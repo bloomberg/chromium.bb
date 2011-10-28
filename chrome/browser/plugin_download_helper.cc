@@ -8,7 +8,7 @@
 #include <windows.h>
 
 #include "base/file_util.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/base/io_buffer.h"
 

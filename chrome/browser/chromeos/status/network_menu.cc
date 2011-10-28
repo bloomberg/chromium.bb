@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
@@ -22,10 +22,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/window.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/browser_thread.h"
+#include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"

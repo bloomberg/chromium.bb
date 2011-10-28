@@ -8,7 +8,7 @@
 #include "chrome/common/about_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -103,7 +103,7 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
       }
   };
   MessageLoopForUI message_loop;
-  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   TestingProfile profile;
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {

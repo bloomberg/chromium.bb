@@ -5,11 +5,12 @@
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/values.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/intents/web_intents_registry.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/ui/intents/web_intents_model.h"
+#include "chrome/browser/webdata/web_data_service.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_model.h"
 
@@ -66,8 +67,8 @@ class WebIntentsModelTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread db_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
   scoped_refptr<WebDataService> wds_;
   WebIntentsRegistry registry_;
   ScopedTempDir temp_dir_;

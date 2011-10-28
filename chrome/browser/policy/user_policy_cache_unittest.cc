@@ -15,7 +15,7 @@
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/policy/proto/old_generic_format.pb.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -135,8 +135,8 @@ class UserPolicyCacheTest : public testing::Test {
 
  private:
   ScopedTempDir temp_dir_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 };
 
 TEST_F(UserPolicyCacheTest, DecodePolicy) {

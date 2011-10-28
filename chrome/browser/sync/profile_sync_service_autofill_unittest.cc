@@ -43,8 +43,8 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
+#include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
@@ -52,8 +52,8 @@
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
-#include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::Time;

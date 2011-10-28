@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_unpacker.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -59,7 +60,8 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
  public:
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    file_thread_.reset(new BrowserThread(BrowserThread::FILE, &loop_));
+    file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE,
+                                                      &loop_));
     // It will delete itself.
     client_ = new MockSandboxedExtensionUnpackerClient;
     client_->DelegateToFake();
@@ -157,7 +159,7 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
   scoped_ptr<ExtensionUnpacker> unpacker_;
   scoped_refptr<SandboxedExtensionUnpacker> sandboxed_unpacker_;
   MessageLoop loop_;
-  scoped_ptr<BrowserThread> file_thread_;
+  scoped_ptr<content::TestBrowserThread> file_thread_;
 };
 
 TEST_F(SandboxedExtensionUnpackerTest, NoCatalogsSuccess) {

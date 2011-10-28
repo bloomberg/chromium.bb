@@ -3719,6 +3719,7 @@
             'chrome_resources',
             'chrome_strings',
             '../content/content.gyp:content_gpu',
+            '../content/content.gyp:test_support_content',
             '../base/base.gyp:base',
             '../base/base.gyp:test_support_base',
             '../base/base.gyp:test_support_perf',

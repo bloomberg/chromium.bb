@@ -13,10 +13,10 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using webkit_glue::PasswordForm;
 using testing::_;
@@ -118,7 +118,7 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
   PasswordManager* manager() { return manager_.get(); }
 
   // We create a UI thread to satisfy PasswordStore.
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 
   scoped_refptr<MockPasswordStore> store_;
   MockPasswordManagerDelegate delegate_;  // Owned by manager_.

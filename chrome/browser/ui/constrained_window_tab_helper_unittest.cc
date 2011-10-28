@@ -6,8 +6,8 @@
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "content/browser/browser_thread.h"
 
 class ConstrainedWindowTabHelperUnit : public TabContentsWrapperTestHarness {
  public:
@@ -17,7 +17,7 @@ class ConstrainedWindowTabHelperUnit : public TabContentsWrapperTestHarness {
   }
 
  private:
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 };
 
 class ConstrainedWindowCloseTest : public ConstrainedWindow {

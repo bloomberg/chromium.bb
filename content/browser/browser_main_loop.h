@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
-class BrowserThread;
 class CommandLine;
 class HighResolutionTimerManager;
 class MessageLoop;
@@ -29,6 +28,7 @@ class NetworkChangeNotifier;
 namespace content {
 
 class BrowserMainParts;
+class BrowserThreadImpl;
 
 // Implements the main browser loop stages called from |BrowserMain()|.
 // See comments in browser_main_parts.h for additional info.
@@ -65,7 +65,7 @@ class BrowserMainLoop {
   scoped_ptr<base::SystemMonitor> system_monitor_;
   scoped_ptr<HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  scoped_ptr<BrowserThread> main_thread_;
+  scoped_ptr<BrowserThreadImpl> main_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainLoop);
 };

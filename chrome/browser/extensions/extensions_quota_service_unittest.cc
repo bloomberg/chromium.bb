@@ -6,6 +6,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -119,7 +120,7 @@ class ExtensionsQuotaServiceTest : public testing::Test {
   std::string extension_c_;
   scoped_ptr<ExtensionsQuotaService> service_;
   MessageLoop loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 };
 
 class QuotaLimitHeuristicTest : public testing::Test {

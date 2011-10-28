@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/values.h"
-#include "content/browser/browser_thread.h"
 #include "content/common/font_list.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 

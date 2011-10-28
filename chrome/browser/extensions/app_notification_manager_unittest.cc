@@ -5,13 +5,14 @@
 #include "base/bind.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/app_notification_test_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_test_util.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace util = app_notification_test_util;
@@ -61,8 +62,8 @@ class AppNotificationManagerTest : public testing::Test {
   }
 
   MessageLoop ui_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
   ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<AppNotificationManager> mgr_;

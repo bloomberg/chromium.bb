@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_settings_backend.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
 class ExtensionSettingsFrontend::DefaultObserver

@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/util/unrecoverable_error_info.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace base {
 class WaitableEvent;

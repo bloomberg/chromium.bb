@@ -9,16 +9,16 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
-#include "base/time.h"
-#include "base/message_loop.h"
 #include "base/process_util.h"
-#include "crypto/sha2.h"
+#include "base/time.h"
 #include "chrome/browser/safe_browsing/bloom_filter.h"
 #include "chrome/browser/safe_browsing/prefix_set.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_MACOSX)

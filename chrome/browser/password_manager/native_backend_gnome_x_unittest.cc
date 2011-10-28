@@ -14,6 +14,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using webkit_glue::PasswordForm;
@@ -377,8 +378,8 @@ class NativeBackendGnomeTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread db_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
 
   TestingProfile profile_;
 

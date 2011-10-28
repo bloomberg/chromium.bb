@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state_resolver.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 

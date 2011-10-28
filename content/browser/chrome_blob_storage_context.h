@@ -8,8 +8,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/browser_thread.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 
 class GURL;
 

@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager_event_handler.h"
+#include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_manager.h"
 
 namespace media_stream {

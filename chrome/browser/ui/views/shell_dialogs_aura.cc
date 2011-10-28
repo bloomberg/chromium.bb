@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/shell_dialogs.h"
 
 #include "chrome/browser/ui/views/file_manager_dialog.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 // static
 SelectFileDialog* SelectFileDialog::Create(Listener* listener) {

@@ -13,7 +13,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::DataTypeController;
@@ -84,7 +84,7 @@ class ProfileSyncFactoryImplTest : public testing::Test {
   }
 
   MessageLoop message_loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
   scoped_ptr<Profile> profile_;
   scoped_ptr<CommandLine> command_line_;
   scoped_ptr<ProfileSyncFactoryImpl> profile_sync_service_factory_;

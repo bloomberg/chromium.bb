@@ -4,7 +4,7 @@
 
 #include "content/browser/user_metrics.h"
 
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 

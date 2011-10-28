@@ -15,11 +15,12 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "content/test/test_browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "net/url_request/url_request.h"
 
 namespace {
@@ -227,14 +228,14 @@ class ProtocolHandlerRegistryTest : public testing::Test {
 
   virtual void SetUp() {
     ui_message_loop_.reset(new MessageLoopForUI());
-    ui_thread_.reset(new BrowserThread(BrowserThread::UI,
-                                       MessageLoop::current()));
-    io_thread_.reset(new BrowserThread(BrowserThread::IO));
+    ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
+                                                    MessageLoop::current()));
+    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
     base::Thread::Options options;
     options.message_loop_type = MessageLoop::TYPE_IO;
     io_thread_->StartWithOptions(options);
 
-    file_thread_.reset(new BrowserThread(BrowserThread::FILE));
+    file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE));
     options.message_loop_type = MessageLoop::TYPE_DEFAULT;
     file_thread_->StartWithOptions(options);
 
@@ -265,9 +266,9 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   }
 
   scoped_ptr<MessageLoopForUI> ui_message_loop_;
-  scoped_ptr<BrowserThread> ui_thread_;
-  scoped_ptr<BrowserThread> io_thread_;
-  scoped_ptr<BrowserThread> file_thread_;
+  scoped_ptr<content::TestBrowserThread> ui_thread_;
+  scoped_ptr<content::TestBrowserThread> io_thread_;
+  scoped_ptr<content::TestBrowserThread> file_thread_;
 
   FakeDelegate* delegate_;
   scoped_ptr<TestingProfile> profile_;

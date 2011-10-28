@@ -5,9 +5,9 @@
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 
 #include "base/message_loop.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/browser/browser_thread.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace browser_sync {
 

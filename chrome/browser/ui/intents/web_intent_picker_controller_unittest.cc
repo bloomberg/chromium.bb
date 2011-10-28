@@ -20,9 +20,9 @@
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/web_intent_service_data.h"
@@ -193,8 +193,8 @@ class WebIntentPickerControllerTest : public TabContentsWrapperTestHarness {
     MessageLoop::current()->Run();
   }
 
-  BrowserThread ui_thread_;
-  BrowserThread db_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
   WebIntentPickerMock picker_;
 
   // |controller_| takes ownership.

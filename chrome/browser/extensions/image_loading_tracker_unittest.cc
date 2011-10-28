@@ -11,8 +11,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
@@ -89,9 +89,9 @@ class ImageLoadingTrackerTest : public testing::Test,
   int image_loaded_count_;
   bool quit_in_image_loaded_;
   MessageLoop ui_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
+  content::TestBrowserThread io_thread_;
 };
 
 // Tests asking ImageLoadingTracker to cache pushes the result to the Extension.

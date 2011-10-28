@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace keys = extension_manifest_keys;
@@ -24,8 +24,8 @@ class ExtensionInfoMapTest : public testing::Test {
 
  private:
   MessageLoop message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
 };
 
 // Returns a barebones test Extension object with the given name.

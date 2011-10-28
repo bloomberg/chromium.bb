@@ -8,12 +8,12 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_form_data.h"
-#include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 using webkit_glue::PasswordForm;
 using sync_datatype_helper::test;

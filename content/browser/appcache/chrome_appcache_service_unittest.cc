@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_storage_impl.h"
@@ -56,10 +56,10 @@ class ChromeAppCacheServiceTest : public testing::Test {
   const GURL kSessionOnlyManifestURL;
 
  private:
-  BrowserThread db_thread_;
-  BrowserThread file_thread_;
-  BrowserThread cache_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread db_thread_;
+  content::TestBrowserThread file_thread_;
+  content::TestBrowserThread cache_thread_;
+  content::TestBrowserThread io_thread_;
 };
 
 scoped_refptr<ChromeAppCacheService>

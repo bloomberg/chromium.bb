@@ -19,7 +19,7 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(TOOLKIT_USES_GTK) && !defined(OS_CHROMEOS)
 #include "chrome/browser/printing/print_dialog_gtk.h"

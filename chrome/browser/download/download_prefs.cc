@@ -17,9 +17,9 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/save_package.h"
+#include "content/public/browser/browser_thread.h"
 
 DownloadPrefs::DownloadPrefs(PrefService* prefs) : prefs_(prefs) {
   prompt_for_download_.Init(prefs::kPromptForDownload, prefs, NULL);

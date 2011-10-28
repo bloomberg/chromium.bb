@@ -28,6 +28,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/test/notification_observer_mock.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -313,8 +314,9 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
   }
 
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread db_thread_;  // PasswordStore, WDS schedule work on this thread.
+  content::TestBrowserThread ui_thread_;
+  // PasswordStore, WDS schedule work on this thread.
+  content::TestBrowserThread db_thread_;
 
   scoped_ptr<LoginDatabase> login_db_;
   scoped_ptr<TestingProfile> profile_;

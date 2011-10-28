@@ -11,9 +11,9 @@
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_persistent_store_info.h"
+#include "content/public/browser/browser_thread.h"
 #include "sql/statement.h"
 
 namespace history {

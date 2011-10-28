@@ -12,9 +12,10 @@
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/test/base/test_url_request_context_getter.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -72,8 +73,8 @@ class SyncBackendHostTest : public testing::Test {
 
  private:
   MessageLoop ui_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
 };
 
 TEST_F(SyncBackendHostTest, InitShutdown) {

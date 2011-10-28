@@ -13,8 +13,8 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
@@ -33,11 +33,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/switch_utils.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)

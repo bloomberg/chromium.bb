@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/login/signed_settings.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/importer_host.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/password_form.h"
 

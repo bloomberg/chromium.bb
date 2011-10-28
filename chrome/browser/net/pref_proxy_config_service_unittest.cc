@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -102,8 +102,8 @@ class PrefProxyConfigServiceTestBase : public TESTBASE {
 
  private:
   scoped_refptr<PrefProxyConfigTracker> proxy_config_tracker_;
-  BrowserThread ui_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
 };
 
 class PrefProxyConfigServiceTest

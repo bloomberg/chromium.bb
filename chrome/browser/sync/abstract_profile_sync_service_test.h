@@ -15,7 +15,7 @@
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ProfileSyncService;
@@ -60,9 +60,9 @@ class AbstractProfileSyncServiceTest : public testing::Test {
 
  protected:
   MessageLoopForUI ui_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread db_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
+  content::TestBrowserThread io_thread_;
   ProfileSyncFactoryMock factory_;
   scoped_ptr<TokenService> token_service_;
   scoped_ptr<TestProfileSyncService> service_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/sys_string_conversions.h"
-#include "content/browser/browser_thread.h"
 #import "content/browser/find_pasteboard.h"
+#include "content/public/browser/browser_thread.h"
 
 // The number of utf16 code units that will be written to the find pasteboard,
 // longer texts are silently ignored. This is to prevent that a compromised

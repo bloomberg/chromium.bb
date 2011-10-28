@@ -9,12 +9,12 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/media_stream_device_settings.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace media_stream {
 

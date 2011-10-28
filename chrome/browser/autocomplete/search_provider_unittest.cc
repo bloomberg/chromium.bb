@@ -18,7 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,7 +89,7 @@ class SearchProviderTest : public testing::Test,
   GURL keyword_url_;
 
   MessageLoopForUI message_loop_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread io_thread_;
 
   // URLFetcherFactory implementation registered.
   TestURLFetcherFactory test_factory_;

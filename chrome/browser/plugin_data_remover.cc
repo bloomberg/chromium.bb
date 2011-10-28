@@ -13,9 +13,9 @@
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/plugin_service.h"
 #include "content/common/plugin_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
 #if defined(OS_POSIX)

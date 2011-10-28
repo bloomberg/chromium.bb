@@ -16,7 +16,7 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
 using namespace speech_input;
@@ -607,6 +607,6 @@ void ExtensionSpeechInputManager::StopSucceededOnUIThread() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_SPEECH_INPUT_RECORDING_STOPPED,
       // Guarded by the state_ == kShutdown check.
-      content::Source<Profile>(profile_),      
+      content::Source<Profile>(profile_),
       content::Details<std::string>(&extension_id));
 }

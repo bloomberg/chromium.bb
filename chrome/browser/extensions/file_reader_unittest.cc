@@ -12,7 +12,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_test_util.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -24,7 +24,7 @@ class FileReaderTest : public testing::Test {
   }
  private:
   MessageLoop message_loop_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread file_thread_;
 };
 
 class Receiver {

@@ -29,7 +29,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -317,8 +317,8 @@ class TopSitesTest : public HistoryUnitTestBase {
 
  private:
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread db_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
   scoped_ptr<TestingProfile> profile_;
   CancelableRequestConsumer consumer_;
   CommandLine original_command_line_;

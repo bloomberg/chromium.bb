@@ -17,7 +17,7 @@
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/prefs/pref_value_map.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "policy/policy_constants.h"
 
 namespace policy {

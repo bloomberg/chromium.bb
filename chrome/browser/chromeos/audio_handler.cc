@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/audio_mixer_alsa.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 using std::max;
 using std::min;

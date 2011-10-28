@@ -44,11 +44,11 @@
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_status_updater_delegate.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 
 class DownloadFileManager;

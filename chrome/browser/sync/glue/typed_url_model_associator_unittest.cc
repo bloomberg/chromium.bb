@@ -13,7 +13,7 @@
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -419,7 +419,7 @@ static void CreateModelAssociator(base::WaitableEvent* startup,
 // association on the UI thread, then ensure that AssociateModels() returns
 // false.
 TEST_F(TypedUrlModelAssociatorTest, TestAbort) {
-  BrowserThread db_thread(BrowserThread::DB);
+  content::TestBrowserThread db_thread(BrowserThread::DB);
   base::WaitableEvent startup(false, false);
   base::WaitableEvent aborted(false, false);
   base::WaitableEvent done(false, false);

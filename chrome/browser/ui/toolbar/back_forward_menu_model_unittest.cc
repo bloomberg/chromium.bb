@@ -13,11 +13,11 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -99,7 +99,7 @@ class BackFwdMenuModelTest : public ChromeRenderViewHostTestHarness {
     contents()->CommitPendingNavigation();
   }
 
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 };
 
 TEST_F(BackFwdMenuModelTest, BasicCase) {

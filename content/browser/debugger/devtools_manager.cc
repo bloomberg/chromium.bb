@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/message_loop.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/debugger/devtools_client_host.h"
@@ -15,6 +14,7 @@
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "googleurl/src/gurl.h"
 

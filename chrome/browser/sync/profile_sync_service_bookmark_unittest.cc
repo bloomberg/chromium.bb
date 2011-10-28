@@ -34,7 +34,7 @@
 #include "chrome/browser/sync/test/engine/test_user_share.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -507,9 +507,9 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
  private:
   // Used by both |ui_thread_| and |file_thread_|.
   MessageLoop message_loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
   // Needed by |model_|.
-  BrowserThread file_thread_;
+  content::TestBrowserThread file_thread_;
 
   TestingProfile profile_;
   scoped_ptr<TestBookmarkModelAssociator> model_associator_;

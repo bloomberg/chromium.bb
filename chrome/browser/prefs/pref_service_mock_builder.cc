@@ -10,7 +10,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
 #include "chrome/common/json_pref_store.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 PrefServiceMockBuilder::PrefServiceMockBuilder()
   : user_prefs_(new TestingPrefStore) {

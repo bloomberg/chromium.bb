@@ -4,9 +4,9 @@
 
 #include "content/browser/file_system/browser_file_system_helper.h"
 
-#include "base/file_path.h"
 #include "base/command_line.h"
-#include "content/browser/browser_thread.h"
+#include "base/file_path.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "webkit/quota/quota_manager.h"
 

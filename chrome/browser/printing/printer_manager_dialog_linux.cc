@@ -7,8 +7,8 @@
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
 #include "base/process_util.h"
-#include "content/browser/browser_thread.h"
 #include "content/common/process_watcher.h"
+#include "content/public/browser/browser_thread.h"
 
 using base::Environment;
 

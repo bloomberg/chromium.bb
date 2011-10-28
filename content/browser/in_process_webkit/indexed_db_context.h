@@ -15,8 +15,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/browser_thread.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/quota/quota_types.h"
 

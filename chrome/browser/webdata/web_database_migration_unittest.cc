@@ -19,10 +19,10 @@
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
-#include "content/browser/browser_thread.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/guid.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/test/test_browser_thread.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -189,7 +189,7 @@ class WebDatabaseMigrationTest : public testing::Test {
 
  private:
   MessageLoopForUI message_loop_for_ui_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
   ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);

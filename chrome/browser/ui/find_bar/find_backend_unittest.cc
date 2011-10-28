@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/test/test_browser_thread.h"
 
 class FindBackendTest : public TabContentsWrapperTestHarness {
  public:
@@ -21,7 +21,7 @@ class FindBackendTest : public TabContentsWrapperTestHarness {
         browser_thread_(BrowserThread::UI, &message_loop_) {}
 
  private:
-  BrowserThread browser_thread_;
+  content::TestBrowserThread browser_thread_;
 };
 
 namespace {

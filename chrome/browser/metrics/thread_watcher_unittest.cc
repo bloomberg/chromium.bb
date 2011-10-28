@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -248,8 +249,9 @@ class ThreadWatcherTest : public ::testing::Test {
   ThreadWatcherTest()
       : setup_complete_(&lock_),
         initialized_(false) {
-    webkit_thread_.reset(new BrowserThread(BrowserThread::WEBKIT));
-    io_thread_.reset(new BrowserThread(BrowserThread::IO));
+    webkit_thread_.reset(new content::TestBrowserThread(
+        BrowserThread::WEBKIT));
+    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
     watchdog_thread_.reset(new WatchDogThread());
     webkit_thread_->Start();
     io_thread_->Start();
@@ -309,8 +311,8 @@ class ThreadWatcherTest : public ::testing::Test {
   base::Lock lock_;
   base::ConditionVariable setup_complete_;
   bool initialized_;
-  scoped_ptr<BrowserThread> webkit_thread_;
-  scoped_ptr<BrowserThread> io_thread_;
+  scoped_ptr<content::TestBrowserThread> webkit_thread_;
+  scoped_ptr<content::TestBrowserThread> io_thread_;
   scoped_ptr<WatchDogThread> watchdog_thread_;
 };
 

@@ -19,8 +19,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/media/media_internals.h"
-#include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/passive_log_collector.h"
@@ -30,9 +30,9 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/base/cert_verifier.h"
@@ -340,7 +340,7 @@ IOThread::IOThread(
     PrefService* local_state,
     ChromeNetLog* net_log,
     ExtensionEventRouterForwarder* extension_event_router_forwarder)
-    : BrowserProcessSubThread(BrowserThread::IO),
+    : content::BrowserProcessSubThread(BrowserThread::IO),
       net_log_(net_log),
       extension_event_router_forwarder_(extension_event_router_forwarder),
       globals_(NULL),
@@ -399,7 +399,7 @@ void IOThread::Init() {
   // messages around; it shouldn't be allowed to perform any blocking disk I/O.
   base::ThreadRestrictions::SetIOAllowed(false);
 
-  BrowserProcessSubThread::Init();
+  content::BrowserProcessSubThread::Init();
 
   DCHECK_EQ(MessageLoop::TYPE_IO, message_loop()->type());
 
@@ -515,7 +515,7 @@ void IOThread::CleanUp() {
 
   // This will delete the |notification_service_|.  Make sure it's done after
   // anything else can reference it.
-  BrowserProcessSubThread::CleanUp();
+  content::BrowserProcessSubThread::CleanUp();
 }
 
 // static

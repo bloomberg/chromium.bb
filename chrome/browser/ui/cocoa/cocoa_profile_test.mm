@@ -6,13 +6,16 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "content/test/test_browser_thread.h"
 
 CocoaProfileTest::CocoaProfileTest()
     : ui_thread_(BrowserThread::UI, &message_loop_),
       profile_manager_(static_cast<TestingBrowserProcess*>(g_browser_process)),
       profile_(NULL),
-      file_thread_(new BrowserThread(BrowserThread::FILE, &message_loop_)),
-      io_thread_(new BrowserThread(BrowserThread::IO, &message_loop_)) {
+      file_thread_(new content::TestBrowserThread(BrowserThread::FILE,
+                                                  &message_loop_)),
+      io_thread_(new content::TestBrowserThread(BrowserThread::IO,
+                                                &message_loop_)) {
 }
 
 CocoaProfileTest::~CocoaProfileTest() {

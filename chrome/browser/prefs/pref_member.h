@@ -31,7 +31,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 
 class PrefService;

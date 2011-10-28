@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/process_util.h"
 #include "content/browser/browser_child_process_host.h"
-#include "content/browser/browser_thread.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 
 // This class acts as the browser-side host to a utility child process.  A
 // utility process is a short-lived sandboxed process that is created to run

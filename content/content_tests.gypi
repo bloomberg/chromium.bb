@@ -75,6 +75,8 @@
         'test/render_view_test.h',
         'test/test_browser_context.cc',
         'test/test_browser_context.h',
+        'test/test_browser_thread.cc',
+        'test/test_browser_thread.h',
         'test/test_content_client.cc',
         'test/test_content_client.h',
         'test/test_notification_tracker.cc',

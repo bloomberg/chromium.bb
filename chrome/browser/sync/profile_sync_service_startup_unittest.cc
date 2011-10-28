@@ -19,7 +19,7 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using browser_sync::DataTypeManager;
@@ -79,8 +79,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   MessageLoop ui_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
   scoped_ptr<TestingProfile> profile_;
   ProfileSyncFactoryMock factory_;
   scoped_ptr<TestProfileSyncService> service_;

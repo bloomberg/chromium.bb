@@ -12,7 +12,7 @@
 #include "base/win/registry.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"

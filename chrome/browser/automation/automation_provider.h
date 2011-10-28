@@ -26,10 +26,10 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/content_settings.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/trace_controller.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "ipc/ipc_channel.h"
 

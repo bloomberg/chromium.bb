@@ -7,10 +7,10 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task.h"
 #include "base/test/test_timeouts.h"
 #include "base/tracked_objects.h"
-#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/api/syncable_service_mock.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
@@ -19,7 +19,7 @@
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::WaitableEvent;
@@ -210,8 +210,8 @@ class NewNonFrontendDataTypeControllerTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread db_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
   ProfileMock profile_;
   scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
   ProfileSyncServiceMock service_;

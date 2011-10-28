@@ -304,8 +304,8 @@ CFUrlRequestUnittestRunner::CFUrlRequestUnittestRunner(int argc, char** argv)
       registrar_(chrome_frame_test::GetTestBedType()),
       test_result_(0) {
   // Register the main thread by instantiating it, but don't call any methods.
-  main_thread_.reset(new BrowserThread(BrowserThread::UI,
-                                       MessageLoop::current()));
+  main_thread_.reset(new DeprecatedBrowserThread(BrowserThread::UI,
+                                                 MessageLoop::current()));
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   fake_chrome_.Initialize();
   pss_subclass_.reset(new ProcessSingletonSubclass(this));

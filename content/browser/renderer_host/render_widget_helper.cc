@@ -6,11 +6,11 @@
 
 #include "base/eintr_wrapper.h"
 #include "base/threading/thread.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_thread.h"
 
 // A Task used with InvokeLater that we hold a pointer to in pending_paints_.
 // Instances are deleted by MessageLoop after it calls their Run method.

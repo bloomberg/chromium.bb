@@ -5,7 +5,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill_i18n::NormalizePhoneNumber;
@@ -21,7 +21,7 @@ class PhoneNumberI18NTest : public testing::Test {
 
  private:
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(PhoneNumberI18NTest);
 };

@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_settings_storage.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/test/test_browser_thread.h"
 
 class ExtensionSettingsFrontendTest : public testing::Test {
  public:
@@ -56,8 +57,8 @@ class ExtensionSettingsFrontendTest : public testing::Test {
   }
 
   MessageLoop message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 };
 
 TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {

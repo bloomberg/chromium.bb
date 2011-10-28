@@ -13,7 +13,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "printing/print_dialog_gtk_interface.h"
 #include "printing/printing_context_cairo.h"
 #include "ui/base/gtk/gtk_signal.h"

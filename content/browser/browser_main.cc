@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/notification_service_impl.h"
 #include "content/common/main_function_params.h"
 #include "content/public/common/content_switches.h"

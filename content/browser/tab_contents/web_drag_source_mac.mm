@@ -13,7 +13,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_thread.h"
+#include "content/browser/browser_thread_impl.h"
 #include "content/browser/download/drag_download_file.h"
 #include "content/browser/download/drag_download_util.h"
 #include "content/browser/renderer_host/render_view_host.h"

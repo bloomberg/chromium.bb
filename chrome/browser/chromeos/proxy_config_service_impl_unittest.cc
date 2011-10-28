@@ -14,7 +14,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -415,8 +415,8 @@ class ProxyConfigServiceImplTest : public PlatformTest {
 
   ScopedStubCrosEnabler stub_cros_enabler_;
   MessageLoop message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
 
   scoped_refptr<ProxyConfigServiceImpl> config_service_;
 };

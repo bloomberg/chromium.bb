@@ -18,8 +18,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/context_menu.h"
@@ -58,8 +58,8 @@ class ExtensionMenuManagerTest : public testing::Test {
  protected:
   TestingProfile profile_;
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 
   ExtensionMenuManager manager_;
   ExtensionList extensions_;

@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 struct DesktopNotificationHostMsg_Show_Params;
@@ -91,7 +91,7 @@ class DesktopNotificationsTest : public testing::Test {
   // Create a message loop to allow notifications code to post tasks,
   // and a thread so that notifications code runs on the expected thread.
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 
   // Mock local state.
   TestingPrefService local_state_;

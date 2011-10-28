@@ -8,14 +8,14 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
+#include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/external_policy_extension_loader.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ExternalPolicyExtensionProviderTest : public testing::Test {
@@ -31,7 +31,7 @@ class ExternalPolicyExtensionProviderTest : public testing::Test {
   // We need these to satisfy BrowserThread::CurrentlyOn(BrowserThread::UI)
   // checks in ExternalExtensionProviderImpl.
   MessageLoop loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 };
 
 class MockExternalPolicyExtensionProviderVisitor

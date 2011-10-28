@@ -5,13 +5,13 @@
 #include "chrome/browser/sync/glue/new_non_frontend_data_type_controller.h"
 
 #include "base/logging.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/glue/shared_change_processor_ref.h"
+#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace browser_sync {
 

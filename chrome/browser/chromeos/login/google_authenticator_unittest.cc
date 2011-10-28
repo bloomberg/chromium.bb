@@ -28,7 +28,7 @@
 #include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
@@ -121,7 +121,7 @@ class GoogleAuthenticatorTest : public testing::Test {
 
   void ReadLocalaccountFile(GoogleAuthenticator* auth,
                             const std::string& filename) {
-    BrowserThread file_thread(BrowserThread::FILE);
+    content::TestBrowserThread file_thread(BrowserThread::FILE);
     file_thread.Start();
 
     BrowserThread::PostTask(
@@ -152,7 +152,7 @@ class GoogleAuthenticatorTest : public testing::Test {
   }
 
   MessageLoop message_loop_ui_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 
   unsigned char fake_hash_[32];
   std::string hash_ascii_;
@@ -611,7 +611,7 @@ TEST_F(GoogleAuthenticatorTest, FullHostedLoginFailure) {
       &profile, username_, hash_ascii_, std::string(), std::string());
 
   // For when |auth| tries to load the localaccount file.
-  BrowserThread file_thread(BrowserThread::FILE);
+  content::TestBrowserThread file_thread(BrowserThread::FILE);
   file_thread.Start();
 
   // Run the UI thread until we exit it gracefully.
@@ -649,7 +649,7 @@ TEST_F(GoogleAuthenticatorTest, CancelLogin) {
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   // For when |auth| tries to load the localaccount file.
-  BrowserThread file_thread(BrowserThread::FILE);
+  content::TestBrowserThread file_thread(BrowserThread::FILE);
   file_thread.Start();
 
   // Start an authentication attempt, which will kick off a URL "fetch" that

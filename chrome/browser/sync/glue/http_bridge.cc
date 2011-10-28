@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/base/cookie_monster.h"

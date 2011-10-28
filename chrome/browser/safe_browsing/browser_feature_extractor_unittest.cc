@@ -12,19 +12,19 @@
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
-#include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/browser_features.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
+#include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -133,7 +133,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     }
   }
 
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
   int num_pending_;
   scoped_ptr<BrowserFeatureExtractor> extractor_;
   std::map<ClientPhishingRequest*, bool> success_;

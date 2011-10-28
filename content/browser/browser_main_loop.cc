@@ -12,7 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
-#include "content/browser/browser_thread.h"
+#include "content/browser/browser_thread_impl.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
 #include "content/common/sandbox_policy.h"
@@ -239,6 +239,9 @@ void BrowserMainLoop::MainMessageLoopStart() {
   }
 #endif
 
+  // Must first NULL pointer or we hit a DCHECK that the newly constructed
+  // message loop is the current one.
+  main_message_loop_.reset();
   main_message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
 
   InitializeMainThread();
@@ -295,8 +298,8 @@ void BrowserMainLoop::InitializeMainThread() {
 #endif  // TRACK_ALL_TASK_OBJECTS
 
   // Register the main thread by instantiating it, but don't call any methods.
-  main_thread_.reset(new BrowserThread(BrowserThread::UI,
-                                       MessageLoop::current()));
+  main_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,
+                                           MessageLoop::current()));
 }
 
 void BrowserMainLoop::InitializeToolkit() {

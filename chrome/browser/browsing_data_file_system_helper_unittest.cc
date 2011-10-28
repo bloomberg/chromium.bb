@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_file_system_helper.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -173,9 +173,9 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   // defined before profile_ to prevent explosions. The threads also must be
   // defined in the order they're listed here. Oh how I love C++.
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
+  content::TestBrowserThread io_thread_;
   TestingProfile profile_;
 
   // We don't own this pointer: don't delete it.

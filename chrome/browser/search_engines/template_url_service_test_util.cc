@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -74,8 +75,8 @@ class TemplateURLServiceTestingProfile : public TestingProfile {
  private:
   scoped_refptr<WebDataService> service_;
   ScopedTempDir temp_dir_;
-  BrowserThread db_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread db_thread_;
+  content::TestBrowserThread io_thread_;
 };
 
 // Trivial subclass of TemplateURLService that records the last invocation of

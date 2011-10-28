@@ -2,4 +2,5 @@ include_rules = [
   "+chrome/browser",
   "+chrome/third_party/hunspell/google",
   "+content/browser",
+  "+content/public/browser",
 ]

@@ -23,7 +23,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/dialogs_common.h"
 #include "chrome/browser/ui/shell_dialogs.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

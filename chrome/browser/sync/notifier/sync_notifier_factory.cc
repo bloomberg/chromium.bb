@@ -14,7 +14,7 @@
 #include "chrome/browser/sync/notifier/p2p_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "jingle/notifier/base/const_communicator.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/mediator_thread_impl.h"

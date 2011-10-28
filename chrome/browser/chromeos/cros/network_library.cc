@@ -24,8 +24,8 @@
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
 #include "base/utf_string_conversion_utils.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
@@ -35,7 +35,7 @@
 #include "chrome/browser/chromeos/network_login_observer.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/common/time_format.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util.h"  // crypto::GetTPMTokenInfo() for 802.1X and VPN.
 #include "grit/generated_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

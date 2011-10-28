@@ -13,9 +13,9 @@
 #include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
-#include "content/browser/browser_thread.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
 using std::vector;

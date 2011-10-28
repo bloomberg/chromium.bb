@@ -9,7 +9,7 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "net/base/ssl_config_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,9 +25,9 @@ class SSLConfigServiceManagerPrefTest : public testing::Test {
   virtual void SetUp() {
     message_loop_.reset(new MessageLoop());
     ui_thread_.reset(
-        new BrowserThread(BrowserThread::UI, message_loop_.get()));
+        new content::TestBrowserThread(BrowserThread::UI, message_loop_.get()));
     io_thread_.reset(
-        new BrowserThread(BrowserThread::IO, message_loop_.get()));
+        new content::TestBrowserThread(BrowserThread::IO, message_loop_.get()));
     pref_service_.reset(new TestingPrefService());
     SSLConfigServiceManager::RegisterPrefs(pref_service_.get());
   }
@@ -41,8 +41,8 @@ class SSLConfigServiceManagerPrefTest : public testing::Test {
 
  protected:
   scoped_ptr<MessageLoop> message_loop_;
-  scoped_ptr<BrowserThread> ui_thread_;
-  scoped_ptr<BrowserThread> io_thread_;
+  scoped_ptr<content::TestBrowserThread> ui_thread_;
+  scoped_ptr<content::TestBrowserThread> io_thread_;
   scoped_ptr<TestingPrefService> pref_service_;
 };
 

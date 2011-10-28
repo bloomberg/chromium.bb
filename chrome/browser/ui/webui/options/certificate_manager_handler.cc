@@ -15,9 +15,9 @@
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "chrome/browser/ui/gtk/certificate_dialogs.h"
-#include "content/browser/browser_thread.h"  // for FileAccessProvider
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/browser_thread.h"  // for FileAccessProvider
 #include "grit/generated_resources.h"
 #include "net/base/crypto_module.h"
 #include "net/base/x509_certificate.h"

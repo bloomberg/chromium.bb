@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/values.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -20,7 +20,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/test/base/signaling_task.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

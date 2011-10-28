@@ -7,20 +7,20 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task.h"
 #include "base/test/test_timeouts.h"
 #include "base/tracked_objects.h"
-#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/glue/change_processor_mock.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
+#include "chrome/browser/sync/glue/model_associator_mock.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller_mock.h"
-#include "chrome/browser/sync/glue/model_associator_mock.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 
 using base::WaitableEvent;
 using browser_sync::ChangeProcessorMock;
@@ -189,8 +189,8 @@ class NonFrontendDataTypeControllerTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread db_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
   scoped_refptr<NonFrontendDataTypeControllerFake> non_frontend_dtc_;
   scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
   scoped_refptr<NonFrontendDataTypeControllerMock> dtc_mock_;

@@ -17,9 +17,9 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 
 namespace browser_sync {

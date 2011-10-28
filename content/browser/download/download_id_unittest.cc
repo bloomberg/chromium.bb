@@ -9,8 +9,9 @@
 #include <set>
 #include <vector>
 
-#include "content/browser/download/mock_download_manager_delegate.h"
 #include "content/browser/download/mock_download_manager.h"
+#include "content/browser/download/mock_download_manager_delegate.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class DownloadIdTest : public testing::Test {
@@ -45,7 +46,8 @@ class DownloadIdTest : public testing::Test {
   scoped_ptr<MockDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<DownloadManager> download_managers_[2];
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;  // Necessary to delete |DownloadManager|s.
+  // Necessary to delete |DownloadManager|s.
+  content::TestBrowserThread ui_thread_;
   size_t num_managers_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadIdTest);

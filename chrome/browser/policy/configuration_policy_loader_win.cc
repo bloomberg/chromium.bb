@@ -6,7 +6,7 @@
 
 #include <userenv.h>
 
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 // userenv.dll is required for RegisterGPNotification().
 #pragma comment(lib, "userenv.lib")

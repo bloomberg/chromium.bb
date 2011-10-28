@@ -16,10 +16,10 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "base/synchronization/waitable_event.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 using webkit_glue::PasswordForm;
 

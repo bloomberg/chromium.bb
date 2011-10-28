@@ -13,9 +13,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_fetcher.h"
+#include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -133,7 +133,7 @@ class GoogleURLTrackerTest : public testing::Test {
 
  private:
   MessageLoop message_loop_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread io_thread_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   ScopedTestingLocalState local_state_;
 

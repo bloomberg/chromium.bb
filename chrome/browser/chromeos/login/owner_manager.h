@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "crypto/rsa_private_key.h"
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "crypto/rsa_private_key.h"
 
 class FilePath;
 

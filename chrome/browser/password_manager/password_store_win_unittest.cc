@@ -22,7 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/signaling_task.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -124,8 +124,9 @@ class PasswordStoreWinTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread db_thread_;  // PasswordStore, WDS schedule work on this thread.
+  content::TestBrowserThread ui_thread_;
+  // PasswordStore, WDS schedule work on this thread.
+  content::TestBrowserThread db_thread_;
 
   scoped_ptr<LoginDatabase> login_db_;
   scoped_ptr<TestingProfile> profile_;

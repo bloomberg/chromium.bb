@@ -21,7 +21,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "google_update_idl_i.c"
 #include "views/widget/widget.h"
 

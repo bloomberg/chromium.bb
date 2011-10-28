@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,9 +10,9 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/common/plugin_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/gfx/rect.h"
 
 void PluginProcessHost::OnPluginSelectWindow(uint32 window_id,

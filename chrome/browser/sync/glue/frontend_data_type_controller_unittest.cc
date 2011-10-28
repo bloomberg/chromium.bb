@@ -17,7 +17,7 @@
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 
 using browser_sync::ChangeProcessorMock;
 using browser_sync::DataTypeController;
@@ -134,7 +134,7 @@ class FrontendDataTypeControllerTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
   scoped_refptr<FrontendDataTypeControllerFake> frontend_dtc_;
   scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
   scoped_refptr<FrontendDataTypeControllerMock> dtc_mock_;

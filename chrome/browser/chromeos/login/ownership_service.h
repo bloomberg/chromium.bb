@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
 #include "chrome/browser/chromeos/login/owner_manager.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

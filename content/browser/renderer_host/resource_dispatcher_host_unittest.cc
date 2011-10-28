@@ -10,7 +10,6 @@
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/mock_resource_context.h"
@@ -23,6 +22,7 @@
 #include "content/common/resource_messages.h"
 #include "content/common/resource_response.h"
 #include "content/common/view_messages.h"
+#include "content/test/test_browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_util.h"
@@ -385,8 +385,8 @@ class ResourceDispatcherHostTest : public testing::Test,
   }
 
   MessageLoopForIO message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
   scoped_refptr<ForwardingFilter> filter_;
   ResourceDispatcherHost host_;
   ResourceIPCAccumulator accum_;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_BROWSER_THREAD_H_
-#define CONTENT_BROWSER_BROWSER_THREAD_H_
+#ifndef CONTENT_PUBLIC_BROWSER_BROWSER_THREAD_H_
+#define CONTENT_PUBLIC_BROWSER_BROWSER_THREAD_H_
 #pragma once
 
 #include "base/callback.h"
@@ -20,12 +20,20 @@ namespace base {
 class MessageLoopProxy;
 }
 
+namespace content {
+class BrowserThreadImpl;
+}
+
+class DeprecatedBrowserThread;
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserThread
 //
-// This class represents a thread that is known by a browser-wide name.  For
-// example, there is one IO thread for the entire browser process, and various
-// pieces of code find it useful to retrieve a pointer to the IO thread's
+// Utility functions for threads that are known by a browser-wide
+// name.  For example, there is one IO thread for the entire browser
+// process, and various pieces of code find it useful to retrieve a
+// pointer to the IO thread's message loop.
+//
 // Invoke a task by thread ID:
 //
 //   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task);
@@ -80,16 +88,6 @@ class CONTENT_EXPORT BrowserThread : public base::Thread {
     // identifier.
     ID_COUNT
   };
-
-  // Construct a BrowserThread with the supplied identifier.  It is an error
-  // to construct a BrowserThread that already exists.
-  explicit BrowserThread(ID identifier);
-
-  // Special constructor for the main (UI) thread and unittests. We use a dummy
-  // thread here since the main thread already exists.
-  BrowserThread(ID identifier, MessageLoop* message_loop);
-
-  virtual ~BrowserThread();
 
   // These are the same methods in message_loop.h, but are guaranteed to either
   // get posted to the MessageLoop if it's still alive, or be deleted otherwise.
@@ -216,36 +214,40 @@ class CONTENT_EXPORT BrowserThread : public base::Thread {
   struct DeleteOnWebKitThread : public DeleteOnThread<WEBKIT> { };
 
  private:
+  // Construct a BrowserThread with the supplied identifier.  It is an error
+  // to construct a BrowserThread that already exists.
+  explicit BrowserThread(ID identifier);
+
+  // Special constructor for the main (UI) thread and unittests. We use a dummy
+  // thread here since the main thread already exists.
+  BrowserThread(ID identifier, MessageLoop* message_loop);
+
+  virtual ~BrowserThread();
+
   // Common initialization code for the constructors.
   void Initialize();
 
-  // TODO(brettw) remove this variant when Task->Closure migration is complete.
-  static bool PostTaskHelper(
-      ID identifier,
-      const tracked_objects::Location& from_here,
-      Task* task,
-      int64 delay_ms,
-      bool nestable);
-  static bool PostTaskHelper(
-      ID identifier,
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      int64 delay_ms,
-      bool nestable);
+  // Constructors are only available through this subclass.
+  friend class content::BrowserThreadImpl;
+
+  // TODO(joi): Remove.
+  friend class DeprecatedBrowserThread;
 
   // The identifier of this thread.  Only one thread can exist with a given
   // identifier at a given time.
+  // TODO(joi): Move to BrowserThreadImpl, and make constructors here
+  // do-nothing.
   ID identifier_;
-
-  // This lock protects |browser_threads_|.  Do not read or modify that array
-  // without holding this lock.  Do not block while holding this lock.
-  static base::Lock lock_;
-
-  // An array of the BrowserThread objects.  This array is protected by |lock_|.
-  // The threads are not owned by this array.  Typically, the threads are owned
-  // on the UI thread by the g_browser_process object.  BrowserThreads remove
-  // themselves from this array upon destruction.
-  static BrowserThread* browser_threads_[ID_COUNT];
 };
 
-#endif  // CONTENT_BROWSER_BROWSER_THREAD_H_
+// Temporary escape hatch for chrome/ to construct BrowserThread,
+// until we make content/ construct its own threads.
+class DeprecatedBrowserThread : public BrowserThread {
+ public:
+  explicit DeprecatedBrowserThread(BrowserThread::ID identifier);
+  DeprecatedBrowserThread(BrowserThread::ID identifier,
+                          MessageLoop* message_loop);
+  virtual ~DeprecatedBrowserThread();
+};
+
+#endif  // CONTENT_PUBLIC_BROWSER_BROWSER_THREAD_H_

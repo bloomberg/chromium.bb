@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 
@@ -153,7 +153,7 @@ class SpeechInputBubbleControllerTest
  protected:
   // The main thread of the test is marked as the IO thread and we create a new
   // one for the UI thread.
-  BrowserThread io_thread_;
+  content::TestBrowserThread io_thread_;
   bool cancel_clicked_;
   bool try_again_clicked_;
   bool focus_changed_;

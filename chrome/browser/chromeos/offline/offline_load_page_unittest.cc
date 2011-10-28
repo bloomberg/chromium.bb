@@ -6,10 +6,10 @@
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "chrome/browser/renderer_host/offline_resource_handler.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/view_messages.h"
+#include "content/test/test_browser_thread.h"
 
 static const char* kURL1 = "http://www.google.com/";
 static const char* kURL2 = "http://www.gmail.com/";
@@ -93,8 +93,8 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
 
  private:
   UserResponse user_response_;
-  BrowserThread ui_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
 
   // Initializes / shuts down a stub CrosLibrary.
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;

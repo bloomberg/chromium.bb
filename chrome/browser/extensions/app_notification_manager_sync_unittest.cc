@@ -5,10 +5,11 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/app_notification.h"
+#include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/sync/protocol/app_notification_specifics.pb.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -179,8 +180,8 @@ class AppNotificationManagerSyncTest : public testing::Test {
 
  protected:
   MessageLoop ui_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 
   // We keep two TemplateURLServices to test syncing between them.
   ScopedTempDir temp_dir_;

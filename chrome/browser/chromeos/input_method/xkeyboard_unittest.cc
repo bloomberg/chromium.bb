@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/x/x11_util.h"
 
@@ -59,7 +59,7 @@ class XKeyboardTest : public testing::Test {
   TestableXKeyboard xkey_;
 
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 };
 
 // Returns a ModifierMap object that contains the following mapping:

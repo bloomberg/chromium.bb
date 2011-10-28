@@ -11,7 +11,7 @@
 #include "base/test/thread_test_helper.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -79,8 +79,8 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
   }
 
  protected:
-  BrowserThread db_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread db_thread_;
+  content::TestBrowserThread io_thread_;
   base::WaitableEvent loaded_event_;
   base::WaitableEvent key_loaded_event_;
   std::vector<net::CookieMonster::CanonicalCookie*> cookies_;

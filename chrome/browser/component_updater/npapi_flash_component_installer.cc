@@ -4,8 +4,8 @@
 
 #include "chrome/browser/component_updater/flash_component_installer.h"
 
-#include "base/bind.h"
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -16,8 +16,8 @@
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/plugin_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 

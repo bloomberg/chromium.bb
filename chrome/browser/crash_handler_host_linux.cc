@@ -29,7 +29,7 @@
 #include "chrome/app/breakpad_linux.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/env_vars.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 using google_breakpad::ExceptionHandler;
 

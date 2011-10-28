@@ -12,7 +12,7 @@
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/util/weak_handle.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/cert_verifier.h"
@@ -58,7 +58,7 @@ class InvalidationNotifierTest : public testing::Test {
   StrictMock<MockSyncNotifierObserver> mock_observer_;
   notifier::FakeBaseTask fake_base_task_;
   // Since this test calls HostResolver code, we need an IO thread.
-  BrowserThread io_thread_;
+  content::TestBrowserThread io_thread_;
 };
 
 TEST_F(InvalidationNotifierTest, Basic) {

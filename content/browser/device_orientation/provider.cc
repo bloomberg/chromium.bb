@@ -1,13 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/device_orientation/provider.h"
 
 #include "base/logging.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/device_orientation/data_fetcher.h"
 #include "content/browser/device_orientation/provider_impl.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/device_orientation/accelerometer_mac.h"

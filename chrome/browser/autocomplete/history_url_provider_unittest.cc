@@ -17,7 +17,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -153,8 +153,8 @@ class HistoryURLProviderTest : public testing::Test,
   void RunAdjustOffsetTest(const string16 text, size_t expected_offset);
 
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
   ACMatches matches_;
   scoped_ptr<TestingProfile> profile_;
   HistoryService* history_service_;

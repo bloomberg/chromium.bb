@@ -6,9 +6,9 @@
 
 #include "base/task.h"
 #include "chrome/browser/tab_contents/web_drag_utils_win.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 

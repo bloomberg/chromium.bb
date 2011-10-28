@@ -20,7 +20,7 @@
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"

@@ -8,7 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/time.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser {

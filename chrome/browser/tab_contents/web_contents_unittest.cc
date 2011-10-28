@@ -14,7 +14,6 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
@@ -22,11 +21,12 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/content_constants.h"
+#include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/message_box_flags.h"
 #include "webkit/glue/webkit_glue.h"
@@ -199,7 +199,7 @@ class TabContentsTest : public ChromeRenderViewHostTestHarness {
                                Value::CreateStringValue("bar"));
   }
 
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 };
 
 // Test to make sure that title updates get stripped of whitespace.

@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "base/nullable_string16.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/dom_storage_area.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/dom_storage_namespace.h"
 #include "content/common/dom_storage_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
 using WebKit::WebStorageArea;

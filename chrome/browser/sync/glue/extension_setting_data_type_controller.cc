@@ -11,7 +11,7 @@
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace browser_sync {
 

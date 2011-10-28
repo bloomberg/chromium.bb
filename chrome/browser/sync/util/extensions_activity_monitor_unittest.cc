@@ -12,8 +12,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/notification_service_impl.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::ExtensionsActivityMonitor;
@@ -140,7 +140,7 @@ class ExtensionsActivityMonitorTest : public testing::Test {
   }
  private:
   content::NotificationService* service_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 };
 
 TEST_F(ExtensionsActivityMonitorTest, Basic) {

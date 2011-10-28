@@ -6,13 +6,13 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "chrome/browser/debugger/inspectable_tab_proxy.h"
 #include "chrome/browser/debugger/debugger_remote_service.h"
-#include "chrome/browser/debugger/devtools_remote_message.h"
 #include "chrome/browser/debugger/devtools_remote_listen_socket.h"
+#include "chrome/browser/debugger/devtools_remote_message.h"
 #include "chrome/browser/debugger/devtools_remote_service.h"
 #include "chrome/browser/debugger/extension_ports_remote_service.h"
-#include "content/browser/browser_thread.h"
+#include "chrome/browser/debugger/inspectable_tab_proxy.h"
+#include "content/public/browser/browser_thread.h"
 
 // static
 scoped_refptr<DevToolsProtocolHandler> DevToolsProtocolHandler::Start(

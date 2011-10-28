@@ -8,8 +8,8 @@
 
 #include "chrome/browser/rlz/rlz.h"
 
-#include <process.h>
 #include <windows.h>
+#include <process.h>
 
 #include <algorithm>
 
@@ -31,8 +31,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
 namespace {

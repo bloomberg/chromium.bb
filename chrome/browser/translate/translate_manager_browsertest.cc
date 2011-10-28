@@ -7,8 +7,8 @@
 #include <set>
 #include <vector>
 
-#include "base/utf_string_conversions.h"
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -18,14 +18,13 @@
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
@@ -33,6 +32,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/test/notification_observer_mock.h"
+#include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_test_sink.h"
@@ -238,7 +238,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
  private:
   content::NotificationRegistrar notification_registrar_;
   TestURLFetcherFactory url_fetcher_factory_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 
   // The infobars that have been removed.
   // WARNING: the pointers point to deleted objects, use only for comparison.

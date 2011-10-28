@@ -8,9 +8,9 @@
 
 #include "base/file_util.h"
 #include "base/stringprintf.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_manager.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 

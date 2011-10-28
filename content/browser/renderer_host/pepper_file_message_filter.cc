@@ -10,10 +10,10 @@
 #include "base/platform_file.h"
 #include "base/process_util.h"
 #include "content/browser/browser_context.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/common/pepper_file_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_platform_file.h"
 #include "webkit/plugins/ppapi/file_path.h"
 

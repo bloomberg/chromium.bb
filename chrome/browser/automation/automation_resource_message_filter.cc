@@ -5,8 +5,8 @@
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 
 #include "base/bind.h"
-#include "base/path_service.h"
 #include "base/metrics/histogram.h"
+#include "base/path_service.h"
 #include "base/stl_util.h"
 #include "chrome/browser/automation/url_request_automation_job.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -15,7 +15,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/browser_message_filter.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"

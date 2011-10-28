@@ -13,9 +13,9 @@
 #include "base/nix/xdg_util.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/process_watcher.h"
+#include "content/public/browser/browser_thread.h"
 
 // Command used to configure GNOME 2 proxy settings.
 const char* kGNOME2ProxyConfigCommand[] = {"gnome-network-properties", NULL};

@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class EncodingMenuControllerTest : public testing::Test {
@@ -20,7 +21,7 @@ class EncodingMenuControllerTest : public testing::Test {
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
  private:
   MessageLoop message_loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 };
 
 TEST_F(EncodingMenuControllerTest, EncodingIDsBelongTest) {

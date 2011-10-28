@@ -8,7 +8,7 @@
 #include "chrome/browser/bookmarks/bookmark_extension_api.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
 namespace browser_sync {

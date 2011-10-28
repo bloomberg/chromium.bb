@@ -14,6 +14,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_data.h"
@@ -40,7 +41,7 @@ class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
         contents(), &profile_, web_data_service_));
   }
 
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 
   TestingProfile profile_;
   scoped_refptr<MockWebDataService> web_data_service_;

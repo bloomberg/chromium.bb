@@ -13,6 +13,7 @@
 #include "content/browser/resource_context.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/test/test_browser_thread.h"
 #include "ipc/ipc_message_macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -141,9 +142,11 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   virtual void SetUp() {
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
     // ResourceContext must be created on UI thread.
-    ui_thread_.reset(new BrowserThread(BrowserThread::UI, message_loop_.get()));
+    ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
+                                                    message_loop_.get()));
     // MediaStreamManager must be created and called on IO thread.
-    io_thread_.reset(new BrowserThread(BrowserThread::IO, message_loop_.get()));
+    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO,
+                                                    message_loop_.get()));
 
     // Create a MediaStreamManager instance and hand over pointer to
     // ResourceContext.
@@ -193,8 +196,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
   scoped_refptr<MockMediaStreamDispatcherHost> host_;
   scoped_ptr<MessageLoop> message_loop_;
-  scoped_ptr<BrowserThread> ui_thread_;
-  scoped_ptr<BrowserThread> io_thread_;
+  scoped_ptr<content::TestBrowserThread> ui_thread_;
+  scoped_ptr<content::TestBrowserThread> io_thread_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
 };
 

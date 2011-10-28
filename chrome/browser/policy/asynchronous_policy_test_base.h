@@ -9,7 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,8 +45,8 @@ class AsynchronousPolicyTestBase : public testing::Test {
   scoped_ptr<ProviderDelegateMock> delegate_;
 
  private:
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousPolicyTestBase);
 };

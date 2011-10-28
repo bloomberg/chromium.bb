@@ -12,7 +12,7 @@
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"

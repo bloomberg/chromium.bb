@@ -12,7 +12,7 @@
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -79,8 +79,8 @@ class DeviceManagementServiceTestBase : public TESTBASE {
 
  private:
   MessageLoopForUI loop_;
-  BrowserThread ui_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
 };
 
 struct FailedRequestParams {

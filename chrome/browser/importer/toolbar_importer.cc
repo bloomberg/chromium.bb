@@ -16,7 +16,7 @@
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/libxml_utils.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_fetcher.h"
 #include "grit/generated_resources.h"
 

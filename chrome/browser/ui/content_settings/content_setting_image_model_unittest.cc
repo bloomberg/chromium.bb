@@ -10,9 +10,9 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/test/test_browser_thread.h"
 #include "net/base/cookie_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,7 +22,7 @@ class ContentSettingImageModelTest : public TabContentsWrapperTestHarness {
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
  private:
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingImageModelTest);
 };

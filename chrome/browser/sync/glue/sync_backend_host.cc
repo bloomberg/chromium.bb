@@ -20,19 +20,19 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
+#include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/browser/sync/internal_api/base_transaction.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
-#include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/sessions/session_state.h"
+#include "chrome/browser/sync/sync_prefs.h"
 // TODO(tim): Remove this! We should have a syncapi pass-thru instead.
 #include "chrome/browser/sync/syncable/directory_manager.h"  // Cryptographer.
-#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_client.h"
 

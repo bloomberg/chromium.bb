@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "base/process.h"
-#include "content/browser/browser_thread.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_platform_file.h"
 
 class FilePath;

@@ -10,14 +10,14 @@
 #include "base/base64.h"
 #include "base/lazy_instance.h"
 #include "base/rand_util.h"
-#include "base/synchronization/lock.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "crypto/hmac.h"
 
 namespace {

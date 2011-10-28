@@ -9,8 +9,8 @@
 
 #include "base/process.h"
 #include "base/process_util.h"
-#include "base/string_number_conversions.h"
 #include "base/string16.h"
+#include "base/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/timer.h"
@@ -20,11 +20,11 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/zygote_host_linux.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 

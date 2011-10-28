@@ -36,7 +36,7 @@
 #include "ui/gfx/image/image.h"
 
 #if !defined(OS_MACOSX)
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #endif
 
 namespace {

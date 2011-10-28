@@ -8,8 +8,8 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
-#include "content/browser/browser_thread.h"
 #include "content/common/utility_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 using webkit::npapi::PluginList;

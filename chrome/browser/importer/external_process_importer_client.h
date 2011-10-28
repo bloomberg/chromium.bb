@@ -14,8 +14,8 @@
 #include "base/string16.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/utility_process_host.h"
+#include "content/public/browser/browser_thread.h"
 
 class ExternalProcessImporterHost;
 class InProcessImporterBridge;

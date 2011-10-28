@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -67,7 +67,7 @@ class LoggingWorkSchedulerTest : public testing::Test {
   MessageLoop loop_;
 
  private:
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(LoggingWorkSchedulerTest);
 };

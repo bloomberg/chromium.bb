@@ -6,12 +6,12 @@
 
 #include "base/bind.h"
 #include "base/file_path.h"
-#include "base/message_loop.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_thread.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/plugins/webplugininfo.h"
 
 class MockPluginLoaderPosix : public PluginLoaderPosix {
@@ -82,8 +82,8 @@ class PluginLoaderPosixTest : public testing::Test {
 
  private:
   MessageLoopForIO message_loop_;
-  BrowserThread file_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread file_thread_;
+  content::TestBrowserThread io_thread_;
 
   scoped_refptr<MockPluginLoaderPosix> plugin_loader_;
 };

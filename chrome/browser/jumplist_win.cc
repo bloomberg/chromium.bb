@@ -35,7 +35,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"

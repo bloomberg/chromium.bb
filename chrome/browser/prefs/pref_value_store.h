@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "chrome/common/pref_store.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 class FilePath;
 class PrefModelAssociator;

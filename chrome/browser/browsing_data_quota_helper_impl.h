@@ -17,7 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/browsing_data_quota_helper.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "webkit/quota/quota_types.h"
 
 namespace quota {

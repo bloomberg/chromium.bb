@@ -18,7 +18,7 @@
 #include "chrome/browser/extensions/syncable_extension_settings_storage.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 
 // TODO(kalman): Integration tests for sync.
 
@@ -167,8 +167,8 @@ class ExtensionSettingsSyncTest : public testing::Test {
 
   // Need these so that the DCHECKs for running on FILE or UI threads pass.
   MessageLoop message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 
   MockSyncChangeProcessor sync_;
   TestingProfile profile_;

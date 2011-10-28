@@ -7,13 +7,14 @@
 #include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/shell_dialogs.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "chrome/common/pref_names.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class FileSelectionUser : public SelectFileDialog::Listener {
@@ -73,7 +74,7 @@ typedef testing::Test FileSelectionDialogTest;
 // file-selection dialogs disabled by policy.
 TEST_F(FileSelectionDialogTest, ExpectAsynchronousListenerCall) {
   MessageLoopForUI message_loop;
-  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
   ScopedTestingLocalState local_state(
       static_cast<TestingBrowserProcess*>(g_browser_process));

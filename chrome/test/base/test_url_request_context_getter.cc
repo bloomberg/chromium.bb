@@ -4,7 +4,7 @@
 
 #include "chrome/test/base/test_url_request_context_getter.h"
 
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_test_util.h"
 
 TestURLRequestContextGetter::TestURLRequestContextGetter() {}

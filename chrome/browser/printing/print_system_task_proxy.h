@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/webui/print_preview_handler.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace base {
 class DictionaryValue;

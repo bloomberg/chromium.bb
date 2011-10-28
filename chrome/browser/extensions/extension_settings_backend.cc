@@ -17,7 +17,7 @@
 #include "chrome/browser/extensions/extension_settings_sync_util.h"
 #include "chrome/browser/extensions/in_memory_extension_settings_storage.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 

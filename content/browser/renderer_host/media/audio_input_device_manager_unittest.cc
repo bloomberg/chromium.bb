@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager_event_handler.h"
+#include "content/test/test_browser_thread.h"
 #include "media/audio/audio_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,7 +85,8 @@ class AudioInputDeviceManagerTest: public testing::Test {
   virtual void SetUp() {
     // The test must run on Browser::IO.
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
-    io_thread_.reset(new BrowserThread(BrowserThread::IO, message_loop_.get()));
+    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO,
+                                                    message_loop_.get()));
     manager_.reset(new media_stream::AudioInputDeviceManager());
     audio_input_listener_.reset(new MockAudioInputDeviceManagerListener());
     manager_->Register(audio_input_listener_.get());
@@ -127,7 +128,7 @@ class AudioInputDeviceManagerTest: public testing::Test {
     message_loop_->Run();
   }
   scoped_ptr<MessageLoop> message_loop_;
-  scoped_ptr<BrowserThread> io_thread_;
+  scoped_ptr<content::TestBrowserThread> io_thread_;
   scoped_ptr<AudioInputDeviceManager> manager_;
   scoped_ptr<MockAudioInputDeviceManagerListener> audio_input_listener_;
 

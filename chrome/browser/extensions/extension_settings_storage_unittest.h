@@ -17,7 +17,7 @@
 #include "chrome/browser/extensions/extension_settings_backend.h"
 #include "chrome/browser/extensions/extension_settings_frontend.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 
 // Parameter type for the value-parameterized tests.
 typedef ExtensionSettingsStorage* (*ExtensionSettingsStorageTestParam)(
@@ -73,8 +73,8 @@ class ExtensionSettingsStorageTest
 
   // Need these so that the DCHECKs for running on FILE or UI threads pass.
   MessageLoop message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_STORAGE_UNITTEST_H_

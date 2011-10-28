@@ -15,7 +15,7 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
@@ -61,11 +61,13 @@ ACTION(QuitCurrentMessageLoop) {
 class ClientSideDetectionServiceTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    file_thread_.reset(new BrowserThread(BrowserThread::FILE, &msg_loop_));
+    file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE,
+                                                      &msg_loop_));
 
     factory_.reset(new FakeURLFetcherFactory());
 
-    browser_thread_.reset(new BrowserThread(BrowserThread::UI, &msg_loop_));
+    browser_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
+                                                         &msg_loop_));
   }
 
   virtual void TearDown() {
@@ -188,8 +190,8 @@ class ClientSideDetectionServiceTest : public testing::Test {
     msg_loop_.Quit();
   }
 
-  scoped_ptr<BrowserThread> browser_thread_;
-  scoped_ptr<BrowserThread> file_thread_;
+  scoped_ptr<content::TestBrowserThread> browser_thread_;
+  scoped_ptr<content::TestBrowserThread> file_thread_;
 
   GURL phishing_url_;
   bool is_phishing_;

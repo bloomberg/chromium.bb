@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,10 +30,11 @@ class BrowsingDataCookieHelperTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    ui_thread_.reset(new BrowserThread(BrowserThread::UI, &message_loop_));
+    ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
+                                                    &message_loop_));
     // Note: we're starting a real IO thread because parts of the
     // BrowsingDataCookieHelper expect to run on that thread.
-    io_thread_.reset(new BrowserThread(BrowserThread::IO));
+    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
     ASSERT_TRUE(io_thread_->Start());
     testing_profile_.reset(new TestingProfile());
     base::WaitableEvent io_setup_complete(true, false);
@@ -110,8 +111,8 @@ class BrowsingDataCookieHelperTest : public testing::Test {
 
  protected:
   MessageLoop message_loop_;
-  scoped_ptr<BrowserThread> ui_thread_;
-  scoped_ptr<BrowserThread> io_thread_;
+  scoped_ptr<content::TestBrowserThread> ui_thread_;
+  scoped_ptr<content::TestBrowserThread> io_thread_;
   scoped_ptr<TestingProfile> testing_profile_;
 
   net::CookieList cookie_list_;

@@ -5,7 +5,7 @@
 #include "chrome/browser/bug_report_data.h"
 
 #include "chrome/browser/bug_report_util.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/notifications/system_notification.h"

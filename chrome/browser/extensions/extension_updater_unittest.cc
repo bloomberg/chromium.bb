@@ -27,7 +27,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "libxml/globals.h"
 #include "net/base/escape.h"
@@ -316,9 +316,9 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestExtensionUpdateCheckRequests(bool pending) {
     MessageLoop message_loop;
-    BrowserThread ui_thread(BrowserThread::UI, &message_loop);
-    BrowserThread file_thread(BrowserThread::FILE, &message_loop);
-    BrowserThread io_thread(BrowserThread::IO);
+    content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+    content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
+    content::TestBrowserThread io_thread(BrowserThread::IO);
     io_thread.Start();
 
     // Create an extension with an update_url.
@@ -385,8 +385,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // Setup and start the updater.
     MessageLoop message_loop;
-    BrowserThread ui_thread(BrowserThread::UI, &message_loop);
-    BrowserThread io_thread(BrowserThread::IO);
+    content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+    content::TestBrowserThread io_thread(BrowserThread::IO);
     io_thread.Start();
 
     TestURLFetcherFactory factory;
@@ -493,8 +493,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestDetermineUpdates() {
     MessageLoop message_loop;
-    BrowserThread ui_thread(BrowserThread::UI, &message_loop);
-    BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+    content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+    content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
 
     // Create a set of test extensions
     ServiceForManifestTests service;
@@ -542,7 +542,7 @@ class ExtensionUpdaterTest : public testing::Test {
     SetupPendingExtensionManagerForTest(3, GURL(), pending_extension_manager);
 
     MessageLoop message_loop;
-    BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+    content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);
@@ -570,10 +570,10 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestMultipleManifestDownloading() {
     MessageLoop ui_loop;
-    BrowserThread ui_thread(BrowserThread::UI, &ui_loop);
-    BrowserThread file_thread(BrowserThread::FILE);
+    content::TestBrowserThread ui_thread(BrowserThread::UI, &ui_loop);
+    content::TestBrowserThread file_thread(BrowserThread::FILE);
     file_thread.Start();
-    BrowserThread io_thread(BrowserThread::IO);
+    content::TestBrowserThread io_thread(BrowserThread::IO);
     io_thread.Start();
 
     TestURLFetcherFactory factory;
@@ -649,10 +649,10 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestSingleExtensionDownloading(bool pending) {
     MessageLoop ui_loop;
-    BrowserThread ui_thread(BrowserThread::UI, &ui_loop);
-    BrowserThread file_thread(BrowserThread::FILE);
+    content::TestBrowserThread ui_thread(BrowserThread::UI, &ui_loop);
+    content::TestBrowserThread file_thread(BrowserThread::FILE);
     file_thread.Start();
-    BrowserThread io_thread(BrowserThread::IO);
+    content::TestBrowserThread io_thread(BrowserThread::IO);
     io_thread.Start();
 
     TestURLFetcherFactory factory;
@@ -715,9 +715,9 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestBlacklistDownloading() {
     MessageLoop message_loop;
-    BrowserThread ui_thread(BrowserThread::UI, &message_loop);
-    BrowserThread file_thread(BrowserThread::FILE, &message_loop);
-    BrowserThread io_thread(BrowserThread::IO);
+    content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+    content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
+    content::TestBrowserThread io_thread(BrowserThread::IO);
     io_thread.Start();
 
     TestURLFetcherFactory factory;
@@ -766,9 +766,9 @@ class ExtensionUpdaterTest : public testing::Test {
   // UpdateExtension() returns false, signaling install failures.
   static void TestMultipleExtensionDownloading(bool updates_start_running) {
     MessageLoopForUI message_loop;
-    BrowserThread ui_thread(BrowserThread::UI, &message_loop);
-    BrowserThread file_thread(BrowserThread::FILE, &message_loop);
-    BrowserThread io_thread(BrowserThread::IO);
+    content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+    content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
+    content::TestBrowserThread io_thread(BrowserThread::IO);
     io_thread.Start();
 
     TestURLFetcherFactory factory;
@@ -933,8 +933,8 @@ class ExtensionUpdaterTest : public testing::Test {
                                   bool active_bit,
                                   bool expect_brand_code) {
     MessageLoop message_loop;
-    BrowserThread ui_thread(BrowserThread::UI, &message_loop);
-    BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+    content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+    content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
 
     TestURLFetcherFactory factory;
 
@@ -1061,7 +1061,7 @@ class ExtensionUpdaterTest : public testing::Test {
   static void TestHandleManifestResults() {
     ServiceForManifestTests service;
     MessageLoop message_loop;
-    BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+    content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);
@@ -1108,7 +1108,7 @@ TEST_F(ExtensionUpdaterTest, TestBlacklistUpdateCheckRequests) {
 
 TEST_F(ExtensionUpdaterTest, TestUpdateUrlData) {
   MessageLoop message_loop;
-  BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+  content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
 
   ExtensionUpdaterTest::TestUpdateUrlDataEmpty();
   ExtensionUpdaterTest::TestUpdateUrlDataSimple();
@@ -1164,7 +1164,7 @@ TEST_F(ExtensionUpdaterTest, TestHandleManifestResults) {
 
 TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   MessageLoop message_loop;
-  BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+  content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
 
   MockService service;
   ManifestFetchesBuilder builder(&service, service.extension_prefs());
@@ -1213,8 +1213,8 @@ TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
 
 TEST_F(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
     MessageLoop message_loop;
-    BrowserThread ui_thread(BrowserThread::UI, &message_loop);
-    BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+    content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+    content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
 
     ServiceForManifestTests service;
     TestURLFetcherFactory factory;
@@ -1234,8 +1234,8 @@ TEST_F(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
 
 TEST_F(ExtensionUpdaterTest, TestCheckSoon) {
     MessageLoop message_loop;
-    BrowserThread ui_thread(BrowserThread::UI, &message_loop);
-    BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+    content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+    content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
 
     ServiceForManifestTests service;
     TestURLFetcherFactory factory;

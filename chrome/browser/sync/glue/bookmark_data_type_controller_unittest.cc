@@ -18,9 +18,9 @@
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/profile_mock.h"
-#include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using browser_sync::BookmarkDataTypeController;
@@ -81,7 +81,7 @@ class BookmarkDataTypeControllerTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
   scoped_refptr<BookmarkDataTypeController> bookmark_dtc_;
   scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
   ProfileMock profile_;

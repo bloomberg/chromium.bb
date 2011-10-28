@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace keys = extension_manifest_keys;
@@ -217,7 +218,7 @@ TEST_F(ExtensionSpecialStoragePolicyTest, OverlappingApps) {
 
 TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
   MessageLoop message_loop;
-  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
   TestingProfile profile;
   CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);

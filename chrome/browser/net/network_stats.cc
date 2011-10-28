@@ -14,7 +14,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/tuple.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"

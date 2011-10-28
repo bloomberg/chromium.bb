@@ -7,7 +7,7 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 using ::base::files::FilePathWatcher;
 

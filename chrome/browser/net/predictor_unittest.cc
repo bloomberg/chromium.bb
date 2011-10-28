@@ -16,7 +16,7 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_info.h"
 #include "chrome/common/net/predictor_common.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "net/base/address_list.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/winsock_init.h"
@@ -99,8 +99,8 @@ class PredictorTest : public testing::Test {
   // must not outlive the message loop, otherwise bad things can happen
   // (like posting to a deleted message loop).
   MessageLoopForUI loop_;
-  BrowserThread ui_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
 
  protected:
   scoped_ptr<net::MockCachingHostResolver> host_resolver_;

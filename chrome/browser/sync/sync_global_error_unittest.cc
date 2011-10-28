@@ -7,9 +7,9 @@
 #include "base/basictypes.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "content/browser/browser_thread.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock-actions.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Return;
@@ -71,7 +71,7 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
 // Test that SyncGlobalError shows an error if a passphrase is required.
 TEST(SyncGlobalErrorTest, PassphraseGlobalError) {
   MessageLoopForUI message_loop;
-  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   NiceMock<ProfileSyncServiceMock> service;
   SyncGlobalError error(&service);
 
@@ -88,7 +88,7 @@ TEST(SyncGlobalErrorTest, PassphraseGlobalError) {
 // the user.
 TEST(SyncGlobalErrorTest, AuthStateGlobalError) {
   MessageLoopForUI message_loop;
-  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   NiceMock<ProfileSyncServiceMock> service;
   SyncGlobalError error(&service);
 

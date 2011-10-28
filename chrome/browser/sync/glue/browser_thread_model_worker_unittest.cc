@@ -6,12 +6,12 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/threading/thread.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread.h"
 #include "base/timer.h"
 #include "chrome/browser/sync/glue/browser_thread_model_worker.h"
 #include "chrome/browser/sync/util/unrecoverable_error_info.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::OneShotTimer;
@@ -85,9 +85,9 @@ class BrowserThreadModelWorkerTest : public testing::Test {
   scoped_refptr<BrowserThreadModelWorker> worker_;
   OneShotTimer<BrowserThreadModelWorkerTest> timer_;
 
-  BrowserThread db_thread_;
+  content::TestBrowserThread db_thread_;
   MessageLoopForIO io_loop_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread io_thread_;
 
   ScopedRunnableMethodFactory<BrowserThreadModelWorkerTest> method_factory_;
 };

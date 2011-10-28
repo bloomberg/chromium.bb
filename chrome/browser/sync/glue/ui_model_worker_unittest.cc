@@ -11,7 +11,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "chrome/browser/sync/util/unrecoverable_error_info.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::UIModelWorker;
@@ -113,7 +113,8 @@ class UIModelWorkerTest : public testing::Test {
 
   virtual void SetUp() {
     faux_syncer_thread_.Start();
-    ui_thread_.reset(new BrowserThread(BrowserThread::UI, &faux_ui_loop_));
+    ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
+                                                    &faux_ui_loop_));
     bmw_ = new UIModelWorker();
     syncer_.reset(new Syncer(bmw_.get()));
   }
@@ -124,7 +125,7 @@ class UIModelWorkerTest : public testing::Test {
   base::Thread* syncer_thread() { return &faux_syncer_thread_; }
  private:
   MessageLoop faux_ui_loop_;
-  scoped_ptr<BrowserThread> ui_thread_;
+  scoped_ptr<content::TestBrowserThread> ui_thread_;
   base::Thread faux_syncer_thread_;
   base::Thread faux_core_thread_;
   scoped_refptr<UIModelWorker> bmw_;

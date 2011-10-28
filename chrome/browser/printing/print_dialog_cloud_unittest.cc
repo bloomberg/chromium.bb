@@ -19,10 +19,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -233,8 +233,8 @@ class CloudPrintDataSenderTest : public testing::Test {
   scoped_ptr<MockCloudPrintDataSenderHelper> mock_helper_;
 
   MessageLoop message_loop_;
-  BrowserThread file_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread file_thread_;
+  content::TestBrowserThread io_thread_;
 };
 
 // TODO(scottbyer): DISABLED until the binary test file can get
@@ -320,7 +320,7 @@ class CloudPrintHtmlDialogDelegateTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
   base::WeakPtr<MockCloudPrintFlowHandler> mock_flow_handler_;
   scoped_ptr<CloudPrintHtmlDialogDelegate> delegate_;
 };

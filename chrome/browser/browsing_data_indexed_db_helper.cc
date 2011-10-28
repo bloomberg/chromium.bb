@@ -13,8 +13,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "webkit/database/database_util.h"
 #include "webkit/glue/webkit_glue.h"
 

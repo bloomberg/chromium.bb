@@ -10,10 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/test/test_browser_thread.h"
 #include "media/video/capture/video_capture_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,7 +82,8 @@ class VideoCaptureManagerTest : public testing::Test {
   virtual void SetUp() {
     listener_.reset(new media_stream::MockMediaStreamProviderListener());
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
-    io_thread_.reset(new BrowserThread(BrowserThread::IO, message_loop_.get()));
+    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO,
+                                                    message_loop_.get()));
     vcm_.reset(new media_stream::VideoCaptureManager());
     vcm_->UseFakeDevice();
     vcm_->Register(listener_.get());
@@ -120,7 +121,7 @@ class VideoCaptureManagerTest : public testing::Test {
   scoped_ptr<media_stream::VideoCaptureManager> vcm_;
   scoped_ptr<media_stream::MockMediaStreamProviderListener> listener_;
   scoped_ptr<MessageLoop> message_loop_;
-  scoped_ptr<BrowserThread> io_thread_;
+  scoped_ptr<content::TestBrowserThread> io_thread_;
   scoped_ptr<MockFrameObserver> frame_observer_;
 
  private:

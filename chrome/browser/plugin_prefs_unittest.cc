@@ -8,6 +8,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/plugins/npapi/mock_plugin_list.cc"
 #include "webkit/plugins/webplugininfo.h"
@@ -132,8 +133,8 @@ TEST_F(PluginPrefsTest, EnabledAndDisabledByPolicy) {
 
 TEST_F(PluginPrefsTest, DisableGlobally) {
   MessageLoop message_loop;
-  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
-  BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
 
   TestingBrowserProcess* browser_process =
       static_cast<TestingBrowserProcess*>(g_browser_process);

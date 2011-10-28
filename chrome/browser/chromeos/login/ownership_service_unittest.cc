@@ -13,8 +13,8 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/login/mock_owner_key_utils.h"
 #include "chrome/browser/chromeos/login/owner_manager_unittest.h"
-#include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/test/test_browser_thread.h"
 #include "crypto/nss_util.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -70,8 +70,8 @@ class OwnershipServiceTest : public testing::Test {
   FilePath tmpfile_;
 
   MessageLoop message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 
   std::vector<uint8> fake_public_key_;
   scoped_ptr<RSAPrivateKey> fake_private_key_;

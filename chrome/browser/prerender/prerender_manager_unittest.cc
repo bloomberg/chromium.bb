@@ -8,9 +8,9 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -201,7 +201,7 @@ class PrerenderManagerTest : public testing::Test {
 
   // Needed to pass PrerenderManager's DCHECKs.
   MessageLoop message_loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
   scoped_ptr<TestPrerenderManager> prerender_manager_;
 };
 

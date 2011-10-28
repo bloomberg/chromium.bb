@@ -13,11 +13,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/download/download_item.h"
 #include "content/public/common/url_fetcher_delegate.h"
+#include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -43,12 +44,13 @@ class MockSafeBrowsingService : public SafeBrowsingService {
 class DownloadProtectionServiceTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    ui_thread_.reset(new BrowserThread(BrowserThread::UI, &msg_loop_));
+    ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
+                                                    &msg_loop_));
     // Start real threads for the IO and File threads so that the DCHECKs
     // to test that we're on the correct thread work.
-    io_thread_.reset(new BrowserThread(BrowserThread::IO));
+    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
     ASSERT_TRUE(io_thread_->Start());
-    file_thread_.reset(new BrowserThread(BrowserThread::FILE));
+    file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE));
     ASSERT_TRUE(file_thread_->Start());
     sb_service_ = new MockSafeBrowsingService();
     download_service_ = sb_service_->download_protection_service();
@@ -135,9 +137,9 @@ class DownloadProtectionServiceTest : public testing::Test {
   DownloadProtectionService* download_service_;
   MessageLoop msg_loop_;
   DownloadProtectionService::DownloadCheckResult result_;
-  scoped_ptr<BrowserThread> io_thread_;
-  scoped_ptr<BrowserThread> file_thread_;
-  scoped_ptr<BrowserThread> ui_thread_;
+  scoped_ptr<content::TestBrowserThread> io_thread_;
+  scoped_ptr<content::TestBrowserThread> file_thread_;
+  scoped_ptr<content::TestBrowserThread> ui_thread_;
 };
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {

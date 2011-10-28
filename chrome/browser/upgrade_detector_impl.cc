@@ -17,7 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)

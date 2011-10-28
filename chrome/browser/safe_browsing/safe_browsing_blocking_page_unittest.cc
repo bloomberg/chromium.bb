@@ -9,10 +9,10 @@
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/view_messages.h"
+#include "content/test/test_browser_thread.h"
 
 static const char* kGoogleURL = "http://www.google.com/";
 static const char* kGoodURL = "http://www.goodguys.com/";
@@ -175,8 +175,8 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
 
   UserResponse user_response_;
   TestSafeBrowsingBlockingPageFactory factory_;
-  BrowserThread ui_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
 };
 
 // Tests showing a blocking page for a malware page and not proceeding.

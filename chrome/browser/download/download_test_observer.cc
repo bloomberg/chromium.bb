@@ -10,7 +10,7 @@
 #include "base/task.h"
 #include "chrome/browser/download/download_test_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 // These functions take scoped_refptr's to DownloadManager because they
 // are posted to message queues, and hence may execute arbitrarily after

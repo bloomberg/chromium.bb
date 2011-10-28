@@ -13,7 +13,7 @@
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/util/weak_handle.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,7 +57,7 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
   }
 
   MessageLoop ui_loop_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread io_thread_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_ptr<NonBlockingInvalidationNotifier> invalidation_notifier_;
   StrictMock<MockSyncNotifierObserver> mock_observer_;

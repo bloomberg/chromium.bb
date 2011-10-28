@@ -4,13 +4,13 @@
 
 #include "chrome/browser/chromeos/system/udev_info_provider.h"
 
-#include "base/command_line.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/system/name_value_pairs_parser.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 namespace system {

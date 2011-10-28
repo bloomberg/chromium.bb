@@ -12,7 +12,7 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(UserStyleSheetWatcherTest, StyleLoad) {
@@ -30,9 +30,9 @@ TEST(UserStyleSheetWatcherTest, StyleLoad) {
   base::Thread io_thread("UserStyleSheetWatcherTestIOThread");
   base::Thread::Options options(MessageLoop::TYPE_IO, 0);
   ASSERT_TRUE(io_thread.StartWithOptions(options));
-  BrowserThread browser_ui_thread(BrowserThread::UI, &loop);
-  BrowserThread browser_file_thread(BrowserThread::FILE,
-                                    io_thread.message_loop());
+  content::TestBrowserThread browser_ui_thread(BrowserThread::UI, &loop);
+  content::TestBrowserThread browser_file_thread(BrowserThread::FILE,
+                                                 io_thread.message_loop());
 
   // It is important that the creation of |style_sheet_watcher| occur after the
   // creation of |browser_ui_thread| because UserStyleSheetWatchers are

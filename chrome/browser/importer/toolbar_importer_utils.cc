@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/string_split.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"

@@ -14,9 +14,9 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -48,9 +48,9 @@ class UserScriptMasterTest : public testing::Test,
 
     // UserScriptMaster posts tasks to the file thread so make the current
     // thread look like one.
-    file_thread_.reset(new BrowserThread(
+    file_thread_.reset(new content::TestBrowserThread(
         BrowserThread::FILE, MessageLoop::current()));
-    ui_thread_.reset(new BrowserThread(
+    ui_thread_.reset(new content::TestBrowserThread(
         BrowserThread::UI, MessageLoop::current()));
   }
 
@@ -77,8 +77,8 @@ class UserScriptMasterTest : public testing::Test,
   // MessageLoop used in tests.
   MessageLoop message_loop_;
 
-  scoped_ptr<BrowserThread> file_thread_;
-  scoped_ptr<BrowserThread> ui_thread_;
+  scoped_ptr<content::TestBrowserThread> file_thread_;
+  scoped_ptr<content::TestBrowserThread> ui_thread_;
 
   // Updated to the script shared memory when we get notified.
   base::SharedMemory* shared_memory_;

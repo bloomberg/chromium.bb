@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 

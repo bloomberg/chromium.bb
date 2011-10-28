@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/load_from_memory_cache_details.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -18,6 +17,7 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "net/base/cert_status_flags.h"

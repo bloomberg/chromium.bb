@@ -23,8 +23,8 @@
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/nigori_util.h"
-#include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/engine/syncapi_internal.h"
+#include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/http_post_provider_factory.h"
 #include "chrome/browser/sync/internal_api/http_post_provider_interface.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
@@ -52,7 +52,7 @@
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/util/time.h"
 #include "chrome/test/base/values_test_util.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -824,7 +824,7 @@ class SyncManagerTest : public testing::Test,
   // Needed by |ui_thread_|.
   MessageLoopForUI ui_loop_;
   // Needed by |sync_manager_|.
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
   // Needed by |sync_manager_|.
   ScopedTempDir temp_dir_;
   // Sync Id's for the roots of the enabled datatypes.

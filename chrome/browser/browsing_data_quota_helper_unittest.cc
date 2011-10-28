@@ -9,6 +9,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/browsing_data_quota_helper_impl.h"
+#include "content/test/test_browser_thread.h"
 #include "webkit/quota/mock_storage_client.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -112,9 +113,9 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   }
 
   MessageLoop message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread db_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
+  content::TestBrowserThread io_thread_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
 
   ScopedTempDir dir_;

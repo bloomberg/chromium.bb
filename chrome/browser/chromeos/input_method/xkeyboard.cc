@@ -22,7 +22,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/x/x11_util.h"
 
 namespace chromeos {

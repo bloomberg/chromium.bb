@@ -11,7 +11,7 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy(
     CookieSettings* cookie_settings)

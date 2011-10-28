@@ -11,7 +11,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -101,8 +101,8 @@ class NetworkActionPredictorTest : public testing::Test {
 
  private:
   MessageLoop loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
   TestingProfile profile_;
   NetworkActionPredictor predictor_;
 };

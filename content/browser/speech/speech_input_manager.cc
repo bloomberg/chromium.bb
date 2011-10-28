@@ -5,8 +5,8 @@
 #include "content/browser/speech/speech_input_manager.h"
 
 #include "base/bind.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/speech/speech_input_preferences.h"
+#include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_manager.h"
 
 namespace speech_input {

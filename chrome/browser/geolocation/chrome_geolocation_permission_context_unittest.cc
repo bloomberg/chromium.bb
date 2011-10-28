@@ -14,18 +14,18 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/geolocation/arbitrator_dependency_factories_for_test.h"
 #include "content/browser/geolocation/location_arbitrator.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/mock_location_provider.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/common/geolocation_messages.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // ClosedDelegateTracker ------------------------------------------------------
@@ -126,7 +126,7 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
   virtual void SetUp();
   virtual void TearDown();
 
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
   scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory_;
 };
 

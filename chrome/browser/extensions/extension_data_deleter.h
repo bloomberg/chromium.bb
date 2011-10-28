@@ -9,7 +9,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
 namespace webkit_database {

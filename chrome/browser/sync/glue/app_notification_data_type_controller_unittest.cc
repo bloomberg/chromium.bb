@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::AppNotificationDataTypeController;
@@ -125,8 +126,8 @@ class AppNotificationDataTypeControllerTest
   }
 
   MessageLoop ui_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<TestAppNotificationDataTypeController> app_notif_dtc_;
   scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;

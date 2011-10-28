@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_H_
 #pragma once
 
-#include <string>
 #include <list>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -16,7 +16,7 @@
 #include "base/process.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_message.h"

@@ -5,6 +5,7 @@
 #include "content/browser/resolve_proxy_msg_helper.h"
 
 #include "content/common/view_messages.h"
+#include "content/test/test_browser_thread.h"
 #include "ipc/ipc_test_sink.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/mock_proxy_resolver.h"
@@ -77,7 +78,7 @@ class ResolveProxyMsgHelperTest : public testing::Test,
   }
 
   MessageLoop message_loop_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread io_thread_;
   IPC::TestSink test_sink_;
 };
 

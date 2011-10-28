@@ -7,7 +7,7 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -72,7 +72,7 @@ class SpellCheckProfileTest : public testing::Test {
   }
 
   // SpellCheckHost will be deleted on FILE thread.
-  BrowserThread file_thread_;
+  content::TestBrowserThread file_thread_;
 };
 
 TEST_F(SpellCheckProfileTest, ReinitializeEnabled) {

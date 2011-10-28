@@ -8,12 +8,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
+#include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/mock_auth_attempt_state_resolver.h"
 #include "chrome/browser/chromeos/login/test_attempt_state.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -125,8 +125,8 @@ class CryptohomeOpTest : public ::testing::Test {
   }
 
   MessageLoop message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
   std::string username_;
   std::string hash_ascii_;
   TestAttemptState state_;

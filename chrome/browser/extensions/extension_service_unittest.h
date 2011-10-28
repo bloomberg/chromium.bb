@@ -12,7 +12,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ExtensionServiceTestBase : public testing::Test {
@@ -52,11 +52,11 @@ class ExtensionServiceTestBase : public testing::Test {
   ExtensionService* service_;
   size_t total_successes_;
   MessageLoop loop_;
-  BrowserThread ui_thread_;
-  BrowserThread db_thread_;
-  BrowserThread webkit_thread_;
-  BrowserThread file_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
+  content::TestBrowserThread webkit_thread_;
+  content::TestBrowserThread file_thread_;
+  content::TestBrowserThread io_thread_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_UNITTEST_H_

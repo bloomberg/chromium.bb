@@ -16,6 +16,7 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/dummy_resource_handler.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/test/test_browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -180,9 +181,9 @@ class GViewRequestInterceptorTest : public testing::Test {
 
  protected:
   MessageLoopForIO message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
+  content::TestBrowserThread io_thread_;
   TestingPrefService prefs_;
   scoped_refptr<PluginPrefs> plugin_prefs_;
   net::URLRequestJobFactory job_factory_;

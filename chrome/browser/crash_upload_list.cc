@@ -6,16 +6,16 @@
 
 #include <iterator>
 
-#include "base/path_service.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #if defined(OS_WIN)
 #include "chrome/browser/crash_upload_list_win.h"
 #endif
 #include "chrome/common/chrome_paths.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 CrashUploadList::CrashInfo::CrashInfo(const std::string& c, const base::Time& t)
     : crash_id(c), crash_time(t) {}

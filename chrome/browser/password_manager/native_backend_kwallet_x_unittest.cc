@@ -16,6 +16,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/test/test_browser_thread.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
@@ -165,8 +166,8 @@ class NativeBackendKWalletTest : public testing::Test {
                           const ExpectationArray& sorted_expected);
 
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread db_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
   TestingProfile profile_;
 
   scoped_refptr<dbus::MockBus> mock_session_bus_;

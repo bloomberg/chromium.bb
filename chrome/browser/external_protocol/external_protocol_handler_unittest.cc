@@ -4,7 +4,7 @@
 
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class FakeExternalProtocolHandlerWorker
@@ -122,8 +122,8 @@ class ExternalProtocolHandlerTest : public testing::Test {
   }
 
   MessageLoopForUI ui_message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 
   FakeExternalProtocolHandlerDelegate delegate_;
 };

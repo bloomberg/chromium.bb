@@ -22,7 +22,7 @@
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/policy/user_policy_cache.h"
 #include "chrome/browser/policy/user_policy_token_cache.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -222,8 +222,8 @@ class EnterpriseMetricsTest : public testing::Test {
   // test in a separate process.
   base::StatisticsRecorder statistics_recorder_;
   MessageLoop loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
   // |metric_name_| is the UMA counter that is being tested. It must be set
   // before any calls to ExpectSample or CheckSamples.
   std::string metric_name_;

@@ -23,6 +23,7 @@
 #include "chrome/test/base/view_event_test_base.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/public/browser/notification_service.h"
+#include "content/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -290,8 +291,8 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   gfx::Size bb_view_pref_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
   ViewsDelegateImpl views_delegate_;
 };
 

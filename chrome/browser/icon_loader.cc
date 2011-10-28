@@ -5,7 +5,7 @@
 #include "chrome/browser/icon_loader.h"
 
 #include "base/basictypes.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(TOOLKIT_GTK)

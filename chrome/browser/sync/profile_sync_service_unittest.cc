@@ -19,7 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/user_agent.h"
@@ -112,9 +112,9 @@ class ProfileSyncServiceTest : public testing::Test {
 
   MessageLoop ui_loop_;
   // Needed by |service_|.
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
   // Needed by |service| and |profile_|'s request context.
-  BrowserThread io_thread_;
+  content::TestBrowserThread io_thread_;
 
   scoped_ptr<TestProfileSyncService> service_;
   scoped_ptr<TestingProfile> profile_;

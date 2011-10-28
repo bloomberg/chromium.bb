@@ -14,7 +14,7 @@
 #include "base/time.h"
 #include "chrome/browser/chromeos/system/name_value_pairs_parser.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 namespace system {

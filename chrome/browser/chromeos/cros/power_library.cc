@@ -14,7 +14,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "third_party/cros/chromeos_power.h"
 #include "third_party/cros/chromeos_resume.h"
 

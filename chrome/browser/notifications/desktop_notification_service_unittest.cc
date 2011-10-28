@@ -11,7 +11,7 @@
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
@@ -27,10 +27,11 @@ class ThreadProxy : public base::RefCountedThreadSafe<ThreadProxy> {
         permission_(WebKit::WebNotificationPresenter::PermissionAllowed) {
     // The current message loop was already initalized by the test superclass.
     ui_thread_.reset(
-        new BrowserThread(BrowserThread::UI, MessageLoop::current()));
+        new content::TestBrowserThread(BrowserThread::UI,
+                                       MessageLoop::current()));
 
     // Create IO thread, start its message loop.
-    io_thread_.reset(new BrowserThread(BrowserThread::IO));
+    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
     io_thread_->Start();
 
     // Calling PauseIOThread() here isn't safe, because the runnable method
@@ -84,8 +85,8 @@ class ThreadProxy : public base::RefCountedThreadSafe<ThreadProxy> {
 
   base::WaitableEvent io_event_;
   base::WaitableEvent ui_event_;
-  scoped_ptr<BrowserThread> ui_thread_;
-  scoped_ptr<BrowserThread> io_thread_;
+  scoped_ptr<content::TestBrowserThread> ui_thread_;
+  scoped_ptr<content::TestBrowserThread> io_thread_;
 
   WebKit::WebNotificationPresenter::Permission permission_;
 };

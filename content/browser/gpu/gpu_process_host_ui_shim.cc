@@ -6,24 +6,24 @@
 
 #include <algorithm>
 
-#include "base/id_map.h"
-#include "base/process_util.h"
 #include "base/debug/trace_event.h"
+#include "base/id_map.h"
 #include "base/lazy_instance.h"
-#include "content/browser/browser_thread.h"
+#include "base/process_util.h"
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(TOOLKIT_USES_GTK)
 // These two #includes need to come after gpu_messages.h.
-#include <gdk/gdkwindow.h>  // NOLINT
-#include <gdk/gdkx.h>  // NOLINT
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/size.h"
+#include <gdk/gdkwindow.h>  // NOLINT
+#include <gdk/gdkx.h>  // NOLINT
 #endif
 
 namespace {

@@ -8,13 +8,13 @@
 #include <map>
 
 #include "base/tuple.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/debugger/devtools_agent_host.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/worker_devtools_message_filter.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/browser/worker_host/worker_service.h"
 #include "content/common/devtools_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"

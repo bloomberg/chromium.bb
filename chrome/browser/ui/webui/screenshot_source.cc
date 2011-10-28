@@ -15,7 +15,7 @@
 #include "chrome/common/url_constants.h"
 
 #if defined(OS_CHROMEOS)
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #endif
 
 static const char kCurrentScreenshotFilename[] = "current";

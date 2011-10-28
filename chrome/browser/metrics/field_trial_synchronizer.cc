@@ -8,8 +8,8 @@
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/public/browser/browser_thread.h"
 
 FieldTrialSynchronizer::FieldTrialSynchronizer() {
   DCHECK(field_trial_synchronizer_ == NULL);

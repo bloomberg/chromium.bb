@@ -38,7 +38,7 @@ class ScopedURLFetcherFactory : public base::NonThreadSafe {
 //   // TestURLFetcher requires a MessageLoop:
 //   MessageLoopForUI message_loop;
 //   // And io_thread to release URLRequestContextGetter in URLFetcher::Core.
-//   BrowserThread io_thread(BrowserThread::IO, &message_loop);
+//   BrowserThreadImpl io_thread(BrowserThread::IO, &message_loop);
 //   // Create factory (it automatically sets itself as URLFetcher's factory).
 //   TestURLFetcherFactory factory;
 //   // Do something that triggers creation of a URLFetcher.

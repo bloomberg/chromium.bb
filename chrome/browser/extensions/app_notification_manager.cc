@@ -13,7 +13,7 @@
 #include "chrome/browser/sync/protocol/app_notification_specifics.pb.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
 typedef std::map<std::string, SyncData> SyncDataMap;

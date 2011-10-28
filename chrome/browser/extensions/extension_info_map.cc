@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 

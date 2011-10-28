@@ -4,11 +4,11 @@
 
 #include "chrome/browser/sync/glue/shared_change_processor.h"
 
-#include "chrome/browser/sync/profile_sync_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
-#include "content/browser/browser_thread.h"
+#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "content/public/browser/browser_thread.h"
 
 using base::AutoLock;
 

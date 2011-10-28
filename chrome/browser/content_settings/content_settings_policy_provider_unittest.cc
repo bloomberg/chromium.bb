@@ -18,9 +18,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
 
@@ -40,7 +40,7 @@ class PolicyProviderTest : public testing::Test {
   // BrowserThread IDs. Then we could get rid of the message_loop and ui_thread
   // fields.
   MessageLoop message_loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 };
 
 TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,11 +10,11 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/net/url_request_mock_link_doctor_job.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/net/url_request_failed_dns_job.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/net/url_request_slow_download_job.h"
 #include "content/browser/net/url_request_slow_http_job.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_filter.h"
 
 namespace chrome_browser_net {

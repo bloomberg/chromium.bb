@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -48,7 +49,7 @@ class URLRequestContextGetter;
 class URLSecurityManager;
 }  // namespace net
 
-class IOThread : public BrowserProcessSubThread {
+class IOThread : public content::BrowserProcessSubThread {
  public:
   struct Globals {
     Globals();

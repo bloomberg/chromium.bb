@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/extension_settings_sync_util.h"
 #include "chrome/browser/sync/api/sync_data.h"
 #include "chrome/browser/sync/protocol/extension_setting_specifics.pb.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 SyncableExtensionSettingsStorage::SyncableExtensionSettingsStorage(
     const scoped_refptr<ObserverListThreadSafe<ExtensionSettingsObserver> >&

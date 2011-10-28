@@ -13,7 +13,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/ui_test.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 
 class FastShutdown : public UITest {
  protected:
@@ -70,8 +70,8 @@ class FastShutdown : public UITest {
     to_notify->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   }
 
-  BrowserThread db_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread db_thread_;
+  content::TestBrowserThread io_thread_;
   scoped_refptr<base::ThreadTestHelper> thread_helper_;
   FilePath user_data_dir_;
 

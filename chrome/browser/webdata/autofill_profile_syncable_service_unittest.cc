@@ -9,9 +9,9 @@
 #include "chrome/browser/sync/internal_api/syncapi_mock.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_mock.h"
-#include "chrome/browser/webdata/autofill_profile_syncable_service.h"
-#include "content/browser/browser_thread.h"
 #include "chrome/browser/webdata/autofill_change.h"
+#include "chrome/browser/webdata/autofill_profile_syncable_service.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -111,7 +111,7 @@ class AutofillProfileSyncableServiceTest : public testing::Test {
   }
  protected:
   MessageLoop message_loop_;
-  BrowserThread db_thread_;
+  content::TestBrowserThread db_thread_;
   MockAutofillProfileSyncableService autofill_syncable_service_;
   scoped_ptr<MockSyncChangeProcessor> sync_processor_;
 };

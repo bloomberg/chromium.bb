@@ -5,10 +5,10 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "base/base_paths.h"
+#include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/hash_tables.h"
 #include "base/path_service.h"
@@ -27,10 +27,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/model_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_iterator.h"
 #include "ui/base/models/tree_node_model.h"
@@ -754,8 +754,8 @@ class BookmarkModelTestWithProfile : public testing::Test {
 
  private:
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 };
 
 // Creates a set of nodes in the bookmark bar model, then recreates the

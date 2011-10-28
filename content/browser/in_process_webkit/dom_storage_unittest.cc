@@ -6,6 +6,7 @@
 #include "base/file_util.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/test/test_browser_context.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
@@ -20,7 +21,7 @@ class DOMStorageTest : public testing::Test {
   MessageLoop message_loop_;
 
  private:
-  BrowserThread webkit_thread_;
+  content::TestBrowserThread webkit_thread_;
 };
 
 TEST_F(DOMStorageTest, SessionOnly) {

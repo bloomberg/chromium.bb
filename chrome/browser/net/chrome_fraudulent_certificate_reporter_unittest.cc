@@ -13,7 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/ssl_info.h"
 #include "net/base/transport_security_state.h"
@@ -180,21 +180,21 @@ TEST(ChromeFraudulentCertificateReporterTest, GoodBadInfo) {
 
 TEST(ChromeFraudulentCertificateReporterTest, ReportIsSent) {
   MessageLoop loop(MessageLoop::TYPE_IO);
-  BrowserThread io_thread(BrowserThread::IO, &loop);
+  content::TestBrowserThread io_thread(BrowserThread::IO, &loop);
   loop.PostTask(FROM_HERE, base::Bind(&DoReportIsSent));
   loop.RunAllPending();
 }
 
 TEST(ChromeFraudulentCertificateReporterTest, MockReportIsSent) {
   MessageLoop loop(MessageLoop::TYPE_IO);
-  BrowserThread io_thread(BrowserThread::IO, &loop);
+  content::TestBrowserThread io_thread(BrowserThread::IO, &loop);
   loop.PostTask(FROM_HERE, base::Bind(&DoMockReportIsSent));
   loop.RunAllPending();
 }
 
 TEST(ChromeFraudulentCertificateReporterTest, ReportIsNotSent) {
   MessageLoop loop(MessageLoop::TYPE_IO);
-  BrowserThread io_thread(BrowserThread::IO, &loop);
+  content::TestBrowserThread io_thread(BrowserThread::IO, &loop);
   loop.PostTask(FROM_HERE, base::Bind(&DoReportIsNotSent));
   loop.RunAllPending();
 }

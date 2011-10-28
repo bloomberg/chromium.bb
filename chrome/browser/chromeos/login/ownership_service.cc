@@ -12,7 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {

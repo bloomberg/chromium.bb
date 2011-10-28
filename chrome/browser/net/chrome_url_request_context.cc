@@ -15,10 +15,10 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/browser_thread.h"
-#include "content/public/common/content_client.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/common/content_client.h"
 #include "net/base/cookie_store.h"
 #include "net/http/http_util.h"
 

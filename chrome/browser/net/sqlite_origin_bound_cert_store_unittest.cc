@@ -10,7 +10,7 @@
 #include "base/test/thread_test_helper.h"
 #include "chrome/browser/net/sqlite_origin_bound_cert_store.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class SQLiteOriginBoundCertStoreTest : public testing::Test {
@@ -34,7 +34,7 @@ class SQLiteOriginBoundCertStoreTest : public testing::Test {
             "https://encrypted.google.com:8443", "a", "b"));
   }
 
-  BrowserThread db_thread_;
+  content::TestBrowserThread db_thread_;
   ScopedTempDir temp_dir_;
   scoped_refptr<SQLiteOriginBoundCertStore> store_;
 };

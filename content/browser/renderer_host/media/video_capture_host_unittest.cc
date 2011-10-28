@@ -12,13 +12,13 @@
 #include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/browser/resource_context.h"
 #include "content/common/media/video_capture_messages.h"
+#include "content/test/test_browser_thread.h"
 #include "media/video/capture/video_capture_types.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
@@ -195,10 +195,12 @@ class VideoCaptureHostTest : public testing::Test {
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
 
     // ResourceContext must be created on the UI thread.
-    ui_thread_.reset(new BrowserThread(BrowserThread::UI, message_loop_.get()));
+    ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
+                                                    message_loop_.get()));
 
     // MediaStreamManager must be created on the IO thread.
-    io_thread_.reset(new BrowserThread(BrowserThread::IO, message_loop_.get()));
+    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO,
+                                                    message_loop_.get()));
 
     // Create a MediaStreamManager instance and hand over pointer to
     // ResourceContext.
@@ -360,8 +362,8 @@ class VideoCaptureHostTest : public testing::Test {
 
  private:
   scoped_ptr<MessageLoop> message_loop_;
-  scoped_ptr<BrowserThread> ui_thread_;
-  scoped_ptr<BrowserThread> io_thread_;
+  scoped_ptr<content::TestBrowserThread> ui_thread_;
+  scoped_ptr<content::TestBrowserThread> io_thread_;
   scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHostTest);

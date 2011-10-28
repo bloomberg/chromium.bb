@@ -17,7 +17,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -135,8 +135,9 @@ class BookmarksObserver : public BookmarksExportObserver {
 // way of bookmark_html_writer, then using the importer to read it back in.
 TEST_F(BookmarkHTMLWriterTest, Test) {
   MessageLoop message_loop;
-  BrowserThread fake_ui_thread(BrowserThread::UI, &message_loop);
-  BrowserThread fake_file_thread(BrowserThread::FILE, &message_loop);
+  content::TestBrowserThread fake_ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThread fake_file_thread(BrowserThread::FILE,
+                                              &message_loop);
 
   TestingProfile profile;
   profile.CreateHistoryService(true, false);

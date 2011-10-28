@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_utility_messages.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 

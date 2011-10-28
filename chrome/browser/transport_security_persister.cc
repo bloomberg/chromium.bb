@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/transport_security_state.h"
 
 class TransportSecurityPersister::Loader {

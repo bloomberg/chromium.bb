@@ -12,7 +12,7 @@
 #include "chrome/browser/policy/config_dir_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -181,8 +181,8 @@ class ConfigDirPolicyProviderValueTest
 
  private:
   MessageLoop loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 };
 
 TEST_P(ConfigDirPolicyProviderValueTest, Default) {

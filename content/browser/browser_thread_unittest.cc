@@ -6,9 +6,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "content/browser/browser_thread.h"
+#include "content/browser/browser_thread_impl.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+namespace content {
 
 class BrowserThreadTest : public testing::Test {
  public:
@@ -19,8 +22,8 @@ class BrowserThreadTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    ui_thread_.reset(new BrowserThread(BrowserThread::UI));
-    file_thread_.reset(new BrowserThread(BrowserThread::FILE));
+    ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI));
+    file_thread_.reset(new BrowserThreadImpl(BrowserThread::FILE));
     ui_thread_->Start();
     file_thread_->Start();
   }
@@ -79,8 +82,8 @@ class BrowserThreadTest : public testing::Test {
   };
 
  private:
-  scoped_ptr<BrowserThread> ui_thread_;
-  scoped_ptr<BrowserThread> file_thread_;
+  scoped_ptr<BrowserThreadImpl> ui_thread_;
+  scoped_ptr<BrowserThreadImpl> file_thread_;
   // It's kind of ugly to make this mutable - solely so we can post the Quit
   // Task from Release(). This should be fixed.
   mutable MessageLoop loop_;
@@ -156,7 +159,8 @@ TEST_F(BrowserThreadTest, TaskToNonExistentThreadIsDeletedViaMessageLoopProxy) {
 }
 
 TEST_F(BrowserThreadTest, PostTaskViaMessageLoopProxyAfterThreadExits) {
-  scoped_ptr<BrowserThread> io_thread(new BrowserThread(BrowserThread::IO));
+  scoped_ptr<BrowserThreadImpl> io_thread(
+      new BrowserThreadImpl(BrowserThread::IO));
   io_thread->Start();
   io_thread->Stop();
 
@@ -170,7 +174,8 @@ TEST_F(BrowserThreadTest, PostTaskViaMessageLoopProxyAfterThreadExits) {
 
 TEST_F(BrowserThreadTest, PostTaskViaMessageLoopProxyAfterThreadIsDeleted) {
   {
-    scoped_ptr<BrowserThread> io_thread(new BrowserThread(BrowserThread::IO));
+    scoped_ptr<BrowserThreadImpl> io_thread(
+        new BrowserThreadImpl(BrowserThread::IO));
     io_thread->Start();
   }
   bool deleted = false;
@@ -179,4 +184,6 @@ TEST_F(BrowserThreadTest, PostTaskViaMessageLoopProxyAfterThreadIsDeleted) {
   bool ret = message_loop_proxy->PostTask(FROM_HERE, new DummyTask(&deleted));
   EXPECT_FALSE(ret);
   EXPECT_TRUE(deleted);
+}
+
 }

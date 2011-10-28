@@ -5,8 +5,8 @@
 #include "content/browser/resource_context.h"
 
 #include "base/logging.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/plugin_process_host.h"
+#include "content/public/browser/browser_thread.h"
 #include "webkit/database/database_tracker.h"
 
 namespace content {

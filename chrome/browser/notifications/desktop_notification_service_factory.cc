@@ -8,7 +8,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 // static
 DesktopNotificationService* DesktopNotificationServiceFactory::GetForProfile(

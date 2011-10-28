@@ -9,9 +9,9 @@
 #include "chrome/browser/automation/mock_tab_event_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,7 +55,7 @@ class AutomationTabHelperTest : public TabContentsWrapperTestHarness {
     return contents_wrapper()->automation_tab_helper();
   }
 
-  BrowserThread browser_thread_;
+  content::TestBrowserThread browser_thread_;
 
   MockTabEventObserver mock_observer_;
 };

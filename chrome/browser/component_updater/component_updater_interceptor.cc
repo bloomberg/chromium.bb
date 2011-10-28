@@ -5,7 +5,7 @@
 
 #include "base/file_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -12,8 +12,8 @@
 #include "base/stl_util.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/glue/session_change_processor.h"
@@ -31,17 +31,17 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
+#include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/profile_mock.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -246,7 +246,7 @@ class ProfileSyncServiceSessionTest
     return true;
   }
 
-  BrowserThread io_thread_;
+  content::TestBrowserThread io_thread_;
   // Path used in testing.
   ScopedTempDir temp_dir_;
   SessionServiceTestHelper helper_;

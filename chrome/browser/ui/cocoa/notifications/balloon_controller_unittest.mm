@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/cocoa/notifications/balloon_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/test/test_browser_thread.h"
 
 // Subclass balloon controller and mock out the initialization of the RVH.
 @interface TestBalloonController : BalloonController {
@@ -68,8 +69,8 @@ class BalloonControllerTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  BrowserThread ui_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
   scoped_ptr<Browser> browser_;
   scoped_ptr<BalloonCollection> collection_;
 };

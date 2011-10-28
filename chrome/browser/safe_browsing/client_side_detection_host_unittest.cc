@@ -16,9 +16,9 @@
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -149,10 +149,11 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     mock_profile_ = new NiceMock<MockTestingProfile>();
     browser_context_.reset(mock_profile_);
 
-    ui_thread_.reset(new BrowserThread(BrowserThread::UI, &message_loop_));
+    ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
+                                                    &message_loop_));
     // Note: we're starting a real IO thread to make sure our DCHECKs that
     // verify which thread is running are actually tested.
-    io_thread_.reset(new BrowserThread(BrowserThread::IO));
+    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
     ASSERT_TRUE(io_thread_->Start());
 
     TabContentsWrapperTestHarness::SetUp();
@@ -289,8 +290,8 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
   MockTestingProfile* mock_profile_;  // We don't own this object
 
  private:
-  scoped_ptr<BrowserThread> ui_thread_;
-  scoped_ptr<BrowserThread> io_thread_;
+  scoped_ptr<content::TestBrowserThread> ui_thread_;
+  scoped_ptr<content::TestBrowserThread> io_thread_;
 };
 
 TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneInvalidVerdict) {

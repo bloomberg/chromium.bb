@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
-#include "content/browser/browser_thread.h"
+#include "content/browser/browser_thread_impl.h"
 #include "content/common/content_export.h"
 
 class BrowserWebKitPlatformSupportImpl;
@@ -25,7 +25,7 @@ class CONTENT_EXPORT WebKitThread {
 
  private:
   // Must be private so that we can carefully control its lifetime.
-  class InternalWebKitThread : public BrowserThread {
+  class InternalWebKitThread : public content::BrowserThreadImpl {
    public:
     InternalWebKitThread();
     virtual ~InternalWebKitThread();

@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace keys = extension_clear_api_constants;
 

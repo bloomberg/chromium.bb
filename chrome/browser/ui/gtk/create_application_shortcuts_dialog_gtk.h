@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/shell_integration.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/gtk/gtk_signal.h"
 

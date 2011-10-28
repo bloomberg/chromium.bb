@@ -11,7 +11,7 @@
 #include "chrome/browser/browser_process.h"  // g_browser_process
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/net/x509_certificate_model.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_database.h"

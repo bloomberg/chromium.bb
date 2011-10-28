@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_fetcher.h"
 
 // Manifest attributes names.

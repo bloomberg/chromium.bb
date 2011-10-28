@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
   const char kStubSystemSalt[] = "stub_system_salt";

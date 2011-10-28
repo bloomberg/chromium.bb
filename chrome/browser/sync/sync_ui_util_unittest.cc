@@ -4,11 +4,11 @@
 
 #include "base/basictypes.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "content/browser/browser_thread.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "chrome/browser/sync/sync_ui_util.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock-actions.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Return;
@@ -47,7 +47,7 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
 
 TEST(SyncUIUtilTest, ConstructAboutInformationWithUnrecoverableErrorTest) {
   MessageLoopForUI message_loop;
-  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   NiceMock<ProfileSyncServiceMock> service;
   DictionaryValue strings;
 
@@ -77,7 +77,7 @@ TEST(SyncUIUtilTest, ConstructAboutInformationWithUnrecoverableErrorTest) {
 // passphrase is required.
 TEST(SyncUIUtilTest, PassphraseGlobalError) {
   MessageLoopForUI message_loop;
-  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   NiceMock<ProfileSyncServiceMock> service;
 
   EXPECT_CALL(service, IsPassphraseRequired())
@@ -93,7 +93,7 @@ TEST(SyncUIUtilTest, PassphraseGlobalError) {
 // cannot be resolved by the user.
 TEST(SyncUIUtilTest, AuthStateGlobalError) {
   MessageLoopForUI message_loop;
-  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   NiceMock<ProfileSyncServiceMock> service;
 
   browser_sync::SyncBackendHost::Status status;

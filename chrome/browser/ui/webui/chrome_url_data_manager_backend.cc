@@ -25,7 +25,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/url_util.h"
 #include "grit/platform_locale_settings.h"
 #include "net/base/io_buffer.h"

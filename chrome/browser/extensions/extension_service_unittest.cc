@@ -54,12 +54,12 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_options.h"
@@ -3624,8 +3624,8 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   ExtensionsReadyRecorder recorder;
   scoped_ptr<TestingProfile> profile(new TestingProfile());
   MessageLoop loop;
-  BrowserThread ui_thread(BrowserThread::UI, &loop);
-  BrowserThread file_thread(BrowserThread::FILE, &loop);
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &loop);
+  content::TestBrowserThread file_thread(BrowserThread::FILE, &loop);
   scoped_ptr<CommandLine> command_line;
   FilePath install_dir = profile->GetPath()
       .AppendASCII(ExtensionService::kInstallDirectoryName);

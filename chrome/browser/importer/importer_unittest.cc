@@ -34,7 +34,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/password_form.h"
 
@@ -121,8 +121,8 @@ class ImporterTest : public testing::Test {
 
   ScopedTempDir temp_dir_;
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
   FilePath profile_path_;
   FilePath app_path_;
   scoped_ptr<TestingProfile> profile_;

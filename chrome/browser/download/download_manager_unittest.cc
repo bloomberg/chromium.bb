@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
 #include <set>
+#include <string>
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -22,7 +22,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/download/download_buffer.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
@@ -33,6 +32,7 @@
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/download/mock_download_manager.h"
+#include "content/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mock_file_stream.h"
@@ -124,8 +124,8 @@ class DownloadManagerTest : public testing::Test {
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<DownloadFileManager> file_manager_;
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
   scoped_refptr<content::DownloadBuffer> download_buffer_;
 
   DownloadFileManager* file_manager() {
@@ -366,7 +366,7 @@ class ItemObserver : public DownloadItem::Observer {
 }  // namespace
 
 TEST_F(DownloadManagerTest, StartDownload) {
-  BrowserThread io_thread(BrowserThread::IO, &message_loop_);
+  content::TestBrowserThread io_thread(BrowserThread::IO, &message_loop_);
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetFilePath(prefs::kDownloadDefaultDirectory, FilePath());
   DownloadPrefs* download_prefs =

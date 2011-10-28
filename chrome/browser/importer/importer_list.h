@@ -12,17 +12,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
-
 
 namespace importer {
 class ImporterListObserver;
 struct SourceProfile;
-}
-
-namespace net {
-class URLRequestContextGetter;
 }
 
 class ImporterList : public base::RefCountedThreadSafe<ImporterList> {

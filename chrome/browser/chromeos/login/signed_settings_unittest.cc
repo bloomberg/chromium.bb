@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/login/owner_manager_unittest.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -275,8 +275,8 @@ class SignedSettingsTest : public testing::Test {
   FilePath tmpfile_;
 
   MessageLoop message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 
   std::vector<uint8> fake_public_key_;
   scoped_ptr<crypto::RSAPrivateKey> fake_private_key_;

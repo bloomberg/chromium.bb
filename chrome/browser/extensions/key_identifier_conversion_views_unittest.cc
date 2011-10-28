@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
@@ -19,7 +19,7 @@ class KeyEventFromKeyIdentifierTest : public testing::Test {
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 };
 
 TEST_F(KeyEventFromKeyIdentifierTest, MatchOnIdentifier) {

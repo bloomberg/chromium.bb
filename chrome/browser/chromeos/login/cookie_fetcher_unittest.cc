@@ -12,8 +12,8 @@
 #include "chrome/browser/chromeos/login/mock_auth_response_handler.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/public/common/url_fetcher.h"
+#include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,7 +40,7 @@ class CookieFetcherTest : public testing::Test {
   const std::string client_login_data_;
   const std::string token_;
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
   TestingProfile profile_;
 };
 

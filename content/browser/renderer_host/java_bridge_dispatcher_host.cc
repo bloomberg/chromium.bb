@@ -4,14 +4,14 @@
 
 #include "content/browser/renderer_host/java_bridge_dispatcher_host.h"
 
-#include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/java_bridge_channel_host.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
+#include "content/browser/renderer_host/java_bridge_channel_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/child_process.h"
 #include "content/common/java_bridge_messages.h"
 #include "content/common/npobject_stub.h"
 #include "content/common/npobject_util.h"  // For CreateNPVariantParam()
+#include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
 JavaBridgeDispatcherHost::JavaBridgeDispatcherHost(

@@ -12,7 +12,7 @@
 #include "base/process_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 namespace system {

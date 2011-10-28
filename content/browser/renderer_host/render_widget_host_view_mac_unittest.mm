@@ -5,8 +5,8 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/cocoa_test_event_utils.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
@@ -88,8 +88,9 @@ TEST_F(RenderWidgetHostViewMacTest, Basic) {
 // Regression test for http://crbug.com/60318
 TEST_F(RenderWidgetHostViewMacTest, FocusAcceleratedView) {
   // The accelerated view methods want to be called on the UI thread.
-  scoped_ptr<BrowserThread> ui_thread_(
-      new BrowserThread(BrowserThread::UI, MessageLoop::current()));
+  scoped_ptr<content::TestBrowserThread> ui_thread_(
+      new content::TestBrowserThread(BrowserThread::UI,
+                                     MessageLoop::current()));
 
   int w = 400, h = 300;
   gfx::PluginWindowHandle accelerated_handle = AddAcceleratedPluginView(w, h);
@@ -160,8 +161,9 @@ TEST_F(RenderWidgetHostViewMacTest, TakesFocusOnMouseDown) {
 // Regression test for http://crbug.com/64256
 TEST_F(RenderWidgetHostViewMacTest, TakesFocusOnMouseDownWithAcceleratedView) {
   // The accelerated view methods want to be called on the UI thread.
-  scoped_ptr<BrowserThread> ui_thread_(
-      new BrowserThread(BrowserThread::UI, MessageLoop::current()));
+  scoped_ptr<content::TestBrowserThread> ui_thread_(
+      new content::TestBrowserThread(BrowserThread::UI,
+                                     MessageLoop::current()));
 
   int w = 400, h = 300;
   gfx::PluginWindowHandle accelerated_handle = AddAcceleratedPluginView(w, h);

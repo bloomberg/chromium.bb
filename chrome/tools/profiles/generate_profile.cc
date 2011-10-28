@@ -23,8 +23,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/notification_service_impl.h"
+#include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -235,8 +235,8 @@ int main(int argc, const char* argv[]) {
   ResourceBundle::InitSharedInstance("en-US");
   NotificationServiceImpl notification_service;
   MessageLoopForUI message_loop;
-  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
-  BrowserThread db_thread(BrowserThread::DB, &message_loop);
+  DeprecatedBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  DeprecatedBrowserThread db_thread(BrowserThread::DB, &message_loop);
   TestingProfile profile;
   profile.CreateHistoryService(false, false);
   if (types & TOP_SITES) {

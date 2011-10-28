@@ -28,7 +28,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -38,6 +37,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/test/notification_observer_mock.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -260,7 +260,7 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
     return &accessor;
   }
 
-  BrowserThread browser_thread_;
+  content::TestBrowserThread browser_thread_;
 
   std::wstring test_dir_;
   std::wstring profile_path_;

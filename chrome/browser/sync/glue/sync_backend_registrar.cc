@@ -11,12 +11,12 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/browser_thread_model_worker.h"
+#include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/history_model_worker.h"
 #include "chrome/browser/sync/glue/password_model_worker.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace browser_sync {
 

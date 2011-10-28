@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/update_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 

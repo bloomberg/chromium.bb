@@ -16,6 +16,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/test/test_browser_thread.h"
 #include "content/test/test_notification_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,8 +69,8 @@ class TokenServiceTestHarness : public testing::Test {
   void WaitForDBLoadCompletion();
 
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;  // Mostly so DCHECKS pass.
-  BrowserThread db_thread_;  // WDS on here
+  content::TestBrowserThread ui_thread_;  // Mostly so DCHECKS pass.
+  content::TestBrowserThread db_thread_;  // WDS on here
 
   TokenService service_;
   TokenAvailableTracker success_tracker_;

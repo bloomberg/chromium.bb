@@ -22,7 +22,7 @@
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace browser_sync {
 

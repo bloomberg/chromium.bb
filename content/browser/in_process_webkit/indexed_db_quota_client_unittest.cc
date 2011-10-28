@@ -15,6 +15,7 @@
 #include "content/browser/in_process_webkit/indexed_db_quota_client.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/test/test_browser_context.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/database/database_util.h"
 
@@ -153,8 +154,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
   scoped_refptr<IndexedDBContext> idb_context_;
   base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_;
   MessageLoop message_loop_;
-  BrowserThread webkit_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread webkit_thread_;
+  content::TestBrowserThread io_thread_;
   quota::QuotaStatusCode delete_status_;
 };
 

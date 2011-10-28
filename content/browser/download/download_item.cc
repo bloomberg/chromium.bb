@@ -14,10 +14,8 @@
 #include "base/stringprintf.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
-#include "net/base/net_util.h"
-#include "content/browser/browser_thread.h"
-#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_create_info.h"
+#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_manager.h"
@@ -25,8 +23,10 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/interrupt_reasons.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager_delegate.h"
+#include "net/base/net_util.h"
 
 // A DownloadItem normally goes through the following states:
 //      * Created (when download starts)

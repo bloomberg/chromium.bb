@@ -8,7 +8,7 @@
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

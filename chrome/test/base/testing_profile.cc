@@ -48,9 +48,9 @@
 #include "chrome/test/base/test_url_request_context_getter.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/mock_resource_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
@@ -59,8 +59,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/quota/quota_manager.h"
 #include "webkit/quota/mock_quota_manager.h"
+#include "webkit/quota/quota_manager.h"
 
 using base::Time;
 using testing::NiceMock;

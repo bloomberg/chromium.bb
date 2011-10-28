@@ -5,11 +5,12 @@
 #include "chrome/browser/chromeos/cros/burn_library.h"
 
 #include <cstring>
+
 #include "base/bind.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/common/zip.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 

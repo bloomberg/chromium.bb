@@ -10,7 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 

@@ -6,15 +6,15 @@
 #define CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_CONTROLLER_H__
 #pragma once
 
-#include <string>
 #include <map>
+#include <string>
 
 #include "base/callback.h"
 #include "base/location.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 class SyncError;
 

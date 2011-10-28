@@ -25,14 +25,14 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/browser_thread.h"
-#include "content/browser/resource_context.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
-#include "content/public/browser/notification_service.h"
+#include "content/browser/resource_context.h"
 #include "content/common/resource_messages.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/load_flags.h"
 
 // TODO(oshima): Enable this for other platforms.

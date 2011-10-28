@@ -5,7 +5,7 @@
 #include "chrome/browser/net/connection_tester.h"
 
 #include "chrome/test/base/testing_pref_service.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/dnsrr_resolver.h"
@@ -101,7 +101,7 @@ class ConnectionTesterTest : public PlatformTest {
   // MessageLoop is already destroyed, then the RemoveObserver will be a
   // no-op, and the ObserverList will contain invalid entries.
   MessageLoop message_loop_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread io_thread_;
   net::TestServer test_server_;
   ConnectionTesterDelegate test_delegate_;
   net::MockHostResolver host_resolver_;

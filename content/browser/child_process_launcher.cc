@@ -12,9 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
-#include "content/browser/browser_thread.h"
 #include "content/common/chrome_descriptors.h"
 #include "content/common/process_watcher.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -26,8 +26,8 @@
 #include "content/browser/mach_broker_mac.h"
 #elif defined(OS_POSIX)
 #include "base/memory/singleton.h"
-#include "content/browser/zygote_host_linux.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
+#include "content/browser/zygote_host_linux.h"
 #endif
 
 #if defined(OS_POSIX)

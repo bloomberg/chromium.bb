@@ -11,8 +11,10 @@
 #include <Objbase.h>
 #endif
 
+namespace content {
+
 BrowserProcessSubThread::BrowserProcessSubThread(BrowserThread::ID identifier)
-      : BrowserThread(identifier) {}
+    : BrowserThreadImpl(identifier) {}
 
 BrowserProcessSubThread::~BrowserProcessSubThread() {
   // We cannot rely on our base class to stop the thread since we want our
@@ -39,3 +41,5 @@ void BrowserProcessSubThread::CleanUp() {
   CoUninitialize();
 #endif
 }
+
+}  // namespace content

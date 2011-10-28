@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "media/video/capture/fake_video_capture_device.h"
 #include "media/video/capture/video_capture_device.h"
 

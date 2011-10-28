@@ -19,7 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -230,8 +230,8 @@ class CloudPolicySubsystemTestBase : public TESTBASE {
   ScopedTempDir temp_user_data_dir_;
 
   MessageLoop loop_;
-  BrowserThread ui_thread_;
-  BrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
 
   scoped_ptr<EventLogger> logger_;
   scoped_ptr<CloudPolicyDataStore> data_store_;

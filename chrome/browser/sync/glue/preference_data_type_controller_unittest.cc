@@ -9,14 +9,14 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/sync/glue/preference_data_type_controller.h"
 #include "chrome/browser/sync/glue/change_processor_mock.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/model_associator_mock.h"
+#include "chrome/browser/sync/glue/preference_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 
 using browser_sync::ChangeProcessorMock;
 using browser_sync::DataTypeController;
@@ -75,7 +75,7 @@ class PreferenceDataTypeControllerTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
   scoped_refptr<PreferenceDataTypeController> preference_dtc_;
   scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
   ProfileMock profile_;

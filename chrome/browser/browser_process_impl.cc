@@ -17,8 +17,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/background/background_mode_manager.h"
-#include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/browser_trial.h"
+#include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
@@ -71,7 +71,6 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/browser_process_sub_thread.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/download/download_file_manager.h"
@@ -83,6 +82,7 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/common/url_fetcher.h"
 #include "ipc/ipc_logging.h"
@@ -836,7 +836,7 @@ void BrowserProcessImpl::CreateFileThread() {
   created_file_thread_ = true;
 
   scoped_ptr<base::Thread> thread(
-      new BrowserProcessSubThread(BrowserThread::FILE));
+      new content::BrowserProcessSubThread(BrowserThread::FILE));
   base::Thread::Options options;
 #if defined(OS_WIN)
   // On Windows, the FILE thread needs to be have a UI message loop which pumps
@@ -857,7 +857,7 @@ void BrowserProcessImpl::CreateWebSocketProxyThread() {
   created_web_socket_proxy_thread_ = true;
 
   scoped_ptr<base::Thread> thread(
-      new BrowserProcessSubThread(BrowserThread::WEB_SOCKET_PROXY));
+      new content::BrowserProcessSubThread(BrowserThread::WEB_SOCKET_PROXY));
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   if (!thread->StartWithOptions(options))
@@ -871,7 +871,7 @@ void BrowserProcessImpl::CreateDBThread() {
   created_db_thread_ = true;
 
   scoped_ptr<base::Thread> thread(
-      new BrowserProcessSubThread(BrowserThread::DB));
+      new content::BrowserProcessSubThread(BrowserThread::DB));
   if (!thread->Start())
     return;
   db_thread_.swap(thread);
@@ -882,7 +882,7 @@ void BrowserProcessImpl::CreateProcessLauncherThread() {
   created_process_launcher_thread_ = true;
 
   scoped_ptr<base::Thread> thread(
-      new BrowserProcessSubThread(BrowserThread::PROCESS_LAUNCHER));
+      new content::BrowserProcessSubThread(BrowserThread::PROCESS_LAUNCHER));
   if (!thread->Start())
     return;
   process_launcher_thread_.swap(thread);
@@ -893,7 +893,7 @@ void BrowserProcessImpl::CreateCacheThread() {
   created_cache_thread_ = true;
 
   scoped_ptr<base::Thread> thread(
-      new BrowserThread(BrowserThread::CACHE));
+      new DeprecatedBrowserThread(BrowserThread::CACHE));
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   if (!thread->StartWithOptions(options))

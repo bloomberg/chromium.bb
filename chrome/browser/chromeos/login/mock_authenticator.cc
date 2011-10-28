@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
 
 #include "base/bind.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 

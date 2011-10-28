@@ -4,23 +4,23 @@
 
 #include "chrome/browser/memory_details.h"
 
-#include <unistd.h>
-#include <fcntl.h>
 #include <dirent.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include <set>
 
 #include "base/bind.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_version_info.h"
-#include "base/string_util.h"
 #include "base/process_util.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_child_process_host.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/zygote_host_linux.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 
 // Known browsers which we collect details for.

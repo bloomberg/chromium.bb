@@ -15,6 +15,7 @@
 #include "chrome/test/base/test_url_request_context_getter.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -135,7 +136,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
  private:
   // |request_context_getter_| must be released on the IO thread.
   MessageLoop* io_thread_loop() { return io_thread_.message_loop(); }
-  BrowserThread io_thread_;
+  content::TestBrowserThread io_thread_;
 };
 
 TEST_F(AutofillDownloadTest, QueryAndUploadTest) {

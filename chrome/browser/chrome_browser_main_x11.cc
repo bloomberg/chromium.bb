@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/debug/debugger.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "content/browser/browser_thread.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_result_codes.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 

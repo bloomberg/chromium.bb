@@ -9,9 +9,9 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/media/media_internals_proxy.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/browser_thread.h"
 
 MediaInternalsMessageHandler::MediaInternalsMessageHandler()
     : proxy_(new MediaInternalsProxy()) {}

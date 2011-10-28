@@ -5,7 +5,6 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_manager.h"
@@ -13,6 +12,7 @@
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/mock_download_manager.h"
 #include "content/browser/download/mock_download_manager_delegate.h"
+#include "content/test/test_browser_thread.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -105,9 +105,9 @@ class DownloadFileTest : public testing::Test {
  private:
   MessageLoop loop_;
   // UI thread.
-  BrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
   // File thread to satisfy debug checks in DownloadFile.
-  BrowserThread file_thread_;
+  content::TestBrowserThread file_thread_;
 
   // Keep track of what data should be saved to the disk file.
   std::string expected_data_;

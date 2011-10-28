@@ -18,7 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 namespace system {

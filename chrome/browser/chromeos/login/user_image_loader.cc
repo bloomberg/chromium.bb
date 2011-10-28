@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,9 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/login/image_decoder.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "content/browser/browser_thread.h"
+#include "chrome/browser/chromeos/login/image_decoder.h"
+#include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"

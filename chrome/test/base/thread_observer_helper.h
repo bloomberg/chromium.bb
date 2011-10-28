@@ -8,7 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/test/notification_observer_mock.h"
 

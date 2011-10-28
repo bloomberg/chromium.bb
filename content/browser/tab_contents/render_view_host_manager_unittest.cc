@@ -4,7 +4,6 @@
 
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_controller.h"
@@ -17,6 +16,8 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/test/test_browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "content/test/test_notification_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webkit_glue.h"
@@ -60,7 +61,8 @@ class RenderViewHostManagerTest : public ChromeRenderViewHostTestHarness {
 // different SiteInstances, BrowsingInstances, and RenderProcessHosts. This is
 // a regression test for bug 9364.
 TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
-  BrowserThread ui_thread(BrowserThread::UI, MessageLoop::current());
+  content::TestBrowserThread ui_thread(BrowserThread::UI,
+                                       MessageLoop::current());
   const GURL kNtpUrl(chrome::kTestNewTabURL);
   const GURL kDestUrl("http://www.google.com/");
 
@@ -119,7 +121,8 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
 // EnableViewSourceMode message is sent on every navigation regardless
 // RenderView is being newly created or reused.
 TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
-  BrowserThread ui_thread(BrowserThread::UI, MessageLoop::current());
+  content::TestBrowserThread ui_thread(BrowserThread::UI,
+                                       MessageLoop::current());
   const GURL kNtpUrl(chrome::kTestNewTabURL);
   const GURL kUrl("view-source:http://foo");
 
@@ -271,7 +274,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 
 // Tests WebUI creation.
 TEST_F(RenderViewHostManagerTest, WebUI) {
-  BrowserThread ui_thread(BrowserThread::UI, MessageLoop::current());
+  content::TestBrowserThread ui_thread(BrowserThread::UI,
+                                       MessageLoop::current());
   SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
 
   TestTabContents tab_contents(profile(), instance);
@@ -311,7 +315,7 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
 // still swap processes if ShouldSwapProcessesForNavigation is true.
 // Regression test for bug 46290.
 TEST_F(RenderViewHostManagerTest, NonWebUIChromeURLs) {
-  BrowserThread thread(BrowserThread::UI, &message_loop_);
+  content::TestBrowserThread thread(BrowserThread::UI, &message_loop_);
   SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
   TestTabContents tab_contents(profile(), instance);
   RenderViewHostManager manager(&tab_contents, &tab_contents);

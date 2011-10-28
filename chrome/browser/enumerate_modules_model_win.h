@@ -14,7 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/string16.h"
 #include "base/timer.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
 class EnumerateModulesModel;

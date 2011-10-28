@@ -12,7 +12,7 @@
 #include "base/nix/xdg_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 
 FilePath* SelectFileDialogImpl::last_saved_path_ = NULL;
 FilePath* SelectFileDialogImpl::last_opened_path_ = NULL;

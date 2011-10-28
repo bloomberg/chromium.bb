@@ -1,20 +1,20 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/camera.h"
 
-#include <stdlib.h>
-#include <fcntl.h>  // low-level i/o
-#include <unistd.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/mman.h>
-#include <sys/ioctl.h>
 #include <asm/types.h>  // for videodev2.h
+#include <errno.h>
+#include <fcntl.h>  // low-level i/o
 #include <linux/videodev2.h>
+#include <stdlib.h>
+#include <sys/ioctl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <vector>
@@ -26,7 +26,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"

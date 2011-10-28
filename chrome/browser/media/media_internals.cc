@@ -8,8 +8,8 @@
 #include "base/string16.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/media/media_internals_observer.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/browser_thread.h"
 #include "media/base/media_log.h"
 #include "media/base/media_log_event.h"
 

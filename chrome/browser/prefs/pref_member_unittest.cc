@@ -9,9 +9,9 @@
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 namespace {
 
@@ -240,8 +240,8 @@ TEST(PrefMemberTest, MoveToThread) {
   scoped_refptr<GetPrefValueCallback> callback =
       make_scoped_refptr(new GetPrefValueCallback());
   MessageLoop message_loop;
-  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
-  BrowserThread io_thread(BrowserThread::IO);
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThread io_thread(BrowserThread::IO);
   ASSERT_TRUE(io_thread.Start());
   RegisterTestPrefs(&prefs);
   callback->Init(kBoolPref, &prefs);

@@ -10,7 +10,7 @@
 #include "base/string16.h"
 #include "chrome/browser/media/media_internals_observer.h"
 #include "chrome/browser/net/chrome_net_log.h"
-#include "content/browser/browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

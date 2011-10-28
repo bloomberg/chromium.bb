@@ -17,7 +17,7 @@
 #include "chrome/browser/policy/configuration_policy_provider_win.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/browser_thread.h"
+#include "content/test/test_browser_thread.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -159,8 +159,8 @@ class ConfigurationPolicyProviderWinTest
   MessageLoop loop_;
 
  private:
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 
   // Keys are created for the lifetime of a test to contain
   // the sandboxed HKCU and HKLM hives, respectively.
