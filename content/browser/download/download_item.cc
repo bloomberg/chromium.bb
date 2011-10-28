@@ -4,6 +4,9 @@
 
 #include "content/browser/download/download_item.h"
 
+#include <vector>
+
+#include "base/bind.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
@@ -506,7 +509,7 @@ void DownloadItem::Delete(DeleteReason reason) {
   }
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&DeleteDownloadedFile, full_path_));
+                          base::Bind(&DeleteDownloadedFile, full_path_));
   Remove();
   // We have now been deleted.
 }
@@ -595,16 +598,17 @@ void DownloadItem::OnDownloadCompleting(DownloadFileManager* file_manager) {
 
   if (NeedsRename()) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(file_manager,
-            &DownloadFileManager::RenameCompletingDownloadFile, global_id(),
-            GetTargetFilePath(), safety_state() == SAFE));
+        base::Bind(&DownloadFileManager::RenameCompletingDownloadFile,
+                   file_manager, global_id(),
+                   GetTargetFilePath(), safety_state() == SAFE));
     return;
   }
 
   Completed();
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
-        file_manager, &DownloadFileManager::CompleteDownload, global_id()));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&DownloadFileManager::CompleteDownload,
+                                     file_manager, global_id()));
 }
 
 void DownloadItem::OnDownloadRenamedToFinalName(const FilePath& full_path) {
@@ -724,10 +728,9 @@ void DownloadItem::OffThreadCancel(DownloadFileManager* file_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   request_handle_.CancelRequest();
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          file_manager, &DownloadFileManager::CancelDownload, global_id()));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&DownloadFileManager::CancelDownload,
+                                     file_manager, global_id()));
 }
 
 void DownloadItem::Init(bool active) {
