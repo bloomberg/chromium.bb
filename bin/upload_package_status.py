@@ -19,10 +19,10 @@ import chromite.lib.operation as operation
 import chromite.lib.upgrade_table as utable
 import merge_package_status as mps
 
-REAL_SS_KEY='tJuuSuHmrEMqdL5b8dkgBIA'
-TEST_SS_KEY='t3RE08XLO2f1vTiV4N-w2ng'
-PKGS_WS_NAME='Packages'
-DEPS_WS_NAME='Dependencies'
+REAL_SS_KEY = 'tJuuSuHmrEMqdL5b8dkgBIA'
+TEST_SS_KEY = 't3RE08XLO2f1vTiV4N-w2ng'
+PKGS_WS_NAME = 'Packages'
+DEPS_WS_NAME = 'Dependencies'
 
 oper = operation.Operation('upload_package_status')
 oper.verbose = True # Without verbose Info messages don't show up.
@@ -71,8 +71,8 @@ class Uploader(object):
   ID_COL = utable.UpgradeTable.COL_PACKAGE
   SOURCE = "Uploaded from CSV"
 
-  def __init__(self, table, verbose=False):
-    self._table = table
+  def __init__(self, table_obj, verbose=False):
+    self._table = table_obj
     self._gd_client = None
     self._docs_token = None
     self._email = None

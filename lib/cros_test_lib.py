@@ -7,13 +7,44 @@
 """Cros unit test library, with utility functions."""
 
 import cStringIO
+import os
 import re
+import shutil
 import sys
+import tempfile
 import unittest
 
 import mox
 
 # pylint: disable=W0212,R0904
+
+
+def tempdir_decorator(func):
+  """Populates self.tempdir with path to a temporary writeable directory."""
+  def f(self, *args, **kwargs):
+    self.tempdir = tempfile.mkdtemp()
+    try:
+      os.chmod(self.tempdir, 0700)
+      return func(self, *args, **kwargs)
+    finally:
+      if os.path.exists(self.tempdir):
+        shutil.rmtree(self.tempdir)
+
+  f.__name__ = func.__name__
+  return f
+
+
+def tempfile_decorator(func):
+  """Populates self.tempfile with path to a temporary writeable file"""
+  def f(self, *args, **kwargs):
+    tmpfile = tempfile.NamedTemporaryFile(dir=self.tempdir, delete=False)
+    tmpfile.close()
+    self.tempfile = tmpfile.name
+    return func(self, *args, **kwargs)
+
+  f.__name__ = func.__name__
+  return tempdir_decorator(f)
+
 
 class TestCase(unittest.TestCase):
   """Base class for cros unit tests with utility methods."""

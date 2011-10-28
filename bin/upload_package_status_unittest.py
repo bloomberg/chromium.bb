@@ -6,11 +6,9 @@
 
 """Unit tests for cros_portage_upgrade.py."""
 
-import cStringIO
 import exceptions
-import optparse
-import os
 import re
+import shutil
 import sys
 import tempfile
 import unittest
@@ -18,55 +16,19 @@ import unittest
 import gdata.spreadsheet.service as gdata_ss
 import mox
 
-import chromite.lib.table as table
+import chromite.lib.cros_test_lib as test_lib
+import chromite.lib.table as tablelib
+import merge_package_status as mps
 import upload_package_status as ups
 
-_stdout = None
-_stderr = None
-_stdout_cap = None
-_stderr_cap = None
+# pylint: disable=W0212,R0904,E1120
 
-# pylint: disable=W0212,R0904
-def _StartCapturingOutput():
-  """Begin capturing stdout and stderr."""
-  global _stdout, _stderr, _stdout_cap, _stderr_cap
-  _stdout = sys.stdout
-  _stderr = sys.stderr
-  sys.stdout = _stdout_cap = cStringIO.StringIO()
-  sys.stderr = _stderr_cap = cStringIO.StringIO()
+def _WriteCredsFile(tmpfile_path, email, password):
+  with open(tmpfile_path, 'w') as tmpfile:
+    tmpfile.write(email + '\n')
+    tmpfile.write(password + '\n')
 
-def _RetrieveCapturedOutput():
-  """Return captured output so far as (stdout, stderr) tuple."""
-  global _stdout, _stderr, _stdout_cap, _stderr_cap
-  try:
-    return (_stdout_cap.getvalue(), _stderr_cap.getvalue())
-  except AttributeError:
-    # This will happen if output capturing isn't on.
-    return None
-
-def _StopCapturingOutput():
-  """Stop capturing stdout and stderr."""
-  global _stdout, _stderr, _stdout_cap, _stderr_cap
-  try:
-    sys.stdout = _stdout
-    sys.stderr = _stderr
-    _stdout = None
-    _stderr = None
-    _stdout_cap = None
-    _stderr_cap = None
-  except AttributeError:
-    # This will happen if output capturing wasn't on.
-    pass
-
-def _CreateCredsFile(email, password):
-  fd, path = tempfile.mkstemp(text=True)
-  tmpfile = open(path, 'w')
-  tmpfile.write(email + '\n')
-  tmpfile.write(password + '\n')
-  tmpfile.close()
-  return path
-
-class ModuleTest(unittest.TestCase):
+class ModuleTest(test_lib.TestCase):
   """Test misc functionality of the upload_package_status module."""
 
   ROW_IN1 = {'Package': 'sys-fs/dosfstools',
@@ -156,7 +118,7 @@ class SSFeed(object):
     for row in rows:
       self.entry.append(SSRow(row, cols))
 
-class UploaderTest(mox.MoxTestBase):
+class UploaderTest(test_lib.MoxTestCase):
   """Test the functionality of upload_package_status.Uploader class."""
 
   COL_PKG = 'Package'
@@ -246,34 +208,27 @@ class UploaderTest(mox.MoxTestBase):
                                      [self.ROW0, self.ROW1])
 
   def _CreateTableWithRows(self, cols, rows):
-    mytable = table.Table(list(cols))
+    mytable = tablelib.Table(list(cols))
     if rows:
       for row in rows:
         mytable.AppendRow(dict(row))
     return mytable
 
-  def _CreateTmpCsvFile(self, table):
-    fd, path = tempfile.mkstemp(text=True)
-    tmpfile = open(path, 'w')
-    table.WriteCSV(tmpfile)
-    tmpfile.close()
-    return path
-
   def testLoadTable(self):
     # Note that this test is not actually for method of Uploader class.
 
-    self.mox.StubOutWithMock(table.Table, 'LoadFromCSV')
+    self.mox.StubOutWithMock(tablelib.Table, 'LoadFromCSV')
     csv = 'any.csv'
 
     # Replay script
-    table.Table.LoadFromCSV(csv).AndReturn('loaded_table')
+    tablelib.Table.LoadFromCSV(csv).AndReturn('loaded_table')
     self.mox.ReplayAll()
 
     # Verify
-    _StartCapturingOutput()
+    self._StartCapturingOutput()
     loaded_table = ups.LoadTable(csv)
     self.assertEquals(loaded_table, 'loaded_table')
-    _StopCapturingOutput()
+    self._StopCapturingOutput()
 
   def testSetCreds(self):
     mocked_uploader = self._MockUploader()
@@ -286,30 +241,30 @@ class UploaderTest(mox.MoxTestBase):
     self.assertEquals(self.EMAIL, mocked_uploader._email)
     self.assertEquals(self.PASSWORD, mocked_uploader._password)
 
+  @test_lib.tempfile_decorator
   def testStoreLoadCreds(self):
     table = self._CreateDefaultTable()
     uploader = ups.Uploader(table)
     # Use SetCreds to bootstrap (it has a separate unit test)
     uploader.SetCreds(self.EMAIL, self.PASSWORD)
 
-    _StartCapturingOutput()
+    self._StartCapturingOutput()
 
     self.assertEquals(uploader._email, self.EMAIL)
     self.assertEquals(uploader._password, self.PASSWORD)
 
     # Verify that Uploader can store/load creds
-    fd, path = tempfile.mkstemp(text=True)
-    uploader.StoreCreds(path)
+    uploader.StoreCreds(self.tempfile)
     uploader._email = None
     uploader._password = None
     self.assertFalse(uploader._email)
     self.assertFalse(uploader._password)
 
-    uploader.LoadCreds(path)
+    uploader.LoadCreds(self.tempfile)
     self.assertEquals(uploader._email, self.EMAIL)
     self.assertEquals(uploader._password, self.PASSWORD)
 
-    _StopCapturingOutput()
+    self._StopCapturingOutput()
 
   def testLoginDocsWithEmailPassword(self):
     mocked_uploader = self._MockUploader()
@@ -343,12 +298,12 @@ class UploaderTest(mox.MoxTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    _StartCapturingOutput()
+    self._StartCapturingOutput()
     self.assertFalse(mocked_uploader._gd_client)
     ups.Uploader.LoginDocsWithToken(mocked_uploader)
     self.assertTrue(isinstance(mocked_uploader._gd_client,
                                gdata_ss.SpreadsheetsService))
-    _StopCapturingOutput()
+    self._StopCapturingOutput()
 
   def testGetSSRowForPackage(self):
     mocked_gd_client = self._MockGdClient()
@@ -372,29 +327,30 @@ class UploaderTest(mox.MoxTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    result = ups.Uploader._GetSSRowForPackage(mocked_uploader, package)
+    ups.Uploader._GetSSRowForPackage(mocked_uploader, package)
     self.mox.VerifyAll()
 
   def testUpload(self):
     mocked_uploader = self._MockUploader()
     ss_key = 'Some ss_key'
+    ws_name = 'Some ws_name'
     ws_key = 'Some ws_key'
 
     # Replay script
     # TODO(mtennant): This approach just seems so brittle.  For example,
     # I would prefer this test allow any number of calls to _Verbose
     # at any time.  But I haven't figured out how.
-    mocked_uploader._GetWorksheetKey(ss_key, 0).AndReturn(ws_key)
+    mocked_uploader._GetWorksheetKey(ss_key, ws_name).AndReturn(ws_key)
     mocked_uploader._Verbose(mox.IgnoreArg())
     mocked_uploader._UploadChangedRows().AndReturn(tuple([0, 1, 2]))
     mocked_uploader._DeleteOldRows().AndReturn(tuple([3, 4]))
     self.mox.ReplayAll()
 
     # Verify
-    _StartCapturingOutput()
-    ups.Uploader.Upload(mocked_uploader, ss_key)
+    self._StartCapturingOutput()
+    ups.Uploader.Upload(mocked_uploader, ss_key, ws_name)
     self.mox.VerifyAll()
-    _StopCapturingOutput()
+    self._StopCapturingOutput()
 
   def testUploadChangedRows(self):
     mocked_gd_client = self._MockGdClient()
@@ -432,10 +388,10 @@ class UploaderTest(mox.MoxTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    _StartCapturingOutput()
+    self._StartCapturingOutput()
     ups.Uploader._UploadChangedRows(mocked_uploader)
     self.mox.VerifyAll()
-    _StopCapturingOutput()
+    self._StopCapturingOutput()
 
   def testDeleteOldRows(self):
     mocked_gd_client = self._MockGdClient()
@@ -462,17 +418,25 @@ class UploaderTest(mox.MoxTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    _StartCapturingOutput()
+    self._StartCapturingOutput()
     ups.Uploader._DeleteOldRows(mocked_uploader)
     self.mox.VerifyAll()
-    _StopCapturingOutput()
+    self._StopCapturingOutput()
 
-class MainTest(mox.MoxTestBase):
+class MainTest(test_lib.MoxTestCase):
   """Test argument handling at the main method level."""
 
   def setUp(self):
     """Setup for all tests in this class."""
     mox.MoxTestBase.setUp(self)
+
+  def _AssertOutputEndsInError(self, stdout):
+    """Return True if |stdout| ends with an error message."""
+    lastline = [ln for ln in stdout.split('\n') if ln][-1]
+    self.assertTrue(self._IsErrorLine(lastline),
+                    msg="expected output to end in error line, but "
+                    "_IsErrorLine says this line is not an error:\n%s" %
+                    lastline)
 
   def _PrepareArgv(self, *args):
     """Prepare command line for calling upload_package_status.main"""
@@ -484,7 +448,7 @@ class MainTest(mox.MoxTestBase):
     self._PrepareArgv("--help")
 
     # Capture stdout/stderr so it can be verified later
-    _StartCapturingOutput()
+    self._StartCapturingOutput()
 
     # Running with --help should exit with code==0
     try:
@@ -493,8 +457,8 @@ class MainTest(mox.MoxTestBase):
       self.assertEquals(e.args[0], 0)
 
     # Verify that a message beginning with "Usage: " was printed
-    (stdout, stderr) = _RetrieveCapturedOutput()
-    _StopCapturingOutput()
+    (stdout, _stderr) = self._RetrieveCapturedOutput()
+    self._StopCapturingOutput()
     self.assertTrue(stdout.startswith("Usage: "))
 
   def testMissingCSV(self):
@@ -502,7 +466,7 @@ class MainTest(mox.MoxTestBase):
     self._PrepareArgv("")
 
     # Capture stdout/stderr so it can be verified later
-    _StartCapturingOutput()
+    self._StartCapturingOutput()
 
     # Running without a package should exit with code!=0
     try:
@@ -510,10 +474,10 @@ class MainTest(mox.MoxTestBase):
     except exceptions.SystemExit, e:
       self.assertNotEquals(e.args[0], 0)
 
-    # Verify that a message containing "ERROR: " was printed
-    (stdout, stderr) = _RetrieveCapturedOutput()
-    _StopCapturingOutput()
-    self.assertTrue("ERROR:" in stderr)
+    # Verify that output ends in an error message.
+    (stdout, _stderr) = self._RetrieveCapturedOutput()
+    self._StopCapturingOutput()
+    self._AssertOutputEndsInError(stdout)
 
   def testMainEmailPassword(self):
     """Verify that running main with email/password follows flow."""
@@ -525,11 +489,14 @@ class MainTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(ups.Uploader, 'SetCreds')
     self.mox.StubOutWithMock(ups.Uploader, 'LoginDocsWithEmailPassword')
     self.mox.StubOutWithMock(ups.Uploader, 'Upload')
+    self.mox.StubOutWithMock(mps, 'FinalizeTable')
 
     ups.LoadTable(csv).AndReturn('csv_table')
+    mps.FinalizeTable('csv_table')
     ups.Uploader.SetCreds(email=email, password=password)
     ups.Uploader.LoginDocsWithEmailPassword()
-    ups.Uploader.Upload(mox.IgnoreArg())
+    ups.Uploader.Upload(mox.IgnoreArg(), ws_name='Packages')
+    ups.Uploader.Upload(mox.IgnoreArg(), ws_name='Dependencies')
     self.mox.ReplayAll()
 
     self._PrepareArgv("--email=%s" % email,
@@ -539,30 +506,33 @@ class MainTest(mox.MoxTestBase):
     ups.main()
     self.mox.VerifyAll()
 
+  @test_lib.tempfile_decorator
   def testMainCredsFile(self):
     """Verify that running main with creds file follows flow."""
     csv = 'any.csv'
     email = 'foo@g.com'
     password = '123'
-    creds = _CreateCredsFile(email, password)
+    creds_file = self.tempfile
+    _WriteCredsFile(creds_file, email, password)
 
     self.mox.StubOutWithMock(ups, 'LoadTable')
     self.mox.StubOutWithMock(ups.Uploader, 'LoadCreds')
     self.mox.StubOutWithMock(ups.Uploader, 'LoginDocsWithEmailPassword')
     self.mox.StubOutWithMock(ups.Uploader, 'Upload')
+    self.mox.StubOutWithMock(mps, 'FinalizeTable')
 
     ups.LoadTable(csv).AndReturn('csv_table')
-    ups.Uploader.LoadCreds(creds)
+    mps.FinalizeTable('csv_table')
+    ups.Uploader.LoadCreds(creds_file)
     ups.Uploader.LoginDocsWithEmailPassword()
-    ups.Uploader.Upload(mox.IgnoreArg())
+    ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.PKGS_WS_NAME)
+    ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.DEPS_WS_NAME)
     self.mox.ReplayAll()
 
-    self._PrepareArgv("--cred-file=%s" % creds, csv)
+    self._PrepareArgv("--cred-file=%s" % creds_file, csv)
 
     ups.main()
     self.mox.VerifyAll()
-
-    os.unlink(creds)
 
 if __name__ == '__main__':
   unittest.main()
