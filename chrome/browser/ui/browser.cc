@@ -151,7 +151,6 @@
 #include "content/browser/user_metrics.h"
 #include "content/common/content_restriction.h"
 #include "content/public/browser/notification_service.h"
-#include "content/common/page_zoom.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/common/content_switches.h"
 #include "grit/chromium_strings.h"
@@ -1971,7 +1970,7 @@ void Browser::FindPrevious() {
   FindInPage(true, false);
 }
 
-void Browser::Zoom(PageZoom::Function zoom_function) {
+void Browser::Zoom(content::PageZoom zoom) {
   if (is_devtools())
     return;
 
@@ -1981,10 +1980,10 @@ void Browser::Zoom(PageZoom::Function zoom_function) {
     UserMetricsAction("ZoomPlus")
   };
 
-  UserMetrics::RecordAction(kActions[zoom_function - PageZoom::ZOOM_OUT]);
+  UserMetrics::RecordAction(kActions[zoom - content::PAGE_ZOOM_OUT]);
   TabContentsWrapper* tab_contents = GetSelectedTabContentsWrapper();
   RenderViewHost* host = tab_contents->render_view_host();
-  host->Zoom(zoom_function);
+  host->Zoom(zoom);
 }
 
 void Browser::FocusToolbar() {
@@ -2792,9 +2791,9 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_FIND_PREVIOUS:         FindPrevious();                   break;
 
     // Zoom
-    case IDC_ZOOM_PLUS:             Zoom(PageZoom::ZOOM_IN);          break;
-    case IDC_ZOOM_NORMAL:           Zoom(PageZoom::RESET);            break;
-    case IDC_ZOOM_MINUS:            Zoom(PageZoom::ZOOM_OUT);         break;
+    case IDC_ZOOM_PLUS:             Zoom(content::PAGE_ZOOM_IN);      break;
+    case IDC_ZOOM_NORMAL:           Zoom(content::PAGE_ZOOM_RESET);   break;
+    case IDC_ZOOM_MINUS:            Zoom(content::PAGE_ZOOM_OUT);     break;
 
     // Focus various bits of UI
     case IDC_FOCUS_TOOLBAR:         FocusToolbar();                   break;

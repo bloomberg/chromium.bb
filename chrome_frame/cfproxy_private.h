@@ -80,7 +80,7 @@ class Interface2IPCMessage : public ChromeProxy {
   virtual void Tab_Paste(int tab);
   virtual void Tab_SelectAll(int tab);
   virtual void Tab_MenuCommand(int tab, int selected_command);
-  virtual void Tab_Zoom(int tab, PageZoom::Function zoom_level);
+  virtual void Tab_Zoom(int tab, content::PageZoom zoom_level);
   virtual void Tab_FontSize(int tab, enum AutomationPageFontSize font_size);
   virtual void Tab_SetInitialFocus(int tab, bool reverse,
                                    bool restore_focus_to_view);

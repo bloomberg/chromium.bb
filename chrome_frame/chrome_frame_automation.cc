@@ -1210,7 +1210,7 @@ void ChromeFrameAutomationClient::SetUrlFetcher(
   url_fetcher_->set_delegate(this);
 }
 
-void ChromeFrameAutomationClient::SetZoomLevel(PageZoom::Function zoom_level) {
+void ChromeFrameAutomationClient::SetZoomLevel(content::PageZoom zoom_level) {
   if (automation_server_) {
     automation_server_->Send(new AutomationMsg_SetZoomLevel(tab_handle_,
                                                             zoom_level));

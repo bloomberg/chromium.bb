@@ -30,18 +30,18 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/content_constants.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/drag_messages.h"
-#include "content/public/browser/notification_service.h"
 #include "content/common/speech_input_messages.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
@@ -1308,8 +1308,8 @@ void RenderViewHost::SetZoomLevel(double level) {
   Send(new ViewMsg_SetZoomLevel(routing_id(), level));
 }
 
-void RenderViewHost::Zoom(PageZoom::Function zoom_function) {
-  Send(new ViewMsg_Zoom(routing_id(), zoom_function));
+void RenderViewHost::Zoom(content::PageZoom zoom) {
+  Send(new ViewMsg_Zoom(routing_id(), zoom));
 }
 
 void RenderViewHost::ReloadFrame() {

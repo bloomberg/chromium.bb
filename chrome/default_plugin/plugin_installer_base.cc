@@ -6,7 +6,7 @@
 
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "content/common/content_constants.h"
+#include "content/public/common/content_constants.h"
 
 PluginInstallerBase::PluginInstallerBase()
     : renderer_process_id_(0),

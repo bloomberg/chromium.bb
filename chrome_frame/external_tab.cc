@@ -191,7 +191,7 @@ void ExternalTabProxy::BlockExternalTab(uint64 cookie) {
   proxy_->BlockTab(cookie);
 }
 
-void ExternalTabProxy::SetZoomLevel(PageZoom::Function zoom_level) {
+void ExternalTabProxy::SetZoomLevel(content::PageZoom zoom_level) {
   proxy_->Tab_Zoom(tab_, zoom_level);
 }
 

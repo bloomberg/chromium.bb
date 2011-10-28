@@ -4,8 +4,8 @@
 
 // A handful of resource-like constants related to the Content application.
 
-#ifndef CONTENT_COMMON_CHROME_CONSTANTS_H_
-#define CONTENT_COMMON_CHROME_CONSTANTS_H_
+#ifndef CONTENT_PUBLIC_COMMON_CHROME_CONSTANTS_H_
+#define CONTENT_PUBLIC_COMMON_CHROME_CONSTANTS_H_
 #pragma once
 
 #include <stddef.h>         // For size_t
@@ -43,4 +43,4 @@ extern const int kStatsMaxCounters;
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_CHROME_CONSTANTS_H_
+#endif  // CONTENT_PUBLIC_COMMON_CHROME_CONSTANTS_H_

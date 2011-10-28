@@ -24,8 +24,8 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/page_zoom.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/page_zoom.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/widget/root_view.h"
@@ -467,7 +467,7 @@ void AutomationProvider::OnSetZoomLevel(int handle, int zoom_level) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     if (tab->tab_contents() && tab->tab_contents()->render_view_host()) {
       RenderViewHost* host = tab->tab_contents()->render_view_host();
-      PageZoom::Function zoom = static_cast<PageZoom::Function>(zoom_level);
+      content::PageZoom zoom = static_cast<content::PageZoom>(zoom_level);
       host->Zoom(zoom);
     }
   }

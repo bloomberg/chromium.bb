@@ -44,9 +44,9 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "content/common/page_zoom.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/page_zoom.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
@@ -575,7 +575,7 @@ class Browser : public TabHandlerDelegate,
   void FindPrevious();
 
   // Zoom
-  void Zoom(PageZoom::Function zoom_function);
+  void Zoom(content::PageZoom zoom);
 
   // Focus various bits of UI
   void FocusToolbar();

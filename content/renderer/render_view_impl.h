@@ -26,8 +26,8 @@
 #include "content/common/content_export.h"
 #include "content/common/edit_command.h"
 #include "content/common/navigation_gesture.h"
-#include "content/common/page_zoom.h"
 #include "content/common/renderer_preferences.h"
+#include "content/public/common/page_zoom.h"
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_widget.h"
@@ -858,7 +858,7 @@ class RenderViewImpl : public RenderWidget,
                             const gfx::Rect& view_frame);
   void OnSelectPopupMenuItem(int selected_index);
 #endif
-  void OnZoom(PageZoom::Function function);
+  void OnZoom(content::PageZoom zoom);
   void OnEnableViewSourceMode();
 
   void OnJavaBridgeInit(const IPC::ChannelHandle& channel_handle);

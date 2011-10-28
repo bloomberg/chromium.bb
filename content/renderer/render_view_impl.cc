@@ -26,7 +26,6 @@
 #include "base/utf_string_conversions.h"
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/clipboard_messages.h"
-#include "content/common/content_constants.h"
 #include "content/common/database_messages.h"
 #include "content/common/drag_messages.h"
 #include "content/common/file_system/file_system_dispatcher.h"
@@ -40,6 +39,7 @@
 #include "content/common/request_extra_data.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -3524,7 +3524,7 @@ void RenderViewImpl::OnFindReplyAck() {
   }
 }
 
-void RenderViewImpl::OnZoom(PageZoom::Function function) {
+void RenderViewImpl::OnZoom(content::PageZoom zoom) {
   if (!webview())  // Not sure if this can happen, but no harm in being safe.
     return;
 
@@ -3532,19 +3532,19 @@ void RenderViewImpl::OnZoom(PageZoom::Function function) {
 #if !defined(TOUCH_UI)
   double old_zoom_level = webview()->zoomLevel();
   double zoom_level;
-  if (function == PageZoom::RESET) {
+  if (zoom == content::PAGE_ZOOM_RESET) {
     zoom_level = 0;
   } else if (static_cast<int>(old_zoom_level) == old_zoom_level) {
     // Previous zoom level is a whole number, so just increment/decrement.
-    zoom_level = old_zoom_level + function;
+    zoom_level = old_zoom_level + zoom;
   } else {
     // Either the user hit the zoom factor limit and thus the zoom level is now
     // not a whole number, or a plugin changed it to a custom value.  We want
     // to go to the next whole number so that the user can always get back to
     // 100% with the keyboard/menu.
-    if ((old_zoom_level > 1 && function > 0) ||
-        (old_zoom_level < 1 && function < 0)) {
-      zoom_level = static_cast<int>(old_zoom_level + function);
+    if ((old_zoom_level > 1 && zoom > 0) ||
+        (old_zoom_level < 1 && zoom < 0)) {
+      zoom_level = static_cast<int>(old_zoom_level + zoom);
     } else {
       // We're going towards 100%, so first go to the next whole number.
       zoom_level = static_cast<int>(old_zoom_level);
@@ -3554,11 +3554,11 @@ void RenderViewImpl::OnZoom(PageZoom::Function function) {
 #else
   double old_page_scale_factor = webview()->pageScaleFactor();
   double page_scale_factor;
-  if (function == PageZoom::RESET) {
+  if (zoom == content::PAGE_ZOOM_RESET) {
     page_scale_factor = 1.0;
   } else {
     page_scale_factor = old_page_scale_factor +
-        (function > 0 ? kScalingIncrement : -kScalingIncrement);
+        (zoom > 0 ? kScalingIncrement : -kScalingIncrement);
   }
   webview()->scalePage(page_scale_factor, WebPoint(0, 0));
 #endif

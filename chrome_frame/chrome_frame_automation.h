@@ -23,7 +23,7 @@
 #include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/plugin_url_request.h"
 #include "chrome_frame/sync_msg_reply_dispatcher.h"
-#include "content/common/page_zoom.h"
+#include "content/public/common/page_zoom.h"
 
 // By a convoluated route, this timeout also winds up being the sync automation
 // message timeout. See the ChromeFrameAutomationProxyImpl ctor and the
@@ -399,7 +399,7 @@ class ChromeFrameAutomationClient
   void RemoveBrowsingData(int remove_mask);
 
   // Sets the current zoom level on the tab.
-  void SetZoomLevel(PageZoom::Function zoom_level);
+  void SetZoomLevel(content::PageZoom zoom_level);
 
   // Fires before unload and unload handlers on the page if any. Allows the
   // the website to put up a confirmation dialog on unload.

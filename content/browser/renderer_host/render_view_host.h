@@ -422,7 +422,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   void SetZoomLevel(double level);
 
   // Changes the zoom level for the current main frame.
-  void Zoom(PageZoom::Function zoom_function);
+  void Zoom(content::PageZoom zoom);
 
   // Reloads the current focused frame.
   void ReloadFrame();

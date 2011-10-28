@@ -19,7 +19,7 @@
 #include "chrome/common/automation_constants.h"
 #include "chrome_frame/cfproxy.h"
 #include "chrome_frame/task_marshaller.h"
-#include "content/common/page_zoom.h"
+#include "content/public/common/page_zoom.h"
 #include "googleurl/src/gurl.h"
 
 class Task;
@@ -116,7 +116,7 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
   virtual void ConnectToExternalTab(uint64 external_tab_cookie);
   virtual void BlockExternalTab(uint64 cookie);
 
-  void SetZoomLevel(PageZoom::Function zoom_level);
+  void SetZoomLevel(content::PageZoom zoom_level);
 
  private:
   BEGIN_MSG_MAP(ExternalTabProxy)

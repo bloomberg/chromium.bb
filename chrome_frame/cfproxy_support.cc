@@ -116,7 +116,7 @@ void Interface2IPCMessage::Tab_MenuCommand(int tab, int selected_command) {
       tab, selected_command));
 }
 
-void Interface2IPCMessage::Tab_Zoom(int tab, PageZoom::Function zoom_level) {
+void Interface2IPCMessage::Tab_Zoom(int tab, content::PageZoom zoom_level) {
   sender_->Send(new AutomationMsg_SetZoomLevel(tab, zoom_level));
 }
 

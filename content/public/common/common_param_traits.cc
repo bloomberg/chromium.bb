@@ -4,7 +4,7 @@
 
 #include "content/public/common/common_param_traits.h"
 
-#include "content/common/content_constants.h"
+#include "content/public/common/content_constants.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"

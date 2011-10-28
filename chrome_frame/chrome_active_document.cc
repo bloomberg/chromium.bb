@@ -35,7 +35,7 @@
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/page_zoom.h"
+#include "content/public/common/page_zoom.h"
 #include "grit/generated_resources.h"
 
 DEFINE_GUID(CGID_DocHostCmdPriv, 0x000214D4L, 0, 0, 0xC0, 0, 0, 0, 0, 0, 0,
@@ -896,9 +896,9 @@ void ChromeActiveDocument::OnSetZoomRange(const GUID* cmd_group_guid,
 
   if (in_args && V_VT(in_args) == VT_I4 && IsValid()) {
     if (in_args->lVal == kZoomIn) {
-      automation_client_->SetZoomLevel(PageZoom::ZOOM_IN);
+      automation_client_->SetZoomLevel(content::PAGE_ZOOM_IN);
     } else if (in_args->lVal == kZoomOut) {
-      automation_client_->SetZoomLevel(PageZoom::ZOOM_OUT);
+      automation_client_->SetZoomLevel(content::PAGE_ZOOM_OUT);
     } else {
       DLOG(WARNING) << "Unsupported zoom level:" << in_args->lVal;
     }

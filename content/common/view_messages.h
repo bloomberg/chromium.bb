@@ -11,10 +11,10 @@
 #include "content/common/css_colors.h"
 #include "content/common/edit_command.h"
 #include "content/common/navigation_gesture.h"
-#include "content/common/page_zoom.h"
 #include "content/common/renderer_preferences.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/page_zoom.h"
 #include "content/public/common/webkit_param_traits.h"
 #include "content/public/common/window_container_type.h"
 #include "ipc/ipc_channel_handle.h"
@@ -51,7 +51,7 @@
 
 IPC_ENUM_TRAITS(CSSColors::CSSColorName)
 IPC_ENUM_TRAITS(NavigationGesture)
-IPC_ENUM_TRAITS(PageZoom::Function)
+IPC_ENUM_TRAITS(content::PageZoom)
 IPC_ENUM_TRAITS(RendererPreferencesHintingEnum)
 IPC_ENUM_TRAITS(RendererPreferencesSubpixelRenderingEnum)
 IPC_ENUM_TRAITS(ViewHostMsg_AccEvent::Value)
@@ -912,7 +912,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SelectPopupMenuItem,
 // changes, a ViewHostMsg_DidZoomURL message will be sent back to the browser
 // telling it what url got zoomed and what its current zoom level is.
 IPC_MESSAGE_ROUTED1(ViewMsg_Zoom,
-                    PageZoom::Function /* function */)
+                    content::PageZoom /* function */)
 
 // Set the zoom level for the current main frame.  If the level actually
 // changes, a ViewHostMsg_DidZoomURL message will be sent back to the browser

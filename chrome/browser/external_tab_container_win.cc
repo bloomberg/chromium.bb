@@ -44,11 +44,11 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/public/browser/notification_service.h"
-#include "content/common/page_zoom.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/page_zoom.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1047,13 +1047,13 @@ bool ExternalTabContainer::AcceleratorPressed(
   int command_id = iter->second;
   switch (command_id) {
     case IDC_ZOOM_PLUS:
-      host->Zoom(PageZoom::ZOOM_IN);
+      host->Zoom(content::PAGE_ZOOM_IN);
       break;
     case IDC_ZOOM_NORMAL:
-      host->Zoom(PageZoom::RESET);
+      host->Zoom(content::PAGE_ZOOM_RESET);
       break;
     case IDC_ZOOM_MINUS:
-      host->Zoom(PageZoom::ZOOM_OUT);
+      host->Zoom(content::PAGE_ZOOM_OUT);
       break;
     case IDC_DEV_TOOLS:
       DevToolsWindow::ToggleDevToolsWindow(

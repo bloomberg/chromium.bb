@@ -73,7 +73,7 @@ struct MockProxy : public ChromeProxy {
       FindInPageDirection forward, FindInPageCase match_case, bool find_next));
   MOCK_METHOD2(Tab_MenuCommand, void(int tab, int selected_command));
 
-  MOCK_METHOD2(Tab_Zoom, void(int tab, PageZoom::Function zoom_level));
+  MOCK_METHOD2(Tab_Zoom, void(int tab, content::PageZoom zoom_level));
   MOCK_METHOD2(Tab_FontSize, void(int tab, AutomationPageFontSize font_size));
   MOCK_METHOD3(Tab_SetInitialFocus, void(int tab, bool reverse,
       bool restore_focus_to_view));

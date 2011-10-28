@@ -10,7 +10,7 @@
 #include "chrome/common/chrome_plugin_messages.h"
 #include "chrome/default_plugin/plugin_main.h"
 #include "content/common/child_thread.h"
-#include "content/common/content_constants.h"
+#include "content/public/common/content_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/webkit_strings.h"
 #include "unicode/locid.h"
