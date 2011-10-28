@@ -562,7 +562,7 @@
   fun:Replace_memcpy
   fun:memcpy
   fun:media::CopyPlane
-  fun:media::Copy*Plane
+  ...
   fun:media::FFmpegVideoDecodeEngine::DecodeFrame
   fun:media::FFmpegVideoDecodeEngine::ConsumeVideoSample
 }
@@ -572,14 +572,23 @@
   fun:frame_worker_thread
 }
 {
-   bug_93932_e
-   ThreadSanitizer:Race
-   ...
-   fun:frame_thread_free
-   fun:avcodec_close
-   fun:media::FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine
-   fun:scoped_ptr::reset
-   fun:media::FFmpegVideoDecodeEngineTest::~FFmpegVideoDecodeEngineTest
+  bug_93932_e
+  ThreadSanitizer:Race
+  ...
+  fun:frame_thread_free
+  fun:avcodec_close
+  fun:media::FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine
+  fun:scoped_ptr::reset
+  fun:media::FFmpegVideoDecodeEngineTest::~FFmpegVideoDecodeEngineTest
+}
+{
+  bug_93932_f
+  ThreadSanitizer:Race
+  fun:submit_packet
+  fun:ff_thread_decode_frame
+  fun:avcodec_decode_video2
+  fun:avcodec_decode_video2
+  fun:media::FFmpegVideoDecodeEngine::DecodeFrame
 }
 {
    bug_95509
@@ -630,32 +639,4 @@
   fun:disk_cache::BackendImpl::GetEntryCount
   fun:DiskCacheBackendTest::BackendTrimInvalidEntry2
   fun:DiskCacheBackendTest_*
-}
-{
-   <Put your suppression name here>
-   ThreadSanitizer:Race
-   fun:Replace_memcpy
-   fun:memcpy
-   fun:media::CopyPlane
-   fun:media::CopyVPlane
-   fun:media::FFmpegVideoDecodeEngine::DecodeFrame
-   fun:media::FFmpegVideoDecodeEngine::ConsumeVideoSample
-   fun:media::FFmpegVideoDecoder::OnReadCompleteTask
-   fun:base::internal::Invoker2::DoInvoke
-   fun:base::Callback::Run
-   fun:MessageLoop::RunTask
-}
-{
-   <Put your suppression name here>
-   ThreadSanitizer:Race
-   fun:submit_packet
-   fun:ff_thread_decode_frame
-   fun:avcodec_decode_video2
-   fun:avcodec_decode_video2
-   fun:media::FFmpegVideoDecodeEngine::DecodeFrame
-   fun:media::FFmpegVideoDecodeEngine::ConsumeVideoSample
-   fun:media::FFmpegVideoDecoder::OnReadCompleteTask
-   fun:base::internal::Invoker2::DoInvoke
-   fun:base::Callback::Run
-   fun:MessageLoop::RunTask
 }
