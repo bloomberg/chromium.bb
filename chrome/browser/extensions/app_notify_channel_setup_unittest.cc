@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -64,11 +65,53 @@ class TestDelegate : public AppNotifyChannelSetup::Delegate,
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
+class TestUI : public AppNotifyChannelUI {
+ public:
+  TestUI() : delegate_(NULL) {}
+  ~TestUI() {}
+
+  // AppNotifyChannelUI.
+  virtual void PromptSyncSetup(Delegate* delegate) OVERRIDE {
+    CHECK(!delegate_);
+    delegate_ = delegate;
+
+    // If we have a result, post a task to call back the delegate with
+    // it. Otherwise ReportResult can be called manually at some later point.
+    if (setup_result_.get()) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&TestUI::ReportResult,
+                     base::Unretained(this),
+                     *setup_result_));
+    }
+  }
+
+  // This will make us automatically call back the delegate with |result| after
+  // PromptSyncSetup is called.
+  void SetSyncSetupResult(bool result) {
+    setup_result_.reset(new bool);
+    *setup_result_ = result;
+  }
+
+  void ReportResult(bool result) {
+    CHECK(delegate_);
+    delegate_->OnSyncSetupResult(result);
+  }
+
+ private:
+  AppNotifyChannelUI::Delegate* delegate_;
+  scoped_ptr<bool> setup_result_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestUI);
+};
+
 }  // namespace
 
 class AppNotifyChannelSetupTest : public testing::Test {
  public:
-  AppNotifyChannelSetupTest() : ui_thread_(BrowserThread::UI, &message_loop_) {}
+  AppNotifyChannelSetupTest() : ui_thread_(BrowserThread::UI, &message_loop_),
+                                ui_(new TestUI()) {
+  }
 
   virtual ~AppNotifyChannelSetupTest() {}
 
@@ -103,6 +146,7 @@ class AppNotifyChannelSetupTest : public testing::Test {
                                   page_url,
                                   kRouteId,
                                   kCallbackId,
+                                  ui_.release(),
                                   delegate_.AsWeakPtr());
     setup->Start();
     message_loop_.Run();
@@ -114,17 +158,20 @@ class AppNotifyChannelSetupTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   TestingProfile profile_;
   TestDelegate delegate_;
+  scoped_ptr<TestUI> ui_;
 };
 
-TEST_F(AppNotifyChannelSetupTest, NotAvailable) {
+TEST_F(AppNotifyChannelSetupTest, DidNotLogInToSync) {
   GURL url("http://www.google.com");
 
+  ui_->SetSyncSetupResult(false);
   scoped_refptr<AppNotifyChannelSetup > setup =
       new AppNotifyChannelSetup(&profile_,
                                 "1234",
                                 url,
                                 kRouteId,
                                 kCallbackId,
+                                ui_.release(),
                                 delegate_.AsWeakPtr());
   setup->Start();
   message_loop_.Run();

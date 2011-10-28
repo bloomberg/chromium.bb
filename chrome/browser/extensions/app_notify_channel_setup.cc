@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,13 +21,15 @@ AppNotifyChannelSetup::AppNotifyChannelSetup(
     const GURL& requestor_url,
     int return_route_id,
     int callback_id,
+    AppNotifyChannelUI* ui,
     base::WeakPtr<AppNotifyChannelSetup::Delegate> delegate)
     : profile_(profile),
       client_id_(client_id),
       requestor_url_(requestor_url),
       return_route_id_(return_route_id),
       callback_id_(callback_id),
-      delegate_(delegate) {}
+      delegate_(delegate),
+      ui_(ui) {}
 
 AppNotifyChannelSetup::~AppNotifyChannelSetup() {}
 
@@ -52,37 +55,16 @@ static GURL GetChannelServerURL() {
 void AppNotifyChannelSetup::Start() {
   AddRef(); // Balanced in ReportResult.
 
-  GURL channel_server_url = GetChannelServerURL();
-
   // Check if the user is logged in to the browser.
   std::string username = profile_->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
 
-  // TODO(asargent) - If the user is not logged in, we'd like to prompt for
-  // login and if then they sign in, continue as normal. But for now just return
-  // an error. We do this via PostTask instead of immediately calling back the
-  // delegate because it simplifies tests.
-  if (!channel_server_url.is_valid() || username.empty()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        NewRunnableMethod(this,
-                          &AppNotifyChannelSetup::ReportResult,
-                          std::string(),
-                          std::string("not_available")));
-    return;
+  if (username.empty()) {
+    ui_->PromptSyncSetup(this);
+    return; // We'll get called back in OnSyncSetupResult
   }
 
-  url_fetcher_.reset(content::URLFetcher::Create(
-      0, channel_server_url, content::URLFetcher::POST, this));
-
-  // TODO(asargent) - we eventually want this to use the browser login
-  // credentials instead of the regular cookie store, but for now to aid server
-  // development, we're just using the regular cookie store.
-  url_fetcher_->SetRequestContext(profile_->GetRequestContext());
-  std::string data = "client_id=" + EscapeUrlEncodedData(client_id_, true);
-  url_fetcher_->SetUploadData("application/x-www-form-urlencoded", data);
-  url_fetcher_->Start();
+  BeginFetch();
 }
 
 void AppNotifyChannelSetup::OnURLFetchComplete(
@@ -97,6 +79,40 @@ void AppNotifyChannelSetup::OnURLFetchComplete(
   } else {
     ReportResult("", "channel_service_error");
   }
+}
+
+void AppNotifyChannelSetup::OnSyncSetupResult(bool enabled) {
+  if (enabled) {
+    BeginFetch();
+  } else {
+    ReportResult("", "not_available");
+  }
+}
+
+void AppNotifyChannelSetup::BeginFetch() {
+  GURL channel_server_url = GetChannelServerURL();
+
+  // We return the error via PostTask instead of immediately calling back the
+  // delegate because it simplifies tests.
+  if (!channel_server_url.is_valid()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&AppNotifyChannelSetup::ReportResult, this,
+                   std::string(), std::string("not_available")));
+    return;
+  }
+
+  url_fetcher_.reset(content::URLFetcher::Create(
+      0, channel_server_url, content::URLFetcher::POST, this));
+
+  // TODO(asargent) - we eventually want this to use the browser login
+  // credentials instead of the regular cookie store, but for now to aid server
+  // development, we're just using the regular cookie store.
+  url_fetcher_->SetRequestContext(profile_->GetRequestContext());
+  std::string data = "client_id=" + EscapeUrlEncodedData(client_id_, true);
+  url_fetcher_->SetUploadData("application/x-www-form-urlencoded", data);
+  url_fetcher_->Start();
 }
 
 void AppNotifyChannelSetup::ReportResult(

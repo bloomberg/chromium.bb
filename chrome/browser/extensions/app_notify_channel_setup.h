@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/app_notify_channel_ui.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
@@ -17,6 +18,7 @@ class Profile;
 // app to use when sending server push notifications.
 class AppNotifyChannelSetup
     : public content::URLFetcherDelegate,
+      public AppNotifyChannelUI::Delegate,
       public base::RefCountedThreadSafe<AppNotifyChannelSetup> {
  public:
   class Delegate {
@@ -30,26 +32,31 @@ class AppNotifyChannelSetup
                                                int callback_id) = 0;
   };
 
+  // Ownership of |ui| is transferred to this object.
   AppNotifyChannelSetup(Profile* profile,
                         const std::string& client_id,
                         const GURL& requestor_url,
                         int return_route_id,
                         int callback_id,
+                        AppNotifyChannelUI* ui,
                         base::WeakPtr<Delegate> delegate);
 
   // This begins the process of fetching the channel id using the browser login
-  // credentials. If the user isn't logged in to chrome, this will first cause a
-  // prompt to appear asking the user to log in.
+  // credentials (or using |ui_| to prompt for login if needed).
   void Start();
 
  protected:
   // content::URLFetcherDelegate.
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
+  // AppNotifyChannelUI::Delegate.
+  virtual void OnSyncSetupResult(bool enabled) OVERRIDE;
+
  private:
   friend class base::RefCountedThreadSafe<AppNotifyChannelSetup>;
-
   virtual ~AppNotifyChannelSetup();
+
+  void BeginFetch();
 
   void ReportResult(const std::string& channel_id, const std::string& error);
 
@@ -60,6 +67,7 @@ class AppNotifyChannelSetup
   int callback_id_;
   base::WeakPtr<Delegate> delegate_;
   scoped_ptr<content::URLFetcher> url_fetcher_;
+  scoped_ptr<AppNotifyChannelUI> ui_;
 
   DISALLOW_COPY_AND_ASSIGN(AppNotifyChannelSetup);
 };

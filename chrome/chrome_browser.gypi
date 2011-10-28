@@ -946,6 +946,8 @@
         'browser/extensions/app_notification.h',
         'browser/extensions/app_notification_manager.cc',
         'browser/extensions/app_notification_manager.h',
+        'browser/extensions/app_notify_channel_ui.cc',
+        'browser/extensions/app_notify_channel_ui.h',
         'browser/extensions/app_notify_channel_setup.cc',
         'browser/extensions/app_notify_channel_setup.h',
         'browser/extensions/app_notification_storage.cc',

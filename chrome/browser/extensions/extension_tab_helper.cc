@@ -187,12 +187,16 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
     return;
   }
 
+  AppNotifyChannelUI* ui = new AppNotifyChannelUIImpl(
+      GetBrowser(), tab_contents_wrapper(), extension->name());
+
   scoped_refptr<AppNotifyChannelSetup> channel_setup(
       new AppNotifyChannelSetup(profile,
                                 client_id,
                                 requestor_url,
                                 return_route_id,
                                 callback_id,
+                                ui,
                                 this->AsWeakPtr()));
   channel_setup->Start();
   // We'll get called back in AppNotifyChannelSetupComplete.
