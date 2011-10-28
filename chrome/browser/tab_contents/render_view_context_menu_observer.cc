@@ -11,6 +11,10 @@ bool RenderViewContextMenuObserver::IsCommandIdSupported(int command_id) {
   return false;
 }
 
+bool RenderViewContextMenuObserver::IsCommandIdChecked(int command_id) {
+  return false;
+}
+
 bool RenderViewContextMenuObserver::IsCommandIdEnabled(int command_id) {
   return false;
 }

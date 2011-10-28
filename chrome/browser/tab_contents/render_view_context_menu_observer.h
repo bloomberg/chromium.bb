@@ -93,6 +93,7 @@ class RenderViewContextMenuObserver {
   // Called when the RenderViewContextMenu class sets the initial status of the
   // specified context-menu item. If we need to enable or disable a context-menu
   // item while showing, use RenderViewContextMenuDelegate::UpdateMenuItem().
+  virtual bool IsCommandIdChecked(int command_id);
   virtual bool IsCommandIdEnabled(int command_id);
 
   // Called when a user selects the specified context-menu item.

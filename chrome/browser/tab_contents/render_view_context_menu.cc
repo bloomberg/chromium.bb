@@ -39,6 +39,7 @@
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
+#include "chrome/browser/tab_contents/spellchecker_submenu_observer.h"
 #include "chrome/browser/tab_contents/spelling_menu_observer.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
@@ -227,7 +228,6 @@ RenderViewContextMenu::RenderViewContextMenu(
       profile_(Profile::FromBrowserContext(tab_contents->browser_context())),
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
       external_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(spellcheck_submenu_model_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(speech_input_submenu_model_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(bidi_submenu_model_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(protocol_handler_submenu_model_(this)),
@@ -574,20 +574,13 @@ void RenderViewContextMenu::InitMenu() {
   }
 
   if (params_.is_editable) {
-    // Add a menu item that shows suggestions from the Spelling service.
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
-      PrefService* pref = profile_->GetPrefs();
-      bool use_spelling_service =
-          pref && pref->GetBoolean(prefs::kSpellCheckUseSpellingService);
-      if (use_spelling_service) {
-        if (!spelling_menu_observer_.get())
-            spelling_menu_observer_.reset(new SpellingMenuObserver(this));
-
-        if (spelling_menu_observer_.get())
-          observers_.AddObserver(spelling_menu_observer_.get());
-      }
+    // Add a menu item that shows suggestions.
+    if (!spelling_menu_observer_.get()) {
+      spelling_menu_observer_.reset(
+          new SpellingMenuObserver(this));
     }
+    if (spelling_menu_observer_.get())
+      observers_.AddObserver(spelling_menu_observer_.get());
   }
 
   // Ask our observers to add their menu items.
@@ -618,6 +611,12 @@ void RenderViewContextMenu::AddMenuItem(int command_id,
   menu_model_.AddItem(command_id, title);
 }
 
+void RenderViewContextMenu::AddSubMenu(int command_id,
+                                       const string16& label,
+                                       ui::MenuModel* model) {
+  menu_model_.AddSubMenu(command_id, label, model);
+}
+
 void RenderViewContextMenu::UpdateMenuItem(int command_id,
                                            bool enabled,
                                            bool hidden,
@@ -625,7 +624,6 @@ void RenderViewContextMenu::UpdateMenuItem(int command_id,
   // This function needs platform-specific implementation.
   NOTIMPLEMENTED();
 }
-
 
 RenderViewHost* RenderViewContextMenu::GetRenderViewHost() const {
   return source_tab_contents_->render_view_host();
@@ -908,50 +906,14 @@ void RenderViewContextMenu::AppendEditableItems() {
 }
 
 void RenderViewContextMenu::AppendSpellcheckOptionsSubMenu() {
-  // Add Spell Check languages to sub menu.
-  std::vector<std::string> spellcheck_languages;
-  SpellCheckHost::GetSpellCheckLanguages(profile_,
-      &spellcheck_languages);
-  DCHECK(spellcheck_languages.size() <
-         IDC_SPELLCHECK_LANGUAGES_LAST - IDC_SPELLCHECK_LANGUAGES_FIRST);
-  const std::string app_locale = g_browser_process->GetApplicationLocale();
-  for (size_t i = 0; i < spellcheck_languages.size(); ++i) {
-    string16 display_name(l10n_util::GetDisplayNameForLocale(
-        spellcheck_languages[i], app_locale, true));
-    spellcheck_submenu_model_.AddRadioItem(
-        IDC_SPELLCHECK_LANGUAGES_FIRST + i,
-        display_name,
-        kSpellcheckRadioGroup);
+  if (!spellchecker_submenu_observer_.get()) {
+    spellchecker_submenu_observer_.reset(new SpellCheckerSubMenuObserver(
+        this, this, kSpellcheckRadioGroup));
   }
-
-  // Add item in the sub menu to pop up the fonts and languages options menu.
-  spellcheck_submenu_model_.AddSeparator();
-  spellcheck_submenu_model_.AddItemWithStringId(
-      IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS,
-      IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS);
-
-  // Add 'Check the spelling of this field' item in the sub menu.
-  spellcheck_submenu_model_.AddCheckItem(
-      IDC_CHECK_SPELLING_OF_THIS_FIELD,
-      l10n_util::GetStringUTF16(
-          IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD));
-
-  // Add option for showing the spelling panel if the platform spellchecker
-  // supports it.
-  if (SpellCheckerPlatform::SpellCheckerAvailable() &&
-      SpellCheckerPlatform::SpellCheckerProvidesPanel()) {
-    spellcheck_submenu_model_.AddCheckItem(
-        IDC_SPELLPANEL_TOGGLE,
-        l10n_util::GetStringUTF16(
-            SpellCheckerPlatform::SpellingPanelVisible() ?
-                IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL :
-                IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL));
+  if (spellchecker_submenu_observer_.get()) {
+    spellchecker_submenu_observer_->InitMenu(params_);
+    observers_.AddObserver(spellchecker_submenu_observer_.get());
   }
-
-  menu_model_.AddSubMenu(
-      IDC_SPELLCHECK_MENU,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLCHECK_MENU),
-      &spellcheck_submenu_model_);
 }
 
 void RenderViewContextMenu::AppendSpeechInputOptionsSubMenu() {
@@ -1340,6 +1302,15 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 }
 
 bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
+  // If this command is is added by one of our observers, we dispatch it to the
+  // observer.
+  ObserverListBase<RenderViewContextMenuObserver>::Iterator it(observers_);
+  RenderViewContextMenuObserver* observer;
+  while ((observer = it.GetNext()) != NULL) {
+    if (observer->IsCommandIdSupported(id))
+      return observer->IsCommandIdChecked(id);
+  }
+
   // See if the video is set to looping.
   if (id == IDC_CONTENT_CONTEXT_LOOP) {
     return (params_.media_flags &
@@ -1381,27 +1352,13 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
       return false;
 #endif  // OS_MACOSX
 
-  // Check box for 'Check the Spelling of this field'.
-  if (id == IDC_CHECK_SPELLING_OF_THIS_FIELD) {
-    return (params_.spellcheck_enabled &&
-            profile_->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
-  }
-
   // Check box for menu item 'Block offensive words'.
   if (id == IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES) {
     return profile_->GetPrefs()->GetBoolean(
         prefs::kSpeechInputFilterProfanities);
   }
 
-  // Don't bother getting the display language vector if this isn't a spellcheck
-  // language.
-  if ((id < IDC_SPELLCHECK_LANGUAGES_FIRST) ||
-      (id >= IDC_SPELLCHECK_LANGUAGES_LAST))
-    return false;
-
-  std::vector<std::string> languages;
-  return SpellCheckHost::GetSpellCheckLanguages(profile_, &languages) ==
-      (id - IDC_SPELLCHECK_LANGUAGES_FIRST);
+  return false;
 }
 
 void RenderViewContextMenu::ExecuteCommand(int id) {
@@ -1416,21 +1373,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
   while ((observer = it.GetNext()) != NULL) {
     if (observer->IsCommandIdSupported(id))
       return observer->ExecuteCommand(id);
-  }
-
-  // Check to see if one of the spell check language ids have been clicked.
-  if (id >= IDC_SPELLCHECK_LANGUAGES_FIRST &&
-      id < IDC_SPELLCHECK_LANGUAGES_LAST) {
-    const size_t language_number = id - IDC_SPELLCHECK_LANGUAGES_FIRST;
-    std::vector<std::string> languages;
-    SpellCheckHost::GetSpellCheckLanguages(profile_, &languages);
-    if (language_number < languages.size()) {
-      StringPrefMember dictionary_language;
-      dictionary_language.Init(prefs::kSpellCheckDictionary,
-          profile_->GetPrefs(), NULL);
-      dictionary_language.SetValue(languages[language_number]);
-    }
-    return;
   }
 
   RenderViewHost* rvh = source_tab_contents_->render_view_host();
@@ -1761,10 +1703,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         spellcheck_host->GetMetrics()->RecordReplacedWordStats(1);
       break;
     }
-    case IDC_CHECK_SPELLING_OF_THIS_FIELD: {
-      rvh->Send(new SpellCheckMsg_ToggleSpellCheck(rvh->routing_id()));
-      break;
-    }
     case IDC_SPELLCHECK_ADD_TO_DICTIONARY: {
       // GetSpellCheckHost() can return null when the suggested word is
       // provided by Web SpellCheck API.
@@ -1781,12 +1719,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       std::string url = std::string(chrome::kChromeUISettingsURL) +
           chrome::kLanguageOptionsSubPage;
       OpenURL(GURL(url), GURL(), 0, disposition, content::PAGE_TRANSITION_LINK);
-      break;
-    }
-
-    case IDC_SPELLPANEL_TOGGLE: {
-      rvh->Send(new SpellCheckMsg_ToggleSpellPanel(
-          rvh->routing_id(), SpellCheckerPlatform::SpellingPanelVisible()));
       break;
     }
 

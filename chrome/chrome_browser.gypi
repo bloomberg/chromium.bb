@@ -2320,6 +2320,8 @@
         'browser/tab_contents/tab_util.h',
         'browser/tab_contents/thumbnail_generator.cc',
         'browser/tab_contents/thumbnail_generator.h',
+        'browser/tab_contents/spellchecker_submenu_observer.cc',
+        'browser/tab_contents/spellchecker_submenu_observer.h',
         'browser/tab_contents/spelling_menu_observer.cc',
         'browser/tab_contents/spelling_menu_observer.h',
         'browser/tab_contents/web_drag_bookmark_handler_gtk.cc',
