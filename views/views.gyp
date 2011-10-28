@@ -716,6 +716,8 @@
         'examples/native_theme_checkbox_example.h',
         'examples/native_widget_views_example.cc',
         'examples/native_widget_views_example.h',
+        'examples/progress_bar_example.cc',
+        'examples/progress_bar_example.h',
         'examples/radio_button_example.cc',
         'examples/radio_button_example.h',
         'examples/scroll_view_example.cc',
