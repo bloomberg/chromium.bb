@@ -1121,7 +1121,7 @@ const char* const kSwitchesToAddOnAutorestart[] = {
   switches::kNoStartupWindow
 };
 
-void BrowserProcessImpl::RestartPersistentInstance() {
+void BrowserProcessImpl::RestartBackgroundInstance() {
   CommandLine* old_cl = CommandLine::ForCurrentProcess();
   scoped_ptr<CommandLine> new_cl(new CommandLine(old_cl->GetProgram()));
 
@@ -1158,7 +1158,7 @@ void BrowserProcessImpl::RestartPersistentInstance() {
 void BrowserProcessImpl::OnAutoupdateTimer() {
   if (CanAutorestartForUpdate()) {
     DLOG(WARNING) << "Detected update.  Restarting browser.";
-    RestartPersistentInstance();
+    RestartBackgroundInstance();
   }
 }
 

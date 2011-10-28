@@ -304,7 +304,7 @@ class BrowserProcessImpl : public BrowserProcess,
   // restarted, and if that's the case, restarts the browser.
   void OnAutoupdateTimer();
   bool CanAutorestartForUpdate() const;
-  void RestartPersistentInstance();
+  void RestartBackgroundInstance();
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS)
