@@ -97,6 +97,7 @@ enum IPCMessageStart {
   ChromeBenchmarkingMsgStart,
   IntentsMsgStart,
   JavaBridgeMsgStart,
+  GamepadMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 
