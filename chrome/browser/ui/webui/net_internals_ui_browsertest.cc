@@ -274,23 +274,24 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsExportImportDump) {
 // dns_view.js
 ////////////////////////////////////////////////////////////////////////////////
 
+// TODO: These tests started timing out somewhere around webkit 98733:98738.
 // Adds a successful lookup to the DNS cache, then clears the cache.
-IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDnsViewSuccess) {
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, FAILS_NetInternalsDnsViewSuccess) {
   EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsDnsViewSuccess"));
 }
 
 // Adds a failed lookup to the DNS cache, then clears the cache.
-IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDnsViewFail) {
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, FAILS_NetInternalsDnsViewFail) {
   EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsDnsViewFail"));
 }
 
 // Adds an expired successful lookup to the DNS cache, then clears the cache.
-IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDnsViewExpired) {
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, FAILS_NetInternalsDnsViewExpired) {
   EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsDnsViewExpired"));
 }
 
 // Adds two entries to the DNS cache, clears the cache, and then repeats.
-IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDnsViewAddTwoTwice) {
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, FAILS_NetInternalsDnsViewAddTwoTwice) {
   EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsDnsViewAddTwoTwice"));
 }
 
