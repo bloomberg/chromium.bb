@@ -17,6 +17,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/aura/aura_export.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/layer_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
@@ -27,6 +28,7 @@ namespace ui {
 class Animation;
 class Compositor;
 class Layer;
+class LayerAnimationSequence;
 class Transform;
 class ViewProp;
 }
@@ -268,10 +270,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // the property does not exist.
   void* GetProperty(const char* name) const;
 
-  // Returns an animation configured with the default duration. All animations
-  // should use this. Caller owns returned value.
-  static ui::Animation* CreateDefaultAnimation();
-
  protected:
   // Returns the desktop or NULL if we aren't yet attached to a desktop.
   virtual Desktop* GetDesktop();
@@ -309,7 +307,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnLayerAnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void OnLayerAnimationEnded(
+      const ui::LayerAnimationSequence* animation) OVERRIDE;
 
   int type_;
 

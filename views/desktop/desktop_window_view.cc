@@ -7,9 +7,10 @@
 #include "base/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/transform.h"
+#include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/compositor/layer_animator.h"
 #include "views/desktop/desktop_background.h"
 #include "views/desktop/desktop_window_manager.h"
-#include "views/layer_property_setter.h"
 #include "views/widget/native_widget_view.h"
 #include "views/widget/native_widget_views.h"
 #include "views/widget/widget.h"
@@ -160,12 +161,20 @@ void DesktopWindowView::CreateTestWindow(const string16& title,
       initial_bounds);
   window->Show();
 
+  NativeWidgetViews* native_widget_views =
+      static_cast<NativeWidgetViews*>(window->native_widget());
+
   if (rotate) {
     ui::Transform transform;
     transform.SetRotate(90.0f);
     transform.SetTranslateX(window->GetWindowScreenBounds().width());
-    static_cast<NativeWidgetViews*>(window->native_widget())->GetView()->
-        SetTransform(transform);
+    native_widget_views->GetView()->SetTransform(transform);
+  }
+
+  native_widget_views->GetView()->SetPaintToLayer(true);
+  if (native_widget_views->GetView()->layer()) {
+    native_widget_views->GetView()->layer()->SetAnimator(
+        ui::LayerAnimator::CreateImplicitAnimator());
   }
 }
 

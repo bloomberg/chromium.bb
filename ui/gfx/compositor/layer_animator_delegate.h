@@ -6,22 +6,23 @@
 #define UI_GFX_COMPOSITOR_LAYER_ANIMATOR_DELEGATE_H_
 #pragma once
 
+#include "ui/gfx/rect.h"
+#include "ui/gfx/transform.h"
 #include "ui/gfx/compositor/compositor_export.h"
-
-namespace gfx {
-class Rect;
-}
+#include "ui/gfx/compositor/layer_animation_delegate.h"
 
 namespace ui {
 
-class Transform;
+class LayerAnimationSequence;
 
-// LayerAnimator modifies the Layer using this interface.
-class COMPOSITOR_EXPORT LayerAnimatorDelegate {
+// Layer animators interact with the layers using this interface.
+class COMPOSITOR_EXPORT LayerAnimatorDelegate : public LayerAnimationDelegate {
  public:
-  virtual void SetBoundsFromAnimator(const gfx::Rect& bounds) = 0;
-  virtual void SetTransformFromAnimator(const Transform& transform) = 0;
-  virtual void SetOpacityFromAnimator(float opacity) = 0;
+  // Called when the |sequence| ends. Not called if |sequence| is aborted.
+  virtual void OnLayerAnimationEnded(LayerAnimationSequence* sequence) = 0;
+
+  // if this becomes necessary, this would be the appropriate place to add
+  // notifications about elements starting or ending, or sequences starting.
 
  protected:
   virtual ~LayerAnimatorDelegate() {}
@@ -29,4 +30,4 @@ class COMPOSITOR_EXPORT LayerAnimatorDelegate {
 
 }  // namespace ui
 
-#endif  // UI_GFX_COMPOSITOR_LAYER_H_
+#endif  // UI_GFX_COMPOSITOR_LAYER_ANIMATOR_DELEGATE_H_

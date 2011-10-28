@@ -18,6 +18,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/point3.h"
@@ -25,7 +26,6 @@
 #include "views/background.h"
 #include "views/context_menu_controller.h"
 #include "views/drag_controller.h"
-#include "views/layer_property_setter.h"
 #include "views/layout/layout_manager.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_private.h"
@@ -424,7 +424,7 @@ const ui::Transform& View::GetTransform() const {
 void View::SetTransform(const ui::Transform& transform) {
   if (!transform.HasChange()) {
     if (layer()) {
-      layer_property_setter_->SetTransform(layer(), transform);
+      layer()->SetTransform(transform);
       if (!paint_to_layer_)
         DestroyLayer();
     } else {
@@ -433,7 +433,7 @@ void View::SetTransform(const ui::Transform& transform) {
   } else {
     if (!layer())
       CreateLayer();
-    layer_property_setter_->SetTransform(layer(), transform);
+    layer()->SetTransform(transform);
     layer()->ScheduleDraw();
   }
 }
@@ -445,20 +445,6 @@ void View::SetPaintToLayer(bool paint_to_layer) {
   } else if (!paint_to_layer_ && layer()) {
     DestroyLayer();
   }
-}
-
-void View::SetLayerPropertySetter(LayerPropertySetter* setter) {
-  DCHECK(layer());
-  LayerPropertySetter* old_setter = layer_property_setter_.get();
-  if (!layer() || (old_setter && old_setter == setter))
-    return;
-  if (!setter)
-    setter = LayerPropertySetter::CreateDefaultSetter();
-
-  if (old_setter)
-    old_setter->Uninstalled(layer());
-  layer_property_setter_.reset(setter);
-  layer_property_setter_->Installed(layer());
 }
 
 // RTL positioning -------------------------------------------------------------
@@ -1157,8 +1143,7 @@ void View::UpdateChildLayerVisibility(bool ancestor_visible) {
 
 void View::UpdateChildLayerBounds(const gfx::Point& offset) {
   if (layer()) {
-    layer_property_setter_->SetBounds(layer(), gfx::Rect(offset.x(), offset.y(),
-                                                         width(), height()));
+    layer()->SetBounds(gfx::Rect(offset.x(), offset.y(), width(), height()));
   } else {
     for (int i = 0, count = child_count(); i < count; ++i) {
       gfx::Point new_offset(offset.x() + child_at(i)->x(),
@@ -1174,7 +1159,7 @@ void View::OnPaintLayer(gfx::Canvas* canvas) {
   PaintCommon(canvas);
 }
 
-void View::OnLayerAnimationEnded(const ui::Animation* animation) {
+void View::OnLayerAnimationEnded(const ui::LayerAnimationSequence* animation) {
 }
 
 void View::ReorderLayers() {
@@ -1599,9 +1584,9 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
         gfx::Point offset;
         parent_->CalculateOffsetToAncestorWithLayer(&offset, NULL);
         offset.Offset(x(), y());
-        layer_property_setter_->SetBounds(layer(), gfx::Rect(offset, size()));
+        layer()->SetBounds(gfx::Rect(offset, size()));
       } else {
-        layer_property_setter_->SetBounds(layer(), bounds_);
+        layer()->SetBounds(bounds_);
       }
       // TODO(beng): this seems redundant with the SchedulePaint at the top of
       //             this function. explore collapsing.
@@ -1785,10 +1770,6 @@ void View::CreateLayer() {
 
   layer_.reset(new ui::Layer(NULL));
   layer_->set_delegate(this);
-  if (layer_property_setter_.get())
-    layer_property_setter_->Installed(layer());
-  else
-    SetLayerPropertySetter(NULL);
 
   UpdateParentLayers();
   UpdateLayerVisibility();
@@ -1858,9 +1839,6 @@ void View::DestroyLayer() {
     if (new_parent)
       new_parent->Add(children[i]);
   }
-
-  if (layer_property_setter_.get())
-    layer_property_setter_->Uninstalled(layer());
 
   layer_.reset();
 
