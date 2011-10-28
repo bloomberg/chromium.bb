@@ -200,6 +200,8 @@ class NewNonFrontendDataTypeControllerTest : public testing::Test {
   }
 
   void SetStartFailExpectations(DataTypeController::StartResult result) {
+    EXPECT_CALL(*dtc_mock_, StopLocalServiceAsync());
+    EXPECT_CALL(syncable_service_, StopSyncing(_));
     EXPECT_CALL(*dtc_mock_, StopModels());
     EXPECT_CALL(*dtc_mock_, RecordStartFailure(result));
     EXPECT_CALL(start_callback_, Run(result,_));
@@ -259,7 +261,9 @@ TEST_F(NewNonFrontendDataTypeControllerTest, StartFirstRun) {
 
 TEST_F(NewNonFrontendDataTypeControllerTest, AbortDuringStartModels) {
   EXPECT_CALL(*dtc_mock_, StartModels()).WillOnce(Return(false));
-  SetStartFailExpectations(DataTypeController::ABORTED);
+  EXPECT_CALL(*dtc_mock_, StopModels());
+  EXPECT_CALL(*dtc_mock_, RecordStartFailure(DataTypeController::ABORTED));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED,_));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
   new_non_frontend_dtc_->Start(
       NewCallback(&start_callback_, &StartCallback::Run));
@@ -284,7 +288,6 @@ TEST_F(NewNonFrontendDataTypeControllerTest, StartAssociationFailed) {
                    Return(SyncError(FROM_HERE, "failed", AUTOFILL_PROFILE))));
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   SetStartFailExpectations(DataTypeController::ASSOCIATION_FAILED);
-  EXPECT_CALL(syncable_service_, StopSyncing(_));
   // Set up association to fail with an association failed error.
   EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
   new_non_frontend_dtc_->Start(
@@ -349,8 +352,6 @@ TEST_F(NewNonFrontendDataTypeControllerTest, AbortDuringAssociation) {
   EXPECT_CALL(*change_processor_, Disconnect()).
       WillOnce(DoAll(SignalEvent(&pause_db_thread), Return(true)));
   EXPECT_CALL(service_, DeactivateDataType(_));
-  EXPECT_CALL(*dtc_mock_, StopLocalServiceAsync());
-  EXPECT_CALL(syncable_service_, StopSyncing(_));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
   new_non_frontend_dtc_->Start(
       NewCallback(&start_callback_, &StartCallback::Run));

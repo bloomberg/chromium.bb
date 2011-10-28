@@ -124,7 +124,6 @@ void NewNonFrontendDataTypeController::StartAssociation() {
       new SharedChangeProcessorRef(shared_change_processor_));
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
   if (error.IsSet()) {
-    local_service_->StopSyncing(type());
     StartFailed(ASSOCIATION_FAILED, error);
     return;
   }
@@ -154,8 +153,29 @@ void NewNonFrontendDataTypeController::StartDone(
           error));
 }
 
+void NewNonFrontendDataTypeController::StartDoneImpl(
+    DataTypeController::StartResult result,
+    DataTypeController::State new_state,
+    const SyncError& error) {
+  // If we failed to start up, and we haven't been stopped yet, we need to
+  // ensure we clean up the local service and shared change processor properly.
+  if (new_state != RUNNING && state() != NOT_RUNNING && state() != STOPPING &&
+      shared_change_processor_.get()) {
+    shared_change_processor_->Disconnect();
+    // We release our reference to shared_change_processor on the datatype's
+    // thread.
+    StopLocalServiceAsync();
+  }
+  NonFrontendDataTypeController::StartDoneImpl(result, new_state, error);
+}
+
 void NewNonFrontendDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (state() == NOT_RUNNING) {
+    // Stop() should never be called for datatypes that are already stopped.
+    NOTREACHED();
+    return;
+  }
 
   // Disconnect the change processor. At this point, the SyncableService
   // can no longer interact with the Syncer, even if it hasn't finished
@@ -173,16 +193,18 @@ void NewNonFrontendDataTypeController::Stop() {
     case ASSOCIATING:
       set_state(STOPPING);
       StartDoneImpl(ABORTED, NOT_RUNNING, SyncError());
-      // We continue on to deactivate the datatype.
+      // We continue on to deactivate the datatype and stop the local service.
       break;
     case DISABLED:
-      // If we're disabled we never succeded assocaiting and never activated the
-      // datatype.
+      // If we're disabled we never succeded associating and never activated the
+      // datatype. We would have already stopped the local service in
+      // StartDoneImpl(..).
       set_state(NOT_RUNNING);
       StopModels();
       return;
     default:
-      // Datatype was fully started.
+      // Datatype was fully started. Need to deactivate and stop the local
+      // service.
       DCHECK_EQ(state(), RUNNING);
       set_state(STOPPING);
       StopModels();
