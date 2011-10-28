@@ -433,7 +433,7 @@ void InputMethodMenu::PreferenceUpdateNeeded(
     if (g_browser_process && g_browser_process->local_state()) {
       g_browser_process->local_state()->SetString(
           language_prefs::kPreferredKeyboardLayout, current_input_method.id());
-      g_browser_process->local_state()->SavePersistentPrefs();
+      g_browser_process->local_state()->ScheduleSavePersistentPrefs();
     }
   }
 }

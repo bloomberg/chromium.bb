@@ -122,7 +122,7 @@ bool LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
     // shutdown from login screen. http://crosbug.com/20747
     PrefService* prefs = g_browser_process->local_state();
     prefs->SetString(prefs::kApplicationLocale, locale);
-    prefs->SavePersistentPrefs();
+    prefs->ScheduleSavePersistentPrefs();
 
     return true;
   }

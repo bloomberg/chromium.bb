@@ -227,7 +227,7 @@ void UserManager::SaveImageToLocalState(const std::string& username,
                         new base::FundamentalValue(image_index));
   images_update->SetWithoutPathExpansion(username, image_properties);
   DVLOG(1) << "Saving path to user image in Local State.";
-  local_state->SavePersistentPrefs();
+  local_state->ScheduleSavePersistentPrefs();
 
   NotifyLocalStateChanged();
   content::NotificationService::current()->Notify(
@@ -434,7 +434,7 @@ void UserManager::UserLoggedIn(const std::string& email) {
       logged_in_user_ = *it;
     }
   }
-  prefs->SavePersistentPrefs();
+  prefs->ScheduleSavePersistentPrefs();
   NotifyOnLogin();
   if (current_user_is_new_) {
     SetDefaultUserImage(email);
@@ -518,7 +518,7 @@ void UserManager::RemoveUserFromList(const std::string& email) {
   prefs_oauth_update->GetIntegerWithoutPathExpansion(email, &oauth_status);
   prefs_oauth_update->RemoveWithoutPathExpansion(email, NULL);
 
-  prefs->SavePersistentPrefs();
+  prefs->ScheduleSavePersistentPrefs();
 
   int default_image_id = kDefaultImagesCount;
   if (!IsDefaultImagePath(image_path_string, &default_image_id)) {
@@ -600,7 +600,7 @@ void UserManager::SaveUserOAuthStatus(const std::string& username,
   oauth_status_update->SetWithoutPathExpansion(username,
       new base::FundamentalValue(static_cast<int>(oauth_token_status)));
   DVLOG(1) << "Saving user OAuth token status in Local State.";
-  local_state->SavePersistentPrefs();
+  local_state->ScheduleSavePersistentPrefs();
 }
 
 UserManager::OAuthTokenStatus UserManager::GetUserOAuthStatus(

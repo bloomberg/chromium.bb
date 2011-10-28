@@ -93,11 +93,7 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
 
   g_browser_process->local_state()->SetBoolean(
       prefs::kAccessibilityEnabled, enabled);
-  // Explicitly call SavePersistentPrefs instead of ScheduleSavePersistentPrefs
-  // so that this change gets written immediately, in case the user shuts
-  // down right now.  TODO(dmazzoni) switch this back to
-  // ScheduleSavePersistentPrefs once http://crosbug.com/19491 is fixed.
-  g_browser_process->local_state()->SavePersistentPrefs();
+  g_browser_process->local_state()->ScheduleSavePersistentPrefs();
   ExtensionAccessibilityEventRouter::GetInstance()->
       SetAccessibilityEnabled(enabled);
 
