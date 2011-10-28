@@ -168,6 +168,14 @@ void Speak(const char* speak_str, bool queue, bool interruptible) {
       Speak(speak_str);
 }
 
+void MaybeSpeak(const char* speak_str, bool queue, bool interruptible) {
+  bool accessibility_enabled = g_browser_process &&
+      g_browser_process->local_state()->GetBoolean(
+          prefs::kAccessibilityEnabled);
+  if (accessibility_enabled) {
+    Speak(speak_str, queue, interruptible);
+  }
+}
 
 }  // namespace accessibility
 }  // namespace chromeos
