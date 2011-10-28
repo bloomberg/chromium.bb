@@ -9,8 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
-#include "ui/aura/desktop_observer.h"
 #include "ui/aura_shell/aura_shell_export.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/size.h"
@@ -25,10 +23,11 @@ class Rect;
 }
 
 namespace aura_shell {
+namespace internal {
 class Workspace;
 
 // WorkspaceManager manages multiple workspaces in the desktop.
-class AURA_SHELL_EXPORT WorkspaceManager : public aura::DesktopObserver {
+class AURA_SHELL_EXPORT WorkspaceManager {
  public:
   explicit WorkspaceManager(aura::Window* viewport);
   virtual ~WorkspaceManager();
@@ -60,15 +59,11 @@ class AURA_SHELL_EXPORT WorkspaceManager : public aura::DesktopObserver {
   // Rotate windows by moving |source| window to the position of |target|.
   void RotateWindows(aura::Window* source, aura::Window* target);
 
-  // Overridden from aura::DesktopObserver:
-  virtual void OnDesktopResized(const gfx::Size& new_size) OVERRIDE;
-  virtual void OnActiveWindowChanged(aura::Window* active) OVERRIDE;
+  // Sets the size of a single workspace (all workspaces have the same size).
+  void SetWorkspaceSize(const gfx::Size& workspace_size);
 
  private:
   friend class Workspace;
-  FRIEND_TEST_ALL_PREFIXES(WorkspaceManagerTest, Overview);
-  FRIEND_TEST_ALL_PREFIXES(WorkspaceManagerTest, LayoutWorkspaces);
-  FRIEND_TEST_ALL_PREFIXES(WorkspaceManagerTest, FindRotateWindow);
 
   void AddWorkspace(Workspace* workspace);
   void RemoveWorkspace(Workspace* workspace);
@@ -101,6 +96,7 @@ class AURA_SHELL_EXPORT WorkspaceManager : public aura::DesktopObserver {
   DISALLOW_COPY_AND_ASSIGN(WorkspaceManager);
 };
 
+}  // namespace internal
 }  // namespace aura_shell
 
 #endif  // UI_AURA_SHELL_WORKSPACE_WORKSPACE_MANAGER_H_

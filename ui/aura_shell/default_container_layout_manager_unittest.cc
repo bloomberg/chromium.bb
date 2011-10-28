@@ -11,7 +11,7 @@
 #include "ui/aura/desktop.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/workspace/workspace_manager.h"
+#include "ui/aura_shell/workspace/workspace_controller.h"
 #include "ui/base/view_prop.h"
 #include "views/widget/native_widget_aura.h"
 
@@ -33,13 +33,10 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
     aura::Desktop* desktop = aura::Desktop::GetInstance();
     container_.reset(
         CreateTestWindow(gfx::Rect(0, 0, 500, 400), desktop));
-    workspace_manager_.reset(new WorkspaceManager(container_.get()));
+    workspace_controller_.reset(
+        new internal::WorkspaceController(container_.get()));
 
     desktop->SetHostSize(gfx::Size(500, 400));
-    default_container_layout_manager_ = new DefaultContainerLayoutManager(
-        container_.get(), workspace_manager_.get());
-    // draggable area is 0,0 500x400.
-    container_->SetLayoutManager(default_container_layout_manager_);
   }
 
   aura::Window* CreateTestWindowWithType(const gfx::Rect& bounds,
@@ -67,15 +64,13 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
   aura::Window* container() { return container_.get(); }
 
   DefaultContainerLayoutManager* default_container_layout_manager() {
-    return default_container_layout_manager_;
+    return workspace_controller_->layout_manager();
   }
-
 
  private:
   scoped_ptr<aura::Window> container_;
   ScopedVector<ui::ViewProp> props_;
-  scoped_ptr<aura_shell::WorkspaceManager> workspace_manager_;
-  DefaultContainerLayoutManager* default_container_layout_manager_;
+  scoped_ptr<aura_shell::internal::WorkspaceController> workspace_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultContainerLayoutManagerTest);
 };

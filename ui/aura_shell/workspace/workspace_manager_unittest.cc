@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/workspace/workspace_manager.h"
 #include "ui/aura_shell/workspace/workspace.h"
-
-#include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/test_desktop_delegate.h"
+#include "ui/aura_shell/workspace/workspace_manager.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/screen_aura.h"
+#include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/test_desktop_delegate.h"
 #include "ui/aura/window.h"
 
-namespace {
+using aura::Window;
+
+namespace aura_shell {
+namespace internal {
 
 class WorkspaceManagerTestBase : public aura::test::AuraTestBase {
  public:
@@ -20,7 +22,7 @@ class WorkspaceManagerTestBase : public aura::test::AuraTestBase {
 
   virtual void SetUp() OVERRIDE {
     aura::test::AuraTestBase::SetUp();
-    manager_.reset(new aura_shell::WorkspaceManager(viewport()));
+    manager_.reset(new WorkspaceManager(viewport()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -37,19 +39,11 @@ class WorkspaceManagerTestBase : public aura::test::AuraTestBase {
   aura::Window* viewport() {
     return GetTestDesktopDelegate()->default_container();
   }
-  scoped_ptr<aura_shell::WorkspaceManager> manager_;
+  scoped_ptr<WorkspaceManager> manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WorkspaceManagerTestBase);
 };
-
-}  // namespace
-
-namespace aura_shell {
-
-using aura::Window;
-using aura_shell::Workspace;
-using aura_shell::WorkspaceManager;
 
 class WorkspaceManagerTest : public WorkspaceManagerTestBase {
 };
@@ -82,8 +76,7 @@ TEST_F(WorkspaceManagerTest, WorkspaceManagerCreateAddFind) {
 }
 
 TEST_F(WorkspaceManagerTest, LayoutWorkspaces) {
-  manager_->workspace_size_ = gfx::Size(100, 100);
-  manager_->LayoutWorkspaces();
+  manager_->SetWorkspaceSize(gfx::Size(100, 100));
   EXPECT_EQ("0,0 100x100", viewport()->bounds().ToString());
 
   Workspace* ws1 = manager_->CreateWorkspace();
@@ -102,6 +95,23 @@ TEST_F(WorkspaceManagerTest, LayoutWorkspaces) {
   EXPECT_EQ("150,0 100x100", ws2->bounds().ToString());
 }
 
+// Makes sure the bounds of window are resized if the workspace size shrinks.
+TEST_F(WorkspaceManagerTest, ResizeDuringLayout) {
+  manager_->SetWorkspaceSize(gfx::Size(100, 100));
+  EXPECT_EQ("0,0 100x100", viewport()->bounds().ToString());
+
+  Workspace* ws1 = manager_->CreateWorkspace();
+  scoped_ptr<Window> w1(CreateTestWindow());
+  w1->SetBounds(gfx::Rect(0, 0, 100, 100));
+  viewport()->AddChild(w1.get());
+  EXPECT_TRUE(ws1->AddWindowAfter(w1.get(), NULL));
+  manager_->SetWorkspaceSize(gfx::Size(50, 50));
+
+  // ws1 is laied out in left most position.
+  EXPECT_EQ("0,0 50x50", ws1->bounds().ToString());
+  EXPECT_EQ("0,0 50x50", w1->layer()->GetTargetBounds().ToString());
+}
+
 TEST_F(WorkspaceManagerTest, WorkspaceManagerDragArea) {
   aura::Desktop::GetInstance()->screen()->set_work_area_insets(
       gfx::Insets(10, 10, 10, 10));
@@ -109,8 +119,9 @@ TEST_F(WorkspaceManagerTest, WorkspaceManagerDragArea) {
   EXPECT_EQ("10,10 180x180", manager_->GetDragAreaBounds().ToString());
 }
 
-TEST_F(WorkspaceManagerTest, Overview) {
-  manager_->workspace_size_ = gfx::Size(500, 300);
+// TODO(sky): move this into a test for WorkspaceController.
+TEST_F(WorkspaceManagerTest, DISABLED_Overview) {
+  manager_->SetWorkspaceSize(gfx::Size(500, 300));
 
   // Creating two workspaces, ws1 which contains window w1,
   // and ws2 which contains window w2.
@@ -179,7 +190,7 @@ TEST_F(WorkspaceManagerTest, WorkspaceManagerActivate) {
 }
 
 TEST_F(WorkspaceManagerTest, FindRotateWindow) {
-  manager_->workspace_size_ = gfx::Size(500, 300);
+  manager_->SetWorkspaceSize(gfx::Size(500, 300));
 
   Workspace* ws1 = manager_->CreateWorkspace();
   scoped_ptr<Window> w11(CreateTestWindow());
@@ -489,4 +500,5 @@ TEST_F(WorkspaceTest, ShiftWindowsMultiple) {
   manager_.reset();
 }
 
+}  // namespace internal
 }  // namespace aura_shell

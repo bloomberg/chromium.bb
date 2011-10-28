@@ -4,6 +4,8 @@
 
 #include "ui/aura_shell/workspace/workspace.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/window.h"
@@ -20,6 +22,7 @@ size_t g_max_windows_per_workspace = 2;
 }
 
 namespace aura_shell {
+namespace internal {
 
 Workspace::Workspace(WorkspaceManager* manager)
     : workspace_manager_(manager) {
@@ -211,7 +214,11 @@ void Workspace::MoveWindowTo(
     window->Maximize();
   else {
     gfx::Rect bounds = window->GetTargetBounds();
-    bounds.set_origin(origin);
+    gfx::Rect work_area = GetWorkAreaBounds();
+    // Make sure the window isn't bigger than the workspace size.
+    bounds.SetRect(origin.x(), origin.y(),
+                   std::min(work_area.width(), bounds.width()),
+                   std::min(work_area.height(), bounds.height()));
     if (animate) {
       ui::LayerAnimator::ScopedSettings settings(
           window->layer()->GetAnimator());
@@ -242,4 +249,5 @@ size_t Workspace::SetMaxWindowsCount(size_t max) {
   return old;
 }
 
+}  // namespace internal
 }  // namespace aura_shell

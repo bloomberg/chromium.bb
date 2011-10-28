@@ -1,22 +1,22 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "ui/aura_shell/workspace/workspace_manager.h"
 
 #include <algorithm>
 
 #include "base/auto_reset.h"
+#include "base/logging.h"
+#include "base/stl_util.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/workspace/workspace.h"
-#include "ui/aura_shell/workspace/workspace_manager.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
-#include "base/logging.h"
-#include "base/stl_util.h"
 
 namespace {
 
@@ -30,6 +30,7 @@ const float kMinOverviewScale = 0.3f;
 }
 
 namespace aura_shell {
+namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowManager, public:
@@ -40,11 +41,9 @@ WorkspaceManager::WorkspaceManager(aura::Window* viewport)
       workspace_size_(
           gfx::Screen::GetMonitorAreaNearestWindow(viewport_).size()),
       is_overview_(false) {
-  aura::Desktop::GetInstance()->AddObserver(this);
 }
 
 WorkspaceManager::~WorkspaceManager() {
-  aura::Desktop::GetInstance()->RemoveObserver(this);
   std::vector<Workspace*> copy_to_delete(workspaces_);
   STLDeleteElements(&copy_to_delete);
 }
@@ -165,19 +164,11 @@ void WorkspaceManager::RotateWindows(aura::Window* source,
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// WorkspaceManager, Overridden from aura::DesktopObserver:
-
-void WorkspaceManager::OnDesktopResized(const gfx::Size& new_size) {
-  workspace_size_ =
-      gfx::Screen::GetMonitorAreaNearestWindow(viewport_).size();
+void WorkspaceManager::SetWorkspaceSize(const gfx::Size& workspace_size) {
+  if (workspace_size == workspace_size_)
+    return;
+  workspace_size_ = workspace_size;
   LayoutWorkspaces();
-}
-
-void WorkspaceManager::OnActiveWindowChanged(aura::Window* active) {
-  Workspace* workspace = FindBy(active);
-  if (workspace)
-    SetActiveWorkspace(workspace);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -203,13 +194,9 @@ void WorkspaceManager::RemoveWorkspace(Workspace* workspace) {
 }
 
 void WorkspaceManager::SetActiveWorkspace(Workspace* workspace) {
-  DCHECK(std::find(workspaces_.begin(),
-                   workspaces_.end(),
-                   workspace)
-         != workspaces_.end());
+  DCHECK(std::find(workspaces_.begin(), workspaces_.end(),
+                   workspace) != workspaces_.end());
   active_workspace_ = workspace;
-
-  DCHECK(!workspaces_.empty());
 
   is_overview_ = false;
   UpdateViewport();
@@ -253,4 +240,5 @@ void WorkspaceManager::UpdateViewport() {
   }
 }
 
+}  // namespace internal
 }  // namespace aura_shell

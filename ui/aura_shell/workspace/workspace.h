@@ -17,6 +17,8 @@ class Window;
 }
 
 namespace aura_shell {
+namespace internal {
+
 class WorkspaceManager;
 class WorkspaceTest;
 
@@ -128,6 +130,7 @@ class AURA_SHELL_EXPORT Workspace {
 
 typedef std::vector<Workspace*> Workspaces;
 
+}  // namespace internal
 }  // namespace aura_shell
 
 #endif  // UI_AURA_SHELL_WORKSPACE_WORKSPACE_H_

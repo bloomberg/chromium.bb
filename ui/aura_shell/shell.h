@@ -28,7 +28,10 @@ namespace aura_shell {
 
 class Launcher;
 class ShellDelegate;
-class WorkspaceManager;
+
+namespace internal {
+class WorkspaceController;
+}
 
 // Shell is a singleton object that presents the Shell API and implements the
 // Desktop's delegate interface.
@@ -73,7 +76,7 @@ class AURA_SHELL_EXPORT Shell : public aura::DesktopDelegate {
 
   scoped_ptr<Launcher> launcher_;
 
-  scoped_ptr<WorkspaceManager> workspace_manager_;
+  scoped_ptr<internal::WorkspaceController> workspace_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

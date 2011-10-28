@@ -68,6 +68,8 @@
         'toplevel_frame_view.h',
         'workspace/workspace.cc',
         'workspace/workspace.h',
+        'workspace/workspace_controller.cc',
+        'workspace/workspace_controller.h',
         'workspace/workspace_manager.cc',
         'workspace/workspace_manager.h',
       ],

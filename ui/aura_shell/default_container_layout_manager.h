@@ -21,16 +21,16 @@ class Rect;
 }
 
 namespace aura_shell {
-class WorkspaceManager;
-
 namespace internal {
+
+class WorkspaceManager;
 
 // LayoutManager for the default window container.
 class AURA_SHELL_EXPORT DefaultContainerLayoutManager
     : public aura::LayoutManager {
  public:
-  DefaultContainerLayoutManager(
-      aura::Window* owner, WorkspaceManager* workspace_manager);
+  DefaultContainerLayoutManager(aura::Window* owner,
+                                WorkspaceManager* workspace_manager);
   virtual ~DefaultContainerLayoutManager();
 
   // Invoked when a window receives drag event.
@@ -47,6 +47,12 @@ class AURA_SHELL_EXPORT DefaultContainerLayoutManager
 
   // Invoked when a user finished resizing window.
   void EndResize(aura::Window* drag, aura::MouseEvent* evnet);
+
+  // If true, |CalculateBoundsForChild| does nothing. Use in situations where
+  // you want to circumvent what CalculateBoundsForChild() would normally do.
+  void set_ignore_calculate_bounds(bool value) {
+    ignore_calculate_bounds_ = value;
+  }
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;

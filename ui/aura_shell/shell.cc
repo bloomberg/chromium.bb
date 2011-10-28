@@ -11,13 +11,12 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
 #include "ui/aura_shell/default_container_event_filter.h"
-#include "ui/aura_shell/default_container_layout_manager.h"
 #include "ui/aura_shell/desktop_layout_manager.h"
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/aura_shell/shell_window_ids.h"
-#include "ui/aura_shell/workspace/workspace_manager.h"
+#include "ui/aura_shell/workspace/workspace_controller.h"
 #include "ui/base/view_prop.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
@@ -127,11 +126,8 @@ void Shell::Init() {
           launcher_->widget()->GetWindowScreenBounds().height(),
           kWorkAreaHorizontalMargin));
 
-  // Workspace Manager
-  workspace_manager_.reset(new WorkspaceManager(toplevel_container));
-  toplevel_container->SetLayoutManager(
-      new internal::DefaultContainerLayoutManager(
-          toplevel_container, workspace_manager_.get()));
+  workspace_controller_.reset(
+      new internal::WorkspaceController(toplevel_container));
 
   // Force a layout.
   desktop_layout->OnWindowResized();
@@ -151,7 +147,7 @@ const aura::Window* Shell::GetContainer(int container_id) const {
 }
 
 void Shell::ToggleOverview() {
-  workspace_manager_->SetOverview(!workspace_manager_->is_overview());
+  workspace_controller_->ToggleOverview();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
