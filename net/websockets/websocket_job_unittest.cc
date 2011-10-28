@@ -41,16 +41,18 @@ class MockSocketStream : public net::SocketStream {
       : SocketStream(url, delegate) {}
   virtual ~MockSocketStream() {}
 
-  virtual void Connect() {}
-  virtual bool SendData(const char* data, int len) {
+  virtual void Connect() OVERRIDE {}
+  virtual bool SendData(const char* data, int len) OVERRIDE {
     sent_data_ += std::string(data, len);
     return true;
   }
 
-  virtual void Close() {}
+  virtual void Close() OVERRIDE {}
   virtual void RestartWithAuth(
-      const string16& username, const string16& password) {}
-  virtual void DetachDelegate() {
+      const net::AuthCredentials& credentials) OVERRIDE {
+  }
+
+  virtual void DetachDelegate() OVERRIDE {
     delegate_ = NULL;
   }
 

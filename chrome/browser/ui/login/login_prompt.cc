@@ -360,7 +360,7 @@ void LoginHandler::SetAuthDeferred(const string16& username,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (request_) {
-    request_->SetAuth(username, password);
+    request_->SetAuth(net::AuthCredentials(username, password));
     ResetLoginHandlerForRequest(request_);
   }
 }

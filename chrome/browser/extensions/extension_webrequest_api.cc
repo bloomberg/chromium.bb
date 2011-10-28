@@ -1696,13 +1696,14 @@ bool WebRequestEventHandled::RunImpl() {
       EXTENSION_FUNCTION_VALIDATE(value->GetDictionary(
           keys::kAuthCredentialsKey,
           &credentials_value));
-      response->auth_credentials.reset(new net::AuthCredentials());
+      string16 username;
+      string16 password;
       EXTENSION_FUNCTION_VALIDATE(
-          credentials_value->GetString(keys::kUsernameKey,
-                                       &response->auth_credentials->username));
+          credentials_value->GetString(keys::kUsernameKey, &username));
       EXTENSION_FUNCTION_VALIDATE(
-          credentials_value->GetString(keys::kPasswordKey,
-                                       &response->auth_credentials->password));
+          credentials_value->GetString(keys::kPasswordKey, &password));
+      response->auth_credentials.reset(
+          new net::AuthCredentials(username, password));
     }
   }
 
