@@ -45,8 +45,7 @@ void StatusIconGtk::SetToolTip(const string16& tool_tip) {
 void StatusIconGtk::DisplayBalloon(const SkBitmap& icon,
                                    const string16& title,
                                    const string16& contents) {
-  // TODO(atwilson): Figure out the right thing to do here.
-  // http://crbug.com/74970
+  notification_.DisplayBalloon(icon, title, contents);
 }
 
 void StatusIconGtk::OnClick(GtkWidget* widget) {

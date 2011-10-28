@@ -79,9 +79,7 @@ void StatusIconMac::SetToolTip(const string16& tool_tip) {
 void StatusIconMac::DisplayBalloon(const SkBitmap& icon,
                                    const string16& title,
                                    const string16& contents) {
-  // TODO(atwilson): Figure out the right UI to display here when actually
-  // needed (not yet called).
-  // http://crbug.com/74970
+  notification_.DisplayBalloon(icon, title, contents);
 }
 
 void StatusIconMac::UpdatePlatformContextMenu(ui::MenuModel* menu) {
