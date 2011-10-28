@@ -74,9 +74,10 @@ void DefaultContainerLayoutManager::EndMove(
   // TODO(oshima): finish moving window between workspaces.
   AutoReset<bool> reset(&ignore_calculate_bounds_, true);
   drag_window_ = NULL;
-  Workspace* workspace = workspace_manager_->GetActiveWorkspace();
-  if (workspace)
-    workspace->Layout(NULL, NULL);
+
+  Workspace* workspace = workspace_manager_->FindBy(drag);
+  workspace->Layout(NULL, NULL);
+  workspace->Activate();
   workspace_manager_->SetOverview(false);
 }
 
