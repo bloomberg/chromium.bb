@@ -54,51 +54,26 @@ class AutofillManager : public TabContentsObserver,
   // Registers our Enable/Disable Autofill pref.
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // TabContentsObserver implementation.
-  virtual void DidNavigateMainFramePostCommit(
-      const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params);
-  virtual bool OnMessageReceived(const IPC::Message& message);
-
-  // AutofillDownloadManager::Observer implementation:
-  virtual void OnLoadedServerPredictions(const std::string& response_xml);
-  virtual void OnUploadedPossibleFieldTypes();
-  virtual void OnServerRequestError(
-      const std::string& form_signature,
-      AutofillDownloadManager::AutofillRequestType request_type,
-      int http_error);
-
-  // Returns the value of the AutofillEnabled pref.
-  virtual bool IsAutofillEnabled() const;
-
-  // Imports the form data, submitted by the user, into |personal_data_|.
-  void ImportFormData(const FormStructure& submitted_form);
-
-  // Uploads the form data to the Autofill server.
-  virtual void UploadFormData(const FormStructure& submitted_form);
-
-  // Reset cache.
-  void Reset();
-
  protected:
-  // For tests:
+  // Only test code should subclass AutofillManager.
 
   // The string/int pair is composed of the guid string and variant index
   // respectively.  The variant index is an index into the multi-valued item
   // (where applicable).
   typedef std::pair<std::string, size_t> GUIDPair;
 
+  // Test code should prefer to use this constructor.
   AutofillManager(TabContentsWrapper* tab_contents,
                   PersonalDataManager* personal_data);
 
-  void set_personal_data_manager(PersonalDataManager* personal_data) {
-    personal_data_ = personal_data;
-  }
+  // Returns the value of the AutofillEnabled pref.
+  virtual bool IsAutofillEnabled() const;
 
-  const AutofillMetrics* metric_logger() const { return metric_logger_.get(); }
-  void set_metric_logger(const AutofillMetrics* metric_logger);
+  // Uploads the form data to the Autofill server.
+  virtual void UploadFormData(const FormStructure& submitted_form);
 
-  ScopedVector<FormStructure>* form_structures() { return &form_structures_; }
+  // Reset cache.
+  void Reset();
 
   // Maps GUIDs to and from IDs that are used to identify profiles and credit
   // cards sent to and from the renderer process.
@@ -110,7 +85,22 @@ class AutofillManager : public TabContentsObserver,
   int PackGUIDs(const GUIDPair& cc_guid, const GUIDPair& profile_guid) const;
   void UnpackGUIDs(int id, GUIDPair* cc_guid, GUIDPair* profile_guid) const;
 
+  const AutofillMetrics* metric_logger() const { return metric_logger_.get(); }
+  void set_metric_logger(const AutofillMetrics* metric_logger);
+
+  ScopedVector<FormStructure>* form_structures() { return &form_structures_; }
+
  private:
+  // TabContentsObserver:
+  virtual void DidNavigateMainFramePostCommit(
+      const content::LoadCommittedDetails& details,
+      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // AutofillDownloadManager::Observer:
+  virtual void OnLoadedServerPredictions(
+      const std::string& response_xml) OVERRIDE;
+
   void OnFormSubmitted(const webkit_glue::FormData& form,
                        const base::TimeTicks& timestamp);
   void OnFormsSeen(const std::vector<webkit_glue::FormData>& forms,
@@ -216,6 +206,9 @@ class AutofillManager : public TabContentsObserver,
   // Uses existing personal data to determine possible field types for the
   // |submitted_form|.
   void DeterminePossibleFieldTypesForUpload(FormStructure* submitted_form);
+
+  // Imports the form data, submitted by the user, into |personal_data_|.
+  void ImportFormData(const FormStructure& submitted_form);
 
   // If |initial_interaction_timestamp_| is unset or is set to a later time than
   // |interaction_timestamp|, updates the cached timestamp.  The latter check is

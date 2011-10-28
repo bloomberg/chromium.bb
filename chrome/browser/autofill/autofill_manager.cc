@@ -208,7 +208,7 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents)
     : TabContentsObserver(tab_contents->tab_contents()),
       tab_contents_wrapper_(tab_contents),
       personal_data_(NULL),
-      download_manager_(tab_contents->profile()),
+      download_manager_(tab_contents->profile(), this),
       disable_download_manager_requests_(false),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),
@@ -222,11 +222,9 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents)
   // |personal_data_| is NULL when using TestTabContents.
   personal_data_ = PersonalDataManagerFactory::GetForProfile(
       tab_contents->profile()->GetOriginalProfile());
-  download_manager_.SetObserver(this);
 }
 
 AutofillManager::~AutofillManager() {
-  download_manager_.SetObserver(NULL);
 }
 
 // static
@@ -618,15 +616,6 @@ void AutofillManager::OnLoadedServerPredictions(
   SendAutofillTypePredictions(form_structures_.get());
 }
 
-void AutofillManager::OnUploadedPossibleFieldTypes() {
-}
-
-void AutofillManager::OnServerRequestError(
-    const std::string& form_signature,
-    AutofillDownloadManager::AutofillRequestType request_type,
-    int http_error) {
-}
-
 bool AutofillManager::IsAutofillEnabled() const {
   Profile* profile = Profile::FromBrowserContext(
       const_cast<AutofillManager*>(this)->tab_contents()->browser_context());
@@ -736,7 +725,7 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents,
     : TabContentsObserver(tab_contents->tab_contents()),
       tab_contents_wrapper_(tab_contents),
       personal_data_(personal_data),
-      download_manager_(NULL),
+      download_manager_(tab_contents->profile(), this),
       disable_download_manager_requests_(true),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),

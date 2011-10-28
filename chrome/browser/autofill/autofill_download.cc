@@ -38,38 +38,27 @@ struct AutofillDownloadManager::FormRequestData {
   AutofillRequestType request_type;
 };
 
-AutofillDownloadManager::AutofillDownloadManager(Profile* profile)
+AutofillDownloadManager::AutofillDownloadManager(Profile* profile,
+                                                 Observer* observer)
     : profile_(profile),
-      observer_(NULL),
+      observer_(observer),
       max_form_cache_size_(kMaxFormCacheSize),
       next_query_request_(base::Time::Now()),
       next_upload_request_(base::Time::Now()),
       positive_upload_rate_(0),
       negative_upload_rate_(0),
       fetcher_id_for_unittest_(0) {
-  // |profile_| could be NULL in some unit-tests.
-  if (profile_) {
-    PrefService* preferences = profile_->GetPrefs();
-    positive_upload_rate_ =
-        preferences->GetDouble(prefs::kAutofillPositiveUploadRate);
-    negative_upload_rate_ =
-        preferences->GetDouble(prefs::kAutofillNegativeUploadRate);
-  }
+  DCHECK(observer_);
+  PrefService* preferences = profile_->GetPrefs();
+  positive_upload_rate_ =
+      preferences->GetDouble(prefs::kAutofillPositiveUploadRate);
+  negative_upload_rate_ =
+      preferences->GetDouble(prefs::kAutofillNegativeUploadRate);
 }
 
 AutofillDownloadManager::~AutofillDownloadManager() {
   STLDeleteContainerPairFirstPointers(url_fetchers_.begin(),
                                       url_fetchers_.end());
-}
-
-void AutofillDownloadManager::SetObserver(
-    AutofillDownloadManager::Observer* observer) {
-  if (observer) {
-    DCHECK(!observer_);
-    observer_ = observer;
-  } else {
-    observer_ = NULL;
-  }
 }
 
 bool AutofillDownloadManager::StartQueryRequest(
@@ -91,10 +80,9 @@ bool AutofillDownloadManager::StartQueryRequest(
 
   std::string query_data;
   if (CheckCacheForQueryRequest(request_data.form_signatures, &query_data)) {
-    VLOG(1) << "AutofillDownloadManager: query request has been retrieved from"
-            << "the cache";
-    if (observer_)
-      observer_->OnLoadedServerPredictions(query_data);
+    DVLOG(1) << "AutofillDownloadManager: query request has been retrieved from"
+             << "the cache";
+    observer_->OnLoadedServerPredictions(query_data);
     return true;
   }
 
@@ -107,7 +95,7 @@ bool AutofillDownloadManager::StartUploadRequest(
     const FieldTypeSet& available_field_types) {
   if (next_upload_request_ > base::Time::Now()) {
     // We are in back-off mode: do not do the request.
-    VLOG(1) << "AutofillDownloadManager: Upload request is throttled.";
+    DVLOG(1) << "AutofillDownloadManager: Upload request is throttled.";
     return false;
   }
 
@@ -117,7 +105,7 @@ bool AutofillDownloadManager::StartUploadRequest(
   if (form.upload_required() == UPLOAD_NOT_REQUIRED ||
       (form.upload_required() == USE_UPLOAD_RATES &&
        base::RandDouble() > upload_rate)) {
-    VLOG(1) << "AutofillDownloadManager: Upload request is ignored.";
+    DVLOG(1) << "AutofillDownloadManager: Upload request is ignored.";
     // If we ever need notification that upload was skipped, add it here.
     return false;
   }
@@ -134,25 +122,6 @@ bool AutofillDownloadManager::StartUploadRequest(
   return StartRequest(form_xml, request_data);
 }
 
-bool AutofillDownloadManager::CancelRequest(
-    const std::string& form_signature,
-    AutofillDownloadManager::AutofillRequestType request_type) {
-  for (std::map<content::URLFetcher*, FormRequestData>::iterator it =
-       url_fetchers_.begin();
-       it != url_fetchers_.end();
-       ++it) {
-    if (std::find(it->second.form_signatures.begin(),
-        it->second.form_signatures.end(), form_signature) !=
-        it->second.form_signatures.end() &&
-        it->second.request_type == request_type) {
-      delete it->first;
-      url_fetchers_.erase(it);
-      return true;
-    }
-  }
-  return false;
-}
-
 double AutofillDownloadManager::GetPositiveUploadRate() const {
   return positive_upload_rate_;
 }
@@ -167,7 +136,6 @@ void AutofillDownloadManager::SetPositiveUploadRate(double rate) {
   positive_upload_rate_ = rate;
   DCHECK_GE(rate, 0.0);
   DCHECK_LE(rate, 1.0);
-  DCHECK(profile_);
   PrefService* preferences = profile_->GetPrefs();
   preferences->SetDouble(prefs::kAutofillPositiveUploadRate, rate);
 }
@@ -178,7 +146,6 @@ void AutofillDownloadManager::SetNegativeUploadRate(double rate) {
   negative_upload_rate_ = rate;
   DCHECK_GE(rate, 0.0);
   DCHECK_LE(rate, 1.0);
-  DCHECK(profile_);
   PrefService* preferences = profile_->GetPrefs();
   preferences->SetDouble(prefs::kAutofillNegativeUploadRate, rate);
 }
@@ -307,23 +274,20 @@ void AutofillDownloadManager::OnURLFetchComplete(
       }
     }
 
-    LOG(WARNING) << "AutofillDownloadManager: " << type_of_request
-                 << " request has failed with response "
-                 << source->GetResponseCode();
-    if (observer_) {
-      observer_->OnServerRequestError(it->second.form_signatures[0],
-                                      it->second.request_type,
-                                      source->GetResponseCode());
-    }
+    DVLOG(1) << "AutofillDownloadManager: " << type_of_request
+             << " request has failed with response "
+             << source->GetResponseCode();
+    observer_->OnServerRequestError(it->second.form_signatures[0],
+                                    it->second.request_type,
+                                    source->GetResponseCode());
   } else {
-    VLOG(1) << "AutofillDownloadManager: " << type_of_request
-            << " request has succeeded";
+    DVLOG(1) << "AutofillDownloadManager: " << type_of_request
+             << " request has succeeded";
     std::string response_body;
     source->GetResponseAsString(&response_body);
     if (it->second.request_type == AutofillDownloadManager::REQUEST_QUERY) {
       CacheQueryRequest(it->second.form_signatures, response_body);
-      if (observer_)
-        observer_->OnLoadedServerPredictions(response_body);
+      observer_->OnLoadedServerPredictions(response_body);
     } else {
       double new_positive_upload_rate = 0;
       double new_negative_upload_rate = 0;
@@ -336,8 +300,7 @@ void AutofillDownloadManager::OnURLFetchComplete(
         SetNegativeUploadRate(new_negative_upload_rate);
       }
 
-      if (observer_)
-        observer_->OnUploadedPossibleFieldTypes();
+      observer_->OnUploadedPossibleFieldTypes();
     }
   }
   delete it->first;

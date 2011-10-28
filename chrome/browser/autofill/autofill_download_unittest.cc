@@ -64,7 +64,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
                              public testing::Test {
  public:
   AutofillDownloadTest()
-      : download_manager_(&profile_),
+      : download_manager_(&profile_, this),
         io_thread_(BrowserThread::IO) {
   }
 
@@ -73,13 +73,11 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
     options.message_loop_type = MessageLoop::TYPE_IO;
     io_thread_.StartWithOptions(options);
     profile_.CreateRequestContext();
-    download_manager_.SetObserver(this);
   }
 
   virtual void TearDown() {
     profile_.ResetRequestContext();
     io_thread_.Stop();
-    download_manager_.SetObserver(NULL);
   }
 
   void LimitCache(size_t cache_size) {
@@ -87,14 +85,15 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
   }
 
   // AutofillDownloadManager::Observer implementation.
-  virtual void OnLoadedServerPredictions(const std::string& response_xml) {
+  virtual void OnLoadedServerPredictions(
+      const std::string& response_xml) OVERRIDE {
     ResponseData response;
     response.response = response_xml;
     response.type_of_response = QUERY_SUCCESSFULL;
     responses_.push_back(response);
   }
 
-  virtual void OnUploadedPossibleFieldTypes() {
+  virtual void OnUploadedPossibleFieldTypes() OVERRIDE {
     ResponseData response;
     response.type_of_response = UPLOAD_SUCCESSFULL;
     responses_.push_back(response);
@@ -103,7 +102,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
   virtual void OnServerRequestError(
       const std::string& form_signature,
       AutofillDownloadManager::AutofillRequestType request_type,
-      int http_error) {
+      int http_error) OVERRIDE {
     ResponseData response;
     response.signature = form_signature;
     response.error = http_error;
@@ -113,7 +112,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
     responses_.push_back(response);
   }
 
-  enum TYPE_OF_RESPONSE {
+  enum ResponseType {
     QUERY_SUCCESSFULL,
     UPLOAD_SUCCESSFULL,
     REQUEST_QUERY_FAILED,
@@ -121,12 +120,12 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
   };
 
   struct ResponseData {
-    TYPE_OF_RESPONSE type_of_response;
+    ResponseType type_of_response;
     int error;
     std::string signature;
     std::string response;
-    ResponseData() : type_of_response(REQUEST_QUERY_FAILED), error(0) {
-    }
+
+    ResponseData() : type_of_response(REQUEST_QUERY_FAILED), error(0) {}
   };
   std::list<ResponseData> responses_;
 
