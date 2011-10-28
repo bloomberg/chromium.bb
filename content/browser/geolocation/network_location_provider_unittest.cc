@@ -286,9 +286,9 @@ TEST_F(GeolocationNetworkProviderTest, StartProvider) {
   ASSERT_TRUE(fetcher != NULL);
 
   EXPECT_EQ(test_server_url_.spec() + kTestJson,
-            fetcher->GetOriginalUrl().spec());
+            fetcher->GetOriginalURL().spec());
 
-  CheckRequestIsValid(fetcher->GetOriginalUrl().spec(), 0, 0, 0, "");
+  CheckRequestIsValid(fetcher->GetOriginalURL().spec(), 0, 0, 0, "");
 }
 
 TEST_F(GeolocationNetworkProviderTest, StartProviderLongRequest) {
@@ -302,8 +302,8 @@ TEST_F(GeolocationNetworkProviderTest, StartProviderLongRequest) {
   // The request url should have been shortened to less than 2048 characters
   // in length by not including access points with the lowest signal strength
   // in the request.
-  EXPECT_LT(fetcher->GetOriginalUrl().spec().size(), size_t(2048));
-  CheckRequestIsValid(fetcher->GetOriginalUrl().spec(), 0, 16, 4, "");
+  EXPECT_LT(fetcher->GetOriginalURL().spec().size(), size_t(2048));
+  CheckRequestIsValid(fetcher->GetOriginalURL().spec(), 0, 16, 4, "");
 }
 
 TEST_F(GeolocationNetworkProviderTest, MultipleStartProvider) {
@@ -358,7 +358,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
   EXPECT_EQ(test_server_url_.spec() + kTestJson,
-            fetcher->GetOriginalUrl().spec());
+            fetcher->GetOriginalURL().spec());
 
   // Complete the network request with bad position fix.
   const char* kNoFixNetworkResponse =
@@ -383,7 +383,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   ASSERT_TRUE(fetcher != NULL);
   // The request should have the wifi data.
   CheckRequestIsValid(
-      fetcher->GetOriginalUrl().spec(), 0, kFirstScanAps, 0, "");
+      fetcher->GetOriginalURL().spec(), 0, kFirstScanAps, 0, "");
 
   // Send a reply with good position fix.
   const char* kReferenceNetworkResponse =
@@ -432,7 +432,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   main_message_loop_.RunAllPending();
   fetcher = get_url_fetcher_and_advance_id();
   EXPECT_TRUE(fetcher);
-  CheckRequestIsValid(fetcher->GetOriginalUrl().spec(), 0,
+  CheckRequestIsValid(fetcher->GetOriginalURL().spec(), 0,
                       kThirdScanAps, 0,
                       REFERENCE_ACCESS_TOKEN);
   // ...reply with a network error.
@@ -501,7 +501,7 @@ TEST_F(GeolocationNetworkProviderTest, NetworkRequestDeferredForPermission) {
   ASSERT_TRUE(fetcher != NULL);
 
   EXPECT_EQ(test_server_url_.spec() + kTestJson,
-            fetcher->GetOriginalUrl().spec());
+            fetcher->GetOriginalURL().spec());
 }
 
 TEST_F(GeolocationNetworkProviderTest,
@@ -525,7 +525,7 @@ TEST_F(GeolocationNetworkProviderTest,
   fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
 
-  CheckRequestIsValid(fetcher->GetOriginalUrl().spec(), 0,
+  CheckRequestIsValid(fetcher->GetOriginalURL().spec(), 0,
                       kScanCount, 0, REFERENCE_ACCESS_TOKEN);
 }
 

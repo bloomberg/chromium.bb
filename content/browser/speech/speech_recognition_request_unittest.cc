@@ -41,7 +41,7 @@ void SpeechRecognitionRequestTest::CreateAndTestRequest(
   TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
-  fetcher->set_url(fetcher->GetOriginalUrl());
+  fetcher->set_url(fetcher->GetOriginalURL());
   net::URLRequestStatus status;
   status.set_status(success ? net::URLRequestStatus::SUCCESS :
                               net::URLRequestStatus::FAILED);

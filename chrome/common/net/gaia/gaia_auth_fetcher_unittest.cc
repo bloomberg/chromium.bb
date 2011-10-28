@@ -33,7 +33,7 @@ MockFetcher::MockFetcher(bool success,
                          const std::string& results,
                          content::URLFetcher::RequestType request_type,
                          content::URLFetcherDelegate* d)
-    : TestURLFetcher(0, url, request_type, d) {
+    : TestURLFetcher(0, url, d) {
   set_url(url);
   net::URLRequestStatus::Status code;
   
@@ -56,7 +56,7 @@ MockFetcher::MockFetcher(const GURL& url,
                          const std::string& results,
                          content::URLFetcher::RequestType request_type,
                          content::URLFetcherDelegate* d)
-    : TestURLFetcher(0, url, request_type, d) {
+    : TestURLFetcher(0, url, d) {
   set_url(url);
   set_status(status);
   set_response_code(response_code);

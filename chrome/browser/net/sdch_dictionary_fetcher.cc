@@ -78,7 +78,7 @@ void SdchDictionaryFetcher::OnURLFetchComplete(
       (source->GetStatus().status() == net::URLRequestStatus::SUCCESS)) {
     std::string data;
     source->GetResponseAsString(&data);
-    net::SdchManager::Global()->AddSdchDictionary(data, source->GetUrl());
+    net::SdchManager::Global()->AddSdchDictionary(data, source->GetURL());
   }
   current_fetch_.reset(NULL);
   ScheduleDelayedRun();

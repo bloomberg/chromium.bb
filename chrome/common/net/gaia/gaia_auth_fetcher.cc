@@ -578,7 +578,7 @@ void GaiaAuthFetcher::OnMergeSessionFetched(const std::string& data,
 
 void GaiaAuthFetcher::OnURLFetchComplete(const content::URLFetcher* source) {
   fetch_pending_ = false;
-  const GURL& url = source->GetUrl();
+  const GURL& url = source->GetURL();
   const net::URLRequestStatus& status = source->GetStatus();
   int response_code = source->GetResponseCode();
   std::string data;
@@ -592,7 +592,7 @@ void GaiaAuthFetcher::OnURLFetchComplete(const content::URLFetcher* source) {
   } else if (url == token_auth_gurl_) {
     OnTokenAuthFetched(data, status, response_code);
   } else if (url == merge_session_gurl_ ||
-      (source && source->GetOriginalUrl() == merge_session_gurl_)) {
+      (source && source->GetOriginalURL() == merge_session_gurl_)) {
     // MergeSession may redirect, so check the original URL of the fetcher.
     OnMergeSessionFetched(data, status, response_code);
   } else {

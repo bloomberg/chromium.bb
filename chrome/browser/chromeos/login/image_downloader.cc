@@ -47,7 +47,7 @@ void ImageDownloader::OnURLFetchComplete(const content::URLFetcher* source) {
   source->GetResponseAsString(&data);
   if (source->GetResponseCode() != 200) {
     LOG(ERROR) << "Response code is " << source->GetResponseCode();
-    LOG(ERROR) << "Url is " << source->GetUrl().spec();
+    LOG(ERROR) << "Url is " << source->GetURL().spec();
     LOG(ERROR) << "Data is " << data;
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     return;

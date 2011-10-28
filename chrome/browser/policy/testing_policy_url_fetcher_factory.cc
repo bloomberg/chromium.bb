@@ -39,7 +39,6 @@ class TestingPolicyURLFetcher : public TestURLFetcher {
   TestingPolicyURLFetcher(
       const base::WeakPtr<TestingPolicyURLFetcherFactory>& parent,
       const GURL& url,
-      content::URLFetcher::RequestType request_type,
       content::URLFetcherDelegate* delegate);
 
   virtual void Start() OVERRIDE;
@@ -65,9 +64,8 @@ class TestingPolicyURLFetcher : public TestURLFetcher {
 TestingPolicyURLFetcher::TestingPolicyURLFetcher(
     const base::WeakPtr<TestingPolicyURLFetcherFactory>& parent,
     const GURL& url,
-    content::URLFetcher::RequestType request_type,
     content::URLFetcherDelegate* delegate)
-    : TestURLFetcher(0, url, request_type, delegate),
+    : TestURLFetcher(0, url, delegate),
       parent_(parent) {
   set_url(url);
   set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0));
@@ -78,7 +76,7 @@ void TestingPolicyURLFetcher::Start() {
 
   std::string auth_header;
   net::HttpRequestHeaders headers;
-  std::string request = GetRequestType(GetUrl());
+  std::string request = GetRequestType(GetURL());
   GetExtraRequestHeaders(&headers);
   headers.GetHeader("Authorization", &auth_header);
   // The following method is mocked by the currently running test.
@@ -124,7 +122,7 @@ content::URLFetcher* TestingPolicyURLFetcherFactory::CreateURLFetcher(
     content::URLFetcher::RequestType request_type,
     content::URLFetcherDelegate* delegate) {
   return new TestingPolicyURLFetcher(
-      weak_ptr_factory_.GetWeakPtr(), url, request_type, delegate);
+      weak_ptr_factory_.GetWeakPtr(), url, delegate);
 }
 
 }  // namespace policy

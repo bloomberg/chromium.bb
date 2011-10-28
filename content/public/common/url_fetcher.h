@@ -188,10 +188,10 @@ class CONTENT_EXPORT URLFetcher {
       net::URLRequestContextGetter* request_context_getter) = 0;
 
   // Return the URL that we were asked to fetch.
-  virtual const GURL& GetOriginalUrl() const = 0;
+  virtual const GURL& GetOriginalURL() const = 0;
 
   // Return the URL that this fetcher is processing.
-  virtual const GURL& GetUrl() const = 0;
+  virtual const GURL& GetURL() const = 0;
 
   // The status of the URL fetch.
   virtual const net::URLRequestStatus& GetStatus() const = 0;

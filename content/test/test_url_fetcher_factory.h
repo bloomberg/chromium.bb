@@ -29,7 +29,7 @@ class ScopedURLFetcherFactory : public base::NonThreadSafe {
 };
 
 // TestURLFetcher and TestURLFetcherFactory are used for testing consumers of
-// URLFetcher. TestURLFetcherFactory is a URLFetcher::Factory that creates
+// URLFetcher. TestURLFetcherFactory is a URLFetcherFactory that creates
 // TestURLFetchers. TestURLFetcher::Start is overriden to do nothing. It is
 // expected that you'll grab the delegate from the TestURLFetcher and invoke
 // the callback method when appropriate. In this way it's easy to mock a
@@ -50,14 +50,13 @@ class ScopedURLFetcherFactory : public base::NonThreadSafe {
 //   ...
 //
 // Note: if you don't know when your request objects will be created you
-// might want to use the FakeUrlFetcher and FakeUrlFetcherFactory classes
+// might want to use the FakeURLFetcher and FakeURLFetcherFactory classes
 // below.
 
 class TestURLFetcher : public content::URLFetcher {
  public:
   TestURLFetcher(int id,
                  const GURL& url,
-                 RequestType request_type,
                  content::URLFetcherDelegate* d);
   virtual ~TestURLFetcher();
 
@@ -92,11 +91,11 @@ class TestURLFetcher : public content::URLFetcher {
   virtual void StartWithRequestContextGetter(
       net::URLRequestContextGetter* request_context_getter) OVERRIDE;
 
-  // URL we were created with. Because of how we're using URLFetcher GetUrl()
+  // URL we were created with. Because of how we're using URLFetcher GetURL()
   // always returns an empty URL. Chances are you'll want to use
-  // GetOriginalUrl() in your tests.
-  virtual const GURL& GetOriginalUrl() const OVERRIDE;
-  virtual const GURL& GetUrl() const OVERRIDE;
+  // GetOriginalURL() in your tests.
+  virtual const GURL& GetOriginalURL() const OVERRIDE;
+  virtual const GURL& GetURL() const OVERRIDE;
   virtual const net::URLRequestStatus& GetStatus() const OVERRIDE;
   virtual int GetResponseCode() const OVERRIDE;
   virtual const net::ResponseCookies& GetCookies() const OVERRIDE;
@@ -171,7 +170,7 @@ class TestURLFetcher : public content::URLFetcher {
   DISALLOW_COPY_AND_ASSIGN(TestURLFetcher);
 };
 
-// Simple URLFetcher::Factory method that creates TestURLFetchers. All fetchers
+// Simple URLFetcherFactory method that creates TestURLFetchers. All fetchers
 // are registered in a map by the id passed to the create method.
 class TestURLFetcherFactory : public content::URLFetcherFactory,
                               public ScopedURLFetcherFactory {
@@ -195,7 +194,7 @@ class TestURLFetcherFactory : public content::URLFetcherFactory,
   DISALLOW_COPY_AND_ASSIGN(TestURLFetcherFactory);
 };
 
-// The FakeUrlFetcher and FakeUrlFetcherFactory classes are similar to the
+// The FakeURLFetcher and FakeURLFetcherFactory classes are similar to the
 // ones above but don't require you to know when exactly the URLFetcher objects
 // will be created.
 //
@@ -265,14 +264,14 @@ class FakeURLFetcherFactory : public content::URLFetcherFactory,
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcherFactory);
 };
 
-// This is an implementation of URLFetcher::Factory that will create a real
-// URLFetcher. It can be use in conjunction with a FakeURLFetcherFactory in
+// This is an implementation of URLFetcherFactory that will create a
+// URLFetcherImpl. It can be use in conjunction with a FakeURLFetcherFactory in
 // integration tests to control the behavior of some requests but execute
 // all the other ones.
-class URLFetcherFactory : public content::URLFetcherFactory {
+class URLFetcherImplFactory : public content::URLFetcherFactory {
  public:
-  URLFetcherFactory();
-  virtual ~URLFetcherFactory();
+  URLFetcherImplFactory();
+  virtual ~URLFetcherImplFactory();
 
   // This method will create a real URLFetcher.
   virtual content::URLFetcher* CreateURLFetcher(

@@ -659,7 +659,7 @@ void GaiaOAuthFetcher::OnURLFetchComplete(const content::URLFetcher* source) {
   scoped_ptr<content::URLFetcher> current_fetcher(fetcher_.release());
   fetch_pending_ = false;
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
-  GURL url = source->GetUrl();
+  GURL url = source->GetURL();
   std::string data;
   source->GetResponseAsString(&data);
   net::URLRequestStatus status = source->GetStatus();

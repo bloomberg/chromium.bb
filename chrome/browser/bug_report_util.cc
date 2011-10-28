@@ -137,7 +137,7 @@ void BugReportUtil::PostCleanup::OnURLFetchComplete(
   }
 
   LOG(WARNING) << "FEEDBACK: Submission to feedback server (" <<
-               source->GetUrl() << ") status: " << error_stream.str();
+               source->GetURL() << ") status: " << error_stream.str();
 
   // Delete the URLFetcher.
   delete source;

@@ -43,7 +43,7 @@ void MockAuthResponseHandler::CompleteFetch(
     const net::URLRequestStatus status,
     const int http_response_code,
     const std::string data) {
-  TestURLFetcher fetcher(0, GURL(), content::URLFetcher::GET, delegate);
+  TestURLFetcher fetcher(0, GURL(), delegate);
   fetcher.set_url(remote);
   fetcher.set_status(status);
   fetcher.set_response_code(http_response_code);

@@ -25,7 +25,7 @@ class CommandLine;
 class Profile;
 class ProfileSyncServiceHarness;
 class FakeURLFetcherFactory;
-class URLFetcherFactory;
+class URLFetcherImplFactory;
 
 namespace net {
 class ProxyConfig;
@@ -310,8 +310,8 @@ class SyncTest : public InProcessBrowserTest {
   // Fake URLFetcher factory used to mock out GAIA signin.
   scoped_ptr<FakeURLFetcherFactory> fake_factory_;
 
-  // The URLFetcherFactory instance used to instantiate |fake_factory_|.
-  scoped_ptr<URLFetcherFactory> factory_;
+  // The URLFetcherImplFactory instance used to instantiate |fake_factory_|.
+  scoped_ptr<URLFetcherImplFactory> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncTest);
 };

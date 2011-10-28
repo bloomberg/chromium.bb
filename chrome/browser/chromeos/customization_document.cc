@@ -320,7 +320,7 @@ void ServicesCustomizationDocument::OnURLFetchComplete(
     }
     LOG(ERROR) << "URL fetch for services customization failed:"
                << " response code = " << source->GetResponseCode()
-               << " URL = " << source->GetUrl().spec();
+               << " URL = " << source->GetURL().spec();
   }
 }
 

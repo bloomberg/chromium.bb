@@ -44,7 +44,7 @@ void PluginDownloadUrlHelper::OnURLFetchComplete(
     if (source->GetResponseAsFilePath(true, &response_file)) {
       FilePath new_download_file_path =
           response_file.DirName().AppendASCII(
-              download_file_fetcher_->GetUrl().ExtractFileName());
+              download_file_fetcher_->GetURL().ExtractFileName());
 
       file_util::Delete(new_download_file_path, false);
 

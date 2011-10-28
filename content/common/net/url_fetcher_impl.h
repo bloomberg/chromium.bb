@@ -62,8 +62,8 @@ class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher{
   virtual void Start() OVERRIDE;
   virtual void StartWithRequestContextGetter(
       net::URLRequestContextGetter* request_context_getter) OVERRIDE;
-  virtual const GURL& GetOriginalUrl() const OVERRIDE;
-  virtual const GURL& GetUrl() const OVERRIDE;
+  virtual const GURL& GetOriginalURL() const OVERRIDE;
+  virtual const GURL& GetURL() const OVERRIDE;
   virtual const net::URLRequestStatus& GetStatus() const OVERRIDE;
   virtual int GetResponseCode() const OVERRIDE;
   virtual const net::ResponseCookies& GetCookies() const OVERRIDE;

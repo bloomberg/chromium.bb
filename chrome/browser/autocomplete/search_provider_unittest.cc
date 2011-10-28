@@ -31,7 +31,7 @@
 //   added to history.
 // . The URL created by using the search term keyword_term_ with keyword_t_url_
 //   is added to history.
-// . test_factory_ is set as the URLFetcher::Factory.
+// . test_factory_ is set as the URLFetcherFactory.
 class SearchProviderTest : public testing::Test,
                            public AutocompleteProvider::ACProviderListener {
  public:
@@ -91,7 +91,7 @@ class SearchProviderTest : public testing::Test,
   MessageLoopForUI message_loop_;
   BrowserThread io_thread_;
 
-  // URLFetcher::Factory implementation registered.
+  // URLFetcherFactory implementation registered.
   TestURLFetcherFactory test_factory_;
 
   // Profile we use.
@@ -259,7 +259,7 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
   // And the URL matches what we expected.
   GURL expected_url = GURL(default_t_url_->suggestions_url()->
       ReplaceSearchTerms(*default_t_url_, term, 0, string16()));
-  ASSERT_TRUE(fetcher->GetOriginalUrl() == expected_url);
+  ASSERT_TRUE(fetcher->GetOriginalURL() == expected_url);
 
   // Tell the SearchProvider the suggest query is done.
   fetcher->set_response_code(200);
@@ -319,7 +319,7 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
   // And the URL matches what we expected.
   GURL expected_url = GURL(keyword_t_url_->suggestions_url()->
       ReplaceSearchTerms(*keyword_t_url_, term, 0, string16()));
-  ASSERT_TRUE(keyword_fetcher->GetOriginalUrl() == expected_url);
+  ASSERT_TRUE(keyword_fetcher->GetOriginalURL() == expected_url);
 
   // Tell the SearchProvider the keyword suggest query is done.
   keyword_fetcher->set_response_code(200);

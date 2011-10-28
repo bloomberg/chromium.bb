@@ -206,7 +206,7 @@ void ProfileImageDownloader::OnURLFetchComplete(
   source->GetResponseAsString(&data);
   if (source->GetResponseCode() != 200) {
     LOG(ERROR) << "Response code is " << source->GetResponseCode();
-    LOG(ERROR) << "Url is " << source->GetUrl().spec();
+    LOG(ERROR) << "Url is " << source->GetURL().spec();
     LOG(ERROR) << "Data is " << data;
     if (delegate_)
       delegate_->OnDownloadFailure();

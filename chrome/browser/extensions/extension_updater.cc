@@ -599,13 +599,13 @@ void ExtensionUpdater::OnURLFetchComplete(const content::URLFetcher* source) {
   if (source == manifest_fetcher_.get()) {
     std::string data;
     source->GetResponseAsString(&data);
-    OnManifestFetchComplete(source->GetUrl(),
+    OnManifestFetchComplete(source->GetURL(),
                             source->GetStatus(),
                             source->GetResponseCode(),
                             data);
   } else if (source == extension_fetcher_.get()) {
     OnCRXFetchComplete(source,
-                       source->GetUrl(),
+                       source->GetURL(),
                        source->GetStatus(),
                        source->GetResponseCode());
   } else {
@@ -1160,7 +1160,7 @@ void ExtensionUpdater::StartUpdateCheck(ManifestFetchData* fetch_data) {
   }
 
   if (manifest_fetcher_.get() != NULL) {
-    if (manifest_fetcher_->GetUrl() != fetch_data->full_url()) {
+    if (manifest_fetcher_->GetURL() != fetch_data->full_url()) {
       manifests_pending_.push_back(scoped_fetch_data.release());
     }
   } else {
@@ -1192,7 +1192,7 @@ void ExtensionUpdater::FetchUpdatedExtension(const std::string& id,
   }
 
   if (extension_fetcher_.get() != NULL) {
-    if (extension_fetcher_->GetUrl() != url) {
+    if (extension_fetcher_->GetURL() != url) {
       extensions_pending_.push_back(ExtensionFetch(id, url, hash, version));
     }
   } else {

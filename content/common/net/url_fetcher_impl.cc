@@ -1020,11 +1020,11 @@ void URLFetcherImpl::StartWithRequestContextGetter(
   core_->Start();
 }
 
-const GURL& URLFetcherImpl::GetOriginalUrl() const {
+const GURL& URLFetcherImpl::GetOriginalURL() const {
   return core_->original_url_;
 }
 
-const GURL& URLFetcherImpl::GetUrl() const {
+const GURL& URLFetcherImpl::GetURL() const {
   return core_->url_;
 }
 

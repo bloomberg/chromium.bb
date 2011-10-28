@@ -27,7 +27,6 @@ ScopedURLFetcherFactory::~ScopedURLFetcherFactory() {
 
 TestURLFetcher::TestURLFetcher(int id,
                                const GURL& url,
-                               URLFetcher::RequestType request_type,
                                content::URLFetcherDelegate* d)
     : id_(id),
       original_url_(url),
@@ -124,11 +123,11 @@ void TestURLFetcher::StartWithRequestContextGetter(
   NOTIMPLEMENTED();
 }
 
-const GURL& TestURLFetcher::GetOriginalUrl() const {
+const GURL& TestURLFetcher::GetOriginalURL() const {
   return original_url_;
 }
 
-const GURL& TestURLFetcher::GetUrl() const {
+const GURL& TestURLFetcher::GetURL() const {
   return fake_url_;
 }
 
@@ -209,7 +208,7 @@ content::URLFetcher* TestURLFetcherFactory::CreateURLFetcher(
     const GURL& url,
     content::URLFetcher::RequestType request_type,
     content::URLFetcherDelegate* d) {
-  TestURLFetcher* fetcher = new TestURLFetcher(id, url, request_type, d);
+  TestURLFetcher* fetcher = new TestURLFetcher(id, url, d);
   fetchers_[id] = fetcher;
   return fetcher;
 }
@@ -229,13 +228,14 @@ void TestURLFetcherFactory::RemoveFetcherFromMap(int id) {
 class FakeURLFetcher : public TestURLFetcher {
  public:
   // Normal URL fetcher constructor but also takes in a pre-baked response.
-  FakeURLFetcher(const GURL& url, RequestType request_type,
+  FakeURLFetcher(const GURL& url,
                  content::URLFetcherDelegate* d,
                  const std::string& response_data, bool success)
-    : TestURLFetcher(0, url, request_type, d),
+    : TestURLFetcher(0, url, d),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
     set_status(net::URLRequestStatus(
-        success ? net::URLRequestStatus::SUCCESS :net::URLRequestStatus::FAILED,
+        success ? net::URLRequestStatus::SUCCESS :
+            net::URLRequestStatus::FAILED,
         0));
     set_response_code(success ? 200 : 500);
     SetResponseString(response_data);
@@ -249,8 +249,8 @@ class FakeURLFetcher : public TestURLFetcher {
         method_factory_.NewRunnableMethod(&FakeURLFetcher::RunDelegate));
   }
 
-  virtual const GURL& GetUrl() const OVERRIDE {
-    return TestURLFetcher::GetOriginalUrl();
+  virtual const GURL& GetURL() const OVERRIDE {
+    return TestURLFetcher::GetOriginalURL();
   }
 
  private:
@@ -296,8 +296,7 @@ content::URLFetcher* FakeURLFetcherFactory::CreateURLFetcher(
       return default_factory_->CreateURLFetcher(id, url, request_type, d);
     }
   }
-  return new FakeURLFetcher(url, request_type, d,
-                            it->second.first, it->second.second);
+  return new FakeURLFetcher(url, d, it->second.first, it->second.second);
 }
 
 void FakeURLFetcherFactory::SetFakeResponse(const std::string& url,
@@ -311,11 +310,11 @@ void FakeURLFetcherFactory::ClearFakeResponses() {
   fake_responses_.clear();
 }
 
-URLFetcherFactory::URLFetcherFactory() {}
+URLFetcherImplFactory::URLFetcherImplFactory() {}
 
-URLFetcherFactory::~URLFetcherFactory() {}
+URLFetcherImplFactory::~URLFetcherImplFactory() {}
 
-content::URLFetcher* URLFetcherFactory::CreateURLFetcher(
+content::URLFetcher* URLFetcherImplFactory::CreateURLFetcher(
     int id,
     const GURL& url,
     content::URLFetcher::RequestType request_type,

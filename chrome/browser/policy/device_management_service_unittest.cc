@@ -329,7 +329,7 @@ TEST_F(DeviceManagementServiceTest, RegisterRequest) {
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
-  CheckURLAndQueryParams(fetcher->GetOriginalUrl(),
+  CheckURLAndQueryParams(fetcher->GetOriginalURL(),
                          DeviceManagementBackendImpl::kValueRequestRegister,
                          kDeviceId);
 
@@ -363,14 +363,14 @@ TEST_F(DeviceManagementServiceTest, UnregisterRequest) {
   ASSERT_TRUE(fetcher);
 
   // Check the data the fetcher received.
-  const GURL& request_url(fetcher->GetOriginalUrl());
+  const GURL& request_url(fetcher->GetOriginalURL());
   const GURL service_url(kServiceUrl);
   EXPECT_EQ(service_url.scheme(), request_url.scheme());
   EXPECT_EQ(service_url.host(), request_url.host());
   EXPECT_EQ(service_url.port(), request_url.port());
   EXPECT_EQ(service_url.path(), request_url.path());
 
-  CheckURLAndQueryParams(fetcher->GetOriginalUrl(),
+  CheckURLAndQueryParams(fetcher->GetOriginalURL(),
                          DeviceManagementBackendImpl::kValueRequestUnregister,
                          kDeviceId);
 
@@ -528,7 +528,7 @@ TEST_F(DeviceManagementServiceTest, RetryOnProxyError) {
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   EXPECT_TRUE((fetcher->GetLoadFlags() & net::LOAD_BYPASS_PROXY) == 0);
-  const GURL original_url(fetcher->GetOriginalUrl());
+  const GURL original_url(fetcher->GetOriginalURL());
   const std::string upload_data(fetcher->upload_data());
 
   // Generate a callback with a proxy failure.
@@ -543,7 +543,7 @@ TEST_F(DeviceManagementServiceTest, RetryOnProxyError) {
   fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   EXPECT_TRUE(fetcher->GetLoadFlags() & net::LOAD_BYPASS_PROXY);
-  EXPECT_EQ(original_url, fetcher->GetOriginalUrl());
+  EXPECT_EQ(original_url, fetcher->GetOriginalURL());
   EXPECT_EQ(upload_data, fetcher->upload_data());
 }
 
@@ -559,7 +559,7 @@ TEST_F(DeviceManagementServiceTest, RetryOnBadResponseFromProxy) {
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   EXPECT_TRUE((fetcher->GetLoadFlags() & net::LOAD_BYPASS_PROXY) == 0);
-  const GURL original_url(fetcher->GetOriginalUrl());
+  const GURL original_url(fetcher->GetOriginalURL());
   const std::string upload_data(fetcher->upload_data());
   fetcher->set_was_fetched_via_proxy(true);
   scoped_refptr<net::HttpResponseHeaders> headers;
@@ -579,7 +579,7 @@ TEST_F(DeviceManagementServiceTest, RetryOnBadResponseFromProxy) {
   fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   EXPECT_TRUE((fetcher->GetLoadFlags() & net::LOAD_BYPASS_PROXY) != 0);
-  EXPECT_EQ(original_url, fetcher->GetOriginalUrl());
+  EXPECT_EQ(original_url, fetcher->GetOriginalURL());
   EXPECT_EQ(upload_data, fetcher->upload_data());
 }
 

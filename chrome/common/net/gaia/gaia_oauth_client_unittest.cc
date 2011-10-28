@@ -32,7 +32,7 @@ class MockOAuthFetcher : public TestURLFetcher {
                    const std::string& results,
                    content::URLFetcher::RequestType request_type,
                    content::URLFetcherDelegate* d)
-    : TestURLFetcher(0, url, request_type, d),
+    : TestURLFetcher(0, url, d),
       max_failure_count_(max_failure_count),
       current_failure_count_(0) {
     set_url(url);

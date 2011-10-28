@@ -160,8 +160,7 @@ TEST_F(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_get_access_token_url());
 
-  TestURLFetcher test_fetcher(
-      0, GURL(), content::URLFetcher::GET, &oauth_fetcher);
+  TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
   test_fetcher.set_response_code(RC_REQUEST_OK);
@@ -196,8 +195,7 @@ TEST_F(GaiaOAuthFetcherTest, OAuthWrapBridge) {
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_wrap_bridge_url());
 
-  TestURLFetcher test_fetcher(
-      0, GURL(), content::URLFetcher::GET, &oauth_fetcher);
+  TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
   test_fetcher.set_response_code(RC_REQUEST_OK);
@@ -227,8 +225,7 @@ TEST_F(GaiaOAuthFetcherTest, UserInfo) {
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_user_info_url());
 
-  TestURLFetcher test_fetcher(
-      0, GURL(), content::URLFetcher::GET, &oauth_fetcher);
+  TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
   test_fetcher.set_response_code(RC_REQUEST_OK);
@@ -253,8 +250,7 @@ TEST_F(GaiaOAuthFetcherTest, OAuthRevokeToken) {
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_revoke_token_url());
 
-  TestURLFetcher test_fetcher(
-      0, GURL(), content::URLFetcher::GET, &oauth_fetcher);
+  TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
   test_fetcher.set_response_code(RC_REQUEST_OK);

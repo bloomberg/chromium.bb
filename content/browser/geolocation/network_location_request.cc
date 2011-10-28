@@ -114,7 +114,7 @@ void NetworkLocationRequest::OnURLFetchComplete(
                           response_code,
                           data,
                           timestamp_,
-                          source->GetUrl(),
+                          source->GetURL(),
                           &position,
                           &access_token);
   const bool server_error =

@@ -88,15 +88,6 @@ class HttpBridgeTest : public testing::Test {
   MessageLoop loop_;
 };
 
-class DummyURLFetcher : public TestURLFetcher {
- public:
-  DummyURLFetcher() : TestURLFetcher(0, GURL(), POST, NULL) {}
-
-  net::HttpResponseHeaders* GetResponseHeaders() const {
-    return NULL;
-  }
-};
-
 // An HttpBridge that doesn't actually make network requests and just calls
 // back with dummy response info.
 class ShuntedHttpBridge : public HttpBridge {
@@ -128,7 +119,7 @@ class ShuntedHttpBridge : public HttpBridge {
     net::ResponseCookies cookies;
 
     std::string response_content = "success!";
-    DummyURLFetcher fetcher;
+    TestURLFetcher fetcher(0, GURL(), NULL);
     fetcher.set_url(GURL("www.google.com"));
     fetcher.set_response_code(200);
     fetcher.set_cookies(cookies);

@@ -190,7 +190,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
     net::URLRequestStatus status;
     status.set_status(success ? net::URLRequestStatus::SUCCESS :
                                 net::URLRequestStatus::FAILED);
-    fetcher->set_url(fetcher->GetOriginalUrl());
+    fetcher->set_url(fetcher->GetOriginalURL());
     fetcher->set_status(status);
     fetcher->set_response_code(success ? 200 : 500);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
@@ -218,7 +218,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
       }
       data += "}})";
     }
-    fetcher->set_url(fetcher->GetOriginalUrl());
+    fetcher->set_url(fetcher->GetOriginalURL());
     fetcher->set_status(status);
     fetcher->set_response_code(success ? 200 : 500);
     fetcher->SetResponseString(data);

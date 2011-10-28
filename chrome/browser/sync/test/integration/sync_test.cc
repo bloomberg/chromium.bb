@@ -383,7 +383,7 @@ void SyncTest::ReadPasswordFile() {
 void SyncTest::SetupMockGaiaResponses() {
   username_ = "user@gmail.com";
   password_ = "password";
-  factory_.reset(new URLFetcherFactory());
+  factory_.reset(new URLFetcherImplFactory());
   fake_factory_.reset(new FakeURLFetcherFactory(factory_.get()));
   fake_factory_->SetFakeResponse(kClientLoginUrl, "SID=sid\nLSID=lsid", true);
   fake_factory_->SetFakeResponse(kGetUserInfoUrl, "email=user@gmail.com", true);

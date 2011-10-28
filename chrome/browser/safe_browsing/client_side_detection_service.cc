@@ -190,12 +190,12 @@ void ClientSideDetectionService::OnURLFetchComplete(
   source->GetResponseAsString(&data);
   if (source == model_fetcher_.get()) {
     HandleModelResponse(
-        source, source->GetUrl(), source->GetStatus(),
+        source, source->GetURL(), source->GetStatus(),
         source->GetResponseCode(), source->GetCookies(), data);
   } else if (client_phishing_reports_.find(source) !=
              client_phishing_reports_.end()) {
     HandlePhishingVerdict(
-        source, source->GetUrl(), source->GetStatus(),
+        source, source->GetURL(), source->GetStatus(),
         source->GetResponseCode(), source->GetCookies(), data);
   } else {
     NOTREACHED();

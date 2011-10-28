@@ -263,10 +263,10 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
     } else {
       HandleGetHashError(Time::Now());
       if (source->GetStatus().status() == net::URLRequestStatus::FAILED) {
-        VLOG(1) << "SafeBrowsing GetHash request for: " << source->GetUrl()
+        VLOG(1) << "SafeBrowsing GetHash request for: " << source->GetURL()
                 << " failed with error: " << source->GetStatus().error();
       } else {
-        VLOG(1) << "SafeBrowsing GetHash request for: " << source->GetUrl()
+        VLOG(1) << "SafeBrowsing GetHash request for: " << source->GetURL()
                 << " failed with error: " << source->GetResponseCode();
       }
     }
@@ -297,9 +297,9 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       std::string data;
       source->GetResponseAsString(&data);
       parsed_ok = HandleServiceResponse(
-          source->GetUrl(), data.data(), static_cast<int>(data.length()));
+          source->GetURL(), data.data(), static_cast<int>(data.length()));
       if (!parsed_ok) {
-        VLOG(1) << "SafeBrowsing request for: " << source->GetUrl()
+        VLOG(1) << "SafeBrowsing request for: " << source->GetURL()
                 << " failed parse.";
         must_back_off = true;
         chunk_request_urls_.clear();
@@ -338,10 +338,10 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
         chunk_request_urls_.clear();
       UpdateFinished(false);
       if (source->GetStatus().status() == net::URLRequestStatus::FAILED) {
-        VLOG(1) << "SafeBrowsing request for: " << source->GetUrl()
+        VLOG(1) << "SafeBrowsing request for: " << source->GetURL()
                 << " failed with error: " << source->GetStatus().error();
       } else {
-        VLOG(1) << "SafeBrowsing request for: " << source->GetUrl()
+        VLOG(1) << "SafeBrowsing request for: " << source->GetURL()
                 << " failed with error: " << source->GetResponseCode();
       }
     }

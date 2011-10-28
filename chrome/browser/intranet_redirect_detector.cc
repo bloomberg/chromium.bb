@@ -111,8 +111,8 @@ void IntranetRedirectDetector::OnURLFetchComplete(
     }
     redirect_origin_ = GURL();
   } else {
-    DCHECK(source->GetUrl().is_valid());
-    GURL origin(source->GetUrl().GetOrigin());
+    DCHECK(source->GetURL().is_valid());
+    GURL origin(source->GetURL().GetOrigin());
     if (resulting_origins_.empty()) {
       resulting_origins_.push_back(origin);
       return;

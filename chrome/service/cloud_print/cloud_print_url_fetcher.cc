@@ -52,7 +52,7 @@ void CloudPrintURLFetcher::StartPostRequest(
 
 void CloudPrintURLFetcher::OnURLFetchComplete(
     const content::URLFetcher* source) {
-  VLOG(1) << "CP_PROXY: OnURLFetchComplete, url: " << source->GetUrl()
+  VLOG(1) << "CP_PROXY: OnURLFetchComplete, url: " << source->GetURL()
           << ", response code: " << source->GetResponseCode();
   // Make sure we stay alive through the body of this function.
   scoped_refptr<CloudPrintURLFetcher> keep_alive(this);
@@ -60,7 +60,7 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
   source->GetResponseAsString(&data);
   ResponseAction action = delegate_->HandleRawResponse(
       source,
-      source->GetUrl(),
+      source->GetURL(),
       source->GetStatus(),
       source->GetResponseCode(),
       source->GetCookies(),
@@ -78,7 +78,7 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
     if (!source->GetStatus().is_success() || (source->GetResponseCode() != 200))
       action = RETRY_REQUEST;
     else
-      action = delegate_->HandleRawData(source, source->GetUrl(), data);
+      action = delegate_->HandleRawData(source, source->GetURL(), data);
 
     if (action == CONTINUE_PROCESSING) {
       // If the delegate is not interested in handling the raw response data,
@@ -90,7 +90,7 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
       CloudPrintHelpers::ParseResponseJSON(data, &succeeded, &response_dict);
       if (response_dict)
         action = delegate_->HandleJSONData(source,
-                                           source->GetUrl(),
+                                           source->GetURL(),
                                            response_dict,
                                            succeeded);
       else

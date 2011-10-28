@@ -352,7 +352,7 @@ class ExtensionUpdaterTest : public testing::Test {
     // Get the url our mock fetcher was asked to fetch.
     TestURLFetcher* fetcher =
         factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
-    const GURL& url = fetcher->GetOriginalUrl();
+    const GURL& url = fetcher->GetOriginalURL();
     EXPECT_FALSE(url.is_empty());
     EXPECT_TRUE(url.is_valid());
     EXPECT_TRUE(url.SchemeIs("http"));
@@ -402,7 +402,7 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcher* fetcher =
         factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     ASSERT_FALSE(fetcher == NULL);
-    const GURL& url = fetcher->GetOriginalUrl();
+    const GURL& url = fetcher->GetOriginalURL();
 
     EXPECT_FALSE(url.is_empty());
     EXPECT_TRUE(url.is_valid());
@@ -988,7 +988,7 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcher* fetcher =
       factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
-    fetched_urls.push_back(fetcher->GetOriginalUrl());
+    fetched_urls.push_back(fetcher->GetOriginalURL());
 
     fetcher->set_url(fetched_urls[0]);
     fetcher->set_status(net::URLRequestStatus());
@@ -997,7 +997,7 @@ class ExtensionUpdaterTest : public testing::Test {
     fetcher->delegate()->OnURLFetchComplete(fetcher);
 
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
-    fetched_urls.push_back(fetcher->GetOriginalUrl());
+    fetched_urls.push_back(fetcher->GetOriginalURL());
 
     // The urls could have been fetched in either order, so use the host to
     // tell them apart and note the query each used.

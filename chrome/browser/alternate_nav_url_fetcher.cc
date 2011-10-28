@@ -166,7 +166,7 @@ void AlternateNavURLFetcher::OnURLFetchComplete(
     const content::URLFetcher* source) {
   DCHECK_EQ(fetcher_.get(), source);
   SetStatusFromURLFetch(
-      source->GetUrl(), source->GetStatus(), source->GetResponseCode());
+      source->GetURL(), source->GetStatus(), source->GetResponseCode());
   ShowInfobarIfPossible();
   // WARNING: |this| may be deleted!
 }
