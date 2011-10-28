@@ -12,6 +12,8 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 
+#include "ui/gfx/size.h"
+
 TabEventObserver::TabEventObserver() { }
 
 TabEventObserver::~TabEventObserver() {
@@ -47,6 +49,10 @@ void AutomationTabHelper::AddObserver(TabEventObserver* observer) {
 
 void AutomationTabHelper::RemoveObserver(TabEventObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void AutomationTabHelper::SnapshotEntirePage() {
+  Send(new AutomationMsg_SnapshotEntirePage(routing_id()));
 }
 
 bool AutomationTabHelper::has_pending_loads() const {
@@ -99,10 +105,20 @@ void AutomationTabHelper::OnTabOrRenderViewDestroyed(
   }
 }
 
+void AutomationTabHelper::OnSnapshotEntirePageACK(
+    bool success,
+    const std::vector<unsigned char>& png_data,
+    const std::string& error_msg) {
+  FOR_EACH_OBSERVER(TabEventObserver, observers_,
+                    OnSnapshotEntirePageACK(success, png_data, error_msg));
+}
+
 bool AutomationTabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   bool msg_is_good = true;
   IPC_BEGIN_MESSAGE_MAP_EX(AutomationTabHelper, message, msg_is_good)
+    IPC_MESSAGE_HANDLER(AutomationMsg_SnapshotEntirePageACK,
+                        OnSnapshotEntirePageACK)
     IPC_MESSAGE_HANDLER(AutomationMsg_WillPerformClientRedirect,
                         OnWillPerformClientRedirect)
     IPC_MESSAGE_HANDLER(AutomationMsg_DidCompleteOrCancelClientRedirect,

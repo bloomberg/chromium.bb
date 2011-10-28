@@ -1494,8 +1494,18 @@ IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_EndTracing,
 IPC_SYNC_MESSAGE_CONTROL0_2(AutomationMsg_GetTracingOutput,
                             std::string /* trace_chunk */,
                             int /* remaining_chunks */)
+// Browser -> renderer messages.
+
+// Requests a snapshot.
+IPC_MESSAGE_ROUTED0(AutomationMsg_SnapshotEntirePage)
 
 // Renderer -> browser messages.
+
+// Sent as a response to |AutomationMsg_Snapshot|.
+IPC_MESSAGE_ROUTED3(AutomationMsg_SnapshotEntirePageACK,
+                    bool /* success */,
+                    std::vector<unsigned char> /* png bytes */,
+                    std::string /* error message */)
 
 // Sent when the renderer has scheduled a client redirect to occur.
 IPC_MESSAGE_ROUTED2(AutomationMsg_WillPerformClientRedirect,

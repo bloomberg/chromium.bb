@@ -1343,13 +1343,13 @@ class SavePackageNotificationObserver : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(SavePackageNotificationObserver);
 };
 
-// This class manages taking a snapshot of a page. This requires waiting on
-// asynchronous callbacks and notifications.
-class PageSnapshotTaker : public DomOperationObserver {
+// This class manages taking a snapshot of a page.
+class PageSnapshotTaker : public TabEventObserver,
+                          public content::NotificationObserver {
  public:
   PageSnapshotTaker(AutomationProvider* automation,
                     IPC::Message* reply_message,
-                    RenderViewHost* render_view,
+                    TabContentsWrapper* tab_contents,
                     const FilePath& path);
   virtual ~PageSnapshotTaker();
 
@@ -1357,26 +1357,24 @@ class PageSnapshotTaker : public DomOperationObserver {
   void Start();
 
  private:
-  // Overriden from DomOperationObserver.
-  virtual void OnDomOperationCompleted(const std::string& json) OVERRIDE;
-  virtual void OnModalDialogShown() OVERRIDE;
-
-  // Called by the ThumbnailGenerator when the requested snapshot has been
-  // generated.
-  void OnSnapshotTaken(const SkBitmap& bitmap);
-
-  // Helper method to send arbitrary javascript to the renderer for evaluation.
-  void ExecuteScript(const std::wstring& javascript);
+  // TabEventObserver overrides.
+  virtual void OnSnapshotEntirePageACK(
+      bool success,
+      const std::vector<unsigned char>& png_data,
+      const std::string& error_msg) OVERRIDE;
+  // NotificationObserver overrides.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Helper method to send a response back to the client. Deletes this.
   void SendMessage(bool success, const std::string& error_msg);
 
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
-  RenderViewHost* render_view_;
+  TabContentsWrapper* tab_contents_;
   FilePath image_path_;
-  bool received_width_;
-  gfx::Size entire_page_size_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PageSnapshotTaker);
 };

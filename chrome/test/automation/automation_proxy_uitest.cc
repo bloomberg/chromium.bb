@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_value_serializer.h"
+#include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
@@ -1529,8 +1530,7 @@ class AutomationProxySnapshotTest : public UITest {
 
   // Asserts that the given png file can be read and decoded into the given
   // bitmap.
-  void AssertReadPNG(const FilePath& filename, SkBitmap* bitmap) {
-    DCHECK(bitmap);
+  void AssertReadPNG(const FilePath& filename, std::string* data) {
     ASSERT_TRUE(file_util::PathExists(filename));
 
     int64 size64;
@@ -1540,13 +1540,9 @@ class AutomationProxySnapshotTest : public UITest {
 
     // Read and decode image.
     int size = static_cast<int>(size64);
-    scoped_array<char> data(new char[size]);
-    int bytes_read = file_util::ReadFile(filename, &data[0], size);
+    data->resize(size);
+    int bytes_read = file_util::ReadFile(filename, &(*data)[0], size);
     ASSERT_EQ(size, bytes_read);
-    ASSERT_TRUE(gfx::PNGCodec::Decode(
-        reinterpret_cast<unsigned char*>(&data[0]),
-        bytes_read,
-        bitmap));
   }
 
   // Returns the file path for the directory for these tests appended with
@@ -1566,113 +1562,26 @@ class AutomationProxySnapshotTest : public UITest {
   ScopedTempDir snapshot_dir_;
 };
 
-// See http://crbug.com/63022.
-#if defined(OS_LINUX)
-#define MAYBE_ContentLargerThanView FAILS_ContentLargerThanView
-#else
-#define MAYBE_ContentLargerThanView ContentLargerThanView
-#endif
 // Tests that taking a snapshot when the content is larger than the view
 // produces a snapshot equal to the content size.
-TEST_F(AutomationProxySnapshotTest, MAYBE_ContentLargerThanView) {
+TEST_F(AutomationProxySnapshotTest, ContentLargerThanView) {
+  const char kReferenceMd5[] = "3d594850fd25cb116338cb3610afe18e";
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
-
-  // Resize the window to guarantee that the content is larger than the view.
-  scoped_refptr<WindowProxy> window(browser->GetWindow());
-  ASSERT_TRUE(window.get());
-  ASSERT_TRUE(window->SetBounds(gfx::Rect(300, 400)));
-
   scoped_refptr<TabProxy> tab(browser->GetTab(0));
   ASSERT_TRUE(tab.get());
 
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(GetTestUrl("set_size.html", "600,800")));
+            tab->NavigateToURL(GetTestUrl("set_size.html", "2000,2500")));
 
   ASSERT_TRUE(tab->CaptureEntirePageAsPNG(snapshot_path_));
 
-  SkBitmap bitmap;
-  ASSERT_NO_FATAL_FAILURE(AssertReadPNG(snapshot_path_, &bitmap));
-  ASSERT_EQ(600, bitmap.width());
-  ASSERT_EQ(800, bitmap.height());
-}
-
-// Tests taking a large snapshot works.
-#if defined(OS_LINUX)
-// See http://code.google.com/p/chromium/issues/detail?id=89777
-#define MAYBE_LargeSnapshot DISABLED_LargeSnapshot
-#else
-#define MAYBE_LargeSnapshot LargeSnapshot
-#endif
-TEST_F(AutomationProxySnapshotTest, MAYBE_LargeSnapshot) {
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser.get());
-
-  scoped_refptr<TabProxy> tab(browser->GetTab(0));
-  ASSERT_TRUE(tab.get());
-
-  // 2000x2000 creates an approximately 15 MB bitmap.
-  // Don't increase this too much. At least my linux box has SHMMAX set at
-  // 32 MB.
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(GetTestUrl("set_size.html", "2000,2000")));
-
-  ASSERT_TRUE(tab->CaptureEntirePageAsPNG(snapshot_path_));
-
-  SkBitmap bitmap;
-  ASSERT_NO_FATAL_FAILURE(AssertReadPNG(snapshot_path_, &bitmap));
-  ASSERT_EQ(2000, bitmap.width());
-  ASSERT_EQ(2000, bitmap.height());
-}
-
-#if defined(OS_MACOSX)
-// Most pixels on mac are slightly off.
-#define MAYBE_ContentsCorrect DISABLED_ContentsCorrect
-#elif defined(OS_LINUX)
-// See http://crbug.com/63022.
-#define MAYBE_ContentsCorrect FAILS_ContentsCorrect
-#else
-#define MAYBE_ContentsCorrect ContentsCorrect
-#endif
-
-// Tests that the snapshot contents are correct.
-TEST_F(AutomationProxySnapshotTest, MAYBE_ContentsCorrect) {
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser.get());
-
-  const gfx::Size img_size(400, 300);
-  scoped_refptr<WindowProxy> window(browser->GetWindow());
-  ASSERT_TRUE(window.get());
-  ASSERT_TRUE(window->SetBounds(gfx::Rect(img_size)));
-
-  scoped_refptr<TabProxy> tab(browser->GetTab(0));
-  ASSERT_TRUE(tab.get());
-
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(GetTestUrl("just_image.html", "")));
-
-  ASSERT_TRUE(tab->CaptureEntirePageAsPNG(snapshot_path_));
-
-  SkBitmap snapshot_bmp;
-  ASSERT_NO_FATAL_FAILURE(AssertReadPNG(snapshot_path_, &snapshot_bmp));
-  ASSERT_EQ(img_size.width(), snapshot_bmp.width());
-  ASSERT_EQ(img_size.height(), snapshot_bmp.height());
-
-  SkBitmap reference_bmp;
-  ASSERT_NO_FATAL_FAILURE(AssertReadPNG(GetTestFilePath("image.png"),
-                                        &reference_bmp));
-  ASSERT_EQ(img_size.width(), reference_bmp.width());
-  ASSERT_EQ(img_size.height(), reference_bmp.height());
-
-  SkAutoLockPixels lock_snapshot(snapshot_bmp);
-  SkAutoLockPixels lock_reference(reference_bmp);
-  int diff_pixels_count = 0;
-  for (int x = 0; x < img_size.width(); ++x) {
-    for (int y = 0; y < img_size.height(); ++y) {
-      if (*snapshot_bmp.getAddr32(x, y) != *reference_bmp.getAddr32(x, y)) {
-        ++diff_pixels_count;
-      }
-    }
+  std::string data;
+  ASSERT_NO_FATAL_FAILURE(AssertReadPNG(snapshot_path_, &data));
+  EXPECT_STREQ(kReferenceMd5, base::MD5String(data).c_str());
+  if (CommandLine::ForCurrentProcess()->HasSwitch("dump-test-image")) {
+    FilePath path(FILE_PATH_LITERAL("snapshot.png"));
+    EXPECT_EQ(file_util::WriteFile(path, &data[0], data.length()),
+              static_cast<int>(data.length()));
   }
-  ASSERT_EQ(diff_pixels_count, 0);
 }
