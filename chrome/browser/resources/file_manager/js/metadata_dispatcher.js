@@ -17,11 +17,10 @@ importScripts('byte_reader.js');
  * Dispatches metadata requests to the correct parser.
  */
 function MetadataDispatcher() {
+  // Make sure to ipdate component_extension_resources.grd
+  // when adding new parsers.
   importScripts('exif_parser.js');
-  // importScripts('image_parsers.js');
-  // The line above is commented out because it caused some browser tests
-  // to fail. This is likely to be caused by crbug.com/101665.
-  // TODO(kaznacheev) wait until is gets resoved and rerun tests.
+  importScripts('image_parsers.js');
   importScripts('mpeg_parser.js');
   importScripts('id3_parser.js');
 
