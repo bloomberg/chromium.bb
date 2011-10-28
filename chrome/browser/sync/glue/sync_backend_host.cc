@@ -135,21 +135,19 @@ void SyncBackendHost::Initialize(
 
 void SyncBackendHost::InitCore(const Core::DoInitializeOptions& options) {
   sync_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoInitialize,
-                        options));
+      base::Bind(&SyncBackendHost::Core::DoInitialize, core_.get(),options));
 }
 
 void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
   sync_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(core_.get(),
-                        &SyncBackendHost::Core::DoUpdateCredentials,
-                        credentials));
+      base::Bind(&SyncBackendHost::Core::DoUpdateCredentials, core_.get(),
+                 credentials));
 }
 
 void SyncBackendHost::StartSyncingWithServer() {
   SVLOG(1) << "SyncBackendHost::StartSyncingWithServer called.";
   sync_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoStartSyncing));
+      base::Bind(&SyncBackendHost::Core::DoStartSyncing, core_.get()));
 }
 
 void SyncBackendHost::SetPassphrase(const std::string& passphrase,
@@ -164,8 +162,8 @@ void SyncBackendHost::SetPassphrase(const std::string& passphrase,
 
   // If encryption is enabled and we've got a SetPassphrase
   sync_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoSetPassphrase,
-                        passphrase, is_explicit));
+      base::Bind(&SyncBackendHost::Core::DoSetPassphrase, core_.get(),
+                 passphrase, is_explicit));
 }
 
 void SyncBackendHost::StopSyncManagerForShutdown(
@@ -222,9 +220,8 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   // TODO(tim): DCHECK(registrar_->StoppedOnUIThread()) would be nice.
   if (sync_thread_.IsRunning()) {
     sync_thread_.message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(core_.get(),
-                          &SyncBackendHost::Core::DoShutdown,
-                          sync_disabled));
+        base::Bind(&SyncBackendHost::Core::DoShutdown, core_.get(),
+                   sync_disabled));
   }
 
   // Stop will return once the thread exits, which will be after DoShutdown
@@ -282,27 +279,27 @@ void SyncBackendHost::ConfigureDataTypes(
   if (!types_to_remove_with_nigori.empty()) {
     sync_thread_.message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(
-            core_.get(),
-            &SyncBackendHost::Core::DoRequestCleanupDisabledTypes));
+        base::Bind(&SyncBackendHost::Core::DoRequestCleanupDisabledTypes,
+                   core_.get()));
   }
 
-  StartConfiguration(base::Bind(
-      &SyncBackendHost::Core::FinishConfigureDataTypes, core_.get()));
+  StartConfiguration(
+      base::Bind(&SyncBackendHost::Core::FinishConfigureDataTypes,
+                 core_.get()));
 }
 
 void SyncBackendHost::StartConfiguration(const base::Closure& callback) {
   // Put syncer in the config mode. DTM will put us in normal mode once it is
   // done. This is to ensure we dont do a normal sync when we are doing model
   // association.
-  sync_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      core_.get(), &SyncBackendHost::Core::DoStartConfiguration, callback));
+  sync_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+      &SyncBackendHost::Core::DoStartConfiguration, core_.get(), callback));
 }
 
 void SyncBackendHost::EnableEncryptEverything() {
   sync_thread_.message_loop()->PostTask(FROM_HERE,
-     NewRunnableMethod(core_.get(),
-                       &SyncBackendHost::Core::DoEnableEncryptEverything));
+     base::Bind(&SyncBackendHost::Core::DoEnableEncryptEverything,
+                core_.get()));
 }
 
 void SyncBackendHost::ActivateDataType(
@@ -317,11 +314,10 @@ void SyncBackendHost::DeactivateDataType(syncable::ModelType type) {
 
 bool SyncBackendHost::RequestClearServerData() {
   sync_thread_.message_loop()->PostTask(FROM_HERE,
-     NewRunnableMethod(core_.get(),
-     &SyncBackendHost::Core::DoRequestClearServerData));
+      base::Bind(&SyncBackendHost::Core::DoRequestClearServerData,
+                 core_.get()));
   return true;
 }
-
 
 sync_api::UserShare* SyncBackendHost::GetUserShare() const {
   DCHECK(initialized());
@@ -407,8 +403,9 @@ void SyncBackendHost::Core::OnSyncCycleCompleted(
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+  host_->frontend_loop_->PostTask(FROM_HERE, base::Bind(
       &Core::HandleSyncCycleCompletedOnFrontendLoop,
+      this,
       new SyncSessionSnapshot(*snapshot)));
 }
 
@@ -419,13 +416,11 @@ void SyncBackendHost::Core::OnInitializationComplete(
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
 
   host_->frontend_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this,
-                        &Core::HandleInitializationCompletedOnFrontendLoop,
-                        js_backend, success));
+      base::Bind(&Core::HandleInitializationCompletedOnFrontendLoop, this,
+                 js_backend, success));
 
   // Initialization is complete, so we can schedule recurring SaveChanges.
-  sync_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &Core::StartSavingChanges));
+  sync_loop_->PostTask(FROM_HERE, base::Bind(&Core::StartSavingChanges, this));
 }
 
 void SyncBackendHost::Core::OnAuthError(const AuthError& auth_error) {
@@ -434,8 +429,7 @@ void SyncBackendHost::Core::OnAuthError(const AuthError& auth_error) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   // Post to our core loop so we can modify state. Could be on another thread.
   host_->frontend_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &Core::HandleAuthErrorEventOnFrontendLoop,
-      auth_error));
+      base::Bind(&Core::HandleAuthErrorEventOnFrontendLoop, this, auth_error));
 }
 
 void SyncBackendHost::Core::OnPassphraseRequired(
@@ -444,7 +438,7 @@ void SyncBackendHost::Core::OnPassphraseRequired(
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   host_->frontend_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &Core::NotifyPassphraseRequired, reason));
+      base::Bind(&Core::NotifyPassphraseRequired, this, reason));
 }
 
 void SyncBackendHost::Core::OnPassphraseAccepted(
@@ -453,40 +447,39 @@ void SyncBackendHost::Core::OnPassphraseAccepted(
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   host_->frontend_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &Core::NotifyPassphraseAccepted,
-          bootstrap_token));
+      base::Bind(&Core::NotifyPassphraseAccepted, this, bootstrap_token));
 }
 
 void SyncBackendHost::Core::OnStopSyncingPermanently() {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &Core::HandleStopSyncingPermanentlyOnFrontendLoop));
+  host_->frontend_loop_->PostTask(FROM_HERE, base::Bind(
+      &Core::HandleStopSyncingPermanentlyOnFrontendLoop, this));
 }
 
 void SyncBackendHost::Core::OnUpdatedToken(const std::string& token) {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &Core::NotifyUpdatedToken, token));
+  host_->frontend_loop_->PostTask(FROM_HERE, base::Bind(
+      &Core::NotifyUpdatedToken, this, token));
 }
 
 void SyncBackendHost::Core::OnClearServerDataFailed() {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &Core::HandleClearServerDataFailedOnFrontendLoop));
+  host_->frontend_loop_->PostTask(FROM_HERE, base::Bind(
+      &Core::HandleClearServerDataFailedOnFrontendLoop, this));
 }
 
 void SyncBackendHost::Core::OnClearServerDataSucceeded() {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &Core::HandleClearServerDataSucceededOnFrontendLoop));
+  host_->frontend_loop_->PostTask(FROM_HERE, base::Bind(
+      &Core::HandleClearServerDataSucceededOnFrontendLoop, this));
 }
 
 void SyncBackendHost::Core::OnEncryptedTypesChanged(
@@ -519,8 +512,8 @@ void SyncBackendHost::Core::OnActionableError(
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   host_->frontend_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &Core::HandleActionableErrorEventOnFrontendLoop,
-                        sync_error));
+      base::Bind(&Core::HandleActionableErrorEventOnFrontendLoop, this,
+                 sync_error));
 }
 
 SyncBackendHost::Core::DoInitializeOptions::DoInitializeOptions(
@@ -714,8 +707,8 @@ void SyncBackendHost::Core::DeleteSyncDataFolder() {
 
 void SyncBackendHost::Core::FinishConfigureDataTypes() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &SyncBackendHost::Core::FinishConfigureDataTypesOnFrontendLoop));
+  host_->frontend_loop_->PostTask(FROM_HERE, base::Bind(
+      &SyncBackendHost::Core::FinishConfigureDataTypesOnFrontendLoop, this));
 }
 
 void SyncBackendHost::Core::HandleInitializationCompletedOnFrontendLoop(
@@ -946,9 +939,8 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
       // reachability check.
       sync_thread_.message_loop()->PostTask(
           FROM_HERE,
-          NewRunnableMethod(
-              core_.get(),
-              &SyncBackendHost::Core::DoCheckServerReachable));
+          base::Bind(&SyncBackendHost::Core::DoCheckServerReachable,
+                     core_.get()));
       break;
     default:
       NOTREACHED();
@@ -1001,18 +993,17 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
     SVLOG(1) << "Types " << ModelTypeSetToString(types_to_config)
             << " added; calling DoRequestConfig";
     sync_thread_.message_loop()->PostTask(FROM_HERE,
-         NewRunnableMethod(core_.get(),
-                           &SyncBackendHost::Core::DoRequestConfig,
-                           syncable::ModelTypeBitSetFromSet(types_to_config),
-                           pending_download_state_->reason));
+         base::Bind(&SyncBackendHost::Core::DoRequestConfig,
+                    core_.get(),
+                    syncable::ModelTypeBitSetFromSet(types_to_config),
+                    pending_download_state_->reason));
   }
 
   pending_config_mode_state_.reset();
 
   // Notify the SyncManager about the new types.
   sync_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(core_.get(),
-                        &SyncBackendHost::Core::DoUpdateEnabledTypes));
+      base::Bind(&SyncBackendHost::Core::DoUpdateEnabledTypes, core_.get()));
 }
 
 sync_api::HttpPostProviderFactory* SyncBackendHost::MakeHttpBridgeFactory(

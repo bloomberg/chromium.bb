@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/profile_sync_test_util.h"
 
+#include "base/bind.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 
@@ -20,7 +21,7 @@ void ThreadNotificationService::Init() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   notification_thread_->message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &ThreadNotificationService::InitTask));
+      base::Bind(&ThreadNotificationService::InitTask, this));
   done_event_.Wait();
 }
 
@@ -28,8 +29,7 @@ void ThreadNotificationService::TearDown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   notification_thread_->message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &ThreadNotificationService::TearDownTask));
+      base::Bind(&ThreadNotificationService::TearDownTask, this));
   done_event_.Wait();
 }
 
@@ -60,11 +60,7 @@ void ThreadNotifier::Notify(int type,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   notify_thread_->message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &ThreadNotifier::NotifyTask,
-                        type,
-                        source,
-                        details));
+      base::Bind(&ThreadNotifier::NotifyTask, this, type, source, details));
   done_event_.Wait();
 }
 

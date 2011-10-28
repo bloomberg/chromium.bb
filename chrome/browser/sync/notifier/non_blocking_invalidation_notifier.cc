@@ -159,9 +159,9 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
               GetIOMessageLoopProxy()) {
   if (!io_message_loop_proxy_->PostTask(
           FROM_HERE,
-          NewRunnableMethod(
-              core_.get(),
+          base::Bind(
               &NonBlockingInvalidationNotifier::Core::Initialize,
+              core_.get(),
               notifier_options,
               initial_max_invalidation_versions,
               invalidation_version_tracker,
@@ -174,9 +174,8 @@ NonBlockingInvalidationNotifier::~NonBlockingInvalidationNotifier() {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   if (!io_message_loop_proxy_->PostTask(
           FROM_HERE,
-          NewRunnableMethod(
-              core_.get(),
-              &NonBlockingInvalidationNotifier::Core::Teardown))) {
+          base::Bind(&NonBlockingInvalidationNotifier::Core::Teardown,
+                     core_.get()))) {
     NOTREACHED();
   }
 }
@@ -198,10 +197,8 @@ void NonBlockingInvalidationNotifier::SetUniqueId(
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   if (!io_message_loop_proxy_->PostTask(
           FROM_HERE,
-          NewRunnableMethod(
-              core_.get(),
-              &NonBlockingInvalidationNotifier::Core::SetUniqueId,
-              unique_id))) {
+          base::Bind(&NonBlockingInvalidationNotifier::Core::SetUniqueId,
+                     core_.get(), unique_id))) {
     NOTREACHED();
   }
 }
@@ -210,10 +207,8 @@ void NonBlockingInvalidationNotifier::SetState(const std::string& state) {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   if (!io_message_loop_proxy_->PostTask(
           FROM_HERE,
-          NewRunnableMethod(
-              core_.get(),
-              &NonBlockingInvalidationNotifier::Core::SetState,
-              state))) {
+          base::Bind(&NonBlockingInvalidationNotifier::Core::SetState,
+                     core_.get(), state))) {
     NOTREACHED();
   }
 }
@@ -223,10 +218,8 @@ void NonBlockingInvalidationNotifier::UpdateCredentials(
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   if (!io_message_loop_proxy_->PostTask(
           FROM_HERE,
-          NewRunnableMethod(
-              core_.get(),
-              &NonBlockingInvalidationNotifier::Core::UpdateCredentials,
-              email, token))) {
+          base::Bind(&NonBlockingInvalidationNotifier::Core::UpdateCredentials,
+                     core_.get(), email, token))) {
     NOTREACHED();
   }
 }
@@ -236,10 +229,8 @@ void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   if (!io_message_loop_proxy_->PostTask(
           FROM_HERE,
-          NewRunnableMethod(
-              core_.get(),
-              &NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes,
-              enabled_types))) {
+          base::Bind(&NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes,
+                     core_.get(), enabled_types))) {
     NOTREACHED();
   }
 }

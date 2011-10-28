@@ -66,7 +66,7 @@ void AddLogin(PasswordStore* store, const PasswordForm& form) {
   ASSERT_TRUE(store);
   base::WaitableEvent wait_event(true, false);
   store->AddLogin(form);
-  store->ScheduleTask(NewRunnableFunction(&PasswordStoreCallback, &wait_event));
+  store->ScheduleTask(base::Bind(&PasswordStoreCallback, &wait_event));
   wait_event.Wait();
 }
 
@@ -74,7 +74,7 @@ void UpdateLogin(PasswordStore* store, const PasswordForm& form) {
   ASSERT_TRUE(store);
   base::WaitableEvent wait_event(true, false);
   store->UpdateLogin(form);
-  store->ScheduleTask(NewRunnableFunction(&PasswordStoreCallback, &wait_event));
+  store->ScheduleTask(base::Bind(&PasswordStoreCallback, &wait_event));
   wait_event.Wait();
 }
 
@@ -91,7 +91,7 @@ void RemoveLogin(PasswordStore* store, const PasswordForm& form) {
   ASSERT_TRUE(store);
   base::WaitableEvent wait_event(true, false);
   store->RemoveLogin(form);
-  store->ScheduleTask(NewRunnableFunction(&PasswordStoreCallback, &wait_event));
+  store->ScheduleTask(base::Bind(&PasswordStoreCallback, &wait_event));
   wait_event.Wait();
 }
 

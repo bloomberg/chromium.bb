@@ -40,7 +40,7 @@ class GetAllAutofillEntries
     BrowserThread::PostTask(
         BrowserThread::DB,
         FROM_HERE,
-        NewRunnableMethod(this, &GetAllAutofillEntries::Run));
+        base::Bind(&GetAllAutofillEntries::Run, this));
     done_event_.Wait();
   }
 

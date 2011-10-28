@@ -93,9 +93,7 @@ bool AutofillDataTypeController::StartAssociationAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), ASSOCIATING);
   return BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &AutofillDataTypeController::StartAssociation));
+      base::Bind(&AutofillDataTypeController::StartAssociation, this));
 }
 
 void AutofillDataTypeController::CreateSyncComponents() {
@@ -122,9 +120,7 @@ bool AutofillDataTypeController::StopAssociationAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), STOPPING);
   return BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &AutofillDataTypeController::StopAssociation));
+      base::Bind(&AutofillDataTypeController::StopAssociation, this));
 }
 
 syncable::ModelType AutofillDataTypeController::type() const {

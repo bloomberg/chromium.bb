@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/glue/browser_thread_model_worker.h"
 
+#include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -28,12 +29,8 @@ UnrecoverableErrorInfo BrowserThreadModelWorker::DoWorkAndWaitUntilDone(
   if (!BrowserThread::PostTask(
       thread_,
       FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &BrowserThreadModelWorker::CallDoWorkAndSignalTask,
-          work,
-          &done,
-          &error_info))) {
+      base::Bind(&BrowserThreadModelWorker::CallDoWorkAndSignalTask, this,
+                 work, &done, &error_info))) {
     NOTREACHED() << "Failed to post task to thread " << thread_;
     return error_info;
   }

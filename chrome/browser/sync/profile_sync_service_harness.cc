@@ -764,8 +764,8 @@ bool ProfileSyncServiceHarness::AwaitStatusChangeWithTimeout(
   loop->SetNestableTasksAllowed(true);
   loop->PostDelayedTask(
       FROM_HERE,
-      NewRunnableMethod(timeout_signal.get(),
-                        &StateChangeTimeoutEvent::Callback),
+      base::Bind(&StateChangeTimeoutEvent::Callback,
+                 timeout_signal.get()),
       timeout_milliseconds);
   loop->Run();
   loop->SetNestableTasksAllowed(did_allow_nestable_tasks);

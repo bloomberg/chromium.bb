@@ -193,7 +193,7 @@ bool HttpBridge::MakeSynchronousPost(int* error_code, int* response_code) {
 
   if (!BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(this, &HttpBridge::CallMakeAsynchronousPost))) {
+          base::Bind(&HttpBridge::CallMakeAsynchronousPost, this))) {
     // This usually happens when we're in a unit test.
     LOG(WARNING) << "Could not post CallMakeAsynchronousPost task";
     return false;

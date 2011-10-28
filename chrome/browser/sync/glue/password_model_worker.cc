@@ -26,8 +26,8 @@ UnrecoverableErrorInfo PasswordModelWorker::DoWorkAndWaitUntilDone(
   WaitableEvent done(false, false);
   UnrecoverableErrorInfo error_info;
   password_store_->ScheduleTask(
-      NewRunnableMethod(this, &PasswordModelWorker::CallDoWorkAndSignalTask,
-                        work, &done, &error_info));
+      base::Bind(&PasswordModelWorker::CallDoWorkAndSignalTask,
+                 this, work, &done, &error_info));
   done.Wait();
   return error_info;
 }

@@ -46,7 +46,7 @@ bool PasswordDataTypeController::StartAssociationAsync() {
   DCHECK_EQ(state(), ASSOCIATING);
   DCHECK(password_store_.get());
   password_store_->ScheduleTask(
-      NewRunnableMethod(this, &PasswordDataTypeController::StartAssociation));
+      base::Bind(&PasswordDataTypeController::StartAssociation, this));
   return true;
 }
 
@@ -67,7 +67,7 @@ bool PasswordDataTypeController::StopAssociationAsync() {
   DCHECK_EQ(state(), STOPPING);
   DCHECK(password_store_.get());
   password_store_->ScheduleTask(
-      NewRunnableMethod(this, &PasswordDataTypeController::StopAssociation));
+      base::Bind(&PasswordDataTypeController::StopAssociation, this));
   return true;
 }
 

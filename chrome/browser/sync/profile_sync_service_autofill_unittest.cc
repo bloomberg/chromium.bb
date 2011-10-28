@@ -585,7 +585,7 @@ class WriteTransactionTest: public WriteTransaction {
 
 // Our fake server updater. Needs the RefCountedThreadSafe inheritance so we can
 // post tasks with it.
-class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
+class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
  public:
   FakeServerUpdater(TestProfileSyncService* service,
                     scoped_ptr<WaitableEvent>* wait_for_start,
@@ -652,7 +652,7 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
                                               &FakeServerUpdater::Update));
     ASSERT_FALSE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     if (!BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-         NewRunnableMethod(this, &FakeServerUpdater::Update))) {
+         base::Bind(&FakeServerUpdater::Update, this))) {
       NOTREACHED() << "Failed to post task to the db thread.";
       return;
     }
@@ -665,7 +665,7 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
     ASSERT_FALSE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     is_finished_.Reset();
     if (!BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-         NewRunnableMethod(this, &FakeServerUpdater::Update))) {
+         base::Bind(&FakeServerUpdater::Update, this))) {
       NOTREACHED() << "Failed to post task to the db thread.";
       return;
     }
