@@ -711,32 +711,7 @@ def GetPlatformString(env):
   return build + '-' + subarch
 
 
-tests_to_disable = set([
-    # http://code.google.com/p/nativeclient/issues/detail?id=2390
-    'run_ppapi_emu_file_test',
-    'run_ppapi_simple_audio_test',
-    'run_ppapi_simple_graphics2d_test',
-    'run_ppapi_ppb_url_loader_browser_test',
-    'run_ppapi_ppb_graphics2d_browser_test',
-    'run_ppapi_ppb_core_browser_test',
-    'run_ppapi_ppb_image_data_browser_test',
-    'run_ppapi_ppb_file_system_browser_test',
-    'run_ppapi_ppp_instance_browser_test',
-    'run_ppapi_example_font_test',
-
-    'run_nacl_uma_test',
-
-    'run_pm_exit0_status_chrome_browser_test',
-    'run_pm_exit7_status_chrome_browser_test',
-    'run_pm_exit254_status_chrome_browser_test',
-    'run_pm_exitneg2_status_chrome_browser_test',
-    'run_inbrowser_crash_in_syscall_test',
-    'run_inbrowser_untrusted_crash_test',
-    'run_pm_nameservice_chrome_browser_test',
-
-    'run_pyauto_surfaway_test',
-    'run_pyauto_multiple_nexes_test',
-])
+tests_to_disable = set()
 
 if ARGUMENTS.get('disable_tests', '') != '':
   tests_to_disable.update(ARGUMENTS['disable_tests'].split(','))
