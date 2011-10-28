@@ -45,6 +45,12 @@ const char kPrefVersion[] = "manifest.version";
 // Indicates whether an extension is blacklisted.
 const char kPrefBlacklist[] = "blacklist";
 
+// Indicates whether the user has done app notifications setup or not.
+const char kPrefAppNotificationSetup[] = "app_notif_setup";
+
+// Indicates whether the user has disabled notifications or not.
+const char kPrefAppNotificationDisbaled[] = "app_notif_disabled";
+
 // Indicates whether the user has acknowledged various types of extensions.
 const char kPrefExternalAcknowledged[] = "ack_external";
 const char kPrefBlacklistAcknowledged[] = "ack_blacklist";
@@ -367,7 +373,7 @@ bool ExtensionPrefs::ReadBooleanFromPref(
 }
 
 bool ExtensionPrefs::ReadExtensionPrefBoolean(
-    const std::string& extension_id, const std::string& pref_key) {
+    const std::string& extension_id, const std::string& pref_key) const {
   const DictionaryValue* ext = GetExtensionPref(extension_id);
   if (!ext) {
     // No such extension yet.
@@ -584,6 +590,32 @@ bool ExtensionPrefs::SetAlertSystemFirstRun() {
   }
   prefs_->SetBoolean(prefs::kExtensionAlertsInitializedPref, true);
   return false;
+}
+
+bool ExtensionPrefs::IsAppNotificationSetupDone(
+    const std::string& extension_id) const {
+  return ReadExtensionPrefBoolean(
+      extension_id, kPrefAppNotificationSetup);
+}
+
+void ExtensionPrefs::SetAppNotificationSetupDone(
+    const std::string& extension_id,
+    bool value) {
+  DCHECK(Extension::IdIsValid(extension_id));
+  UpdateExtensionPref(extension_id, kPrefAppNotificationSetup,
+                      Value::CreateBooleanValue(value));
+}
+
+bool ExtensionPrefs::IsAppNotificationDisabled(
+    const std::string& extension_id) const {
+  return ReadExtensionPrefBoolean(extension_id, kPrefAppNotificationDisbaled);
+}
+
+void ExtensionPrefs::SetAppNotificationDisabled(
+   const std::string& extension_id, bool value) {
+  DCHECK(Extension::IdIsValid(extension_id));
+  UpdateExtensionPref(extension_id, kPrefAppNotificationDisbaled,
+                      Value::CreateBooleanValue(value));
 }
 
 bool ExtensionPrefs::IsExtensionAllowedByPolicy(

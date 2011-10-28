@@ -171,6 +171,15 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // reset it. Don't call it unless you mean it!
   bool SetAlertSystemFirstRun();
 
+  // Whether app notifications setup is done for the given app.
+  bool IsAppNotificationSetupDone(const std::string& extension_id) const;
+  void SetAppNotificationSetupDone(const std::string& extension_id,
+      bool value);
+
+  // Whether app notifications are disabled for the given app.
+  bool IsAppNotificationDisabled(const std::string& extension_id) const;
+  void SetAppNotificationDisabled(const std::string& extension_id, bool value);
+
   // Is the extension with |extension_id| allowed by policy (checking both
   // whitelist and blacklist).
   bool IsExtensionAllowedByPolicy(const std::string& extension_id);
@@ -429,7 +438,7 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
 
   // Reads a boolean pref |pref_key| from extension with id |extension_id|.
   bool ReadExtensionPrefBoolean(const std::string& extension_id,
-                                const std::string& pref_key);
+                                const std::string& pref_key) const;
 
   // Reads an integer pref from |ext| with key |pref_key|.
   // Return false if the value does not exist.

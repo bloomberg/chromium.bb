@@ -892,9 +892,12 @@ bool ExtensionService::UninstallExtension(
 
   SyncChange sync_change;
   if (sync_bundle) {
-    ExtensionSyncData extension_sync_data(*extension,
-                                          IsExtensionEnabled(extension_id),
-                                          IsIncognitoEnabled(extension_id));
+    ExtensionSyncData extension_sync_data(
+        *extension,
+        IsExtensionEnabled(extension_id),
+        IsIncognitoEnabled(extension_id),
+        extension_prefs_->IsAppNotificationSetupDone(extension_id),
+        extension_prefs_->IsAppNotificationDisabled(extension_id));
     sync_change = extension_sync_data.GetSyncChange(SyncChange::ACTION_DELETE);
   }
 
@@ -1733,9 +1736,12 @@ bool ExtensionService::SyncBundle::HasPendingExtensionId(const std::string& id)
 void ExtensionService::SyncExtensionChangeIfNeeded(const Extension& extension) {
   SyncBundle* sync_bundle = GetSyncBundleForExtension(extension);
   if (sync_bundle) {
-    ExtensionSyncData extension_sync_data(extension,
-                                          IsExtensionEnabled(extension.id()),
-                                          IsIncognitoEnabled(extension.id()));
+    ExtensionSyncData extension_sync_data(
+        extension,
+        IsExtensionEnabled(extension.id()),
+        IsIncognitoEnabled(extension.id()),
+        extension_prefs_->IsAppNotificationSetupDone(extension.id()),
+        extension_prefs_->IsAppNotificationDisabled(extension.id()));
 
     SyncChangeList sync_change_list(1, extension_sync_data.GetSyncChange(
         sync_bundle->HasExtensionId(extension.id()) ?
@@ -1895,10 +1901,12 @@ void ExtensionService::GetSyncDataListHelper(
         // version is out of date.  We'll sync back the version we got from
         // sync.
         !bundle.HasPendingExtensionId(extension.id())) {
-      sync_data_list->push_back(
-          ExtensionSyncData(extension,
-                            IsExtensionEnabled(extension.id()),
-                            IsIncognitoEnabled(extension.id())));
+      sync_data_list->push_back(ExtensionSyncData(
+          extension,
+          IsExtensionEnabled(extension.id()),
+          IsIncognitoEnabled(extension.id()),
+          extension_prefs_->IsAppNotificationSetupDone(extension.id()),
+          extension_prefs_->IsAppNotificationDisabled(extension.id())));
     }
   }
 }
@@ -2020,6 +2028,35 @@ void ExtensionService::SetIsIncognitoEnabled(
 
   if (extension)
     SyncExtensionChangeIfNeeded(*extension);
+}
+
+void ExtensionService::SetAppNotificationSetupDone(
+    const std::string& extension_id,
+    bool value) {
+  const Extension* extension = GetInstalledExtension(extension_id);
+  // This method is called when the user sets up app notifications.
+  // So it is not expected to be called until the extension is installed.
+  if (!extension) {
+    NOTREACHED();
+    return;
+  }
+  extension_prefs_->SetAppNotificationSetupDone(extension_id, value);
+  SyncExtensionChangeIfNeeded(*extension);
+}
+
+void ExtensionService::SetAppNotificationDisabled(
+    const std::string& extension_id,
+    bool value) {
+  const Extension* extension = GetInstalledExtension(extension_id);
+  // This method is called when the user enables/disables app notifications.
+  // So it is not expected to be called until the extension is installed.
+  if (!extension) {
+    NOTREACHED();
+    return;
+  }
+
+  extension_prefs_->SetAppNotificationDisabled(extension_id, value);
+  SyncExtensionChangeIfNeeded(*extension);
 }
 
 bool ExtensionService::CanCrossIncognito(const Extension* extension) {

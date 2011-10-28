@@ -102,6 +102,14 @@ DictionaryValue* EncryptedDataToValue(const sync_pb::EncryptedData& proto) {
   return value;
 }
 
+DictionaryValue* AppSettingsToValue(
+    const sync_pb::AppNotificationSettings& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_BOOL(initial_setup_done);
+  SET_BOOL(disabled);
+  return value;
+}
+
 DictionaryValue* SessionHeaderToValue(
     const sync_pb::SessionHeader& proto) {
   DictionaryValue* value = new DictionaryValue();
@@ -182,6 +190,7 @@ DictionaryValue* AppSpecificsToValue(
     const sync_pb::AppSpecifics& proto) {
   DictionaryValue* value = new DictionaryValue();
   SET(extension, ExtensionSpecificsToValue);
+  SET(notification_settings, AppSettingsToValue);
   return value;
 }
 

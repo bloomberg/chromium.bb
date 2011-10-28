@@ -13,6 +13,7 @@ class DictionaryValue;
 }
 
 namespace sync_pb {
+class AppNotificationSettings;
 class AppNotificationSpecifics;
 class AppSpecifics;
 class AutofillProfileSpecifics;
@@ -53,6 +54,10 @@ namespace browser_sync {
 // TODO(akalin): Perhaps extend this to decrypt?
 base::DictionaryValue* EncryptedDataToValue(
     const sync_pb::EncryptedData& encrypted_data);
+
+// Sub-protocol of AppSpecifics.
+base::DictionaryValue* AppSettingsToValue(
+    const sync_pb::AppNotificationSettings& app_notification_settings);
 
 // Sub-protocols of SessionSpecifics.
 

@@ -17,6 +17,18 @@ package sync_pb;
 import "sync.proto";
 import "extension_specifics.proto";
 
+// Settings related to push notifications for apps.
+message AppNotificationSettings {
+  // Whether or not the user has setup notifications at least once.
+  // The value for this field will start out false and will be set
+  // to true when the user accepts receiving notifications for the
+  // first time and then it will always remain true.
+  optional bool initial_setup_done = 1;
+
+  // Whether or not the user has disabled notifications.
+  optional bool disabled = 2;
+}
+
 // Properties of app sync objects.
 //
 // For now, an app is just an extension.  We keep the two data types
@@ -24,6 +36,9 @@ import "extension_specifics.proto";
 message AppSpecifics {
   // Extension data.
   optional ExtensionSpecifics extension = 1;
+
+  // Notification settings.
+  optional AppNotificationSettings notification_settings = 2; 
 }
 
 extend EntitySpecifics {

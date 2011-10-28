@@ -207,6 +207,12 @@ class ExtensionService
   virtual void SetIsIncognitoEnabled(const std::string& extension_id,
                                      bool enabled);
 
+  virtual void SetAppNotificationSetupDone(const std::string& extension_id,
+      bool value);
+
+  virtual void SetAppNotificationDisabled(const std::string& extension_id,
+      bool value);
+
   // Returns true if the given extension can see events and data from another
   // sub-profile (incognito to original profile, or vice versa).
   bool CanCrossIncognito(const Extension* extension);
