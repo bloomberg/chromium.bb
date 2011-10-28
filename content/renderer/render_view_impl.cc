@@ -2753,11 +2753,19 @@ void RenderViewImpl::didFailResourceLoad(
 void RenderViewImpl::didLoadResourceFromMemoryCache(
     WebFrame* frame, const WebURLRequest& request,
     const WebURLResponse& response) {
+  // The recipients of this message have no use for data: URLs: they don't
+  // affect the page's insecure content list and are not in the disk cache. To
+  // prevent large (1M+) data: URLs from crashing in the IPC system, we simply
+  // filter them out here.
+  GURL url(request.url());
+  if (url.SchemeIs("data"))
+    return;
+
   // Let the browser know we loaded a resource from the memory cache.  This
   // message is needed to display the correct SSL indicators.
   Send(new ViewHostMsg_DidLoadResourceFromMemoryCache(
       routing_id_,
-      request.url(),
+      url,
       response.securityInfo(),
       request.httpMethod().utf8(),
       ResourceType::FromTargetType(request.targetType())));
