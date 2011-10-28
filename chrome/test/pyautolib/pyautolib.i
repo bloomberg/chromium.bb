@@ -432,5 +432,23 @@ class TestServer {
   %feature("docstring", "Get URL for a file path") GetURL;
   GURL GetURL(const std::string& path) const;
 };
+
+%extend TestServer {
+  %feature("docstring", "Get port number.") GetPort;
+  int GetPort() const {
+    int val = 0;
+    $self->server_data().GetInteger("port", &val);
+    return val;
+  }
+
+  %feature("docstring", "Get xmpp port number in case of sync server.")
+      GetSyncXmppPort;
+  int GetSyncXmppPort() const {
+    int val = 0;
+    $self->server_data().GetInteger("xmpp_port", &val);
+    return val;
+  }
+};
+
 }
 
