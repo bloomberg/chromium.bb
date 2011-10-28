@@ -35,6 +35,10 @@ const int kTopBorderThickness = 4;
 // background at start of slide-in animation.
 const int kFrameBackgroundTopOffset = 25;
 
+// Width of a persistent border that we show around the window (using
+// FrameBackground) even when the resize border isn't visible.
+const int kPersistentBorderThickness = 2;
+
 // The color used to fill the frame.  Opacity is handled in the layer.
 const SkColor kFrameColor = SK_ColorBLACK;
 // Radius of rounded rectangle corners.
@@ -301,10 +305,11 @@ gfx::Rect BrowserNonClientFrameViewAura::GetFrameBackgroundBounds(
     show_top = true;
   gfx::Rect target = bounds();
   // Inset the sides that are not showing.
-  target.Inset((show_left ? 0 : kResizeBorderThickness),
-               (show_top ? 0 : kTopBorderThickness + kFrameBackgroundTopOffset),
-               (show_right ? 0 : kResizeBorderThickness),
-               (show_bottom ? 0 : kResizeBorderThickness));
+  target.Inset(
+      (show_left ? 0 : kResizeBorderThickness - kPersistentBorderThickness),
+      (show_top ? 0 : kTopBorderThickness + kFrameBackgroundTopOffset),
+      (show_right ? 0 : kResizeBorderThickness - kPersistentBorderThickness),
+      (show_bottom ? 0 : kResizeBorderThickness - kPersistentBorderThickness));
   return target;
 }
 
