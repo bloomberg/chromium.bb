@@ -53,6 +53,7 @@
 #include "content/browser/sensors/sensors_provider.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_client.h"
 #include "crypto/nss_util.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
@@ -1197,7 +1198,7 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
             : IDS_ABOUT_VERSION_UNOFFICIAL));
   localized_strings->SetString("user_agent_name",
       l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_USER_AGENT));
-  localized_strings->SetString("useragent", webkit_glue::GetUserAgent(GURL()));
+  localized_strings->SetString("useragent", content::GetUserAgent(GURL()));
   localized_strings->SetString("command_line_name",
       l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COMMAND_LINE));
 
