@@ -244,14 +244,13 @@ def Build(buildroot, board, build_autotest, fast, usepkg, skip_toolchain_update,
                       chroot_args=chroot_args)
 
 
-def BuildImage(buildroot, board, mod_for_test, extra_env=None):
+def BuildImage(buildroot, board, images_to_build, extra_env=None):
   _WipeOldOutput(buildroot)
-
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  cmd = ['./build_image', '--board=%s' % board, '--replace']
-  if mod_for_test:
-    cmd.append('--test')
+  # Default to base if images_to_build is passed empty.
+  if not images_to_build: images_to_build = ['base']
 
+  cmd = ['./build_image', '--board=%s' % board, '--replace'] + images_to_build
   cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=extra_env)
 
 
@@ -826,12 +825,11 @@ def BuildFactoryTestImage(buildroot, board, extra_env):
   alias = _FACTORY_TEST
   cmd = ['./build_image',
          '--board=%s' % board,
-         '--factory',
-         '--test',
          '--replace',
          '--noenable_rootfs_verification',
          '--symlink=%s' % alias,
-         '--build_attempt=2']
+         '--build_attempt=2',
+         'factory_test']
   cros_lib.RunCommand(cmd, enter_chroot=True, extra_env=extra_env,
                       cwd=scripts_dir)
   return alias
@@ -854,10 +852,10 @@ def BuildFactoryInstallImage(buildroot, board, extra_env):
   alias = _FACTORY_SHIM
   cmd = ['./build_image',
          '--board=%s' % board,
-         '--factory_install',
          '--replace',
          '--symlink=%s' % alias,
-         '--build_attempt=3']
+         '--build_attempt=3',
+         'factory_install']
   cros_lib.RunCommand(cmd, enter_chroot=True, extra_env=extra_env,
                       cwd=scripts_dir)
   return alias
@@ -933,7 +931,7 @@ def BuildImageZip(archive_dir, image_dir):
   """
   filename = 'image.zip'
   zipfile = os.path.join(archive_dir, filename)
-  cmd = ['zip', zipfile, '-r', '.', '--exclude', 'chromiumos_image.bin']
+  cmd = ['zip', zipfile, '-r', '.']
   cros_lib.RunCommand(cmd, cwd=image_dir)
   return filename
 
