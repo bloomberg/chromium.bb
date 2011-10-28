@@ -68,7 +68,6 @@ class HTMLPageScreen : public ViewScreen<HTMLPageView>,
   virtual void Refresh();
   virtual HTMLPageView* AllocateView();
 
-  virtual void LoadingStateChanged(TabContents* source);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   // WebPageScreen implementation:

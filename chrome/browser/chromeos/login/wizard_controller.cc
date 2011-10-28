@@ -363,17 +363,6 @@ void WizardController::OnNetworkOffline() {
   ShowLoginScreen();
 }
 
-void WizardController::OnAccountCreateBack() {
-  ShowLoginScreen();
-}
-
-void WizardController::OnAccountCreated() {
-  ShowLoginScreen();
-  // TODO(dpolukhin): clear password memory for real. Now it is not
-  // a problem because we can't extract password from the form.
-  password_.clear();
-}
-
 void WizardController::OnConnectionFailed() {
   // TODO(dpolukhin): show error message after login screen is displayed.
   ShowLoginScreen();
@@ -649,12 +638,6 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case NETWORK_OFFLINE:
       OnNetworkOffline();
-      break;
-    case ACCOUNT_CREATE_BACK:
-      OnAccountCreateBack();
-      break;
-    case ACCOUNT_CREATED:
-      OnAccountCreated();
       break;
     case CONNECTION_FAILED:
       OnConnectionFailed();

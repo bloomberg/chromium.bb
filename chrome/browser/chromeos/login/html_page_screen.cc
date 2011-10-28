@@ -20,8 +20,6 @@
 
 namespace chromeos {
 
-static const char kHTMLPageDoneUrl[] = "about:blank";
-
 ///////////////////////////////////////////////////////////////////////////////
 // HTMLPageDomView
 TabContents* HTMLPageDomView::CreateTabContents(Profile* profile,
@@ -70,19 +68,6 @@ void HTMLPageScreen::Refresh() {
 
 HTMLPageView* HTMLPageScreen::AllocateView() {
   return new HTMLPageView();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// HTMLPageScreen, TabContentsDelegate implementation:
-void HTMLPageScreen::LoadingStateChanged(TabContents* source) {
-  std::string url = source->GetURL().spec();
-  if (url == kHTMLPageDoneUrl) {
-    source->Stop();
-    // TODO(dpolukhin): use special code for this case but now
-    // ACCOUNT_CREATE_BACK works as we would like, i.e. get to login page.
-    VLOG(1) << "HTMLPageScreen::LoadingStateChanged: " << url;
-    CloseScreen(ScreenObserver::ACCOUNT_CREATE_BACK);
-  }
 }
 
 void HTMLPageScreen::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {

@@ -142,8 +142,6 @@ class WizardController : public ScreenObserver {
   // Exit handlers:
   void OnNetworkConnected();
   void OnNetworkOffline();
-  void OnAccountCreateBack();
-  void OnAccountCreated();
   void OnConnectionFailed();
   void OnUpdateCompleted();
   void OnEulaAccepted();

@@ -297,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, MAYBE_Accelerators) {
   EXPECT_EQ(controller()->GetEulaScreen(), controller()->current_screen());
 }
 
-COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 17,
+COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 15,
                add_tests_for_new_control_flow_you_just_introduced);
 
 }  // namespace chromeos
