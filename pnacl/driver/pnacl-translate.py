@@ -193,7 +193,8 @@ def RunLD(infile, outfile, shared):
     args += ['-static']
 
   extra_ld_flags = env.get('EXTRA_LD_FLAGS')
-  RunDriver('pnacl-g++', args + extra_ld_flags)
+  # TODO(robertm): this is a little unexpected and needs better documentation
+  RunDriver('pnacl-clang++', args + extra_ld_flags)
 
 
 def RunLLC(infile, outfile, filetype):

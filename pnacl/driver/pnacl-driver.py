@@ -192,11 +192,6 @@ CustomPatterns = [
   ( '--driver=(.+)',             "env.set('CC', pathtools.normalize($0))\n"),
   ( '--pnacl-skip-ll',           "env.set('EMIT_LL', '0')"),
 
-  ( '--pnacl-gcc',               "env.set('LANGUAGE', 'C')\n"
-                                 "env.set('FRONTEND', 'LLVMGCC')"),
-  ( '--pnacl-gxx',               "env.set('LANGUAGE', 'CXX')\n"
-                                 "env.set('FRONTEND', 'LLVMGCC')"),
-
   ( '--pnacl-clang',             "env.set('LANGUAGE', 'C')\n"
                                  "env.set('FRONTEND', 'CLANG')"),
   ( '--pnacl-clangxx',           "env.set('LANGUAGE', 'CXX')\n"

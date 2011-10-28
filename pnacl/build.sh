@@ -200,8 +200,6 @@ readonly LDSCRIPTS_DIR="${INSTALL_ROOT}/ldscripts"
 readonly LLVM_GCC_VER="4.2.1"
 
 # Location of PNaCl gcc/g++/as
-readonly PNACL_GCC="${INSTALL_BIN}/pnacl-gcc"
-readonly PNACL_GXX="${INSTALL_BIN}/pnacl-g++"
 readonly PNACL_DGCC="${INSTALL_BIN}/pnacl-dgcc"
 readonly PNACL_DGXX="${INSTALL_BIN}/pnacl-dg++"
 readonly PNACL_CLANG="${INSTALL_BIN}/pnacl-clang"
@@ -304,10 +302,6 @@ select-frontend() {
     clang)
       PNACL_CC="${PNACL_CLANG}"
       PNACL_CXX="${PNACL_CLANGXX}"
-      ;;
-    llvm-gcc)
-      PNACL_CC="${PNACL_GCC}"
-      PNACL_CXX="${PNACL_GXX}"
       ;;
     dragonegg)
       PNACL_CC="${PNACL_DGCC}"
@@ -834,6 +828,12 @@ everything-post-hg() {
   binutils
   llvm
   driver
+
+  # we do not neeed to build the compiler anymore but we build
+  # libstdc++ and libgcc_eh from the source which *may* require
+  # this step.
+  # This will go away completely when we use gcc 4.6 to provide
+  # these libraries.
   llvm-gcc arm
 
   libs
@@ -1636,7 +1636,7 @@ llvm-gcc-setup() {
 }
 
 #+-------------------------------------------------------------------------
-#+ llvm-gcc            - build and install pre-gcc
+#+ llvm-gcc             - configure pre-gcc and install headers
 llvm-gcc() {
   llvm-gcc-setup "$@"
   StepBanner "LLVM-GCC (HOST) for ${LLVM_GCC_ARCH}"
@@ -1648,12 +1648,51 @@ llvm-gcc() {
     SkipBanner "LLVM-GCC ${LLVM_GCC_ARCH}" "configure"
   fi
 
-  # We must always make before we do make install, because
-  # the build must occur in a patched environment.
-  # http://code.google.com/p/nativeclient/issues/detail?id=1128
+  # see comment below
   llvm-gcc-make
+  install-pre-gcc-headers
+}
 
-  llvm-gcc-install
+
+install-pre-gcc-headers() {
+  # TODO(robertm): remove unneeed cruft such as arm and ppc intrinsics.
+  #                also see whether the header replication can be eliminated
+  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2393
+  llvm-gcc-setup "$@"
+  INSTALL="/usr/bin/install -c -m 644"
+  dst="${LLVM_GCC_INSTALL_DIR}/lib/gcc/arm-none-linux-gnueabi/4.2.1"
+  mkdir -p ${dst}/
+  mkdir -p ${dst}/include
+  mkdir -p ${dst}/install-tools
+  mkdir -p ${dst}/install-tools/include
+  for file in ${TC_SRC_LLVM_GCC}/gcc/ginclude/decfloat.h \
+              ${TC_SRC_LLVM_GCC}/gcc/ginclude/float.h \
+              ${TC_SRC_LLVM_GCC}/gcc/ginclude/iso646.h \
+              ${TC_SRC_LLVM_GCC}/gcc/ginclude/ppc_intrinsics.h \
+              ${TC_SRC_LLVM_GCC}/gcc/ginclude/stdarg.h \
+              ${TC_SRC_LLVM_GCC}/gcc/ginclude/stdbool.h \
+              ${TC_SRC_LLVM_GCC}/gcc/ginclude/stddef.h \
+              ${TC_SRC_LLVM_GCC}/gcc/ginclude/tgmath.h \
+              ${TC_SRC_LLVM_GCC}/gcc/ginclude/varargs.h \
+              ${TC_SRC_LLVM_GCC}/gcc/config/arm/mmintrin.h \
+              ${TC_SRC_LLVM_GCC}/gcc/config/arm/arm_neon.h \
+              ${TC_SRC_LLVM_GCC}/gcc/config/arm/arm_neon_std.h \
+              ${TC_SRC_LLVM_GCC}/gcc/config/arm/arm_neon_gcc.h; do
+    realfile=$(basename ${file})
+    ${INSTALL} ${file} ${dst}/install-tools/include/${realfile}
+    ${INSTALL} ${file} ${dst}/include/${realfile}
+  done
+
+  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/unwind-generic.h ${dst}/install-tools/include/unwind.h
+  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/unwind-generic.h ${dst}/include/unwind.h
+
+  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/gsyslimits.h ${dst}/install-tools/gsyslimits.h
+  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/gsyslimits.h ${dst}/include/syslimits.h
+
+  # NOTE: this header is usually found in the build dir as gcc/xlimit.h
+  #       but is identical to the source dir'gcc/glimits.h
+  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/glimits.h ${dst}/install-tools/include/limits.h
+  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/glimits.h ${dst}/include/limits.h
 }
 
 #+ sysroot               - setup initial sysroot
@@ -1746,6 +1785,10 @@ llvm-gcc-configure() {
   spopd
 }
 
+# TODO(robertm): this still builds the pre-gcccompiler.
+#                we only need it to configure enough to be able
+#                to build libgcc_eh but it is hard to separate the two
+#                Switching to the gcc 4.6 should solve this problem.
 llvm-gcc-make() {
   llvm-gcc-setup "$@"
   local srcdir="${TC_SRC_LLVM_GCC}"
@@ -1764,24 +1807,6 @@ llvm-gcc-make() {
               make ${MAKE_OPTS} all-gcc
 
   ts-touch-commit "${objdir}"
-
-  spopd
-}
-
-#+ llvm-gcc-install    - Install GCC stage 1
-llvm-gcc-install() {
-  llvm-gcc-setup "$@"
-  StepBanner "LLVM-GCC" "Install ${LLVM_GCC_ARCH}"
-
-  local objdir="${LLVM_GCC_BUILD_DIR}"
-  spushd "${objdir}"
-
-  RunWithLog llvm-pregcc-${LLVM_GCC_ARCH}.install \
-       env -i PATH=/usr/bin/:/bin \
-              CC="${CC}" \
-              CXX="${CXX}" \
-              CFLAGS="-Dinhibit_libc" \
-              make ${MAKE_OPTS} install
 
   spopd
 }
