@@ -165,8 +165,6 @@
       # crbug.com/98526
       '-pyauto_webdriver.PyAutoWebDriverTest.testCanConnectToRestartedBrowser',
       '-pyauto_webdriver.PyAutoWebDriverTest.testTypeIntoTextBox',
-      # crbug.com/102136
-      '-policy_prefs_ui.PolicyPrefsUITest.testPoliciesShowBanner',
     ],
 
     'mac': [
