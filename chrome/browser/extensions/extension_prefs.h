@@ -182,7 +182,8 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
 
   // Is the extension with |extension_id| allowed by policy (checking both
   // whitelist and blacklist).
-  bool IsExtensionAllowedByPolicy(const std::string& extension_id);
+  bool IsExtensionAllowedByPolicy(const std::string& extension_id,
+                                  Extension::Location location);
 
   // Returns the last value set via SetLastPingDay. If there isn't such a
   // pref, the returned Time will return true for is_null().

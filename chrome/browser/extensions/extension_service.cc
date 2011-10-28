@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <set>
 
-#include "base/bind.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -92,8 +92,8 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/user_metrics.h"
-#include "content/public/browser/notification_service.h"
 #include "content/common/pepper_plugin_registry.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/registry_controlled_domain.h"
@@ -1400,7 +1400,12 @@ void ExtensionService::LoadInstalledExtension(const ExtensionInfo& info,
                                               bool write_to_prefs) {
   std::string error;
   scoped_refptr<const Extension> extension(NULL);
-  if (!extension_prefs_->IsExtensionAllowedByPolicy(info.extension_id)) {
+
+  // An explicit check against policy is required to behave correctly during
+  // startup.  This is because extensions that were previously OK might have
+  // been blacklisted in policy while Chrome was not running.
+  if (!extension_prefs_->IsExtensionAllowedByPolicy(info.extension_id,
+                                                    info.extension_location)) {
     error = errors::kDisabledByPolicy;
   } else if (info.extension_manifest.get()) {
     extension = Extension::Create(
@@ -1694,8 +1699,10 @@ void ExtensionService::CheckAdminBlacklist() {
   for (ExtensionList::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     const Extension* extension = (*iter);
-    if (!extension_prefs_->IsExtensionAllowedByPolicy(extension->id()))
+    if (!extension_prefs_->IsExtensionAllowedByPolicy(extension->id(),
+                                                      extension->location())) {
       to_be_removed.push_back(extension->id());
+    }
   }
 
   // UnloadExtension will change the extensions_ list. So, we should

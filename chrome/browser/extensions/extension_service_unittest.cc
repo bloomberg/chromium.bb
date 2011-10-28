@@ -2599,6 +2599,93 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
   EXPECT_EQ(0u, service_->extensions()->size());
 }
 
+// Tests that component extensions are not blacklisted by policy.
+TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
+  InitializeEmptyExtensionService();
+
+  // Blacklist everything.
+  {
+    ListPrefUpdate update(profile_->GetPrefs(),
+                          prefs::kExtensionInstallDenyList);
+    ListValue* blacklist = update.Get();
+    blacklist->Append(Value::CreateStringValue("*"));
+  }
+
+  // Install a component extension.
+  FilePath path = data_dir_
+      .AppendASCII("good")
+      .AppendASCII("Extensions")
+      .AppendASCII(good0)
+      .AppendASCII("1.0.0.0");
+  std::string manifest;
+  ASSERT_TRUE(file_util::ReadFileToString(
+      path.Append(Extension::kManifestFilename), &manifest));
+  service_->register_component_extension(
+      ExtensionService::ComponentExtensionInfo(manifest, path));
+  service_->Init();
+
+  // Extension should be installed despite blacklist.
+  ASSERT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(good0, service_->extensions()->at(0)->id());
+
+  // Poke external providers and make sure the extension is still present.
+  service_->CheckForExternalUpdates();
+  ASSERT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(good0, service_->extensions()->at(0)->id());
+
+  // Extension should not be uninstalled on blacklist changes.
+  {
+    ListPrefUpdate update(profile_->GetPrefs(),
+                          prefs::kExtensionInstallDenyList);
+    ListValue* blacklist = update.Get();
+    blacklist->Append(Value::CreateStringValue(good0));
+  }
+  loop_.RunAllPending();
+  ASSERT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(good0, service_->extensions()->at(0)->id());
+}
+
+// Tests that policy-installed extensions are not blacklisted by policy.
+TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
+  InitializeEmptyExtensionService();
+
+  // Blacklist everything.
+  {
+    ListPrefUpdate update(profile_->GetPrefs(),
+                          prefs::kExtensionInstallDenyList);
+    ListValue* blacklist = update.Get();
+    blacklist->Append(Value::CreateStringValue("*"));
+  }
+
+  // Have policy force-install an extension.
+  MockExtensionProvider* provider =
+      new MockExtensionProvider(service_,
+                                Extension::EXTERNAL_POLICY_DOWNLOAD);
+  AddMockExternalProvider(provider);
+  provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
+                                 data_dir_.AppendASCII("good.crx"));
+
+  // Reloading extensions should find our externally registered extension
+  // and install it.
+  service_->CheckForExternalUpdates();
+  loop_.RunAllPending();
+
+  // Extension should be installed despite blacklist.
+  ASSERT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(good_crx, service_->extensions()->at(0)->id());
+
+  // Blacklist update should not uninstall the extension.
+  {
+    ListPrefUpdate update(profile_->GetPrefs(),
+                          prefs::kExtensionInstallDenyList);
+    ListValue* blacklist = update.Get();
+    blacklist->Append(Value::CreateStringValue(good0));
+  }
+  loop_.RunAllPending();
+  ASSERT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(good_crx, service_->extensions()->at(0)->id());
+}
+
 // Tests disabling extensions
 TEST_F(ExtensionServiceTest, DisableExtension) {
   InitializeEmptyExtensionService();
@@ -3145,8 +3232,7 @@ void ExtensionServiceTest::TestExternalProvider(
 
     // Now test the case where user uninstalls and then the extension is removed
     // from the external provider.
-
-  provider->UpdateOrAddExtension(good_crx, "1.0.0.1", source_path);
+    provider->UpdateOrAddExtension(good_crx, "1.0.0.1", source_path);
     service_->CheckForExternalUpdates();
     loop_.RunAllPending();
 
