@@ -105,6 +105,7 @@
 #include "views/window/dialog_delegate.h"
 
 #if defined(USE_AURA)
+#include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/aura/launcher_icon_updater.h"
 #include "ui/aura_shell/launcher/launcher.h"
@@ -117,7 +118,7 @@
 #include "ui/base/message_box_win.h"
 #include "views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/views/accelerator_table_linux.h"
+#include "chrome/browser/ui/views/accelerator_table.h"
 #include "views/window/hit_test.h"
 #if !defined(TOUCH_UI)
 #include "chrome/browser/ui/views/handle_web_keyboard_event.h"
@@ -2291,10 +2292,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 }
 
 void BrowserView::LoadAccelerators() {
-#if defined(USE_AURA)
-  // TODO(beng):
-  NOTIMPLEMENTED();
-#elif defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   HACCEL accelerator_table = AtlLoadAccelerators(IDR_MAINFRAME);
   DCHECK(accelerator_table);
 

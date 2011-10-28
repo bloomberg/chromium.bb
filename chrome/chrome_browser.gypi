@@ -3246,8 +3246,8 @@
         'browser/ui/views/about_chrome_view.h',
         'browser/ui/views/about_ipc_dialog.cc',
         'browser/ui/views/about_ipc_dialog.h',
-        'browser/ui/views/accelerator_table_linux.cc',
-        'browser/ui/views/accelerator_table_linux.h',
+        'browser/ui/views/accelerator_table.cc',
+        'browser/ui/views/accelerator_table.h',
         'browser/ui/views/accessibility_event_router_views.cc',
         'browser/ui/views/accessibility_event_router_views.h',
         'browser/ui/views/accessible_pane_view.cc',
@@ -4565,6 +4565,12 @@
             ['exclude', '^browser/first_run/try_chrome_dialog_view.h'],
           ],
           'conditions': [
+            ['OS=="linux" or use_aura==1',{
+              'sources/': [
+                ['include', '^browser/ui/views/accelerator_table.cc'],
+                ['include', '^browser/ui/views/accelerator_table.h'],
+              ]
+            }],
             ['OS=="linux" and toolkit_views==1',{
               'dependencies': [
                 '../views/views.gyp:views',
@@ -4645,8 +4651,6 @@
                 ['include', '^browser/ui/tabs/dock_info.h'],
                 ['include', '^browser/ui/views/about_chrome_view.cc'],
                 ['include', '^browser/ui/views/about_chrome_view.h'],
-                ['include', '^browser/ui/views/accelerator_table_linux.cc'],
-                ['include', '^browser/ui/views/accelerator_table_linux.h'],
                 ['include', '^browser/ui/views/accessibility_event_router_views.cc'],
                 ['include', '^browser/ui/views/accessibility_event_router_views.h'],
                 ['include', '^browser/ui/views/accessible_pane_view.cc'],

@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ACCELERATOR_TABLE_LINUX_H_
-#define CHROME_BROWSER_UI_VIEWS_ACCELERATOR_TABLE_LINUX_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_ACCELERATOR_TABLE_H_
+#define CHROME_BROWSER_UI_VIEWS_ACCELERATOR_TABLE_H_
 #pragma once
 
 #include <stdio.h>
 
 #include "ui/base/keycodes/keyboard_codes.h"
 
-// This contains the list of accelerators for the Linux toolkit_view
-// implementation.
+// This contains the list of accelerators for the Aura implementation.
 namespace browser {
 
   struct AcceleratorMapping {
@@ -29,4 +28,4 @@ namespace browser {
   extern const size_t kAcceleratorMapLength;
 }
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ACCELERATOR_TABLE_LINUX_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_ACCELERATOR_TABLE_H_

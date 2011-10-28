@@ -416,7 +416,8 @@ void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
 }
 
 void NativeWidgetAura::ClearNativeFocus() {
-  NOTIMPLEMENTED();
+  if (window_ && window_->GetFocusManager())
+    window_->GetFocusManager()->SetFocusedWindow(window_);
 }
 
 void NativeWidgetAura::FocusNativeView(gfx::NativeView native_view) {
@@ -437,7 +438,10 @@ gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
 // NativeWidgetAura, views::InputMethodDelegate implementation:
 
 void NativeWidgetAura::DispatchKeyEventPostIME(const KeyEvent& key) {
-  delegate_->OnKeyEvent(key);
+  if (delegate_->OnKeyEvent(key))
+    return;
+  if (key.type() == ui::ET_KEY_PRESSED && GetWidget()->GetFocusManager())
+    GetWidget()->GetFocusManager()->OnKeyEvent(key);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -455,7 +459,8 @@ void NativeWidgetAura::OnFocus() {
     InputMethod* input_method = widget->GetInputMethod();
     input_method->OnFocus();
     // See description of got_initial_focus_in_ for details on this.
-    widget->GetFocusManager()->RestoreFocusedView();
+    // TODO(mazda): Investigate this is actually necessary.
+    // widget->GetFocusManager()->RestoreFocusedView();
   }
   delegate_->OnNativeFocus(window_);
 }
