@@ -161,7 +161,7 @@ views::Painter* CreateBackgroundPainter() {
 }
 
 gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
-  gfx::Rect bounds(gfx::Screen::GetMonitorWorkAreaNearestWindow(NULL));
+  gfx::Rect bounds(gfx::Screen::GetMonitorAreaNearestWindow(NULL));
   if (!size.IsEmpty()) {
     int horizontal_diff = bounds.width() - size.width();
     int vertical_diff = bounds.height() - size.height();
