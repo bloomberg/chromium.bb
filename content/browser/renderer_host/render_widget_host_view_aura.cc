@@ -80,6 +80,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
       is_loading_(false) {
   host_->SetView(this);
+  window_->SetProperty(aura::kTooltipTextKey, &tooltip_);
 }
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
@@ -220,8 +221,7 @@ void RenderWidgetHostViewAura::Destroy() {
 }
 
 void RenderWidgetHostViewAura::SetTooltipText(const string16& tooltip_text) {
-  string16* tooltip = new string16(tooltip_text);
-  window_->SetProperty(aura::kTooltipTextKey, tooltip);
+  tooltip_ = tooltip_text;
 }
 
 BackingStore* RenderWidgetHostViewAura::AllocBackingStore(

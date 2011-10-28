@@ -143,6 +143,9 @@ class RenderWidgetHostViewAura : public RenderWidgetHostView,
   // removed from the list on an ET_TOUCH_RELEASED event.
   WebKit::WebTouchEvent touch_event_;
 
+  // Current tooltip text.
+  string16 tooltip_;
+
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   std::vector< base::Callback<void(void)> > on_compositing_ended_callbacks_;
 
