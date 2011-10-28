@@ -496,13 +496,18 @@ function getAnchorName(type, name, scope) {
 }
 
 function shouldExpandObject(object) {
-  return (object.type == "object" && object.properties);
+  return (object.type == "object" && object.properties) ||
+         (object.type == "array" && object.items && object.items.properties);
 }
 
 function getPropertyListFromObject(object) {
   var propertyList = [];
-  for (var p in object.properties) {
-    var prop = object.properties[p];
+  var properties = object.properties;
+  if (!properties && object.type === "array" && object.items) {
+    properties = object.items.properties;
+  }
+  for (var p in properties) {
+    var prop = properties[p];
     // Do not render properties marked as "nodoc": true.
     if (prop.nodoc) {
       continue;
