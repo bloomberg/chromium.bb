@@ -846,34 +846,26 @@ void TabRendererGtk::PaintTitle(GtkWidget* widget, cairo_t* cr) {
 void TabRendererGtk::PaintIcon(GtkWidget* widget, cairo_t* cr) {
   if (loading_animation_.animation_state() != ANIMATION_NONE) {
     PaintLoadingAnimation(widget, cr);
-  } else {
-    if (should_display_crashed_favicon_) {
-      theme_service_->GetSurfaceNamed(IDR_SAD_FAVICON, widget)->SetSource(
-          cr, favicon_bounds_.x(),
-          favicon_bounds_.y() + favicon_hiding_offset_);
-      cairo_paint(cr);
-    } else {
-      if (!data_.favicon.isNull()) {
-        if (data_.is_default_favicon && theme_service_->UsingNativeTheme()) {
-          GdkPixbuf* favicon = GtkThemeService::GetDefaultFavicon(true);
+    return;
+  }
 
-          // TODO(erg): Get GtkThemeService to hand us a
-          // CairoCachedSurface. Then we can simplify all of this.
-          gdk_cairo_set_source_pixbuf(
-              cr, favicon, favicon_bounds_.x(),
-              favicon_bounds_.y() + favicon_hiding_offset_);
-          cairo_paint(cr);
-        } else if (data_.cairo_favicon.valid()) {
-          // TODO(erg): We should research whether we still need to draw app
-          // icons larger. We don't appear to be getting larger icons.
-          data_.cairo_favicon.SetSource(
-              cr,
-              favicon_bounds_.x(),
-              favicon_bounds_.y() + favicon_hiding_offset_);
-          cairo_paint(cr);
-        }
-      }
+  CairoCachedSurface* to_display = NULL;
+  if (should_display_crashed_favicon_) {
+    to_display = theme_service_->GetSurfaceNamed(IDR_SAD_FAVICON, widget);
+  } else if (!data_.favicon.isNull()) {
+    if (data_.is_default_favicon && theme_service_->UsingNativeTheme()) {
+      to_display = theme_service_->GetCairoIcon(
+          GtkThemeService::NATIVE_FAVICON, widget);
+    } else if (data_.cairo_favicon.valid()) {
+      to_display = &data_.cairo_favicon;
     }
+  }
+
+  if (to_display) {
+    to_display->SetSource(cr,
+                          favicon_bounds_.x(),
+                          favicon_bounds_.y() + favicon_hiding_offset_);
+    cairo_paint(cr);
   }
 }
 

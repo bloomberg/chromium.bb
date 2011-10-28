@@ -566,10 +566,11 @@ void GtkThemeService::GetScrollbarColors(GdkColor* thumb_active_color,
 CairoCachedSurface* GtkThemeService::GetSurfaceNamed(
     int id,
     GtkWidget* widget_on_display) {
-  return GetSurfaceNamedImpl(id,
-                             &per_display_surfaces_,
-                             GetPixbufNamed(id),
-                             widget_on_display);
+  return GetSurfaceNamedImpl(
+      id,
+      &per_display_surfaces_,
+      &GtkThemeService::GetPixbufNamed,
+      widget_on_display);
 }
 
 CairoCachedSurface* GtkThemeService::GetRTLEnabledSurfaceNamed(
@@ -580,10 +581,11 @@ CairoCachedSurface* GtkThemeService::GetRTLEnabledSurfaceNamed(
   // location calls this function with a resource ID, and another place calls
   // GetSurfaceNamed() with the same ID, they'll correctly get different
   // surfaces in RTL mode.
-  return GetSurfaceNamedImpl(-id,
-                             &per_display_surfaces_,
-                             GetRTLEnabledPixbufNamed(id),
-                             widget_on_display);
+  return GetSurfaceNamedImpl(
+      -id,
+      &per_display_surfaces_,
+      &GtkThemeService::GetRTLEnabledPixbufNamedWrapper,
+      widget_on_display);
 }
 
 CairoCachedSurface* GtkThemeService::GetUnthemedSurfaceNamed(
@@ -591,8 +593,17 @@ CairoCachedSurface* GtkThemeService::GetUnthemedSurfaceNamed(
     GtkWidget* widget_on_display) {
   return GetSurfaceNamedImpl(id,
       &per_display_unthemed_surfaces_,
-      ResourceBundle::GetSharedInstance().GetNativeImageNamed(id),
+      &GtkThemeService::GetUnthemedNativePixbuf,
       widget_on_display);
+}
+
+CairoCachedSurface* GtkThemeService::GetCairoIcon(
+    int id,
+    GtkWidget* widget_on_display) {
+  return GetSurfaceNamedImpl(id,
+                             &per_display_icon_surfaces_,
+                             &GtkThemeService::GetPixbufForIconId,
+                             widget_on_display);
 }
 
 // static
@@ -704,6 +715,7 @@ void GtkThemeService::FreePlatformCaches() {
   ThemeService::FreePlatformCaches();
   FreePerDisplaySurfaces(&per_display_surfaces_);
   FreePerDisplaySurfaces(&per_display_unthemed_surfaces_);
+  FreePerDisplaySurfaces(&per_display_icon_surfaces_);
   STLDeleteValues(&gtk_images_);
 }
 
@@ -1124,7 +1136,7 @@ void GtkThemeService::GetSelectedEntryForegroundHSL(
 CairoCachedSurface* GtkThemeService::GetSurfaceNamedImpl(
     int id,
     PerDisplaySurfaceMap* display_surface_map,
-    GdkPixbuf* pixbuf,
+    PixbufProvidingMethod provider,
     GtkWidget* widget_on_display) {
   GdkDisplay* display = gtk_widget_get_display(widget_on_display);
   CairoCachedSurfaceMap& surface_map = (*display_surface_map)[display];
@@ -1135,11 +1147,41 @@ CairoCachedSurface* GtkThemeService::GetSurfaceNamedImpl(
     return found->second;
 
   CairoCachedSurface* surface = new CairoCachedSurface;
-  surface->UsePixbuf(pixbuf);
+  surface->UsePixbuf((this->*provider)(id));
 
   surface_map[id] = surface;
 
   return surface;
+}
+
+// PixbufProvidingMethod that undoes the negative sign on |id|.
+GdkPixbuf* GtkThemeService::GetRTLEnabledPixbufNamedWrapper(int id) const {
+  return GetRTLEnabledPixbufNamed(-id);
+}
+
+// PixbufProvidingMethod that just calls ResourceBundle. We want to minimize
+// the calls to this method because it aquires an AutoLock and we don't want
+// this to happen all the time.
+GdkPixbuf* GtkThemeService::GetUnthemedNativePixbuf(int id) const {
+  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(id);
+}
+
+// PixbufProvidingMethod that maps a GtkThemeService::CairoDefaultIcon to a
+// GdkPixbuf.
+GdkPixbuf* GtkThemeService::GetPixbufForIconId(int id) const {
+  switch (id) {
+    case GtkThemeService::NATIVE_FAVICON:
+      return GtkThemeService::GetDefaultFavicon(true);
+    case GtkThemeService::CHROME_FAVICON:
+      return GtkThemeService::GetDefaultFavicon(false);
+    case GtkThemeService::NATIVE_FOLDER:
+      return GtkThemeService::GetFolderIcon(true);
+    case GtkThemeService::CHROME_FOLDER:
+      return GtkThemeService::GetFolderIcon(false);
+    default:
+      NOTREACHED();
+      return NULL;
+  }
 }
 
 void GtkThemeService::OnDestroyChromeButton(GtkWidget* button) {

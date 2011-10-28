@@ -35,6 +35,15 @@ typedef struct _GtkWidget GtkWidget;
 // Specialization of ThemeService which supplies system colors.
 class GtkThemeService : public ThemeService {
  public:
+  // A list of integer keys for a separate PerDisplaySurfaceMap that keeps
+  // what would otherwise be static icons on the X11 server.
+  enum CairoDefaultIcon {
+    NATIVE_FAVICON = 1,
+    CHROME_FAVICON,
+    NATIVE_FOLDER,
+    CHROME_FOLDER
+  };
+
   // Returns GtkThemeService, casted from our superclass.
   static GtkThemeService* GetFrom(Profile* profile);
 
@@ -120,6 +129,10 @@ class GtkThemeService : public ThemeService {
   CairoCachedSurface* GetUnthemedSurfaceNamed(int id,
                                               GtkWidget* widget_on_display);
 
+  // A way to get a cached cairo surface for the equivalent of GetFolderIcon()
+  // or GetDefaultFavicon(). Uses the ids defined in CairoDefaultIcon.
+  CairoCachedSurface* GetCairoIcon(int id, GtkWidget* widget_on_display);
+
   // Returns colors that we pass to webkit to match the system theme.
   const SkColor& get_focus_ring_color() const { return focus_ring_color_; }
   const SkColor& get_thumb_active_color() const { return thumb_active_color_; }
@@ -155,6 +168,8 @@ class GtkThemeService : public ThemeService {
   typedef std::map<int, SkBitmap*> ImageCache;
   typedef std::map<int, CairoCachedSurface*> CairoCachedSurfaceMap;
   typedef std::map<GdkDisplay*, CairoCachedSurfaceMap> PerDisplaySurfaceMap;
+
+  typedef GdkPixbuf*(GtkThemeService::*PixbufProvidingMethod)(int id) const;
 
   // Clears all the GTK color overrides.
   virtual void ClearAllThemeData();
@@ -235,10 +250,21 @@ class GtkThemeService : public ThemeService {
   void GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const;
 
   // Implements GetXXXSurfaceNamed(), given the appropriate pixbuf to use.
-  CairoCachedSurface* GetSurfaceNamedImpl(int id,
-                                          PerDisplaySurfaceMap* surface_map,
-                                          GdkPixbuf* pixbuf,
-                                          GtkWidget* widget_on_display);
+  CairoCachedSurface* GetSurfaceNamedImpl(
+      int id,
+      PerDisplaySurfaceMap* surface_map,
+      PixbufProvidingMethod provider,
+      GtkWidget* widget_on_display);
+
+  // PixbufProvidingMethods passed to GetSurfaceNamedImpl from GetSurface*
+  // methods. We don't want to always fetch the pixbuf and pass the pixbuf to
+  // GetSurfaceNamedImpl which will throw away the result most of the time.
+  //
+  // Especially since GetUnthemedNativePixbuf always locks and
+  // GetRTLEnabledPixbufNamedWrapper locks in debug builds.
+  GdkPixbuf* GetRTLEnabledPixbufNamedWrapper(int id) const;
+  GdkPixbuf* GetUnthemedNativePixbuf(int id) const;
+  GdkPixbuf* GetPixbufForIconId(int id) const;
 
   // Handles signal from GTK that our theme has been changed.
   CHROMEGTK_CALLBACK_1(GtkThemeService, void, OnStyleSet, GtkStyle*);
@@ -306,6 +332,7 @@ class GtkThemeService : public ThemeService {
   // Cairo surfaces for each GdkDisplay.
   PerDisplaySurfaceMap per_display_surfaces_;
   PerDisplaySurfaceMap per_display_unthemed_surfaces_;
+  PerDisplaySurfaceMap per_display_icon_surfaces_;
 
   PrefChangeRegistrar registrar_;
 
