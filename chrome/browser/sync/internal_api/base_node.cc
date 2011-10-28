@@ -224,8 +224,11 @@ int64 BaseNode::GetSuccessorId() const {
 int64 BaseNode::GetFirstChildId() const {
   syncable::Directory* dir = GetTransaction()->GetLookup();
   syncable::BaseTransaction* trans = GetTransaction()->GetWrappedTrans();
-  syncable::Id id_string =
-      dir->GetFirstChildId(trans, GetEntry()->Get(syncable::ID));
+  syncable::Id id_string;
+  // TODO(akalin): Propagate up the error further (see
+  // http://crbug.com/100907).
+  CHECK(dir->GetFirstChildId(trans,
+                             GetEntry()->Get(syncable::ID), &id_string));
   if (id_string.IsRoot())
     return kInvalidId;
   return IdToMetahandle(GetTransaction()->GetWrappedTrans(), id_string);

@@ -1401,8 +1401,11 @@ ModelTypeBitSet SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
     if (change_buffers_[type].IsEmpty())
       continue;
 
-    ImmutableChangeRecordList ordered_changes =
-        change_buffers_[type].GetAllChangesInTreeOrder(&read_trans);
+    ImmutableChangeRecordList ordered_changes;
+    // TODO(akalin): Propagate up the error further (see
+    // http://crbug.com/100907).
+    CHECK(change_buffers_[type].GetAllChangesInTreeOrder(&read_trans,
+                                                         &ordered_changes));
     if (!ordered_changes.Get().empty()) {
       change_delegate_->
           OnChangesApplied(type, &read_trans, ordered_changes);

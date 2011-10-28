@@ -121,8 +121,9 @@ ChangeReorderBuffer::ChangeReorderBuffer() {
 ChangeReorderBuffer::~ChangeReorderBuffer() {
 }
 
-ImmutableChangeRecordList ChangeReorderBuffer::GetAllChangesInTreeOrder(
-    const BaseTransaction* sync_trans) {
+bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
+    const BaseTransaction* sync_trans,
+    ImmutableChangeRecordList* changes) {
   syncable::BaseTransaction* trans = sync_trans->GetWrappedTrans();
 
   // Step 1: Iterate through the operations, doing three things:
@@ -200,8 +201,12 @@ ImmutableChangeRecordList ChangeReorderBuffer::GetAllChangesInTreeOrder(
       // There were ordering changes on the children of this parent, so
       // enumerate all the children in the sibling order.
       syncable::Entry parent(trans, syncable::GET_BY_HANDLE, next);
-      syncable::Id id = trans->directory()->
-          GetFirstChildId(trans, parent.Get(syncable::ID));
+      syncable::Id id;
+      if (!trans->directory()->GetFirstChildId(
+              trans, parent.Get(syncable::ID), &id)) {
+        *changes = ImmutableChangeRecordList();
+        return false;
+      }
       while (!id.IsRoot()) {
         syncable::Entry child(trans, syncable::GET_BY_ID, id);
         CHECK(child.good());
@@ -217,7 +222,8 @@ ImmutableChangeRecordList ChangeReorderBuffer::GetAllChangesInTreeOrder(
     }
   }
 
-  return ImmutableChangeRecordList(&changelist);
+  *changes = ImmutableChangeRecordList(&changelist);
+  return true;
 }
 
 }  // namespace sync_api

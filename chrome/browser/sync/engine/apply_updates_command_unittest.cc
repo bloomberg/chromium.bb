@@ -113,7 +113,9 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
     WriteTransaction trans(FROM_HERE, UNITTEST, dir);
-    Id predecessor_id = dir->GetLastChildId(&trans, parent_id);
+    Id predecessor_id;
+    ASSERT_TRUE(
+        dir->GetLastChildIdForTest(&trans, parent_id, &predecessor_id));
     MutableEntry entry(&trans, syncable::CREATE, parent_id, name);
     ASSERT_TRUE(entry.good());
     entry.Put(syncable::ID, item_id);

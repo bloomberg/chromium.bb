@@ -18,6 +18,7 @@
 
 #include "base/atomicops.h"
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
@@ -925,10 +926,19 @@ class Directory {
   // Returns true iff |id| has children.
   bool HasChildren(BaseTransaction* trans, const Id& id);
 
-  // Find the first or last child in the positional ordering under a parent,
-  // and return its id.  Returns a root Id if parent has no children.
-  Id GetFirstChildId(BaseTransaction* trans, const Id& parent_id);
-  Id GetLastChildId(BaseTransaction* trans, const Id& parent_id);
+  // Find the first child in the positional ordering under a parent,
+  // and fill in |*first_child_id| with its id.  Fills in a root Id if
+  // parent has no children.  Returns true if the first child was
+  // successfully found, or false if an error was encountered.
+  bool GetFirstChildId(BaseTransaction* trans, const Id& parent_id,
+                       Id* first_child_id) WARN_UNUSED_RESULT;
+
+  // Find the last child in the positional ordering under a parent,
+  // and fill in |*first_child_id| with its id.  Fills in a root Id if
+  // parent has no children.  Returns true if the first child was
+  // successfully found, or false if an error was encountered.
+  bool GetLastChildIdForTest(BaseTransaction* trans, const Id& parent_id,
+                             Id* last_child_id) WARN_UNUSED_RESULT;
 
   // Compute a local predecessor position for |update_item|.  The position
   // is determined by the SERVER_POSITION_IN_PARENT value of |update_item|,
@@ -1154,10 +1164,16 @@ class Directory {
       const ScopedKernelLock& lock,
       const Id& parent_id, Directory::ChildHandles* result);
 
-  // Returns a pointer to what is probably (but not certainly) the
+  // Return a pointer to what is probably (but not certainly) the
   // first child of |parent_id|, or NULL if |parent_id| definitely has
   // no children.
   EntryKernel* GetPossibleFirstChild(
+      const ScopedKernelLock& lock, const Id& parent_id);
+
+  // Return a pointer to what is probably (but not certainly) the last
+  // child of |parent_id|, or NULL if |parent_id| definitely has no
+  // children.
+  EntryKernel* GetPossibleLastChildForTest(
       const ScopedKernelLock& lock, const Id& parent_id);
 
   Kernel* kernel_;

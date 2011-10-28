@@ -1252,18 +1252,21 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     EXPECT_EQ(Cryptographer::SensitiveTypes(), GetEncryptedTypes(&trans));
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   trans.GetCryptographer(),
-                                                   syncable::BOOKMARKS,
-                                                   false /* not encrypted */));
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   trans.GetCryptographer(),
-                                                   syncable::SESSIONS,
-                                                   false /* not encrypted */));
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   trans.GetCryptographer(),
-                                                   syncable::THEMES,
-                                                   false /* not encrypted */));
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
+        trans.GetWrappedTrans(),
+        trans.GetCryptographer(),
+        syncable::BOOKMARKS,
+        false /* not encrypted */));
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
+        trans.GetWrappedTrans(),
+        trans.GetCryptographer(),
+        syncable::SESSIONS,
+        false /* not encrypted */));
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
+        trans.GetWrappedTrans(),
+        trans.GetCryptographer(),
+        syncable::THEMES,
+        false /* not encrypted */));
   }
 
   EXPECT_CALL(observer_,
@@ -1274,18 +1277,21 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     EXPECT_EQ(GetAllRealModelTypes(), GetEncryptedTypes(&trans));
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   trans.GetCryptographer(),
-                                                   syncable::BOOKMARKS,
-                                                   true /* is encrypted */));
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   trans.GetCryptographer(),
-                                                   syncable::SESSIONS,
-                                                   true /* is encrypted */));
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   trans.GetCryptographer(),
-                                                   syncable::THEMES,
-                                                   true /* is encrypted */));
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
+        trans.GetWrappedTrans(),
+        trans.GetCryptographer(),
+        syncable::BOOKMARKS,
+        true /* is encrypted */));
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
+        trans.GetWrappedTrans(),
+        trans.GetCryptographer(),
+        syncable::SESSIONS,
+        true /* is encrypted */));
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
+        trans.GetWrappedTrans(),
+        trans.GetCryptographer(),
+        syncable::THEMES,
+        true /* is encrypted */));
   }
 
   // Trigger's a ReEncryptEverything with new passphrase.
@@ -1297,18 +1303,21 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     EXPECT_EQ(GetAllRealModelTypes(), GetEncryptedTypes(&trans));
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   trans.GetCryptographer(),
-                                                   syncable::BOOKMARKS,
-                                                   true /* is encrypted */));
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   trans.GetCryptographer(),
-                                                   syncable::SESSIONS,
-                                                   true /* is encrypted */));
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   trans.GetCryptographer(),
-                                                   syncable::THEMES,
-                                                   true /* is encrypted */));
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
+        trans.GetWrappedTrans(),
+        trans.GetCryptographer(),
+        syncable::BOOKMARKS,
+        true /* is encrypted */));
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
+        trans.GetWrappedTrans(),
+        trans.GetCryptographer(),
+        syncable::SESSIONS,
+        true /* is encrypted */));
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
+        trans.GetWrappedTrans(),
+        trans.GetCryptographer(),
+        syncable::THEMES,
+        true /* is encrypted */));
   }
   // Calling EncryptDataTypes with an empty encrypted types should not trigger
   // a reencryption and should just notify immediately.
@@ -1445,10 +1454,11 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
 
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   trans.GetCryptographer(),
-                                                   syncable::BOOKMARKS,
-                                                   false /* not encrypted */));
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
+        trans.GetWrappedTrans(),
+        trans.GetCryptographer(),
+        syncable::BOOKMARKS,
+        false /* not encrypted */));
   }
 
   EXPECT_CALL(observer_,
@@ -1460,10 +1470,11 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     EXPECT_EQ(GetAllRealModelTypes(), GetEncryptedTypes(&trans));
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   trans.GetCryptographer(),
-                                                   syncable::BOOKMARKS,
-                                                   true /* is encrypted */));
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
+        trans.GetWrappedTrans(),
+        trans.GetCryptographer(),
+        syncable::BOOKMARKS,
+        true /* is encrypted */));
 
     ReadNode node(&trans);
     EXPECT_TRUE(node.InitByIdLookup(node_id1));

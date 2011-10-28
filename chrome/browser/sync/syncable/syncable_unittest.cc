@@ -228,7 +228,9 @@ TEST_F(SyncableGeneralTest, ChildrenOps) {
     ASSERT_FALSE(e.good());  // Hasn't been written yet.
 
     EXPECT_FALSE(dir.HasChildren(&rtrans, rtrans.root_id()));
-    EXPECT_TRUE(dir.GetFirstChildId(&rtrans, rtrans.root_id()).IsRoot());
+    Id child_id;
+    EXPECT_TRUE(dir.GetFirstChildId(&rtrans, rtrans.root_id(), &child_id));
+    EXPECT_TRUE(child_id.IsRoot());
   }
 
   {
@@ -250,7 +252,9 @@ TEST_F(SyncableGeneralTest, ChildrenOps) {
     ASSERT_TRUE(child.good());
 
     EXPECT_TRUE(dir.HasChildren(&rtrans, rtrans.root_id()));
-    EXPECT_EQ(e.Get(ID), dir.GetFirstChildId(&rtrans, rtrans.root_id()));
+    Id child_id;
+    EXPECT_TRUE(dir.GetFirstChildId(&rtrans, rtrans.root_id(), &child_id));
+    EXPECT_EQ(e.Get(ID), child_id);
   }
 
   {
@@ -267,7 +271,9 @@ TEST_F(SyncableGeneralTest, ChildrenOps) {
     ASSERT_TRUE(e.good());
 
     EXPECT_FALSE(dir.HasChildren(&rtrans, rtrans.root_id()));
-    EXPECT_TRUE(dir.GetFirstChildId(&rtrans, rtrans.root_id()).IsRoot());
+    Id child_id;
+    EXPECT_TRUE(dir.GetFirstChildId(&rtrans, rtrans.root_id(), &child_id));
+    EXPECT_TRUE(child_id.IsRoot());
   }
 
   dir.SaveChanges();

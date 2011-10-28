@@ -81,10 +81,11 @@ bool SpecificsNeedsEncryption(const ModelTypeSet& encrypted_types,
 }
 
 // Mainly for testing.
-bool VerifyDataTypeEncryption(BaseTransaction* const trans,
-                              browser_sync::Cryptographer* cryptographer,
-                              ModelType type,
-                              bool is_encrypted) {
+bool VerifyDataTypeEncryptionForTest(
+    BaseTransaction* const trans,
+    browser_sync::Cryptographer* cryptographer,
+    ModelType type,
+    bool is_encrypted) {
   if (type == PASSWORDS || type == NIGORI) {
     NOTREACHED();
     return true;
@@ -97,8 +98,12 @@ bool VerifyDataTypeEncryption(BaseTransaction* const trans,
   }
 
   std::queue<Id> to_visit;
-  Id id_string =
-      trans->directory()->GetFirstChildId(trans, type_root.Get(ID));
+  Id id_string;
+  if (!trans->directory()->GetFirstChildId(
+          trans, type_root.Get(ID), &id_string)) {
+    NOTREACHED();
+    return false;
+  }
   to_visit.push(id_string);
   while (!to_visit.empty()) {
     id_string = to_visit.front();
@@ -112,9 +117,14 @@ bool VerifyDataTypeEncryption(BaseTransaction* const trans,
       return false;
     }
     if (child.Get(IS_DIR)) {
+      Id child_id_string;
+      if (!trans->directory()->GetFirstChildId(
+              trans, child.Get(ID), &child_id_string)) {
+        NOTREACHED();
+        return false;
+      }
       // Traverse the children.
-      to_visit.push(
-          trans->directory()->GetFirstChildId(trans, child.Get(ID)));
+      to_visit.push(child_id_string);
     }
     const sync_pb::EntitySpecifics& specifics = child.Get(SPECIFICS);
     DCHECK_EQ(type, child.GetModelType());

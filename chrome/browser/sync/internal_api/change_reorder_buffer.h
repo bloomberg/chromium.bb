@@ -13,6 +13,7 @@
 #include <map>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/sync/internal_api/base_transaction.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
@@ -84,11 +85,13 @@ class ChangeReorderBuffer {
     return operations_.empty();
   }
 
-  // Output a reordered list of changes to |changelist| using the items that
-  // were pushed into the reorder buffer. |sync_trans| is used to determine the
-  // ordering.
-  ImmutableChangeRecordList
-      GetAllChangesInTreeOrder(const BaseTransaction* sync_trans);
+  // Output a reordered list of changes to |changes| using the items
+  // that were pushed into the reorder buffer. |sync_trans| is used to
+  // determine the ordering.  Returns true if successful, or false if
+  // an error was encountered.
+  bool GetAllChangesInTreeOrder(
+      const BaseTransaction* sync_trans,
+      ImmutableChangeRecordList* changes) WARN_UNUSED_RESULT;
 
  private:
   class Traversal;
