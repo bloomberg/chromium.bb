@@ -540,6 +540,9 @@ void NativeWidgetAura::OnPaint(gfx::Canvas* canvas) {
 
 void NativeWidgetAura::OnWindowDestroying() {
   delegate_->OnNativeWidgetDestroying();
+
+  // If the aura::Window is destroyed, we can no longer show tooltips.
+  tooltip_manager_.reset();
 }
 
 void NativeWidgetAura::OnWindowDestroyed() {
