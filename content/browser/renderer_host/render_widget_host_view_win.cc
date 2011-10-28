@@ -331,7 +331,11 @@ void RenderWidgetHostViewWin::DidBecomeSelected() {
     tab_switch_paint_time_ = TimeTicks::Now();
   is_hidden_ = false;
   EnsureTooltip();
-  render_widget_host_->WasRestored();
+
+  // |render_widget_host_| may be NULL if the TabContents is in the process of
+  // closing.
+  if (render_widget_host_)
+    render_widget_host_->WasRestored();
 }
 
 void RenderWidgetHostViewWin::WasHidden() {
