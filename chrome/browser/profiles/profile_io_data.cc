@@ -253,6 +253,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
   url_blacklist_manager_.reset(new policy::URLBlacklistManager(pref_service));
 #endif
+
+  initialized_on_UI_thread_ = true;
 }
 
 ProfileIOData::AppRequestContext::AppRequestContext() {}
@@ -280,7 +282,8 @@ ProfileIOData::ProfileParams::~ProfileParams() {}
 
 ProfileIOData::ProfileIOData(bool is_incognito)
     : initialized_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(resource_context_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(resource_context_(this)),
+      initialized_on_UI_thread_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -396,7 +399,12 @@ void ProfileIOData::LazyInitialize() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (initialized_)
     return;
-  DCHECK(profile_params_.get());
+
+  // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
+  CHECK(initialized_on_UI_thread_);
+
+  // TODO(jhawkins): Return to DCHECK once crbug.com/102004 is fixed.
+  CHECK(profile_params_.get());
 
   IOThread* const io_thread = profile_params_->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
