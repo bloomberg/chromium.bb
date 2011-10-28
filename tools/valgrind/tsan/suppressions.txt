@@ -345,14 +345,6 @@
    fun:AudioRendererImpl::Run
 }
 {
-   bug_100143
-   ThreadSanitizer:Race
-   ...
-   fun:GpuDataManager::Initialize
-   fun:GpuDataManager::GetInstance
-   fun:GpuBlacklistUpdater::SetupOnFileThread
-}
-{
   Intentional race in net_unittest
   ThreadSanitizer:Race
   fun:disk_cache::BackendImpl::GetEntryCount
