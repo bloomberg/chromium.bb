@@ -59,6 +59,7 @@ cr.define('sync_promo', function() {
       $('sync-setup-login-promo-column').hidden = false;
       $('promo-skip').hidden = false;
 
+      this.showSetupUI_();
       chrome.send('SyncPromo:Initialize');
 
       var self = this;
