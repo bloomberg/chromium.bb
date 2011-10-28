@@ -582,6 +582,11 @@
           # See comment about the same line in chrome/chrome_tests.gypi.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
         }],  # OS=="mac"
+        ['notifications==0', {
+          'sources/': [
+            ['exclude', '^browser/notifications/'],
+          ],
+        }],
         ['toolkit_views==1', {
           'dependencies': [
             '../views/views.gyp:views',
@@ -1974,6 +1979,11 @@
             ['exclude', '^browser/speech/'],
           ],
         }],
+        ['notifications==0', {
+          'sources/': [
+            ['exclude', '^browser/notifications/'],
+          ],
+        }],
         ['safe_browsing==1', {
           'defines': [
             'ENABLE_SAFE_BROWSING',
@@ -2673,6 +2683,11 @@
           'sources/': [
             ['exclude', '^browser/speech/'],
             ['exclude', '^../content/browser/speech/'],
+          ],
+        }],
+        ['notifications==0', {
+          'sources!': [
+            'browser/extensions/notifications_apitest.cc',
           ],
         }],
         ['safe_browsing==1', {

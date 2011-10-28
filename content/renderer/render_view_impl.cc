@@ -361,7 +361,12 @@ RenderViewImpl::RenderViewImpl(gfx::NativeViewId parent_hwnd,
   }
 
   intents_dispatcher_ = new IntentsDispatcher(this);
+
+#if defined(ENABLE_NOTIFICATIONS)
   notification_provider_ = new NotificationProvider(this);
+#else
+  notification_provider_ = NULL;
+#endif
 
   RenderThread::Get()->AddRoute(routing_id_, this);
   // Take a reference on behalf of the RenderThread.  This will be balanced

@@ -227,6 +227,12 @@
             'renderer/speech_input_dispatcher.h',
           ]
         }],
+        ['notifications==0', {
+          'sources!': [
+            'renderer/notification_provider.cc',
+            'renderer/active_notification_tracker.cc',
+          ],
+        }],
       ],
       'dependencies': [
         '../build/linux/system.gyp:gtk',

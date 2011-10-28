@@ -209,6 +209,11 @@
             ['exclude', '^browser/speech/'],
           ]
         }],
+        ['notifications==0', {
+           'sources!': [
+             'renderer/active_notification_tracker_unittest.cc',
+           ],
+        }],
         ['use_x11 == 1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
