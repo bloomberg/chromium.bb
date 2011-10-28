@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace policy {
 
@@ -46,8 +48,8 @@ PolicyStatusInfo::~PolicyStatusInfo() {
 DictionaryValue* PolicyStatusInfo::GetDictionaryValue() const {
   string16 level_string = GetPolicyLevelString(level);
   string16 source_type_string = GetSourceTypeString(source_type);
-  string16 status_message = status == ENFORCED ? ASCIIToUTF16("ok")
-                                               : error_message;
+  string16 status_message =
+      status == ENFORCED ? l10n_util::GetStringUTF16(IDS_OK) : error_message;
   DictionaryValue* result = new DictionaryValue();
   result->SetString(std::string(kNameDictPath), name);
   result->SetString(std::string(kLevelDictPath), level_string);

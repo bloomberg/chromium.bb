@@ -1029,9 +1029,9 @@ bool ProxyPolicyHandler::CheckPolicySettings(const PolicyMap* policies,
     if (!entry.pac_url_allowed && pac_url)
       errors->AddError(kPolicyProxyPacUrl, entry.error_message_id);
     if (!entry.bypass_list_allowed && bypass_list)
-      errors->AddError(kPolicyProxyPacUrl, entry.error_message_id);
+      errors->AddError(kPolicyProxyBypassList, entry.error_message_id);
     if (!entry.server_allowed && server)
-      errors->AddError(kPolicyProxyPacUrl, entry.error_message_id);
+      errors->AddError(kPolicyProxyServer, entry.error_message_id);
 
     if ((!entry.pac_url_allowed && pac_url) ||
         (!entry.bypass_list_allowed && bypass_list) ||

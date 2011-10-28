@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -50,18 +51,13 @@ void PolicyErrorMap::AddError(ConfigurationPolicyType policy,
   AddError(PendingError(policy, message_id, ASCIIToUTF16(replacement)));
 }
 
-ListValue* PolicyErrorMap::GetErrors(ConfigurationPolicyType policy) {
+string16 PolicyErrorMap::GetErrors(ConfigurationPolicyType policy) {
   CheckReadyAndConvert();
   std::pair<const_iterator, const_iterator> range = map_.equal_range(policy);
-
-  if (range.first == range.second)
-    return NULL;
-
-  ListValue* list = new ListValue();
+  std::vector<string16> list;
   for (const_iterator it = range.first; it != range.second; ++it)
-    list->Append(Value::CreateStringValue(it->second));
-
-  return list;
+    list.push_back(it->second);
+  return JoinString(list, ' ');
 }
 
 bool PolicyErrorMap::empty() {

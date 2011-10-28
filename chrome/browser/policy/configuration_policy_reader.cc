@@ -13,7 +13,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
 
@@ -70,23 +72,34 @@ DictionaryValue* ConfigurationPolicyStatusKeeper::GetPolicyStatus(
 
 void ConfigurationPolicyStatusKeeper::GetPoliciesFromProvider(
     ConfigurationPolicyProvider* provider) {
-  scoped_ptr<PolicyMap> policies(new PolicyMap());
-  if (!provider->Provide(policies.get()))
-    LOG(WARNING) << "Failed to get policy from provider.";
+  PolicyMap policies;
+  if (!provider->Provide(&policies))
+    DLOG(WARNING) << "Failed to get policy from provider.";
 
-  PolicyMap::const_iterator policy = policies->begin();
-  for ( ; policy != policies->end(); ++policy) {
+  const ConfigurationPolicyHandler::HandlerList* handlers =
+      g_browser_process->browser_policy_connector()->
+          GetConfigurationPolicyHandlerList();
+
+  PolicyErrorMap errors;
+  ConfigurationPolicyHandler::HandlerList::const_iterator handler;
+  for (handler = handlers->begin(); handler != handlers->end(); ++handler)
+    (*handler)->CheckPolicySettings(&policies, &errors);
+
+  PolicyMap::const_iterator policy = policies.begin();
+  for ( ; policy != policies.end(); ++policy) {
     string16 name = ASCIIToUTF16(GetPolicyName(policy->first));
-
-    // TODO(simo) actually determine whether the policy is a user or a device
-    // one and whether the policy could be enforced or not once this information
-    // is available.
+    string16 error_message = errors.GetErrors(policy->first);
+    PolicyStatusInfo::PolicyStatus status =
+        error_message.empty() ? PolicyStatusInfo::ENFORCED
+                              : PolicyStatusInfo::FAILED;
+    // TODO(joaodasilva): determine whether this is a user or device policy.
+    // http://crbug.com/102114
     PolicyStatusInfo* info = new PolicyStatusInfo(name,
                                                   PolicyStatusInfo::USER,
                                                   policy_level_,
                                                   policy->second->DeepCopy(),
-                                                  PolicyStatusInfo::ENFORCED,
-                                                  string16());
+                                                  status,
+                                                  error_message);
     policy_map_[policy->first] = info;
   }
 }
@@ -214,7 +227,7 @@ void PolicyStatus::RemoveObserver(Observer* observer) const {
 
 ListValue* PolicyStatus::GetPolicyStatusList(bool* any_policies_set) const {
   ListValue* result = new ListValue();
-  std::vector<DictionaryValue*> unsent_policies;
+  std::vector<DictionaryValue*> unset_policies;
 
   *any_policies_set = false;
   const PolicyDefinitionList* supported_policies =
@@ -228,15 +241,15 @@ ListValue* PolicyStatus::GetPolicyStatusList(bool* any_policies_set) const {
                             Value::CreateNullValue(),
                             PolicyStatusInfo::STATUS_UNDEFINED,
                             string16());
-      unsent_policies.push_back(info.GetDictionaryValue());
+      unset_policies.push_back(info.GetDictionaryValue());
     } else {
       *any_policies_set = true;
     }
   }
 
   // Add policies that weren't actually sent from providers to list.
-  std::vector<DictionaryValue*>::const_iterator info = unsent_policies.begin();
-  for ( ; info != unsent_policies.end(); ++info)
+  std::vector<DictionaryValue*>::const_iterator info = unset_policies.begin();
+  for ( ; info != unset_policies.end(); ++info)
     result->Append(*info);
 
   return result;

@@ -27,7 +27,7 @@ class ConfigurationPolicyReaderTest : public testing::Test {
         new ConfigurationPolicyReader(&provider_, PolicyStatusInfo::MANDATORY));
     recommended_reader_.reset(new ConfigurationPolicyReader(&provider_,
                                   PolicyStatusInfo::RECOMMENDED));
-    status_ok_ = ASCIIToUTF16("ok");
+    status_ok_ = ASCIIToUTF16("OK");
   }
 
   DictionaryValue* CreateDictionary(const char* policy_name,
@@ -158,11 +158,11 @@ class PolicyStatusTest : public testing::Test {
                                           managed_cloud_,
                                           recommended_platform_,
                                           recommended_cloud_));
-    status_ok_ = ASCIIToUTF16("ok");
+    status_ok_ = ASCIIToUTF16("OK");
 
     policy_list_ = GetChromePolicyDefinitionList();
     policy_list_size_ =
-      static_cast<size_t>(policy_list_->end - policy_list_->begin);
+        static_cast<size_t>(policy_list_->end - policy_list_->begin);
   }
 
   void DontSendPolicies() {

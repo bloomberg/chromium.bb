@@ -8,10 +8,10 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "base/values.h"
 #include "policy/configuration_policy_type.h"
 
 namespace policy {
@@ -41,10 +41,9 @@ class PolicyErrorMap {
                 int message_id,
                 const std::string& replacement_string);
 
-  // Returns a list of all the error messages stored for |policy|. Returns NULL
-  // if there are no error messages for |policy. The caller acquires ownership
-  // of the returned ListValue pointer.
-  ListValue* GetErrors(ConfigurationPolicyType policy);
+  // Returns all the error messages stored for |policy|, separated by a white
+  // space. Returns an empty string if there are no errors for |policy|.
+  string16 GetErrors(ConfigurationPolicyType policy);
 
   bool empty();
   size_t size();
