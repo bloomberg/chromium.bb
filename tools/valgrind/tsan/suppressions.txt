@@ -544,7 +544,7 @@
   ...
   fun:scoped_ptr::*
   ...
-  fun:media::FFmpegVideoDecoder*Test::~FFmpegVideoDecoder*Test
+  fun:media::FFmpegVideoDecode*Test::~FFmpegVideoDecode*Test
 }
 {
   bug_93932_b
