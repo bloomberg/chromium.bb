@@ -210,7 +210,7 @@ bool WebMediaPlayerImpl::Initialize(
   filter_collection_->AddAudioDecoder(new media::FFmpegAudioDecoder(
       message_loop_factory_->GetMessageLoop("AudioDecoderThread")));
   filter_collection_->AddVideoDecoder(new media::FFmpegVideoDecoder(
-      message_loop_factory_->GetMessageLoop("VideoDecoderThread"), NULL));
+      message_loop_factory_->GetMessageLoop("VideoDecoderThread")));
   filter_collection_->AddAudioRenderer(new media::NullAudioRenderer());
 
   return true;

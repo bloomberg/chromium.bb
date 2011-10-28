@@ -23,9 +23,7 @@ class MEDIA_EXPORT FFmpegVideoDecodeEngine : public VideoDecodeEngine {
   virtual ~FFmpegVideoDecodeEngine();
 
   // Implementation of the VideoDecodeEngine Interface.
-  virtual void Initialize(MessageLoop* message_loop,
-                          VideoDecodeEngine::EventHandler* event_handler,
-                          VideoDecodeContext* context,
+  virtual void Initialize(VideoDecodeEngine::EventHandler* event_handler,
                           const VideoDecoderConfig& config);
   virtual void ConsumeVideoSample(scoped_refptr<Buffer> buffer);
   virtual void ProduceVideoFrame(scoped_refptr<VideoFrame> frame);

@@ -61,7 +61,7 @@ class FFmpegVideoDecodeEngineTest
 
   void Initialize() {
     EXPECT_CALL(*this, OnInitializeComplete(true));
-    test_engine_->Initialize(MessageLoop::current(), this, NULL, config_);
+    test_engine_->Initialize(this, config_);
   }
 
   // Decodes the single compressed frame in |buffer| and writes the
@@ -154,7 +154,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
 
   // Test avcodec_find_decoder() returning NULL.
   EXPECT_CALL(*this, OnInitializeComplete(false));
-  test_engine_->Initialize(MessageLoop::current(), this, NULL, config);
+  test_engine_->Initialize(this, config);
 }
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
@@ -165,7 +165,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
                             kAspectRatio.num, kAspectRatio.den,
                             NULL, 0);
   EXPECT_CALL(*this, OnInitializeComplete(false));
-  test_engine_->Initialize(MessageLoop::current(), this, NULL, config);
+  test_engine_->Initialize(this, config);
 }
 
 TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_Normal) {

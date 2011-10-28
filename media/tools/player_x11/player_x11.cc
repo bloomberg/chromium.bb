@@ -92,8 +92,7 @@ bool InitPipeline(MessageLoop* message_loop,
   collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
       message_loop_factory->GetMessageLoop("AudioDecoderThread")));
   collection->AddVideoDecoder(new media::FFmpegVideoDecoder(
-      message_loop_factory->GetMessageLoop("VideoDecoderThread"),
-      NULL));
+      message_loop_factory->GetMessageLoop("VideoDecoderThread")));
 
   if (use_gl) {
     collection->AddVideoRenderer(

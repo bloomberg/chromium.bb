@@ -75,7 +75,7 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
   collection->AddAudioDecoder(new FFmpegAudioDecoder(
       message_loop_factory_->GetMessageLoop("AudioDecoderThread")));
   collection->AddVideoDecoder(new FFmpegVideoDecoder(
-      message_loop_factory_->GetMessageLoop("VideoDecoderThread"), NULL));
+      message_loop_factory_->GetMessageLoop("VideoDecoderThread")));
 
   if (enable_audio_) {
     collection->AddAudioRenderer(new ReferenceAudioRenderer());

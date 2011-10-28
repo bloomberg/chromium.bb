@@ -13,7 +13,6 @@
 #include "media/base/pipeline.h"
 #include "media/base/video_util.h"
 #include "media/ffmpeg/ffmpeg_common.h"
-#include "media/filters/ffmpeg_demuxer.h"
 
 namespace media {
 
@@ -37,9 +36,7 @@ FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine() {
 }
 
 void FFmpegVideoDecodeEngine::Initialize(
-    MessageLoop* message_loop,
     VideoDecodeEngine::EventHandler* event_handler,
-    VideoDecodeContext* context,
     const VideoDecoderConfig& config) {
   frame_rate_numerator_ = config.frame_rate_numerator();
   frame_rate_denominator_ = config.frame_rate_denominator();

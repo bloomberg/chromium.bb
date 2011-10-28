@@ -11,13 +11,9 @@
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 
-class MessageLoop;
-
 namespace media {
 
 class Buffer;
-class VideoDecodeContext;
-
 struct PipelineStatistics;
 
 class MEDIA_EXPORT VideoDecodeEngine {
@@ -66,17 +62,9 @@ class MEDIA_EXPORT VideoDecodeEngine {
 
   // Initialize the engine with specified configuration.
   //
-  // |decode_context| is used for allocation of VideoFrame.
-  // It is important that |decode_context| is called only on |message_loop|.
-  //
-  // TODO(hclam): Currently refactoring code to use VideoDecodeContext so
-  // |context| may be NULL in some cases.
-  //
   // Engine should call EventHandler::OnInitializeDone() whether the
   // initialization operation finished successfully or not.
-  virtual void Initialize(MessageLoop* message_loop,
-                          EventHandler* event_handler,
-                          VideoDecodeContext* context,
+  virtual void Initialize(EventHandler* event_handler,
                           const VideoDecoderConfig& config) = 0;
 
   // Uninitialize the engine. Engine should destroy all resources and call
