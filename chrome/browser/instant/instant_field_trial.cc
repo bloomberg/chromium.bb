@@ -118,7 +118,7 @@ InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
 }
 
 // static
-bool InstantFieldTrial::IsExperimentGroup(Profile* profile) {
+bool InstantFieldTrial::IsInstantExperiment(Profile* profile) {
   Group group = GetGroup(profile);
   return group == INSTANT_EXPERIMENT_A || group == INSTANT_EXPERIMENT_B ||
          group == HIDDEN_EXPERIMENT_A || group == HIDDEN_EXPERIMENT_B ||
@@ -128,7 +128,8 @@ bool InstantFieldTrial::IsExperimentGroup(Profile* profile) {
 // static
 bool InstantFieldTrial::IsHiddenExperiment(Profile* profile) {
   Group group = GetGroup(profile);
-  return group == HIDDEN_EXPERIMENT_A || group == HIDDEN_EXPERIMENT_B;
+  return group == HIDDEN_EXPERIMENT_A || group == HIDDEN_EXPERIMENT_B ||
+         group == SILENT_EXPERIMENT_A || group == SILENT_EXPERIMENT_B;
 }
 
 // static

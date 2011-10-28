@@ -45,7 +45,7 @@ InstantController::InstantController(Profile* profile,
       last_transition_type_(content::PAGE_TRANSITION_LINK),
       ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)) {
   PrefService* service = profile->GetPrefs();
-  if (service && !InstantFieldTrial::IsExperimentGroup(profile)) {
+  if (service && !InstantFieldTrial::IsInstantExperiment(profile)) {
     // kInstantEnabledOnce was added after instant, set it now to make sure it
     // is correctly set.
     service->SetBoolean(prefs::kInstantEnabledOnce, true);
@@ -97,7 +97,7 @@ void InstantController::RecordMetrics(Profile* profile) {
 bool InstantController::IsEnabled(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
   return prefs->GetBoolean(prefs::kInstantEnabled) ||
-         InstantFieldTrial::IsExperimentGroup(profile);
+         InstantFieldTrial::IsInstantExperiment(profile);
 }
 
 // static
@@ -200,8 +200,11 @@ void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
   // Always track the omnibox bounds. That way if Update is later invoked the
   // bounds are in sync.
   omnibox_bounds_ = bounds;
-  if (loader_.get())
+
+  if (loader_.get() && !is_out_of_date_ &&
+      !InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile())) {
     loader_->SetOmniboxBounds(bounds);
+  }
 }
 
 void InstantController::DestroyPreviewContents() {
@@ -238,10 +241,8 @@ bool InstantController::PrepareForCommit() {
 
   // If we are not in the HIDDEN or SILENT field trials, return the status of
   // the preview.
-  if (!InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile()) &&
-      !InstantFieldTrial::IsSilentExperiment(tab_contents_->profile())) {
+  if (!InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile()))
     return IsCurrent();
-  }
 
   TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
       tab_contents_->profile());
@@ -370,7 +371,7 @@ void InstantController::OnAutocompleteGotFocus(
     TabContentsWrapper* tab_contents) {
   CommandLine* cl = CommandLine::ForCurrentProcess();
   if (!cl->HasSwitch(switches::kPreloadInstantSearch) &&
-      !InstantFieldTrial::IsExperimentGroup(tab_contents->profile())) {
+      !InstantFieldTrial::IsInstantExperiment(tab_contents->profile())) {
     return;
   }
 
@@ -496,12 +497,14 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
                                      bool verbatim,
                                      string16* suggested_text) {
   is_out_of_date_ = false;
-  loader_->SetOmniboxBounds(omnibox_bounds_);
+  bool hidden = InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile());
+  if (!hidden)
+    loader_->SetOmniboxBounds(omnibox_bounds_);
   loader_->Update(tab_contents_, template_url, url, transition_type, user_text,
                   verbatim, suggested_text);
   UpdateIsDisplayable();
-  // For the HIDDEN field trial, don't send back suggestions to the omnibox.
-  if (InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile()))
+  // For the HIDDEN and SILENT field trials, don't send back suggestions.
+  if (hidden)
     suggested_text->clear();
 }
 

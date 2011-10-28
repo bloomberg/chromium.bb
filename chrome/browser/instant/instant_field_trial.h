@@ -69,10 +69,10 @@ class InstantFieldTrial {
   // Return the field trial group this profile belongs to.
   static Group GetGroup(Profile* profile);
 
-  // Check if the user is in one of the EXPERIMENT groups.
-  static bool IsExperimentGroup(Profile* profile);
+  // Check if the user is in any of the EXPERIMENT groups.
+  static bool IsInstantExperiment(Profile* profile);
 
-  // Check if the user is in the HIDDEN_EXPERIMENT group.
+  // Check if the user is in the HIDDEN or SILENT EXPERIMENT groups.
   static bool IsHiddenExperiment(Profile* profile);
 
   // Check if the user is in the SILENT EXPERIMENT group.
