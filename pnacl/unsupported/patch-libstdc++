@@ -1,3 +1,4 @@
+/usr/local/google/home/robertm/nacl-gclient2/native_client/pnacl/git/gcc /usr/local/google/home/robertm/nacl-gclient2/native_client
 diff --git a/libstdc++-v3/configure b/libstdc++-v3/configure
 index c321e76..8c6584c 100755
 --- a/libstdc++-v3/configure
@@ -84,6 +85,36 @@ index bddef3a..76ffdb3 100644
  } // namespace regex_constants
  } // namespace
 -
+diff --git a/libstdc++-v3/include/ext/atomicity.h b/libstdc++-v3/include/ext/atomicity.h
+index f0c7752..bb6a9f3 100644
+--- a/libstdc++-v3/include/ext/atomicity.h
++++ b/libstdc++-v3/include/ext/atomicity.h
+@@ -106,11 +106,23 @@ _GLIBCXX_END_NAMESPACE_VERSION
+ // Even if the CPU doesn't need a memory barrier, we need to ensure
+ // that the compiler doesn't reorder memory accesses across the
+ // barriers.
++
++// @LOCALMOD
++void _llvm_mem_barrier(char ll, char ls, char sl, char ss, char device)
++  asm("llvm.memory.barrier");
++
+ #ifndef _GLIBCXX_READ_MEM_BARRIER
+-#define _GLIBCXX_READ_MEM_BARRIER __asm __volatile ("":::"memory")
++// @LOCALMOD
++// TODO(robertm): pick better arguments instead of worst-case
++#define _GLIBCXX_READ_MEM_BARRIER  _llvm_mem_barrier(1,1,1,1,1) 
++//#define _GLIBCXX_READ_MEM_BARRIER __asm __volatile ("":::"memory")
++
+ #endif
+ #ifndef _GLIBCXX_WRITE_MEM_BARRIER
+-#define _GLIBCXX_WRITE_MEM_BARRIER __asm __volatile ("":::"memory")
++// @LOCALMOD
++// TODO(robertm): pick better arguments instead of worst-case
++#define _GLIBCXX_WRITE_MEM_BARRIER _llvm_mem_barrier(1,1,1,1,1) 
++//#define _GLIBCXX_WRITE_MEM_BARRIER __asm __volatile ("":::"memory")
+ #endif
+ 
+ #endif 
 diff --git a/libstdc++-v3/include/ext/ropeimpl.h b/libstdc++-v3/include/ext/ropeimpl.h
 index 467b8fd..883f0e5 100644
 --- a/libstdc++-v3/include/ext/ropeimpl.h
@@ -271,4 +302,4 @@ index e77c5c9..eb0cf5f 100644
    // collate
    template class collate<C>;
    template class collate_byname<C>;
-/usr/local/google/home/robertm/nacl-gclient1/native_client
+/usr/local/google/home/robertm/nacl-gclient2/native_client

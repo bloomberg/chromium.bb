@@ -5,10 +5,10 @@
 #  Upon success this should be folded into utman
 # NOTE: run this in native_client/ like so
 #
-# tools/llvm/unsupported/build-libstdc++.sh download
-# tools/llvm/unsupported/build-libstdc++.sh libstdcpp-patch
-# tools/llvm/unsupported/build-libstdc++.sh libstdcpp-configure
-# tools/llvm/unsupported/build-libstdc++.sh libstdcpp-make -k
+# pnacl/unsupported/build-libstdc++.sh download
+# pnacl/unsupported/build-libstdc++.sh libstdcpp-patch
+# pnacl/unsupported/build-libstdc++.sh libstdcpp-configure
+# pnacl/unsupported/build-libstdc++.sh libstdcpp-make -k
 #
 set -o nounset
 set -o errexit
@@ -18,7 +18,7 @@ readonly INSTALL_ROOT="$(pwd)/toolchain/pnacl_linux_x86_64_newlib"
 readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
 readonly INSTALL_LIB="${INSTALL_ROOT}/lib"
 readonly LIBSTDCPP_INSTALL_DIR="${INSTALL_ROOT}/pkg/libstdcpp"
-
+readonly BUILD=cpp-build
 readonly GCC_SRC="$(pwd)/pnacl/git/gcc"
 
 CC=gcc
@@ -70,6 +70,12 @@ STD_ENV_FOR_LIBSTDCPP_CLANG=(
   OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" )
 
 
+unpatch() {
+  pushd ${GCC_SRC}
+  git reset --hard HEAD
+  popd
+}
+
 generate-patch() {
   pushd ${GCC_SRC}
   git diff
@@ -78,14 +84,14 @@ generate-patch() {
 
 libstdcpp-patch() {
   pushd ${GCC_SRC}
-  patch -p1 < ../../../tools/llvm/unsupported/patch-libstdc++
+  patch -p1 < ../../../pnacl/unsupported/patch-libstdc++
   popd
 }
 
 
 libstdcpp-configure() {
-  mkdir -p build
-  pushd build
+  mkdir -p ${BUILD}
+  pushd ${BUILD}
 
   env -i PATH=/usr/bin/:/bin  "${STD_ENV_FOR_LIBSTDCPP_CLANG[@]}" \
     ${GCC_SRC}/libstdc++-v3/configure \
@@ -107,7 +113,7 @@ libstdcpp-configure() {
 
 
 libstdcpp-make() {
-  pushd  build
+  pushd  ${BUILD}
   env -i PATH=/usr/bin/:/bin "${STD_ENV_FOR_LIBSTDCPP_CLANG[@]}" \
         make \
         "$@"
@@ -116,7 +122,7 @@ libstdcpp-make() {
 
 
 libstdcpp-install() {
-  pushd  build
+  pushd  ${BUILD}
   # install headers (=install-data)
   # for good measure make sure we do not keep any old headers
   rm -rf "${INSTALL_ROOT}/include/c++"
@@ -133,5 +139,12 @@ libstdcpp-install() {
   popd
 }
 
+all() {
+  unpatch
+  libstdcpp-patch
+  libstdcpp-configure
+  libstdcpp-make
+  libstdcpp-install
+}
 
 "$@"
