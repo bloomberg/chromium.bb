@@ -12,6 +12,7 @@
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_view.h"
 #include "views/widget/root_view.h"
+#include "views/widget/tooltip_manager_views.h"
 #include "views/widget/window_manager.h"
 
 #if defined(HAVE_IBUS)
@@ -127,6 +128,12 @@ void NativeWidgetViews::OnBoundsChanged(const gfx::Rect& new_bounds,
 }
 
 bool NativeWidgetViews::OnMouseEvent(const MouseEvent& event) {
+#if defined(TOUCH_UI) || defined(USE_AURA)
+  TooltipManagerViews* tooltip_manager =
+      static_cast<TooltipManagerViews*>(GetTooltipManager());
+  if (tooltip_manager)
+    tooltip_manager->UpdateForMouseEvent(event);
+#endif
   return HandleWindowOperation(event) ? true : delegate_->OnMouseEvent(event);
 }
 

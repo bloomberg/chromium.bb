@@ -82,15 +82,42 @@ TooltipManagerViews::TooltipManagerViews(views::View* root_view)
   tooltip_widget_->SetContentsView(&tooltip_label_);
   tooltip_widget_->Activate();
   tooltip_widget_->SetAlwaysOnTop(true);
-  tooltip_timer_.Start(FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kTooltipTimeoutMs),
-      this, &TooltipManagerViews::TooltipTimerFired);
-  MessageLoopForUI::current()->AddObserver(this);
 }
 
 TooltipManagerViews::~TooltipManagerViews() {
-  MessageLoopForUI::current()->RemoveObserver(this);
   tooltip_widget_->CloseNow();
+}
+
+void TooltipManagerViews::UpdateForMouseEvent(const MouseEvent& event) {
+  switch (event.type()) {
+    case ui::ET_MOUSE_EXITED:
+      // Mouse is exiting this widget. Stop showing the tooltip and the timer.
+      if (tooltip_timer_.IsRunning())
+        tooltip_timer_.Stop();
+      if (tooltip_widget_->IsVisible())
+        tooltip_widget_->Hide();
+      break;
+    case ui::ET_MOUSE_ENTERED:
+      // Mouse just entered this widget. Start the timer to show the tooltip.
+      CHECK(!tooltip_timer_.IsRunning());
+      tooltip_timer_.Start(FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kTooltipTimeoutMs),
+          this, &TooltipManagerViews::TooltipTimerFired);
+      break;
+    case ui::ET_MOUSE_MOVED:
+      OnMouseMoved(event.location().x(), event.location().y());
+      break;
+    case ui::ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_RELEASED:
+    case ui::ET_MOUSE_DRAGGED:
+    case ui::ET_MOUSEWHEEL:
+      // Hide the tooltip for click, release, drag, wheel events.
+      if (tooltip_widget_->IsVisible())
+        tooltip_widget_->Hide();
+      break;
+    default:
+      NOTIMPLEMENTED();
+  }
 }
 
 void TooltipManagerViews::UpdateTooltip() {
@@ -110,46 +137,6 @@ void TooltipManagerViews::HideKeyboardTooltip() {
   NOTREACHED();
 }
 
-#if defined(USE_WAYLAND)
-base::MessagePumpObserver::EventStatus TooltipManagerViews::WillProcessEvent(
-      ui::WaylandEvent* event) {
-  if (event->type == ui::WAYLAND_MOTION)
-    OnMouseMoved(event->motion.x, event->motion.y);
-  return base::MessagePumpObserver::EVENT_CONTINUE;
-}
-#elif defined(USE_X11)
-base::EventStatus TooltipManagerViews::WillProcessEvent(
-    const base::NativeEvent& native_event) {
-  if (!ui::IsMouseEvent(native_event))
-    return base::EVENT_CONTINUE;
-#if defined(USE_AURA)
-  aura::MouseEvent event(native_event);
-#else
-  MouseEvent event(native_event);
-#endif
-  switch (event.type()) {
-    case ui::ET_MOUSE_MOVED:
-      OnMouseMoved(event.x(), event.y());
-    default:
-      break;
-  }
-  return base::EVENT_CONTINUE;
-}
-
-void TooltipManagerViews::DidProcessEvent(const base::NativeEvent& event) {
-}
-#elif defined(OS_WIN)
-base::EventStatus TooltipManagerViews::WillProcessEvent(
-    const base::NativeEvent& event) {
-  if (event.message == WM_MOUSEMOVE)
-    OnMouseMoved(GET_X_LPARAM(event.lParam), GET_Y_LPARAM(event.lParam));
-  return base::EVENT_CONTINUE;
-}
-
-void TooltipManagerViews::DidProcessEvent(const base::NativeEvent& event) {
-}
-#endif
-
 void TooltipManagerViews::TooltipTimerFired() {
   UpdateIfRequired(curr_mouse_pos_.x(), curr_mouse_pos_.y(), false);
 }
@@ -159,8 +146,6 @@ View* TooltipManagerViews::GetViewForTooltip(int x, int y, bool for_keyboard) {
   if (!for_keyboard) {
     // Convert x,y from screen coordinates to |root_view_| coordinates.
     gfx::Point point(x, y);
-    gfx::Rect r = root_view_->GetWidget()->GetClientAreaScreenBounds();
-    point.SetPoint(point.x() - r.x(), point.y() - r.y());
     View::ConvertPointFromWidget(root_view_, &point);
     view = root_view_->GetEventHandlerForPoint(point);
   } else {

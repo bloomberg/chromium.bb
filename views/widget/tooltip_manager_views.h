@@ -23,30 +23,25 @@ union WaylandEvent;
 
 namespace views {
 
+class MouseEvent;
 class Widget;
 
 // TooltipManager implementation for Views.
-class TooltipManagerViews : public TooltipManager,
-                            public MessageLoopForUI::Observer {
+class TooltipManagerViews : public TooltipManager {
  public:
   explicit TooltipManagerViews(views::View* root_view);
   virtual ~TooltipManagerViews();
+
+  // Updates the state of the tooltip based on the mouse event. The mouse event
+  // is the same event that goes to a Widget (i.e. it is in the Widget's
+  // coordinate system).
+  void UpdateForMouseEvent(const MouseEvent& event);
 
   // TooltipManager.
   virtual void UpdateTooltip() OVERRIDE;
   virtual void TooltipTextChanged(View* view) OVERRIDE;
   virtual void ShowKeyboardTooltip(View* view) OVERRIDE;
   virtual void HideKeyboardTooltip() OVERRIDE;
-
-#if defined(USE_WAYLAND)
-  virtual base::MessagePumpObserver::EventStatus WillProcessEvent(
-      ui::WaylandEvent* event) OVERRIDE;
-#else
-  // MessageLoopForUI::Observer
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
-#endif
 
  private:
   void TooltipTimerFired();

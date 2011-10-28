@@ -22,6 +22,8 @@ class Font;
 
 namespace views {
 
+class TooltipManagerViews;
+
 class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
                                       public aura::WindowDelegate {
  public:
@@ -158,7 +160,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
 
   gfx::NativeCursor cursor_;
 
-  scoped_ptr<TooltipManager> tooltip_manager_;
+  scoped_ptr<TooltipManagerViews> tooltip_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
 };
