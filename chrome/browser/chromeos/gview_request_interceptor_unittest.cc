@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -101,6 +102,10 @@ class GViewRequestInterceptorTest : public testing::Test {
     ASSERT_TRUE(PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path_));
 
     handler_ = new content::DummyResourceHandler();
+
+    PluginService::GetInstance()->RefreshPluginList();
+    PluginService::GetInstance()->GetPlugins(base::Bind(&QuitMessageLoop));
+    MessageLoop::current()->Run();
   }
 
   virtual void TearDown() {
