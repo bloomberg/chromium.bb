@@ -2007,15 +2007,34 @@ gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
   }
   g_free(rects);
 
-  // TODO(jhawkins): Ideally we'd like to only draw what's needed in the damage
-  // rect, but the tab widgets overlap each other, and painting on one widget
-  // will cause an expose-event to be sent to the widgets underneath.  The
-  // underlying widget does not need to be redrawn as we control the order of
-  // expose-events.  Currently we hack it to redraw the entire tabstrip.  We
-  // could change the damage rect to just contain the tabs + the new tab button.
+  // Ideally we'd like to only draw what's needed in the damage rect, but the
+  // tab widgets overlap each other. To get the proper visual look, we need to
+  // draw tabs from the rightmost to the leftmost tab. So if we have a dirty
+  // rectangle in the center of the tabstrip, we'll have to draw all the tabs
+  // to the left of it.
+  //
+  // TODO(erg): Figure out why we can't have clip rects that don't start from
+  // x=0. jhawkins had a big comment here about how painting on one widget will
+  // cause an expose-event to be sent to the widgets underneath, but that
+  // should still obey clip rects, but doesn't seem to.
+  if (active_animation_.get() || drag_controller_.get()) {
+    // If we have an active animation or the tab is being dragged, no matter
+    // what GTK tells us our dirty rectangles are, we need to redraw the entire
+    // tabstrip.
+    event->area.width = bounds_.width();
+  } else {
+    // Expand whatever dirty rectangle we were given to the area from the
+    // leftmost edge of the tabstrip to the rightmost edge of the dirty
+    // rectangle given.
+    //
+    // Doing this frees up CPU when redrawing the tabstrip with throbbing
+    // tabs. The most likely tabs to throb are pinned or minitabs which live on
+    // the very leftmost of the tabstrip.
+    event->area.width += event->area.x;
+  }
+
   event->area.x = 0;
   event->area.y = 0;
-  event->area.width = bounds_.width();
   event->area.height = bounds_.height();
   gdk_region_union_with_rect(event->region, &event->area);
 
