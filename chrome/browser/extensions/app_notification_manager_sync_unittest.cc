@@ -82,7 +82,9 @@ class AppNotificationManagerSyncTest : public testing::Test {
     ASSERT_TRUE(model_->loaded());
   }
 
-  virtual void TearDown() { }
+  virtual void TearDown() {
+    WaitForFileThread();
+  }
 
   static void PostQuitToUIThread() {
     BrowserThread::PostTask(BrowserThread::UI,
