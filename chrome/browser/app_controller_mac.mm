@@ -352,30 +352,6 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   }
 }
 
-// Helper routine to get the window controller if the key window is a tabbed
-// window, or nil if not. Examples of non-tabbed windows are "about" or
-// "preferences".
-- (TabWindowController*)keyWindowTabController {
-  NSWindowController* keyWindowController =
-      [[NSApp keyWindow] windowController];
-  if ([keyWindowController isKindOfClass:[TabWindowController class]])
-    return (TabWindowController*)keyWindowController;
-
-  return nil;
-}
-
-// Helper routine to get the window controller if the main window is a tabbed
-// window, or nil if not. Examples of non-tabbed windows are "about" or
-// "preferences".
-- (TabWindowController*)mainWindowTabController {
-  NSWindowController* mainWindowController =
-      [[NSApp mainWindow] windowController];
-  if ([mainWindowController isKindOfClass:[TabWindowController class]])
-    return (TabWindowController*)mainWindowController;
-
-  return nil;
-}
-
 // If the window has a tab controller, make "close window" be cmd-shift-w,
 // otherwise leave it as the normal cmd-w. Capitalization of the key equivalent
 // affects whether the shift modifer is used.
@@ -406,18 +382,25 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   [closeWindowMenuItem_ setKeyEquivalentModifierMask:0];
 }
 
-// See if we have a window with tabs open, and adjust the key equivalents for
+// See if the focused window window has tabs, and adjust the key equivalents for
 // Close Tab/Close Window accordingly.
-- (void)fixCloseMenuItemKeyEquivalents:(NSWindow*)window {
+- (void)fixCloseMenuItemKeyEquivalents {
   fileMenuUpdatePending_ = NO;
-  TabWindowController* tabController = [self keyWindowTabController];
-  if (!tabController && ![NSApp keyWindow]) {
-    // There might be a small amount of time where there is no key window,
-    // so just use our main browser window if there is one.
-    tabController = [self mainWindowTabController];
-  }
-  BOOL hasTabs = !!tabController;
 
+  NSWindow* window = [NSApp keyWindow];
+  NSWindow* mainWindow = [NSApp mainWindow];
+  if (!window || ([window parentWindow] == mainWindow)) {
+    // If the key window is a child of the main window (e.g. a bubble), the main
+    // window should be the one that handles the close menu item action.
+    // Also, there might be a small amount of time where there is no key window;
+    // in that case as well, just use our main browser window if there is one.
+    // You might think that we should just always use the main window, but the
+    // "About Chrome" window serves as a counterexample.
+    window = mainWindow;
+  }
+
+  BOOL hasTabs =
+      [[window windowController] isKindOfClass:[TabWindowController class]];
   [self adjustCloseWindowMenuItemKeyEquivalent:hasTabs];
   [self adjustCloseTabMenuItemKeyEquivalent:hasTabs];
 }
@@ -426,7 +409,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 // after a delay to ensure that window layer state has been set by the time
 // we do the enabling. This should only be called on the main thread, code that
 // calls this (even as a side-effect) from other threads needs to be fixed.
-- (void)delayedFixCloseMenuItemKeyEquivalents:(NSNotification*)notify {
+- (void)delayedFixCloseMenuItemKeyEquivalents {
   DCHECK([NSThread isMainThread]);
   if (!fileMenuUpdatePending_) {
     // The OS prefers keypresses to timers, so it's possible that a cmd-w
@@ -436,8 +419,8 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     if ([NSThread isMainThread]) {
       fileMenuUpdatePending_ = YES;
       [self clearCloseMenuItemKeyEquivalents];
-      [self performSelector:@selector(fixCloseMenuItemKeyEquivalents:)
-                 withObject:[notify object]
+      [self performSelector:@selector(fixCloseMenuItemKeyEquivalents)
+                 withObject:nil
                  afterDelay:0];
     } else {
       // This shouldn't be happening, but if it does, force it to the main
@@ -446,8 +429,8 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       // there could be a race between the selector finishing and setting the
       // flag.
       [self
-          performSelectorOnMainThread:@selector(fixCloseMenuItemKeyEquivalents:)
-                           withObject:[notify object]
+          performSelectorOnMainThread:@selector(fixCloseMenuItemKeyEquivalents)
+                           withObject:nil
                         waitUntilDone:NO];
     }
   }
@@ -456,7 +439,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 // Called when we get a notification about the window layering changing to
 // update the UI based on the new main window.
 - (void)windowLayeringDidChange:(NSNotification*)notify {
-  [self delayedFixCloseMenuItemKeyEquivalents:notify];
+  [self delayedFixCloseMenuItemKeyEquivalents];
 
   if ([notify name] == NSWindowDidResignKeyNotification) {
     // If a window is closed, this notification is fired but |[NSApp keyWindow]|

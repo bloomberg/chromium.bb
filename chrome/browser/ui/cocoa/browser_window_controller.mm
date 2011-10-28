@@ -1000,9 +1000,12 @@ enum {
       enable = browser_->command_updater()->IsCommandEnabled(tag);
       switch (tag) {
         case IDC_CLOSE_TAB:
-          // Disable "close tab" if we're not the key window or if there's only
-          // one tab.
-          enable &= [[self window] isKeyWindow];
+          // Disable "close tab" if the receiving window is not tabbed.
+          // We simply check whether the item has a keyboard shortcut set here;
+          // app_controller_mac.mm actually determines whether the item should
+          // be enabled.
+          if ([static_cast<NSObject*>(item) isKindOfClass:[NSMenuItem class]])
+            enable &= !![[static_cast<NSMenuItem*>(item) keyEquivalent] length];
           break;
         case IDC_FULLSCREEN: {
           enable &= [self supportsFullscreen];
