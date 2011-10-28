@@ -445,6 +445,15 @@ var chrome = chrome || {};
     };
   }
 
+  // Remove invalid characters from |text| so that it is suitable to use
+  // for |AutocompleteMatch::contents|.
+  function sanitizeString(text) {
+    // NOTE: This logic mirrors |AutocompleteMatch::SanitizeString()|.
+    // 0x2028 = line separator; 0x2029 = paragraph separator.
+    var kRemoveChars = /(\r|\n|\t|\u2028|\u2029)/gm;
+    return text.trimLeft().replace(kRemoveChars, '');
+  }
+
   // Parses the xml syntax supported by omnibox suggestion results. Returns an
   // object with two properties: 'description', which is just the text content,
   // and 'descriptionStyles', which is an array of style objects in a format
@@ -476,7 +485,7 @@ var chrome = chrome || {};
       for (var i = 0, child; child = node.childNodes[i]; i++) {
         // Append text nodes to our description.
         if (child.nodeType == Node.TEXT_NODE) {
-          result.description += child.nodeValue;
+          result.description += sanitizeString(child.nodeValue);
           continue;
         }
 

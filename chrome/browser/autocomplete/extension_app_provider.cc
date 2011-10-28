@@ -29,6 +29,33 @@ void ExtensionAppProvider::AddExtensionAppForTesting(const string16& app_name,
   extension_apps_.push_back(std::make_pair(app_name, url));
 }
 
+AutocompleteMatch ExtensionAppProvider::CreateAutocompleteMatch(
+    const AutocompleteInput& input,
+    const string16& name,
+    const string16& url,
+    size_t name_match_index,
+    size_t url_match_index) {
+  // TODO(finnur): Figure out what type to return here, might want to have
+  // the extension icon/a generic icon show up in the Omnibox.
+  AutocompleteMatch match(this, 0, false,
+                          AutocompleteMatch::EXTENSION_APP);
+  match.fill_into_edit = url;
+  match.destination_url = GURL(url);
+  match.inline_autocomplete_offset = string16::npos;
+  match.contents = AutocompleteMatch::SanitizeString(name);
+  AutocompleteMatch::ClassifyLocationInString(name_match_index,
+      input.text().length(), name.length(), ACMatchClassification::NONE,
+      &match.contents_class);
+  match.description = url;
+  AutocompleteMatch::ClassifyLocationInString(url_match_index,
+      input.text().length(), url.length(), ACMatchClassification::URL,
+      &match.description_class);
+  match.relevance = CalculateRelevance(input.type(), input.text().length(),
+      (name_match_index != string16::npos ? name.length() : url.length()),
+      match.destination_url);
+  return match;
+}
+
 void ExtensionAppProvider::Start(const AutocompleteInput& input,
                                  bool minimal_changes) {
   matches_.clear();
@@ -54,27 +81,11 @@ void ExtensionAppProvider::Start(const AutocompleteInput& input,
 
       if (matches_name || matches_url) {
         // We have a match, might be a partial match.
-        // TODO(finnur): Figure out what type to return here, might want to have
-        // the extension icon/a generic icon show up in the Omnibox.
-        AutocompleteMatch match(this, 0, false,
-                                AutocompleteMatch::EXTENSION_APP);
-        match.fill_into_edit = url;
-        match.destination_url = GURL(url);
-        match.inline_autocomplete_offset = string16::npos;
-        match.contents = name;
-        AutocompleteMatch::ClassifyLocationInString(matches_name ?
-            static_cast<size_t>(name_iter - name.begin()) : string16::npos,
-            input.text().length(), name.length(), ACMatchClassification::NONE,
-            &match.contents_class);
-        match.description = url;
-        AutocompleteMatch::ClassifyLocationInString(matches_url ?
-            static_cast<size_t>(url_iter - url.begin()) : string16::npos,
-            input.text().length(), url.length(), ACMatchClassification::URL,
-            &match.description_class);
-        match.relevance = CalculateRelevance(input.type(),
-            input.text().length(), matches_name ? name.length() : url.length(),
-            match.destination_url);
-        matches_.push_back(match);
+        matches_.push_back(CreateAutocompleteMatch(input, name, url,
+            matches_name ?
+                static_cast<size_t>(name_iter - name.begin()) : string16::npos,
+            matches_url ?
+                static_cast<size_t>(url_iter - url.begin()) : string16::npos));
       }
     }
   }

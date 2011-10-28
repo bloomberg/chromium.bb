@@ -652,6 +652,13 @@ void AutocompleteResult::CopyOldMatches(const AutocompleteInput& input,
 }
 
 void AutocompleteResult::AppendMatches(const ACMatches& matches) {
+#ifndef NDEBUG
+  for (ACMatches::const_iterator i = matches.begin(); i != matches.end(); ++i) {
+    DCHECK_EQ(AutocompleteMatch::SanitizeString(i->contents), i->contents);
+    DCHECK_EQ(AutocompleteMatch::SanitizeString(i->description),
+              i->description);
+  }
+#endif
   std::copy(matches.begin(), matches.end(), std::back_inserter(matches_));
   default_match_ = end();
   alternate_nav_url_ = GURL();
@@ -659,6 +666,9 @@ void AutocompleteResult::AppendMatches(const ACMatches& matches) {
 
 void AutocompleteResult::AddMatch(const AutocompleteMatch& match) {
   DCHECK(default_match_ != end());
+  DCHECK_EQ(AutocompleteMatch::SanitizeString(match.contents), match.contents);
+  DCHECK_EQ(AutocompleteMatch::SanitizeString(match.description),
+            match.description);
   ACMatches::iterator insertion_point =
       std::upper_bound(begin(), end(), match, &AutocompleteMatch::MoreRelevant);
   ACMatches::iterator::difference_type default_offset =

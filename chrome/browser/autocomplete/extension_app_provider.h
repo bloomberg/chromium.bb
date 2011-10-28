@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "content/public/browser/notification_observer.h"
@@ -39,11 +40,20 @@ class ExtensionAppProvider : public AutocompleteProvider,
                      bool minimal_changes) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ExtensionAppProviderTest, CreateMatchSanitize);
+
   // An ExtensionApp is a pair of Extension Name and the Launch URL.
   typedef std::pair<string16, string16> ExtensionApp;
   typedef std::vector<ExtensionApp> ExtensionApps;
 
   virtual ~ExtensionAppProvider();
+
+  // Construct a match for the specified parameters.
+  AutocompleteMatch CreateAutocompleteMatch(const AutocompleteInput& input,
+                                            const string16& name,
+                                            const string16& url,
+                                            size_t name_match_index,
+                                            size_t url_match_index);
 
   // Fetch the current app list and cache it locally.
   void RefreshAppList();

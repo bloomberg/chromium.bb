@@ -124,6 +124,11 @@ struct AutocompleteMatch {
                                        int style,
                                        ACMatchClassifications* classifications);
 
+  // Removes invalid characters from |str|. Should be called on strings coming
+  // from external sources (such as extensions) before assigning to |contents|
+  // or |description|.
+  static string16 SanitizeString(const string16& text);
+
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
   // no provider (or memory of the user's selection).

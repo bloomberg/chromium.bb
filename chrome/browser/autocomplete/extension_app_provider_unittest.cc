@@ -105,3 +105,26 @@ TEST_F(ExtensionAppProviderTest, BasicMatching) {
 
   RunTest(edit_cases, ARRAYSIZE_UNSAFE(edit_cases));
 }
+
+TEST_F(ExtensionAppProviderTest, CreateMatchSanitize) {
+  struct TestData {
+    const char* name;
+    const char* match_contents;
+  } cases[] = {
+    { "Test", "Test" },
+    { "Test \n Test", "Test  Test" },
+    { "Test\r\t\nTest", "TestTest" },
+  };
+
+  AutocompleteInput input(ASCIIToUTF16("Test"), string16(),
+                          true, true, true, AutocompleteInput::BEST_MATCH);
+  string16 url(ASCIIToUTF16("http://example.com"));
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    AutocompleteMatch match =
+        app_provider_->CreateAutocompleteMatch(input,
+                                               ASCIIToUTF16(cases[i].name),
+                                               url, 0, string16::npos);
+    EXPECT_EQ(ASCIIToUTF16(cases[i].match_contents), match.contents);
+  }
+}
+

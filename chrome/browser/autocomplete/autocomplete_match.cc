@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "grit/theme_resources.h"
 
@@ -154,6 +155,21 @@ void AutocompleteMatch::ClassifyLocationInString(
   if (after_match < overall_length) {
     classification->push_back(ACMatchClassification(after_match, style));
   }
+}
+
+// static
+string16 AutocompleteMatch::SanitizeString(const string16& text) {
+  // NOTE: This logic is mirrored by |sanitizeString()| in
+  // extension_process_bindings.js.
+  // 0x2028 = line separator; 0x2029 = paragraph separator.
+  const char16 kRemoveChars[] = { '\n', '\r', '\t',
+                                  0x2028,  // Line separator
+                                  0x2029,  // Paragraph separator
+                                  0 };
+  string16 result;
+  TrimWhitespace(text, TRIM_LEADING, &result);
+  RemoveChars(result, kRemoveChars, &result);
+  return result;
 }
 
 #ifndef NDEBUG
