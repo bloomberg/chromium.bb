@@ -1339,6 +1339,9 @@ def CMDpassthru(args):
 
   It assumes a change list name is passed and is converted with the files names.
   """
+  if not args or len(args) < 2:
+    ErrorExit("You need to pass a change list name for this svn fall-through "
+              "command")
   cl_name = args[1]
   args = ["svn", args[0]]
   if len(args) > 1:
