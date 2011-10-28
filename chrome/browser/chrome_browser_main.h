@@ -118,10 +118,12 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // it is destroyed last.
   scoped_ptr<ShutdownWatcherHelper> shutdown_watcher_;
 
+#if defined(TRACK_ALL_TASK_OBJECTS)
   // Creating this object starts tracking the creation and deletion of Task
   // instance. This MUST be done before main_message_loop, so that it is
   // destroyed after the main_message_loop.
   tracked_objects::AutoTracking tracking_objects_;
+#endif
 
   // Statistical testing infrastructure for the entire browser. NULL until
   // SetupMetricsAndFieldTrials is called.
