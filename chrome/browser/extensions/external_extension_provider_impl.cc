@@ -355,7 +355,8 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
             new ExternalExtensionProviderImpl(
                 service,
                 new ExternalPrefExtensionLoader(
-                    chrome::DIR_DEFAULT_APPS, options),
+                    chrome::DIR_DEFAULT_APPS,
+                    ExternalPrefExtensionLoader::NONE),
                 Extension::EXTERNAL_PREF,
                 Extension::INVALID,
                 Extension::FROM_BOOKMARK)));
