@@ -75,7 +75,7 @@ NOINLINE void FatalStringQuoteException(const std::string& str) {
   // Copy bad string to the stack so it's recorded in the crash dump.
   char bad_string[256] = {0};
   base::strlcpy(bad_string, str.c_str(), arraysize(bad_string));
-  LOG(FATAL) << "String quoting failed " << bad_string;
+  DLOG(FATAL) << "String quoting failed " << bad_string;
 }
 
 }  // namespace
@@ -364,8 +364,8 @@ NSString* LoadSandboxTemplate(Sandbox::SandboxProcessType sandbox_type) {
                                    error:NULL];
 
   if (!common_sandbox_prefix_data) {
-    LOG(FATAL) << "Failed to find the sandbox profile on disk "
-               << [common_sandbox_prefix_path fileSystemRepresentation];
+    DLOG(FATAL) << "Failed to find the sandbox profile on disk "
+                << [common_sandbox_prefix_path fileSystemRepresentation];
     return nil;
   }
 
@@ -378,8 +378,8 @@ NSString* LoadSandboxTemplate(Sandbox::SandboxProcessType sandbox_type) {
                                     error:NULL];
 
   if (!sandbox_data) {
-    LOG(FATAL) << "Failed to find the sandbox profile on disk "
-               << [sandbox_profile_path fileSystemRepresentation];
+    DLOG(FATAL) << "Failed to find the sandbox profile on disk "
+                << [sandbox_profile_path fileSystemRepresentation];
     return nil;
   }
 
@@ -404,9 +404,9 @@ bool Sandbox::PostProcessSandboxProfile(
   // Split string on "@" characters.
   std::vector<std::string> raw_sandbox_pieces;
   if (Tokenize([sandbox_data UTF8String], "@", &raw_sandbox_pieces) == 0) {
-    LOG(FATAL) << "Bad Sandbox profile, should contain at least one token ("
-               << [sandbox_data UTF8String]
-               << ")";
+    DLOG(FATAL) << "Bad Sandbox profile, should contain at least one token ("
+                << [sandbox_data UTF8String]
+                << ")";
     return false;
   }
 
@@ -548,10 +548,10 @@ bool Sandbox::EnableSandbox(SandboxProcessType sandbox_type,
   char* error_buff = NULL;
   int error = sandbox_init(final_sandbox_profile_str.c_str(), 0, &error_buff);
   bool success = (error == 0 && error_buff == NULL);
-  LOG_IF(FATAL, !success) << "Failed to initialize sandbox: "
-                          << error
-                          << " "
-                          << error_buff;
+  DLOG_IF(FATAL, !success) << "Failed to initialize sandbox: "
+                           << error
+                           << " "
+                           << error_buff;
   sandbox_free_error(error_buff);
   return success;
 }
@@ -560,16 +560,16 @@ bool Sandbox::EnableSandbox(SandboxProcessType sandbox_type,
 void Sandbox::GetCanonicalSandboxPath(FilePath* path) {
   int fd = HANDLE_EINTR(open(path->value().c_str(), O_RDONLY));
   if (fd < 0) {
-    PLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "
-                << path->value();
+    DPLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "
+                 << path->value();
     return;
   }
   file_util::ScopedFD file_closer(&fd);
 
   FilePath::CharType canonical_path[MAXPATHLEN];
   if (HANDLE_EINTR(fcntl(fd, F_GETPATH, canonical_path)) != 0) {
-    PLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "
-                << path->value();
+    DPLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "
+                 << path->value();
     return;
   }
 

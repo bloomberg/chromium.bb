@@ -60,7 +60,7 @@ void Gles2TextureToEglImageTranslator::DestroyEglImage(
   // Clients of this class will call this method for each EGLImage handle.
   // Actual destroying of the handles is done here.
   if (!egl_destroy_image_khr) {
-    LOG(ERROR) << "egl_destroy_image_khr failed";
+    DLOG(ERROR) << "egl_destroy_image_khr failed";
     return;
   }
   egl_destroy_image_khr(egl_display, egl_image);

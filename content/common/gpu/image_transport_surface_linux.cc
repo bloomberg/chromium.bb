@@ -263,7 +263,7 @@ bool EGLImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
 
   if (!context->HasExtension("EGL_KHR_image") &&
       !context->HasExtension("EGL_KHR_image_pixmap")) {
-    LOG(ERROR) << "EGLImage from X11 pixmap not supported";
+    DLOG(ERROR) << "EGLImage from X11 pixmap not supported";
     return false;
   }
 
@@ -273,7 +273,7 @@ bool EGLImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
 
   GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
   if (status != GL_FRAMEBUFFER_COMPLETE) {
-    LOG(ERROR) << "Framebuffer incomplete.";
+    DLOG(ERROR) << "Framebuffer incomplete.";
     return false;
   }
 
@@ -502,7 +502,7 @@ bool GLXImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
     int major = 0, minor = 2;
     XCompositeQueryVersion(dpy, &major, &minor);
     if (major == 0 && minor < 2) {
-      LOG(ERROR) << "Pixmap from window not supported.";
+      DLOG(ERROR) << "Pixmap from window not supported.";
       return false;
     }
   }

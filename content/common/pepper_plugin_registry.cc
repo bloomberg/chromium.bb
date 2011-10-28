@@ -135,9 +135,9 @@ void PepperPluginRegistry::PreloadModules() {
       std::string error;
       base::NativeLibrary library = base::LoadNativeLibrary(plugins[i].path,
                                                             &error);
-      LOG_IF(WARNING, !library) << "Unable to load plugin "
-                                << plugins[i].path.value() << " "
-                                << error;
+      DLOG_IF(WARNING, !library) << "Unable to load plugin "
+                                 << plugins[i].path.value() << " "
+                                 << error;
     }
   }
 }

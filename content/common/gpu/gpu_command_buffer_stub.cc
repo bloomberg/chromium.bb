@@ -74,7 +74,7 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   // handler can assume that the context is current.
   if (decoder_.get()) {
     if (!decoder_->MakeCurrent()) {
-      LOG(ERROR) << "Context lost because MakeCurrent failed.";
+      DLOG(ERROR) << "Context lost because MakeCurrent failed.";
       command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
       command_buffer_->SetParseError(gpu::error::kLostContext);
       if (gfx::GLContext::LosesAllContextsOnContextLost())
@@ -205,7 +205,7 @@ void GpuCommandBufferStub::OnInitialize(
     // Ensure the decoder is not destroyed if it is not initialized.
     decoder_.reset();
 
-    LOG(ERROR) << "Failed to create surface.\n";
+    DLOG(ERROR) << "Failed to create surface.\n";
     OnInitializeFailed(reply_message);
     return;
   }
@@ -222,7 +222,7 @@ void GpuCommandBufferStub::OnInitialize(
     // Ensure the decoder is not destroyed if it is not initialized.
     decoder_.reset();
 
-    LOG(ERROR) << "Failed to create context.\n";
+    DLOG(ERROR) << "Failed to create context.\n";
     OnInitializeFailed(reply_message);
     return;
   }
@@ -234,7 +234,7 @@ void GpuCommandBufferStub::OnInitialize(
                             disallowed_features_,
                             allowed_extensions_.c_str(),
                             requested_attribs_)) {
-    LOG(ERROR) << "Failed to initialize decoder.";
+    DLOG(ERROR) << "Failed to initialize decoder.";
     OnInitializeFailed(reply_message);
     return;
   }

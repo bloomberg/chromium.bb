@@ -201,7 +201,7 @@ bool IOSurfaceImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
 
   GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
   if (status != GL_FRAMEBUFFER_COMPLETE) {
-    LOG(ERROR) << "Framebuffer incomplete.";
+    DLOG(ERROR) << "Framebuffer incomplete.";
     return false;
   }
 
@@ -386,7 +386,7 @@ bool TransportDIBImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
 
   GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
   if (status != GL_FRAMEBUFFER_COMPLETE) {
-    LOG(ERROR) << "Framebuffer incomplete.";
+    DLOG(ERROR) << "Framebuffer incomplete.";
     return false;
   }
 

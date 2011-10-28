@@ -56,9 +56,9 @@ bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
                                     base::SharedMemory* font_data,
                                     uint32* font_data_size,
                                     uint32* font_id) {
-  CHECK(font_data);
-  CHECK(font_data_size);
-  CHECK(font_id);
+  DCHECK(font_data);
+  DCHECK(font_data_size);
+  DCHECK(font_id);
   *font_data_size = 0;
   *font_id = 0;
 
@@ -67,7 +67,7 @@ bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
 
   // Load appropriate NSFont.
   if (!font_to_encode) {
-    LOG(ERROR) << "Failed to load font " << font_name;
+    DLOG(ERROR) << "Failed to load font " << font_name;
     return false;
   }
 
@@ -75,7 +75,7 @@ bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
   ATSFontRef ats_font =
       CTFontGetPlatformFont(reinterpret_cast<CTFontRef>(font_to_encode), NULL);
   if (!ats_font) {
-    LOG(ERROR) << "Conversion to ATSFontRef failed for " << font_name;
+    DLOG(ERROR) << "Conversion to ATSFontRef failed for " << font_name;
     return false;
   }
 
@@ -86,7 +86,7 @@ bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
       uint32_cant_hold_fontcontainer_ref);
   ATSFontContainerRef fontContainer = kATSFontContainerRefUnspecified;
   if (ATSFontGetContainer(ats_font, 0, &fontContainer) != noErr) {
-      LOG(ERROR) << "Failed to get font container ref for " << font_name;
+      DLOG(ERROR) << "Failed to get font container ref for " << font_name;
       return false;
   }
 
@@ -100,7 +100,7 @@ bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
   // since the font now lives in memory as far as it's concerned.
   FSRef font_fsref;
   if (ATSFontGetFileReference(ats_font, &font_fsref) != noErr) {
-    LOG(ERROR) << "Failed to find font file for " << font_name;
+    DLOG(ERROR) << "Failed to find font file for " << font_name;
     return false;
   }
   FilePath font_path = FilePath(base::mac::PathFromFSRef(font_fsref));
@@ -108,18 +108,18 @@ bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
   // Load file into shared memory buffer.
   int64 font_file_size_64 = -1;
   if (!file_util::GetFileSize(font_path, &font_file_size_64)) {
-    LOG(ERROR) << "Couldn't get font file size for " << font_path.value();
+    DLOG(ERROR) << "Couldn't get font file size for " << font_path.value();
     return false;
   }
 
   if (font_file_size_64 <= 0 || font_file_size_64 >= kint32max) {
-    LOG(ERROR) << "Bad size for font file " << font_path.value();
+    DLOG(ERROR) << "Bad size for font file " << font_path.value();
     return false;
   }
 
   int32 font_file_size_32 = static_cast<int32>(font_file_size_64);
   if (!font_data->CreateAndMapAnonymous(font_file_size_32)) {
-    LOG(ERROR) << "Failed to create shmem area for " << font_name;
+    DLOG(ERROR) << "Failed to create shmem area for " << font_name;
     return false;
   }
 
@@ -127,7 +127,7 @@ bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
                        reinterpret_cast<char*>(font_data->memory()),
                        font_file_size_32);
   if (amt_read != font_file_size_32) {
-    LOG(ERROR) << "Failed to read font data for " << font_path.value();
+    DLOG(ERROR) << "Failed to read font data for " << font_path.value();
     return false;
   }
 

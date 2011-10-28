@@ -17,8 +17,8 @@
 + (NSApplication*)sharedApplication {
   NSApplication* app = [super sharedApplication];
   if (![NSApp isKindOfClass:self]) {
-    LOG(ERROR) << "NSApp should be of type " << [[self className] UTF8String]
-               << ", not " << [[NSApp className] UTF8String];
+    DLOG(ERROR) << "NSApp should be of type " << [[self className] UTF8String]
+                << ", not " << [[NSApp className] UTF8String];
     DCHECK(false) << "NSApp is of wrong type";
   }
   return app;

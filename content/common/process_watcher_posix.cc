@@ -18,7 +18,7 @@
 static bool IsChildDead(pid_t child) {
   const pid_t result = HANDLE_EINTR(waitpid(child, NULL, WNOHANG));
   if (result == -1) {
-    PLOG(ERROR) << "waitpid(" << child << ")";
+    DPLOG(ERROR) << "waitpid(" << child << ")";
     NOTREACHED();
   } else if (result > 0) {
     // The child has died.
@@ -47,8 +47,8 @@ class BackgroundReaper : public base::PlatformThread::Delegate {
     if (timeout_ == 0) {
       pid_t r = HANDLE_EINTR(waitpid(child_, NULL, 0));
       if (r != child_) {
-        PLOG(ERROR) << "While waiting for " << child_
-                    << " to terminate, we got the following result: " << r;
+        DPLOG(ERROR) << "While waiting for " << child_
+                     << " to terminate, we got the following result: " << r;
       }
       return;
     }
@@ -67,10 +67,10 @@ class BackgroundReaper : public base::PlatformThread::Delegate {
       // SIGKILL is uncatchable. Since the signal was delivered, we can
       // just wait for the process to die now in a blocking manner.
       if (HANDLE_EINTR(waitpid(child_, NULL, 0)) < 0)
-        PLOG(WARNING) << "waitpid";
+        DPLOG(WARNING) << "waitpid";
     } else {
-      LOG(ERROR) << "While waiting for " << child_ << " to terminate we"
-                 << " failed to deliver a SIGKILL signal (" << errno << ").";
+      DLOG(ERROR) << "While waiting for " << child_ << " to terminate we"
+                  << " failed to deliver a SIGKILL signal (" << errno << ").";
     }
   }
 

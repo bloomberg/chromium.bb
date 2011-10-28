@@ -82,7 +82,7 @@ void HandleEnumerator::EnumerateHandles() {
     output += GetAccessString(current_type,
         sys_handle->handle_entry()->GrantedAccess);
   }
-  LOG(INFO) << output;
+  DLOG(INFO) << output;
 }
 
 HandleType StringToHandleType(const string16& type) {
