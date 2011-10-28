@@ -721,11 +721,15 @@ tests_to_disable = set([
     'run_ppapi_ppb_core_browser_test',
     'run_ppapi_ppb_image_data_browser_test',
     'run_ppapi_ppb_file_system_browser_test',
+    'run_ppapi_ppp_instance_browser_test',
+    'run_ppapi_example_font_test',
 
     'run_nacl_uma_test',
 
     'run_pm_exit0_status_chrome_browser_test',
     'run_pm_exit7_status_chrome_browser_test',
+    'run_pm_exit254_status_chrome_browser_test',
+    'run_pm_exitneg2_status_chrome_browser_test',
     'run_inbrowser_crash_in_syscall_test',
     'run_inbrowser_untrusted_crash_test',
     'run_pm_nameservice_chrome_browser_test',
