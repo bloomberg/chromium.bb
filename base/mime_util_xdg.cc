@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -26,31 +27,36 @@
 
 namespace {
 
-// None of the XDG stuff is thread-safe, so serialize all accesss under
+// None of the XDG stuff is thread-safe, so serialize all access under
 // this lock.
-base::Lock g_mime_util_xdg_lock;
+static base::LazyInstance<base::Lock>
+        g_mime_util_xdg_lock(base::LINKER_INITIALIZED);
 
 class IconTheme;
 
 class MimeUtilConstants {
  public:
+  typedef std::map<std::string, IconTheme*> IconThemeMap;
+  typedef std::map<FilePath, int> IconDirMtimeMap;
+  typedef std::vector<std::string> IconFormats;
+
+  // In seconds, specified by icon theme specs.
+  static const int kUpdateInterval = 5;
+
+  static const size_t kDefaultThemeNum = 4;
+
   static MimeUtilConstants* GetInstance() {
     return Singleton<MimeUtilConstants>::get();
   }
 
-  // In seconds, specified by icon theme specs.
-  const int kUpdateInterval;
-
   // Store icon directories and their mtimes.
-  std::map<FilePath, int>* icon_dirs_;
+  IconDirMtimeMap* icon_dirs_;
 
   // Store icon formats.
-  std::vector<std::string> icon_formats_;
+  IconFormats icon_formats_;
 
   // Store loaded icon_theme.
-  std::map<std::string, IconTheme*>* icon_themes_;
-
-  static const size_t kDefaultThemeNum = 4;
+  IconThemeMap* icon_themes_;
 
   // The default theme.
   IconTheme* default_themes_[kDefaultThemeNum];
@@ -64,8 +70,7 @@ class MimeUtilConstants {
 
  private:
   MimeUtilConstants()
-      : kUpdateInterval(5),
-        icon_dirs_(NULL),
+      : icon_dirs_(NULL),
         icon_themes_(NULL),
         last_check_time_(0) {
     icon_formats_.push_back(".png");
@@ -164,9 +169,9 @@ IconTheme::IconTheme(const std::string& name)
   base::ThreadRestrictions::AssertIOAllowed();
   // Iterate on all icon directories to find directories of the specified
   // theme and load the first encountered index.theme.
-  std::map<FilePath, int>::iterator iter;
+  MimeUtilConstants::IconDirMtimeMap::iterator iter;
   FilePath theme_path;
-  std::map<FilePath, int>* icon_dirs =
+  MimeUtilConstants::IconDirMtimeMap* icon_dirs =
       MimeUtilConstants::GetInstance()->icon_dirs_;
   for (iter = icon_dirs->begin(); iter != icon_dirs->end(); ++iter) {
     theme_path = iter->first.Append(name);
@@ -227,7 +232,7 @@ FilePath IconTheme::GetIconPath(const std::string& icon_name, int size,
 
 IconTheme* IconTheme::LoadTheme(const std::string& theme_name) {
   scoped_ptr<IconTheme> theme;
-  std::map<std::string, IconTheme*>* icon_themes =
+  MimeUtilConstants::IconThemeMap* icon_themes =
       MimeUtilConstants::GetInstance()->icon_themes_;
   if (icon_themes->find(theme_name) != icon_themes->end()) {
     theme.reset((*icon_themes)[theme_name]);
@@ -244,7 +249,7 @@ FilePath IconTheme::GetIconPathUnderSubdir(const std::string& icon_name,
                                            const std::string& subdir) {
   FilePath icon_path;
   std::list<FilePath>::iterator dir_iter;
-  std::vector<std::string>* icon_formats =
+  MimeUtilConstants::IconFormats* icon_formats =
       &MimeUtilConstants::GetInstance()->icon_formats_;
   for (dir_iter = dirs_.begin(); dir_iter != dirs_.end(); ++dir_iter) {
     for (size_t i = 0; i < icon_formats->size(); ++i) {
@@ -446,8 +451,8 @@ void EnsureUpdated() {
   MimeUtilConstants* constants = MimeUtilConstants::GetInstance();
 
   if (constants->last_check_time_ == 0) {
-    constants->icon_dirs_ = new std::map<FilePath, int>;
-    constants->icon_themes_ = new std::map<std::string, IconTheme*>;
+    constants->icon_dirs_ = new MimeUtilConstants::IconDirMtimeMap;
+    constants->icon_themes_ = new MimeUtilConstants::IconThemeMap;
     InitIconDir();
     constants->last_check_time_ = now;
   } else {
@@ -462,9 +467,9 @@ void EnsureUpdated() {
 FilePath LookupFallbackIcon(const std::string& icon_name) {
   FilePath icon;
   MimeUtilConstants* constants = MimeUtilConstants::GetInstance();
-  std::map<FilePath, int>::iterator iter;
-  std::map<FilePath, int>* icon_dirs = constants->icon_dirs_;
-  std::vector<std::string>* icon_formats = &constants->icon_formats_;
+  MimeUtilConstants::IconDirMtimeMap::iterator iter;
+  MimeUtilConstants::IconDirMtimeMap* icon_dirs = constants->icon_dirs_;
+  MimeUtilConstants::IconFormats* icon_formats = &constants->icon_formats_;
   for (iter = icon_dirs->begin(); iter != icon_dirs->end(); ++iter) {
     for (size_t i = 0; i < icon_formats->size(); ++i) {
       icon = iter->first.Append(icon_name + (*icon_formats)[i]);
@@ -527,7 +532,7 @@ void InitDefaultThemes() {
 FilePath LookupIconInDefaultTheme(const std::string& icon_name, int size) {
   EnsureUpdated();
   MimeUtilConstants* constants = MimeUtilConstants::GetInstance();
-  std::map<std::string, IconTheme*>* icon_themes = constants->icon_themes_;
+  MimeUtilConstants::IconThemeMap* icon_themes = constants->icon_themes_;
   if (icon_themes->empty())
     InitDefaultThemes();
 
@@ -556,13 +561,13 @@ namespace mime_util {
 
 std::string GetFileMimeType(const FilePath& filepath) {
   base::ThreadRestrictions::AssertIOAllowed();
-  base::AutoLock scoped_lock(g_mime_util_xdg_lock);
+  base::AutoLock scoped_lock(g_mime_util_xdg_lock.Get());
   return xdg_mime_get_mime_type_from_file_name(filepath.value().c_str());
 }
 
 std::string GetDataMimeType(const std::string& data) {
   base::ThreadRestrictions::AssertIOAllowed();
-  base::AutoLock scoped_lock(g_mime_util_xdg_lock);
+  base::AutoLock scoped_lock(g_mime_util_xdg_lock.Get());
   return xdg_mime_get_mime_type_for_data(data.data(), data.length(), NULL);
 }
 
@@ -591,7 +596,7 @@ FilePath GetMimeIcon(const std::string& mime_type, size_t size) {
   FilePath icon_file;
 
   {
-    base::AutoLock scoped_lock(g_mime_util_xdg_lock);
+    base::AutoLock scoped_lock(g_mime_util_xdg_lock.Get());
     const char *icon = xdg_mime_get_icon(mime_type.c_str());
     icon_name = std::string(icon ? icon : "");
   }
