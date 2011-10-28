@@ -105,22 +105,16 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwayProgressEvents(self):
     self.surfAway('ppapi_progress_events.html', 'PPAPI')
 
-  # TODO(krasin): fix it
-  # http://code.google.com/p/nativeclient/issues/detail?id=2392
   def testSurfAwayPPBCore(self):
     self.surfAway('ppapi_ppb_core.html', 'PPAPI')
 
-  # TODO(krasin): fix it
-  # http://code.google.com/p/nativeclient/issues/detail?id=2392
-  def disabledTestSurfAwayPPBGraphics2D(self):
+  def testSurfAwayPPBGraphics2D(self):
     self.surfAway('ppapi_ppb_graphics2d.html', 'PPAPI')
 
   def testSurfAwayPPBImageData(self):
     self.surfAway('ppapi_ppb_image_data.html', 'PPAPI')
 
-  # TODO(krasin): fix it
-  # http://code.google.com/p/nativeclient/issues/detail?id=2392
-  def disabledTestSurfAwayPPBFileSystem(self):
+  def testSurfAwayPPBFileSystem(self):
     self.surfAway('ppapi_ppb_file_system.html', 'PPAPI')
 
   def testSurfAwayPPAPITestsGraphics2D(self):

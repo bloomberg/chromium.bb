@@ -72,7 +72,8 @@ ppapi_example_post_message_files = CreateDefaultDeps(
 #              '_%s.nexe' % platform),
 #     env.File('${STAGING_DIR}/ppapi_gles_book_texture_wrap.nmf')]
 ppapi_ppb_core_files = CreateDefaultDeps('ppapi_ppb_core')
-ppapi_ppb_file_system_files = CreateDefaultDeps('ppapi_ppb_file_system')
+ppapi_ppb_file_system_files = CreateDefaultDeps('ppapi_ppb_file_system') + [
+    env.File('${STAGING_DIR}/ppapi_ppb_file_system.js')]
 ppapi_ppb_graphics2d_files = CreateDefaultDeps('ppapi_ppb_graphics2d')
 ppapi_ppb_image_data_files = CreateDefaultDeps('ppapi_ppb_image_data')
 ppapi_progress_events_files = CreateDefaultDeps('ppapi_progress_events') + [

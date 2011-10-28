@@ -38,8 +38,7 @@ class NaClTest(pyauto.PyUITest):
            #  'ppapi_gles_book_texture_wrap.nmf', 1),
            ('ppapi_progress_events.html', 1),
            ('ppapi_ppb_core.html', 1),
-           # TODO(krasin): http://code.google.com/p/nativeclient/issues/detail?id=2392
-           # ('ppapi_ppb_file_system.html', 1),
+           ('ppapi_ppb_file_system.html', 1),
            ('ppapi_ppb_graphics2d.html', 1),
            # TODO(nfullagar): reenable
            # http://code.google.com/p/chromium/issues/detail?id=93806
