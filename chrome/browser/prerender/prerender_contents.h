@@ -15,11 +15,11 @@
 #include "base/values.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/notification_registrar.h"
 
 class Profile;
 class RenderViewHost;
+class RenderViewHostDelegate;
 class TabContents;
 class TabContentsWrapper;
 struct FaviconURL;
