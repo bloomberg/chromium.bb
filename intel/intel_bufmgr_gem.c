@@ -1134,21 +1134,6 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 	return 0;
 }
 
-int drm_intel_gem_bo_unmap_gtt(drm_intel_bo *bo)
-{
-	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
-	int ret = 0;
-
-	if (bo == NULL)
-		return 0;
-
-	pthread_mutex_lock(&bufmgr_gem->lock);
-	bo->virtual = NULL;
-	pthread_mutex_unlock(&bufmgr_gem->lock);
-
-	return ret;
-}
-
 static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
@@ -1180,6 +1165,11 @@ static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	return ret;
+}
+
+int drm_intel_gem_bo_unmap_gtt(drm_intel_bo *bo)
+{
+	return drm_intel_gem_bo_unmap(bo);
 }
 
 static int
