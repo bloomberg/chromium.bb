@@ -52,7 +52,6 @@ class WorkerMessageFilter : public BrowserMessageFilter {
                            bool* exists,
                            int* route_id,
                            bool* url_error);
-  void OnCancelCreateDedicatedWorker(int route_id);
   void OnForwardToWorker(const IPC::Message& message);
   void OnDocumentDetached(unsigned long long document_id);
   void OnCreateMessagePort(int* route_id, int* message_port_id);

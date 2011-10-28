@@ -74,7 +74,6 @@
 #include "content/renderer/web_ui_bindings.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "content/renderer/websharedworker_proxy.h"
-#include "content/renderer/webworker_proxy.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_switches.h"
 #include "media/base/message_loop_factory_impl.h"
@@ -1887,15 +1886,6 @@ WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
   return CreatePlugin(frame, info, params_to_use);
 }
 
-WebWorker* RenderViewImpl::createWorker(WebFrame* frame,
-                                        WebWorkerClient* client) {
-  WebApplicationCacheHostImpl* appcache_host =
-      WebApplicationCacheHostImpl::FromFrame(frame);
-  int appcache_host_id = appcache_host ? appcache_host->host_id() : 0;
-  return new WebWorkerProxy(client, RenderThreadImpl::current(), routing_id_,
-                            appcache_host_id);
-}
-
 WebSharedWorker* RenderViewImpl::createSharedWorker(
     WebFrame* frame, const WebURL& url, const WebString& name,
     unsigned long long document_id) {
@@ -1905,12 +1895,10 @@ WebSharedWorker* RenderViewImpl::createSharedWorker(
   bool url_mismatch = false;
   ViewHostMsg_CreateWorker_Params params;
   params.url = url;
-  params.is_shared = true;
   params.name = name;
   params.document_id = document_id;
   params.render_view_route_id = routing_id_;
   params.route_id = MSG_ROUTING_NONE;
-  params.parent_appcache_host_id = 0;
   params.script_resource_appcache_id = 0;
   Send(new ViewHostMsg_LookupSharedWorker(
       params, &exists, &route_id, &url_mismatch));

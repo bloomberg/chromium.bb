@@ -42,8 +42,6 @@ bool WorkerMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWorker, OnCreateWorker)
     // Only sent from renderer for now, until we have nested workers.
     IPC_MESSAGE_HANDLER(ViewHostMsg_LookupSharedWorker, OnLookupSharedWorker)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CancelCreateDedicatedWorker,
-                        OnCancelCreateDedicatedWorker)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker, OnForwardToWorker)
     // Only sent from renderer.
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentDetached, OnDocumentDetached)
@@ -93,10 +91,6 @@ void WorkerMessageFilter::OnLookupSharedWorker(
 
   WorkerService::GetInstance()->LookupSharedWorker(
       params, *route_id, this, resource_context_, exists, url_error);
-}
-
-void WorkerMessageFilter::OnCancelCreateDedicatedWorker(int route_id) {
-  WorkerService::GetInstance()->CancelCreateDedicatedWorker(route_id, this);
 }
 
 void WorkerMessageFilter::OnForwardToWorker(const IPC::Message& message) {

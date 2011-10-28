@@ -345,9 +345,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
   // URL for the worker script.
   IPC_STRUCT_MEMBER(GURL, url)
 
-  // True if this is a SharedWorker, false if it is a dedicated Worker.
-  IPC_STRUCT_MEMBER(bool, is_shared)
-
   // Name for a SharedWorker, otherwise empty string.
   IPC_STRUCT_MEMBER(string16, name)
 
@@ -360,9 +357,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
   // The route ID to associate with the worker. If MSG_ROUTING_NONE is passed,
   // a new unique ID is created and assigned to the worker.
   IPC_STRUCT_MEMBER(int, route_id)
-
-  // The ID of the parent's appcache host, only valid for dedicated workers.
-  IPC_STRUCT_MEMBER(int, parent_appcache_host_id)
 
   // The ID of the appcache the main shared worker script resource was loaded
   // from, only valid for shared workers.
@@ -1542,13 +1536,6 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_DocumentDetached,
 // hop.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_ForwardToWorker,
                      IPC::Message /* message */)
-
-// Sent if the worker object has sent a ViewHostMsg_CreateDedicatedWorker
-// message and not received a ViewMsg_WorkerCreated reply, but in the
-// mean time it's destroyed.  This tells the browser to not create the queued
-// worker.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_CancelCreateDedicatedWorker,
-                     int /* route_id */)
 
 // Tells the browser that a specific Appcache manifest in the current page
 // was accessed.

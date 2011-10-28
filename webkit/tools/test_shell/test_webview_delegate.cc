@@ -75,7 +75,6 @@
 #include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
-#include "webkit/tools/test_shell/test_web_worker.h"
 
 #if defined(OS_WIN)
 // TODO(port): make these files work everywhere.
@@ -638,11 +637,6 @@ WebPlugin* TestWebViewDelegate::createPlugin(WebFrame* frame,
 
   return new webkit::npapi::WebPluginImpl(
       frame, params, plugins.front().path, AsWeakPtr());
-}
-
-WebWorker* TestWebViewDelegate::createWorker(WebFrame* frame,
-                                             WebWorkerClient* client) {
-  return new TestWebWorker();
 }
 
 WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
