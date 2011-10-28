@@ -84,4 +84,6 @@ node = env.PPAPIBrowserTester(
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_pm_nameservice_chrome_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
+                       # http://code.google.com/p/nativeclient/issues/detail?id=2400
+                       #env.PPAPIBrowserTesterIsBroken())
+                       is_broken=(env.Bit("linux") and env.Bit("build_x86_64")))

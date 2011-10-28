@@ -5,6 +5,10 @@
 
 Import('env')
 
+# http://code.google.com/p/nativeclient/issues/detail?id=2400
+if env.Bit('linux') and env.Bit('build_x86_64'):
+  Return()
+
 # postmessage test to check that exit status is available to
 # JavaScript
 
