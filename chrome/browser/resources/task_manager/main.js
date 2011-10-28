@@ -93,9 +93,8 @@ TaskManager.prototype = {
    * Sends command to initiate resource inspection.
    * @public
    */
-  inspect: function (resourceIndex, event) {
-    event.stopPropagation();
-    chrome.send('inspect', [resourceIndex]);
+  inspect: function (uniqueId) {
+    chrome.send('inspect', [uniqueId]);
   },
 
   /**

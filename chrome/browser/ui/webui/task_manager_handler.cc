@@ -26,8 +26,8 @@ namespace {
 static Value* CreateColumnValue(const TaskManagerModel* tm,
                                 const std::string column_name,
                                 const int i) {
-  if (column_name == "resourceIndex")
-    return Value::CreateIntegerValue(i);
+  if (column_name == "uniqueId")
+    return Value::CreateIntegerValue(tm->GetResourceUniqueId(i));
   if (column_name == "type")
     return Value::CreateStringValue(
         TaskManager::Resource::GetResourceTypeAsString(
@@ -178,7 +178,7 @@ static DictionaryValue* CreateTaskGroupValue(const TaskManagerModel* tm,
   CreateGroupColumnList(tm, "v8MemoryAllocatedSizeValue", index, 1, val);
 
   // Columns which have some data in each group.
-  CreateGroupColumnList(tm, "resourceIndex", index, length, val);
+  CreateGroupColumnList(tm, "uniqueId", index, length, val);
   CreateGroupColumnList(tm, "icon", index, length, val);
   CreateGroupColumnList(tm, "title", index, length, val);
   CreateGroupColumnList(tm, "profileName", index, length, val);
@@ -354,11 +354,19 @@ void TaskManagerHandler::HandleKillProcess(const ListValue* indexes) {
 void TaskManagerHandler::HandleInspect(const ListValue* resource_index) {
   for (ListValue::const_iterator i = resource_index->begin();
        i != resource_index->end(); ++i) {
-    int resource_index = parseIndex(*i);
-    if (resource_index == -1)
+    int unique_id = parseIndex(*i);
+    if (unique_id == -1)
       continue;
-    if (model_->CanInspect(resource_index))
-      model_->Inspect(resource_index);
+
+    for (int resource_index = 0; resource_index < model_->ResourceCount();
+         ++resource_index) {
+      if (model_->GetResourceUniqueId(resource_index) == unique_id) {
+        if (model_->CanInspect(resource_index))
+          model_->Inspect(resource_index);
+        break;
+      }
+    }
+
     break;
   }
 }

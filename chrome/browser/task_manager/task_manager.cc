@@ -78,7 +78,8 @@ string16 FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
 TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
     : update_requests_(0),
       update_state_(IDLE),
-      goat_salt_(rand()) {
+      goat_salt_(rand()),
+      last_unique_id_(0) {
   AddResourceProvider(
       new TaskManagerBrowserProcessResourceProvider(task_manager));
   AddResourceProvider(
@@ -116,6 +117,11 @@ void TaskManagerModel::AddObserver(TaskManagerModelObserver* observer) {
 
 void TaskManagerModel::RemoveObserver(TaskManagerModelObserver* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+int TaskManagerModel::GetResourceUniqueId(int index) const {
+  CHECK_LT(index, ResourceCount());
+  return resources_[index]->get_unique_id();
 }
 
 string16 TaskManagerModel::GetResourceTitle(int index) const {
@@ -561,10 +567,12 @@ bool TaskManagerModel::GetV8Memory(int index, size_t* result) const {
 }
 
 bool TaskManagerModel::CanInspect(int index) const {
+  CHECK_LT(index, ResourceCount());
   return resources_[index]->CanInspect();
 }
 
 void TaskManagerModel::Inspect(int index) const {
+  CHECK_LT(index, ResourceCount());
   resources_[index]->Inspect();
 }
 
@@ -642,6 +650,8 @@ void TaskManagerModel::AddResourceProvider(
 }
 
 void TaskManagerModel::AddResource(TaskManager::Resource* resource) {
+  resource->unique_id_ = ++last_unique_id_;
+
   base::ProcessHandle process = resource->GetProcess();
 
   ResourceList* group_entries = NULL;
@@ -767,6 +777,7 @@ void TaskManagerModel::Clear() {
     FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
                       OnItemsRemoved(0, size));
   }
+  last_unique_id_ = 0;
 }
 
 void TaskManagerModel::ModelChanged() {

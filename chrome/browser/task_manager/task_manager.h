@@ -131,7 +131,17 @@ class TaskManager {
         TASKMANAGER_RESOURCE_TYPE_LIST(TASKMANAGER_RESOURCE_TYPE_LIST_AS_STRING)
         default: return "UNKNOWN";
       }
-    };
+    }
+
+    // Returns resource identifier that is unique within single task manager
+    // session (between StartUpdating and StopUpdating).
+    int get_unique_id() { return unique_id_; }
+   protected:
+    Resource() : unique_id_(0) {}
+
+   private:
+    friend class TaskManagerModel;
+    int unique_id_;
   };
 
   // ResourceProviders are responsible for adding/removing resources to the task
@@ -262,6 +272,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   int64 GetNetworkUsage(int index) const;
   double GetCPUUsage(int index) const;
   int GetProcessId(int index) const;
+  int GetResourceUniqueId(int index) const;
 
   // Methods to return formatted resource information.
   string16 GetResourceTitle(int index) const;
@@ -514,6 +525,9 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   // A salt lick for the goats.
   int goat_salt_;
+
+  // Resource identifier that is unique within single session.
+  int last_unique_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerModel);
 };
