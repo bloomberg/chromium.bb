@@ -10,12 +10,8 @@ TEST(CloudPrintTokenStoreTest, Basic) {
   EXPECT_EQ(NULL, CloudPrintTokenStore::current());
   CloudPrintTokenStore* store = new CloudPrintTokenStore;
   EXPECT_EQ(store, CloudPrintTokenStore::current());
-  CloudPrintTokenStore::current()->SetToken("myclientlogintoken", false);
+  CloudPrintTokenStore::current()->SetToken("myclientlogintoken");
   EXPECT_EQ(CloudPrintTokenStore::current()->token(), "myclientlogintoken");
-  EXPECT_FALSE(CloudPrintTokenStore::current()->token_is_oauth());
-  CloudPrintTokenStore::current()->SetToken("myoauth2token", true);
-  EXPECT_EQ(CloudPrintTokenStore::current()->token(), "myoauth2token");
-  EXPECT_TRUE(CloudPrintTokenStore::current()->token_is_oauth());
   delete store;
   EXPECT_EQ(NULL, CloudPrintTokenStore::current());
 }

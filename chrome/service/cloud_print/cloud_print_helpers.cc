@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
+#include "chrome/service/cloud_print/cloud_print_token_store.h"
 #include "chrome/service/service_process.h"
 
 std::string StringFromJobStatus(cloud_print::PrintJobStatus status) {
@@ -266,3 +267,20 @@ bool CloudPrintHelpers::IsDryRunJob(const std::vector<std::string>& tags) {
   }
   return false;
 }
+
+std::string CloudPrintHelpers::GetCloudPrintAuthHeader() {
+  std::string header;
+  CloudPrintTokenStore* token_store = CloudPrintTokenStore::current();
+  if (!token_store || token_store->token().empty()) {
+    // Using LOG here for critical errors. GCP connector may run in the headless
+    // mode and error indication might be useful for user in that case.
+    LOG(ERROR) << "CP_PROXY: Missing OAuth token for request";
+  }
+
+  if (token_store) {
+    header = "Authorization: OAuth ";
+    header += token_store->token();
+  }
+  return header;
+}
+

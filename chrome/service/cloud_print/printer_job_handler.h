@@ -33,12 +33,12 @@ class URLFetcher;
 //                              | Have Pending tasks
 //                              |
 //                              |
-//       <----Delete Pending -- | ---Update Pending----->
-//       |                      |                       |
-//       |                      |                       |
-//       |                      |                       |
-// Delete Printer from server   |                 Update Printer info on server
-//   Shutdown                   |                      Go to Stop
+//                              | ---Update Pending----->
+//                              |                       |
+//                              |                       |
+//                              |                       |
+//                              |                 Update Printer info on server
+//                              |                      Go to Stop
 //                              |
 //                              | Job Available
 //                              |
@@ -88,14 +88,10 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
  public:
   class Delegate {
    public:
-     virtual void OnPrinterJobHandlerShutdown(
-        PrinterJobHandler* job_handler, const std::string& printer_id) = 0;
+     // Notify delegate about authentication error.
      virtual void OnAuthError() = 0;
-     // Called when the PrinterJobHandler cannot find the printer locally. The
-     // delegate returns |delete_from_server| to true if the printer should be
-     // deleted from the server,false otherwise.
-     virtual void OnPrinterNotFound(const std::string& printer_name,
-                                    bool* delete_from_server) = 0;
+     // Notify delegate that printer has been deleted.
+     virtual void OnPrinterDeleted(const std::string& printer_name) = 0;
 
    protected:
      virtual ~Delegate() {}
@@ -115,6 +111,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
                     Delegate* delegate);
   virtual ~PrinterJobHandler();
   bool Initialize();
+  std::string GetPrinterName() const;
   // Requests a job check. |reason| is the reason for fetching the job. Used
   // for logging and diagnostc purposes.
   void CheckForJobs(const std::string& reason);
@@ -143,7 +140,8 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
       base::DictionaryValue* json_data,
       bool succeeded);
   virtual void OnRequestGiveUp();
-  virtual void OnRequestAuthError();
+  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError();
+  virtual std::string GetAuthHeader();
 
   // JobStatusUpdater::Delegate implementation
   virtual bool OnJobCompleted(JobStatusUpdater* updater);
@@ -175,12 +173,6 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
                                         const std::string& data);
   // Begin request handlers for each state in the state machine
   CloudPrintURLFetcher::ResponseAction HandlePrinterUpdateResponse(
-      const content::URLFetcher* source,
-      const GURL& url,
-      base::DictionaryValue* json_data,
-      bool succeeded);
-
-  CloudPrintURLFetcher::ResponseAction HandlePrinterDeleteResponse(
       const content::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
@@ -288,7 +280,6 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   // Flags that specify various pending server updates
   bool job_check_pending_;
   bool printer_update_pending_;
-  bool printer_delete_pending_;
 
   // Some task in the state machine is in progress.
   bool task_in_progress_;

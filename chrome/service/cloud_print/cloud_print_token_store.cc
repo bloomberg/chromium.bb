@@ -16,7 +16,7 @@ CloudPrintTokenStore* CloudPrintTokenStore::current() {
   return lazy_tls.Pointer()->Get();
 }
 
-CloudPrintTokenStore::CloudPrintTokenStore() : token_is_oauth_(false) {
+CloudPrintTokenStore::CloudPrintTokenStore() {
   lazy_tls.Pointer()->Set(this);
 }
 
@@ -24,8 +24,7 @@ CloudPrintTokenStore::~CloudPrintTokenStore() {
   lazy_tls.Pointer()->Set(NULL);
 }
 
-void CloudPrintTokenStore::SetToken(const std::string& token, bool is_oauth) {
+void CloudPrintTokenStore::SetToken(const std::string& token) {
   DCHECK(CalledOnValidThread());
   token_ = token;
-  token_is_oauth_ = is_oauth;
 }

@@ -158,7 +158,8 @@ bool CloudPrintProxy::CreateBackend() {
 
   GURL cloud_print_server_url(cloud_print_server_url_str.c_str());
   DCHECK(cloud_print_server_url.is_valid());
-  backend_.reset(new CloudPrintProxyBackend(this, cloud_print_server_url,
+  backend_.reset(new CloudPrintProxyBackend(this, proxy_id_,
+                                            cloud_print_server_url,
                                             print_system_settings,
                                             oauth_client_info,
                                             enable_job_poll));

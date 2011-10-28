@@ -18,6 +18,7 @@ extern const char kPrinterStatusValue[];
 extern const char kPrinterTagValue[];
 extern const char kPrinterRemoveTagValue[];
 extern const char kMessageTextValue[];
+
 // Values in the respone JSON from the cloud print server
 extern const char kPrinterListValue[];
 extern const char kSuccessValue[];
@@ -38,6 +39,7 @@ extern const char kTagDryRunFlag[];
 extern const char kDefaultCloudPrintServerUrl[];
 extern const char kCloudPrintGaiaServiceId[];
 extern const char kSyncGaiaServiceId[];
+extern const char kProxyAuthUserAgent[];
 extern const char kCloudPrintPushNotificationsSource[];
 extern const char kChromeCloudPrintProxyHeader[];
 extern const char kCloudPrintUserAgent[];
@@ -56,6 +58,10 @@ extern const char kDefaultCloudPrintOAuthClientSecret[];
 const int kJobDataMaxRetryCount = 5;
 // Max retry count (infinity) for API fetch requests.
 const int kCloudPrintAPIMaxRetryCount = -1;
+// Max retry count (infinity) for Registration requests.
+const int kCloudPrintRegisterMaxRetryCount = -1;
+// Max retry count (infinity) for authentication requests.
+const int kCloudPrintAuthMaxRetryCount = -1;
 
 // When we don't have XMPP notifications available, we resort to polling for
 // print jobs. We choose a random interval in seconds between these 2 values.

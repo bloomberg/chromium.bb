@@ -70,6 +70,8 @@ class CloudPrintHelpers {
 
   // Returns true is tags indicate a dry run (test) job.
   static bool IsDryRunJob(const std::vector<std::string>& tags);
+
+  static std::string GetCloudPrintAuthHeader();
  private:
   CloudPrintHelpers() {
   }

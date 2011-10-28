@@ -20,6 +20,10 @@ CloudPrintURLFetcher::CloudPrintURLFetcher()
       num_retries_(0) {
 }
 
+bool CloudPrintURLFetcher::IsSameRequest(const content::URLFetcher* source) {
+  return (request_.get() == source);
+}
+
 void CloudPrintURLFetcher::StartGetRequest(
     const GURL& url,
     Delegate* delegate,
@@ -65,15 +69,14 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
       source->GetResponseCode(),
       source->GetCookies(),
       data);
+
+  // If we get auth error, notify delegate and check if it wants to proceed.
+  if (action == CONTINUE_PROCESSING &&
+      source->GetResponseCode() == RC_FORBIDDEN) {
+    action = delegate_->OnRequestAuthError();
+  }
+
   if (action == CONTINUE_PROCESSING) {
-    // If we are not using an OAuth token, and we got an auth error, we are
-    // done. Else, the token may have been refreshed. Let us try again.
-    if ((RC_FORBIDDEN == source->GetResponseCode()) &&
-        (!CloudPrintTokenStore::current() ||
-         !CloudPrintTokenStore::current()->token_is_oauth())) {
-      delegate_->OnRequestAuthError();
-      return;
-    }
     // We need to retry on all network errors.
     if (!source->GetStatus().is_success() || (source->GetResponseCode() != 200))
       action = RETRY_REQUEST;
@@ -104,6 +107,12 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
     // period.  If it was already a failure by status code, this call will
     // be ignored.
     request_->ReceivedContentWasMalformed();
+
+    // If we receive error code from the server "Media Type Not Supported",
+    // there is no reason to retry, request will never succeed.
+    // In that case we should call OnRequestGiveUp() right away.
+    if (source->GetResponseCode() == RC_UNSUPPORTED_MEDIA_TYPE)
+      num_retries_ = source->GetMaxRetries();
 
     ++num_retries_;
     if ((-1 != source->GetMaxRetries()) &&
@@ -136,8 +145,8 @@ void CloudPrintURLFetcher::StartRequestHelper(
   // Since we implement our own retry logic, disable the retry in URLFetcher.
   request_->SetAutomaticallyRetryOn5xx(false);
   request_->SetMaxRetries(max_retries);
-  SetupRequestHeaders();
   delegate_ = delegate;
+  SetupRequestHeaders();
   if (request_type == content::URLFetcher::POST) {
     request_->SetUploadData(post_data_mime_type, post_data);
   }
@@ -146,14 +155,9 @@ void CloudPrintURLFetcher::StartRequestHelper(
 }
 
 void CloudPrintURLFetcher::SetupRequestHeaders() {
-  std::string headers;
-  CloudPrintTokenStore* token_store = CloudPrintTokenStore::current();
-  if (token_store) {
-    headers = token_store->token_is_oauth() ?
-        "Authorization: OAuth " : "Authorization: GoogleLogin auth=";
-    headers += token_store->token();
+  std::string headers = delegate_->GetAuthHeader();
+  if (!headers.empty())
     headers += "\r\n";
-  }
   headers += kChromeCloudPrintProxyHeader;
   if (!additional_headers_.empty()) {
     headers += "\r\n";

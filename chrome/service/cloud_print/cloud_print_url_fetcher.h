@@ -38,6 +38,7 @@ class CloudPrintURLFetcher
     STOP_PROCESSING,
     RETRY_REQUEST,
   };
+
   class Delegate {
    public:
     virtual ~Delegate() { }
@@ -80,9 +81,19 @@ class CloudPrintURLFetcher
     virtual void OnRequestGiveUp() { }
     // Invoked when the request returns a 403 error (applicable only when
     // HandleRawResponse returns CONTINUE_PROCESSING).
-    virtual void OnRequestAuthError() = 0;
+    // Returning RETRY_REQUEST will retry current request. (auth information
+    // may have been updated and new info is available through the
+    // Authenticator interface).
+    // Returning CONTINUE_PROCESSING will treat auth error as a network error.
+    virtual ResponseAction OnRequestAuthError() = 0;
+
+    // Authentication information may change between retries.
+    // CloudPrintURLFetcher will request auth info before sending any request.
+    virtual std::string GetAuthHeader() = 0;
   };
   CloudPrintURLFetcher();
+
+  bool IsSameRequest(const content::URLFetcher* source);
 
   void StartGetRequest(const GURL& url,
                        Delegate* delegate,

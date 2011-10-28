@@ -23,19 +23,14 @@ class CloudPrintTokenStore : public base::NonThreadSafe {
   CloudPrintTokenStore();
   ~CloudPrintTokenStore();
 
-  void SetToken(const std::string& token, bool is_oauth);
+  void SetToken(const std::string& token);
   std::string token() const {
     DCHECK(CalledOnValidThread());
     return token_;
   }
-  bool token_is_oauth() const {
-    DCHECK(CalledOnValidThread());
-    return token_is_oauth_;
-  }
 
  private:
   std::string token_;
-  bool token_is_oauth_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintTokenStore);
 };

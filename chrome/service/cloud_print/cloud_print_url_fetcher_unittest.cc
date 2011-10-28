@@ -84,8 +84,13 @@ class CloudPrintURLFetcherTest : public testing::Test,
       const net::ResponseCookies& cookies,
       const std::string& data);
 
-  virtual void OnRequestAuthError() {
+  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError() {
     ADD_FAILURE();
+    return CloudPrintURLFetcher::STOP_PROCESSING;
+  }
+
+  virtual std::string GetAuthHeader() {
+    return std::string();
   }
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy() {

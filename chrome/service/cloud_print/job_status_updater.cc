@@ -89,7 +89,17 @@ CloudPrintURLFetcher::ResponseAction JobStatusUpdater::HandleJSONData(
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
 
-void JobStatusUpdater::OnRequestAuthError() {
+CloudPrintURLFetcher::ResponseAction JobStatusUpdater::OnRequestAuthError() {
+  // We got an Auth error and have no idea how long it will take to refresh
+  // auth information (may take forever). We'll drop current request and
+  // propagate this error to the upper level. After auth issues will be
+  // resolved, GCP connector will restart.
   if (delegate_)
     delegate_->OnAuthError();
+  return CloudPrintURLFetcher::STOP_PROCESSING;
 }
+
+std::string JobStatusUpdater::GetAuthHeader() {
+  return CloudPrintHelpers::GetCloudPrintAuthHeader();
+}
+

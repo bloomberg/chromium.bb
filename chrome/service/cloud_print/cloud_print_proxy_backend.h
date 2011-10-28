@@ -58,6 +58,7 @@ class CloudPrintProxyBackend {
   // use system default settings.
   CloudPrintProxyBackend(
       CloudPrintProxyFrontend* frontend,
+      const std::string& proxy_id,
       const GURL& cloud_print_server_url,
       const base::DictionaryValue* print_sys_settings,
       const gaia::OAuthClientInfo& oauth_client_info,

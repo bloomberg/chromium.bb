@@ -51,26 +51,17 @@ PrinterJobHandler::PrinterJobHandler(
       shutting_down_(false),
       job_check_pending_(false),
       printer_update_pending_(true),
-      printer_delete_pending_(false),
       task_in_progress_(false) {
 }
 
 bool PrinterJobHandler::Initialize() {
-  if (print_system_->IsValidPrinter(
-      printer_info_.printer_name)) {
-    printer_watcher_ = print_system_->CreatePrinterWatcher(
-        printer_info_.printer_name);
-    printer_watcher_->StartWatching(this);
-    CheckForJobs(kJobFetchReasonStartup);
-  } else {
-    // This printer does not exist any more. Check if we should delete it from
-    // the server.
-    bool delete_from_server = false;
-    delegate_->OnPrinterNotFound(printer_info_.printer_name,
-                                 &delete_from_server);
-    if (delete_from_server)
-      OnPrinterDeleted();
-  }
+  if (!print_system_->IsValidPrinter(printer_info_.printer_name))
+    return false;
+
+  printer_watcher_ = print_system_->CreatePrinterWatcher(
+      printer_info_.printer_name);
+  printer_watcher_->StartWatching(this);
+  CheckForJobs(kJobFetchReasonStartup);
   return true;
 }
 
@@ -86,8 +77,12 @@ void PrinterJobHandler::Reset() {
   print_thread_.Stop();
 }
 
+std::string PrinterJobHandler::GetPrinterName() const {
+  return printer_info_.printer_name;
+}
+
 void PrinterJobHandler::Start() {
-  VLOG(1) << "CP_PROXY: Start printer job handler, id: "
+  VLOG(1) << "CP_CONNECTOR: Start printer job handler, id: "
           << printer_info_cloud_.printer_id
           << ", task in progress: " << task_in_progress_;
   if (task_in_progress_) {
@@ -99,18 +94,6 @@ void PrinterJobHandler::Start() {
   if (!shutting_down_) {
     // Check if we have work to do.
     if (HavePendingTasks()) {
-      if (printer_delete_pending_) {
-        printer_delete_pending_ = false;
-        task_in_progress_ = true;
-        SetNextJSONHandler(&PrinterJobHandler::HandlePrinterDeleteResponse);
-        request_ = new CloudPrintURLFetcher;
-        request_->StartGetRequest(
-            CloudPrintHelpers::GetUrlForPrinterDelete(
-                cloud_print_server_url_, printer_info_cloud_.printer_id),
-            this,
-            kCloudPrintAPIMaxRetryCount,
-            std::string());
-      }
       if (!task_in_progress_ && printer_update_pending_) {
         printer_update_pending_ = false;
         task_in_progress_ = UpdatePrinterInfo();
@@ -139,7 +122,7 @@ void PrinterJobHandler::Start() {
 }
 
 void PrinterJobHandler::Stop() {
-  VLOG(1) << "CP_PROXY: Stop printer job handler, id: "
+  VLOG(1) << "CP_CONNECTOR: Stop printer job handler, id: "
           << printer_info_cloud_.printer_id;
   task_in_progress_ = false;
   Reset();
@@ -150,7 +133,7 @@ void PrinterJobHandler::Stop() {
 }
 
 void PrinterJobHandler::CheckForJobs(const std::string& reason) {
-  VLOG(1) << "CP_PROXY: CheckForJobs, id: "
+  VLOG(1) << "CP_CONNECTOR: CheckForJobs, id: "
           << printer_info_cloud_.printer_id
           << ", reason: " << reason
           << ", task in progress: " << task_in_progress_;
@@ -164,13 +147,13 @@ void PrinterJobHandler::CheckForJobs(const std::string& reason) {
 
 bool PrinterJobHandler::UpdatePrinterInfo() {
   if (!printer_watcher_) {
-    LOG(ERROR) << "CP_PROXY: Printer watcher is missing."
+    LOG(ERROR) << "CP_CONNECTOR: Printer watcher is missing."
                << "Check printer server url for printer id: "
                << printer_info_cloud_.printer_id;
     return false;
   }
 
-  VLOG(1) << "CP_PROXY: Update printer info, id: "
+  VLOG(1) << "CP_CONNECTOR: Update printer info, id: "
           << printer_info_cloud_.printer_id;
   // We need to update the parts of the printer info that have changed
   // (could be printer name, description, status or capabilities).
@@ -316,10 +299,7 @@ CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleJSONData(
     DictionaryValue* json_data,
     bool succeeded) {
   DCHECK(next_json_data_handler_);
-  return (this->*next_json_data_handler_)(source,
-                                          url,
-                                          json_data,
-                                          succeeded);
+  return (this->*next_json_data_handler_)(source, url, json_data, succeeded);
 }
 
 void PrinterJobHandler::OnRequestGiveUp() {
@@ -333,8 +313,15 @@ void PrinterJobHandler::OnRequestGiveUp() {
                         JOB_DOWNLOAD_FAILED));
 }
 
-void PrinterJobHandler::OnRequestAuthError() {
+CloudPrintURLFetcher::ResponseAction PrinterJobHandler::OnRequestAuthError() {
+  // TODO(gene): We might consider stop processing if we get auth error here.
   OnAuthError();
+  // Continue processing as a network error.
+  return CloudPrintURLFetcher::CONTINUE_PROCESSING;
+}
+
+std::string PrinterJobHandler::GetAuthHeader() {
+  return CloudPrintHelpers::GetCloudPrintAuthHeader();
 }
 
 // JobStatusUpdater::Delegate implementation
@@ -357,11 +344,8 @@ void PrinterJobHandler::OnAuthError() {
 }
 
 void PrinterJobHandler::OnPrinterDeleted() {
-  printer_delete_pending_ = true;
-  if (!task_in_progress_) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &PrinterJobHandler::Start));
-  }
+  if (delegate_)
+    delegate_->OnPrinterDeleted(printer_info_cloud_.printer_id);
 }
 
 void PrinterJobHandler::OnPrinterChanged() {
@@ -390,25 +374,11 @@ PrinterJobHandler::HandlePrinterUpdateResponse(
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
-  VLOG(1) << "CP_PROXY: Handle printer update response, id: "
+  VLOG(1) << "CP_CONNECTOR: Handle printer update response, id: "
           << printer_info_cloud_.printer_id;
   // We are done here. Go to the Stop state
   MessageLoop::current()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &PrinterJobHandler::Stop));
-  return CloudPrintURLFetcher::STOP_PROCESSING;
-}
-
-CloudPrintURLFetcher::ResponseAction
-PrinterJobHandler::HandlePrinterDeleteResponse(
-    const content::URLFetcher* source,
-    const GURL& url,
-    DictionaryValue* json_data,
-    bool succeeded) {
-  VLOG(1) << "CP_PROXY: Handler printer delete response, id: "
-          << printer_info_cloud_.printer_id;
-  // The printer has been deleted. Shutdown the handler class.
-  MessageLoop::current()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &PrinterJobHandler::Shutdown));
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
 
@@ -418,7 +388,7 @@ PrinterJobHandler::HandleJobMetadataResponse(
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
-  VLOG(1) << "CP_PROXY: Handle job metadata response, id: "
+  VLOG(1) << "CP_CONNECTOR: Handle job metadata response, id: "
           << printer_info_cloud_.printer_id;
   bool job_available = false;
   if (succeeded) {
@@ -465,7 +435,7 @@ CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandlePrintTicketResponse(const content::URLFetcher* source,
                                              const GURL& url,
                                              const std::string& data) {
-  VLOG(1) << "CP_PROXY: Handle print ticket response, id: "
+  VLOG(1) << "CP_CONNECTOR: Handle print ticket response, id: "
           << printer_info_cloud_.printer_id;
   if (print_system_->ValidatePrintTicket(printer_info_.printer_name, data)) {
     job_details_.print_ticket_ = data;
@@ -488,7 +458,7 @@ CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandlePrintDataResponse(const content::URLFetcher* source,
                                            const GURL& url,
                                            const std::string& data) {
-  VLOG(1) << "CP_PROXY: Handle print data response, id: "
+  VLOG(1) << "CP_CONNECTOR: Handle print data response, id: "
           << printer_info_cloud_.printer_id;
   Task* next_task = NULL;
   if (file_util::CreateTemporaryFile(&job_details_.print_data_file_path_)) {
@@ -518,7 +488,7 @@ PrinterJobHandler::HandleSuccessStatusUpdateResponse(
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
-  VLOG(1) << "CP_PROXY: Handle success status update response, id: "
+  VLOG(1) << "CP_CONNECTOR: Handle success status update response, id: "
           << printer_info_cloud_.printer_id;
   // The print job has been spooled locally. We now need to create an object
   // that monitors the status of the job and updates the server.
@@ -545,7 +515,7 @@ PrinterJobHandler::HandleFailureStatusUpdateResponse(
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
-  VLOG(1) << "CP_PROXY: Handle failure status update response, id: "
+  VLOG(1) << "CP_CONNECTOR: Handle failure status update response, id: "
           << printer_info_cloud_.printer_id;
   MessageLoop::current()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &PrinterJobHandler::Stop));
@@ -554,7 +524,8 @@ PrinterJobHandler::HandleFailureStatusUpdateResponse(
 // End Response handlers
 
 void PrinterJobHandler::StartPrinting() {
-  VLOG(1) << "CP_PROXY: Start printing, id: " << printer_info_cloud_.printer_id;
+  VLOG(1) << "CP_CONNECTOR: Start printing, id: "
+          << printer_info_cloud_.printer_id;
   // We are done with the request object for now.
   request_ = NULL;
   if (!shutting_down_) {
@@ -570,14 +541,14 @@ void PrinterJobHandler::StartPrinting() {
 }
 
 void PrinterJobHandler::JobFailed(PrintJobError error) {
-  VLOG(1) << "CP_PROXY: Job failed, id: " << printer_info_cloud_.printer_id;
+  VLOG(1) << "CP_CONNECTOR: Job failed, id: " << printer_info_cloud_.printer_id;
   if (!shutting_down_) {
     UpdateJobStatus(cloud_print::PRINT_JOB_STATUS_ERROR, error);
   }
 }
 
 void PrinterJobHandler::JobSpooled(cloud_print::PlatformJobId local_job_id) {
-  VLOG(1) << "CP_PROXY: Job spooled, printer id: "
+  VLOG(1) << "CP_CONNECTOR: Job spooled, printer id: "
           << printer_info_cloud_.printer_id << ", job id: " << local_job_id;
   if (!shutting_down_) {
     local_job_id_ = local_job_id;
@@ -587,7 +558,7 @@ void PrinterJobHandler::JobSpooled(cloud_print::PlatformJobId local_job_id) {
 }
 
 void PrinterJobHandler::Shutdown() {
-  VLOG(1) << "CP_PROXY: Printer job handler shutdown, id: "
+  VLOG(1) << "CP_CONNECTOR: Printer job handler shutdown, id: "
           << printer_info_cloud_.printer_id;
   Reset();
   shutting_down_ = true;
@@ -596,20 +567,16 @@ void PrinterJobHandler::Shutdown() {
     // remove the updater object from the list.
     job_status_updater_list_.front()->Stop();
   }
-  if (delegate_) {
-    delegate_->OnPrinterJobHandlerShutdown(this,
-                                           printer_info_cloud_.printer_id);
-  }
 }
 
 void PrinterJobHandler::UpdateJobStatus(cloud_print::PrintJobStatus status,
                                         PrintJobError error) {
-  VLOG(1) << "CP_PROXY: Update job status, id: "
+  VLOG(1) << "CP_CONNECTOR: Update job status, id: "
           << printer_info_cloud_.printer_id;
   if (!shutting_down_) {
     if (!job_details_.job_id_.empty()) {
-      VLOG(1) << "CP_PROXY: Updating status, job id: " << job_details_.job_id_
-              << ", status: " << status;
+      VLOG(1) << "CP_CONNECTOR: Updating status, job id: "
+              << job_details_.job_id_ << ", status: " << status;
       if (error == SUCCESS) {
         SetNextJSONHandler(
             &PrinterJobHandler::HandleSuccessStatusUpdateResponse);
@@ -640,13 +607,12 @@ void PrinterJobHandler::SetNextDataHandler(DataHandler handler) {
 }
 
 bool PrinterJobHandler::HavePendingTasks() {
-  return (job_check_pending_ || printer_update_pending_ ||
-          printer_delete_pending_);
+  return (job_check_pending_ || printer_update_pending_);
 }
 
 void PrinterJobHandler::FailedFetchingJobData() {
   if (!shutting_down_) {
-    LOG(ERROR) << "CP_PROXY: Failed fetching job data for printer: " <<
+    LOG(ERROR) << "CP_CONNECTOR: Failed fetching job data for printer: " <<
         printer_info_.printer_name << ", job id: " << job_details_.job_id_;
     JobFailed(INVALID_JOB_DATA);
   }
