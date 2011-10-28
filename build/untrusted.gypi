@@ -23,6 +23,8 @@
           'build_newlib': 0,
           'build_glibc': 0,
           'extra_args': [],
+          'enable_x86_32': 1,
+          'enable_x86_64': 1,
           'lib_dirs': [],
           'include_dirs': ['<(DEPTH)','<(DEPTH)/ppapi'],
           'defines': [
@@ -53,7 +55,7 @@
     ['disable_untrusted==0 and (target_arch=="x64" or OS=="win")', {
       'target_defaults': {
         'target_conditions': [
-           ['nexe_target!="" and build_newlib!=0', {
+           ['nexe_target!="" and build_newlib!=0 and enable_x86_64!=0', {
              'variables': {
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
@@ -94,7 +96,7 @@
     ['disable_untrusted==0 and (target_arch=="x64" or OS=="win")', {
       'target_defaults': {
         'target_conditions': [
-           ['nlib_target!="" and build_newlib!=0', {
+           ['nlib_target!="" and build_newlib!=0 and enable_x86_64!=0', {
              'variables': {
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
@@ -135,7 +137,7 @@
     ['disable_untrusted==0 and target_arch=="ia32"', {
       'target_defaults': {
         'target_conditions': [
-           ['nexe_target!="" and build_newlib!=0', {
+           ['nexe_target!="" and build_newlib!=0 and enable_x86_32!=0', {
              'variables': {
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
@@ -176,7 +178,7 @@
     ['disable_untrusted==0 and target_arch=="ia32"', {
       'target_defaults': {
         'target_conditions': [
-           ['nlib_target!="" and build_newlib!=0', {
+           ['nlib_target!="" and build_newlib!=0 and enable_x86_32!=0', {
              'variables': {
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
