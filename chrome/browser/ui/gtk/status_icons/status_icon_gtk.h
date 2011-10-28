@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/status_icons/desktop_notification_balloon.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "ui/base/gtk/gtk_signal.h"
 
@@ -26,7 +27,7 @@ class StatusIconGtk : public StatusIcon {
   virtual void SetToolTip(const string16& tool_tip) OVERRIDE;
   virtual void DisplayBalloon(const SkBitmap& icon,
                               const string16& title,
-                              const string16& contents);
+                              const string16& contents) OVERRIDE;
 
   // Exposed for testing.
   CHROMEGTK_CALLBACK_0(StatusIconGtk, void, OnClick);
@@ -44,6 +45,9 @@ class StatusIconGtk : public StatusIcon {
 
   // The context menu for this icon (if any).
   scoped_ptr<MenuGtk> menu_;
+
+  // Notification balloon.
+  DesktopNotificationBalloon notification_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusIconGtk);
 };

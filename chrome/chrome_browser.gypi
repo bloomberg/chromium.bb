@@ -2159,6 +2159,8 @@
         'browser/ssl/ssl_error_info.cc',
         'browser/ssl/ssl_error_info.h',
         'browser/ssl_client_certificate_selector.h',
+        'browser/status_icons/desktop_notification_balloon.cc',
+        'browser/status_icons/desktop_notification_balloon.h',
         'browser/status_icons/status_icon.cc',
         'browser/status_icons/status_icon.h',
         'browser/status_icons/status_tray.cc',
