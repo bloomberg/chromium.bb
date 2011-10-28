@@ -716,6 +716,20 @@ tests_to_disable = set([
     'run_ppapi_emu_file_test',
     'run_ppapi_simple_audio_test',
     'run_ppapi_simple_graphics2d_test',
+    'run_ppapi_ppb_url_loader_browser_test',
+    'run_ppapi_ppb_graphics2d_browser_test',
+    'run_ppapi_ppb_core_browser_test',
+
+    'run_nacl_uma_test',
+
+    'run_pm_exit0_status_chrome_browser_test',
+    'run_pm_exit7_status_chrome_browser_test',
+    'run_inbrowser_crash_in_syscall_test',
+    'run_inbrowser_untrusted_crash_test',
+    'run_pm_nameservice_chrome_browser_test',
+
+    'run_pyauto_surfaway_test',
+    'run_pyauto_multiple_nexes_test',
 ])
 
 if ARGUMENTS.get('disable_tests', '') != '':
