@@ -109,8 +109,8 @@ cr.define('print_preview', function() {
      * @private
      */
     fadeInOut_: function(fadeOut) {
-      fadeOut ? fadeOutElement(this.layoutOption_) :
-          fadeInElement(this.layoutOption_);
+      fadeOut ? fadeOutOption(this.layoutOption_) :
+          fadeInOption(this.layoutOption_);
     }
   };
 

@@ -75,8 +75,8 @@ cr.define('print_preview', function() {
     onPrinterCapabilitiesUpdated_: function(e) {
       var disableColorOption = e.printerCapabilities.disableColorOption;
 
-      disableColorOption ? fadeOutElement(this.colorOption_) :
-          fadeInElement(this.colorOption_);
+      disableColorOption ? fadeOutOption(this.colorOption_) :
+          fadeInOption(this.colorOption_);
       this.colorOption_.setAttribute('aria-hidden', disableColorOption);
 
       var setColorAsDefault = e.printerCapabilities.setColorAsDefault;

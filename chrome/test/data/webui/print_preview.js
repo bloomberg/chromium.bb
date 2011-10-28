@@ -447,5 +447,5 @@ TEST_F('PrintPreviewNoPDFWebUITest', 'TestErrorMessage', function() {
   expectFalse(errorButton.disabled);
   var errorText = $('custom-message');
   assertNotEquals(null, errorText);
-  expectFalse(errorText.classList.contains('hidden'));
+  expectFalse(errorText.hidden);
 });

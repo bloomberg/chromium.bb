@@ -57,3 +57,7 @@ html[dir='rtl'] .form {
   cursor: pointer;
   text-decoration: underline;
 }
+
+.displaytable {
+  display: table;
+}

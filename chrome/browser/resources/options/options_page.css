@@ -572,12 +572,10 @@ html[flashPluginSupportsClearSiteData] .clear-plugin-lso-data-disabled {
 
 
 /* Display a collection of sections as a table in order to display nicely
- * in multiple locales.  The left column should expand to accomodate the
- * widest label without introducing excessive whitespace.  Labels in
- * languages such as German or Dutch tend to be wider than for English.
+ * in multiple locales. This is a further refinement of the displaytable class
+ * in webui.css.
  */
 .displaytable {
-  display: table;
   width: 100%;
 }
 

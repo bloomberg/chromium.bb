@@ -78,3 +78,60 @@ function fadeInOutCleanup(animationName) {
     animEl.parentNode.removeChild(animEl);
 }
 
+/**
+ * Fades in a printing option existing under |el|.
+ * @param {HTMLElement} el The element to hide.
+ */
+function fadeInOption(el) {
+  if (el.classList.contains('visible'))
+    return;
+
+  wrapContentsInDiv(el.querySelector('h1'), ['invisible']);
+  var rightColumn = el.querySelector('.right-column');
+  wrapContentsInDiv(rightColumn, ['invisible']);
+
+  var toAnimate = el.querySelectorAll('.collapsible');
+  for (var i = 0; i < toAnimate.length; i++)
+    fadeInElement(toAnimate[i]);
+  el.classList.add('visible');
+}
+
+/**
+ * Fades out a printing option existing under |el|.
+ * @param {HTMLElement} el The element to hide.
+ */
+function fadeOutOption(el) {
+  if (!el.classList.contains('visible'))
+    return;
+
+  wrapContentsInDiv(el.querySelector('h1'), ['visible']);
+  var rightColumn = el.querySelector('.right-column');
+  wrapContentsInDiv(rightColumn, ['visible']);
+
+  var toAnimate = el.querySelectorAll('.collapsible');
+  for (var i = 0; i < toAnimate.length; i++)
+    fadeOutElement(toAnimate[i]);
+  el.classList.remove('visible');
+}
+
+/**
+ * Wraps the contents of |el| in a div element and attaches css classes
+ * |classes| in the new div, only if has not been already done. It is neccesary
+ * for animating the height of table cells.
+ * @param {HTMLElement} el The element to be processed.
+ * @param {array} classes The css classes to add.
+ */
+function wrapContentsInDiv(el, classes) {
+  var div = el.querySelector('div');
+  if (!div || !div.classList.contains('collapsible')) {
+    div = document.createElement('div');
+    while (el.childNodes.length > 0)
+      div.appendChild(el.firstChild);
+    el.appendChild(div);
+  }
+
+  div.className = '';
+  div.classList.add('collapsible');
+  for (var i = 0; i < classes.length; i++)
+    div.classList.add(classes[i]);
+}

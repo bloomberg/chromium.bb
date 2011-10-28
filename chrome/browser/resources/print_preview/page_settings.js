@@ -237,7 +237,7 @@ cr.define('print_preview', function() {
     validateSelectedPages_: function() {
       if (this.isPageSelectionValid()) {
         this.selectedPagesTextfield.classList.remove('invalid');
-        fadeOutElement(this.selectedPagesHint);
+        fadeOutElement(this.selectedPagesHint_);
         this.selectedPagesHint.setAttribute('aria-hidden', 'true');
       } else {
         this.selectedPagesTextfield.classList.add('invalid');

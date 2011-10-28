@@ -27,25 +27,20 @@
         <button id="cancel-button" i18n-content="cancelButton"></button>
       </div>
     </header>
-    <div id="main">
-      <div id="destination-option" class="two-column">
+    <div id="main" class="displaytable">
+      <div id="destination-option" class="two-column visible">
         <h1 i18n-content="destinationLabel"></h1>
-        <select id="printer-list"></select>
+        <div class="right-column">
+          <select id="printer-list"></select>
+        </div>
       </div>
-      <hr>
       <include src="page_settings.html"></include>
-      <hr id="hr-before-copies" class="invisible">
       <include src="copies_settings.html"></include>
-      <hr>
       <include src="layout_settings.html"></include>
-      <hr>
       <include src="color_settings.html"></include>
-      <hr>
       <include src="margin_settings.html"></include>
-      <hr>
       <include src="header_footer_settings.html"></include>
-      <hr>
-      <div id="system-dialog-div">
+      <div>
         <if expr="pp_ifdef('chromeos')">
           <button id="system-dialog-link" class="link-button"
               i18n-content="cloudPrintDialogOption"></button>

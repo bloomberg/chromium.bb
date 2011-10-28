@@ -615,7 +615,7 @@ cr.define('print_preview', function() {
      */
     onPDFLoaded_: function() {
       if (!previewModifiable)
-        fadeOutElement(this.marginsOption_);
+        fadeOutOption(this.marginsOption_);
     }
   };
 

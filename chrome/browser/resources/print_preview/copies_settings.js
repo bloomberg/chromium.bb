@@ -161,15 +161,11 @@ cr.define('print_preview', function() {
      * @private
      */
     onPrinterCapabilitiesUpdated_: function(e) {
-      if (e.printerCapabilities.disableCopiesOption) {
-        fadeOutElement(this.copiesOption_);
-        $('hr-before-copies').classList.remove('invisible');
-      } else {
-        fadeInElement(this.copiesOption_);
-        $('hr-before-copies').classList.add('invisible');
-      }
       this.updateTwoSidedOption_(
           e.printerCapabilities.printerDefaultDuplexValue);
+      e.printerCapabilities.disableCopiesOption ?
+          fadeOutOption(this.copiesOption_) :
+          fadeInOption(this.copiesOption_);
     },
 
     /**
