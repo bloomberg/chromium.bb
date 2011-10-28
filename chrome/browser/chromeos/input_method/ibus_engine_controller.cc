@@ -129,7 +129,11 @@ class IBusEngineControllerImpl : public IBusEngineController {
     // Check the IBus connection status.
     bool result = true;
     if (ibus_bus_is_connected(ibus_)) {
-      LOG(INFO) << "ibus_bus_is_connected(). IBus connection is ready.";
+      if (!g_factory_) {
+        g_factory_ = ibus_factory_new(ibus_bus_get_connection(ibus_));
+      }
+
+      VLOG(1) << "ibus_bus_is_connected(). IBus connection is ready.";
       result = MaybeCreateComponent();
     }
 
@@ -620,6 +624,10 @@ class IBusEngineControllerImpl : public IBusEngineController {
     g_return_if_fail(user_data);
     IBusEngineControllerImpl* self
         = static_cast<IBusEngineControllerImpl*>(user_data);
+    if (!g_factory_) {
+      g_factory_ = ibus_factory_new(ibus_bus_get_connection(bus));
+    }
+
     if (!self->MaybeCreateComponent()) {
       LOG(ERROR) << "MaybeCreateComponent() failed";
       return;
@@ -629,10 +637,11 @@ class IBusEngineControllerImpl : public IBusEngineController {
   // Handles "disconnected" signal from ibus-daemon.
   static void IBusBusDisconnectedCallback(IBusBus* bus, gpointer user_data) {
     LOG(WARNING) << "IBus connection is terminated.";
+    g_factory_ = NULL;
   }
 
   bool MaybeCreateComponent() {
-    if (!ibus_ || !ibus_bus_is_connected(ibus_)) {
+    if (!ibus_ || !ibus_bus_is_connected(ibus_) || !g_factory_) {
       return false;
     }
 
@@ -655,8 +664,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
                                                    "",
                                                    layout_.c_str()));
 
-    IBusFactory* factory = ibus_factory_new(ibus_bus_get_connection(ibus_));
-    ibus_factory_add_engine(factory, engine_id_.c_str(),
+    ibus_factory_add_engine(g_factory_, engine_id_.c_str(),
                             IBUS_TYPE_CHROMEOS_ENGINE);
     ibus_bus_register_component(ibus_, component);
     g_object_unref(component);
@@ -871,10 +879,13 @@ class IBusEngineControllerImpl : public IBusEngineController {
   std::set<IBusChromeOSEngine*> engine_instances_;
 
   static ConnectionMap* g_connections_;
+  static IBusFactory* g_factory_;
 };
 
 IBusEngineControllerImpl::ConnectionMap*
     IBusEngineControllerImpl::g_connections_ = NULL;
+
+IBusFactory* IBusEngineControllerImpl::g_factory_ = NULL;
 
 void ibus_chromeos_engine_class_init(IBusChromeOSEngineClass *klass) {
   IBusEngineControllerImpl::InitEngineClass(klass);
