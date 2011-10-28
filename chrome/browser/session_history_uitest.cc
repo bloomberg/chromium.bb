@@ -80,8 +80,9 @@ class SessionHistoryTest : public UITest {
   net::TestServer test_server_;
 };
 
-#if defined(OS_WIN)
-// See http://crbug.com/61619
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// See http://crbug.com/61619 on windows.
+// See http://crbug.com/102094 on mac.
 #define MAYBE_BasicBackForward FLAKY_BasicBackForward
 #else
 #define MAYBE_BasicBackForward BasicBackForward
