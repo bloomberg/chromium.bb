@@ -293,7 +293,7 @@ evdev_input_device_create(struct evdev_input *master,
 		return NULL;
 
 	ec = (struct wlsc_compositor *) master->base.input_device.compositor;
-	device->output = 
+	device->output =
 		container_of(ec->output_list.next, struct wlsc_output, link);
 
 	device->tool = 1;
@@ -302,33 +302,29 @@ evdev_input_device_create(struct evdev_input *master,
 	device->devnode = strdup(path);
 
 	device->fd = open(path, O_RDONLY);
-	if (device->fd < 0) {
-		free(device->devnode);
-		free(device);
-		fprintf(stderr, "couldn't create pointer for %s: %m\n", path);
-		return NULL;
-	}
+	if (device->fd < 0)
+		goto err0;
 
-	if (evdev_configure_device(device) == -1) {
-		close(device->fd);
-		free(device->devnode);
-		free(device);
-		return NULL;
-	}
+	if (evdev_configure_device(device) == -1)
+		goto err1;
 
 	loop = wl_display_get_event_loop(display);
 	device->source = wl_event_loop_add_fd(loop, device->fd,
 					      WL_EVENT_READABLE,
 					      evdev_input_device_data, device);
-	if (device->source == NULL) {
-		close(device->fd);
-		free(device->devnode);
-		free(device);
-		return NULL;
-	}
+	if (device->source == NULL)
+		goto err1;
 
 	wl_list_insert(master->devices_list.prev, &device->link);
+
 	return device;
+
+err1:
+	close(device->fd);
+err0:
+	free(device->devnode);
+	free(device);
+	return NULL;
 }
 
 static const char default_seat[] = "seat0";
