@@ -7,6 +7,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
 
+#include "base/auto_reset.h"
 #include "base/base_switches.h"
 #import "base/basictypes.h"
 #include "base/command_line.h"
@@ -48,6 +49,40 @@ void ClearCrashKeyValue(NSString* key) {
   }
 
   BreakpadRemoveUploadParameter(gBreakpadRef, key);
+}
+
+bool FatalMessageHandler(int severity, const char* file, int line,
+                         size_t message_start, const std::string& str) {
+  // Do not handle non-FATAL.
+  if (severity != logging::LOG_FATAL)
+    return false;
+
+  // In case of OOM condition, this code could be reentered when
+  // constructing and storing the key.  Using a static is not
+  // thread-safe, but if multiple threads are in the process of a
+  // fatal crash at the same time, this should work.
+  static bool guarded = false;
+  if (guarded)
+    return false;
+
+  AutoReset<bool> guard(&guarded, true);
+
+  // Only log last path component.  This matches logging.cc.
+  if (file) {
+    const char* slash = strrchr(file, '/');
+    if (slash)
+      file = slash + 1;
+  }
+
+  NSString* fatal_key = @"LOG_FATAL";
+  NSString* fatal_value =
+      [NSString stringWithFormat:@"%s:%d: %s",
+                                 file, line, str.c_str() + message_start];
+  SetCrashKeyValue(fatal_key, fatal_value);
+
+  // Rather than including the code to force the crash here, allow the
+  // caller to do it.
+  return false;
 }
 
 }  // namespace
@@ -176,7 +211,9 @@ void InitCrashReporter() {
     std::string guid =
         command_line->GetSwitchValueASCII(switches::kEnableCrashReporter);
     child_process_logging::SetClientId(guid);
-   }
+  }
+
+  logging::SetLogMessageHandler(&FatalMessageHandler);
 }
 
 void InitCrashProcessInfo() {
