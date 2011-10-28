@@ -4,6 +4,7 @@
 
 #include "content/browser/download/download_request_handle.h"
 
+#include "base/bind.h"
 #include "base/stringprintf.h"
 #include "content/browser/browser_context.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -79,8 +80,8 @@ void DownloadRequestHandle::PauseRequest() const {
   if (rdh_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(&ResourceDispatcherHostPauseRequest,
-                            rdh_, child_id_, request_id_, true));
+        base::Bind(&ResourceDispatcherHostPauseRequest,
+                   rdh_, child_id_, request_id_, true));
   }
 }
 
@@ -90,8 +91,8 @@ void DownloadRequestHandle::ResumeRequest() const {
   if (rdh_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(&ResourceDispatcherHostPauseRequest,
-                            rdh_, child_id_, request_id_, false));
+        base::Bind(&ResourceDispatcherHostPauseRequest,
+                   rdh_, child_id_, request_id_, false));
   }
 }
 
@@ -101,8 +102,8 @@ void DownloadRequestHandle::CancelRequest() const {
   if (rdh_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(&ResourceDispatcherHostCancelRequest,
-                            rdh_, child_id_, request_id_));
+        base::Bind(&ResourceDispatcherHostCancelRequest,
+                  rdh_, child_id_, request_id_));
   }
 }
 
