@@ -91,6 +91,8 @@
               ['exclude', '^compositor_(gl|win|stub).(h|cc)$'],
             ],
             'dependencies': [
+              '<(DEPTH)/webkit/support/webkit_support.gyp:fileapi',
+              '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
               '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_gpu',
             ],
           }, {
@@ -115,6 +117,7 @@
       'conditions': [
         ['use_webkit_compositor == 1', {
             'dependencies': [
+              '<(DEPTH)/base/allocator/allocator.gyp:allocator',
               '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
               '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
             ],
