@@ -262,7 +262,11 @@ void AutomationResourceMessageFilter::RegisterRenderViewInIOThread(
 
   RenderViewMap::iterator automation_details_iter(
       filtered_render_views_.Get().find(renderer_key));
-  if (automation_details_iter != filtered_render_views_.Get().end()) {
+  // We need to match the renderer key and the AutomationResourceMessageFilter
+  // instances. If the filter instances are different it means that a new
+  // automation channel (External host process) was created for this tab.
+  if (automation_details_iter != filtered_render_views_.Get().end() &&
+      automation_details_iter->second.filter == filter) {
     DCHECK_GT(automation_details_iter->second.ref_count, 0);
     automation_details_iter->second.ref_count++;
     // The tab handle may have changed:-
