@@ -70,6 +70,7 @@ extern const char kEnableAccessibilityLogging[];
 CONTENT_EXPORT extern const char kEnableDNSCertProvenanceChecking[];
 CONTENT_EXPORT extern const char kEnableDeviceMotion[];
 CONTENT_EXPORT extern const char kDisableFullScreen[];
+extern const char kEnableGamepad[];
 extern const char kEnableGPUPlugin[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kEnableMediaSource[];
