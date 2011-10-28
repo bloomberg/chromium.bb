@@ -4,13 +4,20 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "net/base/mock_host_resolver.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 namespace {
 
@@ -91,4 +98,37 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_blocking.html")) <<
       message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestNewTab) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  // Wait for the extension to set itself up and return control to us.
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_newTab.html"))
+      << message_;
+
+  ResultCatcher catcher;
+
+  ExtensionService* service = browser()->profile()->GetExtensionService();
+  const Extension* extension =
+      service->GetExtensionById(last_loaded_extension_id_, false);
+  GURL url = extension->GetResourceURL("newTab/a.html");
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // There's a link on a.html with target=_blank. Click on it to open it in a
+  // new tab.
+  WebKit::WebMouseEvent mouse_event;
+  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.x = 7;
+  mouse_event.y = 7;
+  mouse_event.clickCount = 1;
+  TabContents* tab = browser()->GetSelectedTabContents();
+  tab->render_view_host()->ForwardMouseEvent(mouse_event);
+  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  tab->render_view_host()->ForwardMouseEvent(mouse_event);
+
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

@@ -8,6 +8,7 @@ var expectedEventData;
 var capturedEventData;
 var expectedEventOrder;
 var tabId;
+var tabIdMap;
 var testServerPort;
 var testServer = "www.a.com";
 var eventsCaptured;
@@ -15,6 +16,8 @@ var eventsCaptured;
 function runTests(tests) {
   chrome.tabs.create({url: "about:blank"}, function(tab) {
     tabId = tab.id;
+    tabIdMap = {};
+    tabIdMap[tabId] = 0;
     chrome.test.getConfig(function(config) {
       testServerPort = config.testServer.port;
       chrome.test.runTests(tests);
@@ -71,7 +74,7 @@ function expect(data, order, filter, extraInfoSpec) {
       expectedEventData[i].details.method = "GET";
     }
     if (!expectedEventData[i].details.tabId) {
-      expectedEventData[i].details.tabId = tabId;
+      expectedEventData[i].details.tabId = tabIdMap[tabId];
     }
     if (!expectedEventData[i].details.type) {
       expectedEventData[i].details.type = "main_frame";
@@ -160,6 +163,13 @@ function captureEvent(name, details, callback) {
     details.frameUrl = tabAndFrameUrls[key] || "unknown frame URL";
   }
   delete details.frameId;
+
+  // This assigns unique IDs to newly opened tabs. However, the new IDs are only
+  // deterministic, if the order in which the tabs are opened is deterministic.
+  if (!(details.tabId in tabIdMap)) {
+    tabIdMap[details.tabId] = Object.keys(tabIdMap).length;
+  }
+  details.tabId = tabIdMap[details.tabId];
 
   delete details.requestId;
   delete details.timeStamp;

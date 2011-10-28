@@ -3824,6 +3824,15 @@ bool Browser::ShouldAddNavigationToHistory(
   return !IsApplication();
 }
 
+void Browser::TabContentsCreated(TabContents* new_contents) {
+  // Create a TabContentsWrapper now, so all observers are in place, as the
+  // network requests for its initial navigation will start immediately. The
+  // TabContents will later be inserted into this browser using
+  // Browser::Navigate via AddNewContents. The latter will retrieve the newly
+  // created TabContentsWrapper from TabContents object.
+  new TabContentsWrapper(new_contents);
+}
+
 void Browser::ContentRestrictionsChanged(TabContents* source) {
   UpdateCommandsForContentRestrictionState();
 }

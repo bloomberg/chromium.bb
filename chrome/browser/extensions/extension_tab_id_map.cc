@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -46,6 +47,8 @@ ExtensionTabIdMap::TabObserver::TabObserver() {
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_TAB_PARENTED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_RETARGETING,
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 ExtensionTabIdMap::TabObserver::~TabObserver() {
@@ -78,6 +81,25 @@ void ExtensionTabIdMap::TabObserver::Observe(
     case content::NOTIFICATION_TAB_PARENTED: {
       TabContentsWrapper* tab =
           content::Source<TabContentsWrapper>(source).ptr();
+      RenderViewHost* host = tab->render_view_host();
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(
+              &ExtensionTabIdMap::SetTabAndWindowId,
+              base::Unretained(ExtensionTabIdMap::GetInstance()),
+              host->process()->id(), host->routing_id(),
+              tab->restore_tab_helper()->session_id().id(),
+              tab->restore_tab_helper()->window_id().id()));
+      break;
+    }
+    case content::NOTIFICATION_RETARGETING: {
+      content::RetargetingDetails* retargeting_details =
+          content::Details<content::RetargetingDetails>(details).ptr();
+      TabContents* contents = retargeting_details->target_tab_contents;
+      TabContentsWrapper* tab =
+          TabContentsWrapper::GetCurrentWrapperForContents(contents);
+      if (!tab)
+        break;
       RenderViewHost* host = tab->render_view_host();
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,

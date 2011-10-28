@@ -263,6 +263,9 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
       params.frame_name);
 
   if (new_contents) {
+    if (tab_contents->delegate())
+      tab_contents->delegate()->TabContentsCreated(new_contents);
+
     content::RetargetingDetails details;
     details.source_tab_contents = tab_contents;
     details.source_frame_id = params.opener_frame_id;
@@ -273,9 +276,6 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
         content::Source<content::BrowserContext>(
             tab_contents->browser_context()),
         content::Details<content::RetargetingDetails>(&details));
-
-    if (tab_contents->delegate())
-      tab_contents->delegate()->TabContentsCreated(new_contents);
   } else {
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED,

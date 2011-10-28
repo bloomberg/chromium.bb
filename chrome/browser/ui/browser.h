@@ -976,6 +976,7 @@ class Browser : public TabHandlerDelegate,
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       content::NavigationType navigation_type) OVERRIDE;
+  virtual void TabContentsCreated(TabContents* new_contents) OVERRIDE;
   virtual void ContentRestrictionsChanged(TabContents* source) OVERRIDE;
   virtual void RendererUnresponsive(TabContents* source) OVERRIDE;
   virtual void RendererResponsive(TabContents* source) OVERRIDE;
