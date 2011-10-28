@@ -1010,9 +1010,6 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 
 	pthread_mutex_lock(&bufmgr_gem->lock);
 
-	/* Allow recursive mapping. Mesa may recursively map buffers with
-	 * nested display loops.
-	 */
 	if (!bo_gem->mem_virtual) {
 		struct drm_i915_gem_mmap mmap_arg;
 
