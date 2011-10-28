@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,9 +70,6 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
   if (!ok)
     return false;
   switch (type) {
-    case WebKit::WebIDBKey::NullType:
-      r->SetNull();
-      return true;
     case WebKit::WebIDBKey::StringType:
       r->SetString(string);
       return true;
@@ -83,6 +80,7 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
       r->SetNumber(number);
       return true;
     case WebKit::WebIDBKey::InvalidType:
+    default: // TODO(jsbell): Remove this case label once NullType is gone
       r->SetInvalid();
       return true;
   }

@@ -17,7 +17,6 @@ class CONTENT_EXPORT IndexedDBKey {
   explicit IndexedDBKey(const WebKit::WebIDBKey& key);
   ~IndexedDBKey();
 
-  void SetNull();
   void SetInvalid();
   void SetString(const string16& string);
   void SetDate(double date);

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,10 +20,6 @@ IndexedDBKey::IndexedDBKey(const WebIDBKey& key) {
 }
 
 IndexedDBKey::~IndexedDBKey() {
-}
-
-void IndexedDBKey::SetNull() {
-  type_ = WebIDBKey::NullType;
 }
 
 void IndexedDBKey::SetInvalid() {
@@ -55,8 +51,6 @@ void IndexedDBKey::Set(const WebIDBKey& key) {
 
 IndexedDBKey::operator WebIDBKey() const {
   switch (type_) {
-    case WebIDBKey::NullType:
-      return WebIDBKey::createNull();
     case WebIDBKey::StringType:
       return WebIDBKey::createString(string_);
     case WebIDBKey::DateType:
@@ -64,6 +58,7 @@ IndexedDBKey::operator WebIDBKey() const {
     case WebIDBKey::NumberType:
       return WebIDBKey::createNumber(number_);
     case WebIDBKey::InvalidType:
+    default: // TODO(jsbell): Remove this case label once NullType is gone
       return WebIDBKey::createInvalid();
   }
   NOTREACHED();
