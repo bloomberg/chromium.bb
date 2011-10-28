@@ -711,7 +711,13 @@ def GetPlatformString(env):
   return build + '-' + subarch
 
 
-tests_to_disable = set()
+tests_to_disable = set([
+    # these sel_universal tests are broken and it's won't fix
+    # http://code.google.com/p/nativeclient/issues/detail?id=2390
+    run_ppapi_simple_audio_test,
+    run_ppapi_simple_graphics2d_test,
+    run_ppapi_emu_file_test,
+])
 
 if ARGUMENTS.get('disable_tests', '') != '':
   tests_to_disable.update(ARGUMENTS['disable_tests'].split(','))
