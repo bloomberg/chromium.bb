@@ -10,7 +10,7 @@
 
 namespace aura {
 
-AURA_EXPORT const char* kTooltipTextKey = "TooltipTextKey";
+AURA_EXPORT extern const char* kTooltipTextKey;
 
 }  // namespace aura
 
