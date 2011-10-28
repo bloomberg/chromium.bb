@@ -171,6 +171,8 @@ cr.define('options', function() {
     setInstantFieldTrialStatus_: function(enabled) {
       $('instantEnabledCheckbox').hidden = enabled;
       $('instantFieldTrialCheckbox').hidden = !enabled;
+      $('instantLabel').htmlFor = enabled ? 'instantFieldTrialCheckbox'
+                                          : 'instantEnabledCheckbox';
     },
 
     /**
