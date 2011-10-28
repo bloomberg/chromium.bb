@@ -40,7 +40,11 @@ class TabbedLauncherButton : public views::CustomButton {
 
   LauncherButtonHost* host_;
 
-  static SkBitmap* bg_image_;
+  // Background images. Which one is chosen depends upon how many images are
+  // provided.
+  static SkBitmap* bg_image_1_;
+  static SkBitmap* bg_image_2_;
+  static SkBitmap* bg_image_3_;
 
   DISALLOW_COPY_AND_ASSIGN(TabbedLauncherButton);
 };

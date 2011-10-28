@@ -51,7 +51,7 @@ class ShellDelegateImpl : public aura_shell::ShellDelegate {
                                           i == 1 ? 255 : 0,
                                           i == 2 ? 255 : 0);
     }
-    image_count = (image_count + 1) % 2;
+    image_count = (image_count + 1) % 3;
     return true;  // Makes the entry show up in the launcher.
   }
 };
