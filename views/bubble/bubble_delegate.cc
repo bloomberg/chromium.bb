@@ -29,7 +29,8 @@ BubbleDelegateView::BubbleDelegateView(
       close_on_esc_(true),
       anchor_point_(anchor_point),
       arrow_location_(arrow_location),
-      color_(color) {
+      color_(color),
+      original_opacity_(255) {
   AddAccelerator(Accelerator(ui::VKEY_ESCAPE, 0));
 }
 
@@ -88,12 +89,19 @@ void BubbleDelegateView::StartFade(bool fade_in) {
   fade_animation_->SetSlideDuration(kHideFadeDurationMS);
   fade_animation_->Reset(fade_in ? 0.0 : 1.0);
   if (fade_in) {
-    GetWidget()->SetOpacity(0);
+    original_opacity_ = 0;
+    GetWidget()->SetOpacity(original_opacity_);
     GetWidget()->Show();
     fade_animation_->Show();
   } else {
+    original_opacity_ = 255;
     fade_animation_->Hide();
   }
+}
+
+void BubbleDelegateView::ResetFade() {
+  fade_animation_.reset();
+  GetWidget()->SetOpacity(original_opacity_);
 }
 
 bool BubbleDelegateView::AcceleratorPressed(const Accelerator& accelerator) {

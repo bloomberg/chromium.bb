@@ -58,6 +58,10 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Fade in calls Widget::Show; fade out calls Widget::Close upon completion.
   void StartFade(bool fade_in);
 
+  // Reset fade and opacity of bubble. Restore the opacity of the
+  // bubble to the setting before StartFade() was called.
+  void ResetFade();
+
  protected:
   // View overrides:
   virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
@@ -90,6 +94,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
   // The background color of the bubble.
   SkColor color_;
+
+  // Original opacity of the bubble.
+  int original_opacity_;
 };
 
 }  // namespace views

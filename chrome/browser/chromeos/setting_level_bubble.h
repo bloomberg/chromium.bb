@@ -7,9 +7,11 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/ui/views/bubble/bubble.h"
+#include "views/bubble/bubble_delegate.h"
+#include "views/widget/widget.h"
 
 class SkBitmap;
 
@@ -17,12 +19,15 @@ namespace chromeos {
 
 class SettingLevelBubbleView;
 
-// Singleton class controlling a bubble displaying a level-based setting like
+// Controls a bubble displaying a level-based setting like
 // volume or brightness.
-class SettingLevelBubble : public BubbleDelegate {
+class SettingLevelBubble : public views::Widget::Observer {
  public:
-  // Shows the bubble.  |percent| should be in the range [0.0, 100.0].
+  // Shows the bubble with the target |percent| and |enabled| setting.
+  // |percent| should be in the range [0.0, 100.0].
   void ShowBubble(double percent, bool enabled);
+
+  // Hides the Bubble, closing the view.
   void HideBubble();
 
   // Updates the bubble's current level without showing the bubble onscreen.
@@ -46,15 +51,23 @@ class SettingLevelBubble : public BubbleDelegate {
   SettingLevelBubble(SkBitmap* increase_icon,
                      SkBitmap* decrease_icon,
                      SkBitmap* zero_icon);
+
   virtual ~SettingLevelBubble();
 
  private:
-  // Overridden from BubbleDelegate.
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
-  virtual bool CloseOnEscape() OVERRIDE;
-  virtual bool FadeInOnShow() OVERRIDE;
+  FRIEND_TEST_ALL_PREFIXES(SettingLevelBubbleTest, CreateAndUpdate);
+  FRIEND_TEST_ALL_PREFIXES(SettingLevelBubbleTest, ShowBubble);
+  FRIEND_TEST_ALL_PREFIXES(BrightnessBubbleTest, UpdateWithoutShowing);
+  FRIEND_TEST_ALL_PREFIXES(VolumeBubbleTest, GetInstanceAndShow);
 
-  // Callback for |hide_timer_|.  Closes the bubble.
+  // views::Widget::Observer overrides:
+  void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+
+  // Creates the bubble content view.
+  // Caller should call Init() on the returned SettingLevelBubbleView.
+  SettingLevelBubbleView* CreateView();
+
+  // Callback for |hide_timer_|.  Starts fading out.
   void OnHideTimeout();
 
   // Callback for |animation_timer_|.  Updates the level displayed by the view,
@@ -89,9 +102,6 @@ class SettingLevelBubble : public BubbleDelegate {
   SkBitmap* increase_icon_;
   SkBitmap* decrease_icon_;
   SkBitmap* disabled_icon_;
-
-  // Currently shown bubble or NULL.
-  Bubble* bubble_;
 
   // Contents view owned by Bubble.
   SettingLevelBubbleView* view_;

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_SETTING_LEVEL_BUBBLE_VIEW_H_
 #pragma once
 
+#include "base/gtest_prod_util.h"
 #include "views/view.h"
 
 namespace views {
@@ -20,6 +21,7 @@ namespace chromeos {
 // level-based setting like volume or brightness.
 class SettingLevelBubbleView : public views::View {
  public:
+  // Layout() is called before Init(), make sure |progress_bar_| is ready.
   SettingLevelBubbleView();
 
   // Initialize the view, setting the progress bar to the specified level in the
@@ -42,6 +44,8 @@ class SettingLevelBubbleView : public views::View {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SettingLevelBubbleTest, CreateAndUpdate);
+
   views::ProgressBar* progress_bar_;
   SkBitmap* icon_;  // not owned
 
