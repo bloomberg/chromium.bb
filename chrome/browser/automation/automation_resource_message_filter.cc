@@ -265,6 +265,16 @@ void AutomationResourceMessageFilter::RegisterRenderViewInIOThread(
   if (automation_details_iter != filtered_render_views_.Get().end()) {
     DCHECK_GT(automation_details_iter->second.ref_count, 0);
     automation_details_iter->second.ref_count++;
+    // The tab handle may have changed:-
+    // 1.A external tab container is being destroyed and a new one is being
+    //   created.
+    // 2.The external tab container being destroyed receives a RVH created
+    //   notification for the new RVH created to host the newly created tab.
+    //   In this case the tab handle in the AutomationDetails structure would
+    //   be invalid as it points to a destroyed tab.
+    // We need to replace the handle of the external tab being destroyed with
+    // the new one that is being created."
+    automation_details_iter->second.tab_handle = tab_handle;
   } else {
     filtered_render_views_.Get()[renderer_key] =
         AutomationDetails(tab_handle, filter, pending_view);
@@ -471,15 +481,14 @@ void AutomationResourceMessageFilter::ResumeJobsForPendingView(
   DCHECK(new_filter != NULL);
 
   RequestMap pending_requests = old_filter->pending_request_map_;
+  old_filter->pending_request_map_.clear();
 
-  for (RequestMap::iterator index = old_filter->pending_request_map_.begin();
-          index != old_filter->pending_request_map_.end(); index++) {
+  for (RequestMap::iterator index = pending_requests.begin();
+       index != pending_requests.end(); index++) {
     URLRequestAutomationJob* job = (*index).second;
     DCHECK_EQ(job->message_filter(), old_filter);
     DCHECK(job->is_pending());
     // StartPendingJob will register the job with the new filter.
     job->StartPendingJob(tab_handle, new_filter);
   }
-
-  old_filter->pending_request_map_.clear();
 }

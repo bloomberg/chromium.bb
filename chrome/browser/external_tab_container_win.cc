@@ -219,6 +219,8 @@ bool ExternalTabContainer::Init(Profile* profile,
                  content::Source<TabContents>(tab_contents_->tab_contents()));
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  content::NotificationService::AllSources());
+  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
+                 content::NotificationService::AllSources());
 
   TabContentsObserver::Observe(tab_contents_->tab_contents());
 
@@ -838,33 +840,33 @@ void ExternalTabContainer::Observe(int type,
         break;
       }
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-        if (ignore_next_load_notification_) {
-          ignore_next_load_notification_ = false;
-          return;
-        }
-
-        const content::LoadCommittedDetails* commit =
-            content::Details<content::LoadCommittedDetails>(details).ptr();
-
-        if (commit->http_status_code >= kHttpClientErrorStart &&
-            commit->http_status_code <= kHttpServerErrorEnd) {
-          automation_->Send(new AutomationMsg_NavigationFailed(
-              tab_handle_, commit->http_status_code, commit->entry->url()));
-
-          ignore_next_load_notification_ = true;
-        } else {
-          NavigationInfo navigation_info;
-          // When the previous entry index is invalid, it will be -1, which
-          // will still make the computation come out right (navigating to the
-          // 0th entry will be +1).
-          if (InitNavigationInfo(&navigation_info, commit->type,
-                  commit->previous_entry_index -
-                  tab_contents_->controller().last_committed_entry_index()))
-            automation_->Send(new AutomationMsg_DidNavigate(tab_handle_,
-                                                            navigation_info));
-        }
-        break;
+      if (ignore_next_load_notification_) {
+        ignore_next_load_notification_ = false;
+        return;
       }
+
+      const content::LoadCommittedDetails* commit =
+          content::Details<content::LoadCommittedDetails>(details).ptr();
+
+      if (commit->http_status_code >= kHttpClientErrorStart &&
+          commit->http_status_code <= kHttpServerErrorEnd) {
+        automation_->Send(new AutomationMsg_NavigationFailed(
+            tab_handle_, commit->http_status_code, commit->entry->url()));
+
+        ignore_next_load_notification_ = true;
+      } else {
+        NavigationInfo navigation_info;
+        // When the previous entry index is invalid, it will be -1, which
+        // will still make the computation come out right (navigating to the
+        // 0th entry will be +1).
+        if (InitNavigationInfo(&navigation_info, commit->type,
+                commit->previous_entry_index -
+                tab_contents_->controller().last_committed_entry_index()))
+          automation_->Send(new AutomationMsg_DidNavigate(tab_handle_,
+                                                          navigation_info));
+      }
+      break;
+    }
     case content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR: {
       const ProvisionalLoadDetails* load_details =
           content::Details<ProvisionalLoadDetails>(details).ptr();
@@ -885,6 +887,13 @@ void ExternalTabContainer::Observe(int type,
       if (load_requests_via_automation_) {
         RenderViewHost* rvh = content::Source<RenderViewHost>(source).ptr();
         UnregisterRenderViewHost(rvh);
+      }
+      break;
+    }
+    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED: {
+      if (load_requests_via_automation_) {
+        RenderViewHost* rvh = content::Source<RenderViewHost>(source).ptr();
+        RegisterRenderViewHostForAutomation(rvh, false);
       }
       break;
     }
