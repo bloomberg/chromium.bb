@@ -135,6 +135,25 @@ inline bool operator!=(const map<Key, Data, kLeftMaxSize>& left,
   return !(left == right);
 }
 
+template<typename Map, typename Key>
+bool MapContainsKey(const Map& the_map, const Key& the_key) {
+  return the_map.find(the_key) != the_map.end();
+}
+
+// Removes any ids from the map that are not finger ids in hs.
+template<typename Data, int kSetSize>
+void RemoveMissingIdsFromMap(map<short, Data, kSetSize>* the_map,
+                             const HardwareState& hs) {
+  short old_ids[the_map->size()];
+  size_t old_ids_len = 0;
+  for (typename map<short, Data, kSetSize>::const_iterator it =
+           the_map->begin(); it != the_map->end(); ++it)
+    if (!hs.GetFingerState((*it).first))
+      old_ids[old_ids_len++] = (*it).first;
+  for (size_t i = 0; i < old_ids_len; i++)
+    the_map->erase(old_ids[i]);
+}
+
 }  // namespace gestures
 
 #endif  // GESTURES_MAP_H__

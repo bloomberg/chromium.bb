@@ -52,6 +52,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, GetGesturingFingersTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickStateMachineTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickEnableTest);
+  FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainTest);
  public:
   enum TapToClickState {
@@ -226,7 +227,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Click suppression
   map<short, ClickWiggleRec, kMaxFingers> wiggle_recs_;
 
-  set<short, kMaxFingers> thumb_;  // contacts believed to be thumbs
+  // contacts believed to be thumbs, and when they were inserted into the map
+  map<short, stime_t, kMaxFingers> thumb_;
 
   // Tap-to-click
   // The current state:

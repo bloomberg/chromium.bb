@@ -370,7 +370,7 @@ bool ImmediateInterpreter::WiggleSuppressed(short tracking_id) const {
 // Updates thumb_ below.
 void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
   // Remove old ids from thumb_
-  RemoveMissingIdsFromSet(&thumb_, hwstate);
+  RemoveMissingIdsFromMap(&thumb_, hwstate);
   float min_pressure = INFINITY;
   for (size_t i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
@@ -384,12 +384,18 @@ void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
     const FingerState& fs = hwstate.fingers[i];
     if (SetContainsValue(palm_, fs.tracking_id))
       continue;
-    if (fs.pressure > (min_pressure + two_finger_pressure_diff_thresh_.val_))
-      thumb_.insert(fs.tracking_id);
+    if (fs.pressure > (min_pressure + two_finger_pressure_diff_thresh_.val_)) {
+      if (!MapContainsKey(thumb_, fs.tracking_id))
+        thumb_[fs.tracking_id] = hwstate.timestamp;
+    } else if (MapContainsKey(thumb_, fs.tracking_id) &&
+               hwstate.timestamp <
+               thumb_[fs.tracking_id] + change_timeout_.val_) {
+      thumb_.erase(fs.tracking_id);
+    }
   }
-  for (set<short, kMaxFingers>::const_iterator it = thumb_.begin();
+  for (map<short, stime_t, kMaxFingers>::const_iterator it = thumb_.begin();
        it != thumb_.end(); ++it) {
-    pointing_.erase(*it);
+    pointing_.erase((*it).first);
   }
 }
 

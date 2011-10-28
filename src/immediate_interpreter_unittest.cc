@@ -250,6 +250,52 @@ TEST(ImmediateInterpreterTest, ThumbRetainTest) {
   }
 }
 
+TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest) {
+  ImmediateInterpreter ii(NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    10,  // right edge
+    10,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    1,  // x screen DPI
+    1,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    0,  // tripletap
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    // one thumb, one finger (it seems)
+    {0, 0, 0, 0, 24, 0, 3.0, 3, 3},
+    {0, 0, 0, 0, 58, 0, 3.5, 3, 4},
+    // two big fingers, it turns out!
+    {0, 0, 0, 0, 27, 0, 3.0, 6, 3},
+    {0, 0, 0, 0, 58, 0, 3.5, 6, 4},
+    // they  move
+    {0, 0, 0, 0, 27, 0, 3.0, 7, 3},
+    {0, 0, 0, 0, 58, 0, 3.5, 7, 4},
+  };
+  HardwareState hardware_states[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    { 1.000, 0, 2, 2, &finger_states[0] },  // next 2 fingers arrive
+    { 1.010, 0, 2, 2, &finger_states[2] },  // pressures fix
+    { 1.100, 0, 2, 2, &finger_states[4] },  // they move
+  };
+
+  ii.SetHardwareProperties(hwprops);
+  ii.tap_enable_.val_ = 0;
+
+  for (size_t i = 0; i < arraysize(hardware_states); i++) {
+    Gesture* gs = ii.SyncInterpret(&hardware_states[i], NULL);
+    EXPECT_TRUE(!gs || gs->type == kGestureTypeScroll);
+  }
+}
+
 TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {
   ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {
