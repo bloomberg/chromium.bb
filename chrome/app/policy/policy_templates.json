@@ -1847,6 +1847,21 @@
       'caption': '''Device-level network configuration''',
       'desc': '''Allows pushing network configuration to be applied for all useers of a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration''',
     },
+    {
+      'name': 'CloudPrintSubmitEnabled',
+      'type': 'main',
+      'supported_on': ['chrome.*:17-'],
+      'features': {'dynamic_refresh': 1},
+      'future': False,
+      'example_value': True,
+      'id': 109,
+      'caption': '''Enable submission of documents to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>''',
+      'desc': '''      Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to submit documents to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> for printing.  NOTE: This only affects <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> support in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.  It does not prevent users from submitting print jobs on web sites.
+
+      If this setting is enabled or not configured, users can print to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> from the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> print dialog.
+
+      If this setting is disabled, users cannot print to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> from the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> print dialog''',
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.

@@ -1553,6 +1553,9 @@ const char kCloudPrintRobotRefreshToken[] = "cloud_print.robot_refresh_token";
 const char kCloudPrintRobotEmail[] = "cloud_print.robot_email";
 // Indicates whether the Mac Virtual driver is enabled.
 const char kVirtualPrinterDriverEnabled[] = "cloud_print.enable_virtual_driver";
+// A boolean indicating whether submitting jobs to Google Cloud Print is
+// blocked by policy.
+const char kCloudPrintSubmitEnabled[] = "cloud_print.submit_enabled";
 
 // Preference to store proxy settings.
 const char kProxy[] = "proxy";

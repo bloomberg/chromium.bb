@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/printing/print_system_task_proxy.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -39,6 +41,7 @@
 #include "chrome/browser/ui/webui/cloud_print_signin_dialog.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -658,10 +661,13 @@ void PrintPreviewHandler::SetupPrinterList(const ListValue& printers) {
 }
 
 void PrintPreviewHandler::SendCloudPrintEnabled() {
-  GURL gcp_url(CloudPrintURL(BrowserList::GetLastActive()->profile()).
-               GetCloudPrintServiceURL());
-  base::StringValue gcp_url_value(gcp_url.spec());
-  web_ui_->CallJavascriptFunction("setUseCloudPrint", gcp_url_value);
+  Profile* profile = BrowserList::GetLastActive()->profile();
+  PrefService* prefs = profile->GetPrefs();
+  if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled)) {
+    GURL gcp_url(CloudPrintURL(profile).GetCloudPrintServiceURL());
+    base::StringValue gcp_url_value(gcp_url.spec());
+    web_ui_->CallJavascriptFunction("setUseCloudPrint", gcp_url_value);
+  }
 }
 
 void PrintPreviewHandler::SendCloudPrintJob(const DictionaryValue& settings,

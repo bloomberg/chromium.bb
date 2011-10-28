@@ -371,7 +371,10 @@ INSTANTIATE_TEST_CASE_P(
     testing::Values(
         ValueTestParams::ForIntegerPolicy(
             kPolicyPolicyRefreshRate,
-            key::kPolicyRefreshRate)));
+            key::kPolicyRefreshRate),
+        ValueTestParams::ForBooleanPolicy(
+            kPolicyCloudPrintSubmitEnabled,
+            key::kCloudPrintSubmitEnabled));
 #endif
 
 }  // namespace policy
