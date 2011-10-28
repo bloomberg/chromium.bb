@@ -242,6 +242,9 @@ class ChromeLauncher(BrowserLauncher):
 
   def MakeCmd(self, url, port):
     cmd = [self.binary,
+            # Remove this when the underlying bug is fixed
+            # http://code.google.com/p/nativeclient/issues/detail?id=2394
+            '--js-flags="--gc_greedy"',
             '--disable-web-resources',
             '--disable-preconnect',
             '--no-first-run',
