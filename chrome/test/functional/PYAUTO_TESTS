@@ -165,6 +165,8 @@
       # crbug.com/98526
       '-pyauto_webdriver.PyAutoWebDriverTest.testCanConnectToRestartedBrowser',
       '-pyauto_webdriver.PyAutoWebDriverTest.testTypeIntoTextBox',
+      # crbug.com/102228
+      '-downloads.DownloadsTest.testPauseAndResume',
     ],
 
     'mac': [
