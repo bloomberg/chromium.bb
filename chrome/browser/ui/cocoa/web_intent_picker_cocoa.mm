@@ -46,6 +46,17 @@ WebIntentPickerCocoa::WebIntentPickerCocoa(Browser* browser,
 }
 
 void WebIntentPickerCocoa::SetServiceURLs(const std::vector<GURL>& urls) {
+  DCHECK(controller_);
+  scoped_nsobject<NSMutableArray> urlArray(
+      [[NSMutableArray alloc] initWithCapacity:urls.size()]);
+
+  for (std::vector<GURL>::const_iterator iter(urls.begin());
+       iter != urls.end(); ++iter) {
+    [urlArray addObject:
+        [NSString stringWithUTF8String:iter->spec().c_str()]];
+  }
+
+  [controller_ setServiceURLs:urlArray];
 }
 
 void WebIntentPickerCocoa::SetServiceIcon(size_t index, const SkBitmap& icon) {

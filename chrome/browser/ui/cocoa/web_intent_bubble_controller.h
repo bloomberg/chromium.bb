@@ -25,6 +25,9 @@ class WebIntentPickerCocoa;
   // Images for all icons shown in bubble.
   scoped_nsobject<NSPointerArray> iconImages_;
 
+  // URLs associated with the individual services.
+  scoped_nsobject<NSArray> serviceURLs_;
+
   // Default icon to use if no icon is specified.
   scoped_nsobject<NSImage> defaultIcon_;
 
@@ -39,6 +42,9 @@ class WebIntentPickerCocoa;
 
 // Replaces the |image| for service at |index|.
 - (void)replaceImageAtIndex:(size_t)index withImage:(NSImage*)image;
+
+// Set the service |urls| for all services.
+- (void)setServiceURLs:(NSArray*)urls;
 
 @end  // WebIntentBubbleController
 

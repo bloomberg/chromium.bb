@@ -81,6 +81,15 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   return self;
 }
 
+- (void)setServiceURLs:(NSArray*)urls {
+  serviceURLs_.reset([urls retain]);
+
+  if ([iconImages_ count] < [serviceURLs_ count])
+    [iconImages_ setCount:[serviceURLs_ count]];
+
+  [self performLayout];
+}
+
 - (void)replaceImageAtIndex:(size_t)index withImage:(NSImage*)image {
   if ([iconImages_ count] <= index)
     [iconImages_ setCount:index + 1];
@@ -232,6 +241,8 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
     [cell setEnabled:YES];
 
     [matrix putCell:cell atRow:(i / iconsPerRow) column:(i % iconsPerRow)];
+    if (serviceURLs_ && [serviceURLs_ count] >= i)
+      [matrix setToolTip:[serviceURLs_ objectAtIndex:i] forCell:cell];
   }
 
   [subviews addObject:matrix];
