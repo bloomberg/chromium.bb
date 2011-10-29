@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,8 +67,8 @@ void GpuChannel::DestroyTransportTexture(int32 route_id) {
 
 bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
   if (log_messages_) {
-    VLOG(1) << "received message @" << &message << " on channel @" << this
-            << " with type " << message.type();
+    DVLOG(1) << "received message @" << &message << " on channel @" << this
+             << " with type " << message.type();
   }
 
   // Control messages are not deferred and can be handled out of order with
@@ -105,8 +105,8 @@ bool GpuChannel::Send(IPC::Message* message) {
   // process. This could result in deadlock.
   DCHECK(!message->is_sync());
   if (log_messages_) {
-    VLOG(1) << "sending message @" << message << " on channel @" << this
-            << " with type " << message->type();
+    DVLOG(1) << "sending message @" << message << " on channel @" << this
+             << " with type " << message->type();
   }
 
   if (!channel_.get()) {

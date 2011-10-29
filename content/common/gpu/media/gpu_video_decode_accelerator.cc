@@ -58,8 +58,8 @@ void GpuVideoDecodeAccelerator::ProvidePictureBuffers(
     uint32 requested_num_of_buffers, const gfx::Size& dimensions) {
   if (!Send(new AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers(
           host_route_id_, requested_num_of_buffers, dimensions))) {
-    LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers) "
-               << "failed";
+    DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers) "
+                << "failed";
   }
 }
 
@@ -68,8 +68,8 @@ void GpuVideoDecodeAccelerator::DismissPictureBuffer(
   // Notify client that picture buffer is now unused.
   if (!Send(new AcceleratedVideoDecoderHostMsg_DismissPictureBuffer(
           host_route_id_, picture_buffer_id))) {
-    LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_DismissPictureBuffer) "
-               << "failed";
+    DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_DismissPictureBuffer) "
+                << "failed";
   }
 }
 
@@ -79,7 +79,7 @@ void GpuVideoDecodeAccelerator::PictureReady(
           host_route_id_,
           picture.picture_buffer_id(),
           picture.bitstream_buffer_id()))) {
-    LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_PictureReady) failed";
+    DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_PictureReady) failed";
   }
 }
 
@@ -98,8 +98,8 @@ void GpuVideoDecodeAccelerator::NotifyError(
   }
   if (!Send(new AcceleratedVideoDecoderHostMsg_ErrorNotification(
           host_route_id_, error))) {
-    LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ErrorNotification) "
-               << "failed";
+    DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ErrorNotification) "
+                << "failed";
   }
 }
 
@@ -143,7 +143,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
     if (!command_decoder->GetServiceTextureId(
             texture_ids[i], &service_texture_id)) {
       // TODO(vrk): Send an error for invalid GLES buffers.
-      LOG(DFATAL) << "Failed to translate texture!";
+      DLOG(DFATAL) << "Failed to translate texture!";
       return;
     }
     buffers.push_back(media::PictureBuffer(
@@ -185,18 +185,18 @@ void GpuVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer(
 
 void GpuVideoDecodeAccelerator::NotifyInitializeDone() {
   if (!Send(init_done_msg_))
-    LOG(ERROR) << "Send(init_done_msg_) failed";
+    DLOG(ERROR) << "Send(init_done_msg_) failed";
   init_done_msg_ = NULL;
 }
 
 void GpuVideoDecodeAccelerator::NotifyFlushDone() {
   if (!Send(new AcceleratedVideoDecoderHostMsg_FlushDone(host_route_id_)))
-    LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_FlushDone) failed";
+    DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_FlushDone) failed";
 }
 
 void GpuVideoDecodeAccelerator::NotifyResetDone() {
   if (!Send(new AcceleratedVideoDecoderHostMsg_ResetDone(host_route_id_)))
-    LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ResetDone) failed";
+    DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ResetDone) failed";
 }
 
 bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {

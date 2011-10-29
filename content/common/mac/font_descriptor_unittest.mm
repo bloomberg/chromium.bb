@@ -26,7 +26,7 @@ bool CompareFonts(NSFont* font1, NSFont* font2) {
   ATSFontRef id2 = CTFontGetPlatformFont(reinterpret_cast<CTFontRef>(font2), 0);
 
   if (id1 != id2) {
-    LOG(ERROR) << "ATSFontRefs for "
+    DLOG(ERROR) << "ATSFontRefs for "
         << [[font1 fontName] UTF8String]
         << " and "
         << [[font2 fontName] UTF8String]
@@ -37,7 +37,7 @@ bool CompareFonts(NSFont* font1, NSFont* font2) {
   CGFloat size1 = [font1 pointSize];
   CGFloat size2 = [font2 pointSize];
   if (size1 != size2) {
-    LOG(ERROR) << "font sizes for "
+    DLOG(ERROR) << "font sizes for "
         << [[font1 fontName] UTF8String] << " (" << size1 << ")"
         << "and"
         << [[font2 fontName] UTF8String]  << " (" << size2 << ")"
@@ -56,7 +56,7 @@ bool CompareFonts(NSFont* font1, NSFont* font2) {
   bool is_italic2 = traits2 & NSItalicFontMask;
 
   if (is_bold1 != is_bold2 || is_italic1 != is_italic2) {
-    LOG(ERROR) << "Style information for "
+    DLOG(ERROR) << "Style information for "
         << [[font1 fontName] UTF8String]
         << " and "
         << [[font2 fontName] UTF8String]

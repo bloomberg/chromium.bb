@@ -32,7 +32,7 @@ void TransportTexture::CreateTextures(
   bool ret = sender_->Send(new GpuTransportTextureHostMsg_CreateTextures(
       host_id_, n, width, height, static_cast<int>(format)));
   if (!ret) {
-    LOG(ERROR) << "GpuTransportTexture_CreateTextures failed";
+    DLOG(ERROR) << "GpuTransportTexture_CreateTextures failed";
   }
 }
 
@@ -42,21 +42,21 @@ void TransportTexture::ReleaseTextures() {
   bool ret = sender_->Send(new GpuTransportTextureHostMsg_ReleaseTextures(
       host_id_));
   if (!ret) {
-    LOG(ERROR) << "GpuTransportTexture_ReleaseTextures failed";
+    DLOG(ERROR) << "GpuTransportTexture_ReleaseTextures failed";
   }
 }
 
 void TransportTexture::TextureUpdated(int texture_id) {
   TextureMap::iterator iter = texture_map_.find(texture_id);
   if (iter == texture_map_.end()) {
-    LOG(ERROR) << "Texture not found: " << texture_id;
+    DLOG(ERROR) << "Texture not found: " << texture_id;
     return;
   }
 
   bool ret = sender_->Send(new GpuTransportTextureHostMsg_TextureUpdated(
       host_id_, iter->second));
   if (!ret) {
-    LOG(ERROR) << "GpuTransportTexture_TextureUpdated failed";
+    DLOG(ERROR) << "GpuTransportTexture_TextureUpdated failed";
   }
 }
 
@@ -86,7 +86,7 @@ void TransportTexture::OnDestroy() {
 void TransportTexture::OnTexturesCreated(const std::vector<int>& textures) {
   bool ret = decoder_->MakeCurrent();
   if (!ret) {
-    LOG(ERROR) << "Failed to switch context";
+    DLOG(ERROR) << "Failed to switch context";
     return;
   }
 
