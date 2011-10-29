@@ -4250,8 +4250,14 @@ void Browser::Observe(int type,
       TabStripModel* model = tab_handler_->GetTabStripModel();
       for (int i = model->count() - 1; i >= 0; --i) {
         TabContents* tc = model->GetTabContentsAt(i)->tab_contents();
-        if (tc->GetURL().SchemeIs(chrome::kExtensionScheme) &&
-            tc->GetURL().host() == extension->id()) {
+        bool close_tab_contents =
+            tc->GetURL().SchemeIs(chrome::kExtensionScheme) &&
+            tc->GetURL().host() == extension->id();
+        // We want to close all panels originated by the unloaded extension.
+        close_tab_contents = close_tab_contents || (type_ == TYPE_PANEL &&
+            (web_app::GetExtensionIdFromApplicationName(app_name_) ==
+                extension->id()));
+        if (close_tab_contents) {
           CloseTabContents(tc);
         }
       }

@@ -21,10 +21,12 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1311,6 +1313,67 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
 
   panel1->Close();
   panel2->Close();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
+                       NonExtensionDomainPanelsCloseOnUninstall) {
+  // Create a test extension.
+  DictionaryValue empty_value;
+  scoped_refptr<Extension> extension =
+      CreateExtension(FILE_PATH_LITERAL("TestExtension"),
+      Extension::INVALID, empty_value);
+  std::string extension_app_name =
+      web_app::GenerateApplicationNameFromExtensionId(extension->id());
+
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  EXPECT_EQ(0, panel_manager->num_panels());
+
+  // Create a panel with the extension as host.
+  CreatePanelParams params(extension_app_name, gfx::Rect(), SHOW_AS_INACTIVE);
+  std::string extension_domain_url(chrome::kExtensionScheme);
+  extension_domain_url += "://";
+  extension_domain_url += extension->id();
+  extension_domain_url += "/hello.html";
+  params.url = GURL(extension_domain_url);
+  Panel* panel = CreatePanelWithParams(params);
+  EXPECT_EQ(1, panel_manager->num_panels());
+
+  // Create a panel with a non-extension host.
+  CreatePanelParams params1(extension_app_name, gfx::Rect(), SHOW_AS_INACTIVE);
+  params1.url = GURL(chrome::kAboutBlankURL);
+  Panel* panel1 = CreatePanelWithParams(params1);
+  EXPECT_EQ(2, panel_manager->num_panels());
+
+  // Create another extension and a panel from that extension.
+  scoped_refptr<Extension> extension_other =
+      CreateExtension(FILE_PATH_LITERAL("TestExtensionOther"),
+      Extension::INVALID, empty_value);
+  std::string extension_app_name_other =
+      web_app::GenerateApplicationNameFromExtensionId(extension_other->id());
+  Panel* panel_other = CreatePanel(extension_app_name_other);
+
+  ui_test_utils::WindowedNotificationObserver signal(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::Source<Browser>(panel->browser()));
+  ui_test_utils::WindowedNotificationObserver signal1(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::Source<Browser>(panel1->browser()));
+
+  // Send unload notification on the first extension.
+  UnloadedExtensionInfo details(extension,
+                                extension_misc::UNLOAD_REASON_UNINSTALL);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_UNLOADED,
+      content::Source<Profile>(browser()->profile()),
+      content::Details<UnloadedExtensionInfo>(&details));
+
+  // Wait for the panels opened by the first extension to close.
+  signal.Wait();
+  signal1.Wait();
+
+  // Verify that the panel that's left is the panel from the second extension.
+  EXPECT_EQ(panel_other, panel_manager->panels()[0]);
+  panel_other->Close();
 }
 
 class PanelDownloadTest : public PanelBrowserTest {
