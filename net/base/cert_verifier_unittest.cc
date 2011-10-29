@@ -59,6 +59,7 @@ TEST(CertVerifierTest, CacheHit) {
   ASSERT_EQ(1u, verifier.requests());
   ASSERT_EQ(0u, verifier.cache_hits());
   ASSERT_EQ(0u, verifier.inflight_joins());
+  ASSERT_EQ(1u, verifier.GetCacheSize());
 
   error = verifier.Verify(test_cert, "www.example.com", 0, NULL, &verify_result,
                           callback.callback(), &request_handle, BoundNetLog());
@@ -69,6 +70,72 @@ TEST(CertVerifierTest, CacheHit) {
   ASSERT_EQ(2u, verifier.requests());
   ASSERT_EQ(1u, verifier.cache_hits());
   ASSERT_EQ(0u, verifier.inflight_joins());
+  ASSERT_EQ(1u, verifier.GetCacheSize());
+}
+
+// Tests the same server certificate with different intermediate CA
+// certificates.  These should be treated as different certificate chains even
+// though the two X509Certificate objects contain the same server certificate.
+TEST(CertVerifierTest, DifferentCACerts) {
+  TestTimeService* time_service = new TestTimeService;
+  base::Time current_time = base::Time::Now();
+  time_service->set_current_time(current_time);
+  CertVerifier verifier(time_service);
+
+  FilePath certs_dir = GetTestCertsDirectory();
+
+  scoped_refptr<X509Certificate> server_cert =
+      ImportCertFromFile(certs_dir, "salesforce_com_test.pem");
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert);
+
+  scoped_refptr<X509Certificate> intermediate_cert1 =
+      ImportCertFromFile(certs_dir, "verisign_intermediate_ca_2011.pem");
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert1);
+
+  scoped_refptr<X509Certificate> intermediate_cert2 =
+      ImportCertFromFile(certs_dir, "verisign_intermediate_ca_2016.pem");
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert2);
+
+  X509Certificate::OSCertHandles intermediates;
+  intermediates.push_back(intermediate_cert1->os_cert_handle());
+  scoped_refptr<X509Certificate> cert_chain1 =
+      X509Certificate::CreateFromHandle(server_cert->os_cert_handle(),
+                                        intermediates);
+
+  intermediates.clear();
+  intermediates.push_back(intermediate_cert2->os_cert_handle());
+  scoped_refptr<X509Certificate> cert_chain2 =
+      X509Certificate::CreateFromHandle(server_cert->os_cert_handle(),
+                                        intermediates);
+
+  int error;
+  CertVerifyResult verify_result;
+  TestCompletionCallback callback;
+  CertVerifier::RequestHandle request_handle;
+
+  error = verifier.Verify(cert_chain1, "www.example.com", 0, NULL,
+                          &verify_result, callback.callback(),
+                          &request_handle, BoundNetLog());
+  ASSERT_EQ(ERR_IO_PENDING, error);
+  ASSERT_TRUE(request_handle != NULL);
+  error = callback.WaitForResult();
+  ASSERT_TRUE(IsCertificateError(error));
+  ASSERT_EQ(1u, verifier.requests());
+  ASSERT_EQ(0u, verifier.cache_hits());
+  ASSERT_EQ(0u, verifier.inflight_joins());
+  ASSERT_EQ(1u, verifier.GetCacheSize());
+
+  error = verifier.Verify(cert_chain2, "www.example.com", 0, NULL,
+                          &verify_result, callback.callback(),
+                          &request_handle, BoundNetLog());
+  ASSERT_EQ(ERR_IO_PENDING, error);
+  ASSERT_TRUE(request_handle != NULL);
+  error = callback.WaitForResult();
+  ASSERT_TRUE(IsCertificateError(error));
+  ASSERT_EQ(2u, verifier.requests());
+  ASSERT_EQ(0u, verifier.cache_hits());
+  ASSERT_EQ(0u, verifier.inflight_joins());
+  ASSERT_EQ(2u, verifier.GetCacheSize());
 }
 
 // Tests an inflight join.
