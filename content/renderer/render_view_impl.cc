@@ -3262,6 +3262,11 @@ void RenderViewImpl::SyncSelectionIfRequired() {
   } else {
     offset = location;
     text = frame->selectionAsText();
+    // http://crbug.com/101435
+    // In some case, frame->selectionAsText() returned text's length is not
+    // equal to the length returned from webview()->caretOrSelectionRange().
+    // So we have to set the range according to text.length().
+    range.set_end(range.start() + text.length());
   }
 
   // Sometimes we get repeated didChangeSelection calls from webkit when
