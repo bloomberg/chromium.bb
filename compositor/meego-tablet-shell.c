@@ -684,6 +684,5 @@ shell_init(struct wlsc_compositor *compositor)
 		meego_tablet_shell_set_selection_focus;
 	launch_ux_daemon(shell);
 
-	wlsc_spring_init(&compositor->fade.spring, 40.0, 1.0, 1.0);
 	meego_tablet_shell_set_state(shell, STATE_STARTING);
 }

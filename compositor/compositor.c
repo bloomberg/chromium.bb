@@ -163,34 +163,36 @@ wlsc_spring_update(struct wlsc_spring *spring, uint32_t msec)
 {
 	double force, v, current, step;
 
-	step = (msec - spring->timestamp) / 300.0;
-	spring->timestamp = msec;
+	step = 0.01;
+	while (4 < msec - spring->timestamp) {
+		current = spring->current;
+		v = current - spring->previous;
+		force = spring->k * (spring->target - current) / 10.0 +
+			(spring->previous - current) - v * spring->friction;
 
-	current = spring->current;
-	v = current - spring->previous;
-	force = spring->k * (spring->target - current) / 10.0 +
-		(spring->previous - current) - v * spring->friction;
-
-	spring->current =
-		current + (current - spring->previous) + force * step * step;
-	spring->previous = current;
+		spring->current =
+			current + (current - spring->previous) +
+			force * step * step;
+		spring->previous = current;
 
 #if 0
-	if (spring->current >= 1.0) {
+		if (spring->current >= 1.0) {
 #ifdef TWEENER_BOUNCE
-		spring->current = 2.0 - spring->current;
-		spring->previous = 2.0 - spring->previous;
+			spring->current = 2.0 - spring->current;
+			spring->previous = 2.0 - spring->previous;
 #else
-		spring->current = 1.0;
-		spring->previous = 1.0;
+			spring->current = 1.0;
+			spring->previous = 1.0;
 #endif
-	}
+		}
 
-	if (spring->current <= 0.0) {
-		spring->current = 0.0;
-		spring->previous = 0.0;
-	}
+		if (spring->current <= 0.0) {
+			spring->current = 0.0;
+			spring->previous = 0.0;
+		}
 #endif
+		spring->timestamp += 4;
+	}
 }
 
 WL_EXPORT int
@@ -2070,7 +2072,7 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wl_list_init(&ec->output_list);
 	wl_list_init(&ec->binding_list);
 	wl_list_init(&ec->animation_list);
-	wlsc_spring_init(&ec->fade.spring, 0.8, 0.0, 0.0);
+	wlsc_spring_init(&ec->fade.spring, 40.0, 1.0, 1.0);
 	ec->fade.animation.frame = fade_frame;
 	wl_list_init(&ec->fade.animation.link);
 
