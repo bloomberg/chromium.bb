@@ -632,3 +632,15 @@
   fun:DiskCacheBackendTest::BackendTrimInvalidEntry2
   fun:DiskCacheBackendTest_*
 }
+{
+  bug_102134a
+  ThreadSanitizer:Race
+  fun:content::BrowserThreadImpl::~BrowserThreadImpl
+  fun:content::TestBrowserThread::~TestBrowserThread
+}
+{
+  bug_102134b
+  ThreadSanitizer:Race
+  fun:BrowserThread::~BrowserThread
+  fun:DeprecatedBrowserThread::~DeprecatedBrowserThread
+}
