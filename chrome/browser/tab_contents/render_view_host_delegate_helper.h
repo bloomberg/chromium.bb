@@ -125,8 +125,7 @@ class RenderViewHostDelegateViewHelper : public content::NotificationObserver {
 // RenderViewHostDelegate methods.
 class RenderViewHostDelegateHelper {
  public:
-  static WebPreferences GetWebkitPrefs(content::BrowserContext* browser_context,
-                                       bool is_web_ui);
+  static WebPreferences GetWebkitPrefs(RenderViewHost* rvh);
 
   static void UpdateInspectorSetting(content::BrowserContext* browser_context,
                                      const std::string& key,

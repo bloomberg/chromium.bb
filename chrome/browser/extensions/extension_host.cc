@@ -526,24 +526,8 @@ RendererPreferences ExtensionHost::GetRendererPrefs(
 }
 
 WebPreferences ExtensionHost::GetWebkitPrefs() {
-  Profile* profile = Profile::FromBrowserContext(
-      render_view_host()->process()->browser_context());
   WebPreferences webkit_prefs =
-      RenderViewHostDelegateHelper::GetWebkitPrefs(profile,
-                                                   false);  // is_web_ui
-  // Extensions are trusted so we override any user preferences for disabling
-  // javascript or images.
-  webkit_prefs.loads_images_automatically = true;
-  webkit_prefs.javascript_enabled = true;
-
-  // Enable privileged WebGL extensions.
-  webkit_prefs.privileged_webgl_extensions_enabled = true;
-
-  if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_POPUP ||
-      extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_DIALOG ||
-      extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE ||
-      extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR)
-    webkit_prefs.allow_scripts_to_close_windows = true;
+      RenderViewHostDelegateHelper::GetWebkitPrefs(render_view_host());
 
   // Disable anything that requires the GPU process for background pages.
   // See http://crbug.com/64512 and http://crbug.com/64841.

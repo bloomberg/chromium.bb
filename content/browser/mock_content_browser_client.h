@@ -120,9 +120,7 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual speech_input::SpeechInputManager* GetSpeechInputManager() OVERRIDE;
   virtual AccessTokenStore* CreateAccessTokenStore() OVERRIDE;
   virtual bool IsFastShutdownPossible() OVERRIDE;
-  virtual WebPreferences GetWebkitPrefs(
-      content::BrowserContext* browser_context,
-      bool is_web_ui) OVERRIDE;
+  virtual WebPreferences GetWebkitPrefs(RenderViewHost* rvh) OVERRIDE;
   virtual void UpdateInspectorSetting(RenderViewHost* rvh,
                                       const std::string& key,
                                       const std::string& value) OVERRIDE;

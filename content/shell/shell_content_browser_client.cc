@@ -261,9 +261,7 @@ bool ShellContentBrowserClient::IsFastShutdownPossible() {
   return true;
 }
 
-WebPreferences ShellContentBrowserClient::GetWebkitPrefs(
-    content::BrowserContext* browser_context,
-    bool is_web_ui) {
+WebPreferences ShellContentBrowserClient::GetWebkitPrefs(RenderViewHost* rvh) {
   return WebPreferences();
 }
 

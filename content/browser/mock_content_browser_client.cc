@@ -247,9 +247,7 @@ bool MockContentBrowserClient::IsFastShutdownPossible() {
   return true;
 }
 
-WebPreferences MockContentBrowserClient::GetWebkitPrefs(
-    content::BrowserContext* browser_context,
-    bool is_web_ui) {
+WebPreferences MockContentBrowserClient::GetWebkitPrefs(RenderViewHost* rvh) {
   return WebPreferences();
 }
 

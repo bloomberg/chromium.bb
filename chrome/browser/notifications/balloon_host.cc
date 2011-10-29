@@ -66,8 +66,7 @@ const string16& BalloonHost::GetSource() const {
 
 WebPreferences BalloonHost::GetWebkitPrefs() {
   WebPreferences web_prefs =
-      RenderViewHostDelegateHelper::GetWebkitPrefs(balloon_->profile(),
-                                                   enable_web_ui_);
+      RenderViewHostDelegateHelper::GetWebkitPrefs(render_view_host_);
   web_prefs.allow_scripts_to_close_windows = true;
   return web_prefs;
 }

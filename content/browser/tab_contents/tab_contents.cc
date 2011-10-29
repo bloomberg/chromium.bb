@@ -1800,7 +1800,7 @@ void TabContents::RunBeforeUnloadConfirm(const RenderViewHost* rvh,
 WebPreferences TabContents::GetWebkitPrefs() {
   WebPreferences web_prefs =
       content::GetContentClient()->browser()->GetWebkitPrefs(
-          render_view_host()->process()->browser_context(), false);
+          render_view_host());
 
   // Force accelerated compositing and 2d canvas off for chrome:, about: and
   // chrome-devtools: pages (unless it's specifically allowed).
@@ -2006,4 +2006,3 @@ bool TabContents::GotResponseToLockMouseRequest(bool allowed) {
   return render_view_host() ?
       render_view_host()->GotResponseToLockMouseRequest(allowed) : false;
 }
-

@@ -891,10 +891,8 @@ bool ChromeContentBrowserClient::IsFastShutdownPossible() {
   return !browser_command_line.HasSwitch(switches::kChromeFrame);
 }
 
-WebPreferences ChromeContentBrowserClient::GetWebkitPrefs(
-    content::BrowserContext* browser_context, bool is_web_ui) {
-  return RenderViewHostDelegateHelper::GetWebkitPrefs(browser_context,
-                                                      is_web_ui);
+WebPreferences ChromeContentBrowserClient::GetWebkitPrefs(RenderViewHost* rvh) {
+  return RenderViewHostDelegateHelper::GetWebkitPrefs(rvh);
 }
 
 void ChromeContentBrowserClient::UpdateInspectorSetting(

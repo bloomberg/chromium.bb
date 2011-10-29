@@ -1197,6 +1197,8 @@
         'browser/extensions/extension_web_socket_proxy_private_api.h',
         'browser/extensions/extension_web_ui.cc',
         'browser/extensions/extension_web_ui.h',
+        'browser/extensions/extension_webkit_preferences.cc',
+        'browser/extensions/extension_webkit_preferences.h',
         'browser/extensions/extension_webnavigation_api.cc',
         'browser/extensions/extension_webnavigation_api.h',
         'browser/extensions/extension_webnavigation_api_constants.cc',

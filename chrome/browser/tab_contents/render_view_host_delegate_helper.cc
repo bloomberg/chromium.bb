@@ -13,7 +13,9 @@
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_webkit_preferences.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -23,6 +25,7 @@
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/child_process_security_policy.h"
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -326,8 +329,9 @@ RenderWidgetHostView*
 
 // static
 WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
-    content::BrowserContext* browser_context, bool is_web_ui) {
-  Profile* profile = Profile::FromBrowserContext(browser_context);
+    RenderViewHost* rvh) {
+  Profile* profile = Profile::FromBrowserContext(
+      rvh->process()->browser_context());
   PrefService* prefs = profile->GetPrefs();
   WebPreferences web_prefs;
 
@@ -525,12 +529,22 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
   }
   DCHECK(!web_prefs.default_encoding.empty());
 
-  if (is_web_ui) {
+  if (ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+          rvh->process()->id())) {
     web_prefs.loads_images_automatically = true;
     web_prefs.javascript_enabled = true;
   }
 
   web_prefs.is_online = !net::NetworkChangeNotifier::IsOffline();
+
+  ExtensionProcessManager* extension_process_manager =
+      profile->GetExtensionProcessManager();
+  if (extension_process_manager) {
+    const Extension* extension =
+        extension_process_manager->GetExtensionForSiteInstance(
+            rvh->site_instance()->id());
+    extension_webkit_preferences::SetPreferences(&web_prefs, extension);
+  }
 
   return web_prefs;
 }

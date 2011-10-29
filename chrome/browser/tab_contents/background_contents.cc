@@ -185,12 +185,9 @@ RendererPreferences BackgroundContents::GetRendererPrefs(
 }
 
 WebPreferences BackgroundContents::GetWebkitPrefs() {
-  // TODO(rafaelw): Consider enabling the webkit_prefs.dom_paste_enabled for
-  // apps.
-  Profile* profile = Profile::FromBrowserContext(
-      render_view_host_->process()->browser_context());
-  WebPreferences prefs = RenderViewHostDelegateHelper::GetWebkitPrefs(profile,
-                                                                      false);
+  WebPreferences prefs =
+      RenderViewHostDelegateHelper::GetWebkitPrefs(render_view_host_);
+
   // Disable all kinds of acceleration for background pages.
   // See http://crbug.com/96005 and http://crbug.com/96006
   prefs.force_compositing_mode = false;

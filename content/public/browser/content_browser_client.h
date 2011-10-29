@@ -297,8 +297,7 @@ class ContentBrowserClient {
   virtual bool IsFastShutdownPossible() = 0;
 
   // Returns the WebKit preferences that are used by the renderer.
-  virtual WebPreferences GetWebkitPrefs(BrowserContext* browser_context,
-                                        bool is_web_ui) = 0;
+  virtual WebPreferences GetWebkitPrefs(RenderViewHost* render_view_host) = 0;
 
   // Inspector setting was changed and should be persisted.
   virtual void UpdateInspectorSetting(RenderViewHost* rvh,
