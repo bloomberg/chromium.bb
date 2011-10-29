@@ -4,6 +4,8 @@
 
 #include "chrome/browser/service/service_process_control.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/process_util.h"
@@ -144,8 +146,8 @@ void ServiceProcessControl::Launch(const base::Closure& success_task,
 
   // And then start the process asynchronously.
   launcher_ = new Launcher(this, cmd_line);
-  launcher_->Run(
-      NewRunnableMethod(this, &ServiceProcessControl::OnProcessLaunched));
+  launcher_->Run(base::Bind(&ServiceProcessControl::OnProcessLaunched,
+                            base::Unretained(this)));
 }
 
 void ServiceProcessControl::Disconnect() {
@@ -260,29 +262,30 @@ ServiceProcessControl::Launcher::Launcher(ServiceProcessControl* process,
 // Execute the command line to start the process asynchronously.
 // After the command is executed, |task| is called with the process handle on
 // the UI thread.
-void ServiceProcessControl::Launcher::Run(Task* task) {
+void ServiceProcessControl::Launcher::Run(const base::Closure& task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  notify_task_.reset(task);
+  notify_task_ = task;
   BrowserThread::PostTask(BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-                         NewRunnableMethod(this, &Launcher::DoRun));
+                          base::Bind(&Launcher::DoRun, this));
 }
 
 ServiceProcessControl::Launcher::~Launcher() {}
 
 void ServiceProcessControl::Launcher::Notify() {
-  DCHECK(notify_task_.get());
-  notify_task_->Run();
-  notify_task_.reset();
+  DCHECK_EQ(false, notify_task_.is_null());
+  notify_task_.Run();
+  notify_task_.Reset();
 }
 
 #if !defined(OS_MACOSX)
 void ServiceProcessControl::Launcher::DoDetectLaunched() {
-  DCHECK(notify_task_.get());
+  DCHECK_EQ(false, notify_task_.is_null());
+
   const uint32 kMaxLaunchDetectRetries = 10;
   launched_ = CheckServiceProcessReady();
   if (launched_ || (retry_count_ >= kMaxLaunchDetectRetries)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &Launcher::Notify));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, base::Bind(&Launcher::Notify, this));
     return;
   }
   retry_count_++;
@@ -290,24 +293,24 @@ void ServiceProcessControl::Launcher::DoDetectLaunched() {
   // If the service process is not launched yet then check again in 2 seconds.
   const int kDetectLaunchRetry = 2000;
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &Launcher::DoDetectLaunched),
+      FROM_HERE, base::Bind(&Launcher::DoDetectLaunched, this),
       kDetectLaunchRetry);
 }
 
 void ServiceProcessControl::Launcher::DoRun() {
-  DCHECK(notify_task_.get());
+  DCHECK_EQ(false, notify_task_.is_null());
+
   base::LaunchOptions options;
 #if defined(OS_WIN)
   options.start_hidden = true;
 #endif
   if (base::LaunchProcess(*cmd_line_, options, NULL)) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            NewRunnableMethod(this,
-                                              &Launcher::DoDetectLaunched));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&Launcher::DoDetectLaunched, this));
   } else {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            NewRunnableMethod(this, &Launcher::Notify));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, base::Bind(&Launcher::Notify, this));
   }
 }
 #endif  // !OS_MACOSX

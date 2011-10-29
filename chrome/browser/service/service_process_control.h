@@ -101,10 +101,10 @@ class ServiceProcessControl : public IPC::Channel::Sender,
       : public base::RefCountedThreadSafe<ServiceProcessControl::Launcher> {
    public:
     Launcher(ServiceProcessControl* process, CommandLine* cmd_line);
-    // Execute the command line to start the process asynchronously.
-    // After the comamnd is executed |task| is called with the process handle on
-    // the UI thread.
-    void Run(Task* task);
+    // Execute the command line to start the process asynchronously. After the
+    // command is executed |task| is called with the process handle on the UI
+    // thread.
+    void Run(const base::Closure& task);
 
     bool launched() const { return launched_; }
 
@@ -120,7 +120,7 @@ class ServiceProcessControl : public IPC::Channel::Sender,
     void Notify();
     ServiceProcessControl* process_;
     scoped_ptr<CommandLine> cmd_line_;
-    scoped_ptr<Task> notify_task_;
+    base::Closure notify_task_;
     bool launched_;
     uint32 retry_count_;
   };

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/service/service_process_control.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "chrome/common/service_process_util_posix.h"
@@ -21,5 +22,5 @@ void ServiceProcessControl::Launcher::DoRun() {
     launched_ = true;
   }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          NewRunnableMethod(this, &Launcher::Notify));
+                          base::Bind(&Launcher::Notify, this));
 }
