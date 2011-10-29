@@ -77,6 +77,7 @@ struct x11_output {
 	xcb_window_t		window;
 	EGLSurface		egl_surface;
 	struct wlsc_mode	mode;
+	struct wl_event_source *finish_frame_timer;
 };
 
 struct x11_input {
@@ -180,21 +181,31 @@ x11_output_prepare_render(struct wlsc_output *output_base)
 }
 
 static int
+finish_frame_handler(void *data)
+{
+	struct x11_output *output = data;
+	uint32_t msec;
+	struct timeval tv;
+	
+	gettimeofday(&tv, NULL);
+	msec = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	wlsc_output_finish_frame(&output->base, msec);
+
+	return 1;
+}
+
+static int
 x11_output_present(struct wlsc_output *output_base)
 {
 	struct x11_output *output = (struct x11_output *) output_base;
 	struct wlsc_compositor *ec = output->base.compositor;
-	struct timeval tv;
-	uint32_t msec;
 
 	if (x11_output_prepare_render(&output->base))
 		return -1;
 
 	eglSwapBuffers(ec->display, output->egl_surface);
 
-	gettimeofday(&tv, NULL);
-	msec = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	wlsc_output_finish_frame(&output->base, msec);
+	wl_event_source_timer_update(output->finish_frame_timer, 10);
 
 	return 0;
 }
@@ -319,6 +330,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	struct x11_output *output;
 	xcb_screen_iterator_t iter;
 	struct wm_normal_hints normal_hints;
+	struct wl_event_loop *loop;
 	uint32_t mask = XCB_CW_EVENT_MASK | XCB_CW_CURSOR;
 	uint32_t values[2] = { 
 		XCB_EVENT_MASK_KEY_PRESS |
@@ -411,6 +423,10 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 		fprintf(stderr, "failed to make surface current\n");
 		return -1;
 	}
+
+	loop = wl_display_get_event_loop(c->base.wl_display);
+	output->finish_frame_timer =
+		wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
 	output->base.prepare_render = x11_output_prepare_render;
 	output->base.present = x11_output_present;
