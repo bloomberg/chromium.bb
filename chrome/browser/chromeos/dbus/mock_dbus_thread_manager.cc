@@ -22,17 +22,17 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_sensors_client_(new MockSensorsClient),
       mock_session_manager_client_(new MockSessionManagerClient),
       mock_speech_synthesizer_client_(new MockSpeechSynthesizerClient) {
-  EXPECT_CALL(*this, bluetooth_adapter_client())
+  EXPECT_CALL(*this, GetBluetoothAdapterClient())
       .WillRepeatedly(Return(mock_bluetooth_adapter_client_.get()));
-  EXPECT_CALL(*this, bluetooth_manager_client())
+  EXPECT_CALL(*this, GetBluetoothManagerClient())
       .WillRepeatedly(Return(mock_bluetooth_manager_client()));
-  EXPECT_CALL(*this, power_manager_client())
+  EXPECT_CALL(*this, GetPowerManagerClient())
       .WillRepeatedly(Return(mock_power_manager_client_.get()));
-  EXPECT_CALL(*this, sensors_client())
+  EXPECT_CALL(*this, GetSensorsClient())
       .WillRepeatedly(Return(mock_sensors_client_.get()));
-  EXPECT_CALL(*this, session_manager_client())
+  EXPECT_CALL(*this, GetSessionManagerClient())
       .WillRepeatedly(Return(mock_session_manager_client_.get()));
-  EXPECT_CALL(*this, speech_synthesizer_client())
+  EXPECT_CALL(*this, GetSpeechSynthesizerClient())
       .WillRepeatedly(Return(mock_speech_synthesizer_client_.get()));
 }
 

@@ -105,7 +105,7 @@ bool ExtensionTtsPlatformImplChromeOs::Speak(
   }
 
   chromeos::SpeechSynthesizerClient* speech_synthesizer_client =
-      chromeos::DBusThreadManager::Get()->speech_synthesizer_client();
+      chromeos::DBusThreadManager::Get()->GetSpeechSynthesizerClient();
 
   if (!options.empty())
     speech_synthesizer_client->SetSpeakProperties(options);
@@ -119,7 +119,7 @@ bool ExtensionTtsPlatformImplChromeOs::Speak(
 }
 
 bool ExtensionTtsPlatformImplChromeOs::StopSpeaking() {
-  chromeos::DBusThreadManager::Get()->speech_synthesizer_client()->
+  chromeos::DBusThreadManager::Get()->GetSpeechSynthesizerClient()->
       StopSpeaking();
   return true;
 }
@@ -137,7 +137,7 @@ void ExtensionTtsPlatformImplChromeOs::PollUntilSpeechFinishes(
     return;
   }
   chromeos::SpeechSynthesizerClient* speech_synthesizer_client =
-      chromeos::DBusThreadManager::Get()->speech_synthesizer_client();
+      chromeos::DBusThreadManager::Get()->GetSpeechSynthesizerClient();
   speech_synthesizer_client->IsSpeaking(base::Bind(
       &ExtensionTtsPlatformImplChromeOs::ContinuePollingIfSpeechIsNotFinished,
       weak_ptr_factory_.GetWeakPtr(), utterance_id));

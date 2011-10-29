@@ -157,10 +157,10 @@ void Speak(const char* speak_str, bool queue, bool interruptible) {
     props.append(queue ? "1;" : "0;");
     props.append("interruptible=");
     props.append(interruptible ? "1;" : "0;");
-    chromeos::DBusThreadManager::Get()->speech_synthesizer_client()->
+    chromeos::DBusThreadManager::Get()->GetSpeechSynthesizerClient()->
         SetSpeakProperties(props);
   }
-  chromeos::DBusThreadManager::Get()->speech_synthesizer_client()->
+  chromeos::DBusThreadManager::Get()->GetSpeechSynthesizerClient()->
       Speak(speak_str);
 }
 

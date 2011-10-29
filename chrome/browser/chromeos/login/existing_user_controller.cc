@@ -115,7 +115,7 @@ void ExistingUserController::Init(const UserVector& users) {
   login_display_->Init(filtered_users, show_guest, show_new_user);
 
   LoginUtils::Get()->PrewarmAuthentication();
-  DBusThreadManager::Get()->session_manager_client()->EmitLoginPromptReady();
+  DBusThreadManager::Get()->GetSessionManagerClient()->EmitLoginPromptReady();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

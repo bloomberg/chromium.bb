@@ -27,12 +27,12 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockDBusThreadManager();
   virtual ~MockDBusThreadManager();
 
-  MOCK_METHOD0(bluetooth_adapter_client, BluetoothAdapterClient*(void));
-  MOCK_METHOD0(bluetooth_manager_client, BluetoothManagerClient*(void));
-  MOCK_METHOD0(power_manager_client, PowerManagerClient*(void));
-  MOCK_METHOD0(sensors_client, SensorsClient*(void));
-  MOCK_METHOD0(session_manager_client, SessionManagerClient*(void));
-  MOCK_METHOD0(speech_synthesizer_client, SpeechSynthesizerClient*(void));
+  MOCK_METHOD0(GetBluetoothAdapterClient, BluetoothAdapterClient*(void));
+  MOCK_METHOD0(GetBluetoothManagerClient, BluetoothManagerClient*(void));
+  MOCK_METHOD0(GetPowerManagerClient, PowerManagerClient*(void));
+  MOCK_METHOD0(GetSensorsClient, SensorsClient*(void));
+  MOCK_METHOD0(GetSessionManagerClient, SessionManagerClient*(void));
+  MOCK_METHOD0(GetSpeechSynthesizerClient, SpeechSynthesizerClient*(void));
 
   MockBluetoothAdapterClient* mock_bluetooth_adapter_client() {
     return mock_bluetooth_adapter_client_.get();

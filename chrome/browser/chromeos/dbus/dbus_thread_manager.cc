@@ -75,32 +75,32 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
-  virtual BluetoothAdapterClient* bluetooth_adapter_client() OVERRIDE {
+  virtual BluetoothAdapterClient* GetBluetoothAdapterClient() OVERRIDE {
     return bluetooth_adapter_client_.get();
   }
 
   // DBusThreadManager override.
-  virtual BluetoothManagerClient* bluetooth_manager_client() OVERRIDE {
+  virtual BluetoothManagerClient* GetBluetoothManagerClient() OVERRIDE {
     return bluetooth_manager_client_.get();
   }
 
   // DBusThreadManager override.
-  virtual PowerManagerClient* power_manager_client() OVERRIDE {
+  virtual PowerManagerClient* GetPowerManagerClient() OVERRIDE {
     return power_manager_client_.get();
   }
 
   // DBusThreadManager override.
-  virtual SensorsClient* sensors_client() OVERRIDE {
+  virtual SensorsClient* GetSensorsClient() OVERRIDE {
     return sensors_client_.get();
   }
 
   // DBusThreadManager override.
-  virtual SessionManagerClient* session_manager_client() OVERRIDE {
+  virtual SessionManagerClient* GetSessionManagerClient() OVERRIDE {
     return session_manager_client_.get();
   }
 
   // DBusThreadManager override.
-  virtual SpeechSynthesizerClient* speech_synthesizer_client() OVERRIDE {
+  virtual SpeechSynthesizerClient* GetSpeechSynthesizerClient() OVERRIDE {
     return speech_synthesizer_client_.get();
   }
 

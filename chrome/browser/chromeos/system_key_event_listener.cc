@@ -197,12 +197,12 @@ void SystemKeyEventListener::GrabKey(int32 key, uint32 mask) {
 }
 
 void SystemKeyEventListener::OnBrightnessDown() {
-  DBusThreadManager::Get()->power_manager_client()->
+  DBusThreadManager::Get()->GetPowerManagerClient()->
       DecreaseScreenBrightness(true);
 }
 
 void SystemKeyEventListener::OnBrightnessUp() {
-  DBusThreadManager::Get()->power_manager_client()->
+  DBusThreadManager::Get()->GetPowerManagerClient()->
       IncreaseScreenBrightness();
 }
 

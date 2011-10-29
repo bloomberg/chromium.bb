@@ -19,7 +19,8 @@ class BluetoothAdapterImpl : public BluetoothAdapter,
   explicit BluetoothAdapterImpl(const std::string& id) : id_(id) {
     DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
     DCHECK(dbus_thread_manager);
-    bluetooth_adapter_client_ = dbus_thread_manager->bluetooth_adapter_client();
+    bluetooth_adapter_client_ =
+        dbus_thread_manager->GetBluetoothAdapterClient();
     DCHECK(bluetooth_adapter_client_);
     bluetooth_adapter_client_->AddObserver(this, id_);
   }

@@ -21,7 +21,8 @@ class BluetoothManagerImpl : public BluetoothManager,
   BluetoothManagerImpl() : weak_ptr_factory_(this) {
     DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
     DCHECK(dbus_thread_manager);
-    bluetooth_manager_client_ = dbus_thread_manager->bluetooth_manager_client();
+    bluetooth_manager_client_ =
+        dbus_thread_manager->GetBluetoothManagerClient();
     DCHECK(bluetooth_manager_client_);
 
     bluetooth_manager_client_->AddObserver(this);

@@ -325,7 +325,7 @@ void BrowserList::NotifyAndTerminate(bool fast_path) {
           chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
       cros_library->GetUpdateLibrary()->RebootAfterUpdate();
     } else {
-      chromeos::DBusThreadManager::Get()->session_manager_client()
+      chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
           ->StopSession();
     }
     return;

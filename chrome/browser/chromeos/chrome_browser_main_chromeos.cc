@@ -81,12 +81,12 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
   if (session_manager_observer_.get()) {
-    chromeos::DBusThreadManager::Get()->session_manager_client()->
+    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
         RemoveObserver(session_manager_observer_.get());
   }
   if (brightness_observer_.get()) {
-    chromeos::DBusThreadManager::Get()->power_manager_client()->RemoveObserver(
-        brightness_observer_.get());
+    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()
+        ->RemoveObserver(brightness_observer_.get());
   }
 
   chromeos::DBusThreadManager::Shutdown();
@@ -146,12 +146,12 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // Initialize the brightness observer so that we'll display an onscreen
   // indication of brightness changes during login.
   brightness_observer_.reset(new chromeos::BrightnessObserver());
-  chromeos::DBusThreadManager::Get()->power_manager_client()->AddObserver(
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       brightness_observer_.get());
   // Initialize the session manager observer so that we'll take actions
   // per signals sent from the session manager.
   session_manager_observer_.reset(new chromeos::SessionManagerObserver);
-  chromeos::DBusThreadManager::Get()->session_manager_client()->
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
       AddObserver(session_manager_observer_.get());
 
   // Initialize the Chrome OS bluetooth subsystem

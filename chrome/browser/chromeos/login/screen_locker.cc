@@ -318,7 +318,7 @@ void ScreenLocker::Signout() {
 #if defined(TOOLKIT_USES_GTK)
   WmIpc::instance()->NotifyAboutSignout();
 #endif
-  DBusThreadManager::Get()->session_manager_client()->StopSession();
+  DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
 
   // Don't hide yet the locker because the chrome screen may become visible
   // briefly.

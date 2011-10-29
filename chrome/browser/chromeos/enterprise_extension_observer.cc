@@ -60,7 +60,7 @@ void EnterpriseExtensionObserver::CheckExtensionAndNotifyEntd(
 // static
 void EnterpriseExtensionObserver::NotifyEntd() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DBusThreadManager::Get()->session_manager_client()->RestartEntd();
+  DBusThreadManager::Get()->GetSessionManagerClient()->RestartEntd();
 }
 
 }  // namespace chromeos

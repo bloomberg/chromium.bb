@@ -351,7 +351,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
   display_host->StartWizard(first_screen_name, GURL());
 
   chromeos::LoginUtils::Get()->PrewarmAuthentication();
-  chromeos::DBusThreadManager::Get()->session_manager_client()
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
       ->EmitLoginPromptReady();
 
   // Set initial timezone if specified by customization.

@@ -154,12 +154,12 @@ void SystemOptionsHandler::DecreaseScreenBrightnessCallback(
     const ListValue* args) {
   // Do not allow the options button to turn off the backlight, as that
   // can make it very difficult to see the increase brightness button.
-  chromeos::DBusThreadManager::Get()->power_manager_client()->
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       DecreaseScreenBrightness(false);
 }
 
 void SystemOptionsHandler::IncreaseScreenBrightnessCallback(
     const ListValue* args) {
-  chromeos::DBusThreadManager::Get()->power_manager_client()->
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       IncreaseScreenBrightness();
 }

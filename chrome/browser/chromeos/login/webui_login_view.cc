@@ -321,7 +321,7 @@ void WebUILoginView::OnTabMainFrameFirstRender() {
     emit_login_visible = true;
 #endif
   if (emit_login_visible)
-    chromeos::DBusThreadManager::Get()->session_manager_client()
+    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
         ->EmitLoginPromptVisible();
 
   OobeUI* oobe_ui = static_cast<OobeUI*>(GetWebUI());

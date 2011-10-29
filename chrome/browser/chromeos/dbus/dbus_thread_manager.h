@@ -70,31 +70,31 @@ class DBusThreadManager {
   // Returns the bluetooth adapter client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
-  virtual BluetoothAdapterClient* bluetooth_adapter_client() = 0;
+  virtual BluetoothAdapterClient* GetBluetoothAdapterClient() = 0;
 
   // Returns the bluetooth manager client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
-  virtual BluetoothManagerClient* bluetooth_manager_client() = 0;
+  virtual BluetoothManagerClient* GetBluetoothManagerClient() = 0;
 
   // Returns the power manager client, owned by DBusThreadManager.
   // See also comments at session_manager_client().
-  virtual PowerManagerClient* power_manager_client() = 0;
+  virtual PowerManagerClient* GetPowerManagerClient() = 0;
 
   // Returns the session manager client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
-  virtual SensorsClient* sensors_client() = 0;
+  virtual SensorsClient* GetSensorsClient() = 0;
 
   // Returns the session manager client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
-  virtual SessionManagerClient* session_manager_client() = 0;
+  virtual SessionManagerClient* GetSessionManagerClient() = 0;
 
   // Returns the speech synthesizer client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
-  virtual SpeechSynthesizerClient* speech_synthesizer_client() = 0;
+  virtual SpeechSynthesizerClient* GetSpeechSynthesizerClient() = 0;
 
   virtual ~DBusThreadManager();
 

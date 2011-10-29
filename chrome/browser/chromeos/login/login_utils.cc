@@ -385,7 +385,7 @@ class JobRestartRequest
  private:
   void RestartJob() {
     if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      DBusThreadManager::Get()->session_manager_client()->RestartJob(
+      DBusThreadManager::Get()->GetSessionManagerClient()->RestartJob(
           pid_, command_line_);
     } else {
       // This function can be called on FILE thread. See PostTask in the
@@ -578,7 +578,7 @@ void LoginUtilsImpl::PrepareProfile(
 
   if (CrosLibrary::Get()->EnsureLoaded()) {
     btl->AddLoginTimeMarker("StartSession-Start", false);
-    DBusThreadManager::Get()->session_manager_client()->StartSession(
+    DBusThreadManager::Get()->GetSessionManagerClient()->StartSession(
         username);
     btl->AddLoginTimeMarker("StartSession-End", false);
   }
