@@ -10,10 +10,13 @@
 #pragma once
 
 #include "base/message_loop.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/test/ui/ui_test_suite.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
+#endif
 
 // The C++ style guide forbids using default arguments but I'm taking the
 // liberty of allowing it in this file. The sole purpose of this (and the
@@ -33,7 +36,9 @@ class PyUITestSuiteBase : public UITestSuite {
   void SetCrSourceRoot(const FilePath& path);
 
  private:
+#if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool_;
+#endif
 };
 
 // The primary class that interfaces with Automation Proxy.

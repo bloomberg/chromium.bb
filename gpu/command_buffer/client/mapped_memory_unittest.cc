@@ -5,13 +5,16 @@
 #include "gpu/command_buffer/client/mapped_memory.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
+#endif
 
 namespace gpu {
 
@@ -64,7 +67,9 @@ class MappedMemoryTestBase : public testing::Test {
     return command_buffer_->GetState().token;
   }
 
+#if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool autorelease_pool_;
+#endif
   MessageLoop message_loop_;
   scoped_ptr<AsyncAPIMock> api_mock_;
   scoped_ptr<CommandBufferService> command_buffer_;

@@ -8,7 +8,6 @@
 #include "base/debug/stack_trace.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/test/test_file_util.h"
@@ -40,6 +39,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/audio_handler.h"
+#elif defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
 // Passed as value of kTestType.
@@ -255,6 +256,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   signal(SIGTERM, DumpStackTraceSignalHandler);
 #endif  // defined(OS_POSIX)
 
+#if defined(OS_MACOSX)
   // On Mac, without the following autorelease pool, code which is directly
   // executed (as opposed to executed inside a message loop) would autorelease
   // objects into a higher-level pool. This pool is not recycled in-sync with
@@ -263,29 +265,42 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   // browser shutdown). To avoid this, the following pool is recycled after each
   // time code is directly executed.
   base::mac::ScopedNSAutoreleasePool pool;
+#endif
 
   // Pump startup related events.
   MessageLoopForUI::current()->RunAllPending();
+#if defined(OS_MACOSX)
   pool.Recycle();
+#endif
 
   browser_ = CreateBrowser(ProfileManager::GetDefaultProfile());
+#if defined(OS_MACOSX)
   pool.Recycle();
+#endif
 
   // Pump any pending events that were created as a result of creating a
   // browser.
   MessageLoopForUI::current()->RunAllPending();
 
   SetUpOnMainThread();
+#if defined(OS_MACOSX)
   pool.Recycle();
+#endif
 
   RunTestOnMainThread();
+#if defined(OS_MACOSX)
   pool.Recycle();
+#endif
 
   CleanUpOnMainThread();
+#if defined(OS_MACOSX)
   pool.Recycle();
+#endif
 
   QuitBrowsers();
+#if defined(OS_MACOSX)
   pool.Recycle();
+#endif
 }
 
 void InProcessBrowserTest::QuitBrowsers() {

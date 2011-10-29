@@ -14,7 +14,7 @@
 #include "content/worker/worker_thread.h"
 
 #if defined(OS_WIN)
-#include "content/common/sandbox_init_wrapper.h"
+#include "content/public/common/sandbox_init.h"
 #include "sandbox/src/sandbox.h"
 #endif
 
@@ -31,7 +31,7 @@ int WorkerMain(const MainFunctionParams& parameters) {
   worker_process.set_main_thread(new WorkerThread());
 #if defined(OS_WIN)
   sandbox::TargetServices* target_services =
-      parameters.sandbox_info_.TargetServices();
+      parameters.sandbox_info->target_services;
   if (!target_services)
     return false;
 
@@ -45,7 +45,7 @@ int WorkerMain(const MainFunctionParams& parameters) {
   target_services->LowerToken();
 #endif
 
-  const CommandLine& parsed_command_line = parameters.command_line_;
+  const CommandLine& parsed_command_line = parameters.command_line;
   if (parsed_command_line.HasSwitch(switches::kWaitForDebugger)) {
     ChildProcess::WaitForDebugger("Worker");
   }

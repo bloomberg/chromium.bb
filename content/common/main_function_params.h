@@ -11,24 +11,36 @@
 #pragma once
 
 #include "base/command_line.h"
-#include "content/common/sandbox_init_wrapper.h"
 
+#if defined(OS_WIN)
+namespace sandbox {
+struct SandboxInterfaceInfo;
+}
+#elif defined(OS_MACOSX)
 namespace base {
 namespace mac {
 class ScopedNSAutoreleasePool;
 }
 }
+#endif
 
 class Task;
 
 struct MainFunctionParams {
-  MainFunctionParams(const CommandLine& cl, const SandboxInitWrapper& sb,
-                     base::mac::ScopedNSAutoreleasePool* pool)
-      : command_line_(cl), sandbox_info_(sb), autorelease_pool_(pool),
-        ui_task(NULL) { }
-  const CommandLine& command_line_;
-  const SandboxInitWrapper& sandbox_info_;
-  base::mac::ScopedNSAutoreleasePool* autorelease_pool_;
+  explicit MainFunctionParams(const CommandLine& cl)
+      : command_line(cl),
+#if defined(OS_WIN)
+        sandbox_info(NULL),
+#elif defined(OS_MACOSX)
+        autorelease_pool(NULL),
+#endif
+        ui_task(NULL) {}
+  const CommandLine& command_line;
+#if defined(OS_WIN)
+  sandbox::SandboxInterfaceInfo* sandbox_info;
+#elif defined(OS_MACOSX)
+  base::mac::ScopedNSAutoreleasePool* autorelease_pool;
+#endif
   // Used by InProcessBrowserTest. If non-null BrowserMain schedules this
   // task to run on the MessageLoop and BrowserInit is not invoked.
   Task* ui_task;

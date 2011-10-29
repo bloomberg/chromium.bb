@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
-#include "content/app/startup_helper_win.h"
+#include "content/public/app/startup_helper_win.h"
 #include "content/public/common/result_codes.h"
 #include "sandbox/src/sandbox_factory.h"
 

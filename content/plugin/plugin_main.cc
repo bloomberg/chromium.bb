@@ -89,7 +89,7 @@ int PluginMain(const MainFunctionParams& parameters) {
   base::SystemMonitor system_monitor;
   HighResolutionTimerManager high_resolution_timer_manager;
 
-  const CommandLine& parsed_command_line = parameters.command_line_;
+  const CommandLine& parsed_command_line = parameters.command_line;
 
 #if defined(OS_LINUX)
 
@@ -99,7 +99,7 @@ int PluginMain(const MainFunctionParams& parameters) {
 
 #elif defined(OS_WIN)
   sandbox::TargetServices* target_services =
-      parameters.sandbox_info_.TargetServices();
+      parameters.sandbox_info->target_services;
 
   CoInitialize(NULL);
   DVLOG(1) << "Started plugin with "

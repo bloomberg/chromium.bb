@@ -11,6 +11,7 @@
 #include "base/native_library.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/common/sandbox_mac.h"
+#include "content/public/common/sandbox_init.h"
 
 NaClMainPlatformDelegate::NaClMainPlatformDelegate(
     const MainFunctionParams& parameters)
@@ -32,7 +33,7 @@ void NaClMainPlatformDelegate::PlatformUninitialize() {
 }
 
 void NaClMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
-  const CommandLine& command_line = parameters_.command_line_;
+  const CommandLine& command_line = parameters_.command_line;
 
   DVLOG(1) << "Started NaClLdr with ";
   const std::vector<std::string>& argstrings = command_line.argv();
@@ -54,13 +55,8 @@ void NaClMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
 }
 
 void NaClMainPlatformDelegate::EnableSandbox() {
-  CommandLine* parsed_command_line = CommandLine::ForCurrentProcess();
-  SandboxInitWrapper sandbox_wrapper;
-  bool sandbox_initialized_ok =
-       sandbox_wrapper.InitializeSandbox(*parsed_command_line,
-                                         switches::kNaClLoaderProcess);
-  CHECK(sandbox_initialized_ok) << "Error initializing sandbox for "
-                                << switches::kNaClLoaderProcess;
+  CHECK(content::InitializeSandbox()) << "Error initializing sandbox for "
+                                      << switches::kNaClLoaderProcess;
 }
 
 bool NaClMainPlatformDelegate::RunSandboxTests() {

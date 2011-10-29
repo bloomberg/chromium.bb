@@ -26,7 +26,9 @@ PyUITestSuiteBase::PyUITestSuiteBase(int argc, char** argv)
 }
 
 PyUITestSuiteBase::~PyUITestSuiteBase() {
+#if defined(OS_MACOSX)
   pool_.Recycle();
+#endif
   Shutdown();
 }
 

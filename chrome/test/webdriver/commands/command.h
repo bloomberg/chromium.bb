@@ -11,7 +11,11 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "build/build_config.h"
+
+#if defined(OS_MACOX)
 #include "base/mac/scoped_nsautorelease_pool.h"
+#endif
 
 namespace webdriver {
 
@@ -101,12 +105,14 @@ class Command {
   const std::vector<std::string> path_segments_;
   const scoped_ptr<const DictionaryValue> parameters_;
 
+#if defined(OS_MACOX)
   // An autorelease pool must exist on any thread where Objective C is used,
   // even implicitly. Otherwise the warning:
   //   "Objects autoreleased with no pool in place."
   // is printed for every object deallocted.  Since every incomming command to
   // chrome driver is allocated a new thread, the release pool is declared here.
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(Command);
 };

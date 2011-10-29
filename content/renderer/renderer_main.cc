@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/message_loop.h"
@@ -33,6 +32,7 @@
 #include <unistd.h>
 
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "third_party/mach_override/mach_override.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #endif  // OS_MACOSX
@@ -124,10 +124,10 @@ class RendererMessageLoopObserver : public MessageLoop::TaskObserver {
 int RendererMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN_ETW("RendererMain", 0, "");
 
-  const CommandLine& parsed_command_line = parameters.command_line_;
-  base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;
+  const CommandLine& parsed_command_line = parameters.command_line;
 
 #if defined(OS_MACOSX)
+  base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool;
   InstallFrameworkHacks();
 #endif  // OS_MACOSX
 
@@ -222,8 +222,10 @@ int RendererMain(const MainFunctionParams& parameters) {
     startup_timer.Stop();  // End of Startup Time Measurement.
 
     if (run_loop) {
+#if defined(OS_MACOSX)
       if (pool)
         pool->Recycle();
+#endif
       TRACE_EVENT_BEGIN_ETW("RendererMain.START_MSG_LOOP", 0, 0);
       MessageLoop::current()->Run();
       TRACE_EVENT_END_ETW("RendererMain.START_MSG_LOOP", 0, 0);

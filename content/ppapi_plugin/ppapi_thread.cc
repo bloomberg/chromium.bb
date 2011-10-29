@@ -11,11 +11,11 @@
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "content/common/child_process.h"
-#include "content/common/sandbox_init_wrapper.h"
 #include "content/ppapi_plugin/broker_process_dispatcher.h"
 #include "content/ppapi_plugin/plugin_process_dispatcher.h"
 #include "content/ppapi_plugin/ppapi_webkit_thread.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/sandbox_init.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/c/dev/ppp_network_state_dev.h"
@@ -201,11 +201,9 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
     // We need to do this after getting |PPP_GetInterface()| (or presumably
     // doing something nontrivial with the library), else the sandbox
     // intercedes.
-    CommandLine* parsed_command_line = CommandLine::ForCurrentProcess();
-    SandboxInitWrapper sandbox_wrapper;
-    if (!sandbox_wrapper.InitializeSandbox(*parsed_command_line,
-                                           switches::kPpapiPluginProcess))
+    if (!content::InitializeSandbox()) {
       LOG(WARNING) << "Failed to initialize sandbox";
+    }
 #endif
 
     // Get the InitializeModule function (required).

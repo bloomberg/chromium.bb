@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/sandbox_init_wrapper.h"
+#include "content/public/common/sandbox_init.h"
 
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -10,16 +10,20 @@
 #include "content/common/sandbox_mac.h"
 #include "content/public/common/content_switches.h"
 
-bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
-                                           const std::string& process_type) {
+namespace content {
+
+bool InitializeSandbox() {
   using sandbox::Sandbox;
 
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kNoSandbox))
     return true;
 
   Sandbox::SandboxProcessType sandbox_process_type;
   FilePath allowed_dir;  // Empty by default.
 
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
   if (process_type.empty()) {
     // Browser process isn't sandboxed.
     return true;
@@ -65,3 +69,5 @@ bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
   // Actually sandbox the process.
   return Sandbox::EnableSandbox(sandbox_process_type, allowed_dir);
 }
+
+}  // namespace content

@@ -6,6 +6,13 @@
 #define CHROME_RENDERER_RENDERER_MAIN_PLATFORM_DELEGATE_H_
 #pragma once
 
+#include "build/build_config.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
+#include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/common/main_function_params.h"
 

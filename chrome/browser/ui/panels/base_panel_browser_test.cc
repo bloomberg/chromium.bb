@@ -7,7 +7,6 @@
 #include "chrome/browser/ui/browser_list.h"
 
 #include "base/command_line.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +21,7 @@
 #include "content/public/common/url_constants.h"
 
 #if defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #endif
 
@@ -225,6 +225,7 @@ void BasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
 
 Panel* BasePanelBrowserTest::CreatePanelWithParams(
     const CreatePanelParams& params) {
+#if defined(OS_MACOSX)
   // Opening panels on a Mac causes NSWindowController of the Panel window
   // to be autoreleased. We need a pool drained after it's done so the test
   // can close correctly. The NSWindowController of the Panel window controls
@@ -232,6 +233,7 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
   // possible. In real Chrome, this is done by message pump.
   // On non-Mac platform, this is an empty class.
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
+#endif
 
   Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                  params.name,

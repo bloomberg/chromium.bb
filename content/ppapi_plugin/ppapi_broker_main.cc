@@ -12,7 +12,7 @@
 
 // Main function for starting the PPAPI broker process.
 int PpapiBrokerMain(const MainFunctionParams& parameters) {
-  const CommandLine& command_line = parameters.command_line_;
+  const CommandLine& command_line = parameters.command_line;
   if (command_line.HasSwitch(switches::kPpapiStartupDialog)) {
     ChildProcess::WaitForDebugger("PpapiBroker");
   }

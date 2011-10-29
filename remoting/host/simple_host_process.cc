@@ -26,7 +26,6 @@
 #include "base/environment.h"
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/test/mock_chrome_application_mac.h"
@@ -51,9 +50,9 @@
 
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"
-#endif
-
-#if defined(OS_WIN)
+#elif defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
+#elif defined(OS_WIN)
 // TODO(garykac) Make simple host into a proper GUI app on Windows so that we
 // have an hModule for the dialog resource.
 HMODULE g_hModule = NULL;
@@ -261,8 +260,11 @@ class SimpleHost {
 };
 
 int main(int argc, char** argv) {
-  // Needed for the Mac, so we don't leak objects when threads are created.
+#if defined(OS_MACOSX)
+  // Needed so we don't leak objects when threads are created.
   base::mac::ScopedNSAutoreleasePool pool;
+  mock_cr_app::RegisterMockCrApp();
+#endif
 
   CommandLine::Init(argc, argv);
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
@@ -273,10 +275,6 @@ int main(int argc, char** argv) {
 #if defined(TOOLKIT_USES_GTK)
   gfx::GtkInitFromCommandLine(*cmd_line);
 #endif  // TOOLKIT_USES_GTK
-
-#if defined(OS_MACOSX)
-  mock_cr_app::RegisterMockCrApp();
-#endif  // OS_MACOSX
 
   SimpleHost simple_host;
 

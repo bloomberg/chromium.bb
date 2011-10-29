@@ -29,10 +29,10 @@ void* g_target_services = 0;
 
 // Main function for starting the PPAPI plugin process.
 int PpapiPluginMain(const MainFunctionParams& parameters) {
-  const CommandLine& command_line = parameters.command_line_;
+  const CommandLine& command_line = parameters.command_line;
 
 #if defined(OS_WIN)
-  g_target_services = parameters.sandbox_info_.TargetServices();
+  g_target_services = parameters.sandbox_info->target_services;
 #endif
 
   // If |g_target_services| is not null this process is sandboxed. One side

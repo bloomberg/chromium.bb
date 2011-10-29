@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/process_util.h"

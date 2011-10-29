@@ -28,12 +28,12 @@ void NaClMainPlatformDelegate::PlatformUninitialize() {
 }
 
 void NaClMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
-  const CommandLine& command_line = parameters_.command_line_;
+  const CommandLine& command_line = parameters_.command_line;
 
   DVLOG(1) << "Started NaClLdr with " << command_line.GetCommandLineString();
 
   sandbox::TargetServices* target_services =
-      parameters_.sandbox_info_.TargetServices();
+      parameters_.sandbox_info->target_services;
 
   if (target_services && !no_sandbox) {
     FilePath test_dll_name =
@@ -59,7 +59,7 @@ void NaClMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
 
 void NaClMainPlatformDelegate::EnableSandbox() {
   sandbox::TargetServices* target_services =
-      parameters_.sandbox_info_.TargetServices();
+      parameters_.sandbox_info->target_services;
 
   CHECK(target_services) << "NaCl-Win EnableSandbox: No Target Services!";
   // Cause advapi32 to load before the sandbox is turned on.

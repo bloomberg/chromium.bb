@@ -51,16 +51,11 @@ enum TerminationCodes {
   SBOX_FATAL_CLOSEHANDLES = 7010     // Failed to close pending handles.
 };
 
-class TargetServices;
 class BrokerServices;
+class TargetServices;
 
-// Contains the pointer to a target or broker service. Older code used
-// a union so the |legacy| member is there for us to detect we are
-// being passed a SandboxInterfaceInfo by old code. If legacy is not
-// null it means we are dealing with old code a must copy this value
-// into both |broker_services| and |target_services|.
+// Contains the pointer to a target or broker service.
 struct SandboxInterfaceInfo {
-  void* legacy;
   BrokerServices* broker_services;
   TargetServices* target_services;
 };

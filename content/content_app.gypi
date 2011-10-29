@@ -16,8 +16,8 @@
     'app/content_main.cc',
     'app/content_main.h',
     'app/startup_helper_win.cc',
-    'app/startup_helper_win.h',
     'public/app/content_main_delegate.h',
+    'public/app/startup_helper_win.h',
   ],
   'conditions': [
     ['OS=="win"', {

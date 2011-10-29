@@ -16,32 +16,9 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
-#include "content/common/sandbox_policy.h"
-#include "sandbox/src/sandbox.h"
 #endif
 
 namespace {
-
-#if defined(OS_WIN)
-// Windows-specific initialization code for the sandbox broker services.
-void InitializeBrokerServices(const MainFunctionParams& parameters,
-                              const CommandLine& parsed_command_line) {
-  sandbox::BrokerServices* broker_services =
-      parameters.sandbox_info_.BrokerServices();
-  if (broker_services) {
-    sandbox::InitBrokerServices(broker_services);
-    if (!parsed_command_line.HasSwitch(switches::kNoSandbox)) {
-      bool use_winsta = !parsed_command_line.HasSwitch(
-                            switches::kDisableAltWinstation);
-      // Precreate the desktop and window station used by the renderers.
-      sandbox::TargetPolicy* policy = broker_services->CreatePolicy();
-      sandbox::ResultCode result = policy->CreateAlternateDesktop(use_winsta);
-      CHECK(sandbox::SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION != result);
-      policy->Release();
-    }
-  }
-}
-#endif
 
 bool g_exited_main_message_loop = false;
 
@@ -106,11 +83,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Make this call before going multithreaded, or spawning any subprocesses.
   base::allocator::SetupSubprocessAllocator();
 #endif
-  // The broker service initialization needs to run early because it will
-  // initialize the sandbox broker, which requires the process to swap its
-  // window station. During this time all the UI will be broken. This has to
-  // run before threads and windows are created.
-  InitializeBrokerServices(parameters, parameters.command_line_);
 
   base::win::ScopedCOMInitializer com_initializer;
 #endif  // OS_WIN

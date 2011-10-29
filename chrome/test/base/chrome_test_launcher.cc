@@ -18,7 +18,7 @@
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-#include "content/app/startup_helper_win.h"
+#include "content/public/app/startup_helper_win.h"
 #include "sandbox/src/sandbox_types.h"
 #endif  // defined(OS_WIN)
 

@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
@@ -31,6 +30,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "content/common/chrome_application_mac.h"
 #endif
 
@@ -159,9 +159,8 @@ ChromeTestSuite::~ChromeTestSuite() {
 void ChromeTestSuite::Initialize() {
 #if defined(OS_MACOSX)
   chrome_application_mac::RegisterCrApp();
-#endif
-
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
+#endif
 
   base::TestSuite::Initialize();
 

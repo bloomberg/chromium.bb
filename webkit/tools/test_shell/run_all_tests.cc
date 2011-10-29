@@ -13,7 +13,6 @@
 #endif
 
 #include "base/command_line.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/test/test_suite.h"
@@ -28,6 +27,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
 #endif
 
@@ -106,7 +106,9 @@ class TestShellTestSuite : public base::TestSuite {
 };
 
 int main(int argc, char** argv) {
+#if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool scoped_pool;
+#endif
 
   TestShellPlatformDelegate::PreflightArgs(&argc, &argv);
   return TestShellTestSuite(argc, argv).Run();

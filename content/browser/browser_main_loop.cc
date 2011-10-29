@@ -149,7 +149,7 @@ namespace content {
 
 BrowserMainLoop::BrowserMainLoop(const MainFunctionParams& parameters)
     : parameters_(parameters),
-      parsed_command_line_(parameters.command_line_),
+      parsed_command_line_(parameters.command_line),
       result_code_(content::RESULT_CODE_NORMAL_EXIT) {
 #if defined(OS_WIN)
   OleInitialize(NULL);
@@ -332,7 +332,7 @@ void BrowserMainLoop::InitializeToolkit() {
 #endif
 
 #if !defined(USE_AURA)
-  gfx::GtkInitFromCommandLine(parameters_.command_line_);
+  gfx::GtkInitFromCommandLine(parameters_.command_line);
 #endif
 
   SetUpGLibLogHandler();

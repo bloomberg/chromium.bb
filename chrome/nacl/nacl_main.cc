@@ -30,7 +30,7 @@ static void HandleNaClTestParameters(const CommandLine& command_line) {
 
 // main() routine for the NaCl loader process.
 int NaClMain(const MainFunctionParams& parameters) {
-  const CommandLine& parsed_command_line = parameters.command_line_;
+  const CommandLine& parsed_command_line = parameters.command_line;
 
   // This function allows pausing execution using the --nacl-startup-dialog
   // flag allowing us to attach a debugger.

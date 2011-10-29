@@ -14,7 +14,6 @@
 #include "base/debug/trace_event.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -175,6 +174,7 @@
 #if defined(OS_MACOSX)
 #include <Security/Security.h>
 
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/mac/install_from_dmg.h"
 #include "chrome/browser/mac/keystone_glue.h"
 #endif
@@ -451,7 +451,7 @@ Profile* CreateProfile(const MainFunctionParams& parameters,
     // --user-data-dir switch.  The last flag of the same name wins.
     // TODO(tc): It would be nice to remove the flag we don't want, but that
     // sounds risky if we parse differently than CommandLineToArgvW.
-    CommandLine new_command_line = parameters.command_line_;
+    CommandLine new_command_line = parameters.command_line;
     new_command_line.AppendSwitchPath(switches::kUserDataDir,
                                       new_user_data_dir);
     base::LaunchProcess(new_command_line, base::LaunchOptions(), NULL);
@@ -682,7 +682,7 @@ const char kMissingLocaleDataMessage[] =
 ChromeBrowserMainParts::ChromeBrowserMainParts(
     const MainFunctionParams& parameters)
     : parameters_(parameters),
-      parsed_command_line_(parameters.command_line_),
+      parsed_command_line_(parameters.command_line),
       result_code_(content::RESULT_CODE_NORMAL_EXIT),
       shutdown_watcher_(new ShutdownWatcherHelper()),
       record_search_engine_(false),
@@ -1662,6 +1662,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       return content::RESULT_CODE_NORMAL_EXIT;
     }
   }
+  base::mac::ScopedNSAutoreleasePool* pool = parameters().autorelease_pool;
 #endif
 
   // Show the First Run UI if this is the first time Chrome has been run on
@@ -1885,11 +1886,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   ThreadWatcherList::StartWatchingAll(parsed_command_line());
 
   int result_code = content::RESULT_CODE_NORMAL_EXIT;
-  base::mac::ScopedNSAutoreleasePool* pool = parameters().autorelease_pool_;
   if (parameters().ui_task) {
     // We are in test mode. Run one task and enter the main message loop.
+#if defined(OS_MACOSX)
     if (pool)
       pool->Recycle();
+#endif
     parameters().ui_task->Run();
     delete parameters().ui_task;
   } else {
@@ -1919,10 +1921,13 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
       // Record now as the last successful chrome start.
       GoogleUpdateSettings::SetLastRunTime();
+
+#if defined(OS_MACOSX)
       // Call Recycle() here as late as possible, before going into the loop
       // because Start() will add things to it while creating the main window.
       if (pool)
         pool->Recycle();
+#endif
 
       RecordPreReadExperimentTime("Startup.BrowserOpenTabs",
                                   base::TimeTicks::Now() - browser_open_start);
@@ -2084,7 +2089,7 @@ void ChromeBrowserMainParts::ToolkitInitialized() {
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
 
   // TODO(beng): Move to WidgetImpl and implement on Windows too!
-  if (parameters().command_line_.HasSwitch(switches::kDebugViewsPaint))
+  if (parameters().command_line.HasSwitch(switches::kDebugViewsPaint))
     views::Widget::SetDebugPaintEnabled(true);
 #endif
 

@@ -11,6 +11,7 @@
 
 #if defined(OS_WIN)
 #include "content/common/sandbox_policy.h"
+#include "sandbox/src/sandbox_types.h"
 #elif defined(OS_MACOSX)
 #include "chrome/service/chrome_service_application_mac.h"
 #endif  // defined(OS_WIN)
@@ -19,12 +20,12 @@
 int ServiceProcessMain(const MainFunctionParams& parameters) {
   MessageLoopForUI main_message_loop;
   main_message_loop.set_thread_name("MainThread");
-  if (parameters.command_line_.HasSwitch(switches::kWaitForDebugger)) {
+  if (parameters.command_line.HasSwitch(switches::kWaitForDebugger)) {
     base::debug::WaitForDebugger(60, true);
   }
 
   VLOG(1) << "Service process launched: "
-          << parameters.command_line_.GetCommandLineString();
+          << parameters.command_line.GetCommandLineString();
 
 #if defined(OS_MACOSX)
   chrome_service_application_mac::RegisterServiceCrApp();
@@ -39,14 +40,14 @@ int ServiceProcessMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_WIN)
   sandbox::BrokerServices* broker_services =
-      parameters.sandbox_info_.BrokerServices();
+      parameters.sandbox_info->broker_services;
   if (broker_services)
     sandbox::InitBrokerServices(broker_services);
 #endif  // defined(OS_WIN)
 
   ServiceProcess service_process;
   if (service_process.Initialize(&main_message_loop,
-                                 parameters.command_line_,
+                                 parameters.command_line,
                                  state.release())) {
     MessageLoop::current()->Run();
   } else {

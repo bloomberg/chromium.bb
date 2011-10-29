@@ -96,10 +96,8 @@ void RenderViewTest::SetUp() {
     render_thread_.reset(new MockRenderThread());
   render_thread_->set_routing_id(kRouteId);
 
-  sandbox_init_wrapper_.reset(new SandboxInitWrapper());
   command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
-  params_.reset(new MainFunctionParams(*command_line_, *sandbox_init_wrapper_,
-                                       NULL));
+  params_.reset(new MainFunctionParams(*command_line_));
   platform_.reset(new RendererMainPlatformDelegate(*params_));
   platform_->PlatformInitialize();
 
@@ -154,7 +152,6 @@ void RenderViewTest::TearDown() {
   platform_.reset();
   params_.reset();
   command_line_.reset();
-  sandbox_init_wrapper_.reset();
 }
 
 int RenderViewTest::SendKeyEvent(MockKeyboard::Layout layout,

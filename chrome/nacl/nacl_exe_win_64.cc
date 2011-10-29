@@ -16,12 +16,10 @@
 #include "chrome/nacl/nacl_broker_listener.h"
 #include "chrome/nacl/nacl_listener.h"
 #include "chrome/nacl/nacl_main_platform_delegate.h"
-#include "content/app/startup_helper_win.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
-#include "content/common/sandbox_init_wrapper.h"
-#include "content/common/sandbox_policy.h"
-#include "sandbox/src/sandbox.h"
+#include "content/public/app/startup_helper_win.h"
+#include "content/public/common/sandbox_init.h"
 #include "sandbox/src/sandbox_types.h"
 
 extern int NaClMain(const MainFunctionParams&);
@@ -29,33 +27,13 @@ extern int NaClMain(const MainFunctionParams&);
 // main() routine for the NaCl broker process.
 // This is necessary for supporting NaCl in Chrome on Win64.
 int NaClBrokerMain(const MainFunctionParams& parameters) {
-  const CommandLine& parsed_command_line = parameters.command_line_;
+  const CommandLine& parsed_command_line = parameters.command_line;
 
   MessageLoopForIO main_message_loop;
   base::PlatformThread::SetName("CrNaClBrokerMain");
 
   base::SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
-
-  // NOTE: this code is duplicated from browser_main.cc
-  // IMPORTANT: This piece of code needs to run as early as possible in the
-  // process because it will initialize the sandbox broker, which requires the
-  // process to swap its window station. During this time all the UI will be
-  // broken. This has to run before threads and windows are created.
-  sandbox::BrokerServices* broker_services =
-      parameters.sandbox_info_.BrokerServices();
-  if (broker_services) {
-    sandbox::InitBrokerServices(broker_services);
-    if (!parsed_command_line.HasSwitch(switches::kNoSandbox)) {
-      bool use_winsta = !parsed_command_line.HasSwitch(
-          switches::kDisableAltWinstation);
-      // Precreate the desktop and window station used by the renderers.
-      sandbox::TargetPolicy* policy = broker_services->CreatePolicy();
-      sandbox::ResultCode result = policy->CreateAlternateDesktop(use_winsta);
-      CHECK(sandbox::SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION != result);
-      policy->Release();
-    }
-  }
 
   NaClBrokerListener listener;
   listener.Listen();
@@ -85,14 +63,12 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
   content::SetupCRT(command_line);
 
   // Initialize the sandbox for this process.
-  SandboxInitWrapper sandbox_wrapper;
-  sandbox_wrapper.SetServices(&sandbox_info);
-  bool sandbox_initialized_ok =
-      sandbox_wrapper.InitializeSandbox(command_line, process_type);
+  bool sandbox_initialized_ok = content::InitializeSandbox(&sandbox_info);
   // Die if the sandbox can't be enabled.
   CHECK(sandbox_initialized_ok) << "Error initializing sandbox for "
                                 << process_type;
-  MainFunctionParams main_params(command_line, sandbox_wrapper, NULL);
+  MainFunctionParams main_params(command_line);
+  main_params.sandbox_info = &sandbox_info;
 
   if (process_type == switches::kNaClLoaderProcess)
     return NaClMain(main_params);

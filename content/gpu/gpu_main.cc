@@ -36,7 +36,7 @@
 int GpuMain(const MainFunctionParams& parameters) {
   base::Time start_time = base::Time::Now();
 
-  const CommandLine& command_line = parameters.command_line_;
+  const CommandLine& command_line = parameters.command_line;
   if (command_line.HasSwitch(switches::kGpuStartupDialog)) {
     ChildProcess::WaitForDebugger("Gpu");
   }
@@ -77,7 +77,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_WIN)
   sandbox::TargetServices* target_services =
-      parameters.sandbox_info_.TargetServices();
+      parameters.sandbox_info->target_services;
   // For windows, if the target_services interface is not zero, the process
   // is sandboxed and we must call LowerToken() before rendering untrusted
   // content.

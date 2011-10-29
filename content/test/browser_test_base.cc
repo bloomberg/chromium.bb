@@ -27,10 +27,7 @@ BrowserTestBase::~BrowserTestBase() {
 }
 
 void BrowserTestBase::SetUp() {
-  SandboxInitWrapper sandbox_wrapper;
-  MainFunctionParams params(*CommandLine::ForCurrentProcess(),
-                            sandbox_wrapper,
-                            NULL);
+  MainFunctionParams params(*CommandLine::ForCurrentProcess());
   params.ui_task =
       NewRunnableMethod(this, &BrowserTestBase::ProxyRunTestOnMainThreadLoop);
 

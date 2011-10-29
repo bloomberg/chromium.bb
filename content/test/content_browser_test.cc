@@ -5,11 +5,14 @@
 #include "content/test/content_browser_test.h"
 
 #include "base/debug/stack_trace.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_main_delegate.h"
 #include "content/test/test_content_client.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
+#endif
 
 ContentBrowserTest::ContentBrowserTest() {
 }
@@ -46,6 +49,7 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
   signal(SIGTERM, DumpStackTraceSignalHandler);
 #endif  // defined(OS_POSIX)
 
+#if defined(OS_MACOSX)
   // On Mac, without the following autorelease pool, code which is directly
   // executed (as opposed to executed inside a message loop) would autorelease
   // objects into a higher-level pool. This pool is not recycled in-sync with
@@ -54,14 +58,22 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
   // browser shutdown). To avoid this, the following pool is recycled after each
   // time code is directly executed.
   base::mac::ScopedNSAutoreleasePool pool;
+#endif
 
   // Pump startup related events.
   MessageLoopForUI::current()->RunAllPending();
+
+#if defined(OS_MACOSX)
   pool.Recycle();
+#endif
 
   RunTestOnMainThread();
+#if defined(OS_MACOSX)
   pool.Recycle();
+#endif
 
   MessageLoopForUI::current()->Quit();
+#if defined(OS_MACOSX)
   pool.Recycle();
+#endif
 }

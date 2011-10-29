@@ -5,7 +5,6 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +18,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
+#endif
+
 class PanelAppBrowserTest : public ExtensionBrowserTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) {
@@ -26,6 +29,7 @@ class PanelAppBrowserTest : public ExtensionBrowserTest {
   }
 
   void LoadAndLaunchExtension(const char* name) {
+#if defined(OS_MACOSX)
     // Opening panels on a Mac causes NSWindowController of the Panel window
     // to be autoreleased. We need a pool drained after it's done so the test
     // can close correctly. The NSWindowController of the Panel window controls
@@ -33,6 +37,7 @@ class PanelAppBrowserTest : public ExtensionBrowserTest {
     // possible. In real Chrome, this is done by message pump.
     // On non-Mac platform, this is an empty class.
     base::mac::ScopedNSAutoreleasePool autorelease_pool;
+#endif
 
     EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII(name)));
 

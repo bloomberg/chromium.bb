@@ -73,7 +73,7 @@ RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 void RendererMainPlatformDelegate::PlatformInitialize() {
   // Be mindful of what resources you acquire here. They can be used by
   // malicious code if the renderer gets compromised.
-  const CommandLine& command_line = parameters_.command_line_;
+  const CommandLine& command_line = parameters_.command_line;
   bool no_sandbox = command_line.HasSwitch(switches::kNoSandbox);
   EnableThemeSupportForRenderer(no_sandbox);
 
@@ -92,12 +92,12 @@ void RendererMainPlatformDelegate::PlatformUninitialize() {
 }
 
 bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
-  const CommandLine& command_line = parameters_.command_line_;
+  const CommandLine& command_line = parameters_.command_line;
 
   DVLOG(1) << "Started renderer with " << command_line.GetCommandLineString();
 
   sandbox::TargetServices* target_services =
-      parameters_.sandbox_info_.TargetServices();
+      parameters_.sandbox_info->target_services;
 
   if (target_services && !no_sandbox) {
       std::wstring test_dll_name =
@@ -115,7 +115,7 @@ bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
 
 bool RendererMainPlatformDelegate::EnableSandbox() {
   sandbox::TargetServices* target_services =
-      parameters_.sandbox_info_.TargetServices();
+      parameters_.sandbox_info->target_services;
 
   if (target_services) {
     // Cause advapi32 to load before the sandbox is turned on.
