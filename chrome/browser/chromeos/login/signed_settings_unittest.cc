@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/mock_session_manager_client.h"
 #include "chrome/browser/chromeos/login/mock_owner_key_utils.h"
 #include "chrome/browser/chromeos/login/mock_ownership_service.h"
@@ -109,14 +109,15 @@ class SignedSettingsTest : public testing::Test {
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE),
         mock_(new MockKeyUtils),
-        injector_(mock_) /* injector_ takes ownership of mock_ */ {
+        injector_(mock_) /* injector_ takes ownership of mock_ */,
+        mock_dbus_thread_manager_(new MockDBusThreadManager) {
   }
 
   virtual ~SignedSettingsTest() {}
 
   virtual void SetUp() {
     file_thread_.Start();
-    DBusThreadManager::Initialize();
+    DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager_);
   }
 
   virtual void TearDown() {
@@ -283,9 +284,14 @@ class SignedSettingsTest : public testing::Test {
 
   MockKeyUtils* mock_;
   MockInjector injector_;
+  MockDBusThreadManager* mock_dbus_thread_manager_;
 
   ScopedStubCrosEnabler stub_cros_enabler_;
 };
+
+ACTION_P(Retrieve, policy_blob) { arg0.Run(policy_blob); }
+ACTION_P(Store, success) { arg1.Run(success); }
+ACTION_P(FinishKeyOp, s) { arg2->OnKeyOpComplete(OwnerManager::SUCCESS, s); }
 
 TEST_F(SignedSettingsTest, CheckWhitelist) {
   NormalDelegate<bool> d(true);
@@ -357,6 +363,12 @@ TEST_F(SignedSettingsTest, Whitelist) {
   em::PolicyData out_pol;
   ExpectWhitelistOp(s.get(), &in_pol, &out_pol);
 
+  MockSessionManagerClient* client =
+      mock_dbus_thread_manager_->mock_session_manager_client();
+  EXPECT_CALL(*client, StorePolicy(_, _))
+      .WillOnce(Store(true))
+      .RetiresOnSaturation();
+
   s->Execute();
   s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
   message_loop_.RunAllPending();
@@ -374,6 +386,12 @@ TEST_F(SignedSettingsTest, AddToExistingWhitelist) {
   em::PolicyData out_pol;
   ExpectWhitelistOp(s.get(), &in_pol, &out_pol);
 
+  MockSessionManagerClient* client =
+      mock_dbus_thread_manager_->mock_session_manager_client();
+  EXPECT_CALL(*client, StorePolicy(_, _))
+      .WillOnce(Store(true))
+      .RetiresOnSaturation();
+
   s->Execute();
   s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
   message_loop_.RunAllPending();
@@ -390,6 +408,12 @@ TEST_F(SignedSettingsTest, Unwhitelist) {
       BuildPolicyData(std::vector<std::string>(1, fake_email_));
   em::PolicyData out_pol;
   ExpectWhitelistOp(s.get(), &in_pol, &out_pol);
+
+  MockSessionManagerClient* client =
+      mock_dbus_thread_manager_->mock_session_manager_client();
+  EXPECT_CALL(*client, StorePolicy(_, _))
+      .WillOnce(Store(true))
+      .RetiresOnSaturation();
 
   s->Execute();
   s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
@@ -409,6 +433,12 @@ TEST_F(SignedSettingsTest, RemoveFromExistingWhitelist) {
   em::PolicyData in_pol = BuildPolicyData(whitelist);
   em::PolicyData out_pol;
   ExpectWhitelistOp(s.get(), &in_pol, &out_pol);
+
+  MockSessionManagerClient* client =
+      mock_dbus_thread_manager_->mock_session_manager_client();
+  EXPECT_CALL(*client, StorePolicy(_, _))
+      .WillOnce(Store(true))
+      .RetiresOnSaturation();
 
   s->Execute();
   s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
@@ -437,6 +467,12 @@ TEST_F(SignedSettingsTest, StoreProperty) {
   em::PolicyData out_pol;
   EXPECT_CALL(m_, set_cached_policy(A<const em::PolicyData&>()))
       .WillOnce(SaveArg<0>(&out_pol));
+
+  MockSessionManagerClient* client =
+      mock_dbus_thread_manager_->mock_session_manager_client();
+  EXPECT_CALL(*client, StorePolicy(_, _))
+      .WillOnce(Store(true))
+      .RetiresOnSaturation();
 
   s->Execute();
   s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
@@ -513,10 +549,6 @@ TEST_F(SignedSettingsTest, RetrievePropertyNotFound) {
   message_loop_.RunAllPending();
 }
 
-ACTION_P(Retrieve, policy_blob) { arg0.Run(policy_blob); }
-ACTION_P(Store, success) { arg1.Run(success); }
-ACTION_P(FinishKeyOp, s) { arg2->OnKeyOpComplete(OwnerManager::SUCCESS, s); }
-
 TEST_F(SignedSettingsTest, RetrievePolicyToRetrieveProperty) {
   NormalDelegate<std::string> d(fake_value_);
   d.expect_success();
@@ -529,8 +561,8 @@ TEST_F(SignedSettingsTest, RetrievePolicyToRetrieveProperty) {
   em::PolicyFetchResponse signed_policy = BuildProto(data,
                                                      fake_value_,
                                                      &signed_serialized);
-  MockSessionManagerClient* client = new MockSessionManagerClient;
-  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  MockSessionManagerClient* client =
+      mock_dbus_thread_manager_->mock_session_manager_client();
   EXPECT_CALL(*client, RetrievePolicy(_))
       .WillOnce(Retrieve(signed_serialized))
       .RetiresOnSaturation();
@@ -591,8 +623,8 @@ TEST_F(SignedSettingsTest, SignAndStorePolicy) {
   std::vector<uint8> fake_sig(fake_value_.c_str(),
                               fake_value_.c_str() + fake_value_.length());
 
-  MockSessionManagerClient* client = new MockSessionManagerClient;;
-  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  MockSessionManagerClient* client =
+      mock_dbus_thread_manager_->mock_session_manager_client();
   EXPECT_CALL(*client, StorePolicy(signed_serialized, _))
       .WillOnce(Store(true))
       .RetiresOnSaturation();
@@ -612,8 +644,8 @@ TEST_F(SignedSettingsTest, StoreSignedPolicy) {
                                                      &signed_serialized);
   scoped_refptr<SignedSettings> s(
       SignedSettings::CreateStorePolicyOp(&signed_policy, &d));
-  MockSessionManagerClient* client = new MockSessionManagerClient;;
-  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  MockSessionManagerClient* client =
+      mock_dbus_thread_manager_->mock_session_manager_client();
   EXPECT_CALL(*client, StorePolicy(signed_serialized, _))
       .WillOnce(Store(true))
       .RetiresOnSaturation();
@@ -661,8 +693,8 @@ TEST_F(SignedSettingsTest, RetrievePolicy) {
   d.expect_success();
   scoped_refptr<SignedSettings> s(SignedSettings::CreateRetrievePolicyOp(&d));
 
-  MockSessionManagerClient* client = new MockSessionManagerClient;;
-  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  MockSessionManagerClient* client =
+      mock_dbus_thread_manager_->mock_session_manager_client();
   EXPECT_CALL(*client, RetrievePolicy(_))
       .WillOnce(Retrieve(signed_serialized))
       .RetiresOnSaturation();
@@ -689,8 +721,8 @@ TEST_F(SignedSettingsTest, RetrieveNullPolicy) {
   d.expect_failure(SignedSettings::NOT_FOUND);
   scoped_refptr<SignedSettings> s(SignedSettings::CreateRetrievePolicyOp(&d));
 
-  MockSessionManagerClient* client = new MockSessionManagerClient;;
-  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  MockSessionManagerClient* client =
+      mock_dbus_thread_manager_->mock_session_manager_client();
   EXPECT_CALL(*client, RetrievePolicy(_))
       .WillOnce(Retrieve(""))
       .RetiresOnSaturation();
@@ -706,8 +738,8 @@ TEST_F(SignedSettingsTest, RetrieveEmptyPolicy) {
   d.expect_failure(SignedSettings::NOT_FOUND);
   scoped_refptr<SignedSettings> s(SignedSettings::CreateRetrievePolicyOp(&d));
 
-  MockSessionManagerClient* client = new MockSessionManagerClient;;
-  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  MockSessionManagerClient* client =
+      mock_dbus_thread_manager_->mock_session_manager_client();
   EXPECT_CALL(*client, RetrievePolicy(_))
       .WillOnce(Retrieve(""))
       .RetiresOnSaturation();
@@ -725,8 +757,8 @@ TEST_F(SignedSettingsTest, RetrieveUnsignedPolicy) {
   d.expect_failure(SignedSettings::BAD_SIGNATURE);
   scoped_refptr<SignedSettings> s(SignedSettings::CreateRetrievePolicyOp(&d));
 
-  MockSessionManagerClient* client = new MockSessionManagerClient;;
-  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  MockSessionManagerClient* client =
+      mock_dbus_thread_manager_->mock_session_manager_client();
   EXPECT_CALL(*client, RetrievePolicy(_))
       .WillOnce(Retrieve(serialized))
       .RetiresOnSaturation();
@@ -744,8 +776,8 @@ TEST_F(SignedSettingsTest, RetrieveMalsignedPolicy) {
   d.expect_failure(SignedSettings::BAD_SIGNATURE);
   scoped_refptr<SignedSettings> s(SignedSettings::CreateRetrievePolicyOp(&d));
 
-  MockSessionManagerClient* client = new MockSessionManagerClient;;
-  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  MockSessionManagerClient* client =
+      mock_dbus_thread_manager_->mock_session_manager_client();
   EXPECT_CALL(*client, RetrievePolicy(_))
       .WillOnce(Retrieve(signed_serialized))
       .RetiresOnSaturation();

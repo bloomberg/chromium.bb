@@ -91,14 +91,6 @@ class DBusThreadManager {
   // down.
   virtual SessionManagerClient* session_manager_client() = 0;
 
-  // Sets the session manager client. Takes the ownership.
-  // The function is exported for testing.
-  //
-  // TODO(satorux): Remove this once we convert tests to use
-  // MockDBusThreadManager.
-  virtual void set_session_manager_client_for_testing(
-      SessionManagerClient* session_manager_client) = 0;
-
   // Returns the speech synthesizer client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.

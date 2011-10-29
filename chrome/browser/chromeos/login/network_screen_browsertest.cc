@@ -10,7 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/mock_session_manager_client.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -47,22 +47,22 @@ class DummyButtonListener : public views::ButtonListener {
 class NetworkScreenTest : public WizardInProcessBrowserTest {
  public:
   NetworkScreenTest(): WizardInProcessBrowserTest("network"),
-                       mock_session_manager_client_(NULL),
                        mock_network_library_(NULL) {
   }
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() {
-    DBusThreadManager::Initialize();
+    MockDBusThreadManager* mock_dbus_thread_manager =
+        new MockDBusThreadManager;
+    DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
     cros_mock_->InitStatusAreaMocks();
     mock_network_library_ = cros_mock_->mock_network_library();
-    mock_session_manager_client_ = new MockSessionManagerClient();
-    DBusThreadManager::Get()->set_session_manager_client_for_testing(
-        mock_session_manager_client_);
+    MockSessionManagerClient* mock_session_manager_client =
+        mock_dbus_thread_manager->mock_session_manager_client();
     cellular_.reset(new NetworkDevice("cellular"));
-    EXPECT_CALL(*mock_session_manager_client_, EmitLoginPromptReady())
+    EXPECT_CALL(*mock_session_manager_client, EmitLoginPromptReady())
         .Times(1);
-    EXPECT_CALL(*mock_session_manager_client_, RetrievePolicy(_))
+    EXPECT_CALL(*mock_session_manager_client, RetrievePolicy(_))
         .Times(AnyNumber());
 
     // Minimal set of expectations needed on NetworkScreen initialization.
@@ -148,13 +148,10 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   }
 
   scoped_ptr<MockScreenObserver> mock_screen_observer_;
-  MockSessionManagerClient* mock_session_manager_client_;
   MockNetworkLibrary* mock_network_library_;
   scoped_ptr<NetworkDevice> cellular_;
   NetworkScreen* network_screen_;
   ViewsNetworkScreenActor* actor_;
-  // DBusThreadManager needs a message loop.
-  MessageLoopForUI message_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkScreenTest);

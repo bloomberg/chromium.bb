@@ -104,12 +104,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return speech_synthesizer_client_.get();
   }
 
-  // DBusThreadManager override.
-  virtual void set_session_manager_client_for_testing(
-      SessionManagerClient* session_manager_client) OVERRIDE {
-    session_manager_client_.reset(session_manager_client);
-  }
-
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
   scoped_ptr<CrosDBusService> cros_dbus_service_;

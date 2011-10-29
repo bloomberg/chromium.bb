@@ -32,8 +32,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(power_manager_client, PowerManagerClient*(void));
   MOCK_METHOD0(sensors_client, SensorsClient*(void));
   MOCK_METHOD0(session_manager_client, SessionManagerClient*(void));
-  MOCK_METHOD1(set_session_manager_client_for_testing,
-               void(SessionManagerClient*));
   MOCK_METHOD0(speech_synthesizer_client, SpeechSynthesizerClient*(void));
 
   MockBluetoothAdapterClient* mock_bluetooth_adapter_client() {
