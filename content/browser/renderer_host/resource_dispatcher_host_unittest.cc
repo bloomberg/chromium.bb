@@ -12,6 +12,7 @@
 #include "base/process_util.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/download/download_id.h"
+#include "content/browser/download/download_id_factory.h"
 #include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/dummy_resource_handler.h"
 #include "content/browser/renderer_host/global_request_id.h"
@@ -1161,8 +1162,10 @@ TEST_F(ResourceDispatcherHostTest, IgnoreCancelForDownloads) {
   HandleScheme("http");
 
   MakeTestRequest(render_view_id, request_id, GURL("http://example.com/blah"));
-  content::MockResourceContext::GetInstance()->set_next_download_id_thunk(
-      base::Bind(&MockNextDownloadId));
+  scoped_refptr<DownloadIdFactory> id_factory(
+      new DownloadIdFactory("valid DownloadId::Domain"));
+  content::MockResourceContext::GetInstance()->set_download_id_factory(
+      id_factory);
   // Return some data so that the request is identified as a download
   // and the proper resource handlers are created.
   EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());
@@ -1198,8 +1201,10 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContext) {
   HandleScheme("http");
 
   MakeTestRequest(render_view_id, request_id, GURL("http://example.com/blah"));
-  content::MockResourceContext::GetInstance()->set_next_download_id_thunk(
-      base::Bind(&MockNextDownloadId));
+  scoped_refptr<DownloadIdFactory> id_factory(
+      new DownloadIdFactory("valid DownloadId::Domain"));
+  content::MockResourceContext::GetInstance()->set_download_id_factory(
+      id_factory);
   // Return some data so that the request is identified as a download
   // and the proper resource handlers are created.
   EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());

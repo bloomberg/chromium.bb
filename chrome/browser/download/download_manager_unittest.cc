@@ -26,6 +26,7 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_file_manager.h"
+#include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_request_handle.h"
@@ -42,6 +43,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
+DownloadId::Domain kValidIdDomain = "valid DownloadId::Domain";
+
 class DownloadManagerTest : public testing::Test {
  public:
   static const char* kTestData;
@@ -51,8 +54,11 @@ class DownloadManagerTest : public testing::Test {
       : profile_(new TestingProfile()),
         download_manager_delegate_(new ChromeDownloadManagerDelegate(
             profile_.get())),
+        id_factory_(new DownloadIdFactory(kValidIdDomain)),
         download_manager_(new MockDownloadManager(
-            download_manager_delegate_, &download_status_updater_)),
+            download_manager_delegate_,
+            id_factory_,
+            &download_status_updater_)),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
         download_buffer_(new content::DownloadBuffer) {
@@ -71,7 +77,7 @@ class DownloadManagerTest : public testing::Test {
   }
 
   void AddDownloadToFileManager(int id, DownloadFile* download_file) {
-    file_manager()->downloads_[DownloadId(download_manager_.get(), id)] =
+    file_manager()->downloads_[DownloadId(kValidIdDomain, id)] =
       download_file;
   }
 
@@ -100,7 +106,7 @@ class DownloadManagerTest : public testing::Test {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&DownloadFileManager::UpdateDownload, file_manager_.get(),
-                   DownloadId(download_manager_.get(), id), download_buffer_));
+                   DownloadId(kValidIdDomain, id), download_buffer_));
 
     message_loop_.RunAllPending();
   }
@@ -121,6 +127,7 @@ class DownloadManagerTest : public testing::Test {
   DownloadStatusUpdater download_status_updater_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<ChromeDownloadManagerDelegate> download_manager_delegate_;
+  scoped_refptr<DownloadIdFactory> id_factory_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<DownloadFileManager> file_manager_;
   MessageLoopForUI message_loop_;
@@ -383,7 +390,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
     // responsible for deleting it.  In these unit tests, however, we
     // don't call the function that deletes it, so we do so ourselves.
     scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-    info->download_id = static_cast<int>(i);
+    info->download_id = DownloadId(kValidIdDomain, static_cast<int>(i));
     info->prompt_user_for_save_location = kStartDownloadCases[i].save_as;
     info->url_chain.push_back(GURL(kStartDownloadCases[i].url));
     info->mime_type = kStartDownloadCases[i].mime_type;
@@ -392,9 +399,9 @@ TEST_F(DownloadManagerTest, StartDownload) {
     DownloadFile* download_file(
         new DownloadFile(info.get(), DownloadRequestHandle(),
                          download_manager_));
-    AddDownloadToFileManager(info->download_id, download_file);
+    AddDownloadToFileManager(info->download_id.local(), download_file);
     download_file->Initialize(false);
-    download_manager_->StartDownload(info->download_id);
+    download_manager_->StartDownload(info->download_id.local());
     message_loop_.RunAllPending();
 
     // SelectFileObserver will have recorded any attempt to open the
@@ -416,14 +423,14 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     // responsible for deleting it.  In these unit tests, however, we
     // don't call the function that deletes it, so we do so ourselves.
     scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-    info->download_id = static_cast<int>(i);
+    info->download_id = DownloadId(kValidIdDomain, static_cast<int>(i));
     info->prompt_user_for_save_location = false;
     info->url_chain.push_back(GURL());
     const FilePath new_path(kDownloadRenameCases[i].suggested_path);
 
     MockDownloadFile* download_file(
         new MockDownloadFile(info.get(), download_manager_));
-    AddDownloadToFileManager(info->download_id, download_file);
+    AddDownloadToFileManager(info->download_id.local(), download_file);
 
     // |download_file| is owned by DownloadFileManager.
     ::testing::Mock::AllowLeak(download_file);
@@ -479,7 +486,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   // responsible for deleting it.  In these unit tests, however, we
   // don't call the function that deletes it, so we do so ourselves.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  info->download_id = static_cast<int>(0);
+  info->download_id = DownloadId(kValidIdDomain, 0);
   info->prompt_user_for_save_location = false;
   info->url_chain.push_back(GURL());
   info->total_bytes = static_cast<int64>(kTestDataLen);
@@ -488,7 +495,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
 
   MockDownloadFile* download_file(
       new MockDownloadFile(info.get(), download_manager_));
-  AddDownloadToFileManager(info->download_id, download_file);
+  AddDownloadToFileManager(info->download_id.local(), download_file);
 
   // |download_file| is owned by DownloadFileManager.
   ::testing::Mock::AllowLeak(download_file);
@@ -569,8 +576,8 @@ TEST_F(DownloadManagerTest, DownloadFileErrorTest) {
   // responsible for deleting it.  In these unit tests, however, we
   // don't call the function that deletes it, so we do so ourselves.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  int32 id = 0;
-  info->download_id = id;
+  static const int32 local_id = 0;
+  info->download_id = DownloadId(kValidIdDomain, local_id);
   info->prompt_user_for_save_location = false;
   info->url_chain.push_back(GURL());
   info->total_bytes = static_cast<int64>(kTestDataLen * 3);
@@ -579,7 +586,7 @@ TEST_F(DownloadManagerTest, DownloadFileErrorTest) {
   // Create a download file that we can insert errors into.
   DownloadFileWithMockStream* download_file(new DownloadFileWithMockStream(
       info.get(), download_manager_, mock_stream));
-  AddDownloadToFileManager(id, download_file);
+  AddDownloadToFileManager(local_id, download_file);
 
   // |download_file| is owned by DownloadFileManager.
   download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
@@ -594,7 +601,7 @@ TEST_F(DownloadManagerTest, DownloadFileErrorTest) {
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
 
   // Add some data before finalizing the file name.
-  UpdateData(id, kTestData, kTestDataLen);
+  UpdateData(local_id, kTestData, kTestDataLen);
 
   // Finalize the file name.
   ContinueDownloadWithPath(download, path);
@@ -602,11 +609,11 @@ TEST_F(DownloadManagerTest, DownloadFileErrorTest) {
   EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
 
   // Add more data.
-  UpdateData(id, kTestData, kTestDataLen);
+  UpdateData(local_id, kTestData, kTestDataLen);
 
   // Add more data, but an error occurs.
   download_file->SetForcedError(net::ERR_FAILED);
-  UpdateData(id, kTestData, kTestDataLen);
+  UpdateData(local_id, kTestData, kTestDataLen);
 
   // Check the state.  The download should have been interrupted.
   EXPECT_TRUE(GetActiveDownloadItem(0) == NULL);
@@ -648,7 +655,7 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   // responsible for deleting it.  In these unit tests, however, we
   // don't call the function that deletes it, so we do so ourselves.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  info->download_id = static_cast<int>(0);
+  info->download_id = DownloadId(kValidIdDomain, 0);
   info->prompt_user_for_save_location = false;
   info->url_chain.push_back(GURL());
   const FilePath new_path(FILE_PATH_LITERAL("foo.zip"));
@@ -656,7 +663,7 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
 
   MockDownloadFile* download_file(
       new MockDownloadFile(info.get(), download_manager_));
-  AddDownloadToFileManager(info->download_id, download_file);
+  AddDownloadToFileManager(info->download_id.local(), download_file);
 
   // |download_file| is owned by DownloadFileManager.
   ::testing::Mock::AllowLeak(download_file);
@@ -732,7 +739,7 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   // responsible for deleting it.  In these unit tests, however, we
   // don't call the function that deletes it, so we do so ourselves.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  info->download_id = static_cast<int>(0);
+  info->download_id = DownloadId(kValidIdDomain, 0);
   info->prompt_user_for_save_location = true;
   info->url_chain.push_back(GURL());
 
@@ -756,7 +763,7 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   // This creates the .crdownload version of the file.
   download_file->Initialize(false);
   // |download_file| is owned by DownloadFileManager.
-  AddDownloadToFileManager(info->download_id, download_file);
+  AddDownloadToFileManager(info->download_id.local(), download_file);
 
   ContinueDownloadWithPath(download, new_path);
   message_loop_.RunAllPending();
@@ -808,7 +815,7 @@ TEST_F(DownloadManagerTest, DownloadRemoveTest) {
   // responsible for deleting it.  In these unit tests, however, we
   // don't call the function that deletes it, so we do so ourselves.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  info->download_id = static_cast<int>(0);
+  info->download_id = DownloadId(kValidIdDomain, 0);
   info->prompt_user_for_save_location = true;
   info->url_chain.push_back(GURL());
 
@@ -832,7 +839,7 @@ TEST_F(DownloadManagerTest, DownloadRemoveTest) {
   // This creates the .crdownload version of the file.
   download_file->Initialize(false);
   // |download_file| is owned by DownloadFileManager.
-  AddDownloadToFileManager(info->download_id, download_file);
+  AddDownloadToFileManager(info->download_id.local(), download_file);
 
   ContinueDownloadWithPath(download, new_path);
   message_loop_.RunAllPending();

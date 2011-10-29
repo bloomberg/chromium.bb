@@ -14,8 +14,9 @@ class DownloadItem;
 class MockDownloadManager : public DownloadManager {
  public:
   explicit MockDownloadManager(content::DownloadManagerDelegate* delegate,
+                               DownloadIdFactory* id_factory,
                                DownloadStatusUpdater* updater)
-      : DownloadManager(delegate, updater) {
+      : DownloadManager(delegate, id_factory, updater) {
   }
 
   // Override some functions.

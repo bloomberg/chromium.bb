@@ -57,7 +57,7 @@ std::string DownloadFile::DebugString() const {
                             " request_handle = %s"
                             " Base File = %s"
                             " }",
-                            id_,
+                            id_.local(),
                             request_handle_.DebugString().c_str(),
                             BaseFile::DebugString().c_str());
 }

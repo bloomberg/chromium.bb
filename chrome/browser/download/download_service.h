@@ -14,6 +14,7 @@
 class ChromeDownloadManagerDelegate;
 class DownloadManager;
 class Profile;
+class DownloadIdFactory;
 
 // Owning class for DownloadManager (content) and
 // ChromeDownloadManagerDelegate (chrome)
@@ -21,6 +22,8 @@ class DownloadService : public ProfileKeyedService {
  public:
   explicit DownloadService(Profile* profile);
   virtual ~DownloadService();
+
+  DownloadIdFactory* GetDownloadIdFactory() const;
 
   // Get the download manager.  Creates the download manager if
   // it does not already exist.
@@ -46,6 +49,8 @@ class DownloadService : public ProfileKeyedService {
   virtual void Shutdown() OVERRIDE;
 
  private:
+  scoped_refptr<DownloadIdFactory> id_factory_;
+
   bool download_manager_created_;
   Profile* profile_;
 

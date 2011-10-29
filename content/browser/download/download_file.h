@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/download/base_file.h"
+#include "content/browser/download/download_id.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_types.h"
 #include "content/common/content_export.h"
@@ -33,8 +34,9 @@ class CONTENT_EXPORT DownloadFile : public BaseFile {
   // Cancels the download request associated with this file.
   void CancelDownloadRequest();
 
-  int id() const { return id_; }
+  int id() const { return id_.local(); }
   DownloadManager* GetDownloadManager();
+  const DownloadId& global_id() const { return id_; }
 
   virtual std::string DebugString() const;
 
@@ -61,7 +63,7 @@ class CONTENT_EXPORT DownloadFile : public BaseFile {
  private:
   // The unique identifier for this download, assigned at creation by
   // the DownloadFileManager for its internal record keeping.
-  int id_;
+  DownloadId id_;
 
   // The handle to the request information.  Used for operations outside the
   // download system, specifically canceling a download.

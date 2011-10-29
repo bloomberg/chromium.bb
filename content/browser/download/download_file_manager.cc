@@ -70,9 +70,8 @@ void DownloadFileManager::CreateDownloadFile(
     return;
   }
 
-  DownloadId global_id(download_manager, info->download_id);
-  DCHECK(GetDownloadFile(global_id) == NULL);
-  downloads_[global_id] = download_file.release();
+  DCHECK(GetDownloadFile(info->download_id) == NULL);
+  downloads_[info->download_id] = download_file.release();
 
   // The file is now ready, we can un-pause the request and start saving data.
   request_handle.ResumeRequest();
@@ -82,7 +81,7 @@ void DownloadFileManager::CreateDownloadFile(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DownloadManager::StartDownload, download_manager,
-                 info->download_id));
+                 info->download_id.local()));
 }
 
 DownloadFile* DownloadFileManager::GetDownloadFile(DownloadId global_id) {
@@ -280,7 +279,7 @@ void DownloadFileManager::OnDownloadManagerShutdown(DownloadManager* manager) {
 
   for (std::set<DownloadFile*>::iterator i = to_remove.begin();
        i != to_remove.end(); ++i) {
-    downloads_.erase(DownloadId((*i)->GetDownloadManager(), (*i)->id()));
+    downloads_.erase((*i)->global_id());
     delete *i;
   }
 }

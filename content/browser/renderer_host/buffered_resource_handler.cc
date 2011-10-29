@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -317,7 +318,7 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
 
     info->set_is_download(true);
 
-    DownloadId dl_id = info->context()->next_download_id_thunk().Run();
+    DownloadId dl_id = info->context()->download_id_factory()->GetNextId();
 
     scoped_refptr<ResourceHandler> handler(
       new DownloadResourceHandler(host_,

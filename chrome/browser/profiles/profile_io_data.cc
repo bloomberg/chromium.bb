@@ -18,6 +18,8 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/io_thread.h"
@@ -42,6 +44,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/chrome_blob_storage_context.h"
+#include "content/browser/download/download_id_factory.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -187,7 +190,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* pref_service = profile->GetPrefs();
 
-  next_download_id_thunk_ = profile->GetDownloadManager()->GetNextIdThunk();
+  download_id_factory_ = DownloadServiceFactory::GetForProfile(profile)->
+    GetDownloadIdFactory();
 
   scoped_ptr<ProfileParams> params(new ProfileParams);
   params->path = profile->GetPath();
@@ -515,7 +519,7 @@ void ProfileIOData::LazyInitialize() const {
   resource_context_.SetUserData(NULL, const_cast<ProfileIOData*>(this));
   resource_context_.set_media_observer(
       io_thread_globals->media.media_internals.get());
-  resource_context_.set_next_download_id_thunk(next_download_id_thunk_);
+  resource_context_.set_download_id_factory(download_id_factory_);
   resource_context_.set_media_stream_manager(media_stream_manager_.get());
 
   LazyInitializeInternal(profile_params_.get());

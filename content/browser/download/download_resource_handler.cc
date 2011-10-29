@@ -89,7 +89,7 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   // Deleted in DownloadManager.
   DownloadCreateInfo* info = new DownloadCreateInfo(FilePath(), GURL(),
       base::Time::Now(), 0, content_length_, DownloadItem::IN_PROGRESS,
-      download_id_.local(), request_info->has_user_gesture(),
+      download_id_, request_info->has_user_gesture(),
       request_info->transition_type());
   info->url_chain = request_->url_chain();
   info->referrer_url = GURL(request_->referrer());
@@ -97,7 +97,7 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   info->received_bytes = 0;
   info->total_bytes = content_length_;
   info->state = DownloadItem::IN_PROGRESS;
-  info->download_id = download_id_.local();
+  info->download_id = download_id_;
   info->has_user_gesture = request_info->has_user_gesture();
   info->content_disposition = content_disposition_;
   info->mime_type = response->response_head.mime_type;

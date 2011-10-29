@@ -7,6 +7,7 @@
 #pragma once
 
 #include <set>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/file_path.h"
@@ -16,7 +17,6 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/resource_context.h"
 #include "net/base/cookie_monster.h"
 
@@ -25,6 +25,7 @@ class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class CookieSettings;
 class DesktopNotificationService;
+class DownloadIdFactory;
 class ExtensionInfoMap;
 class HostContentSettingsMap;
 class HostZoomMap;
@@ -297,7 +298,7 @@ class ProfileIOData {
   mutable scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   mutable scoped_refptr<quota::QuotaManager> quota_manager_;
   mutable scoped_refptr<HostZoomMap> host_zoom_map_;
-  mutable DownloadManager::GetNextIdThunkType next_download_id_thunk_;
+  mutable scoped_refptr<DownloadIdFactory> download_id_factory_;
   mutable scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
 
   // TODO(willchan): Remove from ResourceContext.

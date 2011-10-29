@@ -26,7 +26,7 @@ class DownloadIdTest : public testing::Test {
     // Create the download managers.
     for (i = 0; i < num_managers_; ++i) {
       managers[i] =
-          new MockDownloadManager(download_manager_delegate_.get(), NULL);
+          new MockDownloadManager(download_manager_delegate_.get(), NULL, NULL);
     }
     // Sort by pointer value.
     std::sort(managers.begin(), managers.end());

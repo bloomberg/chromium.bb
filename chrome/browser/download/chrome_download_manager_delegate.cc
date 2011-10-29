@@ -63,9 +63,6 @@ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
   download_history_->Load(
       base::Bind(&DownloadManager::OnPersistentStoreQueryComplete,
                  base::Unretained(dm)));
-  download_history_->GetNextId(
-      base::Bind(&DownloadManager::OnPersistentStoreGetNextId,
-                 base::Unretained(dm)));
 }
 
 void ChromeDownloadManagerDelegate::Shutdown() {

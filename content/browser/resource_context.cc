@@ -153,16 +153,15 @@ void ResourceContext::set_media_observer(MediaObserver* media_observer) {
   media_observer_ = media_observer;
 }
 
-const DownloadManager::GetNextIdThunkType&
-ResourceContext::next_download_id_thunk() const {
+DownloadIdFactory* ResourceContext::download_id_factory() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   EnsureInitialized();
-  return next_download_id_thunk_;
+  return download_id_factory_;
 }
-void ResourceContext::set_next_download_id_thunk(
-    const DownloadManager::GetNextIdThunkType& thunk) {
+void ResourceContext::set_download_id_factory(
+    DownloadIdFactory* download_id_factory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  next_download_id_thunk_ = thunk;
+  download_id_factory_ = download_id_factory;
 }
 
 media_stream::MediaStreamManager*

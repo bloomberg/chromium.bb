@@ -26,6 +26,7 @@
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/download/download_file_manager.h"
+#include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/save_file_manager.h"
@@ -50,10 +51,10 @@
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/worker_host/worker_service.h"
-#include "content/public/browser/notification_service.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -830,7 +831,7 @@ void ResourceDispatcherHost::BeginDownload(
 
   request_id_--;
 
-  DownloadId dl_id = context.next_download_id_thunk().Run();
+  DownloadId dl_id = context.download_id_factory()->GetNextId();
 
   scoped_refptr<ResourceHandler> handler(
       new DownloadResourceHandler(this,

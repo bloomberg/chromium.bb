@@ -7,6 +7,8 @@
 #include "base/string_number_conversions.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
+#include "content/browser/download/download_id.h"
+#include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater.h"
@@ -16,6 +18,8 @@
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+DownloadId::Domain kValidIdDomain = "valid DownloadId::Domain";
 
 class DownloadFileTest : public testing::Test {
  public:
@@ -33,6 +37,7 @@ class DownloadFileTest : public testing::Test {
   // calling Release() on |download_manager_| won't ever result in its
   // destructor being called and we get a leak.
   DownloadFileTest() :
+      id_factory_(new DownloadIdFactory(kValidIdDomain)),
       ui_thread_(BrowserThread::UI, &loop_),
       file_thread_(BrowserThread::FILE, &loop_) {
   }
@@ -43,7 +48,9 @@ class DownloadFileTest : public testing::Test {
   virtual void SetUp() {
     download_manager_delegate_.reset(new MockDownloadManagerDelegate());
     download_manager_ = new MockDownloadManager(
-        download_manager_delegate_.get(), &download_status_updater_);
+        download_manager_delegate_.get(),
+        id_factory_,
+        &download_status_updater_);
   }
 
   virtual void TearDown() {
@@ -58,7 +65,7 @@ class DownloadFileTest : public testing::Test {
 
   virtual void CreateDownloadFile(scoped_ptr<DownloadFile>* file, int offset) {
     DownloadCreateInfo info;
-    info.download_id = kDummyDownloadId + offset;
+    info.download_id = DownloadId(kValidIdDomain, kDummyDownloadId + offset);
     // info.request_handle default constructed to null.
     info.save_info.file_stream = file_stream_;
     file->reset(
@@ -104,6 +111,7 @@ class DownloadFileTest : public testing::Test {
 
  private:
   MessageLoop loop_;
+  scoped_refptr<DownloadIdFactory> id_factory_;
   // UI thread.
   content::TestBrowserThread ui_thread_;
   // File thread to satisfy debug checks in DownloadFile.

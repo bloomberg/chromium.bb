@@ -8,10 +8,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/resource_context.h"
 
 class ChromeBlobStorageContext;
+class DownloadIdFactory;
 
 namespace content {
 
@@ -22,7 +22,7 @@ class ShellResourceContext : public content::ResourceContext {
   ShellResourceContext(
       ShellURLRequestContextGetter* getter,
       ChromeBlobStorageContext* blob_storage_context,
-      DownloadManager::GetNextIdThunkType next_download_id_thunk);
+      DownloadIdFactory* download_id_factory);
   virtual ~ShellResourceContext();
 
  private:
@@ -32,7 +32,7 @@ class ShellResourceContext : public content::ResourceContext {
 
   scoped_refptr<ShellURLRequestContextGetter> getter_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-  DownloadManager::GetNextIdThunkType next_download_id_thunk_;
+  scoped_refptr<DownloadIdFactory> download_id_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellResourceContext);
 };

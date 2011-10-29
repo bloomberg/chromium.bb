@@ -19,6 +19,7 @@
 #include "content/browser/browser_context.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
+#include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_stats.h"
@@ -70,15 +71,16 @@ void BeginDownload(const URLParams& url_params,
 }  // namespace
 
 DownloadManager::DownloadManager(content::DownloadManagerDelegate* delegate,
+                                 DownloadIdFactory* id_factory,
                                  DownloadStatusUpdater* status_updater)
     : shutdown_needed_(false),
       browser_context_(NULL),
-      next_id_(0),
       file_manager_(NULL),
       status_updater_((status_updater != NULL)
                       ? status_updater->AsWeakPtr()
                       : base::WeakPtr<DownloadStatusUpdater>()),
       delegate_(delegate),
+      id_factory_(id_factory),
       largest_db_handle_in_history_(DownloadItem::kUninitializedHandle) {
   // NOTE(benjhayden): status_updater may be NULL when using
   // TestingBrowserProcess.
@@ -90,6 +92,10 @@ DownloadManager::~DownloadManager() {
   DCHECK(!shutdown_needed_);
   if (status_updater_.get() != NULL)
     status_updater_->RemoveDelegate(this);
+}
+
+DownloadId DownloadManager::GetNextId() {
+  return id_factory_->GetNextId();
 }
 
 void DownloadManager::Shutdown() {
@@ -205,30 +211,6 @@ void DownloadManager::SearchDownloads(const string16& query,
   }
 }
 
-void DownloadManager::OnPersistentStoreGetNextId(int next_id) {
-  DVLOG(1) << __FUNCTION__ << " " << next_id;
-  base::AutoLock lock(next_id_lock_);
-  // TODO(benjhayden) Delay Profile initialization until here, and set next_id_
-  // = next_id. The '+=' works for now because these ids are not yet persisted
-  // to the database. GetNextId() can allocate zero or more ids starting from 0,
-  // then this callback can increment next_id_, and the items with lower ids
-  // won't clash with any other items even though there may be items loaded from
-  // the history because items from the history don't have valid ids.
-  next_id_ += next_id;
-}
-
-DownloadId DownloadManager::GetNextId() {
-  // May be called on any thread via the GetNextIdThunk.
-  // TODO(benjhayden) If otr, forward to parent DM.
-  base::AutoLock lock(next_id_lock_);
-  return DownloadId(this, next_id_++);
-}
-
-DownloadManager::GetNextIdThunkType DownloadManager::GetNextIdThunk() {
-  // TODO(benjhayden) If otr, forward to parent DM.
-  return base::Bind(&DownloadManager::GetNextId, this);
-}
-
 // Query the history service for information about all persisted downloads.
 bool DownloadManager::Init(content::BrowserContext* browser_context) {
   DCHECK(browser_context);
@@ -338,7 +320,7 @@ void DownloadManager::CreateDownloadItem(
   DownloadItem* download = new DownloadItem(this, *info,
                                             request_handle,
                                             browser_context_->IsOffTheRecord());
-  int32 download_id = info->download_id;
+  int32 download_id = info->download_id.local();
   DCHECK(!ContainsKey(in_progress_, download_id));
 
   // TODO(rdsmith): Remove after http://crbug.com/85408 resolved.

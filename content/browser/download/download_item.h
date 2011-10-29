@@ -25,6 +25,7 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "content/browser/download/download_id.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_state_info.h"
 #include "content/browser/download/interrupt_reasons.h"
@@ -277,8 +278,8 @@ class CONTENT_EXPORT DownloadItem {
     total_bytes_ = total_bytes;
   }
   int64 received_bytes() const { return received_bytes_; }
-  int32 id() const { return download_id_; }
-  DownloadId global_id() const;
+  int32 id() const { return download_id_.local(); }
+  DownloadId global_id() const { return download_id_; }
   base::Time start_time() const { return start_time_; }
   base::Time end_time() const { return end_time_; }
   void set_db_handle(int64 handle) { db_handle_ = handle; }
@@ -379,7 +380,7 @@ class CONTENT_EXPORT DownloadItem {
   DownloadRequestHandle request_handle_;
 
   // Download ID assigned by DownloadResourceHandler.
-  int32 download_id_;
+  DownloadId download_id_;
 
   // Full path to the downloaded or downloading file.
   FilePath full_path_;
