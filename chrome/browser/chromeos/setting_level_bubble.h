@@ -61,7 +61,7 @@ class SettingLevelBubble : public views::Widget::Observer {
   FRIEND_TEST_ALL_PREFIXES(VolumeBubbleTest, GetInstanceAndShow);
 
   // views::Widget::Observer overrides:
-  void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   // Creates the bubble content view.
   // Caller should call Init() on the returned SettingLevelBubbleView.
