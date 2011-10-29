@@ -262,6 +262,46 @@ class BenchmarkPerfTest(BasePerfTest):
           '%s_%s-%s' % ('score', 'V8Benchmark', benchmark_name),
           int(benchmark_score))
 
+  def testSunSpider(self):
+    """Runs the SunSpider javascript benchmark suite."""
+    url = self.GetFileURLForDataPath('sunspider', 'sunspider-driver.html')
+    self.assertTrue(self.AppendTab(pyauto.GURL(url)),
+                    msg='Failed to append tab for SunSpider benchmark suite.')
+
+    js_is_done = """
+        var done = false;
+        if (document.getElementById("console"))
+          done = true;
+        window.domAutomationController.send(JSON.stringify(done));
+    """
+    self.assertTrue(
+        self.WaitUntil(
+            lambda: self.ExecuteJavascript(js_is_done, tab_index=1) == 'true',
+            timeout=300, retry_sleep=1),
+        msg='Timed out when waiting for SunSpider benchmark score.')
+
+    js_get_results = """
+        window.domAutomationController.send(
+            document.getElementById("console").innerHTML);
+    """
+    # Append '<br>' to the result to simplify regular expression matching.
+    results = self.ExecuteJavascript(js_get_results, tab_index=1) + '<br>'
+    total = re.search('Total:\s*([\d.]+)ms', results).group(1)
+    logging.info('Total: %.2f ms' % float(total))
+    self._OutputPerfGraphValue('ms_SunSpider-total', float(total))
+
+    for match_category in re.finditer('\s\s(\w+):.+?<br><br>', results):
+      category_name = match_category.group(1)
+      for match_result in re.finditer('<br>\s\s\s\s([\w-]+):\s*([\d.]+)ms',
+                                      match_category.group(0)):
+        result_name = match_result.group(1)
+        result_value = match_result.group(2)
+        logging.info('Result %s-%s: %.2f ms', category_name, result_name,
+                     float(result_value))
+        self._OutputPerfGraphValue(
+            'ms_SunSpider-%s-%s' % (category_name, result_name),
+            float(result_value))
+
 
 class LiveWebappLoadTest(BasePerfTest):
   """Tests that involve performance measurements of live webapps.
