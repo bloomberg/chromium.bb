@@ -434,9 +434,11 @@ post_dispatch_check(struct wl_event_loop *loop)
 static void
 dispatch_idle_sources(struct wl_event_loop *loop)
 {
-	struct wl_event_source_idle *source, *next;
+	struct wl_event_source_idle *source;
 
-	wl_list_for_each_safe(source, next, &loop->idle_list, base.link) {
+	while (!wl_list_empty(&loop->idle_list)) {
+		source = container_of(loop->idle_list.next,
+				      struct wl_event_source_idle, base.link);
 		source->func(source->base.data);
 		wl_event_source_remove(&source->base);
 	}
