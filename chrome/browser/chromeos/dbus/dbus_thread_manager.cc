@@ -20,71 +20,132 @@ namespace chromeos {
 
 static DBusThreadManager* g_dbus_thread_manager = NULL;
 
-DBusThreadManager::DBusThreadManager() {
-  // Create the D-Bus thread.
-  base::Thread::Options thread_options;
-  thread_options.message_loop_type = MessageLoop::TYPE_IO;
-  dbus_thread_.reset(new base::Thread("D-Bus thread"));
-  dbus_thread_->StartWithOptions(thread_options);
+// The DBusThreadManager implementation used in production.
+class DBusThreadManagerImpl : public DBusThreadManager {
+ public:
+  DBusThreadManagerImpl() {
+    // Create the D-Bus thread.
+    base::Thread::Options thread_options;
+    thread_options.message_loop_type = MessageLoop::TYPE_IO;
+    dbus_thread_.reset(new base::Thread("D-Bus thread"));
+    dbus_thread_->StartWithOptions(thread_options);
 
-  // Create the connection to the system bus.
-  dbus::Bus::Options system_bus_options;
-  system_bus_options.bus_type = dbus::Bus::SYSTEM;
-  system_bus_options.connection_type = dbus::Bus::PRIVATE;
-  system_bus_options.dbus_thread_message_loop_proxy =
-      dbus_thread_->message_loop_proxy();
-  system_bus_ = new dbus::Bus(system_bus_options);
+    // Create the connection to the system bus.
+    dbus::Bus::Options system_bus_options;
+    system_bus_options.bus_type = dbus::Bus::SYSTEM;
+    system_bus_options.connection_type = dbus::Bus::PRIVATE;
+    system_bus_options.dbus_thread_message_loop_proxy =
+        dbus_thread_->message_loop_proxy();
+    system_bus_ = new dbus::Bus(system_bus_options);
 
-  // Create and start the cros D-Bus service.
-  cros_dbus_service_.reset(CrosDBusService::Create(system_bus_.get()));
-  cros_dbus_service_->Start();
+    // Create and start the cros D-Bus service.
+    cros_dbus_service_.reset(CrosDBusService::Create(system_bus_.get()));
+    cros_dbus_service_->Start();
 
-  // Start monitoring sensors if needed.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableSensors)) {
-    sensors_client_.reset(SensorsClient::Create(system_bus_.get()));
+    // Start monitoring sensors if needed.
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    if (command_line.HasSwitch(switches::kEnableSensors))
+      sensors_client_.reset(SensorsClient::Create(system_bus_.get()));
+
+    // Create bluetooth clients if bluetooth is enabled.
+    if (command_line.HasSwitch(switches::kEnableBluetooth)) {
+      bluetooth_manager_client_.reset(BluetoothManagerClient::Create(
+          system_bus_.get()));
+      bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create(
+          system_bus_.get()));
+    }
+
+    // Create the power manager client.
+    power_manager_client_.reset(PowerManagerClient::Create(system_bus_.get()));
+    // Create the session manager client.
+    session_manager_client_.reset(
+        SessionManagerClient::Create(system_bus_.get()));
+    // Create the speech synthesizer client.
+    speech_synthesizer_client_.reset(
+        SpeechSynthesizerClient::Create(system_bus_.get()));
   }
 
-  // Create bluetooth clients if bluetooth is enabled.
-  if (command_line.HasSwitch(switches::kEnableBluetooth)) {
-    bluetooth_manager_client_.reset(BluetoothManagerClient::Create(
-        system_bus_.get()));
-    bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create(
-        system_bus_.get()));
+  virtual ~DBusThreadManagerImpl() {
+    // Shut down the bus. During the browser shutdown, it's ok to shut down
+    // the bus synchronously.
+    system_bus_->ShutdownOnDBusThreadAndBlock();
+
+    // Stop the D-Bus thread.
+    dbus_thread_->Stop();
   }
 
-  // Create the power manager client.
-  power_manager_client_.reset(PowerManagerClient::Create(system_bus_.get()));
-  // Create the session manager client.
-  session_manager_client_.reset(
-      SessionManagerClient::Create(system_bus_.get()));
-  // Create the speech synthesizer client.
-  speech_synthesizer_client_.reset(
-      SpeechSynthesizerClient::Create(system_bus_.get()));
-}
+  // DBusThreadManager override.
+  virtual BluetoothAdapterClient* bluetooth_adapter_client() OVERRIDE {
+    return bluetooth_adapter_client_.get();
+  }
 
-DBusThreadManager::~DBusThreadManager() {
-  // Shut down the bus. During the browser shutdown, it's ok to shut down
-  // the bus synchronously.
-  system_bus_->ShutdownOnDBusThreadAndBlock();
+  // DBusThreadManager override.
+  virtual BluetoothManagerClient* bluetooth_manager_client() OVERRIDE {
+    return bluetooth_manager_client_.get();
+  }
 
-  // Stop the D-Bus thread.
-  dbus_thread_->Stop();
-}
+  // DBusThreadManager override.
+  virtual PowerManagerClient* power_manager_client() OVERRIDE {
+    return power_manager_client_.get();
+  }
 
+  // DBusThreadManager override.
+  virtual SensorsClient* sensors_client() OVERRIDE {
+    return sensors_client_.get();
+  }
+
+  // DBusThreadManager override.
+  virtual SessionManagerClient* session_manager_client() OVERRIDE {
+    return session_manager_client_.get();
+  }
+
+  // DBusThreadManager override.
+  virtual SpeechSynthesizerClient* speech_synthesizer_client() OVERRIDE {
+    return speech_synthesizer_client_.get();
+  }
+
+  // DBusThreadManager override.
+  virtual void set_session_manager_client_for_testing(
+      SessionManagerClient* session_manager_client) OVERRIDE {
+    session_manager_client_.reset(session_manager_client);
+  }
+
+  scoped_ptr<base::Thread> dbus_thread_;
+  scoped_refptr<dbus::Bus> system_bus_;
+  scoped_ptr<CrosDBusService> cros_dbus_service_;
+  scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
+  scoped_ptr<BluetoothManagerClient> bluetooth_manager_client_;
+  scoped_ptr<PowerManagerClient> power_manager_client_;
+  scoped_ptr<SensorsClient> sensors_client_;
+  scoped_ptr<SessionManagerClient> session_manager_client_;
+  scoped_ptr<SpeechSynthesizerClient> speech_synthesizer_client_;
+};
+
+// static
 void DBusThreadManager::Initialize() {
   if (g_dbus_thread_manager) {
-    // This can happen in tests.
-    LOG(WARNING) << "DBusThreadManager::Initialize() was already called";
+    LOG(WARNING) << "DBusThreadManager was already initialized";
     return;
   }
-  g_dbus_thread_manager = new DBusThreadManager;
+  g_dbus_thread_manager = new DBusThreadManagerImpl;
   VLOG(1) << "DBusThreadManager initialized";
 }
 
+// static
+void DBusThreadManager::InitializeForTesting(
+    DBusThreadManager* dbus_thread_manager) {
+  if (g_dbus_thread_manager) {
+    LOG(WARNING) << "DBusThreadManager was already initialized";
+    return;
+  }
+  g_dbus_thread_manager = dbus_thread_manager;
+  VLOG(1) << "DBusThreadManager initialized";
+}
+
+// static
 void DBusThreadManager::Shutdown() {
   if (!g_dbus_thread_manager) {
-    // This can happen in tests.
+    // TODO(satorux): Make it a DCHECK() once it's ready.
     LOG(WARNING) << "DBusThreadManager::Shutdown() called with NULL manager";
     return;
   }
@@ -93,15 +154,17 @@ void DBusThreadManager::Shutdown() {
   VLOG(1) << "DBusThreadManager Shutdown completed";
 }
 
+DBusThreadManager::DBusThreadManager() {
+}
+
+DBusThreadManager::~DBusThreadManager() {
+}
+
+// static
 DBusThreadManager* DBusThreadManager::Get() {
   CHECK(g_dbus_thread_manager)
       << "DBusThreadManager::Get() called before Initialize()";
   return g_dbus_thread_manager;
-}
-
-void DBusThreadManager::set_session_manager_client_for_testing(
-    SessionManagerClient* session_manager_client) {
-  session_manager_client_.reset(session_manager_client);
 }
 
 }  // namespace chromeos

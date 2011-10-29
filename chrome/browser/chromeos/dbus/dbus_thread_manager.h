@@ -52,64 +52,62 @@ class DBusThreadManager {
   // making it a Singleton, to ensure clean startup and shutdown.
   static void Initialize();
 
+  // Similar to Initialize(), but can inject an alternative
+  // DBusThreadManager such as MockDBusThreadManager for testing.
+  // The injected object will be owned by the internal pointer and deleted
+  // by Shutdown().
+  static void InitializeForTesting(DBusThreadManager* dbus_thread_manager);
+
   // Destroys the global instance.
   static void Shutdown();
 
   // Gets the global instance. Initialize() must be called first.
   static DBusThreadManager* Get();
 
-  // Returns the bluetooth manager client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
-  BluetoothManagerClient* bluetooth_manager_client() {
-    return bluetooth_manager_client_.get();
-  }
+  // TODO(satorux): Rename the following getters to something like
+  // GetFooClient() as they are now virtual.
 
   // Returns the bluetooth adapter client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
-  BluetoothAdapterClient* bluetooth_adapter_client() {
-    return bluetooth_adapter_client_.get();
-  }
+  virtual BluetoothAdapterClient* bluetooth_adapter_client() = 0;
+
+  // Returns the bluetooth manager client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManager is shut
+  // down.
+  virtual BluetoothManagerClient* bluetooth_manager_client() = 0;
 
   // Returns the power manager client, owned by DBusThreadManager.
   // See also comments at session_manager_client().
-  PowerManagerClient* power_manager_client() {
-    return power_manager_client_.get();
-  }
+  virtual PowerManagerClient* power_manager_client() = 0;
 
   // Returns the session manager client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
-  SessionManagerClient* session_manager_client() {
-    return session_manager_client_.get();
-  }
+  virtual SensorsClient* sensors_client() = 0;
+
+  // Returns the session manager client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManager is shut
+  // down.
+  virtual SessionManagerClient* session_manager_client() = 0;
 
   // Sets the session manager client. Takes the ownership.
   // The function is exported for testing.
-  void set_session_manager_client_for_testing(
-      SessionManagerClient* session_manager_client);
+  //
+  // TODO(satorux): Remove this once we convert tests to use
+  // MockDBusThreadManager.
+  virtual void set_session_manager_client_for_testing(
+      SessionManagerClient* session_manager_client) = 0;
 
   // Returns the speech synthesizer client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
-  SpeechSynthesizerClient* speech_synthesizer_client() {
-    return speech_synthesizer_client_.get();
-  }
+  virtual SpeechSynthesizerClient* speech_synthesizer_client() = 0;
 
- private:
-  DBusThreadManager();
   virtual ~DBusThreadManager();
 
-  scoped_ptr<base::Thread> dbus_thread_;
-  scoped_refptr<dbus::Bus> system_bus_;
-  scoped_ptr<CrosDBusService> cros_dbus_service_;
-  scoped_ptr<SensorsClient> sensors_client_;
-  scoped_ptr<BluetoothManagerClient> bluetooth_manager_client_;
-  scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
-  scoped_ptr<PowerManagerClient> power_manager_client_;
-  scoped_ptr<SessionManagerClient> session_manager_client_;
-  scoped_ptr<SpeechSynthesizerClient> speech_synthesizer_client_;
+ protected:
+  DBusThreadManager();
 
   DISALLOW_COPY_AND_ASSIGN(DBusThreadManager);
 };
