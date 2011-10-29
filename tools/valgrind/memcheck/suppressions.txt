@@ -859,7 +859,7 @@
    intentional_BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test_leak
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN59BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test8TestBodyEv
+   fun:*BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test8TestBodyEv
 }
 {
    # This is an on demand initialization which is done and then intentionally
@@ -5163,6 +5163,33 @@
    fun:_ZN8SkCanvas19updateDeviceCMCacheEv
    fun:_ZN10SkDrawIterC1EP8SkCanvasb
    fun:_ZN8SkCanvas8draw*ERK6Sk*RK7SkPaint
+}
+{
+   bug_102255
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15DownloadService18GetDownloadManagerEv
+   fun:_ZN29ExtensionDownloadsEventRouterC*
+   fun:_ZN16ExtensionService16InitEventRoutersEv
+   fun:_ZN16ExtensionService7ObserveEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
+   ...
+   fun:_ZN23NotificationServiceImpl6NotifyEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
+   fun:_ZN14ProfileManager16OnImportFinishedEP7Profile
+   fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
+}
+{
+   bug_102256
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN26AutocompleteHistoryManager15SendSuggestions*
+   fun:_ZN52AutocompleteHistoryManagerTest_ExternalDelegate_Test8TestBodyEv
+}
+{
+   bug_102257
+   Memcheck:Cond
+   ...
+   fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_Pb
+   fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_6ObjectEEES4_iPS4_Pbb
 }
 
 #-----------------------------------------------------------------------

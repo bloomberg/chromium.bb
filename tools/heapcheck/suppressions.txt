@@ -136,7 +136,7 @@
 {
    Intentional leak in BrowserThreadTest.NotReleasedIfTargetThreadNonExistent
    Heapcheck:Leak
-   fun:BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
+   fun:content::BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
 }
 {
    Intentional leak of *Histograms to avoid shutdown races
@@ -1629,4 +1629,11 @@
    fun:base::internal::Invoker*::DoInvoke
    fun:base::Callback::Run
    fun:MessageLoop::RunTask
+}
+{
+   bug_102256
+   Heapcheck:Leak
+   ...
+   fun:AutocompleteHistoryManager::SendSuggestions
+   fun:AutocompleteHistoryManagerTest_ExternalDelegate_Test::TestBody
 }
