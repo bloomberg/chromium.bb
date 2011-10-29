@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"  // Temporary
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -13,6 +14,7 @@
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
+#include "content/browser/renderer_host/render_view_host.h"  // Temporary
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_details.h"
@@ -671,6 +673,24 @@ content::NavigationType NavigationController::ClassifyNavigation(
     // release builds. Instead, we'll kill the renderer process to be safe.
     LOG(ERROR) << "terminating renderer for bad navigation: " << params.url;
     UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_NC"));
+
+    // Temporary code so we can get more information:
+    std::string temp = params.url.spec();;
+    temp.append("#");
+    temp.append(params.referrer.spec());
+    temp.append("#");
+    temp.append(base::IntToString(params.page_id));
+    for (int i = static_cast<int>(entries_.size()) - 1; i >= 0; --i) {
+      if (entries_[i]->site_instance() == tab_contents_->GetSiteInstance()) {
+        temp.append("#");
+        temp.append(base::IntToString(entries_[i]->page_id()));
+      }
+    }
+    GURL url(temp);
+    tab_contents_->render_view_host()->Send(new ViewMsg_TempCrashWithData(url));
+    return content::NAVIGATION_TYPE_NAV_IGNORE;
+
+
     if (tab_contents_->GetSiteInstance()->HasProcess())
       tab_contents_->GetSiteInstance()->GetProcess()->ReceivedBadMessage();
     return content::NAVIGATION_TYPE_NAV_IGNORE;

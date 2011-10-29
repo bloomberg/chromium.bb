@@ -190,6 +190,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   void OnPurgePluginListCache(bool reload_pages);
   void OnNetworkStateChanged(bool online);
   void OnGetAccessibilityTree();
+  void OnTempCrashWithData(const GURL& data);
 
   // These objects live solely on the render thread.
   scoped_ptr<ScopedRunnableMethodFactory<RenderThreadImpl> > task_factory_;

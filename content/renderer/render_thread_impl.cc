@@ -663,6 +663,7 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
     IPC_MESSAGE_HANDLER(ViewMsg_NetworkStateChanged, OnNetworkStateChanged)
     IPC_MESSAGE_HANDLER(DOMStorageMsg_Event, OnDOMStorageEvent)
+    IPC_MESSAGE_HANDLER(ViewMsg_TempCrashWithData, OnTempCrashWithData)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -774,6 +775,11 @@ void RenderThreadImpl::OnPurgePluginListCache(bool reload_pages) {
 void RenderThreadImpl::OnNetworkStateChanged(bool online) {
   EnsureWebKitInitialized();
   WebNetworkStateNotifier::setOnLine(online);
+}
+
+void RenderThreadImpl::OnTempCrashWithData(const GURL& data) {
+  content::GetContentClient()->SetActiveURL(data);
+  CHECK(false);
 }
 
 scoped_refptr<base::MessageLoopProxy>

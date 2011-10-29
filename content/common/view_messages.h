@@ -1149,6 +1149,11 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SavePageAsMHTML,
 // Exit fullscreen.
 IPC_MESSAGE_ROUTED0(ViewMsg_ExitFullscreen)
 
+// Temporary message to diagnose an unexpected condition in TabContents.
+IPC_MESSAGE_CONTROL1(ViewMsg_TempCrashWithData,
+                     GURL /* data */)
+
+
 // Messages sent from the renderer to the browser.
 
 // Sent by the renderer when it is creating a new window.  The browser creates
