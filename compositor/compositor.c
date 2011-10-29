@@ -152,7 +152,7 @@ wlsc_spring_init(struct wlsc_spring *spring,
 		 double k, double current, double target)
 {
 	spring->k = k;
-	spring->friction = 100.0;
+	spring->friction = 400.0;
 	spring->current = current;
 	spring->previous = current;
 	spring->target = target;
@@ -2072,7 +2072,7 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wl_list_init(&ec->output_list);
 	wl_list_init(&ec->binding_list);
 	wl_list_init(&ec->animation_list);
-	wlsc_spring_init(&ec->fade.spring, 40.0, 1.0, 1.0);
+	wlsc_spring_init(&ec->fade.spring, 30.0, 1.0, 1.0);
 	ec->fade.animation.frame = fade_frame;
 	wl_list_init(&ec->fade.animation.link);
 
