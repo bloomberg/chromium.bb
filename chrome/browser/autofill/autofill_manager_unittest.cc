@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
@@ -14,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
+#include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
@@ -25,6 +27,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/common/autofill_messages.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
@@ -38,6 +41,7 @@
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 
+using testing::_;
 using webkit_glue::FormData;
 using webkit_glue::FormField;
 
@@ -2834,3 +2838,68 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUploadStressTest) {
   EXPECT_TRUE(possible_types2.find(UNKNOWN_TYPE) !=
               possible_types2.end());
 }
+
+namespace {
+
+class MockAutofillExternalDelegate : public AutofillExternalDelegate {
+ public:
+  explicit MockAutofillExternalDelegate(TabContentsWrapper* wrapper)
+      : AutofillExternalDelegate(wrapper) {}
+  virtual ~MockAutofillExternalDelegate() {}
+
+  MOCK_METHOD3(OnQuery, void(int query_id,
+                             const webkit_glue::FormData& form,
+                             const webkit_glue::FormField& field));
+  virtual void OnSuggestionsReturned(
+      int query_id,
+      const std::vector<string16>& autofill_values,
+      const std::vector<string16>& autofill_labels,
+      const std::vector<string16>& autofill_icons,
+      const std::vector<int>& autofill_unique_ids) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockAutofillExternalDelegate);
+};
+
+}  // namespace
+
+// Test our external delegate is called at the right time.
+TEST_F(AutofillManagerTest, TestExternalDelegate) {
+  MockAutofillExternalDelegate external_delegate(contents_wrapper());
+  EXPECT_CALL(external_delegate, OnQuery(_, _, _));
+  autofill_manager_->SetExternalDelegate(&external_delegate);
+
+  FormData form;
+  CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  const FormField& field = form.fields[0];
+  GetAutofillSuggestions(form, field);  // should call the delegate's OnQuery()
+
+  autofill_manager_->SetExternalDelegate(NULL);
+}
+
+#if defined(OS_ANDROID)
+// Only OS_ANDROID defines an external delegate, but prerequisites for
+// landing autofill_external_delegate_android.cc in the Chromium tree
+// have not themselves landed.
+
+// Turn on the external delegate.  Recreate a TabContents.  Make sure
+// an external delegate was set in the proper structures.
+TEST_F(AutofillManagerTest, TestTabContentsWithExternalDelegate) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kExternalAutofillPopup);
+
+  // Setting the contents creates a new TabContentsWrapper.
+  TestTabContents* contents = CreateTestTabContents();
+  SetContents(contents);
+
+  AutofillManager* autofill_manager = contents_wrapper()->autofill_manager();
+  EXPECT_TRUE(autofill_manager->external_delegate());
+
+  AutocompleteHistoryManager* autocomplete_history_manager =
+      contents_wrapper()->autocomplete_history_manager();
+  EXPECT_TRUE(autocomplete_history_manager->external_delegate());
+}
+
+#endif  // OS_ANDROID

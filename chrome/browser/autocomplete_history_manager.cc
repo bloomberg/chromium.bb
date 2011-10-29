@@ -9,6 +9,7 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -102,7 +103,8 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
     TabContents* tab_contents)
     : TabContentsObserver(tab_contents),
       pending_query_handle_(0),
-      query_id_(0) {
+      query_id_(0),
+      external_delegate_(NULL) {
   profile_ = Profile::FromBrowserContext(tab_contents->browser_context());
   // May be NULL in unit tests.
   web_data_service_ = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
@@ -260,6 +262,15 @@ void AutocompleteHistoryManager::SendSuggestions(
         autofill_unique_ids_.push_back(0);  // 0 means no profile.
       }
     }
+  }
+
+  if (external_delegate_) {
+    external_delegate_->OnSuggestionsReturned(
+        query_id_,
+        autofill_values_,
+        autofill_labels_,
+        autofill_icons_,
+        autofill_unique_ids_);
   }
 
   Send(new AutofillMsg_SuggestionsReturned(routing_id(),

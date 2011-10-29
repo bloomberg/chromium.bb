@@ -23,6 +23,7 @@
 #include "chrome/browser/autofill/form_structure.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
+class AutofillExternalDelegate;
 class AutofillField;
 class AutofillProfile;
 class AutofillMetrics;
@@ -53,6 +54,14 @@ class AutofillManager : public TabContentsObserver,
 
   // Registers our Enable/Disable Autofill pref.
   static void RegisterUserPrefs(PrefService* prefs);
+
+  // Set our external delegate.
+  // TODO(jrg): consider passing delegate into the ctor.  That won't
+  // work if the delegate has a pointer to the AutofillManager, but
+  // future directions may not need such a pointer.
+  void SetExternalDelegate(AutofillExternalDelegate* delegate) {
+    external_delegate_ = delegate;
+  }
 
  protected:
   // Only test code should subclass AutofillManager.
@@ -89,6 +98,17 @@ class AutofillManager : public TabContentsObserver,
   void set_metric_logger(const AutofillMetrics* metric_logger);
 
   ScopedVector<FormStructure>* form_structures() { return &form_structures_; }
+
+ // Called from our external delegate so it cannot be private.
+  void OnFillAutoFillFormData(int query_id,
+                              const webkit_glue::FormData& form,
+                              const webkit_glue::FormField& field,
+                              int unique_id);
+
+  // Exposed for testing.
+  AutofillExternalDelegate* external_delegate() {
+    return external_delegate_;
+  }
 
  private:
   // TabContentsObserver:
@@ -268,6 +288,10 @@ class AutofillManager : public TabContentsObserver,
   mutable std::map<GUIDPair, int> guid_id_map_;
   mutable std::map<int, GUIDPair> id_guid_map_;
 
+  // Delegate to perform external processing (display, selection) on
+  // our behalf.  Weak.
+  AutofillExternalDelegate* external_delegate_;
+
   friend class AutofillManagerTest;
   friend class FormStructureBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
@@ -282,6 +306,9 @@ class AutofillManager : public TabContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetricsForFailure);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetricsWithExperimentId);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, SaneMetricsWithCacheMismatch);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, TestExternalDelegate);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           TestTabContentsWithExternalDelegate);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
                            UserHappinessFormLoadAndSubmission);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, UserHappinessFormInteraction);

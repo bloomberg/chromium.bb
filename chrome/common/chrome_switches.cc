@@ -589,6 +589,9 @@ const char kExtensionProcess[]              = "extension-process";
 // Frequency in seconds for Extensions auto-update.
 const char kExtensionsUpdateFrequency[]     = "extensions-update-frequency";
 
+// Should we use an external Autofill popup?  Default is no.
+const char kExternalAutofillPopup[]         = "external-autofill-popup";
+
 // These two flags are added around the switches about:flags adds to the
 // command line. This is useful to see which switches were added by about:flags
 // on about:version. They don't have any effect.

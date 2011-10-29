@@ -169,6 +169,7 @@ extern const char kExperimentalSpellcheckerFeatures[];
 extern const char kExplicitlyAllowedPorts[];
 extern const char kExtensionProcess[];
 extern const char kExtensionsUpdateFrequency[];
+extern const char kExternalAutofillPopup[];
 extern const char kFlagSwitchesBegin[];
 extern const char kFlagSwitchesEnd[];
 extern const char kFeedbackServer[];

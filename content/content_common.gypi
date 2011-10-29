@@ -62,6 +62,7 @@
     'common/appcache/appcache_dispatcher.cc',
     'common/appcache/appcache_dispatcher.h',
     'common/appcache_messages.h',
+    'common/autofill_messages.h',
     'common/child_process.cc',
     'common/child_process.h',
     'common/child_process_host.cc',

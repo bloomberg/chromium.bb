@@ -88,6 +88,10 @@ IPC_MESSAGE_ROUTED1(
     AutofillMsg_FieldTypePredictionsAvailable,
     std::vector<webkit_glue::FormDataPredictions> /* forms */)
 
+// Select an Autofill item when using an external delegate.
+IPC_MESSAGE_ROUTED1(AutofillMsg_SelectAutofillSuggestionAtIndex,
+                    int /* listIndex */)
+
 // Autofill messages sent from the renderer to the browser.
 
 // Notification that forms have been seen that are candidates for

@@ -20,6 +20,7 @@
 
 class AutocompleteHistoryManager;
 class AutofillManager;
+class AutofillExternalDelegate;
 class AutomationTabHelper;
 class BlockedContentTabHelper;
 class BookmarkTabHelper;
@@ -274,6 +275,7 @@ class TabContentsWrapper : public TabContentsObserver,
 
   scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
   scoped_ptr<AutofillManager> autofill_manager_;
+  scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
   scoped_ptr<AutomationTabHelper> automation_tab_helper_;
   scoped_ptr<BlockedContentTabHelper> blocked_content_tab_helper_;
   scoped_ptr<BookmarkTabHelper> bookmark_tab_helper_;

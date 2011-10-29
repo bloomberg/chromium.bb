@@ -100,6 +100,9 @@ class AutofillAgent : public content::RenderViewObserver,
   void OnFieldTypePredictionsAvailable(
       const std::vector<webkit_glue::FormDataPredictions>& forms);
 
+ // For external Autofill selection.
+  void OnSelectAutofillSuggestionAtIndex(int listIndex);
+
   // Called in a posted task by textFieldDidChange() to work-around a WebKit bug
   // http://bugs.webkit.org/show_bug.cgi?id=16976
   void TextFieldDidChangeImpl(const WebKit::WebInputElement& element);

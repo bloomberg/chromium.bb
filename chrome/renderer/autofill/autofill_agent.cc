@@ -72,6 +72,8 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutofillMsg_FormDataFilled, OnFormDataFilled)
     IPC_MESSAGE_HANDLER(AutofillMsg_FieldTypePredictionsAvailable,
                         OnFieldTypePredictionsAvailable)
+    IPC_MESSAGE_HANDLER(AutofillMsg_SelectAutofillSuggestionAtIndex,
+                        OnSelectAutofillSuggestionAtIndex)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -348,6 +350,12 @@ void AutofillAgent::OnFieldTypePredictionsAvailable(
   for (size_t i = 0; i < forms.size(); ++i) {
     form_cache_.ShowPredictions(forms[i]);
   }
+}
+
+void AutofillAgent::OnSelectAutofillSuggestionAtIndex(int listIndex) {
+  NOTIMPLEMENTED();
+  // TODO(jrg): enable once changes land in WebKit
+  // render_view()->webview()->selectAutofillSuggestionAtIndex(listIndex);
 }
 
 void AutofillAgent::ShowSuggestions(const WebInputElement& element,

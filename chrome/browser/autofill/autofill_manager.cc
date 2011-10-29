@@ -19,6 +19,7 @@
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_feedback_infobar_delegate.h"
+#include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_profile.h"
@@ -216,7 +217,8 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents)
       did_show_suggestions_(false),
       user_did_type_(false),
       user_did_autofill_(false),
-      user_did_edit_autofilled_field_(false) {
+      user_did_edit_autofilled_field_(false),
+      external_delegate_(NULL) {
   DCHECK(tab_contents);
 
   // |personal_data_| is NULL when using TestTabContents.
@@ -379,6 +381,9 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   std::vector<string16> labels;
   std::vector<string16> icons;
   std::vector<int> unique_ids;
+
+  if (external_delegate_)
+    external_delegate_->OnQuery(query_id, form, field);
 
   RenderViewHost* host = NULL;
   FormStructure* form_structure = NULL;
@@ -733,7 +738,8 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents,
       did_show_suggestions_(false),
       user_did_type_(false),
       user_did_autofill_(false),
-      user_did_edit_autofilled_field_(false)  {
+      user_did_edit_autofilled_field_(false),
+      external_delegate_(NULL) {
   DCHECK(tab_contents);
 }
 

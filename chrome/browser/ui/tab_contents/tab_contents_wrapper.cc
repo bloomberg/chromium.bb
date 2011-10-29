@@ -6,9 +6,11 @@
 
 #include "base/utf_string_conversions.h"
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/autocomplete_history_manager.h"
+#include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
 #include "chrome/browser/browser_process.h"
@@ -246,6 +248,14 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   // Create the tab helpers.
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(contents));
   autofill_manager_.reset(new AutofillManager(this));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kExternalAutofillPopup)) {
+    autofill_external_delegate_.reset(
+        AutofillExternalDelegate::Create(this, autofill_manager_.get()));
+    autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
+    autocomplete_history_manager_->SetExternalDelegate(
+        autofill_external_delegate_.get());
+  }
   automation_tab_helper_.reset(new AutomationTabHelper(contents));
   blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
   bookmark_tab_helper_.reset(new BookmarkTabHelper(this));
