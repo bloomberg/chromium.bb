@@ -324,6 +324,7 @@ void ClientSideDetectionHost::DidNavigateMainFramePostCommit(
   }
   browse_info_->host_redirects = cur_host_redirects_;
   browse_info_->url_redirects = params.redirects;
+  browse_info_->http_status_code = details.http_status_code;
 
   // Notify the renderer if it should classify this URL.
   classification_request_ = new ShouldClassifyUrlRequest(params,

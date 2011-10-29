@@ -71,6 +71,9 @@ extern const char kSecureRedirectValue[];
 // Resource was fetched from a known bad IP address.
 extern const char kBadIpFetch[];
 
+// The HTTP status code for the main document.
+extern const char kHttpStatusCode[];
+
 // SafeBrowsing related featues.  Fields from the UnsafeResource if there is
 // any.
 extern const char kSafeBrowsingMaliciousUrl[];

@@ -272,6 +272,7 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   redirect_chain.push_back(GURL("http://somerandomwebsite.com/"));
   redirect_chain.push_back(GURL("http://www.foo.com/"));
   SetRedirectChain(redirect_chain, true);
+  browse_info_->http_status_code = 200;
   NavigateAndCommit(GURL("http://www.foo.com/"),
                     GURL("http://google.com/"),
                     content::PageTransitionFromInt(
@@ -299,6 +300,7 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   EXPECT_EQ(0.0, features[features::kHasSSLReferrer]);
   EXPECT_EQ(2.0, features[features::kPageTransitionType]);
   EXPECT_EQ(1.0, features[features::kIsFirstNavigation]);
+  EXPECT_EQ(200.0, features[features::kHttpStatusCode]);
 
   request.Clear();
   request.set_url("http://www.foo.com/page.html");
@@ -308,6 +310,7 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   redirect_chain.push_back(GURL("http://www.foo.com/second_redirect"));
   redirect_chain.push_back(GURL("http://www.foo.com/page.html"));
   SetRedirectChain(redirect_chain, false);
+  browse_info_->http_status_code = 404;
   NavigateAndCommit(GURL("http://www.foo.com/page.html"),
                     GURL("http://www.foo.com"),
                     content::PageTransitionFromInt(
@@ -352,6 +355,7 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
             features[StringPrintf("%s%s",
                                   features::kHostPrefix,
                                   features::kIsFirstNavigation)]);
+  EXPECT_EQ(404.0, features[features::kHttpStatusCode]);
 
   request.Clear();
   request.set_url("http://www.bar.com/");

@@ -28,7 +28,7 @@
 
 namespace safe_browsing {
 
-BrowseInfo::BrowseInfo() {}
+BrowseInfo::BrowseInfo() : http_status_code(0) {}
 
 BrowseInfo::~BrowseInfo() {}
 
@@ -232,7 +232,9 @@ void BrowserFeatureExtractor::ExtractBrowseInfoFeatures(
                static_cast<double>(info.unsafe_resource->threat_type),
                request);
   }
-
+  if (info.http_status_code != 0) {
+    AddFeature(features::kHttpStatusCode, info.http_status_code, request);
+  }
 }
 
 void BrowserFeatureExtractor::StartExtractFeatures(

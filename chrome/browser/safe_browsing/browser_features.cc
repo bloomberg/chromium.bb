@@ -27,6 +27,7 @@ const char kRedirectUrlMismatch[] = "RedirectUrlMismatch";
 const char kRedirect[] = "Redirect";
 const char kSecureRedirectValue[] = "SecureRedirect";
 const char kBadIpFetch[] = "BadIpFetch=";
+const char kHttpStatusCode[] = "HttpStatusCode";
 const char kSafeBrowsingMaliciousUrl[] = "SafeBrowsingMaliciousUrl=";
 const char kSafeBrowsingOriginalUrl[] = "SafeBrowsingOriginalUrl=";
 const char kSafeBrowsingIsSubresource[] = "SafeBrowsingIsSubresource";
