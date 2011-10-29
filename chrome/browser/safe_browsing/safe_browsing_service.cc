@@ -913,8 +913,11 @@ void SafeBrowsingService::Start() {
       !cmdline->HasSwitch(switches::kDisableClientSidePhishingDetection);
 #endif
 
-  enable_download_whitelist_ = cmdline->HasSwitch(
-      switches::kEnableImprovedDownloadProtection);
+  // TODO(noelutz): remove this boolean variable since it should always be true
+  // if SafeBrowsing is enabled.  Unfortunately, we have no test data for this
+  // list right now.  This means that we need to be able to disable this list
+  // for the SafeBrowsing test to pass.
+  enable_download_whitelist_ = enable_csd_whitelist_;
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

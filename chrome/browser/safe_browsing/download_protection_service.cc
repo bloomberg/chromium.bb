@@ -67,7 +67,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
         callback_(callback),
         service_(service),
         sb_service_(sb_service),
-        pingback_enabled_(service_->enabled()) {
+        pingback_enabled_(service_->enabled()),
+        is_signed_(false) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
@@ -162,15 +163,14 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
   void ExtractFileFeatures() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    bool is_signed;
     if (safe_browsing::signature_util::IsSigned(info_.local_file)) {
       VLOG(2) << "Downloaded a signed binary: " << info_.local_file.value();
-      is_signed = true;
+      is_signed_ = true;
     } else {
       VLOG(2) << "Downloaded an unsigned binary: " << info_.local_file.value();
-      is_signed = false;
+      is_signed_ = false;
     }
-    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.SignedBinaryDownload", is_signed);
+    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.SignedBinaryDownload", is_signed_);
 
     // TODO(noelutz): DownloadInfo should also contain the IP address of every
     // URL in the redirect chain.  We also should check whether the download
@@ -184,7 +184,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   void CheckWhitelists() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     DownloadCheckResultReason reason = REASON_MAX;
-    if (!pingback_enabled_ || !sb_service_.get()) {
+    if (!sb_service_.get()) {
       reason = REASON_SB_DISABLED;
     } else {
       for (size_t i = 0; i < info_.download_url_chain.size(); ++i) {
@@ -194,25 +194,30 @@ class DownloadProtectionService::CheckClientDownloadRequest
           break;
         }
       }
-      if (info_.referrer_url.is_valid() &&
+      if (info_.referrer_url.is_valid() && reason == REASON_MAX &&
           sb_service_->MatchDownloadWhitelistUrl(info_.referrer_url)) {
         reason = REASON_WHITELISTED_REFERRER;
+      }
+      if (reason != REASON_MAX || is_signed_) {
+        UMA_HISTOGRAM_COUNTS("SBClientDownload.SignedOrWhitelistedDownload", 1);
       }
     }
     if (reason != REASON_MAX) {
       RecordStats(reason);
       PostFinishTask(SAFE);
-      return;
+    } else if (!pingback_enabled_) {
+      RecordStats(REASON_SB_DISABLED);
+      PostFinishTask(SAFE);
+    } else {
+      // TODO(noelutz): check signature and CA against whitelist.
+
+      // The URLFetcher is owned by the UI thread, so post a message to
+      // start the pingback.
+      BrowserThread::PostTask(
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&CheckClientDownloadRequest::SendRequest, this));
     }
-
-    // TODO(noelutz): check signature and CA against whitelist.
-
-    // The URLFetcher is owned by the UI thread, so post a message to
-    // start the pingback.
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&CheckClientDownloadRequest::SendRequest, this));
   }
 
   void SendRequest() {
@@ -221,6 +226,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // This is our last chance to check whether the request has been canceled
     // before sending it.
     if (!service_) {
+      RecordStats(REASON_REQUEST_CANCELED);
       FinishRequest(SAFE);
       return;
     }
@@ -289,7 +295,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
   // Will be NULL if the request has been canceled.
   DownloadProtectionService* service_;
   scoped_refptr<SafeBrowsingService> sb_service_;
-  bool pingback_enabled_;
+  const bool pingback_enabled_;
+  bool is_signed_;
   scoped_ptr<content::URLFetcher> fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequest);

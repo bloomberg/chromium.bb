@@ -97,6 +97,7 @@ class DownloadProtectionService {
     REASON_SERVER_PING_FAILED,
     REASON_INVALID_RESPONSE_PROTO,
     REASON_NOT_BINARY_FILE,
+    REASON_REQUEST_CANCELED,
     REASON_MAX  // Always add new values before this one.
   };
 

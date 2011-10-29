@@ -432,7 +432,7 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
         std::string data_str;
         data_str.assign(data, length);
         std::string encoded_chunk;
-        base::Base64Encode(data, &encoded_chunk);
+        base::Base64Encode(data_str, &encoded_chunk);
         VLOG(1) << "ParseChunk error for chunk: " << chunk_url.url
                 << ", client_key: " << client_key_
                 << ", wrapped_key: " << wrapped_key_

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -335,8 +335,9 @@ bool SafeBrowsingProtocolParser::ParseAddChunk(const std::string& list_name,
   SBEntry::Type type = hash_len == sizeof(SBPrefix) ?
       SBEntry::ADD_PREFIX : SBEntry::ADD_FULL_HASH;
 
-  if (list_name == safe_browsing_util::kBinHashList) {
-    // kBinHashList only contains prefixes, no HOSTKEY and COUNT.
+  if (list_name == safe_browsing_util::kBinHashList ||
+      list_name == safe_browsing_util::kDownloadWhiteList) {
+    // These lists only contain prefixes, no HOSTKEY and COUNT.
     DCHECK_EQ(0, remaining % hash_len);
     prefix_count = remaining / hash_len;
     SBChunkHost chunk_host;

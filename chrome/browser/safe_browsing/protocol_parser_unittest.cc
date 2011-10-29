@@ -924,3 +924,43 @@ TEST(SafeBrowsingProtocolParsingTest, TestSubBinHashChunk) {
   EXPECT_EQ(entry->ChunkIdAtPrefix(1), 0x32323232);
   EXPECT_EQ(entry->PrefixAt(1), 0x6e6e6e6e);
 }
+
+TEST(SafeBrowsingProtocolParsingTest, TestAddDownloadWhitelistChunk) {
+  std::string add_chunk("a:1:32:32\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                        "a:2:32:64\nyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+                        "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
+  // Run the parse.
+  SafeBrowsingProtocolParser parser;
+  bool re_key = false;
+  SBChunkList chunks;
+  bool result = parser.ParseChunk(
+      safe_browsing_util::kDownloadWhiteList,
+      add_chunk.data(),
+      static_cast<int>(add_chunk.length()),
+      "", "", &re_key, &chunks);
+  EXPECT_TRUE(result);
+  EXPECT_FALSE(re_key);
+  EXPECT_EQ(chunks.size(), 2U);
+  EXPECT_EQ(chunks[0].chunk_number, 1);
+  EXPECT_EQ(chunks[0].hosts.size(), 1U);
+  EXPECT_EQ(chunks[0].hosts[0].host, 0);
+  SBEntry* entry = chunks[0].hosts[0].entry;
+  EXPECT_TRUE(entry->IsAdd());
+  EXPECT_FALSE(entry->IsPrefix());
+  EXPECT_EQ(entry->prefix_count(), 1);
+  SBFullHash full;
+  memcpy(full.full_hash, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 32);
+  EXPECT_TRUE(entry->FullHashAt(0) == full);
+
+  EXPECT_EQ(chunks[1].chunk_number, 2);
+  EXPECT_EQ(chunks[1].hosts.size(), 1U);
+  EXPECT_EQ(chunks[1].hosts[0].host, 0);
+  entry = chunks[1].hosts[0].entry;
+  EXPECT_TRUE(entry->IsAdd());
+  EXPECT_FALSE(entry->IsPrefix());
+  EXPECT_EQ(entry->prefix_count(), 2);
+  memcpy(full.full_hash, "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy", 32);
+  EXPECT_TRUE(entry->FullHashAt(0) == full);
+  memcpy(full.full_hash, "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz", 32);
+  EXPECT_TRUE(entry->FullHashAt(1) == full);
+}
