@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiles/off_the_record_profile_impl.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
@@ -112,8 +113,7 @@ void OffTheRecordProfileImpl::Init() {
 
   BrowserThread::PostTask(
     BrowserThread::IO, FROM_HERE,
-    NewRunnableFunction(
-      &NotifyOTRProfileCreatedOnIOThread, profile_, this));
+    base::Bind(&NotifyOTRProfileCreatedOnIOThread, profile_, this));
 }
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
@@ -128,15 +128,14 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&NotifyOTRProfileDestroyedOnIOThread, profile_,
-                          this));
+      base::Bind(&NotifyOTRProfileDestroyedOnIOThread, profile_, this));
 
   // Clean up all DB files/directories
   if (db_tracker_) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(db_tracker_.get(),
-                          &webkit_database::DatabaseTracker::Shutdown));
+        base::Bind(&webkit_database::DatabaseTracker::Shutdown,
+                   db_tracker_.get()));
   }
 
   BrowserList::RemoveObserver(this);
@@ -517,9 +516,8 @@ ChromeBlobStorageContext* OffTheRecordProfileImpl::GetBlobStorageContext() {
     blob_storage_context_ = new ChromeBlobStorageContext();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            blob_storage_context_.get(),
-            &ChromeBlobStorageContext::InitializeOnIOThread));
+        base::Bind(&ChromeBlobStorageContext::InitializeOnIOThread,
+                   blob_storage_context_.get()));
   }
   return blob_storage_context_;
 }
@@ -617,13 +615,12 @@ void OffTheRecordProfileImpl::CreateQuotaManagerAndClients() {
   appcache_service_ = new ChromeAppCacheService(quota_manager_->proxy());
   BrowserThread::PostTask(
     BrowserThread::IO, FROM_HERE,
-    NewRunnableMethod(
-        appcache_service_.get(),
-        &ChromeAppCacheService::InitializeOnIOThread,
-        IsOffTheRecord()
-            ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
-        &GetResourceContext(),
-        make_scoped_refptr(GetExtensionSpecialStoragePolicy())));
+    base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
+               appcache_service_.get(),
+               IsOffTheRecord()
+                   ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
+               &GetResourceContext(),
+               make_scoped_refptr(GetExtensionSpecialStoragePolicy())));
 }
 
 #if defined(OS_CHROMEOS)

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiles/profile_impl.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"
@@ -159,6 +160,13 @@ enum ContextType {
 typedef std::list<std::pair<FilePath::StringType, int> >
     ComponentExtensionList;
 
+// Helper method needed because PostTask cannot currently take a Callback
+// function with non-void return type.
+// TODO(jhawkins): Remove once IgnoreReturn is fixed.
+void CreateDirectoryNoResult(const FilePath& path) {
+  file_util::CreateDirectory(path);
+}
+
 #if defined(FILE_MANAGER_EXTENSION)
 void AddFileManagerExtension(ComponentExtensionList* component_extensions) {
 #ifndef NDEBUG
@@ -240,10 +248,9 @@ Profile* Profile::CreateProfileAsync(const FilePath& path,
                                      Profile::Delegate* delegate) {
   DCHECK(delegate);
   // This is safe while all file operations are done on the FILE thread.
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          NewRunnableFunction(&file_util::CreateDirectory,
-                                              path));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CreateDirectoryNoResult, path));
   // Async version.
   return new ProfileImpl(path, delegate);
 }
@@ -339,10 +346,9 @@ void ProfileImpl::DoFinalInit() {
   } else {
     // Async profile loading is used, so call this on the FILE thread instead.
     // It is safe since all other file operations should also be done there.
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            NewRunnableFunction(&file_util::CreateDirectory,
-                                                base_cache_path_));
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&CreateDirectoryNoResult, base_cache_path_));
   }
 
 #if !defined(OS_CHROMEOS)
@@ -642,10 +648,8 @@ ProfileImpl::~ProfileImpl() {
   if (appcache_service_ && clear_local_state_on_exit_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            appcache_service_.get(),
-            &appcache::AppCacheService::set_clear_local_state_on_exit,
-            true));
+        base::Bind(&appcache::AppCacheService::set_clear_local_state_on_exit,
+                   appcache_service_.get(), true));
   }
 
   if (webkit_context_.get())
@@ -669,9 +673,8 @@ ProfileImpl::~ProfileImpl() {
   if (db_tracker_) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(
-            db_tracker_.get(),
-            &webkit_database::DatabaseTracker::Shutdown));
+        base::Bind(&webkit_database::DatabaseTracker::Shutdown,
+                   db_tracker_.get()));
   }
 
   // Password store uses WebDB, shut it down before the WebDB has been shutdown.
@@ -971,10 +974,9 @@ void ProfileImpl::RegisterExtensionWithRequestContexts(
       GetExtensionService()->IsIncognitoEnabled(extension->id());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(extension_info_map_.get(),
-                        &ExtensionInfoMap::AddExtension,
-                        make_scoped_refptr(extension),
-                        install_time, incognito_enabled));
+      base::Bind(&ExtensionInfoMap::AddExtension, extension_info_map_.get(),
+                 make_scoped_refptr(extension), install_time,
+                 incognito_enabled));
 }
 
 void ProfileImpl::UnregisterExtensionWithRequestContexts(
@@ -982,10 +984,8 @@ void ProfileImpl::UnregisterExtensionWithRequestContexts(
     const extension_misc::UnloadedExtensionReason reason) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(extension_info_map_.get(),
-                        &ExtensionInfoMap::RemoveExtension,
-                        extension_id,
-                        reason));
+      base::Bind(&ExtensionInfoMap::RemoveExtension, extension_info_map_.get(),
+                 extension_id, reason));
 }
 
 net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
@@ -1369,13 +1369,12 @@ void ProfileImpl::CreateQuotaManagerAndClients() {
   appcache_service_ = new ChromeAppCacheService(quota_manager_->proxy());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          appcache_service_.get(),
-          &ChromeAppCacheService::InitializeOnIOThread,
-          IsOffTheRecord()
-              ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
-          &GetResourceContext(),
-          make_scoped_refptr(GetExtensionSpecialStoragePolicy())));
+      base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
+                 appcache_service_.get(),
+                 IsOffTheRecord()
+                     ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
+                 &GetResourceContext(),
+                 make_scoped_refptr(GetExtensionSpecialStoragePolicy())));
 }
 
 WebKitContext* ProfileImpl::GetWebKitContext() {
@@ -1531,8 +1530,8 @@ ChromeBlobStorageContext* ProfileImpl::GetBlobStorageContext() {
     blob_storage_context_ = new ChromeBlobStorageContext();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(blob_storage_context_.get(),
-                          &ChromeBlobStorageContext::InitializeOnIOThread));
+        base::Bind(&ChromeBlobStorageContext::InitializeOnIOThread,
+                   blob_storage_context_.get()));
   }
   return blob_storage_context_;
 }

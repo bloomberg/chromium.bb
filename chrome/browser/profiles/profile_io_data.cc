@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -90,11 +91,8 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
       net::CookieMonster::Delegate::ChangeCause cause) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-            &ChromeCookieMonsterDelegate::OnCookieChangedAsyncHelper,
-            cookie,
-            removed,
-            cause));
+        base::Bind(&ChromeCookieMonsterDelegate::OnCookieChangedAsyncHelper,
+                   this, cookie, removed, cause));
   }
 
  private:
