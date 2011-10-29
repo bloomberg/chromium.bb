@@ -460,6 +460,9 @@ class TabContents;
 // |source| rect doesn't fit into |target|.
 - (NSSize)overflowFrom:(NSRect)source
                     to:(NSRect)target;
+
+// The fullscreen exit bubble controller, or nil if the bubble isn't showing.
+- (FullscreenExitBubbleController*)fullscreenExitBubbleController;
 @end  // @interface BrowserWindowController (TestingAPI)
 
 
