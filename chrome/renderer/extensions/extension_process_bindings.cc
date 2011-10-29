@@ -436,9 +436,15 @@ class ExtensionImpl : public ChromeV8Extension {
       const v8::Arguments& args, ListValue* value_args) {
     ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
 
+    const ChromeV8ContextSet& contexts =
+        v8_extension->extension_dispatcher()->v8_context_set();
+    ChromeV8Context* current_context = contexts.GetCurrent();
+    if (!current_context)
+      return v8::Undefined();
+
     // Get the current RenderView so that we can send a routed IPC message from
     // the correct source.
-    content::RenderView* renderview = GetCurrentRenderView();
+    content::RenderView* renderview = current_context->GetRenderView();
     if (!renderview)
       return v8::Undefined();
 
@@ -450,11 +456,12 @@ class ExtensionImpl : public ChromeV8Extension {
       return v8::Undefined();
     }
 
+    // TODO(aa): add this to ChromeV8Context.
     if (!v8_extension->CheckPermissionForCurrentRenderView(name))
       return v8::Undefined();
 
     GURL source_url;
-    WebFrame* webframe = WebFrame::frameForCurrentContext();
+    WebFrame* webframe = current_context->web_frame();
     if (webframe)
       source_url = webframe->document().url();
 
@@ -462,11 +469,11 @@ class ExtensionImpl : public ChromeV8Extension {
     bool has_callback = args[3]->BooleanValue();
     bool for_io_thread = args[4]->BooleanValue();
 
-    v8::Persistent<v8::Context> current_context =
+    v8::Persistent<v8::Context> v8_context =
         v8::Persistent<v8::Context>::New(v8::Context::GetCurrent());
-    DCHECK(!current_context.IsEmpty());
+    DCHECK(!v8_context.IsEmpty());
     g_pending_requests.Get()[request_id].reset(new PendingRequest(
-        current_context, name));
+        v8_context, name));
 
     ExtensionHostMsg_Request_Params params;
     params.name = name;
