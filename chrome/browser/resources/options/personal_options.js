@@ -223,7 +223,8 @@ cr.define('options', function() {
       var selectedProfile = profilesList.selectedItem;
       var hasSelection = selectedProfile != null;
       var hasSingleProfile = profilesList.dataModel.length == 1;
-      $('profiles-manage').disabled = !hasSelection;
+      $('profiles-manage').disabled = !hasSelection ||
+          !selectedProfile.isCurrentProfile;
       $('profiles-delete').disabled = !hasSelection || hasSingleProfile;
     },
 
