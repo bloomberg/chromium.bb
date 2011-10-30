@@ -14,6 +14,9 @@
         '../base/base.gyp:base',
         '../build/linux/system.gyp:dbus',
       ],
+      'export_dependent_settings': [
+        '../base/base.gyp:base',
+      ],
       'sources': [
         'bus.cc',
         'bus.h',
