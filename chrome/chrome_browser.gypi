@@ -1362,6 +1362,8 @@
         'browser/history/in_memory_history_backend.h',
         'browser/history/in_memory_url_index.cc',
         'browser/history/in_memory_url_index.h',
+        'browser/history/in_memory_url_index_types.cc',
+        'browser/history/in_memory_url_index_types.h',
         'browser/history/page_usage_data.cc',
         'browser/history/page_usage_data.h',
         'browser/history/query_parser.cc',

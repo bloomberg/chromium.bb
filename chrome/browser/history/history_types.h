@@ -74,6 +74,13 @@ class URLRow {
   URLRow& operator=(const URLRow& other);
 
   URLID id() const { return id_; }
+
+  // Sets the id of the row. The id should only be manually set when a row has
+  // been retrieved from the history database or other dataset based on criteria
+  // other than its id (i.e. by URL) and when the id has not yet been set in the
+  // row.
+  void set_id(URLID id) { id_ = id; }
+
   const GURL& url() const { return url_; }
 
   const string16& title() const {
@@ -140,8 +147,9 @@ class URLRow {
   // This excludes objects which autoinitialize such as strings.
   void Initialize();
 
-  // The row ID of this URL. Immutable except for the database which sets it
-  // when it pulls them out.
+  // The row ID of this URL from the history database. This is immutable except
+  // when retrieving the row from the database or when determining if the URL
+  // referenced by the URLRow already exists in the database.
   URLID id_;
 
   // The URL of this row. Immutable except for the database which sets it

@@ -81,7 +81,10 @@ class HistoryQuickProvider : public HistoryProvider {
       bool is_url);
 
   // Only for use in unittests.  Takes ownership of |index|.
-  void SetIndexForTesting(history::InMemoryURLIndex* index);
+  void set_index(history::InMemoryURLIndex* index) {
+    index_for_testing_.reset(index);
+  }
+
   AutocompleteInput autocomplete_input_;
   std::string languages_;
 

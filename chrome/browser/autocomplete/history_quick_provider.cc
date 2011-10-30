@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/in_memory_url_index.h"
+#include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -81,8 +82,7 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
   }
 }
 
-// HistoryQuickProvider matches are currently not deletable.
-// TODO(mrossetti): Determine when a match should be deletable.
+// TODO(mrossetti): Implement this function. (Will happen in next CL.)
 void HistoryQuickProvider::DeleteMatch(const AutocompleteMatch& match) {}
 
 void HistoryQuickProvider::DoAutocomplete() {
@@ -90,8 +90,8 @@ void HistoryQuickProvider::DoAutocomplete() {
   string16 term_string = autocomplete_input_.text();
   term_string = net::UnescapeURLComponent(term_string,
       UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
-  history::InMemoryURLIndex::String16Vector terms(
-      InMemoryURLIndex::WordVectorFromString16(term_string, false));
+  history::String16Vector terms(
+      history::String16VectorFromString16(term_string, false));
   ScoredHistoryMatches matches = GetIndex()->HistoryItemsForTerms(terms);
   if (matches.empty())
     return;
@@ -131,13 +131,12 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
 
   // Format the URL autocomplete presentation.
   std::vector<size_t> offsets =
-      InMemoryURLIndex::OffsetsFromTermMatches(history_match.url_matches);
+      OffsetsFromTermMatches(history_match.url_matches);
   match.contents =
       net::FormatUrlWithOffsets(info.url(), languages_, net::kFormatUrlOmitAll,
                                 UnescapeRule::SPACES, NULL, NULL, &offsets);
   history::TermMatches new_matches =
-      InMemoryURLIndex::ReplaceOffsetsInTermMatches(history_match.url_matches,
-                                                    offsets);
+      ReplaceOffsetsInTermMatches(history_match.url_matches, offsets);
   match.contents_class =
       SpansFromTermMatch(new_matches, match.contents.length(), true);
   match.fill_into_edit = match.contents;
@@ -168,12 +167,6 @@ history::InMemoryURLIndex* HistoryQuickProvider::GetIndex() {
     return NULL;
 
   return history_service->InMemoryIndex();
-}
-
-void HistoryQuickProvider::SetIndexForTesting(
-    history::InMemoryURLIndex* index) {
-  DCHECK(index);
-  index_for_testing_.reset(index);
 }
 
 // static
