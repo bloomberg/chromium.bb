@@ -595,8 +595,7 @@ WebKit::WebString WebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
     unsigned key_size_index,
     const WebKit::WebString& challenge,
     const WebKit::WebURL& url) {
-  NOTREACHED();
-  return WebKit::WebString();
+  return WebKit::WebString("");
 }
 
 #if defined(OS_LINUX)
