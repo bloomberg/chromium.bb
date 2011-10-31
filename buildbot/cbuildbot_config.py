@@ -67,7 +67,9 @@ build_type -- Type of builder.  Checks constants.VALID_BUILD_TYPES.
 
 prebuilts -- Upload prebuilts for this build.
 
-images -- List of images we want to build -- see build_image for more details.
+test_mod -- Create a test mod image for archival.
+factory_install_mod -- Create a factory install image for archival.
+factory_test_mod -- Create a factory test image for archival.
 
 push_image -- Do we push a final release image to chromeos-images.
 upload_symbols -- Do we upload debug symbols.
@@ -197,7 +199,9 @@ default = {
   'build_type': constants.PFQ_TYPE,
   'archive_build_debug' : False,
 
-  'images' : ['test'],
+  'test_mod' : False,
+  'factory_install_mod' : False,
+  'factory_test_mod' : False,
   'factory_install_netboot' : False,
 
   'push_image' : False,
@@ -237,7 +241,9 @@ binary = {
 
   'build_type': constants.BUILD_FROM_SOURCE_TYPE,
   'archive_build_debug' : True,
-  'images': ['test', 'factory_test', 'factory_install'],
+  'test_mod' : True,
+  'factory_install_mod' : True,
+  'factory_test_mod' : True,
   'git_sync' : True,
 }
 
@@ -254,7 +260,9 @@ full = {
 
   'build_type': constants.BUILD_FROM_SOURCE_TYPE,
   'archive_build_debug' : True,
-  'images': ['test', 'factory_test', 'factory_install'],
+  'test_mod' : True,
+  'factory_install_mod' : True,
+  'factory_test_mod' : True,
   'git_sync' : True,
 }
 
@@ -293,7 +301,6 @@ release = {
   'build_tests' : True,
   'chrome_tests' : True,
   'manifest_version' : True,
-  'images': ['base', 'test', 'factory_test', 'factory_install'],
   'prebuilts' : False,
   'push_image' : True,
   'upload_symbols' : True,
