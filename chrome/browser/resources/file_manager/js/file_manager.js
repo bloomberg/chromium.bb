@@ -1274,7 +1274,7 @@ FileManager.prototype = {
 
   FileManager.prototype.setupPath_ = function(path) {
     // Split the dirname from the basename.
-    var ary = path.match(/^(.*?)(?:\/([^\/]+))?$/);
+    var ary = path.match(/^(?:(.*)\/)?([^\/]*)$/);
     if (!ary) {
       console.warn('Unable to split default path: ' + path);
       self.changeDirectory('/', CD_NO_HISTORY);

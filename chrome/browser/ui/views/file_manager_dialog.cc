@@ -199,7 +199,7 @@ void FileManagerDialog::SelectFileImpl(
   FilePath virtual_path;
   if (!FileManagerUtil::ConvertFileToRelativeFileSystemPath(
           owner_browser->profile(), default_path, &virtual_path)) {
-    virtual_path = FilePath();
+    virtual_path = default_path.BaseName();
   }
 
   hasMultipleFileTypeChoices_ =
