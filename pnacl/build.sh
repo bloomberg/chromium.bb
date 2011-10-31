@@ -1645,14 +1645,14 @@ llvm-gcc() {
 
   # see comment below
   llvm-gcc-make
+  # this is only used for dragon egg
   install-pre-gcc-headers
 }
 
-
 install-pre-gcc-headers() {
+  # NOTE: this is only used for draggon egg and should be moved to 4.6.2 or later
   # TODO(robertm): remove unneeed cruft such as arm and ppc intrinsics.
   #                also see whether the header replication can be eliminated
-  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2393
   llvm-gcc-setup "$@"
   INSTALL="/usr/bin/install -c -m 644"
   dst="${LLVM_GCC_INSTALL_DIR}/lib/gcc/arm-none-linux-gnueabi/4.2.1"
@@ -1819,6 +1819,15 @@ build-libgcc_eh() {
   # to get different versions of libgcc_eh.
   # NOTE: For simplicity we piggyback the libgcc_eh build onto a preconfigured
   #       objdir. So, to be safe, you have to run gcc-stage1-make first
+
+  # NOTE: this is only useful for the clang frontend. For draggon egg we use the
+  #       llvm-gcc install step to copy unwind.h to the proper place.
+  #       Doing the copying here seems to be the right thing to do as
+  #       libgcc_eh alternatives such as libunwind might provide their own unwind.h
+  INSTALL="/usr/bin/install -c -m 644"
+  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/unwind-generic.h \
+             ${LLVM_INSTALL_DIR}/lib/clang/3.1/include/unwind.h
+
   local arch=$1
   local srcdir="${TC_SRC_LLVM_GCC}"
   local objdir="${TC_BUILD_LLVM_GCC}-arm"

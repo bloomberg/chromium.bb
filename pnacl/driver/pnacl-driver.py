@@ -79,14 +79,7 @@ EXTRA_ENV = {
 
 
   'ISYSTEM_CLANG':
-      '${BASE_LLVM}/lib/clang/3.0/include ' +
-      # Fall back to gcc include, for unwind.h
-      '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include',
-
-  'ISYSTEM_LLVMGCC':
-      '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
-      '${BASE_LLVM_GCC}/' +
-        'lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include',
+      '${BASE_LLVM}/lib/clang/3.1/include',
 
   'ISYSTEM_DRAGONEGG':
       '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
