@@ -20,7 +20,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/iat_patch_function.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/autocomplete/autocomplete_accessibility.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
@@ -37,6 +36,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "skia/ext/skia_utils_win.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -305,6 +305,39 @@ OmniboxViewWin::ScopedSuspendUndo::~ScopedSuspendUndo() {
   if (text_object_model_)
     text_object_model_->Undo(tomResume, NULL);
 }
+
+// A subclass of NativeViewHost that provides accessibility info for the
+// underlying Omnibox view.
+class OmniboxViewWrapper : public views::NativeViewHost {
+ public:
+  explicit OmniboxViewWrapper(OmniboxViewWin* omnibox_view_win)
+      : omnibox_view_win_(omnibox_view_win) {}
+
+  gfx::NativeViewAccessible GetNativeViewAccessible() {
+    // This forces it to use NativeViewAccessibilityWin rather than
+    // any accessibility provided natively by the HWND.
+    return View::GetNativeViewAccessible();
+  }
+
+  // views::View
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) {
+    views::NativeViewHost::GetAccessibleState(state);
+    state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION);
+    state->role = ui::AccessibilityTypes::ROLE_TEXT;
+    state->value = omnibox_view_win_->GetText();
+    state->state = ui::AccessibilityTypes::STATE_EDITABLE;
+    size_t sel_start;
+    size_t sel_end;
+    omnibox_view_win_->GetSelectionBounds(&sel_start, &sel_end);
+    state->selection_start = sel_start;
+    state->selection_end = sel_end;
+  }
+
+ private:
+  OmniboxViewWin* omnibox_view_win_;
+
+  DISALLOW_COPY_AND_ASSIGN(OmniboxViewWrapper);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // OmniboxViewWin
@@ -671,7 +704,7 @@ bool OmniboxViewWin::DeleteAtEndPressed() {
 }
 
 void OmniboxViewWin::GetSelectionBounds(string16::size_type* start,
-                                        string16::size_type* end) {
+                                        string16::size_type* end) const {
   CHARRANGE selection;
   GetSel(selection);
   *start = static_cast<size_t>(selection.cpMin);
@@ -731,27 +764,6 @@ void OmniboxViewWin::ClosePopup() {
 
 void OmniboxViewWin::SetFocus() {
   ::SetFocus(m_hWnd);
-}
-
-IAccessible* OmniboxViewWin::GetIAccessible() {
-  if (!autocomplete_accessibility_) {
-    CComObject<AutocompleteAccessibility>* accessibility = NULL;
-    if (!SUCCEEDED(CComObject<AutocompleteAccessibility>::CreateInstance(
-            &accessibility)) || !accessibility)
-      return NULL;
-
-    // Wrap the created object in a smart pointer so it won't leak.
-    base::win::ScopedComPtr<IAccessible> accessibility_comptr(accessibility);
-    if (!SUCCEEDED(accessibility->Initialize(this)))
-      return NULL;
-
-    // Copy to the class smart pointer, and notify that an instance of
-    // IAccessible was allocated for m_hWnd.
-    autocomplete_accessibility_ = accessibility_comptr;
-    NotifyWinEvent(EVENT_OBJECT_CREATE, m_hWnd, OBJID_CLIENT, CHILDID_SELF);
-  }
-  // Detach to leave ref counting to the caller.
-  return autocomplete_accessibility_.Detach();
 }
 
 void OmniboxViewWin::SetDropHighlightPosition(int position) {
@@ -894,12 +906,14 @@ bool OmniboxViewWin::OnAfterPossibleChangeInternal(bool force_text_changed) {
   if (text_differs) {
     // Note that a TEXT_CHANGED event implies that the cursor/selection
     // probably changed too, so we don't need to send both.
-    parent_view_->GetWidget()->NotifyAccessibilityEvent(
-        parent_view_, ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
+    native_view_host_->GetWidget()->NotifyAccessibilityEvent(
+        native_view_host_, ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
   } else if (selection_differs) {
     // Notify assistive technology that the cursor or selection changed.
-    parent_view_->GetWidget()->NotifyAccessibilityEvent(
-        parent_view_, ui::AccessibilityTypes::EVENT_SELECTION_CHANGED, true);
+    native_view_host_->GetWidget()->NotifyAccessibilityEvent(
+        native_view_host_,
+        ui::AccessibilityTypes::EVENT_SELECTION_CHANGED,
+        true);
   } else if (delete_at_end_pressed_) {
     model_->OnChanged();
   }
@@ -956,11 +970,11 @@ bool OmniboxViewWin::IsImeComposing() const {
 }
 
 views::View* OmniboxViewWin::AddToView(views::View* parent) {
-  views::NativeViewHost* host = new views::NativeViewHost;
-  parent->AddChildView(host);
-  host->set_focus_view(parent);
-  host->Attach(GetNativeView());
-  return host;
+  native_view_host_ = new OmniboxViewWrapper(this);
+  parent->AddChildView(native_view_host_);
+  native_view_host_->set_focus_view(parent);
+  native_view_host_->Attach(GetNativeView());
+  return native_view_host_;
 }
 
 int OmniboxViewWin::OnPerformDrop(const views::DropTargetEvent& event) {
@@ -1339,18 +1353,13 @@ void OmniboxViewWin::OnCut() {
   ReplaceSel(L"", true);
 }
 
-LRESULT OmniboxViewWin::OnGetObject(UINT uMsg,
+LRESULT OmniboxViewWin::OnGetObject(UINT message,
                                     WPARAM wparam,
                                     LPARAM lparam) {
-  // Accessibility readers will send an OBJID_CLIENT message.
+  // This is a request for the native accessibility object.
   if (lparam == OBJID_CLIENT) {
-    // Re-attach for internal re-usage of accessibility pointer.
-    autocomplete_accessibility_.Attach(GetIAccessible());
-
-    if (autocomplete_accessibility_) {
-      return LresultFromObject(IID_IAccessible, wparam,
-                               autocomplete_accessibility_);
-    }
+    return LresultFromObject(IID_IAccessible, wparam,
+                             native_view_host_->GetNativeViewAccessible());
   }
   return 0;
 }

@@ -31,6 +31,7 @@ class LocationBarView;
 class TabContents;
 
 namespace views {
+class NativeViewHost;
 class View;
 }
 
@@ -117,7 +118,7 @@ class OmniboxViewWin
   virtual bool IsSelectAll() OVERRIDE;
   virtual bool DeleteAtEndPressed() OVERRIDE;
   virtual void GetSelectionBounds(string16::size_type* start,
-                                  string16::size_type* end) OVERRIDE;
+                                  string16::size_type* end) const OVERRIDE;
   virtual void SelectAll(bool reversed) OVERRIDE;
   virtual void RevertAll() OVERRIDE;
 
@@ -147,9 +148,6 @@ class OmniboxViewWin
   virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
 
   int GetPopupMaxYCoordinate();
-
-  // Exposes custom IAccessible implementation to the overall MSAA hierarchy.
-  IAccessible* GetIAccessible();
 
   void SetDropHighlightPosition(int position);
   int drop_highlight_position() const { return drop_highlight_position_; }
@@ -283,7 +281,7 @@ class OmniboxViewWin
   void OnContextMenu(HWND window, const CPoint& point);
   void OnCopy();
   void OnCut();
-  LRESULT OnGetObject(UINT uMsg, WPARAM wparam, LPARAM lparam);
+  LRESULT OnGetObject(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeComposition(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeNotify(UINT message, WPARAM wparam, LPARAM lparam);
   void OnKeyDown(TCHAR key, UINT repeat_count, UINT flags);
@@ -549,6 +547,9 @@ class OmniboxViewWin
 
   // Instance of accessibility information and handling.
   mutable base::win::ScopedComPtr<IAccessible> autocomplete_accessibility_;
+
+  // The native view host.
+  views::NativeViewHost* native_view_host_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewWin);
 };

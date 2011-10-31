@@ -22,32 +22,33 @@ class AccessibilityTypes {
  public:
 
   // This defines states of the supported accessibility roles in our
-  // Views (e.g. used in View::GetAccessibleState). Any interface using roles
-  // must provide a conversion to its own roles (see e.g.
-  // ViewAccessibility::get_accState and ViewAccessibility::MSAAState).
+  // Views (e.g. used in View::GetAccessibleState). Any interface using states
+  // must provide a conversion to its own states (see e.g.
+  // NativeViewAccessibilityWin::get_accState).
   typedef uint32 State;
   enum StateFlag {
     STATE_CHECKED     = 1 << 0,
     STATE_COLLAPSED   = 1 << 1,
     STATE_DEFAULT     = 1 << 2,
-    STATE_EXPANDED    = 1 << 3,
-    STATE_HASPOPUP    = 1 << 4,
-    STATE_HOTTRACKED  = 1 << 5,
-    STATE_INVISIBLE   = 1 << 6,
-    STATE_LINKED      = 1 << 7,
-    STATE_OFFSCREEN   = 1 << 8,
-    STATE_PRESSED     = 1 << 9,
-    STATE_PROTECTED   = 1 << 10,
-    STATE_READONLY    = 1 << 11,
-    STATE_SELECTED    = 1 << 12,
-    STATE_FOCUSED     = 1 << 13,
-    STATE_UNAVAILABLE = 1 << 14
+    STATE_EDITABLE    = 1 << 3,
+    STATE_EXPANDED    = 1 << 4,
+    STATE_FOCUSED     = 1 << 5,
+    STATE_HASPOPUP    = 1 << 6,
+    STATE_HOTTRACKED  = 1 << 7,
+    STATE_INVISIBLE   = 1 << 8,
+    STATE_LINKED      = 1 << 9,
+    STATE_OFFSCREEN   = 1 << 10,
+    STATE_PRESSED     = 1 << 11,
+    STATE_PROTECTED   = 1 << 12,
+    STATE_READONLY    = 1 << 13,
+    STATE_SELECTED    = 1 << 14,
+    STATE_UNAVAILABLE = 1 << 15
   };
 
   // This defines an enumeration of the supported accessibility roles in our
   // Views (e.g. used in View::GetAccessibleRole). Any interface using roles
   // must provide a conversion to its own roles (see e.g.
-  // ViewAccessibility::get_accRole and ViewAccessibility::MSAARole).
+  // NativeViewAccessibilityWin::get_accRole).
   enum Role {
     ROLE_ALERT,
     ROLE_APPLICATION,

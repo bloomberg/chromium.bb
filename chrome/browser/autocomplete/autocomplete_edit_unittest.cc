@@ -37,7 +37,7 @@ class TestingOmniboxView : public OmniboxView {
   virtual void SetForcedQuery() {}
   virtual bool IsSelectAll() { return false; }
   virtual bool DeleteAtEndPressed() { return false; }
-  virtual void GetSelectionBounds(size_t* start, size_t* end) {}
+  virtual void GetSelectionBounds(size_t* start, size_t* end) const {}
   virtual void SelectAll(bool reversed) {}
   virtual void RevertAll() {}
   virtual void UpdatePopup() {}

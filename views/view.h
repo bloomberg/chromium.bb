@@ -24,6 +24,10 @@
 #include "views/background.h"
 #include "views/border.h"
 
+#if defined(OS_WIN)
+#include "base/win/scoped_comptr.h"
+#endif
+
 using ui::OSExchangeData;
 
 namespace gfx {
@@ -44,7 +48,8 @@ enum TouchStatus;
 }
 
 #if defined(OS_WIN)
-class NativeViewAccessibilityWin;
+class __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
+NativeViewAccessibilityWin;
 #endif
 
 namespace views {
@@ -1440,7 +1445,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // The Windows-specific accessibility implementation for this view.
 #if defined(OS_WIN)
-  scoped_refptr<NativeViewAccessibilityWin> native_view_accessibility_win_;
+  base::win::ScopedComPtr<NativeViewAccessibilityWin>
+      native_view_accessibility_win_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(View);

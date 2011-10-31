@@ -12,6 +12,7 @@
 #include <oleacc.h>
 
 #include "base/memory/scoped_ptr.h"
+#include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/view.h"
@@ -28,13 +29,20 @@
 // technology (AT).
 //
 ////////////////////////////////////////////////////////////////////////////////
-class ATL_NO_VTABLE NativeViewAccessibilityWin
+class __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
+NativeViewAccessibilityWin
   : public CComObjectRootEx<CComMultiThreadModel>,
-    public IDispatchImpl<IAccessible, &IID_IAccessible, &LIBID_Accessibility> {
+    public IDispatchImpl<IAccessible2, &IID_IAccessible2,
+                           &LIBID_IAccessible2Lib>,
+    public IAccessibleText,
+    public IServiceProvider {
  public:
   BEGIN_COM_MAP(NativeViewAccessibilityWin)
-    COM_INTERFACE_ENTRY2(IDispatch, IAccessible)
-    COM_INTERFACE_ENTRY(IAccessible)
+    COM_INTERFACE_ENTRY2(IDispatch, IAccessible2)
+    COM_INTERFACE_ENTRY2(IAccessible, IAccessible2)
+    COM_INTERFACE_ENTRY(IAccessible2)
+    COM_INTERFACE_ENTRY(IAccessibleText)
+    COM_INTERFACE_ENTRY(IServiceProvider)
   END_COM_MAP()
 
   // Create method for view accessibility.
@@ -111,6 +119,171 @@ class ATL_NO_VTABLE NativeViewAccessibilityWin
   STDMETHODIMP put_accName(VARIANT var_id, BSTR put_name);
   STDMETHODIMP put_accValue(VARIANT var_id, BSTR put_val);
 
+  //
+  // IAccessible2
+  //
+
+  STDMETHODIMP role(LONG* role);
+
+  STDMETHODIMP get_states(AccessibleStates* states);
+
+  STDMETHODIMP get_uniqueID(LONG* unique_id);
+
+  STDMETHODIMP get_windowHandle(HWND* window_handle);
+
+  //
+  // IAccessible2 methods not implemented.
+  //
+
+  STDMETHODIMP get_attributes(BSTR* attributes) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_indexInParent(LONG* index_in_parent) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_extendedRole(BSTR* extended_role) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_nRelations(LONG* n_relations) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_relation(LONG relation_index,
+                            IAccessibleRelation** relation) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_relations(LONG max_relations,
+      IAccessibleRelation** relations,
+      LONG* n_relations) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP scrollToPoint(
+      enum IA2CoordinateType coordinate_type,
+      LONG x,
+      LONG y) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_groupPosition(LONG* group_level,
+                                 LONG* similar_items_in_group,
+                                 LONG* position_in_group) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_localizedExtendedRole(
+      BSTR* localized_extended_role) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_nExtendedStates(LONG* n_extended_states) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_extendedStates(LONG max_extended_states,
+                                  BSTR** extended_states,
+                                  LONG* n_extended_states) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_localizedExtendedStates(
+      LONG max_localized_extended_states,
+      BSTR** localized_extended_states,
+      LONG* n_localized_extended_states) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_locale(IA2Locale* locale) {
+    return E_NOTIMPL;
+  }
+
+  //
+  // IAccessibleText methods.
+  //
+
+  STDMETHODIMP get_nCharacters(LONG* n_characters);
+
+  STDMETHODIMP get_caretOffset(LONG* offset);
+
+  STDMETHODIMP get_nSelections(LONG* n_selections);
+
+  STDMETHODIMP get_selection(LONG selection_index,
+                             LONG* start_offset,
+                             LONG* end_offset);
+
+  STDMETHODIMP get_text(LONG start_offset, LONG end_offset, BSTR* text);
+
+  STDMETHODIMP get_offsetAtPoint(LONG x, LONG y,
+      enum IA2CoordinateType coord_type,
+      LONG* offset);
+
+  //
+  // IAccessibleText methods not implemented.
+  //
+
+  STDMETHODIMP get_textAtOffset(LONG offset,
+      enum IA2TextBoundaryType boundary_type,
+      LONG* start_offset, LONG* end_offset,
+      BSTR* text) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_textBeforeOffset(LONG offset,
+      enum IA2TextBoundaryType boundary_type,
+      LONG* start_offset, LONG* end_offset,
+      BSTR* text) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_textAfterOffset(LONG offset,
+      enum IA2TextBoundaryType boundary_type,
+      LONG* start_offset, LONG* end_offset,
+      BSTR* text) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_newText(IA2TextSegment* new_text) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_oldText(IA2TextSegment* old_text) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP addSelection(LONG start_offset, LONG end_offset) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_attributes(LONG offset,
+                              LONG* start_offset,
+                              LONG* end_offset,
+                              BSTR* text_attributes) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_characterExtents(LONG offset,
+      enum IA2CoordinateType coord_type,
+      LONG* x, LONG* y,
+      LONG* width, LONG* height) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP removeSelection(LONG selection_index) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP setCaretOffset(LONG offset) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP setSelection(LONG selection_index,
+                            LONG start_offset,
+                            LONG end_offset) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP scrollSubstringTo(LONG start_index,
+                                 LONG end_index,
+                                 enum IA2ScrollType scroll_type) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP scrollSubstringToPoint(LONG start_index,
+      LONG end_index,
+      enum IA2CoordinateType coordinate_type,
+      LONG x, LONG y) {
+    return E_NOTIMPL;
+  }
+
+  //
+  // IServiceProvider methods.
+  //
+
+  STDMETHODIMP QueryService(REFGUID guidService, REFIID riid, void** object);
+
   // Returns a conversion from the event (as defined in accessibility_types.h)
   // to an MSAA event.
   static int32 MSAAEvent(ui::AccessibilityTypes::Event event);
@@ -144,11 +317,20 @@ class ATL_NO_VTABLE NativeViewAccessibilityWin
   // Helper function which sets applicable states of view.
   void SetState(VARIANT* msaa_state, views::View* view);
 
+  // Return the text to use for IAccessibleText.
+  string16 TextForIAccessibleText();
+
   // Give CComObject access to the class constructor.
   template <class Base> friend class CComObject;
 
   // Member View needed for view-specific calls.
   views::View* view_;
+
+  // A unique id for each object, needed for IAccessible2.
+  long unique_id_;
+
+  // Next unique id to assign.
+  static long next_unique_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewAccessibilityWin);
 };

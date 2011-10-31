@@ -391,7 +391,7 @@ bool OmniboxViewMac::DeleteAtEndPressed() {
 }
 
 void OmniboxViewMac::GetSelectionBounds(string16::size_type* start,
-                                        string16::size_type* end) {
+                                        string16::size_type* end) const {
   if (![field_ currentEditor]) {
     *start = *end = 0;
     return;

@@ -591,7 +591,7 @@ bool OmniboxViewGtk::DeleteAtEndPressed() {
 }
 
 void OmniboxViewGtk::GetSelectionBounds(string16::size_type* start,
-                                        string16::size_type* end) {
+                                        string16::size_type* end) const {
   CharRange selection = GetSelection();
   *start = static_cast<size_t>(selection.cp_min);
   *end = static_cast<size_t>(selection.cp_max);

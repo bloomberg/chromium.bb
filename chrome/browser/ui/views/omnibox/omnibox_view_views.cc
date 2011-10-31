@@ -428,7 +428,7 @@ bool OmniboxViewViews::DeleteAtEndPressed() {
 }
 
 void OmniboxViewViews::GetSelectionBounds(string16::size_type* start,
-                                          string16::size_type* end) {
+                                          string16::size_type* end) const {
   ui::Range range;
   textfield_->GetSelectedRange(&range);
   *start = static_cast<size_t>(range.end());

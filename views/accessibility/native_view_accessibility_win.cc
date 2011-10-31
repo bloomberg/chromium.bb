@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <atlbase.h>
+#include <atlcom.h>
+
 #include "views/accessibility/native_view_accessibility_win.h"
 
+#include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/view_prop.h"
 #include "views/widget/native_widget_win.h"
@@ -11,10 +15,8 @@
 
 using ui::AccessibilityTypes;
 
-namespace views {
-const char kViewsNativeHostPropForAccessibility[] =
-    "Views_NativeViewHostHWNDForAccessibility";
-}
+// static
+long NativeViewAccessibilityWin::next_unique_id_ = 1;
 
 // static
 scoped_refptr<NativeViewAccessibilityWin> NativeViewAccessibilityWin::Create(
@@ -27,7 +29,9 @@ scoped_refptr<NativeViewAccessibilityWin> NativeViewAccessibilityWin::Create(
   return scoped_refptr<NativeViewAccessibilityWin>(instance);
 }
 
-NativeViewAccessibilityWin::NativeViewAccessibilityWin() : view_(NULL) {
+NativeViewAccessibilityWin::NativeViewAccessibilityWin()
+    : view_(NULL),
+      unique_id_(next_unique_id_++) {
 }
 
 NativeViewAccessibilityWin::~NativeViewAccessibilityWin() {
@@ -417,6 +421,9 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accRole(
 
 STDMETHODIMP NativeViewAccessibilityWin::get_accState(
     VARIANT var_id, VARIANT* state) {
+  // This returns MSAA states. See also the IAccessible2 interface
+  // get_states().
+
   if (!IsValidId(var_id) || !state)
     return E_INVALIDARG;
 
@@ -458,62 +465,6 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accValue(
   }
 
   return S_OK;
-}
-
-// Helper functions.
-
-bool NativeViewAccessibilityWin::IsNavDirNext(int nav_dir) const {
-  if (nav_dir == NAVDIR_RIGHT || nav_dir == NAVDIR_DOWN ||
-      nav_dir == NAVDIR_NEXT) {
-      return true;
-  }
-  return false;
-}
-
-bool NativeViewAccessibilityWin::IsValidNav(
-    int nav_dir, int start_id, int lower_bound, int upper_bound) const {
-  if (IsNavDirNext(nav_dir)) {
-    if ((start_id + 1) > upper_bound) {
-      return false;
-    }
-  } else {
-    if ((start_id - 1) <= lower_bound) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool NativeViewAccessibilityWin::IsValidId(const VARIANT& child) const {
-  // View accessibility returns an IAccessible for each view so we only support
-  // the CHILDID_SELF id.
-  return (VT_I4 == child.vt) && (CHILDID_SELF == child.lVal);
-}
-
-void NativeViewAccessibilityWin::SetState(
-    VARIANT* msaa_state, views::View* view) {
-  // Ensure the output param is initialized to zero.
-  msaa_state->lVal = 0;
-
-  // Default state; all views can have accessibility focus.
-  msaa_state->lVal |= STATE_SYSTEM_FOCUSABLE;
-
-  if (!view)
-    return;
-
-  if (!view->IsEnabled())
-    msaa_state->lVal |= STATE_SYSTEM_UNAVAILABLE;
-  if (!view->IsVisible())
-    msaa_state->lVal |= STATE_SYSTEM_INVISIBLE;
-  if (view->IsHotTracked())
-    msaa_state->lVal |= STATE_SYSTEM_HOTTRACKED;
-  if (view->HasFocus())
-    msaa_state->lVal |= STATE_SYSTEM_FOCUSED;
-
-  // Add on any view-specific states.
-   ui::AccessibleViewState view_state;
-   view->GetAccessibleState(&view_state);
-   msaa_state->lVal |= MSAAState(view_state.state);
 }
 
 // IAccessible functions not supported.
@@ -559,6 +510,211 @@ STDMETHODIMP NativeViewAccessibilityWin::put_accValue(
   return E_NOTIMPL;
 }
 
+//
+// IAccessible2
+//
+
+STDMETHODIMP NativeViewAccessibilityWin::role(LONG* role) {
+  if (!view_)
+    return E_FAIL;
+
+  if (!role)
+    return E_INVALIDARG;
+
+  ui::AccessibleViewState state;
+  view_->GetAccessibleState(&state);
+  *role = MSAARole(state.role);
+  return S_OK;
+}
+
+STDMETHODIMP NativeViewAccessibilityWin::get_states(AccessibleStates* states) {
+  // This returns IAccessible2 states, which supplement MSAA states.
+  // See also the MSAA interface get_accState.
+
+  if (!view_)
+    return E_FAIL;
+
+  if (!states)
+    return E_INVALIDARG;
+
+  ui::AccessibleViewState state;
+  view_->GetAccessibleState(&state);
+
+  // There are only a couple of states we need to support
+  // in IAccessible2. If any more are added, we may want to
+  // add a helper function like MSAAState.
+  *states = IA2_STATE_OPAQUE;
+  if (state.state & AccessibilityTypes::STATE_EDITABLE)
+    *states |= IA2_STATE_EDITABLE;
+
+  return S_OK;
+}
+
+STDMETHODIMP NativeViewAccessibilityWin::get_uniqueID(LONG* unique_id) {
+  if (!view_)
+    return E_FAIL;
+
+  if (!unique_id)
+    return E_INVALIDARG;
+
+  *unique_id = unique_id_;
+  return S_OK;
+}
+
+STDMETHODIMP NativeViewAccessibilityWin::get_windowHandle(HWND* window_handle) {
+  if (!view_)
+    return E_FAIL;
+
+  if (!window_handle)
+    return E_INVALIDARG;
+
+  *window_handle = view_->GetWidget()->GetNativeView();
+  return S_OK;
+}
+
+//
+// IAccessibleText
+//
+
+STDMETHODIMP NativeViewAccessibilityWin::get_nCharacters(LONG* n_characters) {
+  if (!view_)
+    return E_FAIL;
+
+  if (!n_characters)
+    return E_INVALIDARG;
+
+  string16 text = TextForIAccessibleText();
+  *n_characters = static_cast<LONG>(text.size());
+  return S_OK;
+}
+
+STDMETHODIMP NativeViewAccessibilityWin::get_caretOffset(LONG* offset) {
+  if (!view_)
+    return E_FAIL;
+
+  if (!offset)
+    return E_INVALIDARG;
+
+  ui::AccessibleViewState state;
+  view_->GetAccessibleState(&state);
+  *offset = static_cast<LONG>(state.selection_end);
+  return S_OK;
+}
+
+STDMETHODIMP NativeViewAccessibilityWin::get_nSelections(LONG* n_selections) {
+  if (!view_)
+    return E_FAIL;
+
+  if (!n_selections)
+    return E_INVALIDARG;
+
+  ui::AccessibleViewState state;
+  view_->GetAccessibleState(&state);
+  if (state.selection_start != state.selection_end)
+    *n_selections = 1;
+  else
+    *n_selections = 0;
+  return S_OK;
+}
+
+STDMETHODIMP NativeViewAccessibilityWin::get_selection(LONG selection_index,
+                                                      LONG* start_offset,
+                                                      LONG* end_offset) {
+  if (!view_)
+    return E_FAIL;
+
+  if (!start_offset || !end_offset || selection_index != 0)
+    return E_INVALIDARG;
+
+  ui::AccessibleViewState state;
+  view_->GetAccessibleState(&state);
+  *start_offset = static_cast<LONG>(state.selection_start);
+  *end_offset = static_cast<LONG>(state.selection_end);
+  return S_OK;
+}
+
+STDMETHODIMP NativeViewAccessibilityWin::get_text(LONG start_offset,
+                                                 LONG end_offset,
+                                                 BSTR* text) {
+  if (!view_)
+    return E_FAIL;
+
+  ui::AccessibleViewState state;
+  view_->GetAccessibleState(&state);
+  string16 text_str = TextForIAccessibleText();
+  LONG len = static_cast<LONG>(text_str.size());
+
+  if (start_offset == IA2_TEXT_OFFSET_LENGTH) {
+    start_offset = len;
+  } else if (start_offset == IA2_TEXT_OFFSET_CARET) {
+    start_offset = static_cast<LONG>(state.selection_end);
+  }
+  if (end_offset == IA2_TEXT_OFFSET_LENGTH) {
+    end_offset = static_cast<LONG>(text_str.size());
+  } else if (end_offset == IA2_TEXT_OFFSET_CARET) {
+    end_offset = static_cast<LONG>(state.selection_end);
+  }
+
+  // The spec allows the arguments to be reversed.
+  if (start_offset > end_offset) {
+    LONG tmp = start_offset;
+    start_offset = end_offset;
+    end_offset = tmp;
+  }
+
+  // The spec does not allow the start or end offsets to be out or range;
+  // we must return an error if so.
+  if (start_offset < 0)
+    return E_INVALIDARG;
+  if (end_offset > len)
+    return E_INVALIDARG;
+
+  string16 substr = text_str.substr(start_offset, end_offset - start_offset);
+  if (substr.empty())
+    return S_FALSE;
+
+  *text = SysAllocString(substr.c_str());
+  DCHECK(*text);
+  return S_OK;
+}
+
+STDMETHODIMP NativeViewAccessibilityWin::get_offsetAtPoint(
+    LONG x, LONG y, enum IA2CoordinateType coord_type, LONG* offset) {
+  if (!view_)
+    return E_FAIL;
+
+  if (!offset)
+    return E_INVALIDARG;
+
+  // We don't support this method, but we have to return something
+  // rather than E_NOTIMPL or screen readers will complain.
+  *offset = 0;
+  return S_OK;
+}
+
+//
+// IServiceProvider methods.
+//
+
+STDMETHODIMP NativeViewAccessibilityWin::QueryService(
+    REFGUID guidService, REFIID riid, void** object) {
+  if (!view_)
+    return E_FAIL;
+
+  if (guidService == IID_IAccessible ||
+      guidService == IID_IAccessible2 ||
+      guidService == IID_IAccessibleText) {
+    return QueryInterface(riid, object);
+  }
+
+  *object = NULL;
+  return E_FAIL;
+}
+
+//
+// Static methods.
+//
+
 int32 NativeViewAccessibilityWin::MSAAEvent(AccessibilityTypes::Event event) {
   switch (event) {
     case AccessibilityTypes::EVENT_ALERT:
@@ -578,7 +734,7 @@ int32 NativeViewAccessibilityWin::MSAAEvent(AccessibilityTypes::Event event) {
     case AccessibilityTypes::EVENT_TEXT_CHANGED:
       return EVENT_OBJECT_VALUECHANGE;
     case AccessibilityTypes::EVENT_SELECTION_CHANGED:
-      return EVENT_OBJECT_TEXTSELECTIONCHANGED;
+      return IA2_EVENT_TEXT_CARET_MOVED;
     case AccessibilityTypes::EVENT_VALUE_CHANGED:
       return EVENT_OBJECT_VALUECHANGE;
     default:
@@ -656,6 +812,9 @@ return ROLE_SYSTEM_ALERT;
 }
 
 int32 NativeViewAccessibilityWin::MSAAState(AccessibilityTypes::State state) {
+  // This maps MSAA states for get_accState(). See also the IAccessible2
+  // interface get_states().
+
   int32 msaa_state = 0;
   if (state & AccessibilityTypes::STATE_CHECKED)
     msaa_state |= STATE_SYSTEM_CHECKED;
@@ -688,4 +847,69 @@ int32 NativeViewAccessibilityWin::MSAAState(AccessibilityTypes::State state) {
   if (state & AccessibilityTypes::STATE_UNAVAILABLE)
     msaa_state |= STATE_SYSTEM_UNAVAILABLE;
   return msaa_state;
+}
+
+//
+// Private methods.
+//
+
+bool NativeViewAccessibilityWin::IsNavDirNext(int nav_dir) const {
+  return (nav_dir == NAVDIR_RIGHT ||
+          nav_dir == NAVDIR_DOWN ||
+          nav_dir == NAVDIR_NEXT);
+}
+
+bool NativeViewAccessibilityWin::IsValidNav(
+    int nav_dir, int start_id, int lower_bound, int upper_bound) const {
+  if (IsNavDirNext(nav_dir)) {
+    if ((start_id + 1) > upper_bound) {
+      return false;
+    }
+  } else {
+    if ((start_id - 1) <= lower_bound) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool NativeViewAccessibilityWin::IsValidId(const VARIANT& child) const {
+  // View accessibility returns an IAccessible for each view so we only support
+  // the CHILDID_SELF id.
+  return (VT_I4 == child.vt) && (CHILDID_SELF == child.lVal);
+}
+
+void NativeViewAccessibilityWin::SetState(
+    VARIANT* msaa_state, views::View* view) {
+  // Ensure the output param is initialized to zero.
+  msaa_state->lVal = 0;
+
+  // Default state; all views can have accessibility focus.
+  msaa_state->lVal |= STATE_SYSTEM_FOCUSABLE;
+
+  if (!view)
+    return;
+
+  if (!view->IsEnabled())
+    msaa_state->lVal |= STATE_SYSTEM_UNAVAILABLE;
+  if (!view->IsVisible())
+    msaa_state->lVal |= STATE_SYSTEM_INVISIBLE;
+  if (view->IsHotTracked())
+    msaa_state->lVal |= STATE_SYSTEM_HOTTRACKED;
+  if (view->HasFocus())
+    msaa_state->lVal |= STATE_SYSTEM_FOCUSED;
+
+  // Add on any view-specific states.
+  ui::AccessibleViewState view_state;
+  view->GetAccessibleState(&view_state);
+  msaa_state->lVal |= MSAAState(view_state.state);
+}
+
+string16 NativeViewAccessibilityWin::TextForIAccessibleText() {
+  ui::AccessibleViewState state;
+  view_->GetAccessibleState(&state);
+  if (state.role == AccessibilityTypes::ROLE_TEXT)
+    return state.value;
+  else
+    return state.name;
 }

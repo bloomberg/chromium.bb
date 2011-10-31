@@ -529,6 +529,10 @@
           ],
         }],
         ['OS=="win"', {
+          'dependencies': [
+            # For accessibility
+            '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
+          ],
           'include_dirs': [
             '../third_party/wtl/include',
           ],
