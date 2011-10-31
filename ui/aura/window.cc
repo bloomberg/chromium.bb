@@ -25,7 +25,7 @@
 namespace aura {
 
 Window::Window(WindowDelegate* delegate)
-    : type_(kWindowType_None),
+    : type_(WINDOW_TYPE_UNKNOWN),
       delegate_(delegate),
       show_state_(ui::SHOW_STATE_NORMAL),
       parent_(NULL),
@@ -76,13 +76,11 @@ Window::~Window() {
 
 void Window::Init(ui::Layer::LayerType layer_type) {
   layer_.reset(new ui::Layer(Desktop::GetInstance()->compositor(), layer_type));
-  // Windows (and therefore their layers) should initially be hidden, except for
-  // controls.
-  layer_->SetVisible(type_ == kWindowType_Control);
+  layer_->SetVisible(false);
   layer_->set_delegate(this);
 }
 
-void Window::SetType(int type) {
+void Window::SetType(WindowType type) {
   // Cannot change type after the window is initialized.
   DCHECK(!layer());
   type_ = type;

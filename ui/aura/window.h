@@ -16,6 +16,7 @@
 #include "ui/base/events.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/aura/aura_export.h"
+#include "ui/aura/window_types.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/layer_delegate.h"
@@ -62,10 +63,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void Init(ui::Layer::LayerType layer_type);
 
   // A type is used to identify a class of Windows and customize behavior such
-  // as event handling and parenting. The value can be any of those in
-  // window_types.h or a user defined value.
-  int type() const { return type_; }
-  void SetType(int type);
+  // as event handling and parenting.  This field should only be consumed by the
+  // shell -- Aura itself shouldn't contain type-specific logic.
+  WindowType type() const { return type_; }
+  void SetType(WindowType type);
 
   int id() const { return id_; }
   void set_id(int id) { id_ = id; }
@@ -315,7 +316,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   virtual void OnLayerAnimationEnded(
       const ui::LayerAnimationSequence* animation) OVERRIDE;
 
-  int type_;
+  WindowType type_;
 
   WindowDelegate* delegate_;
 

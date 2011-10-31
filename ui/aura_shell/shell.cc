@@ -155,22 +155,18 @@ void Shell::ToggleOverview() {
 
 void Shell::AddChildToDefaultParent(aura::Window* window) {
   aura::Window* parent = NULL;
-  intptr_t type = reinterpret_cast<intptr_t>(
-      ui::ViewProp::GetValue(window, views::NativeWidgetAura::kWindowTypeKey));
-  switch (static_cast<Widget::InitParams::Type>(type)) {
-    case Widget::InitParams::TYPE_WINDOW:
-    case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
-    case Widget::InitParams::TYPE_CONTROL:
-    case Widget::InitParams::TYPE_BUBBLE:
-    case Widget::InitParams::TYPE_POPUP:
+  switch (window->type()) {
+    case aura::WINDOW_TYPE_NORMAL:
+    case aura::WINDOW_TYPE_POPUP:
       parent = GetContainer(internal::kShellWindowId_DefaultContainer);
       break;
-    case Widget::InitParams::TYPE_MENU:
-    case Widget::InitParams::TYPE_TOOLTIP:
+    case aura::WINDOW_TYPE_MENU:
+    case aura::WINDOW_TYPE_TOOLTIP:
       parent = GetContainer(internal::kShellWindowId_MenusAndTooltipsContainer);
       break;
     default:
-      // This will crash for controls, since they can't be parented to anything.
+      NOTREACHED() << "Window " << window->id()
+                   << " has unhandled type " << window->type();
       break;
   }
   parent->AddChild(window);

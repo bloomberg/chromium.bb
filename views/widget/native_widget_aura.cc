@@ -31,7 +31,28 @@
 
 namespace views {
 
-const char* const NativeWidgetAura::kWindowTypeKey = "WindowType";
+namespace {
+
+aura::WindowType GetAuraWindowTypeForWidgetType(Widget::InitParams::Type type) {
+  switch (type) {
+    case Widget::InitParams::TYPE_WINDOW:
+      return aura::WINDOW_TYPE_NORMAL;
+    case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
+    case Widget::InitParams::TYPE_CONTROL:
+    case Widget::InitParams::TYPE_POPUP:
+    case Widget::InitParams::TYPE_BUBBLE:
+      return aura::WINDOW_TYPE_POPUP;
+    case Widget::InitParams::TYPE_MENU:
+      return aura::WINDOW_TYPE_MENU;
+    case Widget::InitParams::TYPE_TOOLTIP:
+      return aura::WINDOW_TYPE_TOOLTIP;
+    default:
+      NOTREACHED() << "Unhandled widget type " << type;
+      return aura::WINDOW_TYPE_UNKNOWN;
+  }
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, public:
@@ -73,11 +94,13 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   window_->set_user_data(this);
   Widget::InitParams::Type window_type =
       params.child ? Widget::InitParams::TYPE_CONTROL : params.type;
-  SetNativeWindowProperty(kWindowTypeKey, reinterpret_cast<void*>(window_type));
-  window_->SetType(window_type == Widget::InitParams::TYPE_CONTROL ?
-                   aura::kWindowType_Control : aura::kWindowType_None);
+  window_->SetType(GetAuraWindowTypeForWidgetType(window_type));
   window_->Init(params.create_texture_for_layer ?
-                ui::Layer::LAYER_HAS_TEXTURE : ui::Layer::LAYER_HAS_NO_TEXTURE);
+                    ui::Layer::LAYER_HAS_TEXTURE :
+                    ui::Layer::LAYER_HAS_NO_TEXTURE);
+  if (window_type == Widget::InitParams::TYPE_CONTROL)
+    window_->Show();
+
   // TODO(beng): respect |params| authoritah wrt transparency.
   window_->layer()->SetFillsBoundsOpaquely(false);
   delegate_->OnNativeWidgetCreated();

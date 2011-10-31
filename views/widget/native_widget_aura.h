@@ -140,10 +140,6 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void OnWindowDestroyed() OVERRIDE;
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
-  // ViewProp key for window type. The prop value is one of
-  // Widget::InitParams::Type.
-  static const char* const kWindowTypeKey;
-
  private:
   internal::NativeWidgetDelegate* delegate_;
 

@@ -41,11 +41,8 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
 
   aura::Window* CreateTestWindowWithType(const gfx::Rect& bounds,
                                          aura::Window* parent,
-                                         Widget::InitParams::Type type) {
+                                         aura::WindowType type) {
     aura::Window* window = new aura::Window(NULL);
-    props_.push_back(new ui::ViewProp(
-        window, views::NativeWidgetAura::kWindowTypeKey,
-        reinterpret_cast<void*>(type)));
     window->SetType(type);
     window->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
     window->SetBounds(bounds);
@@ -58,7 +55,7 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
                                  aura::Window* parent) {
     return CreateTestWindowWithType(bounds,
                                     parent,
-                                    Widget::InitParams::TYPE_WINDOW);
+                                    aura::WINDOW_TYPE_NORMAL);
   }
 
   aura::Window* container() { return container_.get(); }
@@ -69,7 +66,6 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
 
  protected:
   scoped_ptr<aura::Window> container_;
-  ScopedVector<ui::ViewProp> props_;
   scoped_ptr<aura_shell::internal::WorkspaceController> workspace_controller_;
 
  private:
@@ -124,7 +120,7 @@ TEST_F(DefaultContainerLayoutManagerTest, Popup) {
   scoped_ptr<aura::Window> popup(
       CreateTestWindowWithType(gfx::Rect(0, -1000, 100, 100),
                                container(),
-                               Widget::InitParams::TYPE_POPUP));
+                               aura::WINDOW_TYPE_POPUP));
   // A popup window can be placed outside of draggable area.
   EXPECT_EQ("0,-1000 100x100", popup->bounds().ToString());
 

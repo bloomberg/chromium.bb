@@ -118,6 +118,7 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
 
   // Sets the root of the layer tree drawn by this Compositor.
   // The Compositor does not own the root layer.
+  const Layer* root_layer() const { return root_layer_; }
   Layer* root_layer() { return root_layer_; }
   void SetRootLayer(Layer* root_layer);
 

@@ -10,13 +10,16 @@
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "ui/aura/aura_constants.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/hit_test.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_types.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/screen.h"
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 #include "base/bind.h"
@@ -78,6 +81,8 @@ void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event,
 RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
     : host_(host),
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
+      is_fullscreen_(false),
+      popup_parent_host_view_(NULL),
       is_loading_(false) {
   host_->SetView(this);
   window_->SetProperty(aura::kTooltipTextKey, &tooltip_);
@@ -96,18 +101,28 @@ void RenderWidgetHostViewAura::Init() {
 void RenderWidgetHostViewAura::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& pos) {
-  NOTIMPLEMENTED();
-  // TODO(ivankr): there has to be an Init() call, otherwise |window_|
-  // is left uninitialized and will eventually crash.
+  popup_parent_host_view_ =
+      static_cast<RenderWidgetHostViewAura*>(parent_host_view);
+  window_->SetType(aura::WINDOW_TYPE_MENU);
   Init();
+
+  window_->SetParent(NULL);
+  Show();
+  SetBounds(pos);
 }
 
 void RenderWidgetHostViewAura::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
-  NOTIMPLEMENTED();
-  // TODO(ivankr): there has to be an Init() call, otherwise |window_|
-  // is left uninitialized and will eventually crash.
+  window_->SetType(aura::WINDOW_TYPE_POPUP);
+  is_fullscreen_ = true;
   Init();
+
+  window_->SetParent(NULL);
+  window_->Fullscreen();
+  Show();
+  Focus();
+  // TODO(derat): The window is visible but it's not being updated.  Figure out
+  // why.
 }
 
 RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {
@@ -127,7 +142,20 @@ void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
-  window_->SetBounds(rect);
+  gfx::Rect adjusted_rect = rect;
+
+  if (popup_parent_host_view_) {
+    gfx::Point translated_origin = adjusted_rect.origin();
+    // |rect| is relative to |popup_parent_host_view_|; translate it for the
+    // window's container.
+    aura::Window::ConvertPointToWindow(
+        popup_parent_host_view_->window_,
+        window_->parent(),
+        &translated_origin);
+    adjusted_rect.set_origin(translated_origin);
+  }
+
+  window_->SetBounds(adjusted_rect);
   host_->WasResized();
 }
 
@@ -285,16 +313,20 @@ void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
 #if defined(OS_POSIX)
 void RenderWidgetHostViewAura::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
-  NOTIMPLEMENTED();
+  GetScreenInfo(results);
 }
 
 void RenderWidgetHostViewAura::GetScreenInfo(WebKit::WebScreenInfo* results) {
-  NOTIMPLEMENTED();
+  const gfx::Size size = gfx::Screen::GetPrimaryMonitorSize();
+  results->rect = WebKit::WebRect(0, 0, size.width(), size.height());
+  results->availableRect = results->rect;
+  // TODO(derat): Don't hardcode this?
+  results->depth = 24;
+  results->depthPerComponent = 8;
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetRootWindowBounds() {
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  return aura::Desktop::GetInstance()->bounds();
 }
 #endif
 
@@ -374,8 +406,13 @@ void RenderWidgetHostViewAura::OnBlur() {
 }
 
 bool RenderWidgetHostViewAura::OnKeyEvent(aura::KeyEvent* event) {
-  NativeWebKeyboardEvent webkit_event(event);
-  host_->ForwardKeyboardEvent(webkit_event);
+  // We need to handle the Escape key for Pepper Flash.
+  if (is_fullscreen_ && event->key_code() == ui::VKEY_ESCAPE) {
+    host_->Shutdown();
+  } else {
+    NativeWebKeyboardEvent webkit_event(event);
+    host_->ForwardKeyboardEvent(webkit_event);
+  }
   return true;
 }
 

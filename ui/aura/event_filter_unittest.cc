@@ -209,4 +209,3 @@ TEST_F(EventFilterTest, Basic) {
 
 }  // namespace test
 }  // namespace aura
-

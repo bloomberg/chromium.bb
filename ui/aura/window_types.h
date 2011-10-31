@@ -8,14 +8,18 @@
 
 namespace aura {
 
-// This file is obsolete. Please do not add any new types.
-// This still exists as Window::Init uses Type_Control.
-// TODO(ben|oshima): Figure out how to clean this up.
+enum WindowType {
+  WINDOW_TYPE_UNKNOWN = 0,
 
-const int kWindowType_None = 0;
-const int kWindowType_Control = 1;
+  // Regular windows that should be laid out by the shell.
+  WINDOW_TYPE_NORMAL,
 
-const int kWindowType_Max = 2;
+  // Miscellaneous windows that should not be laid out by the shell.
+  WINDOW_TYPE_POPUP,
+
+  WINDOW_TYPE_MENU,
+  WINDOW_TYPE_TOOLTIP,
+};
 
 }  // namespace aura
 

@@ -12,6 +12,7 @@ namespace aura {
 class KeyEvent;
 class MouseEvent;
 class TouchEvent;
+class Window;
 }
 
 namespace content {

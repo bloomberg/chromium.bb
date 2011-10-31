@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/web_input_event_aura.h"
 
 #include "ui/aura/event.h"
+#include "ui/aura/window.h"
 
 namespace content {
 
@@ -64,9 +65,10 @@ WebKit::WebMouseEvent MakeWebMouseEvent(aura::MouseEvent* event) {
   webkit_event.windowX = webkit_event.x = event->x();
   webkit_event.windowY = webkit_event.y = event->y();
 
-  // TODO(beng): map these to screen coordinates.
-  webkit_event.globalX = event->x();
-  webkit_event.globalY = event->y();
+  const gfx::Point host_point =
+      ui::EventLocationFromNative(event->native_event());
+  webkit_event.globalX = host_point.x();
+  webkit_event.globalY = host_point.y();
 
   return webkit_event;
 }
@@ -86,9 +88,10 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::MouseEvent* event) {
   webkit_event.windowX = webkit_event.x = event->x();
   webkit_event.windowY = webkit_event.y = event->y();
 
-  // TODO(beng): map these to screen coordinates.
-  webkit_event.globalX = event->x();
-  webkit_event.globalY = event->y();
+  const gfx::Point host_point =
+      ui::EventLocationFromNative(event->native_event());
+  webkit_event.globalX = host_point.x();
+  webkit_event.globalY = host_point.y();
 
   return webkit_event;
 }

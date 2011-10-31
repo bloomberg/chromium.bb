@@ -132,6 +132,12 @@ class RenderWidgetHostViewAura : public RenderWidgetHostView,
 
   aura::Window* window_;
 
+  // Is this a fullscreen view?
+  bool is_fullscreen_;
+
+  // Our parent host view, if this is a popup.  NULL otherwise.
+  RenderWidgetHostViewAura* popup_parent_host_view_;
+
   // True when content is being loaded. Used to show an hourglass cursor.
   bool is_loading_;
 

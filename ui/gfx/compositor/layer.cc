@@ -212,19 +212,16 @@ bool Layer::ShouldDraw() const {
 void Layer::ConvertPointToLayer(const Layer* source,
                                 const Layer* target,
                                 gfx::Point* point) {
-  const Layer* inner = NULL;
-  const Layer* outer = NULL;
-  if (source->Contains(target)) {
-    inner = target;
-    outer = source;
-    inner->ConvertPointFromAncestor(outer, point);
-  } else if (target->Contains(source)) {
-    inner = source;
-    outer = target;
-    inner->ConvertPointForAncestor(outer, point);
-  } else {
-    NOTREACHED(); // |source| and |target| are in unrelated hierarchies.
-  }
+  if (source == target)
+    return;
+
+  const Layer* root_layer = source->compositor()->root_layer();
+  CHECK_EQ(root_layer, target->compositor()->root_layer());
+
+  if (source != root_layer)
+    source->ConvertPointForAncestor(root_layer, point);
+  if (target != root_layer)
+    target->ConvertPointFromAncestor(root_layer, point);
 }
 
 void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {

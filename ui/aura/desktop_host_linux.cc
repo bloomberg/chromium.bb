@@ -17,6 +17,7 @@
 #include "ui/aura/cursor.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/compositor/layer.h"
@@ -180,6 +181,46 @@ int CoalescePendingXIMotionEvents(const XEvent* xev, XEvent* last_event) {
   return num_coalesed;
 }
 
+// We emulate Windows' WM_KEYDOWN and WM_CHAR messages.  WM_CHAR events are only
+// generated for certain keys; see
+// http://msdn.microsoft.com/en-us/library/windows/desktop/ms646268.aspx.
+bool ShouldSendCharEventForKeyboardCode(ui::KeyboardCode keycode) {
+  if ((keycode >= ui::VKEY_0 && keycode <= ui::VKEY_9) ||
+      (keycode >= ui::VKEY_A && keycode <= ui::VKEY_Z) ||
+      (keycode >= ui::VKEY_NUMPAD0 && keycode <= ui::VKEY_NUMPAD9)) {
+    return true;
+  }
+
+  switch (keycode) {
+    case ui::VKEY_BACK:
+    case ui::VKEY_RETURN:
+    case ui::VKEY_ESCAPE:
+    case ui::VKEY_TAB:
+    // In addition to the keys listed at MSDN, we include other
+    // graphic-character and numpad keys.
+    case ui::VKEY_MULTIPLY:
+    case ui::VKEY_ADD:
+    case ui::VKEY_SUBTRACT:
+    case ui::VKEY_DECIMAL:
+    case ui::VKEY_DIVIDE:
+    case ui::VKEY_OEM_1:
+    case ui::VKEY_OEM_2:
+    case ui::VKEY_OEM_3:
+    case ui::VKEY_OEM_4:
+    case ui::VKEY_OEM_5:
+    case ui::VKEY_OEM_6:
+    case ui::VKEY_OEM_7:
+    case ui::VKEY_OEM_102:
+    case ui::VKEY_OEM_PLUS:
+    case ui::VKEY_OEM_COMMA:
+    case ui::VKEY_OEM_MINUS:
+    case ui::VKEY_OEM_PERIOD:
+      return true;
+    default:
+      return false;
+  }
+}
+
 class DesktopHostLinux : public DesktopHost {
  public:
   explicit DesktopHostLinux(const gfx::Rect& bounds);
@@ -256,8 +297,10 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
     case KeyPress: {
       KeyEvent keydown_event(xev, false);
       handled = desktop_->DispatchKeyEvent(&keydown_event);
-      KeyEvent char_event(xev, true);
-      handled |= desktop_->DispatchKeyEvent(&char_event);
+      if (ShouldSendCharEventForKeyboardCode(keydown_event.key_code())) {
+        KeyEvent char_event(xev, true);
+        handled |= desktop_->DispatchKeyEvent(&char_event);
+      }
       break;
     }
     case KeyRelease: {
