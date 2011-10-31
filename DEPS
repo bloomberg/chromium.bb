@@ -94,8 +94,6 @@ deps = {
      Var("chrome_rev")),
   "third_party/tlslite":
     Var("chromium_trunk") + "/src/third_party/tlslite@" + Var("chrome_rev"),
-  "third_party/zlib":
-    Var("native_client_trunk") + "/src/third_party/zlib@" + Var("tools_rev"),
   "tools/clang":
     Var("chromium_trunk") + "/src/tools/clang@" + Var("chrome_rev"),
   "tools/gyp":
