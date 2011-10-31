@@ -210,6 +210,11 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
                   base::SysInfo::OperatingSystemName() + " " +
                   base::SysInfo::OperatingSystemVersion());
   dict->SetString("angle_revision", base::UintToString(BUILD_REVISION));
+#if defined(USE_SKIA)
+  dict->SetString("graphics_backend", "Skia");
+#else
+  dict->SetString("graphics_backend", "Core Graphics");
+#endif
   dict->SetString("blacklist_version",
       GpuDataManager::GetInstance()->GetBlacklistVersion());
 

@@ -61,6 +61,10 @@ cr.define('gpu', function() {
           {
             description: 'ANGLE revision',
             value: clientInfo.angle_revision
+          },
+          {
+            description: '2D graphics backend',
+            value: clientInfo.graphics_backend
           }]);
       } else {
         this.setText_('client-info', '... loading...');
