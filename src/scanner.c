@@ -267,6 +267,9 @@ start_element(void *data, const char *element_name, const char **atts)
 
 		ctx->enumeration = enumeration;
 	} else if (strcmp(element_name, "entry") == 0) {
+		if (name == NULL)
+			fail(ctx, "no entry name given");
+
 		entry = malloc(sizeof *entry);
 		entry->name = strdup(name);
 		entry->uppercase_name = uppercase_dup(name);
