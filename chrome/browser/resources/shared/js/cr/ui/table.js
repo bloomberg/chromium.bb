@@ -51,6 +51,15 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * The list of table.
+     *
+     * @type {cr.ui.list}
+     */
+    get list() {
+      return this.list_;
+    },
+
+    /**
      * The table column model.
      *
      * @type {cr.ui.table.TableColumnModel}

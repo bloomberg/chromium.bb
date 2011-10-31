@@ -197,6 +197,7 @@ TaskManager.prototype = {
 
     this.initTable_();
     this.initColumnMenu_();
+    this.initTableMenu_();
     this.table_.redraw();
   },
 
@@ -258,6 +259,29 @@ TaskManager.prototype = {
 
   },
 
+  initTableMenu_: function () {
+    this.table_menu_commands_ = [];
+    this.tableContextMenu_ = this.document_.createElement('menu');
+
+    // Creates command element to receive event.
+    var command = this.document_.createElement('command');
+    command.id = 'tableContextMenu-inspect';
+    cr.ui.Command.decorate(command);
+    this.table_menu_commands_[command.id] = command;
+    this.commandsElement_.appendChild(command);
+
+    // Creates menuitem element.
+    var item = this.document_.createElement('menuitem');
+    item.command = command;
+    command.menuitem = item;
+    var localized_label = localStrings.getString('INSPECT');
+    item.textContent = (localized_label != "") ? localized_label : "Inspect";
+    this.tableContextMenu_.appendChild(item);
+
+    this.document_.body.appendChild(this.tableContextMenu_);
+    cr.ui.Menu.decorate(this.tableContextMenu_);
+  },
+
   initTable_: function () {
     if (!this.dataModel_ || !this.selectionModel_ || !this.columnModel_) {
       console.log('ERROR: some models are not defined.');
@@ -273,6 +297,10 @@ TaskManager.prototype = {
 
     // Expands height of row when a process has some tasks.
     this.table_.autoExpands = true;
+
+    this.table_.list.addEventListener('contextmenu',
+                                      this.onTableContextMenuOpened_.bind(this),
+                                      true);
 
     // Sets custom row render function.
     this.table_.setRenderFunction(this.renderRow_.bind(this));
@@ -295,6 +323,7 @@ TaskManager.prototype = {
 
       listItem.appendChild(cell);
     }
+    listItem.data = dataItem;
 
     return listItem;
   },
@@ -316,6 +345,12 @@ TaskManager.prototype = {
           text.className = 'detail-title-text';
           text.textContent = entry['title'][i];
           label.appendChild(text);
+
+          cr.ui.contextMenuHandler.addContextMenuProperty(label);
+          label.contextMenu = this.tableContextMenu_;
+
+          label.data = entry;
+          label.index_in_group = i;
         } else {
           label.textContent = entry[columnId][i];
         }
@@ -371,11 +406,49 @@ TaskManager.prototype = {
     if (command.id.substr(0, 18) == 'columnContextMenu-') {
       console.log(command.id.substr(18));
       this.onColumnContextMenu_(command.id.substr(18), command);
+    } else if (command.id == 'tableContextMenu-inspect') {
+      var contextMenuTarget = this.currentContextMenuTarget_;
+      if (contextMenuTarget) {
+        this.inspect(contextMenuTarget);
+        this.currentContextMenuTarget_ = undefined;
+      }
     }
   },
 
   onCommandCanExecute_: function(event) {
     event.canExecute = true;
+  },
+
+  /**
+   * Store resourceIndex of target resource of context menu, because resource
+   * will be replaced when it is refleshed.
+   */
+  onTableContextMenuOpened_: function (e) {
+    var command = this.table_menu_commands_['tableContextMenu-inspect'];
+    var menuItem = command.menuitem;
+
+    // Disabled by default.
+    menuItem.disabled = true;
+    this.currentContextMenuTarget_ = undefined;
+
+    var target = e.target;
+    var classes = target.className.split(" ");
+    while (target && classes.indexOf('detail-title') == -1) {
+      target = target.parentNode;
+      classes = target.className.split(" ");
+    }
+
+    if (!target)
+      return;
+
+    var index_in_group = target.index_in_group;
+
+    var canInspect = target.data['canInspect'][index_in_group];
+    if (canInspect) {
+      menuItem.disabled = false;
+      this.currentContextMenuTarget_ =
+          target.data['uniqueId'][index_in_group];
+    }
   },
 
   onColumnContextMenu_: function(id, command) {
