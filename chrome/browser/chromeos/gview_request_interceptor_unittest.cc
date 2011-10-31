@@ -31,6 +31,16 @@ namespace chromeos {
 
 namespace {
 
+const char kPdfUrl[] = "http://foo.com/file.pdf";
+const char kPptUrl[] = "http://foo.com/file.ppt";
+const char kHtmlUrl[] = "http://foo.com/index.html";
+const char kPdfBlob[] = "blob:blobinternal:///d17c4eef-28e7-42bd-bafa-78d5cb8";
+
+const char kPdfUrlIntercepted[] =
+    "http://docs.google.com/gview?url=http%3A//foo.com/file.pdf";
+const char kPptUrlIntercepted[] =
+    "http://docs.google.com/gview?url=http%3A//foo.com/file.ppt";
+
 class GViewURLRequestTestJob : public net::URLRequestTestJob {
  public:
   explicit GViewURLRequestTestJob(net::URLRequest* request)
@@ -46,9 +56,10 @@ class GViewURLRequestTestJob : public net::URLRequestTestJob {
     // is a request for one of the test URLs that point to viewable
     // content, return an appropraite mime type.  Otherwise, return
     // "text/html".
-    if (request_->url() == GURL("http://foo.com/file.pdf")) {
+    const GURL& request_url = request_->url();
+    if (request_url == GURL(kPdfUrl) || request_url == GURL(kPdfBlob)) {
       *mime_type = "application/pdf";
-    } else if (request_->url() == GURL("http://foo.com/file.ppt")) {
+    } else if (request_url == GURL(kPptUrl)) {
       *mime_type = "application/vnd.ms-powerpoint";
     } else {
       *mime_type = "text/html";
@@ -199,70 +210,89 @@ class GViewRequestInterceptorTest : public testing::Test {
 };
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptHtml) {
-  net::URLRequest request(GURL("http://foo.com/index.html"), &test_delegate_);
+  net::URLRequest request(GURL(kHtmlUrl), &test_delegate_);
   SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(0, test_delegate_.received_redirect_count());
-  EXPECT_EQ(GURL("http://foo.com/index.html"), request.url());
+  EXPECT_EQ(GURL(kHtmlUrl), request.url());
 }
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptDownload) {
-  net::URLRequest request(GURL("http://foo.com/file.pdf"), &test_delegate_);
+  net::URLRequest request(GURL(kPdfUrl), &test_delegate_);
   SetupRequest(&request);
   request.set_load_flags(net::LOAD_IS_DOWNLOAD);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(0, test_delegate_.received_redirect_count());
-  EXPECT_EQ(GURL("http://foo.com/file.pdf"), request.url());
+  EXPECT_EQ(GURL(kPdfUrl), request.url());
 }
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptPdfWhenEnabled) {
   SetPDFPluginLoadedState(true);
   plugin_prefs_->EnablePlugin(true, pdf_path_);
 
-  net::URLRequest request(GURL("http://foo.com/file.pdf"), &test_delegate_);
+  net::URLRequest request(GURL(kPdfUrl), &test_delegate_);
   SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(0, test_delegate_.received_redirect_count());
-  EXPECT_EQ(GURL("http://foo.com/file.pdf"), request.url());
+  EXPECT_EQ(GURL(kPdfUrl), request.url());
 }
 
 TEST_F(GViewRequestInterceptorTest, InterceptPdfWhenDisabled) {
   SetPDFPluginLoadedState(true);
   plugin_prefs_->EnablePlugin(false, pdf_path_);
 
-  net::URLRequest request(GURL("http://foo.com/file.pdf"), &test_delegate_);
+  net::URLRequest request(GURL(kPdfUrl), &test_delegate_);
   SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(1, test_delegate_.received_redirect_count());
-  EXPECT_EQ(
-      GURL("http://docs.google.com/gview?url=http%3A//foo.com/file.pdf"),
-      request.url());
+  EXPECT_EQ(GURL(kPdfUrlIntercepted), request.url());
 }
 
 TEST_F(GViewRequestInterceptorTest, InterceptPdfWithNoPlugin) {
   SetPDFPluginLoadedState(false);
 
-  net::URLRequest request(GURL("http://foo.com/file.pdf"), &test_delegate_);
+  net::URLRequest request(GURL(kPdfUrl), &test_delegate_);
   SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(1, test_delegate_.received_redirect_count());
-  EXPECT_EQ(GURL("http://docs.google.com/gview?url=http%3A//foo.com/file.pdf"),
-                 request.url());
+  EXPECT_EQ(GURL(kPdfUrlIntercepted), request.url());
 }
 
 TEST_F(GViewRequestInterceptorTest, InterceptPowerpoint) {
-  net::URLRequest request(GURL("http://foo.com/file.ppt"), &test_delegate_);
+  net::URLRequest request(GURL(kPptUrl), &test_delegate_);
   SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(1, test_delegate_.received_redirect_count());
-  EXPECT_EQ(GURL("http://docs.google.com/gview?url=http%3A//foo.com/file.ppt"),
-                 request.url());
+  EXPECT_EQ(GURL(kPptUrlIntercepted), request.url());
+}
+
+TEST_F(GViewRequestInterceptorTest, DoNotInterceptPost) {
+  SetPDFPluginLoadedState(false);
+
+  net::URLRequest request(GURL(kPdfUrl), &test_delegate_);
+  SetupRequest(&request);
+  request.set_method("POST");
+  request.Start();
+  MessageLoop::current()->Run();
+  EXPECT_EQ(0, test_delegate_.received_redirect_count());
+  EXPECT_EQ(GURL(kPdfUrl), request.url());
+}
+
+TEST_F(GViewRequestInterceptorTest, DoNotInterceptBlob) {
+  SetPDFPluginLoadedState(false);
+
+  net::URLRequest request(GURL(kPdfBlob), &test_delegate_);
+  SetupRequest(&request);
+  request.Start();
+  MessageLoop::current()->Run();
+  EXPECT_EQ(0, test_delegate_.received_redirect_count());
+  EXPECT_EQ(GURL(kPdfBlob), request.url());
 }
 
 }  // namespace

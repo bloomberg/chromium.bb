@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -20,19 +21,23 @@
 
 namespace chromeos {
 
+namespace {
+
 // The PDF mime type is treated special if the browser has a built-in
 // PDF viewer plug-in installed - we want to intercept only if we're
 // told to.
-static const char kPdfMimeType[] = "application/pdf";
+const char kPdfMimeType[] = "application/pdf";
 
 // This is the list of mime types currently supported by the Google
 // Document Viewer.
-static const char* const kSupportedMimeTypeList[] = {
+const char* const kSupportedMimeTypeList[] = {
   kPdfMimeType,
   "application/vnd.ms-powerpoint"
 };
 
-static const char kGViewUrlPrefix[] = "http://docs.google.com/gview?url=";
+const char kGViewUrlPrefix[] = "http://docs.google.com/gview?url=";
+
+}  // namespace
 
 GViewRequestInterceptor::GViewRequestInterceptor() {
   for (size_t i = 0; i < arraysize(kSupportedMimeTypeList); ++i) {
@@ -75,6 +80,11 @@ bool GViewRequestInterceptor::ShouldUsePdfPlugin(
       request->url(), GURL(), &plugin);
 }
 
+bool GViewRequestInterceptor::ShouldInterceptScheme(
+    const std::string& scheme) const {
+  return scheme == chrome::kHttpScheme;
+}
+
 net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
     net::URLRequest* request) const {
   // Do not intercept this request if it is a download.
@@ -84,10 +94,17 @@ net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
 
   std::string mime_type;
   request->GetMimeType(&mime_type);
+
+  if (request->method() != "GET" ||
+      !ShouldInterceptScheme(request->original_url().scheme())) {
+    return NULL;
+  }
+
   // If the local PDF viewing plug-in is installed and enabled, don't
   // redirect PDF files to Google Document Viewer.
   if (mime_type == kPdfMimeType && ShouldUsePdfPlugin(request))
     return NULL;
+
   // If supported, build the URL to the Google Document Viewer
   // including the origial document's URL, then create a new job that
   // will redirect the browser to this new URL.

@@ -7,14 +7,18 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/simple_message_box.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/plugin_service.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
@@ -41,10 +45,13 @@ const char kMediaPlayerUrl[] = FILEBROWSER_URL("mediaplayer.html");
 const char kMediaPlayerPlaylistUrl[] = FILEBROWSER_URL("playlist.html");
 #undef FILEBROWSER_URL
 
+const char kPdfExtension[] = ".pdf";
 // List of file extension we can open in tab.
 const char* kBrowserSupportedExtensions[] = {
-    ".bmp", ".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf", ".txt", ".html",
-    ".htm"
+#if defined(GOOGLE_CHROME_BUILD)
+    ".pdf",
+#endif
+    ".bmp", ".jpg", ".jpeg", ".png", ".webp", ".gif", ".txt", ".html", ".htm"
 };
 // List of file extension that can be handled with the media player.
 const char* kAVExtensions[] = {
@@ -83,6 +90,29 @@ bool IsSupportedAVExtension(const char* ext) {
     }
   }
   return false;
+}
+
+// If pdf plugin is enabled, we should open pdf files in a tab.
+bool ShouldBeOpenedWithPdfPlugin(const char* ext) {
+  if (base::strcasecmp(ext, kPdfExtension) != 0)
+    return false;
+
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser)
+    return false;
+
+  FilePath pdf_path;
+  PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
+
+  webkit::WebPluginInfo plugin;
+  if (!PluginService::GetInstance()->GetPluginInfoByPath(pdf_path, &plugin))
+    return false;
+
+  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser->profile());
+  if (!plugin_prefs)
+    return false;
+
+  return plugin_prefs->IsPluginEnabled(plugin);
 }
 
 // static
@@ -226,7 +256,8 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
   std::string ext = full_path.Extension();
   // For things supported natively by the browser, we should open it
   // in a tab.
-  if (IsSupportedBrowserExtension(ext.data())) {
+  if (IsSupportedBrowserExtension(ext.data()) ||
+      ShouldBeOpenedWithPdfPlugin(ext.data())) {
     std::string path;
     path = "file://";
     path.append(EscapeUrlEncodedData(full_path.value(), false));

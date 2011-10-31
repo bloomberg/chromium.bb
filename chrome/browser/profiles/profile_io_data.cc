@@ -484,13 +484,13 @@ void ProfileIOData::LazyInitialize() const {
           profile_params_->file_system_context,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   DCHECK(set_protocol);
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(GOOGLE_CHROME_BUILD)
   // Install the GView request interceptor that will redirect requests
   // of compatible documents (PDF, etc) to the GView document viewer.
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(switches::kEnableGView))
     job_factory_->AddInterceptor(new chromeos::GViewRequestInterceptor);
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) && !defined(GOOGLE_CHROME_BUILD)
 
   media_stream_manager_.reset(new media_stream::MediaStreamManager);
 

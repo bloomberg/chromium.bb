@@ -40,6 +40,7 @@ class GViewRequestInterceptor : public net::URLRequestJobFactory::Interceptor {
 
  private:
   bool ShouldUsePdfPlugin(net::URLRequest* request) const;
+  bool ShouldInterceptScheme(const std::string& scheme) const;
 
   // The list of supported mime types.
   base::hash_set<std::string> supported_mime_types_;
