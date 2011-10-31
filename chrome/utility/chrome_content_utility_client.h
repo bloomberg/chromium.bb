@@ -48,7 +48,8 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   virtual bool Send(IPC::Message* message);
 
   // IPC message handlers.
-  void OnUnpackExtension(const FilePath& extension_path);
+  void OnUnpackExtension(const FilePath& extension_path,
+                         int location, int creation_flags);
   void OnUnpackWebResource(const std::string& resource_data);
   void OnParseUpdateManifest(const std::string& xml);
   void OnDecodeImage(const std::vector<unsigned char>& encoded_data);

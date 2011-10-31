@@ -20,7 +20,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -112,12 +111,13 @@ void RecordSuccessfulUnpackTimeHistograms(
 SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
     const FilePath& crx_path,
     ResourceDispatcherHost* rdh,
+    Extension::Location location,
     int creation_flags,
     SandboxedExtensionUnpackerClient* client)
     : crx_path_(crx_path),
       thread_identifier_(BrowserThread::ID_COUNT),
       rdh_(rdh), client_(client), got_response_(false),
-      creation_flags_(creation_flags) {
+      location_(location), creation_flags_(creation_flags) {
 }
 
 bool SandboxedExtensionUnpacker::CreateTempDirectory() {
@@ -214,7 +214,7 @@ void SandboxedExtensionUnpacker::Start() {
             link_free_crx_path));
   } else {
     // Otherwise, unpack the extension in this process.
-    ExtensionUnpacker unpacker(temp_crx_path);
+    ExtensionUnpacker unpacker(temp_crx_path, location_, creation_flags_);
     if (unpacker.Run() && unpacker.DumpImagesToFile() &&
         unpacker.DumpMessageCatalogsToFile()) {
       OnUnpackExtensionSucceeded(*unpacker.parsed_manifest());
@@ -262,7 +262,9 @@ void SandboxedExtensionUnpacker::StartProcessOnIOThread(
   // Grant the subprocess access to the entire subdir the extension file is
   // in, so that it can unpack to that dir.
   host->set_exposed_dir(temp_crx_path.DirName());
-  host->Send(new ChromeUtilityMsg_UnpackExtension(temp_crx_path));
+  host->Send(
+      new ChromeUtilityMsg_UnpackExtension(
+          temp_crx_path, location_, creation_flags_));
 }
 
 void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
@@ -296,7 +298,7 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
 
   extension_ = Extension::Create(
       extension_root_,
-      Extension::INTERNAL,
+      location_,
       *final_manifest,
       Extension::REQUIRE_KEY | creation_flags_,
       &error);

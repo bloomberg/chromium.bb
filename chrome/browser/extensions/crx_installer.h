@@ -137,8 +137,13 @@ class CrxInstaller
   bool allow_silent_install() const { return allow_silent_install_; }
   void set_allow_silent_install(bool val) { allow_silent_install_ = val; }
 
-  bool is_gallery_install() const { return is_gallery_install_; }
-  void set_is_gallery_install(bool val) { is_gallery_install_ = val; }
+  bool is_gallery_install() const {
+    return (creation_flags_ & Extension::FROM_WEBSTORE) > 0;
+  }
+  void set_is_gallery_install(bool val) {
+    if (val) creation_flags_ |= Extension::FROM_WEBSTORE;
+    else creation_flags_ &= ~Extension::FROM_WEBSTORE;
+  }
 
   // The original download URL should be set when the WebstoreInstaller is
   // tracking the installation. The WebstoreInstaller uses this URL to match
@@ -246,9 +251,6 @@ class CrxInstaller
   // Whether we're supposed to delete the source file on destruction. Defaults
   // to false.
   bool delete_source_;
-
-  // Whether the install originated from the gallery.
-  bool is_gallery_install_;
 
   // The download URL, before redirects, if this is a gallery install.
   GURL original_download_url_;

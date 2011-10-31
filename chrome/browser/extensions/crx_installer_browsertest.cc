@@ -73,3 +73,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Whitelisting) {
                                         "hdgllgikmikobbofgnabhfimcfoopgnd"));
 #endif  // !defined(OS_CHROMEOS)
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
+                       GalleryInstallGetsExperimental) {
+  InstallExtension(test_data_dir_.AppendASCII("experimental.crx"), 0);
+  InstallExtensionFromWebstore(
+      test_data_dir_.AppendASCII("experimental.crx"), 1);
+}

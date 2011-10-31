@@ -35,7 +35,9 @@ public:
         "Original path " << original_path.value() <<
         ", Crx path " << crx_path.value();
 
-    unpacker_.reset(new ExtensionUnpacker(crx_path));
+    unpacker_.reset(
+        new ExtensionUnpacker(
+            crx_path, Extension::INTERNAL, Extension::NO_FLAGS));
   }
 
  protected:

@@ -176,7 +176,8 @@ FilePath ExtensionBrowserTest::PackExtension(const FilePath& dir_path) {
                     crx_path,
                     FilePath(),  // no existing pem, use empty path
                     pem_path)) {
-    ADD_FAILURE() << "ExtensionCreator::Run() failed.";
+    ADD_FAILURE() << "ExtensionCreator::Run() failed: "
+                  << creator->error_message();
     return FilePath();
   }
 

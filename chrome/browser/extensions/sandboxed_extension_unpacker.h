@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_temp_dir.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/browser/utility_process_host.h"
 
 class Extension;
@@ -101,6 +102,7 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   // sandboxed subprocess. Otherwise, it is done in-process.
   SandboxedExtensionUnpacker(const FilePath& crx_path,
                              ResourceDispatcherHost* rdh,
+                             Extension::Location location,
                              int creation_flags,
                              SandboxedExtensionUnpackerClient* client);
 
@@ -241,6 +243,9 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
 
   // Time at which unpacking started. Used to compute the time unpacking takes.
   base::TimeTicks unpack_start_time_;
+
+  // Location to use for the unpacked extension.
+  Extension::Location location_;
 
   // Creation flags to use for the extension.  These flags will be used
   // when calling Extenion::Create() by the crx installer.

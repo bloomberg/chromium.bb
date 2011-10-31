@@ -121,7 +121,6 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
       install_source_(Extension::INTERNAL),
       extensions_enabled_(frontend_weak->extensions_enabled()),
       delete_source_(false),
-      is_gallery_install_(false),
       create_app_shortcut_(false),
       page_index_(-1),
       frontend_weak_(frontend_weak),
@@ -165,6 +164,7 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
       new SandboxedExtensionUnpacker(
           source_file,
           g_browser_process->resource_dispatcher_host(),
+          install_source_,
           creation_flags_,
           this));
 
@@ -274,7 +274,7 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
     // If the client_ is NULL, then the app is either being installed via
     // an internal mechanism like sync, external_extensions, or default apps.
     // In that case, we don't want to enforce things like the install origin.
-    if (!is_gallery_install_ && client_) {
+    if (!is_gallery_install() && client_) {
       // For apps with a gallery update URL, require that they be installed
       // from the gallery.
       // TODO(erikkay) Apply this rule for paid extensions and themes as well.
@@ -405,7 +405,7 @@ void CrxInstaller::ConfirmInstall() {
   bool whitelisted = false;
   scoped_ptr<CrxInstaller::WhitelistEntry> entry(
       RemoveWhitelistEntry(extension_->id()));
-  if (is_gallery_install_ && entry.get() && original_manifest_.get()) {
+  if (is_gallery_install() && entry.get() && original_manifest_.get()) {
     if (!(original_manifest_->Equals(entry->parsed_manifest.get()))) {
       ReportFailureFromUIThread(
           l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_INVALID));
@@ -497,13 +497,10 @@ void CrxInstaller::CompleteInstall() {
   // TODO(aa): All paths to resources inside extensions should be created
   // lazily and based on the Extension's root path at that moment.
   std::string error;
-  int flags = extension_->creation_flags() | Extension::REQUIRE_KEY;
-  if (is_gallery_install())
-    flags |= Extension::FROM_WEBSTORE;
   extension_ = extension_file_util::LoadExtension(
       version_dir,
       install_source_,
-      flags,
+      extension_->creation_flags() | Extension::REQUIRE_KEY,
       &error);
   CHECK(error.empty()) << error;
 

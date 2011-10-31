@@ -90,7 +90,8 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
         "Original path: " << original_path.value() <<
         ", Crx path: " << crx_path.value();
 
-    unpacker_.reset(new ExtensionUnpacker(crx_path));
+    unpacker_.reset(new ExtensionUnpacker(
+        crx_path, Extension::INTERNAL, Extension::NO_FLAGS));
 
     // Build a temp area where the extension will be unpacked.
     temp_path_ =
@@ -98,8 +99,8 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
     ASSERT_TRUE(file_util::CreateDirectory(temp_path_));
 
     sandboxed_unpacker_ =
-        new SandboxedExtensionUnpacker(crx_path, NULL, Extension::NO_FLAGS,
-                                       client_);
+        new SandboxedExtensionUnpacker(crx_path, NULL, Extension::INTERNAL,
+                                       Extension::NO_FLAGS, client_);
 
     // Hack since SandboxedExtensionUnpacker gets its background thread id from
     // the Start call, but we don't call it here.

@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/platform_file.h"
 #include "base/values.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/serialized_script_value.h"
@@ -53,8 +54,10 @@ IPC_STRUCT_TRAITS_END()
 // These are messages from the browser to the utility process.
 // Tell the utility process to unpack the given extension file in its
 // directory and verify that it is valid.
-IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_UnpackExtension,
-                     FilePath /* extension_filename */)
+IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_UnpackExtension,
+                     FilePath /* extension_filename */,
+                     int /* Extension::Location */,
+                     int /* InitFromValue flags */)
 
 // Tell the utility process to parse the given JSON data and verify its
 // validity.

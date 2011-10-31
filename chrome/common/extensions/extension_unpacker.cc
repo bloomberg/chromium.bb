@@ -84,8 +84,11 @@ bool PathContainsParentDirectory(const FilePath& path) {
 
 }  // namespace
 
-ExtensionUnpacker::ExtensionUnpacker(const FilePath& extension_path)
-    : extension_path_(extension_path) {
+ExtensionUnpacker::ExtensionUnpacker(const FilePath& extension_path,
+                                     Extension::Location location,
+                                     int creation_flags)
+    : extension_path_(extension_path), location_(location),
+      creation_flags_(creation_flags) {
 }
 
 ExtensionUnpacker::~ExtensionUnpacker() {
@@ -178,9 +181,9 @@ bool ExtensionUnpacker::Run() {
   std::string error;
   scoped_refptr<Extension> extension(Extension::Create(
       temp_install_dir_,
-      Extension::INVALID,
+      location_,
       *parsed_manifest_,
-      Extension::NO_FLAGS,
+      creation_flags_,
       &error));
   if (!extension.get()) {
     SetError(error);

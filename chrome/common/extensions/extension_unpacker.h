@@ -12,6 +12,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/tuple.h"
+#include "chrome/common/extensions/extension.h"
 
 class SkBitmap;
 
@@ -27,7 +28,9 @@ class ExtensionUnpacker {
  public:
   typedef std::vector< Tuple2<SkBitmap, FilePath> > DecodedImages;
 
-  explicit ExtensionUnpacker(const FilePath& extension_path);
+  explicit ExtensionUnpacker(const FilePath& extension_path,
+                             Extension::Location location,
+                             int creation_flags);
   ~ExtensionUnpacker();
 
   // Install the extension file at |extension_path|.  Returns true on success.
@@ -84,6 +87,12 @@ class ExtensionUnpacker {
 
   // The extension to unpack.
   FilePath extension_path_;
+
+  // The location to use for the created extension.
+  Extension::Location location_;
+
+  // The creation flags to use with the created extension.
+  int creation_flags_;
 
   // The place we unpacked the extension to.
   FilePath temp_install_dir_;

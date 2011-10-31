@@ -13,6 +13,7 @@
 #include "chrome/browser/importer/profile_import_process_messages.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_utility_messages.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_unpacker.h"
 #include "chrome/common/extensions/update_manifest.h"
@@ -93,8 +94,13 @@ bool ChromeContentUtilityClient::Send(IPC::Message* message) {
 }
 
 void ChromeContentUtilityClient::OnUnpackExtension(
-    const FilePath& extension_path) {
-  ExtensionUnpacker unpacker(extension_path);
+    const FilePath& extension_path, int location, int creation_flags) {
+  CHECK(location > Extension::INVALID);
+  CHECK(location < Extension::NUM_LOCATIONS);
+  ExtensionUnpacker unpacker(
+      extension_path,
+      static_cast<Extension::Location>(location),
+      creation_flags);
   if (unpacker.Run() && unpacker.DumpImagesToFile() &&
       unpacker.DumpMessageCatalogsToFile()) {
     Send(new ChromeUtilityHostMsg_UnpackExtension_Succeeded(
