@@ -481,15 +481,16 @@ cr.define('options', function() {
    * @private
    */
   OptionsPage.reverseButtonStrip_ = function(overlay) {
-    var buttonStrip = overlay.pageDiv.querySelector('.button-strip');
+    var buttonStrips = overlay.pageDiv.querySelectorAll('.button-strip');
 
-    // Not all overlays have button strips.
-    if (!buttonStrip)
-      return;
+    // Reverse all button-strips in the overlay.
+    for (var j = 0; j < buttonStrips.length; j++) {
+      var buttonStrip = buttonStrips[j];
 
-    var childNodes = buttonStrip.childNodes;
-    for (var i = childNodes.length - 1; i >= 0; i--)
-      buttonStrip.appendChild(childNodes[i]);
+      var childNodes = buttonStrip.childNodes;
+      for (var i = childNodes.length - 1; i >= 0; i--)
+        buttonStrip.appendChild(childNodes[i]);
+    }
   };
 
   /**
