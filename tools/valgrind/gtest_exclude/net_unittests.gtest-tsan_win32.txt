@@ -35,3 +35,4 @@ X509CertificateTest.TestKnownRoot
 
 # See http://crbug.com/102330
 SSLClientSocketTest.ConnectExpired
+SSLClientSocketTest.ConnectMismatched

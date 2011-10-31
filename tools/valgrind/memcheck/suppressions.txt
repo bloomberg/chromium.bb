@@ -2073,6 +2073,20 @@
    fun:_ZN3net18SSLClientSocketNSS14DoPayloadWriteEv
 }
 {
+   bug_44341g
+   Memcheck:Addr4
+   ...
+   fun:PK11_CipherOp
+   fun:ssl3_CompressMACEncryptRecord
+   fun:ssl3_SendRecord
+   fun:ssl3_SendApplicationData
+   fun:ssl_SecureSend
+   fun:ssl_SecureWrite
+   fun:ssl_Write
+   fun:PR_Write
+   fun:_ZN3net18SSLClientSocketNSS14DoPayloadWriteEv
+}
+{
    bug_44385
    Memcheck:Leak
    fun:_Znw*
