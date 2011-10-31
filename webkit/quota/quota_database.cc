@@ -35,6 +35,10 @@ class HistogramUniquifier {
   static const char* name() { return "Sqlite.Quota.Error"; }
 };
 
+sql::ErrorDelegate* GetErrorHandlerForQuotaDb() {
+  return new sql::DiagnosticErrorDelegate<HistogramUniquifier>();
+}
+
 bool PrepareCachedStatement(
     sql::Connection* db, const sql::StatementID& id,
     const char* sql, sql::Statement* statement) {
@@ -476,6 +480,8 @@ bool QuotaDatabase::LazyOpen(bool create_if_needed) {
 
   db_.reset(new sql::Connection);
   meta_table_.reset(new sql::MetaTable);
+
+  db_->set_error_delegate(GetErrorHandlerForQuotaDb());
 
   bool opened = false;
   if (in_memory_only) {
