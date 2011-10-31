@@ -106,8 +106,8 @@ class PhishingDOMFeatureExtractor {
   void Clear();
 
   // Called after advancing |cur_document_| to update the state in
-  // |cur_frame_data_|.  Returns true if the state was updated successfully.
-  bool ResetFrameData();
+  // |cur_frame_data_|.
+  void ResetFrameData();
 
   // Returns the next document in frame-traversal order from cur_document_.
   // If there are no more documents, returns a null WebDocument.

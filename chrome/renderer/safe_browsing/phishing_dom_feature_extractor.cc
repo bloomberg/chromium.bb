@@ -170,11 +170,7 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
     } else {
       // We just moved to a new frame, so update our frame state
       // and advance to the first element.
-      if (!ResetFrameData()) {
-        // Nothing in this frame, move on to the next one.
-        DLOG(WARNING) << "No content in frame, skipping";
-        continue;
-      }
+      ResetFrameData();
       cur_node = cur_frame_data_->elements.firstItem();
     }
 
@@ -381,7 +377,7 @@ void PhishingDOMFeatureExtractor::Clear() {
   cur_document_.reset();
 }
 
-bool PhishingDOMFeatureExtractor::ResetFrameData() {
+void PhishingDOMFeatureExtractor::ResetFrameData() {
   DCHECK(!cur_document_.isNull());
   DCHECK(!cur_frame_data_.get());
 
@@ -390,7 +386,6 @@ bool PhishingDOMFeatureExtractor::ResetFrameData() {
   cur_frame_data_->domain =
       net::RegistryControlledDomainService::GetDomainAndRegistry(
           cur_document_.url());
-  return true;
 }
 
 WebKit::WebDocument PhishingDOMFeatureExtractor::GetNextDocument() {
