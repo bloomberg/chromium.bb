@@ -197,7 +197,7 @@ void PasswordChangeProcessor::CommitChangesFromSyncModel() {
   DCHECK(expected_loop_ == MessageLoop::current());
   if (!running())
     return;
-  StopObserving();
+  ScopedStopObserving<PasswordChangeProcessor> stop_observing(this);
 
   if (!model_associator_->WriteToPasswordStore(&new_passwords_,
                                                &updated_passwords_,
@@ -209,8 +209,6 @@ void PasswordChangeProcessor::CommitChangesFromSyncModel() {
   deleted_passwords_.clear();
   new_passwords_.clear();
   updated_passwords_.clear();
-
-  StartObserving();
 }
 
 void PasswordChangeProcessor::StartImpl(Profile* profile) {

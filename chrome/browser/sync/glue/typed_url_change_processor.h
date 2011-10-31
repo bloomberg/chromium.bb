@@ -68,6 +68,7 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
   virtual void StopImpl();
 
  private:
+  friend class ScopedStopObserving<TypedUrlChangeProcessor>;
   void StartObserving();
   void StopObserving();
 

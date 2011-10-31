@@ -57,6 +57,7 @@ class SessionChangeProcessor : public ChangeProcessor,
   virtual void StopImpl() OVERRIDE;
 
  private:
+  friend class ScopedStopObserving<SessionChangeProcessor>;
   void StartObserving();
   void StopObserving();
   SessionModelAssociator* session_model_associator_;

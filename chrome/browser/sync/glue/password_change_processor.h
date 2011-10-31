@@ -58,6 +58,7 @@ class PasswordChangeProcessor : public ChangeProcessor,
   virtual void StopImpl() OVERRIDE;
 
  private:
+  friend class ScopedStopObserving<PasswordChangeProcessor>;
   void StartObserving();
   void StopObserving();
 

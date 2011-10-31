@@ -106,9 +106,8 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModel(
     DCHECK(profile_);
     theme_specifics = node.GetThemeSpecifics();
   }
-  StopObserving();
+  ScopedStopObserving<ThemeChangeProcessor> stop_observing(this);
   SetCurrentThemeFromThemeSpecificsIfNecessary(theme_specifics, profile_);
-  StartObserving();
 }
 
 void ThemeChangeProcessor::StartImpl(Profile* profile) {

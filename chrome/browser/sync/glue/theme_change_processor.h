@@ -47,6 +47,7 @@ class ThemeChangeProcessor : public ChangeProcessor,
   virtual void StopImpl() OVERRIDE;
 
  private:
+  friend class ScopedStopObserving<ThemeChangeProcessor>;
   void StartObserving();
   void StopObserving();
 

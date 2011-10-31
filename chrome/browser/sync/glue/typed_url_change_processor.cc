@@ -307,7 +307,9 @@ void TypedUrlChangeProcessor::CommitChangesFromSyncModel() {
   if (!running())
     return;
 
-  StopObserving();
+  // Make sure we stop listening for changes while we're modifying the backend,
+  // so we don't try to re-apply these changes to the sync DB.
+  ScopedStopObserving<TypedUrlChangeProcessor> stop_observing(this);
   if (!pending_deleted_urls_.empty())
     history_backend_->DeleteURLs(pending_deleted_urls_);
 
@@ -327,8 +329,6 @@ void TypedUrlChangeProcessor::CommitChangesFromSyncModel() {
   pending_new_visits_.clear();
   pending_deleted_visits_.clear();
   pending_deleted_urls_.clear();
-
-  StartObserving();
 }
 
 void TypedUrlChangeProcessor::StartImpl(Profile* profile) {

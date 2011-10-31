@@ -214,7 +214,7 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
     return;
   }
 
-  StopObserving();
+  ScopedStopObserving<SessionChangeProcessor> stop_observing(this);
 
   sync_api::ReadNode root(trans);
   if (!root.InitByTagLookup(kSessionsTag)) {
@@ -261,7 +261,6 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
       // if encryption was turned on. In that case, the data is still the same,
       // so we can ignore.
       LOG(WARNING) << "Dropping modification to local session.";
-      StartObserving();
       return;
     }
     const base::Time& mtime = sync_node.GetModificationTime();
@@ -274,8 +273,6 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
       chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
       content::Source<Profile>(profile_),
       content::NotificationService::NoDetails());
-
-  StartObserving();
 }
 
 void SessionChangeProcessor::StartImpl(Profile* profile) {

@@ -70,6 +70,7 @@ class AutofillChangeProcessor : public ChangeProcessor,
   virtual void StopImpl() OVERRIDE;
 
  private:
+  friend class ScopedStopObserving<AutofillChangeProcessor>;
   void StartObserving();
   void StopObserving();
 

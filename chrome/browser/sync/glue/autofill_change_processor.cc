@@ -196,7 +196,7 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!running())
     return;
-  StopObserving();
+  ScopedStopObserving<AutofillChangeProcessor> stop_observing(this);
 
   sync_api::ReadNode autofill_root(trans);
   if (!autofill_root.InitByTagLookup(kAutofillTag)) {
@@ -249,15 +249,13 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
       NOTREACHED() << "Autofill specifics has no data!";
     }
   }
-
-  StartObserving();
 }
 
 void AutofillChangeProcessor::CommitChangesFromSyncModel() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!running())
     return;
-  StopObserving();
+  ScopedStopObserving<AutofillChangeProcessor> stop_observing(this);
 
   std::vector<AutofillEntry> new_entries;
   for (unsigned int i = 0; i < autofill_changes_.size(); i++) {
@@ -300,7 +298,6 @@ void AutofillChangeProcessor::CommitChangesFromSyncModel() {
   WebDataService::NotifyOfMultipleAutofillChanges(
       profile_->GetWebDataService(Profile::EXPLICIT_ACCESS));
 
-  StartObserving();
 }
 
 void AutofillChangeProcessor::ApplySyncAutofillEntryDelete(
