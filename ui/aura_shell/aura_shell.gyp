@@ -80,7 +80,6 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:test_support_base',
-        '../../chrome/chrome_resources.gyp:packed_resources',
         '../../build/temp_gyp/googleurl.gyp:googleurl',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
@@ -111,6 +110,13 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
       ],
+      'conditions': [
+        ['OS!="mac"', {
+          'dependencies': [
+            '../../chrome/chrome.gyp:packed_resources',
+           ],
+        }],
+      ],
     },
     {
       'target_name': 'aura_shell_exe',
@@ -118,7 +124,6 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
-        '../../chrome/chrome_resources.gyp:packed_resources',
         '../../skia/skia.gyp:skia',
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
@@ -145,6 +150,13 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
+      ],
+      'conditions': [
+        ['OS!="mac"', {
+          'dependencies': [
+            '../../chrome/chrome.gyp:packed_resources',
+           ],
+        }],
       ],
     },
     # It's convenient for aura_shell developers to be able to build all
