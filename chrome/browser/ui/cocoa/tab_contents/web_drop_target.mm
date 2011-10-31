@@ -9,11 +9,11 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/cocoa/drag_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -167,7 +167,7 @@ using WebKit::WebDragOperationsMask;
     NSPasteboard* pboard = [info draggingPasteboard];
     if ([pboard containsURLData]) {
       GURL url;
-      drag_util::PopulateURLAndTitleFromPasteBoard(&url, NULL, pboard, YES);
+      ui::PopulateURLAndTitleFromPasteboard(&url, NULL, pboard, YES);
       tabContents_->OpenURL(url, GURL(), CURRENT_TAB,
                             content::PAGE_TRANSITION_AUTO_BOOKMARK);
       return YES;
@@ -212,10 +212,10 @@ using WebKit::WebDragOperationsMask;
 
   // Get URL if possible. To avoid exposing file system paths to web content,
   // filenames in the drag are not converted to file URLs.
-  drag_util::PopulateURLAndTitleFromPasteBoard(&data->url,
-                                               &data->url_title,
-                                               pboard,
-                                               NO);
+  ui::PopulateURLAndTitleFromPasteboard(&data->url,
+                                        &data->url_title,
+                                        pboard,
+                                        NO);
 
   // Get plain text.
   if ([types containsObject:NSStringPboardType]) {

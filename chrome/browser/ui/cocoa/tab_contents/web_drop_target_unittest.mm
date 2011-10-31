@@ -7,12 +7,12 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/tab_contents/web_drop_target.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "webkit/glue/webdropdata.h"
 
 class WebDropTargetTest : public ChromeRenderViewHostTestHarness {
@@ -82,7 +82,7 @@ TEST_F(WebDropTargetTest, URL) {
   pboard = [NSPasteboard pasteboardWithUniqueName];
   url = @"http://www.google.com/";
   PutURLOnPasteboard(url, pboard);
-  EXPECT_TRUE(drag_util::PopulateURLAndTitleFromPasteBoard(
+  EXPECT_TRUE(ui::PopulateURLAndTitleFromPasteboard(
       &result_url, &result_title, pboard, NO));
   EXPECT_EQ(base::SysNSStringToUTF8(url), result_url.spec());
   [pboard releaseGlobally];
@@ -92,7 +92,7 @@ TEST_F(WebDropTargetTest, URL) {
   url = @"http://www.google.com/";
   title = @"Title of Awesomeness!",
   PutCoreURLAndTitleOnPasteboard(url, title, pboard);
-  EXPECT_TRUE(drag_util::PopulateURLAndTitleFromPasteBoard(
+  EXPECT_TRUE(ui::PopulateURLAndTitleFromPasteboard(
       &result_url, &result_title, pboard, NO));
   EXPECT_EQ(base::SysNSStringToUTF8(url), result_url.spec());
   EXPECT_EQ(base::SysNSStringToUTF16(title), result_title);
@@ -103,7 +103,7 @@ TEST_F(WebDropTargetTest, URL) {
   url = @"file:///tmp/dont_delete_me.txt";
   title = @"very important";
   PutCoreURLAndTitleOnPasteboard(url, title, pboard);
-  EXPECT_TRUE(drag_util::PopulateURLAndTitleFromPasteBoard(
+  EXPECT_TRUE(ui::PopulateURLAndTitleFromPasteboard(
       &result_url, &result_title, pboard, NO));
   EXPECT_EQ(base::SysNSStringToUTF8(url), result_url.spec());
   EXPECT_EQ(base::SysNSStringToUTF16(title), result_title);
@@ -114,7 +114,7 @@ TEST_F(WebDropTargetTest, URL) {
   url = @"javascript:open('http://www.youtube.com/')";
   title = @"kill some time";
   PutCoreURLAndTitleOnPasteboard(url, title, pboard);
-  EXPECT_TRUE(drag_util::PopulateURLAndTitleFromPasteBoard(
+  EXPECT_TRUE(ui::PopulateURLAndTitleFromPasteboard(
       &result_url, &result_title, pboard, NO));
   EXPECT_EQ(base::SysNSStringToUTF8(url), result_url.spec());
   EXPECT_EQ(base::SysNSStringToUTF16(title), result_title);
@@ -126,9 +126,9 @@ TEST_F(WebDropTargetTest, URL) {
                  owner:nil];
   [pboard setPropertyList:[NSArray arrayWithObject:url]
                   forType:NSFilenamesPboardType];
-  EXPECT_FALSE(drag_util::PopulateURLAndTitleFromPasteBoard(
+  EXPECT_FALSE(ui::PopulateURLAndTitleFromPasteboard(
       &result_url, &result_title, pboard, NO));
-  EXPECT_TRUE(drag_util::PopulateURLAndTitleFromPasteBoard(
+  EXPECT_TRUE(ui::PopulateURLAndTitleFromPasteboard(
       &result_url, &result_title, pboard, YES));
   EXPECT_EQ("file://localhost/bin/sh", result_url.spec());
   EXPECT_EQ("sh", UTF16ToUTF8(result_title));

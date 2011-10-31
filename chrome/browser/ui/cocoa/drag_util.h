@@ -8,22 +8,10 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/basictypes.h"
-#include "googleurl/src/gurl.h"
-
+class GURL;
 class Profile;
 
 namespace drag_util {
-
-// Populates the |url| and |title| with URL data in |pboard|. There may be more
-// than one, but we only handle dropping the first. |url| must not be |NULL|;
-// |title| is an optional parameter. Returns |YES| if URL data was obtained from
-// the pasteboard, |NO| otherwise. If |convert_filenames| is |YES|, the function
-// will also attempt to convert filenames in |pboard| to file URLs.
-BOOL PopulateURLAndTitleFromPasteBoard(GURL* url,
-                                       string16* title,
-                                       NSPasteboard* pboard,
-                                       BOOL convert_filenames);
 
 // Returns the first file URL from |info|, if there is one. If |info| doesn't
 // contain any file URLs, an empty |GURL| is returned.
