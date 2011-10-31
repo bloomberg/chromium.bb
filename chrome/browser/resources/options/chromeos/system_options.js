@@ -5,6 +5,8 @@
 cr.define('options', function() {
 
   var OptionsPage = options.OptionsPage;
+  var RepeatingButton = cr.ui.RepeatingButton;
+
   /////////////////////////////////////////////////////////////////////////////
   // SystemOptions class:
 
@@ -63,27 +65,24 @@ cr.define('options', function() {
         chrome.send('accessibilityChange',
                     [String($('accesibility-check').checked)]);
       };
-
-      if (cr.isTouch) {
-        initializeBrightnessButton_('brightness-decrease-button',
-            'decreaseScreenBrightness');
-        initializeBrightnessButton_('brightness-increase-button',
-            'increaseScreenBrightness');
-      }
+      initializeBrightnessButton_('brightness-decrease-button',
+          'decreaseScreenBrightness');
+      initializeBrightnessButton_('brightness-increase-button',
+          'increaseScreenBrightness');
     }
   };
 
   /**
-   * Initializes a button for controlling screen brightness on touch builds of
-   * ChromeOS.
+   * Initializes a button for controlling screen brightness.
    * @param {string} id Button ID.
    * @param {string} callback Name of the callback function.
    */
   function initializeBrightnessButton_(id, callback) {
-    // TODO(kevers): Make brightness buttons auto-repeat if held.
-    $(id).onclick = function(event) {
+    var button = $(id);
+    cr.ui.decorate(button, RepeatingButton);
+    button.addEventListener(RepeatingButton.Event.BUTTON_HELD, function(e) {
       chrome.send(callback);
-    }
+    });
   }
 
   /**

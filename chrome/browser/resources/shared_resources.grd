@@ -92,6 +92,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/js/cr/ui/splitter.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_GRID"
                file="shared/js/cr/ui/grid.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_REPEATING_BUTTON"
+               file="shared/js/cr/ui/repeating_button.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_TABLE"
                file="shared/js/cr/ui/table.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_TABLE_COLUMN"
