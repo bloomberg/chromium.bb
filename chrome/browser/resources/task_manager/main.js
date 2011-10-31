@@ -432,10 +432,11 @@ TaskManager.prototype = {
     this.currentContextMenuTarget_ = undefined;
 
     var target = e.target;
-    var classes = target.className.split(" ");
-    while (target && classes.indexOf('detail-title') == -1) {
+    var classes = target.classList;
+    while (target &&
+        Array.prototype.indexOf.call(classes, 'detail-title') == -1) {
       target = target.parentNode;
-      classes = target.className.split(" ");
+      classes = target.classList;
     }
 
     if (!target)

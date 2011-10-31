@@ -132,6 +132,8 @@ cr.define('cr.ui', function() {
           // keyIdentifier does not report 'Esc' correctly
           if (e.keyCode == 27 /* Esc */) {
             this.hideMenu();
+            e.stopPropagation();
+            e.preventDefault();
 
           // If the menu is visible we let it handle all the keyboard events.
           } else if (this.menu) {
