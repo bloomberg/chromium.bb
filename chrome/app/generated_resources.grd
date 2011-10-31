@@ -10305,10 +10305,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Sync Promo New Tab Page bubble strings -->
       <message name="IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE" desc="The body of the sync promo NTP bubble.">
-        You're now signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>. Your bookmarks, history, and other settings are being synced to your Google Account.
+        You're now signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>. Your bookmarks, history, and other settings are being synced with your Google Account.
       </message>
       <message name="IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE_ALT1" desc="And alternate string for the body of the sync promo NTP bubble.">
-        You're now signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>. Your bookmarks, history, and other settings are being synced to your Google Account using default settings.
+        You're now signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>. Your bookmarks, history, and other settings are being synced with your Google Account using default settings.
       </message>
       <message name="IDS_SYNC_PROMO_NTP_BUBBLE_LEARN_MORE" desc="The learn more link in the sync promo NTP bubble. Clicking the link will take users to a page explaining what sync is.">
         Learn more
@@ -10698,6 +10698,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- Sync promo page chrome://syncpromo -->
+      <message name="IDS_SYNC_PROMO_TAB_TITLE" desc="The title of the sync promo tab.">
+        Sign in
+      </message>
       <message name="IDS_SYNC_PROMO_TITLE" desc="The title at the top of the sync promo">
         Welcome to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
       </message>
@@ -10705,7 +10708,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Set up <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account
       </message>
       <message name="IDS_SYNC_PROMO_MESSAGE_BODY" desc="The body of the sync promo message. This is followed by a learn more link.">
-        Automatically &lt;strong&gt;back up&lt;/strong&gt; and &lt;strong&gt;sync&lt;/strong&gt; your bookmarks, history, and settings.
+        Get your bookmarks, history, and settings on all your devices.
       </message>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="In Title Case: The button at the bottom to let the user skip the sync promo.">

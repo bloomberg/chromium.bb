@@ -316,7 +316,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "encryptAllOption", IDS_SYNC_ENCRYPT_ALL_DATA },
     { "encryptAllOption", IDS_SYNC_ENCRYPT_ALL_DATA },
     { "aspWarningText", IDS_SYNC_ASP_PASSWORD_WARNING_TEXT },
-    { "promoPageTitle", IDS_NEW_TAB_TITLE},
+    { "promoPageTitle", IDS_SYNC_PROMO_TAB_TITLE},
     { "promoMessageBody", IDS_SYNC_PROMO_MESSAGE_BODY},
     { "promoSkipButton", IDS_SYNC_PROMO_SKIP_BUTTON},
     { "promoAdvanced", IDS_SYNC_PROMO_ADVANCED},
