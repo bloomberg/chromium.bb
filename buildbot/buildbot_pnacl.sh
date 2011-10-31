@@ -173,11 +173,8 @@ scons-tests() {
   for platform in ${platforms} ; do
     single-scons-test ${platform} "${extra}" "${test}"
     single-scons-test ${platform} "${extra} nacl_pic=1" "${test}"
-    if [ "${platform}" != "arm" ] ; then
-      build-sbtc-prerequisites ${platform}
-      single-scons-test ${platform} "${extra} use_sandboxed_translator=1" \
-        "${test}"
-    fi
+    build-sbtc-prerequisites ${platform}
+    single-scons-test ${platform} "${extra} use_sandboxed_translator=1" "${test}"
   done
 }
 

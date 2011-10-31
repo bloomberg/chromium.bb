@@ -121,8 +121,9 @@ INITIAL_ENV = {
 
   'SEL_UNIVERSAL_PREFIX': '${USE_EMULATOR ? ${EMULATOR}}',
   'SEL_UNIVERSAL'       : '${SCONS_STAGING}/sel_universal${EXEC_EXT}',
+  # NOTE: -Q skips sel_ldr qualification tests, -c -c skips validation
   'SEL_UNIVERSAL_FLAGS' : '--abort_on_error -B ${IRT_BLOB} ' +
-                          '${USE_EMULATOR ? -Q --command_prefix ${EMULATOR}}',
+                          '${USE_EMULATOR ? -Q -c -c --command_prefix ${EMULATOR}}',
 
   'IRT_STAGING'         : '${IRT_STAGING_%ARCH%}',
   'IRT_STAGING_X8632'   : '${SCONS_OUT}/nacl_irt-x86-32/staging',
@@ -152,6 +153,8 @@ INITIAL_ENV = {
   'AS_X8632'      : '${LLVM_MC}',
   'AS_X8664'      : '${LLVM_MC}',
 
+  # Note: -a enables sel_ldr debug mode allowing us to access to local files
+  #       this is only needed if we compile/run the translators in non-srpc mode
   'LD_SB'         : '${SEL_LDR} -a -B ${IRT_BLOB} -- ${BASE_SB}/nonsrpc/bin/ld',
   'LLC_SB'        : '${SEL_LDR} -a -B ${IRT_BLOB} -- ${RUNNABLE_LD} ' +
                     '${BASE_SB}/nonsrpc/bin/llc',
