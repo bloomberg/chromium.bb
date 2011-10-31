@@ -162,8 +162,8 @@ ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
     TabContentsWrapper* tab =
         TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
     DCHECK(tab);
-    extension_bookmark_manager_event_router_.reset(
-        new ExtensionBookmarkManagerEventRouter(profile, tab));
+    bookmark_manager_extension_event_router_.reset(
+        new BookmarkManagerExtensionEventRouter(profile, tab));
 
     link_transition_type_ = content::PAGE_TRANSITION_AUTO_BOOKMARK;
   }
@@ -171,9 +171,9 @@ ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
 
 ExtensionWebUI::~ExtensionWebUI() {}
 
-ExtensionBookmarkManagerEventRouter*
-ExtensionWebUI::extension_bookmark_manager_event_router() {
-  return extension_bookmark_manager_event_router_.get();
+BookmarkManagerExtensionEventRouter*
+ExtensionWebUI::bookmark_manager_extension_event_router() {
+  return bookmark_manager_extension_event_router_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -20,13 +20,12 @@ class ListValue;
 }
 
 // Class that handles the chrome.experimental.bookmarkManager events.
-// TODO(aa): Rename this
-class ExtensionBookmarkManagerEventRouter
+class BookmarkManagerExtensionEventRouter
     : public BookmarkTabHelper::BookmarkDrag {
  public:
-  ExtensionBookmarkManagerEventRouter(Profile* profile,
+  BookmarkManagerExtensionEventRouter(Profile* profile,
                                       TabContentsWrapper* tab);
-  virtual ~ExtensionBookmarkManagerEventRouter();
+  virtual ~BookmarkManagerExtensionEventRouter();
 
   // RenderViewHostDelegate::BookmarkDrag interface
   virtual void OnDragEnter(const BookmarkNodeData& data);
@@ -51,7 +50,7 @@ class ExtensionBookmarkManagerEventRouter
   TabContentsWrapper* tab_;
   BookmarkNodeData bookmark_drag_data_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionBookmarkManagerEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(BookmarkManagerExtensionEventRouter);
 };
 
 class ClipboardBookmarkManagerFunction : public BookmarksFunction {

@@ -146,19 +146,19 @@ void BookmarkNodeDataToJSON(Profile* profile, const BookmarkNodeData& data,
 
 }  // namespace
 
-ExtensionBookmarkManagerEventRouter::ExtensionBookmarkManagerEventRouter(
+BookmarkManagerExtensionEventRouter::BookmarkManagerExtensionEventRouter(
     Profile* profile, TabContentsWrapper* tab)
     : profile_(profile),
     tab_(tab) {
   tab_->bookmark_tab_helper()->SetBookmarkDragDelegate(this);
 }
 
-ExtensionBookmarkManagerEventRouter::~ExtensionBookmarkManagerEventRouter() {
+BookmarkManagerExtensionEventRouter::~BookmarkManagerExtensionEventRouter() {
   if (tab_->bookmark_tab_helper()->GetBookmarkDragDelegate() == this)
     tab_->bookmark_tab_helper()->SetBookmarkDragDelegate(NULL);
 }
 
-void ExtensionBookmarkManagerEventRouter::DispatchEvent(const char* event_name,
+void BookmarkManagerExtensionEventRouter::DispatchEvent(const char* event_name,
                                                         const ListValue* args) {
   if (!profile_->GetExtensionEventRouter())
     return;
@@ -169,7 +169,7 @@ void ExtensionBookmarkManagerEventRouter::DispatchEvent(const char* event_name,
       event_name, json_args, NULL, GURL());
 }
 
-void ExtensionBookmarkManagerEventRouter::DispatchDragEvent(
+void BookmarkManagerExtensionEventRouter::DispatchDragEvent(
     const BookmarkNodeData& data, const char* event_name) {
   if (data.size() == 0)
     return;
@@ -179,23 +179,23 @@ void ExtensionBookmarkManagerEventRouter::DispatchDragEvent(
   DispatchEvent(event_name, &args);
 }
 
-void ExtensionBookmarkManagerEventRouter::OnDragEnter(
+void BookmarkManagerExtensionEventRouter::OnDragEnter(
     const BookmarkNodeData& data) {
   DispatchDragEvent(data, keys::kOnBookmarkDragEnter);
 }
 
-void ExtensionBookmarkManagerEventRouter::OnDragOver(
+void BookmarkManagerExtensionEventRouter::OnDragOver(
     const BookmarkNodeData& data) {
   // Intentionally empty since these events happens too often and floods the
   // message queue. We do not need this event for the bookmark manager anyway.
 }
 
-void ExtensionBookmarkManagerEventRouter::OnDragLeave(
+void BookmarkManagerExtensionEventRouter::OnDragLeave(
     const BookmarkNodeData& data) {
   DispatchDragEvent(data, keys::kOnBookmarkDragLeave);
 }
 
-void ExtensionBookmarkManagerEventRouter::OnDrop(
+void BookmarkManagerExtensionEventRouter::OnDrop(
     const BookmarkNodeData& data) {
   DispatchDragEvent(data, keys::kOnBookmarkDrop);
 
@@ -205,13 +205,13 @@ void ExtensionBookmarkManagerEventRouter::OnDrop(
 }
 
 const BookmarkNodeData*
-ExtensionBookmarkManagerEventRouter::GetBookmarkNodeData() {
+BookmarkManagerExtensionEventRouter::GetBookmarkNodeData() {
   if (bookmark_drag_data_.is_valid())
     return &bookmark_drag_data_;
   return NULL;
 }
 
-void ExtensionBookmarkManagerEventRouter::ClearBookmarkNodeData() {
+void BookmarkManagerExtensionEventRouter::ClearBookmarkNodeData() {
   bookmark_drag_data_.Clear();
 }
 
@@ -420,8 +420,8 @@ bool DropBookmarkManagerFunction::RunImpl() {
     ExtensionWebUI* web_ui =
         static_cast<ExtensionWebUI*>(tab_contents->web_ui());
     CHECK(web_ui);
-    ExtensionBookmarkManagerEventRouter* router =
-        web_ui->extension_bookmark_manager_event_router();
+    BookmarkManagerExtensionEventRouter* router =
+        web_ui->bookmark_manager_extension_event_router();
 
     DCHECK(router);
     const BookmarkNodeData* drag_data = router->GetBookmarkNodeData();
