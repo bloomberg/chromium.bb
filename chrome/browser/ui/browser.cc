@@ -2575,7 +2575,8 @@ void Browser::RegisterIntentHandlerHelper(TabContents* tab,
                                           const string16& action,
                                           const string16& type,
                                           const string16& href,
-                                          const string16& title) {
+                                          const string16& title,
+                                          const string16& disposition) {
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
       tab);
   if (!tcw || tcw->profile()->IsOffTheRecord())
@@ -2595,6 +2596,8 @@ void Browser::RegisterIntentHandlerHelper(TabContents* tab,
   service.action = action;
   service.type = type;
   service.title = title;
+  service.setDisposition(disposition);
+
   InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
   infobar_helper->AddInfoBar(new RegisterIntentHandlerInfoBarDelegate(
       infobar_helper,
@@ -3958,8 +3961,9 @@ void Browser::RegisterIntentHandler(TabContents* tab,
                                     const string16& action,
                                     const string16& type,
                                     const string16& href,
-                                    const string16& title) {
-  RegisterIntentHandlerHelper(tab, action, type, href, title);
+                                    const string16& title,
+                                    const string16& disposition) {
+  RegisterIntentHandlerHelper(tab, action, type, href, title, disposition);
 }
 
 void Browser::WebIntentDispatch(TabContents* tab,

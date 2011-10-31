@@ -502,6 +502,14 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   friend class TestTabContents;
 
   // Message handlers.
+  void OnRegisterIntentHandler(const string16& action,
+                               const string16& type,
+                               const string16& href,
+                               const string16& title,
+                               const string16& disposition);
+  void OnWebIntentDispatch(const IPC::Message& message,
+                           const webkit_glue::WebIntentData& intent,
+                           int intent_id);
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                          bool main_frame,
                                          const GURL& opener_url,
@@ -532,13 +540,6 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   void OnRegisterProtocolHandler(const std::string& protocol,
                                  const GURL& url,
                                  const string16& title);
-  void OnRegisterIntentHandler(const string16& action,
-                               const string16& type,
-                               const string16& href,
-                               const string16& title);
-  void OnWebIntentDispatch(const IPC::Message& message,
-                           const webkit_glue::WebIntentData& intent,
-                           int intent_id);
   void OnFindReply(int request_id, int number_of_matches,
                    const gfx::Rect& selection_rect, int active_match_ordinal,
                    bool final_update);

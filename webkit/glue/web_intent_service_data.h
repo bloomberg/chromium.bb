@@ -27,6 +27,8 @@ struct WebIntentServiceData {
 
   bool operator==(const WebIntentServiceData& other) const;
 
+  void setDisposition(const string16& disp);
+
   GURL service_url;  // URL for service invocation.
   string16 action;  // Name of action provided by service.
   string16 type;  // MIME type of data accepted by service.

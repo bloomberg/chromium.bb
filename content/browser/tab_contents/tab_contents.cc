@@ -278,6 +278,8 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   bool message_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(TabContents, message, message_is_ok)
+    IPC_MESSAGE_HANDLER(IntentsHostMsg_RegisterIntentHandler,
+                        OnRegisterIntentHandler)
     IPC_MESSAGE_HANDLER(IntentsHostMsg_WebIntentDispatch,
                         OnWebIntentDispatch)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
@@ -305,8 +307,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_JSOutOfMemory, OnJSOutOfMemory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
                         OnRegisterProtocolHandler)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterIntentHandler,
-                        OnRegisterIntentHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
@@ -881,6 +881,21 @@ void TabContents::SetContentRestrictions(int restrictions) {
   delegate()->ContentRestrictionsChanged(this);
 }
 
+void TabContents::OnRegisterIntentHandler(const string16& action,
+                                          const string16& type,
+                                          const string16& href,
+                                          const string16& title,
+                                          const string16& disposition) {
+  delegate()->RegisterIntentHandler(
+      this, action, type, href, title, disposition);
+}
+
+void TabContents::OnWebIntentDispatch(const IPC::Message& message,
+                                      const webkit_glue::WebIntentData& intent,
+                                      int intent_id) {
+  delegate()->WebIntentDispatch(this, message.routing_id(), intent, intent_id);
+}
+
 void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                     bool is_main_frame,
                                                     const GURL& opener_url,
@@ -1114,19 +1129,6 @@ void TabContents::OnRegisterProtocolHandler(const std::string& protocol,
                                             const GURL& url,
                                             const string16& title) {
   delegate()->RegisterProtocolHandler(this, protocol, url, title);
-}
-
-void TabContents::OnRegisterIntentHandler(const string16& action,
-                                          const string16& type,
-                                          const string16& href,
-                                          const string16& title) {
-  delegate()->RegisterIntentHandler(this, action, type, href, title);
-}
-
-void TabContents::OnWebIntentDispatch(const IPC::Message& message,
-                                      const webkit_glue::WebIntentData& intent,
-                                      int intent_id) {
-  delegate()->WebIntentDispatch(this, message.routing_id(), intent, intent_id);
 }
 
 void TabContents::OnFindReply(int request_id,

@@ -323,7 +323,8 @@ class CONTENT_EXPORT TabContentsDelegate {
                                      const string16& action,
                                      const string16& type,
                                      const string16& href,
-                                     const string16& title);
+                                     const string16& title,
+                                     const string16& disposition);
 
   // WebIntent notification handler.
   virtual void WebIntentDispatch(TabContents* tab,

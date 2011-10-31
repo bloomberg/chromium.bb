@@ -33,3 +33,11 @@ IPC_MESSAGE_ROUTED3(IntentsMsg_WebIntentReply,
 IPC_MESSAGE_ROUTED2(IntentsHostMsg_WebIntentDispatch,
                     webkit_glue::WebIntentData,
                     int /* intent ID */)
+
+// Register a new handler for Intents with the given action and type filter.
+IPC_MESSAGE_ROUTED5(IntentsHostMsg_RegisterIntentHandler,
+                    string16 /* action */,
+                    string16 /* type */,
+                    string16 /* href */,
+                    string16 /* title */,
+                    string16 /* disposition */)

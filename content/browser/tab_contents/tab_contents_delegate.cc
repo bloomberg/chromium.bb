@@ -301,7 +301,8 @@ void TabContentsDelegate::RegisterIntentHandler(TabContents* tab,
                                                 const string16& action,
                                                 const string16& type,
                                                 const string16& href,
-                                                const string16& title) {
+                                                const string16& title,
+                                                const string16& disposition) {
 }
 
 void TabContentsDelegate::WebIntentDispatch(

@@ -691,7 +691,8 @@ class Browser : public TabHandlerDelegate,
                                           const string16& action,
                                           const string16& type,
                                           const string16& href,
-                                          const string16& title);
+                                          const string16& title,
+                                          const string16& disposition);
 
   // Helper function to handle find results.
   static void FindReplyHelper(TabContents* tab,
@@ -1004,7 +1005,8 @@ class Browser : public TabHandlerDelegate,
                                      const string16& action,
                                      const string16& type,
                                      const string16& href,
-                                     const string16& title) OVERRIDE;
+                                     const string16& title,
+                                     const string16& disposition) OVERRIDE;
   virtual void WebIntentDispatch(TabContents* tab,
                                  int routing_id,
                                  const webkit_glue::WebIntentData& intent,

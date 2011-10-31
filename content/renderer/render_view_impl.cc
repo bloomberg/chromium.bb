@@ -4517,12 +4517,14 @@ void RenderViewImpl::registerProtocolHandler(const WebString& scheme,
 void RenderViewImpl::registerIntentHandler(const WebString& action,
                                            const WebString& type,
                                            const WebString& href,
-                                           const WebString& title) {
-  Send(new ViewHostMsg_RegisterIntentHandler(routing_id_,
+                                           const WebString& title,
+                                           const WebString& disposition) {
+  Send(new IntentsHostMsg_RegisterIntentHandler(routing_id_,
                                              action,
                                              type,
                                              href,
-                                             title));
+                                             title,
+                                             disposition));
 }
 
 WebKit::WebPageVisibilityState RenderViewImpl::visibilityState() const {

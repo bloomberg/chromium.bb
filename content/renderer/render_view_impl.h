@@ -398,7 +398,8 @@ class RenderViewImpl : public RenderWidget,
   virtual void registerIntentHandler(const WebKit::WebString& action,
                                      const WebKit::WebString& type,
                                      const WebKit::WebString& href,
-                                     const WebKit::WebString& title);
+                                     const WebKit::WebString& title,
+                                     const WebKit::WebString& disposition);
   virtual WebKit::WebPageVisibilityState visibilityState() const;
   virtual void startActivity(const WebKit::WebString& action,
                              const WebKit::WebString& type,

@@ -766,8 +766,10 @@ void ExternalTabContainer::RegisterIntentHandler(TabContents* tab,
                                                  const string16& action,
                                                  const string16& type,
                                                  const string16& href,
-                                                 const string16& title) {
-  Browser::RegisterIntentHandlerHelper(tab, action, type, href, title);
+                                                 const string16& title,
+                                                 const string16& disposition) {
+  Browser::RegisterIntentHandlerHelper(
+      tab, action, type, href, title, disposition);
 }
 
 void ExternalTabContainer::WebIntentDispatch(
