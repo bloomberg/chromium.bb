@@ -182,8 +182,15 @@ void ChromeMiniInstaller::InstallMiniInstaller(bool over_install,
                                                const FilePath& path) {
   LOG(INFO) << "Install level is: "
       << (system_install_ ? "system" : "user");
-  RunInstaller(CommandLine(path));
-
+  ASSERT_TRUE(file_util::PathExists(path));
+  CommandLine installer(path);
+  if (is_chrome_frame_) {
+    installer.AppendSwitch(installer::switches::kDoNotCreateShortcuts);
+    installer.AppendSwitch(installer::switches::kDoNotLaunchChrome);
+    installer.AppendSwitch(installer::switches::kDoNotRegisterForUpdateLaunch);
+    installer.AppendSwitch(installer::switches::kChromeFrame);
+  }
+  RunInstaller(installer);
   std::string version;
   ASSERT_TRUE(GetChromeVersionFromRegistry(&version))
       << "Install failed: unable to get version.";
@@ -216,6 +223,10 @@ void ChromeMiniInstaller::InstallChromeUsingMultiInstall() {
 
 void ChromeMiniInstaller::InstallChromeFrameUsingMultiInstall() {
   CommandLine cmd = GetBaseMultiInstallCommand();
+  cmd.AppendSwitch(installer::switches::kDoNotCreateShortcuts);
+  cmd.AppendSwitch(installer::switches::kDoNotLaunchChrome);
+  cmd.AppendSwitch(installer::switches::kDoNotRegisterForUpdateLaunch);
+  cmd.AppendSwitch(installer::switches::kChromeFrame);
   RunInstaller(cmd);
 
   // Verify installation.
@@ -302,7 +313,15 @@ void ChromeMiniInstaller::InstallMetaInstaller() {
   // Install Google Chrome through meta installer.
   CommandLine installer(FilePath::FromWStringHack(
       mini_installer_constants::kChromeMetaInstallerExe));
+  ASSERT_TRUE(file_util::PathExists(installer.GetProgram()));
+  if (is_chrome_frame_) {
+    installer.AppendSwitch(installer::switches::kDoNotCreateShortcuts);
+    installer.AppendSwitch(installer::switches::kDoNotLaunchChrome);
+    installer.AppendSwitch(installer::switches::kDoNotRegisterForUpdateLaunch);
+    installer.AppendSwitch(installer::switches::kChromeFrame);
+  }
   RunInstaller(installer);
+
   ASSERT_TRUE(MiniInstallerTestUtil::VerifyProcessClose(
       mini_installer_constants::kChromeMetaInstallerExecutable));
 
@@ -353,7 +372,7 @@ void ChromeMiniInstaller::Repair(
     std::string build_number;
     ASSERT_TRUE(GetChromeVersionFromRegistry(&build_number));
     FilePath install_path;
-    ASSERT_TRUE(GetChromeInstallDirectoryLocation(&install_path));
+    ASSERT_TRUE(GetInstallDirectory(&install_path));
     install_path = install_path.AppendASCII(build_number);
     ASSERT_TRUE(file_util::Delete(install_path, true));
   } else if (repair_type == ChromeMiniInstaller::REGISTRY) {
@@ -460,7 +479,7 @@ void ChromeMiniInstaller::UnInstallChromeFrameWithIERunning() {
 void ChromeMiniInstaller::CleanChromeInstall() {
   DeletePvRegistryKey();
   FilePath install_path;
-  ASSERT_TRUE(GetChromeInstallDirectoryLocation(&install_path));
+  ASSERT_TRUE(GetInstallDirectory(&install_path));
   ASSERT_TRUE(file_util::Delete(install_path, true));
 }
 
@@ -622,9 +641,9 @@ void ChromeMiniInstaller::FindChromeShortcut() {
   }
 }
 
-bool ChromeMiniInstaller::GetChromeInstallDirectoryLocation(FilePath* path) {
+bool ChromeMiniInstaller::GetInstallDirectory(FilePath* path) {
   BrowserDistribution* dist = GetCurrentBrowserDistribution();
-  *path = installer::GetChromeInstallPath(system_install_, dist);
+    *path = installer::GetChromeInstallPath(system_install_, dist);
   FilePath parent;
   if (system_install_) {
     PathService::Get(base::DIR_PROGRAM_FILES, &parent);
@@ -668,16 +687,9 @@ HKEY ChromeMiniInstaller::GetRootRegistryKey() {
   return type;
 }
 
-// Launches the chrome installer and waits for it to end.
 void ChromeMiniInstaller::RunInstaller(const CommandLine& command) {
   ASSERT_TRUE(file_util::PathExists(command.GetProgram()));
   CommandLine installer(command);
-  if (is_chrome_frame_) {
-    installer.AppendSwitch(installer::switches::kDoNotCreateShortcuts);
-    installer.AppendSwitch(installer::switches::kDoNotLaunchChrome);
-    installer.AppendSwitch(installer::switches::kDoNotRegisterForUpdateLaunch);
-    installer.AppendSwitch(installer::switches::kChromeFrame);
-  }
   if (system_install_) {
     installer.AppendSwitch(installer::switches::kSystemLevel);
   }
@@ -696,7 +708,7 @@ void ChromeMiniInstaller::LaunchChrome(bool kill) {
   MiniInstallerTestUtil::CloseProcesses(installer::kChromeExe);
 
   FilePath install_path;
-  ASSERT_TRUE(GetChromeInstallDirectoryLocation(&install_path));
+  ASSERT_TRUE(GetInstallDirectory(&install_path));
   install_path = install_path.Append(installer::kChromeExe);
   CommandLine browser(install_path);
 

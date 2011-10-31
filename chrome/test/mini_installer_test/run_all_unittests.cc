@@ -20,7 +20,7 @@ void BackUpProfile(bool chrome_frame) {
   }
   ChromeMiniInstaller installer(false, chrome_frame, "");
   FilePath path;
-  installer.GetChromeInstallDirectoryLocation(&path);
+  installer.GetInstallDirectory(&path);
   path = path.Append(mini_installer_constants::kChromeAppDir).DirName();
   FilePath backup_path = path;
   // Will hold User Data path that needs to be backed-up.
