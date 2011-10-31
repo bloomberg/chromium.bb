@@ -471,7 +471,7 @@ void  NaClAppPrintDetails(struct NaClApp  *nap,
   gprintf(gp, "stack size:       0x%08"NACL_PRIx32"\n", nap->stack_size);
 
   gprintf(gp, "mem start addr:   0x%08"NACL_PRIxPTR"\n", nap->mem_start);
-  /*           123456789012345678901234567890  */
+  /*           123456789012345678901234567890 */
 
   gprintf(gp, "static_text_end:   0x%08"NACL_PRIxPTR"\n", nap->static_text_end);
   gprintf(gp, "end-of-text:       0x%08"NACL_PRIxPTR"\n",
