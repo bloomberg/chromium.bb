@@ -640,18 +640,44 @@ TEST_F(ExtensionManifestTest, HostedAppPermissions) {
     StringValue* p = new StringValue(name);
     permissions->Clear();
     permissions->Append(p);
-    Extension::Location location = Extension::INTERNAL;
 
-    // Many permissions are not available to hosted apps.
-    if (!permission->is_hosted_app() || permission->is_component_only()) {
+    // Some permissions are only available to component hosted apps.
+    if (permission->is_component_only()) {
       LoadAndExpectError(Manifest(manifest.get(), name),
-                         errors::kPermissionNotAllowed);
+                         errors::kPermissionNotAllowed,
+                         Extension::INTERNAL);
+      scoped_refptr<Extension> extension(
+          LoadAndExpectSuccess(Manifest(manifest.get(), name),
+                               Extension::COMPONENT));
+      EXPECT_TRUE(extension->GetActivePermissions()->HasAPIPermission(
+          permission->id()));
 
-      // ... unless the hosted app is a component app.
-      location = Extension::COMPONENT;
+    } else if (!permission->is_hosted_app()) {
+      // Most normal extension permissions also aren't available to hosted apps.
+      // For these, the error is only reported in strict mode for legacy
+      // reasons: crbug.com/101993.
+      LoadAndExpectError(Manifest(manifest.get(), name),
+                         errors::kPermissionNotAllowed,
+                         Extension::INTERNAL,
+                         Extension::STRICT_ERROR_CHECKS);
+      scoped_refptr<Extension> extension(
+          LoadAndExpectSuccess(Manifest(manifest.get(), name),
+                               Extension::INTERNAL));
+      EXPECT_FALSE(extension->GetActivePermissions()->HasAPIPermission(
+          permission->id()));
+
+      // These permissions are also allowed for component hosted apps.
+      extension = LoadAndExpectSuccess(Manifest(manifest.get(), name),
+                                       Extension::COMPONENT);
+      EXPECT_TRUE(extension->GetActivePermissions()->HasAPIPermission(
+          permission->id()));
+
+    } else {
+      scoped_refptr<Extension> extension(
+          LoadAndExpectSuccess(Manifest(manifest.get(), name)));
+      EXPECT_TRUE(extension->GetActivePermissions()->HasAPIPermission(
+          permission->id()));
     }
-
-    LoadAndExpectSuccess(Manifest(manifest.get(), name), location);
   }
 }
 

@@ -2571,9 +2571,10 @@ bool Extension::ParsePermissions(const DictionaryValue* source,
           ExtensionPermissionsInfo::GetInstance()->GetByName(permission_str);
 
       if (permission != NULL) {
-        if (!CanSpecifyAPIPermission(permission, error))
+        if (CanSpecifyAPIPermission(permission, error))
+          api_permissions->insert(permission->id());
+        if (!error->empty())
           return false;
-        api_permissions->insert(permission->id());
         continue;
       }
 
@@ -2808,8 +2809,17 @@ bool Extension::CanSpecifyAPIPermission(
 
   if (is_hosted_app()) {
     if (!CanSpecifyPermissionForHostedApp(permission)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kPermissionNotAllowed, permission->name());
+      // Some old versions of Chrome did not return errors here and we ended up
+      // with extensions in the store containing bad data: crbug.com/101993.
+      //
+      // TODO(aa): Consider just being a lot looser when loading and installing
+      // extensions. We can be strict when packing and in development mode. Then
+      // we won't have to maintain all these tricky backward compat issues:
+      // crbug.com/102328.
+      if (creation_flags_ & STRICT_ERROR_CHECKS) {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kPermissionNotAllowed, permission->name());
+      }
       return false;
     }
   }
