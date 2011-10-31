@@ -519,12 +519,6 @@ const char kDisablePanels[]                 = "disable-panels";
 // Enables speculative TCP/IP preconnection.
 const char kEnablePreconnect[]              = "enable-preconnect";
 
-// Controls the support for SDCH filtering (dictionary based expansion of
-// content). By default SDCH filtering is enabled. To disable SDCH filtering,
-// use "--enable-sdch=0" as command line argument. SDCH is currently only
-// supported server-side for searches on google.com.
-const char kEnableSdch[]                    = "enable-sdch";
-
 // Enables the IsSearchProviderInstalled and InstallSearchProvider with an
 // extra parameter to indicate if the provider should be the default.
 const char kEnableSearchProviderApiV2[]     = "enable-search-provider-api-v2";
@@ -545,27 +539,20 @@ const char kEnableSyncOAuth[]               = "enable-sync-oauth";
 const char kEnableSyncSearchEngines[]       = "enable-sync-search-engines";
 
 // Enables syncing browser sessions.
-const char kEnableSyncTabs[]                = "enable-sync-tabs";
+const char kEnableSyncTabs[]            = "enable-sync-tabs";
 
 // Enables syncing browser sessions for other synced clients.
 const char kEnableSyncTabsForOtherClients[] =
     "enable-sync-tabs-for-other-clients";
 
 // Enable syncing app notifications.
-const char kEnableSyncAppNotifications[]    = "enable-sync-app-notifications";
+const char kEnableSyncAppNotifications[] = "enable-sync-app-notifications";
 
 // Enables context menu for selecting groups of tabs.
-const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
+const char kEnableTabGroupsContextMenu[]     = "enable-tab-groups-context-menu";
 
 // Enables the "synced bookmarks" folder.
 const char kEnableSyncedBookmarksFolder[]   = "enable-synced-bookmarks-folder";
-
-// Enables tracking of tasks in profiler for viewing via about:tracking.
-// To predominantly disable tracking (profiling), use the command line switch:
-// --enable-tracking=0
-// Some tracking will still take place at startup, but it will be turned off
-// during chrome_browser_main.
-const char kEnableTracking[]                = "enable-tracking";
 
 // Spawns threads to watch for excessive delays in specified message loops.
 // User should set breakpoints on Alarm() to examine problematic thread.
@@ -975,6 +962,12 @@ const char kSbDisableAutoUpdate[] = "safebrowsing-disable-auto-update";
 // content's hash to make sure the content are not malicious.
 const char kSbDisableDownloadProtection[] =
     "safebrowsing-disable-download-protection";
+
+// Controls the support for SDCH filtering (dictionary based expansion of
+// content). By default SDCH filtering is enabled. To disable SDCH filtering,
+// use "--enable-sdch=0" as command line argument. SDCH is currently only
+// supported server-side for searches on google.com.
+const char kEnableSdch[]                   = "enable-sdch";
 
 // Enables the showing of an info-bar instructing user they can search directly
 // from the omnibox.

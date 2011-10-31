@@ -145,9 +145,11 @@ const char* const kChromePaths[] = {
   chrome::kChromeUITCMallocHost,
   chrome::kChromeUITermsHost,
   chrome::kChromeUITracingHost,
-  chrome::kChromeUITrackingHost,
   chrome::kChromeUIVersionHost,
   chrome::kChromeUIWorkersHost,
+#if defined(TRACK_ALL_TASK_OBJECTS)
+  chrome::kChromeUITrackingHost,
+#endif
 #if defined(OS_WIN)
   chrome::kChromeUIConflictsHost,
 #endif
@@ -182,8 +184,10 @@ const char* const kAboutSourceNames[] = {
   chrome::kChromeUIStatsHost,
   chrome::kChromeUITaskManagerHost,
   chrome::kChromeUITermsHost,
-  chrome::kChromeUITrackingHost,
   chrome::kChromeUIVersionHost,
+#if defined(TRACK_ALL_TASK_OBJECTS)
+  chrome::kChromeUITrackingHost,
+#endif
 #if defined(USE_TCMALLOC)
   chrome::kChromeUITCMallocHost,
 #endif
@@ -885,6 +889,7 @@ void AboutMemory(const std::string& path, AboutSource* source, int request_id) {
   }
 }
 
+#if defined(TRACK_ALL_TASK_OBJECTS)
 static std::string AboutTracking(const std::string& query) {
   std::string unescaped_title("About Tracking");
   if (!query.empty()) {
@@ -898,6 +903,7 @@ static std::string AboutTracking(const std::string& query) {
   AppendFooter(&data);
   return data;
 }
+#endif  // TRACK_ALL_TASK_OBJECTS
 
 // Handler for filling in the "about:stats" page, as called by the browser's
 // About handler processing.
@@ -1468,8 +1474,10 @@ void AboutSource::StartDataRequest(const std::string& path,
 #endif
   } else if (host == chrome::kChromeUIStatsHost) {
     response = AboutStats(path);
+#if defined(TRACK_ALL_TASK_OBJECTS)
   } else if (host == chrome::kChromeUITrackingHost) {
     response = AboutTracking(path);
+#endif
 #if defined(USE_TCMALLOC)
   } else if (host == chrome::kChromeUITCMallocHost) {
     response = AboutTcmalloc();
