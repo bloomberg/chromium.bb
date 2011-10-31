@@ -594,6 +594,16 @@ wl_connection_demarshal(struct wl_connection *connection,
 				goto err;
 			}
 
+			if (*object != NULL && message->types[i-2] != NULL &&
+			    (*object)->interface != message->types[i-2]) {
+				printf("invalid object (%d), type (%s), "
+					"message %s(%s)\n",
+				       *p, (*object)->interface->name,
+				       message->name, message->signature);
+				errno = EINVAL;
+				goto err;
+			}
+
 			p++;
 			break;
 		case 'n':
