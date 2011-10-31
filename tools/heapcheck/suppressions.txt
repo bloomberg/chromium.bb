@@ -193,12 +193,8 @@
    fun:base::LeakyLazyInstanceTraits::New
    fun:base::LazyInstance::Pointer
 }
-{
-   Give breathing room for tracked object tests.. may do better later.
-   Heapcheck:Leak
-   ...
-   fun:tracked_objects::TrackedObjectsTest*
-}
+
+
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
