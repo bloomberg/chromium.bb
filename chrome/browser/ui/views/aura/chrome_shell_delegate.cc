@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/aura/app_list_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/launcher/launcher_types.h"
@@ -39,6 +40,7 @@ void ChromeShellDelegate::CreateNewWindow() {
 }
 
 void ChromeShellDelegate::ShowApps() {
+  AppListWindow::SetVisible(!AppListWindow::IsVisible());
 }
 
 void ChromeShellDelegate::LauncherItemClicked(

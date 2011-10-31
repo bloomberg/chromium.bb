@@ -3262,6 +3262,8 @@
         'browser/ui/views/app_menu_button_win.h',
         'browser/ui/views/appcache_info_view.cc',
         'browser/ui/views/appcache_info_view.h',
+        'browser/ui/views/aura/app_list_window.cc',
+        'browser/ui/views/aura/app_list_window.h',
         'browser/ui/views/aura/chrome_shell_delegate.cc',
         'browser/ui/views/aura/chrome_shell_delegate.h',
         'browser/ui/views/aura/launcher_icon_updater.cc',
