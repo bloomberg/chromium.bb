@@ -423,8 +423,14 @@ Profile* CreateProfile(const MainFunctionParams& parameters,
         parsed_command_line.GetSwitchValueASCII(
             switches::kProfileDirectory));
   }
+#if defined(OS_CHROMEOS)
+  // TODO(ivankr): http://crbug.com/83792
+  profile = g_browser_process->profile_manager()->GetDefaultProfile(
+      user_data_dir);
+#else
   profile = g_browser_process->profile_manager()->GetLastUsedProfile(
       user_data_dir);
+#endif
   if (profile)
     return profile;
 
