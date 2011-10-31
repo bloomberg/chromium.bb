@@ -5443,8 +5443,9 @@ void Browser::OnWindowDidShow() {
 
   // Suppress the first run bubble if we're showing the sync promo.
   TabContents* contents = GetSelectedTabContents();
-  bool is_showing_promo =
-      contents && contents->GetURL() == GURL(chrome::kChromeUISyncPromoURL);
+  bool is_showing_promo = contents &&
+      contents->GetURL().SchemeIs(chrome::kChromeUIScheme) &&
+      contents->GetURL().host() == chrome::kChromeUISyncPromoHost;
 
   // Show the First Run information bubble if we've been told to.
   PrefService* local_state = g_browser_process->local_state();
