@@ -106,12 +106,6 @@
         {
           'target_name': 'dump_syms',
           'type': 'executable',
-          'variables': {
-            # Turn off PIE because it may interfere with dump_syms' ability to
-            # allocate a contiguous region in memory large enough to mmap the
-            # entire unstripped framework in a 32-bit dump_syms process.
-            'mac_pie': 0,
-          },
           'include_dirs++': [
             # ++ ensures this comes before src brought in from target_defaults.
             'pending/src',
@@ -144,8 +138,17 @@
             'HAVE_MACH_O_NLIST_H',
           ],
           'xcode_settings': {
+            # Like ld, dump_syms needs to operate on enough data that it may
+            # actually need to be able to address more than 4GB. Use x86_64.
+            # Don't worry! An x86_64 dump_syms is perfectly able to dump
+            # 32-bit files.
+            'ARCHS': [
+              'x86_64',
+            ],
+
             # The DWARF utilities require -funsigned-char.
             'GCC_CHAR_IS_UNSIGNED_CHAR': 'YES',
+
             # dwarf2reader.cc uses dynamic_cast.
             'GCC_ENABLE_CPP_RTTI': 'YES',
           },
