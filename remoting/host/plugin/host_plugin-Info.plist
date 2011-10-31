@@ -21,13 +21,13 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5.0</string>
 	<key>WebPluginName</key>
-	<string>${EXECUTABLE_NAME}</string>
+	<string>HOST_PLUGIN_NAME</string>
 	<key>WebPluginMIMETypes</key>
 	<dict>
 		<key>HOST_PLUGIN_MIME_TYPE</key>
 		<dict/>
 	</dict>
 	<key>WebPluginDescription</key>
-	<string>Remoting Host Plugin</string>
+	<string>HOST_PLUGIN_DESCRIPTION</string>
 </dict>
 </plist>

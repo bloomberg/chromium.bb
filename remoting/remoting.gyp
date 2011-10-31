@@ -7,8 +7,10 @@
     # TODO(dmaclach): can we pick this up some other way? Right now it's
     # duplicated from chrome.gyp
     'chromium_code': 1,
-    # Use a consistent MIME-type independent of branding.
+    # Use consistent strings across all platforms. Note that the plugin name
+    # is brand-dependent and is defined further down.
     'host_plugin_mime_type': 'application/vnd.chromium.remoting-host',
+    'host_plugin_description': 'Allow another user to access your computer securely over the Internet.',
     'conditions': [
       ['OS=="mac"', {
         'conditions': [
@@ -43,6 +45,7 @@
         'host_plugin_prefix': '',
       }],
       ['branding=="Chrome"', {
+        'host_plugin_name': 'Chrome Remote Desktop Host',
         'remoting_it2me_locale_files': [
           'webapp/me2mom/_locales.official/ar/messages.json',
           'webapp/me2mom/_locales.official/bg/messages.json',
@@ -88,6 +91,7 @@
           'webapp/me2mom/_locales.official/zh_TW/messages.json',
         ],
       }, {  # else: branding!="Chrome"
+        'host_plugin_name': 'Chromoting Host',
         'remoting_it2me_locale_files': [
           'webapp/me2mom/_locales/en/messages.json',
         ],
@@ -238,7 +242,9 @@
       'product_extension': '<(host_plugin_extension)',
       'product_prefix': '<(host_plugin_prefix)',
       'defines': [
-        'HOST_PLUGIN_MIME_TYPE=<(host_plugin_mime_type)',
+        'HOST_PLUGIN_MIME_TYPE="<(host_plugin_mime_type)"',
+        'HOST_PLUGIN_NAME="<(host_plugin_name)"',
+        'HOST_PLUGIN_DESCRIPTION="<(host_plugin_description)"',
       ],
       'dependencies': [
         'remoting_base',
@@ -270,7 +276,7 @@
             'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
             'INFOPLIST_FILE': 'host/plugin/host_plugin-Info.plist',
             'INFOPLIST_PREPROCESS': 'YES',
-            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'HOST_PLUGIN_MIME_TYPE=<(host_plugin_mime_type)',
+            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'HOST_PLUGIN_MIME_TYPE="<(host_plugin_mime_type)" HOST_PLUGIN_NAME="<(host_plugin_name)" HOST_PLUGIN_DESCRIPTION="<(host_plugin_description)"',
           },
           # TODO(mark): Come up with a fancier way to do this.  It should
           # only be necessary to list host_plugin-Info.plist once, not the
