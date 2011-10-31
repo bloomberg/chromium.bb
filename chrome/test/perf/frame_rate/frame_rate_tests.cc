@@ -186,8 +186,9 @@ INSTANTIATE_TEST_CASE_P(, FrameRateCanvasInternalTest, ::testing::Values(
                         kInternal | kDisableGpu,
                         kInternal | kUseReferenceBuild));
 
-INTERNAL_FRAME_RATE_TEST_CANVAS(fireflies)
-INTERNAL_FRAME_RATE_TEST_CANVAS(FishIE)
+// Fails on all platforms. See http://crbug.com/102428
+//INTERNAL_FRAME_RATE_TEST_CANVAS(fireflies)
+//INTERNAL_FRAME_RATE_TEST_CANVAS(FishIE)
 
 typedef FrameRateTest FrameRateNoVsyncCanvasInternalTest;
 
@@ -204,7 +205,8 @@ INSTANTIATE_TEST_CASE_P(, FrameRateNoVsyncCanvasInternalTest, ::testing::Values(
                         kInternal | kUseReferenceBuild,
                         kInternal | kDisableVsync | kUseReferenceBuild));
 
-INTERNAL_FRAME_RATE_TEST_CANVAS_WITH_AND_WITHOUT_NOVSYNC(fishbowl)
-INTERNAL_FRAME_RATE_TEST_CANVAS_WITH_AND_WITHOUT_NOVSYNC(speedreading)
+// Fails on all platforms. See http://crbug.com/102428
+//INTERNAL_FRAME_RATE_TEST_CANVAS_WITH_AND_WITHOUT_NOVSYNC(fishbowl)
+//INTERNAL_FRAME_RATE_TEST_CANVAS_WITH_AND_WITHOUT_NOVSYNC(speedreading)
 
 }  // namespace
