@@ -183,18 +183,19 @@ class TabSwitchingUITest : public UIPerfTest {
   DISALLOW_COPY_AND_ASSIGN(TabSwitchingUITest);
 };
 
-#if defined(OS_WIN)
-// Started failing with a webkit roll in r49936. See http://crbug.com/46751
-#define MAYBE_TabSwitch FAILS_TabSwitch
-#define MAYBE_TabSwitchRef FAILS_TabSwitchRef
-#else
-#define MAYBE_TabSwitch TabSwitch
-#define MAYBE_TabSwitchRef TabSwitchRef
-#endif
+// This is failing, and taking forever to finish when doing so.
+// http://crbug.com/102162
 
-TEST_F(TabSwitchingUITest, MAYBE_TabSwitch) {
+TEST_F(TabSwitchingUITest, FAILS_TabSwitch) {
   RunTabSwitchingUITest("t", true);
 }
+
+#if defined(OS_WIN)
+// Started failing with a webkit roll in r49936. See http://crbug.com/46751
+#define MAYBE_TabSwitchRef FAILS_TabSwitchRef
+#else
+#define MAYBE_TabSwitchRef TabSwitchRef
+#endif
 
 TEST_F(TabSwitchingUITest, MAYBE_TabSwitchRef) {
   UseReferenceBuild();
