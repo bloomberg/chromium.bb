@@ -1069,13 +1069,8 @@ prune() {
   rm  -f "${NEWLIB_INSTALL_DIR}"/lib/lib*.a
 
   echo "stripping binaries (llvm-gcc, llvm, binutils)"
-  strip \
-    "${LLVM_GCC_INSTALL_DIR}"/libexec/gcc/${CROSS_TARGET_ARM}/${LLVM_GCC_VER}/c*
   strip "${BINUTILS_INSTALL_DIR}"/bin/*
   if ! strip "${LLVM_INSTALL_DIR}"/bin/* ; then
-    echo "NOTE: some failures during stripping are expected"
-  fi
-  if ! strip "${LLVM_GCC_INSTALL_DIR}"/bin/* ; then
     echo "NOTE: some failures during stripping are expected"
   fi
 
