@@ -90,6 +90,7 @@ class PolicyPrefsUITest(pyauto.PyUITest):
     'PrintingEnabled': (False, []),
     # Note: supported_on is empty for this policy.
     'CloudPrintProxyEnabled': (True, [], []),
+    'CloudPrintSubmitEnabled': (False, [], ['win', 'mac', 'linux']),
     'SafeBrowsingEnabled': (False, [ ADVANCED ]),
     # TODO(joaodasilva): This is only in place on official builds, but the
     # SetUserCloudPolicy call is a nop on official builds. Should be ADVANCED.

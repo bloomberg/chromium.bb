@@ -363,6 +363,17 @@ INSTANTIATE_TEST_CASE_P(
             kPolicyURLWhitelist,
             key::kURLWhitelist)));
 
+// Adds additional cases that can't be included in
+// ConfigDirPolicyProviderValueTestInstance since testing::Values is limited
+// to 50 entries.
+INSTANTIATE_TEST_CASE_P(
+    ConfigDirPolicyProviderValueTestInstanceContinued,
+    ConfigDirPolicyProviderValueTest,
+    testing::Values(
+        ValueTestParams::ForBooleanPolicy(
+            kPolicyCloudPrintSubmitEnabled,
+            key::kCloudPrintSubmitEnabled)));
+
 // Test parameters for all policies that are supported on ChromeOS only.
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(

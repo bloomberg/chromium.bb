@@ -443,6 +443,8 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kRemoteAccessHostFirewallTraversal },
   { Value::TYPE_BOOLEAN, kPolicyCloudPrintProxyEnabled,
     prefs::kCloudPrintProxyEnabled },
+  { Value::TYPE_BOOLEAN, kPolicyCloudPrintSubmitEnabled,
+    prefs::kCloudPrintSubmitEnabled },
   { Value::TYPE_BOOLEAN, kPolicyTranslateEnabled, prefs::kEnableTranslate },
   { Value::TYPE_BOOLEAN, kPolicyAllowOutdatedPlugins,
     prefs::kPluginsAllowOutdated },

@@ -521,6 +521,9 @@ INSTANTIATE_TEST_CASE_P(
     testing::Values(
         PolicyTestParams::ForListPolicy(
             kPolicyURLWhitelist,
-            key::kURLWhitelist)));
+            key::kURLWhitelist),
+        PolicyTestParams::ForBooleanPolicy(
+            kPolicyCloudPrintSubmitEnabled,
+            key::kCloudPrintSubmitEnabled)));
 
 }  // namespace policy
