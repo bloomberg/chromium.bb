@@ -111,11 +111,7 @@ void Bubble::AnimationProgressed(const ui::Animation* animation) {
   // Set the opacity for the main contents window.
   unsigned char opacity = static_cast<unsigned char>(
       animation_->GetCurrentValue() * 255);
-#if defined(USE_AURA)
-  // TODO(beng):
-  (void)opacity;
-  NOTIMPLEMENTED();
-#elif defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   SetLayeredWindowAttributes(GetNativeView(), 0,
       static_cast<byte>(opacity), LWA_ALPHA);
   contents_->SchedulePaint();
@@ -140,11 +136,10 @@ Bubble::Bubble()
 #elif defined(TOOLKIT_USES_GTK)
       views::NativeWidgetGtk(new views::Widget),
 #endif
-#if defined(USE_AURA)
-#elif defined(TOOLKIT_USES_GTK)
-      border_contents_(NULL),
-#elif defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
       border_(NULL),
+#else
+      border_contents_(NULL),
 #endif
       delegate_(NULL),
       show_status_(kOpen),
@@ -171,9 +166,7 @@ Bubble::Bubble(views::Widget::InitParams::Type type,
 #else
     : views::NativeWidgetGtk(new views::Widget),
 #endif
-#if defined(TOOLKIT_USES_GTK)
       border_contents_(NULL),
-#endif
       delegate_(NULL),
       show_status_(kOpen),
       fade_away_on_close_(false),
@@ -280,10 +273,7 @@ void Bubble::InitBubble(views::Widget* parent,
   // Calculate and set the bounds for all windows and views.
   gfx::Rect window_bounds;
 
-#if defined(USE_AURA)
-  // TODO(beng):
-  NOTIMPLEMENTED();
-#elif defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Initialize and position the border window.
   window_bounds = border_->SizeAndGetBounds(position_relative_to,
                                             arrow_location,
@@ -349,10 +339,7 @@ BorderContents* Bubble::CreateBorderContents() {
 void Bubble::SizeToContents() {
   gfx::Rect window_bounds;
 
-#if defined(USE_AURA)
-  // TODO(beng):
-  NOTIMPLEMENTED();
-#elif defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Initialize and position the border window.
   window_bounds = border_->SizeAndGetBounds(position_relative_to_,
                                             arrow_location_,
@@ -372,7 +359,9 @@ void Bubble::SizeToContents() {
 }
 
 #if defined(USE_AURA)
-// TODO(beng):
+void Bubble::OnLostActive() {
+  GetWidget()->Close();
+}
 #elif defined(OS_WIN)
 void Bubble::OnActivate(UINT action, BOOL minimized, HWND window) {
   // The popup should close when it is deactivated.
@@ -405,15 +394,11 @@ void Bubble::DoClose(bool closed_by_escape) {
     delegate_->BubbleClosing(this, closed_by_escape);
   FOR_EACH_OBSERVER(Observer, observer_list_, OnBubbleClosing());
   show_status_ = kClosed;
-#if defined(USE_AURA)
-  // TODO(beng):
-  NOTIMPLEMENTED();
-#elif defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   border_->Close();
 #endif
 #if defined(USE_AURA)
-  // TODO(beng):
-  NOTIMPLEMENTED();
+  NativeWidgetAura::Close();
 #elif defined(OS_WIN)
   NativeWidgetWin::Close();
 #elif defined(TOUCH_UI)

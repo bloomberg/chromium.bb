@@ -611,12 +611,15 @@ void Layer::SetTransformImmediately(const ui::Transform& transform) {
 }
 
 void Layer::SetOpacityImmediately(float opacity) {
+  bool schedule_draw = (opacity != opacity_ && IsDrawn());
   opacity_ = opacity;
   SetNeedsToRecomputeHole();
 #if defined(USE_WEBKIT_COMPOSITOR)
   if (visible_)
     web_layer_.setOpacity(opacity);
 #endif
+  if (schedule_draw)
+    ScheduleDraw();
 }
 
 void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds) {

@@ -190,7 +190,7 @@ class Bubble
 
 #if defined(USE_AURA)
   // Overridden from NativeWidgetAura:
-  // TODO(beng): OnActivate();
+  virtual void OnLostActive() OVERRIDE;
 #elif defined(OS_WIN)
   // Overridden from NativeWidgetWin:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window);
@@ -202,12 +202,10 @@ class Bubble
   virtual void OnActiveChanged() OVERRIDE;
 #endif
 
-#if defined(USE_AURA)
-  // TODO(beng):
-#elif defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // The window used to render the padding, border and arrow.
   BorderWidgetWin* border_;
-#elif defined(TOOLKIT_USES_GTK)
+#else
   // The view displaying the border.
   BorderContents* border_contents_;
 #endif
