@@ -500,7 +500,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
 }
 
 // Called when "Translate" button is clicked.
-- (IBAction)ok:(id)sender {
+- (void)ok:(id)sender {
   if (![self isOwned])
     return;
   TranslateInfoBarDelegate* delegate = [self delegate];
@@ -512,7 +512,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
 }
 
 // Called when someone clicks on the "Nope" button.
-- (IBAction)cancel:(id)sender {
+- (void)cancel:(id)sender {
   if (![self isOwned])
     return;
   TranslateInfoBarDelegate* delegate = [self delegate];
