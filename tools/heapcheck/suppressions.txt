@@ -194,28 +194,10 @@
    fun:base::LazyInstance::Pointer
 }
 {
-   Intentional leak in object tracking statics to avoid shutdown race
-   Heapcheck:Leak
-   ...
-   fun:tracked_objects::ThreadData::Initialize*
-}
-{
    Give breathing room for tracked object tests.. may do better later.
    Heapcheck:Leak
    ...
    fun:tracked_objects::TrackedObjectsTest*
-}
-{
-   Intentional leak in object tracking of thread context to avoid shutdown race
-   Heapcheck:Leak
-   ...
-   fun:tracked_objects::ThreadData::Get
-}
-{
-   Intentional leak of task birth and death data to avoid shutdown race
-   Heapcheck:Leak
-   ...
-   fun:tracked_objects::ThreadData::TallyA*
 }
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
