@@ -182,6 +182,11 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void AddTransientChild(Window* child);
   void RemoveTransientChild(Window* child);
 
+  const Windows& transient_children() const { return transient_children_; }
+
+  Window* transient_parent() { return transient_parent_; }
+  const Window* transient_parent() const { return transient_parent_; }
+
   // Retrieves the first-level child with the specified id, or NULL if no first-
   // level child is found matching |id|.
   Window* GetChildById(int id);

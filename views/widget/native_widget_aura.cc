@@ -86,10 +86,12 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   if (params.type == Widget::InitParams::TYPE_CONTROL) {
     window_->SetParent(params.GetParent());
   } else {
-    window_->SetParent(NULL);
+    // Set up the transient child before the window is added. This way the
+    // LayoutManager knows the window has a transient parent.
     gfx::NativeView parent = params.GetParent();
     if (parent)
       parent->AddTransientChild(window_);
+    window_->SetParent(NULL);
   }
   // TODO(beng): do this some other way.
   delegate_->OnNativeWidgetSizeChanged(params.bounds.size());

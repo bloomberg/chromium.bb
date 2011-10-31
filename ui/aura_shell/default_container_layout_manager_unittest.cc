@@ -67,11 +67,12 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
     return workspace_controller_->layout_manager();
   }
 
- private:
+ protected:
   scoped_ptr<aura::Window> container_;
   ScopedVector<ui::ViewProp> props_;
   scoped_ptr<aura_shell::internal::WorkspaceController> workspace_controller_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(DefaultContainerLayoutManagerTest);
 };
 
@@ -134,6 +135,24 @@ TEST_F(DefaultContainerLayoutManagerTest, Popup) {
   // A popup window can be resized to the size bigger than draggable area.
   popup->SetBounds(gfx::Rect(0, 0, 1000, 1000));
   EXPECT_EQ("0,0 1000x1000", popup->bounds().ToString());
+}
+
+// Make sure a window with a transient parent isn't resized by the layout
+// manager.
+TEST_F(DefaultContainerLayoutManagerTest, IgnoreTransient) {
+  scoped_ptr<aura::Window> window(new aura::Window(NULL));
+  props_.push_back(
+      new ui::ViewProp(
+          window.get(), views::NativeWidgetAura::kWindowTypeKey,
+          reinterpret_cast<void*>(Widget::InitParams::TYPE_WINDOW)));
+  window->SetType(Widget::InitParams::TYPE_WINDOW);
+  window->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  aura::Desktop::GetInstance()->AddTransientChild(window.get());
+  window->SetBounds(gfx::Rect(0, 0, 200, 200));
+  window->Show();
+  window->SetParent(container());
+
+  EXPECT_EQ("0,0 200x200", window->bounds().ToString());
 }
 
 }  // namespace test

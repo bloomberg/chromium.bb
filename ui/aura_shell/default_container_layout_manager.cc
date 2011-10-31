@@ -102,7 +102,8 @@ void DefaultContainerLayoutManager::OnWindowResized() {
 void DefaultContainerLayoutManager::OnWindowAdded(aura::Window* child) {
   intptr_t type = reinterpret_cast<intptr_t>(
       ui::ViewProp::GetValue(child, views::NativeWidgetAura::kWindowTypeKey));
-  if (type != views::Widget::InitParams::TYPE_WINDOW)
+  if (type != views::Widget::InitParams::TYPE_WINDOW ||
+      child->transient_parent())
     return;
 
   AutoReset<bool> reset(&ignore_calculate_bounds_, true);
@@ -144,7 +145,7 @@ void DefaultContainerLayoutManager::CalculateBoundsForChild(
   intptr_t type = reinterpret_cast<intptr_t>(
       ui::ViewProp::GetValue(child, views::NativeWidgetAura::kWindowTypeKey));
   if (type != views::Widget::InitParams::TYPE_WINDOW ||
-      ignore_calculate_bounds_)
+      ignore_calculate_bounds_ || child->transient_parent())
     return;
 
   // If a drag window is requesting bounds, make sure its attached to
