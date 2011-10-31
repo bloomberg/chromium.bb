@@ -99,7 +99,7 @@ class MenuScrollButton : public View {
       y += config.scroll_arrow_height;
     }
     for (int i = 0; i < config.scroll_arrow_height; ++i, --x, y += delta_y)
-      canvas->FillRectInt(arrow_color, x, y, (i * 2) + 1, 1);
+      canvas->FillRect(arrow_color, gfx::Rect(x, y, (i * 2) + 1, 1));
   }
 
  private:

@@ -18,8 +18,7 @@ namespace examples {
 
 class LockView : public views::WidgetDelegateView {
  public:
-  LockView() {
-  }
+  LockView() {}
   virtual ~LockView() {}
 
   // Overridden from View:
@@ -30,7 +29,7 @@ class LockView : public views::WidgetDelegateView {
  private:
   // Overridden from View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRectInt(SK_ColorYELLOW, 0, 0, width(), height());
+    canvas->FillRect(SK_ColorYELLOW, GetLocalBounds());
     string16 text = ASCIIToUTF16("LOCKED!");
     int string_width = font_.GetStringWidth(text);
     canvas->DrawStringInt(text, font_, SK_ColorRED, (width() - string_width)/ 2,

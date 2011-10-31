@@ -65,8 +65,7 @@ StatusAreaButton::StatusAreaButton(StatusAreaHost* host,
 void StatusAreaButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   if (state() == BS_PUSHED) {
     // Apply 10% white when pushed down.
-    canvas->FillRectInt(SkColorSetARGB(0x19, 0xFF, 0xFF, 0xFF),
-        0, 0, width(), height());
+    canvas->FillRect(SkColorSetARGB(0x19, 0xFF, 0xFF, 0xFF), GetLocalBounds());
   }
 
   if (use_menu_button_paint_) {

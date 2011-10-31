@@ -202,23 +202,21 @@ void CanvasDirect2D::Scale(int x_scale, int y_scale) {
   rt_->SetTransform(transform);
 }
 
-void CanvasDirect2D::FillRectInt(const SkColor& color,
-                                 int x, int y, int w, int h) {
+void CanvasDirect2D::FillRect(const SkColor& color, const gfx::Rect& rect) {
   base::win::ScopedComPtr<ID2D1SolidColorBrush> solid_brush;
   rt_->CreateSolidColorBrush(SkColorToColorF(color), solid_brush.Receive());
-  rt_->FillRectangle(RectToRectF(x, y, w, h), solid_brush);
+  rt_->FillRectangle(RectToRectF(rect), solid_brush);
 }
 
-void CanvasDirect2D::FillRectInt(const SkColor& color,
-                                 int x, int y, int w, int h,
-                                 SkXfermode::Mode mode) {
+void CanvasDirect2D::FillRect(const SkColor& color,
+                              const gfx::Rect& rect,
+                              SkXfermode::Mode mode) {
   NOTIMPLEMENTED();
 }
 
-void CanvasDirect2D::FillRectInt(const gfx::Brush* brush,
-                                 int x, int y, int w, int h) {
+void CanvasDirect2D::FillRect(const gfx::Brush* brush, const gfx::Rect& rect) {
   const Direct2DBrush* d2d_brush = static_cast<const Direct2DBrush*>(brush);
-  rt_->FillRectangle(RectToRectF(x, y, w, h), d2d_brush->brush());
+  rt_->FillRectangle(RectToRectF(rect), d2d_brush->brush());
 }
 
 void CanvasDirect2D::DrawRectInt(const SkColor& color,

@@ -10,8 +10,8 @@
 #include "views/examples/example_base.h"
 #include "views/test/test_views_delegate.h"
 #include "views/view.h"
-#include "views/widget/widget.h"
 #include "views/widget/native_widget_views.h"
+#include "views/widget/widget.h"
 
 namespace examples {
 
@@ -33,7 +33,7 @@ class TestContentView : public views::View,
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     SkColor color = click_count_ % 2 == 0 ? SK_ColorGREEN : SK_ColorBLUE;
-    canvas->FillRectInt(color, 0, 0, width(), height());
+    canvas->FillRect(color, GetLocalBounds());
   }
   virtual void Layout() OVERRIDE {
     button_->SetBounds(10, 10, width() - 20, height() - 20);

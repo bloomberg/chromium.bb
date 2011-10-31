@@ -176,7 +176,7 @@ void DrawDeemphasized(const SkColor& color,
            paint_rect.y(),
            SRCCOPY);
   }
-  canvas.FillRectInt(color, 0, 0, paint_rect.width(), paint_rect.height());
+  canvas.FillRect(color, gfx::Rect(gfx::Point(), paint_rect.size()));
   skia::DrawToNativeContext(canvas.sk_canvas(), paint_dc, paint_rect.x(),
                             paint_rect.y(), NULL);
 }

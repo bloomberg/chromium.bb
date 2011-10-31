@@ -122,27 +122,26 @@ void CanvasSkia::Scale(int x_scale, int y_scale) {
   canvas_->scale(SkIntToScalar(x_scale), SkIntToScalar(y_scale));
 }
 
-void CanvasSkia::FillRectInt(const SkColor& color, int x, int y, int w, int h) {
-  FillRectInt(color, x, y, w, h, SkXfermode::kSrcOver_Mode);
+void CanvasSkia::FillRect(const SkColor& color, const gfx::Rect& rect) {
+  FillRect(color, rect, SkXfermode::kSrcOver_Mode);
 }
 
-void CanvasSkia::FillRectInt(const SkColor& color,
-                             int x, int y, int w, int h,
-                             SkXfermode::Mode mode) {
+void CanvasSkia::FillRect(const SkColor& color,
+                          const gfx::Rect& rect,
+                          SkXfermode::Mode mode) {
   SkPaint paint;
   paint.setColor(color);
   paint.setStyle(SkPaint::kFill_Style);
   paint.setXfermodeMode(mode);
-  DrawRectInt(x, y, w, h, paint);
+  DrawRectInt(rect.x(), rect.y(), rect.width(), rect.height(), paint);
 }
 
-void CanvasSkia::FillRectInt(const gfx::Brush* brush,
-                             int x, int y, int w, int h) {
+void CanvasSkia::FillRect(const gfx::Brush* brush, const gfx::Rect& rect) {
   const SkiaShader* shader = static_cast<const SkiaShader*>(brush);
   SkPaint paint;
   paint.setShader(shader->shader());
   // TODO(beng): set shader transform to match canvas transform.
-  DrawRectInt(x, y, w, h, paint);
+  DrawRectInt(rect.x(), rect.y(), rect.width(), rect.height(), paint);
 }
 
 void CanvasSkia::DrawRectInt(const SkColor& color, int x, int y, int w, int h) {

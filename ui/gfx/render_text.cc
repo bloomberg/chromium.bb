@@ -351,7 +351,7 @@ void RenderText::Draw(Canvas* canvas) {
   for (std::vector<Rect>::const_iterator i = selection.begin();
        i < selection.end(); ++i) {
     Rect r(*i);
-    canvas->FillRectInt(selection_color, r.x(), r.y(), r.width(), r.height());
+    canvas->FillRect(selection_color, r);
   }
 
   // Create a temporary copy of the style ranges for composition and selection.

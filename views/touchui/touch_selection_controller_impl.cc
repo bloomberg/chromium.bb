@@ -4,8 +4,8 @@
 
 #include "views/touchui/touch_selection_controller_impl.h"
 
-#include "base/utf_string_conversions.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "grit/ui_strings.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -21,8 +21,8 @@
 #include "views/controls/button/button.h"
 #include "views/controls/button/custom_button.h"
 #include "views/controls/button/text_button.h"
-#include "views/controls/menu/menu_config.h"
 #include "views/controls/label.h"
+#include "views/controls/menu/menu_config.h"
 #include "views/layout/box_layout.h"
 #include "views/widget/widget.h"
 
@@ -191,15 +191,15 @@ class ContextMenuButtonBackground : public Background {
     }
     int w = view->width();
     int h = view->height();
-    canvas->FillRectInt(background_color, 1, 1, w - 2, h - 2);
-    canvas->FillRectInt(border_color, 2, 0, w - 4, 1);
-    canvas->FillRectInt(border_color, 1, 1, 1, 1);
-    canvas->FillRectInt(border_color, 0, 2, 1, h - 4);
-    canvas->FillRectInt(border_color, 1, h - 2, 1, 1);
-    canvas->FillRectInt(border_color, 2, h - 1, w - 4, 1);
-    canvas->FillRectInt(border_color, w - 2, 1, 1, 1);
-    canvas->FillRectInt(border_color, w - 1, 2, 1, h - 4);
-    canvas->FillRectInt(border_color, w - 2, h - 2, 1, 1);
+    canvas->FillRect(background_color, gfx::Rect(1, 1, w - 2, h - 2));
+    canvas->FillRect(border_color, gfx::Rect(2, 0, w - 4, 1));
+    canvas->FillRect(border_color, gfx::Rect(1, 1, 1, 1));
+    canvas->FillRect(border_color, gfx::Rect(0, 2, 1, h - 4));
+    canvas->FillRect(border_color, gfx::Rect(1, h - 2, 1, 1));
+    canvas->FillRect(border_color, gfx::Rect(2, h - 1, w - 4, 1));
+    canvas->FillRect(border_color, gfx::Rect(w - 2, 1, 1, 1));
+    canvas->FillRect(border_color, gfx::Rect(w - 1, 2, 1, h - 4));
+    canvas->FillRect(border_color, gfx::Rect(w - 2, h - 2, 1, 1));
   }
 
  private:

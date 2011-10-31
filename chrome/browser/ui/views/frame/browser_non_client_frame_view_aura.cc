@@ -77,7 +77,7 @@ class WindowControlButton : public views::CustomButton {
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRectInt(GetBackgroundColor(), 0, 0, width(), height());
+    canvas->FillRect(GetBackgroundColor(), GetLocalBounds());
     canvas->DrawBitmapInt(icon_, 0, 0);
   }
   virtual gfx::Size GetPreferredSize() OVERRIDE {

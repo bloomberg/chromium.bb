@@ -7,9 +7,9 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
-#include "third_party/skia/include/core/SkTypeface.h"
 
 namespace {
 
@@ -577,7 +577,7 @@ void RenderTextWin::DrawSelection(Canvas* canvas) {
       GetSubstringBounds(GetSelectionStart(), GetCursorPosition()));
   SkColor color = focused() ? kFocusedSelectionColor : kUnfocusedSelectionColor;
   for (std::vector<Rect>::const_iterator i = sel.begin(); i < sel.end(); ++i)
-    canvas->FillRectInt(color, i->x(), i->y(), i->width(), i->height());
+    canvas->FillRect(color, *i);
 }
 
 void RenderTextWin::DrawVisualText(Canvas* canvas) {

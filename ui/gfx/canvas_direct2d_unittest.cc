@@ -183,9 +183,9 @@ TEST(CanvasDirect2D, SaveLayerAlpha) {
   gfx::CanvasDirect2D canvas(window.rt());
 
   canvas.Save();
-  canvas.FillRectInt(SK_ColorBLUE, 20, 20, 100, 100);
+  canvas.FillRect(SK_ColorBLUE, gfx::Rect(20, 20, 100, 100));
   canvas.SaveLayerAlpha(127);
-  canvas.FillRectInt(SK_ColorRED, 60, 60, 100, 100);
+  canvas.FillRect(SK_ColorRED, gfx::Rect(60, 60, 100, 100));
   canvas.Restore();
   canvas.Restore();
 }
@@ -197,9 +197,9 @@ TEST(CanvasDirect2D, SaveLayerAlphaWithBounds) {
   gfx::CanvasDirect2D canvas(window.rt());
 
   canvas.Save();
-  canvas.FillRectInt(SK_ColorBLUE, 20, 20, 100, 100);
+  canvas.FillRect(SK_ColorBLUE, gfx::Rect(20, 20, 100, 100));
   canvas.SaveLayerAlpha(127, gfx::Rect(60, 60, 50, 50));
-  canvas.FillRectInt(SK_ColorRED, 60, 60, 100, 100);
+  canvas.FillRect(SK_ColorRED, gfx::Rect(60, 60, 100, 100));
   canvas.Restore();
   canvas.Restore();
 }
@@ -210,7 +210,7 @@ TEST(CanvasDirect2D, FillRect) {
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 
-  canvas.FillRectInt(SK_ColorRED, 20, 20, 100, 100);
+  canvas.FillRect(SK_ColorRED, gfx::Rect(20, 20, 100, 100));
 }
 
 TEST(CanvasDirect2D, ClipRect) {
@@ -219,9 +219,9 @@ TEST(CanvasDirect2D, ClipRect) {
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 
-  canvas.FillRectInt(SK_ColorGREEN, 0, 0, 500, 500);
+  canvas.FillRect(SK_ColorGREEN, gfx::Rect(0, 0, 500, 500));
   canvas.ClipRect(gfx::Rect(20, 20, 120, 120));
-  canvas.FillRectInt(SK_ColorBLUE, 0, 0, 500, 500);
+  canvas.FillRect(SK_ColorBLUE, gfx::Rect(0, 0, 500, 500));
 }
 
 TEST(CanvasDirect2D, ClipRectWithTranslate) {
@@ -232,16 +232,16 @@ TEST(CanvasDirect2D, ClipRectWithTranslate) {
 
   // Repeat the same rendering as in ClipRect...
   canvas.Save();
-  canvas.FillRectInt(SK_ColorGREEN, 0, 0, 500, 500);
+  canvas.FillRect(SK_ColorGREEN, gfx::Rect(0, 0, 500, 500));
   canvas.ClipRect(gfx::Rect(20, 20, 120, 120));
-  canvas.FillRectInt(SK_ColorBLUE, 0, 0, 500, 500);
+  canvas.FillRect(SK_ColorBLUE, gfx::Rect(0, 0, 500, 500));
   canvas.Restore();
 
   // ... then translate, clip and fill again relative to the new origin.
   canvas.Save();
   canvas.Translate(gfx::Point(150, 150));
   canvas.ClipRect(gfx::Rect(10, 10, 110, 110));
-  canvas.FillRectInt(SK_ColorRED, 0, 0, 500, 500);
+  canvas.FillRect(SK_ColorRED, gfx::Rect(0, 0, 500, 500));
   canvas.Restore();
 }
 
@@ -253,9 +253,9 @@ TEST(CanvasDirect2D, ClipRectWithScale) {
 
   // Repeat the same rendering as in ClipRect...
   canvas.Save();
-  canvas.FillRectInt(SK_ColorGREEN, 0, 0, 500, 500);
+  canvas.FillRect(SK_ColorGREEN, gfx::Rect(0, 0, 500, 500));
   canvas.ClipRect(gfx::Rect(20, 20, 120, 120));
-  canvas.FillRectInt(SK_ColorBLUE, 0, 0, 500, 500);
+  canvas.FillRect(SK_ColorBLUE, gfx::Rect(0, 0, 500, 500));
   canvas.Restore();
 
   // ... then translate and scale, clip and fill again relative to the new
@@ -264,7 +264,7 @@ TEST(CanvasDirect2D, ClipRectWithScale) {
   canvas.Translate(gfx::Point(150, 150));
   canvas.Scale(2, 2);
   canvas.ClipRect(gfx::Rect(10, 10, 110, 110));
-  canvas.FillRectInt(SK_ColorRED, 0, 0, 500, 500);
+  canvas.FillRect(SK_ColorRED, gfx::Rect(0, 0, 500, 500));
   canvas.Restore();
 }
 

@@ -28,10 +28,8 @@ void DetachableToolbarView::PaintBackgroundAttachedMode(
     views::View* view,
     const gfx::Point& background_origin) {
   ui::ThemeProvider* tp = view->GetThemeProvider();
-  SkColor theme_toolbar_color =
-      tp->GetColor(ThemeService::COLOR_TOOLBAR);
-  canvas->FillRectInt(theme_toolbar_color, 0, 0,
-                      view->width(), view->height());
+  SkColor theme_toolbar_color = tp->GetColor(ThemeService::COLOR_TOOLBAR);
+  canvas->FillRect(theme_toolbar_color, view->GetLocalBounds());
   canvas->TileImageInt(*tp->GetBitmapNamed(IDR_THEME_TOOLBAR),
                        background_origin.x(), background_origin.y(), 0, 0,
                        view->width(), view->height());
@@ -58,14 +56,16 @@ void DetachableToolbarView::PaintHorizontalBorder(gfx::Canvas* canvas,
   // the view (bar/shelf) is attached or detached.
   int thickness = views::NonClientFrameView::kClientEdgeThickness;
   int y = view->IsDetached() ? 0 : (view->height() - thickness);
-  canvas->FillRectInt(ResourceBundle::toolbar_separator_color,
-      0, y, view->width(), thickness);
+  canvas->FillRect(ResourceBundle::toolbar_separator_color,
+                   gfx::Rect(0, y, view->width(), thickness));
 }
 
 // static
 void DetachableToolbarView::PaintContentAreaBackground(
-    gfx::Canvas* canvas, ui::ThemeProvider* theme_provider,
-    const SkRect& rect, double roundness) {
+    gfx::Canvas* canvas,
+    ui::ThemeProvider* theme_provider,
+    const SkRect& rect,
+    double roundness) {
   SkPaint paint;
   paint.setAntiAlias(true);
   paint.setColor(theme_provider->GetColor(ThemeService::COLOR_TOOLBAR));

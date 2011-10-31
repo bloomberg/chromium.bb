@@ -183,12 +183,13 @@ void FirstRunSearchEngineView::ButtonPressed(views::Button* sender,
 
 void FirstRunSearchEngineView::OnPaint(gfx::Canvas* canvas) {
   // Fill in behind the background image with the standard gray toolbar color.
-  canvas->FillRectInt(GetThemeProvider()->GetColor(ThemeService::COLOR_TOOLBAR),
-                      0, 0, width(), background_image_->height());
+  canvas->FillRect(GetThemeProvider()->GetColor(ThemeService::COLOR_TOOLBAR),
+                   gfx::Rect(0, 0, width(), background_image_->height()));
   // The rest of the dialog background should be white.
   DCHECK(height() > background_image_->height());
-  canvas->FillRectInt(SK_ColorWHITE, 0, background_image_->height(), width(),
-                      height() - background_image_->height());
+  canvas->FillRect(SK_ColorWHITE,
+                   gfx::Rect(0, background_image_->height(), width(),
+                             height() - background_image_->height()));
 }
 
 void FirstRunSearchEngineView::OnTemplateURLServiceChanged() {

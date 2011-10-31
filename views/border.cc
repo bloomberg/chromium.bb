@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,15 +35,15 @@ SolidBorder::SolidBorder(int thickness, SkColor color)
 
 void SolidBorder::Paint(const View& view, gfx::Canvas* canvas) const {
   // Top border.
-  canvas->FillRectInt(color_, 0, 0, view.width(), insets_.top());
+  canvas->FillRect(color_, gfx::Rect(0, 0, view.width(), insets_.top()));
   // Left border.
-  canvas->FillRectInt(color_, 0, 0, insets_.left(), view.height());
+  canvas->FillRect(color_, gfx::Rect(0, 0, insets_.left(), view.height()));
   // Bottom border.
-  canvas->FillRectInt(color_, 0, view.height() - insets_.bottom(),
-                      view.width(), insets_.bottom());
+  canvas->FillRect(color_, gfx::Rect(0, view.height() - insets_.bottom(),
+                                     view.width(), insets_.bottom()));
   // Right border.
-  canvas->FillRectInt(color_, view.width() - insets_.right(), 0,
-                      insets_.right(), view.height());
+  canvas->FillRect(color_, gfx::Rect(view.width() - insets_.right(), 0,
+                                     insets_.right(), view.height()));
 }
 
 void SolidBorder::GetInsets(gfx::Insets* insets) const {

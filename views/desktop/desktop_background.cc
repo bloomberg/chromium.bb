@@ -19,7 +19,7 @@ DesktopBackground::~DesktopBackground() {
 
 void DesktopBackground::Paint(gfx::Canvas* canvas, View* view) const {
   // Paint the sky.
-  canvas->FillRectInt(SK_ColorCYAN, 0, 0, view->width(), view->width());
+  canvas->FillRect(SK_ColorCYAN, view->GetLocalBounds());
 
   SkPaint paint;
   paint.setAntiAlias(true);

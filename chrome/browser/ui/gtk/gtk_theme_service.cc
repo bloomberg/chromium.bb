@@ -27,8 +27,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -1077,9 +1077,9 @@ SkBitmap* GtkThemeService::GenerateFrameImage(
     canvas.DrawRectInt(0, 0, kToolbarImageWidth, gradient_size, paint);
   }
 
-  canvas.FillRectInt(base, 0, gradient_size,
-                     kToolbarImageWidth,
-                     kToolbarImageHeight - gradient_size);
+  canvas.FillRect(base, gfx::Rect(0, gradient_size,
+                                  kToolbarImageWidth,
+                                  kToolbarImageHeight - gradient_size));
   return new SkBitmap(canvas.ExtractBitmap());
 }
 

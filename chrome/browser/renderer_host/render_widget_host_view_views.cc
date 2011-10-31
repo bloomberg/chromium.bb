@@ -827,11 +827,8 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
   // paint a "hole" in the canvas so that the render of the web page is on
   // top of whatever else has already been painted in the views hierarchy.
   // Later views might still get to paint on top.
-  if (!get_use_acceleration_when_possible()) {
-    canvas->FillRectInt(SK_ColorBLACK, 0, 0,
-                        bounds().width(), bounds().height(),
-                        SkXfermode::kClear_Mode);
-  }
+  if (!get_use_acceleration_when_possible())
+    canvas->FillRect(SK_ColorBLACK, GetLocalBounds(), SkXfermode::kClear_Mode);
 
   DCHECK(!about_to_validate_and_paint_);
 
@@ -896,8 +893,7 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
       whiteout_start_time_ = base::TimeTicks::Now();
 
     if (get_use_acceleration_when_possible())
-      canvas->FillRectInt(SK_ColorWHITE, 0, 0,
-                          bounds().width(), bounds().height());
+      canvas->FillRect(SK_ColorWHITE, GetLocalBounds());
   }
 }
 

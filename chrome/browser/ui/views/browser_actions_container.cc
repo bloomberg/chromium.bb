@@ -845,9 +845,7 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
 
     // Color of the drop indicator.
     static const SkColor kDropIndicatorColor = SK_ColorBLACK;
-    canvas->FillRectInt(kDropIndicatorColor, indicator_bounds.x(),
-                        indicator_bounds.y(), indicator_bounds.width(),
-                        indicator_bounds.height());
+    canvas->FillRect(kDropIndicatorColor, indicator_bounds);
   }
 }
 

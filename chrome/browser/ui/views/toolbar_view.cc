@@ -594,7 +594,7 @@ void ToolbarView::OnPaint(gfx::Canvas* canvas) {
   // toolbar background below the location bar for us.
   // NOTE: Keep this in sync with BrowserView::GetInfoBarSeparatorColor()!
   if (GetWidget()->ShouldUseNativeFrame())
-    canvas->FillRectInt(SK_ColorBLACK, 0, height() - 1, width(), 1);
+    canvas->FillRect(SK_ColorBLACK, gfx::Rect(0, height() - 1, width(), 1));
 }
 
 // Note this method is ignored on Windows, but needs to be implemented for

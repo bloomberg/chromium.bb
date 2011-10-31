@@ -73,7 +73,7 @@ class TestWindowContentView : public WidgetDelegateView {
  private:
   // Overridden from View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRectInt(color_, 0, 0, width(), height());
+    canvas->FillRect(color_, GetLocalBounds());
   }
 
   // Overridden from WindowDelegate:

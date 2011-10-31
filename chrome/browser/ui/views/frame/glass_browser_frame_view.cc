@@ -330,9 +330,11 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                         right_x, y);
 
   // Draw the content/toolbar separator.
-  canvas->FillRectInt(ResourceBundle::toolbar_separator_color,
-      x + kClientEdgeThickness, toolbar_bounds.bottom() - kClientEdgeThickness,
-      w - (2 * kClientEdgeThickness), kClientEdgeThickness);
+  canvas->FillRect(ResourceBundle::toolbar_separator_color,
+      gfx::Rect(x + kClientEdgeThickness,
+                toolbar_bounds.bottom() - kClientEdgeThickness,
+                w - (2 * kClientEdgeThickness),
+                kClientEdgeThickness));
 }
 
 void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
@@ -372,15 +374,16 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   // images because the images are meant to alpha-blend atop the frame whereas
   // these rects are meant to be fully opaque, without anything overlaid.
   SkColor toolbar_color = tp->GetColor(ThemeService::COLOR_TOOLBAR);
-  canvas->FillRectInt(toolbar_color,
-      client_area_bounds.x() - kClientEdgeThickness, client_area_top,
-      kClientEdgeThickness,
-      client_area_bottom + kClientEdgeThickness - client_area_top);
-  canvas->FillRectInt(toolbar_color, client_area_bounds.x(), client_area_bottom,
-                      client_area_bounds.width(), kClientEdgeThickness);
-  canvas->FillRectInt(toolbar_color, client_area_bounds.right(),
-      client_area_top, kClientEdgeThickness,
-      client_area_bottom + kClientEdgeThickness - client_area_top);
+  canvas->FillRect(toolbar_color,
+      gfx::Rect(client_area_bounds.x() - kClientEdgeThickness, client_area_top,
+                kClientEdgeThickness,
+                client_area_bottom + kClientEdgeThickness - client_area_top));
+  canvas->FillRect(toolbar_color,
+                   gfx::Rect(client_area_bounds.x(), client_area_bottom,
+                             client_area_bounds.width(), kClientEdgeThickness));
+  canvas->FillRect(toolbar_color, gfx::Rect(client_area_bounds.right(),
+       client_area_top, kClientEdgeThickness,
+       client_area_bottom + kClientEdgeThickness - client_area_top));
 }
 
 void GlassBrowserFrameView::LayoutAvatar() {

@@ -12,8 +12,8 @@
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/gfx/canvas.h"
-#include "views/examples/example_combobox_model.h"
 #include "views/controls/label.h"
+#include "views/examples/example_combobox_model.h"
 #include "views/layout/grid_layout.h"
 #include "views/native_theme_painter.h"
 
@@ -191,7 +191,7 @@ gfx::Size ExampleNativeThemeButton::GetPreferredSize() {
 void ExampleNativeThemeButton::OnPaintBackground(gfx::Canvas* canvas) {
   // Fill the background with a known colour so that we know where the bounds
   // of the View are.
-  canvas->FillRectInt(SkColorSetRGB(255, 128, 128), 0, 0, width(), height());
+  canvas->FillRect(SkColorSetRGB(255, 128, 128), GetLocalBounds());
   CustomButton::OnPaintBackground(canvas);
 }
 

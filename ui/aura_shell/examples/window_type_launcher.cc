@@ -58,7 +58,7 @@ WindowTypeLauncher::~WindowTypeLauncher() {
 }
 
 void WindowTypeLauncher::OnPaint(gfx::Canvas* canvas) {
-  canvas->FillRectInt(SK_ColorWHITE, 0, 0, width(), height());
+  canvas->FillRect(SK_ColorWHITE, GetLocalBounds());
 }
 
 void WindowTypeLauncher::Layout() {

@@ -357,8 +357,7 @@ void SubmenuView::PaintDropIndicator(gfx::Canvas* canvas,
     return;
 
   gfx::Rect bounds = CalculateDropIndicatorBounds(item, position);
-  canvas->FillRectInt(kDropIndicatorColor, bounds.x(), bounds.y(),
-                      bounds.width(), bounds.height());
+  canvas->FillRect(kDropIndicatorColor, bounds);
 }
 
 void SubmenuView::SchedulePaintForDropIndicator(

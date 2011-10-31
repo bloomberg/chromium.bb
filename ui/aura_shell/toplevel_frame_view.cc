@@ -46,7 +46,7 @@ class WindowControlButton : public views::CustomButton {
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRectInt(GetBackgroundColor(), 0, 0, width(), height());
+    canvas->FillRect(GetBackgroundColor(), GetLocalBounds());
     canvas->DrawBitmapInt(icon_, 0, 0);
   }
   virtual gfx::Size GetPreferredSize() OVERRIDE {
@@ -116,11 +116,11 @@ class FrameComponent : public views::View,
     // Fill with current opacity value.
     int opacity = animation_->CurrentValueBetween(kFrameBorderHiddenOpacity,
                                                   kFrameBorderVisibleOpacity);
-    canvas->FillRectInt(SkColorSetARGB(opacity,
-                                       SkColorGetR(kFrameColor),
-                                       SkColorGetG(kFrameColor),
-                                       SkColorGetB(kFrameColor)),
-                        0, 0, width(), height());
+    canvas->FillRect(SkColorSetARGB(opacity,
+                                    SkColorGetR(kFrameColor),
+                                    SkColorGetG(kFrameColor),
+                                    SkColorGetB(kFrameColor)),
+                     GetLocalBounds());
   }
 
   // Overridden from ui::AnimationDelegate:

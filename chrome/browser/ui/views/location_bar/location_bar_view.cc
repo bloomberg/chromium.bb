@@ -751,8 +751,7 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
     canvas->GetSkCanvas()->drawRoundRect(gfx::RectToSkRect(bounds), radius,
                                          radius, paint);
   } else {
-    canvas->FillRectInt(color, bounds.x(), bounds.y(), bounds.width(),
-                        bounds.height());
+    canvas->FillRect(color, bounds);
   }
 
   if (show_focus_rect_ && HasFocus()) {

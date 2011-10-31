@@ -141,17 +141,15 @@ void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   bitmap_device.eraseARGB(0, 0, 0, 0);
 
   int tab_height = renderer_bounds_.back().height();
-  scale_canvas.FillRectInt(kDraggedTabBorderColor, 0,
-      tab_height - kDragFrameBorderSize,
-      ps.width(), ps.height() - tab_height);
-  int image_x = kDragFrameBorderSize;
-  int image_y = tab_height;
-  int image_w = ps.width() - kTwiceDragFrameBorderSize;
-  int image_h = contents_size_.height();
-  scale_canvas.FillRectInt(SK_ColorBLACK, image_x, image_y, image_w, image_h);
-  photobooth_->PaintScreenshotIntoCanvas(
-      &scale_canvas,
-      gfx::Rect(image_x, image_y, image_w, image_h));
+  scale_canvas.FillRect(kDraggedTabBorderColor,
+                        gfx::Rect(0, tab_height - kDragFrameBorderSize,
+                                  ps.width(), ps.height() - tab_height));
+  gfx::Rect image_rect(kDragFrameBorderSize,
+                       tab_height,
+                       ps.width() - kTwiceDragFrameBorderSize,
+                       contents_size_.height());
+  scale_canvas.FillRect(SK_ColorBLACK, image_rect);
+  photobooth_->PaintScreenshotIntoCanvas(&scale_canvas, image_rect);
   for (size_t i = 0; i < renderers_.size(); ++i)
     renderers_[i]->Paint(&scale_canvas);
 

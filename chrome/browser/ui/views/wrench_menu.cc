@@ -143,46 +143,49 @@ class MenuButtonBackground : public views::Background {
     int h = view->height();
     switch (TypeAdjustedForRTL()) {
       case LEFT_BUTTON:
-        canvas->FillRectInt(background_color(state), 1, 1, w, h - 2);
-        canvas->FillRectInt(border_color(state), 2, 0, w, 1);
-        canvas->FillRectInt(border_color(state), 1, 1, 1, 1);
-        canvas->FillRectInt(border_color(state), 0, 2, 1, h - 4);
-        canvas->FillRectInt(border_color(state), 1, h - 2, 1, 1);
-        canvas->FillRectInt(border_color(state), 2, h - 1, w, 1);
+        canvas->FillRect(background_color(state), gfx::Rect(1, 1, w, h - 2));
+        canvas->FillRect(border_color(state), gfx::Rect(2, 0, w, 1));
+        canvas->FillRect(border_color(state), gfx::Rect(1, 1, 1, 1));
+        canvas->FillRect(border_color(state), gfx::Rect(0, 2, 1, h - 4));
+        canvas->FillRect(border_color(state), gfx::Rect(1, h - 2, 1, 1));
+        canvas->FillRect(border_color(state), gfx::Rect(2, h - 1, w, 1));
         break;
 
       case CENTER_BUTTON: {
-        canvas->FillRectInt(background_color(state), 1, 1, w - 2, h - 2);
+        canvas->FillRect(background_color(state),
+                         gfx::Rect(1, 1, w - 2, h - 2));
         SkColor left_color = state != CustomButton::BS_NORMAL ?
             border_color(state) : border_color(left_button_->state());
-        canvas->FillRectInt(left_color, 0, 0, 1, h);
-        canvas->FillRectInt(border_color(state), 1, 0, w - 2, 1);
-        canvas->FillRectInt(border_color(state), 1, h - 1, w - 2, 1);
+        canvas->FillRect(left_color, gfx::Rect(0, 0, 1, h));
+        canvas->FillRect(border_color(state), gfx::Rect(1, 0, w - 2, 1));
+        canvas->FillRect(border_color(state), gfx::Rect(1, h - 1, w - 2, 1));
         SkColor right_color = state != CustomButton::BS_NORMAL ?
             border_color(state) : border_color(right_button_->state());
-        canvas->FillRectInt(right_color, w - 1, 0, 1, h);
+        canvas->FillRect(right_color, gfx::Rect(w - 1, 0, 1, h));
         break;
       }
 
       case RIGHT_BUTTON:
-        canvas->FillRectInt(background_color(state), 0, 1, w - 1, h - 2);
-        canvas->FillRectInt(border_color(state), 0, 0, w - 2, 1);
-        canvas->FillRectInt(border_color(state), w - 2, 1, 1, 1);
-        canvas->FillRectInt(border_color(state), w - 1, 2, 1, h - 4);
-        canvas->FillRectInt(border_color(state), w - 2, h - 2, 1, 1);
-        canvas->FillRectInt(border_color(state), 0, h - 1, w - 2, 1);
+        canvas->FillRect(background_color(state),
+                         gfx::Rect(0, 1, w - 1, h - 2));
+        canvas->FillRect(border_color(state), gfx::Rect(0, 0, w - 2, 1));
+        canvas->FillRect(border_color(state), gfx::Rect(w - 2, 1, 1, 1));
+        canvas->FillRect(border_color(state), gfx::Rect(w - 1, 2, 1, h - 4));
+        canvas->FillRect(border_color(state), gfx::Rect(w - 2, h - 2, 1, 1));
+        canvas->FillRect(border_color(state), gfx::Rect(0, h - 1, w - 2, 1));
         break;
 
       case SINGLE_BUTTON:
-        canvas->FillRectInt(background_color(state), 1, 1, w - 2, h - 2);
-        canvas->FillRectInt(border_color(state), 2, 0, w - 4, 1);
-        canvas->FillRectInt(border_color(state), 1, 1, 1, 1);
-        canvas->FillRectInt(border_color(state), 0, 2, 1, h - 4);
-        canvas->FillRectInt(border_color(state), 1, h - 2, 1, 1);
-        canvas->FillRectInt(border_color(state), 2, h - 1, w - 4, 1);
-        canvas->FillRectInt(border_color(state), w - 2, 1, 1, 1);
-        canvas->FillRectInt(border_color(state), w - 1, 2, 1, h - 4);
-        canvas->FillRectInt(border_color(state), w - 2, h - 2, 1, 1);
+        canvas->FillRect(background_color(state),
+                         gfx::Rect(1, 1, w - 2, h - 2));
+        canvas->FillRect(border_color(state), gfx::Rect(2, 0, w - 4, 1));
+        canvas->FillRect(border_color(state), gfx::Rect(1, 1, 1, 1));
+        canvas->FillRect(border_color(state), gfx::Rect(0, 2, 1, h - 4));
+        canvas->FillRect(border_color(state), gfx::Rect(1, h - 2, 1, 1));
+        canvas->FillRect(border_color(state), gfx::Rect(2, h - 1, w - 4, 1));
+        canvas->FillRect(border_color(state), gfx::Rect(w - 2, 1, 1, 1));
+        canvas->FillRect(border_color(state), gfx::Rect(w - 1, 2, 1, h - 4));
+        canvas->FillRect(border_color(state), gfx::Rect(w - 2, h - 2, 1, 1));
         break;
 
       default:

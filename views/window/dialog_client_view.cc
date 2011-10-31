@@ -56,7 +56,7 @@ void UpdateButtonHelper(NativeTextButton* button_view,
 void FillViewWithSysColor(gfx::Canvas* canvas, View* view, COLORREF color) {
   SkColor sk_color =
       SkColorSetRGB(GetRValue(color), GetGValue(color), GetBValue(color));
-  canvas->FillRectInt(sk_color, 0, 0, view->width(), view->height());
+  canvas->FillRect(sk_color, view->GetLocalBounds());
 }
 #endif
 
@@ -317,14 +317,13 @@ void DialogClientView::OnPaint(gfx::Canvas* canvas) {
   FillViewWithSysColor(canvas, this, GetSysColor(COLOR_3DFACE));
 #elif defined(USE_WAYLAND) || defined(USE_AURA)
   SkColor sk_color = SkColorSetARGB(200, 255, 255, 255);
-  canvas->FillRectInt(sk_color, 0, 0, width(), height());
+  canvas->FillRect(sk_color, GetLocalBounds());
 #else
   GtkWidget* widget = GetWidget()->GetNativeView();
   if (GTK_IS_WINDOW(widget)) {
     GtkStyle* window_style = gtk_widget_get_style(widget);
-    canvas->FillRectInt(gfx::GdkColorToSkColor(
-                            window_style->bg[GTK_STATE_NORMAL]),
-                        0, 0, width(), height());
+    canvas->FillRect(gfx::GdkColorToSkColor(window_style->bg[GTK_STATE_NORMAL]),
+                     GetLocalBounds());
   }
 #endif
 }

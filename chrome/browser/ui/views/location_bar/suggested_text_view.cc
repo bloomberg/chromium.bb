@@ -47,7 +47,7 @@ void SuggestedTextView::OnPaintBackground(gfx::Canvas* canvas) {
     return;
 
   // TODO(sky): these numbers need to come from the edit.
-  canvas->FillRectInt(bg_color_, 0, 2, width(), height() - 5);
+  canvas->FillRect(bg_color_, gfx::Rect(0, 2, width(), height() - 5));
 }
 
 void SuggestedTextView::AnimationEnded(const ui::Animation* animation) {

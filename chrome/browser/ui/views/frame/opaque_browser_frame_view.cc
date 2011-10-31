@@ -610,19 +610,27 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
       GetBoundsForTabStrip(browser_view_->tabstrip()).bottom());
   }
   SkColor frame_color = GetFrameColor();
-  canvas->FillRectInt(frame_color, 0, 0, width(), top_area_height);
+  canvas->FillRect(frame_color, gfx::Rect(0, 0, width(), top_area_height));
 
-  // Now fill down the sides.
-  canvas->FillRectInt(frame_color, 0, top_area_height, left_edge->width(),
-                      height() - top_area_height);
-  canvas->FillRectInt(frame_color, width() - right_edge->width(),
-                      top_area_height, right_edge->width(),
-                      height() - top_area_height);
-  // Now fill the bottom area.
-  canvas->FillRectInt(frame_color, left_edge->width(),
-                      height() - bottom_edge->height(),
-                      width() - left_edge->width() - right_edge->width(),
-                      bottom_edge->height());
+  int remaining_height = height() - top_area_height;
+  if (remaining_height > 0) {
+    // Now fill down the sides.
+    canvas->FillRect(frame_color,
+                     gfx::Rect(0, top_area_height, left_edge->width(),
+                               remaining_height));
+    canvas->FillRect(frame_color,
+                     gfx::Rect(width() - right_edge->width(),
+                               top_area_height, right_edge->width(),
+                               remaining_height));
+    int center_width = width() - left_edge->width() - right_edge->width();
+    if (center_width > 0) {
+      // Now fill the bottom area.
+      canvas->FillRect(frame_color,
+                       gfx::Rect(left_edge->width(),
+                                 height() - bottom_edge->height(),
+                                 center_width, bottom_edge->height()));
+    }
+  }
 
   // Draw the theme frame.
   canvas->TileImageInt(*theme_frame, 0, 0, width(), theme_frame->height());
@@ -691,7 +699,7 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
       GetBoundsForTabStrip(browser_view_->tabstrip()).bottom();
   if (top_area_height > theme_frame_bottom) {
     SkColor frame_color = GetFrameColor();
-    canvas->FillRectInt(frame_color, 0, 0, width(), top_area_height);
+    canvas->FillRect(frame_color, gfx::Rect(0, 0, width(), top_area_height));
   }
 
   // Draw the theme frame.  It must be aligned with the tabstrip as if we were
@@ -787,9 +795,9 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                      h));
   canvas->GetSkCanvas()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
 
-  SkColor theme_toolbar_color =
-      tp->GetColor(ThemeService::COLOR_TOOLBAR);
-  canvas->FillRectInt(theme_toolbar_color, x, bottom_y, w, bottom_edge_height);
+  SkColor theme_toolbar_color = tp->GetColor(ThemeService::COLOR_TOOLBAR);
+  canvas->FillRect(theme_toolbar_color,
+                   gfx::Rect(x, bottom_y, w, bottom_edge_height));
 
   // Tile the toolbar image starting at the frame edge on the left and where the
   // horizontal tabstrip is (or would be) on the top.
@@ -854,9 +862,11 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
       bottom_edge_height, false);
 
   // Draw the content/toolbar separator.
-  canvas->FillRectInt(ResourceBundle::toolbar_separator_color,
-      x + kClientEdgeThickness, toolbar_bounds.bottom() - kClientEdgeThickness,
-      w - (2 * kClientEdgeThickness), kClientEdgeThickness);
+  canvas->FillRect(ResourceBundle::toolbar_separator_color,
+                   gfx::Rect(x + kClientEdgeThickness,
+                             toolbar_bounds.bottom() - kClientEdgeThickness,
+                             w - (2 * kClientEdgeThickness),
+                             kClientEdgeThickness));
 }
 
 void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
@@ -895,11 +905,12 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
         top_right->width(), height, false);
 
     // Draw the toolbar color across the top edge.
-    canvas->FillRectInt(toolbar_color,
-        client_area_bounds.x() - kClientEdgeThickness,
-        client_area_top - kClientEdgeThickness,
-        client_area_bounds.width() + (2 * kClientEdgeThickness),
-        kClientEdgeThickness);
+    canvas->FillRect(
+        toolbar_color,
+        gfx::Rect(client_area_bounds.x() - kClientEdgeThickness,
+                  client_area_top - kClientEdgeThickness,
+                  client_area_bounds.width() + (2 * kClientEdgeThickness),
+                  kClientEdgeThickness));
   }
 
   int client_area_bottom =
@@ -930,15 +941,21 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   // where not covered by the toolbar image.  NOTE: We do this after drawing the
   // images because the images are meant to alpha-blend atop the frame whereas
   // these rects are meant to be fully opaque, without anything overlaid.
-  canvas->FillRectInt(toolbar_color,
-      client_area_bounds.x() - kClientEdgeThickness, client_area_top,
-      kClientEdgeThickness,
-      client_area_bottom + kClientEdgeThickness - client_area_top);
-  canvas->FillRectInt(toolbar_color, client_area_bounds.x(), client_area_bottom,
-                      client_area_bounds.width(), kClientEdgeThickness);
-  canvas->FillRectInt(toolbar_color, client_area_bounds.right(),
-      client_area_top, kClientEdgeThickness,
-      client_area_bottom + kClientEdgeThickness - client_area_top);
+  canvas->FillRect(
+      toolbar_color,
+      gfx::Rect(client_area_bounds.x() - kClientEdgeThickness,
+                client_area_top,
+                kClientEdgeThickness,
+                client_area_bottom + kClientEdgeThickness - client_area_top));
+  canvas->FillRect(toolbar_color,
+                   gfx::Rect(client_area_bounds.x(), client_area_bottom,
+                             client_area_bounds.width(), kClientEdgeThickness));
+  canvas->FillRect(
+      toolbar_color,
+      gfx::Rect(client_area_bounds.right(),
+                client_area_top,
+                kClientEdgeThickness,
+                client_area_bottom + kClientEdgeThickness - client_area_top));
 }
 
 SkBitmap* OpaqueBrowserFrameView::GetFrameBitmap() const {

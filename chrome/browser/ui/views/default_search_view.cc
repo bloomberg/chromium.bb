@@ -9,9 +9,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
@@ -19,8 +19,8 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "ui/base/message_box_flags.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/message_box_flags.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/button/text_button.h"
@@ -28,8 +28,8 @@
 #include "views/controls/label.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
-#include "views/window/dialog_client_view.h"
 #include "views/widget/widget.h"
+#include "views/window/dialog_client_view.h"
 
 namespace {
 
@@ -134,12 +134,13 @@ DefaultSearchView::~DefaultSearchView() {
 
 void DefaultSearchView::OnPaint(gfx::Canvas* canvas) {
   // Fill in behind the background image with the standard gray toolbar color.
-  canvas->FillRectInt(GetThemeProvider()->GetColor(ThemeService::COLOR_TOOLBAR),
-                      0, 0, width(), background_image_->height());
+  canvas->FillRect(GetThemeProvider()->GetColor(ThemeService::COLOR_TOOLBAR),
+                   gfx::Rect(0, 0, width(), background_image_->height()));
   // The rest of the dialog background should be white.
   DCHECK(height() > background_image_->height());
-  canvas->FillRectInt(SK_ColorWHITE, 0, background_image_->height(), width(),
-                      height() - background_image_->height());
+  canvas->FillRect(SK_ColorWHITE,
+                   gfx::Rect(0, background_image_->height(), width(),
+                             height() - background_image_->height()));
 }
 
 void DefaultSearchView::ButtonPressed(views::Button* sender,

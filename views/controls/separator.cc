@@ -37,7 +37,7 @@ void Separator::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void Separator::Paint(gfx::Canvas* canvas) {
-  canvas->FillRectInt(kDefaultColor, x(), y(), width(), height());
+  canvas->FillRect(kDefaultColor, bounds());
 }
 
 std::string Separator::GetClassName() const {

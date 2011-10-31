@@ -74,9 +74,9 @@ void ToolbarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
                      h));
   canvas->GetSkCanvas()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
 
-  SkColor theme_toolbar_color =
-      tp->GetColor(ThemeService::COLOR_TOOLBAR);
-  canvas->FillRectInt(theme_toolbar_color, x, bottom_y, w, bottom_edge_height);
+  SkColor theme_toolbar_color = tp->GetColor(ThemeService::COLOR_TOOLBAR);
+  canvas->FillRect(theme_toolbar_color,
+                   gfx::Rect(x, bottom_y, w, bottom_edge_height));
 
   // Tile the toolbar image starting at the frame edge on the left and where the
   // horizontal tabstrip is (or would be) on the top.
@@ -141,12 +141,13 @@ void ToolbarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
       bottom_edge_height, false);
 
   // Draw the content/toolbar separator.
-  canvas->FillRectInt(
+  canvas->FillRect(
       ResourceBundle::toolbar_separator_color,
-      x + views::NonClientFrameView::kClientEdgeThickness,
-      toolbar_bounds.bottom() - views::NonClientFrameView::kClientEdgeThickness,
-      w - (2 * views::NonClientFrameView::kClientEdgeThickness),
-      views::NonClientFrameView::kClientEdgeThickness);
+      gfx::Rect(
+          x + views::NonClientFrameView::kClientEdgeThickness,
+          toolbar_bounds.bottom() - views::NonClientFrameView::kClientEdgeThickness,
+          w - (2 * views::NonClientFrameView::kClientEdgeThickness),
+          views::NonClientFrameView::kClientEdgeThickness));
 }
 
 }  // namespace

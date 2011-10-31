@@ -6,10 +6,10 @@
 
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/color_utils.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/view.h"
 
 InfoBarBackground::InfoBarBackground(InfoBarDelegate::Type infobar_type)
@@ -57,7 +57,7 @@ void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   paint.setAntiAlias(false);
 
   // Now draw the separator at the bottom.
-  canvas->FillRectInt(separator_color_, 0,
-                      view->height() - InfoBar::kSeparatorLineHeight,
-                      view->width(), InfoBar::kSeparatorLineHeight);
+  canvas->FillRect(separator_color_,
+                   gfx::Rect(0, view->height() - InfoBar::kSeparatorLineHeight,
+                             view->width(), InfoBar::kSeparatorLineHeight));
 }

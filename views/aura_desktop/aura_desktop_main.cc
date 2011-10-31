@@ -82,7 +82,7 @@ class TestView : public views::View {
  private:
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) {
-    canvas->FillRectInt(color_, 0, 0, width(), height());
+    canvas->FillRect(color_, GetLocalBounds());
   }
   virtual bool OnMousePressed(const views::MouseEvent& event) {
     color_shifting_ = true;
@@ -114,7 +114,7 @@ class TestWindowContents : public views::WidgetDelegateView {
  private:
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRectInt(SK_ColorGRAY, 0, 0, width(), height());
+    canvas->FillRect(SK_ColorGRAY, GetLocalBounds());
   }
 
   // Overridden from views::WidgetDelegateView:

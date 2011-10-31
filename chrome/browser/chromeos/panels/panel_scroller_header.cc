@@ -40,11 +40,11 @@ gfx::Size PanelScrollerHeader::GetPreferredSize() {
 
 void PanelScrollerHeader::OnPaint(gfx::Canvas* canvas) {
   // TODO(brettw) fill this out with real styling.
-  canvas->FillRectInt(0xFFFFFFFF, 0, 0, size().width(), size().height());
+  canvas->FillRect(0xFFFFFFFF, GetLocalBounds());
   canvas->DrawLineInt(0xFFE6E6E6, 0, size().height() - 1,
                       size().width(), size().height() - 1);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::Font font =
       rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
   int font_top = 1;

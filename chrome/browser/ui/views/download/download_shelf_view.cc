@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/views/download/download_item_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/browser/download/download_item.h"
-#include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_manager.h"
+#include "content/browser/download/download_stats.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -171,7 +171,7 @@ void DownloadShelfView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void DownloadShelfView::OnPaintBorder(gfx::Canvas* canvas) {
-  canvas->FillRectInt(kBorderColor, 0, 0, width(), 1);
+  canvas->FillRect(kBorderColor, gfx::Rect(0, 0, width(), 1));
 }
 
 void DownloadShelfView::OpenedDownload(DownloadItemView* view) {

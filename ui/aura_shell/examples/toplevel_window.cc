@@ -34,7 +34,7 @@ ToplevelWindow::~ToplevelWindow() {
 }
 
 void ToplevelWindow::OnPaint(gfx::Canvas* canvas) {
-  canvas->FillRectInt(SK_ColorDKGRAY, 0, 0, width(), height());
+  canvas->FillRect(SK_ColorDKGRAY, GetLocalBounds());
 }
 
 string16 ToplevelWindow::GetWindowTitle() const {

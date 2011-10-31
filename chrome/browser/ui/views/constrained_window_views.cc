@@ -450,18 +450,28 @@ void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
 
   // Fill with the frame color first so we have a constant background for
   // areas not covered by the theme image.
-  canvas->FillRectInt(frame_color, 0, 0, width(), theme_frame->height());
-  // Now fill down the sides.
-  canvas->FillRectInt(frame_color, 0, theme_frame->height(), left_edge->width(),
-                      height() - theme_frame->height());
-  canvas->FillRectInt(frame_color, width() - right_edge->width(),
-                      theme_frame->height(), right_edge->width(),
-                      height() - theme_frame->height());
-  // Now fill the bottom area.
-  canvas->FillRectInt(frame_color,
-      left_edge->width(), height() - bottom_edge->height(),
-      width() - left_edge->width() - right_edge->width(),
-      bottom_edge->height());
+  canvas->FillRect(frame_color,
+                   gfx::Rect(0, 0, width(), theme_frame->height()));
+
+  int remaining_height = height() - theme_frame->height();
+  if (remaining_height > 0) {
+    // Now fill down the sides.
+    canvas->FillRect(frame_color, gfx::Rect(0, theme_frame->height(),
+                                            left_edge->width(),
+                                            remaining_height));
+    canvas->FillRect(frame_color, gfx::Rect(width() - right_edge->width(),
+                                            theme_frame->height(),
+                                            right_edge->width(),
+                                            remaining_height));
+    int center_width = width() - left_edge->width() - right_edge->width();
+    if (center_width > 0) {
+      // Now fill the bottom area.
+      canvas->FillRect(frame_color,
+                       gfx::Rect(left_edge->width(),
+                                 height() - bottom_edge->height(),
+                                 center_width, bottom_edge->height()));
+    }
+  }
 
   // Draw the theme frame.
   canvas->TileImageInt(*theme_frame, 0, 0, width(), theme_frame->height());
@@ -508,13 +518,8 @@ void ConstrainedWindowFrameView::PaintClientEdge(gfx::Canvas* canvas) {
   gfx::Rect frame_shadow_bounds(client_edge_bounds);
   frame_shadow_bounds.Inset(-kFrameShadowThickness, -kFrameShadowThickness);
 
-  canvas->FillRectInt(kContentsBorderShadow, frame_shadow_bounds.x(),
-                      frame_shadow_bounds.y(), frame_shadow_bounds.width(),
-                      frame_shadow_bounds.height());
-
-  canvas->FillRectInt(ResourceBundle::toolbar_color, client_edge_bounds.x(),
-                      client_edge_bounds.y(), client_edge_bounds.width(),
-                      client_edge_bounds.height());
+  canvas->FillRect(kContentsBorderShadow, frame_shadow_bounds);
+  canvas->FillRect(ResourceBundle::toolbar_color, client_edge_bounds);
 }
 
 void ConstrainedWindowFrameView::LayoutWindowControls() {

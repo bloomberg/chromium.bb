@@ -56,17 +56,16 @@ void PaintThemeBackground(
 }  // namespace
 
 // static
-void NtpBackgroundUtil::PaintBackgroundDetachedMode(
-    ui::ThemeProvider* tp, gfx::Canvas* canvas, const gfx::Rect& area,
-    int tab_contents_height) {
+void NtpBackgroundUtil::PaintBackgroundDetachedMode(ui::ThemeProvider* tp,
+                                                    gfx::Canvas* canvas,
+                                                    const gfx::Rect& area,
+                                                    int tab_contents_height) {
   // Draw the background to match the new tab page.
-  canvas->FillRectInt(tp->GetColor(ThemeService::COLOR_NTP_BACKGROUND),
-                      area.x(), area.y(), area.width(), area.height());
+  canvas->FillRect(tp->GetColor(ThemeService::COLOR_NTP_BACKGROUND), area);
 
   if (tp->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
     int tiling = ThemeService::NO_REPEAT;
-    tp->GetDisplayProperty(ThemeService::NTP_BACKGROUND_TILING,
-                           &tiling);
+    tp->GetDisplayProperty(ThemeService::NTP_BACKGROUND_TILING, &tiling);
     int alignment;
     if (tp->GetDisplayProperty(ThemeService::NTP_BACKGROUND_ALIGNMENT,
         &alignment)) {

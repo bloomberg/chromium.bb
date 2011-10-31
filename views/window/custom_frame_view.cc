@@ -345,18 +345,28 @@ void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 
   // Fill with the frame color first so we have a constant background for
   // areas not covered by the theme image.
-  canvas->FillRectInt(frame_color, 0, 0, width(), frame_image->height());
-  // Now fill down the sides.
-  canvas->FillRectInt(frame_color, 0, frame_image->height(), left_edge->width(),
-                      height() - frame_image->height());
-  canvas->FillRectInt(frame_color, width() - right_edge->width(),
-                      frame_image->height(), right_edge->width(),
-                      height() - frame_image->height());
-  // Now fill the bottom area.
-  canvas->FillRectInt(frame_color,
-      left_edge->width(), height() - bottom_edge->height(),
-      width() - left_edge->width() - right_edge->width(),
-      bottom_edge->height());
+  canvas->FillRect(frame_color,
+                   gfx::Rect(0, 0, width(), frame_image->height()));
+
+  int remaining_height = height() - frame_image->height();
+  if (remaining_height > 0) {
+    // Now fill down the sides.
+    canvas->FillRect(frame_color,
+                     gfx::Rect(0, frame_image->height(), left_edge->width(),
+                               remaining_height));
+    canvas->FillRect(frame_color,
+                     gfx::Rect(width() - right_edge->width(),
+                               frame_image->height(), right_edge->width(),
+                               remaining_height));
+    int center_width = width() - left_edge->width() - right_edge->width();
+    if (center_width > 0) {
+      // Now fill the bottom area.
+      canvas->FillRect(frame_color,
+                       gfx::Rect(left_edge->width(),
+                                 height() - bottom_edge->height(),
+                                 center_width, bottom_edge->height()));
+    }
+  }
 
   // Draw the theme frame.
   canvas->TileImageInt(*frame_image, 0, 0, width(), frame_image->height());
