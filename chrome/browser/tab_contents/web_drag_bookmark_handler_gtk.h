@@ -6,28 +6,29 @@
 #define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_GTK_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "content/browser/tab_contents/web_drag_dest_delegate_gtk.h"
+#include "content/browser/tab_contents/web_drag_dest_delegate.h"
 
 class TabContentsWrapper;
 
 // Chrome needs to intercept content drag events so it can dispatch them to the
 // bookmarks and extensions system.
-class WebDragBookmarkHandlerGtk : public content::WebDragDestDelegateGtk {
+class WebDragBookmarkHandlerGtk : public content::WebDragDestDelegate {
  public:
   WebDragBookmarkHandlerGtk();
   virtual ~WebDragBookmarkHandlerGtk();
 
   // Overridden from WebDragBookmarkDelegate:
-  virtual void DragInitialize(TabContents* contents);
-  virtual GdkAtom GetBookmarkTargetAtom() const;
-  virtual void OnReceiveDataFromGtk(GtkSelectionData* data);
+  virtual void DragInitialize(TabContents* contents) OVERRIDE;
+  virtual GdkAtom GetBookmarkTargetAtom() const OVERRIDE;
+  virtual void OnReceiveDataFromGtk(GtkSelectionData* data) OVERRIDE;
   virtual void OnReceiveProcessedData(const GURL& url,
-                                      const string16& title);
-  virtual void OnDragOver();
-  virtual void OnDragEnter();
-  virtual void OnDrop();
-  virtual void OnDragLeave();
+                                      const string16& title) OVERRIDE;
+  virtual void OnDragOver() OVERRIDE;
+  virtual void OnDragEnter() OVERRIDE;
+  virtual void OnDrop() OVERRIDE;
+  virtual void OnDragLeave() OVERRIDE;
 
  private:
   // The TabContentsWrapper for |tab_contents_|.

@@ -538,7 +538,7 @@
     'browser/tab_contents/tab_contents_view.cc',
     'browser/tab_contents/tab_contents_view.h',
     'browser/tab_contents/title_updated_details.h',
-    'browser/tab_contents/web_drag_dest_delegate_gtk.h',
+    'browser/tab_contents/web_drag_dest_delegate.h',
     'browser/tab_contents/web_drag_dest_gtk.cc',
     'browser/tab_contents/web_drag_dest_gtk.h',
     'browser/tab_contents/web_drag_source_gtk.cc',
