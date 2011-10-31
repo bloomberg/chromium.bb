@@ -113,9 +113,6 @@ deps_os = {
     "third_party/python_26":
       (Var("chromium_trunk") + "/tools/third_party/python_26@" +
        Var("python_26_rev")),
-    "third_party/wix_2_0_4221":
-      (Var("o3d_trunk") + "/googleclient/third_party/wix_2_0_4221@" +
-       Var("wix_rev")),
   },
 }
 
