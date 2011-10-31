@@ -128,17 +128,15 @@ gyp-arm-build() {
 
 
 ad-hoc-shared-lib-tests() {
-  local platforms=$1
+  local platform=$1
   # TODO(robertm): make this accessible by the utman script so that this get
   # http://code.google.com/p/nativeclient/issues/detail?id=1647
   echo "@@@BUILD_STEP fake_shared_libs@@@"
   pushd  tests/pnacl_ld_example/
   make -f Makefile.pnacl clean
-  for platform in ${platforms} ; do
-    make -f Makefile.pnacl preparation.${platform}
-    make -f Makefile.pnacl run.${platform}
-    make -f Makefile.pnacl run2.${platform}
-  done
+  make -f Makefile.pnacl preparation.${platform}
+  make -f Makefile.pnacl run.${platform}
+  make -f Makefile.pnacl run2.${platform}
   popd
 }
 
@@ -167,24 +165,28 @@ single-browser-test() {
 }
 
 scons-tests() {
-  local platforms=$1
+  local platform=$1
   local extra=$2
   local test=$3
-  for platform in ${platforms} ; do
-    single-scons-test ${platform} "${extra}" "${test}"
-    single-scons-test ${platform} "${extra} nacl_pic=1" "${test}"
-    build-sbtc-prerequisites ${platform}
-    single-scons-test ${platform} "${extra} use_sandboxed_translator=1" "${test}"
-  done
+  single-scons-test ${platform} "${extra}" "${test}"
+  single-scons-test ${platform} "${extra} nacl_pic=1" "${test}"
+  build-sbtc-prerequisites ${platform}
+  single-scons-test ${platform} "${extra} use_sandboxed_translator=1" "${test}"
+}
+
+scons-tests-no-translator() {
+  local platform=$1
+  local extra=$2
+  local test=$3
+  single-scons-test ${platform} "${extra}" "${test}"
+  single-scons-test ${platform} "${extra} nacl_pic=1" "${test}"
 }
 
 browser-tests() {
-  local platforms=$1
+  local platform=$1
   local extra=$2
   local test="chrome_browser_tests"
-  for platform in ${platforms} ; do
-    single-browser-test ${platform} "${extra}" "${test}"
-  done
+  single-browser-test ${platform} "${extra}" "${test}"
 }
 
 ######################################################################
@@ -218,17 +220,6 @@ mode-trybot-x8664() {
   browser-tests "x86-64" "--mode=opt-host,nacl -k"
   # no adhoc tests for x86-64
 }
-
-# TODO(bradnelson): remove after sharding is complete
-mode-trybot() {
-  FAIL_FAST=false
-  clobber
-  install-lkgr-toolchains
-  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
-  browser-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -k"
-  #ad-hoc-shared-lib-tests "arm x86-32"
-}
-
 
 mode-buildbot-x8632() {
   FAIL_FAST=false
@@ -313,9 +304,9 @@ mode-buildbot-arm-try() {
 mode-buildbot-arm-hw() {
   FAIL_FAST=false
   local flags="naclsdk_validate=0 built_elsewhere=1 $1"
-  scons-tests "arm" "${flags} -k" "small_tests"
-  scons-tests "arm" "${flags} -k" "medium_tests"
-  scons-tests "arm" "${flags} -k" "large_tests"
+  scons-tests-no-translator "arm" "${flags} -k" "small_tests"
+  scons-tests-no-translator "arm" "${flags} -k" "medium_tests"
+  scons-tests-no-translator "arm" "${flags} -k" "large_tests"
   browser-tests "arm" "${flags}"
 }
 
@@ -354,14 +345,19 @@ mode-test-all() {
 
   # First build everything.
   echo "@@@BUILD_STEP scons build @@@"
-  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j${concur}" ""
+  scons-tests "arm" "--mode=opt-host,nacl -j${concur}" ""
+  scons-tests "x86-32" "--mode=opt-host,nacl -j${concur}" ""
+  scons-tests "x86-64" "--mode=opt-host,nacl -j${concur}" ""
   # Then test everything.
   echo "@@@BUILD_STEP scons smoke_tests @@@"
-  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j${concur}" \
-    "smoke_tests"
+  scons-tests "arm" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
+  scons-tests "x86-32" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
+  scons-tests "x86-64" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
   # browser tests are run with -j1 on the bots
-  browser-tests "arm x86-32 x86-64" "--verbose --mode=opt-host,nacl -j1"
-  #ad-hoc-shared-lib-tests "arm x86-32"
+  browser-tests "arm" "--verbose --mode=opt-host,nacl -j1"
+  browser-tests "x86-32" "--verbose --mode=opt-host,nacl -j1"
+  browser-tests "x86-64" "--verbose --mode=opt-host,nacl -j1"
+  # ad-hoc-shared-lib-tests "arm"
 }
 
 ######################################################################
