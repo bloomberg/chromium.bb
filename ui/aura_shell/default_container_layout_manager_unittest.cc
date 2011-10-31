@@ -137,11 +137,7 @@ TEST_F(DefaultContainerLayoutManagerTest, Popup) {
 // manager.
 TEST_F(DefaultContainerLayoutManagerTest, IgnoreTransient) {
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
-  props_.push_back(
-      new ui::ViewProp(
-          window.get(), views::NativeWidgetAura::kWindowTypeKey,
-          reinterpret_cast<void*>(Widget::InitParams::TYPE_WINDOW)));
-  window->SetType(Widget::InitParams::TYPE_WINDOW);
+  window->SetType(aura::WINDOW_TYPE_NORMAL);
   window->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
   aura::Desktop::GetInstance()->AddTransientChild(window.get());
   window->SetBounds(gfx::Rect(0, 0, 200, 200));
