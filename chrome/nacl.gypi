@@ -69,8 +69,8 @@
                 'python build_nacl_irt.py --inputs',
           },
           'dependencies': [
-            'chrome_resources',
-            'chrome_strings',
+            'chrome_resources.gyp:chrome_resources',
+            'chrome_resources.gyp:chrome_strings',
             'common',
             '../webkit/support/webkit_support.gyp:glue',
             '../ppapi/native_client/src/trusted/plugin/plugin.gyp:ppGoogleNaClPluginChrome',

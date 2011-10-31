@@ -1,7 +1,6 @@
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 {
   'variables': {
     'chromium_code': 1,
@@ -550,6 +549,10 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
+        # TODO(jcivelli): ideally the resource needed by views would be
+        #                 factored out. (for some reason it pulls in a bunch
+        #                 unrelated things like v8, sqlite nss...).
+        '../chrome/chrome_resources.gyp:packed_resources',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
@@ -665,14 +668,6 @@
             ['exclude', '../ui/aura/test/test_desktop_delegate.h'],
           ],
         }],
-        ['OS!="mac"', {
-          'dependencies': [
-            # TODO(jcivelli): ideally the resource needed by views would be
-            #                 factored out. (for some reason it pulls in a bunch
-            #                 unrelated things like v8, sqlite nss...).
-            '../chrome/chrome.gyp:packed_resources',
-           ],
-        }],
       ],
     },
     {
@@ -681,6 +676,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
+        '../chrome/chrome_resources.gyp:packed_resources',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -780,11 +776,6 @@
             'examples/table_example.h',
           ],
         }],
-        ['OS!="mac"', {
-          'dependencies': [
-            '../chrome/chrome.gyp:packed_resources',
-           ],
-        }],
       ],
     },
     {
@@ -792,6 +783,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../chrome/chrome_resources.gyp:packed_resources',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -837,11 +829,6 @@
             '../third_party/wtl/include',
           ],
         }],
-        ['OS!="mac"', {
-          'dependencies': [
-            '../chrome/chrome.gyp:packed_resources',
-           ],
-        }],
       ],
     },
     {
@@ -850,6 +837,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
+        '../chrome/chrome_resources.gyp:packed_resources',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -902,11 +890,6 @@
             '../third_party/wtl/include',
           ],
         }],
-        ['OS!="mac"', {
-          'dependencies': [
-            '../chrome/chrome.gyp:packed_resources',
-           ],
-        }],
       ],
     },
   ],
@@ -919,6 +902,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
+            '../chrome/chrome_resources.gyp:packed_resources',
             '../skia/skia.gyp:skia',
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',
@@ -949,11 +933,6 @@
               'include_dirs': [
                 '../third_party/wtl/include',
               ],
-            }],
-            ['OS!="mac"', {
-              'dependencies': [
-                '../chrome/chrome.gyp:packed_resources',
-               ],
             }],
           ],
         },

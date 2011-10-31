@@ -1,7 +1,6 @@
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 {
   'variables' : {
     'pyautolib_sources': [
@@ -34,17 +33,17 @@
       'target_name': 'test_support_common',
       'type': 'static_library',
       'dependencies': [
+        'app/policy/cloud_policy_codegen.gyp:policy',
         'browser',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        'chrome_resources.gyp:chrome_resources',
+        'chrome_resources.gyp:chrome_strings',
+        'chrome_resources.gyp:theme_resources',
         'common',
-        'renderer',
         'plugin',
+        'renderer',
         'service',
         'utility',
-        'chrome_resources',
-        'chrome_strings',
-        'app/policy/cloud_policy_codegen.gyp:policy',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
-        'theme_resources',
         '../base/base.gyp:test_support_base',
         '../content/content.gyp:content_app',
         '../content/content.gyp:content_gpu',
@@ -266,10 +265,10 @@
       'target_name': 'test_support_ui',
       'type': 'static_library',
       'dependencies': [
+        'chrome_resources.gyp:chrome_resources',
+        'chrome_resources.gyp:chrome_strings',
+        'chrome_resources.gyp:theme_resources',
         'test_support_common',
-        'chrome_resources',
-        'chrome_strings',
-        'theme_resources',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
       ],
@@ -399,9 +398,9 @@
       'target_name': 'test_support_unit',
       'type': 'static_library',
       'dependencies': [
+        'chrome_resources.gyp:chrome_resources',
+        'chrome_resources.gyp:chrome_strings',
         'test_support_common',
-        'chrome_resources',
-        'chrome_strings',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
       ],
@@ -428,10 +427,10 @@
       'type': 'executable',
       'dependencies': [
         'browser',
+        'chrome_resources.gyp:theme_resources',
         'renderer',
         'test_support_common',
         'test_support_ui',
-        'theme_resources',
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../third_party/libxml/libxml.gyp:libxml',
@@ -482,8 +481,8 @@
       'dependencies': [
         'browser/sync/protocol/sync_proto.gyp:sync_proto',
         'chrome',
-        'chrome_resources',
-        'chrome_strings',
+        'chrome_resources.gyp:chrome_resources',
+        'chrome_resources.gyp:chrome_strings',
         'debugger',
         'syncapi_core',
         'test_support_common',
@@ -683,11 +682,11 @@
       'target_name': 'ui_tests',
       'type': 'executable',
       'dependencies': [
-        'chrome',
         'browser',
+        'chrome',
+        'chrome_resources.gyp:chrome_resources',
+        'chrome_resources.gyp:chrome_strings',
         'common',
-        'chrome_resources',
-        'chrome_strings',
         'test_support_ui',
         '../base/base.gyp:base',
         '../net/net.gyp:net',
@@ -878,8 +877,8 @@
       'dependencies': [
         'browser',
         'chrome',
-        'chrome_resources',
-        'chrome_strings',
+        'chrome_resources.gyp:chrome_resources',
+        'chrome_resources.gyp:chrome_strings',
         'chromedriver_support',
         'common',
         'syncapi_core',
@@ -1122,8 +1121,8 @@
         '../ui/ui.gyp:ui_resources_standard',
         '../ui/ui.gyp:ui_test_support',
         '../v8/tools/gyp/v8.gyp:v8',
-        'chrome_resources',
-        'chrome_strings',
+        'chrome_resources.gyp:chrome_resources',
+        'chrome_resources.gyp:chrome_strings',
       ],
       'include_dirs': [
         '..',
@@ -2157,9 +2156,9 @@
           ],
         }, { # OS != "mac"
           'dependencies': [
+            'chrome_resources.gyp:packed_extra_resources',
+            'chrome_resources.gyp:packed_resources',
             'convert_dict_lib',
-            'packed_extra_resources',
-            'packed_resources',
             '../third_party/hunspell/hunspell.gyp:hunspell',
           ],
           'sources!': [
@@ -2282,8 +2281,8 @@
         'browser',
         'browser/sync/protocol/sync_proto.gyp:sync_proto',
         'chrome',
-        'chrome_resources',
-        'chrome_strings',
+        'chrome_resources.gyp:chrome_resources',
+        'chrome_resources.gyp:chrome_strings',
         'renderer',
         'test_support_common',
         '../base/base.gyp:base',
@@ -2952,9 +2951,9 @@
       'dependencies': [
         'browser',
         'chrome',
+        'chrome_resources.gyp:theme_resources',
         'test_support_common',
         'test_support_ui',
-        'theme_resources',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
@@ -3003,8 +3002,8 @@
       'type': 'executable',
       'dependencies': [
         'chrome',
-        'chrome_resources',
-        'chrome_strings',
+        'chrome_resources.gyp:chrome_resources',
+        'chrome_resources.gyp:chrome_strings',
         'debugger',
         'test_support_common',
         'test_support_ui',
@@ -3237,8 +3236,8 @@
           ],
         },{  # OS!="mac"
           'dependencies': [
-            'packed_extra_resources',
-            'packed_resources'
+            'chrome_resources.gyp:packed_extra_resources',
+            'chrome_resources.gyp:packed_resources'
           ],
         }],
         ['OS=="linux" and chromeos==1', {
@@ -3255,10 +3254,10 @@
         'browser',
         'browser/sync/protocol/sync_proto.gyp:sync_proto',
         'chrome',
-        'chrome_resources',
+        'chrome_resources.gyp:chrome_resources',
+        'chrome_resources.gyp:chrome_strings',
         'common',
         'renderer',
-        'chrome_strings',
         'test_support_common',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
@@ -3551,8 +3550,8 @@
       'dependencies': [
         'browser',
         'chrome',
-        'chrome_resources',
-        'chrome_strings',
+        'chrome_resources.gyp:chrome_resources',
+        'chrome_resources.gyp:chrome_strings',
         'renderer',
         'test_support_common',
         'test_support_ui',
@@ -3659,8 +3658,8 @@
       'type': 'executable',
       'dependencies': [
         'chrome',
-        'chrome_resources',
-        'chrome_strings',
+        'chrome_resources.gyp:chrome_resources',
+        'chrome_resources.gyp:chrome_strings',
         'test_support_common',
         'test_support_ui',
         '../skia/skia.gyp:skia',
@@ -3731,10 +3730,10 @@
           'type': 'executable',
           'dependencies': [
             'browser',
+            'chrome_resources.gyp:chrome_resources',
+            'chrome_resources.gyp:chrome_strings',
             'common',
             'renderer',
-            'chrome_resources',
-            'chrome_strings',
             '../content/content.gyp:content_gpu',
             '../content/content.gyp:test_support_content',
             '../base/base.gyp:base',
@@ -3860,12 +3859,12 @@
           'product_prefix': '_',
           'dependencies': [
             'chrome',
+            'chrome_resources.gyp:chrome_resources',
+            'chrome_resources.gyp:chrome_strings',
+            'chrome_resources.gyp:theme_resources',
             'debugger',
             'syncapi_core',
             'test_support_common',
-            'chrome_resources',
-            'chrome_strings',
-            'theme_resources',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
           ],
