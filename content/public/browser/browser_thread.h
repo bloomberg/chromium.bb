@@ -242,7 +242,7 @@ class CONTENT_EXPORT BrowserThread : public base::Thread {
 
 // Temporary escape hatch for chrome/ to construct BrowserThread,
 // until we make content/ construct its own threads.
-class DeprecatedBrowserThread : public BrowserThread {
+class CONTENT_EXPORT DeprecatedBrowserThread : public BrowserThread {
  public:
   explicit DeprecatedBrowserThread(BrowserThread::ID identifier);
   DeprecatedBrowserThread(BrowserThread::ID identifier,

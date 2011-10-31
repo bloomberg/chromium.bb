@@ -6,11 +6,12 @@
 #define CONTENT_BROWSER_BROWSER_THREAD_IMPL_H_
 #pragma once
 
+#include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
 
-class BrowserThreadImpl : public BrowserThread {
+class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread {
  public:
   explicit BrowserThreadImpl(BrowserThread::ID identifier);
   BrowserThreadImpl(BrowserThread::ID identifier, MessageLoop* message_loop);
