@@ -20,7 +20,6 @@ class Balloon;
 class Browser;
 class Profile;
 class SiteInstance;
-struct RendererPreferences;
 struct WebPreferences;
 
 namespace IPC {
@@ -60,7 +59,7 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual content::ViewType GetRenderViewType() const OVERRIDE;
   virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
   virtual void HandleMouseDown() OVERRIDE;
-  virtual RendererPreferences GetRendererPrefs(
+  virtual content::RendererPreferences GetRendererPrefs(
       content::BrowserContext* browser_context) const OVERRIDE;
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
 

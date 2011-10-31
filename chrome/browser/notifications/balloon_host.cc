@@ -18,10 +18,10 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/public/browser/notification_service.h"
-#include "content/common/renderer_preferences.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/renderer_preferences.h"
 #include "ipc/ipc_message.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -165,10 +165,10 @@ void BalloonHost::HandleMouseDown() {
   balloon_->OnClick();
 }
 
-RendererPreferences BalloonHost::GetRendererPrefs(
+content::RendererPreferences BalloonHost::GetRendererPrefs(
     content::BrowserContext* browser_context) const {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  RendererPreferences preferences;
+  content::RendererPreferences preferences;
   renderer_preferences_util::UpdateFromSystemSettings(&preferences, profile);
   return preferences;
 }

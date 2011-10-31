@@ -30,7 +30,7 @@
 #include "content/browser/disposition_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -636,7 +636,7 @@ GtkWidget* IndentWidget(GtkWidget* content) {
   return content_alignment;
 }
 
-void UpdateGtkFontSettings(RendererPreferences* prefs) {
+void UpdateGtkFontSettings(content::RendererPreferences* prefs) {
   DCHECK(prefs);
 
   // From http://library.gnome.org/devel/gtk/unstable/GtkSettings.html, this is
@@ -660,9 +660,9 @@ void UpdateGtkFontSettings(RendererPreferences* prefs) {
 
   // Set some reasonable defaults.
   prefs->should_antialias_text = true;
-  prefs->hinting = RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT;
+  prefs->hinting = content::RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT;
   prefs->subpixel_rendering =
-      RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT;
+      content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT;
 
   if (cursor_blink) {
     // Dividing by 2*1000ms follows the WebKit GTK port and makes the blink
@@ -680,25 +680,30 @@ void UpdateGtkFontSettings(RendererPreferences* prefs) {
     prefs->should_antialias_text = antialias;
 
     if (hinting == 0 || strcmp(hint_style, "hintnone") == 0) {
-      prefs->hinting = RENDERER_PREFERENCES_HINTING_NONE;
+      prefs->hinting = content::RENDERER_PREFERENCES_HINTING_NONE;
     } else if (strcmp(hint_style, "hintslight") == 0) {
-      prefs->hinting = RENDERER_PREFERENCES_HINTING_SLIGHT;
+      prefs->hinting = content::RENDERER_PREFERENCES_HINTING_SLIGHT;
     } else if (strcmp(hint_style, "hintmedium") == 0) {
-      prefs->hinting = RENDERER_PREFERENCES_HINTING_MEDIUM;
+      prefs->hinting = content::RENDERER_PREFERENCES_HINTING_MEDIUM;
     } else if (strcmp(hint_style, "hintfull") == 0) {
-      prefs->hinting = RENDERER_PREFERENCES_HINTING_FULL;
+      prefs->hinting = content::RENDERER_PREFERENCES_HINTING_FULL;
     }
 
     if (strcmp(rgba_style, "none") == 0) {
-      prefs->subpixel_rendering = RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE;
+      prefs->subpixel_rendering =
+          content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE;
     } else if (strcmp(rgba_style, "rgb") == 0) {
-      prefs->subpixel_rendering = RENDERER_PREFERENCES_SUBPIXEL_RENDERING_RGB;
+      prefs->subpixel_rendering =
+          content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_RGB;
     } else if (strcmp(rgba_style, "bgr") == 0) {
-      prefs->subpixel_rendering = RENDERER_PREFERENCES_SUBPIXEL_RENDERING_BGR;
+      prefs->subpixel_rendering =
+          content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_BGR;
     } else if (strcmp(rgba_style, "vrgb") == 0) {
-      prefs->subpixel_rendering = RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VRGB;
+      prefs->subpixel_rendering =
+          content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VRGB;
     } else if (strcmp(rgba_style, "vbgr") == 0) {
-      prefs->subpixel_rendering = RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VBGR;
+      prefs->subpixel_rendering =
+          content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VBGR;
     }
   }
 

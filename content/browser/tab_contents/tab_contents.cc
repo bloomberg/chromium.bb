@@ -1400,7 +1400,7 @@ TabContents::GetRendererManagementDelegate() {
   return &render_manager_;
 }
 
-RendererPreferences TabContents::GetRendererPrefs(
+content::RendererPreferences TabContents::GetRendererPrefs(
     content::BrowserContext* browser_context) const {
   return renderer_preferences_;
 }

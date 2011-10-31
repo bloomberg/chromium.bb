@@ -510,10 +510,10 @@ void ExtensionHost::Close(RenderViewHost* render_view_host) {
   }
 }
 
-RendererPreferences ExtensionHost::GetRendererPrefs(
+content::RendererPreferences ExtensionHost::GetRendererPrefs(
     content::BrowserContext* browser_context) const {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  RendererPreferences preferences;
+  content::RendererPreferences preferences;
 
   TabContents* associated_contents = GetAssociatedTabContents();
   if (associated_contents)

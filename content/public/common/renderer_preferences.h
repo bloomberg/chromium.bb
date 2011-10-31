@@ -7,14 +7,16 @@
 // glue layer rather than applying to just WebKit.
 //
 // Adding new values to this class probably involves updating
-// common/render_messages.h, browser/browser.cc, etc.
+// common/view_messages.h, browser/browser.cc, etc.
 
-#ifndef CONTENT_COMMON_RENDERER_PREFERENCES_H_
-#define CONTENT_COMMON_RENDERER_PREFERENCES_H_
+#ifndef CONTENT_PUBLIC_COMMON_RENDERER_PREFERENCES_H_
+#define CONTENT_PUBLIC_COMMON_RENDERER_PREFERENCES_H_
 #pragma once
 
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkColor.h"
+
+namespace content {
 
 enum RendererPreferencesHintingEnum {
   RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT = 0,
@@ -79,4 +81,6 @@ struct CONTENT_EXPORT RendererPreferences {
   bool enable_referrers;
 };
 
-#endif  // CONTENT_COMMON_RENDERER_PREFERENCES_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_COMMON_RENDERER_PREFERENCES_H_

@@ -24,27 +24,28 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "webkit/glue/window_open_disposition.h"
 
+
 class BackgroundContents;
-struct BookmarkNodeData;
 class BookmarkNode;
-struct ContextMenuParams;
 class GURL;
-struct NativeWebKeyboardEvent;
-struct RendererPreferences;
 class RenderProcessHost;
 class RenderViewHost;
 class SkBitmap;
 class TabContents;
+class WebKeyboardEvent;
+struct BookmarkNodeData;
+struct ContextMenuParams;
+struct NativeWebKeyboardEvent;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_FrameNavigate_Params;
+struct ViewHostMsg_RunFileChooser_Params;
 struct WebDropData;
 struct WebMenuItem;
-class WebKeyboardEvent;
 struct WebPreferences;
-struct ViewHostMsg_RunFileChooser_Params;
 
 namespace content {
 class BrowserContext;
+struct RendererPreferences;
 }
 
 namespace gfx {
@@ -302,7 +303,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // Return a dummy RendererPreferences object that will be used by the renderer
   // associated with the owning RenderViewHost.
-  virtual RendererPreferences GetRendererPrefs(
+  virtual content::RendererPreferences GetRendererPrefs(
       content::BrowserContext* browser_context) const = 0;
 
   // Returns a WebPreferences object that will be used by the renderer

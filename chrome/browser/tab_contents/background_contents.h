@@ -75,7 +75,7 @@ class BackgroundContents : public RenderViewHostDelegate,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message) OVERRIDE;
   virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
-  virtual RendererPreferences GetRendererPrefs(
+  virtual content::RendererPreferences GetRendererPrefs(
       content::BrowserContext* browser_context) const OVERRIDE;
   virtual void RenderViewGone(RenderViewHost* rvh,
                               base::TerminationStatus status,

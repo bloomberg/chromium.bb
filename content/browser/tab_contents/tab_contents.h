@@ -27,7 +27,7 @@
 #include "content/browser/webui/web_ui.h"
 #include "content/common/content_export.h"
 #include "content/common/property_bag.h"
-#include "content/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.h"
 #include "net/base/load_states.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/resource_type.h"
@@ -36,30 +36,19 @@
 #include "base/win/scoped_handle.h"
 #endif
 
-namespace gfx {
-class Rect;
-}
-namespace webkit_glue {
-struct WebIntentData;
-}
-
 class DownloadItem;
 class LoadNotificationDetails;
-struct RendererPreferences;
 class RenderViewHost;
 class SessionStorageNamespace;
 class SiteInstance;
-class SkBitmap;
 class TabContentsDelegate;
 class TabContentsObserver;
 class TabContentsView;
-struct ThumbnailScore;
-class URLPattern;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
-struct ViewHostMsg_FrameNavigate_Params;
-struct ViewHostMsg_RunFileChooser_Params;
-struct WebPreferences;
-class WebUI;
+
+namespace webkit_glue {
+struct WebIntentData;
+}
 
 // Describes what goes in the main content area of a tab. TabContents is
 // the only type of TabContents, and these should be merged together.
@@ -403,7 +392,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // ViewMsg_ResetPageEncodingToDefault to the renderer.
   void ResetOverrideEncoding();
 
-  RendererPreferences* GetMutableRendererPrefs() {
+  content::RendererPreferences* GetMutableRendererPrefs() {
     return &renderer_preferences_;
   }
 
@@ -670,7 +659,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   virtual void RunBeforeUnloadConfirm(const RenderViewHost* rvh,
                                       const string16& message,
                                       IPC::Message* reply_msg) OVERRIDE;
-  virtual RendererPreferences GetRendererPrefs(
+  virtual content::RendererPreferences GetRendererPrefs(
       content::BrowserContext* browser_context) const OVERRIDE;
   virtual WebPreferences GetWebkitPrefs() OVERRIDE;
   virtual void OnUserGesture() OVERRIDE;
@@ -830,7 +819,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   bool is_showing_before_unload_dialog_;
 
   // Settings that get passed to the renderer process.
-  RendererPreferences renderer_preferences_;
+  content::RendererPreferences renderer_preferences_;
 
   // If this tab was created from a renderer using window.open, this will be
   // non-NULL and represent the WebUI of the opening renderer.

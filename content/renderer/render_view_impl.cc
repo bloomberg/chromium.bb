@@ -35,7 +35,6 @@
 #include "content/common/pepper_messages.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/common/quota_dispatcher.h"
-#include "content/common/renderer_preferences.h"
 #include "content/common/request_extra_data.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/bindings_policy.h"
@@ -304,14 +303,15 @@ struct RenderViewImpl::PendingFileChooser {
   WebFileChooserCompletion* completion;  // MAY BE NULL to skip callback.
 };
 
-RenderViewImpl::RenderViewImpl(gfx::NativeViewId parent_hwnd,
-                               int32 opener_id,
-                               const RendererPreferences& renderer_prefs,
-                               const WebPreferences& webkit_prefs,
-                               SharedRenderViewCounter* counter,
-                               int32 routing_id,
-                               int64 session_storage_namespace_id,
-                               const string16& frame_name)
+RenderViewImpl::RenderViewImpl(
+    gfx::NativeViewId parent_hwnd,
+    int32 opener_id,
+    const content::RendererPreferences& renderer_prefs,
+    const WebPreferences& webkit_prefs,
+    SharedRenderViewCounter* counter,
+    int32 routing_id,
+    int64 session_storage_namespace_id,
+    const string16& frame_name)
     : RenderWidget(WebKit::WebPopupTypeNone),
       webkit_preferences_(webkit_prefs),
       send_content_state_immediately_(false),
@@ -476,7 +476,7 @@ void content::RenderView::ForEach(content::RenderViewVisitor* visitor) {
 RenderViewImpl* RenderViewImpl::Create(
     gfx::NativeViewId parent_hwnd,
     int32 opener_id,
-    const RendererPreferences& renderer_prefs,
+    const content::RendererPreferences& renderer_prefs,
     const WebPreferences& webkit_prefs,
     SharedRenderViewCounter* counter,
     int32 routing_id,
@@ -3774,7 +3774,7 @@ void RenderViewImpl::OnDisableScrollbarsForSmallWindows(
 }
 
 void RenderViewImpl::OnSetRendererPrefs(
-    const RendererPreferences& renderer_prefs) {
+    const content::RendererPreferences& renderer_prefs) {
   renderer_preferences_ = renderer_prefs;
   UpdateFontRenderingFromRendererPrefs();
 #if defined(TOOLKIT_USES_GTK)

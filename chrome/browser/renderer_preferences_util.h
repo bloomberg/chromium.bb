@@ -6,14 +6,17 @@
 #define CHROME_BROWSER_RENDERER_PREFERENCES_UTIL_H_
 #pragma once
 
-#include "content/common/renderer_preferences.h"
-
 class Profile;
+
+namespace content {
+struct RendererPreferences;
+}
 
 namespace renderer_preferences_util {
 
 // Copies system configuration preferences into |prefs|.
-void UpdateFromSystemSettings(RendererPreferences* prefs, Profile* profile);
+void UpdateFromSystemSettings(content::RendererPreferences* prefs,
+                              Profile* profile);
 
 }  // namespace renderer_preferences_util
 

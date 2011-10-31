@@ -11,10 +11,10 @@
 #include "content/common/css_colors.h"
 #include "content/common/edit_command.h"
 #include "content/common/navigation_gesture.h"
-#include "content/common/renderer_preferences.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/page_zoom.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/webkit_param_traits.h"
 #include "content/public/common/window_container_type.h"
 #include "ipc/ipc_channel_handle.h"
@@ -52,8 +52,6 @@
 IPC_ENUM_TRAITS(CSSColors::CSSColorName)
 IPC_ENUM_TRAITS(NavigationGesture)
 IPC_ENUM_TRAITS(content::PageZoom)
-IPC_ENUM_TRAITS(RendererPreferencesHintingEnum)
-IPC_ENUM_TRAITS(RendererPreferencesSubpixelRenderingEnum)
 IPC_ENUM_TRAITS(ViewHostMsg_AccEvent::Value)
 IPC_ENUM_TRAITS(ViewHostMsg_RunFileChooser_Mode::Value)
 IPC_ENUM_TRAITS(ViewMsg_Navigate_Type::Value)
@@ -62,16 +60,18 @@ IPC_ENUM_TRAITS(WebKit::WebContextMenuData::MediaType)
 IPC_ENUM_TRAITS(WebKit::WebMediaPlayerAction::Type)
 IPC_ENUM_TRAITS(WebKit::WebPopupType)
 IPC_ENUM_TRAITS(WebKit::WebTextDirection)
-IPC_ENUM_TRAITS(ui::TextInputType)
 IPC_ENUM_TRAITS(WebMenuItem::Type)
 IPC_ENUM_TRAITS(WindowContainerType)
+IPC_ENUM_TRAITS(ui::TextInputType)
+IPC_ENUM_TRAITS(content::RendererPreferencesHintingEnum)
+IPC_ENUM_TRAITS(content::RendererPreferencesSubpixelRenderingEnum)
+IPC_ENUM_TRAITS(media::MediaLogEvent::Type)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::BoolAttribute)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::FloatAttribute)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::IntAttribute)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::Role)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::State)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::StringAttribute)
-IPC_ENUM_TRAITS(media::MediaLogEvent::Type)
 
 IPC_STRUCT_TRAITS_BEGIN(ContextMenuParams)
   IPC_STRUCT_TRAITS_MEMBER(media_type)
@@ -116,7 +116,7 @@ IPC_STRUCT_TRAITS_BEGIN(FontDescriptor)
 IPC_STRUCT_TRAITS_END()
 #endif
 
-IPC_STRUCT_TRAITS_BEGIN(RendererPreferences)
+IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(can_accept_load_drops)
   IPC_STRUCT_TRAITS_MEMBER(should_antialias_text)
   IPC_STRUCT_TRAITS_MEMBER(hinting)
@@ -631,7 +631,7 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   IPC_STRUCT_MEMBER(gfx::NativeViewId, parent_window)
 
   // Renderer-wide preferences.
-  IPC_STRUCT_MEMBER(RendererPreferences, renderer_preferences)
+  IPC_STRUCT_MEMBER(content::RendererPreferences, renderer_preferences)
 
   // Preferences for this view.
   IPC_STRUCT_MEMBER(WebPreferences, web_preferences)
@@ -703,7 +703,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_CreatingNew_ACK,
 
 // Sends updated preferences to the renderer.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetRendererPrefs,
-                    RendererPreferences)
+                    content::RendererPreferences)
 
 // This passes a set of webkit preferences down to the renderer.
 IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences,

@@ -24,7 +24,10 @@ class BrowserWindow;
 class GtkThemeService;
 class GURL;
 class Profile;
-struct RendererPreferences;  // from common/renderer_preferences.h
+
+namespace content {
+struct RendererPreferences;
+}
 
 namespace event_utils {
 
@@ -191,7 +194,7 @@ GtkWidget* IndentWidget(GtkWidget* content);
 
 // Sets (or resets) the font settings in |prefs| (used when creating new
 // renderers) based on GtkSettings (which itself comes from XSETTINGS).
-void UpdateGtkFontSettings(RendererPreferences* prefs);
+void UpdateGtkFontSettings(content::RendererPreferences* prefs);
 
 // Reverses a point in RTL mode. Used in making vectors of GdkPoints for window
 // shapes.

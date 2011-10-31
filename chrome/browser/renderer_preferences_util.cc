@@ -7,6 +7,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/common/renderer_preferences.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -15,7 +16,8 @@
 
 namespace renderer_preferences_util {
 
-void UpdateFromSystemSettings(RendererPreferences* prefs, Profile* profile) {
+void UpdateFromSystemSettings(
+    content::RendererPreferences* prefs, Profile* profile) {
 #if defined(TOOLKIT_USES_GTK)
   gtk_util::UpdateGtkFontSettings(prefs);
 

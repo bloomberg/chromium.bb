@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.h"
+
+namespace content {
 
 RendererPreferences::RendererPreferences()
     : can_accept_load_drops(true),
@@ -22,3 +24,5 @@ RendererPreferences::RendererPreferences()
       caret_blink_interval(0),
       enable_referrers(true) {
 }
+
+}  // namespace content

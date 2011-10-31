@@ -26,8 +26,8 @@
 #include "content/common/content_export.h"
 #include "content/common/edit_command.h"
 #include "content/common/navigation_gesture.h"
-#include "content/common/renderer_preferences.h"
 #include "content/public/common/page_zoom.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_widget.h"
@@ -180,7 +180,7 @@ class RenderViewImpl : public RenderWidget,
   CONTENT_EXPORT static RenderViewImpl* Create(
       gfx::NativeViewId parent_hwnd,
       int32 opener_id,
-      const RendererPreferences& renderer_prefs,
+      const content::RendererPreferences& renderer_prefs,
       const WebPreferences& webkit_prefs,
       SharedRenderViewCounter* counter,
       int32 routing_id,
@@ -688,7 +688,7 @@ class RenderViewImpl : public RenderWidget,
 
   RenderViewImpl(gfx::NativeViewId parent_hwnd,
                  int32 opener_id,
-                 const RendererPreferences& renderer_prefs,
+                 const content::RendererPreferences& renderer_prefs,
                  const WebPreferences& webkit_prefs,
                  SharedRenderViewCounter* counter,
                  int32 routing_id,
@@ -837,7 +837,7 @@ class RenderViewImpl : public RenderWidget,
 #endif
   void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
   void OnSetPageEncoding(const std::string& encoding_name);
-  void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);
+  void OnSetRendererPrefs(const content::RendererPreferences& renderer_prefs);
 #if defined(OS_MACOSX)
   void OnSetWindowVisibility(bool visible);
 #endif
@@ -948,7 +948,7 @@ class RenderViewImpl : public RenderWidget,
   // Settings ------------------------------------------------------------------
 
   WebPreferences webkit_preferences_;
-  RendererPreferences renderer_preferences_;
+  content::RendererPreferences renderer_preferences_;
 
   HostZoomLevels host_zoom_levels_;
 

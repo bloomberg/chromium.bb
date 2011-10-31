@@ -176,10 +176,10 @@ void BackgroundContents::RenderViewGone(RenderViewHost* rvh,
   delete this;
 }
 
-RendererPreferences BackgroundContents::GetRendererPrefs(
+content::RendererPreferences BackgroundContents::GetRendererPrefs(
     content::BrowserContext* browser_context) const {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  RendererPreferences preferences;
+  content::RendererPreferences preferences;
   renderer_preferences_util::UpdateFromSystemSettings(&preferences, profile);
   return preferences;
 }

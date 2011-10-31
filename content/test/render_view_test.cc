@@ -5,9 +5,9 @@
 #include "content/test/render_view_test.h"
 
 #include "content/common/dom_storage_common.h"
-#include "content/common/renderer_preferences.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "content/test/mock_render_process.h"
@@ -112,7 +112,7 @@ void RenderViewTest::SetUp() {
   RenderViewImpl* view = RenderViewImpl::Create(
       0,
       kOpenerId,
-      RendererPreferences(),
+      content::RendererPreferences(),
       WebPreferences(),
       new SharedRenderViewCounter(0),
       kRouteId,
