@@ -938,6 +938,11 @@ enum NotificationType {
   // Used only in unit testing.
   NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
 
+  // Sent when panel is minimized/restored/shows title only etc.
+  // The source is the Panel, no details.
+  // Used only in unit testing.
+  NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
+
   // Sent when panel window size is known. This is for platforms where the
   // window creation is async and size of the window only becomes known later.
   // Used only in unit testing.

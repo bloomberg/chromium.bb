@@ -22,8 +22,7 @@ class Panel;
 // This class manages a set of panels.
 // Note that the ref count is needed by using PostTask in the implementation.
 class PanelManager : public PanelMouseWatcher::Observer,
-                     public AutoHidingDesktopBar::Observer,
-                     public base::RefCounted<PanelManager> {
+                     public AutoHidingDesktopBar::Observer {
  public:
   typedef std::vector<Panel*> Panels;
 
@@ -101,6 +100,10 @@ class PanelManager : public PanelMouseWatcher::Observer,
     SetWorkArea(work_area);
   }
 
+  void remove_delays_for_testing() {
+    remove_delays_for_testing_ = true;
+  }
+
   int minimized_panel_count() {
     return minimized_panel_count_;
   }
@@ -152,13 +155,11 @@ class PanelManager : public PanelMouseWatcher::Observer,
   void DragLeft();
   void DragRight();
 
-  // Checks if the titlebars have been brought up or down. If not, do not wait
-  // for the notifications to trigger it any more, and start to bring them up or
-  // down immediately.
-  void DelayedBringUpOrDownTitlebarsCheck();
-
   // Does the real job of bringing up or down the titlebars.
   void DoBringUpOrDownTitlebars(bool bring_up);
+  // The callback for a delyed task, checks if it still need to perform
+  // the delayed action.
+  void DelayedBringUpOrDownTitlebarsCheck();
 
   int GetMaxPanelWidth() const;
   int GetMaxPanelHeight() const;
@@ -201,9 +202,12 @@ class PanelManager : public PanelMouseWatcher::Observer,
 
   scoped_refptr<AutoHidingDesktopBar> auto_hiding_desktop_bar_;
 
+  // Delayed transitions support. Sometimes transitions between minimized and
+  // title-only states are delayed, for better usability with Taskbars/Docks.
   TitlebarAction delayed_titlebar_action_;
-
-  ScopedRunnableMethodFactory<PanelManager> method_factory_;
+  bool remove_delays_for_testing_;
+  // Owned by MessageLoop after posting.
+  CancelableTask* titlebar_action_task_;
 
   // Whether or not bounds will be updated when the preferred content size is
   // changed. The testing code could set this flag to false so that other tests
@@ -222,5 +226,9 @@ class PanelManager : public PanelMouseWatcher::Observer,
 
   DISALLOW_COPY_AND_ASSIGN(PanelManager);
 };
+
+// Required for CancellableTask to be used with non-refcounted objects.
+// Defines empty AddRef/Release.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(PanelManager);
 
 #endif  // CHROME_BROWSER_UI_PANELS_PANEL_MANAGER_H_

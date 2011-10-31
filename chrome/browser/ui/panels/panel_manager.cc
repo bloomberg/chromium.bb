@@ -32,14 +32,21 @@ const double kPanelMaxHeightFactor = 0.5;
 // After the time expires, we bring up/down the titlebars as planned.
 const int kMaxMillisecondsWaitForBottomBarVisibilityChange = 1000;
 
+// See usage below.
+#if defined(OS_MACOSX)
+const int kMillisecondsBeforeCollapsingFromTitleOnlyState = 3000;
+#else
+const int kMillisecondsBeforeCollapsingFromTitleOnlyState = 0;
+#endif
+
 // Single instance of PanelManager.
-scoped_refptr<PanelManager> panel_manager_instance;
+scoped_ptr<PanelManager> panel_manager_instance;
 }  // namespace
 
 // static
 PanelManager* PanelManager::GetInstance() {
   if (!panel_manager_instance.get())
-    panel_manager_instance = new PanelManager();
+    panel_manager_instance.reset(new PanelManager());
   return panel_manager_instance.get();
 }
 
@@ -49,7 +56,8 @@ PanelManager::PanelManager()
       dragging_panel_index_(kInvalidPanelIndex),
       dragging_panel_original_x_(0),
       delayed_titlebar_action_(NO_ACTION),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      remove_delays_for_testing_(false),
+      titlebar_action_task_(NULL),
       auto_sizing_enabled_(true),
       mouse_watching_disabled_(false) {
   panel_mouse_watcher_.reset(PanelMouseWatcher::Create(this));
@@ -61,6 +69,10 @@ PanelManager::~PanelManager() {
   DCHECK(panels_.empty());
   DCHECK(panels_pending_to_remove_.empty());
   DCHECK_EQ(0, minimized_panel_count_);
+  if (titlebar_action_task_) {
+     titlebar_action_task_->Cancel();
+     titlebar_action_task_ = NULL;
+  }
 }
 
 void PanelManager::OnDisplayChanged() {
@@ -392,6 +404,8 @@ bool PanelManager::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
 }
 
 void PanelManager::BringUpOrDownTitlebars(bool bring_up) {
+  int task_delay_milliseconds = 0;
+
   // If the auto-hiding bottom bar exists, delay the action until the bottom
   // bar is fully visible or hidden. We do not want both bottom bar and panel
   // titlebar to move at the same time but with different speeds.
@@ -400,33 +414,64 @@ void PanelManager::BringUpOrDownTitlebars(bool bring_up) {
         GetVisibility(AutoHidingDesktopBar::ALIGN_BOTTOM);
     if (visibility != (bring_up ? AutoHidingDesktopBar::VISIBLE
                                 : AutoHidingDesktopBar::HIDDEN)) {
-      // OnAutoHidingDesktopBarVisibilityChanged will handle this.
-      delayed_titlebar_action_ = bring_up ? BRING_UP : BRING_DOWN;
-
       // Occasionally some system, like Windows, might not bring up or down the
       // bottom bar when the mouse enters or leaves the bottom screen area.
       // Thus, we schedule a delayed task to do the work if we do not receive
       // the bottom bar visibility change notification within a certain period
       // of time.
-      MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          method_factory_.NewRunnableMethod(
-              &PanelManager::DelayedBringUpOrDownTitlebarsCheck),
-          kMaxMillisecondsWaitForBottomBarVisibilityChange);
-
-      return;
+      task_delay_milliseconds =
+          kMaxMillisecondsWaitForBottomBarVisibilityChange;
     }
   }
 
-  DoBringUpOrDownTitlebars(bring_up);
+  // On some OSes, the interaction with native Taskbars/Docks may be improved
+  // if the panels do not go back to minimized state too fast. For example,
+  // it makes it possible to hit the titlebar on OSX if Dock has Magnifying
+  // enabled - the panels stay up for a while after Dock magnification effect
+  // stops covering the panels.
+  // TODO(dimich): when there is implementation which has both delays to be
+  // different from zero, figure out what shoudl be the combined delay.
+  if (!bring_up &&
+      task_delay_milliseconds < kMillisecondsBeforeCollapsingFromTitleOnlyState)
+    task_delay_milliseconds = kMillisecondsBeforeCollapsingFromTitleOnlyState;
+
+  // OnAutoHidingDesktopBarVisibilityChanged will handle this.
+  delayed_titlebar_action_ = bring_up ? BRING_UP : BRING_DOWN;
+  if (remove_delays_for_testing_)
+    task_delay_milliseconds = 0;
+
+  // If user moves the mouse in and out of mouse tracking area, we might have
+  // previously posted but not yet dispatched task in the queue. New action
+  // shoudl always 'reset' the delays so cancel the old task and post a new one.
+  if (titlebar_action_task_)
+    titlebar_action_task_->Cancel();
+
+  titlebar_action_task_ = NewRunnableMethod(
+      this, &PanelManager::DelayedBringUpOrDownTitlebarsCheck);
+
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                          titlebar_action_task_,
+                                          task_delay_milliseconds);
 }
 
 void PanelManager::DelayedBringUpOrDownTitlebarsCheck() {
+  titlebar_action_task_ = NULL;
+
+  // Task was already processed or cancelled - bail out.
   if (delayed_titlebar_action_ == NO_ACTION)
     return;
 
-  DoBringUpOrDownTitlebars(delayed_titlebar_action_ == BRING_UP);
+  bool need_to_bring_up_titlebars = (delayed_titlebar_action_ == BRING_UP);
+
   delayed_titlebar_action_ = NO_ACTION;
+
+  // Check if the action is still needed based on the latest mouse position. The
+  // user could move the mouse into the tracking area and then quickly move it
+  // out of the area. In case of this, cancel the action.
+  if (are_titlebars_up_ != need_to_bring_up_titlebars)
+    return;
+
+  DoBringUpOrDownTitlebars(need_to_bring_up_titlebars);
 }
 
 void PanelManager::DoBringUpOrDownTitlebars(bool bring_up) {

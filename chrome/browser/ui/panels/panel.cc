@@ -17,6 +17,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/gfx/rect.h"
@@ -111,6 +112,11 @@ void Panel::SetExpansionState(ExpansionState new_state) {
   // The minimized panel should not get the focus.
   if (expansion_state_ == MINIMIZED)
     Deactivate();
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
+      content::Source<Panel>(this),
+      content::NotificationService::NoDetails());
 }
 
 bool Panel::ShouldBringUpTitlebar(int mouse_x, int mouse_y) const {

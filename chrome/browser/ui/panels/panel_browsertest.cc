@@ -54,6 +54,15 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     MessageLoopForUI::current()->RunAllPending();
   }
 
+  void MoveMouseAndWaitForExpansionStateChange(Panel* panel,
+                                               const gfx::Point& position) {
+    ui_test_utils::WindowedNotificationObserver signal(
+        chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
+        content::Source<Panel>(panel));
+    MoveMouse(position);
+    signal.Wait();
+  }
+
   void TestCreatePanelOnOverflow() {
     PanelManager* panel_manager = PanelManager::GetInstance();
     EXPECT_EQ(0, panel_manager->num_panels()); // No panels initially.
@@ -400,14 +409,14 @@ class PanelBrowserTest : public BasePanelBrowserTest {
       // Hover mouse on minimized panel.
       // Verify titlebar is exposed on all panels.
       gfx::Point hover_point(panels[index]->GetBounds().origin());
-      MoveMouse(hover_point);
+      MoveMouseAndWaitForExpansionStateChange(panels[index], hover_point);
       EXPECT_EQ(titlebar_exposed_bounds, GetAllPanelBounds());
       EXPECT_EQ(titlebar_exposed_states, GetAllPanelExpansionStates());
 
       // Hover mouse above the panel. Verify all panels are minimized.
       hover_point.set_y(
           panels[index]->GetBounds().y() - kFarEnoughFromHoverArea);
-      MoveMouse(hover_point);
+      MoveMouseAndWaitForExpansionStateChange(panels[index], hover_point);
       EXPECT_EQ(minimized_bounds, GetAllPanelBounds());
       EXPECT_EQ(minimized_states, GetAllPanelExpansionStates());
 
@@ -415,7 +424,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
       // Verify titlebar is exposed on all panels.
       hover_point.set_y(panels[index]->GetBounds().y() +
                         panels[index]->GetBounds().height() + 5);
-      MoveMouse(hover_point);
+      MoveMouseAndWaitForExpansionStateChange(panels[index], hover_point);
       EXPECT_EQ(titlebar_exposed_bounds, GetAllPanelBounds());
       EXPECT_EQ(titlebar_exposed_states, GetAllPanelExpansionStates());
 
@@ -429,7 +438,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
       // Hover mouse above panel.  Verify all panels are minimized.
       hover_point.set_y(
           panels[index]->GetBounds().y() - kFarEnoughFromHoverArea);
-      MoveMouse(hover_point);
+      MoveMouseAndWaitForExpansionStateChange(panels[index], hover_point);
       EXPECT_EQ(minimized_bounds, GetAllPanelBounds());
       EXPECT_EQ(minimized_states, GetAllPanelExpansionStates());
     }
