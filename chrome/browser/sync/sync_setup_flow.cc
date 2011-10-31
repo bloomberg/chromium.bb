@@ -128,6 +128,8 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
   // going back now.  Check if the other data types are registered though.
   syncable::ModelTypeSet registered_types;
   service->GetRegisteredDataTypes(&registered_types);
+  syncable::ModelTypeSet preferred_types;
+  service->GetPreferredDataTypes(&preferred_types);
   args->SetBoolean("passwordsRegistered",
       registered_types.count(syncable::PASSWORDS) > 0);
   args->SetBoolean("autofillRegistered",
@@ -143,25 +145,26 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
   args->SetBoolean("sessionsRegistered",
       registered_types.count(syncable::SESSIONS) > 0);
   args->SetBoolean("syncBookmarks",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncBookmarks));
+                   preferred_types.count(syncable::BOOKMARKS) > 0);
   args->SetBoolean("syncPreferences",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncPreferences));
+                   preferred_types.count(syncable::PREFERENCES) > 0);
   args->SetBoolean("syncThemes",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncThemes));
+                   preferred_types.count(syncable::THEMES) > 0);
   args->SetBoolean("syncPasswords",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncPasswords));
+                   preferred_types.count(syncable::PASSWORDS) > 0);
   args->SetBoolean("syncAutofill",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncAutofill));
+                   preferred_types.count(syncable::AUTOFILL) > 0);
   args->SetBoolean("syncExtensions",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncExtensions));
+                   preferred_types.count(syncable::EXTENSIONS) > 0);
   args->SetBoolean("syncSearchEngines",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncSearchEngines));
+                   preferred_types.count(syncable::SEARCH_ENGINES) > 0);
   args->SetBoolean("syncSessions",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncSessions));
+                   preferred_types.count(syncable::SESSIONS) > 0);
   args->SetBoolean("syncTypedUrls",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncTypedUrls));
+                   preferred_types.count(syncable::TYPED_URLS) > 0);
   args->SetBoolean("syncApps",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncApps));
+                   preferred_types.count(syncable::APPS) > 0);
+
   args->SetBoolean("encryptionEnabled",
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableSyncEncryption));
