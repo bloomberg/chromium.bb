@@ -167,6 +167,13 @@
   fun:base::SharedMemory::CreateNamed
 }
 
+{
+  Benign race to access status during TrackedObject unittests
+  ThreadSanitizer:Race
+  ...
+  fun:tracked_objects::ThreadData::ShutdownSingleThreadedCleanup
+}
+
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).

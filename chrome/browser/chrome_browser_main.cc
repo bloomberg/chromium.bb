@@ -1223,6 +1223,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     browser_process_.reset(new BrowserProcessImpl(parsed_command_line()));
   }
 
+  if (parsed_command_line().HasSwitch(switches::kEnableTracking)) {
+    // User wants to override default tracking status.
+    std::string flag =
+      parsed_command_line().GetSwitchValueASCII(switches::kEnableTracking);
+    bool enabled = flag.compare("0") != 0;
+    tracked_objects::ThreadData::InitializeAndSetTrackingStatus(enabled);
+  }
+
   // This forces the TabCloseableStateWatcher to be created and, on chromeos,
   // register for the notifications it needs to track the closeable state of
   // tabs.
