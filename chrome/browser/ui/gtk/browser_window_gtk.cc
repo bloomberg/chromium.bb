@@ -1456,8 +1456,10 @@ gboolean BrowserWindowGtk::OnWindowState(GtkWidget* sender,
             GURL(),
             FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION));
       }
+      gtk_widget_hide(titlebar_widget());
       gtk_widget_hide(toolbar_border_);
     } else {
+      gtk_widget_show(titlebar_widget());
       fullscreen_exit_bubble_.reset();
       UpdateCustomFrame();
       ShowSupportedWindowFeatures();
