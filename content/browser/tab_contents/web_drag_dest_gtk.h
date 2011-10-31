@@ -20,7 +20,7 @@ class TabContents;
 
 namespace content {
 
-class WebDragDestDelegate;
+class WebDragDestDelegateGtk;
 
 // A helper class that handles DnD for drops in the renderer. In GTK parlance,
 // this handles destination-side DnD, but not source-side DnD.
@@ -37,8 +37,8 @@ class CONTENT_EXPORT WebDragDestGtk {
   // See OnDragLeave().
   void DragLeave();
 
-  WebDragDestDelegate* delegate() const { return delegate_; }
-  void set_delegate(WebDragDestDelegate* delegate) { delegate_ = delegate; }
+  WebDragDestDelegateGtk* delegate() const { return delegate_; }
+  void set_delegate(WebDragDestDelegateGtk* delegate) { delegate_ = delegate; }
 
  private:
   // Called when a system drag crosses over the render view. As there is no drag
@@ -94,7 +94,7 @@ class CONTENT_EXPORT WebDragDestGtk {
   int destroy_handler_;
 
   // A delegate that can receive drag information about drag events.
-  WebDragDestDelegate* delegate_;
+  WebDragDestDelegateGtk* delegate_;
 
   ScopedRunnableMethodFactory<WebDragDestGtk> method_factory_;
 
