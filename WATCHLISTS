@@ -296,6 +296,12 @@
     'message_loop': {
       'filepath': 'base/message_.*'
     },
+    'clipboard': {
+      'filepath': 'clipboard',
+      'filepath': 'dnd',
+      'filepath': 'drag',
+      'filepath': 'drop',
+    },
   },
 
   'WATCHLISTS': {
@@ -406,5 +412,6 @@
     'textinput': ['suzhe@chromium.org'],
     'omnibox': ['suzhe@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
+    'clipboard': ['dcheng@chromium.org'],
   },
 }
