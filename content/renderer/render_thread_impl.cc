@@ -21,6 +21,7 @@
 #include "base/task.h"
 #include "base/threading/thread_local.h"
 #include "base/values.h"
+#include "base/win/scoped_com_initializer.h"
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/database_messages.h"
@@ -182,7 +183,7 @@ void RenderThreadImpl::Init() {
   // If you are running plugins in this thread you need COM active but in
   // the normal case you don't.
   if (RenderProcessImpl::InProcessPlugins())
-    CoInitialize(0);
+    initialize_com_.reset(new base::win::ScopedCOMInitializer());
 #endif
 
   // In single process the single process is all there is.
@@ -258,9 +259,6 @@ RenderThreadImpl::~RenderThreadImpl() {
 #if defined(OS_WIN)
   // Clean up plugin channels before this thread goes away.
   NPChannelBase::CleanupChannels();
-  // Don't call COM if the renderer is in the sandbox.
-  if (RenderProcessImpl::InProcessPlugins())
-    CoUninitialize();
 #endif
 }
 

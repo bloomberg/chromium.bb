@@ -56,6 +56,9 @@ class WebStorageEventDispatcher;
 namespace base {
 class MessageLoopProxy;
 class Thread;
+namespace win {
+class ScopedCOMInitializer;
+}
 }
 
 namespace content {
@@ -210,6 +213,9 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
 
   // Used on multiple script execution context threads.
   scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
+
+  // Initialize COM when using plugins outside the sandbox (Windows only).
+  scoped_ptr<base::win::ScopedCOMInitializer> initialize_com_;
 
   // If true, then a GetPlugins call is allowed to rescan the disk.
   bool plugin_refresh_allowed_;
