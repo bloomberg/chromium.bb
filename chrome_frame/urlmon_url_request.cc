@@ -1261,6 +1261,8 @@ void UrlmonUrlRequestManager::StopAll() {
         NewRunnableMethod(
             this, &UrlmonUrlRequestManager::StopAllRequestsHelper,
             &background_request_map_, &background_resource_map_lock_));
+     // background_thread_->Stop();
+     // background_thread_.reset();
   }
 }
 
