@@ -164,7 +164,8 @@ class AutocompleteHistoryManagerStubSend : public AutocompleteHistoryManager {
                                               WebDataService* wds)
       : AutocompleteHistoryManager(tab_contents, profile, wds) {}
 
-  virtual bool Send(IPC::Message* message) { return true; }  // intentional nop
+  // Intentionally swallow the message.
+  virtual bool Send(IPC::Message* message) { delete message; return true; }
 };
 
 }  // namespace

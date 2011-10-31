@@ -1632,10 +1632,3 @@
    fun:base::Callback::Run
    fun:MessageLoop::RunTask
 }
-{
-   bug_102256
-   Heapcheck:Leak
-   ...
-   fun:AutocompleteHistoryManager::SendSuggestions
-   fun:AutocompleteHistoryManagerTest_ExternalDelegate_Test::TestBody
-}
