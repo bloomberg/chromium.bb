@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/string16.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/text_input_type.h"
@@ -74,7 +73,8 @@ class VIEWS_EXPORT TextInputClient {
 
   // Document content operations ----------------------------------------------
 
-  // Retrieves the UTF-16 based character range containing all text in the View.
+  // Retrieves the UTF-16 based character range containing accessibled text in
+  // the View. It must cover the composition and selection range.
   // Returns false if the information cannot be retrieved right now.
   virtual bool GetTextRange(ui::Range* range) = 0;
 
@@ -98,12 +98,10 @@ class VIEWS_EXPORT TextInputClient {
   virtual bool DeleteRange(const ui::Range& range) = 0;
 
   // Retrieves the text content in a given UTF-16 based character range.
-  // The result will be send back to the input method by calling the given
-  // callback, which may happen asynchronously.
-  // Returns false if the operation is not supported.
-  virtual bool GetTextFromRange(
-      const ui::Range& range,
-      const base::Callback<void(const string16&)>& callback) = 0;
+  // The result will be stored into |*text|.
+  // Returns false if the operation is not supported or the specified range
+  // is out of the text range returned by GetTextRange().
+  virtual bool GetTextFromRange(const ui::Range& range, string16* text) = 0;
 
   // Miscellaneous ------------------------------------------------------------
 

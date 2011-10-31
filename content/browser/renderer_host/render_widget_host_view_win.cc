@@ -285,7 +285,8 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       overlay_color_(0),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       is_fullscreen_(false),
-      ignore_mouse_movement_(true) {
+      ignore_mouse_movement_(true),
+      composition_range_(ui::Range::InvalidRange()) {
   render_widget_host_->SetView(this);
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -673,6 +674,11 @@ void RenderWidgetHostViewWin::SelectionBoundsChanged(
 
 void RenderWidgetHostViewWin::ImeCancelComposition() {
   ime_input_.CancelIME(m_hWnd);
+}
+
+void RenderWidgetHostViewWin::ImeCompositionRangeChanged(
+    const ui::Range& range) {
+  composition_range_ = range;
 }
 
 BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lparam) {
@@ -1277,6 +1283,31 @@ LRESULT RenderWidgetHostViewWin::OnImeEndComposition(
   // Let WTL call ::DefWindowProc() and release its resources.
   handled = FALSE;
   return 0;
+}
+
+LRESULT RenderWidgetHostViewWin::OnImeRequest(
+    UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  if (!render_widget_host_) {
+    handled = FALSE;
+    return 0;
+  }
+
+  // Should not receive WM_IME_REQUEST message, if IME is disabled.
+  if (text_input_type_ == ui::TEXT_INPUT_TYPE_NONE ||
+      text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD) {
+    handled = FALSE;
+    return 0;
+  }
+
+  switch (wparam) {
+    case IMR_RECONVERTSTRING:
+      return OnReconvertString(reinterpret_cast<RECONVERTSTRING*>(lparam));
+    case IMR_DOCUMENTFEED:
+      return OnDocumentFeed(reinterpret_cast<RECONVERTSTRING*>(lparam));
+    default:
+      handled = FALSE;
+      return 0;
+  }
 }
 
 LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
@@ -2025,4 +2056,95 @@ void RenderWidgetHostViewWin::HandleLockedMouseEvent(UINT message,
   }
 
   ForwardMouseEventToRenderer(message, wparam, lparam);
+}
+
+LRESULT RenderWidgetHostViewWin::OnDocumentFeed(RECONVERTSTRING* reconv) {
+  size_t target_offset;
+  size_t target_length;
+  bool has_composition;
+  if (!composition_range_.is_empty()) {
+    target_offset = composition_range_.GetMin();
+    target_length = composition_range_.length();
+    has_composition = true;
+  } else if (selection_range_.IsValid()) {
+    target_offset = selection_range_.GetMin();
+    target_length = selection_range_.length();
+    has_composition = false;
+  } else {
+    return 0;
+  }
+
+  size_t len = selection_text_.length();
+  size_t need_size = sizeof(RECONVERTSTRING) + len * sizeof(WCHAR);
+
+  if (target_offset < selection_text_offset_ ||
+      target_offset + target_length > selection_text_offset_ + len) {
+    return 0;
+  }
+
+  if (!reconv)
+    return need_size;
+
+  if (reconv->dwSize < need_size)
+    return 0;
+
+  reconv->dwVersion = 0;
+  reconv->dwStrLen = len;
+  reconv->dwStrOffset = sizeof(RECONVERTSTRING);
+  reconv->dwCompStrLen = has_composition ? target_length: 0;
+  reconv->dwCompStrOffset =
+      (target_offset - selection_text_offset_) * sizeof(WCHAR);
+  reconv->dwTargetStrLen = target_length;
+  reconv->dwTargetStrOffset = reconv->dwCompStrOffset;
+  memcpy(reinterpret_cast<char*>(reconv) + sizeof(RECONVERTSTRING),
+         selection_text_.c_str(), len * sizeof(WCHAR));
+
+  // According to Microsft API document, IMR_RECONVERTSTRING and
+  // IMR_DOCUMENTFEED should return reconv, but some applications return
+  // need_size.
+  return reinterpret_cast<LRESULT>(reconv);
+}
+
+LRESULT RenderWidgetHostViewWin::OnReconvertString(RECONVERTSTRING* reconv) {
+  // If there is a composition string already, we don't allow reconversion.
+  if (ime_input_.is_composing())
+    return 0;
+
+  if (selection_range_.is_empty())
+    return 0;
+
+  if (selection_text_.empty())
+    return 0;
+
+  if (selection_range_.GetMin() < selection_text_offset_ ||
+      selection_range_.GetMax() >
+      selection_text_offset_ + selection_text_.length()) {
+    return 0;
+  }
+
+  size_t len = selection_range_.length();
+  size_t need_size = sizeof(RECONVERTSTRING) + len * sizeof(WCHAR);
+
+  if (!reconv)
+    return need_size;
+
+  if (reconv->dwSize < need_size)
+    return 0;
+
+  reconv->dwVersion = 0;
+  reconv->dwStrLen = len;
+  reconv->dwStrOffset = sizeof(RECONVERTSTRING);
+  reconv->dwCompStrLen = len;
+  reconv->dwCompStrOffset = 0;
+  reconv->dwTargetStrLen = len;
+  reconv->dwTargetStrOffset = 0;
+
+  size_t offset = selection_range_.GetMin() - selection_text_offset_;
+  memcpy(reinterpret_cast<char*>(reconv) + sizeof(RECONVERTSTRING),
+         selection_text_.c_str() + offset, len * sizeof(WCHAR));
+
+  // According to Microsft API document, IMR_RECONVERTSTRING and
+  // IMR_DOCUMENTFEED should return reconv, but some applications return
+  // need_size.
+  return reinterpret_cast<LRESULT>(reconv);
 }

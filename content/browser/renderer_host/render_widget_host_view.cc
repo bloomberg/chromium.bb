@@ -45,7 +45,10 @@ void RenderWidgetHostView::GetDefaultScreenInfo(
 #endif
 
 RenderWidgetHostView::RenderWidgetHostView()
-    : popup_type_(WebKit::WebPopupTypeNone), mouse_locked_(false) {
+    : popup_type_(WebKit::WebPopupTypeNone),
+      mouse_locked_(false),
+      selection_text_offset_(0),
+      selection_range_(ui::Range::InvalidRange()) {
 }
 
 RenderWidgetHostView::~RenderWidgetHostView() {
@@ -54,4 +57,14 @@ RenderWidgetHostView::~RenderWidgetHostView() {
 
 void RenderWidgetHostView::SetBackground(const SkBitmap& background) {
   background_ = background;
+}
+
+
+void RenderWidgetHostView::SelectionChanged(const string16& text,
+                                            size_t offset,
+                                            const ui::Range& range) {
+  selection_text_ = text;
+  selection_text_offset_ = offset;
+  selection_range_.set_start(range.start());
+  selection_range_.set_end(range.end());
 }

@@ -10,7 +10,9 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/string16.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
@@ -177,9 +179,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual bool GetSelectionRange(ui::Range* range) OVERRIDE;
   virtual bool SetSelectionRange(const ui::Range& range) OVERRIDE;
   virtual bool DeleteRange(const ui::Range& range) OVERRIDE;
-  virtual bool GetTextFromRange(
-      const ui::Range& range,
-      const base::Callback<void(const string16&)>& callback) OVERRIDE;
+  virtual bool GetTextFromRange(const ui::Range& range,
+                                string16* text) OVERRIDE;
   virtual void OnInputMethodChanged() OVERRIDE;
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE;
@@ -290,9 +291,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   // The current text input type.
   ui::TextInputType text_input_type_;
 
-  string16 selection_text_;
-  size_t selection_text_offset_;
-  ui::Range selection_range_;
+  // Rectangles before and after the selection.
   gfx::Rect selection_start_rect_;
   gfx::Rect selection_end_rect_;
 

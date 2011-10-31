@@ -1520,15 +1520,11 @@ bool RenderViewImpl::isSelectTrailingWhitespaceEnabled() {
 }
 
 void RenderViewImpl::didChangeSelection(bool is_empty_selection) {
-  // TODO(penghuang): Enable this on Window to support IME reconversion.
-  // http://crbug.com/100220
-#if defined(OS_POSIX)
   if (!handling_input_event_ && !handling_select_range_)
       return;
   handling_select_range_ = false;
 
   SyncSelectionIfRequired();
-#endif  // defined(OS_POSIX)
 }
 
 void RenderViewImpl::didExecuteCommand(const WebString& command_name) {

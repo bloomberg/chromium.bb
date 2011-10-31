@@ -54,6 +54,8 @@ class InputMethodWin : public InputMethodBase {
       UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled);
   LRESULT OnImeEndComposition(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled);
+  LRESULT OnImeRequest(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled);
   // For both WM_CHAR and WM_SYSCHAR
   LRESULT OnChar(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled);
@@ -61,6 +63,8 @@ class InputMethodWin : public InputMethodBase {
   LRESULT OnDeadChar(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled);
 
+  LRESULT OnDocumentFeed(RECONVERTSTRING *reconv);
+  LRESULT OnReconvertString(RECONVERTSTRING *reconv);
 
   // Overridden from InputMethodBase.
   virtual void FocusedViewWillChange() OVERRIDE;

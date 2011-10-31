@@ -174,7 +174,7 @@ class RenderWidgetHostView {
   // Notifies the View that the renderer text selection has changed.
   virtual void SelectionChanged(const string16& text,
                                 size_t offset,
-                                const ui::Range& range) {}
+                                const ui::Range& range);
 
   // Notifies the View that the renderer selection bounds has changed.
   // |start_rect| and |end_rect| are the bounds end of the selection in the
@@ -353,6 +353,16 @@ class RenderWidgetHostView {
   // indicates what the change in position of the mouse would be had it not been
   // locked.
   bool mouse_locked_;
+
+  // A buffer containing the text inside and around the current selection range.
+  string16 selection_text_;
+
+  // The offset of the text stored in |selection_text_| relative to the start of
+  // the web page.
+  size_t selection_text_offset_;
+
+  // The current selection range relative to the start of the web page.
+  ui::Range selection_range_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostView);

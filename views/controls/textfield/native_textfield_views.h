@@ -158,9 +158,8 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   virtual bool GetSelectionRange(ui::Range* range) OVERRIDE;
   virtual bool SetSelectionRange(const ui::Range& range) OVERRIDE;
   virtual bool DeleteRange(const ui::Range& range) OVERRIDE;
-  virtual bool GetTextFromRange(
-      const ui::Range& range,
-      const base::Callback<void(const string16&)>& callback) OVERRIDE;
+  virtual bool GetTextFromRange(const ui::Range& range,
+                                string16* text) OVERRIDE;
   virtual void OnInputMethodChanged() OVERRIDE;
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE;

@@ -791,11 +791,15 @@ bool NativeTextfieldViews::DeleteRange(const ui::Range& range) {
 
 bool NativeTextfieldViews::GetTextFromRange(
     const ui::Range& range,
-    const base::Callback<void(const string16&)>& callback) {
-  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_TEXT || range.is_empty())
+    string16* text) {
+  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_TEXT || !range.IsValid())
     return false;
 
-  callback.Run(model_->GetTextFromRange(range));
+  ui::Range text_range;
+  if (!GetTextRange(&text_range) || !text_range.Contains(range))
+    return false;
+
+  *text = model_->GetTextFromRange(range);
   return true;
 }
 

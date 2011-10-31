@@ -104,6 +104,7 @@ class RenderWidgetHostViewWin
     MESSAGE_HANDLER(WM_IME_STARTCOMPOSITION, OnImeStartComposition)
     MESSAGE_HANDLER(WM_IME_COMPOSITION, OnImeComposition)
     MESSAGE_HANDLER(WM_IME_ENDCOMPOSITION, OnImeEndComposition)
+    MESSAGE_HANDLER(WM_IME_REQUEST, OnImeRequest)
     MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseEvent)
     MESSAGE_HANDLER(WM_MOUSELEAVE, OnMouseEvent)
     MESSAGE_HANDLER(WM_LBUTTONDOWN, OnMouseEvent)
@@ -160,6 +161,7 @@ class RenderWidgetHostViewWin
   virtual void SelectionBoundsChanged(const gfx::Rect& start_rect,
                                       const gfx::Rect& end_rect) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
+  virtual void ImeCompositionRangeChanged(const ui::Range& range) OVERRIDE;
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
       const std::vector<gfx::Rect>& copy_rects) OVERRIDE;
@@ -219,6 +221,8 @@ class RenderWidgetHostViewWin
   LRESULT OnImeComposition(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
   LRESULT OnImeEndComposition(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnImeRequest(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
   LRESULT OnMouseEvent(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
@@ -303,6 +307,9 @@ class RenderWidgetHostViewWin
   void MoveCursorToCenter() const;
 
   void HandleLockedMouseEvent(UINT message, WPARAM wparam, LPARAM lparam);
+
+  LRESULT OnDocumentFeed(RECONVERTSTRING* reconv);
+  LRESULT OnReconvertString(RECONVERTSTRING* reconv);
 
   // The associated Model.  While |this| is being Destroyed,
   // |render_widget_host_| is NULL and the Windows message loop is run one last
@@ -410,6 +417,8 @@ class RenderWidgetHostViewWin
   // In the case of the mouse being moved away from the view and then moved
   // back, we regard the mouse movement as (0, 0).
   bool ignore_mouse_movement_;
+
+  ui::Range composition_range_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };

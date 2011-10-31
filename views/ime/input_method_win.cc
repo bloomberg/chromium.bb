@@ -10,6 +10,10 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/events/event.h"
 
+// Extra number of chars before and after selection (or composition) range which
+// is returned to IME for improving conversion accuracy.
+static const size_t kExtraNumberOfChars = 20;
+
 namespace views {
 
 InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate)
@@ -115,6 +119,9 @@ LRESULT InputMethodWin::OnImeMessages(
     case WM_IME_ENDCOMPOSITION:
       result = OnImeEndComposition(message, w_param, l_param, handled);
       break;
+    case WM_IME_REQUEST:
+      result = OnImeRequest(message, w_param, l_param, handled);
+      break;
     case WM_CHAR:
     case WM_SYSCHAR:
       result = OnChar(message, w_param, l_param, handled);
@@ -219,6 +226,29 @@ LRESULT InputMethodWin::OnImeEndComposition(
   return 0;
 }
 
+LRESULT InputMethodWin::OnImeRequest(
+    UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled) {
+  *handled = FALSE;
+
+  // Should not receive WM_IME_REQUEST message, if IME is disabled.
+  const ui::TextInputType type = GetTextInputType();
+  if (type == ui::TEXT_INPUT_TYPE_NONE ||
+      type == ui::TEXT_INPUT_TYPE_PASSWORD) {
+    return 0;
+  }
+
+  switch (wparam) {
+    case IMR_RECONVERTSTRING:
+      *handled = TRUE;
+      return OnReconvertString(reinterpret_cast<RECONVERTSTRING*>(lparam));
+    case IMR_DOCUMENTFEED:
+      *handled = TRUE;
+      return OnDocumentFeed(reinterpret_cast<RECONVERTSTRING*>(lparam));
+    default:
+      return 0;
+  }
+}
+
 LRESULT InputMethodWin::OnChar(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled) {
   *handled = TRUE;
@@ -252,6 +282,123 @@ LRESULT InputMethodWin::OnDeadChar(
       ui::CompositionUnderline(0, 1, SK_ColorBLACK, false));
   GetTextInputClient()->SetCompositionText(composition);
   return 0;
+}
+
+LRESULT InputMethodWin::OnDocumentFeed(RECONVERTSTRING* reconv) {
+  TextInputClient* client = GetTextInputClient();
+  if (!client)
+    return 0;
+
+  ui::Range text_range;
+  if (!client->GetTextRange(&text_range) || text_range.is_empty())
+    return 0;
+
+  bool result = false;
+  ui::Range target_range;
+  if (client->HasCompositionText())
+    result = client->GetCompositionTextRange(&target_range);
+
+  if (!result || target_range.is_empty()) {
+    if (!client->GetSelectionRange(&target_range) ||
+        !target_range.IsValid()) {
+      return 0;
+    }
+  }
+
+  if (!text_range.Contains(target_range))
+    return 0;
+
+  if (target_range.GetMin() - text_range.start() > kExtraNumberOfChars)
+    text_range.set_start(target_range.GetMin() - kExtraNumberOfChars);
+
+  if (text_range.end() - target_range.GetMax() > kExtraNumberOfChars)
+    text_range.set_end(target_range.GetMax() + kExtraNumberOfChars);
+
+  size_t len = text_range.length();
+  size_t need_size = sizeof(RECONVERTSTRING) + len * sizeof(WCHAR);
+
+  if (!reconv)
+    return need_size;
+
+  if (reconv->dwSize < need_size)
+    return 0;
+
+  string16 text;
+  if (!GetTextInputClient()->GetTextFromRange(text_range, &text))
+    return 0;
+  DCHECK_EQ(text_range.length(), text.length());
+
+  reconv->dwVersion = 0;
+  reconv->dwStrLen = len;
+  reconv->dwStrOffset = sizeof(RECONVERTSTRING);
+  reconv->dwCompStrLen =
+      client->HasCompositionText() ? target_range.length() : 0;
+  reconv->dwCompStrOffset =
+      (target_range.GetMin() - text_range.start()) * sizeof(WCHAR);
+  reconv->dwTargetStrLen = target_range.length();
+  reconv->dwTargetStrOffset = reconv->dwCompStrOffset;
+
+  memcpy((char*)reconv + sizeof(RECONVERTSTRING),
+         text.c_str(), len * sizeof(WCHAR));
+
+  // According to Microsft API document, IMR_RECONVERTSTRING and
+  // IMR_DOCUMENTFEED should return reconv, but some applications return
+  // need_size.
+  return reinterpret_cast<LRESULT>(reconv);
+}
+
+LRESULT InputMethodWin::OnReconvertString(RECONVERTSTRING* reconv) {
+  TextInputClient* client = GetTextInputClient();
+  if (!client)
+    return 0;
+
+  // If there is a composition string already, we don't allow reconversion.
+  if (client->HasCompositionText())
+    return 0;
+
+  ui::Range text_range;
+  if (!client->GetTextRange(&text_range) || text_range.is_empty())
+    return 0;
+
+  ui::Range selection_range;
+  if (!client->GetSelectionRange(&selection_range) ||
+      selection_range.is_empty()) {
+    return 0;
+  }
+
+  DCHECK(text_range.Contains(selection_range));
+
+  size_t len = selection_range.length();
+  size_t need_size = sizeof(RECONVERTSTRING) + len * sizeof(WCHAR);
+
+  if (!reconv)
+    return need_size;
+
+  if (reconv->dwSize < need_size)
+    return 0;
+
+  // TODO(penghuang): Return some extra context to help improve IME's
+  // reconversion accuracy.
+  string16 text;
+  if (!GetTextInputClient()->GetTextFromRange(selection_range, &text))
+    return 0;
+  DCHECK_EQ(selection_range.length(), text.length());
+
+  reconv->dwVersion = 0;
+  reconv->dwStrLen = len;
+  reconv->dwStrOffset = sizeof(RECONVERTSTRING);
+  reconv->dwCompStrLen = len;
+  reconv->dwCompStrOffset = 0;
+  reconv->dwTargetStrLen = len;
+  reconv->dwTargetStrOffset = 0;
+
+  memcpy(reinterpret_cast<char*>(reconv) + sizeof(RECONVERTSTRING),
+         text.c_str(), len * sizeof(WCHAR));
+
+  // According to Microsft API document, IMR_RECONVERTSTRING and
+  // IMR_DOCUMENTFEED should return reconv, but some applications return
+  // need_size.
+  return reinterpret_cast<LRESULT>(reconv);
 }
 
 void InputMethodWin::ConfirmCompositionText() {

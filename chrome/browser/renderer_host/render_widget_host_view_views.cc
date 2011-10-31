@@ -384,10 +384,7 @@ void RenderWidgetHostViewViews::SetTooltipText(const string16& tip) {
 void RenderWidgetHostViewViews::SelectionChanged(const string16& text,
                                                  size_t offset,
                                                  const ui::Range& range) {
-  selection_text_ = text;
-  selection_text_offset_ = offset;
-  selection_range_ = range;
-
+  RenderWidgetHostView::SelectionChanged(text, offset, range);
   // TODO(anicolao): deal with the clipboard without GTK
   NOTIMPLEMENTED();
 }
@@ -752,9 +749,9 @@ bool RenderWidgetHostViewViews::HasCompositionText() {
 }
 
 bool RenderWidgetHostViewViews::GetTextRange(ui::Range* range) {
-  // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
-  NOTIMPLEMENTED();
-  return false;
+  range->set_start(selection_text_offset_);
+  range->set_end(selection_text_offset_ + selection_text_.length());
+  return true;
 }
 
 bool RenderWidgetHostViewViews::GetCompositionTextRange(ui::Range* range) {
@@ -764,9 +761,9 @@ bool RenderWidgetHostViewViews::GetCompositionTextRange(ui::Range* range) {
 }
 
 bool RenderWidgetHostViewViews::GetSelectionRange(ui::Range* range) {
-  // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
-  NOTIMPLEMENTED();
-  return false;
+  range->set_start(selection_range_.start());
+  range->set_end(selection_range_.end());
+  return true;
 }
 
 bool RenderWidgetHostViewViews::SetSelectionRange(const ui::Range& range) {
@@ -783,10 +780,23 @@ bool RenderWidgetHostViewViews::DeleteRange(const ui::Range& range) {
 
 bool RenderWidgetHostViewViews::GetTextFromRange(
     const ui::Range& range,
-    const base::Callback<void(const string16&)>& callback) {
-  // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
-  NOTIMPLEMENTED();
-  return false;
+    string16* text) {
+  ui::Range selection_text_range(selection_text_offset_,
+      selection_text_offset_ + selection_text_.length());
+
+  if (!selection_text_range.Contains(range)) {
+    text->clear();
+    return false;
+  }
+  if (selection_text_range.EqualsIgnoringDirection(range)) {
+    // Avoid calling substr which performance is low.
+    *text = selection_text_;
+  } else {
+    *text = selection_text_.substr(
+        range.GetMin() - selection_text_offset_,
+        range.length());
+  }
+  return true;
 }
 
 void RenderWidgetHostViewViews::OnInputMethodChanged() {

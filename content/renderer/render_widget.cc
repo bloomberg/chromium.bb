@@ -1155,7 +1155,9 @@ void RenderWidget::OnImeSetComposition(
 void RenderWidget::OnImeConfirmComposition(
     const string16& text, const ui::Range& replacement_range) {
   if (webwidget_) {
+    handling_input_event_ = true;
     webwidget_->confirmComposition(text);
+    handling_input_event_ = false;
   }
   // Send an updated IME range with just the caret range.
   ui::Range range(ui::Range::InvalidRange());
