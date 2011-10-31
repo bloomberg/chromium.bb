@@ -149,9 +149,9 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/content_restriction.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/common/content_restriction.h"
 #include "content/public/common/content_switches.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -4727,11 +4727,11 @@ void Browser::UpdateCommandsForContentRestrictionState() {
   int restrictions = GetContentRestrictionsForSelectedTab();
 
   command_updater_.UpdateCommandEnabled(
-      IDC_COPY, !(restrictions & CONTENT_RESTRICTION_COPY));
+      IDC_COPY, !(restrictions & content::CONTENT_RESTRICTION_COPY));
   command_updater_.UpdateCommandEnabled(
-      IDC_CUT, !(restrictions & CONTENT_RESTRICTION_CUT));
+      IDC_CUT, !(restrictions & content::CONTENT_RESTRICTION_CUT));
   command_updater_.UpdateCommandEnabled(
-      IDC_PASTE, !(restrictions & CONTENT_RESTRICTION_PASTE));
+      IDC_PASTE, !(restrictions & content::CONTENT_RESTRICTION_PASTE));
   UpdateSaveAsState(restrictions);
   UpdatePrintingState(restrictions);
 }
@@ -4750,7 +4750,7 @@ void Browser::UpdatePrintingState(int content_restrictions) {
     bool has_constrained_window = (wrapper &&
         wrapper->constrained_window_tab_helper()->constrained_window_count());
     if (has_constrained_window ||
-        content_restrictions & CONTENT_RESTRICTION_PRINT) {
+        content_restrictions & content::CONTENT_RESTRICTION_PRINT) {
       print_enabled = false;
       advanced_print_enabled = false;
     }
@@ -4816,7 +4816,7 @@ void Browser::MarkHomePageAsChanged(PrefService* pref_service) {
 }
 
 void Browser::UpdateSaveAsState(int content_restrictions) {
-  bool enabled = !(content_restrictions & CONTENT_RESTRICTION_SAVE);
+  bool enabled = !(content_restrictions & content::CONTENT_RESTRICTION_SAVE);
   PrefService* state = g_browser_process->local_state();
   if (state)
     enabled = enabled && state->GetBoolean(prefs::kAllowFileSelectionDialogs);
@@ -5382,7 +5382,7 @@ int Browser::GetContentRestrictionsForSelectedTab() {
     NavigationEntry* active_entry = current_tab->controller().GetActiveEntry();
     // See comment in UpdateCommandsForTabState about why we call url().
     if (!SavePackage::IsSavableURL(active_entry ? active_entry->url() : GURL()))
-      content_restrictions |= CONTENT_RESTRICTION_SAVE;
+      content_restrictions |= content::CONTENT_RESTRICTION_SAVE;
   }
   return content_restrictions;
 }

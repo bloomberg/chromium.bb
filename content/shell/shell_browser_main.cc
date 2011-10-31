@@ -20,7 +20,7 @@
 namespace content {
 
 ShellBrowserMainParts::ShellBrowserMainParts(
-    const MainFunctionParams& parameters)
+    const content::MainFunctionParams& parameters)
     : BrowserMainParts() {
   ShellContentBrowserClient* shell_browser_client =
       static_cast<ShellContentBrowserClient*>(

@@ -11,8 +11,8 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "content/common/main_function_params.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/main_function_params.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,7 +28,8 @@ class BrowserMainTest : public testing::Test {
 TEST_F(BrowserMainTest, WarmConnectionFieldTrial_WarmestSocket) {
   command_line_.AppendSwitchASCII(switches::kSocketReusePolicy, "0");
 
-  scoped_ptr<MainFunctionParams> params(new MainFunctionParams(command_line_));
+  scoped_ptr<content::MainFunctionParams> params(
+      new content::MainFunctionParams(command_line_));
   ScopedVector<content::BrowserMainParts> bwv;
   content::GetContentClient()->browser()->CreateBrowserMainParts(
       *params, &(bwv.get()));
@@ -43,7 +44,8 @@ TEST_F(BrowserMainTest, WarmConnectionFieldTrial_WarmestSocket) {
 }
 
 TEST_F(BrowserMainTest, WarmConnectionFieldTrial_Random) {
-  scoped_ptr<MainFunctionParams> params(new MainFunctionParams(command_line_));
+  scoped_ptr<content::MainFunctionParams> params(
+      new content::MainFunctionParams(command_line_));
   ScopedVector<content::BrowserMainParts> bwv;
   content::GetContentClient()->browser()->CreateBrowserMainParts(
       *params, &(bwv.get()));
@@ -65,7 +67,8 @@ TEST_F(BrowserMainTest, WarmConnectionFieldTrial_Random) {
 TEST_F(BrowserMainTest, WarmConnectionFieldTrial_Invalid) {
   command_line_.AppendSwitchASCII(switches::kSocketReusePolicy, "100");
 
-  scoped_ptr<MainFunctionParams> params(new MainFunctionParams(command_line_));
+  scoped_ptr<content::MainFunctionParams> params(
+      new content::MainFunctionParams(command_line_));
   // This test ends up launching a new process, and that doesn't initialize the
   // ContentClient interfaces.
   ScopedVector<content::BrowserMainParts> bwv;

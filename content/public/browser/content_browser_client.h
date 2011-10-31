@@ -35,11 +35,11 @@ class TabContents;
 class TabContentsView;
 class WorkerProcessHost;
 struct DesktopNotificationHostMsg_Show_Params;
-struct MainFunctionParams;
 struct WebPreferences;
 
 namespace content {
 class BrowserMainParts;
+struct MainFunctionParams;
 }
 
 namespace crypto {
@@ -86,7 +86,7 @@ class ContentBrowserClient {
   // implementations for the browser startup code. See comments in
   // browser_main_parts.h.
   virtual void CreateBrowserMainParts(
-      const MainFunctionParams& parameters,
+      const content::MainFunctionParams& parameters,
       std::vector<BrowserMainParts*>* parts_list) = 0;
 
   // Platform-specific creator. Use this to construct new RenderWidgetHostViews

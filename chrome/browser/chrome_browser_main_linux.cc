@@ -12,7 +12,7 @@
 #endif
 
 ChromeBrowserMainPartsLinux::ChromeBrowserMainPartsLinux(
-    const MainFunctionParams& parameters)
+    const content::MainFunctionParams& parameters)
     : ChromeBrowserMainPartsPosix(parameters) {
 }
 

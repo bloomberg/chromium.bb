@@ -16,9 +16,9 @@
 #include "base/threading/platform_thread.h"
 #include "content/common/child_process.h"
 #include "content/common/hi_res_timer_manager.h"
-#include "content/common/main_function_params.h"
 #include "content/plugin/plugin_thread.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/main_function_params.h"
 
 #if defined(OS_WIN)
 #include "content/common/injection_test_dll.h"
@@ -75,7 +75,7 @@ int PreloadIMEForFlash() {
 #endif
 
 // main() routine for running as the plugin process.
-int PluginMain(const MainFunctionParams& parameters) {
+int PluginMain(const content::MainFunctionParams& parameters) {
   // The main thread of the plugin services UI.
 #if defined(OS_MACOSX)
 #if !defined(__LP64__)

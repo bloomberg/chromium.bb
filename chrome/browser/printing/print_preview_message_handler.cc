@@ -21,8 +21,8 @@
 #include "chrome/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/content_restriction.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_restriction.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 
@@ -245,7 +245,7 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
 void PrintPreviewMessageHandler::DidStartLoading() {
   if (tab_contents()->delegate() &&
       PrintPreviewTabController::IsPrintPreviewTab(tab_contents_wrapper())) {
-    tab_contents()->SetContentRestrictions(CONTENT_RESTRICTION_PRINT);
+    tab_contents()->SetContentRestrictions(content::CONTENT_RESTRICTION_PRINT);
   }
 }
 

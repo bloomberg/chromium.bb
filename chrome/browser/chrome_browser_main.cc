@@ -90,9 +90,9 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/child_process.h"
-#include "content/common/main_function_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/main_function_params.h"
 #include "grit/app_locale_settings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -413,7 +413,7 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
 // Initializes the profile, possibly doing some user prompting to pick a
 // fallback profile. Returns the newly created profile, or NULL if startup
 // should not continue.
-Profile* CreateProfile(const MainFunctionParams& parameters,
+Profile* CreateProfile(const content::MainFunctionParams& parameters,
                        const FilePath& user_data_dir,
                        const CommandLine& parsed_command_line) {
   Profile* profile;
@@ -686,7 +686,7 @@ const char kMissingLocaleDataMessage[] =
 // BrowserMainParts ------------------------------------------------------------
 
 ChromeBrowserMainParts::ChromeBrowserMainParts(
-    const MainFunctionParams& parameters)
+    const content::MainFunctionParams& parameters)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(content::RESULT_CODE_NORMAL_EXIT),

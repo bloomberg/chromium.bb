@@ -30,7 +30,6 @@
 #include "crypto/nss_util.h"
 #include "content/common/chrome_descriptors.h"
 #include "content/common/font_config_ipc_linux.h"
-#include "content/common/main_function_params.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/common/process_watcher.h"
 #include "content/common/sandbox_methods_linux.h"
@@ -38,6 +37,7 @@
 #include "content/common/set_process_title.h"
 #include "content/common/unix_domain_socket_posix.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "skia/ext/SkFontHost_fontconfig_control.h"
@@ -805,7 +805,7 @@ static bool EnterSandbox() {
 
 #endif  // CHROMIUM_SELINUX
 
-bool ZygoteMain(const MainFunctionParams& params,
+bool ZygoteMain(const content::MainFunctionParams& params,
                 content::ZygoteForkDelegate* forkdelegate) {
 #if !defined(CHROMIUM_SELINUX)
   g_am_zygote_or_renderer = true;

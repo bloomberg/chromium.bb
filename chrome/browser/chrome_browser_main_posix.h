@@ -9,7 +9,8 @@
 
 class ChromeBrowserMainPartsPosix : public ChromeBrowserMainParts {
  public:
-  explicit ChromeBrowserMainPartsPosix(const MainFunctionParams& parameters);
+  explicit ChromeBrowserMainPartsPosix(
+      const content::MainFunctionParams& parameters);
 
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;

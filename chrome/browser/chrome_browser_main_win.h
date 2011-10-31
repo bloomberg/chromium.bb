@@ -19,7 +19,8 @@ int DoUninstallTasks(bool chrome_still_running);
 
 class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
  public:
-  explicit ChromeBrowserMainPartsWin(const MainFunctionParams& parameters);
+  explicit ChromeBrowserMainPartsWin(
+      const content::MainFunctionParams& parameters);
 
   // BrowserParts overrides.
   virtual void PreMainMessageLoopStart() OVERRIDE;

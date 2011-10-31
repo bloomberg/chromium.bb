@@ -10,7 +10,8 @@
 
 class ChromeBrowserMainPartsMac : public ChromeBrowserMainPartsPosix {
  public:
-  explicit ChromeBrowserMainPartsMac(const MainFunctionParams& parameters);
+  explicit ChromeBrowserMainPartsMac(
+      const content::MainFunctionParams& parameters);
 
   // BrowserParts overrides.
   virtual void PreEarlyInitialization() OVERRIDE;

@@ -24,7 +24,7 @@ MockContentBrowserClient::~MockContentBrowserClient() {
 }
 
 void MockContentBrowserClient::CreateBrowserMainParts(
-    const MainFunctionParams& parameters,
+    const content::MainFunctionParams& parameters,
     std::vector<BrowserMainParts*>* parts_list) {
 }
 

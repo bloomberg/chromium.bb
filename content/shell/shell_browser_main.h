@@ -11,7 +11,6 @@
 #include "content/public/browser/browser_main_parts.h"
 
 class ResourceDispatcherHost;
-struct MainFunctionParams;
 
 namespace base {
 class Thread;
@@ -24,10 +23,11 @@ class Clipboard;
 namespace content {
 
 class ShellBrowserContext;
+struct MainFunctionParams;
 
 class ShellBrowserMainParts : public BrowserMainParts {
  public:
-  explicit ShellBrowserMainParts(const MainFunctionParams& parameters);
+  explicit ShellBrowserMainParts(const content::MainFunctionParams& parameters);
   virtual ~ShellBrowserMainParts();
 
   virtual void PreEarlyInitialization() OVERRIDE {}

@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/common/main_function_params.h"
+#include "content/public/common/main_function_params.h"
 #include "net/base/network_change_notifier.h"
 
 #if defined(TOOLKIT_USES_GTK)
@@ -71,7 +71,7 @@ static base::LazyInstance<MessageLoopObserver> g_message_loop_observer(
     base::LINKER_INITIALIZED);
 
 ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
-    const MainFunctionParams& parameters)
+    const content::MainFunctionParams& parameters)
     : ChromeBrowserMainPartsLinux(parameters) {
 }
 

@@ -15,12 +15,12 @@
 #include <vector>
 
 #include "base/at_exit.h"
+#include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "chrome/nacl/nacl_listener.h"
-#include "content/common/main_function_params.h"
 #include "content/common/unix_domain_socket_posix.h"
 #include "ipc/ipc_switches.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"

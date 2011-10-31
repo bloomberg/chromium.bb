@@ -202,7 +202,7 @@ RenderProcessHostPrivilege GetProcessPrivilege(
 namespace chrome {
 
 void ChromeContentBrowserClient::CreateBrowserMainParts(
-    const MainFunctionParams& parameters,
+    const content::MainFunctionParams& parameters,
     std::vector<content::BrowserMainParts*>* parts_list) {
   // Construct the Main browser parts based on the OS type.
 #if defined(OS_WIN)

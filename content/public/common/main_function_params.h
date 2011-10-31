@@ -6,8 +6,8 @@
 // plugin) to shield the call sites from the differences between platforms
 // (e.g., POSIX doesn't need to pass any sandbox information).
 
-#ifndef CONTENT_COMMON_MAIN_FUNCTION_PARAMS_H_
-#define CONTENT_COMMON_MAIN_FUNCTION_PARAMS_H_
+#ifndef CONTENT_PUBLIC_COMMON_MAIN_FUNCTION_PARAMS_H_
+#define CONTENT_PUBLIC_COMMON_MAIN_FUNCTION_PARAMS_H_
 #pragma once
 
 #include "base/command_line.h"
@@ -25,6 +25,8 @@ class ScopedNSAutoreleasePool;
 #endif
 
 class Task;
+
+namespace content {
 
 struct MainFunctionParams {
   explicit MainFunctionParams(const CommandLine& cl)
@@ -46,4 +48,6 @@ struct MainFunctionParams {
   Task* ui_task;
 };
 
-#endif  // CONTENT_COMMON_MAIN_FUNCTION_PARAMS_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_COMMON_MAIN_FUNCTION_PARAMS_H_

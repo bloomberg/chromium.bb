@@ -23,12 +23,15 @@ class PrefService;
 class Profile;
 class ShutdownWatcherHelper;
 class TranslateManager;
-struct MainFunctionParams;
 
 namespace chrome_browser {
 // For use by ShowMissingLocaleMessageBox.
 extern const char kMissingLocaleDataTitle[];
 extern const char kMissingLocaleDataMessage[];
+}
+
+namespace content {
+struct MainFunctionParams;
 }
 
 class ChromeBrowserMainParts : public content::BrowserMainParts {
@@ -40,7 +43,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // switches.
   MetricsService* SetupMetricsAndFieldTrials(PrefService* local_state);
 
-  const MainFunctionParams& parameters() const {
+  const content::MainFunctionParams& parameters() const {
     return parameters_;
   }
   const CommandLine& parsed_command_line() const {
@@ -48,7 +51,8 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   }
 
  protected:
-  explicit ChromeBrowserMainParts(const MainFunctionParams& parameters);
+  explicit ChromeBrowserMainParts(
+      const content::MainFunctionParams& parameters);
 
   // content::BrowserParts overrides
   virtual void PreEarlyInitialization() OVERRIDE {}
@@ -109,7 +113,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Members initialized on construction ---------------------------------------
 
-  const MainFunctionParams& parameters_;
+  const content::MainFunctionParams& parameters_;
   const CommandLine& parsed_command_line_;
   int result_code_;
 

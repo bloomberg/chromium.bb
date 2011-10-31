@@ -11,8 +11,8 @@
 #include "base/metrics/histogram.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/notification_service_impl.h"
-#include "content/common/main_function_params.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/main_function_params.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
@@ -33,7 +33,7 @@ bool ExitedMainMessageLoop() {
 }  // namespace content
 
 // Main routine for running as the Browser process.
-int BrowserMain(const MainFunctionParams& parameters) {
+int BrowserMain(const content::MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN_ETW("BrowserMain", 0, "");
 
   NotificationServiceImpl main_notification_service;

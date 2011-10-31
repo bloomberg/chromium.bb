@@ -10,7 +10,7 @@
 #include "base/threading/platform_thread.h"
 #include "content/common/child_process.h"
 #include "content/common/hi_res_timer_manager.h"
-#include "content/common/main_function_params.h"
+#include "content/public/common/main_function_params.h"
 #include "content/worker/worker_thread.h"
 
 #if defined(OS_WIN)
@@ -19,7 +19,7 @@
 #endif
 
 // Mainline routine for running as the worker process.
-int WorkerMain(const MainFunctionParams& parameters) {
+int WorkerMain(const content::MainFunctionParams& parameters) {
   // The main message loop of the worker process.
   MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrWorkerMain");

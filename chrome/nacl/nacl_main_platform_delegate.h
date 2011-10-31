@@ -7,14 +7,15 @@
 #pragma once
 
 #include "base/native_library.h"
-#include "content/common/main_function_params.h"
+#include "content/public/common/main_function_params.h"
 
 typedef bool (*RunNaClLoaderTests)(void);
 const char kNaClLoaderTestCall[] = "RunNaClLoaderTests";
 
 class NaClMainPlatformDelegate {
  public:
-  explicit NaClMainPlatformDelegate(const MainFunctionParams& parameters);
+  explicit NaClMainPlatformDelegate(
+      const content::MainFunctionParams& parameters);
   ~NaClMainPlatformDelegate();
 
   // Called first thing and last thing in the process' lifecycle, i.e. before
@@ -35,7 +36,7 @@ class NaClMainPlatformDelegate {
   bool RunSandboxTests();
 
  private:
-  const MainFunctionParams& parameters_;
+  const content::MainFunctionParams& parameters_;
   base::NativeLibrary sandbox_test_module_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClMainPlatformDelegate);

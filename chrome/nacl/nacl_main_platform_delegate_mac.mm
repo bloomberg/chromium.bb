@@ -14,7 +14,7 @@
 #include "content/public/common/sandbox_init.h"
 
 NaClMainPlatformDelegate::NaClMainPlatformDelegate(
-    const MainFunctionParams& parameters)
+    const content::MainFunctionParams& parameters)
     : parameters_(parameters), sandbox_test_module_(NULL) {
 }
 

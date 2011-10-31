@@ -17,10 +17,10 @@
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "content/common/content_counters.h"
-#include "content/common/main_function_params.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/main_function_params.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
@@ -121,7 +121,7 @@ class RendererMessageLoopObserver : public MessageLoop::TaskObserver {
 };
 
 // mainline routine for running as the Renderer process
-int RendererMain(const MainFunctionParams& parameters) {
+int RendererMain(const content::MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN_ETW("RendererMain", 0, "");
 
   const CommandLine& parsed_command_line = parameters.command_line;

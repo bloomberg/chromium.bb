@@ -31,7 +31,7 @@
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
-#include "content/common/main_function_params.h"
+#include "content/public/common/main_function_params.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -136,7 +136,7 @@ int DoUninstallTasks(bool chrome_still_running) {
 // ChromeBrowserMainPartsWin ---------------------------------------------------
 
 ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
-    const MainFunctionParams& parameters)
+    const content::MainFunctionParams& parameters)
     : ChromeBrowserMainParts(parameters) {
 }
 

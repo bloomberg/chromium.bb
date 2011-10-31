@@ -15,8 +15,6 @@ class CommandLine;
 class HighResolutionTimerManager;
 class MessageLoop;
 
-struct MainFunctionParams;
-
 namespace base {
 class SystemMonitor;
 }
@@ -29,12 +27,13 @@ namespace content {
 
 class BrowserMainParts;
 class BrowserThreadImpl;
+struct MainFunctionParams;
 
 // Implements the main browser loop stages called from |BrowserMain()|.
 // See comments in browser_main_parts.h for additional info.
 class BrowserMainLoop {
  public:
-  explicit BrowserMainLoop(const MainFunctionParams& parameters);
+  explicit BrowserMainLoop(const content::MainFunctionParams& parameters);
   virtual ~BrowserMainLoop();
 
   void Init();
@@ -51,7 +50,7 @@ class BrowserMainLoop {
   void InitializeMainThread();
 
   // Members initialized on construction ---------------------------------------
-  const MainFunctionParams& parameters_;
+  const content::MainFunctionParams& parameters_;
   const CommandLine& parsed_command_line_;
   int result_code_;
 

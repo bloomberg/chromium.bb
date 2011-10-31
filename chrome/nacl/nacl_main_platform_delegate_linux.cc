@@ -8,7 +8,7 @@
 #include "seccompsandbox/sandbox.h"
 
 NaClMainPlatformDelegate::NaClMainPlatformDelegate(
-    const MainFunctionParams& parameters)
+    const content::MainFunctionParams& parameters)
     : parameters_(parameters), sandbox_test_module_(NULL) {
 }
 

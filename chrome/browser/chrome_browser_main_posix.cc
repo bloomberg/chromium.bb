@@ -187,7 +187,7 @@ void SetFileDescriptorLimit(unsigned int max_descriptors) {
 // ChromeBrowserMainPartsPosix -------------------------------------------------
 
 ChromeBrowserMainPartsPosix::ChromeBrowserMainPartsPosix(
-    const MainFunctionParams& parameters)
+    const content::MainFunctionParams& parameters)
     : ChromeBrowserMainParts(parameters) {
 }
 

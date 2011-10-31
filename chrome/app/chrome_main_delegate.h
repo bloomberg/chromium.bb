@@ -28,7 +28,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   virtual void SandboxInitialized(const std::string& process_type) OVERRIDE;
   virtual int RunProcess(
       const std::string& process_type,
-      const MainFunctionParams& main_function_params) OVERRIDE;
+      const content::MainFunctionParams& main_function_params) OVERRIDE;
   virtual void ProcessExiting(const std::string& process_type) OVERRIDE;
 
 #if defined(OS_MACOSX)

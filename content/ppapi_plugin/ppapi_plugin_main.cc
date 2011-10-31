@@ -8,9 +8,9 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/common/child_process.h"
-#include "content/common/main_function_params.h"
 #include "content/ppapi_plugin/ppapi_thread.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/main_function_params.h"
 #include "ppapi/proxy/proxy_module.h"
 
 #if defined(OS_WIN)
@@ -28,7 +28,7 @@ void* g_target_services = 0;
 #endif
 
 // Main function for starting the PPAPI plugin process.
-int PpapiPluginMain(const MainFunctionParams& parameters) {
+int PpapiPluginMain(const content::MainFunctionParams& parameters) {
   const CommandLine& command_line = parameters.command_line;
 
 #if defined(OS_WIN)

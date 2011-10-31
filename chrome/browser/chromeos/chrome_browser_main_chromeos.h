@@ -15,7 +15,8 @@ class SessionManagerObserver;
 
 class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
  public:
-  explicit ChromeBrowserMainPartsChromeos(const MainFunctionParams& parameters);
+  explicit ChromeBrowserMainPartsChromeos(
+      const content::MainFunctionParams& parameters);
   virtual ~ChromeBrowserMainPartsChromeos();
 
   virtual void PreEarlyInitialization() OVERRIDE;

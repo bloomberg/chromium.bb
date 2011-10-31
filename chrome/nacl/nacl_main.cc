@@ -14,7 +14,7 @@
 #include "chrome/nacl/nacl_main_platform_delegate.h"
 #include "content/common/child_process.h"
 #include "content/common/hi_res_timer_manager.h"
-#include "content/common/main_function_params.h"
+#include "content/public/common/main_function_params.h"
 
 // This function provides some ways to test crash and assertion handling
 // behavior of the renderer.
@@ -29,7 +29,7 @@ static void HandleNaClTestParameters(const CommandLine& command_line) {
 }
 
 // main() routine for the NaCl loader process.
-int NaClMain(const MainFunctionParams& parameters) {
+int NaClMain(const content::MainFunctionParams& parameters) {
   const CommandLine& parsed_command_line = parameters.command_line;
 
   // This function allows pausing execution using the --nacl-startup-dialog

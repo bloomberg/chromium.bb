@@ -9,7 +9,7 @@
 #include "content/public/common/content_switches.h"
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
-    const MainFunctionParams& parameters)
+    const content::MainFunctionParams& parameters)
     : parameters_(parameters) {
 }
 

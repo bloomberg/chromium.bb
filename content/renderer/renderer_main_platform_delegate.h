@@ -14,7 +14,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
-#include "content/common/main_function_params.h"
+#include "content/public/common/main_function_params.h"
 
 #ifdef __OBJC__
 @class NSBundle;
@@ -24,7 +24,8 @@ class NSBundle;
 
 class CONTENT_EXPORT RendererMainPlatformDelegate {
  public:
-  explicit RendererMainPlatformDelegate(const MainFunctionParams& parameters);
+  explicit RendererMainPlatformDelegate(
+      const content::MainFunctionParams& parameters);
   ~RendererMainPlatformDelegate();
 
   // Called first thing and last thing in the process' lifecycle, i.e. before
@@ -43,7 +44,7 @@ class CONTENT_EXPORT RendererMainPlatformDelegate {
   void RunSandboxTests();
 
  private:
-  const MainFunctionParams& parameters_;
+  const content::MainFunctionParams& parameters_;
 #if defined(OS_WIN)
   HMODULE sandbox_test_module_;
 #elif defined(OS_MACOSX)

@@ -14,11 +14,11 @@
 #include "base/tracked_objects.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/common/hi_res_timer_manager.h"
-#include "content/common/main_function_params.h"
 #include "content/common/sandbox_policy.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
 #include "crypto/nss_util.h"
 #include "net/base/network_change_notifier.h"
@@ -147,7 +147,7 @@ namespace content {
 
 // BrowserMainLoop construction / destructione =============================
 
-BrowserMainLoop::BrowserMainLoop(const MainFunctionParams& parameters)
+BrowserMainLoop::BrowserMainLoop(const content::MainFunctionParams& parameters)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(content::RESULT_CODE_NORMAL_EXIT) {

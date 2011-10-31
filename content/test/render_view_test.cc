@@ -97,7 +97,7 @@ void RenderViewTest::SetUp() {
   render_thread_->set_routing_id(kRouteId);
 
   command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
-  params_.reset(new MainFunctionParams(*command_line_));
+  params_.reset(new content::MainFunctionParams(*command_line_));
   platform_.reset(new RendererMainPlatformDelegate(*params_));
   platform_->PlatformInitialize();
 

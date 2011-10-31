@@ -64,8 +64,8 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/content_restriction.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/content_restriction.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
@@ -1000,13 +1000,13 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
   if (id == IDC_PRINT &&
       (source_tab_contents_->content_restrictions() &
-          CONTENT_RESTRICTION_PRINT)) {
+          content::CONTENT_RESTRICTION_PRINT)) {
     return false;
   }
 
   if (id == IDC_SAVE_PAGE &&
       (source_tab_contents_->content_restrictions() &
-          CONTENT_RESTRICTION_SAVE)) {
+          content::CONTENT_RESTRICTION_SAVE)) {
     return false;
   }
 

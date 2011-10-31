@@ -29,7 +29,7 @@ ShellContentBrowserClient::~ShellContentBrowserClient() {
 }
 
 void ShellContentBrowserClient::CreateBrowserMainParts(
-    const MainFunctionParams& parameters,
+    const content::MainFunctionParams& parameters,
     std::vector<BrowserMainParts*>* parts_list) {
   parts_list->push_back(new ShellBrowserMainParts(parameters));
 }

@@ -62,7 +62,7 @@ void EnableThemeSupportForRenderer(bool no_sandbox) {
 }  // namespace
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
-    const MainFunctionParams& parameters)
+    const content::MainFunctionParams& parameters)
         : parameters_(parameters),
           sandbox_test_module_(NULL) {
 }

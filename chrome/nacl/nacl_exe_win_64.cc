@@ -17,16 +17,16 @@
 #include "chrome/nacl/nacl_listener.h"
 #include "chrome/nacl/nacl_main_platform_delegate.h"
 #include "content/common/hi_res_timer_manager.h"
-#include "content/common/main_function_params.h"
 #include "content/public/app/startup_helper_win.h"
+#include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
 #include "sandbox/src/sandbox_types.h"
 
-extern int NaClMain(const MainFunctionParams&);
+extern int NaClMain(const content::MainFunctionParams&);
 
 // main() routine for the NaCl broker process.
 // This is necessary for supporting NaCl in Chrome on Win64.
-int NaClBrokerMain(const MainFunctionParams& parameters) {
+int NaClBrokerMain(const content::MainFunctionParams& parameters) {
   const CommandLine& parsed_command_line = parameters.command_line;
 
   MessageLoopForIO main_message_loop;
@@ -67,7 +67,7 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
   // Die if the sandbox can't be enabled.
   CHECK(sandbox_initialized_ok) << "Error initializing sandbox for "
                                 << process_type;
-  MainFunctionParams main_params(command_line);
+  content::MainFunctionParams main_params(command_line);
   main_params.sandbox_info = &sandbox_info;
 
   if (process_type == switches::kNaClLoaderProcess)

@@ -105,8 +105,8 @@ base::LazyInstance<chrome::ChromeContentUtilityClient>
 base::LazyInstance<chrome::ChromeContentPluginClient>
     g_chrome_content_plugin_client(base::LINKER_INITIALIZED);
 
-extern int NaClMain(const MainFunctionParams&);
-extern int ServiceProcessMain(const MainFunctionParams&);
+extern int NaClMain(const content::MainFunctionParams&);
+extern int ServiceProcessMain(const content::MainFunctionParams&);
 
 namespace {
 
@@ -374,7 +374,7 @@ void SetUpProfilingShutdownHandler() {
 
 struct MainFunction {
   const char* name;
-  int (*function)(const MainFunctionParams&);
+  int (*function)(const content::MainFunctionParams&);
 };
 
 }  // namespace
@@ -657,7 +657,7 @@ void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
 
 int ChromeMainDelegate::RunProcess(
     const std::string& process_type,
-    const MainFunctionParams& main_function_params) {
+    const content::MainFunctionParams& main_function_params) {
   static const MainFunction kMainFunctions[] = {
     { switches::kServiceProcess,     ServiceProcessMain },
 #if defined(OS_MACOSX)

@@ -10,11 +10,10 @@
 
 #include "build/build_config.h"
 
-struct MainFunctionParams;
-
 namespace content {
 
 class ZygoteForkDelegate;
+struct MainFunctionParams;
 
 class ContentMainDelegate {
  public:
@@ -36,8 +35,9 @@ class ContentMainDelegate {
   virtual void SandboxInitialized(const std::string& process_type) = 0;
 
   // Asks the embedder to start a process that content doesn't know about.
-  virtual int RunProcess(const std::string& process_type,
-                         const MainFunctionParams& main_function_params) = 0;
+  virtual int RunProcess(
+      const std::string& process_type,
+      const content::MainFunctionParams& main_function_params) = 0;
 
   // Called right before the process exits.
   virtual void ProcessExiting(const std::string& process_type) = 0;

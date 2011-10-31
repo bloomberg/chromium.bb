@@ -13,7 +13,8 @@
 
 class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
  public:
-  explicit ChromeBrowserMainPartsLinux(const MainFunctionParams& parameters);
+  explicit ChromeBrowserMainPartsLinux(
+      const content::MainFunctionParams& parameters);
 
   // ChromeBrowserMainParts overrides.
   virtual void ShowMissingLocaleMessageBox() OVERRIDE;

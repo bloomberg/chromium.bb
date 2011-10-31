@@ -15,7 +15,6 @@
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "content/browser/browser_main.h"
-#include "content/common/main_function_params.h"
 #include "content/common/set_process_title.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/app/startup_helper_win.h"
@@ -23,6 +22,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_switches.h"
@@ -59,15 +59,15 @@ int tc_set_new_mode(int mode);
 }
 #endif
 
-extern int GpuMain(const MainFunctionParams&);
-extern int PluginMain(const MainFunctionParams&);
-extern int PpapiPluginMain(const MainFunctionParams&);
-extern int PpapiBrokerMain(const MainFunctionParams&);
-extern int RendererMain(const MainFunctionParams&);
-extern int WorkerMain(const MainFunctionParams&);
-extern int UtilityMain(const MainFunctionParams&);
+extern int GpuMain(const content::MainFunctionParams&);
+extern int PluginMain(const content::MainFunctionParams&);
+extern int PpapiPluginMain(const content::MainFunctionParams&);
+extern int PpapiBrokerMain(const content::MainFunctionParams&);
+extern int RendererMain(const content::MainFunctionParams&);
+extern int WorkerMain(const content::MainFunctionParams&);
+extern int UtilityMain(const content::MainFunctionParams&);
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-extern int ZygoteMain(const MainFunctionParams&,
+extern int ZygoteMain(const content::MainFunctionParams&,
                       content::ZygoteForkDelegate* forkdelegate);
 #endif
 
@@ -176,7 +176,7 @@ void InitializeStatsTable(base::ProcessId browser_pid,
 // flag.  This struct is used to build a table of (flag, main function) pairs.
 struct MainFunction {
   const char* name;
-  int (*function)(const MainFunctionParams&);
+  int (*function)(const content::MainFunctionParams&);
 };
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -184,7 +184,7 @@ struct MainFunction {
 // subprocesses that are launched via the zygote.  This function
 // fills in some process-launching bits around ZygoteMain().
 // Returns the exit code of the subprocess.
-int RunZygote(const MainFunctionParams& main_function_params,
+int RunZygote(const content::MainFunctionParams& main_function_params,
               content::ContentMainDelegate* delegate) {
   static const MainFunction kMainFunctions[] = {
     { switches::kRendererProcess,    RendererMain },
@@ -219,7 +219,7 @@ int RunZygote(const MainFunctionParams& main_function_params,
       base::GetParentProcessId(base::GetCurrentProcId()));
   InitializeStatsTable(browser_pid, command_line);
 
-  MainFunctionParams main_params(command_line);
+  content::MainFunctionParams main_params(command_line);
 
   // Get the new process type from the new command line.
   std::string process_type =
@@ -241,9 +241,10 @@ int RunZygote(const MainFunctionParams& main_function_params,
 // Run the FooMain() for a given process type.
 // If |process_type| is empty, runs BrowserMain().
 // Returns the exit code for this process.
-int RunNamedProcessTypeMain(const std::string& process_type,
-                            const MainFunctionParams& main_function_params,
-                            content::ContentMainDelegate* delegate) {
+int RunNamedProcessTypeMain(
+    const std::string& process_type,
+    const content::MainFunctionParams& main_function_params,
+    content::ContentMainDelegate* delegate) {
   static const MainFunction kMainFunctions[] = {
     { "",                            BrowserMain },
     { switches::kRendererProcess,    RendererMain },
@@ -435,7 +436,7 @@ int ContentMain(int argc,
   SetProcessTitleFromCommandLine(argv);
 #endif
 
-  MainFunctionParams main_params(command_line);
+  content::MainFunctionParams main_params(command_line);
 #if defined(OS_WIN)
   main_params.sandbox_info = sandbox_info;
 #elif defined(OS_MACOSX)

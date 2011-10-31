@@ -7,7 +7,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/service/service_process.h"
-#include "content/common/main_function_params.h"
+#include "content/public/common/main_function_params.h"
 
 #if defined(OS_WIN)
 #include "content/common/sandbox_policy.h"
@@ -17,7 +17,7 @@
 #endif  // defined(OS_WIN)
 
 // Mainline routine for running as the service process.
-int ServiceProcessMain(const MainFunctionParams& parameters) {
+int ServiceProcessMain(const content::MainFunctionParams& parameters) {
   MessageLoopForUI main_message_loop;
   main_message_loop.set_thread_name("MainThread");
   if (parameters.command_line.HasSwitch(switches::kWaitForDebugger)) {

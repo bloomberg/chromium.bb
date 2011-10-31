@@ -8,8 +8,8 @@
 #include "base/threading/platform_thread.h"
 #include "content/common/child_process.h"
 #include "content/common/hi_res_timer_manager.h"
-#include "content/common/main_function_params.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/main_function_params.h"
 #include "content/utility/utility_thread_impl.h"
 
 #if defined(OS_WIN)
@@ -17,7 +17,7 @@
 #endif
 
 // Mainline routine for running as the utility process.
-int UtilityMain(const MainFunctionParams& parameters) {
+int UtilityMain(const content::MainFunctionParams& parameters) {
   // The main message loop of the utility process.
   MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrUtilityMain");

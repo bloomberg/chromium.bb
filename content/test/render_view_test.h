@@ -11,8 +11,8 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "content/common/main_function_params.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/common/main_function_params.h"
 #include "content/renderer/mock_content_renderer_client.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "content/test/mock_keyboard.h"
@@ -123,7 +123,7 @@ class RenderViewTest : public testing::Test {
 
   // Used to setup the process so renderers can run.
   scoped_ptr<RendererMainPlatformDelegate> platform_;
-  scoped_ptr<MainFunctionParams> params_;
+  scoped_ptr<content::MainFunctionParams> params_;
   scoped_ptr<CommandLine> command_line_;
 };
 

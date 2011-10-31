@@ -15,8 +15,8 @@
 #include "base/win/scoped_com_initializer.h"
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_config.h"
-#include "content/common/main_function_params.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/main_function_params.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
 #include "ui/gfx/gl/gl_surface.h"
@@ -33,7 +33,7 @@
 #endif
 
 // Main function for starting the Gpu process.
-int GpuMain(const MainFunctionParams& parameters) {
+int GpuMain(const content::MainFunctionParams& parameters) {
   base::Time start_time = base::Time::Now();
 
   const CommandLine& command_line = parameters.command_line;

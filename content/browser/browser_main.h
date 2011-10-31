@@ -9,14 +9,14 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 
-struct MainFunctionParams;
-
 namespace content {
+
+struct MainFunctionParams;
 
 bool ExitedMainMessageLoop();
 
 }  // namespace content
 
-CONTENT_EXPORT int BrowserMain(const MainFunctionParams& parameters);
+CONTENT_EXPORT int BrowserMain(const content::MainFunctionParams& parameters);
 
 #endif  // CONTENT_BROWSER_BROWSER_MAIN_H_
