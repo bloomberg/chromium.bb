@@ -4,14 +4,16 @@
 
 #include "content/browser/resolve_proxy_msg_helper.h"
 
+#include "content/browser/browser_thread_impl.h"
 #include "content/common/view_messages.h"
-#include "content/test/test_browser_thread.h"
 #include "ipc/ipc_test_sink.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/mock_proxy_resolver.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using content::BrowserThreadImpl;
 
 // This ProxyConfigService always returns "http://pac" as the PAC url to use.
 class MockProxyConfigService : public net::ProxyConfigService {
@@ -78,7 +80,7 @@ class ResolveProxyMsgHelperTest : public testing::Test,
   }
 
   MessageLoop message_loop_;
-  content::TestBrowserThread io_thread_;
+  BrowserThreadImpl io_thread_;
   IPC::TestSink test_sink_;
 };
 

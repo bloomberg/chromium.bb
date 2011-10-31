@@ -4,13 +4,15 @@
 
 #include <vector>
 
+#include "content/browser/browser_thread_impl.h"
 #include "content/browser/speech/speech_recognizer.h"
-#include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "media/audio/test_audio_input_controller_factory.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using content::BrowserThreadImpl;
 
 using media::AudioInputController;
 using media::TestAudioInputController;
@@ -106,7 +108,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
 
  protected:
   MessageLoopForIO message_loop_;
-  content::TestBrowserThread io_thread_;
+  BrowserThreadImpl io_thread_;
   scoped_refptr<SpeechRecognizer> recognizer_;
   bool recording_complete_;
   bool recognition_complete_;

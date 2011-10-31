@@ -11,19 +11,21 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
+#include "content/browser/browser_thread_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_context.h"
 #include "content/browser/in_process_webkit/indexed_db_quota_client.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/test/test_browser_context.h"
-#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/database/database_util.h"
+
 
 // Declared to shorten the line lengths.
 static const quota::StorageType kTemp = quota::kStorageTypeTemporary;
 static const quota::StorageType kPerm = quota::kStorageTypePersistent;
 
 using namespace webkit_database;
+using content::BrowserThreadImpl;
 
 // Base class for our test fixtures.
 class IndexedDBQuotaClientTest : public testing::Test {
@@ -154,8 +156,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
   scoped_refptr<IndexedDBContext> idb_context_;
   base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_;
   MessageLoop message_loop_;
-  content::TestBrowserThread webkit_thread_;
-  content::TestBrowserThread io_thread_;
+  BrowserThreadImpl webkit_thread_;
+  BrowserThreadImpl io_thread_;
   quota::QuotaStatusCode delete_status_;
 };
 

@@ -5,6 +5,7 @@
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
+#include "content/browser/browser_thread_impl.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/mock_content_browser_client.h"
@@ -19,9 +20,10 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_browser_context.h"
-#include "content/test/test_browser_thread.h"
 #include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using content::BrowserThreadImpl;
 
 namespace {
 
@@ -115,7 +117,7 @@ class SiteInstanceTest : public testing::Test {
 
  private:
   MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  BrowserThreadImpl ui_thread_;
 
   SiteInstanceTestBrowserClient browser_client_;
   content::ContentBrowserClient* old_browser_client_;

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "content/browser/browser_thread_impl.h"
 #include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -13,7 +14,6 @@
 #include "content/browser/resource_context.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
-#include "content/test/test_browser_thread.h"
 #include "ipc/ipc_message_macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,6 +22,8 @@ using ::testing::_;
 using ::testing::DeleteArg;
 using ::testing::DoAll;
 using ::testing::Return;
+
+using content::BrowserThreadImpl;
 
 const int kProcessId = 5;
 const int kRenderId = 6;
@@ -142,11 +144,11 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   virtual void SetUp() {
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
     // ResourceContext must be created on UI thread.
-    ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
-                                                    message_loop_.get()));
+    ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,
+                                           message_loop_.get()));
     // MediaStreamManager must be created and called on IO thread.
-    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO,
-                                                    message_loop_.get()));
+    io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
+                                           message_loop_.get()));
 
     // Create a MediaStreamManager instance and hand over pointer to
     // ResourceContext.
@@ -196,8 +198,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
   scoped_refptr<MockMediaStreamDispatcherHost> host_;
   scoped_ptr<MessageLoop> message_loop_;
-  scoped_ptr<content::TestBrowserThread> ui_thread_;
-  scoped_ptr<content::TestBrowserThread> io_thread_;
+  scoped_ptr<BrowserThreadImpl> ui_thread_;
+  scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
 };
 

@@ -10,11 +10,13 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/test/test_file_util.h"
-#include "content/test/test_browser_thread.h"
+#include "content/browser/browser_thread_impl.h"
 #include "net/base/file_stream.h"
 #include "net/base/mock_file_stream.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using content::BrowserThreadImpl;
 
 namespace {
 
@@ -162,7 +164,7 @@ class BaseFileTest : public testing::Test {
 
   // Mock file thread to satisfy debug checks in BaseFile.
   MessageLoop message_loop_;
-  content::TestBrowserThread file_thread_;
+  BrowserThreadImpl file_thread_;
 };
 
 // Test the most basic scenario: just create the object and do a sanity check

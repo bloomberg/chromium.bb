@@ -8,11 +8,11 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/sync_socket.h"
+#include "content/browser/browser_thread_impl.h"
 #include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/mock_media_observer.h"
 #include "content/common/media/audio_messages.h"
-#include "content/test/test_browser_thread.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/fake_audio_output_stream.h"
@@ -27,6 +27,8 @@ using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArgumentPointee;
+
+using content::BrowserThreadImpl;
 
 static const int kStreamId = 50;
 
@@ -175,10 +177,10 @@ class AudioRendererHostTest : public testing::Test {
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
 
     // Claim to be on both the UI and IO threads to pass all the DCHECKS.
-    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO,
-                                                    message_loop_.get()));
-    ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
-                                                    message_loop_.get()));
+    io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
+                                           message_loop_.get()));
+    ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,
+                                           message_loop_.get()));
 
     observer_.reset(new MockMediaObserver());
     content::MockResourceContext* context =
@@ -359,8 +361,8 @@ class AudioRendererHostTest : public testing::Test {
   scoped_ptr<MockMediaObserver> observer_;
   scoped_refptr<MockAudioRendererHost> host_;
   scoped_ptr<MessageLoop> message_loop_;
-  scoped_ptr<content::TestBrowserThread> io_thread_;
-  scoped_ptr<content::TestBrowserThread> ui_thread_;
+  scoped_ptr<BrowserThreadImpl> io_thread_;
+  scoped_ptr<BrowserThreadImpl> ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHostTest);
 };

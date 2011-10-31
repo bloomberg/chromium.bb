@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/browser_thread_impl.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/test/test_browser_context.h"
-#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using content::BrowserThreadImpl;
 
 class MockDOMStorageContext : public DOMStorageContext {
  public:
@@ -47,8 +49,7 @@ TEST(WebKitContextTest, PurgeMemory) {
   // Start up a WebKit thread for the WebKitContext to call the
   // DOMStorageContext on.
   MessageLoop message_loop(MessageLoop::TYPE_DEFAULT);
-  content::TestBrowserThread webkit_thread(BrowserThread::WEBKIT,
-                                           &message_loop);
+  BrowserThreadImpl webkit_thread(BrowserThread::WEBKIT, &message_loop);
 
   {
     // Create the contexts.

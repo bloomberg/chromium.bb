@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_id_factory.h"
@@ -23,7 +24,6 @@
 #include "content/common/resource_messages.h"
 #include "content/common/resource_response.h"
 #include "content/common/view_messages.h"
-#include "content/test/test_browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_util.h"
@@ -32,6 +32,8 @@
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_interfaces.h"
+
+using content::BrowserThreadImpl;
 
 // TODO(eroman): Write unit tests for SafeBrowsing that exercise
 //               SafeBrowsingResourceHandler.
@@ -386,8 +388,8 @@ class ResourceDispatcherHostTest : public testing::Test,
   }
 
   MessageLoopForIO message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  BrowserThreadImpl ui_thread_;
+  BrowserThreadImpl io_thread_;
   scoped_refptr<ForwardingFilter> filter_;
   ResourceDispatcherHost host_;
   ResourceIPCAccumulator accum_;

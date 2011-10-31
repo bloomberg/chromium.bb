@@ -9,10 +9,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "content/test/test_browser_thread.h"
+#include "content/browser/browser_thread_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/plugins/webplugininfo.h"
+
+using content::BrowserThreadImpl;
 
 class MockPluginLoaderPosix : public PluginLoaderPosix {
  public:
@@ -82,8 +84,8 @@ class PluginLoaderPosixTest : public testing::Test {
 
  private:
   MessageLoopForIO message_loop_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
+  BrowserThreadImpl file_thread_;
+  BrowserThreadImpl io_thread_;
 
   scoped_refptr<MockPluginLoaderPosix> plugin_loader_;
 };

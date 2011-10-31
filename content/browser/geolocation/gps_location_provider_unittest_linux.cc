@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/browser_thread_impl.h"
 #include "content/browser/geolocation/gps_location_provider_linux.h"
 #include "content/browser/geolocation/libgps_wrapper_linux.h"
-#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using content::BrowserThreadImpl;
 
 struct gps_data_t {
 };
@@ -66,7 +68,7 @@ class GeolocationGpsProviderLinuxTests : public testing::Test {
 
  protected:
   MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
+  BrowserThreadImpl ui_thread_;
   LocaionProviderListenerLoopQuitter location_listener_;
   scoped_ptr<GpsLocationProviderLinux> provider_;
 };
