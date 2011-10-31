@@ -236,9 +236,8 @@ void PasswordManager::Autofill(
     }
     default:
       if (observer_) {
-        observer_->OnAutofillDataAvailable(
-            UTF16ToWideHack(preferred_match->username_value),
-            UTF16ToWideHack(preferred_match->password_value));
+        observer_->OnAutofillDataAvailable(preferred_match->username_value,
+                                           preferred_match->password_value);
       }
   }
 }

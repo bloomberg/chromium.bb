@@ -26,22 +26,22 @@ namespace {
 class LoginPromptBrowserTest : public InProcessBrowserTest {
  public:
   LoginPromptBrowserTest()
-      : bad_password_(L"incorrect"), bad_username_(L"nouser") {
+      : bad_password_("incorrect"), bad_username_("nouser") {
     set_show_window(true);
 
-    auth_map_["foo"] = AuthInfo(L"testuser", L"foopassword");
-    auth_map_["bar"] = AuthInfo(L"testuser", L"barpassword");
+    auth_map_["foo"] = AuthInfo("testuser", "foopassword");
+    auth_map_["bar"] = AuthInfo("testuser", "barpassword");
   }
 
  protected:
   struct AuthInfo {
-    std::wstring username_;
-    std::wstring password_;
+    std::string username_;
+    std::string password_;
 
     AuthInfo() {}
 
-    AuthInfo(const std::wstring username,
-             const std::wstring password)
+    AuthInfo(const std::string username,
+             const std::string password)
         : username_(username), password_(password) {}
   };
 
@@ -50,8 +50,8 @@ class LoginPromptBrowserTest : public InProcessBrowserTest {
   void SetAuthFor(LoginHandler* handler);
 
   AuthMap auth_map_;
-  std::wstring bad_password_;
-  std::wstring bad_username_;
+  std::string bad_password_;
+  std::string bad_username_;
 };
 
 void LoginPromptBrowserTest::SetAuthFor(LoginHandler* handler) {
@@ -62,8 +62,8 @@ void LoginPromptBrowserTest::SetAuthFor(LoginHandler* handler) {
   EXPECT_TRUE(auth_map_.end() != i);
   if (i != auth_map_.end()) {
     const AuthInfo& info = i->second;
-    handler->SetAuth(WideToUTF16Hack(info.username_),
-                     WideToUTF16Hack(info.password_));
+    handler->SetAuth(UTF8ToUTF16(info.username_),
+                     UTF8ToUTF16(info.password_));
   }
 }
 
@@ -491,8 +491,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, IncorrectConfirmation) {
     LoginHandler* handler = *observer.handlers_.begin();
 
     ASSERT_TRUE(handler);
-    handler->SetAuth(WideToUTF16Hack(bad_username_),
-                     WideToUTF16Hack(bad_password_));
+    handler->SetAuth(UTF8ToUTF16(bad_username_),
+                     UTF8ToUTF16(bad_password_));
     auth_supplied_waiter.Wait();
 
     // The request should be retried after the incorrect password is

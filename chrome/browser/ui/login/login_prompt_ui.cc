@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -127,8 +128,8 @@ class LoginHandlerHtmlDelegate : public HtmlDialogUIDelegate,
                    base::Unretained(this)));
   }
 
-  void ShowAutofillData(const std::wstring& username,
-                        const std::wstring& password);
+  void ShowAutofillData(const string16& username,
+                        const string16& password);
 
  private:
   // Send autofill data to HTML once the dialog is ready and the data is
@@ -147,8 +148,8 @@ class LoginHandlerHtmlDelegate : public HtmlDialogUIDelegate,
 
   bool has_autofill_;
   bool ready_for_autofill_;
-  std::string autofill_username_;
-  std::string autofill_password_;
+  string16 autofill_username_;
+  string16 autofill_password_;
 
   static const int kDialogWidth = 400;
   static const int kDialogHeight = 160;
@@ -164,8 +165,8 @@ class LoginHandlerHtml : public LoginHandler {
   }
 
   // LoginModelObserver method:
-  virtual void OnAutofillDataAvailable(const std::wstring& username,
-                                       const std::wstring& password) OVERRIDE {
+  virtual void OnAutofillDataAvailable(const string16& username,
+                                       const string16& password) OVERRIDE {
     if (delegate_)
       delegate_->ShowAutofillData(username, password);
   }
@@ -218,10 +219,10 @@ void LoginHandlerHtmlDelegate::OnDialogClosed(const std::string& json_retval) {
   // we've registered ourselves as a WebUIMessageHandler.
 }
 
-void LoginHandlerHtmlDelegate::ShowAutofillData(const std::wstring& username,
-                                                const std::wstring& password) {
-  autofill_username_ = WideToUTF8(username);
-  autofill_password_ = WideToUTF8(password);
+void LoginHandlerHtmlDelegate::ShowAutofillData(const string16& username,
+                                                const string16& password) {
+  autofill_username_ = username;
+  autofill_password_ = password;
   has_autofill_ = true;
   SendAutofillData();
 }

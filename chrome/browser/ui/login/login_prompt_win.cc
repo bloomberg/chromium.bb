@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/login/login_prompt.h"
 
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -37,8 +38,8 @@ class LoginHandlerWin : public LoginHandler,
   }
 
   // LoginModelObserver implementation.
-  virtual void OnAutofillDataAvailable(const std::wstring& username,
-                                       const std::wstring& password) OVERRIDE {
+  virtual void OnAutofillDataAvailable(const string16& username,
+                                       const string16& password) OVERRIDE {
     // Nothing to do here since LoginView takes care of autofil for win.
   }
 

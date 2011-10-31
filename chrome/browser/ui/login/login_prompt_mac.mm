@@ -6,6 +6,7 @@
 #import "chrome/browser/ui/login/login_prompt_mac.h"
 
 #include "base/mac/mac_util.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -44,12 +45,12 @@ class LoginHandlerMac : public LoginHandler,
   }
 
   // LoginModelObserver implementation.
-  virtual void OnAutofillDataAvailable(const std::wstring& username,
-                                       const std::wstring& password) {
+  virtual void OnAutofillDataAvailable(const string16& username,
+                                       const string16& password) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    [sheet_controller_ autofillLogin:base::SysWideToNSString(username)
-                            password:base::SysWideToNSString(password)];
+    [sheet_controller_ autofillLogin:base::SysUTF16ToNSString(username)
+                            password:base::SysUTF16ToNSString(password)];
   }
 
   // LoginHandler:

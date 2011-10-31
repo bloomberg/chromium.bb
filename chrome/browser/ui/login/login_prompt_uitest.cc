@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_proxy.h"
@@ -23,10 +25,10 @@ const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 class LoginPromptTest : public UITest {
  protected:
   LoginPromptTest()
-      : username_basic_(L"basicuser"),
-        username_digest_(L"digestuser"),
-        password_(L"secret"),
-        password_bad_(L"denyme"),
+      : username_basic_(UTF8ToUTF16("basicuser")),
+        username_digest_(UTF8ToUTF16("digestuser")),
+        password_(UTF8ToUTF16("secret")),
+        password_bad_(UTF8ToUTF16("denyme")),
         test_server_(net::TestServer::TYPE_HTTP, FilePath(kDocRoot)) {
   }
 
@@ -37,18 +39,18 @@ class LoginPromptTest : public UITest {
   }
 
  protected:
-  wstring username_basic_;
-  wstring username_digest_;
-  wstring password_;
-  wstring password_bad_;
+  string16 username_basic_;
+  string16 username_digest_;
+  string16 password_;
+  string16 password_bad_;
 
   net::TestServer test_server_;
 };
 
-wstring ExpectedTitleFromAuth(const wstring& username,
-                              const wstring& password) {
+string16 ExpectedTitleFromAuth(const string16& username,
+                               const string16& password) {
   // The TestServer sets the title to username/password on successful login.
-  return username + L"/" + password;
+  return username + UTF8ToUTF16("/") + password;
 }
 
 // Test that "Basic" HTTP authentication works.
@@ -61,7 +63,8 @@ TEST_F(LoginPromptTest, TestBasicAuth) {
             tab->NavigateToURL(test_server_.GetURL("auth-basic")));
 
   EXPECT_TRUE(tab->NeedsAuth());
-  EXPECT_FALSE(tab->SetAuth(username_basic_, password_bad_));
+  EXPECT_FALSE(tab->SetAuth(UTF16ToWideHack(username_basic_),
+                            UTF16ToWideHack(password_bad_)));
   EXPECT_TRUE(tab->NeedsAuth());
   EXPECT_TRUE(tab->CancelAuth());
   EXPECT_EQ(L"Denied: wrong password", GetActiveTabTitle());
@@ -70,9 +73,10 @@ TEST_F(LoginPromptTest, TestBasicAuth) {
             tab->NavigateToURL(test_server_.GetURL("auth-basic")));
 
   EXPECT_TRUE(tab->NeedsAuth());
-  EXPECT_TRUE(tab->SetAuth(username_basic_, password_));
+  EXPECT_TRUE(tab->SetAuth(UTF16ToWideHack(username_basic_),
+                           UTF16ToWideHack(password_)));
   EXPECT_EQ(ExpectedTitleFromAuth(username_basic_, password_),
-            GetActiveTabTitle());
+            WideToUTF16Hack(GetActiveTabTitle()));
 }
 
 // Test that "Digest" HTTP authentication works.
@@ -85,7 +89,8 @@ TEST_F(LoginPromptTest, TestDigestAuth) {
             tab->NavigateToURL(test_server_.GetURL("auth-digest")));
 
   EXPECT_TRUE(tab->NeedsAuth());
-  EXPECT_FALSE(tab->SetAuth(username_digest_, password_bad_));
+  EXPECT_FALSE(tab->SetAuth(UTF16ToWideHack(username_digest_),
+                            UTF16ToWideHack(password_bad_)));
   EXPECT_TRUE(tab->CancelAuth());
   EXPECT_EQ(L"Denied: wrong password", GetActiveTabTitle());
 
@@ -93,9 +98,10 @@ TEST_F(LoginPromptTest, TestDigestAuth) {
             tab->NavigateToURL(test_server_.GetURL("auth-digest")));
 
   EXPECT_TRUE(tab->NeedsAuth());
-  EXPECT_TRUE(tab->SetAuth(username_digest_, password_));
+  EXPECT_TRUE(tab->SetAuth(UTF16ToWideHack(username_digest_),
+                           UTF16ToWideHack(password_)));
   EXPECT_EQ(ExpectedTitleFromAuth(username_digest_, password_),
-            GetActiveTabTitle());
+            WideToUTF16Hack(GetActiveTabTitle()));
 }
 
 // Test that logging in on 2 tabs at once works.
@@ -114,16 +120,20 @@ TEST_F(LoginPromptTest, TestTwoAuths) {
             digest_tab->NavigateToURL(test_server_.GetURL("auth-digest")));
 
   EXPECT_TRUE(basic_tab->NeedsAuth());
-  EXPECT_TRUE(basic_tab->SetAuth(username_basic_, password_));
+  EXPECT_TRUE(basic_tab->SetAuth(UTF16ToWideHack(username_basic_),
+                                 UTF16ToWideHack(password_)));
   EXPECT_TRUE(digest_tab->NeedsAuth());
-  EXPECT_TRUE(digest_tab->SetAuth(username_digest_, password_));
+  EXPECT_TRUE(digest_tab->SetAuth(UTF16ToWideHack(username_digest_),
+                                  UTF16ToWideHack(password_)));
 
   wstring title;
   EXPECT_TRUE(basic_tab->GetTabTitle(&title));
-  EXPECT_EQ(ExpectedTitleFromAuth(username_basic_, password_), title);
+  EXPECT_EQ(ExpectedTitleFromAuth(username_basic_, password_),
+            WideToUTF16Hack(title));
 
   EXPECT_TRUE(digest_tab->GetTabTitle(&title));
-  EXPECT_EQ(ExpectedTitleFromAuth(username_digest_, password_), title);
+  EXPECT_EQ(ExpectedTitleFromAuth(username_digest_, password_),
+            WideToUTF16Hack(title));
 }
 
 // If multiple tabs are looking for the same auth, the user should only have to
@@ -147,16 +157,19 @@ TEST_F(LoginPromptTest, SupplyRedundantAuths) {
   // Set the auth in only one of the tabs (but wait for the other to load).
   int64 last_navigation_time;
   ASSERT_TRUE(basic_tab2->GetLastNavigationTime(&last_navigation_time));
-  EXPECT_TRUE(basic_tab1->SetAuth(username_basic_, password_));
+  EXPECT_TRUE(basic_tab1->SetAuth(UTF16ToWideHack(username_basic_),
+                                  UTF16ToWideHack(password_)));
   EXPECT_TRUE(basic_tab2->WaitForNavigation(last_navigation_time));
 
   // Now both tabs have loaded.
   wstring title1;
   EXPECT_TRUE(basic_tab1->GetTabTitle(&title1));
-  EXPECT_EQ(ExpectedTitleFromAuth(username_basic_, password_), title1);
+  EXPECT_EQ(ExpectedTitleFromAuth(username_basic_, password_),
+            WideToUTF16Hack(title1));
   wstring title2;
   EXPECT_TRUE(basic_tab2->GetTabTitle(&title2));
-  EXPECT_EQ(ExpectedTitleFromAuth(username_basic_, password_), title2);
+  EXPECT_EQ(ExpectedTitleFromAuth(username_basic_, password_),
+            WideToUTF16Hack(title2));
 }
 
 // If multiple tabs are looking for the same auth, and one is cancelled, the
