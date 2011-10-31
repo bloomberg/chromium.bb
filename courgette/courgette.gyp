@@ -37,8 +37,8 @@
       'simple_delta.h',
       'streams.cc',
       'streams.h',
-      'win32_x86_generator.h',
-      'win32_x86_patcher.h',
+      'patch_generator_x86_32.h',
+      'patcher_x86_32.h',
     ],
   },
   'targets': [

@@ -11,12 +11,12 @@
 
 namespace courgette {
 
-// CourgetteWin32X86Patcher is a TransformationPatcher for Windows 32-bit
+// Courgette32X86Patcher is a TransformationPatcher for Windows 32-bit
 // executables.
 //
-class CourgetteWin32X86Patcher : public TransformationPatcher {
+class PatcherX86_32 : public TransformationPatcher {
  public:
-  explicit CourgetteWin32X86Patcher(const Region& region)
+  explicit PatcherX86_32(const Region& region)
       : ensemble_region_(region) {
   }
 
@@ -86,7 +86,7 @@ class CourgetteWin32X86Patcher : public TransformationPatcher {
   uint32 base_offset_;
   uint32 base_length_;
 
-  DISALLOW_COPY_AND_ASSIGN(CourgetteWin32X86Patcher);
+  DISALLOW_COPY_AND_ASSIGN(PatcherX86_32);
 };
 
 }  // namespace

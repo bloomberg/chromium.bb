@@ -133,12 +133,6 @@ struct CourgettePatchFile {
   static const uint32 kMagic = 'C' | ('o' << 8) | ('u' << 16);
 
   static const uint32 kVersion = 20110216;
-
-  // Transformation method IDs. These are embedded in generated files, so
-  // never remove or change an existing id.
-  enum TransformationMethodId {
-    T_COURGETTE_WIN32_X86 = 1,  // Windows 32 bit 'Portable Executable' x86.
-  };
 };
 
 // For any transform you would implement both a TransformationPatcher and a
@@ -208,7 +202,7 @@ class TransformationPatchGenerator {
   virtual ~TransformationPatchGenerator();
 
   // Returns the TransformationMethodId that identies this transformation.
-  virtual CourgettePatchFile::TransformationMethodId Kind() = 0;
+  virtual ExecutableType Kind() = 0;
 
   // Writes the parameters that will be passed to TransformationPatcher::Init.
   virtual Status WriteInitialParameters(SinkStream* parameter_stream) = 0;

@@ -50,7 +50,7 @@ Status DetectExecutableType(const void* buffer, size_t length,
   }
 
   // We failed to detect anything
-  *type = UNKNOWN;
+  *type = EXE_UNKNOWN;
   *detected_length = 0;
   return C_INPUT_NOT_RECOGNIZED;
 }

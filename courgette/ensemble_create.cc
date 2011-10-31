@@ -28,8 +28,8 @@
 #include "courgette/region.h"
 #include "courgette/simple_delta.h"
 
-#include "courgette/win32_x86_patcher.h"
-#include "courgette/win32_x86_generator.h"
+#include "courgette/patcher_x86_32.h"
+#include "courgette/patch_generator_x86_32.h"
 
 namespace courgette {
 
@@ -65,14 +65,15 @@ Status TransformationPatchGenerator::Reform(
 TransformationPatchGenerator* MakeGenerator(Element* old_element,
                                             Element* new_element) {
   switch (new_element->kind()) {
-    case UNKNOWN:
+    case EXE_UNKNOWN:
       break;
-    case WIN32_X86: {
+    case EXE_WIN_32_X86: {
       TransformationPatchGenerator* generator =
-          new CourgetteWin32X86PatchGenerator(
+          new PatchGeneratorX86_32(
               old_element,
               new_element,
-              new CourgetteWin32X86Patcher(old_element->region()));
+              new PatcherX86_32(old_element->region()),
+              EXE_WIN_32_X86);
       return generator;
     }
   }
@@ -240,7 +241,7 @@ Status GenerateEnsemblePatch(SourceStream* base,
     return C_STREAM_ERROR;
 
   for (size_t i = 0;  i < number_of_transformations;  ++i) {
-    CourgettePatchFile::TransformationMethodId kind = generators[i]->Kind();
+    ExecutableType kind = generators[i]->Kind();
     if (!tranformation_descriptions->WriteVarint32(kind))
       return C_STREAM_ERROR;
   }

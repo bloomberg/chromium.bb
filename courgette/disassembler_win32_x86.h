@@ -18,7 +18,7 @@ class DisassemblerWin32X86 : public Disassembler {
  public:
   explicit DisassemblerWin32X86(const void* start, size_t length);
 
-  virtual ExecutableType kind() { return WIN32_X86; }
+  virtual ExecutableType kind() { return EXE_WIN_32_X86; }
 
   // Returns 'true' if the buffer appears to point to a Windows 32 bit
   // executable, 'false' otherwise.  If ParseHeader() succeeds, other member

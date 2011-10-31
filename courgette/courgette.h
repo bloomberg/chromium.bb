@@ -51,10 +51,10 @@ enum Status {
 };
 
 // What type of executable is something
-// Generally corresponds to CourgettePatchFile::TransformationMethodId
+// This is part of the patch format. Never reuse an id number.
 enum ExecutableType {
-  UNKNOWN,
-  WIN32_X86
+  EXE_UNKNOWN = 0,
+  EXE_WIN_32_X86 = 1,
 };
 
 class SinkStream;

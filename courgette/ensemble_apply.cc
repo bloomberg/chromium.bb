@@ -14,7 +14,7 @@
 #include "courgette/region.h"
 #include "courgette/streams.h"
 #include "courgette/simple_delta.h"
-#include "courgette/win32_x86_patcher.h"
+#include "courgette/patcher_x86_32.h"
 
 namespace courgette {
 
@@ -139,8 +139,8 @@ Status EnsemblePatchApplication::ReadInitialParameters(
 
     switch (kind)
     {
-      case CourgettePatchFile::T_COURGETTE_WIN32_X86:
-        patcher = new CourgetteWin32X86Patcher(base_region_);
+      case EXE_WIN_32_X86:
+        patcher = new PatcherX86_32(base_region_);
         break;
     }
 

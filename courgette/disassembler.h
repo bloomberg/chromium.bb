@@ -21,7 +21,7 @@ class Disassembler {
  public:
   virtual ~Disassembler();
 
-  virtual ExecutableType kind() { return UNKNOWN; }
+  virtual ExecutableType kind() { return EXE_UNKNOWN; }
 
   // ok() may always be called but returns 'true' only after ParseHeader
   // succeeds.

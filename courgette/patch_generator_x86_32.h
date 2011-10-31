@@ -14,17 +14,17 @@
 
 namespace courgette {
 
-class CourgetteWin32X86PatchGenerator : public TransformationPatchGenerator {
+class PatchGeneratorX86_32 : public TransformationPatchGenerator {
  public:
-  CourgetteWin32X86PatchGenerator(Element* old_element,
+  PatchGeneratorX86_32(Element* old_element,
                                   Element* new_element,
-                                  CourgetteWin32X86Patcher* patcher)
-      : TransformationPatchGenerator(old_element, new_element, patcher) {
+                                  PatcherX86_32* patcher,
+                                  ExecutableType kind)
+      : TransformationPatchGenerator(old_element, new_element, patcher),
+        kind_(kind) {
   }
 
-  CourgettePatchFile::TransformationMethodId Kind() {
-    return CourgettePatchFile::T_COURGETTE_WIN32_X86;
-  }
+  virtual ExecutableType Kind() { return kind_; }
 
   Status WriteInitialParameters(SinkStream* parameter_stream) {
     if (!parameter_stream->WriteSizeVarint32(
@@ -124,9 +124,11 @@ class CourgetteWin32X86PatchGenerator : public TransformationPatchGenerator {
   }
 
  private:
-  ~CourgetteWin32X86PatchGenerator() { }
+  virtual ~PatchGeneratorX86_32() { }
 
-  DISALLOW_COPY_AND_ASSIGN(CourgetteWin32X86PatchGenerator);
+  ExecutableType kind_;
+
+  DISALLOW_COPY_AND_ASSIGN(PatchGeneratorX86_32);
 };
 
 }  // namespace courgette
