@@ -1942,4 +1942,12 @@
    fun:CTFontGetAscent
    fun:__NSFontInstanceInfoInitializeMetricsInfo
 }
-
+{
+   bug_102327
+   Memcheck:Addr1
+   fun:_ZNK15tracked_objects10ThreadData26OnThreadTerminationCleanupEv
+   fun:_ZN15tracked_objects10ThreadData19OnThreadTerminationEPv
+   fun:_pthread_tsd_cleanup
+   fun:_pthread_exit
+   fun:thread_start
+}

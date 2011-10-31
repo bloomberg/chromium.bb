@@ -272,8 +272,9 @@
 {
   bug_68481 [test-only race on bool]
   ThreadSanitizer:Race
-  fun:tracked_objects::ThreadData::StartTracking*
-  fun:tracked_objects::TrackedObjectsTest_MinimalStartupShutdown_Test::TestBody*
+  ...
+  fun:tracked_objects::ThreadData::ShutdownSingleThreadedCleanup
+  fun:tracked_objects::TrackedObjectsTest_MinimalStartupShutdown_Test::*
 }
 
 # TODO(timurrrr): bug item
@@ -643,4 +644,22 @@
   ThreadSanitizer:Race
   fun:BrowserThread::~BrowserThread
   fun:DeprecatedBrowserThread::~DeprecatedBrowserThread
+}
+{
+  bug_102327_a
+  ThreadSanitizer:Race
+  fun:tracked_objects::ThreadData::Initialize
+  fun:tracked_objects::ThreadData::InitializeThreadContext
+  fun:base::Thread::ThreadMain
+  fun:base::::ThreadFunc
+}
+{
+  bug_102327_b
+  ThreadSanitizer:Race
+  ...
+  fun:tracked_objects::ThreadData::TallyABirthIfActive
+  fun:base::PosixDynamicThreadPool::PendingTask::PendingTask
+  fun:base::PosixDynamicThreadPool::WaitForTask
+  fun:base::::WorkerThread::ThreadMain
+  fun:base::::ThreadFunc
 }
