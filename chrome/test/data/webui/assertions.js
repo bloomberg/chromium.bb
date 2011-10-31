@@ -59,20 +59,41 @@ TEST_F('WebUIAssertionsTest', 'testConstructedMessage', function() {
 });
 
 /**
- * Async version of WebUIAssertionsTest.
+ * Failing version of WebUIAssertionsTest.
+ * @extends WebUIAssertionsTest
+ * @constructor
+ */
+function WebUIAssertionsTestFail() {}
+
+WebUIAssertionsTestFail.prototype = {
+  __proto__: WebUIAssertionsTest.prototype,
+
+  /** @inheritDoc */
+  testShouldFail: true,
+};
+
+// Test that an assertion failure fails test.
+TEST_F('WebUIAssertionsTestFail', 'testAssertFailFails', function() {
+  assertNotReached();
+});
+
+// Test that an expect failure fails test.
+TEST_F('WebUIAssertionsTestFail', 'testExpectFailFails', function() {
+  expectNotReached();
+});
+
+/**
+ * Async version of WebUIAssertionsTestFail.
  * @extends WebUIAssertionsTest
  * @constructor
  */
 function WebUIAssertionsTestAsyncFail() {}
 
 WebUIAssertionsTestAsyncFail.prototype = {
-  __proto__: WebUIAssertionsTest.prototype,
+  __proto__: WebUIAssertionsTestFail.prototype,
 
   /** @inheritDoc */
   isAsync: true,
-
-  /** @inheritDoc */
-  testShouldFail: true,
 };
 
 // Test that an assertion failure doesn't hang forever.

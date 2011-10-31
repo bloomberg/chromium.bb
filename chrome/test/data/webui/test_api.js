@@ -767,7 +767,10 @@ var testing = {};
     if (testBody != RUN_TEST_F) {
       console.log('Running test ' + testName);
     }
-    var result = runTestFunction(testFunction, testBody, testArguments, true);
+
+    // Async allow expect errors, but not assert errors.
+    var result = runTestFunction(testFunction, testBody, testArguments,
+                                 isAsync);
     if (!isAsync || !result[0])
       testDone(result);
     return true;
