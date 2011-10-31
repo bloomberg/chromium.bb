@@ -22,6 +22,10 @@ namespace browser {
 
 gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent, Profile* profile,
                                  HtmlDialogUIDelegate* delegate) {
+  // It's not always safe to display an html dialog with an off the record
+  // profile.  If the last browser with that profile is closed it will go
+  // away.
+  DCHECK(!profile->IsOffTheRecord() || delegate->IsDialogModal());
   HtmlDialogGtk* html_dialog =
       new HtmlDialogGtk(profile, delegate, parent);
   return html_dialog->InitDialog();

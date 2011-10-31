@@ -78,8 +78,17 @@ namespace browser {
 
 gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent, Profile* profile,
                                  HtmlDialogUIDelegate* delegate) {
+  // It's not always safe to display an html dialog with an off the record
+  // profile.  If the last browser with that profile is closed it will go
+  // away.
+  // On most platforms we insist on the dialog being modal if we're off the
+  // record to prevent that.  That wont work on the Mac since we don't have
+  // modal dialogs.
+  // Fall back to the old (incorrect) behavior of grabbing the original
+  // profile.
   // NOTE: Use the parent parameter once we implement modal dialogs.
-  return [HtmlDialogWindowController showHtmlDialog:delegate profile:profile];
+  return [HtmlDialogWindowController showHtmlDialog:delegate
+      profile:profile->GetOriginalProfile()];
 }
 
 }  // namespace html_dialog_window_controller

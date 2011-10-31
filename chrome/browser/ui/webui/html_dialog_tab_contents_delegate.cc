@@ -18,7 +18,7 @@
 // profile that's long-lived?  Of course, we'd still have to clear it out
 // when all incognito browsers close.
 HtmlDialogTabContentsDelegate::HtmlDialogTabContentsDelegate(Profile* profile)
-    : profile_(profile->GetOriginalProfile()) {}
+    : profile_(profile) {}
 
 HtmlDialogTabContentsDelegate::~HtmlDialogTabContentsDelegate() {}
 

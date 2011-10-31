@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/window.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -31,6 +32,10 @@ namespace browser {
 gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
                                  Profile* profile,
                                  HtmlDialogUIDelegate* delegate) {
+  // It's not always safe to display an html dialog with an off the record
+  // profile.  If the last browser with that profile is closed it will go
+  // away.
+  DCHECK(!profile->IsOffTheRecord() || delegate->IsDialogModal());
   HtmlDialogView* html_view = new HtmlDialogView(profile, delegate);
   browser::CreateViewsWindow(parent, html_view);
   html_view->InitDialog();
