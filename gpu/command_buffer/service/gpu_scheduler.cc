@@ -62,7 +62,7 @@ void GpuScheduler::PutChanged() {
 
   // Check that the GPU has passed all fences.
   if (!unschedule_fences_.empty()) {
-    if (glGenFencesNV) {
+    if (gfx::g_GL_NV_fence) {
       while (!unschedule_fences_.empty()) {
         if (glTestFenceNV(unschedule_fences_.front().fence)) {
           glDeleteFencesNV(1, &unschedule_fences_.front().fence);
@@ -181,7 +181,7 @@ void GpuScheduler::DeferToFence(base::Closure task) {
   //     This follows the semantics for texture object names before
   //     they are bound, in that they acquire their state upon binding.
   //     We will arbitrarily return TRUE for consistency.
-  if (glGenFencesNV) {
+  if (gfx::g_GL_NV_fence) {
     glGenFencesNV(1, &fence.fence);
     glSetFenceNV(fence.fence, GL_ALL_COMPLETED_NV);
   }

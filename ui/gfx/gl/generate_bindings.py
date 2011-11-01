@@ -476,7 +476,7 @@ FUNCTION_SETS = [
     '../../../third_party/mesa/MesaLib/include/GL/glxext.h']],
 ]
 
-def GenerateHeader(file, functions, set_name):
+def GenerateHeader(file, functions, set_name, used_extension_functions):
   """Generates gl_binding_autogen_x.h"""
 
   # Write file header.
@@ -506,6 +506,11 @@ def GenerateHeader(file, functions, set_name):
   for [return_type, names, arguments] in functions:
     file.write('typedef %s (GL_BINDING_CALL *%sProc)(%s);\n' %
         (return_type, names[0], arguments))
+
+  # Write declarations for booleans indicating which extensions are available.
+  file.write('\n')
+  for extension, ext_functions in used_extension_functions:
+    file.write('GL_EXPORT extern bool g_%s;\n' % extension)
 
   # Write declarations for function pointers. Always use the GL name for the
   # declaration.
@@ -541,9 +546,14 @@ def GenerateSource(file, functions, set_name, used_extension_functions):
   file.write('#include "ui/gfx/gl/gl_context.h"\n')
   file.write('#include "ui/gfx/gl/gl_implementation.h"\n')
 
-  # Write definitions of function pointers.
+  # Write definitions for booleans indicating which extensions are available.
   file.write('\n')
   file.write('namespace gfx {\n')
+  file.write('\n')
+  for extension, ext_functions in used_extension_functions:
+    file.write('bool g_%s;\n' % extension)
+
+  # Write definitions of function pointers.
   file.write('\n')
   file.write('static bool g_debugBindingsInitialized;\n')
   file.write('static void UpdateDebugGLExtensionBindings();\n')
@@ -576,7 +586,8 @@ def GenerateSource(file, functions, set_name, used_extension_functions):
       set_name.upper())
   file.write('  DCHECK(context && context->IsCurrent(NULL));\n')
   for extension, ext_functions in used_extension_functions:
-    file.write('  if (context->HasExtension("%s")) {\n' % extension)
+    file.write('  if ((g_%s = context->HasExtension("%s"))) {\n' %
+        (extension, extension))
     queried_entry_points = set()
     for entry_point_name, function_name in ext_functions:
       # Replace the pointer unconditionally unless this extension has several
@@ -836,15 +847,16 @@ def main(argv):
     dir = '.'
 
   for [functions, set_name, extension_headers] in FUNCTION_SETS:
+    used_extension_functions = GetUsedExtensionFunctions(
+        functions, extension_headers)
+
     header_file = open(
         os.path.join(dir, 'gl_bindings_autogen_%s.h' % set_name), 'wb')
-    GenerateHeader(header_file, functions, set_name)
+    GenerateHeader(header_file, functions, set_name, used_extension_functions)
     header_file.close()
 
     source_file = open(
         os.path.join(dir, 'gl_bindings_autogen_%s.cc' % set_name), 'wb')
-    used_extension_functions = GetUsedExtensionFunctions(
-        functions, extension_headers)
     GenerateSource(source_file, functions, set_name, used_extension_functions)
     source_file.close()
 
