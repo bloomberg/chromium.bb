@@ -37,18 +37,8 @@ deps = {
     Var("chromium_trunk") + "/src/build@" + Var("chrome_rev"),
   "chrome/test/pyautolib":
     Var("chromium_trunk") + "/src/chrome/test/pyautolib@" + Var("chrome_rev"),
-  "gpu/command_buffer":
-    Var("chromium_trunk") + "/src/gpu/command_buffer@" + Var("chrome_rev"),
-  "gpu/common":
-    Var("chromium_trunk") + "/src/gpu/common@" + Var("chrome_rev"),
-  "gpu/demos":
-    Var("chromium_trunk") + "/src/gpu/demos@" + Var("chrome_rev"),
-  "gpu/GLES2":
-    Var("chromium_trunk") + "/src/gpu/GLES2@" + Var("chrome_rev"),
-  "gpu/KHR":
-    Var("chromium_trunk") + "/src/gpu/KHR@" + Var("chrome_rev"),
-  "gpu/pgl":
-    Var("chromium_trunk") + "/src/gpu/pgl@" + Var("chrome_rev"),
+  "gpu":
+    Var("chromium_trunk") + "/src/gpu@" + Var("chrome_rev"),
   "native_client/src/third_party/valgrind/bin":
     Var("native_client_trunk") + "/src/third_party/valgrind/bin@" +
     Var("valgrind_rev"),
