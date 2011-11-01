@@ -385,8 +385,8 @@ Canvas* Canvas::CreateCanvas() {
   return new CanvasSkia;
 }
 
-Canvas* Canvas::CreateCanvas(int width, int height, bool is_opaque) {
-  return new CanvasSkia(width, height, is_opaque);
+Canvas* Canvas::CreateCanvas(const gfx::Size& size, bool is_opaque) {
+  return new CanvasSkia(size.width(), size.height(), is_opaque);
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

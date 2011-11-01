@@ -409,8 +409,8 @@ void Layer::UpdateLayerCanvas() {
     invalid_rect_ = gfx::Rect();
     return;
   }
-  scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvas(
-      draw_rect.width(), draw_rect.height(), false));
+  scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvas(draw_rect.size(),
+                                                           false));
   canvas->Translate(gfx::Point().Subtract(draw_rect.origin()));
   delegate_->OnPaintLayer(canvas.get());
   SetCanvas(*canvas->GetSkCanvas(), draw_rect.origin());

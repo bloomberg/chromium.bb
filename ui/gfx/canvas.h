@@ -29,6 +29,7 @@ class CanvasSkia;
 class Font;
 class Point;
 class Rect;
+class Size;
 
 // TODO(beng): documentation.
 class UI_EXPORT Canvas {
@@ -81,7 +82,7 @@ class UI_EXPORT Canvas {
   static Canvas* CreateCanvas();
 
   // Creates a canvas with the specified size.
-  static Canvas* CreateCanvas(int width, int height, bool is_opaque);
+  static Canvas* CreateCanvas(const gfx::Size& size, bool is_opaque);
 
   // Saves a copy of the drawing state onto a stack, operating on this copy
   // until a balanced call to Restore() is made.
