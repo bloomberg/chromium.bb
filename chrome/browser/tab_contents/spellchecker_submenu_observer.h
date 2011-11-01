@@ -44,6 +44,9 @@ class SpellCheckerSubMenuObserver : public RenderViewContextMenuObserver {
   // Whether spellchecking is enabled in the focused element or not.
   bool spellcheck_enabled_;
 
+  // Whether we integrate the spelling service to Chrome.
+  bool integrate_spelling_service_;
+
   // The radio items representing languages available for spellchecking.
   int language_group_;
   int language_selected_;

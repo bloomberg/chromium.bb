@@ -576,16 +576,13 @@ void RenderViewContextMenu::InitMenu() {
   if (params_.is_editable) {
     // Add a menu item that shows suggestions.
     if (!spelling_menu_observer_.get()) {
-      spelling_menu_observer_.reset(
-          new SpellingMenuObserver(this));
+      spelling_menu_observer_.reset(new SpellingMenuObserver(this));
     }
-    if (spelling_menu_observer_.get())
+    if (spelling_menu_observer_.get()) {
       observers_.AddObserver(spelling_menu_observer_.get());
+      spelling_menu_observer_->InitMenu(params_);
+    }
   }
-
-  // Ask our observers to add their menu items.
-  FOR_EACH_OBSERVER(RenderViewContextMenuObserver, observers_,
-                    InitMenu(params_));
 
   if (params_.is_editable)
     AppendEditableItems();
@@ -838,13 +835,6 @@ void RenderViewContextMenu::AppendSearchProvider() {
 }
 
 void RenderViewContextMenu::AppendEditableItems() {
-  // Append Dictionary spell check suggestions.
-  for (size_t i = 0; i < params_.dictionary_suggestions.size() &&
-       IDC_SPELLCHECK_SUGGESTION_0 + i <= IDC_SPELLCHECK_SUGGESTION_LAST;
-       ++i) {
-    menu_model_.AddItem(IDC_SPELLCHECK_SUGGESTION_0 + static_cast<int>(i),
-                        params_.dictionary_suggestions[i]);
-  }
   if (!params_.dictionary_suggestions.empty()) {
     menu_model_.AddSeparator();
 
@@ -1234,11 +1224,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL:
-    case IDC_SPELLCHECK_SUGGESTION_0:
-    case IDC_SPELLCHECK_SUGGESTION_1:
-    case IDC_SPELLCHECK_SUGGESTION_2:
-    case IDC_SPELLCHECK_SUGGESTION_3:
-    case IDC_SPELLCHECK_SUGGESTION_4:
     case IDC_SPELLPANEL_TOGGLE:
 #if !defined(OS_MACOSX)
     // TODO(jeremy): re-enable - http://crbug.com/34512 .
@@ -1689,20 +1674,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
     }
 
-    case IDC_SPELLCHECK_SUGGESTION_0:
-    case IDC_SPELLCHECK_SUGGESTION_1:
-    case IDC_SPELLCHECK_SUGGESTION_2:
-    case IDC_SPELLCHECK_SUGGESTION_3:
-    case IDC_SPELLCHECK_SUGGESTION_4: {
-      rvh->Replace(
-          params_.dictionary_suggestions[id - IDC_SPELLCHECK_SUGGESTION_0]);
-      // GetSpellCheckHost() can return null when the suggested word is
-      // provided by Web SpellCheck API.
-      SpellCheckHost* spellcheck_host = profile_->GetSpellCheckHost();
-      if (spellcheck_host && spellcheck_host->GetMetrics())
-        spellcheck_host->GetMetrics()->RecordReplacedWordStats(1);
-      break;
-    }
     case IDC_SPELLCHECK_ADD_TO_DICTIONARY: {
       // GetSpellCheckHost() can return null when the suggested word is
       // provided by Web SpellCheck API.
