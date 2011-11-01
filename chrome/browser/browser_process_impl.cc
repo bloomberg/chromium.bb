@@ -682,8 +682,7 @@ void BrowserProcessImpl::Observe(int type,
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* pref = content::Details<std::string>(details).ptr();
     if (*pref == prefs::kDefaultBrowserSettingEnabled) {
-      if (local_state_->GetBoolean(prefs::kDefaultBrowserSettingEnabled))
-        ShellIntegration::SetAsDefaultBrowser();
+      ApplyDefaultBrowserPolicy();
     } else if (*pref == prefs::kDisabledSchemes) {
       ApplyDisabledSchemesPolicy();
     } else if (*pref == prefs::kAllowCrossOriginAuthPrompt) {
@@ -940,8 +939,7 @@ void BrowserProcessImpl::CreateLocalState() {
   local_state_->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,
                                     false);
   if (local_state_->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled)) {
-    if (local_state_->GetBoolean(prefs::kDefaultBrowserSettingEnabled))
-      ShellIntegration::SetAsDefaultBrowser();
+    ApplyDefaultBrowserPolicy();
   }
   pref_change_registrar_.Add(prefs::kDefaultBrowserSettingEnabled, this);
 
@@ -1057,6 +1055,14 @@ void BrowserProcessImpl::ApplyDisabledSchemesPolicy() {
       schemes.insert(scheme);
   }
   ChildProcessSecurityPolicy::GetInstance()->RegisterDisabledSchemes(schemes);
+}
+
+void BrowserProcessImpl::ApplyDefaultBrowserPolicy() {
+  if (local_state_->GetBoolean(prefs::kDefaultBrowserSettingEnabled)) {
+    scoped_refptr<ShellIntegration::DefaultWebClientWorker>
+        set_browser_worker = new ShellIntegration::DefaultBrowserWorker(NULL);
+    set_browser_worker->StartSetAsDefault();
+  }
 }
 
 void BrowserProcessImpl::ApplyAllowCrossOriginAuthPromptPolicy() {

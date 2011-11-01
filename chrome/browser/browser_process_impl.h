@@ -170,6 +170,7 @@ class BrowserProcessImpl : public BrowserProcess,
 
   void ApplyDisabledSchemesPolicy();
   void ApplyAllowCrossOriginAuthPromptPolicy();
+  void ApplyDefaultBrowserPolicy();
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   void SetIPCLoggingEnabledForChildProcesses(bool enabled);
