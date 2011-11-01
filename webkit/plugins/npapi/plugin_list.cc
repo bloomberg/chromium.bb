@@ -28,11 +28,15 @@ FilePath::CharType kDefaultPluginLibraryName[] =
 
 // Some version ranges can be shared across operating systems. This should be
 // done where possible to avoid duplication.
+// This is up to date with
+// http://www.adobe.com/support/security/bulletins/apsb11-26.html
 static const VersionRangeDefinition kFlashVersionRange[] = {
-    { "", "", "10.2.153", false }
+    { "", "", "10.3.183", false }
 };
+// This is up to date with
+// http://www.adobe.com/support/security/bulletins/apsb11-19.html
 static const VersionRangeDefinition kShockwaveVersionRange[] = {
-    { "",  "", "11.5.9.620", true }
+    { "",  "", "11.6.1.629", true }
 };
 static const VersionRangeDefinition kSilverlightVersionRange[] = {
     { "0", "4", "3.0.50611.0", false },
@@ -98,11 +102,11 @@ static const VersionRangeDefinition kJavaVersionRange[] = {
     { "7", "", "10.1", true }  // JDK7u1 identifies itself as 10.1
 };
 // This is up to date with
-// http://www.adobe.com/support/security/bulletins/apsb11-08.html
+// http://www.adobe.com/support/security/bulletins/apsb11-24.html
 static const VersionRangeDefinition kAdobeReaderVersionRange[] = {
-    { "10", "11", "10.0.1", false },
-    { "9", "10", "9.4.4", false },
-    { "0", "9", "8.2.6", false }
+    { "10", "11", "10.1.1", false },
+    { "9", "10", "9.4.6", false },
+    { "0", "9", "8.3.1", false }
 };
 static const VersionRangeDefinition kDivXVersionRange[] = {
     { "", "", "1.4.3.4", false }
