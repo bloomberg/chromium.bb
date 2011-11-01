@@ -5198,6 +5198,14 @@
    fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_Pb
    fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_6ObjectEEES4_iPS4_Pbb
 }
+{
+   bug_102327
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15tracked_objects10ThreadData10InitializeEv
+   fun:_ZN15tracked_objects10ThreadData30InitializeAndSetTrackingStatusEb
+   fun:_ZN15tracked_objects10ThreadData29ShutdownSingleThreadedCleanupEb
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
