@@ -43,6 +43,7 @@ using testing::DoDefault;
 using testing::ElementsAreArray;
 using testing::Pointee;
 using testing::Property;
+using webkit_glue::WebIntentServiceData;
 
 typedef std::vector<AutofillChange> AutofillChangeList;
 
@@ -150,10 +151,10 @@ class WebIntentsConsumer : public WebDataServiceConsumer {
  public:
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                            const WDTypedResult* result) {
-    intents.clear();
+    services_.clear();
     if (result) {
       DCHECK(result->GetType() == WEB_INTENTS_RESULT);
-      intents = static_cast<
+      services_ = static_cast<
           const WDResult<std::vector<WebIntentServiceData> >*>(result)->
               GetValue();
     }
@@ -170,7 +171,7 @@ class WebIntentsConsumer : public WebDataServiceConsumer {
   }
 
   // Result data from completion callback.
-  std::vector<WebIntentServiceData> intents;
+  std::vector<WebIntentServiceData> services_;
 };
 
 // Simple consumer for Keywords data. Stores the result data and quits UI
@@ -634,7 +635,7 @@ TEST_F(WebDataServiceTest, WebIntents) {
 
   wds_->GetWebIntents(ASCIIToUTF16("share"), &consumer);
   WebIntentsConsumer::WaitUntilCalled();
-  EXPECT_EQ(0U, consumer.intents.size());
+  EXPECT_EQ(0U, consumer.services_.size());
 
   WebIntentServiceData service;
   service.service_url = GURL("http://google.com");
@@ -647,29 +648,29 @@ TEST_F(WebDataServiceTest, WebIntents) {
 
   wds_->GetWebIntents(ASCIIToUTF16("share"), &consumer);
   WebIntentsConsumer::WaitUntilCalled();
-  ASSERT_EQ(2U, consumer.intents.size());
+  ASSERT_EQ(2U, consumer.services_.size());
 
-  if (consumer.intents[0].type != ASCIIToUTF16("image/*"))
-    std::swap(consumer.intents[0],consumer.intents[1]);
+  if (consumer.services_[0].type != ASCIIToUTF16("image/*"))
+    std::swap(consumer.services_[0], consumer.services_[1]);
 
-  EXPECT_EQ(service.service_url, consumer.intents[0].service_url);
-  EXPECT_EQ(service.action, consumer.intents[0].action);
-  EXPECT_EQ(ASCIIToUTF16("image/*"), consumer.intents[0].type);
-  EXPECT_EQ(service.service_url, consumer.intents[1].service_url);
-  EXPECT_EQ(service.action, consumer.intents[1].action);
-  EXPECT_EQ(service.type, consumer.intents[1].type);
+  EXPECT_EQ(service.service_url, consumer.services_[0].service_url);
+  EXPECT_EQ(service.action, consumer.services_[0].action);
+  EXPECT_EQ(ASCIIToUTF16("image/*"), consumer.services_[0].type);
+  EXPECT_EQ(service.service_url, consumer.services_[1].service_url);
+  EXPECT_EQ(service.action, consumer.services_[1].action);
+  EXPECT_EQ(service.type, consumer.services_[1].type);
 
   service.type = ASCIIToUTF16("image/*");
   wds_->RemoveWebIntent(service);
 
   wds_->GetWebIntents(ASCIIToUTF16("share"), &consumer);
   WebIntentsConsumer::WaitUntilCalled();
-  ASSERT_EQ(1U, consumer.intents.size());
+  ASSERT_EQ(1U, consumer.services_.size());
 
   service.type = ASCIIToUTF16("video/*");
-  EXPECT_EQ(service.service_url, consumer.intents[0].service_url);
-  EXPECT_EQ(service.action, consumer.intents[0].action);
-  EXPECT_EQ(service.type, consumer.intents[0].type);
+  EXPECT_EQ(service.service_url, consumer.services_[0].service_url);
+  EXPECT_EQ(service.action, consumer.services_[0].action);
+  EXPECT_EQ(service.type, consumer.services_[0].type);
 }
 
 TEST_F(WebDataServiceTest, WebIntentsGetAll) {
@@ -686,14 +687,14 @@ TEST_F(WebDataServiceTest, WebIntentsGetAll) {
 
   wds_->GetAllWebIntents(&consumer);
   WebIntentsConsumer::WaitUntilCalled();
-  ASSERT_EQ(2U, consumer.intents.size());
+  ASSERT_EQ(2U, consumer.services_.size());
 
-  if (consumer.intents[0].action != ASCIIToUTF16("edit"))
-    std::swap(consumer.intents[0],consumer.intents[1]);
+  if (consumer.services_[0].action != ASCIIToUTF16("edit"))
+    std::swap(consumer.services_[0],consumer.services_[1]);
 
-  EXPECT_EQ(service, consumer.intents[0]);
+  EXPECT_EQ(service, consumer.services_[0]);
   service.action = ASCIIToUTF16("share");
-  EXPECT_EQ(service, consumer.intents[1]);
+  EXPECT_EQ(service, consumer.services_[1]);
 }
 
 TEST_F(WebDataServiceTest, DidDefaultSearchProviderChangeOnNewProfile) {

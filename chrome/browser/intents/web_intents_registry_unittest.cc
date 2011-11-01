@@ -14,6 +14,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using webkit_glue::WebIntentServiceData;
+
 class MockExtensionService: public ExtensionServiceInterface {
  public:
   virtual ~MockExtensionService() {}
@@ -62,6 +64,7 @@ DictionaryValue* LoadManifestFile(const std::string& filename,
 }
 
 namespace {
+
 scoped_refptr<Extension> LoadExtensionWithLocation(
     DictionaryValue* value,
     Extension::Location location,
@@ -101,7 +104,7 @@ scoped_refptr<Extension> LoadAndExpectSuccess(const std::string& name) {
   return extension;
 }
 
-}
+}  // namespace
 
 class WebIntentsRegistryTest : public testing::Test {
  public:
@@ -147,7 +150,7 @@ class TestConsumer: public WebIntentsRegistry::Consumer {
  public:
    virtual void OnIntentsQueryDone(
        WebIntentsRegistry::QueryID id,
-       const std::vector<WebIntentServiceData>& services) {
+       const std::vector<webkit_glue::WebIntentServiceData>& services) {
      DCHECK(id == expected_id_);
      services_ = services;
 
@@ -162,12 +165,15 @@ class TestConsumer: public WebIntentsRegistry::Consumer {
      MessageLoop::current()->Run();
    }
 
-   WebIntentsRegistry::QueryID expected_id_;  // QueryID callback is tied to.
-   std::vector<WebIntentServiceData> services_;  // Result data from callback.
+   // QueryID callback is tied to.
+   WebIntentsRegistry::QueryID expected_id_;
+
+   // Result data from callback.
+   std::vector<webkit_glue::WebIntentServiceData> services_;
 };
 
 TEST_F(WebIntentsRegistryTest, BasicTests) {
-  WebIntentServiceData service;
+  webkit_glue::WebIntentServiceData service;
   service.service_url = GURL("http://google.com");
   service.action = ASCIIToUTF16("share");
   service.type = ASCIIToUTF16("image/*");
@@ -206,7 +212,7 @@ TEST_F(WebIntentsRegistryTest, BasicTests) {
 }
 
 TEST_F(WebIntentsRegistryTest, GetAllIntents) {
-  WebIntentServiceData service;
+  webkit_glue::WebIntentServiceData service;
   service.service_url = GURL("http://google.com");
   service.action = ASCIIToUTF16("share");
   service.type = ASCIIToUTF16("image/*");
@@ -257,7 +263,7 @@ TEST_F(WebIntentsRegistryTest, GetIntentsFromMixedSources) {
   extensions_.push_back(LoadAndExpectSuccess("intent_valid.json"));
   extensions_.push_back(LoadAndExpectSuccess("intent_valid_2.json"));
 
-  WebIntentServiceData service;
+  webkit_glue::WebIntentServiceData service;
   service.service_url = GURL("http://somewhere.com/intent/edit.html");
   service.action = ASCIIToUTF16("http://webintents.org/edit");
   service.type = ASCIIToUTF16("image/*");

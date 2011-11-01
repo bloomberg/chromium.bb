@@ -22,7 +22,7 @@ class WebIntentsRegistry
   // Unique identifier for intent queries.
   typedef int QueryID;
 
-  typedef std::vector<WebIntentServiceData> IntentList;
+  typedef std::vector<webkit_glue::WebIntentServiceData> IntentServiceList;
 
   // An interface the WebIntentsRegistry uses to notify its clients when
   // it has finished loading intents data from the web database.
@@ -31,7 +31,7 @@ class WebIntentsRegistry
     // Notifies the observer that the intents request has been completed.
     virtual void OnIntentsQueryDone(
         QueryID query_id,
-        const IntentList& intents) = 0;
+        const IntentServiceList& intents) = 0;
 
    protected:
     virtual ~Consumer() {}
@@ -42,10 +42,12 @@ class WebIntentsRegistry
                   ExtensionServiceInterface* extension_service);
 
   // Registers a web intent provider.
-  virtual void RegisterIntentProvider(const WebIntentServiceData& intent);
+  virtual void RegisterIntentProvider(
+      const webkit_glue::WebIntentServiceData& intent);
 
   // Removes a web intent provider from the registry.
-  void UnregisterIntentProvider(const WebIntentServiceData& intent);
+  void UnregisterIntentProvider(
+      const webkit_glue::WebIntentServiceData& intent);
 
   // Requests all intent providers matching |action| and |mimetype|.
   // |mimetype| can contain wildcards, i.e. "image/*" or "*".

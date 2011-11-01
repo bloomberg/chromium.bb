@@ -534,7 +534,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool incognito_split_mode() const { return incognito_split_mode_; }
   bool offline_enabled() const { return offline_enabled_; }
   const std::vector<TtsVoice>& tts_voices() const { return tts_voices_; }
-  const std::vector<WebIntentServiceData>& intents() const { return intents_; }
+  const std::vector<webkit_glue::WebIntentServiceData>&
+      intents_services() const {
+    return intents_services_;
+  }
 
   bool wants_file_access() const { return wants_file_access_; }
   int creation_flags() const { return creation_flags_; }
@@ -643,8 +646,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                      std::string* error);
   bool LoadAppIsolation(const base::DictionaryValue* manifest,
                         std::string* error);
-  bool LoadWebIntents(const base::DictionaryValue& manifest,
-                      std::string* error);
+  bool LoadWebIntentServices(const base::DictionaryValue& manifest,
+                             std::string* error);
   bool EnsureNotHybridApp(const base::DictionaryValue* manifest,
                           std::string* error);
 
@@ -848,8 +851,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // List of text-to-speech voices that this extension provides, if any.
   std::vector<TtsVoice> tts_voices_;
 
-  // List of intents that this extension provides, if any.
-  std::vector<WebIntentServiceData> intents_;
+  // List of intent services that this extension provides, if any.
+  std::vector<webkit_glue::WebIntentServiceData> intents_services_;
 
   // Whether the extension has host permissions or user script patterns that
   // imply access to file:/// scheme URLs (the user may not have actually

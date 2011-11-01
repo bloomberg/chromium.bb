@@ -38,19 +38,21 @@ class WebIntentsTable : public WebDatabaseTable {
   virtual bool Init();
   virtual bool IsSyncable();
 
-  // Adds a web intent to the WebIntents table. If intent already exists,
-  // replaces it.
-  bool SetWebIntent(const WebIntentServiceData& intent);
+  // Adds a web intent service to the WebIntents table.
+  // If |service| already exists, replaces it.
+  bool SetWebIntent(const webkit_glue::WebIntentServiceData& service);
 
-  // Retrieve all intents from WebIntents table that match |action|.
+  // Retrieve all |services| from WebIntents table that match |action|.
   bool GetWebIntents(const string16& action,
-                     std::vector<WebIntentServiceData>* intents);
+                     std::vector<webkit_glue::WebIntentServiceData>* services);
 
-  // Retrieve all intents from WebIntents table.
-  bool GetAllWebIntents(std::vector<WebIntentServiceData>* intents);
+  // Retrieve all |services| from WebIntents table.
+  bool GetAllWebIntents(
+      std::vector<webkit_glue::WebIntentServiceData>* services);
 
-  // Removes intent from WebIntents table - must match all parameters exactly.
-  bool RemoveWebIntent(const WebIntentServiceData& intent);
+  // Removes |service| from WebIntents table - must match all parameters
+  // exactly.
+  bool RemoveWebIntent(const webkit_glue::WebIntentServiceData& service);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebIntentsTable);

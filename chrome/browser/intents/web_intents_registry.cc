@@ -23,6 +23,8 @@ bool MimeTypesAreEqual(const string16& type1, const string16& type2) {
 
 }  // namespace
 
+using webkit_glue::WebIntentServiceData;
+
 // Internal object representing all data associated with a single query.
 struct WebIntentsRegistry::IntentsQuery {
   // Unique query identifier.
@@ -73,8 +75,8 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
   DCHECK(query);
   queries_.erase(it);
 
-  IntentList matching_intents = static_cast<
-      const WDResult<IntentList>*>(result)->GetValue();
+  IntentServiceList matching_services = static_cast<
+      const WDResult<IntentServiceList>*>(result)->GetValue();
 
   // Loop over all intents in all extensions, collect ones matching the query.
   if (extension_service_) {
@@ -82,26 +84,26 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
     if (extensions) {
       for (ExtensionList::const_iterator i(extensions->begin());
            i != extensions->end(); ++i) {
-        const IntentList& intents((*i)->intents());
-        for (IntentList::const_iterator j(intents.begin());
+        const IntentServiceList& intents((*i)->intents_services());
+        for (IntentServiceList::const_iterator j(intents.begin());
              j != intents.end(); ++j) {
           if (query->action_.empty() || query->action_ == j->action)
-            matching_intents.push_back(*j);
+            matching_services.push_back(*j);
         }
       }
     }
   }
 
   // Filter out all intents not matching the query type.
-  IntentList::iterator iter(matching_intents.begin());
-  while (iter != matching_intents.end()) {
+  IntentServiceList::iterator iter(matching_services.begin());
+  while (iter != matching_services.end()) {
     if (MimeTypesAreEqual(iter->type, query->type_))
       ++iter;
     else
-      iter = matching_intents.erase(iter);
+      iter = matching_services.erase(iter);
   }
 
-  query->consumer_->OnIntentsQueryDone(query->query_id_, matching_intents);
+  query->consumer_->OnIntentsQueryDone(query->query_id_, matching_services);
   delete query;
 }
 

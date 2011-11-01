@@ -11,8 +11,6 @@ namespace webkit_glue {
 
 static const char kIntentsInlineDisposition[] = "inline";
 
-}  // namespace webkit_glue
-
 WebIntentServiceData::WebIntentServiceData()
     : disposition(WebIntentServiceData::DISPOSITION_WINDOW) {
 }
@@ -55,3 +53,5 @@ std::ostream& operator<<(::std::ostream& os,
          ", " << intent.disposition <<
          "}";
 }
+
+}  // namespace webkit_glue

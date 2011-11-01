@@ -10,6 +10,8 @@
 #include "googleurl/src/gurl.h"
 #include <iosfwd>
 
+namespace webkit_glue {
+
 // Describes the relevant elements of a WebIntent service.
 struct WebIntentServiceData {
   // An intents disposition determines which context the service is opened in.
@@ -37,6 +39,9 @@ struct WebIntentServiceData {
 };
 
 // Printing operator - helps gtest produce readable error messages.
-std::ostream& operator<<(std::ostream& os, const WebIntentServiceData& intent);
+std::ostream& operator<<(std::ostream& os,
+                         const webkit_glue::WebIntentServiceData& intent);
+
+}  // namespace webkit_glue
 
 #endif  // CHROME_BROWSER_INTENTS_WEB_INTENT_SERVICE_DATA_H_

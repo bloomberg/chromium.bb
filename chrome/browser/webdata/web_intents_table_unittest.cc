@@ -15,6 +15,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/web_intent_service_data.h"
 
+using webkit_glue::WebIntentServiceData;
+
 namespace {
 
 GURL test_url("http://google.com/");
@@ -25,8 +27,10 @@ string16 test_title_2 = ASCIIToUTF16("Test WebIntent #2");
 string16 mime_image = ASCIIToUTF16("image/*");
 string16 mime_video = ASCIIToUTF16("video/*");
 
-WebIntentServiceData MakeIntent(const GURL& url, const string16& action,
-                                const string16& type, const string16& title) {
+WebIntentServiceData MakeIntentService(const GURL& url,
+                                       const string16& action,
+                                       const string16& type,
+                                       const string16& title) {
   WebIntentServiceData service;
   service.service_url = url;
   service.action = action;
@@ -52,106 +56,105 @@ class WebIntentsTableTest : public testing::Test {
   ScopedTempDir temp_dir_;
 };
 
-// Test we can add, retrieve, and remove intents from the database.
+// Test we can add, retrieve, and remove intent services from the database.
 TEST_F(WebIntentsTableTest, SetGetDeleteIntent) {
-  std::vector<WebIntentServiceData> intents;
+  std::vector<WebIntentServiceData> services;
 
-  // By default, no intents exist.
-  EXPECT_TRUE(IntentsTable()->GetWebIntents(test_action, &intents));
-  EXPECT_EQ(0U, intents.size());
+  // By default, no intent services exist.
+  EXPECT_TRUE(IntentsTable()->GetWebIntents(test_action, &services));
+  EXPECT_EQ(0U, services.size());
 
   // Now adding one.
-  WebIntentServiceData intent = MakeIntent(test_url, test_action, mime_image,
-                                           test_title);
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
+  WebIntentServiceData service =
+      MakeIntentService(test_url, test_action, mime_image, test_title);
+  EXPECT_TRUE(IntentsTable()->SetWebIntent(service));
 
-  // Make sure that intent can now be fetched
-  EXPECT_TRUE(IntentsTable()->GetWebIntents(test_action, &intents));
-  ASSERT_EQ(1U, intents.size());
-  EXPECT_EQ(intent, intents[0]);
+  // Make sure that service can now be fetched
+  EXPECT_TRUE(IntentsTable()->GetWebIntents(test_action, &services));
+  ASSERT_EQ(1U, services.size());
+  EXPECT_EQ(service, services[0]);
 
-  // Remove the intent.
-  EXPECT_TRUE(IntentsTable()->RemoveWebIntent(intent));
+  // Remove the service.
+  EXPECT_TRUE(IntentsTable()->RemoveWebIntent(service));
 
-  // Intent should now be gone.
-  intents.clear();
-  EXPECT_TRUE(IntentsTable()->GetWebIntents(test_action, &intents));
-  EXPECT_EQ(0U, intents.size());
+  // Should now be gone.
+  services.clear();
+  EXPECT_TRUE(IntentsTable()->GetWebIntents(test_action, &services));
+  EXPECT_EQ(0U, services.size());
 }
 
-// Test we support multiple intents for the same MIME type
+// Test we support multiple intent services for the same MIME type
 TEST_F(WebIntentsTableTest, SetMultipleIntents) {
-  std::vector<WebIntentServiceData> intents;
+  std::vector<WebIntentServiceData> services;
 
-  WebIntentServiceData intent = MakeIntent(test_url, test_action, mime_image,
-                                           test_title);
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
+  WebIntentServiceData service =
+      MakeIntentService(test_url, test_action, mime_image, test_title);
+  EXPECT_TRUE(IntentsTable()->SetWebIntent(service));
 
-  intent.type = mime_video;
-  intent.title = test_title_2;
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
+  service.type = mime_video;
+  service.title = test_title_2;
+  EXPECT_TRUE(IntentsTable()->SetWebIntent(service));
 
-  // Recover stored intents from DB.
-  EXPECT_TRUE(IntentsTable()->GetWebIntents(test_action, &intents));
-  ASSERT_EQ(2U, intents.size());
+  // Recover stored intent services from DB.
+  EXPECT_TRUE(IntentsTable()->GetWebIntents(test_action, &services));
+  ASSERT_EQ(2U, services.size());
 
   // WebIntentsTable does not guarantee order, so ensure order here.
-  if (intents[0].type == mime_video)
-    std::swap(intents[0], intents[1]);
+  if (services[0].type == mime_video)
+    std::swap(services[0], services[1]);
 
-  EXPECT_EQ(intent, intents[1]);
+  EXPECT_EQ(service, services[1]);
 
-  intent.type = mime_image;
-  intent.title = test_title;
-  EXPECT_EQ(intent, intents[0]);
+  service.type = mime_image;
+  service.title = test_title;
+  EXPECT_EQ(service, services[0]);
 }
 
-// Test we support getting all intents independent of action.
+// Test we support getting all intent services independent of action.
 TEST_F(WebIntentsTableTest, GetAllIntents) {
-  std::vector<WebIntentServiceData> intents;
+  std::vector<WebIntentServiceData> services;
 
-  WebIntentServiceData intent = MakeIntent(test_url, test_action, mime_image,
-                                           test_title);
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
+  WebIntentServiceData service =
+      MakeIntentService(test_url, test_action, mime_image, test_title);
+  EXPECT_TRUE(IntentsTable()->SetWebIntent(service));
 
-  intent.action = test_action_2;
-  intent.title = test_title_2;
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
+  service.action = test_action_2;
+  service.title = test_title_2;
+  EXPECT_TRUE(IntentsTable()->SetWebIntent(service));
 
-  // Recover stored intents from DB.
-  EXPECT_TRUE(IntentsTable()->GetAllWebIntents(&intents));
-  ASSERT_EQ(2U, intents.size());
+  // Recover stored services from DB.
+  EXPECT_TRUE(IntentsTable()->GetAllWebIntents(&services));
+  ASSERT_EQ(2U, services.size());
 
   // WebIntentsTable does not guarantee order, so ensure order here.
-  if (intents[0].type == test_action_2)
-    std::swap(intents[0], intents[1]);
+  if (services[0].type == test_action_2)
+    std::swap(services[0], services[1]);
 
-  EXPECT_EQ(intent, intents[1]);
+  EXPECT_EQ(service, services[1]);
 
-  intent.action = test_action;
-  intent.title = test_title;
-  EXPECT_EQ(intent, intents[0]);
+  service.action = test_action;
+  service.title = test_title;
+  EXPECT_EQ(service, services[0]);
 }
 
 TEST_F(WebIntentsTableTest, DispositionToStringMapping) {
-  WebIntentServiceData intent = MakeIntent(test_url, test_action, mime_image,
-                                    test_title);
-  intent.disposition = WebIntentServiceData::DISPOSITION_WINDOW;
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
+  WebIntentServiceData service =
+      MakeIntentService(test_url, test_action, mime_image, test_title);
+  service.disposition = WebIntentServiceData::DISPOSITION_WINDOW;
+  EXPECT_TRUE(IntentsTable()->SetWebIntent(service));
 
-  intent = MakeIntent(test_url, test_action, mime_video,
-                                    test_title);
-  intent.disposition = WebIntentServiceData::DISPOSITION_INLINE;
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
+  service = MakeIntentService(test_url, test_action, mime_video, test_title);
+  service.disposition = WebIntentServiceData::DISPOSITION_INLINE;
+  EXPECT_TRUE(IntentsTable()->SetWebIntent(service));
 
-  std::vector<WebIntentServiceData> intents;
-  EXPECT_TRUE(IntentsTable()->GetAllWebIntents(&intents));
-  ASSERT_EQ(2U, intents.size());
+  std::vector<WebIntentServiceData> services;
+  EXPECT_TRUE(IntentsTable()->GetAllWebIntents(&services));
+  ASSERT_EQ(2U, services.size());
 
-  if (intents[0].disposition == WebIntentServiceData::DISPOSITION_WINDOW)
-    std::swap(intents[0], intents[1]);
+  if (services[0].disposition == WebIntentServiceData::DISPOSITION_WINDOW)
+    std::swap(services[0], services[1]);
 
-  EXPECT_EQ(WebIntentServiceData::DISPOSITION_INLINE, intents[0].disposition);
-  EXPECT_EQ(WebIntentServiceData::DISPOSITION_WINDOW, intents[1].disposition);
+  EXPECT_EQ(WebIntentServiceData::DISPOSITION_INLINE, services[0].disposition);
+  EXPECT_EQ(WebIntentServiceData::DISPOSITION_WINDOW, services[1].disposition);
 }
 } // namespace

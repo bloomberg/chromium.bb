@@ -41,7 +41,7 @@ class WebIntentsModelTest : public testing::Test {
 
   void LoadRegistry() {
     {
-      WebIntentServiceData service;
+      webkit_glue::WebIntentServiceData service;
       service.service_url = GURL("http://www.google.com/share");
       service.action = ASCIIToUTF16("SHARE");
       service.type = ASCIIToUTF16("text/url");
@@ -49,7 +49,7 @@ class WebIntentsModelTest : public testing::Test {
       registry_.RegisterIntentProvider(service);
     }
     {
-      WebIntentServiceData service;
+      webkit_glue::WebIntentServiceData service;
       service.service_url = GURL("http://picasaweb.google.com/share");
       service.action = ASCIIToUTF16("EDIT");
       service.type = ASCIIToUTF16("image/*");
@@ -57,7 +57,7 @@ class WebIntentsModelTest : public testing::Test {
       registry_.RegisterIntentProvider(service);
     }
     {
-      WebIntentServiceData service;
+      webkit_glue::WebIntentServiceData service;
       service.service_url = GURL("http://www.digg.com/share");
       service.action = ASCIIToUTF16("SHARE");
       service.type = ASCIIToUTF16("text/url");

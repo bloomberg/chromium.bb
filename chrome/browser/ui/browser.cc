@@ -2591,7 +2591,7 @@ void Browser::RegisterIntentHandlerHelper(TabContents* tab,
     service_url = url.Resolve(href);
   }
 
-  WebIntentServiceData service;
+  webkit_glue::WebIntentServiceData service;
   service.service_url = service_url;
   service.action = action;
   service.type = type;

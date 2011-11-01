@@ -835,29 +835,31 @@ TEST_F(ExtensionManifestTest, WebIntents) {
       LoadAndExpectSuccess("intent_valid.json"));
   ASSERT_TRUE(extension.get() != NULL);
 
-  ASSERT_EQ(1u, extension->intents().size());
-  EXPECT_EQ("image/png", UTF16ToUTF8(extension->intents()[0].type));
+  ASSERT_EQ(1u, extension->intents_services().size());
+  EXPECT_EQ("image/png", UTF16ToUTF8(extension->intents_services()[0].type));
   EXPECT_EQ("http://webintents.org/share",
-            UTF16ToUTF8(extension->intents()[0].action));
-  EXPECT_EQ("chrome-extension", extension->intents()[0].service_url.scheme());
-  EXPECT_EQ("///services/share", extension->intents()[0].service_url.path());
+            UTF16ToUTF8(extension->intents_services()[0].action));
+  EXPECT_EQ("chrome-extension",
+            extension->intents_services()[0].service_url.scheme());
+  EXPECT_EQ("///services/share",
+            extension->intents_services()[0].service_url.path());
   EXPECT_EQ("Sample Sharing Intent",
-            UTF16ToUTF8(extension->intents()[0].title));
-  EXPECT_EQ(WebIntentServiceData::DISPOSITION_INLINE,
-            extension->intents()[0].disposition);
+            UTF16ToUTF8(extension->intents_services()[0].title));
+  EXPECT_EQ(webkit_glue::WebIntentServiceData::DISPOSITION_INLINE,
+            extension->intents_services()[0].disposition);
 
   // Verify that optional fields are filled with defaults.
   extension = LoadAndExpectSuccess("intent_valid_minimal.json");
   ASSERT_TRUE(extension.get() != NULL);
 
-  ASSERT_EQ(1u, extension->intents().size());
-  EXPECT_EQ("", UTF16ToUTF8(extension->intents()[0].type));
+  ASSERT_EQ(1u, extension->intents_services().size());
+  EXPECT_EQ("", UTF16ToUTF8(extension->intents_services()[0].type));
   EXPECT_EQ("http://webintents.org/share",
-            UTF16ToUTF8(extension->intents()[0].action));
-  EXPECT_TRUE(extension->intents()[0].service_url.is_empty());
-  EXPECT_EQ("", UTF16ToUTF8(extension->intents()[0].title));
-  EXPECT_EQ(WebIntentServiceData::DISPOSITION_WINDOW,
-            extension->intents()[0].disposition);
+            UTF16ToUTF8(extension->intents_services()[0].action));
+  EXPECT_TRUE(extension->intents_services()[0].service_url.is_empty());
+  EXPECT_EQ("", UTF16ToUTF8(extension->intents_services()[0].title));
+  EXPECT_EQ(webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW,
+            extension->intents_services()[0].disposition);
 }
 
 TEST_F(ExtensionManifestTest, ForbidPortsInPermissions) {

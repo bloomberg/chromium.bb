@@ -63,11 +63,11 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
  protected:
   void AddWebIntentService(const string16& action,
                            const GURL& service_url) {
-    WebIntentServiceData web_intent_service_data;
-    web_intent_service_data.action = action;
-    web_intent_service_data.type = kType;
-    web_intent_service_data.service_url = service_url;
-    web_data_service_->AddWebIntent(web_intent_service_data);
+    webkit_glue::WebIntentServiceData service;
+    service.action = action;
+    service.type = kType;
+    service.service_url = service_url;
+    web_data_service_->AddWebIntent(service);
   }
 
   void SetPickerExpectations(int expected_service_count,

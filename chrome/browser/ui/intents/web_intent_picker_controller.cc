@@ -58,7 +58,7 @@ class WebIntentPickerController::WebIntentDataFetcher
   // WebIntentsRegistry::Consumer implementation.
   virtual void OnIntentsQueryDone(
       WebIntentsRegistry::QueryID,
-      const std::vector<WebIntentServiceData>& intents) OVERRIDE;
+      const std::vector<webkit_glue::WebIntentServiceData>& services) OVERRIDE;
 
   // A weak pointer to the picker controller.
   WebIntentPickerController* controller_;
@@ -229,10 +229,10 @@ void WebIntentPickerController::OnCancelled() {
 }
 
 void WebIntentPickerController::OnWebIntentDataAvailable(
-    const std::vector<WebIntentServiceData>& intent_data) {
+    const std::vector<webkit_glue::WebIntentServiceData>& services) {
   urls_.clear();
-  for (size_t i = 0; i < intent_data.size(); ++i) {
-    urls_.push_back(intent_data[i].service_url);
+  for (size_t i = 0; i < services.size(); ++i) {
+    urls_.push_back(services[i].service_url);
   }
 
   // Tell the picker to initialize N urls to the default favicon
@@ -281,8 +281,8 @@ void WebIntentPickerController::WebIntentDataFetcher::Fetch(
 
 void WebIntentPickerController::WebIntentDataFetcher::OnIntentsQueryDone(
     WebIntentsRegistry::QueryID,
-    const std::vector<WebIntentServiceData>& intents) {
-  controller_->OnWebIntentDataAvailable(intents);
+    const std::vector<webkit_glue::WebIntentServiceData>& services) {
+  controller_->OnWebIntentDataAvailable(services);
   query_id_ = -1;
 }
 

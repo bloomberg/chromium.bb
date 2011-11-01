@@ -31,7 +31,6 @@ class Profile;
 class SkBitmap;
 class TemplateURL;
 class WebDatabase;
-struct WebIntentServiceData;
 
 namespace base {
 class Thread;
@@ -40,6 +39,7 @@ class Thread;
 namespace webkit_glue {
 struct FormField;
 struct PasswordForm;
+struct WebIntentServiceData;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -364,10 +364,10 @@ class WebDataService
   //////////////////////////////////////////////////////////////////////////////
 
   // Adds a web intent provider registration.
-  void AddWebIntent(const WebIntentServiceData& service);
+  void AddWebIntent(const webkit_glue::WebIntentServiceData& service);
 
   // Removes a web intent provider registration.
-  void RemoveWebIntent(const WebIntentServiceData& service);
+  void RemoveWebIntent(const webkit_glue::WebIntentServiceData& service);
 
   // Get all web intent providers registered for the specified |action|.
   // |consumer| must not be NULL.
@@ -616,8 +616,10 @@ class WebDataService
   // Web Intents.
   //
   //////////////////////////////////////////////////////////////////////////////
-  void AddWebIntentImpl(GenericRequest<WebIntentServiceData>* request);
-  void RemoveWebIntentImpl(GenericRequest<WebIntentServiceData>* request);
+  void AddWebIntentImpl(
+      GenericRequest<webkit_glue::WebIntentServiceData>* request);
+  void RemoveWebIntentImpl(
+      GenericRequest<webkit_glue::WebIntentServiceData>* request);
   void GetWebIntentsImpl(GenericRequest<string16>* request);
   void GetAllWebIntentsImpl(GenericRequest<std::string>* request);
 

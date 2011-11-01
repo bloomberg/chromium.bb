@@ -19,7 +19,8 @@ namespace {
 
 class MockWebIntentsRegistry : public WebIntentsRegistry {
  public:
-  MOCK_METHOD1(RegisterIntentProvider, void(const WebIntentServiceData&));
+  MOCK_METHOD1(RegisterIntentProvider,
+               void(const webkit_glue::WebIntentServiceData&));
 };
 
 ProfileKeyedService* BuildMockWebIntentsRegistry(Profile* profile) {
@@ -60,7 +61,7 @@ class RegisterIntentHandlerInfoBarDelegateTest
 };
 
 TEST_F(RegisterIntentHandlerInfoBarDelegateTest, Accept) {
-  WebIntentServiceData service;
+  webkit_glue::WebIntentServiceData service;
   service.service_url = GURL("google.com");
   service.action = ASCIIToUTF16("http://webintents.org/share");
   service.type = ASCIIToUTF16("text/url");

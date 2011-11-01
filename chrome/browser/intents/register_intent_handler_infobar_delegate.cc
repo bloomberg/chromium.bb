@@ -15,7 +15,7 @@
 RegisterIntentHandlerInfoBarDelegate::RegisterIntentHandlerInfoBarDelegate(
     InfoBarTabHelper* infobar_helper,
     WebIntentsRegistry* registry,
-    const WebIntentServiceData& service)
+    const webkit_glue::WebIntentServiceData& service)
     : ConfirmInfoBarDelegate(infobar_helper),
       registry_(registry),
       service_(service) {

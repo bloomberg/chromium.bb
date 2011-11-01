@@ -18,9 +18,10 @@ class WebIntentsRegistry;
 // Intent handler.
 class RegisterIntentHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  RegisterIntentHandlerInfoBarDelegate(InfoBarTabHelper* infobar_helper,
-                                       WebIntentsRegistry* registry,
-                                       const WebIntentServiceData& service);
+  RegisterIntentHandlerInfoBarDelegate(
+      InfoBarTabHelper* infobar_helper,
+      WebIntentsRegistry* registry,
+      const webkit_glue::WebIntentServiceData& service);
 
   // ConfirmInfoBarDelegate implementation.
   virtual Type GetInfoBarType() const OVERRIDE;
@@ -34,8 +35,8 @@ class RegisterIntentHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
   // The web intents registry to use. Weak pointer.
   WebIntentsRegistry* registry_;
 
-  // The cached intent data bundle passed up from the renderer.
-  WebIntentServiceData service_;
+  // The cached intent service data bundle passed up from the renderer.
+  webkit_glue::WebIntentServiceData service_;
 
   DISALLOW_COPY_AND_ASSIGN(RegisterIntentHandlerInfoBarDelegate);
 };

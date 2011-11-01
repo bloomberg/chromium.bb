@@ -1166,8 +1166,8 @@ bool Extension::LoadAppIsolation(const DictionaryValue* manifest,
   return true;
 }
 
-bool Extension::LoadWebIntents(const base::DictionaryValue& manifest,
-                               std::string* error) {
+bool Extension::LoadWebIntentServices(const base::DictionaryValue& manifest,
+                                      std::string* error) {
   DCHECK(error);
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
@@ -1176,59 +1176,62 @@ bool Extension::LoadWebIntents(const base::DictionaryValue& manifest,
   if (!manifest.HasKey(keys::kIntents))
     return true;
 
-  DictionaryValue* all_intents = NULL;
-  if (!manifest.GetDictionary(keys::kIntents, &all_intents)) {
+  DictionaryValue* all_services = NULL;
+  if (!manifest.GetDictionary(keys::kIntents, &all_services)) {
     *error = errors::kInvalidIntents;
     return false;
   }
 
   std::string value;
-  for (DictionaryValue::key_iterator iter(all_intents->begin_keys());
-       iter != all_intents->end_keys(); ++iter) {
-    WebIntentServiceData intent;
+  for (DictionaryValue::key_iterator iter(all_services->begin_keys());
+       iter != all_services->end_keys(); ++iter) {
+    webkit_glue::WebIntentServiceData service;
 
-    DictionaryValue* one_intent = NULL;
-    if (!all_intents->GetDictionaryWithoutPathExpansion(*iter, &one_intent)) {
+    DictionaryValue* one_service = NULL;
+    if (!all_services->GetDictionaryWithoutPathExpansion(*iter, &one_service)) {
       *error = errors::kInvalidIntent;
       return false;
     }
-    intent.action = UTF8ToUTF16(*iter);
+    service.action = UTF8ToUTF16(*iter);
 
     // TODO(groby): Support an array of types.
-    if (one_intent->HasKey(keys::kIntentType) &&
-        !one_intent->GetString(keys::kIntentType, &intent.type)) {
+    if (one_service->HasKey(keys::kIntentType) &&
+        !one_service->GetString(keys::kIntentType, &service.type)) {
       *error = errors::kInvalidIntentType;
       return false;
     }
 
-    if (one_intent->HasKey(keys::kIntentPath)) {
-      if (!one_intent->GetString(keys::kIntentPath, &value)) {
+    if (one_service->HasKey(keys::kIntentPath)) {
+      if (!one_service->GetString(keys::kIntentPath, &value)) {
         *error = errors::kInvalidIntentPath;
         return false;
       }
-      intent.service_url = GetResourceURL(value);
+      service.service_url = GetResourceURL(value);
     }
 
-    if (one_intent->HasKey(keys::kIntentTitle) &&
-        !one_intent->GetString(keys::kIntentTitle, &intent.title)) {
+    if (one_service->HasKey(keys::kIntentTitle) &&
+        !one_service->GetString(keys::kIntentTitle, &service.title)) {
       *error = errors::kInvalidIntentTitle;
       return false;
     }
 
-    if (one_intent->HasKey(keys::kIntentDisposition)) {
-      if (!one_intent->GetString(keys::kIntentDisposition, &value) ||
+    if (one_service->HasKey(keys::kIntentDisposition)) {
+      if (!one_service->GetString(keys::kIntentDisposition, &value) ||
           (value != values::kIntentDispositionWindow &&
            value != values::kIntentDispositionInline)) {
         *error = errors::kInvalidIntentDisposition;
         return false;
       }
-      if (value == values::kIntentDispositionInline)
-        intent.disposition = WebIntentServiceData::DISPOSITION_INLINE;
-      else
-        intent.disposition = WebIntentServiceData::DISPOSITION_WINDOW;
+      if (value == values::kIntentDispositionInline) {
+        service.disposition =
+            webkit_glue::WebIntentServiceData::DISPOSITION_INLINE;
+      } else {
+        service.disposition =
+            webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW;
+      }
     }
 
-    intents_.push_back(intent);
+    intents_services_.push_back(service);
   }
   return true;
 }
@@ -2316,7 +2319,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
   }
 
   // Initialize web intents (optional).
-  if (!LoadWebIntents(source, error))
+  if (!LoadWebIntentServices(source, error))
     return false;
 
   // Initialize incognito behavior. Apps default to split mode, extensions

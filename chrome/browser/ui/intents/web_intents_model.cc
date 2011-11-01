@@ -121,7 +121,7 @@ void WebIntentsModel::LoadModel() {
 
 void WebIntentsModel::OnIntentsQueryDone(
     WebIntentsRegistry::QueryID query_id,
-    const std::vector<WebIntentServiceData>& services) {
+    const std::vector<webkit_glue::WebIntentServiceData>& services) {
   for (size_t i = 0; i < services.size(); ++i) {
     // Eventually do some awesome sorting, grouping, clustering stuff here.
     // For now, just stick it in the model flat.
