@@ -228,7 +228,7 @@ def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   script.append('readonly_file myfile %s' % infile)
   for f in flags:
     script.append('rpc AddArg s("%s") *' % f)
-  script.append('rpc Translate h(myfile) * h() i()')
+  script.append('rpc Translate h(myfile) * h() i() i() s() s()')
   script.append('set_variable out_handle ${result0}')
   script.append('set_variable out_size ${result1}')
   script.append('map_shmem ${out_handle} addr')

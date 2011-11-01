@@ -3112,7 +3112,10 @@ irt_variant_tests = [
     'tests/null/nacl.scons',
     'tests/nullptr/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
-    'tests/pnacl_client_translator/nacl.scons',
+    # Commented out until the new parameter profile for invoking llc.nexe
+    # has been committed to Chrome.
+    # TODO(sehr): re-enable client translator test.
+    #'tests/pnacl_client_translator/nacl.scons',
     'tests/redir/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',
     'tests/signal_handler/nacl.scons',
