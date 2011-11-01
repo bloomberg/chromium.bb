@@ -134,8 +134,8 @@ x11_compositor_init_egl(struct x11_compositor *c)
 	}
 
 	extensions = eglQueryString(c->base.display, EGL_EXTENSIONS);
-	if (!strstr(extensions, "EGL_KHR_surfaceless_opengl")) {
-		fprintf(stderr, "EGL_KHR_surfaceless_opengl not available\n");
+	if (!strstr(extensions, "EGL_KHR_surfaceless_gles2")) {
+		fprintf(stderr, "EGL_KHR_surfaceless_gles2 not available\n");
 		return -1;
 	}
 
