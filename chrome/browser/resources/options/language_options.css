@@ -118,6 +118,7 @@
   margin-top: 12px;
 }
 
+<if expr="not pp_ifdef('touchui')">
 html[os=chromeos] #add-language-overlay-language-list {
   -webkit-column-count: 2;
   -webkit-column-gap: 20px;
@@ -144,6 +145,7 @@ html[os=chromeos] #add-language-overlay-page ul {
   padding: 0;
   margin: 0;
 }
+</if>
 
 /* TODO(kochi): This is temporary copy from new_tab.css */
 /* Notification */
