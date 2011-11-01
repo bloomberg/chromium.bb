@@ -272,6 +272,8 @@ function updateControlsWithSelectedPrinterCapabilities() {
         'printerColorModelForColor': print_preview.ColorSettings.COLOR,
         'printerDefaultDuplexValue': copiesSettings.UNKNOWN_DUPLEX_MODE,
         'disableCopiesOption': true});
+    if (cr.isChromeOS && selectedValue == PRINT_WITH_CLOUD_PRINT)
+      sendPrintDocumentRequest();
   } else {
     // This message will call back to 'updateWithPrinterCapabilities'
     // function.
