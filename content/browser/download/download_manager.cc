@@ -483,6 +483,10 @@ void DownloadManager::MaybeCompleteDownload(DownloadItem* download) {
   DCHECK(download->db_handle() != DownloadItem::kUninitializedHandle);
   DCHECK_EQ(1u, history_downloads_.count(download->db_handle()));
 
+  // Give the delegate a chance to override.
+  if (!delegate_->ShouldCompleteDownload(download))
+    return;
+
   VLOG(20) << __FUNCTION__ << "()" << " executing: download = "
            << download->DebugString(false);
 

@@ -296,8 +296,7 @@ void DownloadItem::OpenDownload() {
   if (!open_enabled_)
     return;
 
-  if (download_manager_->delegate()->ShouldOpenDownload(this))
-    content::GetContentClient()->browser()->OpenItem(full_path());
+  content::GetContentClient()->browser()->OpenItem(full_path());
 }
 
 void DownloadItem::ShowDownloadInShell() {
@@ -397,7 +396,7 @@ void DownloadItem::MarkAsComplete() {
   TransitionTo(COMPLETE);
 }
 
-void DownloadItem::CompleteDelayedDownload() {
+void DownloadItem::DelayedDownloadOpened() {
   auto_opened_ = true;
   Completed();
 }
@@ -619,7 +618,7 @@ void DownloadItem::OnDownloadRenamedToFinalName(const FilePath& full_path) {
 
   Rename(full_path);
 
-  if (download_manager_->delegate()->ShouldCompleteDownload(this)) {
+  if (download_manager_->delegate()->ShouldOpenDownload(this)) {
     Completed();
   } else {
     delegate_delayed_complete_ = true;

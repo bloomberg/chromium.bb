@@ -152,11 +152,11 @@ bool ShellDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
   return false;
 }
 
-bool ShellDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
+bool ShellDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
   return true;
 }
 
-bool ShellDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
+bool ShellDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
   return true;
 }
 

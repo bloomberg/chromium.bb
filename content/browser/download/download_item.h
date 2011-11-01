@@ -176,9 +176,9 @@ class CONTENT_EXPORT DownloadItem {
   // to display progress when the DownloadItem should be considered complete.
   void MarkAsComplete();
 
-  // Called by the delegate after it delayed completing the download in
-  // DownloadManagerDelegate::ShouldCompleteDownload.
-  void CompleteDelayedDownload();
+  // Called by the delegate after it delayed opening the download in
+  // DownloadManagerDelegate::ShouldOpenDownload.
+  void DelayedDownloadOpened();
 
   // Called when all data has been saved. Only has display effects.
   void OnAllDataSaved(int64 size);

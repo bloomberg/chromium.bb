@@ -144,15 +144,11 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
   return download_prefs_->IsAutoOpenEnabledForExtension(extension);
 }
 
-bool ChromeDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
-  if (!IsExtensionDownload(item))
-    return true;
-
-  download_crx_util::OpenChromeExtension(profile_, *item);
-  return false;
+bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
+  return true;
 }
 
-bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
+bool ChromeDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
   if (!IsExtensionDownload(item)) {
 #if defined(ENABLE_SAFE_BROWSING)
     // Begin the safe browsing download protection check.
@@ -179,7 +175,7 @@ bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
       download_crx_util::OpenChromeExtension(profile_, *item);
 
   // CRX_INSTALLER_DONE will fire when the install completes.  Observe()
-  // will call CompleteDelayedDownload() on this item.  If this DownloadItem is
+  // will call DelayedDownloadOpened() on this item.  If this DownloadItem is
   // not around when CRX_INSTALLER_DONE fires, Complete() will not be called.
   registrar_.Add(this,
                  chrome::NOTIFICATION_CRX_INSTALLER_DONE,
@@ -344,7 +340,7 @@ void ChromeDownloadManagerDelegate::Observe(
 
   DownloadItem* item = download_manager_->GetActiveDownloadItem(download_id);
   if (item)
-    item->CompleteDelayedDownload();
+    item->DelayedDownloadOpened();
 }
 
 void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(

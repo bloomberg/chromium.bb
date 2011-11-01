@@ -25,8 +25,8 @@ class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
                                         FilePath* intermediate_path) OVERRIDE;
   virtual TabContents* GetAlternativeTabContentsToNotifyForDownload() OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
-  virtual bool ShouldOpenDownload(DownloadItem* item) OVERRIDE;
   virtual bool ShouldCompleteDownload(DownloadItem* item) OVERRIDE;
+  virtual bool ShouldOpenDownload(DownloadItem* item) OVERRIDE;
   virtual bool GenerateFileHash() OVERRIDE;
   virtual void OnResponseCompleted(DownloadItem* item,
                                    const std::string& hash) OVERRIDE;

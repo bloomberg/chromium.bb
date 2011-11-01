@@ -51,14 +51,21 @@ class DownloadManagerDelegate {
   // Tests if a file type should be opened automatically.
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) = 0;
 
-  // Allows the delegate to override the opening of a download. If it returns
-  // true then it's reponsible for opening the item.
-  virtual bool ShouldOpenDownload(DownloadItem* item) = 0;
-
-  // Allows the delegate to override completing the download. The delegate needs
-  // to call DownloadItem::CompleteDelayedDownload when it's done with the item,
-  // and is responsible for opening it.
+  // Allows the delegate to override completion of the download.  If this
+  // function returns false, the download completion is delayed and the
+  // delegate is responsible for making sure that
+  // DownloadManager::MaybeCompleteDownload is called at some point in the
+  // future.  Note that at that point this function will be called again,
+  // and is responsible for returning true when it really is ok for the
+  // download to complete.
   virtual bool ShouldCompleteDownload(DownloadItem* item) = 0;
+
+  // Allows the delegate to override opening the download. If this function
+  // returns false, the delegate needs to call
+  // DownloadItem::DelayedDownloadOpened when it's done with the item,
+  // and is responsible for opening it.  This function is called
+  // after the final rename, but before the download state is set to COMPLETED.
+  virtual bool ShouldOpenDownload(DownloadItem* item) = 0;
 
   // Returns true if we need to generate a binary hash for downloads.
   virtual bool GenerateFileHash() = 0;
