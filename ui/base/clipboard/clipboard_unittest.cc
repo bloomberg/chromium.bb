@@ -143,6 +143,33 @@ TEST_F(ClipboardTest, TrickyHTMLTest) {
 #endif  // defined(OS_WIN)
 }
 
+#if defined(OS_WIN)
+TEST_F(ClipboardTest, UniodeHTMLTest) {
+  Clipboard clipboard;
+
+  string16 markup(UTF8ToUTF16("<div>A \xc3\xb8 \xe6\xb0\xb4</div>")),
+      markup_result;
+  std::string url, url_result;
+
+  {
+    ScopedClipboardWriter clipboard_writer(&clipboard);
+    clipboard_writer.WriteHTML(markup, url);
+  }
+
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
+  uint32 fragment_start;
+  uint32 fragment_end;
+  clipboard.ReadHTML(Clipboard::BUFFER_STANDARD, &markup_result, &url_result,
+                     &fragment_start, &fragment_end);
+  EXPECT_PRED2(MarkupMatches, markup, markup_result);
+  EXPECT_EQ(url, url_result);
+  // Make sure that fragment indices were adjusted when converting.
+  EXPECT_EQ(36, fragment_start);
+  EXPECT_EQ(56, fragment_end);
+}
+#endif  // defined(OS_WIN)
+
 #if defined(TOOLKIT_USES_GTK)
 // Regression test for crbug.com/56298 (pasting empty HTML crashes Linux).
 TEST_F(ClipboardTest, EmptyHTMLTest) {
