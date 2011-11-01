@@ -252,6 +252,10 @@ html[dir=rtl]  .step.left {
   -webkit-margin-end: 10px;
 }
 
+#user-image {
+  margin: 0 20px;
+}
+
 #user-image-grid {
   -webkit-user-drag: none;
   -webkit-user-select: none;
