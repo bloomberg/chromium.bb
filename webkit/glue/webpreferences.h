@@ -93,6 +93,7 @@ struct WebPreferences {
   bool force_compositing_mode;
   bool allow_webui_compositing;
   bool composite_to_texture_enabled;
+  bool fixed_position_compositing_enabled;
   bool accelerated_layers_enabled;
   bool accelerated_video_enabled;
   bool accelerated_2d_canvas_enabled;

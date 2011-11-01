@@ -79,6 +79,7 @@ WebPreferences::WebPreferences()
       force_compositing_mode(false),
       allow_webui_compositing(false),
       composite_to_texture_enabled(false),
+      fixed_position_compositing_enabled(false),
       accelerated_layers_enabled(false),
       accelerated_video_enabled(false),
       accelerated_2d_canvas_enabled(false),
@@ -263,6 +264,11 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Enable composite to offscreen texture if requested on the command line.
   settings->setCompositeToTextureEnabled(composite_to_texture_enabled);
+
+  // Enable compositing for fixed position elements if requested
+  // on the command line.
+  settings->setAcceleratedCompositingForFixedPositionEnabled(
+      fixed_position_compositing_enabled);
 
   // Enable gpu-accelerated 2d canvas if requested on the command line.
   settings->setAccelerated2dCanvasEnabled(accelerated_2d_canvas_enabled);

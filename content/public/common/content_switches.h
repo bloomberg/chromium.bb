@@ -67,6 +67,7 @@ extern const char kEnableAccelerated2dCanvas[];
 CONTENT_EXPORT extern const char kEnableAcceleratedDrawing[];
 extern const char kEnableAccessibility[];
 extern const char kEnableAccessibilityLogging[];
+CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
 CONTENT_EXPORT extern const char kEnableDNSCertProvenanceChecking[];
 CONTENT_EXPORT extern const char kEnableDeviceMotion[];
 CONTENT_EXPORT extern const char kDisableFullScreen[];

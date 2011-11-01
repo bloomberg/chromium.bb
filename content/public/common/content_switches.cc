@@ -181,6 +181,10 @@ const char kEnableAccessibility[]           = "enable-accessibility";
 // Turns on extremely verbose logging of accessibility events.
 const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 
+// Enables the creation of compositing layers for fixed position elements.
+const char kEnableCompositingForFixedPosition[] =
+     "enable-fixed-position-compositing";
+
 // Enable DNS side checking of certificates. Still experimental, should only
 // be used by developers at the current time.
 const char kEnableDNSCertProvenanceChecking[] =

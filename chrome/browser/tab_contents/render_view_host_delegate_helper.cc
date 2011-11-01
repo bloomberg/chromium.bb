@@ -449,6 +449,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         command_line.HasSwitch(switches::kEnableThreadedCompositing);
     web_prefs.force_compositing_mode =
         command_line.HasSwitch(switches::kForceCompositingMode);
+    web_prefs.fixed_position_compositing_enabled =
+        command_line.HasSwitch(switches::kEnableCompositingForFixedPosition);
     web_prefs.allow_webui_compositing =
         command_line.HasSwitch(switches::kAllowWebUICompositing);
     web_prefs.accelerated_2d_canvas_enabled =
