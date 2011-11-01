@@ -34,9 +34,9 @@ class GaiaCookieMechanism : public buzz::SaslCookieMechanism {
     const std::string NS_GOOGLE_AUTH_PROTOCOL(
         "http://www.google.com/talk/protocol/auth");
     const buzz::QName QN_GOOGLE_ALLOW_GENERATED_JID_XMPP_LOGIN(
-        true, NS_GOOGLE_AUTH_PROTOCOL, "allow-generated-jid");
+        NS_GOOGLE_AUTH_PROTOCOL, "allow-generated-jid");
     const buzz::QName QN_GOOGLE_AUTH_CLIENT_USES_FULL_BIND_RESULT(
-        true, NS_GOOGLE_AUTH_PROTOCOL, "client-uses-full-bind-result");
+        NS_GOOGLE_AUTH_PROTOCOL, "client-uses-full-bind-result");
     auth->SetAttr(QN_GOOGLE_ALLOW_GENERATED_JID_XMPP_LOGIN, "true");
     auth->SetAttr(QN_GOOGLE_AUTH_CLIENT_USES_FULL_BIND_RESULT, "true");
     return auth;

@@ -156,12 +156,6 @@
 
         'overrides/talk/base/scoped_ptr.h',
 
-        # Libjingle's QName is not threadsafe, so we need to use our own version
-        # here.
-        # TODO(sergeyu): Fix QName in Libjingle.
-        'overrides/talk/xmllite/qname.cc',
-        'overrides/talk/xmllite/qname.h',
-
         'source/talk/base/Equifax_Secure_Global_eBusiness_CA-1.h',
         'source/talk/base/asyncfile.cc',
         'source/talk/base/asyncfile.h',
@@ -281,6 +275,8 @@
         'source/talk/base/urlencode.h',
         'source/talk/base/worker.cc',
         'source/talk/base/worker.h',
+        'source/talk/xmllite/qname.cc',
+        'source/talk/xmllite/qname.h',
         'source/talk/xmllite/xmlbuilder.cc',
         'source/talk/xmllite/xmlbuilder.h',
         'source/talk/xmllite/xmlconstants.cc',
@@ -448,7 +444,7 @@
     {
       'target_name': 'libjingle_peerconnection',
       'type': 'static_library',
-      'sources': [        
+      'sources': [
         'source/talk/app/webrtc/peerconnection.h',
         'source/talk/app/webrtc/peerconnectionfactory.cc',
         'source/talk/app/webrtc/peerconnectionfactory.h',
@@ -473,13 +469,15 @@
         'source/talk/session/phone/cryptoparams.h',
         'source/talk/session/phone/currentspeakermonitor.cc',
         'source/talk/session/phone/currentspeakermonitor.h',
-        'source/talk/session/phone/devicemanager.cc',
-        'source/talk/session/phone/devicemanager.h',
+        # See http://crbug.com/102012
+        # 'source/talk/session/phone/devicemanager.cc',
+        # 'source/talk/session/phone/devicemanager.h',
         'source/talk/session/phone/filemediaengine.cc',
-        'source/talk/session/phone/filemediaengine.h',   
+        'source/talk/session/phone/filemediaengine.h',
         'source/talk/session/phone/mediachannel.h',
-        'source/talk/session/phone/mediaengine.cc',
-        'source/talk/session/phone/mediaengine.h',
+        # See http://crbug.com/102451
+        # 'source/talk/session/phone/mediaengine.cc',
+        # 'source/talk/session/phone/mediaengine.h',
         'source/talk/session/phone/mediamessages.cc',
         'source/talk/session/phone/mediamessages.h',
         'source/talk/session/phone/mediamonitor.cc',
@@ -490,21 +488,25 @@
         'source/talk/session/phone/mediasessionclient.h',
         'source/talk/session/phone/mediasink.h',
         'source/talk/session/phone/rtcpmuxfilter.cc',
-        'source/talk/session/phone/rtcpmuxfilter.h',        
+        'source/talk/session/phone/rtcpmuxfilter.h',
         'source/talk/session/phone/rtpdump.cc',
         'source/talk/session/phone/rtpdump.h',
         'source/talk/session/phone/rtputils.cc',
         'source/talk/session/phone/rtputils.h',
         'source/talk/session/phone/soundclip.cc',
         'source/talk/session/phone/soundclip.h',
-        'source/talk/session/phone/srtpfilter.cc',
-        'source/talk/session/phone/srtpfilter.h',
+        # See http://crbug.com/102451
+        # 'source/talk/session/phone/srtpfilter.cc',
+        # 'source/talk/session/phone/srtpfilter.h',
         'source/talk/session/phone/videocommon.h',
+        'source/talk/session/phone/videoframe.cc',
+        'source/talk/session/phone/videoframe.h',
         'source/talk/session/phone/voicechannel.h',
         'source/talk/session/phone/webrtccommon.h',
         'source/talk/session/phone/webrtcpassthroughrender.cc',
-        'source/talk/session/phone/webrtcvideoengine.cc',
-        'source/talk/session/phone/webrtcvideoengine.h',
+        # See http://crbug.com/102451
+        # 'source/talk/session/phone/webrtcvideoengine.cc',
+        # 'source/talk/session/phone/webrtcvideoengine.h',
         'source/talk/session/phone/webrtcvideoframe.cc',
         'source/talk/session/phone/webrtcvideoframe.h',
         'source/talk/session/phone/webrtcvie.h',
@@ -520,7 +522,7 @@
         '<(DEPTH)/third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
         'libjingle',
         'libjingle_p2p',
-      ],          
+      ],
     },  # target libjingle_peerconnection
   ],
 }

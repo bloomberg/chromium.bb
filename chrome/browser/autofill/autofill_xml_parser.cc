@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include "base/logging.h"
-#include "third_party/libjingle/overrides/talk/xmllite/qname.h"
+#include "third_party/libjingle/source/talk/xmllite/qname.h"
 
 AutofillXmlParser::AutofillXmlParser()
     : succeeded_(true) {

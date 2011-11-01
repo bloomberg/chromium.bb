@@ -114,7 +114,7 @@ void HeartbeatSender::ProcessResponse(const XmlElement* response) {
   }
 
   // This method must only be called for error or result stanzas.
-  DCHECK_EQ(buzz::STR_RESULT, type);
+  DCHECK_EQ(std::string(buzz::STR_RESULT), type);
 
   const XmlElement* result_element =
       response->FirstNamed(QName(kChromotingXmlNamespace, kHeartbeatResultTag));

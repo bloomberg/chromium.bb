@@ -351,7 +351,7 @@ buzz::XmlElement* JingleMessageReply::ToXml(
 
   std::string type;
   std::string error_text;
-  QName name;
+  QName name("");
   switch (error_type) {
     case BAD_REQUEST:
       type = "modify";

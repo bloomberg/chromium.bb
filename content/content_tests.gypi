@@ -117,6 +117,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/libjingle/libjingle.gyp:libjingle',
+        '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/gfx/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
