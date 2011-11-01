@@ -324,6 +324,7 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
   DCHECK_NE(0u, module_ref_count_);
   module_ref_count_--;
   if (0 == module_ref_count_) {
+    CHECK(MessageLoop::current()->is_running());
     // Allow UI and IO threads to do blocking IO on shutdown, since we do a lot
     // of it on shutdown for valid reasons.
     base::ThreadRestrictions::SetIOAllowed(true);
