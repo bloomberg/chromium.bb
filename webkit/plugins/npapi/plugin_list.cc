@@ -64,7 +64,8 @@ static const VersionRangeDefinition kQuicktimeVersionRange[] = {
 };
 static const VersionRangeDefinition kJavaVersionRange[] = {
     { "0", "13.0", "12.8.0", true },  // Leopard
-    { "13.0", "14.0", "13.4.0", true }  // Snow Leopard
+    { "13.0", "14.0", "13.5.0", true },  // Snow Leopard
+    { "14.0", "", "14.0.3", true }  // Lion
 };
 static const VersionRangeDefinition kFlip4MacVersionRange[] = {
     { "", "", "2.2.1", true }
@@ -93,7 +94,8 @@ static const VersionRangeDefinition kQuicktimeVersionRange[] = {
     { "", "", "7.6.9", true }
 };
 static const VersionRangeDefinition kJavaVersionRange[] = {
-    { "0", "7", "6.0.260", true }  // "260" is not a typo.
+    { "0", "7", "6.0.290", true },  // "290" is not a typo.
+    { "7", "", "10.1", true }  // JDK7u1 identifies itself as 10.1
 };
 // This is up to date with
 // http://www.adobe.com/support/security/bulletins/apsb11-08.html
@@ -146,12 +148,14 @@ static const PluginGroupDefinition kGroupDefinitions[] = { };
 
 #else  // Most importantly, covers desktop Linux.
 static const VersionRangeDefinition kJavaVersionRange[] = {
-    { "0", "1.7", "1.6.0.26", true }
+    { "0", "1.7", "1.6.0.29", true },
+    { "1.7", "", "1.7.0.1", true }
 };
 
 static const VersionRangeDefinition kRedhatIcedTeaVersionRange[] = {
-    { "0", "1.9", "1.8.8", true },
-    { "1.9", "1.10", "1.9.8", true },
+    { "0", "1.9", "1.8.10", true },
+    { "1.9", "1.10", "1.9.10", true },
+    { "1.10", "", "1.10.4", true }
 };
 
 static const PluginGroupDefinition kGroupDefinitions[] = {
