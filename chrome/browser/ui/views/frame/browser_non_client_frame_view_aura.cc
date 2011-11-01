@@ -259,7 +259,8 @@ int BrowserNonClientFrameViewAura::NonClientHitTestImpl(
 // OnWidgetActivationChanged() to be called before GetWidget()->IsActive()
 // changes state.
 gfx::Rect BrowserNonClientFrameViewAura::GetFrameBackgroundBounds(
-    int hittest_code, bool active_window) {
+    int hittest_code,
+    bool active_window) {
   bool show_left = false;
   bool show_top = false;
   bool show_right = false;
@@ -318,6 +319,18 @@ void BrowserNonClientFrameViewAura::UpdateFrameBackground(bool active_window) {
   gfx::Rect end_bounds =
       GetFrameBackgroundBounds(last_hittest_code_, active_window);
   frame_background_->Configure(start_bounds, end_bounds);
+}
+
+void BrowserNonClientFrameViewAura::ActiveStateChanged() {
+  bool active = ShouldPaintAsActive();
+  // Active windows have different background bounds.
+  UpdateFrameBackground(active);
+  if (active)
+    frame_background_->Show();
+  else
+    frame_background_->Hide();
+  maximize_button_->SetVisible(active);
+  close_button_->SetVisible(active);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -397,6 +410,10 @@ void BrowserNonClientFrameViewAura::UpdateWindowIcon() {
   // TODO(jamescook): We will need this for app frames.
 }
 
+void BrowserNonClientFrameViewAura::ShouldPaintAsActiveChanged() {
+  ActiveStateChanged();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // views::View overrides:
 
@@ -410,7 +427,7 @@ void BrowserNonClientFrameViewAura::Layout() {
   preferred = maximize_button_->GetPreferredSize();
   maximize_button_->SetBounds(right - preferred.width(), kTopBorderThickness,
                               preferred.width(), preferred.height());
-  UpdateFrameBackground(GetWidget()->IsActive());
+  UpdateFrameBackground(ShouldPaintAsActive());
 }
 
 views::View* BrowserNonClientFrameViewAura::GetEventHandlerForPoint(
@@ -456,7 +473,7 @@ bool BrowserNonClientFrameViewAura::HitTest(const gfx::Point& p) const {
 void BrowserNonClientFrameViewAura::OnMouseMoved(
     const views::MouseEvent& event) {
   // We may be hovering over the resize edge.
-  UpdateFrameBackground(GetWidget()->IsActive());
+  UpdateFrameBackground(ShouldPaintAsActive());
   frame_background_->Show();
 }
 
@@ -515,16 +532,10 @@ void BrowserNonClientFrameViewAura::ButtonPressed(views::Button* sender,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// views::ButtonListener overrides:
+// views::Widget::Observer overrides:
 
 void BrowserNonClientFrameViewAura::OnWidgetActivationChanged(
-    views::Widget* widget, bool active) {
-  // Active windows have different background bounds.
-  UpdateFrameBackground(active);
-  if (active)
-    frame_background_->Show();
-  else
-    frame_background_->Hide();
-  maximize_button_->SetVisible(active);
-  close_button_->SetVisible(active);
+    views::Widget* widget,
+    bool active) {
+  ActiveStateChanged();
 }

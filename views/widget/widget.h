@@ -342,10 +342,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns whether the Widget is the currently active window.
   virtual bool IsActive() const;
 
-  // Prevents the window from being rendered as deactivated the next time it is.
-  // This state is reset automatically as soon as the window becomes activated
-  // again. There is no ability to control the state through this API as this
-  // leads to sync problems.
+  // Prevents the window from being rendered as deactivated. This state is
+  // reset automatically as soon as the window becomes activated again. There is
+  // no ability to control the state through this API as this leads to sync
+  // problems.
   void DisableInactiveRendering();
 
   // Sets the widget to be on top of all other widgets in the windowing system.
@@ -632,6 +632,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Returns whether capture should be released on mouse release.
   virtual bool ShouldReleaseCaptureOnMouseReleased() const;
+
+  // Sets the value of |disable_inactive_rendering_|. If the value changes,
+  // both the NonClientView and WidgetDelegate are notified.
+  void SetInactiveRenderingDisabled(bool value);
 
   // Persists the window's restored position and "show" state using the
   // window delegate.

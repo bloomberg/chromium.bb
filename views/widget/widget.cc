@@ -534,9 +534,7 @@ bool Widget::IsActive() const {
 }
 
 void Widget::DisableInactiveRendering() {
-  disable_inactive_rendering_ = true;
-  if (non_client_view_)
-    non_client_view_->DisableInactiveRendering(disable_inactive_rendering_);
+  SetInactiveRenderingDisabled(true);
 }
 
 void Widget::SetAlwaysOnTop(bool on_top) {
@@ -849,9 +847,7 @@ bool Widget::IsInactiveRenderingDisabled() const {
 }
 
 void Widget::EnableInactiveRendering() {
-  disable_inactive_rendering_ = false;
-  if (non_client_view_)
-    non_client_view_->DisableInactiveRendering(false);
+  SetInactiveRenderingDisabled(false);
 }
 
 void Widget::OnNativeWidgetActivationChanged(bool active) {
@@ -1111,6 +1107,16 @@ void Widget::DestroyRootView() {
 
 bool Widget::ShouldReleaseCaptureOnMouseReleased() const {
   return true;
+}
+
+void Widget::SetInactiveRenderingDisabled(bool value) {
+  if (value == disable_inactive_rendering_)
+    return;
+
+  disable_inactive_rendering_ = value;
+  if (non_client_view_)
+    non_client_view_->SetInactiveRenderingDisabled(value);
+  native_widget_->SetInactiveRenderingDisabled(value);
 }
 
 void Widget::SaveWindowPlacement() {

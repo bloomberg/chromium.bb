@@ -206,6 +206,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   virtual bool ConvertPointFromAncestor(
       const Widget* ancestor, gfx::Point* point) const = 0;
   virtual gfx::Rect GetWorkAreaBoundsInScreen() const = 0;
+  virtual void SetInactiveRenderingDisabled(bool value) = 0;
 
   // Overridden from NativeWidget:
   virtual internal::NativeWidgetPrivate* AsNativeWidgetPrivate() OVERRIDE;

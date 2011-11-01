@@ -42,6 +42,9 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   // Recomputes the bounds of the semi-transparent frame background.
   void UpdateFrameBackground(bool active_window);
 
+  // Invoked when the active state changes.
+  void ActiveStateChanged();
+
   // BrowserNonClientFrameView overrides:
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
   virtual int GetHorizontalTabStripVerticalOffset(bool restored) const OVERRIDE;
@@ -58,6 +61,7 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   virtual void EnableClose(bool enable) OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
+  virtual void ShouldPaintAsActiveChanged() OVERRIDE;
 
   // views::View overrides:
   virtual void Layout() OVERRIDE;

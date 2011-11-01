@@ -71,8 +71,8 @@ void NonClientView::UpdateFrame() {
   widget->UpdateFrameAfterFrameChange();
 }
 
-void NonClientView::DisableInactiveRendering(bool disable) {
-  frame_view_->DisableInactiveRendering(disable);
+void NonClientView::SetInactiveRenderingDisabled(bool disable) {
+  frame_view_->SetInactiveRenderingDisabled(disable);
 }
 
 gfx::Rect NonClientView::GetWindowBoundsForClientBounds(
@@ -184,6 +184,17 @@ views::View* NonClientView::GetEventHandlerForPoint(const gfx::Point& point) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NonClientFrameView, public:
+
+void NonClientFrameView::SetInactiveRenderingDisabled(bool disable) {
+  if (paint_as_active_ == disable)
+    return;
+
+  paint_as_active_ = disable;
+  ShouldPaintAsActiveChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, View overrides:
 
 bool NonClientFrameView::HitTest(const gfx::Point& l) const {
@@ -246,6 +257,11 @@ int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
 
 bool NonClientFrameView::ShouldPaintAsActive() const {
   return GetWidget()->IsActive() || paint_as_active_;
+}
+
+void NonClientFrameView::ShouldPaintAsActiveChanged() {
+  if (!paint_as_active_)
+    SchedulePaint();
 }
 
 void NonClientFrameView::GetAccessibleState(ui::AccessibleViewState* state) {

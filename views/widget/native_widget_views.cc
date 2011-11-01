@@ -593,6 +593,9 @@ gfx::Rect NativeWidgetViews::GetWorkAreaBoundsInScreen() const {
   return GetParentNativeWidget()->GetWorkAreaBoundsInScreen();
 }
 
+void NativeWidgetViews::SetInactiveRenderingDisabled(bool value) {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetViews, private:
 

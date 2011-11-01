@@ -196,11 +196,9 @@ void Bubble::InitBubble(views::Widget* parent,
 
   // Create the main window.
 #if defined(USE_AURA)
-  // TODO(beng):
-  NOTIMPLEMENTED();
-  // NOTE: This Widget initialization here is mostly to paper over a crash.
-  // This will soon be not necessary anymore with alicet/msw's work on new
-  // bubbles infrastructure.
+  views::Widget* parent_window = parent->GetTopLevelWidget();
+  if (parent_window)
+    parent_window->DisableInactiveRendering();
   views::Widget::InitParams params;
   params.transparent = true;
   params.parent_widget = parent;

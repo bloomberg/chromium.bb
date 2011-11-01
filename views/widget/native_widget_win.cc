@@ -1122,6 +1122,9 @@ gfx::Rect NativeWidgetWin::GetWorkAreaBoundsInScreen() const {
   return gfx::Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
 }
 
+void NativeWidgetWin::SetInactiveRenderingDisabled(bool value) {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, MessageLoop::Observer implementation:
 

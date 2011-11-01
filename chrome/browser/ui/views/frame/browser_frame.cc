@@ -59,7 +59,7 @@ void BrowserFrame::InitBrowserFrame() {
     params.keep_on_top = true;
   }
   Init(params);
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
   // On ChromeOS we always want top-level windows to appear active.
   if (!browser_view_->IsBrowserTypePopup())
     DisableInactiveRendering();

@@ -1371,6 +1371,9 @@ gfx::Rect NativeWidgetGtk::GetWorkAreaBoundsInScreen() const {
     return gfx::Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
 }
 
+void NativeWidgetGtk::SetInactiveRenderingDisabled(bool value) {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetGtk, protected:
 

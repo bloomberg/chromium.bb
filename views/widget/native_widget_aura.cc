@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "ui/aura/desktop.h"
+#include "ui/aura/desktop_observer.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
@@ -53,6 +54,33 @@ aura::WindowType GetAuraWindowTypeForWidgetType(Widget::InitParams::Type type) {
 }
 
 }  // namespace
+
+// Used when SetInactiveRenderingDisabled() is invoked to track when active
+// status changes in such a way that we should enable inactive rendering.
+class NativeWidgetAura::DesktopObserverImpl : public aura::DesktopObserver {
+ public:
+  explicit DesktopObserverImpl(NativeWidgetAura* host)
+      : host_(host) {
+    aura::Desktop::GetInstance()->AddObserver(this);
+  }
+
+  virtual ~DesktopObserverImpl() {
+    aura::Desktop::GetInstance()->RemoveObserver(this);
+  }
+
+  // DesktopObserver overrides:
+  virtual void OnActiveWindowChanged(aura::Window* active) OVERRIDE {
+    if (!active || (active != host_->window_ &&
+                    active->transient_parent() != host_->window_)) {
+      host_->delegate_->EnableInactiveRendering();
+    }
+  }
+
+ private:
+  NativeWidgetAura* host_;
+
+  DISALLOW_COPY_AND_ASSIGN(DesktopObserverImpl);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, public:
@@ -460,6 +488,13 @@ bool NativeWidgetAura::ConvertPointFromAncestor(const Widget* ancestor,
 
 gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
   return gfx::Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
+}
+
+void NativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
+  if (!value)
+    desktop_observer_.reset();
+  else
+    desktop_observer_.reset(new DesktopObserverImpl(this));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

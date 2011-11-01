@@ -362,9 +362,13 @@ void Desktop::SetActiveWindow(Window* window, Window* to_focus) {
 
   if (active_window_ == window)
     return;
-  if (active_window_ && active_window_->delegate())
-    active_window_->delegate()->OnLostActive();
+  Window* old_active = active_window_;
   active_window_ = window;
+  // Invoke OnLostActive after we've changed the active window. That way if the
+  // delegate queries for active state it doesn't think the window is still
+  // active.
+  if (old_active && old_active->delegate())
+    old_active->delegate()->OnLostActive();
   if (active_window_) {
     active_window_->parent()->MoveChildToFront(active_window_);
     if (active_window_->delegate())

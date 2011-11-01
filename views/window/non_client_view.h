@@ -33,14 +33,11 @@ class VIEWS_EXPORT NonClientFrameView : public View {
   // frame border.
   static const int kClientEdgeThickness;
 
-  // Prevent the frame view from painting its inactive state. Prevents a related
-  // window from causing its owner to appear deactivated. Used for windows like
-  // bubbles.
-  void DisableInactiveRendering(bool disable) {
-    paint_as_active_ = disable;
-    if (!paint_as_active_)
-      SchedulePaint();
-  }
+  // Sets whether the window should be rendered as active regardless of the
+  // actual active state. Used when bubbles become active to make their parent
+  // appear active. A value of true makes the window render as active always,
+  // false gives normal behavior.
+  void SetInactiveRenderingDisabled(bool disable);
 
   // Returns the bounds (in this View's parent's coordinates) that the client
   // view should be laid out within.
@@ -83,8 +80,12 @@ class VIEWS_EXPORT NonClientFrameView : public View {
 
   // Used to determine if the frame should be painted as active. Keyed off the
   // window's actual active state and the override, see
-  // DisableInactiveRendering() above.
+  // SetInactiveRenderingDisabled() above.
   bool ShouldPaintAsActive() const;
+
+  // Invoked from SetInactiveRenderingDisabled(). This implementation invokes
+  // SchedulesPaint as necessary.
+  virtual void ShouldPaintAsActiveChanged();
 
  private:
   // True when the non-client view should always be rendered as if the window
@@ -160,7 +161,7 @@ class VIEWS_EXPORT NonClientView : public View {
   // shown that shouldn't visually de-activate the window.
   // Subclasses can override this to perform additional actions when this value
   // changes.
-  void DisableInactiveRendering(bool disable);
+  void SetInactiveRenderingDisabled(bool disable);
 
   // Returns the bounds of the window required to display the content area at
   // the specified bounds.

@@ -117,6 +117,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual bool ConvertPointFromAncestor(
       const Widget* ancestor, gfx::Point* point) const OVERRIDE;
   virtual gfx::Rect GetWorkAreaBoundsInScreen() const OVERRIDE;
+  virtual void SetInactiveRenderingDisabled(bool value) OVERRIDE;
 
   // Overridden from views::InputMethodDelegate:
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
@@ -141,6 +142,8 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
  private:
+  class DesktopObserverImpl;
+
   internal::NativeWidgetDelegate* delegate_;
 
   aura::Window* window_;
@@ -158,6 +161,8 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   gfx::NativeCursor cursor_;
 
   scoped_ptr<TooltipManagerViews> tooltip_manager_;
+
+  scoped_ptr<DesktopObserverImpl> desktop_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
 };

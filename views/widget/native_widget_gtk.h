@@ -224,6 +224,7 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   virtual bool ConvertPointFromAncestor(
       const Widget* ancestor, gfx::Point* point) const OVERRIDE;
   virtual gfx::Rect GetWorkAreaBoundsInScreen() const OVERRIDE;
+  virtual void SetInactiveRenderingDisabled(bool value) OVERRIDE;
 
  protected:
   // Modifies event coordinates to the targeted widget contained by this widget.

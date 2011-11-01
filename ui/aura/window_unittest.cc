@@ -693,6 +693,65 @@ TEST_F(WindowTest, ActivateOnTouch) {
   EXPECT_EQ(0, d1.lost_active_count());
 }
 
+namespace {
+
+class ActiveWindowDelegate : public TestWindowDelegate {
+ public:
+  ActiveWindowDelegate() : window_(NULL), was_active_(false), hit_count_(0) {
+  }
+
+  void set_window(Window* window) { window_ = window; }
+
+  // Number of times OnLostActive has been invoked.
+  int hit_count() const { return hit_count_; }
+
+  // Was the window active from the first call to OnLostActive?
+  bool was_active() const { return was_active_; }
+
+  virtual void OnLostActive() OVERRIDE {
+    if (hit_count_++ == 0)
+      was_active_ = window_->IsActive();
+  }
+
+ private:
+  Window* window_;
+
+  // See description above getters for details on these.
+  bool was_active_;
+  int hit_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActiveWindowDelegate);
+};
+
+}  // namespace
+
+// Verifies that when WindowDelegate::OnLostActive is invoked the window is not
+// active.
+TEST_F(WindowTest, NotActiveInLostActive) {
+  Desktop* desktop = Desktop::GetInstance();
+
+  ActiveWindowDelegate d1;
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
+  d1.set_window(w1.get());
+
+  // Activate w1.
+  desktop->SetActiveWindow(w1.get(), NULL);
+  EXPECT_EQ(w1.get(), desktop->active_window());
+
+  // Should not have gotten a OnLostActive yet.
+  EXPECT_EQ(0, d1.hit_count());
+
+  // Change the active window to NULL.
+  desktop->SetActiveWindow(NULL, NULL);
+  EXPECT_TRUE(desktop->active_window() == NULL);
+
+  // Should have gotten OnLostActive and w1 should not have been active at that
+  // time.
+  EXPECT_EQ(1, d1.hit_count());
+  EXPECT_FALSE(d1.was_active());
+}
+
 // Creates a window with a delegate (w111) that can handle events at a lower
 // z-index than a window without a delegate (w12). w12 is sized to fill the
 // entire bounds of the container. This test verifies that

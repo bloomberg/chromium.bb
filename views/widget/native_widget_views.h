@@ -139,6 +139,7 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate {
   virtual bool ConvertPointFromAncestor(
       const Widget* ancestor, gfx::Point* point) const OVERRIDE;
   virtual gfx::Rect GetWorkAreaBoundsInScreen() const OVERRIDE;
+  virtual void SetInactiveRenderingDisabled(bool value) OVERRIDE;
 
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
