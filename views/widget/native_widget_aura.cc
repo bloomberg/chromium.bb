@@ -335,7 +335,7 @@ void NativeWidgetAura::EnableClose(bool enable) {
 }
 
 void NativeWidgetAura::Show() {
-  window_->Show();
+  ShowWithWindowState(ui::SHOW_STATE_INACTIVE);
 }
 
 void NativeWidgetAura::Hide() {
@@ -345,12 +345,11 @@ void NativeWidgetAura::Hide() {
 void NativeWidgetAura::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
   window_->SetBounds(restored_bounds);
-  window_->Maximize();
-  window_->Show();
+  ShowWithWindowState(ui::SHOW_STATE_MAXIMIZED);
 }
 
 void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
-  switch(state) {
+  switch (state) {
     case ui::SHOW_STATE_MAXIMIZED:
       window_->Maximize();
       break;
@@ -361,6 +360,10 @@ void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
       break;
   }
   window_->Show();
+  if (can_activate_ && (state != ui::SHOW_STATE_INACTIVE ||
+                        !GetWidget()->SetInitialFocus())) {
+    window_->Activate();
+  }
 }
 
 bool NativeWidgetAura::IsVisible() const {

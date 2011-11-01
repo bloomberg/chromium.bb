@@ -152,6 +152,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   // instance.
   base::WeakPtrFactory<NativeWidgetAura> close_widget_factory_;
 
+  // Can we be made active?
   bool can_activate_;
 
   gfx::NativeCursor cursor_;
