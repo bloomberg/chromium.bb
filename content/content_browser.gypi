@@ -541,6 +541,8 @@
     'browser/tab_contents/web_drag_dest_delegate.h',
     'browser/tab_contents/web_drag_dest_gtk.cc',
     'browser/tab_contents/web_drag_dest_gtk.h',
+    'browser/tab_contents/web_drag_dest_mac.h',
+    'browser/tab_contents/web_drag_dest_mac.mm',
     'browser/tab_contents/web_drag_source_gtk.cc',
     'browser/tab_contents/web_drag_source_gtk.h',
     'browser/tab_contents/web_drag_source_mac.h',
@@ -670,6 +672,8 @@
         # Build necessary Mozilla sources
         '../third_party/mozilla/ComplexTextInputPanel.h',
         '../third_party/mozilla/ComplexTextInputPanel.mm',
+        '../third_party/mozilla/NSPasteboard+Utils.h',
+        '../third_party/mozilla/NSPasteboard+Utils.mm',
       ],
       'link_settings': {
         'mac_bundle_resources': [

@@ -6,21 +6,20 @@
 #import "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/tab_contents/web_drop_target.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#import "content/browser/tab_contents/web_drag_dest_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
+#import "ui/base/test/ui_cocoa_test_helper.h"
 #include "webkit/glue/webdropdata.h"
 
-class WebDropTargetTest : public ChromeRenderViewHostTestHarness {
+class WebDragDestTest : public RenderViewHostTestHarness {
  public:
   virtual void SetUp() {
-    ChromeRenderViewHostTestHarness::SetUp();
-    CocoaTest::BootstrapCocoa();
-    drop_target_.reset([[WebDropTarget alloc] initWithTabContents:contents()]);
+    RenderViewHostTestHarness::SetUp();
+    drag_dest_.reset([[WebDragDest alloc] initWithTabContents:contents()]);
   }
 
   void PutURLOnPasteboard(NSString* urlString, NSPasteboard* pboard) {
@@ -45,24 +44,24 @@ class WebDropTargetTest : public ChromeRenderViewHostTestHarness {
   }
 
   base::mac::ScopedNSAutoreleasePool pool_;
-  scoped_nsobject<WebDropTarget> drop_target_;
+  scoped_nsobject<WebDragDest> drag_dest_;
 };
 
 // Make sure nothing leaks.
-TEST_F(WebDropTargetTest, Init) {
-  EXPECT_TRUE(drop_target_);
+TEST_F(WebDragDestTest, Init) {
+  EXPECT_TRUE(drag_dest_);
 }
 
 // Test flipping of coordinates given a point in window coordinates.
-TEST_F(WebDropTargetTest, Flip) {
+TEST_F(WebDragDestTest, Flip) {
   NSPoint windowPoint = NSZeroPoint;
   scoped_nsobject<NSWindow> window([[CocoaTestHelperWindow alloc] init]);
   NSPoint viewPoint =
-      [drop_target_ flipWindowPointToView:windowPoint
-                                     view:[window contentView]];
+      [drag_dest_ flipWindowPointToView:windowPoint
+                                   view:[window contentView]];
   NSPoint screenPoint =
-      [drop_target_ flipWindowPointToScreen:windowPoint
-                               view:[window contentView]];
+      [drag_dest_ flipWindowPointToScreen:windowPoint
+                                     view:[window contentView]];
   EXPECT_EQ(0, viewPoint.x);
   EXPECT_EQ(600, viewPoint.y);
   EXPECT_EQ(0, screenPoint.x);
@@ -71,7 +70,7 @@ TEST_F(WebDropTargetTest, Flip) {
   EXPECT_NE(0, screenPoint.y);
 }
 
-TEST_F(WebDropTargetTest, URL) {
+TEST_F(WebDragDestTest, URL) {
   NSPasteboard* pboard = nil;
   NSString* url = nil;
   NSString* title = nil;
@@ -135,7 +134,7 @@ TEST_F(WebDropTargetTest, URL) {
   [pboard releaseGlobally];
 }
 
-TEST_F(WebDropTargetTest, Data) {
+TEST_F(WebDragDestTest, Data) {
   WebDropData data;
   NSPasteboard* pboard = [NSPasteboard pasteboardWithUniqueName];
 
@@ -147,7 +146,7 @@ TEST_F(WebDropTargetTest, Data) {
   NSString* textString = @"hi there";
   [pboard setString:htmlString forType:NSHTMLPboardType];
   [pboard setString:textString forType:NSStringPboardType];
-  [drop_target_ populateWebDropData:&data fromPasteboard:pboard];
+  [drag_dest_ populateWebDropData:&data fromPasteboard:pboard];
   EXPECT_EQ(data.url.spec(), "http://www.google.com/");
   EXPECT_EQ(base::SysNSStringToUTF16(textString), data.plain_text);
   EXPECT_EQ(base::SysNSStringToUTF16(htmlString), data.text_html);

@@ -2810,8 +2810,6 @@
         'browser/ui/cocoa/tab_contents/sad_tab_view.mm',
         'browser/ui/cocoa/tab_contents/tab_contents_controller.h',
         'browser/ui/cocoa/tab_contents/tab_contents_controller.mm',
-        'browser/ui/cocoa/tab_contents/web_drop_target.h',
-        'browser/ui/cocoa/tab_contents/web_drop_target.mm',
         'browser/ui/cocoa/tab_view_picker_table.h',
         'browser/ui/cocoa/tab_view_picker_table.mm',
         'browser/ui/cocoa/table_row_nsimage_cache.h',
@@ -4402,8 +4400,6 @@
             '../third_party/molokocacao/NSBezierPath+MCAdditions.h',
             '../third_party/molokocacao/NSBezierPath+MCAdditions.m',
             # Build necessary Mozilla sources
-            '../third_party/mozilla/NSPasteboard+Utils.h',
-            '../third_party/mozilla/NSPasteboard+Utils.mm',
             '../third_party/mozilla/NSScreen+Utils.h',
             '../third_party/mozilla/NSScreen+Utils.m',
             '../third_party/mozilla/NSString+Utils.h',

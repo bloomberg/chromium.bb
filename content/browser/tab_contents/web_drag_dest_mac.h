@@ -22,7 +22,7 @@ typedef RenderViewHost* RenderViewHostIdentifier;
 // over the content area. Assumes something else initiates the drag, this is
 // only for processing during a drag.
 
-@interface WebDropTarget : NSObject {
+@interface WebDragDest : NSObject {
  @private
   // Our associated TabContents. Weak reference.
   TabContents* tabContents_;
@@ -64,7 +64,7 @@ typedef RenderViewHost* RenderViewHostIdentifier;
 @end
 
 // Public use only for unit tests.
-@interface WebDropTarget(Testing)
+@interface WebDragDest(Testing)
 // Given |data|, which should not be nil, fill it in using the contents of the
 // given pasteboard.
 - (void)populateWebDropData:(WebDropData*)data

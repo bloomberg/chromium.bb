@@ -28,8 +28,8 @@ class RenderViewContextMenuMac;
 class SkBitmap;
 class TabContentsViewMac;
 class WebDragBookmarkHandlerMac;
+@class WebDragDest;
 @class WebDragSource;
-@class WebDropTarget;
 namespace gfx {
 class Point;
 }
@@ -38,7 +38,7 @@ class Point;
  @private
   TabContentsViewMac* tabContentsView_;  // WEAK; owns us
   scoped_nsobject<WebDragSource> dragSource_;
-  scoped_nsobject<WebDropTarget> dropTarget_;
+  scoped_nsobject<WebDragDest> dragDest_;
   scoped_ptr<WebDragBookmarkHandlerMac> bookmarkHandler_;
 }
 

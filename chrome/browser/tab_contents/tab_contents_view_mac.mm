@@ -14,7 +14,6 @@
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_mac.h"
 #import "chrome/browser/ui/cocoa/focus_tracker.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
-#import "chrome/browser/ui/cocoa/tab_contents/web_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -23,6 +22,7 @@
 #include "content/browser/tab_contents/popup_menu_helper_mac.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#import "content/browser/tab_contents/web_drag_dest_mac.h"
 #import "content/browser/tab_contents/web_drag_source_mac.h"
 #import "content/common/chrome_application_mac.h"
 #include "content/common/view_messages.h"
@@ -419,10 +419,10 @@ void TabContentsViewMac::Observe(int type,
   self = [super initWithFrame:NSZeroRect];
   if (self != nil) {
     tabContentsView_ = w;
-    dropTarget_.reset(
-        [[WebDropTarget alloc] initWithTabContents:[self tabContents]]);
+    dragDest_.reset(
+        [[WebDragDest alloc] initWithTabContents:[self tabContents]]);
     bookmarkHandler_.reset(new WebDragBookmarkHandlerMac);
-    [dropTarget_ setDragDelegate:
+    [dragDest_ setDragDelegate:
         static_cast<content::WebDragDestDelegate*>(bookmarkHandler_.get())];
     [self registerDragTypes];
     // TabContentsViewCocoa's ViewID may be changed to VIEW_ID_DEV_TOOLS_DOCKED
@@ -461,7 +461,7 @@ void TabContentsViewMac::Observe(int type,
 }
 
 - (void)setCurrentDragOperation:(NSDragOperation)operation {
-  [dropTarget_ setCurrentOperation:operation];
+  [dragDest_ setCurrentOperation:operation];
 }
 
 - (TabContents*)tabContents {
@@ -557,19 +557,19 @@ void TabContentsViewMac::Observe(int type,
 // NSDraggingDestination methods
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
-  return [dropTarget_ draggingEntered:sender view:self];
+  return [dragDest_ draggingEntered:sender view:self];
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
-  [dropTarget_ draggingExited:sender];
+  [dragDest_ draggingExited:sender];
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
-  return [dropTarget_ draggingUpdated:sender view:self];
+  return [dragDest_ draggingUpdated:sender view:self];
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
-  return [dropTarget_ performDragOperation:sender view:self];
+  return [dragDest_ performDragOperation:sender view:self];
 }
 
 - (void)cancelDeferredClose {

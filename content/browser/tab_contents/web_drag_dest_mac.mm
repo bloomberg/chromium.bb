@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/tab_contents/web_drop_target.h"
+#import "content/browser/tab_contents/web_drag_dest_mac.h"
 
 #include "base/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -15,7 +15,7 @@
 
 using WebKit::WebDragOperationsMask;
 
-@implementation WebDropTarget
+@implementation WebDragDest
 
 // |contents| is the TabContents representing this tab, used to communicate
 // drag&drop messages to WebCore and handle navigation on a successful drop
@@ -33,7 +33,7 @@ using WebKit::WebDragOperationsMask;
 
 // Call to set whether or not we should allow the drop. Takes effect the
 // next time |-draggingUpdated:| is called.
-- (void)setCurrentOperation: (NSDragOperation)operation {
+- (void)setCurrentOperation:(NSDragOperation)operation {
   current_operation_ = operation;
 }
 
