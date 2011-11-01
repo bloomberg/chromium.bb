@@ -13,113 +13,49 @@
 #include "base/sys_string_conversions.h"
 #include "remoting/host/chromoting_host.h"
 
-// As this is a plugin, there needs to be a way to find its bundle
-// so that resources are able to be found. This class exists solely so that
-// there is a way to get the bundle that this code file is in using
-// [NSBundle bundleForClass:[ContinueWindowMacClassToLocateMyBundle class]]
-// It is really only a name.
-@interface ContinueWindowMacClassToLocateMyBundle : NSObject
-@end
+// Handles the ContinueWindow.
+@interface ContinueWindowMacController : NSObject {
+ @private
+  scoped_nsobject<NSMutableArray> shades_;
+  scoped_nsobject<NSAlert> continue_alert_;
+  remoting::ChromotingHost* host_;
+}
 
-@implementation ContinueWindowMacClassToLocateMyBundle
+- (id)initWithHost:(remoting::ChromotingHost*)host;
+- (void)show;
+- (void)hide;
+- (void)onCancel:(id)sender;
+- (void)onContinue:(id)sender;
 @end
 
 namespace remoting {
 
+// A bridge between C++ and ObjC implementations of ContinueWindow.
+// Everything important occurs in ContinueWindowMacController.
 class ContinueWindowMac : public remoting::ContinueWindow {
  public:
-  ContinueWindowMac() : modal_session_(NULL) {}
+  ContinueWindowMac() {}
   virtual ~ContinueWindowMac() {}
 
   virtual void Show(remoting::ChromotingHost* host) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
  private:
-  NSModalSession modal_session_;
+  scoped_nsobject<ContinueWindowMacController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ContinueWindowMac);
 };
 
 void ContinueWindowMac::Show(remoting::ChromotingHost* host) {
   base::mac::ScopedNSAutoreleasePool pool;
+  controller_.reset([[ContinueWindowMacController alloc] initWithHost:host]);
+  [controller_ show];
 
-  // Generate window shade
-  NSArray* screens = [NSScreen screens];
-  NSMutableArray* windows = [NSMutableArray arrayWithCapacity:[screens count]];
-  for (NSScreen *screen in screens) {
-    NSWindow* window =
-      [[[NSWindow alloc] initWithContentRect:[screen frame]
-                                   styleMask:NSBorderlessWindowMask
-                                   backing:NSBackingStoreBuffered
-                                   defer:NO
-                                   screen:screen] autorelease];
-    [window setReleasedWhenClosed:NO];
-    [window setAlphaValue:0.8];
-    [window setOpaque:NO];
-    [window setBackgroundColor:[NSColor blackColor]];
-    // Raise the window shade above just about everything else.
-    // Leave the dock and menu bar exposed so the user has some basic level
-    // of control (like they can quit Chromium).
-    [window setLevel:NSModalPanelWindowLevel - 1];
-    [window orderFront:nil];
-    [windows addObject:window];
-  }
-
-  // Put up alert
-  const UiStrings& strings = host->ui_strings();
-  NSString* message = base::SysUTF16ToNSString(strings.continue_prompt);
-  NSString* continue_button = base::SysUTF16ToNSString(
-      strings.continue_button_text);
-  NSString* cancel_button = base::SysUTF16ToNSString(
-      strings.stop_sharing_button_text);
-  scoped_nsobject<NSAlert> continue_alert([[NSAlert alloc] init]);
-  [continue_alert setMessageText:message];
-  [continue_alert addButtonWithTitle:continue_button];
-  [continue_alert addButtonWithTitle:cancel_button];
-
-  // See ContinueWindowMacClassToLocateMyBundle class above for details
-  // on this.
-  NSBundle *bundle =
-      [NSBundle bundleForClass:[ContinueWindowMacClassToLocateMyBundle class]];
-  NSString *imagePath = [bundle pathForResource:@"chromoting128" ofType:@"png"];
-  scoped_nsobject<NSImage> image(
-      [[NSImage alloc] initByReferencingFile:imagePath]);
-  [continue_alert setIcon:image];
-  [continue_alert layout];
-
-  NSWindow* continue_window = [continue_alert window];
-  [continue_window center];
-  [continue_window orderWindow:NSWindowAbove
-                    relativeTo:[[windows lastObject] windowNumber]];
-  [continue_window makeKeyWindow];
-  NSApplication* application = [NSApplication sharedApplication];
-  modal_session_ = [application beginModalSessionForWindow:continue_window];
-  NSInteger answer = 0;
-  do {
-    answer = [application runModalSession:modal_session_];
-  } while (answer == NSRunContinuesResponse);
-  [application endModalSession:modal_session_];
-  modal_session_ = NULL;
-
-  [continue_window close];
-
-  // Remove window shade.
-  for (NSWindow* window in windows) {
-    [window close];
-  }
-
-  if (answer == NSAlertFirstButtonReturn) {
-    host->PauseSession(false);
-  } else {
-    host->Shutdown(NULL);
-  }
 }
 
 void ContinueWindowMac::Hide() {
-  if (modal_session_) {
-    NSApplication* application = [NSApplication sharedApplication];
-    [application stopModalWithCode:NSAlertFirstButtonReturn];
-  }
+  base::mac::ScopedNSAutoreleasePool pool;
+  [controller_ hide];
 }
 
 ContinueWindow* ContinueWindow::Create() {
@@ -127,3 +63,94 @@ ContinueWindow* ContinueWindow::Create() {
 }
 
 }  // namespace remoting
+
+@implementation ContinueWindowMacController
+
+- (id)initWithHost:(remoting::ChromotingHost*)host {
+  if ((self = [super init])) {
+    host_ = host;
+  }
+  return self;
+}
+
+- (void)show {
+  // Generate window shade
+  NSArray* screens = [NSScreen screens];
+  shades_.reset([[NSMutableArray alloc] initWithCapacity:[screens count]]);
+  for (NSScreen *screen in screens) {
+    NSWindow* shade =
+      [[[NSWindow alloc] initWithContentRect:[screen frame]
+                                   styleMask:NSBorderlessWindowMask
+                                     backing:NSBackingStoreBuffered
+                                       defer:NO
+                                      screen:screen] autorelease];
+    [shade setReleasedWhenClosed:NO];
+    [shade setAlphaValue:0.8];
+    [shade setOpaque:NO];
+    [shade setBackgroundColor:[NSColor blackColor]];
+    // Raise the window shade above just about everything else.
+    // Leave the dock and menu bar exposed so the user has some basic level
+    // of control (like they can quit Chromium).
+    [shade setLevel:NSModalPanelWindowLevel - 1];
+    [shade orderFront:nil];
+    [shades_ addObject:shade];
+  }
+
+  // Create alert.
+  const remoting::UiStrings& strings = host_->ui_strings();
+  NSString* message = base::SysUTF16ToNSString(strings.continue_prompt);
+  NSString* continue_button_string = base::SysUTF16ToNSString(
+      strings.continue_button_text);
+  NSString* cancel_button_string = base::SysUTF16ToNSString(
+      strings.stop_sharing_button_text);
+  continue_alert_.reset([[NSAlert alloc] init]);
+  [continue_alert_ setMessageText:message];
+
+  NSButton* continue_button =
+      [continue_alert_ addButtonWithTitle:continue_button_string];
+  [continue_button setAction:@selector(onContinue:)];
+  [continue_button setTarget:self];
+
+  NSButton* cancel_button =
+      [continue_alert_ addButtonWithTitle:cancel_button_string];
+  [cancel_button setAction:@selector(onCancel:)];
+  [cancel_button setTarget:self];
+
+  NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+  NSString *imagePath = [bundle pathForResource:@"chromoting128" ofType:@"png"];
+  scoped_nsobject<NSImage> image(
+      [[NSImage alloc] initByReferencingFile:imagePath]);
+  [continue_alert_ setIcon:image];
+  [continue_alert_ layout];
+
+  // Force alert to be at the proper level and location.
+  NSWindow* continue_window = [continue_alert_ window];
+  [continue_window center];
+  [continue_window setLevel:NSModalPanelWindowLevel];
+  [continue_window orderWindow:NSWindowAbove
+                    relativeTo:[[shades_ lastObject] windowNumber]];
+  [continue_window makeKeyWindow];
+}
+
+- (void)hide {
+  // Remove window shade.
+  for (NSWindow* window in shades_.get()) {
+    [window close];
+  }
+  shades_.reset();
+  continue_alert_.reset();
+}
+
+- (void)onCancel:(id)sender {
+  [self hide];
+  host_->Shutdown(NULL);
+  host_ = nil;
+}
+
+- (void)onContinue:(id)sender {
+  [self hide];
+  host_->PauseSession(false);
+  host_ = nil;
+}
+
+@end
