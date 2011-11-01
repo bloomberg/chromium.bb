@@ -218,6 +218,16 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Determines the visibility of icons next to the treeItem labels. If set to
+   * 'hidden', no space is reserved for icons and no icons are displayed next
+   * to treeItem labels. If set to 'parent', folder icons will be displayed
+   * next to expandable parent nodes. If set to 'all' folder icons will be
+   * displayed next to all nodes. Icons can be set using the treeItem's icon
+   * property.
+   */
+  cr.defineProperty(Tree, 'iconVisibility', cr.PropertyKind.ATTR);
+
+  /**
    * This is used as a blueprint for new tree item elements.
    * @type {!HTMLElement}
    */

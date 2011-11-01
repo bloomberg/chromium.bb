@@ -134,6 +134,16 @@ const cr = (function() {
   }
 
   /**
+   * Converts a camelCase javascript property name to a hyphenated-lower-case
+   * attribute name.
+   * @param {string} jsName The javascript camelCase property name.
+   * @return {string} The equivalent hyphenated-lower-case attribute name.
+   */
+  function getAttributeName(jsName) {
+    return jsName.replace(/([A-Z])/g, '-$1').toLowerCase();
+  }
+
+  /**
    * The kind of property to define in {@code defineProperty}.
    * @enum {number}
    */
@@ -171,12 +181,14 @@ const cr = (function() {
           return this[privateName];
         };
       case PropertyKind.ATTR:
+        var attributeName = getAttributeName(name);
         return function() {
-          return this.getAttribute(name);
+          return this.getAttribute(attributeName);
         };
       case PropertyKind.BOOL_ATTR:
+        var attributeName = getAttributeName(name);
         return function() {
-          return this.hasAttribute(name);
+          return this.hasAttribute(attributeName);
         };
     }
   }
@@ -207,13 +219,14 @@ const cr = (function() {
         };
 
       case PropertyKind.ATTR:
+        var attributeName = getAttributeName(name);
         return function(value) {
-          var oldValue = this[name];
+          var oldValue = this[attributeName];
           if (value !== oldValue) {
             if (value == undefined)
-              this.removeAttribute(name);
+              this.removeAttribute(attributeName);
             else
-              this.setAttribute(name, value);
+              this.setAttribute(attributeName, value);
             if (opt_setHook)
               opt_setHook.call(this, value, oldValue);
             dispatchPropertyChange(this, name, value, oldValue);
@@ -221,13 +234,14 @@ const cr = (function() {
         };
 
       case PropertyKind.BOOL_ATTR:
+        var attributeName = getAttributeName(name);
         return function(value) {
-          var oldValue = this[name];
+          var oldValue = this[attributeName];
           if (value !== oldValue) {
             if (value)
-              this.setAttribute(name, name);
+              this.setAttribute(attributeName, name);
             else
-              this.removeAttribute(name);
+              this.removeAttribute(attributeName);
             if (opt_setHook)
               opt_setHook.call(this, value, oldValue);
             dispatchPropertyChange(this, name, value, oldValue);
