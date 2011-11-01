@@ -21,9 +21,6 @@
 #include "views/border.h"
 #include "views/painter.h"
 
-using std::max;
-using std::min;
-
 namespace {
 
 // Corner radius for the progress bar's border.
@@ -143,6 +140,41 @@ ProgressBar::ProgressBar()
 ProgressBar::~ProgressBar() {
 }
 
+void ProgressBar::SetDisplayRange(double min_display_value,
+                                  double max_display_value) {
+  if (min_display_value != min_display_value_ ||
+      max_display_value != max_display_value_) {
+    DCHECK(min_display_value < max_display_value);
+    min_display_value_ = min_display_value;
+    max_display_value_ = max_display_value;
+    SchedulePaint();
+  }
+}
+
+void ProgressBar::SetValue(double value) {
+  if (value != current_value_) {
+    current_value_ = value;
+    SchedulePaint();
+  }
+}
+
+void ProgressBar::SetTooltipText(const string16& tooltip_text) {
+  tooltip_text_ = tooltip_text;
+}
+
+bool ProgressBar::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
+  DCHECK(tooltip);
+  if (tooltip == NULL)
+    return false;
+  tooltip->assign(tooltip_text_);
+  return !tooltip_text_.empty();
+}
+
+void ProgressBar::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_PROGRESSBAR;
+  state->state = ui::AccessibilityTypes::STATE_READONLY;
+}
+
 gfx::Size ProgressBar::GetPreferredSize() {
   return gfx::Size(100, 16);
 }
@@ -151,14 +183,9 @@ std::string ProgressBar::GetClassName() const {
   return kViewClassName;
 }
 
-void ProgressBar::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PROGRESSBAR;
-  state->state = ui::AccessibilityTypes::STATE_READONLY;
-}
-
 void ProgressBar::OnPaint(gfx::Canvas* canvas) {
-  const double capped_value =
-      min(max(current_value_, min_display_value_), max_display_value_);
+  const double capped_value = std::min(
+      std::max(current_value_, min_display_value_), max_display_value_);
   const double capped_fraction =
       (capped_value - min_display_value_) /
       (max_display_value_ - min_display_value_);
@@ -287,36 +314,6 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
                   border_color,
                   kBorderWidth);
 #endif
-}
-
-bool ProgressBar::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
-  DCHECK(tooltip);
-  if (tooltip == NULL)
-    return false;
-  tooltip->assign(tooltip_text_);
-  return !tooltip_text_.empty();
-}
-
-void ProgressBar::SetDisplayRange(double min_display_value,
-                                  double max_display_value) {
-  if (min_display_value != min_display_value_ ||
-      max_display_value != max_display_value_) {
-    DCHECK(min_display_value < max_display_value);
-    min_display_value_ = min_display_value;
-    max_display_value_ = max_display_value;
-    SchedulePaint();
-  }
-}
-
-void ProgressBar::SetValue(double value) {
-  if (value != current_value_) {
-    current_value_ = value;
-    SchedulePaint();
-  }
-}
-
-void ProgressBar::SetTooltipText(const string16& tooltip_text) {
-  tooltip_text_ = tooltip_text;
 }
 
 }  // namespace views
