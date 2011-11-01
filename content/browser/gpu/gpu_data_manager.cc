@@ -8,6 +8,8 @@
 #include <CoreGraphics/CGDisplayConfiguration.h>
 #endif
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
@@ -190,7 +192,8 @@ void GpuDataManager::UserFlags::ApplyPolicies() {
 }
 
 GpuDataManager::GpuDataManager()
-    : complete_gpu_info_already_requested_(false) {
+    : complete_gpu_info_already_requested_(false),
+      observer_list_(new GpuDataManagerObserverList) {
   Initialize();
 }
 
@@ -244,7 +247,7 @@ void GpuDataManager::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
       return;
   }
 
-  RunGpuInfoUpdateCallbacks();
+  NotifyGpuInfoUpdate();
 
   {
     base::AutoLock auto_lock(gpu_info_lock_);
@@ -412,20 +415,12 @@ bool GpuDataManager::GpuAccessAllowed() {
   return (gpu_feature_flags_.flags() & mask) == 0;
 }
 
-void GpuDataManager::AddGpuInfoUpdateCallback(Callback0::Type* callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  gpu_info_update_callbacks_.insert(callback);
+void GpuDataManager::AddObserver(Observer* observer) {
+  observer_list_->AddObserver(observer);
 }
 
-bool GpuDataManager::RemoveGpuInfoUpdateCallback(Callback0::Type* callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::set<Callback0::Type*>::iterator i =
-      gpu_info_update_callbacks_.find(callback);
-  if (i != gpu_info_update_callbacks_.end()) {
-    gpu_info_update_callbacks_.erase(i);
-    return true;
-  }
-  return false;
+void GpuDataManager::RemoveObserver(Observer* observer) {
+  observer_list_->RemoveObserver(observer);
 }
 
 void GpuDataManager::AppendRendererCommandLine(
@@ -572,23 +567,16 @@ DictionaryValue* GpuDataManager::GpuInfoAsDictionaryValue() const {
   return info;
 }
 
-void GpuDataManager::RunGpuInfoUpdateCallbacks() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &GpuDataManager::RunGpuInfoUpdateCallbacks));
-    return;
-  }
-
-  std::set<Callback0::Type*>::iterator i = gpu_info_update_callbacks_.begin();
-  for (; i != gpu_info_update_callbacks_.end(); ++i) {
-    (*i)->Run();
-  }
+void GpuDataManager::NotifyGpuInfoUpdate() {
+  observer_list_->Notify(&GpuDataManager::Observer::OnGpuInfoUpdate);
 }
 
 void GpuDataManager::UpdateGpuFeatureFlags() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &GpuDataManager::UpdateGpuFeatureFlags));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&GpuDataManager::UpdateGpuFeatureFlags,
+                   base::Unretained(this)));
     return;
   }
 
@@ -607,7 +595,7 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
   }
 
   // Notify clients that GpuInfo state has changed
-  RunGpuInfoUpdateCallbacks();
+  NotifyGpuInfoUpdate();
 
   uint32 flags = gpu_feature_flags_.flags();
   uint32 max_entry_id = gpu_blacklist->max_entry_id();

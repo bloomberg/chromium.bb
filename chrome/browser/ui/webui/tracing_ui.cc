@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_old.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -48,7 +47,8 @@ class TracingMessageHandler
     : public WebUIMessageHandler,
       public SelectFileDialog::Listener,
       public base::SupportsWeakPtr<TracingMessageHandler>,
-      public TraceSubscriber {
+      public TraceSubscriber,
+      public GpuDataManager::Observer {
  public:
   TracingMessageHandler();
   virtual ~TracingMessageHandler();
@@ -66,6 +66,9 @@ class TracingMessageHandler
   virtual void OnTraceDataCollected(const std::string& trace_fragment);
   virtual void OnTraceBufferPercentFullReply(float percent_full);
 
+  // GpuDataManager::Observer implementation.
+  virtual void OnGpuInfoUpdate() OVERRIDE;
+
   // Messages.
   void OnTracingControllerInitialized(const ListValue* list);
   void OnBeginTracing(const ListValue* list);
@@ -73,9 +76,6 @@ class TracingMessageHandler
   void OnBeginRequestBufferPercentFull(const ListValue* list);
   void OnLoadTraceFile(const ListValue* list);
   void OnSaveTraceFile(const ListValue* list);
-
-  // Callbacks.
-  void OnGpuInfoUpdate();
 
   // Callbacks.
   void LoadTraceFileComplete(std::string* file_contents);
@@ -97,9 +97,6 @@ class TracingMessageHandler
 
   // Cache the Singleton for efficiency.
   GpuDataManager* gpu_data_manager_;
-
-  // Callback called when the GPU info is updated.
-  Callback0::Type* gpu_info_update_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingMessageHandler);
 };
@@ -138,17 +135,13 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
 
 TracingMessageHandler::TracingMessageHandler()
   : select_trace_file_dialog_type_(SelectFileDialog::SELECT_NONE),
-    trace_enabled_(false),
-    gpu_info_update_callback_(NULL) {
+    trace_enabled_(false) {
   gpu_data_manager_ = GpuDataManager::GetInstance();
   DCHECK(gpu_data_manager_);
 }
 
 TracingMessageHandler::~TracingMessageHandler() {
-  if (gpu_info_update_callback_) {
-    gpu_data_manager_->RemoveGpuInfoUpdateCallback(gpu_info_update_callback_);
-    delete gpu_info_update_callback_;
-  }
+  gpu_data_manager_->RemoveObserver(this);
 
   if (select_trace_file_dialog_)
     select_trace_file_dialog_->ListenerDestroyed();
@@ -190,12 +183,8 @@ void TracingMessageHandler::OnTracingControllerInitialized(
     const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DCHECK(!gpu_info_update_callback_);
-
   // Watch for changes in GPUInfo
-  gpu_info_update_callback_ =
-      NewCallback(this, &TracingMessageHandler::OnGpuInfoUpdate);
-  gpu_data_manager_->AddGpuInfoUpdateCallback(gpu_info_update_callback_);
+  gpu_data_manager_->AddObserver(this);
 
   // Tell GpuDataManager it should have full GpuInfo. If the
   // Gpu process has not run yet, this will trigger its launch.

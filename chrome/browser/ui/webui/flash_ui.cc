@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_old.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string_number_conversions.h"
@@ -66,10 +65,11 @@ const int kTimeout = 8 * 1000;  // 8 seconds.
 
 // The handler for JavaScript messages for the about:flags page.
 class FlashDOMHandler : public WebUIMessageHandler,
-                        public CrashUploadList::Delegate {
+                        public CrashUploadList::Delegate,
+                        public GpuDataManager::Observer {
  public:
   FlashDOMHandler();
-  virtual ~FlashDOMHandler() {}
+  virtual ~FlashDOMHandler();
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
@@ -77,11 +77,11 @@ class FlashDOMHandler : public WebUIMessageHandler,
   // CrashUploadList::Delegate implementation.
   virtual void OnCrashListAvailable() OVERRIDE;
 
+  // GpuDataManager::Observer implementation.
+  virtual void OnGpuInfoUpdate() OVERRIDE;
+
   // Callback for the "requestFlashInfo" message.
   void HandleRequestFlashInfo(const ListValue* args);
-
-  // Callback for the GPU information update.
-  void OnGpuInfoUpdate();
 
   // Callback for the Flash plugin information.
   void OnGotPlugins(const std::vector<webkit::WebPluginInfo>& plugins);
@@ -103,7 +103,6 @@ class FlashDOMHandler : public WebUIMessageHandler,
 
   // GPU variables.
   GpuDataManager* gpu_data_manager_;
-  Callback0::Type* gpu_info_update_callback_;
 
   // Crash list.
   scoped_refptr<CrashUploadList> upload_list_;
@@ -135,9 +134,7 @@ FlashDOMHandler::FlashDOMHandler()
 
   // Watch for changes in GPUInfo.
   gpu_data_manager_ = GpuDataManager::GetInstance();
-  gpu_info_update_callback_ =
-      NewCallback(this, &FlashDOMHandler::OnGpuInfoUpdate);
-  gpu_data_manager_->AddGpuInfoUpdateCallback(gpu_info_update_callback_);
+  gpu_data_manager_->AddObserver(this);
 
   // Tell GpuDataManager it should have full GpuInfo. If the
   // GPU process has not run yet, this will trigger its launch.
@@ -155,6 +152,10 @@ FlashDOMHandler::FlashDOMHandler()
   // "Loading..." message.
   timeout_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kTimeout),
                  this, &FlashDOMHandler::OnTimeout);
+}
+
+FlashDOMHandler::~FlashDOMHandler() {
+  gpu_data_manager_->RemoveObserver(this);
 }
 
 void FlashDOMHandler::RegisterMessages() {

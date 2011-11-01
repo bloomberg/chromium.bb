@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_old.h"
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -44,7 +43,8 @@ ChromeWebUIDataSource* CreateGpuHTMLSource() {
 // this class's methods are expected to run on the UI thread.
 class GpuMessageHandler
     : public WebUIMessageHandler,
-      public base::SupportsWeakPtr<GpuMessageHandler> {
+      public base::SupportsWeakPtr<GpuMessageHandler>,
+      public GpuDataManager::Observer {
  public:
   GpuMessageHandler();
   virtual ~GpuMessageHandler();
@@ -53,6 +53,9 @@ class GpuMessageHandler
   virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
+  // GpuDataManager::Observer implementation.
+  virtual void OnGpuInfoUpdate() OVERRIDE;
+
   // Messages
   void OnBrowserBridgeInitialized(const ListValue* list);
   void OnCallAsync(const ListValue* list);
@@ -60,9 +63,6 @@ class GpuMessageHandler
   // Submessages dispatched from OnCallAsync
   Value* OnRequestClientInfo(const ListValue* list);
   Value* OnRequestLogMessages(const ListValue* list);
-
-  // Callbacks.
-  void OnGpuInfoUpdate();
 
   // Executes the javascript function |function_name| in the renderer, passing
   // it the argument |value|.
@@ -73,8 +73,6 @@ class GpuMessageHandler
   // Cache the Singleton for efficiency.
   GpuDataManager* gpu_data_manager_;
 
-  Callback0::Type* gpu_info_update_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(GpuMessageHandler);
 };
 
@@ -84,17 +82,13 @@ class GpuMessageHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-GpuMessageHandler::GpuMessageHandler()
-  : gpu_info_update_callback_(NULL) {
+GpuMessageHandler::GpuMessageHandler() {
   gpu_data_manager_ = GpuDataManager::GetInstance();
   DCHECK(gpu_data_manager_);
 }
 
 GpuMessageHandler::~GpuMessageHandler() {
-  if (gpu_info_update_callback_) {
-    gpu_data_manager_->RemoveGpuInfoUpdateCallback(gpu_info_update_callback_);
-    delete gpu_info_update_callback_;
-  }
+  gpu_data_manager_->RemoveObserver(this);
 }
 
 WebUIMessageHandler* GpuMessageHandler::Attach(WebUI* web_ui) {
@@ -165,12 +159,8 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
 void GpuMessageHandler::OnBrowserBridgeInitialized(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DCHECK(!gpu_info_update_callback_);
-
   // Watch for changes in GPUInfo
-  gpu_info_update_callback_ =
-      NewCallback(this, &GpuMessageHandler::OnGpuInfoUpdate);
-  gpu_data_manager_->AddGpuInfoUpdateCallback(gpu_info_update_callback_);
+  gpu_data_manager_->AddObserver(this);
 
   // Tell GpuDataManager it should have full GpuInfo. If the
   // Gpu process has not run yet, this will trigger its launch.

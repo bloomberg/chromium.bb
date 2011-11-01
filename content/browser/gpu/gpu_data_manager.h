@@ -9,9 +9,9 @@
 #include <set>
 #include <string>
 
-#include "base/callback_old.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/values.h"
@@ -24,6 +24,17 @@ class GpuBlacklist;
 
 class CONTENT_EXPORT GpuDataManager {
  public:
+  // Observers can register themselves via GpuDataManager::AddObserver, and
+  // can un-register with GpuDataManager::RemoveObserver.
+  class Observer {
+   public:
+    // Called for any observers whenever there is a GPU info update.
+    virtual void OnGpuInfoUpdate() = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   // Getter for the singleton. This will return NULL on failure.
   static GpuDataManager* GetInstance();
 
@@ -82,12 +93,15 @@ class CONTENT_EXPORT GpuDataManager {
   // Can be called on any thread.
   bool GpuAccessAllowed();
 
-  // Add a callback.
-  void AddGpuInfoUpdateCallback(Callback0::Type* callback);
+  // Registers |observer|. The thread on which this is called is the thread
+  // on which |observer| will be called back with notifications. |observer|
+  // must not be NULL.
+  void AddObserver(Observer* observer);
 
-  // Remove a callback.
-  // Returns true if removed, or false if it was not found.
-  bool RemoveGpuInfoUpdateCallback(Callback0::Type* callback);
+  // Unregisters |observer| from receiving notifications. This must be called
+  // on the same thread on which AddObserver() was called. |observer|
+  // must not be NULL.
+  void RemoveObserver(Observer* observer);
 
   // Inserting disable-feature switches into renderer process command-line
   // in correspondance to preliminary gpu feature flags.
@@ -160,6 +174,9 @@ class CONTENT_EXPORT GpuDataManager {
     std::string use_gl_;
   };
 
+  typedef ObserverListThreadSafe<GpuDataManager::Observer>
+      GpuDataManagerObserverList;
+
   friend struct DefaultSingletonTraits<GpuDataManager>;
 
   GpuDataManager();
@@ -175,8 +192,8 @@ class CONTENT_EXPORT GpuDataManager {
   // and compute the flags.
   void UpdateGpuFeatureFlags();
 
-  // Call all callbacks.
-  void RunGpuInfoUpdateCallbacks();
+  // Notify all observers whenever there is a GPU info update.
+  void NotifyGpuInfoUpdate();
 
   // If use-gl switch is osmesa or any, return true.
   bool UseGLIsOSMesaOrAny();
@@ -206,14 +223,12 @@ class CONTENT_EXPORT GpuDataManager {
 
   scoped_ptr<GpuBlacklist> gpu_blacklist_;
 
-  // Map of callbacks.
-  std::set<Callback0::Type*> gpu_info_update_callbacks_;
+  // Observers.
+  const scoped_refptr<GpuDataManagerObserverList> observer_list_;
 
   ListValue log_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManager);
 };
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(GpuDataManager);
 
 #endif  // CONTENT_BROWSER_GPU_GPU_DATA_MANAGER_H_
