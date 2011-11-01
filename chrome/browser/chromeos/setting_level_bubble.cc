@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "chrome/browser/chromeos/login/background_view.h"
-#include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -79,12 +79,9 @@ static views::Widget* GetToplevelWidget() {
     if (background) {
       window = GTK_WINDOW(background->GetNativeWindow());
     } else {
-      ExistingUserController* controller =
-          ExistingUserController::current_controller();
-      if (controller) {
-        window =
-            GTK_WINDOW(controller->login_display_host()->GetNativeWindow());
-      }
+      LoginDisplayHost* host = BaseLoginDisplayHost::default_host();
+      if (host)
+        window = host->GetNativeWindow();
     }
 #endif
   }

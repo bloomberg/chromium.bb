@@ -26,7 +26,7 @@
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
-#include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #endif
 
 namespace {
@@ -82,9 +82,10 @@ views::Widget* GetTopLevelWidget(Browser* browser) {
   }
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
-  views::Widget* login_window = chromeos::WebUILoginDisplay::GetLoginWindow();
-  if (login_window)
-    return login_window;
+  chromeos::LoginDisplayHost* host =
+      chromeos::BaseLoginDisplayHost::default_host();
+  if (host)
+    return views::Widget::GetWidgetForNativeWindow(host->GetNativeWindow());
 #endif
 
   if (!browser)
