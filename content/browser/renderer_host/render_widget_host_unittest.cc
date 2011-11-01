@@ -21,6 +21,10 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas_skia.h"
 
+#if defined(USE_AURA)
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#endif
+
 using base::TimeDelta;
 
 using content::BrowserThreadImpl;
@@ -426,6 +430,10 @@ TEST_F(RenderWidgetHostTest, Background) {
 #if !defined(OS_MACOSX)
   scoped_ptr<RenderWidgetHostView> view(
       content::GetContentClient()->browser()->CreateViewForWidget(host_.get()));
+#if defined(USE_AURA)
+  // TODO(derat): Call this on all platforms: http://crbug.com/102450.
+  static_cast<RenderWidgetHostViewAura*>(view.get())->InitAsChild();
+#endif
   host_->SetView(view.get());
 
   // Create a checkerboard background to test with.

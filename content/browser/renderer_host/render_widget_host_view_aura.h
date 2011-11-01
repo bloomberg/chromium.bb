@@ -30,7 +30,9 @@ class RenderWidgetHostViewAura : public RenderWidgetHostView,
   explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
   virtual ~RenderWidgetHostViewAura();
 
-  void Init();
+  // TODO(derat): Add an abstract RenderWidgetHostView::InitAsChild() method and
+  // update callers: http://crbug.com/102450.
+  void InitAsChild();
 
   // Overridden from RenderWidgetHostView:
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,

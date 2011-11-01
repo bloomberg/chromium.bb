@@ -63,7 +63,7 @@ RenderWidgetHostView* NativeTabContentsViewAura::CreateRenderWidgetHostView(
     RenderWidgetHost* render_widget_host) {
   RenderWidgetHostViewAura* view =
       new RenderWidgetHostViewAura(render_widget_host);
-  view->Init();
+  view->InitAsChild();
   GetNativeView()->AddChild(view->GetNativeView());
   view->Show();
   return view;
