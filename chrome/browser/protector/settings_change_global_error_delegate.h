@@ -24,6 +24,9 @@ class SettingsChangeGlobalErrorDelegate {
   // Called if user clicked outside the bubble and timeout for its reshow
   // has passed.
   virtual void OnDecisionTimeout() = 0;
+
+  // Called when error is removed from profile so it's safe to delete it.
+  virtual void OnRemovedFromProfile() = 0;
 };
 
 }  // namespace protector

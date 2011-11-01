@@ -44,6 +44,7 @@ class Protector : public SettingsChangeGlobalErrorDelegate {
   virtual void OnApplyChanges() OVERRIDE;
   virtual void OnDiscardChanges() OVERRIDE;
   virtual void OnDecisionTimeout() OVERRIDE;
+  virtual void OnRemovedFromProfile() OVERRIDE;
 
  private:
   friend class DeleteTask<Protector>;

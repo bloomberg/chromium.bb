@@ -57,13 +57,16 @@ void Protector::OnDecisionTimeout() {
   OnChangesAction(&SettingChange::DoDefault);
 }
 
+void Protector::OnRemovedFromProfile() {
+  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
+}
+
 void Protector::OnChangesAction(SettingChangeAction action) {
   DCHECK(error_.get());
   SettingChangeVector* changes = error_->mutable_changes();
   for (SettingChangeVector::iterator it = changes->begin();
        it != changes->end(); ++it)
     ((*it)->*action)(this);
-  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
 }
 
 

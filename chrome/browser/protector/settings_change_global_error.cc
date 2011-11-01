@@ -153,17 +153,17 @@ bool SettingsChangeGlobalError::IsAcceptButtonDefault() {
 }
 
 void SettingsChangeGlobalError::BubbleViewAcceptButtonPressed() {
+  closed_by_button_ = true;
   DCHECK(delegate_);
   VLOG(1) << "Apply changes";
   delegate_->OnApplyChanges();
-  closed_by_button_ = true;
 }
 
 void SettingsChangeGlobalError::BubbleViewCancelButtonPressed() {
+  closed_by_button_ = true;
   DCHECK(delegate_);
   VLOG(1) << "Discard changes";
   delegate_->OnDiscardChanges();
-  closed_by_button_ = true;
 }
 
 void SettingsChangeGlobalError::RemoveFromProfile() {
@@ -172,6 +172,7 @@ void SettingsChangeGlobalError::RemoveFromProfile() {
     GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(this);
   if (!closed_by_button_)
     delegate_->OnDecisionTimeout();
+  delegate_->OnRemovedFromProfile();
 }
 
 void SettingsChangeGlobalError::BubbleViewDidClose() {
