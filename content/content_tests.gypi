@@ -95,6 +95,13 @@
         '../webkit/quota/mock_special_storage_policy.cc',
         '../webkit/quota/mock_special_storage_policy.h',
       ],
+      'conditions': [
+        ['toolkit_uses_gtk == 1', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'content_unittests',
