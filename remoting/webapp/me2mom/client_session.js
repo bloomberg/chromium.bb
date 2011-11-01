@@ -199,22 +199,22 @@ remoting.ClientSession.prototype.removePlugin = function() {
 remoting.ClientSession.prototype.disconnect = function() {
   if (remoting.wcs) {
     remoting.wcs.setOnIq(function(stanza) {});
+    this.sendIq_(
+        '<cli:iq ' +
+            'to="' + this.hostJid + '" ' +
+            'type="set" ' +
+            'id="session-terminate" ' +
+            'xmlns:cli="jabber:client">' +
+          '<jingle ' +
+              'xmlns="urn:xmpp:jingle:1" ' +
+              'action="session-terminate" ' +
+              'initiator="' + this.clientJid + '" ' +
+              'sid="' + this.sessionId + '">' +
+            '<reason><success/></reason>' +
+          '</jingle>' +
+        '</cli:iq>');
   }
   this.removePlugin();
-  this.sendIq_(
-      '<cli:iq ' +
-          'to="' + this.hostJid + '" ' +
-          'type="set" ' +
-          'id="session-terminate" ' +
-          'xmlns:cli="jabber:client">' +
-        '<jingle ' +
-            'xmlns="urn:xmpp:jingle:1" ' +
-            'action="session-terminate" ' +
-            'initiator="' + this.clientJid + '" ' +
-            'sid="' + this.sessionId + '">' +
-          '<reason><success/></reason>' +
-        '</jingle>' +
-      '</cli:iq>');
 };
 
 /**
