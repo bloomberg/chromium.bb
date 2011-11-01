@@ -294,7 +294,7 @@ hg-assert-is-merge() {
     spopd
     return
   fi
-  local REPONAME=$(basename $(pwd))
+  local REPONAME=$(basename "${dir}")
   spopd
   Banner "ERROR: Working directory of '${REPONAME}' does not have a merge."
   exit -1
@@ -378,7 +378,7 @@ hg-has-outgoing() {
 hg-assert-no-outgoing() {
   local dir=$1
   if hg-has-outgoing "${dir}" ; then
-    local REPONAME=$(basename $(pwd))
+    local REPONAME=$(basename "${dir}")
     msg="ERROR: Repository ${REPONAME} has outgoing commits. Clean first."
     Banner "${msg}"
     exit -1
