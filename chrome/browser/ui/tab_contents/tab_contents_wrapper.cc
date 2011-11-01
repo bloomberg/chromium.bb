@@ -247,7 +247,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
 
   // Create the tab helpers.
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(contents));
-  autofill_manager_.reset(new AutofillManager(this));
+  autofill_manager_ = new AutofillManager(this);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kExternalAutofillPopup)) {
     autofill_external_delegate_.reset(

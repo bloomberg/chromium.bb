@@ -11,6 +11,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string16.h"
@@ -44,6 +45,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
@@ -125,6 +127,40 @@ bool SectionIsAutofilled(const FormStructure& form_structure,
 
 bool FormIsHTTPS(const FormStructure& form) {
   return form.source_url().SchemeIs(chrome::kHttpsScheme);
+}
+
+// Uses the existing personal data in |profiles| and |credit_cards| to determine
+// possible field types for the |submitted_form|.  This is potentially
+// expensive -- on the order of 50ms even for a small set of |stored_data|.
+// Hence, it should not run on the UI thread -- to avoid locking up the UI --
+// nor on the IO thread -- to avoid blocking IPC calls.
+void DeterminePossibleFieldTypesForUpload(
+    const std::vector<AutofillProfile>& profiles,
+    const std::vector<CreditCard>& credit_cards,
+    FormStructure* submitted_form) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // For each field in the |submitted_form|, extract the value.  Then for each
+  // profile or credit card, identify any stored types that match the value.
+  for (size_t i = 0; i < submitted_form->field_count(); ++i) {
+    AutofillField* field = submitted_form->field(i);
+    string16 value = CollapseWhitespace(field->value, false);
+
+    FieldTypeSet matching_types;
+    for (std::vector<AutofillProfile>::const_iterator it = profiles.begin();
+         it != profiles.end(); ++it) {
+      it->GetMatchingTypes(value, &matching_types);
+    }
+    for (std::vector<CreditCard>::const_iterator it = credit_cards.begin();
+          it != credit_cards.end(); ++it) {
+      it->GetMatchingTypes(value, &matching_types);
+    }
+
+    if (matching_types.empty())
+      matching_types.insert(UNKNOWN_TYPE);
+
+    field->set_possible_types(matching_types);
+  }
 }
 
 // Check for unidentified forms among those with the most query or upload
@@ -219,8 +255,6 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents)
       user_did_autofill_(false),
       user_did_edit_autofilled_field_(false),
       external_delegate_(NULL) {
-  DCHECK(tab_contents);
-
   // |personal_data_| is NULL when using TestTabContents.
   personal_data_ = PersonalDataManagerFactory::GetForProfile(
       tab_contents->profile()->GetOriginalProfile());
@@ -282,53 +316,81 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void AutofillManager::OnFormSubmitted(const FormData& form,
+bool AutofillManager::OnFormSubmitted(const FormData& form,
                                       const TimeTicks& timestamp) {
   // Let AutoComplete know as well.
   tab_contents_wrapper_->autocomplete_history_manager()->OnFormSubmitted(form);
 
   if (!IsAutofillEnabled())
-    return;
+    return false;
 
   if (tab_contents()->browser_context()->IsOffTheRecord())
-    return;
+    return false;
 
   // Don't save data that was submitted through JavaScript.
   if (!form.user_submitted)
-    return;
+    return false;
 
   // Grab a copy of the form data.
-  FormStructure submitted_form(form);
+  scoped_ptr<FormStructure> submitted_form(new FormStructure(form));
 
   // Disregard forms that we wouldn't ever autofill in the first place.
-  if (!submitted_form.ShouldBeParsed(true))
-    return;
+  if (!submitted_form->ShouldBeParsed(true))
+    return false;
 
   // Ignore forms not present in our cache.  These are typically forms with
   // wonky JavaScript that also makes them not auto-fillable.
   FormStructure* cached_submitted_form;
   if (!FindCachedForm(form, &cached_submitted_form))
-    return;
-  submitted_form.UpdateFromCache(*cached_submitted_form);
+    return false;
+
+  submitted_form->UpdateFromCache(*cached_submitted_form);
+  if (submitted_form->IsAutofillable(true))
+    ImportFormData(*submitted_form);
 
   // Only upload server statistics and UMA metrics if at least some local data
   // is available to use as a baseline.
-  if (!personal_data_->profiles().empty() ||
-      !personal_data_->credit_cards().empty()) {
-    DeterminePossibleFieldTypesForUpload(&submitted_form);
-    submitted_form.LogQualityMetrics(*metric_logger_,
-                                     forms_loaded_timestamp_,
-                                     initial_interaction_timestamp_,
-                                     timestamp);
+  const std::vector<AutofillProfile*>& profiles = personal_data_->profiles();
+  const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
+  if (!profiles.empty() || !credit_cards.empty()) {
+    // Copy the profile and credit card data, so that it can be accessed on a
+    // separate thread.
+    std::vector<AutofillProfile> copied_profiles;
+    copied_profiles.reserve(profiles.size());
+    for (std::vector<AutofillProfile*>::const_iterator it = profiles.begin();
+         it != profiles.end(); ++it) {
+      copied_profiles.push_back(**it);
+    }
 
-    if (submitted_form.ShouldBeCrowdsourced())
-      UploadFormData(submitted_form);
+    std::vector<CreditCard> copied_credit_cards;
+    copied_credit_cards.reserve(credit_cards.size());
+    for (std::vector<CreditCard*>::const_iterator it = credit_cards.begin();
+         it != credit_cards.end(); ++it) {
+      copied_credit_cards.push_back(**it);
+    }
+
+    // TODO(isherman): Ideally, we should not be using the FILE thread here.
+    // Per jar@, this is a good compromise for now, as we don't currently have a
+    // broad consensus on how to support such one-off background tasks.
+
+    // Note that ownership of |submitted_form| is passed to the second task,
+    // using |base::Owned|.
+    FormStructure* raw_submitted_form = submitted_form.get();
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&DeterminePossibleFieldTypesForUpload,
+                   copied_profiles,
+                   copied_credit_cards,
+                   raw_submitted_form),
+        base::Bind(&AutofillManager::UploadFormDataAsyncCallback,
+                   this,
+                   base::Owned(submitted_form.release()),
+                   forms_loaded_timestamp_,
+                   initial_interaction_timestamp_,
+                   timestamp));
   }
 
-  if (!submitted_form.IsAutofillable(true))
-    return;
-
-  ImportFormData(submitted_form);
+  return true;
 }
 
 void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
@@ -627,35 +689,6 @@ bool AutofillManager::IsAutofillEnabled() const {
   return profile->GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
 }
 
-void AutofillManager::DeterminePossibleFieldTypesForUpload(
-    FormStructure* submitted_form) {
-  // Combine all the profiles and credit cards stored in |personal_data_| into
-  // one vector for ease of iteration.
-  const std::vector<AutofillProfile*>& profiles = personal_data_->profiles();
-  const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
-  std::vector<FormGroup*> stored_data;
-  stored_data.insert(stored_data.end(), profiles.begin(), profiles.end());
-  stored_data.insert(stored_data.end(), credit_cards.begin(),
-                     credit_cards.end());
-
-  // For each field in the |submitted_form|, extract the value.  Then for each
-  // profile or credit card, identify any stored types that match the value.
-  for (size_t i = 0; i < submitted_form->field_count(); i++) {
-    AutofillField* field = submitted_form->field(i);
-    string16 value = CollapseWhitespace(field->value, false);
-    FieldTypeSet matching_types;
-    for (std::vector<FormGroup*>::const_iterator it = stored_data.begin();
-         it != stored_data.end(); ++it) {
-      (*it)->GetMatchingTypes(value, &matching_types);
-    }
-
-    if (matching_types.empty())
-      matching_types.insert(UNKNOWN_TYPE);
-
-    field->set_possible_types(matching_types);
-  }
-}
-
 void AutofillManager::SendAutofillTypePredictions(
     const std::vector<FormStructure*>& forms) const {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
@@ -689,6 +722,24 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
                                       personal_data_,
                                       metric_logger_.get()));
   }
+}
+
+// Note that |submitted_form| is passed as a pointer rather than as a reference
+// so that we can get memory management right across threads.  Note also that we
+// explicitly pass in all the time stamps of interest, as the cached ones might
+// get reset before this method executes.
+void AutofillManager::UploadFormDataAsyncCallback(
+    const FormStructure* submitted_form,
+    const TimeTicks& load_time,
+    const TimeTicks& interaction_time,
+    const TimeTicks& submission_time) {
+  submitted_form->LogQualityMetrics(*metric_logger_,
+                                    load_time,
+                                    interaction_time,
+                                    submission_time);
+
+  if (submitted_form->ShouldBeCrowdsourced())
+    UploadFormData(*submitted_form);
 }
 
 void AutofillManager::UploadFormData(const FormStructure& submitted_form) {

@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_synced_tab_delegate.h"
@@ -274,7 +275,7 @@ class TabContentsWrapper : public TabContentsObserver,
   // "Tab Helpers" section in the member functions area, above.)
 
   scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
-  scoped_ptr<AutofillManager> autofill_manager_;
+  scoped_refptr<AutofillManager> autofill_manager_;
   scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
   scoped_ptr<AutomationTabHelper> automation_tab_helper_;
   scoped_ptr<BlockedContentTabHelper> blocked_content_tab_helper_;

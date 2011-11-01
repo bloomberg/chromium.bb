@@ -411,13 +411,71 @@ class TestAutofillManager : public AutofillManager {
                       TestPersonalDataManager* personal_data)
       : AutofillManager(tab_contents, personal_data),
         personal_data_(personal_data),
-        autofill_enabled_(true) {
+        autofill_enabled_(true),
+        did_finish_async_form_submit_(false),
+        message_loop_is_running_(false) {
   }
 
   virtual bool IsAutofillEnabled() const OVERRIDE { return autofill_enabled_; }
 
   void set_autofill_enabled(bool autofill_enabled) {
     autofill_enabled_ = autofill_enabled;
+  }
+
+  void set_expected_submitted_field_types(
+      const std::vector<FieldTypeSet>& expected_types) {
+    expected_submitted_field_types_ = expected_types;
+  }
+
+  virtual void UploadFormDataAsyncCallback(
+      const FormStructure* submitted_form,
+      const base::TimeTicks& load_time,
+      const base::TimeTicks& interaction_time,
+      const base::TimeTicks& submission_time) OVERRIDE {
+    if (message_loop_is_running_) {
+      MessageLoop::current()->Quit();
+      message_loop_is_running_ = false;
+    } else {
+      did_finish_async_form_submit_ = true;
+    }
+
+    // If we have expected field types set, make sure they match.
+    if (!expected_submitted_field_types_.empty()) {
+      ASSERT_EQ(expected_submitted_field_types_.size(),
+                submitted_form->field_count());
+      for (size_t i = 0; i < expected_submitted_field_types_.size(); ++i) {
+        SCOPED_TRACE(
+            StringPrintf("Field %d with value %s", static_cast<int>(i),
+                         UTF16ToUTF8(submitted_form->field(i)->value).c_str()));
+        const FieldTypeSet& possible_types =
+            submitted_form->field(i)->possible_types();
+        EXPECT_EQ(expected_submitted_field_types_[i].size(),
+                  possible_types.size());
+        for (FieldTypeSet::const_iterator it =
+                 expected_submitted_field_types_[i].begin();
+             it != expected_submitted_field_types_[i].end(); ++it) {
+          EXPECT_TRUE(possible_types.count(*it))
+              << "Expected type: " << AutofillType::FieldTypeToString(*it);
+        }
+      }
+    }
+
+    AutofillManager::UploadFormDataAsyncCallback(submitted_form,
+                                                 load_time,
+                                                 interaction_time,
+                                                 submission_time);
+  }
+
+  // Wait for the asynchronous OnFormSubmitted() call to complete.
+  void WaitForAsyncFormSubmit() {
+    if (!did_finish_async_form_submit_) {
+      // TODO(isherman): It seems silly to need this variable.  Is there some
+      // way I can just query the message loop's state?
+      message_loop_is_running_ = true;
+      MessageLoop::current()->Run();
+    } else {
+      did_finish_async_form_submit_ = false;
+    }
   }
 
   virtual void UploadFormData(const FormStructure& submitted_form) OVERRIDE {
@@ -452,10 +510,19 @@ class TestAutofillManager : public AutofillManager {
   }
 
  private:
+  // AutofillManager is ref counted.
+  virtual ~TestAutofillManager() {}
+
   // Weak reference.
   TestPersonalDataManager* personal_data_;
+
   bool autofill_enabled_;
+
+  bool did_finish_async_form_submit_;
+  bool message_loop_is_running_;
+
   std::string submitted_form_signature_;
+  std::vector<FieldTypeSet> expected_submitted_field_types_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
@@ -468,24 +535,32 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
 
   AutofillManagerTest()
       : TabContentsWrapperTestHarness(),
-        browser_thread_(BrowserThread::UI, &message_loop_) {
+        ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE) {
   }
 
   virtual ~AutofillManagerTest() {
     // Order of destruction is important as AutofillManager relies on
     // PersonalDataManager to be around when it gets destroyed.
-    autofill_manager_.reset(NULL);
+    autofill_manager_ = NULL;
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     Profile* profile = new TestingProfile();
     browser_context_.reset(profile);
     PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
         profile, TestPersonalDataManager::Build);
 
     TabContentsWrapperTestHarness::SetUp();
-    autofill_manager_.reset(new TestAutofillManager(contents_wrapper(),
-                                                    &personal_data_));
+    autofill_manager_ = new TestAutofillManager(contents_wrapper(),
+                                                &personal_data_);
+
+    file_thread_.Start();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    file_thread_.Stop();
+    TabContentsWrapperTestHarness::TearDown();
   }
 
   void GetAutofillSuggestions(int query_id,
@@ -509,7 +584,8 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
   }
 
   void FormSubmitted(const FormData& form) {
-    autofill_manager_->OnFormSubmitted(form, base::TimeTicks::Now());
+    if (autofill_manager_->OnFormSubmitted(form, base::TimeTicks::Now()))
+      autofill_manager_->WaitForAsyncFormSubmit();
   }
 
   void FillAutofillFormData(int query_id,
@@ -570,9 +646,10 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
   }
 
  protected:
-  content::TestBrowserThread browser_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 
-  scoped_ptr<TestAutofillManager> autofill_manager_;
+  scoped_refptr<TestAutofillManager> autofill_manager_;
   TestPersonalDataManager personal_data_;
 
  private:
@@ -2773,70 +2850,8 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  FormStructure form_structure(form);
-  autofill_manager_->DeterminePossibleFieldTypesForUpload(&form_structure);
-
-  ASSERT_EQ(expected_types.size(), form_structure.field_count());
-  for (size_t i = 0; i < expected_types.size(); ++i) {
-    SCOPED_TRACE(
-        StringPrintf("Field %d with value %s", static_cast<int>(i),
-                     UTF16ToUTF8(form_structure.field(i)->value).c_str()));
-    const FieldTypeSet& possible_types =
-        form_structure.field(i)->possible_types();
-    EXPECT_EQ(expected_types[i].size(), possible_types.size());
-    for (FieldTypeSet::const_iterator it = expected_types[i].begin();
-         it != expected_types[i].end(); ++it) {
-      EXPECT_TRUE(possible_types.count(*it))
-          << "Expected type: " << AutofillType::FieldTypeToString(*it);
-    }
-  }
-}
-
-TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUploadStressTest) {
-  personal_data_.ClearAutofillProfiles();
-  const int kNumProfiles = 5;
-  for (int i = 0; i < kNumProfiles; ++i) {
-    AutofillProfile* profile = new AutofillProfile;
-    autofill_test::SetProfileInfo(profile,
-                                  StringPrintf("John%d", i).c_str(),
-                                  "",
-                                  StringPrintf("Doe%d", i).c_str(),
-                                  StringPrintf("JohnDoe%d@somesite.com",
-                                               i).c_str(),
-                                  "",
-                                  StringPrintf("%d 1st st.", i).c_str(),
-                                  "",
-                                  "Memphis", "Tennessee", "38116", "USA",
-                                  StringPrintf("650234%04d", i).c_str());
-    profile->set_guid(
-        StringPrintf("00000000-0000-0000-0001-00000000%04d", i).c_str());
-    personal_data_.AddProfile(profile);
-  }
-  FormData form;
-  CreateTestAddressFormData(&form);
-  ASSERT_LT(3U, form.fields.size());
-  form.fields[0].value = ASCIIToUTF16("6502340001");
-  form.fields[1].value = ASCIIToUTF16("John1");
-  form.fields[2].value = ASCIIToUTF16("12345");
-  FormStructure form_structure(form);
-  autofill_manager_->DeterminePossibleFieldTypesForUpload(&form_structure);
-  ASSERT_LT(3U, form_structure.field_count());
-  const FieldTypeSet& possible_types0 =
-      form_structure.field(0)->possible_types();
-  EXPECT_EQ(2U, possible_types0.size());
-  EXPECT_TRUE(possible_types0.find(PHONE_HOME_WHOLE_NUMBER) !=
-              possible_types0.end());
-  EXPECT_TRUE(possible_types0.find(PHONE_HOME_CITY_AND_NUMBER) !=
-              possible_types0.end());
-  const FieldTypeSet& possible_types1 =
-      form_structure.field(1)->possible_types();
-  EXPECT_EQ(1U, possible_types1.size());
-  EXPECT_TRUE(possible_types1.find(NAME_FIRST) != possible_types1.end());
-  const FieldTypeSet& possible_types2 =
-      form_structure.field(2)->possible_types();
-  EXPECT_EQ(1U, possible_types2.size());
-  EXPECT_TRUE(possible_types2.find(UNKNOWN_TYPE) !=
-              possible_types2.end());
+  autofill_manager_->set_expected_submitted_field_types(expected_types);
+  FormSubmitted(form);
 }
 
 namespace {

@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
@@ -47,10 +48,10 @@ struct FormField;
 // Manages saving and restoring the user's personal information entered into web
 // forms.
 class AutofillManager : public TabContentsObserver,
-                        public AutofillDownloadManager::Observer {
+                        public AutofillDownloadManager::Observer,
+                        public base::RefCounted<AutofillManager> {
  public:
   explicit AutofillManager(TabContentsWrapper* tab_contents);
-  virtual ~AutofillManager();
 
   // Registers our Enable/Disable Autofill pref.
   static void RegisterUserPrefs(PrefService* prefs);
@@ -65,6 +66,8 @@ class AutofillManager : public TabContentsObserver,
 
  protected:
   // Only test code should subclass AutofillManager.
+  friend class base::RefCounted<AutofillManager>;
+  virtual ~AutofillManager();
 
   // The string/int pair is composed of the guid string and variant index
   // respectively.  The variant index is an index into the multi-valued item
@@ -83,6 +86,14 @@ class AutofillManager : public TabContentsObserver,
 
   // Reset cache.
   void Reset();
+
+  // Logs quality metrics for the |submitted_form| and uploads the form data
+  // to the crowdsourcing server, if appropriate.
+  virtual void UploadFormDataAsyncCallback(
+      const FormStructure* submitted_form,
+      const base::TimeTicks& load_time,
+      const base::TimeTicks& interaction_time,
+      const base::TimeTicks& submission_time);
 
   // Maps GUIDs to and from IDs that are used to identify profiles and credit
   // cards sent to and from the renderer process.
@@ -110,6 +121,12 @@ class AutofillManager : public TabContentsObserver,
     return external_delegate_;
   }
 
+  // Processes the submitted |form|, saving any new Autofill data and uploading
+  // the possible field types for the submitted fields to the crowdsouring
+  // server.  Returns false if this form is not relevant for Autofill.
+  bool OnFormSubmitted(const webkit_glue::FormData& form,
+                       const base::TimeTicks& timestamp);
+
  private:
   // TabContentsObserver:
   virtual void DidNavigateMainFramePostCommit(
@@ -121,8 +138,6 @@ class AutofillManager : public TabContentsObserver,
   virtual void OnLoadedServerPredictions(
       const std::string& response_xml) OVERRIDE;
 
-  void OnFormSubmitted(const webkit_glue::FormData& form,
-                       const base::TimeTicks& timestamp);
   void OnFormsSeen(const std::vector<webkit_glue::FormData>& forms,
                    const base::TimeTicks& timestamp);
   void OnTextFieldDidChange(const webkit_glue::FormData& form,
@@ -222,10 +237,6 @@ class AutofillManager : public TabContentsObserver,
 
   // Parses the forms using heuristic matching and querying the Autofill server.
   void ParseForms(const std::vector<webkit_glue::FormData>& forms);
-
-  // Uses existing personal data to determine possible field types for the
-  // |submitted_form|.
-  void DeterminePossibleFieldTypesForUpload(FormStructure* submitted_form);
 
   // Imports the form data, submitted by the user, into |personal_data_|.
   void ImportFormData(const FormStructure& submitted_form);
