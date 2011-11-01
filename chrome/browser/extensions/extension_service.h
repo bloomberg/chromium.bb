@@ -145,7 +145,11 @@ class ExtensionService
 
   // The name of the directory inside the profile where per-extension settings
   // are stored.
-  static const char* kSettingsDirectoryName;
+  static const char* kExtensionSettingsDirectoryName;
+
+  // The name of the directory inside the profile where per-app settings
+  // are stored.
+  static const char* kAppSettingsDirectoryName;
 
   // Determine if a given extension download should be treated as if it came
   // from the gallery. Note that this is requires *both* that the download_url

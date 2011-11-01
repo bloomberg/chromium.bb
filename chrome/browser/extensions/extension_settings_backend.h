@@ -26,8 +26,7 @@ class ExtensionSettingsBackend : public SyncableService {
   // |observers| is the list of observers to settings changes.
   explicit ExtensionSettingsBackend(
       const FilePath& base_path,
-      const scoped_refptr<ObserverListThreadSafe<ExtensionSettingsObserver> >&
-          observers);
+      const scoped_refptr<ExtensionSettingsObserverList>& observers);
 
   virtual ~ExtensionSettingsBackend();
 
@@ -41,7 +40,7 @@ class ExtensionSettingsBackend : public SyncableService {
       const std::string& extension_id) const;
 
   // Deletes all setting data for an extension.  Call on the FILE thread.
-  void DeleteExtensionData(const std::string& extension_id);
+  void DeleteStorage(const std::string& extension_id);
 
   // Sends a change event to the observer list.  |profile| is the profile which
   // generated the change.  Must be called on the FILE thread.
@@ -78,14 +77,17 @@ class ExtensionSettingsBackend : public SyncableService {
   const FilePath base_path_;
 
   // The list of observers to settings changes.
-  const scoped_refptr<ObserverListThreadSafe<ExtensionSettingsObserver> >
-      observers_;
+  const scoped_refptr<ExtensionSettingsObserverList> observers_;
 
   // A cache of ExtensionSettingsStorage objects that have already been created.
   // Ensure that there is only ever one created per extension.
   typedef std::map<std::string, linked_ptr<SyncableExtensionSettingsStorage> >
       StorageObjMap;
   mutable StorageObjMap storage_objs_;
+
+  // Current sync model type.  Will be UNSPECIFIED if sync hasn't been enabled
+  // yet, and either EXTENSION_SETTINGS or APP_SETTINGS if it has been.
+  syncable::ModelType sync_type_;
 
   // Current sync processor, if any.
   SyncChangeProcessor* sync_processor_;

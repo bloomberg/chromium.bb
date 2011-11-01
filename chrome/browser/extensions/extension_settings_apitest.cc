@@ -7,7 +7,6 @@
 #include "base/json/json_writer.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_settings_backend.h"
 #include "chrome/browser/extensions/extension_settings_sync_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
@@ -57,19 +56,25 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
 
   void InitSync(SyncChangeProcessor* sync_processor) {
     browser()->profile()->GetExtensionService()->
-        extension_settings_frontend()->RunWithBackend(base::Bind(
-            &ExtensionSettingsApiTest::InitSyncWithBackend,
-            this,
-            sync_processor));
+        extension_settings_frontend()->RunWithSyncableService(
+            // TODO(kalman): test both EXTENSION_SETTINGS and APP_SETTINGS.
+            syncable::EXTENSION_SETTINGS,
+            base::Bind(
+                &ExtensionSettingsApiTest::InitSyncWithSyncableService,
+                this,
+                sync_processor));
     MessageLoop::current()->RunAllPending();
   }
 
   void SendChanges(const SyncChangeList& change_list) {
     browser()->profile()->GetExtensionService()->
-        extension_settings_frontend()->RunWithBackend(base::Bind(
-            &ExtensionSettingsApiTest::SendChangesToBackend,
-            this,
-            change_list));
+        extension_settings_frontend()->RunWithSyncableService(
+            // TODO(kalman): test both EXTENSION_SETTINGS and APP_SETTINGS.
+            syncable::EXTENSION_SETTINGS,
+            base::Bind(
+                &ExtensionSettingsApiTest::SendChangesToSyncableService,
+                this,
+                change_list));
     MessageLoop::current()->RunAllPending();
   }
 
@@ -109,17 +114,18 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
     return message_json;
   }
 
-  void InitSyncWithBackend(
-      SyncChangeProcessor* sync_processor, ExtensionSettingsBackend* backend) {
-    EXPECT_FALSE(backend->MergeDataAndStartSyncing(
+  void InitSyncWithSyncableService(
+      SyncChangeProcessor* sync_processor, SyncableService* settings_service) {
+    EXPECT_FALSE(settings_service->MergeDataAndStartSyncing(
         syncable::EXTENSION_SETTINGS,
         SyncDataList(),
         sync_processor).IsSet());
   }
 
-  void SendChangesToBackend(
-      const SyncChangeList& change_list, ExtensionSettingsBackend* backend) {
-    EXPECT_FALSE(backend->ProcessSyncChanges(FROM_HERE, change_list).IsSet());
+  void SendChangesToSyncableService(
+      const SyncChangeList& change_list, SyncableService* settings_service) {
+    EXPECT_FALSE(
+        settings_service->ProcessSyncChanges(FROM_HERE, change_list).IsSet());
   }
 };
 

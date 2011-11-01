@@ -166,7 +166,11 @@ void ProfileSyncFactoryImpl::RegisterDataTypes(ProfileSyncService* pss) {
   // explicitly enabled.
   if (command_line_->HasSwitch(switches::kEnableSyncExtensionSettings)) {
     pss->RegisterDataTypeController(
-        new ExtensionSettingDataTypeController(this, profile_, pss));
+        new ExtensionSettingDataTypeController(
+            syncable::EXTENSION_SETTINGS, this, profile_, pss));
+    pss->RegisterDataTypeController(
+        new ExtensionSettingDataTypeController(
+            syncable::APP_SETTINGS, this, profile_, pss));
   }
 
   if (!command_line_->HasSwitch(switches::kDisableSyncAutofillProfile)) {
@@ -269,19 +273,22 @@ ProfileSyncFactoryImpl::CreateBookmarkSyncComponents(
 }
 
 ProfileSyncFactory::SyncComponents
-ProfileSyncFactoryImpl::CreateExtensionSettingSyncComponents(
-    ExtensionSettingsBackend* extension_settings_backend,
+ProfileSyncFactoryImpl::CreateExtensionOrAppSettingSyncComponents(
+    syncable::ModelType type,
+    SyncableService* settings_service,
     ProfileSyncService* profile_sync_service,
     UnrecoverableErrorHandler* error_handler) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(type == syncable::EXTENSION_SETTINGS ||
+         type == syncable::APP_SETTINGS);
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
   GenericChangeProcessor* change_processor =
       new GenericChangeProcessor(error_handler,
-                                 extension_settings_backend->AsWeakPtr(),
+                                 settings_service->AsWeakPtr(),
                                  user_share);
   browser_sync::SyncableServiceAdapter* sync_service_adapter =
-      new browser_sync::SyncableServiceAdapter(syncable::EXTENSION_SETTINGS,
-                                               extension_settings_backend,
+      new browser_sync::SyncableServiceAdapter(type,
+                                               settings_service,
                                                change_processor);
   return SyncComponents(sync_service_adapter, change_processor);
 }

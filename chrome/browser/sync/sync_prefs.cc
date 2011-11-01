@@ -372,6 +372,8 @@ const char* GetPrefNameForDataType(syncable::ModelType data_type) {
       return prefs::kSyncExtensionSettings;
     case syncable::EXTENSIONS:
       return prefs::kSyncExtensions;
+    case syncable::APP_SETTINGS:
+      return prefs::kSyncAppSettings;
     case syncable::APPS:
       return prefs::kSyncApps;
     case syncable::SEARCH_ENGINES:

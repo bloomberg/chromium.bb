@@ -1329,6 +1329,8 @@
         'browser/extensions/extension_settings_storage_unittest.h',
         'browser/extensions/extension_settings_storage_unittest.cc',
         'browser/extensions/extension_settings_sync_unittest.cc',
+        'browser/extensions/extension_settings_test_util.h',
+        'browser/extensions/extension_settings_test_util.cc',
         'browser/extensions/extension_service_unittest.cc',
         'browser/extensions/extension_service_unittest.h',
         'browser/extensions/extension_special_storage_policy_unittest.cc',

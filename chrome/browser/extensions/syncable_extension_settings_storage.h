@@ -41,6 +41,8 @@ class SyncableExtensionSettingsStorage : public ExtensionSettingsStorage {
   // Sync-related methods, analogous to those on SyncableService (handled by
   // ExtensionSettings).
   SyncError StartSyncing(
+      // Either EXTENSION_SETTINGS or APP_SETTINGS.
+      syncable::ModelType type,
       const DictionaryValue& sync_state,
       // Must NOT be NULL. Ownership NOT taken.
       SyncChangeProcessor* sync_processor);
@@ -91,6 +93,10 @@ class SyncableExtensionSettingsStorage : public ExtensionSettingsStorage {
 
   // Storage area to sync.
   const scoped_ptr<ExtensionSettingsStorage> delegate_;
+
+  // Sync model type.  Either EXTENSION_SETTINGS or APP_SETTINGS while sync is
+  // enabled (between calls to Start/StopSyncing), or UNSPECIFIED while not.
+  syncable::ModelType sync_type_;
 
   // Sync processor.  Non-NULL while sync is enabled (between calls to
   // StartSyncing and StopSyncing).

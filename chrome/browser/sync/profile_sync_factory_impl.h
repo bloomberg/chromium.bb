@@ -12,7 +12,6 @@
 #include "chrome/browser/sync/profile_sync_factory.h"
 
 class CommandLine;
-class ExtensionSettingsBackend;
 class Profile;
 
 class ProfileSyncFactoryImpl : public ProfileSyncFactory {
@@ -53,8 +52,10 @@ class ProfileSyncFactoryImpl : public ProfileSyncFactory {
       ProfileSyncService* profile_sync_service,
       browser_sync::UnrecoverableErrorHandler* error_handler);
 
-  virtual SyncComponents CreateExtensionSettingSyncComponents(
-      ExtensionSettingsBackend* extension_settings_backend,
+  virtual SyncComponents CreateExtensionOrAppSettingSyncComponents(
+      // Either EXTENSION_SETTING or APP_SETTING.
+      syncable::ModelType type,
+      SyncableService* settings_service,
       ProfileSyncService* profile_sync_service,
       browser_sync::UnrecoverableErrorHandler* error_handler);
 

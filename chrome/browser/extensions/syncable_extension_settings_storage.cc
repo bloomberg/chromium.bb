@@ -18,6 +18,7 @@ SyncableExtensionSettingsStorage::SyncableExtensionSettingsStorage(
     : observers_(observers),
       extension_id_(extension_id),
       delegate_(delegate),
+      sync_type_(syncable::UNSPECIFIED),
       sync_processor_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
@@ -110,10 +111,17 @@ ExtensionSettingsStorage::Result SyncableExtensionSettingsStorage::Clear() {
 // Sync-related methods.
 
 SyncError SyncableExtensionSettingsStorage::StartSyncing(
-    const DictionaryValue& sync_state, SyncChangeProcessor* sync_processor) {
+    syncable::ModelType type,
+    const DictionaryValue& sync_state,
+    SyncChangeProcessor* sync_processor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(type == syncable::EXTENSION_SETTINGS ||
+         type == syncable::APP_SETTINGS);
+  DCHECK_EQ(sync_type_, syncable::UNSPECIFIED);
   DCHECK(!sync_processor_);
   DCHECK(synced_keys_.empty());
+
+  sync_type_ = type;
   sync_processor_ = sync_processor;
 
   Result maybe_settings = delegate_->Get();
@@ -121,7 +129,7 @@ SyncError SyncableExtensionSettingsStorage::StartSyncing(
     return SyncError(
         FROM_HERE,
         std::string("Failed to get settings: ") + maybe_settings.GetError(),
-        syncable::EXTENSION_SETTINGS);
+        type);
   }
 
   const DictionaryValue* settings = maybe_settings.GetSettings();
@@ -221,7 +229,11 @@ SyncError SyncableExtensionSettingsStorage::OverwriteLocalSettingsWithSync(
 
 void SyncableExtensionSettingsStorage::StopSyncing() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(sync_type_ == syncable::EXTENSION_SETTINGS ||
+         sync_type_ == syncable::APP_SETTINGS);
   DCHECK(sync_processor_);
+
+  sync_type_ = syncable::UNSPECIFIED;
   sync_processor_ = NULL;
   synced_keys_.clear();
 }
@@ -250,7 +262,7 @@ std::vector<SyncError> SyncableExtensionSettingsStorage::ProcessSyncChanges(
             FROM_HERE,
             std::string("Error getting current sync state for ") +
                 extension_id_ + "/" + key + ": " + maybe_settings.GetError(),
-            syncable::EXTENSION_SETTINGS));
+            sync_type_));
         continue;
       }
       const DictionaryValue* settings = maybe_settings.GetSettings();
@@ -397,7 +409,7 @@ SyncError SyncableExtensionSettingsStorage::OnSyncAdd(
         FROM_HERE,
         std::string("Error pushing sync add to local settings: ") +
             result.GetError(),
-        syncable::EXTENSION_SETTINGS);
+        sync_type_);
   }
   changes->AppendChange(key, NULL, new_value);
   return SyncError();
@@ -416,7 +428,7 @@ SyncError SyncableExtensionSettingsStorage::OnSyncUpdate(
         FROM_HERE,
         std::string("Error pushing sync update to local settings: ") +
             result.GetError(),
-        syncable::EXTENSION_SETTINGS);
+        sync_type_);
   }
   changes->AppendChange(key, old_value, new_value);
   return SyncError();
@@ -434,7 +446,7 @@ SyncError SyncableExtensionSettingsStorage::OnSyncDelete(
         FROM_HERE,
         std::string("Error pushing sync remove to local settings: ") +
             result.GetError(),
-        syncable::EXTENSION_SETTINGS);
+        sync_type_);
   }
   changes->AppendChange(key, old_value, NULL);
   return SyncError();

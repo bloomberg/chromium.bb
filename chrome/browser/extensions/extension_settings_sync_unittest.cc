@@ -11,16 +11,17 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/task.h"
-#include "chrome/browser/extensions/extension_settings_backend.h"
 #include "chrome/browser/extensions/extension_settings_frontend.h"
 #include "chrome/browser/extensions/extension_settings_storage_cache.h"
 #include "chrome/browser/extensions/extension_settings_sync_util.h"
 #include "chrome/browser/extensions/syncable_extension_settings_storage.h"
+#include "chrome/browser/extensions/extension_settings_test_util.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
 
 // TODO(kalman): Integration tests for sync.
+
+using namespace extension_settings_test_util;
 
 namespace {
 
@@ -119,9 +120,7 @@ class MockSyncChangeProcessor : public SyncChangeProcessor {
   ExtensionSettingSyncDataList changes_;
 };
 
-// To be called as a callback from ExtensionSettingsFrontend::RunWithSettings.
-void AssignSettings(
-    ExtensionSettingsBackend** dst, ExtensionSettingsBackend* src) {
+void AssignSettingsService(SyncableService** dst, SyncableService* src) {
   *dst = src;
 }
 
@@ -131,31 +130,43 @@ class ExtensionSettingsSyncTest : public testing::Test {
  public:
   ExtensionSettingsSyncTest()
       : ui_thread_(BrowserThread::UI, MessageLoop::current()),
-        file_thread_(BrowserThread::FILE, MessageLoop::current()),
-        frontend_(&profile_),
-        backend_(NULL) {
-  }
+        file_thread_(BrowserThread::FILE, MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
-    frontend_.RunWithBackend(base::Bind(&AssignSettings, &backend_));
-    MessageLoop::current()->RunAllPending();
-    ASSERT_TRUE(backend_ != NULL);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    profile_.reset(new MockProfile(temp_dir_.path()));
+    frontend_.reset(new ExtensionSettingsFrontend(profile_.get()));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    frontend_.reset();
+    profile_.reset();
   }
 
  protected:
-  // Creates a new extension storage object and adds a record of the extension
-  // to the extension service.
-  SyncableExtensionSettingsStorage* GetStorage(
-      const std::string& extension_id) {
-    return static_cast<SyncableExtensionSettingsStorage*>(
-        backend_->GetStorage(extension_id));
+  // Adds a record of an extension or app to the extension service, then returns
+  // its storage area.
+  ExtensionSettingsStorage* AddExtensionAndGetStorage(
+      const std::string& id, Extension::Type type) {
+    profile_->GetMockExtensionService()->AddExtension(id, type);
+    return GetStorage(id, frontend_.get());
   }
 
-  // Gets all the sync data from |backend_| as a map from extension id to its
-  // sync data.
-  std::map<std::string, ExtensionSettingSyncDataList> GetAllSyncData() {
+  // Gets the SyncableService for the given sync type.
+  SyncableService* GetSyncableService(syncable::ModelType model_type) {
+    SyncableService* settings_service = NULL;
+    frontend_->RunWithSyncableService(
+        model_type, base::Bind(&AssignSettingsService, &settings_service));
+    MessageLoop::current()->RunAllPending();
+    return settings_service;
+  }
+
+  // Gets all the sync data from the SyncableService for a sync type as a map
+  // from extension id to its sync data.
+  std::map<std::string, ExtensionSettingSyncDataList> GetAllSyncData(
+      syncable::ModelType model_type) {
     SyncDataList as_list =
-        backend_->GetAllSyncData(syncable::EXTENSION_SETTINGS);
+        GetSyncableService(model_type)->GetAllSyncData(model_type);
     std::map<std::string, ExtensionSettingSyncDataList> as_map;
     for (SyncDataList::iterator it = as_list.begin();
         it != as_list.end(); ++it) {
@@ -170,48 +181,53 @@ class ExtensionSettingsSyncTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 
+  ScopedTempDir temp_dir_;
   MockSyncChangeProcessor sync_;
-  TestingProfile profile_;
-  ExtensionSettingsFrontend frontend_;
-
-  // Get from frontend_->RunWithBackend, so weak reference.
-  ExtensionSettingsBackend* backend_;
+  scoped_ptr<MockProfile> profile_;
+  scoped_ptr<ExtensionSettingsFrontend> frontend_;
 };
 
+// Get a semblance of coverage for both EXTENSION_SETTINGS and APP_SETTINGS
+// sync by roughly alternative which one to test.
+
 TEST_F(ExtensionSettingsSyncTest, NoDataDoesNotInvokeSync) {
-  ASSERT_EQ(0u, GetAllSyncData().size());
+  syncable::ModelType model_type = syncable::EXTENSION_SETTINGS;
+  Extension::Type type = Extension::TYPE_EXTENSION;
+
+  ASSERT_EQ(0u, GetAllSyncData(model_type).size());
 
   // Have one extension created before sync is set up, the other created after.
-  GetStorage("s1");
-  ASSERT_EQ(0u, GetAllSyncData().size());
+  AddExtensionAndGetStorage("s1", type);
+  ASSERT_EQ(0u, GetAllSyncData(model_type).size());
 
-  backend_->MergeDataAndStartSyncing(
-      syncable::EXTENSION_SETTINGS,
-      SyncDataList(),
-      &sync_);
+  GetSyncableService(model_type)->MergeDataAndStartSyncing(
+      model_type, SyncDataList(), &sync_);
 
-  GetStorage("s2");
-  ASSERT_EQ(0u, GetAllSyncData().size());
+  AddExtensionAndGetStorage("s2", type);
+  ASSERT_EQ(0u, GetAllSyncData(model_type).size());
 
-  backend_->StopSyncing(syncable::EXTENSION_SETTINGS);
+  GetSyncableService(model_type)->StopSyncing(model_type);
 
   ASSERT_EQ(0u, sync_.changes().size());
-  ASSERT_EQ(0u, GetAllSyncData().size());
+  ASSERT_EQ(0u, GetAllSyncData(model_type).size());
 }
 
 TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
+  syncable::ModelType model_type = syncable::APP_SETTINGS;
+  Extension::Type type = Extension::TYPE_PACKAGED_APP;
+
   StringValue value1("fooValue");
   ListValue value2;
   value2.Append(StringValue::CreateStringValue("barValue"));
 
-  SyncableExtensionSettingsStorage* storage1 = GetStorage("s1");
-  SyncableExtensionSettingsStorage* storage2 = GetStorage("s2");
+  ExtensionSettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
+  ExtensionSettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
 
   storage1->Set("foo", value1);
   storage2->Set("bar", value2);
 
   std::map<std::string, ExtensionSettingSyncDataList> all_sync_data =
-      GetAllSyncData();
+      GetAllSyncData(model_type);
   ASSERT_EQ(2u, all_sync_data.size());
   ASSERT_EQ(1u, all_sync_data["s1"].size());
   ASSERT_PRED_FORMAT2(ValuesEq, &value1, &all_sync_data["s1"][0].value());
@@ -224,8 +240,8 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
   sync_data.push_back(extension_settings_sync_util::CreateData(
       "s2", "bar", value2));
 
-  backend_->MergeDataAndStartSyncing(
-      syncable::EXTENSION_SETTINGS, sync_data, &sync_);
+  GetSyncableService(model_type)->MergeDataAndStartSyncing(
+      model_type, sync_data, &sync_);
 
   // Already in sync, so no changes.
   ASSERT_EQ(0u, sync_.changes().size());
@@ -241,22 +257,25 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
   ASSERT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
   ASSERT_TRUE(value2.Equals(&change.value()));
 
-  backend_->StopSyncing(syncable::EXTENSION_SETTINGS);
+  GetSyncableService(model_type)->StopSyncing(model_type);
 }
 
 TEST_F(ExtensionSettingsSyncTest, LocalDataWithNoSyncDataIsPushedToSync) {
+  syncable::ModelType model_type = syncable::EXTENSION_SETTINGS;
+  Extension::Type type = Extension::TYPE_EXTENSION;
+
   StringValue value1("fooValue");
   ListValue value2;
   value2.Append(StringValue::CreateStringValue("barValue"));
 
-  SyncableExtensionSettingsStorage* storage1 = GetStorage("s1");
-  SyncableExtensionSettingsStorage* storage2 = GetStorage("s2");
+  ExtensionSettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
+  ExtensionSettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
 
   storage1->Set("foo", value1);
   storage2->Set("bar", value2);
 
-  backend_->MergeDataAndStartSyncing(
-      syncable::EXTENSION_SETTINGS, SyncDataList(), &sync_);
+  GetSyncableService(model_type)->MergeDataAndStartSyncing(
+      model_type, SyncDataList(), &sync_);
 
   // All settings should have been pushed to sync.
   ASSERT_EQ(2u, sync_.changes().size());
@@ -267,10 +286,13 @@ TEST_F(ExtensionSettingsSyncTest, LocalDataWithNoSyncDataIsPushedToSync) {
   ASSERT_EQ(SyncChange::ACTION_ADD, change.change_type());
   ASSERT_TRUE(value2.Equals(&change.value()));
 
-  backend_->StopSyncing(syncable::EXTENSION_SETTINGS);
+  GetSyncableService(model_type)->StopSyncing(model_type);
 }
 
 TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
+  syncable::ModelType model_type = syncable::APP_SETTINGS;
+  Extension::Type type = Extension::TYPE_PACKAGED_APP;
+
   StringValue value1("fooValue");
   ListValue value2;
   value2.Append(StringValue::CreateStringValue("barValue"));
@@ -280,7 +302,7 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
   DictionaryValue expected1, expected2;
 
   // Pre-populate one of the storage areas.
-  SyncableExtensionSettingsStorage* storage1 = GetStorage("s1");
+  ExtensionSettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
   storage1->Set("overwriteMe", value1);
 
   SyncDataList sync_data;
@@ -288,12 +310,12 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
       "s1", "foo", value1));
   sync_data.push_back(extension_settings_sync_util::CreateData(
       "s2", "bar", value2));
-  backend_->MergeDataAndStartSyncing(
-      syncable::EXTENSION_SETTINGS, sync_data, &sync_);
+  GetSyncableService(model_type)->MergeDataAndStartSyncing(
+      model_type, sync_data, &sync_);
   expected1.Set("foo", value1.DeepCopy());
   expected2.Set("bar", value2.DeepCopy());
 
-  SyncableExtensionSettingsStorage* storage2 = GetStorage("s2");
+  ExtensionSettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
 
   // All changes should be local, so no sync changes.
   ASSERT_EQ(0u, sync_.changes().size());
@@ -302,10 +324,13 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
   ASSERT_PRED_FORMAT2(SettingsEq, &expected1, storage1->Get());
   ASSERT_PRED_FORMAT2(SettingsEq, &expected2, storage2->Get());
 
-  backend_->StopSyncing(syncable::EXTENSION_SETTINGS);
+  GetSyncableService(model_type)->StopSyncing(model_type);
 }
 
 TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
+  syncable::ModelType model_type = syncable::EXTENSION_SETTINGS;
+  Extension::Type type = Extension::TYPE_EXTENSION;
+
   StringValue value1("fooValue");
   ListValue value2;
   value2.Append(StringValue::CreateStringValue("barValue"));
@@ -315,8 +340,8 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   DictionaryValue expected1, expected2;
 
   // Make storage1 initialised from local data, storage2 initialised from sync.
-  SyncableExtensionSettingsStorage* storage1 = GetStorage("s1");
-  SyncableExtensionSettingsStorage* storage2 = GetStorage("s2");
+  ExtensionSettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
+  ExtensionSettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
 
   storage1->Set("foo", value1);
   expected1.Set("foo", value1.DeepCopy());
@@ -325,8 +350,8 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   sync_data.push_back(extension_settings_sync_util::CreateData(
       "s2", "bar", value2));
 
-  backend_->MergeDataAndStartSyncing(
-      syncable::EXTENSION_SETTINGS, sync_data, &sync_);
+  GetSyncableService(model_type)->MergeDataAndStartSyncing(
+      model_type, sync_data, &sync_);
   expected2.Set("bar", value2.DeepCopy());
 
   // Make sync add some settings.
@@ -335,7 +360,7 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
       "s1", "bar", value2));
   change_list.push_back(extension_settings_sync_util::CreateAdd(
       "s2", "foo", value1));
-  backend_->ProcessSyncChanges(FROM_HERE, change_list);
+  GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   expected1.Set("bar", value2.DeepCopy());
   expected2.Set("foo", value1.DeepCopy());
 
@@ -349,7 +374,7 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
       "s1", "bar", value2));
   change_list.push_back(extension_settings_sync_util::CreateUpdate(
       "s2", "bar", value1));
-  backend_->ProcessSyncChanges(FROM_HERE, change_list);
+  GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   expected1.Set("bar", value2.DeepCopy());
   expected2.Set("bar", value1.DeepCopy());
 
@@ -363,27 +388,30 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
       "s1", "foo"));
   change_list.push_back(extension_settings_sync_util::CreateDelete(
       "s2", "foo"));
-  backend_->ProcessSyncChanges(FROM_HERE, change_list);
+  GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   expected1.Remove("foo", NULL);
   expected2.Remove("foo", NULL);
 
   ASSERT_PRED_FORMAT2(SettingsEq, &expected1, storage1->Get());
   ASSERT_PRED_FORMAT2(SettingsEq, &expected2, storage2->Get());
 
-  backend_->StopSyncing(syncable::EXTENSION_SETTINGS);
+  GetSyncableService(model_type)->StopSyncing(model_type);
 }
 
 TEST_F(ExtensionSettingsSyncTest, PushToSync) {
+  syncable::ModelType model_type = syncable::APP_SETTINGS;
+  Extension::Type type = Extension::TYPE_PACKAGED_APP;
+
   StringValue value1("fooValue");
   ListValue value2;
   value2.Append(StringValue::CreateStringValue("barValue"));
 
   // Make storage1/2 initialised from local data, storage3/4 initialised from
   // sync.
-  SyncableExtensionSettingsStorage* storage1 = GetStorage("s1");
-  SyncableExtensionSettingsStorage* storage2 = GetStorage("s2");
-  SyncableExtensionSettingsStorage* storage3 = GetStorage("s3");
-  SyncableExtensionSettingsStorage* storage4 = GetStorage("s4");
+  ExtensionSettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
+  ExtensionSettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
+  ExtensionSettingsStorage* storage3 = AddExtensionAndGetStorage("s3", type);
+  ExtensionSettingsStorage* storage4 = AddExtensionAndGetStorage("s4", type);
 
   storage1->Set("foo", value1);
   storage2->Set("foo", value1);
@@ -394,8 +422,8 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
   sync_data.push_back(extension_settings_sync_util::CreateData(
       "s4", "bar", value2));
 
-  backend_->MergeDataAndStartSyncing(
-      syncable::EXTENSION_SETTINGS, sync_data, &sync_);
+  GetSyncableService(model_type)->MergeDataAndStartSyncing(
+      model_type, sync_data, &sync_);
 
   // Add something locally.
   storage1->Set("bar", value2);
@@ -507,5 +535,53 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
       SyncChange::ACTION_DELETE,
       sync_.GetOnlyChange("s4", "bar").change_type());
 
-  backend_->StopSyncing(syncable::EXTENSION_SETTINGS);
+  GetSyncableService(model_type)->StopSyncing(model_type);
+}
+
+TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
+  StringValue value1("fooValue");
+  ListValue value2;
+  value2.Append(StringValue::CreateStringValue("barValue"));
+
+  // storage1 is an extension, storage2 is an app.
+  ExtensionSettingsStorage* storage1 = AddExtensionAndGetStorage(
+      "s1", Extension::TYPE_EXTENSION);
+  ExtensionSettingsStorage* storage2 = AddExtensionAndGetStorage(
+      "s2", Extension::TYPE_PACKAGED_APP);
+
+  storage1->Set("foo", value1);
+  storage2->Set("bar", value2);
+
+  std::map<std::string, ExtensionSettingSyncDataList> extension_sync_data =
+      GetAllSyncData(syncable::EXTENSION_SETTINGS);
+  ASSERT_EQ(1u, extension_sync_data.size());
+  ASSERT_EQ(1u, extension_sync_data["s1"].size());
+  ASSERT_PRED_FORMAT2(ValuesEq, &value1, &extension_sync_data["s1"][0].value());
+
+  std::map<std::string, ExtensionSettingSyncDataList> app_sync_data =
+      GetAllSyncData(syncable::APP_SETTINGS);
+  ASSERT_EQ(1u, app_sync_data.size());
+  ASSERT_EQ(1u, app_sync_data["s2"].size());
+  ASSERT_PRED_FORMAT2(ValuesEq, &value2, &app_sync_data["s2"][0].value());
+
+  // Stop each separately, there should be no changes either time.
+  SyncDataList sync_data;
+  sync_data.push_back(extension_settings_sync_util::CreateData(
+      "s1", "foo", value1));
+
+  GetSyncableService(syncable::EXTENSION_SETTINGS)->
+      MergeDataAndStartSyncing(syncable::EXTENSION_SETTINGS, sync_data, &sync_);
+  GetSyncableService(syncable::EXTENSION_SETTINGS)->
+      StopSyncing(syncable::EXTENSION_SETTINGS);
+  ASSERT_EQ(0u, sync_.changes().size());
+
+  sync_data.clear();
+  sync_data.push_back(extension_settings_sync_util::CreateData(
+      "s2", "bar", value2));
+
+  GetSyncableService(syncable::APP_SETTINGS)->
+      MergeDataAndStartSyncing(syncable::APP_SETTINGS, sync_data, &sync_);
+  GetSyncableService(syncable::APP_SETTINGS)->
+      StopSyncing(syncable::APP_SETTINGS);
+  ASSERT_EQ(0u, sync_.changes().size());
 }

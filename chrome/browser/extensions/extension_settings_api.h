@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_settings_backend.h"
 #include "chrome/browser/extensions/extension_settings_storage.h"
@@ -22,19 +23,21 @@ class SettingsFunction : public AsyncExtensionFunction {
   // Implementations should fill in args themselves, though (like RunImpl)
   // may return false to imply failure.
   virtual bool RunWithStorage(
-      ExtensionSettingsBackend* backend,
+      scoped_refptr<ExtensionSettingsObserverList> observers,
       ExtensionSettingsStorage* storage) = 0;
 
   // Sets error_ or result_ depending on the value of a storage Result, and
   // returns whether the Result implies success (i.e. !error).
   bool UseResult(
-      ExtensionSettingsBackend* backend,
+      scoped_refptr<ExtensionSettingsObserverList> observers,
       const ExtensionSettingsStorage::Result& storage_result);
 
  private:
   // Called via PostTask from RunImpl.  Calls RunWithStorage and then
   // SendReponse with its success value.
-  void RunWithBackendOnFileThread(ExtensionSettingsBackend* backend);
+  void RunWithStorageOnFileThread(
+      scoped_refptr<ExtensionSettingsObserverList> observers,
+      ExtensionSettingsStorage* storage);
 };
 
 class GetSettingsFunction : public SettingsFunction {
@@ -43,7 +46,7 @@ class GetSettingsFunction : public SettingsFunction {
 
  protected:
   virtual bool RunWithStorage(
-      ExtensionSettingsBackend* backend,
+      scoped_refptr<ExtensionSettingsObserverList> observers,
       ExtensionSettingsStorage* storage) OVERRIDE;
 };
 
@@ -53,7 +56,7 @@ class SetSettingsFunction : public SettingsFunction {
 
  protected:
   virtual bool RunWithStorage(
-      ExtensionSettingsBackend* backend,
+      scoped_refptr<ExtensionSettingsObserverList> observers,
       ExtensionSettingsStorage* storage) OVERRIDE;
 };
 
@@ -63,7 +66,7 @@ class RemoveSettingsFunction : public SettingsFunction {
 
  protected:
   virtual bool RunWithStorage(
-      ExtensionSettingsBackend* backend,
+      scoped_refptr<ExtensionSettingsObserverList> observers,
       ExtensionSettingsStorage* storage) OVERRIDE;
 };
 
@@ -73,7 +76,7 @@ class ClearSettingsFunction : public SettingsFunction {
 
  protected:
   virtual bool RunWithStorage(
-      ExtensionSettingsBackend* backend,
+      scoped_refptr<ExtensionSettingsObserverList> observers,
       ExtensionSettingsStorage* storage) OVERRIDE;
 };
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_OBSERVER_H_
 #pragma once
 
+#include "base/observer_list_threadsafe.h"
 #include "chrome/browser/extensions/extension_setting_changes.h"
 
 class Profile;
@@ -27,5 +28,8 @@ class ExtensionSettingsObserver {
  protected:
   virtual ~ExtensionSettingsObserver();
 };
+
+typedef ObserverListThreadSafe<ExtensionSettingsObserver>
+    ExtensionSettingsObserverList;
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_OBSERVER_H_

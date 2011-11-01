@@ -15,7 +15,6 @@
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 
-class ExtensionSettingsBackend;
 class PasswordStore;
 class PersonalDataManager;
 class ProfileSyncService;
@@ -115,10 +114,12 @@ class ProfileSyncFactory {
       browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 
   // Instantiates both a model associator and change processor for the
-  // extension setting data type.  The pointers in the return struct are
+  // extension or app setting data type.  The pointers in the return struct are
   // owned by the caller.
-  virtual SyncComponents CreateExtensionSettingSyncComponents(
-      ExtensionSettingsBackend* extension_settings_backend_,
+  virtual SyncComponents CreateExtensionOrAppSettingSyncComponents(
+      // Either EXTENSION_SETTINGS or APP_SETTINGS.
+      syncable::ModelType type,
+      SyncableService* settings_service,
       ProfileSyncService* profile_sync_service,
       browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 

@@ -16,16 +16,25 @@ const char* kUnsupportedArgumentType = "Unsupported argument type";
 // SettingsFunction
 
 bool SettingsFunction::RunImpl() {
-  profile()->GetExtensionService()->extension_settings_frontend()->
-      RunWithBackend(
-          base::Bind(&SettingsFunction::RunWithBackendOnFileThread, this));
+  ExtensionSettingsFrontend* frontend =
+      profile()->GetExtensionService()->extension_settings_frontend();
+  frontend->RunWithStorage(
+      extension_id(),
+      base::Bind(
+          &SettingsFunction::RunWithStorageOnFileThread,
+          this,
+          frontend->GetObservers()));
   return true;
 }
 
-void SettingsFunction::RunWithBackendOnFileThread(
-    ExtensionSettingsBackend* backend) {
+void SettingsFunction::RunWithStorageOnFileThread(
+    scoped_refptr<ExtensionSettingsObserverList> observers,
+    ExtensionSettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  bool success = RunWithStorage(backend, backend->GetStorage(extension_id()));
+  bool success = false;
+  if (storage) {
+    success = RunWithStorage(observers.get(), storage);
+  }
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -33,7 +42,7 @@ void SettingsFunction::RunWithBackendOnFileThread(
 }
 
 bool SettingsFunction::UseResult(
-    ExtensionSettingsBackend* backend,
+    scoped_refptr<ExtensionSettingsObserverList> observers,
     const ExtensionSettingsStorage::Result& storage_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (storage_result.HasError()) {
@@ -58,8 +67,11 @@ bool SettingsFunction::UseResult(
           old_value ? old_value->DeepCopy() : NULL,
           new_value ? new_value->DeepCopy() : NULL);
     }
-    backend->TriggerOnSettingsChanged(
-        profile(), extension_id(), changes.Build());
+    observers->Notify(
+        &ExtensionSettingsObserver::OnSettingsChanged,
+        profile(),
+        extension_id(),
+        changes.Build());
   }
 
   return true;
@@ -80,7 +92,7 @@ static void AddAllStringValues(
 }
 
 bool GetSettingsFunction::RunWithStorage(
-    ExtensionSettingsBackend* backend,
+    scoped_refptr<ExtensionSettingsObserverList> observers,
     ExtensionSettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Value *input;
@@ -88,29 +100,29 @@ bool GetSettingsFunction::RunWithStorage(
   std::string as_string;
   ListValue* as_list;
   if (input->IsType(Value::TYPE_NULL)) {
-    return UseResult(backend, storage->Get());
+    return UseResult(observers, storage->Get());
   } else if (input->GetAsString(&as_string)) {
-    return UseResult(backend, storage->Get(as_string));
+    return UseResult(observers, storage->Get(as_string));
   } else if (input->GetAsList(&as_list)) {
     std::vector<std::string> string_list;
     AddAllStringValues(*as_list, &string_list);
-    return UseResult(backend, storage->Get(string_list));
+    return UseResult(observers, storage->Get(string_list));
   }
   return UseResult(
-      backend, ExtensionSettingsStorage::Result(kUnsupportedArgumentType));
+      observers, ExtensionSettingsStorage::Result(kUnsupportedArgumentType));
 }
 
 bool SetSettingsFunction::RunWithStorage(
-    ExtensionSettingsBackend* backend,
+    scoped_refptr<ExtensionSettingsObserverList> observers,
     ExtensionSettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DictionaryValue *input;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &input));
-  return UseResult(backend, storage->Set(*input));
+  return UseResult(observers, storage->Set(*input));
 }
 
 bool RemoveSettingsFunction::RunWithStorage(
-    ExtensionSettingsBackend* backend,
+    scoped_refptr<ExtensionSettingsObserverList> observers,
     ExtensionSettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Value *input;
@@ -118,19 +130,19 @@ bool RemoveSettingsFunction::RunWithStorage(
   std::string as_string;
   ListValue* as_list;
   if (input->GetAsString(&as_string)) {
-    return UseResult(backend, storage->Remove(as_string));
+    return UseResult(observers, storage->Remove(as_string));
   } else if (input->GetAsList(&as_list)) {
     std::vector<std::string> string_list;
     AddAllStringValues(*as_list, &string_list);
-    return UseResult(backend, storage->Remove(string_list));
+    return UseResult(observers, storage->Remove(string_list));
   }
   return UseResult(
-      backend, ExtensionSettingsStorage::Result(kUnsupportedArgumentType));
+      observers, ExtensionSettingsStorage::Result(kUnsupportedArgumentType));
 }
 
 bool ClearSettingsFunction::RunWithStorage(
-    ExtensionSettingsBackend* backend,
+    scoped_refptr<ExtensionSettingsObserverList> observers,
     ExtensionSettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  return UseResult(backend, storage->Clear());
+  return UseResult(observers, storage->Clear());
 }

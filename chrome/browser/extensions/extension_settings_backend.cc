@@ -38,10 +38,10 @@ const size_t kMaxSettingKeys = 512;
 
 ExtensionSettingsBackend::ExtensionSettingsBackend(
     const FilePath& base_path,
-    const scoped_refptr<ObserverListThreadSafe<ExtensionSettingsObserver> >&
-        observers)
+    const scoped_refptr<ExtensionSettingsObserverList>& observers)
     : base_path_(base_path),
       observers_(observers),
+      sync_type_(syncable::UNSPECIFIED),
       sync_processor_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
@@ -93,15 +93,15 @@ ExtensionSettingsBackend::GetOrCreateStorageWithSyncData(
               storage));
   if (sync_processor_) {
     // TODO(kalman): do something if StartSyncing fails.
-    ignore_result(syncable_storage->StartSyncing(sync_data, sync_processor_));
+    ignore_result(syncable_storage->StartSyncing(
+        sync_type_, sync_data, sync_processor_));
   }
 
   storage_objs_[extension_id] = syncable_storage;
   return syncable_storage.get();
 }
 
-void ExtensionSettingsBackend::DeleteExtensionData(
-    const std::string& extension_id) {
+void ExtensionSettingsBackend::DeleteStorage(const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   StorageObjMap::iterator maybe_storage = storage_objs_.find(extension_id);
   if (maybe_storage == storage_objs_.end()) {
@@ -129,10 +129,6 @@ void ExtensionSettingsBackend::TriggerOnSettingsChanged(
 std::set<std::string> ExtensionSettingsBackend::GetKnownExtensionIDs() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::set<std::string> result;
-
-  // TODO(kalman): we will need to do something to disambiguate between app
-  // settings and extension settings, since settings for apps should be synced
-  // iff app sync is turned on, ditto for extensions.
 
   // Extension IDs live in-memory and/or on disk.  The cache will contain all
   // that are in-memory.
@@ -162,11 +158,13 @@ std::set<std::string> ExtensionSettingsBackend::GetKnownExtensionIDs() const {
 SyncDataList ExtensionSettingsBackend::GetAllSyncData(
     syncable::ModelType type) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK_EQ(type, syncable::EXTENSION_SETTINGS);
+  // Ignore the type, it's just for sanity checking; assume that whatever base
+  // path we're constructed with is correct for the sync type.
+  DCHECK(type == syncable::EXTENSION_SETTINGS ||
+         type == syncable::APP_SETTINGS);
 
-  // For all extensions, get all their settings.
-  // This has the effect of bringing in the entire state of extension settings
-  // in memory; sad.
+  // For all extensions, get all their settings.  This has the effect
+  // of bringing in the entire state of extension settings in memory; sad.
   SyncDataList all_sync_data;
   std::set<std::string> known_extension_ids(GetKnownExtensionIDs());
 
@@ -197,8 +195,12 @@ SyncError ExtensionSettingsBackend::MergeDataAndStartSyncing(
     const SyncDataList& initial_sync_data,
     SyncChangeProcessor* sync_processor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK_EQ(type, syncable::EXTENSION_SETTINGS);
+  DCHECK(type == syncable::EXTENSION_SETTINGS ||
+         type == syncable::APP_SETTINGS);
+  DCHECK_EQ(sync_type_, syncable::UNSPECIFIED);
   DCHECK(!sync_processor_);
+
+  sync_type_ = type;
   sync_processor_ = sync_processor;
 
   // Group the initial sync data by extension id.
@@ -226,12 +228,13 @@ SyncError ExtensionSettingsBackend::MergeDataAndStartSyncing(
     if (maybe_sync_data != grouped_sync_data.end()) {
       // TODO(kalman): do something if StartSyncing fails.
       ignore_result(
-          it->second->StartSyncing(*maybe_sync_data->second, sync_processor));
+          it->second->StartSyncing(
+              type, *maybe_sync_data->second, sync_processor));
       grouped_sync_data.erase(it->first);
     } else {
       DictionaryValue empty;
       // TODO(kalman): do something if StartSyncing fails.
-      ignore_result(it->second->StartSyncing(empty, sync_processor));
+      ignore_result(it->second->StartSyncing(type, empty, sync_processor));
     }
   }
 
@@ -260,6 +263,7 @@ SyncError ExtensionSettingsBackend::ProcessSyncChanges(
     grouped_sync_data[data.extension_id()].push_back(data);
   }
 
+  // Create any storage areas that don't exist yet but have sync data.
   DictionaryValue empty;
   for (std::map<std::string, ExtensionSettingSyncDataList>::iterator
       it = grouped_sync_data.begin(); it != grouped_sync_data.end(); ++it) {
@@ -274,7 +278,12 @@ SyncError ExtensionSettingsBackend::ProcessSyncChanges(
 
 void ExtensionSettingsBackend::StopSyncing(syncable::ModelType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(type == syncable::EXTENSION_SETTINGS ||
+         type == syncable::APP_SETTINGS);
+  DCHECK_EQ(type, sync_type_);
   DCHECK(sync_processor_);
+
+  sync_type_ = syncable::UNSPECIFIED;
   sync_processor_ = NULL;
 
   for (StorageObjMap::iterator it = storage_objs_.begin();

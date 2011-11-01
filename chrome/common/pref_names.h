@@ -494,6 +494,7 @@ extern const char kSyncBookmarks[];
 extern const char kSyncPasswords[];
 extern const char kSyncPreferences[];
 extern const char kSyncAppNotifications[];
+extern const char kSyncAppSettings[];
 extern const char kSyncApps[];
 extern const char kSyncAutofill[];
 extern const char kSyncAutofillProfile[];

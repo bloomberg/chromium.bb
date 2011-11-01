@@ -25,7 +25,6 @@ class URLRequestContextGetter;
 }
 
 class ChromeAppCacheService;
-class ExtensionSettingsBackend;
 class Profile;
 class WebKitContext;
 
@@ -80,10 +79,6 @@ class ExtensionDataDeleter
   // Deletes appcache files for the extension. May only be called on the IO
   // thread.
   void DeleteAppcachesOnIOThread();
-
-  // Deletes extension settings for the extension. Will be called on the FILE
-  // thread via the ExtensionSettingsFrontend.
-  void DeleteExtensionSettingsOnFileThread(ExtensionSettingsBackend* backend);
 
   // The ID of the extension being deleted.
   const std::string extension_id_;

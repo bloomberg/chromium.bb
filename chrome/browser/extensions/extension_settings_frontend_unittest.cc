@@ -9,12 +9,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/extensions/extension_settings_backend.h"
 #include "chrome/browser/extensions/extension_settings_frontend.h"
 #include "chrome/browser/extensions/extension_settings_storage.h"
+#include "chrome/browser/extensions/extension_settings_test_util.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
+
+using namespace extension_settings_test_util;
 
 class ExtensionSettingsFrontendTest : public testing::Test {
  public:
@@ -24,7 +25,7 @@ class ExtensionSettingsFrontendTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    profile_.reset(new TestingProfile(temp_dir_.path()));
+    profile_.reset(new MockProfile(temp_dir_.path()));
     frontend_.reset(new ExtensionSettingsFrontend(profile_.get()));
   }
 
@@ -34,39 +35,26 @@ class ExtensionSettingsFrontendTest : public testing::Test {
   }
 
  protected:
-  // Puts the settings backend in |backend|.
-  void GetBackend(ExtensionSettingsBackend** backend) {
-    frontend_->RunWithBackend(
-        base::Bind(
-            &ExtensionSettingsFrontendTest::AssignBackend,
-            base::Unretained(this),
-            backend));
-    MessageLoop::current()->RunAllPending();
-    ASSERT_TRUE(*backend);
-  }
-
   ScopedTempDir temp_dir_;
-  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<MockProfile> profile_;
   scoped_ptr<ExtensionSettingsFrontend> frontend_;
 
  private:
-  // Intended as a ExtensionSettingsFrontend::BackendCallback from GetBackend.
-  void AssignBackend(
-      ExtensionSettingsBackend** dst, ExtensionSettingsBackend* src) {
-    *dst = src;
-  }
-
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 };
 
-TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
-  ExtensionSettingsBackend* backend;
-  GetBackend(&backend);
+// Get a semblance of coverage for both extension and app settings by
+// alternating in each test.
+// TODO(kalman): explicitly test the two interact correctly.
 
+TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   const std::string id = "ext";
-  ExtensionSettingsStorage* storage = backend->GetStorage(id);
+  profile_->GetMockExtensionService()->AddExtension(
+      id, Extension::TYPE_EXTENSION);
+
+  ExtensionSettingsStorage* storage = GetStorage(id, frontend_.get());
 
   // The correctness of Get/Set/Remove/Clear is tested elsewhere so no need to
   // be too rigorous.
@@ -79,8 +67,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   EXPECT_FALSE(result.GetSettings()->empty());
 
   frontend_.reset(new ExtensionSettingsFrontend(profile_.get()));
-  GetBackend(&backend);
-  storage = backend->GetStorage(id);
+  storage = GetStorage(id, frontend_.get());
 
   result = storage->Get();
   ASSERT_FALSE(result.HasError());
@@ -88,32 +75,33 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
 }
 
 TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
-  ExtensionSettingsBackend* backend;
-  GetBackend(&backend);
-
   const std::string id = "ext";
-  ExtensionSettingsStorage* storage = backend->GetStorage(id);
+  profile_->GetMockExtensionService()->AddExtension(
+      id, Extension::TYPE_PACKAGED_APP);
+
+  ExtensionSettingsStorage* storage = GetStorage(id, frontend_.get());
 
   StringValue bar("bar");
   ExtensionSettingsStorage::Result result = storage->Set("foo", bar);
   ASSERT_FALSE(result.HasError());
 
   // This would be triggered by extension uninstall via an ExtensionDataDeleter.
-  backend->DeleteExtensionData(id);
+  frontend_->DeleteStorageSoon(id);
+  MessageLoop::current()->RunAllPending();
 
   // The storage area may no longer be valid post-uninstall, so re-request.
-  storage = backend->GetStorage(id);
+  storage = GetStorage(id, frontend_.get());
   result = storage->Get();
   ASSERT_FALSE(result.HasError());
   EXPECT_TRUE(result.GetSettings()->empty());
 }
 
 TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
-  ExtensionSettingsBackend* backend;
-  GetBackend(&backend);
-
   const std::string id = "ext";
-  ExtensionSettingsStorage* storage = backend->GetStorage(id);
+  profile_->GetMockExtensionService()->AddExtension(
+      id, Extension::TYPE_EXTENSION);
+
+  ExtensionSettingsStorage* storage = GetStorage(id, frontend_.get());
 
   StringValue bar("bar");
   ExtensionSettingsStorage::Result result = storage->Set("foo", bar);

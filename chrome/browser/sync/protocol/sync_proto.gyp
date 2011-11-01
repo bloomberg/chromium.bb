@@ -14,6 +14,7 @@
         'sync.proto',
         'encryption.proto',
         'app_notification_specifics.proto',
+        'app_setting_specifics.proto',
         'app_specifics.proto',
         'autofill_specifics.proto',
         'bookmark_specifics.proto',

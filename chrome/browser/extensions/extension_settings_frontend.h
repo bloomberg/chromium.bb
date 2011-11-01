@@ -18,26 +18,35 @@
 
 class FilePath;
 class Profile;
-class ExtensionSettingsBackend;
 class ExtensionSettingsStorage;
 
 // The component of extension settings which runs on the UI thread, as opposed
 // to ExtensionSettingsBackend which lives on the FILE thread.
+// All public methods must be called on the UI thread.
 class ExtensionSettingsFrontend : public content::NotificationObserver {
  public:
   explicit ExtensionSettingsFrontend(Profile* profile);
   virtual ~ExtensionSettingsFrontend();
 
-  typedef base::Callback<void(ExtensionSettingsBackend*)> BackendCallback;
+  typedef base::Callback<void(SyncableService*)> SyncableServiceCallback;
+  typedef base::Callback<void(ExtensionSettingsStorage*)> StorageCallback;
 
-  // Runs |callback| on the FILE thread with the extension settings.
-  void RunWithBackend(const BackendCallback& callback);
+  // Runs |callback| on the FILE thread with the SyncableService for
+  // |model_type|, either EXTENSION_SETTINGS or APP_SETTINGS.
+  void RunWithSyncableService(
+      syncable::ModelType model_type, const SyncableServiceCallback& callback);
 
-  // Adds an observer to settings changes.
-  void AddObserver(ExtensionSettingsObserver* observer);
+  // Runs |callback| on the FILE thread with the storage area for
+  // |extension_id|.  If there is no extension with that ID, the storage area
+  // will be NULL.
+  void RunWithStorage(
+      const std::string& extension_id, const StorageCallback& callback);
 
-  // Removes an observer to settings changes.
-  void RemoveObserver(ExtensionSettingsObserver* observer);
+  // Deletes the settings for an extension (on the FILE thread).
+  void DeleteStorageSoon(const std::string& extension_id);
+
+  // Gets the thread-safe observer list.
+  scoped_refptr<ExtensionSettingsObserverList> GetObservers();
 
   // NotificationObserver implementation.
   virtual void Observe(
@@ -70,7 +79,7 @@ class ExtensionSettingsFrontend : public content::NotificationObserver {
   Profile* const profile_;
 
   // List of observers to settings changes.
-  scoped_refptr<ObserverListThreadSafe<ExtensionSettingsObserver> > observers_;
+  scoped_refptr<ExtensionSettingsObserverList> observers_;
 
   // The default original and incognito mode profile observers.
   scoped_ptr<DefaultObserver> original_profile_observer;

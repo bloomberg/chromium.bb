@@ -24,10 +24,6 @@ class ExtensionTestingProfile : public TestingProfile {
     return GetPath().AppendASCII(ExtensionService::kInstallDirectoryName);
   }
 
-  FilePath GetExtensionsSettingsDir() {
-    return GetPath().AppendASCII(ExtensionService::kSettingsDirectoryName);
-  }
-
   void InitExtensionProfile() {
     DCHECK(!GetExtensionProcessManager());
     DCHECK(!GetExtensionService());

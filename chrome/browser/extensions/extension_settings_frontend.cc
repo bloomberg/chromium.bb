@@ -14,6 +14,70 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
+namespace {
+
+struct Backends {
+  Backends(
+      const FilePath& profile_path,
+      const scoped_refptr<ExtensionSettingsObserverList>& observers)
+    : extensions_backend_(
+          profile_path.AppendASCII(
+              ExtensionService::kExtensionSettingsDirectoryName),
+          observers),
+      apps_backend_(
+          profile_path.AppendASCII(
+              ExtensionService::kAppSettingsDirectoryName),
+          observers) {}
+
+  ExtensionSettingsBackend extensions_backend_;
+  ExtensionSettingsBackend apps_backend_;
+};
+
+static void CallbackWithExtensionsBackend(
+    const ExtensionSettingsFrontend::SyncableServiceCallback& callback,
+    Backends* backends) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  callback.Run(&backends->extensions_backend_);
+}
+
+void CallbackWithAppsBackend(
+    const ExtensionSettingsFrontend::SyncableServiceCallback& callback,
+    Backends* backends) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  callback.Run(&backends->apps_backend_);
+}
+
+void CallbackWithExtensionsStorage(
+    const std::string& extension_id,
+    const ExtensionSettingsFrontend::StorageCallback& callback,
+    Backends* backends) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  callback.Run(backends->extensions_backend_.GetStorage(extension_id));
+}
+
+void CallbackWithAppsStorage(
+    const std::string& extension_id,
+    const ExtensionSettingsFrontend::StorageCallback& callback,
+    Backends* backends) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  callback.Run(backends->apps_backend_.GetStorage(extension_id));
+}
+
+void CallbackWithNullStorage(
+    const ExtensionSettingsFrontend::StorageCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  callback.Run(NULL);
+}
+
+void DeleteStorageOnFileThread(
+    const std::string& extension_id, Backends* backends) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  backends->extensions_backend_.DeleteStorage(extension_id);
+  backends->apps_backend_.DeleteStorage(extension_id);
+}
+
+}  // namespace
+
 class ExtensionSettingsFrontend::DefaultObserver
     : public ExtensionSettingsObserver {
  public:
@@ -44,34 +108,47 @@ class ExtensionSettingsFrontend::Core
     : public base::RefCountedThreadSafe<Core> {
  public:
   explicit Core(
-      const scoped_refptr<ObserverListThreadSafe<ExtensionSettingsObserver> >&
-          observers)
-      : observers_(observers), backend_(NULL) {
+      const scoped_refptr<ExtensionSettingsObserverList>& observers)
+      : observers_(observers), backends_(NULL) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
+
+  typedef base::Callback<void(Backends*)> BackendsCallback;
 
   // Does any FILE thread specific initialization, such as construction of
   // |backend_|.  Must be called before any call to
   // RunWithBackendOnFileThread().
-  void InitOnFileThread(const FilePath& base_path) {
+  void InitOnFileThread(const FilePath& profile_path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    DCHECK(!backend_);
-    backend_ = new ExtensionSettingsBackend(base_path, observers_);
+    DCHECK(!backends_);
+    backends_ = new Backends(profile_path, observers_);
   }
 
-  // Runs |callback| with the extension backend.
-  void RunWithBackendOnFileThread(const BackendCallback& callback) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    DCHECK(backend_);
-    callback.Run(backend_);
+  // Runs |callback| with both the extensions and apps settings on the FILE
+  // thread.
+  void RunWithBackends(const BackendsCallback& callback) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(
+            &ExtensionSettingsFrontend::Core::RunWithBackendsOnFileThread,
+            this,
+            callback));
   }
 
  private:
+  void RunWithBackendsOnFileThread(const BackendsCallback& callback) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK(backends_);
+    callback.Run(backends_);
+  }
+
   virtual ~Core() {
     if (BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-      delete backend_;
+      delete backends_;
     } else if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, backend_);
+      BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, backends_);
     } else {
       NOTREACHED();
     }
@@ -80,19 +157,18 @@ class ExtensionSettingsFrontend::Core
   friend class base::RefCountedThreadSafe<Core>;
 
   // Observers to settings changes (thread safe).
-  scoped_refptr<ObserverListThreadSafe<ExtensionSettingsObserver> >
-      observers_;
+  scoped_refptr<ExtensionSettingsObserverList> observers_;
 
-  // Lives on the FILE thread.
-  ExtensionSettingsBackend* backend_;
+  // Backends for extensions and apps settings.  Lives on FILE thread.
+  Backends* backends_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 ExtensionSettingsFrontend::ExtensionSettingsFrontend(Profile* profile)
     : profile_(profile),
-      observers_(new ObserverListThreadSafe<ExtensionSettingsObserver>()),
-      core_(new ExtensionSettingsFrontend::Core(observers_.get())) {
+      observers_(new ExtensionSettingsObserverList()),
+      core_(new ExtensionSettingsFrontend::Core(observers_)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!profile->IsOffTheRecord());
 
@@ -111,34 +187,64 @@ ExtensionSettingsFrontend::ExtensionSettingsFrontend(Profile* profile)
       base::Bind(
           &ExtensionSettingsFrontend::Core::InitOnFileThread,
           core_.get(),
-          profile->GetPath().AppendASCII(
-              ExtensionService::kSettingsDirectoryName)));
+          profile->GetPath()));
 }
 
 ExtensionSettingsFrontend::~ExtensionSettingsFrontend() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void ExtensionSettingsFrontend::RunWithBackend(
-    const BackendCallback& callback) {
+void ExtensionSettingsFrontend::RunWithSyncableService(
+    syncable::ModelType model_type, const SyncableServiceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(
-          &ExtensionSettingsFrontend::Core::RunWithBackendOnFileThread,
-          core_.get(),
-          callback));
+  switch (model_type) {
+    case syncable::EXTENSION_SETTINGS:
+      core_->RunWithBackends(
+          base::Bind(&CallbackWithExtensionsBackend, callback));
+      break;
+    case syncable::APP_SETTINGS:
+      core_->RunWithBackends(
+          base::Bind(&CallbackWithAppsBackend, callback));
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
-void ExtensionSettingsFrontend::AddObserver(
-    ExtensionSettingsObserver* observer) {
-  observers_->AddObserver(observer);
+void ExtensionSettingsFrontend::RunWithStorage(
+    const std::string& extension_id,
+    const StorageCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const Extension* extension =
+      profile_->GetExtensionService()->GetExtensionById(extension_id, true);
+  if (!extension) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&CallbackWithNullStorage, callback));
+    return;
+  }
+
+  if (extension->is_app()) {
+    core_->RunWithBackends(
+        base::Bind(&CallbackWithAppsStorage, extension_id, callback));
+  } else {
+    core_->RunWithBackends(
+        base::Bind(&CallbackWithExtensionsStorage, extension_id, callback));
+  }
 }
 
-void ExtensionSettingsFrontend::RemoveObserver(
-    ExtensionSettingsObserver* observer) {
-  observers_->RemoveObserver(observer);
+void ExtensionSettingsFrontend::DeleteStorageSoon(
+    const std::string& extension_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  core_->RunWithBackends(base::Bind(&DeleteStorageOnFileThread, extension_id));
+}
+
+scoped_refptr<ExtensionSettingsObserverList>
+ExtensionSettingsFrontend::GetObservers() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return observers_;
 }
 
 void ExtensionSettingsFrontend::Observe(
@@ -184,13 +290,13 @@ void ExtensionSettingsFrontend::SetDefaultObserver(
     Profile* profile, scoped_ptr<DefaultObserver>* observer) {
   DCHECK(!observer->get());
   observer->reset(new DefaultObserver(profile));
-  AddObserver(observer->get());
+  observers_->AddObserver(observer->get());
 }
 
 void ExtensionSettingsFrontend::ClearDefaultObserver(
     scoped_ptr<DefaultObserver>* observer) {
   if (observer->get()) {
-    RemoveObserver(observer->get());
+    observers_->RemoveObserver(observer->get());
     observer->reset();
   }
 }

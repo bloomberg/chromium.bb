@@ -310,6 +310,8 @@ void Cryptographer::UpdateEncryptedTypesFromNigori(
     encrypted_types.insert(syncable::SEARCH_ENGINES);
   if (nigori.encrypt_sessions())
     encrypted_types.insert(syncable::SESSIONS);
+  if (nigori.encrypt_app_settings())
+    encrypted_types.insert(syncable::APP_SETTINGS);
   if (nigori.encrypt_apps())
     encrypted_types.insert(syncable::APPS);
   if (nigori.encrypt_app_notifications())
@@ -347,6 +349,8 @@ void Cryptographer::UpdateNigoriFromEncryptedTypes(
   nigori->set_encrypt_search_engines(
       encrypted_types_.count(syncable::SEARCH_ENGINES) > 0);
   nigori->set_encrypt_sessions(encrypted_types_.count(syncable::SESSIONS) > 0);
+  nigori->set_encrypt_app_settings(
+      encrypted_types_.count(syncable::APP_SETTINGS) > 0);
   nigori->set_encrypt_apps(encrypted_types_.count(syncable::APPS) > 0);
   nigori->set_encrypt_app_notifications(
       encrypted_types_.count(syncable::APP_NOTIFICATIONS) > 0);

@@ -11,11 +11,11 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 
-class ExtensionSettingsBackend;
 class ExtensionSettingsFrontend;
 class Profile;
 class ProfileSyncFactory;
 class ProfileSyncService;
+class SyncableService;
 
 namespace browser_sync {
 
@@ -23,6 +23,8 @@ class ExtensionSettingDataTypeController
     : public NonFrontendDataTypeController {
  public:
   ExtensionSettingDataTypeController(
+      // Either EXTENSION_SETTINGS or APP_SETTINGS.
+      syncable::ModelType type,
       ProfileSyncFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* profile_sync_service);
@@ -44,17 +46,20 @@ class ExtensionSettingDataTypeController
   virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE;
   virtual void RecordStartFailure(StartResult result) OVERRIDE;
 
-  // Starts sync association with |extension_settings|.  Callback from
+  // Starts sync association with |settings_service|.  Callback from
   // RunWithSettings of |extension_settings_ui_wrapper_| on FILE thread.
-  void StartAssociationWithExtensionSettingsBackend(
-      ExtensionSettingsBackend* extension_settings_backend);
+  void StartAssociationWithExtensionSettingsService(
+      SyncableService* settings_service);
+
+  // Either EXTENSION_SETTINGS or APP_SETTINGS.
+  syncable::ModelType type_;
 
   // These only used on the UI thread.
   ExtensionSettingsFrontend* extension_settings_frontend_;
   ProfileSyncService* profile_sync_service_;
 
   // Only used on the FILE thread.
-  ExtensionSettingsBackend* extension_settings_backend_;
+  SyncableService* settings_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingDataTypeController);
 };
