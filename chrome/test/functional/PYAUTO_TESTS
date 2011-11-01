@@ -426,6 +426,10 @@
       'nacl_sdk',
       'translate',
 
+      # Disabled until the changes reach the Google Chrome builders.
+      # Re-enable on 11/02/2011.
+      '-prefs.PrefsTest.testHaveLocalStatePrefs',
+
       # ===========================
       # Permanently-disabled tests.
       # ===========================
