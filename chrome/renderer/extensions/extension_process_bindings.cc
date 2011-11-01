@@ -66,11 +66,13 @@ const char* kExtensionDeps[] = {
 // Contains info relevant to a pending API request.
 struct PendingRequest {
  public :
-  PendingRequest(v8::Persistent<v8::Context> context, const std::string& name)
-      : context(context), name(name) {
+  PendingRequest(v8::Persistent<v8::Context> context, const std::string& name,
+                 const std::string& extension_id)
+      : context(context), name(name), extension_id(extension_id) {
   }
   v8::Persistent<v8::Context> context;
   std::string name;
+  std::string extension_id;
 };
 typedef std::map<int, linked_ptr<PendingRequest> > PendingRequestMap;
 
@@ -473,7 +475,7 @@ class ExtensionImpl : public ChromeV8Extension {
         v8::Persistent<v8::Context>::New(v8::Context::GetCurrent());
     DCHECK(!v8_context.IsEmpty());
     g_pending_requests.Get()[request_id].reset(new PendingRequest(
-        v8_context, name));
+        v8_context, name, current_context->extension_id()));
 
     ExtensionHostMsg_Request_Params params;
     params.name = name;
@@ -605,7 +607,8 @@ void ExtensionProcessBindings::HandleResponse(
     int request_id,
     bool success,
     const std::string& response,
-    const std::string& error) {
+    const std::string& error,
+    std::string* extension_id) {
   PendingRequestMap::iterator request =
       g_pending_requests.Get().find(request_id);
   if (request == g_pending_requests.Get().end()) {
@@ -642,7 +645,21 @@ void ExtensionProcessBindings::HandleResponse(
   }
 #endif
 
+  // Save the extension id before erasing the request.
+  *extension_id = request->second->extension_id;
+
   request->second->context.Dispose();
   request->second->context.Clear();
   g_pending_requests.Get().erase(request);
+}
+
+// static
+bool ExtensionProcessBindings::HasPendingRequests(
+    const std::string& extension_id) {
+  for (PendingRequestMap::const_iterator it = g_pending_requests.Get().begin();
+       it != g_pending_requests.Get().end(); ++it) {
+    if (it->second->extension_id == extension_id)
+      return true;
+  }
+  return false;
 }

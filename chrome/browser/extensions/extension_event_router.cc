@@ -288,13 +288,34 @@ void ExtensionEventRouter::DispatchEventImpl(
         DispatchEvent(listener->process, listener->extension_id,
                       event->event_name, event->cross_incognito_args,
                       event->event_url);
+        IncrementInFlightEvents(listener->extension_id);
       }
       continue;
     }
 
     DispatchEvent(listener->process, listener->extension_id,
                   event->event_name, event->event_args, event->event_url);
+    IncrementInFlightEvents(listener->extension_id);
   }
+}
+
+void ExtensionEventRouter::IncrementInFlightEvents(
+    const std::string& extension_id) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLazyBackgroundPages))
+    in_flight_events_[extension_id]++;
+}
+
+void ExtensionEventRouter::OnExtensionEventAck(
+    const std::string& extension_id) {
+  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableLazyBackgroundPages));
+  CHECK(in_flight_events_[extension_id] > 0);
+  in_flight_events_[extension_id]--;
+}
+
+bool ExtensionEventRouter::HasInFlightEvents(const std::string& extension_id) {
+  return in_flight_events_[extension_id] > 0;
 }
 
 void ExtensionEventRouter::AppendEvent(

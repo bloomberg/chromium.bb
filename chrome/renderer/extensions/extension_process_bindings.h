@@ -27,12 +27,15 @@ class ExtensionProcessBindings {
  public:
   static v8::Extension* Get(ExtensionDispatcher* extension_dispatcher);
 
-  // Handles a response to an API request.
+  // Handles a response to an API request.  Sets |extension_id|.
   static void HandleResponse(const ChromeV8ContextSet& contexts,
                              int request_id,
                              bool success,
                              const std::string& response,
-                             const std::string& error);
+                             const std::string& error,
+                             std::string* extension_id);
+
+  static bool HasPendingRequests(const std::string& extension_id);
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_PROCESS_BINDINGS_H_

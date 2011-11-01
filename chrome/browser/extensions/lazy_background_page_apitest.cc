@@ -87,10 +87,9 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
   bg_pg_created.Wait();
   bg_pg_closed.Wait();
 
-  // Background page is closed before it created a new tab.
-  // TODO(tessamac): Implement! Close background page after callback.
+  // Background page is closed after creating a new tab.
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
-  EXPECT_EQ(num_tabs_before, browser()->tab_count());
+  EXPECT_EQ(num_tabs_before + 1, browser()->tab_count());
 }
 
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,

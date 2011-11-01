@@ -154,10 +154,18 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
         kInitialExtensionIdleHandlerDelayS);
   }
 
-  // Tell the browser process that we're idle.
+  // Tell the browser process that the event is dispatched and we're idle.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLazyBackgroundPages) &&
-      function_name == "Event.dispatchJSON")  // may always be true
+      function_name == "Event.dispatchJSON") { // may always be true
+    RenderThread::Get()->Send(
+        new ExtensionHostMsg_ExtensionEventAck(extension_id));
+    CheckIdleStatus(extension_id);
+  }
+}
+
+void ExtensionDispatcher::CheckIdleStatus(const std::string& extension_id) {
+  if (!ExtensionProcessBindings::HasPendingRequests(extension_id))
     RenderThread::Get()->Send(new ExtensionHostMsg_ExtensionIdle(extension_id));
 }
 

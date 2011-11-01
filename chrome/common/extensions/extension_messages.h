@@ -273,6 +273,11 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RemoveListener,
 IPC_MESSAGE_CONTROL1(ExtensionHostMsg_ExtensionIdle,
                      std::string /* extension_id */)
 
+// Notify the browser that an event has finished being dispatched.
+IPC_MESSAGE_CONTROL1(ExtensionHostMsg_ExtensionEventAck,
+                     std::string /* extension_id */)
+
+
 // Open a channel to all listening contexts owned by the extension with
 // the given ID.  This always returns a valid port ID which can be used for
 // sending messages.  If an error occurred, the opener will be notified

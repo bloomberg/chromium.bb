@@ -8,6 +8,7 @@
 
 #include "chrome/browser/ui/browser_window.h"
 #include "content/browser/browsing_instance.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #if defined(OS_MACOSX)
 #include "chrome/browser/extensions/extension_host_mac.h"
 #endif
@@ -429,8 +430,12 @@ bool ExtensionProcessManager::HasExtensionHost(ExtensionHost* host) const {
 
 void ExtensionProcessManager::OnExtensionIdle(const std::string& extension_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
-  if (host && !HasVisibleViews(extension_id))
-    CloseBackgroundHost(host);
+  if (host && !HasVisibleViews(extension_id)) {
+    Profile* profile =
+        Profile::FromBrowserContext(browsing_instance_->browser_context());
+    if (!profile->GetExtensionEventRouter()->HasInFlightEvents(extension_id))
+      CloseBackgroundHost(host);
+  }
 }
 
 bool ExtensionProcessManager::HasVisibleViews(const std::string& extension_id) {

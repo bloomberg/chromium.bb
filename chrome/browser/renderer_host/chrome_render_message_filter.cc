@@ -130,6 +130,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveListener,
                         OnExtensionRemoveListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ExtensionIdle, OnExtensionIdle)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ExtensionEventAck, OnExtensionEventAck)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseChannel, OnExtensionCloseChannel)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestForIOThread,
                         OnExtensionRequestForIOThread)
@@ -192,6 +193,7 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
     case ExtensionHostMsg_AddListener::ID:
     case ExtensionHostMsg_RemoveListener::ID:
     case ExtensionHostMsg_ExtensionIdle::ID:
+    case ExtensionHostMsg_ExtensionEventAck::ID:
     case ExtensionHostMsg_CloseChannel::ID:
     case ChromeViewHostMsg_UpdatedCacheStats::ID:
       *thread = BrowserThread::UI;
@@ -379,6 +381,12 @@ void ChromeRenderMessageFilter::OnExtensionIdle(
     const std::string& extension_id) {
   if (profile_->GetExtensionProcessManager())
     profile_->GetExtensionProcessManager()->OnExtensionIdle(extension_id);
+}
+
+void ChromeRenderMessageFilter::OnExtensionEventAck(
+    const std::string& extension_id) {
+  if (profile_->GetExtensionEventRouter())
+    profile_->GetExtensionEventRouter()->OnExtensionEventAck(extension_id);
 }
 
 void ChromeRenderMessageFilter::OnExtensionCloseChannel(int port_id) {
