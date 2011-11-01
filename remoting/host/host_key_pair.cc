@@ -100,9 +100,11 @@ std::string HostKeyPair::GenerateCertificate() const {
           key_.get(), "CN=chromoting",
           base::RandInt(1, std::numeric_limits<int>::max()),
           base::TimeDelta::FromDays(1));
-  std::string result;
-  CHECK(cert->GetDEREncoded(&result));
-  return result;
+  std::string encoded;
+  bool result = net::X509Certificate::GetDEREncoded(cert->os_cert_handle(),
+                                                    &encoded);
+  CHECK(result);
+  return encoded;
 }
 
 }  // namespace remoting

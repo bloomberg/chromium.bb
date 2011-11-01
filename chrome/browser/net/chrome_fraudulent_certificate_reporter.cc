@@ -65,7 +65,8 @@ static std::string BuildReport(
   std::string der_encoded, pem_encoded;
 
   net::X509Certificate* certificate = ssl_info.cert;
-  if (!certificate->GetDEREncoded(&der_encoded) ||
+  if (!net::X509Certificate::GetDEREncoded(certificate->os_cert_handle(),
+                                           &der_encoded) ||
       !DerToPem(der_encoded, &pem_encoded)) {
     LOG(ERROR) << "Could not PEM encode DER certificate";
   }
@@ -75,13 +76,9 @@ static std::string BuildReport(
 
   const net::X509Certificate::OSCertHandles& intermediates =
       certificate->GetIntermediateCertificates();
-
-  for (net::X509Certificate::OSCertHandles::const_iterator
-      i = intermediates.begin(); i != intermediates.end(); ++i) {
-    scoped_refptr<net::X509Certificate> cert =
-        net::X509Certificate::CreateFromHandle(*i, intermediates);
-
-    if (!cert->GetDEREncoded(&der_encoded) ||
+  for (size_t i = 0; i < intermediates.size(); ++i) {
+    if (!net::X509Certificate::GetDEREncoded(intermediates[i],
+                                             &der_encoded) ||
         !DerToPem(der_encoded, &pem_encoded)) {
       LOG(ERROR) << "Could not PEM encode DER certificate";
       continue;
