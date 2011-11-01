@@ -36,6 +36,24 @@ END
   exit 2
 fi
 
+tar=$(which gnutar || which tar)
+uncompress=$(which xz)
+suffix=xz
+if [[ "$uncompress" = "" ]]; then
+  uncompress=bzip2
+  suffix=bz2
+fi
+
+if [[ "$(which wget)" = "" ]]; then
+  wget() {
+    if (($#==1)); then
+      curl "$1" -o "$(basename "$1")"
+    else
+      curl "$1"
+    fi
+  }
+fi
+
 set -e
 set -u
 set -x
@@ -46,7 +64,7 @@ mkdir -p "$target"
   if (($(find "$target" -maxdepth 1 ! -name ".*" | wc -l)<=1)); then
     wget \
       "http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r$1/" -O- |
-    grep patch |
+    grep patch.$suffix |
     while IFS='"' read -r -d $'\n' prefix patchname suffix; do
       basename="$(basename "$patchname")"
       version="${basename#*-}"
@@ -55,36 +73,36 @@ mkdir -p "$target"
       case "$basename" in
         *binutils*)
           wget "$mirror_base_address/binutils/binutils-$version.tar.bz2"
-          tar xjSvpf "binutils-$version.tar.bz2"
+          "$tar" xjSvpf "binutils-$version.tar.bz2"
           mv "binutils-$version" "binutils"
           cd "binutils"
           ;;
         *gcc*)
           wget "$mirror_base_address/gcc/gcc-$version/gcc-core-$version.tar.bz2"
-          tar xjSvpf "gcc-core-$version.tar.bz2"
+          "$tar" xjSvpf "gcc-core-$version.tar.bz2"
           wget "$mirror_base_address/gcc/gcc-$version/gcc-fortran-$version.tar.bz2"
-          tar xjSvpf "gcc-fortran-$version.tar.bz2"
+          "$tar" xjSvpf "gcc-fortran-$version.tar.bz2"
           wget "$mirror_base_address/gcc/gcc-$version/gcc-g++-$version.tar.bz2"
-          tar xjSvpf "gcc-g++-$version.tar.bz2"
+          "$tar" xjSvpf "gcc-g++-$version.tar.bz2"
           wget "$mirror_base_address/gcc/gcc-$version/gcc-objc-$version.tar.bz2"
-          tar xjSvpf "gcc-objc-$version.tar.bz2"
+          "$tar" xjSvpf "gcc-objc-$version.tar.bz2"
           wget "$mirror_base_address/gcc/gcc-$version/gcc-testsuite-$version.tar.bz2"
-          tar xjSvpf "gcc-testsuite-$version.tar.bz2"
+          "$tar" xjSvpf "gcc-testsuite-$version.tar.bz2"
           mv "gcc-$version" "gcc"
           cd "gcc"
           ;;
         *glibc*)
           wget "$mirror_base_address/glibc/glibc-$version.tar.bz2"
-          tar xjSvpf "glibc-$version.tar.bz2"
+          "$tar" xjSvpf "glibc-$version.tar.bz2"
           wget "$mirror_base_address/glibc/glibc-libidn-$version.tar.bz2"
-          tar xjSvpf "glibc-libidn-$version.tar.bz2"
+          "$tar" xjSvpf "glibc-libidn-$version.tar.bz2"
           mv "glibc-$version" "glibc"
           mv "glibc-libidn-$version" "glibc/libidn"
           cd "glibc"
           ;;
         *newlib*)
           wget "$mirror_base_address/newlib/newlib-$version.tar.gz"
-          tar xzSvpf "newlib-$version.tar.gz"
+          "$tar" xzSvpf "newlib-$version.tar.gz"
           mv "newlib-$version" "newlib"
           cd "newlib"
           ;;
@@ -94,6 +112,7 @@ mkdir -p "$target"
           ;;
       esac
       wget "http://commondatastorage.googleapis.com/$patchname" -O- |
+      "$uncompress" -d |
       patch -p1
     done
     cd "$target"
