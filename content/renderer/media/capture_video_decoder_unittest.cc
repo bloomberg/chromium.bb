@@ -95,7 +95,6 @@ class CaptureVideoDecoderTest : public ::testing::Test {
     capability.expected_capture_delay = 0;
     capability.raw_type = media::VideoFrame::I420;
     capability.interlaced = false;
-    capability.resolution_fixed = false;
 
     decoder_ = new CaptureVideoDecoder(message_loop_proxy_,
                                        kVideoStreamId, vc_manager_, capability);

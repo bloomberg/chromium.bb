@@ -16,7 +16,6 @@ VideoCaptureModuleImpl::VideoCaptureModuleImpl(
       thread_("VideoCaptureModuleImpl"),
       vc_manager_(vc_manager),
       state_(media::VideoCapture::kStopped),
-      got_first_frame_(false),
       width_(-1),
       height_(-1),
       frame_rate_(-1),
@@ -160,7 +159,6 @@ void VideoCaptureModuleImpl::StartCaptureInternal(
   cap.height = capability.height;
   cap.max_fps = capability.maxFPS;
   cap.raw_type = media::VideoFrame::I420;
-  cap.resolution_fixed = true;
   capture_engine_->StartCapture(this, cap);
 }
 
@@ -191,7 +189,6 @@ void VideoCaptureModuleImpl::OnStoppedOnCaptureThread(
 
   VLOG(1) << "Capture Stopped!!! ";
   state_ = media::VideoCapture::kStopped;
-  got_first_frame_ = false;
   width_ = -1;
   height_ = -1;
   frame_rate_ = -1;
@@ -210,11 +207,6 @@ void VideoCaptureModuleImpl::OnBufferReadyOnCaptureThread(
 
   if (state_ != media::VideoCapture::kStarted)
     return;
-
-  if (!got_first_frame_) {
-    got_first_frame_ = true;
-    start_time_ = buf->timestamp;
-  }
 
   frameInfo_.width = buf->width;
   frameInfo_.height = buf->height;

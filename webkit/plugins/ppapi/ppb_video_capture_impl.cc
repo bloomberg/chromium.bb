@@ -101,7 +101,6 @@ int32_t PPB_VideoCapture_Impl::StartCapture(
     0,  // ignored.
     media::VideoFrame::I420,
     false,  // ignored
-    false  // resolution_fixed
   };
   status_ = PP_VIDEO_CAPTURE_STATUS_STARTING;
   AddRef();  // Balanced in |OnRemoved()|.

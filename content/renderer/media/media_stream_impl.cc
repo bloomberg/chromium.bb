@@ -42,7 +42,6 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
     capability.expected_capture_delay = 0;
     capability.raw_type = media::VideoFrame::I420;
     capability.interlaced = false;
-    capability.resolution_fixed = false;
 
     decoder = new CaptureVideoDecoder(
         message_loop_factory->GetMessageLoopProxy("CaptureVideoDecoder").get(),

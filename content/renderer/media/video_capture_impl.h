@@ -42,24 +42,12 @@ class CONTENT_EXPORT VideoCaptureImpl
       const media::VideoCaptureParams& device_info);
   virtual void OnDelegateAdded(int32 device_id);
 
-  bool pending_start() {
-    return (new_params_.width > 0 && new_params_.height > 0);
-  }
-
  private:
   friend class VideoCaptureImplManager;
   friend class VideoCaptureImplTest;
   friend class MockVideoCaptureImpl;
 
-  struct DIBBuffer {
-   public:
-    DIBBuffer(base::SharedMemory* d,
-              media::VideoCapture::VideoFrameBuffer* ptr);
-    ~DIBBuffer();
-
-    base::SharedMemory* dib;
-    scoped_refptr<media::VideoCapture::VideoFrameBuffer> mapped_memory;
-  };
+  struct DIBBuffer;
 
   VideoCaptureImpl(media::VideoCaptureSessionId id,
                    scoped_refptr<base::MessageLoopProxy> ml_proxy,
@@ -88,28 +76,22 @@ class CONTENT_EXPORT VideoCaptureImpl
   virtual void Send(IPC::Message* message);
 
   // Helpers.
-  bool CapabilityMatchesParameters(const VideoCaptureCapability& capability,
-                                   const media::VideoCaptureParams& params);
+  bool ClientHasDIB();
 
   scoped_refptr<VideoCaptureMessageFilter> message_filter_;
   scoped_refptr<base::MessageLoopProxy> ml_proxy_;
   int device_id_;
 
   // Pool of DIBs.
-  typedef std::map<int, DIBBuffer*> CachedDIB;
+  typedef std::map<int /* buffer_id */, DIBBuffer*> CachedDIB;
   CachedDIB cached_dibs_;
-
-  // DIBs at client side. The mapped value |int| means number of clients which
-  // hold this dib.
-  typedef std::map<media::VideoCapture::VideoFrameBuffer*, int> ClientSideDIB;
-  ClientSideDIB client_side_dibs_;
 
   typedef std::map<media::VideoCapture::EventHandler*, VideoCaptureCapability>
       ClientInfo;
   ClientInfo clients_;
-  std::list<media::VideoCapture::EventHandler*> master_clients_;
 
-  ClientInfo pending_clients_;
+  ClientInfo clients_pending_on_filter_;
+  ClientInfo clients_pending_on_restart_;
 
   media::VideoFrame::Format video_type_;
 
@@ -121,8 +103,6 @@ class CONTENT_EXPORT VideoCaptureImpl
   media::VideoCaptureParams device_info_;
   bool device_info_available_;
 
-  // The parameter will be used in next capture session.
-  media::VideoCaptureParams new_params_;
   State state_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImpl);

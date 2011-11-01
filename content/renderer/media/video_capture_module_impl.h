@@ -70,7 +70,6 @@ class VideoCaptureModuleImpl
   // The video capture manager handles open/close of video capture devices.
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
   media::VideoCapture::State state_;
-  bool got_first_frame_;
   WebRtc_UWord32 width_;
   WebRtc_UWord32 height_;
   WebRtc_Word32 frame_rate_;
