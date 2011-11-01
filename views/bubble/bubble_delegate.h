@@ -6,6 +6,7 @@
 #define VIEWS_BUBBLE_BUBBLE_DELEGATE_H_
 #pragma once
 
+#include "base/gtest_prod_util.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "views/bubble/bubble_border.h"
 #include "views/widget/widget_delegate.h"
@@ -17,7 +18,6 @@ class SlideAnimation;
 namespace views {
 
 class BubbleFrameView;
-class BubbleView;
 
 // BubbleDelegateView creates frame and client views for bubble Widgets.
 // BubbleDelegateView itself is the client's contents view.
@@ -32,14 +32,13 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
                      const SkColor& color);
   virtual ~BubbleDelegateView();
 
-  // Create a bubble Widget from the argument BubbleDelegateView.
+  // Create and initialize the bubble Widget(s) with proper bounds.
   static Widget* CreateBubble(BubbleDelegateView* bubble_delegate,
                               Widget* parent_widget);
 
   // WidgetDelegate overrides:
   virtual View* GetInitiallyFocusedView() OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
-  virtual ClientView* CreateClientView(Widget* widget) OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
 
   bool close_on_esc() const { return close_on_esc_; }
@@ -53,6 +52,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
   // Get the color used for the background and border.
   virtual SkColor GetColor() const;
+
+  // Show the bubble's widget (and |border_widget_| on Windows).
+  void Show();
 
   // Fade the bubble in or out via Widget transparency.
   // Fade in calls Widget::Show; fade out calls Widget::Close upon completion.
@@ -70,15 +72,25 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   virtual void Init();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewBasicTest, NonClientHitTest);
+  FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CreateDelegate);
+
   // ui::AnimationDelegate overrides:
   virtual void AnimationEnded(const ui::Animation* animation);
   virtual void AnimationProgressed(const ui::Animation* animation);
 
-  const BubbleView* GetBubbleView() const;
-  const BubbleFrameView* GetBubbleFrameView() const;
+  BubbleFrameView* GetBubbleFrameView() const;
 
   // Get bubble bounds from the anchor point and client view's preferred size.
   gfx::Rect GetBubbleBounds();
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // Initialize the border widget needed for Windows native control hosting.
+  void InitializeBorderWidget(Widget* parent_widget);
+
+  // Get bounds for the Windows-only widget that hosts the bubble's contents.
+  gfx::Rect GetBubbleClientBounds() const;
+#endif
 
   // Fade animation for bubble.
   scoped_ptr<ui::SlideAnimation> fade_animation_;
@@ -97,6 +109,11 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
   // Original opacity of the bubble.
   int original_opacity_;
+
+  // The widget hosting the border for this bubble (non-Aura Windows only).
+  Widget* border_widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(BubbleDelegateView);
 };
 
 }  // namespace views

@@ -88,13 +88,13 @@ void BubbleExample::ButtonPressed(views::Button* sender,
 
   ExampleBubbleDelegateView* bubble_delegate =
       new ExampleBubbleDelegateView(config);
-  views::Widget* bubble = views::BubbleDelegateView::CreateBubble(
-      bubble_delegate, example_view()->GetWidget());
+  views::BubbleDelegateView::CreateBubble(bubble_delegate,
+                                          example_view()->GetWidget());
 
   if (config.fade_in)
     bubble_delegate->StartFade(true);
   else
-    bubble->Show();
+    bubble_delegate->Show();
 
   if (config.fade_out) {
     bubble_delegate->set_close_on_esc(false);

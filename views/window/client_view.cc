@@ -37,14 +37,6 @@ const DialogClientView* ClientView::AsDialogClientView() const {
   return NULL;
 }
 
-BubbleView* ClientView::AsBubbleView() {
-  return NULL;
-}
-
-const BubbleView* ClientView::AsBubbleView() const {
-  return NULL;
-}
-
 bool ClientView::CanClose() {
   return true;
 }

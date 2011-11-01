@@ -10,7 +10,6 @@
 
 namespace views {
 
-class BubbleView;
 class DialogClientView;
 class Widget;
 
@@ -37,8 +36,6 @@ class VIEWS_EXPORT ClientView : public View {
   // Manual RTTI ftw.
   virtual DialogClientView* AsDialogClientView();
   virtual const DialogClientView* AsDialogClientView() const;
-  virtual BubbleView* AsBubbleView();
-  virtual const BubbleView* AsBubbleView() const;
 
   // Returns true to signal that the Widget can be closed. Specialized
   // ClientView subclasses can override this default behavior to allow the

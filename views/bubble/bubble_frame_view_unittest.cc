@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/bubble/bubble_frame_view.h"
 #include "views/bubble/bubble_delegate.h"
+#include "views/bubble/bubble_frame_view.h"
 #include "views/test/views_test_base.h"
 #include "views/widget/widget.h"
 #if !defined(OS_WIN)
@@ -32,22 +32,34 @@ TEST_F(BubbleFrameViewBasicTest, GetBoundsForClientView) {
   EXPECT_EQ(expected_insets.top(), frame.GetBoundsForClientView().y());
 }
 
+}  // namespace
+
+class SizedBubbleDelegateView : public BubbleDelegateView {
+ public:
+   SizedBubbleDelegateView() {}
+   virtual ~SizedBubbleDelegateView() {}
+
+   // View overrides:
+   virtual gfx::Size GetPreferredSize() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SizedBubbleDelegateView);
+};
+
+gfx::Size SizedBubbleDelegateView::GetPreferredSize() { return kRect.size(); }
+
 TEST_F(BubbleFrameViewBasicTest, NonClientHitTest) {
-  BubbleDelegateView* delegate = new BubbleDelegateView();
-  scoped_ptr<Widget> widget(
-      views::BubbleDelegateView::CreateBubble(delegate, NULL));
-  widget->SetBounds(kRect);
-  widget->Show();
+  SizedBubbleDelegateView* delegate = new SizedBubbleDelegateView();
+  scoped_ptr<Widget> widget(BubbleDelegateView::CreateBubble(delegate, NULL));
+  delegate->Show();
   gfx::Point kPtInBound(100, 100);
   gfx::Point kPtOutsideBound(1000, 1000);
-  EXPECT_EQ(HTCLIENT, widget->non_client_view()->NonClientHitTest(kPtInBound));
-  EXPECT_EQ(HTNOWHERE,
-            widget->non_client_view()->NonClientHitTest(kPtOutsideBound));
+  BubbleFrameView* bubble_frame_view = delegate->GetBubbleFrameView();
+  EXPECT_EQ(HTCLIENT, bubble_frame_view->NonClientHitTest(kPtInBound));
+  EXPECT_EQ(HTNOWHERE, bubble_frame_view->NonClientHitTest(kPtOutsideBound));
   widget->CloseNow();
   widget.reset();
   RunPendingMessages();
 }
-
-}  // namespace
 
 }  // namespace views

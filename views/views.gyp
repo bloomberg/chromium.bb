@@ -572,7 +572,6 @@
         'animation/bounds_animator_unittest.cc',
         'bubble/bubble_delegate_unittest.cc',
         'bubble/bubble_frame_view_unittest.cc',
-        'bubble/bubble_view_unittest.cc',
         'controls/label_unittest.cc',
         'controls/progress_bar_unittest.cc',
         'controls/single_split_view_unittest.cc',
