@@ -456,8 +456,7 @@ void BookmarkBarGtk::Hide(BookmarkBar::State old_state,
 
   // After coming out of fullscreen, the browser window sets the bookmark bar
   // to the "hidden" state, which means we need to show our minimum height.
-  if (!window_->IsFullscreen())
-    gtk_widget_show(widget());
+  gtk_widget_show(widget());
   CalculateMaxHeight();
   // Sometimes we get called without a matching call to open. If that happens
   // then force hide.

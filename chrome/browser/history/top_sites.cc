@@ -50,7 +50,6 @@ static const size_t kTopSitesNumber = 20;
 // temp_images_ for details.
 static const size_t kMaxTempTopImages = 8;
 
-static const size_t kTopSitesShown = 8;
 static const int kDaysOfHistory = 90;
 // Time from startup to first HistoryService query.
 static const int64 kUpdateIntervalSecs = 15;
@@ -733,7 +732,8 @@ void TopSites::ApplyBlacklistAndPinnedURLs(const MostVisitedURLList& urls,
       urls_copy.push_back(urls[i]);
   }
 
-  for (size_t pinned_index = 0; pinned_index < kTopSitesShown; pinned_index++) {
+  for (size_t pinned_index = 0; pinned_index < kTopSitesNumber;
+       pinned_index++) {
     GURL url;
     bool found = GetPinnedURLAtIndex(pinned_index, &url);
     if (!found)
@@ -756,7 +756,7 @@ void TopSites::ApplyBlacklistAndPinnedURLs(const MostVisitedURLList& urls,
 
   // Add non-pinned URLs in the empty spots.
   size_t current_url = 0;  // Index into the remaining URLs in urls_copy.
-  for (size_t i = 0; i < kTopSitesShown && current_url < urls_copy.size();
+  for (size_t i = 0; i < kTopSitesNumber && current_url < urls_copy.size();
        i++) {
     if (i == out->size()) {
       out->push_back(urls_copy[current_url]);
