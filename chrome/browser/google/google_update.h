@@ -6,10 +6,9 @@
 #define CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_H_
 #pragma once
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/string16.h"
 #if defined(OS_WIN)
 #include "google_update_idl.h"
 #endif
@@ -67,13 +66,15 @@ class GoogleUpdateStatusListener {
  public:
   // This function is called when Google Update has finished its operation and
   // wants to notify us about the results. |results| represents what the end
-  // state is, |error_code| represents what error occurred and |version|
-  // specifies what new version Google Update detected (or installed). This
-  // value can be a blank string, if the version tag in the Update{} block
-  // (in Google Update's server config for Chrome) is blank.
+  // state is, |error_code| represents what error occurred, |error_message| is a
+  // string version of the same (might be blank) and |version| specifies what
+  // new version Google Update detected (or installed). This value can be a
+  // blank string, if the version tag in the Update{} block (in Google Update's
+  // server config for Chrome) is blank.
   virtual void OnReportResults(GoogleUpdateUpgradeResult results,
                                GoogleUpdateErrorCode error_code,
-                               const std::wstring& version) = 0;
+                               const string16& error_message,
+                               const string16& version) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -114,7 +115,7 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
   // listener.
   // Note, after this function completes, this object will have deleted itself.
   bool ReportFailure(HRESULT hr, GoogleUpdateErrorCode error_code,
-                     MessageLoop* main_loop);
+                     const string16& error_message, MessageLoop* main_loop);
 
 #endif
 
@@ -127,15 +128,16 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
                                  MessageLoop* main_loop);
 
   // This function reports the results of the GoogleUpdate operation to the
-  // listener. If results indicates an error, the error_code will indicate which
-  // error occurred.
+  // listener. If results indicates an error, the |error_code| and
+  // |error_message| will indicate which error occurred.
   // Note, after this function completes, this object will have deleted itself.
   void ReportResults(GoogleUpdateUpgradeResult results,
-                     GoogleUpdateErrorCode error_code);
+                     GoogleUpdateErrorCode error_code,
+                     const string16& error_message);
 
   // Which version string Google Update found (if a new one was available).
   // Otherwise, this will be blank.
-  std::wstring version_available_;
+  string16 version_available_;
 
   // The listener who is interested in finding out the result of the operation.
   GoogleUpdateStatusListener* listener_;

@@ -77,14 +77,21 @@ class AboutChromeView : public views::DialogDelegateView,
   // Overridden from GoogleUpdateStatusListener:
   virtual void OnReportResults(GoogleUpdateUpgradeResult result,
                                GoogleUpdateErrorCode error_code,
-                               const std::wstring& version) OVERRIDE;
+                               const string16& error_message,
+                               const string16& version) OVERRIDE;
 #endif
 
  private:
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Update the UI to show the status of the upgrade.
   void UpdateStatus(GoogleUpdateUpgradeResult result,
-                    GoogleUpdateErrorCode error_code);
+                    GoogleUpdateErrorCode error_code,
+                    const string16& error_message);
+
+  // Update the size of the window containing this view to account for more
+  // text being displayed (error messages, etc). Returns how many pixels the
+  // window was increased by (if any).
+  int EnlargeWindowSizeIfNeeded();
 #endif
 
   Profile* profile_;
@@ -102,6 +109,7 @@ class AboutChromeView : public views::DialogDelegateView,
   gfx::Rect open_source_url_rect_;
   views::Link* terms_of_service_url_;
   gfx::Rect terms_of_service_url_rect_;
+  views::Label* error_label_;
   // UI elements we add to the parent view.
   scoped_ptr<views::Throbber> throbber_;
   views::ImageView success_indicator_;
@@ -133,7 +141,7 @@ class AboutChromeView : public views::DialogDelegateView,
 #endif
 
   // The version Google Update reports is available to us.
-  std::wstring new_version_available_;
+  string16 new_version_available_;
 
   // Whether text direction is left-to-right or right-to-left.
   bool text_direction_is_rtl_;
