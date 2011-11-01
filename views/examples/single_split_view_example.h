@@ -8,15 +8,13 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "views/controls/single_split_view_listener.h"
 #include "views/examples/example_base.h"
-
-namespace views {
-class SingleSplitView;
-}
 
 namespace examples {
 
-class SingleSplitViewExample : public ExampleBase {
+class SingleSplitViewExample : public ExampleBase,
+                               public views::SingleSplitViewListener {
  public:
   explicit SingleSplitViewExample(ExamplesMain* main);
   virtual ~SingleSplitViewExample();
@@ -25,6 +23,8 @@ class SingleSplitViewExample : public ExampleBase {
   virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:
+  virtual bool SplitHandleMoved(views::SingleSplitView* sender) OVERRIDE;
+
   views::SingleSplitView* single_split_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleSplitViewExample);

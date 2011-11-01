@@ -69,7 +69,7 @@ void SingleSplitViewExample::CreateExampleView(views::View* container) {
   single_split_view_ = new views::SingleSplitView(
       splitted_view_1, splitted_view_2,
       views::SingleSplitView::HORIZONTAL_SPLIT,
-      NULL);
+      this);
 
   views::GridLayout* layout = new views::GridLayout(container);
   container->SetLayoutManager(layout);
@@ -79,6 +79,11 @@ void SingleSplitViewExample::CreateExampleView(views::View* container) {
                         views::GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1, 0);
   layout->AddView(single_split_view_);
+}
+
+bool SingleSplitViewExample::SplitHandleMoved(views::SingleSplitView* sender) {
+  PrintStatus("Splitter moved");
+  return true;
 }
 
 }  // namespace examples
