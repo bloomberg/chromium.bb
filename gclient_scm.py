@@ -954,6 +954,11 @@ class SVNWrapper(SCMWrapper):
         print(os.path.join(self.checkout_path, file_status[1]))
     scm.SVN.Revert(self.checkout_path, callback=printcb)
 
+    # Revert() may delete the directory altogether.
+    if not os.path.isdir(self.checkout_path):
+      # Don't reuse the args.
+      return self.update(options, [], file_list)
+
     try:
       # svn revert is so broken we don't even use it. Using
       # "svn up --revision BASE" achieve the same effect.

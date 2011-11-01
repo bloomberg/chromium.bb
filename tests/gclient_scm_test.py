@@ -196,6 +196,7 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.isdir(join(self.base_path, '.svn')).AndReturn(True)
     gclient_scm.scm.SVN.CaptureStatus(self.base_path).AndReturn([])
+    gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
         ['update', '--revision', 'BASE', '--ignore-externals'],
@@ -222,11 +223,39 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.islink(file_path).AndReturn(False)
     gclient_scm.os.path.isdir(file_path).AndReturn(True)
     gclient_scm.gclient_utils.RemoveDirectory(file_path)
+    gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
         ['update', '--revision', 'BASE', '--ignore-externals'],
         cwd=self.base_path,
         file_list=mox.IgnoreArg())
+
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    file_list2 = []
+    scm.revert(options, self.args, file_list2)
+    self.checkstdout(('%s\n' % file_path))
+
+  def testRevertDot(self):
+    self.mox.StubOutWithMock(gclient_scm.SVNWrapper, 'update')
+    options = self.Options(verbose=True)
+    gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
+    gclient_scm.os.path.isdir(join(self.base_path, '.svn')).AndReturn(True)
+    items = [
+      ('~      ', '.'),
+    ]
+    gclient_scm.scm.SVN.CaptureStatus(self.base_path).AndReturn(items)
+    file_path = join(self.base_path, '.')
+    gclient_scm.os.path.exists(file_path).AndReturn(True)
+    gclient_scm.os.path.isfile(file_path).AndReturn(False)
+    gclient_scm.os.path.islink(file_path).AndReturn(False)
+    gclient_scm.os.path.isdir(file_path).AndReturn(True)
+    gclient_scm.gclient_utils.RemoveDirectory(file_path)
+    gclient_scm.os.path.isdir(self.base_path).AndReturn(False)
+    # The mock is unbound so self is not necessary.
+    # pylint: disable=E1120
+    gclient_scm.SVNWrapper.update(options, [], ['.'])
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,

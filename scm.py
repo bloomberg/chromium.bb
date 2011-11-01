@@ -985,6 +985,9 @@ class SVN(object):
           not file_status[0][1:].isspace()):
         # Added, deleted file requires manual intervention and require calling
         # revert, like for properties.
+        if not os.path.isdir(repo_root):
+          # '.' was deleted. It's not worth continuing.
+          return
         try:
           SVN.Capture(['revert', file_status[1]], cwd=repo_root)
         except subprocess2.CalledProcessError:
