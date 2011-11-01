@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContentLayer.h"
@@ -304,6 +305,7 @@ void Layer::ScheduleDraw() {
 }
 
 void Layer::Draw() {
+  TRACE_EVENT0("ui", "Layer::Draw");
 #if defined(USE_WEBKIT_COMPOSITOR)
   NOTREACHED();
 #else
@@ -376,6 +378,7 @@ void Layer::notifyNeedsComposite() {
 
 void Layer::paintContents(WebKit::WebCanvas* web_canvas,
                           const WebKit::WebRect& clip) {
+  TRACE_EVENT0("ui", "Layer::paintContents");
 #if defined(USE_WEBKIT_COMPOSITOR)
   gfx::CanvasSkia canvas(web_canvas);
   delegate_->OnPaintLayer(&canvas);
@@ -395,6 +398,7 @@ float Layer::GetCombinedOpacity() const {
 }
 
 void Layer::UpdateLayerCanvas() {
+  TRACE_EVENT0("ui", "Layer::UpdateLayerCanvas");
 #if defined(USE_WEBKIT_COMPOSITOR)
   NOTREACHED();
 #else

@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <psapi.h>
 
+#include "base/debug/trace_event.h"
 #include "skia/ext/bitmap_platform_device_win.h"
 #include "skia/ext/platform_canvas.h"
 
@@ -77,6 +78,8 @@ void CrashIfInvalidSection(HANDLE shared_section) {
 #pragma optimize("", on)
 
 PlatformCanvas::PlatformCanvas(int width, int height, bool is_opaque) {
+  TRACE_EVENT2("skia", "PlatformCanvas::PlatformCanvas",
+               "width", width, "height", height);
   bool initialized = initialize(width, height, is_opaque, NULL);
   if (!initialized)
     CrashForBitmapAllocationFailure(width, height);
@@ -86,6 +89,8 @@ PlatformCanvas::PlatformCanvas(int width,
                                int height,
                                bool is_opaque,
                                HANDLE shared_section) {
+  TRACE_EVENT2("skia", "PlatformCanvas::PlatformCanvas",
+               "width", width, "height", height);
   bool initialized = initialize(width, height, is_opaque, shared_section);
   if (!initialized) {
     CrashIfInvalidSection(shared_section);

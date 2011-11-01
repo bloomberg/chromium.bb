@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -336,6 +337,7 @@ TextureGL::~TextureGL() {
 void TextureGL::SetCanvas(const SkCanvas& canvas,
                           const gfx::Point& origin,
                           const gfx::Size& overall_size) {
+  TRACE_EVENT0("ui", "TextureGL::SetCanvas");
   const SkBitmap& bitmap = canvas.getDevice()->accessBitmap(false);
   // Verify bitmap pixels are contiguous.
   DCHECK_EQ(bitmap.rowBytes(),
@@ -374,6 +376,7 @@ void TextureGL::SetCanvas(const SkCanvas& canvas,
 
 void TextureGL::Draw(const ui::TextureDrawParams& params,
                      const gfx::Rect& clip_bounds_in_texture) {
+  TRACE_EVENT0("ui", "TextureGL::Draw");
   SharedResourcesGL* instance = SharedResourcesGL::GetInstance();
   DCHECK(instance);
   DrawInternal(*instance->program_swizzle(),
@@ -515,6 +518,7 @@ Texture* CompositorGL::CreateTexture() {
 }
 
 void CompositorGL::OnNotifyStart(bool clear) {
+  TRACE_EVENT0("ui", "CompositorGL::OnNotifyStart");
   started_ = true;
   gl_context_->MakeCurrent(gl_surface_.get());
   glViewport(0, 0, size().width(), size().height());
@@ -535,6 +539,7 @@ void CompositorGL::OnNotifyStart(bool clear) {
 }
 
 void CompositorGL::OnNotifyEnd() {
+  TRACE_EVENT0("ui", "CompositorGL::OnNotifyEnd");
   DCHECK(started_);
   gl_surface_->SwapBuffers();
   started_ = false;

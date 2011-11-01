@@ -652,7 +652,7 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void View::Paint(gfx::Canvas* canvas) {
-  TRACE_EVENT0("View", "Paint");
+  TRACE_EVENT0("views", "View::Paint");
 
   ScopedCanvas scoped_canvas(canvas);
 
@@ -1044,30 +1044,44 @@ void View::NativeViewHierarchyChanged(bool attached,
 // Painting --------------------------------------------------------------------
 
 void View::PaintChildren(gfx::Canvas* canvas) {
+  TRACE_EVENT0("views", "View::PaintChildren");
   for (int i = 0, count = child_count(); i < count; ++i)
     if (!child_at(i)->layer())
       child_at(i)->Paint(canvas);
 }
 
 void View::OnPaint(gfx::Canvas* canvas) {
+  TRACE_EVENT0("views", "View::OnPaint");
   OnPaintBackground(canvas);
   OnPaintFocusBorder(canvas);
   OnPaintBorder(canvas);
 }
 
 void View::OnPaintBackground(gfx::Canvas* canvas) {
-  if (background_.get())
+  if (background_.get()) {
+    TRACE_EVENT2("views", "View::OnPaintBackground",
+                 "width", canvas->GetSkCanvas()->getDevice()->width(),
+                 "height", canvas->GetSkCanvas()->getDevice()->height());
     background_->Paint(canvas, this);
+  }
 }
 
 void View::OnPaintBorder(gfx::Canvas* canvas) {
-  if (border_.get())
+  if (border_.get()) {
+    TRACE_EVENT2("views", "View::OnPaintBorder",
+                 "width", canvas->GetSkCanvas()->getDevice()->width(),
+                 "height", canvas->GetSkCanvas()->getDevice()->height());
     border_->Paint(*this, canvas);
+  }
 }
 
 void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if ((IsFocusable() || IsAccessibilityFocusableInRootView()) && HasFocus())
+  if ((IsFocusable() || IsAccessibilityFocusableInRootView()) && HasFocus()) {
+    TRACE_EVENT2("views", "views::OnPaintFocusBorder",
+                 "width", canvas->GetSkCanvas()->getDevice()->width(),
+                 "height", canvas->GetSkCanvas()->getDevice()->height());
     canvas->DrawFocusRect(GetLocalBounds());
+  }
 }
 
 // Accelerated Painting --------------------------------------------------------
