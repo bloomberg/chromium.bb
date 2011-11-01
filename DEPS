@@ -1,3 +1,5 @@
+# DEPS files look like -*- Python -*-
+
 vars = {
   # These two should be updated to the same revision whenever possible.
   "x86_toolchain_version": "7066",
@@ -20,8 +22,7 @@ vars = {
   "native_client_trunk": "http://src.chromium.org/native_client/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
   "python_26_rev": "53573",
-  "tools_rev": "7072",
-  "valgrind_rev": "5674",
+  "tools_rev": "7074",
   "wix_rev": "153",
 }
 
@@ -39,9 +40,6 @@ deps = {
     Var("chromium_trunk") + "/src/chrome/test/pyautolib@" + Var("chrome_rev"),
   "gpu":
     Var("chromium_trunk") + "/src/gpu@" + Var("chrome_rev"),
-  "native_client/src/third_party/valgrind/bin":
-    Var("native_client_trunk") + "/src/third_party/valgrind/bin@" +
-    Var("valgrind_rev"),
   "native_client/tools/perf_expectations":
     Var("chromium_trunk") + "/src/tools/perf_expectations@" + Var("chrome_rev"),
   "net/tools/testserver":
@@ -50,33 +48,18 @@ deps = {
     Var("chromium_trunk") + "/src/ppapi@" + Var("chrome_rev"),
   "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
+  "third_party":
+    Var("native_client_trunk") + "/src/third_party@" + Var("tools_rev"),
   "third_party/asan":
     Var("chromium_trunk") + "/deps/third_party/asan@" + Var("chrome_rev"),
-  "third_party/cloog":
-    Var("native_client_trunk") + "/src/third_party/cloog@" + Var("tools_rev"),
   "third_party/gles2_book":
     Var("chromium_trunk") + "/src/third_party/gles2_book@" + Var("chrome_rev"),
-  "third_party/gmp":
-    Var("native_client_trunk") + "/src/third_party/gmp@" + Var("tools_rev"),
   "third_party/lcov":
     Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
-  "third_party/mpfr":
-    Var("native_client_trunk") + "/src/third_party/mpfr@" + Var("tools_rev"),
-  "third_party/mpc":
-    Var("native_client_trunk") + "/src/third_party/mpc@" + Var("tools_rev"),
-  "third_party/ppl":
-    Var("native_client_trunk") + "/src/third_party/ppl@" + Var("tools_rev"),
   "third_party/pyftpdlib":
     Var("chromium_trunk") + "/src/third_party/pyftpdlib@" + Var("chrome_rev"),
   "third_party/pyftpdlib/src":
     (Var("googlecode_url") % "pyftpdlib") + "/trunk@888",
-  "third_party/pylib":
-    Var("native_client_trunk") + "/src/third_party/pylib@" + Var("tools_rev"),
-  "third_party/qemu":
-    Var("native_client_trunk") + "/src/third_party/qemu@" + Var("tools_rev"),
-  "third_party/scons-2.0.1":
-    (Var("native_client_trunk") + "/src/third_party/scons-2.0.1@" +
-     Var("tools_rev")),
   "third_party/simplejson":
     (Var("chromium_trunk") + "/tools/build/third_party/simplejson@" +
      Var("chrome_rev")),
