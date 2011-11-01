@@ -1070,7 +1070,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'path': path,
       'value': value,
     }
-    self._GetResultFromJSONRequest(cmd_dict)
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
   def GetPrefsInfo(self):
     """Return info about preferences.
@@ -1083,7 +1083,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       an instance of prefs_info.PrefsInfo
     """
     return prefs_info.PrefsInfo(
-        self._SendJSONRequest(0, json.dumps({'command': 'GetPrefsInfo'}),
+        self._SendJSONRequest(-1, json.dumps({'command': 'GetPrefsInfo'}),
                               self.action_max_timeout_ms()))
 
   def SetPrefs(self, path, value):

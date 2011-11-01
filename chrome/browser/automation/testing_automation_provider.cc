@@ -2256,6 +2256,10 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetIndicesFromTab;
   handler_map["NavigateToURL"] =
       &TestingAutomationProvider::NavigateToURL;
+  handler_map["GetLocalStatePrefsInfo"] =
+      &TestingAutomationProvider::GetLocalStatePrefsInfo;
+  handler_map["SetLocalStatePrefs"] =
+      &TestingAutomationProvider::SetLocalStatePrefs;
   handler_map["ExecuteJavascript"] =
       &TestingAutomationProvider::ExecuteJavascriptJSON;
   handler_map["ExecuteJavascriptInRenderView"] =
@@ -2432,10 +2436,6 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["PerformActionOnSearchEngine"] =
       &TestingAutomationProvider::PerformActionOnSearchEngine;
 
-  browser_handler_map["GetLocalStatePrefsInfo"] =
-      &TestingAutomationProvider::GetLocalStatePrefsInfo;
-  browser_handler_map["SetLocalStatePrefs"] =
-      &TestingAutomationProvider::SetLocalStatePrefs;
   browser_handler_map["GetPrefsInfo"] =
       &TestingAutomationProvider::GetPrefsInfo;
   browser_handler_map["SetPrefs"] = &TestingAutomationProvider::SetPrefs;
@@ -3346,7 +3346,6 @@ void TestingAutomationProvider::PerformActionOnSearchEngine(
 // Sample json input: { "command": "GetLocalStatePrefsInfo" }
 // Refer chrome/test/pyautolib/prefs_info.py for sample json output.
 void TestingAutomationProvider::GetLocalStatePrefsInfo(
-    Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
   DictionaryValue* items = g_browser_process->local_state()->
@@ -3358,7 +3357,7 @@ void TestingAutomationProvider::GetLocalStatePrefsInfo(
 
 // Sample json input: { "command": "SetLocalStatePrefs", "path": path,
 //                      "value": value }
-void TestingAutomationProvider::SetLocalStatePrefs(Browser* browser,
+void TestingAutomationProvider::SetLocalStatePrefs(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   std::string path;

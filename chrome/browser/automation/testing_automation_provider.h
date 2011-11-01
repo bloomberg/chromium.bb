@@ -489,14 +489,12 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Get info about preferences stored in Local State.
   // Uses the JSON interface for input/output.
-  void GetLocalStatePrefsInfo(Browser* browser,
-                              base::DictionaryValue* args,
+  void GetLocalStatePrefsInfo(base::DictionaryValue* args,
                               IPC::Message* reply_message);
 
   // Set local state prefs.
   // Uses the JSON interface for input/output.
-  void SetLocalStatePrefs(Browser* browser,
-                          base::DictionaryValue* args,
+  void SetLocalStatePrefs(base::DictionaryValue* args,
                           IPC::Message* reply_message);
 
   // Get info about preferences.

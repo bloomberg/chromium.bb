@@ -188,6 +188,10 @@ class PrefsTest(pyauto.PyUITest):
     self.NavigateToURL(url)
     self.assertEqual(title, self.GetActiveTabTitle())
 
+  def testHaveLocalStatePrefs(self):
+    """Verify that we have some Local State prefs."""
+    self.assertTrue(self.GetLocalStatePrefsInfo())
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
