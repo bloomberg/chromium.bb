@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_GTK_H_
-#define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_GTK_H_
+#ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_MAC_H_
+#define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_MAC_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -14,17 +14,13 @@ class TabContentsWrapper;
 
 // Chrome needs to intercept content drag events so it can dispatch them to the
 // bookmarks and extensions system.
-class WebDragBookmarkHandlerGtk : public content::WebDragDestDelegate {
+class WebDragBookmarkHandlerMac : public content::WebDragDestDelegate {
  public:
-  WebDragBookmarkHandlerGtk();
-  virtual ~WebDragBookmarkHandlerGtk();
+  WebDragBookmarkHandlerMac();
+  virtual ~WebDragBookmarkHandlerMac();
 
   // Overridden from content::WebDragDestDelegate:
   virtual void DragInitialize(TabContents* contents) OVERRIDE;
-  virtual GdkAtom GetBookmarkTargetAtom() const OVERRIDE;
-  virtual void OnReceiveDataFromGtk(GtkSelectionData* data) OVERRIDE;
-  virtual void OnReceiveProcessedData(const GURL& url,
-                                      const string16& title) OVERRIDE;
   virtual void OnDragOver() OVERRIDE;
   virtual void OnDragEnter() OVERRIDE;
   virtual void OnDrop() OVERRIDE;
@@ -37,10 +33,10 @@ class WebDragBookmarkHandlerGtk : public content::WebDragDestDelegate {
   TabContentsWrapper* tab_;
 
   // The bookmark data for the current tab. This will be empty if there is not
-  // a native bookmark drag (or we haven't gotten the data from the source yet).
+  // a native bookmark drag.
   BookmarkNodeData bookmark_drag_data_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebDragBookmarkHandlerGtk);
+  DISALLOW_COPY_AND_ASSIGN(WebDragBookmarkHandlerMac);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_GTK_H_
+#endif  // CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_MAC_H_

@@ -5,13 +5,9 @@
 #import "chrome/browser/ui/cocoa/tab_contents/web_drop_target.h"
 
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/web_drag_dest_delegate.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "webkit/glue/webdropdata.h"
@@ -29,6 +25,10 @@ using WebKit::WebDragOperationsMask;
     tabContents_ = contents;
   }
   return self;
+}
+
+- (void)setDragDelegate:(content::WebDragDestDelegate*)delegate {
+  delegate_ = delegate;
 }
 
 // Call to set whether or not we should allow the drop. Takes effect the
@@ -84,15 +84,10 @@ using WebKit::WebDragOperationsMask;
     return NSDragOperationNone;
   }
 
-  if (!tab_)
-    tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tabContents_);
-
-  // If the tab is showing the bookmark manager, send BookmarkDrag events
-  BookmarkTabHelper::BookmarkDrag* dragDelegate =
-      tab_ ? tab_->bookmark_tab_helper()->GetBookmarkDragDelegate() : NULL;
-  BookmarkNodeData dragData;
-  if(dragDelegate && dragData.ReadFromDragClipboard())
-    dragDelegate->OnDragEnter(dragData);
+  if (delegate_) {
+    delegate_->DragInitialize(tabContents_);
+    delegate_->OnDragEnter();
+  }
 
   // Fill out a WebDropData from pasteboard.
   WebDropData data;
@@ -122,6 +117,9 @@ using WebKit::WebDragOperationsMask;
 
   // Nothing to do in the interstitial case.
 
+  if (delegate_)
+    delegate_->OnDragLeave();
+
   tabContents_->render_view_host()->DragTargetDragLeave();
 }
 
@@ -148,12 +146,9 @@ using WebKit::WebDragOperationsMask;
       gfx::Point(screenPoint.x, screenPoint.y),
       static_cast<WebDragOperationsMask>(mask));
 
-  // If the tab is showing the bookmark manager, send BookmarkDrag events
-  BookmarkTabHelper::BookmarkDrag* dragDelegate =
-      tab_ ? tab_->bookmark_tab_helper()->GetBookmarkDragDelegate() : NULL;
-  BookmarkNodeData dragData;
-  if(dragDelegate && dragData.ReadFromDragClipboard())
-    dragDelegate->OnDragOver(dragData);
+  if (delegate_)
+    delegate_->OnDragOver();
+
   return current_operation_;
 }
 
@@ -175,12 +170,8 @@ using WebKit::WebDragOperationsMask;
     return NO;
   }
 
-  // If the tab is showing the bookmark manager, send BookmarkDrag events
-  BookmarkTabHelper::BookmarkDrag* dragDelegate =
-      tab_ ? tab_->bookmark_tab_helper()->GetBookmarkDragDelegate() : NULL;
-  BookmarkNodeData dragData;
-  if(dragDelegate && dragData.ReadFromDragClipboard())
-    dragDelegate->OnDrop(dragData);
+  if (delegate_)
+    delegate_->OnDrop();
 
   currentRVH_ = NULL;
 
@@ -192,12 +183,6 @@ using WebKit::WebDragOperationsMask;
   tabContents_->render_view_host()->DragTargetDrop(
       gfx::Point(viewPoint.x, viewPoint.y),
       gfx::Point(screenPoint.x, screenPoint.y));
-
-  // Focus the target browser.
-  Browser* browser = Browser::GetBrowserForController(
-      &tabContents_->controller(), NULL);
-  if (browser)
-    browser->window()->Show();
 
   return YES;
 }

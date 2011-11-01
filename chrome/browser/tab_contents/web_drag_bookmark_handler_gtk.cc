@@ -25,6 +25,7 @@ void WebDragBookmarkHandlerGtk::DragInitialize(TabContents* contents) {
   // the constructor. We cannot do that as the WebDragDestGtk object is
   // created during the construction of the TabContents object.  The
   // TabContentsWrapper is created much later.
+  DCHECK(tab_ ? (tab_->tab_contents() == contents) : true);
   if (!tab_)
     tab_ = TabContentsWrapper::GetCurrentWrapperForContents(contents);
 }
@@ -54,17 +55,19 @@ void WebDragBookmarkHandlerGtk::OnReceiveProcessedData(const GURL& url,
 }
 
 void WebDragBookmarkHandlerGtk::OnDragOver() {
-  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate())
+  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
     tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragOver(
         bookmark_drag_data_);
+  }
 }
 
 void WebDragBookmarkHandlerGtk::OnDragEnter() {
   // This is non-null if tab_contents_ is showing an ExtensionWebUI with
   // support for (at the moment experimental) drag and drop extensions.
-  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate())
+  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
     tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragEnter(
         bookmark_drag_data_);
+  }
 }
 
 void WebDragBookmarkHandlerGtk::OnDrop() {
@@ -85,7 +88,8 @@ void WebDragBookmarkHandlerGtk::OnDrop() {
 }
 
 void WebDragBookmarkHandlerGtk::OnDragLeave() {
-  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate())
+  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
     tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragLeave(
         bookmark_drag_data_);
+  }
 }

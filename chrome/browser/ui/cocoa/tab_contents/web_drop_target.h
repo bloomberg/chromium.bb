@@ -9,8 +9,11 @@
 class GURL;
 class RenderViewHost;
 class TabContents;
-class TabContentsWrapper;
 struct WebDropData;
+
+namespace content {
+class WebDragDestDelegate;
+}
 
 // A typedef for a RenderViewHost used for comparison purposes only.
 typedef RenderViewHost* RenderViewHostIdentifier;
@@ -24,10 +27,8 @@ typedef RenderViewHost* RenderViewHostIdentifier;
   // Our associated TabContents. Weak reference.
   TabContents* tabContents_;
 
-  // The TabContentsWrapper for |tab_contents_|.
-  // Weak reference; may be NULL if the contents aren't contained in a wrapper
-  // (e.g. WebUI dialogs).
-  TabContentsWrapper* tab_;
+  // Delegate; weak.
+  content::WebDragDestDelegate* delegate_;
 
   // Updated asynchronously during a drag to tell us whether or not we should
   // allow the drop.
@@ -42,6 +43,8 @@ typedef RenderViewHost* RenderViewHostIdentifier;
 // drag&drop messages to WebCore and handle navigation on a successful drop
 // (if necessary).
 - (id)initWithTabContents:(TabContents*)contents;
+
+- (void)setDragDelegate:(content::WebDragDestDelegate*)delegate;
 
 // Sets the current operation negotiated by the source and destination,
 // which determines whether or not we should allow the drop. Takes effect the

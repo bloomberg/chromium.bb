@@ -27,6 +27,7 @@ class RenderViewContextMenuMac;
 @class SadTabController;
 class SkBitmap;
 class TabContentsViewMac;
+class WebDragBookmarkHandlerMac;
 @class WebDragSource;
 @class WebDropTarget;
 namespace gfx {
@@ -38,6 +39,7 @@ class Point;
   TabContentsViewMac* tabContentsView_;  // WEAK; owns us
   scoped_nsobject<WebDragSource> dragSource_;
   scoped_nsobject<WebDropTarget> dropTarget_;
+  scoped_ptr<WebDragBookmarkHandlerMac> bookmarkHandler_;
 }
 
 // Expose this, since sometimes one needs both the NSView and the TabContents.

@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_delegate.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
+#include "chrome/browser/tab_contents/web_drag_bookmark_handler_mac.h"
 #import "chrome/browser/ui/cocoa/focus_tracker.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/web_drop_target.h"
@@ -420,6 +421,9 @@ void TabContentsViewMac::Observe(int type,
     tabContentsView_ = w;
     dropTarget_.reset(
         [[WebDropTarget alloc] initWithTabContents:[self tabContents]]);
+    bookmarkHandler_.reset(new WebDragBookmarkHandlerMac);
+    [dropTarget_ setDragDelegate:
+        static_cast<content::WebDragDestDelegate*>(bookmarkHandler_.get())];
     [self registerDragTypes];
     // TabContentsViewCocoa's ViewID may be changed to VIEW_ID_DEV_TOOLS_DOCKED
     // by TabContentsController, so we can't just override -viewID method to
