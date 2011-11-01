@@ -2103,10 +2103,12 @@ class UpgradePackageTest(CpuTestBase):
   def _TestUpgradePackage(self, pinfo, upstream_cpv, upstream_cmp,
                           stable_up, latest_up,
                           upgrade_requested, upgrade_staged,
-                          unstable_ok):
+                          unstable_ok, force):
     cmdargs = []
     if unstable_ok:
       cmdargs.append('--unstable-ok')
+    if force:
+      cmdargs.append('--force')
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs)
 
     # Add test-specific mocks/stubs
@@ -2120,7 +2122,8 @@ class UpgradePackageTest(CpuTestBase):
       if upgrade_requested:
         mocked_upgrader._PkgUpgradeStaged(upstream_cpv
                                           ).AndReturn(upgrade_staged)
-        if not upgrade_staged and upstream_cmp > 0:
+        if (not upgrade_staged and
+            (upstream_cmp > 0 or (upstream_cmp == 0 and force))):
           mocked_upgrader._CopyUpstreamPackage(upstream_cpv
                                                ).AndReturn(upstream_cpv)
     self.mox.ReplayAll()
@@ -2132,7 +2135,7 @@ class UpgradePackageTest(CpuTestBase):
     if upstream_cpv:
       self.assertEquals(upstream_cpv, pinfo['upstream_cpv'])
 
-      if upgrade_requested and upstream_cpv != pinfo['cpv']:
+      if upgrade_requested and (upstream_cpv != pinfo['cpv'] or force):
         self.assertEquals(upstream_cpv, pinfo['upgraded_cpv'])
       else:
         self.assertTrue(pinfo['upgraded_cpv'] is None)
@@ -2164,6 +2167,7 @@ class UpgradePackageTest(CpuTestBase):
                                       upgrade_requested=True,
                                       upgrade_staged=False,
                                       unstable_ok=False,
+                                      force=False,
                                       )
     self.assertTrue(result)
 
@@ -2180,6 +2184,7 @@ class UpgradePackageTest(CpuTestBase):
                                       upgrade_requested=True,
                                       upgrade_staged=False,
                                       unstable_ok=True,
+                                      force=False,
                                       )
     self.assertTrue(result)
 
@@ -2196,6 +2201,7 @@ class UpgradePackageTest(CpuTestBase):
                                       upgrade_requested=True,
                                       upgrade_staged=False,
                                       unstable_ok=False, # not important
+                                      force=False,
                                       )
     self.assertTrue(result)
 
@@ -2206,12 +2212,13 @@ class UpgradePackageTest(CpuTestBase):
              }
     result = self._TestUpgradePackage(pinfo,
                                       upstream_cpv='foo/bar-3',
-                                      upstream_cmp=0, # outdated
+                                      upstream_cmp=0, # current
                                       stable_up='foo/bar-3',
                                       latest_up='foo/bar-5',
                                       upgrade_requested=True,
                                       upgrade_staged=False,
                                       unstable_ok=False,
+                                      force=False,
                                       )
     self.assertFalse(result)
 
@@ -2228,8 +2235,26 @@ class UpgradePackageTest(CpuTestBase):
                                       upgrade_requested=True,
                                       upgrade_staged=False,
                                       unstable_ok=False,
+                                      force=False,
                                       )
     self.assertFalse(result)
+
+  def testUpgradePackageCurrentRequestedStableForce(self):
+    pinfo = {'cpv': 'foo/bar-3',
+             'package': 'foo/bar',
+             'upstream_cpv': 'foo/bar-3',
+             }
+    result = self._TestUpgradePackage(pinfo,
+                                      upstream_cpv='foo/bar-3',
+                                      upstream_cmp=0, # current
+                                      stable_up='foo/bar-3',
+                                      latest_up='foo/bar-5',
+                                      upgrade_requested=True,
+                                      upgrade_staged=False,
+                                      unstable_ok=False,
+                                      force=True,
+                                      )
+    self.assertTrue(result)
 
   def testUpgradePackageOutdatedStable(self):
     pinfo = {'cpv': 'foo/bar-2',
@@ -2244,6 +2269,7 @@ class UpgradePackageTest(CpuTestBase):
                                       upgrade_requested=False,
                                       upgrade_staged=False,
                                       unstable_ok=False,
+                                      force=False,
                                       )
     self.assertFalse(result)
 
@@ -2260,6 +2286,7 @@ class UpgradePackageTest(CpuTestBase):
                                       upgrade_requested=True,
                                       upgrade_staged=True,
                                       unstable_ok=False,
+                                      force=False,
                                       )
     self.assertTrue(result)
 
@@ -2276,6 +2303,7 @@ class UpgradePackageTest(CpuTestBase):
                                       upgrade_requested=True,
                                       upgrade_staged=True,
                                       unstable_ok=True,
+                                      force=False,
                                       )
     self.assertTrue(result)
 
@@ -2288,6 +2316,7 @@ class VerifyPackageTest(CpuTestBase):
   def _TestVerifyPackageUpgrade(self, pinfo, unmasked, stable):
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs)
+    was_overwrite = pinfo['cpv_cmp_upstream'] == 0
 
     # Add test-specific mocks/stubs
 
@@ -2296,7 +2325,7 @@ class VerifyPackageTest(CpuTestBase):
                                  ).AndReturn((unmasked, stable))
     mocked_upgrader._VerifyEbuildOverlay(pinfo['upgraded_cpv'],
                                          'portage-stable',
-                                         stable)
+                                         stable, was_overwrite)
     self.mox.ReplayAll()
 
     # Verify
@@ -2309,12 +2338,15 @@ class VerifyPackageTest(CpuTestBase):
   def testVerifyPackageUpgrade(self):
     pinfo = {'upgraded_cpv': 'foo/bar-3',
              }
-    self._TestVerifyPackageUpgrade(pinfo, True, True)
-    self._TestVerifyPackageUpgrade(pinfo, True, False)
-    self._TestVerifyPackageUpgrade(pinfo, False, True)
-    self._TestVerifyPackageUpgrade(pinfo, False, False)
 
-  def _TestVerifyEbuildOverlay(self, cpv, overlay, ebuild_path):
+    for cpv_cmp_upstream in (0, 1):
+      pinfo['cpv_cmp_upstream'] = cpv_cmp_upstream
+      self._TestVerifyPackageUpgrade(pinfo, True, True)
+      self._TestVerifyPackageUpgrade(pinfo, True, False)
+      self._TestVerifyPackageUpgrade(pinfo, False, True)
+      self._TestVerifyPackageUpgrade(pinfo, False, False)
+
+  def _TestVerifyEbuildOverlay(self, cpv, overlay, ebuild_path, was_overwrite):
     """Test Upgrader._VerifyEbuildOverlay"""
     stable_only = True # not important
 
@@ -2346,7 +2378,8 @@ class VerifyPackageTest(CpuTestBase):
 
     # Verify
     result = cpu.Upgrader._VerifyEbuildOverlay(mocked_upgrader, cpv,
-                                               overlay, stable_only)
+                                               overlay, stable_only,
+                                               was_overwrite)
     self.mox.VerifyAll()
 
   def testVerifyEbuildOverlayGood(self):
@@ -2354,16 +2387,25 @@ class VerifyPackageTest(CpuTestBase):
     overlay = 'some-overlay'
     good_path = '/some/path/%s/foo/bar/bar-2.ebuild' % overlay
 
-    self._TestVerifyEbuildOverlay(cpv, overlay, good_path)
+    self._TestVerifyEbuildOverlay(cpv, overlay, good_path, False)
 
-  def testVerifyEbuildOverlayEvil(self):
+  def testVerifyEbuildOverlayEvilNonOverwrite(self):
     cpv = 'foo/bar-2'
     overlay = 'some-overlay'
     evil_path = '/some/path/spam/foo/bar/bar-2.ebuild'
 
     self.assertRaises(RuntimeError,
                       self._TestVerifyEbuildOverlay,
-                      cpv, overlay, evil_path)
+                      cpv, overlay, evil_path, False)
+
+  def testVerifyEbuildOverlayEvilOverwrite(self):
+    cpv = 'foo/bar-2'
+    overlay = 'some-overlay'
+    evil_path = '/some/path/spam/foo/bar/bar-2.ebuild'
+
+    self.assertRaises(RuntimeError,
+                      self._TestVerifyEbuildOverlay,
+                      cpv, overlay, evil_path, True)
 
   def _TestGetMaskBits(self, cpv, output):
     cmdargs = []
@@ -2959,13 +3001,20 @@ class MainTest(CpuTestBase):
     sys.argv = [ re.sub("_unittest", "", sys.argv[0]) ]
     sys.argv.extend(args)
 
-  def _AssertOutputEndsInError(self, stdout):
+  def _AssertOutputEndsInError(self, stdout, debug=False):
     """Return True if |stdout| ends with an error message."""
-    lastline = [ln for ln in stdout.split('\n') if ln][-1]
-    self.assertTrue(_IsErrorLine(lastline),
-                    msg="expected output to end in error line, but "
-                    "_IsErrorLine says this line is not an error:\n%s" %
-                    lastline)
+    if stdout:
+      lastline = [ln for ln in stdout.split('\n') if ln][-1]
+      if debug:
+        print("Test is expecting error in last line of following output:\n%s" %
+              stdout)
+      self.assertTrue(_IsErrorLine(lastline),
+                      msg="expected output to end in error line, but "
+                      "_IsErrorLine says this line is not an error:\n%s" %
+                      lastline)
+    else:
+      self.assertTrue(stdout,
+                      msg="expected output with error, but no output found.")
 
   def _AssertCPUMain(self, cpu, expect_zero):
     """Run cpu.main() and assert exit value is expected.
@@ -3043,6 +3092,36 @@ class MainTest(CpuTestBase):
     self._StartCapturingOutput()
 
     # Running without a package should exit with code!=0
+    self._AssertCPUMain(cpu, expect_zero=False)
+
+    # Verify that an error message was printed.
+    (stdout, stderr) = self._RetrieveCapturedOutput()
+    self._StopCapturingOutput()
+    self._AssertOutputEndsInError(stdout)
+
+  def testUpgradeAndUpgradeDeep(self):
+    """Running with --upgrade and --upgrade-deep exits with an error."""
+    self._PrepareArgv("--host", "--upgrade", "--upgrade-deep", "any-package")
+
+    # Capture stdout/stderr so it can be verified later
+    self._StartCapturingOutput()
+
+    # Expect exit with code!=0
+    self._AssertCPUMain(cpu, expect_zero=False)
+
+    # Verify that an error message was printed.
+    (stdout, stderr) = self._RetrieveCapturedOutput()
+    self._StopCapturingOutput()
+    self._AssertOutputEndsInError(stdout)
+
+  def testForceWithoutUpgrade(self):
+    """Running with --force requires --upgrade or --upgrade-deep."""
+    self._PrepareArgv("--host", "--force", "any-package")
+
+    # Capture stdout/stderr so it can be verified later
+    self._StartCapturingOutput()
+
+    # Expect exit with code!=0
     self._AssertCPUMain(cpu, expect_zero=False)
 
     # Verify that an error message was printed.

@@ -72,7 +72,7 @@ class Upgrader(object):
   STABLE_OVERLAY_NAME = 'portage-stable'
   CROS_OVERLAY_NAME = 'chromiumos-overlay'
   HOST_BOARD = 'amd64-host'
-  OPT_SLOTS = ['amend', 'csv_file', 'no_upstream_cache', 'rdeps',
+  OPT_SLOTS = ['amend', 'csv_file', 'force', 'no_upstream_cache', 'rdeps',
                'upgrade', 'upgrade_deep', 'upstream', 'unstable_ok', 'verbose']
 
   EQUERY_CMD = 'equery'
@@ -88,6 +88,7 @@ class Upgrader(object):
                '_cros_overlay', # Path to chromiumos-overlay repo
                '_csv_file',     # File path for writing csv output
                '_deps_graph',   # Dependency graph from portage
+               '_force',        # Force upgrade even when version already exists
                '_missing_eclass_re',# Regexp for missing eclass in equery
                '_outdated_eclass_re',# Regexp for outdated eclass in equery
                '_emptydir',     # Path to temporary empty directory
@@ -461,12 +462,18 @@ class Upgrader(object):
     raise RuntimeError("Unable to determine whether %s is stable from equery:\n"
                        " %s\noutput:\n %s" % (cpv, ' '.join(cmd), output))
 
-  def _VerifyEbuildOverlay(self, cpv, overlay, stable_only):
-    """Raises exception if ebuild for |cpv| is not from |overlay|.
+  def _VerifyEbuildOverlay(self, cpv, expected_overlay,
+                           stable_only, was_overwrite):
+    """Raises exception if ebuild for |cpv| is not from |expected_overlay|.
 
     Essentially, this verifies that the upgraded ebuild in portage-stable
     is indeed the one being picked up, rather than some other ebuild with
-    the same version in another overlay.
+    the same version in another overlay.  Unless |was_overwrite| (see below).
+
+    If |was_overwrite| then this upgrade was an overwrite of an existing
+    package version (via --force) and it is possible the previous package
+    is still in another overlay (e.g. chromiumos-overlay).  In this case,
+    the user should get rid of the other version first.
     """
     # Further explanation: this check should always pass, but might not
     # if the copy/upgrade from upstream did not work.  This is just a
@@ -481,11 +488,18 @@ class Upgrader(object):
                                  combine_stdout_stderr=True,
                                  )
     ebuild_path = result.output.strip()
-    (ovrly, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
-    if ovrly != overlay:
-      raise RuntimeError('Somehow ebuild for %s is not coming from %s:\n %s\n'
-                         'Please show this error to the build team.' %
-                         (cpv, overlay, ebuild_path))
+    (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
+    if overlay != expected_overlay:
+      if was_overwrite:
+        raise RuntimeError('Upgraded ebuild for %s is not visible because'
+                           ' existing ebuild in %s overlay takes precedence\n'
+                           'Please remove that ebuild before continuing.' %
+                           (cpv, overlay))
+      else:
+        raise RuntimeError('Upgraded ebuild for %s is not coming from %s:\n'
+                           ' %s\n'
+                           'Please show this error to the build team.' %
+                           (cpv, expected_overlay, ebuild_path))
 
   def _IdentifyNeededEclass(self, cpv):
     """Return eclass that must be upgraded for this |cpv|."""
@@ -857,6 +871,16 @@ class Upgrader(object):
           info['upgraded_cpv'] = info['upstream_cpv']
         elif info['cpv_cmp_upstream'] > 0:
           info['upgraded_cpv'] = self._CopyUpstreamPackage(info['upstream_cpv'])
+        elif info['cpv_cmp_upstream'] == 0:
+          if self._force:
+            oper.Info('Forcing upgrade of existing %s.' %
+                      info['upstream_cpv'])
+            upgraded_cpv = self._CopyUpstreamPackage(info['upstream_cpv'])
+            info['upgraded_cpv'] = upgraded_cpv
+          else:
+            oper.Warning('Not upgrading %s; it already exists in source.\n'
+                         'To force upgrade of this version specify --force.' %
+                         info['upstream_cpv'])
 
     return bool(info['upgraded_cpv'])
 
@@ -868,7 +892,8 @@ class Upgrader(object):
     info['upgraded_stable'] = stable
 
     self._VerifyEbuildOverlay(info['upgraded_cpv'], self.STABLE_OVERLAY_NAME,
-                              info['upgraded_stable'])
+                              info['upgraded_stable'],
+                              info['cpv_cmp_upstream'] == 0)
 
   def _PackageReport(self, info):
     """Report on whatever was done with package in |info|."""
@@ -1606,6 +1631,8 @@ def _CreateOptParser():
             'then the package dependencies will also be upgraded.\n'
             'In upgrade mode, it is ok if the specified packages only '
             'exist upstream.\n'
+            'The --force option can be used to do a package upgrade '
+            'even if the local version matches the upstream version.\n'
             '\n'
             'Status report mode examples:\n'
             '> cros_portage_upgrade --board=arm-generic:x86-generic '
@@ -1633,6 +1660,9 @@ def _CreateOptParser():
                     help="Amend existing commit when doing upgrade.")
   parser.add_option('--board', dest='board', type='string', action='store',
                     default=None, help="Target board(s), colon-separated")
+  parser.add_option('--force', dest='force', action='store_true',
+                    default=False,
+                    help="Force upgrade even if version already in source")
   parser.add_option('--host', dest='host', action='store_true',
                     default=False,
                     help="Host target pseudo-board")
@@ -1653,6 +1683,7 @@ def _CreateOptParser():
   parser.add_option('--upgrade-deep', dest='upgrade_deep', action='store_true',
                     default=False,
                     help="Upgrade target package(s) and all dependencies")
+  # TODO(mtennant): Put UPSTREAM_TMP_REPO in as default for better transparency.
   parser.add_option('--upstream', dest='upstream', type='string',
                     action='store', default=None,
                     help="Latest upstream repo location [default: '%default']")
@@ -1673,6 +1704,10 @@ def main():
 
   if (options.verbose): logging.basicConfig(level=logging.DEBUG)
 
+  #
+  # Do some argument checking.
+  #
+
   if not options.board and not options.host:
     parser.print_help()
     oper.Die('Board (or host) is required.')
@@ -1686,6 +1721,11 @@ def main():
     parser.print_help()
     oper.Die('The --upgrade and --upgrade-deep options ' +
              'are mutually exclusive.')
+
+  # The --force option only makes sense with --upgrade or --upgrade-deep.
+  if options.force and not (options.upgrade or options.upgrade_deep):
+    parser.print_help()
+    oper.Die('The --force option requires --upgrade or --upgrade-deep.')
 
   # The --upstream and --no-upstream-cache options are mutually exclusive.
   if options.upstream and options.no_upstream_cache:
