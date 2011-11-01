@@ -9,5 +9,8 @@
 #include "ui/aura/window.h"
 
 bool IsFullScreenMode() {
-  return aura::Desktop::GetInstance()->IsOrContainsFullscreenWindow();
+  // This is used only by notification_ui_manager.cc. On aura, notification
+  // will be managed in panel and no need to provide this functionality.
+  NOTREACHED();
+  return false;
 }

@@ -889,94 +889,6 @@ TEST_F(WindowTest, StopsEventPropagation) {
   EXPECT_EQ(w121.get(), w1->GetFocusManager()->GetFocusedWindow());
 }
 
-TEST_F(WindowTest, Fullscreen) {
-  gfx::Rect original_bounds = gfx::Rect(100, 100, 100, 100);
-  gfx::Rect desktop_bounds(Desktop::GetInstance()->GetHostSize());
-  scoped_ptr<Window> w(CreateTestWindowWithDelegate(
-      NULL, 1, original_bounds, NULL));
-  EXPECT_EQ(original_bounds, w->bounds());
-
-  // Restoreing the restored window.
-  w->Restore();
-  EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());
-  EXPECT_EQ(original_bounds, w->bounds());
-
-  // Fullscreen
-  w->Fullscreen();
-  EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN, w->show_state());
-  EXPECT_EQ(desktop_bounds, w->bounds());
-  w->Restore();
-  EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());
-  EXPECT_EQ(original_bounds, w->bounds());
-
-  // Calling Fullscreen() twice should have no additional effect.
-  w->Fullscreen();
-  w->Fullscreen();
-  EXPECT_EQ(desktop_bounds, w->bounds());
-  w->Restore();
-  EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());
-  EXPECT_EQ(original_bounds, w->bounds());
-
-  // Calling SetBounds() in fullscreen mode should only update the
-  // restore bounds not change the bounds of the window.
-  gfx::Rect new_bounds(50, 50, 50, 50);
-  w->Fullscreen();
-  w->SetBounds(new_bounds);
-  EXPECT_EQ(desktop_bounds, w->bounds());
-  w->Restore();
-  EXPECT_EQ(new_bounds, w->bounds());
-}
-
-TEST_F(WindowTest, Maximized) {
-  gfx::Rect original_bounds = gfx::Rect(100, 100, 100, 100);
-  gfx::Rect desktop_bounds(
-      gfx::Screen::GetMonitorWorkAreaNearestPoint(gfx::Point()));
-  scoped_ptr<Window> w(CreateTestWindowWithDelegate(
-      NULL, 1, original_bounds, NULL));
-  EXPECT_EQ(original_bounds, w->bounds());
-
-  // Maximized
-  w->Maximize();
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, w->show_state());
-  gfx::Rect max_bounds(desktop_bounds);
-  EXPECT_EQ(max_bounds, w->bounds());
-  w->Restore();
-  EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());
-  EXPECT_EQ(original_bounds, w->bounds());
-
-  // Maximize twice
-  w->Maximize();
-  w->Maximize();
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, w->show_state());
-  EXPECT_EQ(max_bounds, w->bounds());
-  w->Restore();
-  EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());
-  EXPECT_EQ(original_bounds, w->bounds());
-
-  // Maximized -> Fullscreen -> Maximized -> Normal
-  w->Maximize();
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, w->show_state());
-  EXPECT_EQ(max_bounds, w->bounds());
-  w->Fullscreen();
-  EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN, w->show_state());
-  EXPECT_EQ(desktop_bounds, w->bounds());
-  w->Maximize();
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, w->show_state());
-  EXPECT_EQ(max_bounds, w->bounds());
-  w->Restore();
-  EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());
-  EXPECT_EQ(original_bounds, w->bounds());
-
-  // Calling SetBounds() in maximized mode mode should only update the
-  // restore bounds not change the bounds of the window.
-  gfx::Rect new_bounds(50, 50, 50, 50);
-  w->Maximize();
-  w->SetBounds(new_bounds);
-  EXPECT_EQ(max_bounds, w->bounds());
-  w->Restore();
-  EXPECT_EQ(new_bounds, w->bounds());
-}
-
 // Various assertions for activating/deactivating.
 TEST_F(WindowTest, Deactivate) {
   TestWindowDelegate d1;
@@ -1006,22 +918,6 @@ TEST_F(WindowTest, Deactivate) {
   EXPECT_FALSE(w1->IsActive());
   EXPECT_TRUE(w2->IsActive());
   EXPECT_EQ(w2.get(), parent->children()[1]);
-}
-
-TEST_F(WindowTest, IsOrContainsFullscreenWindow) {
-  scoped_ptr<Window> w1(
-      CreateTestWindowWithDelegate(NULL, 1, gfx::Rect(0, 0, 100, 100), NULL));
-  scoped_ptr<Window> w11(
-      CreateTestWindow(SK_ColorWHITE, 11, gfx::Rect(0, 0, 10, 10), w1.get()));
-
-  Window* root = Desktop::GetInstance();
-  EXPECT_FALSE(root->IsOrContainsFullscreenWindow());
-
-  w11->Fullscreen();
-  EXPECT_TRUE(root->IsOrContainsFullscreenWindow());
-
-  w11->Hide();
-  EXPECT_FALSE(root->IsOrContainsFullscreenWindow());
 }
 
 #if !defined(OS_WIN)
@@ -1147,75 +1043,30 @@ TEST_F(ToplevelWindowTest, TopMostActivate) {
   EXPECT_EQ(w2.get(), toplevel_container_.GetTopmostWindowToActivate(NULL));
 }
 
-// Tests that maximized windows get resized after desktop is resized.
-TEST_F(ToplevelWindowTest, MaximizeAfterDesktopResize) {
-  gfx::Rect window_bounds(10, 10, 300, 400);
-  scoped_ptr<Window> w1(CreateTestToplevelWindow(NULL, window_bounds));
-
-  w1->Show();
-  EXPECT_EQ(window_bounds, w1->bounds());
-
-  w1->Maximize();
-  EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(w1.get()),
-                                                         w1->bounds());
-
-  // Resize the desktop.
-  Desktop* desktop = Desktop::GetInstance();
-  gfx::Size desktop_size = desktop->GetHostSize();
-  desktop->SetBounds(gfx::Rect(0, 0, desktop_size.width() + 100,
-                                 desktop_size.height() + 200));
-
-  EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(w1.get()),
-                                                         w1->bounds());
-
-  w1->Restore();
-  EXPECT_EQ(window_bounds, w1->bounds());
-}
-
-// Tests that fullscreen windows get resized after desktop is resized.
-TEST_F(ToplevelWindowTest, FullscreenAfterDesktopResize) {
-  gfx::Rect window_bounds(10, 10, 300, 400);
-  scoped_ptr<Window> w1(CreateTestToplevelWindow(NULL, window_bounds));
-
-  w1->Show();
-  EXPECT_EQ(window_bounds, w1->bounds());
-
-  w1->Fullscreen();
-  EXPECT_EQ(gfx::Screen::GetMonitorAreaNearestWindow(w1.get()), w1->bounds());
-
-  // Resize the desktop.
-  Desktop* desktop = Desktop::GetInstance();
-  gfx::Size desktop_size = desktop->GetHostSize();
-  desktop->SetBounds(gfx::Rect(0, 0, desktop_size.width() + 100,
-                                 desktop_size.height() + 200));
-
-  EXPECT_EQ(gfx::Screen::GetMonitorAreaNearestWindow(w1.get()), w1->bounds());
-
-  w1->Restore();
-  EXPECT_EQ(window_bounds, w1->bounds());
-}
-
 TEST_F(WindowTest, Property) {
   scoped_ptr<Window> w(CreateTestWindowWithId(0, NULL));
   const char* key = "test";
   EXPECT_EQ(NULL, w->GetProperty(key));
+  EXPECT_EQ(0, w->GetIntProperty(key));
 
-  void* value = reinterpret_cast<void*>(static_cast<intptr_t>(1));
-  w->SetProperty(key, value);
-  EXPECT_EQ(value, w->GetProperty(key));
+  w->SetIntProperty(key, 1);
+  EXPECT_EQ(1, w->GetIntProperty(key));
+  EXPECT_EQ(reinterpret_cast<void*>(static_cast<intptr_t>(1)),
+            w->GetProperty(key));
 
   // Overwrite the property with different value type.
   w->SetProperty(key, static_cast<void*>(const_cast<char*>("string")));
   std::string expected("string");
-  EXPECT_EQ(expected,
-            static_cast<const char*>(w->GetProperty(key)));
+  EXPECT_EQ(expected, static_cast<const char*>(w->GetProperty(key)));
 
   // Non-existent property.
   EXPECT_EQ(NULL, w->GetProperty("foo"));
+  EXPECT_EQ(0, w->GetIntProperty("foo"));
 
   // Set NULL and make sure the property is gone.
   w->SetProperty(key, NULL);
   EXPECT_EQ(NULL, w->GetProperty(key));
+  EXPECT_EQ(0, w->GetIntProperty(key));
 }
 
 class WindowObserverTest : public WindowTest,
@@ -1229,7 +1080,9 @@ class WindowObserverTest : public WindowTest,
   WindowObserverTest()
       : added_count_(0),
         removed_count_(0),
-        destroyed_count_(0) {
+        destroyed_count_(0),
+        old_property_value_(NULL),
+        new_property_value_(NULL) {
   }
 
   virtual ~WindowObserverTest() {}
@@ -1257,6 +1110,20 @@ class WindowObserverTest : public WindowTest,
     return result;
   }
 
+  // Return a string representation of the arguments passed in
+  // OnPropertyChanged callback.
+  std::string PropertyChangeInfoAndClear() {
+    std::string result(
+        base::StringPrintf("name=%s old=%p new=%p",
+                           property_name_.c_str(),
+                           old_property_value_,
+                           new_property_value_));
+    property_name_.clear();
+    old_property_value_ = NULL;
+    new_property_value_ = NULL;
+    return result;
+  }
+
  private:
   virtual void OnWindowAdded(Window* new_window) OVERRIDE {
     added_count_++;
@@ -1277,10 +1144,21 @@ class WindowObserverTest : public WindowTest,
     destroyed_count_++;
   }
 
+  virtual void OnPropertyChanged(Window* window,
+                                 const char* name,
+                                 void* old) OVERRIDE {
+    property_name_ = std::string(name);
+    old_property_value_ = old;
+    new_property_value_ = window->GetProperty(name);
+  }
+
   int added_count_;
   int removed_count_;
   int destroyed_count_;
   scoped_ptr<VisibilityInfo> visibility_info_;
+  std::string property_name_;
+  void* old_property_value_;
+  void* new_property_value_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowObserverTest);
 };
@@ -1365,6 +1243,21 @@ TEST_F(WindowObserverTest, WindowDestroyed) {
   child->AddObserver(this);
   parent.reset();
   EXPECT_EQ(1, DestroyedCountAndClear());
+}
+
+TEST_F(WindowObserverTest, PropertyChanged) {
+  // Setting property should fire a property change notification.
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  w1->AddObserver(this);
+  w1->SetIntProperty("test", 1);
+  EXPECT_EQ("name=test old=(nil) new=0x1", PropertyChangeInfoAndClear());
+  w1->SetIntProperty("test", 2);
+  EXPECT_EQ("name=test old=0x1 new=0x2", PropertyChangeInfoAndClear());
+  w1->SetProperty("test", NULL);
+  EXPECT_EQ("name=test old=0x2 new=(nil)", PropertyChangeInfoAndClear());
+
+  // Sanity check to see if |PropertyChangeInfoAndClear| really clears.
+  EXPECT_EQ("name= old=(nil) new=(nil)", PropertyChangeInfoAndClear());
 }
 
 class DesktopObserverTest : public WindowTest,

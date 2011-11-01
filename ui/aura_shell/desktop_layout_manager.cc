@@ -61,8 +61,9 @@ void DesktopLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
                                                           bool visibile) {
 }
 
-void DesktopLayoutManager::CalculateBoundsForChild(
-    aura::Window* child, gfx::Rect* requested_bounds) {
+void DesktopLayoutManager::SetChildBounds(aura::Window* child,
+                                          const gfx::Rect& requested_bounds) {
+  SetChildBoundsDirect(child, requested_bounds);
 }
 
 

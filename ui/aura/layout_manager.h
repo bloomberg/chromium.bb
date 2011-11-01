@@ -37,14 +37,17 @@ class AURA_EXPORT LayoutManager {
   // Window::IsVisible() for details.
   virtual void OnChildWindowVisibilityChanged(Window* child, bool visibile) = 0;
 
-  // Calculates the bounds for the |child| based on |requsted_bounds|.
-  virtual void CalculateBoundsForChild(Window* child,
-                                       gfx::Rect* requested_bounds) = 0;
+  // Invoked when |Window::SetBounds| is called on |child|.
+  // Implementation must call |SetChildBoundsDirect| to change the
+  // |child|'s bounds. LayoutManager may modify |requested_bounds|
+  // before applying, or ignore the request.
+  virtual void SetChildBounds(Window* child,
+                              const gfx::Rect& requested_bounds) = 0;
  protected:
   // Sets the child's bounds forcibly. LayoutManager is responsible
   // for checking the state and make sure the bounds are correctly
   // adjusted.
-  void SetChildBounds(aura::Window* child, const gfx::Rect& bounds);
+  void SetChildBoundsDirect(aura::Window* child, const gfx::Rect& bounds);
 };
 
 }  // namespace aura

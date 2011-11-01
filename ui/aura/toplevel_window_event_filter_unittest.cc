@@ -196,31 +196,5 @@ TEST_F(ToplevelWindowEventFilterTest, Client) {
   EXPECT_EQ(bounds, w1->bounds());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, Maximized) {
-  scoped_ptr<Window> w1(CreateWindow(HTCLIENT));
-  gfx::Rect workarea = gfx::Screen::GetMonitorWorkAreaNearestWindow(w1.get());
-  // Maximized window cannot be dragged.
-  gfx::Rect original_bounds = w1->bounds();
-  w1->Maximize();
-  EXPECT_EQ(workarea, w1->bounds());
-  DragFromCenterBy(w1.get(), 100, 100);
-  EXPECT_EQ(workarea, w1->bounds());
-  w1->Restore();
-  EXPECT_EQ(original_bounds, w1->bounds());
-}
-
-TEST_F(ToplevelWindowEventFilterTest, Fullscreen) {
-  scoped_ptr<Window> w1(CreateWindow(HTCLIENT));
-  gfx::Rect monitor = gfx::Screen::GetMonitorAreaNearestWindow(w1.get());
-  // Fullscreen window cannot be dragged.
-  gfx::Rect original_bounds = w1->bounds();
-  w1->Fullscreen();
-  EXPECT_EQ(monitor, w1->bounds());
-  DragFromCenterBy(w1.get(), 100, 100);
-  EXPECT_EQ(monitor, w1->bounds());
-  w1->Restore();
-  EXPECT_EQ(original_bounds, w1->bounds());
-}
-
 }  // namespace test
 }  // namespace aura

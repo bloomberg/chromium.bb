@@ -26,7 +26,6 @@ namespace aura {
 Window::Window(WindowDelegate* delegate)
     : type_(WINDOW_TYPE_UNKNOWN),
       delegate_(delegate),
-      show_state_(ui::SHOW_STATE_NORMAL),
       parent_(NULL),
       transient_parent_(NULL),
       id_(-1),
@@ -100,32 +99,6 @@ bool Window::IsVisible() const {
   return layer_->IsDrawn();
 }
 
-void Window::Maximize() {
-  // The desktop size may have changed, so make sure the window is maximized to
-  // the correct size even if it's already maximized.
-  gfx::Rect rect = gfx::Screen::GetMonitorWorkAreaNearestWindow(this);
-  if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_MAXIMIZED) ||
-      rect != bounds())
-    SetBoundsInternal(rect);
-}
-
-void Window::Fullscreen() {
-  // The desktop size may have changed, so make sure the window is fullscreen to
-  // the correct size even if it's already fullscreen.
-  gfx::Rect rect = gfx::Screen::GetMonitorAreaNearestWindow(this);
-  if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_FULLSCREEN) ||
-      rect != bounds())
-    SetBoundsInternal(rect);
-}
-
-void Window::Restore() {
-  if (show_state_ != ui::SHOW_STATE_NORMAL) {
-    show_state_ = ui::SHOW_STATE_NORMAL;
-    SetBoundsInternal(restore_bounds_);
-    restore_bounds_.SetRect(0, 0, 0, 0);
-  }
-}
-
 gfx::Rect Window::GetScreenBounds() const {
   const gfx::Rect local_bounds = bounds();
   gfx::Point origin = local_bounds.origin();
@@ -165,16 +138,10 @@ void Window::SetLayoutManager(LayoutManager* layout_manager) {
 }
 
 void Window::SetBounds(const gfx::Rect& new_bounds) {
-  gfx::Rect adjusted_bounds = new_bounds;
   if (parent_ && parent_->layout_manager())
-    parent_->layout_manager()->CalculateBoundsForChild(this, &adjusted_bounds);
-
-  if (show_state_ == ui::SHOW_STATE_MAXIMIZED ||
-      show_state_ == ui::SHOW_STATE_FULLSCREEN) {
-    restore_bounds_ = adjusted_bounds;
-    return;
-  }
-  SetBoundsInternal(adjusted_bounds);
+    parent_->layout_manager()->SetChildBounds(this, new_bounds);
+  else
+    SetBoundsInternal(new_bounds);
 }
 
 gfx::Rect Window::GetTargetBounds() const {
@@ -406,23 +373,18 @@ Window* Window::GetToplevelWindow() {
   return window && window->parent() ? window : NULL;
 }
 
-bool Window::IsOrContainsFullscreenWindow() const {
-  if (delegate_)
-    return IsVisible() && show_state_ == ui::SHOW_STATE_FULLSCREEN;
-
-  for (Windows::const_iterator it = children_.begin();
-       it != children_.end(); ++it) {
-    if ((*it)->IsOrContainsFullscreenWindow())
-      return true;
-  }
-  return false;
-}
-
 void Window::SetProperty(const char* name, void* value) {
+  void* old = GetProperty(name);
   if (value)
     prop_map_[name] = value;
   else
     prop_map_.erase(name);
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnPropertyChanged(this, name, old));
+}
+
+void Window::SetIntProperty(const char* name, int value) {
+  SetProperty(name, reinterpret_cast<void*>(value));
 }
 
 void* Window::GetProperty(const char* name) const {
@@ -430,6 +392,11 @@ void* Window::GetProperty(const char* name) const {
   if (iter == prop_map_.end())
     return NULL;
   return iter->second;
+}
+
+int Window::GetIntProperty(const char* name) const {
+  return static_cast<int>(reinterpret_cast<intptr_t>(
+      GetProperty(name)));
 }
 
 Desktop* Window::GetDesktop() {
@@ -480,16 +447,6 @@ void Window::SchedulePaint() {
 
 bool Window::StopsEventPropagation() const {
   return stops_event_propagation_ && !children_.empty();
-}
-
-bool Window::UpdateShowStateAndRestoreBounds(
-    ui::WindowShowState new_show_state) {
-  if (show_state_ == new_show_state)
-    return false;
-  show_state_ = new_show_state;
-  if (restore_bounds_.IsEmpty())
-    restore_bounds_ = bounds();
-  return true;
 }
 
 Window* Window::GetWindowForPoint(const gfx::Point& local_point,

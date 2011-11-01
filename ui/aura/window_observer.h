@@ -20,6 +20,10 @@ class AURA_EXPORT WindowObserver {
   // Invoked prior to removing |window|.
   virtual void OnWillRemoveWindow(Window* window) {}
 
+  // Invoked when |SetProperty| or |SetIntProperty| is called on |window|.
+  // |old| is the old property value.
+  virtual void OnPropertyChanged(Window* window, const char* key, void* old) {}
+
   // Invoked when the SetVisible() is invoked on a window. |visible| is the
   // value supplied to SetVisible(). If |visible| is true, window->IsVisible()
   // may still return false. See description in Window::IsVisible() for details.

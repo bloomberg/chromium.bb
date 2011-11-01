@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura_shell/aura_shell_export.h"
 
@@ -23,6 +24,7 @@ class Rect;
 namespace aura_shell {
 namespace internal {
 
+class ShowStateController;
 class WorkspaceManager;
 
 // LayoutManager for the default window container.
@@ -32,6 +34,11 @@ class AURA_SHELL_EXPORT DefaultContainerLayoutManager
   DefaultContainerLayoutManager(aura::Window* owner,
                                 WorkspaceManager* workspace_manager);
   virtual ~DefaultContainerLayoutManager();
+
+  // Returns the workspace manager for this container.
+  WorkspaceManager* workspace_manager() {
+    return workspace_manager_;
+  }
 
   // Invoked when a window receives drag event.
   void PrepareForMoveOrResize(aura::Window* drag, aura::MouseEvent* event);
@@ -48,8 +55,9 @@ class AURA_SHELL_EXPORT DefaultContainerLayoutManager
   // Invoked when a user finished resizing window.
   void EndResize(aura::Window* drag, aura::MouseEvent* evnet);
 
-  // If true, |CalculateBoundsForChild| does nothing. Use in situations where
-  // you want to circumvent what CalculateBoundsForChild() would normally do.
+  // If true, |SetChildBounds| does not modify the requested bounds.
+  // Use in situations where you want to circumvent what
+  // SetChildBounds() would normally do.
   void set_ignore_calculate_bounds(bool value) {
     ignore_calculate_bounds_ = value;
   }
@@ -60,8 +68,8 @@ class AURA_SHELL_EXPORT DefaultContainerLayoutManager
   virtual void OnWillRemoveWindow(aura::Window* child) OVERRIDE;
   virtual void OnChildWindowVisibilityChanged(aura::Window* child,
                                               bool visibile) OVERRIDE;
-  virtual void CalculateBoundsForChild(aura::Window* child,
-                                       gfx::Rect* requested_bounds) OVERRIDE;
+  virtual void SetChildBounds(aura::Window* child,
+                              const gfx::Rect& requested_bounds) OVERRIDE;
  private:
   aura::Window* owner_;
 
@@ -75,6 +83,8 @@ class AURA_SHELL_EXPORT DefaultContainerLayoutManager
   // workspace manager is laying out children and LayoutManager
   // ignores bounds check.
   bool ignore_calculate_bounds_;
+
+  scoped_ptr<ShowStateController> show_state_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultContainerLayoutManager);
 };

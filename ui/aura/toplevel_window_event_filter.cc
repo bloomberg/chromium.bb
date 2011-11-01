@@ -4,12 +4,14 @@
 
 #include "ui/aura/toplevel_window_event_filter.h"
 
+#include "ui/aura/aura_constants.h"
 #include "ui/aura/cursor.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/hit_test.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/ui_base_types.h"
 
 namespace aura {
 
@@ -150,12 +152,6 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(Window* target,
     case ui::ET_MOUSE_DRAGGED:
       return HandleDrag(target, event);
     case ui::ET_MOUSE_RELEASED:
-      if (window_component_ == HTMAXBUTTON) {
-        if (target->show_state() == ui::SHOW_STATE_MAXIMIZED)
-          target->Restore();
-        else
-          target->Maximize();
-      }
       window_component_ = HTNOWHERE;
       break;
     default:
@@ -190,8 +186,9 @@ bool ToplevelWindowEventFilter::HandleDrag(Window* target, MouseEvent* event) {
   if (bounds_change == kBoundsChange_None)
     return false;
 
-  // Only a normal window can be moved/resized.
-  if (target->show_state() != ui::SHOW_STATE_NORMAL)
+  // Only a normal/default window can be moved/resized.
+  if (target->GetIntProperty(aura::kShowStateKey) != ui::SHOW_STATE_NORMAL &&
+      target->GetIntProperty(aura::kShowStateKey) != ui::SHOW_STATE_DEFAULT)
     return false;
 
   target->SetBounds(gfx::Rect(GetOriginForDrag(bounds_change, target, event),

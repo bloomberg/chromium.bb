@@ -14,7 +14,6 @@
 #include "base/observer_list.h"
 #include "base/string16.h"
 #include "ui/base/events.h"
-#include "ui/base/ui_base_types.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window_types.h"
 #include "ui/gfx/compositor/layer.h"
@@ -94,20 +93,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Returns true if this window and all its ancestors are visible.
   bool IsVisible() const;
 
-  // Maximize the window.
-  void Maximize();
-
-  // Go into fullscreen mode.
-  void Fullscreen();
-
-  // Restore the window to its original bounds.
-  void Restore();
-
   // Returns the window's bounds in screen coordinates.
   gfx::Rect GetScreenBounds() const;
-
-  // Returns the window's show state.
-  ui::WindowShowState show_state() const { return show_state_; }
 
   // Activates this window. Only top level windows can be activated. Requests
   // to activate a non-top level window are ignored.
@@ -263,17 +250,19 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // IsToplevelWindowContainer.
   Window* GetToplevelWindow();
 
-  // Returns true if this window is fullscreen or contains a fullscreen window.
-  bool IsOrContainsFullscreenWindow() const;
-
-  // Sets the window property |value| for given |name|. Setting NULL
+  // Sets the window property |value| for given |name|. Setting NULL or 0
   // removes the property. It uses |ui::ViewProp| to store the property.
   // Please see the description of |prop_map_| for more details.
   void SetProperty(const char* name, void* value);
+  void SetIntProperty(const char* name, int value);
 
-  // Returns the window property for given |name|.  Returns NULL if
+  // Returns the window property for given |name|.  Returns NULL or 0 if
   // the property does not exist.
+  // TODO(oshima): Returning 0 for non existing property is problematic.
+  // Fix ViewProp to be able to tell if the property exists and
+  // change it to -1.
   void* GetProperty(const char* name) const;
+  int GetIntProperty(const char* name) const;
 
  protected:
   // Returns the desktop or NULL if we aren't yet attached to a desktop.
@@ -296,10 +285,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // it in the z-order.
   bool StopsEventPropagation() const;
 
-  // Update the show state and restore bounds. Returns false
-  // if |new_show_state| is same as current show state.
-  bool UpdateShowStateAndRestoreBounds(ui::WindowShowState new_show_state);
-
   // Gets a Window (either this one or a subwindow) containing |local_point|.
   // If |return_tightest| is true, returns the tightest-containing (i.e.
   // furthest down the hierarchy) Window containing the point; otherwise,
@@ -318,8 +303,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   WindowType type_;
 
   WindowDelegate* delegate_;
-
-  ui::WindowShowState show_state_;
 
   // The original bounds of a maximized/fullscreen window.
   gfx::Rect restore_bounds_;

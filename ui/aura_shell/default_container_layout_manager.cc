@@ -5,13 +5,18 @@
 #include "ui/aura_shell/default_container_layout_manager.h"
 
 #include "base/auto_reset.h"
+#include "ui/aura/aura_constants.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/window_types.h"
+#include "ui/aura/window_observer.h"
+#include "ui/aura_shell/property_util.h"
+#include "ui/aura_shell/show_state_controller.h"
 #include "ui/aura_shell/workspace/workspace.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 #include "views/widget/native_widget_aura.h"
 
@@ -27,7 +32,8 @@ DefaultContainerLayoutManager::DefaultContainerLayoutManager(
     : owner_(owner),
       workspace_manager_(workspace_manager),
       drag_window_(NULL),
-      ignore_calculate_bounds_(false) {
+      ignore_calculate_bounds_(false),
+      show_state_controller_(new ShowStateController(this)) {
 }
 
 DefaultContainerLayoutManager::~DefaultContainerLayoutManager() {}
@@ -102,6 +108,11 @@ void DefaultContainerLayoutManager::OnWindowAdded(aura::Window* child) {
   if (child->type() != aura::WINDOW_TYPE_NORMAL || child->transient_parent())
     return;
 
+  if (!child->GetProperty(aura::kShowStateKey))
+    child->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_NORMAL);
+
+  child->AddObserver(show_state_controller_.get());
+
   AutoReset<bool> reset(&ignore_calculate_bounds_, true);
 
   Workspace* workspace = workspace_manager_->GetActiveWorkspace();
@@ -121,6 +132,9 @@ void DefaultContainerLayoutManager::OnWindowAdded(aura::Window* child) {
 
 void DefaultContainerLayoutManager::OnWillRemoveWindow(aura::Window* child) {
   AutoReset<bool> reset(&ignore_calculate_bounds_, true);
+  child->RemoveObserver(show_state_controller_.get());
+  ClearRestoreBounds(child);
+
   Workspace* workspace = workspace_manager_->FindBy(child);
   if (!workspace)
     return;
@@ -135,28 +149,51 @@ void DefaultContainerLayoutManager::OnChildWindowVisibilityChanged(
   NOTIMPLEMENTED();
 }
 
-void DefaultContainerLayoutManager::CalculateBoundsForChild(
+void DefaultContainerLayoutManager::SetChildBounds(
     aura::Window* child,
-    gfx::Rect* requested_bounds) {
+    const gfx::Rect& requested_bounds) {
+  gfx::Rect adjusted_bounds = requested_bounds;
+
+  // First, calculate the adjusted bounds.
   if (child->type() != aura::WINDOW_TYPE_NORMAL ||
       ignore_calculate_bounds_ ||
-      child->transient_parent())
-    return;
-
-  // If a drag window is requesting bounds, make sure its attached to
-  // the workarea's top and fits within the total drag area.
-  if (drag_window_) {
+      child->transient_parent()) {
+    // Use the requested bounds as is.
+  } else if (drag_window_) {
+    // If a drag window is requesting bounds, make sure its attached to
+    // the workarea's top and fits within the total drag area.
     gfx::Rect drag_area =  workspace_manager_->GetDragAreaBounds();
-    requested_bounds->set_y(drag_area.y());
-    *requested_bounds = requested_bounds->AdjustToFit(drag_area);
-    return;
+    adjusted_bounds.set_y(drag_area.y());
+    adjusted_bounds = adjusted_bounds.AdjustToFit(drag_area);
+  } else {
+    Workspace* workspace = workspace_manager_->FindBy(child);
+    gfx::Rect work_area = workspace->GetWorkAreaBounds();
+    adjusted_bounds.set_origin(
+        gfx::Point(child->GetTargetBounds().x(), work_area.y()));
+    adjusted_bounds = adjusted_bounds.AdjustToFit(work_area);
   }
 
-  Workspace* workspace = workspace_manager_->FindBy(child);
-  gfx::Rect work_area = workspace->GetWorkAreaBounds();
-  requested_bounds->set_origin(
-      gfx::Point(child->GetTargetBounds().x(), work_area.y()));
-  *requested_bounds = requested_bounds->AdjustToFit(work_area);
+  ui::WindowShowState show_state = static_cast<ui::WindowShowState>(
+      child->GetIntProperty(aura::kShowStateKey));
+
+  // Second, check if the window is either maximized or in fullscreen mode.
+  if (show_state == ui::SHOW_STATE_MAXIMIZED ||
+      show_state == ui::SHOW_STATE_FULLSCREEN) {
+    // If the request is not from workspace manager,
+    // remember the requested bounds.
+    if (!ignore_calculate_bounds_)
+      SetRestoreBounds(child, adjusted_bounds);
+
+    Workspace* workspace = workspace_manager_->FindBy(child);
+    if (show_state == ui::SHOW_STATE_MAXIMIZED)
+      adjusted_bounds = workspace->GetWorkAreaBounds();
+    else
+      adjusted_bounds = workspace->bounds();
+    // Don't
+    if (child->GetTargetBounds() == adjusted_bounds)
+      return;
+  }
+  SetChildBoundsDirect(child, adjusted_bounds);
 }
 
 }  // namespace internal

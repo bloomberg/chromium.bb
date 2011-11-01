@@ -14,8 +14,8 @@ LayoutManager::LayoutManager() {
 LayoutManager::~LayoutManager() {
 }
 
-void LayoutManager::SetChildBounds(aura::Window* child,
-                                   const gfx::Rect& bounds) {
+void LayoutManager::SetChildBoundsDirect(aura::Window* child,
+                                         const gfx::Rect& bounds) {
   child->SetBoundsInternal(bounds);
 }
 

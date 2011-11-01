@@ -17,6 +17,7 @@
 #include "ui/aura/hit_test.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/screen.h"
@@ -118,7 +119,7 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
   window_->Init(ui::Layer::LAYER_HAS_TEXTURE);
 
   window_->SetParent(NULL);
-  window_->Fullscreen();
+  window_->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   Show();
   Focus();
   // TODO(derat): The window is visible but it's not being updated.  Figure out

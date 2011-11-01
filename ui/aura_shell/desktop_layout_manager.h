@@ -48,8 +48,8 @@ class DesktopLayoutManager : public aura::LayoutManager {
   virtual void OnWillRemoveWindow(aura::Window* child) OVERRIDE;
   virtual void OnChildWindowVisibilityChanged(aura::Window* child,
                                               bool visibile) OVERRIDE;
-  virtual void CalculateBoundsForChild(aura::Window* child,
-                                       gfx::Rect* requested_bounds) OVERRIDE;
+  virtual void SetChildBounds(aura::Window* child,
+                              const gfx::Rect& requested_bounds) OVERRIDE;
 
  private:
   aura::Window* owner_;

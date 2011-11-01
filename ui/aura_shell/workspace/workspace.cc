@@ -7,9 +7,12 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "ui/aura/aura_constants.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/window.h"
+#include "ui/aura_shell/property_util.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 
@@ -19,7 +22,25 @@ const int kWindowHorizontalMargin = 10;
 
 // Maximum number of windows a workspace can have.
 size_t g_max_windows_per_workspace = 2;
+
+// Returns the bounds of the window that should be used to calculate
+// the layout. It uses the restore bounds if exits, or
+// the target bounds of the window. The target bounds is the
+// final destination of |window| if the window's layer is animating,
+// or the current bounds of the window of no animation is currently
+// in progress.
+gfx::Rect GetLayoutBounds(aura::Window* window) {
+  const gfx::Rect* restore_bounds = aura_shell::GetRestoreBounds(window);
+  return restore_bounds ? *restore_bounds : window->GetTargetBounds();
 }
+
+// Returns the width of the window that should be used to calculate
+// the layout. See |GetLayoutBounds| for more details.
+int GetLayoutWidth(aura::Window* window) {
+  return GetLayoutBounds(window).width();
+}
+
+}  // namespace
 
 namespace aura_shell {
 namespace internal {
@@ -171,7 +192,7 @@ void Workspace::Layout(aura::Window* ignore, aura::Window* no_animation) {
                      gfx::Point(work_area.x() + dx, work_area.y()),
                      no_animation != *i);
       }
-      dx += (*i)->bounds().width() + kWindowHorizontalMargin;
+      dx += GetLayoutWidth(*i) + kWindowHorizontalMargin;
     }
   } else {
     DCHECK_LT(windows_.size(), 3U);
@@ -184,11 +205,23 @@ void Workspace::Layout(aura::Window* ignore, aura::Window* no_animation) {
     }
     if (windows_.size() == 2 && windows_[1] != ignore) {
       MoveWindowTo(windows_[1],
-                   gfx::Point(work_area.right() - windows_[1]->bounds().width(),
+                   gfx::Point(work_area.right() - GetLayoutWidth(windows_[1]),
                               work_area.y()),
                    no_animation != windows_[1]);
     }
   }
+}
+
+bool Workspace::ContainsFullscreenWindow() const {
+  for (aura::Window::Windows::const_iterator i = windows_.begin();
+       i != windows_.end();
+       ++i) {
+    aura::Window* w = *i;
+    if (w->IsVisible() &&
+        w->GetIntProperty(aura::kShowStateKey) == ui::SHOW_STATE_FULLSCREEN)
+      return true;
+  }
+  return false;
 }
 
 int Workspace::GetIndexOf(aura::Window* window) const {
@@ -208,24 +241,17 @@ void Workspace::MoveWindowTo(
     aura::Window* window,
     const gfx::Point& origin,
     bool animate) {
-  if (window->show_state() == ui::SHOW_STATE_FULLSCREEN)
-    window->Fullscreen();
-  else if (window->show_state() == ui::SHOW_STATE_MAXIMIZED)
-    window->Maximize();
-  else {
-    gfx::Rect bounds = window->GetTargetBounds();
-    gfx::Rect work_area = GetWorkAreaBounds();
-    // Make sure the window isn't bigger than the workspace size.
-    bounds.SetRect(origin.x(), origin.y(),
-                   std::min(work_area.width(), bounds.width()),
-                   std::min(work_area.height(), bounds.height()));
-    if (animate) {
-      ui::LayerAnimator::ScopedSettings settings(
-          window->layer()->GetAnimator());
-      window->SetBounds(bounds);
-    } else {
-      window->SetBounds(bounds);
-    }
+  gfx::Rect bounds = GetLayoutBounds(window);
+  gfx::Rect work_area = GetWorkAreaBounds();
+  // Make sure the window isn't bigger than the workspace size.
+  bounds.SetRect(origin.x(), origin.y(),
+                 std::min(work_area.width(), bounds.width()),
+                 std::min(work_area.height(), bounds.height()));
+  if (animate) {
+    ui::LayerAnimator::ScopedSettings settings(window->layer()->GetAnimator());
+    window->SetBounds(bounds);
+  } else {
+    window->SetBounds(bounds);
   }
 }
 
@@ -236,8 +262,7 @@ int Workspace::GetTotalWindowsWidth() const {
        ++i) {
     if (total_width)
       total_width += kWindowHorizontalMargin;
-    // TODO(oshima): use restored bounds.
-    total_width += (*i)->bounds().width();
+    total_width += GetLayoutWidth(*i);
   }
   return total_width;
 }

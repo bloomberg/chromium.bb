@@ -91,6 +91,9 @@ class AURA_SHELL_EXPORT Workspace {
   // windows except for the window specified by |no_animation| and |ignore|.
   void Layout(aura::Window* ignore, aura::Window* no_animation);
 
+  // Returns true if the workspace contains a fullscreen window.
+  bool ContainsFullscreenWindow() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WorkspaceTest, WorkspaceBasic);
   FRIEND_TEST_ALL_PREFIXES(WorkspaceTest, RotateWindows);

@@ -5,6 +5,7 @@
 #include "views/widget/native_widget_aura.h"
 
 #include "base/bind.h"
+#include "ui/aura/aura_constants.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/desktop_observer.h"
 #include "ui/aura/event.h"
@@ -123,6 +124,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   Widget::InitParams::Type window_type =
       params.child ? Widget::InitParams::TYPE_CONTROL : params.type;
   window_->SetType(GetAuraWindowTypeForWidgetType(window_type));
+  window_->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_NORMAL);
   window_->Init(params.create_texture_for_layer ?
                     ui::Layer::LAYER_HAS_TEXTURE :
                     ui::Layer::LAYER_HAS_NO_TEXTURE);
@@ -277,7 +279,8 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
 void NativeWidgetAura::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* maximized) const {
-  *maximized = window_->show_state();
+  *maximized = static_cast<ui::WindowShowState>(
+      window_->GetIntProperty(aura::kShowStateKey));
 }
 
 void NativeWidgetAura::SetWindowTitle(const string16& title) {
@@ -377,15 +380,9 @@ void NativeWidgetAura::ShowMaximizedWithBounds(
 }
 
 void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
-  switch (state) {
-    case ui::SHOW_STATE_MAXIMIZED:
-      window_->Maximize();
-      break;
-    case ui::SHOW_STATE_FULLSCREEN:
-      window_->Fullscreen();
-      break;
-    default:
-      break;
+  if (state == ui::SHOW_STATE_MAXIMIZED ||
+      state == ui::SHOW_STATE_FULLSCREEN) {
+    window_->SetIntProperty(aura::kShowStateKey, state);
   }
   window_->Show();
   if (can_activate_ && (state != ui::SHOW_STATE_INACTIVE ||
@@ -415,7 +412,7 @@ void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {
 }
 
 void NativeWidgetAura::Maximize() {
-  window_->Maximize();
+  window_->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
 }
 
 void NativeWidgetAura::Minimize() {
@@ -423,23 +420,28 @@ void NativeWidgetAura::Minimize() {
 }
 
 bool NativeWidgetAura::IsMaximized() const {
-  return window_->show_state() == ui::SHOW_STATE_MAXIMIZED;
+  return window_->GetIntProperty(aura::kShowStateKey) ==
+      ui::SHOW_STATE_MAXIMIZED;
 }
 
 bool NativeWidgetAura::IsMinimized() const {
-  return window_->show_state() == ui::SHOW_STATE_MINIMIZED;
+  return window_->GetIntProperty(aura::kShowStateKey) ==
+      ui::SHOW_STATE_MINIMIZED;
 }
 
 void NativeWidgetAura::Restore() {
-  window_->Restore();
+  window_->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_NORMAL);
 }
 
 void NativeWidgetAura::SetFullscreen(bool fullscreen) {
-  fullscreen ? window_->Fullscreen() : window_->Restore();
+  window_->SetIntProperty(
+      aura::kShowStateKey,
+      fullscreen ? ui::SHOW_STATE_FULLSCREEN : ui::SHOW_STATE_NORMAL);
 }
 
 bool NativeWidgetAura::IsFullscreen() const {
-  return window_->show_state() == ui::SHOW_STATE_FULLSCREEN;
+  return window_->GetIntProperty(aura::kShowStateKey) ==
+      ui::SHOW_STATE_FULLSCREEN;
 }
 
 void NativeWidgetAura::SetOpacity(unsigned char opacity) {

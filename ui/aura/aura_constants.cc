@@ -6,6 +6,10 @@
 
 namespace aura {
 
+const char* kRestoreBoundsKey = "RestoreBoundsKey";
+
+const char* kShowStateKey = "ShowStateKey";
+
 const char* kTooltipTextKey = "TooltipTextKey";
 
 }
