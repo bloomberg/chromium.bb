@@ -4,6 +4,7 @@
 
 #include "chrome/browser/shell_integration.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -80,8 +81,8 @@ void ShellIntegration::DefaultWebClientWorker::StartCheckIsDefault() {
     observer_->SetDefaultWebClientUIState(STATE_PROCESSING);
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(
-            this, &DefaultWebClientWorker::ExecuteCheckIsDefault));
+        base::Bind(
+            &DefaultWebClientWorker::ExecuteCheckIsDefault, this));
   }
 }
 
@@ -91,8 +92,8 @@ void ShellIntegration::DefaultWebClientWorker::StartSetAsDefault() {
   }
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &DefaultWebClientWorker::ExecuteSetAsDefault));
+      base::Bind(
+          &DefaultWebClientWorker::ExecuteSetAsDefault, this));
 }
 
 void ShellIntegration::DefaultWebClientWorker::ObserverDestroyed() {
@@ -110,8 +111,8 @@ void ShellIntegration::DefaultWebClientWorker::ExecuteCheckIsDefault() {
   DefaultWebClientState state = CheckIsDefault();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this, &DefaultWebClientWorker::CompleteCheckIsDefault, state));
+      base::Bind(
+          &DefaultWebClientWorker::CompleteCheckIsDefault, this, state));
 }
 
 void ShellIntegration::DefaultWebClientWorker::CompleteCheckIsDefault(
@@ -131,8 +132,8 @@ void ShellIntegration::DefaultWebClientWorker::ExecuteSetAsDefault() {
   SetAsDefault();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this, &DefaultWebClientWorker::CompleteSetAsDefault));
+      base::Bind(
+          &DefaultWebClientWorker::CompleteSetAsDefault, this));
 }
 
 void ShellIntegration::DefaultWebClientWorker::CompleteSetAsDefault() {
