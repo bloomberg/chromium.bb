@@ -49,6 +49,18 @@ void BalloonCollectionImpl::DidProcessEvent(const base::NativeEvent& event) {
       HandleMouseMoveEvent();
       break;
   }
+#elif defined(USE_AURA)
+  // This is deliberately used only in linux. For an aura build on windows, the
+  // above block of code is fine.
+  switch (ui::EventTypeFromNative(event)) {
+    case ui::ET_MOUSE_MOVED:
+    case ui::ET_MOUSE_DRAGGED:
+    case ui::ET_MOUSE_EXITED:
+      HandleMouseMoveEvent();
+      break;
+    default:
+      break;
+  }
 #else
   NOTIMPLEMENTED();
 #endif

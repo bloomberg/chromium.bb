@@ -202,27 +202,3 @@ void ScreenLocker::ScreenLockReady() {
 }
 
 }  // namespace chromeos
-
-class BalloonCollectionStub : public BalloonCollection {
- public:
-  BalloonCollectionStub() {}
-  virtual ~BalloonCollectionStub() {}
- private:
-  void Add(const Notification& notification, Profile* profile) {}
-  bool RemoveById(const std::string& id) { return true; }
-  bool RemoveBySourceOrigin(const GURL& source_origin) { return true; }
-  void RemoveAll() {}
-  bool HasSpace() const { return true; }
-  void ResizeBalloon(Balloon* balloon, const gfx::Size& size) {}
-  void SetPositionPreference(PositionPreference position) {}
-  void DisplayChanged() {}
-  void OnBalloonClosed(Balloon* source) {}
-  const Balloons& GetActiveBalloons() { return balloons_; }
-
-  Balloons balloons_;
-};
-
-// static
-BalloonCollection* BalloonCollection::Create() {
-  return new BalloonCollectionStub;
-}

@@ -4808,6 +4808,8 @@
                 ['include', '^browser/ui/views/location_bar/selected_keyword_view.h'],
                 ['include', '^browser/ui/views/location_bar/star_view.cc'],
                 ['include', '^browser/ui/views/location_bar/star_view.h'],
+                ['include', '^browser/ui/views/notifications/balloon_view.cc'],
+                ['include', '^browser/ui/views/notifications/balloon_view.h'],
                 ['include', '^browser/ui/views/notifications/balloon_view_host.cc'],
                 ['include', '^browser/ui/views/notifications/balloon_view_host.h'],
                 ['include', '^browser/ui/views/omnibox/omnibox_view_views.cc'],
@@ -5023,6 +5025,14 @@
                 ['exclude', '^browser/ui/views/tab_contents/native_tab_contents_view_gtk.*'],
               ],
             }],
+            # chromeos notifications are not used in aura.
+            ['chromeos==1 and use_aura==0', {
+              'sources/': [
+                ['exclude', '^browser/notifications/balloon_collection_impl.cc'],
+                ['exclude', '^browser/notifications/balloon_collection_impl.h'],
+                ['exclude', '^browser/notifications/balloon_collection_views.cc'],
+              ],
+            }],
             ['chromeos==1',{
               'sources/': [
                 ['include', '^browser/ui/gtk/omnibox/omnibox_view_gtk.cc'],
@@ -5034,10 +5044,7 @@
                 ['exclude', '^browser/download/download_shelf_context_menu.cc'],
                 ['exclude', '^browser/download/download_shelf_context_menu.h'],
                 ['exclude', '^browser/extensions/extension_tts_api_linux.cc'],
-                ['exclude', '^browser/notifications/balloon_collection_impl.cc'],
-                ['exclude', '^browser/notifications/balloon_collection_impl.h'],
                 ['exclude', '^browser/notifications/balloon_collection_gtk.cc'],
-                ['exclude', '^browser/notifications/balloon_collection_views.cc'],
                 ['exclude', '^browser/ui/views/download/download_item_view.cc'],
                 ['exclude', '^browser/ui/views/download/download_item_view.h'],
                 ['exclude', '^browser/ui/views/download/download_shelf_context_menu_view.cc'],
