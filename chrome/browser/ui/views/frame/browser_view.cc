@@ -111,7 +111,6 @@
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/launcher/launcher_model.h"
 #include "ui/aura_shell/shell.h"
-#include "ui/base/view_prop.h"
 #elif defined(OS_WIN)
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"
@@ -130,10 +129,6 @@
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #else
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
-#endif
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-#include "ui/base/view_prop.h"
 #endif
 
 #if defined(TOUCH_UI)
@@ -382,8 +377,10 @@ BrowserView::~BrowserView() {
 // static
 BrowserView* BrowserView::GetBrowserViewForNativeWindow(
     gfx::NativeWindow window) {
-  return reinterpret_cast<BrowserView*>(
-      ui::ViewProp::GetValue(window, kBrowserViewKey));
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  return widget ?
+      reinterpret_cast<BrowserView*>(widget->GetNativeWindowProperty(
+          kBrowserViewKey)) : NULL;
 }
 #endif
 

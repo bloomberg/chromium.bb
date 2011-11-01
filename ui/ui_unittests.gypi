@@ -161,6 +161,7 @@
         }],
         ['use_aura==1', {
           'sources!': [
+            'base/view_prop_unittest.cc',
             'gfx/screen_unittest.cc',
           ],
         }],

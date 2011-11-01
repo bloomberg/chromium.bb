@@ -17,7 +17,6 @@
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_types.h"
 #include "ui/base/animation/multi_animation.h"
-#include "ui/base/view_prop.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/screen.h"
@@ -70,8 +69,6 @@ Window::~Window() {
     parent_->RemoveChild(this);
 
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroyed(this));
-
-  STLDeleteValues(&prop_map_);
 }
 
 void Window::Init(ui::Layer::LayerType layer_type) {
@@ -422,16 +419,17 @@ bool Window::IsOrContainsFullscreenWindow() const {
 }
 
 void Window::SetProperty(const char* name, void* value) {
-  ui::ViewProp* prop = prop_map_[name];
-  delete prop;
   if (value)
-    prop_map_[name] = new ui::ViewProp(this, name, value);
+    prop_map_[name] = value;
   else
     prop_map_.erase(name);
 }
 
 void* Window::GetProperty(const char* name) const {
-  return ui::ViewProp::GetValue(const_cast<gfx::NativeView>(this), name);
+  std::map<const char*, void*>::const_iterator iter = prop_map_.find(name);
+  if (iter == prop_map_.end())
+    return NULL;
+  return iter->second;
 }
 
 Desktop* Window::GetDesktop() {

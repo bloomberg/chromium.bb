@@ -31,7 +31,6 @@ class Compositor;
 class Layer;
 class LayerAnimationSequence;
 class Transform;
-class ViewProp;
 }
 
 namespace aura {
@@ -360,7 +359,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // to create and access property.
   // TODO(oshima): Consolidcate ViewProp and aura::window property
   // implementation.
-  std::map<const char*, ui::ViewProp*> prop_map_;
+  std::map<const char*, void*> prop_map_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

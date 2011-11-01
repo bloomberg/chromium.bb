@@ -11,6 +11,10 @@
 #include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
 
+#if defined(USE_AURA) || defined(OS_LINUX) || defined(OS_MAC)
+#error view_prop.h is only for win, non aura build
+#endif
+
 namespace ui {
 
 // ViewProp maintains a key/value pair for a particular view. ViewProp is

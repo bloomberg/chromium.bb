@@ -17,7 +17,6 @@
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/workspace/workspace_controller.h"
-#include "ui/base/view_prop.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "views/widget/native_widget_aura.h"

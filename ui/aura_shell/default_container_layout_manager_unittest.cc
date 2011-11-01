@@ -12,7 +12,6 @@
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/workspace/workspace_controller.h"
-#include "ui/base/view_prop.h"
 #include "views/widget/native_widget_aura.h"
 
 namespace aura_shell {

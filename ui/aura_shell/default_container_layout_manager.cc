@@ -12,7 +12,6 @@
 #include "ui/aura/window_types.h"
 #include "ui/aura_shell/workspace/workspace.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"
-#include "ui/base/view_prop.h"
 #include "ui/gfx/rect.h"
 #include "views/widget/native_widget_aura.h"
 
