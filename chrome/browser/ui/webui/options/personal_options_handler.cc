@@ -110,6 +110,13 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_NEVERSAVE));
   localized_strings->SetString("manage_passwords",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS));
+#if defined(OS_MACOSX)
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (profile_manager->GetNumberOfProfiles() > 1) {
+    localized_strings->SetString("macPasswordsWarning",
+        l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MAC_WARNING));
+  }
+#endif
   localized_strings->SetString("autologinEnabled",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_AUTOLOGIN));
 

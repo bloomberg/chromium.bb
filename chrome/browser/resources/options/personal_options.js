@@ -134,6 +134,9 @@ cr.define('options', function() {
         $('manage-passwords').disabled = true;
       }
 
+      $('mac-passwords-warning').hidden =
+          !(localStrings.getString('macPasswordsWarning'));
+
       if (PersonalOptions.disableAutofillManagement()) {
         $('autofill-settings').disabled = true;
 

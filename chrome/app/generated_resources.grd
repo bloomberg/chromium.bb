@@ -8093,6 +8093,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Manage saved passwords...
         </message>
       </if>
+      <message name="IDS_OPTIONS_PASSWORDS_MAC_WARNING" desc="The warning for OS X that passwords are shared across profiles in the keychain.">
+          On Mac, passwords are saved to your Keychain and may be accessed or synced by other Chrome users sharing this OS X account.
+      </message>
       <message name="IDS_OPTIONS_PASSWORDS_AUTOLOGIN" desc="The label of the 'autologinEnabled' checkbox">
         Offer to sign into Google sites automatically with this account
       </message>
