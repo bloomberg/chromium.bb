@@ -196,7 +196,7 @@ LDPatterns = [
   ( ('(-Ttext=.*)'),     "env.append('LD_FLAGS', $0)"),
 
   # This overrides the builtin linker script.
-  ( ('-T', '(.*)'),      "env.set('LD_SCRIPT', pathtools.normalize($0))"),
+  ( ('-T', '(.*)'),      "env.set('LD_SCRIPT', $0)"),
 
   ( ('-e','(.*)'),     "env.append('LD_FLAGS', '-e', $0)"),
   ( ('(--section-start)','(.*)'), "env.append('LD_FLAGS', $0, $1)"),
@@ -378,11 +378,14 @@ def LocateLinkerScript():
     # No linker script specified
     return
 
-  if ld_script.startswith('/'):
-    # Already absolute path
+  # See if it's an absolute or relative path
+  path = pathtools.normalize(ld_script)
+  if pathtools.exists(path):
+    env.set('LD_SCRIPT', path)
     return
 
-  search_dirs = env.get('SEARCH_DIRS')
+  # Search for the script
+  search_dirs = [pathtools.normalize('.')] + env.get('SEARCH_DIRS')
   path = FindFile([ld_script], search_dirs)
   if not path:
     Log.Fatal("Unable to find linker script '%s'", ld_script)
