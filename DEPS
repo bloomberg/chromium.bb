@@ -70,8 +70,6 @@ deps = {
     Var("native_client_trunk") + "/src/third_party/gmp@" + Var("tools_rev"),
   "third_party/lcov":
     Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
-  "third_party/mesa":
-    Var("chromium_trunk") + "/src/third_party/mesa@" + Var("chrome_rev"),
   "third_party/mpfr":
     Var("native_client_trunk") + "/src/third_party/mpfr@" + Var("tools_rev"),
   "third_party/mpc":
