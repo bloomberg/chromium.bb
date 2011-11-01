@@ -12,10 +12,15 @@ namespace protector {
 // provider.
 extern const char kProtectorHistogramDefaultSearchProvider[];
 
+extern const char kProtectorBackupInvalidCounter[];
+extern const char kProtectorValueChangedCounter[];
+extern const char kProtectorValueValidCounter[];
+
 // Protector histogram values.
 enum ProtectorError {
   kProtectorErrorBackupInvalid,
   kProtectorErrorValueChanged,
+  kProtectorErrorValueValid,
 
   // This is for convenience only, must always be the last.
   kProtectorErrorCount

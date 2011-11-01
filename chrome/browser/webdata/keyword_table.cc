@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/stats_counters.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -79,7 +80,7 @@ std::string GetSearchProviderIDSignature(int64 id) {
 // Checks if signature for search provider id is correct and returns the
 // result.
 bool IsSearchProviderIDValid(int64 id, const std::string& signature) {
-  return signature == GetSearchProviderIDSignature(id);
+  return protector::IsSettingValid(base::Int64ToString(id), signature);
 }
 
 }  // anonymous namespace
@@ -281,14 +282,21 @@ bool KeywordTable::DidDefaultSearchProviderChange() {
         protector::kProtectorHistogramDefaultSearchProvider,
         protector::kProtectorErrorBackupInvalid,
         protector::kProtectorErrorCount);
+    SIMPLE_STATS_COUNTER(protector::kProtectorBackupInvalidCounter);
     return true;
   } else if (backup_value != GetDefaultSearchProviderID()) {
     UMA_HISTOGRAM_ENUMERATION(
         protector::kProtectorHistogramDefaultSearchProvider,
         protector::kProtectorErrorValueChanged,
         protector::kProtectorErrorCount);
+    SIMPLE_STATS_COUNTER(protector::kProtectorValueChangedCounter);
     return true;
   }
+  UMA_HISTOGRAM_ENUMERATION(
+      protector::kProtectorHistogramDefaultSearchProvider,
+      protector::kProtectorErrorValueValid,
+      protector::kProtectorErrorCount);
+  SIMPLE_STATS_COUNTER(protector::kProtectorValueValidCounter);
   return false;
 }
 

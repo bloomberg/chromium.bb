@@ -9,4 +9,9 @@ namespace protector {
 const char kProtectorHistogramDefaultSearchProvider[] =
     "Protector.DefaultSearchProvider";
 
+const char kProtectorBackupInvalidCounter[] =
+    "Protector.BackupInvalidCounter";
+const char kProtectorValueChangedCounter[] = "Protector.ValueChangedCounter";
+const char kProtectorValueValidCounter[] = "Protector.ValueValidCounter";
+
 }  // namespace protector

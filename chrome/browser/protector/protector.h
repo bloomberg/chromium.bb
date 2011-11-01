@@ -68,6 +68,9 @@ class Protector : public SettingsChangeGlobalErrorDelegate {
 // Signs string value with protector's key.
 std::string SignSetting(const std::string& value);
 
+// Returns true if the signature is valid for the specified key.
+bool IsSettingValid(const std::string& value, const std::string& signature);
+
 }  // namespace protector
 
 #endif  // CHROME_BROWSER_PROTECTOR_PROTECTOR_H_
