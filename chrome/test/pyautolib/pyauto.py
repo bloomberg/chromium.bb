@@ -1039,7 +1039,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       an instance of prefs_info.PrefsInfo
     """
     return prefs_info.PrefsInfo(
-        self._SendJSONRequest(0,
+        self._SendJSONRequest(-1,
                               json.dumps({'command': 'GetLocalStatePrefsInfo'}),
                               self.action_max_timeout_ms()))
 
@@ -1083,7 +1083,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       an instance of prefs_info.PrefsInfo
     """
     return prefs_info.PrefsInfo(
-        self._SendJSONRequest(-1, json.dumps({'command': 'GetPrefsInfo'}),
+        self._SendJSONRequest(0, json.dumps({'command': 'GetPrefsInfo'}),
                               self.action_max_timeout_ms()))
 
   def SetPrefs(self, path, value):
