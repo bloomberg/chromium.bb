@@ -359,8 +359,11 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     return URL;
 
   // Trailing slashes force the input to be treated as a URL.
-  if (parts->path.len == 1)
-    return URL;
+  if (parts->path.is_nonempty()) {
+    char c = text[parts->path.end() - 1];
+    if ((c == '\\') || (c == '/'))
+      return URL;
+  }
 
   // If there is more than one recognized non-host component, this is likely to
   // be a URL, even if the TLD is unknown (in which case this is likely an
