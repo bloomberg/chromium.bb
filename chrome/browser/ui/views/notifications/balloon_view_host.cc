@@ -69,7 +69,7 @@ void BalloonViewHost::InitRenderWidgetHostView() {
 #if defined(USE_AURA)
   RenderWidgetHostViewAura* view_aura =
       static_cast<RenderWidgetHostViewAura*>(render_widget_host_view_);
-  view_aura->Init();
+  view_aura->InitAsChild();
   view_aura->Show();
   native_host_->Attach(view_aura->GetNativeView());
 #elif defined(OS_WIN)
