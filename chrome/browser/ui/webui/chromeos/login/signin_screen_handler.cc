@@ -215,7 +215,7 @@ void NetworkStateInformer::SendStateToObservers(const std::string& reason) {
 // SigninScreenHandler implementation ------------------------------------------
 
 SigninScreenHandler::SigninScreenHandler()
-    : delegate_(WebUILoginDisplay::GetInstance()),
+    : delegate_(NULL),
       show_on_init_(false),
       oobe_ui_(false),
       dns_cleared_(false),
@@ -227,7 +227,6 @@ SigninScreenHandler::SigninScreenHandler()
       cookie_remover_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       key_event_listener_(NULL) {
-  delegate_->SetWebUIHandler(this);
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
@@ -308,6 +307,12 @@ void SigninScreenHandler::Show(bool oobe_ui) {
 
     ShowScreen(kAccountPickerScreen, NULL);
   }
+}
+
+void SigninScreenHandler::SetDelegate(SigninScreenHandlerDelegate* delegate) {
+  delegate_ = delegate;
+  DCHECK(delegate_);
+  delegate_->SetWebUIHandler(this);
 }
 
 // SigninScreenHandler, private: -----------------------------------------------
@@ -548,20 +553,19 @@ void SigninScreenHandler::HandleLaunchHelpApp(const base::ListValue* args) {
   }
 
   if (!help_app_.get())
-    help_app_ = new HelpAppLauncher(
-        WebUILoginDisplay::GetLoginWindow()->GetNativeWindow());
+    help_app_ = new HelpAppLauncher(GetNativeWindow());
   help_app_->ShowHelpTopic(
       static_cast<HelpAppLauncher::HelpTopic>(help_topic_id));
 }
 
 void SigninScreenHandler::SendUserList(bool animated) {
-  bool show_guest = WebUILoginDisplay::GetInstance()->show_guest();
+  bool show_guest = delegate_->IsShowGuest();
 
   size_t max_non_owner_users = show_guest ? kMaxUsers - 2 : kMaxUsers - 1;
   size_t non_owner_count = 0;
 
   ListValue users_list;
-  UserVector users = WebUILoginDisplay::GetInstance()->users();
+  UserVector users = delegate_->GetUsers();
 
   bool single_user = users.size() == 1;
   for (UserVector::const_iterator it = users.begin();

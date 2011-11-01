@@ -25,27 +25,13 @@ namespace chromeos {
 WebUILoginDisplay::~WebUILoginDisplay() {
 }
 
-// WebUILoginDisplay, Singleton implementation: --------------------------------
-
-// static
-WebUILoginDisplay* WebUILoginDisplay::GetInstance() {
-  return Singleton<WebUILoginDisplay>::get();
-}
-
 // LoginDisplay implementation: ------------------------------------------------
 
-// static
-views::Widget* WebUILoginDisplay::GetLoginWindow() {
-  return WebUILoginDisplay::GetInstance()->LoginWindow();
-}
-
-views::Widget* WebUILoginDisplay::LoginWindow() {
-  return login_window_;
-}
-
-void WebUILoginDisplay::Destroy() {
-  background_bounds_ = gfx::Rect();
-  delegate_ = NULL;
+WebUILoginDisplay::WebUILoginDisplay(LoginDisplay::Delegate* delegate)
+    : LoginDisplay(delegate, gfx::Rect()),
+      show_guest_(false),
+      show_new_user_(false),
+      webui_handler_(NULL) {
 }
 
 void WebUILoginDisplay::Init(const std::vector<UserManager::User>& users,
@@ -204,16 +190,17 @@ void WebUILoginDisplay::ShowSigninScreenForCreds(
   webui_handler_->ShowSigninScreenForCreds(username, password);
 }
 
-// WebUILoginDisplay, private: -------------------------------------------------
 
-// Singleton implementation: ---------------------------------------------------
+const std::vector<UserManager::User>& WebUILoginDisplay::GetUsers() const {
+  return users_;
+}
 
-WebUILoginDisplay::WebUILoginDisplay()
-    : LoginDisplay(NULL, gfx::Rect()),
-      show_guest_(false),
-      show_new_user_(false),
-      login_window_(NULL),
-      webui_handler_(NULL) {
+bool WebUILoginDisplay::IsShowGuest() const {
+  return show_guest_;
+}
+
+bool WebUILoginDisplay::IsShowNewUser() const {
+  return show_new_user_;
 }
 
 }  // namespace chromeos

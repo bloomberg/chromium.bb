@@ -38,9 +38,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "unicode/timezone.h"
 
-// TODO(altimofeev): move to ViewsLoginDisplayHost
-#include "chrome/browser/chromeos/login/views_oobe_display.h"
-
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/wm_ipc.h"
 #endif
@@ -132,16 +129,6 @@ void BaseLoginDisplayHost::OnSessionStart() {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-WizardController* BaseLoginDisplayHost::CreateWizardController() {
-  // TODO(altimofeev): move this code to ViewsLoginDisplayHost when WebUI
-  // implementation will always be used with WebUILoginDisplayHost.
-  oobe_display_.reset(new ViewsOobeDisplay(background_bounds()));
-  WizardController* wizard_controller  =
-      new WizardController(this, oobe_display_.get());
-  oobe_display_->SetScreenObserver(wizard_controller);
-  return wizard_controller;
-}
-
 void BaseLoginDisplayHost::StartWizard(
     const std::string& first_screen_name,
     const GURL& start_url) {
@@ -151,13 +138,7 @@ void BaseLoginDisplayHost::StartWizard(
   // new one, because "default_controller()" is updated there. So pure "reset()"
   // is done before new controller creation.
   wizard_controller_.reset();
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin)) {
-    wizard_controller_.reset(CreateWizardController());
-  } else {
-    // Force views based implementation.
-    wizard_controller_.reset(BaseLoginDisplayHost::CreateWizardController());
-  }
+  wizard_controller_.reset(CreateWizardController());
 
   wizard_controller_->set_start_url(start_url);
   ShowBackground();
@@ -167,8 +148,6 @@ void BaseLoginDisplayHost::StartWizard(
 }
 
 void BaseLoginDisplayHost::StartSignInScreen() {
-  oobe_display_.reset();
-
   DVLOG(1) << "Starting sign in screen";
   std::vector<chromeos::UserManager::User> users =
       chromeos::UserManager::Get()->GetUsers();

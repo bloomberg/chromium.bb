@@ -136,8 +136,7 @@ void EulaScreenHandler::HandleOnExit(const base::ListValue* args) {
 
 void EulaScreenHandler::HandleOnLearnMore(const base::ListValue* args) {
   if (!help_app_.get()) {
-    views::Widget* login_window = WebUILoginDisplay::GetLoginWindow();
-    help_app_ = new HelpAppLauncher(login_window->GetNativeWindow());
+    help_app_ = new HelpAppLauncher(GetNativeWindow());
   }
   help_app_->ShowHelpTopic(HelpAppLauncher::HELP_STATS_USAGE);
 }

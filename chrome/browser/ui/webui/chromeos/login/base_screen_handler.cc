@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 #include "base/values.h"
@@ -28,6 +29,11 @@ void BaseScreenHandler::ShowScreen(const char* screen_name,
   if (data)
     screen_params.SetWithoutPathExpansion("data", data->DeepCopy());
   web_ui_->CallJavascriptFunction("cr.ui.Oobe.showScreen", screen_params);
+}
+
+
+gfx::NativeWindow BaseScreenHandler::GetNativeWindow() {
+  return BaseLoginDisplayHost::default_host()->GetNativeWindow();
 }
 
 }  // namespace chromeos

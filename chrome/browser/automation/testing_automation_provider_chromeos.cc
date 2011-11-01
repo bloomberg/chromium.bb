@@ -280,7 +280,7 @@ void TestingAutomationProvider::Login(DictionaryValue* args,
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin)) {
     // WebUI login.
     chromeos::WebUILoginDisplay* webui_login_display =
-        chromeos::WebUILoginDisplay::GetInstance();
+        static_cast<chromeos::WebUILoginDisplay*>(controller->login_display());
     webui_login_display->ShowSigninScreenForCreds(username, password);
   } else {
     // Native UI login.

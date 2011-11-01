@@ -24,8 +24,9 @@ class LoginDisplayHost {
   virtual ~LoginDisplayHost() {}
 
   // Creates UI implementation specific login display instance (views/WebUI).
+  // The caller takes ownership of the returned value.
   virtual LoginDisplay* CreateLoginDisplay(
-      LoginDisplay::Delegate* delegate) const = 0;
+      LoginDisplay::Delegate* delegate) = 0;
 
   // Returns corresponding native window.
   // TODO(nkostylev): Might be refactored, move to views-specific code.

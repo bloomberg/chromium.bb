@@ -34,7 +34,8 @@ const char kOobeURL[] = "chrome://oobe";
 WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
     : BaseLoginDisplayHost(background_bounds),
       login_window_(NULL),
-      login_view_(NULL) {
+      login_view_(NULL),
+      webui_login_display_(NULL) {
 }
 
 WebUILoginDisplayHost::~WebUILoginDisplayHost() {
@@ -45,11 +46,10 @@ WebUILoginDisplayHost::~WebUILoginDisplayHost() {
 // LoginDisplayHost implementation ---------------------------------------------
 
 LoginDisplay* WebUILoginDisplayHost::CreateLoginDisplay(
-    LoginDisplay::Delegate* delegate) const {
-  WebUILoginDisplay* webui_login_display = WebUILoginDisplay::GetInstance();
-  webui_login_display->set_delegate(delegate);
-  webui_login_display->set_background_bounds(background_bounds());
-  return webui_login_display;
+    LoginDisplay::Delegate* delegate) {
+  webui_login_display_ = new WebUILoginDisplay(delegate);
+  webui_login_display_->set_background_bounds(background_bounds());
+  return webui_login_display_;
 }
 
 gfx::NativeWindow WebUILoginDisplayHost::GetNativeWindow() const {
@@ -113,7 +113,7 @@ void WebUILoginDisplayHost::StartSignInScreen() {
     LoadURL(GURL(kLoginURL));
 
   BaseLoginDisplayHost::StartSignInScreen();
-  GetOobeUI()->ShowSigninScreen();
+  GetOobeUI()->ShowSigninScreen(webui_login_display_);
 }
 
 void WebUILoginDisplayHost::LoadURL(const GURL& url) {
@@ -126,7 +126,7 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
     login_window_->Init(params);
     login_view_ = new WebUILoginView();
 
-    login_view_->Init();
+    login_view_->Init(login_window_);
 
 #if defined(USE_AURA)
     aura_shell::Shell::GetInstance()->GetContainer(
@@ -141,7 +141,6 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
 #if defined(USE_AURA)
     login_window_->GetNativeView()->set_name("WebUILoginView");
 #endif
-    WebUILoginDisplay::GetInstance()->set_login_window(login_window_);
     login_view_->OnWindowCreated();
   }
   login_view_->LoadURL(url);

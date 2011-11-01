@@ -69,10 +69,6 @@ class LoginDisplay : public RemoveUserDelegate {
   LoginDisplay(Delegate* delegate, const gfx::Rect& background_bounds);
   virtual ~LoginDisplay();
 
-  // Call for destroying a pointer of type LoginDisplay, since some subclasses
-  // are Singletons
-  virtual void Destroy();
-
   // Initializes login UI with the user pods based on list of known users and
   // guest, new user pods if those are enabled.
   virtual void Init(const std::vector<UserManager::User>& users,

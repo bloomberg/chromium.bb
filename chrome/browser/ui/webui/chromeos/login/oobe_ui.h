@@ -17,6 +17,7 @@ namespace chromeos {
 class BaseScreenHandler;
 class CoreOobeHandler;
 class SigninScreenHandler;
+class SigninScreenHandlerDelegate;
 }
 
 namespace chromeos {
@@ -52,7 +53,7 @@ class OobeUI : public OobeDisplay,
   void ShowOobeUI(bool show);
 
   // Shows the signin screen.
-  void ShowSigninScreen();
+  void ShowSigninScreen(SigninScreenHandlerDelegate* delegate);
 
   // Called when the login main frame has been rendered.
   void OnLoginPromptVisible();

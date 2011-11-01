@@ -43,7 +43,7 @@ class WebUILoginView : public views::WidgetDelegateView,
   virtual ~WebUILoginView();
 
   // Initializes the webui login view.
-  virtual void Init();
+  virtual void Init(views::Widget* login_window);
 
   // Overridden from views::Views:
   virtual bool AcceleratorPressed(
@@ -99,9 +99,6 @@ class WebUILoginView : public views::WidgetDelegateView,
   // Creates and adds the status area (separate window).
   virtual void InitStatusArea();
 
-  // Get the views widget hosting this WebUILoginView.
-  virtual views::Widget* GetLoginWindow();
-
   StatusAreaView* status_area_;
 
   // DOMView for rendering a webpage as a webui login.
@@ -121,6 +118,9 @@ class WebUILoginView : public views::WidgetDelegateView,
   // Called when focus is returned from status area.
   // |reverse| is true when focus is traversed backwards (using Shift-Tab).
   void ReturnFocus(bool reverse);
+
+  // Login window which shows the view.
+  views::Widget* login_window_;
 
   // Window that contains status area.
   // TODO(nkostylev): Temporary solution till we have

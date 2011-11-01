@@ -13,6 +13,7 @@
 #include "base/task.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/browser/webui/web_ui.h"
@@ -76,6 +77,15 @@ class SigninScreenHandlerDelegate {
   // Let the delegate know about the handler it is supposed to be using.
   virtual void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) = 0;
 
+  // Returns users list to be shown.
+  virtual const std::vector<UserManager::User>& GetUsers() const = 0;
+
+  // Whether login as guest is available.
+  virtual bool IsShowGuest() const = 0;
+
+  // Whether new user pod is available.
+  virtual bool IsShowNewUser() const = 0;
+
  protected:
   virtual ~SigninScreenHandlerDelegate() {}
 };
@@ -93,6 +103,10 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Shows the sign in screen. |oobe_ui| indicates whether the signin
   // screen is for OOBE or usual sign-in flow.
   void Show(bool oobe_ui);
+
+  // Sets delegate to be used by the handler. It is guaranteed that valid
+  // delegate is set before Show() method will be called.
+  void SetDelegate(SigninScreenHandlerDelegate* delegate);
 
  private:
   friend class ReportDnsCacheClearedOnUIThread;

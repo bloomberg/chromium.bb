@@ -17,6 +17,7 @@ class Rect;
 namespace chromeos {
 
 class OobeUI;
+class WebUILoginDisplay;
 class WebUILoginView;
 
 // WebUI-specific implementation of the OOBE/login screen host. Uses
@@ -27,8 +28,8 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost {
   virtual ~WebUILoginDisplayHost();
 
   // LoginDisplayHost implementation:
-  virtual LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate)
-      const OVERRIDE;
+  virtual LoginDisplay* CreateLoginDisplay(
+      LoginDisplay::Delegate* delegate) OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
   virtual void SetOobeProgress(BackgroundView::LoginStep step) OVERRIDE;
   virtual void SetOobeProgressBarVisible(bool visible) OVERRIDE;
@@ -54,6 +55,9 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost {
 
   // Container of the view we are displaying.
   WebUILoginView* login_view_;
+
+  // Login display we are using.
+  WebUILoginDisplay* webui_login_display_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUILoginDisplayHost);
 };

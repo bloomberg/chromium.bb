@@ -7,6 +7,7 @@
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace base {
 class DictionaryValue;
@@ -38,6 +39,9 @@ class BaseScreenHandler : public WebUIMessageHandler {
 
   // Whether page is ready.
   bool page_is_ready() const { return page_is_ready_; }
+
+  // Returns the window which shows us.
+  gfx::NativeWindow GetNativeWindow();
 
  private:
   // Keeps whether page is ready.

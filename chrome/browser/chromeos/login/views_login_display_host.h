@@ -14,6 +14,8 @@
 
 namespace chromeos {
 
+class ViewsOobeDisplay;
+
 // Views-specific implementation of the OOBE/login screen host.
 // Uses ViewsLoginDisplay as the login screen UI implementation,
 // BackgroundView as the background UI implementation.
@@ -24,8 +26,7 @@ class ViewsLoginDisplayHost : public chromeos::BaseLoginDisplayHost {
   virtual ~ViewsLoginDisplayHost();
 
   // LoginDisplayHost implementation:
-  virtual LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate)
-      const;
+  virtual LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate);
   virtual gfx::NativeWindow GetNativeWindow() const;
   virtual void SetOobeProgress(BackgroundView::LoginStep step);
   virtual void SetOobeProgressBarVisible(bool visible);
@@ -33,11 +34,18 @@ class ViewsLoginDisplayHost : public chromeos::BaseLoginDisplayHost {
   virtual void SetStatusAreaEnabled(bool enable);
   virtual void SetStatusAreaVisible(bool visible);
   virtual void ShowBackground();
+  virtual void StartSignInScreen();
+
+  // BaseLoginDisplayHost implementation:
+  virtual WizardController* CreateWizardController() OVERRIDE;
 
  private:
   // Background view/window.
   BackgroundView* background_view_;
   views::Widget* background_window_;
+
+  // Keeps views based OobeDisplay implementation.
+  scoped_ptr<ViewsOobeDisplay> oobe_display_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsLoginDisplayHost);
 };

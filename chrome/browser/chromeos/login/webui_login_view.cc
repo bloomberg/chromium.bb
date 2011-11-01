@@ -113,6 +113,7 @@ const int WebUILoginView::kStatusAreaCornerPadding = 5;
 WebUILoginView::WebUILoginView()
     : status_area_(NULL),
       webui_login_(NULL),
+      login_window_(NULL),
       status_window_(NULL),
       host_window_frozen_(false),
       status_area_visibility_on_init_(true) {
@@ -137,8 +138,8 @@ WebUILoginView::~WebUILoginView() {
   status_window_ = NULL;
 }
 
-void WebUILoginView::Init() {
-
+void WebUILoginView::Init(views::Widget* login_window) {
+  login_window_ = login_window;
   webui_login_ = new DOMView();
   AddChildView(webui_login_);
   webui_login_->Init(ProfileManager::GetDefaultProfile(), NULL);
@@ -337,7 +338,6 @@ void WebUILoginView::InitStatusArea() {
   status_area_->Init();
   status_area_->SetVisible(status_area_visibility_on_init_);
 
-  views::Widget* login_window = GetLoginWindow();
   // Width of |status_window| is meant to be large enough.
   // The current value of status_area_->GetPreferredSize().width()
   // will be too small when button status is changed.
@@ -361,7 +361,7 @@ void WebUILoginView::InitStatusArea() {
 #endif
   widget_params.bounds = widget_bounds;
   widget_params.transparent = true;
-  widget_params.parent_widget = login_window;
+  widget_params.parent_widget = login_window_;
   status_window_ = new views::Widget;
   status_window_->Init(widget_params);
 
@@ -420,10 +420,6 @@ void WebUILoginView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   WebUI* web_ui = GetWebUI();
   if (web_ui)
     web_ui->CallJavascriptFunction("cr.ui.Oobe.clearErrors");
-}
-
-views::Widget* WebUILoginView::GetLoginWindow() {
-  return WebUILoginDisplay::GetLoginWindow();
 }
 
 }  // namespace chromeos

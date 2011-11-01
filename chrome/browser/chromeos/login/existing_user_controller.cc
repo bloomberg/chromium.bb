@@ -80,14 +80,13 @@ ExistingUserController* ExistingUserController::current_controller_ = NULL;
 ExistingUserController::ExistingUserController(LoginDisplayHost* host)
     : login_status_consumer_(NULL),
       host_(host),
+      login_display_(host_->CreateLoginDisplay(this)),
       num_login_attempts_(0),
       user_settings_(new UserCrosSettingsProvider),
       weak_factory_(this),
       is_owner_login_(false) {
   DCHECK(current_controller_ == NULL);
   current_controller_ = this;
-
-  login_display_ = host_->CreateLoginDisplay(this);
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
@@ -144,9 +143,7 @@ ExistingUserController::~ExistingUserController() {
   } else {
     NOTREACHED() << "More than one controller are alive.";
   }
-  DCHECK(login_display_ != NULL);
-  login_display_->Destroy();
-  login_display_ = NULL;
+  DCHECK(login_display_.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

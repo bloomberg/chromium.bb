@@ -5,7 +5,10 @@
 #include "chrome/browser/chromeos/login/views_login_display_host.h"
 
 #include "chrome/browser/chromeos/login/views_login_display.h"
+#include "chrome/browser/chromeos/login/views_oobe_display.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
+
 
 namespace chromeos {
 
@@ -25,7 +28,7 @@ ViewsLoginDisplayHost::~ViewsLoginDisplayHost() {
 // LoginDisplayHost implementation -----------------------------------------
 
 LoginDisplay* ViewsLoginDisplayHost::CreateLoginDisplay(
-    LoginDisplay::Delegate* delegate) const {
+    LoginDisplay::Delegate* delegate) {
   chromeos::WizardAccessibilityHelper::GetInstance()->Init();
   return new ViewsLoginDisplay(delegate, background_bounds());
 }
@@ -72,6 +75,19 @@ void ViewsLoginDisplayHost::ShowBackground() {
                                                  GURL(),
                                                  &background_view_);
   background_window_->Show();
+}
+
+void ViewsLoginDisplayHost::StartSignInScreen() {
+  oobe_display_.reset();
+  BaseLoginDisplayHost::StartSignInScreen();
+}
+
+WizardController* ViewsLoginDisplayHost::CreateWizardController() {
+  oobe_display_.reset(new ViewsOobeDisplay(background_bounds()));
+  WizardController* wizard_controller  =
+      new WizardController(this, oobe_display_.get());
+  oobe_display_->SetScreenObserver(wizard_controller);
+  return wizard_controller;
 }
 
 }  // namespace chromeos

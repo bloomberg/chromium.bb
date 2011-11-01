@@ -7,7 +7,9 @@
 #include <algorithm>
 
 #include "chrome/browser/chromeos/login/background_view.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/setting_level_bubble_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -74,15 +76,25 @@ static views::Widget* GetToplevelWidget() {
 #else
     // Otherwise, see if there's a background window that we can use.
     BackgroundView* background = LoginUtils::Get()->GetBackgroundView();
-    if (background)
+    if (background) {
       window = GTK_WINDOW(background->GetNativeWindow());
+    } else {
+      ExistingUserController* controller =
+          ExistingUserController::current_controller();
+      if (controller) {
+        window =
+            GTK_WINDOW(controller->login_display_host()->GetNativeWindow());
+      }
+    }
 #endif
   }
 
-  if (window)
+  if (window) {
     return views::Widget::GetWidgetForNativeWindow(window);
-  else
-    return WebUILoginDisplay::GetLoginWindow();
+  } else {
+    NOTREACHED();
+    return NULL;
+  }
 }
 
 // SettingLevelBubbleDelegateView ----------------------------------------------

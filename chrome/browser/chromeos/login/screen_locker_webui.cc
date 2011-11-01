@@ -137,8 +137,8 @@ class ScreenLockWebUI : public WebUILoginView {
   explicit ScreenLockWebUI(ScreenLocker* screen_locker);
   virtual ~ScreenLockWebUI();
 
-  // WebUILoginView overrides:
-  virtual void Init() OVERRIDE;
+  // Initializes ScreenLockWebUI.
+  void InitView();
 
   // Clears and sets the focus to the password field.
   void ClearAndSetFocusToPassword();
@@ -156,10 +156,6 @@ class ScreenLockWebUI : public WebUILoginView {
       const views::Accelerator& accelerator) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
-
- protected:
-  // WebUILoginView overrides:
-  virtual views::Widget* GetLoginWindow() OVERRIDE;
 
  private:
   friend class test::ScreenLockerTester;
@@ -204,7 +200,7 @@ void ScreenLockerWebUI::Init(bool unlock_on_input) {
   // GTK does not like zero width/height.
   if (!unlock_on_input) {
     screen_lock_webui_ = new ScreenLockWebUI(screen_locker_);
-    screen_lock_webui_->Init();
+    screen_lock_webui_->InitView();
     screen_lock_webui_->SetEnabled(false);
   } else {
     input_event_observer_.reset(new InputEventObserver(screen_locker_));
@@ -299,8 +295,9 @@ ScreenLockWebUI::ScreenLockWebUI(ScreenLocker* screen_locker)
 ScreenLockWebUI::~ScreenLockWebUI() {
 }
 
-void ScreenLockWebUI::Init() {
-  WebUILoginView::Init();
+void ScreenLockWebUI::InitView() {
+  DCHECK(screen_locker_webui_);
+  Init(screen_locker_webui_->lock_window_);
   LoadURL(GURL(chrome::kChromeUILockScreenURL));
 }
 
@@ -343,11 +340,6 @@ void ScreenLockWebUI::HandleKeyboardEvent(
   // cr.ui.Oobe functions.
   // TODO(flackr): This might be able to be removed once merging with the login
   //     screen WebUI is complete.
-}
-
-views::Widget* ScreenLockWebUI::GetLoginWindow() {
-  DCHECK(screen_locker_webui_);
-  return screen_locker_webui_->lock_window_;
 }
 
 }  // namespace chromeos

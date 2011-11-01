@@ -71,8 +71,7 @@ void NetworkDropdownHandler::HandleNetworkDropdownShow(
   if (!args->GetString(0, &element_id))
     NOTREACHED();
 
-  dropdown_.reset(new NetworkDropdown(
-      web_ui_, WebUILoginDisplay::GetLoginWindow()->GetNativeWindow()));
+  dropdown_.reset(new NetworkDropdown(web_ui_, GetNativeWindow()));
 }
 
 void NetworkDropdownHandler::HandleNetworkDropdownHide(

@@ -85,14 +85,13 @@ class ExistingUserController : public LoginDisplay::Delegate,
     login_status_consumer_ = consumer;
   }
 
-  // Returns the LoginDisplay instance created and owned by this controller.
+  // Returns the LoginDisplay created and owned by this controller.
   // Used for testing.
   LoginDisplay* login_display() {
-    return login_display_;
+    return login_display_.get();
   }
 
   // Returns the LoginDisplayHost for this controller.
-  // Used for testing.
   LoginDisplayHost* login_display_host() {
     return host_;
   }
@@ -154,9 +153,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Used to execute login operations.
   scoped_ptr<LoginPerformer> login_performer_;
 
-  // Login UI implementation instance.
-  LoginDisplay* login_display_;
-
   // Delegate for login performer to be overridden by tests.
   // |this| is used if |login_performer_delegate_| is NULL.
   scoped_ptr<LoginPerformer::Delegate> login_performer_delegate_;
@@ -170,6 +166,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // OOBE/login display host.
   LoginDisplayHost* host_;
+
+  // Login UI implementation instance.
+  scoped_ptr<LoginDisplay> login_display_;
 
   // Number of login attempts. Used to show help link when > 1 unsuccessful
   // logins for the same user.
