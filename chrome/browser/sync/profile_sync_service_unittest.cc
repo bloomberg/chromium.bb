@@ -155,6 +155,31 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
   service_.reset();
 }
 
+TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
+  service_.reset(new TestProfileSyncService(&factory_,
+                                            profile_.get(),
+                                            "test", true, NULL));
+  // Register the bookmark data type.
+  EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
+      WillRepeatedly(ReturnNewDataTypeManager());
+
+  profile_->GetTokenService()->IssueAuthTokenForTest(
+      GaiaConstants::kSyncService, "token");
+
+  service_->Initialize();
+  EXPECT_TRUE(service_->sync_initialized());
+  EXPECT_TRUE(service_->GetBackendForTest() != NULL);
+  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+
+  service_->StopAndSuppress();
+  EXPECT_FALSE(service_->sync_initialized());
+  EXPECT_TRUE(profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+
+  service_->UnsuppressAndStart();
+  EXPECT_TRUE(service_->sync_initialized());
+  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+}
+
 TEST_F(ProfileSyncServiceTest, JsControllerHandlersBasic) {
   StartSyncService();
   EXPECT_TRUE(service_->sync_initialized());

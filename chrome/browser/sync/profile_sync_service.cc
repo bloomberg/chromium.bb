@@ -188,19 +188,20 @@ void ProfileSyncService::Initialize() {
     signin_->Initialize(profile_);
   }
 
-  if (!HasSyncSetupCompleted()) {
-    // If autostart is enabled, but we haven't completed sync setup, try to
-    // start sync anyway (it's possible we crashed/shutdown after logging in
-    // but before the backend finished initializing the last time).
-    if (auto_start_enabled_ && !sync_prefs_.IsStartSuppressed() &&
-        AreCredentialsAvailable()) {
+  TryStart();
+}
+
+void ProfileSyncService::TryStart() {
+  if (!sync_prefs_.IsStartSuppressed() && AreCredentialsAvailable()) {
+    if (HasSyncSetupCompleted() || auto_start_enabled_) {
+      // If sync setup has completed we always start the backend.
+      // If autostart is enabled, but we haven't completed sync setup, we try to
+      // start sync anyway, since it's possible we crashed/shutdown after
+      // logging in but before the backend finished initializing the last time.
+      // Note that if we haven't finished setting up sync, backend bring up will
+      // be done by the wizard.
       StartUp();
     }
-  } else if (AreCredentialsAvailable()) {
-    // If we have credentials and sync setup finished, autostart the backend.
-    // Note that if we haven't finished setting up sync, backend bring up will
-    // be done by the wizard.
-    StartUp();
   }
 }
 
@@ -1516,6 +1517,22 @@ bool ProfileSyncService::ShouldPushChanges() {
     return false;
 
   return data_type_manager_->state() == DataTypeManager::CONFIGURED;
+}
+
+void ProfileSyncService::StopAndSuppress() {
+  sync_prefs_.SetStartSuppressed(true);
+  Shutdown(false);
+}
+
+void ProfileSyncService::UnsuppressAndStart() {
+  DCHECK(profile_);
+  sync_prefs_.SetStartSuppressed(false);
+  // Set username in SigninManager, as SigninManager::OnGetUserInfoSuccess
+  // is never called for some clients.
+  if (signin_->GetUsername().empty()) {
+    signin_->SetUsername(sync_prefs_.GetGoogleServicesUsername());
+  }
+  TryStart();
 }
 
 void ProfileSyncService::AcknowledgeSyncedTypes() {

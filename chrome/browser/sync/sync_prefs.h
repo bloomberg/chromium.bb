@@ -69,6 +69,8 @@ class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
   bool IsStartSuppressed() const;
   void SetStartSuppressed(bool is_suppressed);
 
+  std::string GetGoogleServicesUsername() const;
+
   base::Time GetLastSyncedTime() const;
   void SetLastSyncedTime(base::Time time);
 

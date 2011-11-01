@@ -86,6 +86,13 @@ void SyncPrefs::SetStartSuppressed(bool is_suppressed) {
   pref_service_->ScheduleSavePersistentPrefs();
 }
 
+std::string SyncPrefs::GetGoogleServicesUsername() const {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  return
+      pref_service_ ?
+      pref_service_->GetString(prefs::kGoogleServicesUsername) : "";
+}
+
 base::Time SyncPrefs::GetLastSyncedTime() const {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   return

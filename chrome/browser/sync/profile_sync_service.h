@@ -481,6 +481,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   const std::string& cros_user() const { return cros_user_; }
   bool auto_start_enabled() const { return auto_start_enabled_; }
 
+  // Stops the sync backend and sets the flag for suppressing sync startup.
+  void StopAndSuppress();
+
+  // Resets the flag for suppressing sync startup and starts the sync backend.
+  void UnsuppressAndStart();
+
   // Marks all currently registered types as "acknowledged" so we won't prompt
   // the user about them any more.
   void AcknowledgeSyncedTypes();
@@ -541,6 +547,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   friend class TestProfileSyncService;
   friend class ProfileSyncServiceForWizardTest;
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest, InitialState);
+
+  // Starts up sync if it is not suppressed and preconditions are met.
+  // Called from Initialize() and UnsuppressAndStart().
+  void TryStart();
 
   // Called when we've determined that we don't need a passphrase (either
   // because OnPassphraseAccepted() was called, or because we've gotten a
