@@ -89,19 +89,7 @@ void NatPolicy::UpdateNatPolicy(base::DictionaryValue* new_policy) {
   bool new_nat_enabled_state = false;
   if (!new_policy->HasKey(kNatPolicyName)) {
     // If unspecified, the default value of this policy is true.
-    //
-    // TODO(dmaclach): Currently defaults to false on Linux until
-    // we have policy in place. http://crbug.com/97689
-#if defined(OS_WIN)
     new_nat_enabled_state = true;
-#elif defined(OS_MACOSX)
-    new_nat_enabled_state = true;
-#elif defined(OS_LINUX)
-    new_nat_enabled_state = false;
-#else
-    // Be conservative for now
-    new_nat_enabled_state = false;
-#endif  // defined(OS_WIN)
   } else {
     // Otherwise, try to parse the value and only change from false if we get
     // a successful read.
