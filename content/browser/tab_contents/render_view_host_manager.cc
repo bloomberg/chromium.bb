@@ -391,10 +391,17 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   // is part of an app that has been installed or uninstalled since the last
   // visit.
   if (entry.site_instance()) {
-    if (entry.site_instance()->HasWrongProcessForURL(dest_url))
-      return curr_instance->GetRelatedSiteInstance(dest_url);
-    else
-      return entry.site_instance();
+    if (entry.site_instance()->HasWrongProcessForURL(dest_url)) {
+      // If we need to swap to a different SiteInstance, the new one should have
+      // the same max_page_id as the current one so that it identifies new vs
+      // existing navigations correctly.  We also need to update the entry's
+      // SiteInstance, which we will do in TabContents::NavigateToEntry.
+      SiteInstance* new_instance =
+          curr_instance->GetRelatedSiteInstance(dest_url);
+      new_instance->UpdateMaxPageID(curr_instance->max_page_id());
+      return new_instance;
+    }
+    return entry.site_instance();
   }
 
   // (UGLY) HEURISTIC, process-per-site only:

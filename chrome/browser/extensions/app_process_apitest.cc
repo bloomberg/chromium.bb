@@ -369,6 +369,58 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
       contents->render_view_host()->process()->id()));
 }
 
+// Ensure that page_ids are handled correctly when we force a process swap
+// for an installed or uninstalled app.  (http://crbug.com/102408)
+IN_PROC_BROWSER_TEST_F(AppApiTest, BackToAppProcess) {
+  ExtensionProcessManager* extension_process_manager =
+      browser()->profile()->GetExtensionProcessManager();
+
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  // The app under test acts on URLs whose host is "localhost",
+  // so the URLs we navigate to must have host "localhost".
+  GURL base_url = GetTestBaseURL("app_process");
+
+  // Load an app URL before loading the app.
+  ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
+  TabContents* contents = browser()->GetTabContentsAt(0);
+  EXPECT_FALSE(extension_process_manager->IsExtensionProcess(
+      contents->render_view_host()->process()->id()));
+  int orig_page_id = contents->controller().GetLastCommittedEntry()->page_id();
+
+  // Navigate to a second app URL before loading the app.
+  ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path2/empty.html"));
+  EXPECT_FALSE(extension_process_manager->IsExtensionProcess(
+      contents->render_view_host()->process()->id()));
+  EXPECT_EQ(orig_page_id + 1,
+            contents->controller().GetLastCommittedEntry()->page_id());
+
+  // Load app and go back.  We expect a process swap, but we also expect the
+  // same page_id to be used and the SiteInstance to be updated.
+  const Extension* app =
+      LoadExtension(test_data_dir_.AppendASCII("app_process"));
+  ASSERT_TRUE(app);
+  ui_test_utils::WindowedNotificationObserver back_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<NavigationController>(
+          &browser()->GetSelectedTabContentsWrapper()->controller()));
+  browser()->GoBack(CURRENT_TAB);
+  back_observer.Wait();
+  EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
+      contents->render_view_host()->process()->id()));
+  EXPECT_EQ(orig_page_id,
+            contents->controller().GetLastCommittedEntry()->page_id());
+
+  // Now navigate to a different app URL via the renderer process.
+  // The NavigationController should recognize it as a new navigation.
+  NavigateTabHelper(contents, base_url.Resolve("path1/simple.html"));
+  EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
+      contents->render_view_host()->process()->id()));
+  EXPECT_EQ(orig_page_id + 2,
+            contents->controller().GetLastCommittedEntry()->page_id());
+}
+
 
 // Tests that if we have a non-app process (path3/container.html) that has an
 // iframe with  a URL in the app's extent (path1/iframe.html), then opening a

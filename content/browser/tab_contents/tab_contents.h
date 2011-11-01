@@ -592,7 +592,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // Causes the TabContents to navigate in the right renderer to |entry|, which
   // must be already part of the entries in the navigation controller.
   // This does not change the NavigationController state.
-  bool NavigateToEntry(const NavigationEntry& entry,
+  bool NavigateToEntry(NavigationEntry* entry,
                        NavigationController::ReloadType reload_type);
 
   // Sets the history for this tab_contents to |history_length| entries, and

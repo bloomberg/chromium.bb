@@ -571,27 +571,34 @@ TabContents* TabContents::OpenURL(const OpenURLParams& params) {
 
 bool TabContents::NavigateToPendingEntry(
     NavigationController::ReloadType reload_type) {
-  return NavigateToEntry(*controller_.pending_entry(), reload_type);
+  return NavigateToEntry(controller_.pending_entry(), reload_type);
 }
 
 bool TabContents::NavigateToEntry(
-    const NavigationEntry& entry,
+    NavigationEntry* entry,
     NavigationController::ReloadType reload_type) {
   // The renderer will reject IPC messages with URLs longer than
   // this limit, so don't attempt to navigate with a longer URL.
-  if (entry.url().spec().size() > content::kMaxURLChars)
+  if (entry->url().spec().size() > content::kMaxURLChars)
     return false;
 
-  RenderViewHost* dest_render_view_host = render_manager_.Navigate(entry);
+  RenderViewHost* dest_render_view_host = render_manager_.Navigate(*entry);
   if (!dest_render_view_host)
     return false;  // Unable to create the desired render view host.
+
+  // If we were forced to swap the entry's existing SiteInstance, we need to
+  // update it before the navigation begins so that we can find it when the
+  // navigation commits.
+  if (entry->site_instance() &&
+      entry->site_instance() != dest_render_view_host->site_instance())
+    entry->set_site_instance(dest_render_view_host->site_instance());
 
   // For security, we should never send non-Web-UI URLs to a Web UI renderer.
   // Double check that here.
   int enabled_bindings = dest_render_view_host->enabled_bindings();
   bool is_allowed_in_web_ui_renderer = content::GetContentClient()->
       browser()->GetWebUIFactory()->IsURLAcceptableForWebUI(browser_context(),
-                                                            entry.url());
+                                                            entry->url());
   CHECK(!(enabled_bindings & content::BINDINGS_POLICY_WEB_UI) ||
         is_allowed_in_web_ui_renderer);
 
@@ -600,7 +607,7 @@ bool TabContents::NavigateToEntry(
   if (devtools_manager) {  // NULL in unit tests.
     devtools_manager->OnNavigatingToPendingEntry(render_view_host(),
                                                  dest_render_view_host,
-                                                 entry.url());
+                                                 entry->url());
   }
 
   // Used for page load time metrics.
@@ -608,24 +615,24 @@ bool TabContents::NavigateToEntry(
 
   // Navigate in the desired RenderViewHost.
   ViewMsg_Navigate_Params navigate_params;
-  MakeNavigateParams(entry, controller_, delegate_, reload_type,
+  MakeNavigateParams(*entry, controller_, delegate_, reload_type,
                      &navigate_params);
   dest_render_view_host->Navigate(navigate_params);
 
-  if (entry.page_id() == -1) {
+  if (entry->page_id() == -1) {
     // HACK!!  This code suppresses javascript: URLs from being added to
     // session history, which is what we want to do for javascript: URLs that
     // do not generate content.  What we really need is a message from the
     // renderer telling us that a new page was not created.  The same message
     // could be used for mailto: URLs and the like.
-    if (entry.url().SchemeIs(chrome::kJavaScriptScheme))
+    if (entry->url().SchemeIs(chrome::kJavaScriptScheme))
       return false;
   }
 
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(TabContentsObserver,
                     observers_,
-                    NavigateToPendingEntry(entry.url(), reload_type));
+                    NavigateToPendingEntry(entry->url(), reload_type));
 
   if (delegate_)
     delegate_->DidNavigateToPendingEntry(this);
@@ -1090,7 +1097,7 @@ void TabContents::OnGoToEntryAtOffset(int offset) {
         content::PageTransitionFromInt(
             entry->transition_type() |
             content::PAGE_TRANSITION_FORWARD_BACK));
-    NavigateToEntry(*entry, NavigationController::NO_RELOAD);
+    NavigateToEntry(entry, NavigationController::NO_RELOAD);
 
     // If the entry is being restored and doesn't have a SiteInstance yet, fill
     // it in now that we know. This allows us to find the entry when it commits.
