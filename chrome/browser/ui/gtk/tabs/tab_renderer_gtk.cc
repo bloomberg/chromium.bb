@@ -74,6 +74,12 @@ const int kHoverDurationMs = 90;
 // How opaque to make the hover state (out of 1).
 const double kHoverOpacity = 0.33;
 
+// Opacity for non-active selected tabs.
+const double kSelectedTabOpacity = 0.45;
+
+// Selected (but not active) tabs have their throb value scaled down by this.
+const double kSelectedTabThrobScale = 0.5;
+
 // Max opacity for the mini-tab title change animation.
 const double kMiniTitleChangeThrobOpacity = 0.75;
 
@@ -945,8 +951,6 @@ void TabRendererGtk::PaintInactiveTabBackground(GtkWidget* widget,
                                                      cairo_t* cr) {
   int theme_id = data_.incognito ?
       IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
-  if (IsSelected())
-    theme_id = IDR_THEME_TAB_BACKGROUND_V;
 
   CairoCachedSurface* tab_bg =
       theme_service_->GetSurfaceNamed(theme_id, widget);
@@ -1024,12 +1028,19 @@ CustomDrawButton* TabRendererGtk::MakeCloseButton() {
 }
 
 double TabRendererGtk::GetThrobValue() {
+  bool is_selected = IsSelected();
+  double min = is_selected ? kSelectedTabOpacity : 0;
+  double scale = is_selected ? kSelectedTabThrobScale : 1;
+
   if (mini_title_animation_.get() && mini_title_animation_->is_animating()) {
     return mini_title_animation_->GetCurrentValue() *
-        kMiniTitleChangeThrobOpacity;
+        kMiniTitleChangeThrobOpacity * scale + min;
   }
-  return hover_animation_.get() ?
-      kHoverOpacity * hover_animation_->GetCurrentValue() : 0;
+
+  if (hover_animation_.get())
+    return kHoverOpacity * hover_animation_->GetCurrentValue() * scale + min;
+
+  return is_selected ? kSelectedTabOpacity : 0;
 }
 
 void TabRendererGtk::CloseButtonClicked() {
