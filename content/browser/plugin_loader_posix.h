@@ -42,8 +42,8 @@ class MessageLoopProxy;
 // 5. This algorithm continues until the canonical list has been walked to the
 //    end, after which the list of loaded plugins is set on the PluginList and
 //    the completion callback is run.
-class PluginLoaderPosix : public UtilityProcessHost::Client,
-                                 IPC::Message::Sender {
+class CONTENT_EXPORT PluginLoaderPosix : public UtilityProcessHost::Client,
+                                                IPC::Message::Sender {
  public:
   PluginLoaderPosix();
 

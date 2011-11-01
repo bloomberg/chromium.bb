@@ -172,9 +172,9 @@ class RenderWidgetHostView {
   virtual void SetTooltipText(const string16& tooltip_text) = 0;
 
   // Notifies the View that the renderer text selection has changed.
-  virtual void SelectionChanged(const string16& text,
-                                size_t offset,
-                                const ui::Range& range);
+  CONTENT_EXPORT virtual void SelectionChanged(const string16& text,
+                                               size_t offset,
+                                               const ui::Range& range);
 
   // Notifies the View that the renderer selection bounds has changed.
   // |start_rect| and |end_rect| are the bounds end of the selection in the
