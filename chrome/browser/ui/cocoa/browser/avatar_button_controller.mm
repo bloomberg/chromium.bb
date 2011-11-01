@@ -132,6 +132,14 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
   return self;
 }
 
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+                name:NSWindowWillCloseNotification
+              object:[menuController_ window]];
+  [super dealloc];
+}
+
 - (NSButton*)buttonView {
   return static_cast<NSButton*>(self.view);
 }
