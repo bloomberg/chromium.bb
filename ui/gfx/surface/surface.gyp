@@ -22,6 +22,7 @@
       'type': '<(component)',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui',
@@ -31,6 +32,8 @@
         'accelerated_surface_mac.h',
         'accelerated_surface_wayland.cc',
         'accelerated_surface_wayland.h',
+        'accelerated_surface_win.cc',
+        'accelerated_surface_win.h',
         'io_surface_support_mac.cc',
         'io_surface_support_mac.h',
         'surface_export.h',
