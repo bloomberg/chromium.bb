@@ -20,7 +20,7 @@ vars = {
   "native_client_trunk": "http://src.chromium.org/native_client/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
   "python_26_rev": "53573",
-  "tools_rev": "7066",
+  "tools_rev": "7072",
   "valgrind_rev": "5674",
   "wix_rev": "153",
 }
@@ -108,7 +108,7 @@ deps_os = {
       (Var("native_client_trunk") + "/deps/third_party/mingw-w64/mingw/bin@" +
        Var("tools_rev")),
     "third_party/NSIS":
-      (Var("native_client_trunk") + "/src/third_party/NSIS@" +
+      (Var("native_client_trunk") + "/deps/third_party/NSIS@" +
        Var("tools_rev")),
     "third_party/python_26":
       (Var("chromium_trunk") + "/tools/third_party/python_26@" +
