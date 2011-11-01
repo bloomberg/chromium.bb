@@ -154,7 +154,6 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
       ++ix;
   }
 
-  TypedUrlTitleVector titles;
   TypedUrlVector new_urls;
   TypedUrlVisitVector new_visits;
   TypedUrlUpdateVector updated_urls;
@@ -231,10 +230,6 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
                     visits.back().visit_time.ToInternalValue());
           WriteToSyncNode(new_url, visits, &write_node);
         }
-        if (difference & DIFF_LOCAL_TITLE_CHANGED) {
-          titles.push_back(std::pair<GURL, string16>(new_url.url(),
-                                                     new_url.title()));
-        }
         if (difference & DIFF_LOCAL_ROW_CHANGED) {
           updated_urls.push_back(
               std::pair<history::URLID, history::URLRow>(ix->id(), new_url));
@@ -298,8 +293,11 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
       }
 
       if (current_urls.find(typed_url.url()) == current_urls.end()) {
-        if (!UpdateFromNewTypedUrl(typed_url, &new_visits, &updated_urls,
-                                   &new_urls)) {
+        // Update the local DB from the sync DB. Since we are doing our
+        // initial model association, we don't want to remove any of the
+        // existing visits (pass NULL as |visits_to_remove|).
+        if (!UpdateFromSyncDB(typed_url, &new_visits, NULL, &updated_urls,
+                              &new_urls)) {
             error->Reset(FROM_HERE, "Could not get existing url's visits.",
                          model_type());
             return false;
@@ -335,7 +333,7 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   // this is the only thread that writes to the database.  We also don't have
   // to worry about the sync model getting out of sync, because changes are
   // propagated to the ChangeProcessor on this thread.
-  if (!WriteToHistoryBackend(&titles, &new_urls, &updated_urls,
+  if (!WriteToHistoryBackend(&new_urls, &updated_urls,
                              &new_visits, NULL)) {
     error->Reset(FROM_HERE,
                  "Failed to write to history backend",
@@ -345,9 +343,10 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   return true;
 }
 
-bool TypedUrlModelAssociator::UpdateFromNewTypedUrl(
+bool TypedUrlModelAssociator::UpdateFromSyncDB(
     const sync_pb::TypedUrlSpecifics& typed_url,
     TypedUrlVisitVector* visits_to_add,
+    history::VisitVector* visits_to_remove,
     TypedUrlUpdateVector* updated_urls,
     TypedUrlVector* new_urls) {
   history::URLRow new_url(GURL(typed_url.url()));
@@ -364,12 +363,13 @@ bool TypedUrlModelAssociator::UpdateFromNewTypedUrl(
       return false;
     }
   }
+
   // Update the URL with information from the typed URL.
-  TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
-      typed_url, &new_url);
+  UpdateURLRowFromTypedUrlSpecifics(typed_url, &new_url);
 
   // Figure out which visits we need to add.
-  DiffVisits(existing_visits, typed_url, &visits_to_add->back().second, NULL);
+  DiffVisits(existing_visits, typed_url, &visits_to_add->back().second,
+             visits_to_remove);
 
   if (existing_url) {
     updated_urls->push_back(
@@ -485,17 +485,10 @@ bool TypedUrlModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
 }
 
 bool TypedUrlModelAssociator::WriteToHistoryBackend(
-    const TypedUrlTitleVector* titles,
     const TypedUrlVector* new_urls,
     const TypedUrlUpdateVector* updated_urls,
     const TypedUrlVisitVector* new_visits,
     const history::VisitVector* deleted_visits) {
-  if (titles) {
-    for (TypedUrlTitleVector::const_iterator title = titles->begin();
-         title != titles->end(); ++title) {
-      history_backend_->SetPageTitle(title->first, title->second);
-    }
-  }
   if (new_urls) {
 #ifndef NDEBUG
     // All of these URLs should already have been associated.
@@ -525,6 +518,9 @@ bool TypedUrlModelAssociator::WriteToHistoryBackend(
     for (TypedUrlVisitVector::const_iterator visits = new_visits->begin();
          visits != new_visits->end(); ++visits) {
       DCHECK(IsAssociated(visits->first.spec()));
+      // If there are no visits to add, just skip this.
+      if (visits->second.empty())
+        continue;
       if (!history_backend_->AddVisits(visits->first, visits->second,
                                        history::SOURCE_SYNCED)) {
         LOG(ERROR) << "Could not add visits.";
@@ -577,11 +573,6 @@ TypedUrlModelAssociator::MergeResult TypedUrlModelAssociator::MergeUrls(
       new_url->set_title(node_title);
       new_url->set_hidden(node.hidden());
       different |= DIFF_LOCAL_ROW_CHANGED;
-
-      // If we're changing the local title, note this.
-      if (new_url->title().compare(url.title()) != 0) {
-        different |= DIFF_LOCAL_TITLE_CHANGED;
-      }
     } else {
       new_url->set_title(url.title());
       new_url->set_hidden(url.hidden());
@@ -816,8 +807,12 @@ void TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
   CHECK_EQ(typed_url.visit_transitions_size(), typed_url.visits_size());
   new_url->set_title(UTF8ToUTF16(typed_url.title()));
   new_url->set_hidden(typed_url.hidden());
-  new_url->set_last_visit(base::Time::FromInternalValue(
-      typed_url.visits(typed_url.visits_size() - 1)));
+  // Only provide the initial value for the last_visit field - after that, let
+  // the history code update the last_visit field on its own.
+  if (new_url->last_visit().is_null()) {
+    new_url->set_last_visit(base::Time::FromInternalValue(
+        typed_url.visits(typed_url.visits_size() - 1)));
+  }
 }
 
 bool TypedUrlModelAssociator::CryptoReadyIfNecessary() {

@@ -124,6 +124,7 @@ void AddToHistory(HistoryService* service,
                    history::RedirectList(),
                    source,
                    false);
+  service->SetPageTitle(url, ASCIIToUTF16(url.spec() + " - title"));
 }
 
 std::vector<history::URLRow> GetTypedUrlsFromHistoryService(

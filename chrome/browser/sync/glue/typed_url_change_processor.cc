@@ -205,9 +205,9 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
     return;
   }
 
-  DCHECK(pending_titles_.empty() && pending_new_urls_.empty() &&
-         pending_new_visits_.empty() && pending_deleted_visits_.empty() &&
-         pending_updated_urls_.empty() && pending_deleted_urls_.empty());
+  DCHECK(pending_new_urls_.empty() && pending_new_visits_.empty() &&
+         pending_deleted_visits_.empty() && pending_updated_urls_.empty() &&
+         pending_deleted_urls_.empty());
 
   for (sync_api::ChangeRecordList::const_iterator it =
            changes.Get().begin(); it != changes.Get().end(); ++it) {
@@ -237,67 +237,21 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
 
     const sync_pb::TypedUrlSpecifics& typed_url(
         sync_node.GetTypedUrlSpecifics());
-    GURL url(typed_url.url());
+    DCHECK(typed_url.visits_size());
+    if (!typed_url.visits_size()) {
+      continue;
+    }
 
-    if (sync_api::ChangeRecord::ACTION_ADD == it->action) {
-      DCHECK(typed_url.visits_size());
-      if (!typed_url.visits_size()) {
-        continue;
-      }
+    if (!model_associator_->UpdateFromSyncDB(
+            typed_url, &pending_new_visits_, &pending_deleted_visits_,
+            &pending_updated_urls_, &pending_new_urls_)) {
+      error_handler()->OnUnrecoverableError(
+          FROM_HERE, "Could not get existing url's visits.");
+      return;
+    }
 
-      // TODO(atwilson): Combine this with the UPDATE code below
-      // (http://crbug.com/101633).
-      if (!model_associator_->UpdateFromNewTypedUrl(
-              typed_url, &pending_new_visits_, &pending_updated_urls_,
-              &pending_new_urls_)) {
-        error_handler()->OnUnrecoverableError(
-            FROM_HERE, "Could not get existing url's visits.");
-        return;
-      }
-
+    if (it->action == sync_api::ChangeRecord::ACTION_ADD) {
       model_associator_->Associate(&typed_url.url(), it->id);
-    } else {
-      DCHECK_EQ(sync_api::ChangeRecord::ACTION_UPDATE, it->action);
-      history::URLRow old_url;
-      if (!history_backend_->GetURL(url, &old_url)) {
-        LOG(ERROR) << "Could not fetch history row for " << url;
-        continue;
-      }
-
-      history::VisitVector visits;
-      if (!TypedUrlModelAssociator::FixupURLAndGetVisits(
-              history_backend_, &old_url, &visits)) {
-        error_handler()->OnUnrecoverableError(FROM_HERE,
-            "Could not get the url's visits.");
-        return;
-      }
-
-      history::URLRow new_url(old_url);
-      TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
-          typed_url, &new_url);
-
-      pending_updated_urls_.push_back(
-        std::pair<history::URLID, history::URLRow>(old_url.id(), new_url));
-
-      if (old_url.title().compare(new_url.title()) != 0) {
-        pending_titles_.push_back(
-            std::pair<GURL, string16>(new_url.url(), new_url.title()));
-      }
-
-      std::vector<history::VisitInfo> added_visits;
-      history::VisitVector removed_visits;
-      TypedUrlModelAssociator::DiffVisits(visits, typed_url,
-                                          &added_visits, &removed_visits);
-      if (added_visits.size()) {
-        pending_new_visits_.push_back(
-            std::pair<GURL, std::vector<history::VisitInfo> >(
-                url, added_visits));
-      }
-      if (removed_visits.size()) {
-        pending_deleted_visits_.insert(pending_deleted_visits_.end(),
-                                       removed_visits.begin(),
-                                       removed_visits.end());
-      }
     }
   }
 }
@@ -313,8 +267,7 @@ void TypedUrlChangeProcessor::CommitChangesFromSyncModel() {
   if (!pending_deleted_urls_.empty())
     history_backend_->DeleteURLs(pending_deleted_urls_);
 
-  if (!model_associator_->WriteToHistoryBackend(&pending_titles_,
-                                                &pending_new_urls_,
+  if (!model_associator_->WriteToHistoryBackend(&pending_new_urls_,
                                                 &pending_updated_urls_,
                                                 &pending_new_visits_,
                                                 &pending_deleted_visits_)) {
@@ -323,7 +276,6 @@ void TypedUrlChangeProcessor::CommitChangesFromSyncModel() {
     return;
   }
 
-  pending_titles_.clear();
   pending_new_urls_.clear();
   pending_updated_urls_.clear();
   pending_new_visits_.clear();

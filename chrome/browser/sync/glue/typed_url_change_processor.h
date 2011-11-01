@@ -109,7 +109,6 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
 
   // The set of pending changes that will be written out on the next
   // CommitChangesFromSyncModel() call.
-  TypedUrlModelAssociator::TypedUrlTitleVector pending_titles_;
   TypedUrlModelAssociator::TypedUrlVector pending_new_urls_;
   TypedUrlModelAssociator::TypedUrlUpdateVector pending_updated_urls_;
   std::vector<GURL> pending_deleted_urls_;

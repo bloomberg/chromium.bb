@@ -45,7 +45,6 @@ extern const char kTypedUrlTag[];
 class TypedUrlModelAssociator
   : public AbortablePerDataTypeAssociatorInterface<std::string, std::string> {
  public:
-  typedef std::vector<std::pair<GURL, string16> > TypedUrlTitleVector;
   typedef std::vector<history::URLRow> TypedUrlVector;
   typedef std::vector<std::pair<history::URLID, history::URLRow> >
       TypedUrlUpdateVector;
@@ -95,39 +94,37 @@ class TypedUrlModelAssociator
   // |sync_id| with that node's id.
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
 
-  bool WriteToHistoryBackend(const TypedUrlTitleVector* titles,
-                             const TypedUrlVector* new_urls,
+  bool WriteToHistoryBackend(const TypedUrlVector* new_urls,
                              const TypedUrlUpdateVector* updated_urls,
                              const TypedUrlVisitVector* new_visits,
                              const history::VisitVector* deleted_visits);
 
-  // Given a new typed URL in the sync DB, looks for an existing entry in the
+  // Given a typed URL in the sync DB, looks for an existing entry in the
   // local history DB and generates a list of visits to add to the
   // history DB to bring it up to date (avoiding duplicates).
-  // Updates the passed |visits_to_add| vector with the visits to add to the
-  // history DB, and adds a new entry to either |updated_urls| or |new_urls|
-  // depending on whether the URL already existed in the history DB.
+  // Updates the passed |visits_to_add| and |visits_to_remove| vectors with the
+  // visits to add to/remove from the history DB, and adds a new entry to either
+  // |updated_urls| or |new_urls| depending on whether the URL already existed
+  // in the history DB.
   // Returns false if we encountered an error trying to access the history DB.
-  bool UpdateFromNewTypedUrl(const sync_pb::TypedUrlSpecifics& typed_url,
-                             TypedUrlVisitVector* visits_to_add,
-                             TypedUrlUpdateVector* updated_urls,
-                             TypedUrlVector* new_urls);
+  bool UpdateFromSyncDB(const sync_pb::TypedUrlSpecifics& typed_url,
+                        TypedUrlVisitVector* visits_to_add,
+                        history::VisitVector* visits_to_remove,
+                        TypedUrlUpdateVector* updated_urls,
+                        TypedUrlVector* new_urls);
 
   // Bitfield returned from MergeUrls to specify the result of the merge.
   typedef uint32 MergeResult;
   static const MergeResult DIFF_NONE                = 0;
   static const MergeResult DIFF_UPDATE_NODE         = 1 << 0;
-  static const MergeResult DIFF_LOCAL_TITLE_CHANGED = 1 << 1;
-  static const MergeResult DIFF_LOCAL_ROW_CHANGED   = 1 << 2;
-  static const MergeResult DIFF_LOCAL_VISITS_ADDED  = 1 << 3;
+  static const MergeResult DIFF_LOCAL_ROW_CHANGED   = 1 << 1;
+  static const MergeResult DIFF_LOCAL_VISITS_ADDED  = 1 << 2;
 
   // Merges the URL information in |typed_url| with the URL information from the
   // history database in |url| and |visits|, and returns a bitmask with the
   // results of the merge:
   // DIFF_UPDATE_NODE - changes have been made to |new_url| and |visits| which
   //   should be persisted to the sync node.
-  // DIFF_LOCAL_TITLE_CHANGED - The title has changed, so the title in |new_url|
-  //   should be persisted to the history DB.
   // DIFF_LOCAL_ROW_CHANGED - The history data in |new_url| should be persisted
   //   to the history DB.
   // DIFF_LOCAL_VISITS_ADDED - |new_visits| contains a list of visits that
