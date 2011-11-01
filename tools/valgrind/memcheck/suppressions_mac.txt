@@ -1943,11 +1943,18 @@
    fun:__NSFontInstanceInfoInitializeMetricsInfo
 }
 {
-   bug_102327
+   bug_102327_a
    Memcheck:Addr1
    fun:_ZNK15tracked_objects10ThreadData26OnThreadTerminationCleanupEv
    fun:_ZN15tracked_objects10ThreadData19OnThreadTerminationEPv
    fun:_pthread_tsd_cleanup
    fun:_pthread_exit
    fun:thread_start
+}
+{
+   bug_102327_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15tracked_objects10ThreadData10InitializeEv
+   fun:_ZN15tracked_objects10ThreadData23InitializeThreadContextERKSs
 }
