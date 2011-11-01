@@ -250,6 +250,57 @@ bool GetAllWindowsFunction::RunImpl() {
   return true;
 }
 
+bool CreateWindowFunction::ShouldOpenIncognitoWindow(
+    const base::DictionaryValue* args,
+    std::vector<GURL>* urls,
+    bool* is_error) {
+  *is_error = false;
+  const IncognitoModePrefs::Availability incognito_availability =
+      IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
+  bool incognito = false;
+  if (args && args->HasKey(keys::kIncognitoKey)) {
+    EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kIncognitoKey,
+                                                 &incognito));
+    if (incognito && incognito_availability == IncognitoModePrefs::DISABLED) {
+      error_ = keys::kIncognitoModeIsDisabled;
+      *is_error = true;
+      return false;
+    }
+    if (!incognito && incognito_availability == IncognitoModePrefs::FORCED) {
+      error_ = keys::kIncognitoModeIsForced;
+      *is_error = true;
+      return false;
+    }
+  } else if (incognito_availability == IncognitoModePrefs::FORCED) {
+    // If incognito argument is not specified explicitly, we default to
+    // incognito when forced so by policy.
+    incognito = true;
+  }
+
+  // If we are opening an incognito window.
+  if (incognito) {
+    std::string first_url_erased;
+    // Guest session is an exception as it always opens in incognito mode.
+    for (size_t i = 0; i < urls->size();) {
+      if (browser::IsURLAllowedInIncognito((*urls)[i]) &&
+          !Profile::IsGuestSession()) {
+        if (first_url_erased.empty())
+          first_url_erased = (*urls)[i].spec();
+        urls->erase(urls->begin() + i);
+      } else {
+        i++;
+      }
+    }
+    if (urls->empty() && !first_url_erased.empty()) {
+      error_ = ExtensionErrorUtils::FormatErrorMessage(
+          keys::kURLsNotAllowedInIncognitoError, first_url_erased);
+      *is_error = true;
+      return false;
+    }
+  }
+  return incognito;
+}
+
 bool CreateWindowFunction::RunImpl() {
   DictionaryValue* args = NULL;
   std::vector<GURL> urls;
@@ -352,6 +403,18 @@ bool CreateWindowFunction::RunImpl() {
   bool saw_focus_key = false;
   std::string extension_id;
 
+  // Decide whether we are opening a normal window or an incognito window.
+  bool is_error;
+  bool open_incognito_window = ShouldOpenIncognitoWindow(args, &urls,
+                                                         &is_error);
+  if (is_error) {
+    // error_ member variable is set inside of ShouldOpenIncognitoWindow.
+    return false;
+  }
+  if (open_incognito_window) {
+    window_profile = window_profile->GetOffTheRecordProfile();
+  }
+
   if (args) {
     // Any part of the bounds can optionally be set by the caller.
     int bounds_val;
@@ -385,38 +448,6 @@ bool CreateWindowFunction::RunImpl() {
       window_bounds.set_height(bounds_val);
       popup_bounds.set_height(bounds_val);
       panel_bounds.set_height(bounds_val);
-    }
-
-    bool incognito = false;
-    if (args->HasKey(keys::kIncognitoKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kIncognitoKey,
-                                                   &incognito));
-      if (IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) ==
-          IncognitoModePrefs::DISABLED) {
-        error_ = keys::kIncognitoModeIsDisabled;
-        return false;
-      }
-
-      if (incognito) {
-        std::string first_url_erased;
-        // Guest session is an exception as it always opens in incognito mode.
-        for (size_t i = 0; i < urls.size();) {
-          if (browser::IsURLAllowedInIncognito(urls[i]) &&
-              !Profile::IsGuestSession()) {
-            if (first_url_erased.empty())
-              first_url_erased = urls[i].spec();
-            urls.erase(urls.begin() + i);
-          } else {
-            i++;
-          }
-        }
-        if (urls.empty() && !first_url_erased.empty()) {
-          error_ = ExtensionErrorUtils::FormatErrorMessage(
-              keys::kURLsNotAllowedInIncognitoError, first_url_erased);
-          return false;
-        }
-        window_profile = window_profile->GetOffTheRecordProfile();
-      }
     }
 
     if (args->HasKey(keys::kFocusedKey)) {

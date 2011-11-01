@@ -222,3 +222,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_GetViewsOfCreatedWindow) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "get_views_window.html"))
       << message_;
 }
+
+// Adding a new test? Awesome. But API tests are the old hotness. The
+// new hotness is extension_test_utils. See extension_tabs_test.cc for
+// an example. We are trying to phase out many uses of API tests as
+// they tend to be flaky.

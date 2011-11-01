@@ -12,8 +12,10 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -125,4 +127,130 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, UpdateNoPermissions) {
           "[null, {\"url\": \"neutrinos\"}]",
           browser()));
   EXPECT_EQ(base::Value::TYPE_NULL, result->GetType());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
+                       DefaultToIncognitoWhenItIsForced) {
+  static const char kArgsWithoutExplicitIncognitoParam[] =
+      "[{\"url\": \"about:blank\"}]";
+  // Force Incognito mode.
+  IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
+                                      IncognitoModePrefs::FORCED);
+  // Run without an explicit "incognito" param.
+  scoped_ptr<base::DictionaryValue> result(ToDictionary(
+      RunFunctionAndReturnResult(
+          new CreateWindowFunction(),
+          kArgsWithoutExplicitIncognitoParam,
+          browser(),
+          INCLUDE_INCOGNITO)));
+
+  // Make sure it is a new(different) window.
+  EXPECT_NE(ExtensionTabUtil::GetWindowId(browser()),
+            GetInteger(result.get(), "id"));
+  // ... and it is incognito.
+  EXPECT_TRUE(GetBoolean(result.get(), "incognito"));
+
+  // Now try creating a window from incognito window.
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  // Run without an explicit "incognito" param.
+  result.reset(ToDictionary(
+      RunFunctionAndReturnResult(
+          new CreateWindowFunction(),
+          kArgsWithoutExplicitIncognitoParam,
+          incognito_browser,
+          INCLUDE_INCOGNITO)));
+  // Make sure it is a new(different) window.
+  EXPECT_NE(ExtensionTabUtil::GetWindowId(incognito_browser),
+            GetInteger(result.get(), "id"));
+  // ... and it is incognito.
+  EXPECT_TRUE(GetBoolean(result.get(), "incognito"));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
+                       DefaultToIncognitoWhenItIsForcedAndNoArgs) {
+  static const char kEmptyArgs[] = "[]";
+  // Force Incognito mode.
+  IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
+                                      IncognitoModePrefs::FORCED);
+  // Run without an explicit "incognito" param.
+  scoped_ptr<base::DictionaryValue> result(ToDictionary(
+      RunFunctionAndReturnResult(
+          new CreateWindowFunction(),
+          kEmptyArgs,
+          browser(),
+          INCLUDE_INCOGNITO)));
+
+  // Make sure it is a new(different) window.
+  EXPECT_NE(ExtensionTabUtil::GetWindowId(browser()),
+            GetInteger(result.get(), "id"));
+  // ... and it is incognito.
+  EXPECT_TRUE(GetBoolean(result.get(), "incognito"));
+
+  // Now try creating a window from incognito window.
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  // Run without an explicit "incognito" param.
+  result.reset(ToDictionary(
+      RunFunctionAndReturnResult(
+          new CreateWindowFunction(),
+          kEmptyArgs,
+          incognito_browser,
+          INCLUDE_INCOGNITO)));
+  // Make sure it is a new(different) window.
+  EXPECT_NE(ExtensionTabUtil::GetWindowId(incognito_browser),
+            GetInteger(result.get(), "id"));
+  // ... and it is incognito.
+  EXPECT_TRUE(GetBoolean(result.get(), "incognito"));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
+                       DontCreateNormalWindowWhenIncognitoForced) {
+  static const char kArgsWithExplicitIncognitoParam[] =
+      "[{\"url\": \"about:blank\", \"incognito\": false }]";
+  // Force Incognito mode.
+  IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
+                                      IncognitoModePrefs::FORCED);
+
+  // Run with an explicit "incognito" param.
+  EXPECT_TRUE(MatchPattern(
+      RunFunctionAndReturnError(
+          new CreateWindowFunction(),
+          kArgsWithExplicitIncognitoParam,
+          browser()),
+      extension_tabs_module_constants::kIncognitoModeIsForced));
+
+  // Now try opening a normal window from incognito window.
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  // Run with an explicit "incognito" param.
+  EXPECT_TRUE(MatchPattern(
+      RunFunctionAndReturnError(
+          new CreateWindowFunction(),
+          kArgsWithExplicitIncognitoParam,
+          incognito_browser),
+      extension_tabs_module_constants::kIncognitoModeIsForced));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
+                       DontCreateIncognitoWindowWhenIncognitoDisabled) {
+  static const char kArgs[] =
+      "[{\"url\": \"about:blank\", \"incognito\": true }]";
+
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  // Disable Incognito mode.
+  IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
+                                      IncognitoModePrefs::DISABLED);
+  // Run in normal window.
+  EXPECT_TRUE(MatchPattern(
+      RunFunctionAndReturnError(
+          new CreateWindowFunction(),
+          kArgs,
+          browser()),
+      extension_tabs_module_constants::kIncognitoModeIsDisabled));
+
+  // Run in incognito window.
+  EXPECT_TRUE(MatchPattern(
+      RunFunctionAndReturnError(
+          new CreateWindowFunction(),
+          kArgs,
+          incognito_browser),
+      extension_tabs_module_constants::kIncognitoModeIsDisabled));
 }

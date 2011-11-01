@@ -7,15 +7,21 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "googleurl/src/gurl.h"
 
 class BackingStore;
 class SkBitmap;
+
+namespace base {
+class DictionaryValue;
+}  // namespace base
 
 // Windows
 class GetWindowFunction : public SyncExtensionFunction {
@@ -41,6 +47,15 @@ class GetAllWindowsFunction : public SyncExtensionFunction {
 class CreateWindowFunction : public SyncExtensionFunction {
   virtual ~CreateWindowFunction() {}
   virtual bool RunImpl() OVERRIDE;
+  // Returns whether the window should be created in incognito mode.
+  // |urls| is the list of urls to open. If we are creating an incognito window,
+  // the function will remove these urls which may not be opened in incognito
+  // mode.  If window creation leads the browser into an erroneous state,
+  // |is_error| is set to true (also, error_ member variable is assigned
+  // the proper error message).
+  bool ShouldOpenIncognitoWindow(const base::DictionaryValue* args,
+                                 std::vector<GURL>* urls,
+                                 bool* is_error);
   DECLARE_EXTENSION_FUNCTION_NAME("windows.create")
 };
 class UpdateWindowFunction : public SyncExtensionFunction {
