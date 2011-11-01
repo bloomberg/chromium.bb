@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 
 class DownloadManager;
@@ -18,7 +19,30 @@ class TabContents;
 // or objects conditional on it (e.g. TabContents).
 // This class needs to be copyable, so we can pass it across threads and not
 // worry about lifetime or const-ness.
-class CONTENT_EXPORT DownloadRequestHandle {
+//
+// DownloadRequestHandleInterface is defined for mocking purposes.
+class CONTENT_EXPORT DownloadRequestHandleInterface {
+ public:
+  virtual ~DownloadRequestHandleInterface() {}
+
+  // These functions must be called on the UI thread.
+  virtual TabContents* GetTabContents() const = 0;
+  virtual DownloadManager* GetDownloadManager() const = 0;
+
+  // Pause or resume the matching URL request.
+  virtual void PauseRequest() const = 0;
+  virtual void ResumeRequest() const = 0;
+
+  // Cancel the request.
+  virtual void CancelRequest() const = 0;
+
+  // Describe the object.
+  virtual std::string DebugString() const = 0;
+};
+
+
+class CONTENT_EXPORT DownloadRequestHandle
+    : public DownloadRequestHandleInterface {
  public:
   // Create a null DownloadRequestHandle: getters will return null, and
   // all actions are no-ops.
@@ -35,18 +59,13 @@ class CONTENT_EXPORT DownloadRequestHandle {
                         int render_view_id,
                         int request_id);
 
-  // These functions must be called on the UI thread.
-  TabContents* GetTabContents() const;
-  DownloadManager* GetDownloadManager() const;
-
-  // Pause or resume the matching URL request.
-  void PauseRequest() const;
-  void ResumeRequest() const;
-
-  // Cancel the request
-  void CancelRequest() const;
-
-  std::string DebugString() const;
+  // Implement DownloadRequestHandleInterface interface.
+  virtual TabContents* GetTabContents() const OVERRIDE;
+  virtual DownloadManager* GetDownloadManager() const OVERRIDE;
+  virtual void PauseRequest() const OVERRIDE;
+  virtual void ResumeRequest() const OVERRIDE;
+  virtual void CancelRequest() const OVERRIDE;
+  virtual std::string DebugString() const OVERRIDE;
 
  private:
   // The resource dispatcher host.

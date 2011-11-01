@@ -24,7 +24,7 @@ static const int kMaxUniqueFiles = 100;
 }
 
 DownloadFile::DownloadFile(const DownloadCreateInfo* info,
-                           const DownloadRequestHandle& request_handle,
+                           DownloadRequestHandleInterface* request_handle,
                            DownloadManager* download_manager)
     : BaseFile(info->save_info.file_path,
                info->url(),
@@ -43,7 +43,7 @@ DownloadFile::~DownloadFile() {
 
 void DownloadFile::CancelDownloadRequest() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  request_handle_.CancelRequest();
+  request_handle_->CancelRequest();
 }
 
 DownloadManager* DownloadFile::GetDownloadManager() {
@@ -58,7 +58,7 @@ std::string DownloadFile::DebugString() const {
                             " Base File = %s"
                             " }",
                             id_.local(),
-                            request_handle_.DebugString().c_str(),
+                            request_handle_->DebugString().c_str(),
                             BaseFile::DebugString().c_str());
 }
 

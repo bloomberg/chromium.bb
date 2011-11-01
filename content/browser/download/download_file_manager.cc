@@ -64,7 +64,9 @@ void DownloadFileManager::CreateDownloadFile(
   scoped_ptr<DownloadCreateInfo> infop(info);
 
   scoped_ptr<DownloadFile>
-      download_file(new DownloadFile(info, request_handle, download_manager));
+      download_file(new DownloadFile(info,
+                                     new DownloadRequestHandle(request_handle),
+                                     download_manager));
   if (net::OK != download_file->Initialize(get_hash)) {
     request_handle.CancelRequest();
     return;

@@ -294,8 +294,7 @@ void DownloadManager::RestartDownload(
 
   if (download->prompt_user_for_save_location()) {
     // We must ask the user for the place to put the download.
-    DownloadRequestHandle request_handle = download->request_handle();
-    TabContents* contents = request_handle.GetTabContents();
+    TabContents* contents = download->GetTabContents();
 
     // |id_ptr| will be deleted in either FileSelected() or
     // FileSelectionCancelled().
@@ -317,9 +316,9 @@ void DownloadManager::CreateDownloadItem(
     DownloadCreateInfo* info, const DownloadRequestHandle& request_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DownloadItem* download = new DownloadItem(this, *info,
-                                            request_handle,
-                                            browser_context_->IsOffTheRecord());
+  DownloadItem* download = new DownloadItem(
+      this, *info, new DownloadRequestHandle(request_handle),
+      browser_context_->IsOffTheRecord());
   int32 download_id = info->download_id.local();
   DCHECK(!ContainsKey(in_progress_, download_id));
 
@@ -920,8 +919,7 @@ void DownloadManager::OnDownloadItemAddedToPersistentStore(int32 download_id,
 void DownloadManager::ShowDownloadInBrowser(DownloadItem* download) {
   // The 'contents' may no longer exist if the user closed the tab before we
   // get this start completion event.
-  DownloadRequestHandle request_handle = download->request_handle();
-  TabContents* content = request_handle.GetTabContents();
+  TabContents* content = download->GetTabContents();
 
   // If the contents no longer exists, we ask the embedder to suggest another
   // tab.

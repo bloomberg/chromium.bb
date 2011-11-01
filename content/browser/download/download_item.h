@@ -22,6 +22,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -36,6 +37,8 @@
 class DownloadFileManager;
 class DownloadId;
 class DownloadManager;
+class TabContents;
+
 struct DownloadCreateInfo;
 struct DownloadPersistentStoreInfo;
 
@@ -117,10 +120,11 @@ class CONTENT_EXPORT DownloadItem {
   DownloadItem(DownloadManager* download_manager,
                const DownloadPersistentStoreInfo& info);
 
-  // Constructing for a regular download:
+  // Constructing for a regular download.
+  // Takes ownership of the object pointed to by |request_handle|.
   DownloadItem(DownloadManager* download_manager,
                const DownloadCreateInfo& info,
-               const DownloadRequestHandle& request_handle,
+               DownloadRequestHandleInterface* request_handle,
                bool is_otr);
 
   // Constructing for the "Save Page As..." feature:
@@ -311,9 +315,8 @@ class CONTENT_EXPORT DownloadItem {
 
   DownloadPersistentStoreInfo GetPersistentStoreInfo() const;
   DownloadStateInfo state_info() const { return state_info_; }
-  const DownloadRequestHandle& request_handle() const {
-    return request_handle_;
-  }
+
+  TabContents* GetTabContents() const;
 
   // Returns the final target file path for the download.
   FilePath GetTargetFilePath() const;
@@ -377,7 +380,7 @@ class CONTENT_EXPORT DownloadItem {
 
   // The handle to the request information.  Used for operations outside the
   // download system.
-  DownloadRequestHandle request_handle_;
+  scoped_ptr<DownloadRequestHandleInterface> request_handle_;
 
   // Download ID assigned by DownloadResourceHandler.
   DownloadId download_id_;

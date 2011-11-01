@@ -183,7 +183,7 @@ DownloadFileWithMockStream::DownloadFileWithMockStream(
     DownloadCreateInfo* info,
     DownloadManager* manager,
     net::testing::MockFileStream* stream)
-    : DownloadFile(info, DownloadRequestHandle(), manager) {
+    : DownloadFile(info, new DownloadRequestHandle(), manager) {
   DCHECK(file_stream_ == NULL);
   file_stream_.reset(stream);
 }
@@ -281,7 +281,7 @@ const struct {
 class MockDownloadFile : public DownloadFile {
  public:
   MockDownloadFile(DownloadCreateInfo* info, DownloadManager* manager)
-      : DownloadFile(info, DownloadRequestHandle(), manager),
+      : DownloadFile(info, new DownloadRequestHandle(), manager),
         renamed_count_(0) { }
   virtual ~MockDownloadFile() { Destructed(); }
   MOCK_METHOD1(Rename, net::Error(const FilePath&));
@@ -397,7 +397,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
     download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
     DownloadFile* download_file(
-        new DownloadFile(info.get(), DownloadRequestHandle(),
+        new DownloadFile(info.get(), new DownloadRequestHandle(),
                          download_manager_));
     AddDownloadToFileManager(info->download_id.local(), download_file);
     download_file->Initialize(false);
@@ -758,7 +758,8 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   // name has been chosen, so we need to initialize the download file
   // properly.
   DownloadFile* download_file(
-      new DownloadFile(info.get(), DownloadRequestHandle(), download_manager_));
+      new DownloadFile(info.get(), new DownloadRequestHandle(),
+                       download_manager_));
   download_file->Rename(cr_path);
   // This creates the .crdownload version of the file.
   download_file->Initialize(false);
@@ -834,7 +835,8 @@ TEST_F(DownloadManagerTest, DownloadRemoveTest) {
   // name has been chosen, so we need to initialize the download file
   // properly.
   DownloadFile* download_file(
-      new DownloadFile(info.get(), DownloadRequestHandle(), download_manager_));
+      new DownloadFile(info.get(), new DownloadRequestHandle(),
+                       download_manager_));
   download_file->Rename(cr_path);
   // This creates the .crdownload version of the file.
   download_file->Initialize(false);

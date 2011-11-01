@@ -26,8 +26,9 @@ class ResourceDispatcherHost;
 // cancelled, the DownloadFile is destroyed.
 class CONTENT_EXPORT DownloadFile : public BaseFile {
  public:
+  // Takes ownership of the object pointed to by |request_handle|.
   DownloadFile(const DownloadCreateInfo* info,
-               const DownloadRequestHandle& request_handle,
+               DownloadRequestHandleInterface* request_handle,
                DownloadManager* download_manager);
   virtual ~DownloadFile();
 
@@ -67,7 +68,7 @@ class CONTENT_EXPORT DownloadFile : public BaseFile {
 
   // The handle to the request information.  Used for operations outside the
   // download system, specifically canceling a download.
-  DownloadRequestHandle request_handle_;
+  scoped_ptr<DownloadRequestHandleInterface> request_handle_;
 
   // DownloadManager this download belongs to.
   scoped_refptr<DownloadManager> download_manager_;

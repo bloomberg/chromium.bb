@@ -157,7 +157,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
 // Constructing for a regular download:
 DownloadItem::DownloadItem(DownloadManager* download_manager,
                            const DownloadCreateInfo& info,
-                           const DownloadRequestHandle& request_handle,
+                           DownloadRequestHandleInterface* request_handle,
                            bool is_otr)
     : state_info_(info.original_name, info.save_info.file_path,
                   info.has_user_gesture, info.transition_type,
@@ -574,9 +574,9 @@ void DownloadItem::TogglePause() {
 
   DCHECK(IsInProgress());
   if (is_paused_)
-    request_handle_.ResumeRequest();
+    request_handle_->ResumeRequest();
   else
-    request_handle_.PauseRequest();
+    request_handle_->PauseRequest();
   is_paused_ = !is_paused_;
   UpdateObservers();
 }
@@ -641,7 +641,7 @@ bool DownloadItem::MatchesQuery(const string16& query) const {
   //   L"/\x4f60\x597d\x4f60\x597d",
   //   "/%E4%BD%A0%E5%A5%BD%E4%BD%A0%E5%A5%BD"
   std::string languages;
-  TabContents* tab = request_handle_.GetTabContents();
+  TabContents* tab = request_handle_->GetTabContents();
   if (tab)
     languages = content::GetContentClient()->browser()->GetAcceptLangs(tab);
   string16 url_formatted(net::FormatUrl(GetURL(), languages));
@@ -701,6 +701,12 @@ DownloadPersistentStoreInfo DownloadItem::GetPersistentStoreInfo() const {
                                      opened());
 }
 
+TabContents* DownloadItem::GetTabContents() const {
+  if (request_handle_.get())
+    return request_handle_->GetTabContents();
+  return NULL;
+}
+
 FilePath DownloadItem::GetTargetFilePath() const {
   return full_path_.DirName().Append(state_info_.target_name);
 }
@@ -721,7 +727,7 @@ FilePath DownloadItem::GetUserVerifiedFilePath() const {
 
 void DownloadItem::OffThreadCancel(DownloadFileManager* file_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  request_handle_.CancelRequest();
+  request_handle_->CancelRequest();
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&DownloadFileManager::CancelDownload,
