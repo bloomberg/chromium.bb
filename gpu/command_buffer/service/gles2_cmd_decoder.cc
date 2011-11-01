@@ -876,6 +876,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   bool PrepForSetUniformByLocation(
       GLint location, const char* function_name, GLenum* type, GLsizei* count);
 
+  // Gets the service id for any simulated backbuffer fbo.
+  GLuint GetBackbufferServiceId();
+
   // Helper for glGetBooleanv, glGetFloatv and glGetIntegerv
   bool GetHelper(GLenum pname, GLint* params, GLsizei* num_written);
 
@@ -2164,6 +2167,9 @@ void GLES2DecoderImpl::DeleteBuffersHelper(
 
 void GLES2DecoderImpl::DeleteFramebuffersHelper(
     GLsizei n, const GLuint* client_ids) {
+  bool supports_seperate_framebuffer_binds =
+     feature_info_->feature_flags().chromium_framebuffer_multisample;
+
   for (GLsizei ii = 0; ii < n; ++ii) {
     FramebufferManager::FramebufferInfo* info =
         GetFramebufferInfo(client_ids[ii]);
@@ -2171,6 +2177,15 @@ void GLES2DecoderImpl::DeleteFramebuffersHelper(
       if (info == bound_draw_framebuffer_) {
         bound_draw_framebuffer_ = NULL;
         state_dirty_ = true;
+        GLenum target = supports_seperate_framebuffer_binds ?
+            GL_DRAW_FRAMEBUFFER : GL_FRAMEBUFFER;
+        glBindFramebufferEXT(target, GetBackbufferServiceId());
+      }
+      if (info == bound_read_framebuffer_) {
+        bound_read_framebuffer_ = NULL;
+        GLenum target = supports_seperate_framebuffer_binds ?
+            GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
+        glBindFramebufferEXT(target, GetBackbufferServiceId());
       }
       GLuint service_id = info->service_id();
       glDeleteFramebuffersEXT(1, &service_id);
@@ -2839,6 +2854,12 @@ void GLES2DecoderImpl::ApplyDirtyState() {
   }
 }
 
+GLuint GLES2DecoderImpl::GetBackbufferServiceId() {
+  return (offscreen_target_frame_buffer_.get()) ?
+      offscreen_target_frame_buffer_->id() :
+      surface_->GetBackingFrameBufferObject();
+}
+
 void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
   FramebufferManager::FramebufferInfo* info = NULL;
   GLuint service_id = 0;
@@ -2862,8 +2883,6 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
       service_id = info->service_id();
     }
     info->MarkAsValid();
-  } else {
-    service_id = surface_->GetBackingFrameBufferObject();
   }
 
   if (target == GL_FRAMEBUFFER || target == GL_DRAW_FRAMEBUFFER_EXT) {
@@ -2875,10 +2894,10 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
 
   state_dirty_ = true;
 
-  // When rendering to an offscreen frame buffer, instead of unbinding from
-  // the current frame buffer, bind to the offscreen target frame buffer.
-  if (info == NULL && offscreen_target_frame_buffer_.get()) {
-    service_id = offscreen_target_frame_buffer_->id();
+  // If we are rendering to the backbuffer get the FBO id for any simulated
+  // backbuffer.
+  if (info == NULL) {
+    service_id = GetBackbufferServiceId();
   }
 
   glBindFramebufferEXT(target, service_id);

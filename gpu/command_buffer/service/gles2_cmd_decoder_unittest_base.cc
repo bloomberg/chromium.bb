@@ -485,7 +485,19 @@ bool GLES2DecoderTestBase::DoIsFramebuffer(GLuint client_id) {
 }
 
 void GLES2DecoderTestBase::DoDeleteFramebuffer(
-    GLuint client_id, GLuint service_id) {
+    GLuint client_id, GLuint service_id,
+    bool reset_draw, GLenum draw_target, GLuint draw_id,
+    bool reset_read, GLenum read_target, GLuint read_id) {
+  if (reset_draw) {
+    EXPECT_CALL(*gl_, BindFramebufferEXT(draw_target, draw_id))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  if (reset_read) {
+    EXPECT_CALL(*gl_, BindFramebufferEXT(read_target, read_id))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
   EXPECT_CALL(*gl_, DeleteFramebuffersEXT(1, Pointee(service_id)))
       .Times(1)
       .RetiresOnSaturation();

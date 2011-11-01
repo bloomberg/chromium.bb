@@ -1390,7 +1390,10 @@ TEST_F(GLES2DecoderWithShaderTest, BindAndDeleteFramebuffer) {
   SetupExpectationsForApplyingDefaultDirtyState();
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                     kServiceFramebufferId);
-  DoDeleteFramebuffer(client_framebuffer_id_, kServiceFramebufferId);
+  DoDeleteFramebuffer(
+      client_framebuffer_id_, kServiceFramebufferId,
+      true, GL_FRAMEBUFFER, 0,
+      true, GL_FRAMEBUFFER, 0);
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
       .RetiresOnSaturation();
@@ -2820,7 +2823,10 @@ TEST_F(GLES2DecoderTest, IsFramebuffer) {
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                     kServiceFramebufferId);
   EXPECT_TRUE(DoIsFramebuffer(client_framebuffer_id_));
-  DoDeleteFramebuffer(client_framebuffer_id_, kServiceFramebufferId);
+  DoDeleteFramebuffer(
+      client_framebuffer_id_, kServiceFramebufferId,
+      true, GL_FRAMEBUFFER, 0,
+      true, GL_FRAMEBUFFER, 0);
   EXPECT_FALSE(DoIsFramebuffer(client_framebuffer_id_));
 }
 

@@ -219,7 +219,10 @@ class GLES2DecoderTestBase : public testing::Test {
   bool DoIsTexture(GLuint client_id);
 
   void DoDeleteBuffer(GLuint client_id, GLuint service_id);
-  void DoDeleteFramebuffer(GLuint client_id, GLuint service_id);
+  void DoDeleteFramebuffer(
+      GLuint client_id, GLuint service_id,
+      bool reset_draw, GLenum draw_target, GLuint draw_id,
+      bool reset_read, GLenum read_target, GLuint read_id);
   void DoDeleteProgram(GLuint client_id, GLuint service_id);
   void DoDeleteRenderbuffer(GLuint client_id, GLuint service_id);
   void DoDeleteShader(GLuint client_id, GLuint service_id);
