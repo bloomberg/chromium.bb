@@ -75,6 +75,13 @@ const FilePath::CharType kPepperFlashBaseDirectory[] =
 // If we don't have a Pepper Flash component, this is the version we claim.
 const char kNullVersion[] = "0.0.0.0";
 
+// True if Pepper Flash should be enabled by default.
+#if defined(USE_AURA)
+const bool kEnablePepperFlash = true;
+#else
+const bool kEnablePepperFlash = false;
+#endif
+
 // The base directory on Windows looks like:
 // <profile>\AppData\Local\Google\Chrome\User Data\PepperFlash\.
 FilePath GetPepperFlashBaseDirectory() {
@@ -157,7 +164,7 @@ void RegisterPepperFlashWithChrome(const FilePath& path,
   // Register it as out-of-process and disabled.
   if (!MakePepperFlashPluginInfo(path, version, true, &plugin_info))
     return;
-  PluginPrefs::EnablePluginGlobally(false, plugin_info.path);
+  PluginPrefs::EnablePluginGlobally(kEnablePepperFlash, plugin_info.path);
   webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(
       plugin_info.ToWebPluginInfo());
   webkit::npapi::PluginList::Singleton()->RefreshPlugins();
@@ -312,8 +319,8 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
 }  // namespace
 
 void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
-#if defined(GOOGLE_CHROME_BUILD)
+//#if defined(GOOGLE_CHROME_BUILD)
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableFunction(&StartPepperFlashUpdateRegistration, cus));
-#endif
+//#endif
 }
