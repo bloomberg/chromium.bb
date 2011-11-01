@@ -43,8 +43,10 @@ UserImageScreenHandler::~UserImageScreenHandler() {
 
 void UserImageScreenHandler::GetLocalizedStrings(
     DictionaryValue *localized_strings) {
+  // TODO(ivankr): string should be renamed to something like
+  // IDS_USER_IMAGE_SCREEN_TITLE (currently used for Take Photo dialog).
   localized_strings->SetString("userImageScreenTitle",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TITLE));
+      l10n_util::GetStringUTF16(IDS_OOBE_PICTURE));
   localized_strings->SetString("userImageScreenDescription",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT));
   localized_strings->SetString("takePhoto",
