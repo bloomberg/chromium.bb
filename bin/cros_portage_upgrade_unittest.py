@@ -241,20 +241,19 @@ def _VerifyDepsGraphOnePkg(deps_graph, pkg):
   """Verfication function for Mox to validate deps graph for |pkg|."""
 
   if deps_graph is None:
-    print "Error: no dependency graph passed into _GetPreOrderDepGraph"
+    print("Error: no dependency graph passed into _GetPreOrderDepGraph")
     return False
 
   if type(deps_graph) != dict:
-    print "Error: dependency graph is expected to be a dict.  Instead: "
-    print repr(deps_graph)
+    print("Error: dependency graph is expected to be a dict.  Instead:\n%r" %
+          deps_graph)
     return False
 
   validated = True
 
   golden_deps_set = _GetGoldenDepsSet(pkg)
   if golden_deps_set == None:
-    print("Error: golden dependency list not configured for %s package" %
-          (pkg))
+    print("Error: golden dependency list not configured for %s package" % pkg)
     validated = False
 
   # Verify dependencies, by comparing them to GOLDEN_DEP_GRAPHS
@@ -263,8 +262,7 @@ def _VerifyDepsGraphOnePkg(deps_graph, pkg):
     try:
       golden_pkg_info = GOLDEN_DEP_GRAPHS[p]
     except KeyError:
-      print("Error: golden dependency graph not configured for %s package" %
-            (p))
+      print("Error: golden dependency graph not configured for %s package" % p)
       validated = False
       continue
 
@@ -1785,7 +1783,7 @@ class RunBoardTest(CpuTestBase):
   def _TestRunBoard(self, infolist, upgrade=False, staged_changes=False):
     """Test Upgrader.RunBoard."""
 
-    targetlist = [info['arg'] for info in infolist]
+    targetlist = [info['user_arg'] for info in infolist]
     local_infolist = [info for info in infolist if 'cpv' in info]
     upstream_only_infolist = [info for info in infolist if 'cpv' not in info]
 
@@ -1810,15 +1808,18 @@ class RunBoardTest(CpuTestBase):
 
     mocked_upgrader._ResolveAndVerifyArgs(targetlist,
                                           upgrade_mode).AndReturn(infolist)
-    mocked_upgrader._GetCurrentVersions(infolist).AndReturn(infolist)
-    mocked_upgrader._FinalizeLocalInfolist(infolist).AndReturn([])
+    if upgrade:
+      mocked_upgrader._FinalizeUpstreamInfolist(infolist).AndReturn([])
+    else:
+      mocked_upgrader._GetCurrentVersions(infolist).AndReturn(infolist)
+      mocked_upgrader._FinalizeLocalInfolist(infolist).AndReturn([])
 
-    if upgrade_mode:
-      mocked_upgrader._FinalizeUpstreamInfolist(
-        upstream_only_infolist).AndReturn([])
+      if upgrade_mode:
+        mocked_upgrader._FinalizeUpstreamInfolist(
+          upstream_only_infolist).AndReturn([])
 
     mocked_upgrader._UnstashAnyChanges()
-    mocked_upgrader._UpgradePackages(mox.IgnoreArg())
+    mocked_upgrader._UpgradePackages([])
 
     mocked_upgrader._DropAnyStashedChanges()
 
@@ -1829,29 +1830,67 @@ class RunBoardTest(CpuTestBase):
     self.mox.VerifyAll()
 
   def testRunBoard1(self):
-    target_infolist = [{'arg':   'dev-libs/A',
-                        'cpv':   'dev-libs/A-1',
+    target_infolist = [{'user_arg':     'dev-libs/A',
+                        'cpv':          'dev-libs/A-1',
                         'upstream_cpv': 'dev-libs/A-2',
                         },
                        ]
     return self._TestRunBoard(target_infolist)
 
   def testRunBoard2(self):
-    target_infolist = [{'arg':   'dev-libs/A',
-                        'cpv':   'dev-libs/A-1',
+    target_infolist = [{'user_arg':     'dev-libs/A',
+                        'cpv':          'dev-libs/A-1',
                         'upstream_cpv': 'dev-libs/A-2',
                         },
                        ]
     return self._TestRunBoard(target_infolist, upgrade=True)
 
   def testRunBoard3(self):
-    target_infolist = [{'arg':   'dev-libs/A',
-                        'cpv':   'dev-libs/A-1',
+    target_infolist = [{'user_arg':     'dev-libs/A',
+                        'cpv':          'dev-libs/A-1',
                         'upstream_cpv': 'dev-libs/A-2',
                         },
                        ]
     return self._TestRunBoard(target_infolist, upgrade=True,
                               staged_changes=True)
+
+  def testRunBoardUpstreamOnlyStatusMode(self):
+    """Status mode with package that is only upstream should error."""
+
+    infolist = [{'user_arg':     'dev-libs/M',
+                 'cpv':          None,
+                 'upstream_cpv': 'dev-libs/M-2',
+                 },
+                ]
+
+    targetlist = [info['user_arg'] for info in infolist]
+    local_infolist = []
+    upstream_only_infolist = [info for info in infolist if 'cpv' not in info]
+
+    mocked_upgrader = self._MockUpgrader(cmdargs=['dev-libs/M'],
+                                         _curr_board=None)
+    board = 'runboard_testboard'
+
+    # Add test-specific mocks/stubs
+    self.mox.StubOutWithMock(cpu.Upgrader, '_FindBoardArch')
+
+    # Replay script
+    mocked_upgrader._SaveStatusOnStableRepo().AndReturn(None)
+    cpu.Upgrader._FindBoardArch(board).AndReturn('x86')
+    upgrade_mode = cpu.Upgrader._IsInUpgradeMode(mocked_upgrader)
+    mocked_upgrader._IsInUpgradeMode().AndReturn(upgrade_mode)
+    mocked_upgrader._AnyChangesStaged().AndReturn(False)
+
+    mocked_upgrader._ResolveAndVerifyArgs(targetlist,
+                                          upgrade_mode).AndReturn(infolist)
+    mocked_upgrader._DropAnyStashedChanges()
+    self.mox.ReplayAll()
+
+    # Verify
+    self.assertRaises(RuntimeError,
+                      cpu.Upgrader.RunBoard,
+                      mocked_upgrader, board)
+    self.mox.VerifyAll()
 
 
 #############################
@@ -2598,7 +2637,7 @@ class CommitTest(CpuTestBase):
 class GetCurrentVersionsTest(CpuTestBase):
   """Test Upgrader._GetCurrentVersions"""
 
-  def _TestGetCurrentVersions(self, target_infolist):
+  def _TestGetCurrentVersionsLocalCpv(self, target_infolist):
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
                                          _curr_board=None)
@@ -2608,13 +2647,14 @@ class GetCurrentVersionsTest(CpuTestBase):
     self.mox.StubOutWithMock(cpu.Upgrader, '_GetPreOrderDepGraph')
 
     # Replay script
-    targets = [pinfo['package'] for pinfo in target_infolist]
+    packages = [pinfo['package'] for pinfo in target_infolist]
+    targets = ['=' + pinfo['cpv'] for pinfo in target_infolist]
     pm_argv = cpu.Upgrader._GenParallelEmergeArgv(mocked_upgrader, targets)
     pm_argv.append('--root-deps')
-    verifier = _GenDepsGraphVerifier(targets)
+    verifier = _GenDepsGraphVerifier(packages)
     mocked_upgrader._GenParallelEmergeArgv(targets).AndReturn(pm_argv)
     mocked_upgrader._SetPortTree(mox.IsA(portcfg.config), mox.IsA(dict))
-    cpu.Upgrader._GetPreOrderDepGraph(mox.Func(verifier)).AndReturn([]) # TODO
+    cpu.Upgrader._GetPreOrderDepGraph(mox.Func(verifier)).AndReturn([])
     self.mox.ReplayAll()
 
     # Verify
@@ -2626,20 +2666,62 @@ class GetCurrentVersionsTest(CpuTestBase):
     return result
 
   def testGetCurrentVersionsTwoPkgs(self):
-    target_infolist = [{'package': 'dev-libs/A'},
-                       {'package': 'dev-libs/D'},
+    target_infolist = [{'package': 'dev-libs/A', 'cpv': 'dev-libs/A-2'},
+                       {'package': 'dev-libs/D', 'cpv': 'dev-libs/D-3'},
                        ]
-    self._TestGetCurrentVersions(target_infolist)
+    self._TestGetCurrentVersionsLocalCpv(target_infolist)
 
   def testGetCurrentVersionsOnePkgB(self):
-    target_infolist = [{'package': 'dev-libs/B'},
+    target_infolist = [{'package': 'dev-libs/B', 'cpv': 'dev-libs/B-2'},
                        ]
-    self._TestGetCurrentVersions(target_infolist)
+    self._TestGetCurrentVersionsLocalCpv(target_infolist)
 
   def testGetCurrentVersionsOnePkgLibcros(self):
-    target_infolist = [{'package': 'chromeos-base/libcros'},
+    target_infolist = [{'package': 'chromeos-base/libcros',
+                        'cpv': 'chromeos-base/libcros-1',
+                        },
                        ]
-    self._TestGetCurrentVersions(target_infolist)
+    self._TestGetCurrentVersionsLocalCpv(target_infolist)
+
+  def _TestGetCurrentVersionsPackageOnly(self, target_infolist):
+    cmdargs = []
+    mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
+                                         _curr_board=None)
+    self._SetUpPlayground()
+
+    # Add test-specific mocks/stubs
+    self.mox.StubOutWithMock(cpu.Upgrader, '_GetPreOrderDepGraph')
+
+    # Replay script
+    packages = [pinfo['package'] for pinfo in target_infolist]
+    pm_argv = cpu.Upgrader._GenParallelEmergeArgv(mocked_upgrader, packages)
+    pm_argv.append('--root-deps')
+    mocked_upgrader._GenParallelEmergeArgv(packages).AndReturn(pm_argv)
+    mocked_upgrader._SetPortTree(mox.IsA(portcfg.config), mox.IsA(dict))
+    cpu.Upgrader._GetPreOrderDepGraph(mox.IgnoreArg()).AndReturn([])
+    self.mox.ReplayAll()
+
+    # Verify
+    result = cpu.Upgrader._GetCurrentVersions(mocked_upgrader, target_infolist)
+    self.mox.VerifyAll()
+
+    self._TearDownPlayground()
+
+    return result
+
+  def testGetCurrentVersionsWorld(self):
+    target_infolist = [{'package': 'world',
+                        'cpv': 'world',
+                        },
+                       ]
+    self._TestGetCurrentVersionsPackageOnly(target_infolist)
+
+  def testGetCurrentVersionsLocalOnlyB(self):
+    target_infolist = [{'package': 'dev-libs/B',
+                        'cpv': None,
+                        },
+                       ]
+    self._TestGetCurrentVersionsPackageOnly(target_infolist)
 
 ################################
 ### ResolveAndVerifyArgsTest ###

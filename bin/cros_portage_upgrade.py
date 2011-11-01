@@ -777,7 +777,7 @@ class Upgrader(object):
     # Assemble 'depends on' and 'required by' strings.
     depsstr = NOT_APPLICABLE
     usedstr = NOT_APPLICABLE
-    if cpv:
+    if cpv and self._deps_graph:
       deps_entry = self._deps_graph[cpv]
       depslist = sorted(deps_entry['needs'].keys()) # dependencies
       depsstr = ' '.join(depslist)
@@ -1104,13 +1104,27 @@ class Upgrader(object):
 
     The returned list is ordered such that the dependencies of any mentioned
     package occur earlier in the list."""
-    emerge_args = [info['package'] for info in target_infolist]
+    emerge_args = []
+    for info in target_infolist:
+      local_cpv = info['cpv']
+      if local_cpv and local_cpv != WORLD_TARGET:
+        emerge_args.append('=' + local_cpv)
+      else:
+        emerge_args.append(info['package'])
     argv = self._GenParallelEmergeArgv(emerge_args)
 
     deps = parallel_emerge.DepGraphGenerator()
     deps.Initialize(argv)
 
-    deps_tree, deps_info = deps.GenDependencyTree()
+    try:
+      deps_tree, deps_info = deps.GenDependencyTree()
+    except SystemExit:
+      oper.Error("Run of parallel_emerge exited with error while assembling"
+                 " package dependencies (error message should be above).\n"
+                 "Command effectively was:\n%s" %
+                 ' '.join(['parallel_emerge'] + argv))
+      oper.Error("Address the source of the error, then run again.")
+      raise
     self._SetPortTree(deps.emerge.settings, deps.emerge.trees)
     self._deps_graph = deps.GenDependencyGraph(deps_tree, deps_info)
 
@@ -1487,19 +1501,32 @@ class Upgrader(object):
         # only allowed in upgrade mode.
         msg = ("The following packages were not found in current overlays"
                " (but they do exist upstream):\n%s" %
-               '\n'.join([info['arg'] for info in upstream_only_infolist]))
+               '\n'.join([info['user_arg'] for info in upstream_only_infolist]))
         raise RuntimeError(msg)
 
-      oper.Info("Assembling package dependencies.")
-      local_target_infolist = [i for i in target_infolist if i['cpv']]
-      full_infolist = self._GetCurrentVersions(local_target_infolist)
-      full_infolist = self._FinalizeLocalInfolist(full_infolist)
+      full_infolist = None
 
-      # Append any command line targets that were not found in current overlays.
-      # The idea is that they will still be found upstream for upgrading.
-      if upgrade_mode:
-        tmp_list = self._FinalizeUpstreamInfolist(upstream_only_infolist)
-        full_infolist = full_infolist + tmp_list
+      if self._upgrade:
+        # Shallow upgrade mode only cares about targets as they were
+        # found upstream.
+        full_infolist = self._FinalizeUpstreamInfolist(target_infolist)
+      else:
+        # Assembling dependencies only matters in status report mode or
+        # if --upgrade-deep was requested.
+        local_target_infolist = [i for i in target_infolist if i['cpv']]
+        if local_target_infolist:
+          oper.Info("Assembling package dependencies.")
+          full_infolist = self._GetCurrentVersions(local_target_infolist)
+          full_infolist = self._FinalizeLocalInfolist(full_infolist)
+        else:
+          full_infolist = []
+
+        # Append any command line targets that were not found in current
+        # overlays. The idea is that they will still be found upstream
+        # for upgrading.
+        if upgrade_mode:
+          tmp_list = self._FinalizeUpstreamInfolist(upstream_only_infolist)
+          full_infolist = full_infolist + tmp_list
 
       self._UnstashAnyChanges()
       self._UpgradePackages(full_infolist)
