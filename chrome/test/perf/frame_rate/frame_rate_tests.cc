@@ -47,10 +47,6 @@ class FrameRateTest
   FrameRateTest() {
     show_window_ = true;
     dom_automation_enabled_ = true;
-    // Since this is a performance test, try to use the host machine's GPU
-    // instead of falling back to software-rendering.
-    force_use_osmesa_ = false;
-    disable_accelerated_compositing_ = false;
   }
 
   virtual FilePath GetDataPath(const std::string& name) {
