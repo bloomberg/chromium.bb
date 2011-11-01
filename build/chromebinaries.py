@@ -128,10 +128,6 @@ def GetBaseDirectory(base_url, os, arch, revision):
 
 # Construct the URL for a binary, given platform and revision.
 def GetChromeURL(base_url, os, arch, revision):
-  # TODO(krasin/bradnelson): Remove when lkgr has usable build.
-  if os == 'linux' and arch == 'x86-64':
-    return ('http://commondatastorage.googleapis.com/nativeclient-archive2'
-            '/special_chrome_build/2011_10_31/linux_x86-64/chrome-linux.zip')
   directory = GetBaseDirectory(base_url, os, arch, revision)
   key = (os, arch)
   _, archive_name, _, _ = SNAPSHOT_MAP[key]
