@@ -346,6 +346,8 @@
       '-chromeos_browser.ChromeosBrowserTest.testFullScreen',
       # crosbug.com/19556
       '-pyauto_webdriver',
+      # crbug.com/102549
+      '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
     ],
   },
 
