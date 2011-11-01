@@ -99,8 +99,12 @@ TEST_F(ZipTest, UnzipEvil) {
   FilePath path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
   path = path.AppendASCII("zip").AppendASCII("evil.zip");
-  ASSERT_FALSE(zip::Unzip(path, test_dir_));
-  FilePath evil_file = test_dir_;
+  // Unzip the zip file into a sub directory of test_dir_ so evil.zip
+  // won't create a persistent file outside test_dir_ in case of a
+  // failure.
+  FilePath output_dir = test_dir_.AppendASCII("out");
+  ASSERT_FALSE(zip::Unzip(path, output_dir));
+  FilePath evil_file = output_dir;
   evil_file = evil_file.AppendASCII(
       "../levilevilevilevilevilevilevilevilevilevilevilevil");
   ASSERT_FALSE(file_util::PathExists(evil_file));
@@ -110,8 +114,10 @@ TEST_F(ZipTest, UnzipEvil2) {
   FilePath path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
   path = path.AppendASCII("zip").AppendASCII("evil_via_invalid_utf8.zip");
-  ASSERT_TRUE(zip::Unzip(path, test_dir_));
-  FilePath evil_file = test_dir_;
+  // See the comment at UnzipEvil() for why we do this.
+  FilePath output_dir = test_dir_.AppendASCII("out");
+  ASSERT_TRUE(zip::Unzip(path, output_dir));
+  FilePath evil_file = output_dir;
   evil_file = evil_file.AppendASCII("../evil.txt");
   ASSERT_FALSE(file_util::PathExists(evil_file));
 }
