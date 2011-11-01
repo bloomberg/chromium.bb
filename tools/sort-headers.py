@@ -6,6 +6,7 @@
 """Given a filename as an argument, sort the #include/#imports in that file.
 
 Shows a diff and prompts for confirmation before doing the deed.
+Works great with tools/git/for-all-touched-files.py.
 """
 
 import optparse
@@ -71,36 +72,48 @@ def SortHeader(infile, outfile):
     outfile.write(line)
 
 
+def DiffAndConfirm(filename, should_confirm):
+  """Shows a diff of what the tool would change the file named
+  filename to.  Shows a confirmation prompt if should_confirm is true.
+  Saves the resulting file if should_confirm is false or the user
+  answers Y to the confirmation prompt.
+  """
+  fixfilename = filename + '.new'
+  infile = open(filename, 'r')
+  outfile = open(fixfilename, 'w')
+  SortHeader(infile, outfile)
+  infile.close()
+  outfile.close()  # Important so the below diff gets the updated contents.
+
+  try:
+    diff = os.system('diff -u %s %s' % (filename, fixfilename))
+    if diff >> 8 == 0:  # Check exit code.
+      print '%s: no change' % filename
+      return
+
+    if not should_confirm or YesNo('Use new file (y/N)?'):
+      os.rename(fixfilename, filename)
+  finally:
+    try:
+      os.remove(fixfilename)
+    except OSError:
+      # If the file isn't there, we don't care.
+      pass
+
+
 def main():
   parser = optparse.OptionParser(usage='%prog filename1 filename2 ...')
-  opts, args = parser.parse_args()
+  parser.add_option('-f', '--force', action='store_false', default=True,
+                    dest='should_confirm',
+                    help='Turn off confirmation prompt.')
+  opts, filenames = parser.parse_args()
 
-  if len(args) < 1:
+  if len(filenames) < 1:
     parser.print_help()
     sys.exit(1)
 
-  for filename in args:
-    fixfilename = filename + '.new'
-    infile = open(filename, 'r')
-    outfile = open(fixfilename, 'w')
-    SortHeader(infile, outfile)
-    infile.close()
-    outfile.close()  # Important so the below diff gets the updated contents.
-
-    try:
-      diff = os.system('diff -u %s %s' % (filename, fixfilename))
-      if diff >> 8 == 0:  # Check exit code.
-        print '%s: no change' % filename
-        continue
-
-      if YesNo('Use new file (y/N)?'):
-        os.rename(fixfilename, filename)
-    finally:
-      try:
-        os.remove(fixfilename)
-      except OSError:
-        # If the file isn't there, we don't care.
-        pass
+  for filename in filenames:
+    DiffAndConfirm(filename, opts.should_confirm)
 
 
 if __name__ == '__main__':
