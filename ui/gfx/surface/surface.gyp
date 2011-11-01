@@ -46,6 +46,14 @@
       'defines': [
         'SURFACE_IMPLEMENTATION',
       ],
+      'conditions': [
+        ['use_aura==1', {
+          'sources/': [
+            ['exclude', 'accelerated_surface_win.cc'],
+            ['exclude', 'accelerated_surface_win.h'],
+          ],
+        }],
+      ],
     },
   ],
 }
