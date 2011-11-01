@@ -25,7 +25,9 @@ namespace npapi {
 
 // A critical section that prevents two or more plug-ins from accessing a
 // WebPluginIMEWin instance through our patch function.
-base::LazyInstance<base::Lock> g_webplugin_ime_lock(base::LINKER_INITIALIZED);
+base::LazyInstance<base::Lock,
+                   base::LeakyLazyInstanceTraits<base::Lock> >
+    g_webplugin_ime_lock(base::LINKER_INITIALIZED);
 
 WebPluginIMEWin* WebPluginIMEWin::instance_ = NULL;
 

@@ -29,8 +29,9 @@ namespace {
 
 // None of the XDG stuff is thread-safe, so serialize all access under
 // this lock.
-static base::LazyInstance<base::Lock>
-        g_mime_util_xdg_lock(base::LINKER_INITIALIZED);
+static base::LazyInstance<base::Lock,
+                          base::LeakyLazyInstanceTraits<base::Lock> >
+    g_mime_util_xdg_lock(base::LINKER_INITIALIZED);
 
 class IconTheme;
 

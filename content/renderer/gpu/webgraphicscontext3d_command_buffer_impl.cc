@@ -35,7 +35,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
 
-static base::LazyInstance<base::Lock>
+static base::LazyInstance<base::Lock,
+                          base::LeakyLazyInstanceTraits<base::Lock> >
     g_all_shared_contexts_lock(base::LINKER_INITIALIZED);
 static base::LazyInstance<std::set<WebGraphicsContext3DCommandBufferImpl*> >
     g_all_shared_contexts(base::LINKER_INITIALIZED);
@@ -347,8 +348,7 @@ bool WebGraphicsContext3DCommandBufferImpl::readBackFramebuffer(
   if (mustRestoreFBO) {
     gl_->BindFramebuffer(GL_FRAMEBUFFER, buffer);
   }
-   gl_->ReadPixels(0, 0, width, height,
-                   GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  gl_->ReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
   // Swizzle red and blue channels
   // TODO(kbr): expose GL_BGRA as extension

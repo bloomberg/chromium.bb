@@ -13,7 +13,9 @@ using namespace remoting;
 
 namespace {
 LocalInputMonitorThread* g_local_input_monitor_thread = NULL;
-base::LazyInstance<base::Lock> g_thread_lock(base::LINKER_INITIALIZED);
+base::LazyInstance<base::Lock,
+                   base::LeakyLazyInstanceTraits<base::Lock> >
+    g_thread_lock(base::LINKER_INITIALIZED);
 }  // namespace
 
 

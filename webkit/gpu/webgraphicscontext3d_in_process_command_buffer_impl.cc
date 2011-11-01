@@ -167,7 +167,7 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   CommandBufferService* GetCommandBufferService();
 
  private:
-  GLInProcessContext(GLInProcessContext* parent);
+  explicit GLInProcessContext(GLInProcessContext* parent);
 
   bool Initialize(bool onscreen,
                   gfx::PluginWindowHandle render_surface,
@@ -209,7 +209,8 @@ const int32 kTransferBufferSize = 1024 * 1024;
 static base::LazyInstance<
     std::set<WebGraphicsContext3DInProcessCommandBufferImpl*> >
         g_all_shared_contexts(base::LINKER_INITIALIZED);
-static base::LazyInstance<base::Lock>
+static base::LazyInstance<base::Lock,
+                          base::LeakyLazyInstanceTraits<base::Lock> >
     g_all_shared_contexts_lock(base::LINKER_INITIALIZED);
 
 // Singleton used to initialize and terminate the gles2 library.
@@ -837,8 +838,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::readBackFramebuffer(
   if (mustRestoreFBO) {
     gl_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer);
   }
-   gl_->ReadPixels(0, 0, width, height,
-                   GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  gl_->ReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
   // Swizzle red and blue channels
   // TODO(kbr): expose GL_BGRA as extension
@@ -1637,8 +1637,7 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::OnSwapBuffersComplete() {
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::setContextLostCallback(
-    WebGraphicsContext3D::WebGraphicsContextLostCallback* cb)
-{
+    WebGraphicsContext3D::WebGraphicsContextLostCallback* cb) {
   context_lost_callback_ = cb;
 }
 

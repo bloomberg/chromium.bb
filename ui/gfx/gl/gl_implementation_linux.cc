@@ -49,7 +49,9 @@ base::NativeLibrary LoadLibrary(const char* filename) {
 // TODO(backer): Find a more principled (less heavy handed) way to prevent a
 // race in the bindings initialization.
 #if (defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)) || defined(TOUCH_UI)
-base::LazyInstance<base::Lock> g_lock(base::LINKER_INITIALIZED);
+base::LazyInstance<base::Lock,
+                   base::LeakyLazyInstanceTraits<base::Lock> >
+    g_lock(base::LINKER_INITIALIZED);
 #endif
 
 }  // namespace anonymous

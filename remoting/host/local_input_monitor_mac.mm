@@ -152,7 +152,9 @@ class LocalInputMonitorMac : public remoting::LocalInputMonitor {
   DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorMac);
 };
 
-base::LazyInstance<base::Lock> monitor_lock(base::LINKER_INITIALIZED);
+base::LazyInstance<base::Lock,
+                   base::LeakyLazyInstanceTraits<base::Lock> >
+    monitor_lock(base::LINKER_INITIALIZED);
 LocalInputMonitorImpl* local_input_monitor = NULL;
 
 }  // namespace

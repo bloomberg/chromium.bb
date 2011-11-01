@@ -326,8 +326,9 @@ namespace {
 
 static base::LazyInstance<browser::InternalAuthVerificationService>
     g_verification_service(base::LINKER_INITIALIZED);
-static base::LazyInstance<base::Lock> g_verification_service_lock(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<base::Lock,
+                          base::LeakyLazyInstanceTraits<base::Lock> >
+    g_verification_service_lock(base::LINKER_INITIALIZED);
 
 }  // namespace
 
@@ -477,4 +478,3 @@ void InternalAuthGeneration::GenerateNewKey() {
 }
 
 }  // namespace browser
-
