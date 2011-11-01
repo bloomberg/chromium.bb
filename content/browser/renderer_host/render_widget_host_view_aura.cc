@@ -214,10 +214,12 @@ void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
 void RenderWidgetHostViewAura::TextInputStateChanged(
     ui::TextInputType type,
     bool can_compose_inline) {
+  // http://crbug.com/102569
   NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewAura::ImeCancelComposition() {
+  // http://crbug.com/102569
   NOTIMPLEMENTED();
 }
 
@@ -333,22 +335,23 @@ gfx::Rect RenderWidgetHostViewAura::GetRootWindowBounds() {
 
 void RenderWidgetHostViewAura::SetVisuallyDeemphasized(const SkColor* color,
                                                        bool animate) {
+  // http://crbug.com/102568
   NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewAura::UnhandledWheelEvent(
     const WebKit::WebMouseWheelEvent& event) {
-  NOTIMPLEMENTED();
+  // Not needed. Mac-only.
 }
 
 void RenderWidgetHostViewAura::SetHasHorizontalScrollbar(
     bool has_horizontal_scrollbar) {
-  NOTIMPLEMENTED();
+  // Not needed. Mac-only.
 }
 
 void RenderWidgetHostViewAura::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
-  NOTIMPLEMENTED();
+  // Not needed. Mac-only.
 }
 
 #if defined(OS_WIN)
@@ -380,11 +383,13 @@ gfx::PluginWindowHandle RenderWidgetHostViewAura::GetCompositingSurface() {
 #endif
 
 bool RenderWidgetHostViewAura::LockMouse() {
+  // http://crbug.com/102563
   NOTIMPLEMENTED();
   return false;
 }
 
 void RenderWidgetHostViewAura::UnlockMouse() {
+  // http://crbug.com/102563
   NOTIMPLEMENTED();
   host_->LostMouseLock();
 }
@@ -418,8 +423,8 @@ bool RenderWidgetHostViewAura::OnKeyEvent(aura::KeyEvent* event) {
 }
 
 gfx::NativeCursor RenderWidgetHostViewAura::GetCursor(const gfx::Point& point) {
-  // TODO(beng): talk to beng before implementing this.
-  //NOTIMPLEMENTED();
+  // http://crbug.com/102562
+  // NOTIMPLEMENTED();
   return gfx::kNullCursor;
 }
 
@@ -510,6 +515,7 @@ void RenderWidgetHostViewAura::OnCompositingEnded(ui::Compositor* compositor) {
 // RenderWidgetHostViewAura, private:
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
-  //NOTIMPLEMENTED();
+  // http://crbug.com/102562
+  // NOTIMPLEMENTED();
   // TODO(beng): See RenderWidgetHostViewWin.
 }
