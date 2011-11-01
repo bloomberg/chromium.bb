@@ -228,8 +228,11 @@ CapturerMac::~CapturerMac() {
   ReleaseBuffers();
   CGUnregisterScreenRefreshCallback(CapturerMac::ScreenRefreshCallback, this);
   CGScreenUnregisterMoveCallback(CapturerMac::ScreenUpdateMoveCallback, this);
-  CGDisplayRemoveReconfigurationCallback(
+  CGError err = CGDisplayRemoveReconfigurationCallback(
       CapturerMac::DisplaysReconfiguredCallback, this);
+  if (err != kCGErrorSuccess) {
+    LOG(ERROR) << "CGDisplayRemoveReconfigurationCallback " << err;
+  }
 }
 
 bool CapturerMac::Init() {

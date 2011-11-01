@@ -4,9 +4,12 @@
 
 #include "remoting/host/curtain.h"
 
+#include <ApplicationServices/ApplicationServices.h>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/mac/scoped_cftyperef.h"
 
 namespace {
 static const char* kCGSessionPath =
@@ -28,19 +31,25 @@ class CurtainMac : public Curtain {
 };
 
 void CurtainMac::EnableCurtainMode(bool enable) {
-  // Whether curtain mode is being enabled or disabled, switch out the session.
+  // Whether curtain mode is being enabled or disabled, switch out the session
+  // if the current user is switched in.
   // TODO(jamiewalch): If curtain mode is being enabled at the login screen, it
   // should be deferred until the user logs in.
-  pid_t child = fork();
-  if (child == 0) {
-    execl(kCGSessionPath, kCGSessionPath, "-suspend", (char*)0);
-    exit(1);
-  } else if (child > 0) {
-    int status = 0;
-    waitpid(child, &status, 0);
-    // To ensure that the system has plenty of time to notify the CGDisplay-
-    // ReconfigurationCallback, sleep here. 1s is probably overkill.
-    sleep(1);
+  base::mac::ScopedCFTypeRef<CFDictionaryRef> session(
+      CGSessionCopyCurrentDictionary());
+  if (CFDictionaryGetValue(session,
+                           kCGSessionOnConsoleKey) == kCFBooleanTrue) {
+    pid_t child = fork();
+    if (child == 0) {
+      execl(kCGSessionPath, kCGSessionPath, "-suspend", (char*)0);
+      exit(1);
+    } else if (child > 0) {
+      int status = 0;
+      waitpid(child, &status, 0);
+      // To ensure that the system has plenty of time to notify the CGDisplay-
+      // ReconfigurationCallback, sleep here. 1s is probably overkill.
+      sleep(1);
+    }
   }
 }
 
