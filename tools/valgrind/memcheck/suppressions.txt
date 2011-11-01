@@ -890,7 +890,7 @@
    intentional_RendererCrashTest
    Memcheck:Addr4
    fun:_Z*33HandleRendererErrorTestParametersRK11CommandLine
-   fun:_Z12RendererMainRK18MainFunctionParams
+   fun:_Z12RendererMainRKN7content18MainFunctionParams*
 }
 {
    # The InvalidRead error in rc4_wordconv is intentional.
