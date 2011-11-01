@@ -13,12 +13,14 @@
 #include <map>
 #include <vector>
 
+#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
+#include "base/nix/xdg_util.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
@@ -486,8 +488,11 @@ void InitDefaultThemes() {
   IconTheme** default_themes =
       MimeUtilConstants::GetInstance()->default_themes_;
 
-  char* env = getenv("KDE_FULL_SESSION");
-  if (env) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  base::nix::DesktopEnvironment desktop_env =
+      base::nix::GetDesktopEnvironment(env.get());
+  if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE3 ||
+      desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE4) {
     // KDE
     std::string kde_default_theme;
     std::string kde_fallback_theme;
@@ -497,8 +502,7 @@ void InitDefaultThemes() {
     default_themes[0] = NULL;
 
     // Try some reasonable defaults for KDE.
-    env = getenv("KDE_SESSION_VERSION");
-    if (!env || env[0] != '4') {
+    if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE3) {
       // KDE 3
       kde_default_theme = "default.kde";
       kde_fallback_theme = "crystalsvg";
@@ -616,8 +620,11 @@ FilePath GetMimeIcon(const std::string& mime_type, size_t size) {
   icon_names.push_back("gnome-mime-" + icon_name);
 
   // Try "deb" for "application/x-deb" in KDE 3.
-  icon_name = mime_type.substr(mime_type.find("/x-") + 3);
-  icon_names.push_back(icon_name);
+  size_t x_substr_pos = mime_type.find("/x-");
+  if (x_substr_pos != std::string::npos) {
+    icon_name = mime_type.substr(x_substr_pos + 3);
+    icon_names.push_back(icon_name);
+  }
 
   // Try generic name like text-x-generic.
   icon_name = mime_type.substr(0, mime_type.find('/')) + "-x-generic";
