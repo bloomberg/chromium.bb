@@ -17,7 +17,7 @@ pm_es_nexe = env.ComponentProgram(pm_es_nexe_name,
                                               '${PPAPI_LIBS}',
                                               ])
 env.Publish(pm_es_nexe_name, 'run',
-            ['pm_exit_status_test.html', 'pm_exit_status_test7.html'])
+            ['pm_exit_status_test.html'])
 
 # chrome_browser_tests
 
