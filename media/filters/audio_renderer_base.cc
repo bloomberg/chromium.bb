@@ -162,6 +162,11 @@ void AudioRendererBase::ConsumeAudioSamples(scoped_refptr<Buffer> buffer_in) {
   // discard decoded audio data until we reach our desired seek timestamp.
   if (buffer_in->IsEndOfStream()) {
     recieved_end_of_stream_ = true;
+
+    // Transition to kPlaying if we are currently handling an underflow since no
+    // more data will be arriving.
+    if (state_ == kUnderflow || state_ == kRebuffering)
+      state_ = kPlaying;
   } else if (state_ == kSeeking && !buffer_in->IsEndOfStream() &&
              (buffer_in->GetTimestamp() + buffer_in->GetDuration()) <
                  seek_timestamp_) {
