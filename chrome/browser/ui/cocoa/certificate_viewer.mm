@@ -9,30 +9,15 @@
 
 #include <vector>
 
-#include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "net/base/x509_certificate.h"
 
 void ShowCertificateViewer(gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
-  SecCertificateRef cert_mac = cert->os_cert_handle();
-  if (!cert_mac)
-    return;
-
-  base::mac::ScopedCFTypeRef<CFMutableArrayRef> certificates(
-      CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks));
-  if (!certificates.get()) {
-    NOTREACHED();
-    return;
-  }
-  CFArrayAppendValue(certificates, cert_mac);
-
-  // Server certificate must be first in the array; subsequent certificates
-  // in the chain can be in any order.
-  const std::vector<SecCertificateRef>& ca_certs =
-      cert->GetIntermediateCertificates();
-  for (size_t i = 0; i < ca_certs.size(); ++i)
-    CFArrayAppendValue(certificates, ca_certs[i]);
+  base::mac::ScopedCFTypeRef<CFArrayRef> cert_chain(
+      cert->CreateOSCertChainForCert());
+  NSArray* certificates = base::mac::CFToNSCast(cert_chain.get());
 
   // Explicitly disable revocation checking, regardless of user preferences
   // or system settings. The behaviour of SFCertificatePanel is to call
@@ -77,7 +62,7 @@ void ShowCertificateViewer(gfx::NativeWindow parent,
                modalDelegate:nil
               didEndSelector:NULL
                  contextInfo:NULL
-                certificates:reinterpret_cast<NSArray*>(certificates.get())
+                certificates:certificates
                    showGroup:YES];
   // The SFCertificatePanel releases itself when the sheet is dismissed.
 }
