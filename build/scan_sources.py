@@ -227,7 +227,7 @@ def Main(argv):
 
   sorted_list = workQ.Run()
   for pathname in sorted_list:
-    sys.stderr.write(pathname + '\n')
+    sys.stdout.write(pathname + '\n')
   return 0
 
 
