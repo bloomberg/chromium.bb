@@ -527,6 +527,7 @@
         'browser/ui/panels/panel_browsertest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
         'browser/ui/views/button_dropdown_test.cc',
+        'browser/ui/views/constrained_window_views_browsertest.cc',
         'browser/ui/views/find_bar_host_interactive_uitest.cc',
         'browser/ui/views/menu_item_view_test.cc',
         'browser/ui/views/menu_model_adapter_test.cc',
@@ -674,6 +675,7 @@
           },  # configurations
         }, { # else: OS != "win"
           'sources!': [
+            'browser/ui/views/constrained_window_views_browsertest.cc',
             'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
           ],
         }],  # OS != "win"

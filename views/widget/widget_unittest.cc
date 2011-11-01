@@ -133,6 +133,17 @@ Widget* CreateChildPlatformWidget(gfx::NativeView parent_native_view) {
   return child;
 }
 
+Widget* CreateChildPopupPlatformWidget(gfx::NativeView parent_native_view) {
+  Widget* child = new Widget;
+  Widget::InitParams child_params(Widget::InitParams::TYPE_POPUP);
+  child_params.child = true;
+  child_params.native_widget = CreatePlatformNativeWidget(child);
+  child_params.parent = parent_native_view;
+  child->Init(child_params);
+  child->SetContentsView(new View);
+  return child;
+}
+
 Widget* CreateTopLevelNativeWidgetViews() {
   Widget* toplevel = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
@@ -318,9 +329,11 @@ TEST_F(WidgetTest, Visibility) {
   gfx::NativeView parent = toplevel->GetNativeView();
 #endif
   Widget* child = CreateChildPlatformWidget(parent);
+  Widget* child_popup = CreateChildPopupPlatformWidget(parent);
 
   EXPECT_FALSE(toplevel->IsVisible());
   EXPECT_FALSE(child->IsVisible());
+  EXPECT_FALSE(child_popup->IsVisible());
 
   child->Show();
 
@@ -331,6 +344,11 @@ TEST_F(WidgetTest, Visibility) {
 
   EXPECT_TRUE(toplevel->IsVisible());
   EXPECT_TRUE(child->IsVisible());
+  EXPECT_FALSE(child_popup->IsVisible());
+
+  child_popup->Show();
+
+  EXPECT_TRUE(child_popup->IsVisible());
 
   toplevel->CloseNow();
   // |child| should be automatically destroyed with |toplevel|.

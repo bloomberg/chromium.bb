@@ -620,14 +620,11 @@ ConstrainedWindowViews::~ConstrainedWindowViews() {
 // ConstrainedWindowViews, ConstrainedWindow implementation:
 
 void ConstrainedWindowViews::ShowConstrainedWindow() {
-  // We marked the view as hidden during construction.  Mark it as
-  // visible now so FocusManager will let us receive focus.
-  non_client_view()->SetVisible(true);
   ConstrainedWindowTabHelper* helper =
       wrapper_->constrained_window_tab_helper();
   if (helper && helper->delegate())
     helper->delegate()->WillShowConstrainedWindow(wrapper_);
-  Activate();
+  Show();
   FocusConstrainedWindow();
 }
 

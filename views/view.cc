@@ -1948,7 +1948,7 @@ void View::RegisterPendingAccelerators() {
     return;
   }
   // Only register accelerators if we are visible.
-  if (!IsVisibleInRootView())
+  if (!IsVisibleInRootView() || !GetWidget()->IsVisible())
     return;
   for (std::vector<Accelerator>::const_iterator i(
            accelerators_->begin() + registered_accelerator_count_);

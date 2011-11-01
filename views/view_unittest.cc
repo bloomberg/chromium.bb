@@ -985,6 +985,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
   widget->Init(params);
   View* root = widget->GetRootView();
   root->AddChildView(view);
+  widget->Show();
 
   // Get the focus manager.
   FocusManager* focus_manager = widget->GetFocusManager();
@@ -1049,6 +1050,7 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
   widget->Init(params);
   View* root = widget->GetRootView();
   root->AddChildView(view);
+  widget->Show();
 
   FocusManager* focus_manager = widget->GetFocusManager();
   ASSERT_TRUE(focus_manager);
@@ -1059,6 +1061,40 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
 
   view->SetVisible(true);
   EXPECT_EQ(view,
+            focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
+
+  widget->CloseNow();
+}
+#endif
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+TEST_F(ViewTest, ViewInHiddenWidgetWithAccelerator) {
+  Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
+  TestView* view = new TestView();
+  view->Reset();
+  view->AddAccelerator(return_accelerator);
+  EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
+
+  scoped_ptr<Widget> widget(new Widget);
+  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  widget->Init(params);
+  View* root = widget->GetRootView();
+  root->AddChildView(view);
+
+  FocusManager* focus_manager = widget->GetFocusManager();
+  ASSERT_TRUE(focus_manager);
+
+  EXPECT_EQ(NULL,
+            focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
+
+  widget->Show();
+  EXPECT_EQ(view,
+            focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
+
+  widget->Hide();
+  EXPECT_EQ(NULL,
             focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
 
   widget->CloseNow();

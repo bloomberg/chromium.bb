@@ -2235,7 +2235,7 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
 
   // Set type-independent style attributes.
   if (params.child)
-    style |= WS_CHILD | WS_VISIBLE;
+    style |= WS_CHILD;
   if (params.show_state == ui::SHOW_STATE_MAXIMIZED)
     style |= WS_MAXIMIZE;
   if (params.show_state == ui::SHOW_STATE_MINIMIZED)
@@ -2278,6 +2278,7 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
       break;
     }
     case Widget::InitParams::TYPE_CONTROL:
+      style |= WS_VISIBLE;
       break;
     case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
       style |= WS_POPUP;
