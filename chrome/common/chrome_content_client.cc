@@ -241,13 +241,6 @@ bool LoadFlashBroker(const FilePath& plugin_path, CommandLine* cmd_line) {
   ::CloseHandle(process);
   return true;
 }
-
-// Must be dynamically loaded to avoid startup failures on Win XP.
-typedef BOOL (WINAPI *ChangeWindowMessageFilterFunction)(
-    UINT message,
-    DWORD flag);
-ChangeWindowMessageFilterFunction g_ChangeWindowMessageFilter;
-
 #endif  // OS_WIN
 
 }  // namespace
@@ -358,16 +351,10 @@ bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
                           sandbox::USER_INTERACTIVE);
     // Allow the Flash plugin to forward some messages back to Chrome.
     if (base::win::GetVersion() == base::win::VERSION_VISTA) {
-      if (!g_ChangeWindowMessageFilter) {
-        g_ChangeWindowMessageFilter =
-            reinterpret_cast<ChangeWindowMessageFilterFunction>(
-                ::GetProcAddress(::GetModuleHandle(L"user32.dll"),
-                                 "ChangeWindowMessageFilter"));
-      }
       // Per-window message filters required on Win7 or later must be added to:
       // render_widget_host_view_win.cc RenderWidgetHostViewWin::ReparentWindow
-      g_ChangeWindowMessageFilter(WM_MOUSEWHEEL, MSGFLT_ADD);
-      g_ChangeWindowMessageFilter(WM_APPCOMMAND, MSGFLT_ADD);
+      ::ChangeWindowMessageFilter(WM_MOUSEWHEEL, MSGFLT_ADD);
+      ::ChangeWindowMessageFilter(WM_APPCOMMAND, MSGFLT_ADD);
     }
     policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
   } else {
