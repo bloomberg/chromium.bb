@@ -53,13 +53,13 @@ class MimeUtilConstants {
   }
 
   // Store icon directories and their mtimes.
-  IconDirMtimeMap* icon_dirs_;
+  IconDirMtimeMap icon_dirs_;
 
   // Store icon formats.
   IconFormats icon_formats_;
 
   // Store loaded icon_theme.
-  IconThemeMap* icon_themes_;
+  IconThemeMap icon_themes_;
 
   // The default theme.
   IconTheme* default_themes_[kDefaultThemeNum];
@@ -73,9 +73,7 @@ class MimeUtilConstants {
 
  private:
   MimeUtilConstants()
-      : icon_dirs_(NULL),
-        icon_themes_(NULL),
-        last_check_time_(0) {
+      : last_check_time_(0) {
     icon_formats_.push_back(".png");
     icon_formats_.push_back(".svg");
     icon_formats_.push_back(".xpm");
@@ -120,9 +118,7 @@ class IconTheme {
 
   explicit IconTheme(const std::string& name);
 
-  ~IconTheme() {
-    delete[] info_array_;
-  }
+  ~IconTheme() {}
 
   // Returns the path to an icon with the name |icon_name| and a size of |size|
   // pixels. If the icon does not exist, but |inherits| is true, then look for
@@ -162,7 +158,7 @@ class IconTheme {
 
   // store the subdirs of this theme and array index of |info_array_|.
   std::map<std::string, int> subdirs_;
-  SubDirInfo* info_array_;  // List of sub-directories.
+  scoped_array<SubDirInfo> info_array_;  // List of sub-directories.
   std::string inherits_;  // Name of the theme this one inherits from.
 };
 
@@ -175,7 +171,7 @@ IconTheme::IconTheme(const std::string& name)
   MimeUtilConstants::IconDirMtimeMap::iterator iter;
   FilePath theme_path;
   MimeUtilConstants::IconDirMtimeMap* icon_dirs =
-      MimeUtilConstants::GetInstance()->icon_dirs_;
+      &MimeUtilConstants::GetInstance()->icon_dirs_;
   for (iter = icon_dirs->begin(); iter != icon_dirs->end(); ++iter) {
     theme_path = iter->first.Append(name);
     if (!file_util::DirectoryExists(theme_path))
@@ -236,7 +232,7 @@ FilePath IconTheme::GetIconPath(const std::string& icon_name, int size,
 IconTheme* IconTheme::LoadTheme(const std::string& theme_name) {
   scoped_ptr<IconTheme> theme;
   MimeUtilConstants::IconThemeMap* icon_themes =
-      MimeUtilConstants::GetInstance()->icon_themes_;
+      &MimeUtilConstants::GetInstance()->icon_themes_;
   if (icon_themes->find(theme_name) != icon_themes->end()) {
     theme.reset((*icon_themes)[theme_name]);
   } else {
@@ -282,7 +278,7 @@ bool IconTheme::LoadIndexTheme(const FilePath& file) {
     if (entry.length() == 0 || entry[0] == '#') {
       // Blank line or Comment.
       continue;
-    } else if (entry[0] == '[' && info_array_) {
+    } else if (entry[0] == '[' && info_array_.get()) {
       current_info = NULL;
       std::string subdir = entry.substr(1, entry.length() - 2);
       if (subdirs_.find(subdir) != subdirs_.end())
@@ -318,7 +314,7 @@ bool IconTheme::LoadIndexTheme(const FilePath& file) {
         current_info->threshold = atoi(value.c_str());
       }
     } else {
-      if (key.compare("Directories") == 0 && !info_array_) {
+      if (key.compare("Directories") == 0 && !info_array_.get()) {
         if (!SetDirectories(value)) break;
       } else if (key.compare("Inherits") == 0) {
         if (value != "hicolor")
@@ -328,7 +324,7 @@ bool IconTheme::LoadIndexTheme(const FilePath& file) {
   }
 
   file_util::CloseFile(fp);
-  return info_array_ != NULL;
+  return info_array_.get() != NULL;
 }
 
 size_t IconTheme::MatchesSize(SubDirInfo* info, size_t size) {
@@ -391,7 +387,7 @@ bool IconTheme::SetDirectories(const std::string& dirs) {
     return false;
   }
   subdirs_[dir] = num++;
-  info_array_ = new SubDirInfo[num];
+  info_array_.reset(new SubDirInfo[num]);
   return true;
 }
 
@@ -399,7 +395,7 @@ bool IconTheme::SetDirectories(const std::string& dirs) {
 void TryAddIconDir(const FilePath& dir) {
   if (!file_util::DirectoryExists(dir))
     return;
-  (*MimeUtilConstants::GetInstance()->icon_dirs_)[dir] = 0;
+  MimeUtilConstants::GetInstance()->icon_dirs_[dir] = 0;
 }
 
 // For a xdg directory |dir|, add the appropriate icon sub-directories.
@@ -412,7 +408,7 @@ void AddXDGDataDir(const FilePath& dir) {
 
 // Add all the xdg icon directories.
 void InitIconDir() {
-  MimeUtilConstants::GetInstance()->icon_dirs_->clear();
+  MimeUtilConstants::GetInstance()->icon_dirs_.clear();
   FilePath home = file_util::GetHomeDir();
   if (!home.empty()) {
       FilePath legacy_data_dir(home);
@@ -454,8 +450,6 @@ void EnsureUpdated() {
   MimeUtilConstants* constants = MimeUtilConstants::GetInstance();
 
   if (constants->last_check_time_ == 0) {
-    constants->icon_dirs_ = new MimeUtilConstants::IconDirMtimeMap;
-    constants->icon_themes_ = new MimeUtilConstants::IconThemeMap;
     InitIconDir();
     constants->last_check_time_ = now;
   } else {
@@ -468,14 +462,13 @@ void EnsureUpdated() {
 
 // Find a fallback icon if we cannot find it in the default theme.
 FilePath LookupFallbackIcon(const std::string& icon_name) {
-  FilePath icon;
   MimeUtilConstants* constants = MimeUtilConstants::GetInstance();
   MimeUtilConstants::IconDirMtimeMap::iterator iter;
-  MimeUtilConstants::IconDirMtimeMap* icon_dirs = constants->icon_dirs_;
+  MimeUtilConstants::IconDirMtimeMap* icon_dirs = &constants->icon_dirs_;
   MimeUtilConstants::IconFormats* icon_formats = &constants->icon_formats_;
   for (iter = icon_dirs->begin(); iter != icon_dirs->end(); ++iter) {
     for (size_t i = 0; i < icon_formats->size(); ++i) {
-      icon = iter->first.Append(icon_name + (*icon_formats)[i]);
+      FilePath icon = iter->first.Append(icon_name + (*icon_formats)[i]);
       if (file_util::PathExists(icon))
         return icon;
     }
@@ -537,7 +530,7 @@ void InitDefaultThemes() {
 FilePath LookupIconInDefaultTheme(const std::string& icon_name, int size) {
   EnsureUpdated();
   MimeUtilConstants* constants = MimeUtilConstants::GetInstance();
-  MimeUtilConstants::IconThemeMap* icon_themes = constants->icon_themes_;
+  MimeUtilConstants::IconThemeMap* icon_themes = &constants->icon_themes_;
   if (icon_themes->empty())
     InitDefaultThemes();
 
@@ -554,8 +547,6 @@ FilePath LookupIconInDefaultTheme(const std::string& icon_name, int size) {
 }
 
 MimeUtilConstants::~MimeUtilConstants() {
-  delete icon_dirs_;
-  delete icon_themes_;
   for (size_t i = 0; i < kDefaultThemeNum; i++)
     delete default_themes_[i];
 }
