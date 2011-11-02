@@ -4306,10 +4306,10 @@ void RenderViewImpl::OnImeConfirmComposition(
       // Select the text in |replacement_range|, it will then be replaced by
       // text added by the call to RenderWidget::OnImeConfirmComposition().
       if (WebFrame* frame = webview()->focusedFrame()) {
-        frame->setSelectionToRange(
-            WebRange::fromDocumentRange(frame,
-                                        replacement_range.start(),
-                                        replacement_range.length()));
+        WebRange webrange = WebRange::fromDocumentRange(
+            frame, replacement_range.start(), replacement_range.length());
+        if (!webrange.isNull())
+          frame->setSelectionToRange(webrange);
       }
     }
     RenderWidget::OnImeConfirmComposition(text, replacement_range);
