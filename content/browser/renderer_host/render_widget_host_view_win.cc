@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/page_zoom.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -201,8 +202,43 @@ LRESULT CALLBACK PluginWrapperWindowProc(HWND window, unsigned int message,
   return ::DefWindowProc(window, message, wparam, lparam);
 }
 
-bool DecodeScrollGesture(WPARAM wParam,
-                         LPARAM lParam,
+bool DecodeZoomGesture(HWND hwnd, const GESTUREINFO& gi,
+                       content::PageZoom* zoom,
+                       POINT* zoom_center) {
+  static long start = 0;
+  static POINT zoom_first;
+
+  if (gi.dwFlags == GF_BEGIN) {
+    start = gi.ullArguments;
+    zoom_first.x = gi.ptsLocation.x;
+    zoom_first.y = gi.ptsLocation.y;
+    ScreenToClient(hwnd, &zoom_first);
+    return false;
+  }
+
+  if (gi.dwFlags == GF_END)
+    return false;
+
+  POINT zoom_second = {0};
+  zoom_second.x = gi.ptsLocation.x;
+  zoom_second.y = gi.ptsLocation.y;
+  ScreenToClient(hwnd, &zoom_second);
+
+  zoom_center->x = (zoom_first.x + zoom_second.x) / 2;
+  zoom_center->y = (zoom_first.y + zoom_second.y) / 2;
+
+  double zoom_factor =
+      static_cast<double>(gi.ullArguments)/static_cast<double>(start);
+
+  *zoom = zoom_factor >= 1 ? content::PAGE_ZOOM_IN :
+              content::PAGE_ZOOM_OUT;
+
+  start = gi.ullArguments;
+  zoom_first = zoom_second;
+  return true;
+}
+
+bool DecodeScrollGesture(const GESTUREINFO& gi,
                          POINT* start,
                          POINT* delta){
   // Windows gestures are streams of messages with begin/end messages that
@@ -210,16 +246,6 @@ bool DecodeScrollGesture(WPARAM wParam,
   // the static variables.
   static POINT last_pt;
   static POINT start_pt;
-
-  GESTUREINFO gi = {sizeof(GESTUREINFO)};
-  HGESTUREINFO gi_handle = reinterpret_cast<HGESTUREINFO>(lParam);
-  if (!::GetGestureInfo(gi_handle, &gi)) {
-    DWORD error = GetLastError();
-    NOTREACHED() << "Unable to get gesture info. Error : " << error;
-  }
-
-  if (gi.dwID != GID_PAN)
-    return false;
 
   if (gi.dwFlags == GF_BEGIN) {
     delta->x = 0;
@@ -233,32 +259,31 @@ bool DecodeScrollGesture(WPARAM wParam,
   last_pt.x = gi.ptsLocation.x;
   last_pt.y = gi.ptsLocation.y;
   *start = start_pt;
-  ::CloseGestureInfoHandle(gi_handle);
   return true;
 }
 
 WebKit::WebMouseWheelEvent MakeFakeScrollWheelEvent(HWND hwnd,
                                                     POINT start,
                                                     POINT delta) {
-  WebKit::WebMouseWheelEvent result;
-  result.type = WebInputEvent::MouseWheel;
-  result.timeStampSeconds = ::GetMessageTime() / 1000.0;
-  result.button = WebMouseEvent::ButtonNone;
-  result.globalX = start.x;
-  result.globalY = start.y;
-  // Map to window coordinates.
-  POINT clientPoint = { result.globalX, result.globalY };
-  MapWindowPoints(0, hwnd, &clientPoint, 1);
-  result.x = clientPoint.x;
-  result.y = clientPoint.y;
-  result.windowX = result.x;
-  result.windowY = result.y;
-  // Note that we support diagonal scrolling.
-  result.deltaX = static_cast<float>(delta.x);
-  result.wheelTicksX = WHEEL_DELTA;
-  result.deltaY = static_cast<float>(delta.y);
-  result.wheelTicksY = WHEEL_DELTA;
-  return result;
+    WebKit::WebMouseWheelEvent result;
+    result.type = WebInputEvent::MouseWheel;
+    result.timeStampSeconds = ::GetMessageTime() / 1000.0;
+    result.button = WebMouseEvent::ButtonNone;
+    result.globalX = start.x;
+    result.globalY = start.y;
+    // Map to window coordinates.
+    POINT client_point = { result.globalX, result.globalY };
+    MapWindowPoints(0, hwnd, &client_point, 1);
+    result.x = client_point.x;
+    result.y = client_point.y;
+    result.windowX = result.x;
+    result.windowY = result.y;
+    // Note that we support diagonal scrolling.
+    result.deltaX = static_cast<float>(delta.x);
+    result.wheelTicksX = WHEEL_DELTA;
+    result.deltaY = static_cast<float>(delta.y);
+    result.wheelTicksY = WHEEL_DELTA;
+    return result;
 }
 
 }  // namespace
@@ -286,7 +311,9 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       is_fullscreen_(false),
       ignore_mouse_movement_(true),
-      composition_range_(ui::Range::InvalidRange()) {
+      composition_range_(ui::Range::InvalidRange()),
+      ignore_next_lbutton_message_at_same_location(false),
+      last_pointer_down_location_(0) {
   render_widget_host_->SetView(this);
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -299,7 +326,8 @@ RenderWidgetHostViewWin::~RenderWidgetHostViewWin() {
 }
 
 void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
-  Create(parent);  // ATL function to create the window.
+  // ATL function to create the window.
+  Create(parent);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1314,6 +1342,15 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
                                               LPARAM lparam, BOOL& handled) {
   handled = TRUE;
 
+  if (ignore_next_lbutton_message_at_same_location &&
+      message == WM_LBUTTONDOWN) {
+    ignore_next_lbutton_message_at_same_location = false;
+    LPARAM last_location = last_pointer_down_location_;
+    last_pointer_down_location_ = 0;
+    if (last_location == lparam)
+      return 0;
+  }
+
   if (message == WM_MOUSELEAVE)
     ignore_mouse_movement_ = true;
 
@@ -1566,18 +1603,38 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT message,
 }
 
 LRESULT RenderWidgetHostViewWin::OnGestureEvent(
-    UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
-  // Right now we only decode scroll gestures and we forward to the page
-  // as scroll events.
-  POINT start;
-  POINT delta;
-  if (DecodeScrollGesture(wparam, lparam, &start, &delta)) {
-    handled = TRUE;
-    render_widget_host_->ForwardWheelEvent(
-        MakeFakeScrollWheelEvent(m_hWnd, start, delta));
-  } else {
-    handled = FALSE;
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+
+  handled = FALSE;
+
+  GESTUREINFO gi = {sizeof(GESTUREINFO)};
+  HGESTUREINFO gi_handle = reinterpret_cast<HGESTUREINFO>(lparam);
+  if (!::GetGestureInfo(gi_handle, &gi)) {
+    DWORD error = GetLastError();
+    NOTREACHED() << "Unable to get gesture info. Error : " << error;
+    return 0;
   }
+
+  if (gi.dwID == GID_ZOOM) {
+    content::PageZoom zoom = content::PAGE_ZOOM_RESET;
+    POINT zoom_center = {0};
+    if (DecodeZoomGesture(m_hWnd, gi, &zoom, &zoom_center)) {
+      handled = TRUE;
+      Send(new ViewMsg_ZoomFactor(render_widget_host_->routing_id(),
+                                  zoom, zoom_center.x, zoom_center.y));
+    }
+  } else if (gi.dwID == GID_PAN) {
+    // Right now we only decode scroll gestures and we forward to the page
+    // as scroll events.
+    POINT start;
+    POINT delta;
+    if (DecodeScrollGesture(gi, &start, &delta)) {
+      handled = TRUE;
+      render_widget_host_->ForwardWheelEvent(
+          MakeFakeScrollWheelEvent(m_hWnd, start, delta));
+    }
+  }
+  ::CloseGestureInfoHandle(gi_handle);
   return 0;
 }
 
@@ -1859,6 +1916,27 @@ LRESULT RenderWidgetHostViewWin::OnParentNotify(UINT message, WPARAM wparam,
     default:
       break;
   }
+  return 0;
+}
+
+LRESULT RenderWidgetHostViewWin::OnPointerMessage(
+    UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  POINT point = {0};
+
+  point.x = GET_X_LPARAM(lparam);
+  point.y = GET_Y_LPARAM(lparam);
+  ScreenToClient(&point);
+
+  lparam = MAKELPARAM(point.x, point.y);
+
+  if (message == WM_POINTERDOWN) {
+    OnMouseEvent(WM_LBUTTONDOWN, MK_LBUTTON, lparam, handled);
+    ignore_next_lbutton_message_at_same_location = true;
+    last_pointer_down_location_ = lparam;
+  } else if (message == WM_POINTERUP) {
+    OnMouseEvent(WM_LBUTTONUP, MK_LBUTTON, lparam, handled);
+  }
+  handled = FALSE;
   return 0;
 }
 

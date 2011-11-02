@@ -860,6 +860,9 @@ class RenderViewImpl : public RenderWidget,
   void OnSelectPopupMenuItem(int selected_index);
 #endif
   void OnZoom(content::PageZoom zoom);
+  void OnZoomFactor(content::PageZoom zoom, int zoom_center_x,
+                    int zoom_center_y);
+
   void OnEnableViewSourceMode();
 
   void OnJavaBridgeInit(const IPC::ChannelHandle& channel_handle);
@@ -868,6 +871,8 @@ class RenderViewImpl : public RenderWidget,
   // and put it in the same position in the .cc file.
 
   // Misc private functions ----------------------------------------------------
+  void ZoomFactorHelper(content::PageZoom zoom, int zoom_center_x,
+                        int zoom_center_y, float scaling_increment);
 
   void AltErrorPageFinished(WebKit::WebFrame* frame,
                             const WebKit::WebURLError& original_error,

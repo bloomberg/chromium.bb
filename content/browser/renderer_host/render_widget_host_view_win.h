@@ -50,6 +50,21 @@ typedef CWinTraits<WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0>
 
 CONTENT_EXPORT extern const wchar_t kRenderWidgetHostHWNDClass[];
 
+// TODO(ananta)
+// This should be removed once we have the new windows SDK which defines these
+// messages.
+#if !defined(WM_POINTERUPDATE)
+#define WM_POINTERUPDATE 0x0245
+#endif  // WM_POINTERUPDATE
+
+#if !defined(WM_POINTERDOWN)
+#define WM_POINTERDOWN  0x0246
+#endif  // WM_POINTERDOWN
+
+#if !defined(WM_POINTERUP)
+#define WM_POINTERUP    0x0247
+#endif  // WM_POINTERUP
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewWin
 //
@@ -130,6 +145,8 @@ class RenderWidgetHostViewWin
     MESSAGE_HANDLER(WM_MOUSEACTIVATE, OnMouseActivate)
     MESSAGE_HANDLER(WM_GETOBJECT, OnGetObject)
     MESSAGE_HANDLER(WM_PARENTNOTIFY, OnParentNotify)
+    MESSAGE_HANDLER(WM_POINTERDOWN, OnPointerMessage)
+    MESSAGE_HANDLER(WM_POINTERUP, OnPointerMessage)
     MESSAGE_HANDLER(WM_GESTURE, OnGestureEvent)
   END_MSG_MAP()
 
@@ -244,6 +261,10 @@ class RenderWidgetHostViewWin
 
   LRESULT OnParentNotify(UINT message, WPARAM wparam, LPARAM lparam,
                          BOOL& handled);
+
+  // Handle the new pointer messages
+  LRESULT OnPointerMessage(UINT message, WPARAM wparam, LPARAM lparam,
+                           BOOL& handled);
   // Handle high-level touch events.
   LRESULT OnGestureEvent(UINT message, WPARAM wparam, LPARAM lparam,
                          BOOL& handled);
@@ -419,6 +440,14 @@ class RenderWidgetHostViewWin
   bool ignore_mouse_movement_;
 
   ui::Range composition_range_;
+
+  // Set to true if the next lbutton down message is to be ignored. Set by the
+  // WM_POINTERXX handler. We do this to ensure that we don't send out
+  // duplicate lbutton down messages to the renderer.
+  bool ignore_next_lbutton_message_at_same_location;
+  // The location of the last WM_POINTERDOWN message. We ignore the subsequent
+  // lbutton down only if the locations match.
+  LPARAM last_pointer_down_location_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };
