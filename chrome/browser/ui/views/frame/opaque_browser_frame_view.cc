@@ -609,6 +609,16 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
     top_area_height = std::max(top_area_height,
       GetBoundsForTabStrip(browser_view_->tabstrip()).bottom());
   }
+#if defined(USE_AURA)
+  // TODO(jamescook): Remove this when Aura defaults to its own window frame,
+  // BrowserNonClientFrameViewAura.  Until then, don't draw background colored
+  // rectangles, use images with colors baked in.  This allows us to have alpha
+  // rounded window corners without a window mask.  Also avoid overlapping the
+  // frame image with the corners.
+  canvas->TileImageInt(*theme_frame, top_left_corner->width(), 0,
+      width() - top_left_corner->width() - top_right_corner->width(),
+      theme_frame->height());
+#else
   SkColor frame_color = GetFrameColor();
   canvas->FillRect(frame_color, gfx::Rect(0, 0, width(), top_area_height));
 
@@ -634,6 +644,7 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 
   // Draw the theme frame.
   canvas->TileImageInt(*theme_frame, 0, 0, width(), theme_frame->height());
+#endif
 
   // Draw the theme frame overlay.
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
@@ -649,7 +660,8 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(*top_left_corner, 0, 0, top_left_corner->width(),
       top_left_height, 0, 0, top_left_corner->width(), top_left_height, false);
   canvas->TileImageInt(*top_edge, top_left_corner->width(), 0,
-                       width() - top_right_corner->width(), top_edge->height());
+      width() - top_left_corner->width() - top_right_corner->width(),
+      top_edge->height());
   int top_right_height = std::min(top_right_corner->height(),
                                   height() - bottom_right_corner->height());
   canvas->DrawBitmapInt(*top_right_corner, 0, 0, top_right_corner->width(),

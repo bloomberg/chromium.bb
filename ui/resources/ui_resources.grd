@@ -94,14 +94,28 @@
       <if expr="pp_ifdef('touchui')">
           <include name="IDR_THROBBER" file="large_throbber.png" type="BINDATA" />
       </if>
-      <include name="IDR_WINDOW_BOTTOM_CENTER" file="window_bottom_center.png" type="BINDATA" />
-      <include name="IDR_WINDOW_BOTTOM_LEFT_CORNER" file="window_bottom_left_corner.png" type="BINDATA" />
-      <include name="IDR_WINDOW_BOTTOM_RIGHT_CORNER" file="window_bottom_right_corner.png" type="BINDATA" />
-      <include name="IDR_WINDOW_LEFT_SIDE" file="window_left_side.png" type="BINDATA" />
-      <include name="IDR_WINDOW_RIGHT_SIDE" file="window_right_side.png" type="BINDATA" />
-      <include name="IDR_WINDOW_TOP_CENTER" file="window_top_center.png" type="BINDATA" />
-      <include name="IDR_WINDOW_TOP_LEFT_CORNER" file="window_top_left_corner.png" type="BINDATA" />
-      <include name="IDR_WINDOW_TOP_RIGHT_CORNER" file="window_top_right_corner.png" type="BINDATA" />
+      <!-- TODO(jamescook): Delete all these resources when Aura uses its own
+           transparent window frame. -->
+      <if expr="pp_ifdef('use_aura')">
+        <include name="IDR_WINDOW_BOTTOM_CENTER" file="window_bottom_center_aura.png" type="BINDATA" />
+        <include name="IDR_WINDOW_BOTTOM_LEFT_CORNER" file="window_bottom_left_corner_aura.png" type="BINDATA" />
+        <include name="IDR_WINDOW_BOTTOM_RIGHT_CORNER" file="window_bottom_right_corner_aura.png" type="BINDATA" />
+        <include name="IDR_WINDOW_LEFT_SIDE" file="window_left_side_aura.png" type="BINDATA" />
+        <include name="IDR_WINDOW_RIGHT_SIDE" file="window_right_side_aura.png" type="BINDATA" />
+        <include name="IDR_WINDOW_TOP_CENTER" file="window_top_center_aura.png" type="BINDATA" />
+        <include name="IDR_WINDOW_TOP_LEFT_CORNER" file="window_top_left_corner_aura.png" type="BINDATA" />
+        <include name="IDR_WINDOW_TOP_RIGHT_CORNER" file="window_top_right_corner_aura.png" type="BINDATA" />
+      </if>
+      <if expr="not pp_ifdef('use_aura')">
+        <include name="IDR_WINDOW_BOTTOM_CENTER" file="window_bottom_center.png" type="BINDATA" />
+        <include name="IDR_WINDOW_BOTTOM_LEFT_CORNER" file="window_bottom_left_corner.png" type="BINDATA" />
+        <include name="IDR_WINDOW_BOTTOM_RIGHT_CORNER" file="window_bottom_right_corner.png" type="BINDATA" />
+        <include name="IDR_WINDOW_LEFT_SIDE" file="window_left_side.png" type="BINDATA" />
+        <include name="IDR_WINDOW_RIGHT_SIDE" file="window_right_side.png" type="BINDATA" />
+        <include name="IDR_WINDOW_TOP_CENTER" file="window_top_center.png" type="BINDATA" />
+        <include name="IDR_WINDOW_TOP_LEFT_CORNER" file="window_top_left_corner.png" type="BINDATA" />
+        <include name="IDR_WINDOW_TOP_RIGHT_CORNER" file="window_top_right_corner.png" type="BINDATA" />
+      </if>
 
       <!-- Images only used by the Views toolkit. -->
       <if expr="pp_ifdef('toolkit_views')">

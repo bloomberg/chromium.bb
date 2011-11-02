@@ -9,6 +9,7 @@
 namespace switches {
 
 extern const char kAuraHostWindowSize[];
+extern const char kAuraWindows[];
 
 }  // namespace switches
 
