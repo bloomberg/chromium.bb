@@ -1,5 +1,5 @@
 %{
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
@@ -166,13 +166,11 @@ aomori.jp, 2
 aosta.it, 0
 aoste.it, 0
 ap.it, 0
-appspot.com, 0
 aq, 0
 aq.it, 0
 aquarium.museum, 0
 aquila.it, 0
 ar, 2
-ar.com, 0
 ar.it, 0
 ar.us, 0
 arboretum.museum, 0
@@ -396,7 +394,6 @@ botanicgarden.museum, 0
 botany.museum, 0
 bozen.it, 0
 br, 0
-br.com, 0
 br.it, 0
 brand.se, 0
 brandywinevalley.museum, 0
@@ -614,7 +611,6 @@ club.tw, 0
 cm, 0
 cmw.ru, 0
 cn, 0
-cn.com, 0
 cn.it, 0
 cn.ua, 0
 cng.br, 0
@@ -853,7 +849,6 @@ davvesiida.no, 0
 dc.us, 0
 ddr.museum, 0
 de, 0
-de.com, 0
 de.us, 0
 deatnu.no, 0
 decorativearts.museum, 0
@@ -1066,7 +1061,6 @@ eti.br, 0
 etne.no, 0
 etnedal.no, 0
 eu, 0
-eu.com, 0
 eu.int, 0
 eun.eg, 0
 evenassi.no, 0
@@ -1211,7 +1205,6 @@ garden.museum, 0
 gateway.museum, 0
 gaular.no, 0
 gausdal.no, 0
-gb.com, 0
 gb.net, 0
 gc.ca, 0
 gd, 0
@@ -1395,7 +1388,6 @@ gov.to, 0
 gov.tt, 0
 gov.tw, 0
 gov.ua, 0
-gov.uk, 1
 gov.vc, 0
 gov.vn, 0
 gov.ws, 0
@@ -1547,7 +1539,6 @@ hr, 0
 hs.kr, 0
 ht, 0
 hu, 0
-hu.com, 0
 huissier-justice.fr, 0
 humanities.museum, 0
 hurdal.no, 0
@@ -1709,7 +1700,6 @@ journal.aero, 0
 journalism.museum, 0
 journalist.aero, 0
 jp, 0
-jpn.com, 0
 js.cn, 0
 judaica.museum, 0
 judygarland.museum, 0
@@ -1851,7 +1841,6 @@ kopervik.no, 0
 kostroma.ru, 0
 kp, 0
 kr, 0
-kr.com, 0
 kr.it, 0
 kr.ua, 0
 kraanghke.no, 0
@@ -2507,7 +2496,6 @@ nm.cn, 0
 nm.us, 0
 nnov.ru, 0
 no, 0
-no.com, 0
 no.it, 0
 nom.ad, 0
 nom.ag, 0
@@ -2609,7 +2597,6 @@ on.ca, 0
 online.museum, 0
 ontario.museum, 0
 openair.museum, 0
-operaunite.com, 0
 opoczno.pl, 0
 opole.pl, 0
 oppdal.no, 0
@@ -2991,7 +2978,6 @@ pz.it, 0
 q.bg, 0
 qa, 2
 qc.ca, 0
-qc.com, 0
 qh.cn, 0
 qld.au, 0
 qld.edu.au, 0
@@ -3089,7 +3075,6 @@ royrvik.no, 0
 rs, 0
 rs.ba, 0
 ru, 0
-ru.com, 0
 rubtsovsk.ru, 0
 ruovat.no, 0
 russia.museum, 0
@@ -3103,7 +3088,6 @@ s.bg, 0
 s.se, 0
 sa, 0
 sa.au, 0
-sa.com, 0
 sa.cr, 0
 sa.edu.au, 0
 sa.gov.au, 0
@@ -3185,7 +3169,6 @@ sd, 0
 sd.cn, 0
 sd.us, 0
 se, 0
-se.com, 0
 se.net, 0
 seaport.museum, 0
 sebastopol.ua, 0
@@ -3548,7 +3531,6 @@ ug, 0
 ug.gov.pl, 0
 uhren.museum, 0
 uk, 2
-uk.com, 0
 uk.net, 0
 ulan-ude.ru, 0
 ullensaker.no, 0
@@ -3570,7 +3552,6 @@ urbinopesaro.it, 0
 uri.arpa, 0
 urn.arpa, 0
 us, 0
-us.com, 0
 us.na, 0
 usa.museum, 0
 usantiques.museum, 0
@@ -3591,7 +3572,6 @@ utsira.no, 0
 uvic.museum, 0
 uw.gov.pl, 0
 uy, 2
-uy.com, 0
 uz, 0
 uzhgorod.ua, 0
 v.bg, 0
@@ -4007,7 +3987,6 @@ yuzhno-sakhalinsk.ru, 0
 z.bg, 0
 z.se, 0
 za, 2
-za.com, 0
 za.net, 0
 za.org, 0
 zachpomor.pl, 0
