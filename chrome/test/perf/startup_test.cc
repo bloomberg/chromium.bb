@@ -370,7 +370,12 @@ TEST_F(StartupTest, PerfRestoreFewTabsReference) {
 #define MAYBE_PerfExtensionContentScript50 FLAKY_PerfExtensionContentScript50
 #elif defined(OS_WIN)
 // http://crbug.com/46609
+#if !defined(NDEBUG)
+// http://crbug.com/102584
+#define MAYBE_PerfSeveralTabs DISABLED_PerfSeveralTabs
+#else
 #define MAYBE_PerfSeveralTabs FLAKY_PerfSeveralTabs
+#endif
 #define MAYBE_PerfSeveralTabsReference PerfSeveralTabsReference
 #define MAYBE_PerfRestoreSeveralTabs PerfRestoreSeveralTabs
 #define MAYBE_PerfExtensionContentScript50 PerfExtensionContentScript50
