@@ -8,7 +8,7 @@
 
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
-#include "chrome/browser/chromeos/tab_first_render_watcher.h"
+#include "chrome/browser/tab_first_render_watcher.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "views/widget/widget_delegate.h"
@@ -26,7 +26,6 @@ class Widget;
 namespace chromeos {
 
 class StatusAreaView;
-class TabFirstRenderWatcher;
 
 // View used to render a WebUI supporting Widget. This widget is used for the
 // WebUI based start up and lock screens. It contains a StatusAreaView and

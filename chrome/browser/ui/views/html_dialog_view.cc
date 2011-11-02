@@ -52,7 +52,7 @@ HtmlDialogView::HtmlDialogView(Profile* profile,
                                HtmlDialogUIDelegate* delegate)
     : DOMView(),
       HtmlDialogTabContentsDelegate(profile),
-      state_(NONE),
+      initialized_(false),
       delegate_(delegate) {
 }
 
@@ -79,8 +79,8 @@ bool HtmlDialogView::AcceleratorPressed(const views::Accelerator& accelerator) {
 void HtmlDialogView::ViewHierarchyChanged(
     bool is_add, View* parent, View* child) {
   DOMView::ViewHierarchyChanged(is_add, parent, child);
-  if (is_add && GetWidget() && state_ == NONE) {
-    state_ = INITIALIZED;
+  if (is_add && GetWidget() && !initialized_) {
+    initialized_ = true;
 #if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
     CHECK(
         static_cast<views::NativeWidgetGtk*>(
@@ -250,49 +250,27 @@ void HtmlDialogView::InitDialog() {
   // the comment above HtmlDialogUI in its header file for why.
   HtmlDialogUI::GetPropertyAccessor().SetProperty(
       tab_contents->property_bag(), this);
-  notification_registrar_.Add(
-      this,
-      content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-      content::Source<TabContents>(tab_contents));
-  notification_registrar_.Add(
-      this,
-      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      content::Source<TabContents>(tab_contents));
+  tab_watcher_.reset(new TabFirstRenderWatcher(tab_contents, this));
 
   DOMView::LoadURL(GetDialogContentURL());
-}
-
-void HtmlDialogView::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
-      RenderWidgetHost* rwh = content::Details<RenderWidgetHost>(details).ptr();
-      notification_registrar_.Add(
-          this,
-          content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-          content::Source<RenderWidgetHost>(rwh));
-      break;
-    }
-    case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:
-      if (state_ == INITIALIZED)
-        state_ = LOADED;
-      break;
-    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT:
-      if (state_ == LOADED) {
-        state_ = PAINTED;
-#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
-        views::NativeWidgetGtk::UpdateFreezeUpdatesProperty(
-            GTK_WINDOW(GetWidget()->GetNativeView()), false);
-#endif
-      }
-      break;
-    default:
-      NOTREACHED() << "unknown type" << type;
-  }
 }
 
 void HtmlDialogView::RegisterDialogAccelerators() {
   // Pressing the ESC key will close the dialog.
   AddAccelerator(views::Accelerator(ui::VKEY_ESCAPE, false, false, false));
+}
+
+void HtmlDialogView::OnRenderHostCreated(RenderViewHost* host) {
+}
+
+void HtmlDialogView::OnTabMainFrameLoaded() {
+}
+
+void HtmlDialogView::OnTabMainFrameFirstRender() {
+#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
+  if (initialized_) {
+    views::NativeWidgetGtk::UpdateFreezeUpdatesProperty(
+        GTK_WINDOW(GetWidget()->GetNativeView()), false);
+  }
+#endif
 }

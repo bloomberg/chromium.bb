@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/tab_first_render_watcher.h"
+#include "chrome/browser/tab_first_render_watcher.h"
 
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-
-namespace chromeos {
 
 TabFirstRenderWatcher::TabFirstRenderWatcher(TabContents* tab,
                                              Delegate* delegate)
@@ -54,5 +52,3 @@ void TabFirstRenderWatcher::Observe(int type,
       NOTREACHED() << "unknown type" << type;
   }
 }
-
-}  // namespace chromeos

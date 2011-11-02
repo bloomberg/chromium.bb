@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_TAB_FIRST_RENDER_WATCHER_H_
-#define CHROME_BROWSER_CHROMEOS_TAB_FIRST_RENDER_WATCHER_H_
+#ifndef CHROME_BROWSER_TAB_FIRST_RENDER_WATCHER_H_
+#define CHROME_BROWSER_TAB_FIRST_RENDER_WATCHER_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -13,10 +13,7 @@
 class RenderViewHost;
 class TabContents;
 
-namespace chromeos {
-
 // This class watches given TabContent's loading and rendering state change.
-// TODO(xiyuan): Move this to a proper place and share with HTMLDialogView.
 class TabFirstRenderWatcher : public content::NotificationObserver {
  public:
   class Delegate {
@@ -52,6 +49,4 @@ class TabFirstRenderWatcher : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(TabFirstRenderWatcher);
 };
 
-}   // namespace chromeos
-
-#endif  // CHROME_BROWSER_CHROMEOS_TAB_FIRST_RENDER_WATCHER_H_
+#endif  // CHROME_BROWSER_TAB_FIRST_RENDER_WATCHER_H_
