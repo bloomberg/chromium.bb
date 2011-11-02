@@ -32,7 +32,7 @@ class ContentSettingsObserver
 
   // Sets the default content settings that back allowScripts() and
   // allowPlugins().
-  static void SetDefaultContentSettings(const ContentSettings& settings);
+  void SetDefaultContentSettings(const ContentSettings* settings);
 
   // Sets the image setting rules which back |allowImage()|. The
   // |ContentSettingsForOneType| object must outlive this
@@ -94,15 +94,16 @@ class ContentSettingsObserver
   typedef std::map<GURL, ContentSettings> HostContentSettings;
   HostContentSettings host_content_settings_;
 
-  // Stores our most up-to-date view of the default content settings.
-  // TODO(marja): Store default settings in |ChromeRenderProcessObserver|.
-  static ContentSettings default_settings_;
+  // A pointer to the most up-to-date view of the default content
+  // settings. Normally, they are owned by |ChromeRenderProcessObserver|. In the
+  // tests they are owned by the caller of |SetDefaultContentSettings|.
+  const ContentSettings* default_content_settings_;
 
   // Stores if loading of scripts and plugins is allowed.
   ContentSettings current_content_settings_;
 
   // Stores the rules for image content settings. Normally, they are owned by
-  // |ChromeRenderProcessObserver|; in the tests they are owned by the caller of
+  // |ChromeRenderProcessObserver|. In the tests they are owned by the caller of
   // |SetImageSettingRules|.
   const ContentSettingsForOneType* image_setting_rules_;
 

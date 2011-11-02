@@ -41,6 +41,10 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
   // any 'clear cache' commands that were delayed until the next navigation.
   void ExecutePendingClearCache();
 
+  // Returns a pointer to the default content settings owned by
+  // |ChromeRenderProcessObserver|.
+  const ContentSettings* default_content_settings() const;
+
   // Returns a pointer to the image setting rules owned by
   // |ChromeRenderProcessObserver|.
   const ContentSettingsForOneType* image_setting_rules() const;
@@ -75,6 +79,7 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
   chrome::ChromeContentRendererClient* client_;
   // If true, the web cache shall be cleared before the next navigation event.
   bool clear_cache_pending_;
+  ContentSettings default_content_settings_;
   ContentSettingsForOneType image_setting_rules_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessObserver);

@@ -307,7 +307,7 @@ void ChromeRenderProcessObserver::OnSetContentSettingsForCurrentURL(
 
 void ChromeRenderProcessObserver::OnSetDefaultContentSettings(
     const ContentSettings& content_settings) {
-  ContentSettingsObserver::SetDefaultContentSettings(content_settings);
+  default_content_settings_ = content_settings;
 }
 
 void ChromeRenderProcessObserver::OnSetImageSettingRules(
@@ -433,4 +433,9 @@ void ChromeRenderProcessObserver::ExecutePendingClearCache() {
 const ContentSettingsForOneType*
 ChromeRenderProcessObserver::image_setting_rules() const {
   return &image_setting_rules_;
+}
+
+const ContentSettings*
+ChromeRenderProcessObserver::default_content_settings() const {
+  return &default_content_settings_;
 }

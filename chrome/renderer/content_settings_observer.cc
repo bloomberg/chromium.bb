@@ -61,12 +61,12 @@ GURL GetOriginOrURL(const WebFrame* frame) {
 
 }  // namespace
 
-ContentSettings ContentSettingsObserver::default_settings_;
-
 ContentSettingsObserver::ContentSettingsObserver(
     content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<ContentSettingsObserver>(render_view),
+      default_content_settings_(NULL),
+      image_setting_rules_(NULL),
       plugins_temporarily_allowed_(false) {
   ClearBlockedContentSettings();
 }
@@ -80,8 +80,8 @@ void ContentSettingsObserver::SetContentSettings(
 }
 
 void ContentSettingsObserver::SetDefaultContentSettings(
-    const ContentSettings& settings) {
-  default_settings_ = settings;
+    const ContentSettings* settings) {
+  default_content_settings_ = settings;
 }
 
 void ContentSettingsObserver::SetImageSettingRules(
@@ -150,7 +150,8 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(
     // We exempt file URLs here because we sandbox them by default, but folks
     // might reasonably want to supply non-default content settings for various
     // file URLs.
-    SetContentSettings(default_settings_);
+    if (default_content_settings_)
+      SetContentSettings(*default_content_settings_);
     return;
   }
 

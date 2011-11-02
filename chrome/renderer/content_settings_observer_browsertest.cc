@@ -111,7 +111,7 @@ TEST_F(ChromeRenderViewTest, JSBlockSentAfterPageLoad) {
   settings.settings[CONTENT_SETTINGS_TYPE_JAVASCRIPT] = CONTENT_SETTING_BLOCK;
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
   observer->SetContentSettings(settings);
-  ContentSettingsObserver::SetDefaultContentSettings(settings);
+  observer->SetDefaultContentSettings(&settings);
 
   // Make sure no pending messages are in the queue.
   ProcessPendingMessages();
@@ -151,7 +151,7 @@ TEST_F(ChromeRenderViewTest, PluginsTemporarilyAllowed) {
   settings.settings[CONTENT_SETTINGS_TYPE_PLUGINS] = CONTENT_SETTING_BLOCK;
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
   observer->SetContentSettings(settings);
-  ContentSettingsObserver::SetDefaultContentSettings(settings);
+  observer->SetDefaultContentSettings(&settings);
   EXPECT_FALSE(observer->plugins_temporarily_allowed());
 
   // Temporarily allow plugins.
