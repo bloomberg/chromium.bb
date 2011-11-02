@@ -88,22 +88,27 @@ void FFmpegVideoDecodeEngine::Initialize(
   // If we do not have enough buffers, we will report error too.
   frame_queue_available_.clear();
 
-  // Create output buffer pool when direct rendering is not used.
-  for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
-    VideoFrame::Format format =
-        PixelFormatToVideoFormat(codec_context_->pix_fmt);
+  // Convert the pixel format to video format and ensure we support it.
+  VideoFrame::Format format =
+      PixelFormatToVideoFormat(codec_context_->pix_fmt);
 
-    scoped_refptr<VideoFrame> video_frame =
-        VideoFrame::CreateFrame(format,
-                                config.visible_rect().width(),
-                                config.visible_rect().height(),
-                                kNoTimestamp,
-                                kNoTimestamp);
-    frame_queue_available_.push_back(video_frame);
+  bool success = false;
+  if (format != VideoFrame::INVALID) {
+      // Create output buffer pool when direct rendering is not used.
+      for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
+        scoped_refptr<VideoFrame> video_frame =
+            VideoFrame::CreateFrame(format,
+                                    config.visible_rect().width(),
+                                    config.visible_rect().height(),
+                                    kNoTimestamp,
+                                    kNoTimestamp);
+        frame_queue_available_.push_back(video_frame);
+      }
+
+      // Open the codec!
+      success = codec && avcodec_open(codec_context_, codec) >= 0;
   }
 
-  // Open the codec!
-  bool success = codec && avcodec_open(codec_context_, codec) >= 0;
   event_handler_ = event_handler;
   event_handler_->OnInitializeComplete(success);
 }

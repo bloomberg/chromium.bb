@@ -168,6 +168,17 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
   test_engine_->Initialize(this, config);
 }
 
+TEST_F(FFmpegVideoDecodeEngineTest, Initialize_UnsupportedPixelFormat) {
+  // Ensure decoder handles unsupport pixel formats without crashing.
+  VideoDecoderConfig config(kCodecVP8, VideoFrame::INVALID,
+                            kCodedSize, kVisibleRect,
+                            kFrameRate.num, kFrameRate.den,
+                            kAspectRatio.num, kAspectRatio.den,
+                            NULL, 0);
+  EXPECT_CALL(*this, OnInitializeComplete(false));
+  test_engine_->Initialize(this, config);
+}
+
 TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_Normal) {
   Initialize();
 
