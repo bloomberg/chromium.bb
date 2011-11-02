@@ -28,6 +28,8 @@
 #include "ui/gfx/gl/gl_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 
+using content::BrowserThread;
+
 namespace {
 
 enum GpuFeatureStatus {

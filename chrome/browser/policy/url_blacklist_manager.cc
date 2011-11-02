@@ -17,6 +17,8 @@
 #include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 
+using content::BrowserThread;
+
 namespace policy {
 
 namespace {

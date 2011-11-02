@@ -75,7 +75,7 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
   // The ID of the thread DetectSourceProfiles() is called on. Only valid after
   // DetectSourceProfiles() is called and until SourceProfilesLoaded() has
   // returned.
-  BrowserThread::ID source_thread_id_;
+  content::BrowserThread::ID source_thread_id_;
 
   // Weak reference. Only valid after DetectSourceProfiles() is called and until
   // SourceProfilesLoaded() has returned.

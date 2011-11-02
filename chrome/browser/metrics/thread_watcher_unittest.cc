@@ -24,6 +24,7 @@
 
 using base::TimeDelta;
 using base::TimeTicks;
+using content::BrowserThread;
 
 enum State {
   INITIALIZED,        // Created ThreadWatch object.

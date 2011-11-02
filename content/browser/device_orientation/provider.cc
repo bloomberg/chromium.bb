@@ -13,6 +13,8 @@
 #include "content/browser/device_orientation/accelerometer_mac.h"
 #endif
 
+using content::BrowserThread;
+
 namespace device_orientation {
 
 Provider* Provider::GetInstance() {

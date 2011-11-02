@@ -16,6 +16,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 class ControlTask : public HistoryDBTask {

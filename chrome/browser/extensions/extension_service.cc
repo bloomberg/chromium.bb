@@ -118,6 +118,7 @@
 #endif
 
 using base::Time;
+using content::BrowserThread;
 
 namespace errors = extension_manifest_errors;
 

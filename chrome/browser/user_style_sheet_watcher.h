@@ -21,8 +21,9 @@ class UserStyleSheetLoader;
 // Watches the user style sheet file and triggers reloads on the file thread
 // whenever the file changes.
 class UserStyleSheetWatcher
-    : public base::RefCountedThreadSafe<UserStyleSheetWatcher,
-                                        BrowserThread::DeleteOnUIThread>,
+    : public base::RefCountedThreadSafe<
+          UserStyleSheetWatcher,
+          content::BrowserThread::DeleteOnUIThread>,
       public content::NotificationObserver {
  public:
   UserStyleSheetWatcher(Profile* profile, const FilePath& profile_path);
@@ -37,7 +38,8 @@ class UserStyleSheetWatcher
                        const content::NotificationDetails& details);
 
  private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class DeleteTask<UserStyleSheetWatcher>;
 
   virtual ~UserStyleSheetWatcher();

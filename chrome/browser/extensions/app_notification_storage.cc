@@ -18,6 +18,7 @@
 
 using base::JSONReader;
 using base::JSONWriter;
+using content::BrowserThread;
 
 // A concrete implementation of the AppNotificationStorage interface, using
 // LevelDb for backing storage.

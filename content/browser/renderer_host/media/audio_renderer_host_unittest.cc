@@ -27,6 +27,7 @@ using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArgumentPointee;
+using content::BrowserThread;
 
 using content::BrowserThreadImpl;
 

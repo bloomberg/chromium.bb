@@ -29,6 +29,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
 
+using content::BrowserThread;
+
 namespace {
 
 const char* kAllowedIds[] = {

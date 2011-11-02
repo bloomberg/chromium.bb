@@ -11,6 +11,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using content::BrowserThread;
 using WebKit::WebCache;
 
 class WebCacheManagerTest : public testing::Test {

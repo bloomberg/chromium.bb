@@ -44,6 +44,7 @@ using testing::_;
 using testing::InvokeWithoutArgs;
 using testing::Mock;
 using testing::StrictMock;
+using content::BrowserThread;
 
 class TestBookmarkModelAssociator : public BookmarkModelAssociator {
  public:

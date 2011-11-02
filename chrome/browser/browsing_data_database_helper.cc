@@ -16,6 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
+using content::BrowserThread;
 using WebKit::WebSecurityOrigin;
 
 BrowsingDataDatabaseHelper::DatabaseInfo::DatabaseInfo()

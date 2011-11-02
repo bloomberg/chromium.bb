@@ -11,6 +11,8 @@
 #include "chrome/browser/chromeos/notifications/system_notification.h"
 #endif
 
+using content::BrowserThread;
+
 BugReportData::BugReportData()
     : profile_(NULL),
       problem_type_(0)

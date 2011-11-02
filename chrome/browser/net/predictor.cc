@@ -36,6 +36,7 @@
 #include "net/base/single_request_host_resolver.h"
 
 using base::TimeDelta;
+using content::BrowserThread;
 
 namespace chrome_browser_net {
 

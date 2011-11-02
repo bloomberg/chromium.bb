@@ -26,6 +26,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
 
+using content::BrowserThread;
+
 class LoginHandlerSource : public ChromeURLDataManager::DataSource {
  public:
   LoginHandlerSource()

@@ -13,6 +13,8 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 namespace {

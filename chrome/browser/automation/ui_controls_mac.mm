@@ -15,6 +15,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/keycodes/keyboard_code_conversion_mac.h"
 
+using content::BrowserThread;
+
 // Implementation details: We use [NSApplication sendEvent:] instead
 // of [NSApplication postEvent:atStart:] so that the event gets sent
 // immediately.  This lets us run the post-event task right

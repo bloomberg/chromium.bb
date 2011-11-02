@@ -10,6 +10,8 @@
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
 
+using content::BrowserThread;
+
 WorkerMessageFilter::WorkerMessageFilter(
     int render_process_id,
     const content::ResourceContext* resource_context,

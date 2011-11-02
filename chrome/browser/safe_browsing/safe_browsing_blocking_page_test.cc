@@ -26,6 +26,8 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/test/test_browser_thread.h"
 
+using content::BrowserThread;
+
 // A SafeBrowingService class that allows us to inject the malicious URLs.
 class FakeSafeBrowsingService :  public SafeBrowsingService {
  public:

@@ -22,6 +22,7 @@ namespace {
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Mock;
+using content::BrowserThread;
 
 class TestingURLBlacklistManager : public URLBlacklistManager {
  public:

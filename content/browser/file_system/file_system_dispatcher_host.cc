@@ -23,6 +23,7 @@
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_util.h"
 
+using content::BrowserThread;
 using fileapi::FileSystemCallbackDispatcher;
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemOperation;

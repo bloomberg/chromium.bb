@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/plugins/webplugininfo.h"
 
+using content::BrowserThread;
 using content::BrowserThreadImpl;
 
 class MockPluginLoaderPosix : public PluginLoaderPosix {

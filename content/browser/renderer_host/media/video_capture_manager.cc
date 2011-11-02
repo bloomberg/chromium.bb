@@ -10,6 +10,8 @@
 #include "media/video/capture/fake_video_capture_device.h"
 #include "media/video/capture/video_capture_device.h"
 
+using content::BrowserThread;
+
 namespace media_stream {
 
 // Starting id for the first capture session.

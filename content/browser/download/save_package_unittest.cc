@@ -29,6 +29,8 @@ using content::BrowserThreadImpl;
 #define FPL_HTML_EXTENSION ".html"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // This constant copied from save_package.cc.

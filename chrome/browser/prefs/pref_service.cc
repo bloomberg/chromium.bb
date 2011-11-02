@@ -35,6 +35,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // A helper function for RegisterLocalized*Pref that creates a Value* based on

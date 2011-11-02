@@ -8,6 +8,8 @@
 #include "base/command_line.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 WebKitContext::WebKitContext(
     bool is_incognito, const FilePath& data_path,
     quota::SpecialStoragePolicy* special_storage_policy,

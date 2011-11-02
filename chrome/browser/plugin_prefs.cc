@@ -35,6 +35,8 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Default state for a plug-in (not state of the default plug-in!).

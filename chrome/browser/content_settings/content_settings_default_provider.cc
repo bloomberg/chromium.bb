@@ -24,6 +24,8 @@
 #include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // The default setting for each content type.

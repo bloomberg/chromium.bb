@@ -31,6 +31,7 @@
 #include "ui/base/message_box_flags.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::BrowserThread;
 using webkit_glue::PasswordForm;
 
 class TestInterstitialPage : public ChromeInterstitialPage {

@@ -36,6 +36,7 @@ using base::TimeDelta;
 using base::TimeTicks;
 using base::ProcessHandle;
 using base::ProcessMetrics;
+using content::BrowserThread;
 
 namespace {
 

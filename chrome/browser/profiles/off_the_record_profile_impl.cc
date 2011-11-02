@@ -63,6 +63,8 @@
 #include "chrome/browser/chromeos/preferences.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 void NotifyOTRProfileCreatedOnIOThread(void* original_profile,

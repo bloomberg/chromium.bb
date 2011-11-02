@@ -9,6 +9,8 @@
 #include "content/common/speech_input_messages.h"
 #include "content/public/browser/content_browser_client.h"
 
+using content::BrowserThread;
+
 namespace speech_input {
 
 //----------------------------- SpeechInputCallers -----------------------------

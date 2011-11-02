@@ -20,6 +20,8 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/quota/special_storage_policy.h"
 
+using content::BrowserThread;
+
 using WebKit::WebSecurityOrigin;
 
 namespace {

@@ -33,6 +33,8 @@
 #include "ui/base/message_box_win.h"
 #endif
 
+using content::BrowserThread;
+
 ImporterHost::ImporterHost()
     : profile_(NULL),
       waiting_for_bookmarkbar_model_(false),

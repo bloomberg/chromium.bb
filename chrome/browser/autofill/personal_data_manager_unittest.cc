@@ -27,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_data.h"
 
+using content::BrowserThread;
 using webkit_glue::FormData;
 
 ACTION(QuitUIMessageLoop) {

@@ -14,6 +14,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Caller takes ownership of the returned dictionary.

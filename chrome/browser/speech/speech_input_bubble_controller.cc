@@ -13,6 +13,8 @@
 #include "content/public/browser/notification_types.h"
 #include "ui/gfx/rect.h"
 
+using content::BrowserThread;
+
 namespace speech_input {
 
 SpeechInputBubbleController::SpeechInputBubbleController(Delegate* delegate)

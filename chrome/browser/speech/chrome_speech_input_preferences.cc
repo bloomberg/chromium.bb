@@ -9,6 +9,8 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 ChromeSpeechInputPreferences::ChromeSpeechInputPreferences(
     PrefService* pref_service)
     : filter_profanities_(

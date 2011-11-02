@@ -8,6 +8,8 @@
 #include "base/file_util.h"
 #include "base/values.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Gets the pretty-printed JSON for a value.

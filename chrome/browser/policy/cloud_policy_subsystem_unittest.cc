@@ -28,6 +28,7 @@ namespace policy {
 using ::testing::_;
 using ::testing::AtMost;
 using ::testing::InSequence;
+using content::BrowserThread;
 
 namespace em = enterprise_management;
 

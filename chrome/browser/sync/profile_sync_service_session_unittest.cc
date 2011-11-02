@@ -51,6 +51,7 @@ using browser_sync::SessionChangeProcessor;
 using browser_sync::SessionDataTypeController;
 using browser_sync::SessionModelAssociator;
 using browser_sync::SyncBackendHost;
+using content::BrowserThread;
 using sync_api::ChangeRecord;
 using testing::_;
 using testing::Return;

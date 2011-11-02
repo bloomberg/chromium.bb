@@ -39,6 +39,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::BrowserThread;
+
 // AutoLoginRedirector --------------------------------------------------------
 
 // This class is created by the AutoLoginInfoBarDelegate when the user wishes to

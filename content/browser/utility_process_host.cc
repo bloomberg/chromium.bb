@@ -14,6 +14,8 @@
 #include "ui/base/ui_base_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 
+using content::BrowserThread;
+
 UtilityProcessHost::Client::Client() {
 }
 

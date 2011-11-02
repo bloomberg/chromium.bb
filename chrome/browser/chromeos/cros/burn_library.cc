@@ -12,6 +12,8 @@
 #include "chrome/common/zip.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 class BurnLibraryImpl : public BurnLibrary,

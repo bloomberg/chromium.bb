@@ -71,6 +71,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/gfx/gl/gl_switches.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 namespace {

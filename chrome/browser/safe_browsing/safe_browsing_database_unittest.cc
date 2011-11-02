@@ -21,6 +21,7 @@
 #include "testing/platform_test.h"
 
 using base::Time;
+using content::BrowserThread;
 
 namespace {
 

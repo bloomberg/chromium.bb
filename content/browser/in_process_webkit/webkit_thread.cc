@@ -11,6 +11,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::BrowserThread;
+
 WebKitThread::WebKitThread() {
 }
 

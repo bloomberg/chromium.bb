@@ -21,6 +21,7 @@ namespace policy {
 
 const char kTestToken[] = "device_token_fetcher_test_auth_token";
 
+using content::BrowserThread;
 using testing::_;
 using testing::AnyNumber;
 using testing::Mock;

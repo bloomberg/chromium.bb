@@ -17,6 +17,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
 
+using content::BrowserThread;
+
 class ImageLoadingTrackerTest : public testing::Test,
                                 public ImageLoadingTracker::Observer {
  public:

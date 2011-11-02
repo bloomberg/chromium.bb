@@ -12,6 +12,8 @@
 #include "net/base/net_errors.h"
 #include "webkit/quota/quota_manager.h"
 
+using content::BrowserThread;
+
 ChromeAppCacheService::ChromeAppCacheService(
     quota::QuotaManagerProxy* quota_manager_proxy)
     : AppCacheService(quota_manager_proxy),

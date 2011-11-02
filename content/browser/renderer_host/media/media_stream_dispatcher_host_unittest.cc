@@ -22,6 +22,7 @@ using ::testing::_;
 using ::testing::DeleteArg;
 using ::testing::DoAll;
 using ::testing::Return;
+using content::BrowserThread;
 
 using content::BrowserThreadImpl;
 

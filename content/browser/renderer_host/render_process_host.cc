@@ -18,6 +18,8 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 
+using content::BrowserThread;
+
 namespace {
 
 size_t max_renderer_count_override = 0;

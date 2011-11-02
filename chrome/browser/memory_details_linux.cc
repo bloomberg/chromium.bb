@@ -23,6 +23,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 
+using content::BrowserThread;
+
 // Known browsers which we collect details for.
 enum BrowserType {
   CHROME = 0,

@@ -20,6 +20,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using ::crypto::RSAPrivateKey;
 using ::testing::DoAll;
 using ::testing::Eq;

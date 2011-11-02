@@ -15,6 +15,8 @@
 #include "content/common/speech_input_result.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 namespace net {
 class URLRequestContextGetter;
 }

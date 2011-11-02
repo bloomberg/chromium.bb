@@ -10,6 +10,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 
+using content::BrowserThread;
+
 namespace subtle {
 
 PrefMemberBase::PrefMemberBase()

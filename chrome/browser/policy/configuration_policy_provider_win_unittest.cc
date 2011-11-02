@@ -22,6 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
+using content::BrowserThread;
 
 namespace policy {
 

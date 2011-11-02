@@ -11,6 +11,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "media/base/yuv_convert.h"
 
+using content::BrowserThread;
+
 // The number of TransportDIBs VideoCaptureController allocate.
 static const size_t kNoOfDIBS = 3;
 

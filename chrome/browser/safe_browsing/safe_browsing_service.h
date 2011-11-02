@@ -50,8 +50,8 @@ class DownloadProtectionService;
 
 // Construction needs to happen on the main thread.
 class SafeBrowsingService
-    : public base::RefCountedThreadSafe<SafeBrowsingService,
-                                        BrowserThread::DeleteOnUIThread>,
+    : public base::RefCountedThreadSafe<
+          SafeBrowsingService, content::BrowserThread::DeleteOnUIThread>,
       public content::NotificationObserver {
  public:
   class Client;
@@ -329,7 +329,8 @@ class SafeBrowsingService
     base::TimeTicks start;  // When check was queued.
   };
 
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class DeleteTask<SafeBrowsingService>;
   friend class SafeBrowsingServiceTest;
 

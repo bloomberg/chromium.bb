@@ -20,6 +20,8 @@
 #include "content/public/common/url_fetcher.h"
 #include "grit/generated_resources.h"
 
+using content::BrowserThread;
+
 // Toolbar5Importer
 const char Toolbar5Importer::kXmlApiReplyXmlTag[] = "xml_api_reply";
 const char Toolbar5Importer::kBookmarksXmlTag[] = "bookmarks";

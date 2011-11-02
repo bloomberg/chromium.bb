@@ -225,7 +225,8 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   }
 
  protected:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class DeleteTask<UIThreadExtensionFunction>;
 
   virtual ~UIThreadExtensionFunction();
@@ -314,7 +315,8 @@ class IOThreadExtensionFunction : public ExtensionFunction {
   }
 
  protected:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::IO>;
   friend class DeleteTask<IOThreadExtensionFunction>;
 
   virtual ~IOThreadExtensionFunction();

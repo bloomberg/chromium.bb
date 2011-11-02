@@ -24,6 +24,8 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
+using content::BrowserThread;
+
 OfflineResourceHandler::OfflineResourceHandler(
     ResourceHandler* handler,
     int host_id,

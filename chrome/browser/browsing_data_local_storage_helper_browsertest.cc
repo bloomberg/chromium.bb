@@ -22,6 +22,8 @@
 #include "content/browser/in_process_webkit/webkit_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 namespace {
 typedef
     BrowsingDataHelperCallback<BrowsingDataLocalStorageHelper::LocalStorageInfo>

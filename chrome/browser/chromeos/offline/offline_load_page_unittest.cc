@@ -11,6 +11,8 @@
 #include "content/common/view_messages.h"
 #include "content/test/test_browser_thread.h"
 
+using content::BrowserThread;
+
 static const char* kURL1 = "http://www.google.com/";
 static const char* kURL2 = "http://www.gmail.com/";
 

@@ -22,6 +22,8 @@
 #include "webkit/database/database_util.h"
 #include "webkit/fileapi/file_system_context.h"
 
+using content::BrowserThread;
+
 /* static */
 void ExtensionDataDeleter::StartDeleting(
     Profile* profile,

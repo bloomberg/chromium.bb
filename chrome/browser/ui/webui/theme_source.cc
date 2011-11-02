@@ -18,6 +18,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 
+using content::BrowserThread;
+
 // use a resource map rather than hard-coded strings.
 static const char* kNewTabCSSPath = "css/newtab.css";
 static const char* kNewIncognitoTabCSSPath = "css/newincognitotab.css";

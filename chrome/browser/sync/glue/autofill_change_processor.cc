@@ -26,6 +26,8 @@
 #include "chrome/common/guid.h"
 #include "content/public/browser/notification_service.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 struct AutofillChangeProcessor::AutofillChangeRecord {

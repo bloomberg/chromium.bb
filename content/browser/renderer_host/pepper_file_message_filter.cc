@@ -21,6 +21,8 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
+using content::BrowserThread;
+
 // Used to check if the renderer has permission for the requested operation.
 // TODO(viettrungluu): Verify these. They don't necessarily quite make sense,
 // but it seems to be approximately what the file system code does.

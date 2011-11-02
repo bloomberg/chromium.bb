@@ -31,6 +31,7 @@
 
 using ::testing::Return;
 using ::testing::StrictMock;
+using content::BrowserThread;
 
 namespace safe_browsing {
 namespace {

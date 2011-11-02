@@ -9,6 +9,8 @@
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 UnrecoverableErrorInfo UIModelWorker::DoWorkAndWaitUntilDone(

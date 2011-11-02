@@ -14,6 +14,8 @@
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 namespace {

@@ -14,6 +14,8 @@
 #include "chrome/browser/debugger/inspectable_tab_proxy.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 // static
 scoped_refptr<DevToolsProtocolHandler> DevToolsProtocolHandler::Start(
     int port) {

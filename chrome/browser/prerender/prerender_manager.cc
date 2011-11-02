@@ -45,6 +45,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 
+using content::BrowserThread;
+
 namespace prerender {
 
 namespace {

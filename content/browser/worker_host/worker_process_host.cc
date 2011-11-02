@@ -47,6 +47,8 @@
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/glue/resource_type.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Helper class that we pass to SocketStreamDispatcherHost so that it can find

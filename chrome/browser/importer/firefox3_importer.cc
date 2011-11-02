@@ -28,6 +28,8 @@
 #include "sql/statement.h"
 #include "webkit/glue/password_form.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Original definition is in http://mxr.mozilla.org/firefox/source/toolkit/

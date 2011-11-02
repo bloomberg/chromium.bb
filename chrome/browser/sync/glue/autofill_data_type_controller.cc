@@ -17,6 +17,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 AutofillDataTypeController::AutofillDataTypeController(

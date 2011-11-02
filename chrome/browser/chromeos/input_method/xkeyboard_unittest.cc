@@ -18,6 +18,8 @@
 
 #include <X11/Xlib.h>
 
+using content::BrowserThread;
+
 #if defined(TOUCH_UI)
 // Since TOUCH_UI build only supports a few keyboard layouts, we skip the tests
 // for now.

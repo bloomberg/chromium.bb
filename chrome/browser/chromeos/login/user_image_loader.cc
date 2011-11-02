@@ -16,6 +16,8 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/skbitmap_operations.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 UserImageLoader::UserImageLoader(Delegate* delegate)

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,8 @@
 #include "base/file_util.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/common/file_utilities_messages.h"
+
+using content::BrowserThread;
 
 FileUtilitiesMessageFilter::FileUtilitiesMessageFilter(int process_id)
     : process_id_(process_id) {

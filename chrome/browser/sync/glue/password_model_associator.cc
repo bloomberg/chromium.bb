@@ -20,6 +20,8 @@
 #include "net/base/escape.h"
 #include "webkit/glue/password_form.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 const char kPasswordTag[] = "google_chrome_passwords";

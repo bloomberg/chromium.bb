@@ -74,7 +74,7 @@ class ThreadWatcher {
   // base::Bind supports methods with up to 6 parameters. WatchingParams is used
   // as a workaround that limitation for invoking ThreadWatcher::StartWatching.
   struct WatchingParams {
-    const BrowserThread::ID& thread_id;
+    const content::BrowserThread::ID& thread_id;
     const std::string& thread_name;
     const base::TimeDelta& sleep_time;
     const base::TimeDelta& unresponsive_time;
@@ -82,7 +82,7 @@ class ThreadWatcher {
     bool crash_on_hang;
     uint32 live_threads_threshold;
 
-    WatchingParams(const BrowserThread::ID& thread_id_in,
+    WatchingParams(const content::BrowserThread::ID& thread_id_in,
                    const std::string& thread_name_in,
                    const base::TimeDelta& sleep_time_in,
                    const base::TimeDelta& unresponsive_time_in,
@@ -115,7 +115,7 @@ class ThreadWatcher {
   static void StartWatching(const WatchingParams& params);
 
   // Return the |thread_id_| of the thread being watched.
-  BrowserThread::ID thread_id() const { return thread_id_; }
+  content::BrowserThread::ID thread_id() const { return thread_id_; }
 
   // Return the name of the thread being watched.
   std::string thread_name() const { return thread_name_; }
@@ -197,7 +197,7 @@ class ThreadWatcher {
 
   // Watched thread does nothing except post callback_task to the WATCHDOG
   // Thread. This method is called on watched thread.
-  static void OnPingMessage(const BrowserThread::ID& thread_id,
+  static void OnPingMessage(const content::BrowserThread::ID& thread_id,
                             const base::Closure& callback_task);
 
   // This method resets |unresponsive_count_| to zero because watched thread is
@@ -214,7 +214,7 @@ class ThreadWatcher {
 
   // The |thread_id_| of the thread being watched. Only one instance can exist
   // for the given |thread_id_| of the thread being watched.
-  const BrowserThread::ID thread_id_;
+  const content::BrowserThread::ID thread_id_;
 
   // The name of the thread being watched.
   const std::string thread_name_;
@@ -307,7 +307,7 @@ class ThreadWatcher {
 class ThreadWatcherList {
  public:
   // A map from BrowserThread to the actual instances.
-  typedef std::map<BrowserThread::ID, ThreadWatcher*> RegistrationList;
+  typedef std::map<content::BrowserThread::ID, ThreadWatcher*> RegistrationList;
 
   // This method posts a task on WatchDogThread to start watching all browser
   // threads.
@@ -324,7 +324,7 @@ class ThreadWatcherList {
   static void Register(ThreadWatcher* watcher);
 
   // This method returns true if the ThreadWatcher object is registerd.
-  static bool IsRegistered(const BrowserThread::ID thread_id);
+  static bool IsRegistered(const content::BrowserThread::ID thread_id);
 
   // This method returns number of responsive and unresponsive watched threads.
   static void GetStatusOfThreads(uint32* responding_thread_count,
@@ -368,7 +368,7 @@ class ThreadWatcherList {
   // This method calls ThreadWatcher::StartWatching() to perform health check on
   // the given |thread_id|.
   static void StartWatching(
-      const BrowserThread::ID& thread_id,
+      const content::BrowserThread::ID& thread_id,
       const std::string& thread_name,
       const base::TimeDelta& sleep_time,
       const base::TimeDelta& unresponsive_time,
@@ -382,7 +382,7 @@ class ThreadWatcherList {
 
   // The Find() method can be used to test to see if a given ThreadWatcher was
   // already registered, or to retrieve a pointer to it from the global map.
-  static ThreadWatcher* Find(const BrowserThread::ID& thread_id);
+  static ThreadWatcher* Find(const content::BrowserThread::ID& thread_id);
 
   // The singleton of this class and is used to keep track of information about
   // threads that are being watched.

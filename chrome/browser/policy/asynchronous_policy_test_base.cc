@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/asynchronous_policy_test_base.h"
 
+using content::BrowserThread;
+
 namespace policy {
 
 ProviderDelegateMock::ProviderDelegateMock()

@@ -31,6 +31,8 @@
 #include "content/common/view_messages.h"
 #include "webkit/fileapi/file_system_types.h"
 
+using content::BrowserThread;
+
 namespace {
 typedef std::list<TabSpecificContentSettings*> TabSpecificList;
 static base::LazyInstance<TabSpecificList> g_tab_specific(

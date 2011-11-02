@@ -35,6 +35,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Param structs exist because base::Bind can only handle 6 args.

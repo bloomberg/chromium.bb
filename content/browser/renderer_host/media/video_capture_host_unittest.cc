@@ -31,6 +31,7 @@ using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Mock;
 using ::testing::Return;
+using content::BrowserThread;
 
 using content::BrowserThreadImpl;
 

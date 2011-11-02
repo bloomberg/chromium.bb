@@ -16,6 +16,7 @@
 
 using browser_sync::UIModelWorker;
 using browser_sync::UnrecoverableErrorInfo;
+using content::BrowserThread;
 
 // Various boilerplate, primarily for the StopWithPendingWork test.
 

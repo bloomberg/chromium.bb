@@ -28,6 +28,8 @@
 
 #define FPL FILE_PATH_LITERAL
 
+using content::BrowserThread;
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 namespace {
 

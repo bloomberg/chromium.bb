@@ -11,6 +11,8 @@
 #include "chrome/browser/chromeos/system/udev_info_provider.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 namespace {

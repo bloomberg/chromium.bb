@@ -25,6 +25,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 
+using content::BrowserThread;
+
 // PurgeMemoryHelper -----------------------------------------------------------
 
 // This is a small helper class used to ensure that the objects we want to use

@@ -12,6 +12,8 @@
 #include "content/browser/download/download_manager.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace {
 
   // The maximum number of 'uniquified' files we will try to create.

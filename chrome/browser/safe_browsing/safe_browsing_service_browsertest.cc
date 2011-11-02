@@ -33,6 +33,7 @@
 
 using base::Histogram;
 using base::StatisticsRecorder;
+using content::BrowserThread;
 
 using ::testing::_;
 using ::testing::Mock;

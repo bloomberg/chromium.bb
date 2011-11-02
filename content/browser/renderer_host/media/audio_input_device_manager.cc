@@ -10,6 +10,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_manager.h"
 
+using content::BrowserThread;
+
 namespace media_stream {
 
 const int AudioInputDeviceManager::kFakeOpenSessionId = 1;

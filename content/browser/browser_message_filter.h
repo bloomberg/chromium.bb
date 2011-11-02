@@ -38,7 +38,7 @@ class CONTENT_EXPORT BrowserMessageFilter :
   // If you don't handle this message, or want to keep it on the IO thread, do
   // nothing.
   virtual void OverrideThreadForMessage(const IPC::Message& message,
-                                        BrowserThread::ID* thread);
+                                        content::BrowserThread::ID* thread);
 
   // Override this to receive messages.
   // Your function will normally be called on the IO thread.  However, if your

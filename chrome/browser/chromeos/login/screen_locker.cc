@@ -49,6 +49,8 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // Observer to start ScreenLocker when the screen lock

@@ -15,6 +15,8 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 namespace util = app_notification_test_util;
 
 class AppNotificationStorageTest : public testing::Test {

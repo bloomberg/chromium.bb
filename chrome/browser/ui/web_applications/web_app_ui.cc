@@ -26,6 +26,8 @@
 #include "base/environment.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 #if defined(OS_WIN)

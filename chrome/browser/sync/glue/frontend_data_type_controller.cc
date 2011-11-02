@@ -14,6 +14,8 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 FrontendDataTypeController::FrontendDataTypeController()

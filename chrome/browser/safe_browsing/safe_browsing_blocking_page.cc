@@ -39,6 +39,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::BrowserThread;
+
 // For malware interstitial pages, we link the problematic URL to Google's
 // diagnostic page.
 #if defined(GOOGLE_CHROME_BUILD)

@@ -49,6 +49,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
+using content::BrowserThread;
+
 namespace switches {
 const char kPasswordFileForTest[] = "password-file-for-test";
 const char kSyncUserForTest[] = "sync-user-for-test";

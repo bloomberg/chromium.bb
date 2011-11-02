@@ -17,6 +17,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
+using content::BrowserThread;
+
 namespace {
 
 const char kNPAPITestPluginMimeType[] = "application/vnd.npapi-test";

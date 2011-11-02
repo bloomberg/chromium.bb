@@ -45,6 +45,8 @@
 #include "content/browser/mach_broker_mac.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // The delay between updates of the information (in ms).

@@ -12,8 +12,8 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using content::BrowserThreadImpl;
-
 using media::AudioInputController;
 using media::TestAudioInputController;
 using media::TestAudioInputControllerFactory;

@@ -21,6 +21,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 
+using content::BrowserThread;
+
 SpellCheckerSubMenuObserver::SpellCheckerSubMenuObserver(
     RenderViewContextMenuProxy* proxy,
     ui::SimpleMenuModel::Delegate* delegate,

@@ -23,6 +23,8 @@
 #include "net/url_request/url_request_status.h"
 #include "third_party/libjingle/source/talk/base/urlencode.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // The service scope of the OAuth v2 token that ChromeOS login will be

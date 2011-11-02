@@ -46,6 +46,7 @@ typedef GoogleServiceAuthError AuthError;
 
 namespace browser_sync {
 
+using content::BrowserThread;
 using sessions::SyncSessionSnapshot;
 using sync_api::SyncCredentials;
 

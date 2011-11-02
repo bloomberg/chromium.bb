@@ -23,6 +23,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 
+using content::BrowserThread;
+
 namespace {
 
 static const int kIconWidth = 16;

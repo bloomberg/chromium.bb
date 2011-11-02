@@ -17,6 +17,8 @@
 #include "chrome/browser/browser_process.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 // File to look for version number in.

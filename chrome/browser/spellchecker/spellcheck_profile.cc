@@ -15,6 +15,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 
+using content::BrowserThread;
+
 namespace {
 base::LazyInstance<SpellCheckProfile::CustomWordList> g_empty_list(
     base::LINKER_INITIALIZED);

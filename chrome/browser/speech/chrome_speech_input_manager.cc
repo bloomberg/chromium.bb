@@ -23,6 +23,8 @@
 #include "chrome/installer/util/wmi.h"
 #endif
 
+using content::BrowserThread;
+
 namespace speech_input {
 
 // Asynchronously fetches the PC and audio hardware/driver info if

@@ -127,7 +127,7 @@ class AudioInputRendererHost
 
  private:
   // TODO(henrika): extend test suite (compare AudioRenderHost)
-  friend class BrowserThread;
+  friend class content::BrowserThread;
   friend class DeleteTask<AudioInputRendererHost>;
 
   virtual ~AudioInputRendererHost();

@@ -25,6 +25,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/x/x11_util.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 namespace input_method {
 namespace {

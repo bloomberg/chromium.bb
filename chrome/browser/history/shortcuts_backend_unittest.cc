@@ -17,6 +17,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using shortcuts_provider::Shortcut;
 using shortcuts_provider::ShortcutMap;
 

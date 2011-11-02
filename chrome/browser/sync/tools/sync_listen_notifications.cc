@@ -23,6 +23,8 @@
 #include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 // This is a simple utility that initializes a sync notifier and
 // listens to any received notifications.
 
@@ -93,9 +95,9 @@ int main(int argc, char* argv[]) {
       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
 
   MessageLoop ui_loop;
-  DeprecatedBrowserThread ui_thread(BrowserThread::UI, &ui_loop);
+  content::DeprecatedBrowserThread ui_thread(BrowserThread::UI, &ui_loop);
 
-  DeprecatedBrowserThread io_thread(BrowserThread::IO);
+  content::DeprecatedBrowserThread io_thread(BrowserThread::IO);
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   io_thread.StartWithOptions(options);

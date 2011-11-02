@@ -23,6 +23,8 @@
 #include "net/base/network_delegate.h"
 #include "net/url_request/url_request_redirect_job.h"
 
+using content::BrowserThread;
+
 // ProtocolHandlerRegistry -----------------------------------------------------
 
 ProtocolHandlerRegistry::ProtocolHandlerRegistry(Profile* profile,

@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
+using content::BrowserThread;
 using WebKit::WebStorageArea;
 
 DOMStorageMessageFilter* DOMStorageMessageFilter::storage_event_message_filter =

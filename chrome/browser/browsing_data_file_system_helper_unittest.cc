@@ -16,6 +16,8 @@
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Shorter names for fileapi::* constants.

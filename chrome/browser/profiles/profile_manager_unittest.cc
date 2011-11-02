@@ -35,6 +35,8 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 // This global variable is used to check that value returned to different
 // observers is the same.

@@ -14,6 +14,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/test/test_browser_thread.h"
 
+using content::BrowserThread;
+
 namespace {
 typedef BrowsingDataHelperCallback<BrowsingDataDatabaseHelper::DatabaseInfo>
     TestCompletionCallback;

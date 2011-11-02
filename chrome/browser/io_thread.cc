@@ -62,6 +62,8 @@
 #include "net/ocsp/nss_ocsp.h"
 #endif  // defined(USE_NSS)
 
+using content::BrowserThread;
+
 namespace {
 
 // Custom URLRequestContext used by requests which aren't associated with a

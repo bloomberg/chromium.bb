@@ -34,6 +34,8 @@
 #include "base/global_descriptors_posix.h"
 #endif
 
+using content::BrowserThread;
+
 // Having the functionality of ChildProcessLauncher be in an internal
 // ref counted object allows us to automatically terminate the process when the
 // parent class destructs, while still holding on to state that we need.

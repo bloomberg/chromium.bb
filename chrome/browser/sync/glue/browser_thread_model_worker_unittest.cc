@@ -17,6 +17,7 @@
 using base::OneShotTimer;
 using base::Thread;
 using base::TimeDelta;
+using content::BrowserThread;
 
 namespace browser_sync {
 

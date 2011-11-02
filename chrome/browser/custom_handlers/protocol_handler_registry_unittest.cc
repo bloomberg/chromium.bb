@@ -23,6 +23,8 @@
 #include "content/test/test_browser_thread.h"
 #include "net/url_request/url_request.h"
 
+using content::BrowserThread;
+
 namespace {
 
 class FakeDelegate : public ProtocolHandlerRegistry::Delegate {

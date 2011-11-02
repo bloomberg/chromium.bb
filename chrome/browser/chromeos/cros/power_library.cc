@@ -18,6 +18,8 @@
 #include "third_party/cros/chromeos_power.h"
 #include "third_party/cros/chromeos_resume.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 class PowerLibraryImpl : public PowerLibrary {

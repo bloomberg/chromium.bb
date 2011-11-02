@@ -24,6 +24,8 @@
 #include "views/widget/native_widget_win.h"
 #endif
 
+using content::BrowserThread;
+
 // Strings used in alignment properties.
 const char* ThemeService::kAlignmentTop = "top";
 const char* ThemeService::kAlignmentBottom = "bottom";

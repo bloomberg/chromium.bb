@@ -16,6 +16,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
+using content::BrowserThread;
+
 namespace {
 const char kGoogleDomainUrl[] = "http://.google.com/";
 const char kGoogleDomainSecureCookieId[] = "SID=";

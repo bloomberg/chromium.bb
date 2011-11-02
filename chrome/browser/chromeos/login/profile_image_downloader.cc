@@ -29,6 +29,8 @@
 #include "googleurl/src/gurl.h"
 #include "skia/ext/image_operations.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 namespace {

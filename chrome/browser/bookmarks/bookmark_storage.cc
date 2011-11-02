@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_source.h"
 
 using base::TimeTicks;
+using content::BrowserThread;
 
 namespace {
 

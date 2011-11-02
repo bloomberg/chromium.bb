@@ -171,8 +171,8 @@ template <class T> class WDObjectResult : public WDTypedResult {
 class WebDataServiceConsumer;
 
 class WebDataService
-    : public base::RefCountedThreadSafe<WebDataService,
-                                        BrowserThread::DeleteOnUIThread> {
+    : public base::RefCountedThreadSafe<
+          WebDataService, content::BrowserThread::DeleteOnUIThread> {
  public:
   // All requests return an opaque handle of the following type.
   typedef int Handle;
@@ -552,7 +552,8 @@ class WebDataService
   //
   //////////////////////////////////////////////////////////////////////////////
  private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class DeleteTask<WebDataService>;
   friend class ShutdownTask;
 

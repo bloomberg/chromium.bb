@@ -12,6 +12,7 @@
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
+using content::BrowserThread;
 using content::BrowserThreadImpl;
 
 class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {

@@ -25,8 +25,8 @@ class X509Certificate;
 // It is self-owned and deletes itself when the UI reports the user selection or
 // when the net::URLRequest is cancelled.
 class CONTENT_EXPORT SSLClientAuthHandler
-    : public base::RefCountedThreadSafe<SSLClientAuthHandler,
-                                        BrowserThread::DeleteOnIOThread> {
+    : public base::RefCountedThreadSafe<
+          SSLClientAuthHandler, content::BrowserThread::DeleteOnIOThread> {
  public:
   SSLClientAuthHandler(net::URLRequest* request,
                        net::SSLCertRequestInfo* cert_request_info);
@@ -61,9 +61,9 @@ class CONTENT_EXPORT SSLClientAuthHandler
   virtual ~SSLClientAuthHandler();
 
  private:
-  friend class base::RefCountedThreadSafe<SSLClientAuthHandler,
-                                          BrowserThread::DeleteOnIOThread>;
-  friend class BrowserThread;
+  friend class base::RefCountedThreadSafe<
+      SSLClientAuthHandler, content::BrowserThread::DeleteOnIOThread>;
+  friend class content::BrowserThread;
   friend class DeleteTask<SSLClientAuthHandler>;
 
   // Notifies that the user has selected a cert.

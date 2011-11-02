@@ -35,6 +35,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
+using content::BrowserThread;
+
 namespace {
 
 void RecordProductEvents(bool first_run, bool google_default_search,

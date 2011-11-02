@@ -69,6 +69,7 @@ void ScreenshotSource::SendScreenshot(const std::string& screenshot_path,
 #if defined(OS_CHROMEOS)
   } else if (path.compare(0, strlen(kSavedScreenshotsBasePath),
                           kSavedScreenshotsBasePath) == 0) {
+    using content::BrowserThread;
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                             base::Bind(&ScreenshotSource::SendSavedScreenshot,
                                        base::Unretained(this), path,

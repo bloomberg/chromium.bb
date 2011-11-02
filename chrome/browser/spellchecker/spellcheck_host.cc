@@ -13,6 +13,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_common.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // An event used by browser tests to receive status events from this class and

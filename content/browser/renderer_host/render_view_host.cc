@@ -53,6 +53,7 @@
 #include "webkit/glue/webdropdata.h"
 
 using base::TimeDelta;
+using content::BrowserThread;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;

@@ -11,6 +11,8 @@
 #include "base/threading/thread.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Power management cannot be done on the UI thread. IOPMAssertionCreate does a

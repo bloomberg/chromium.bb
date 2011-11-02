@@ -22,6 +22,8 @@
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace keys = extension_clear_api_constants;
 
 namespace {

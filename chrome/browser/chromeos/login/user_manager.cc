@@ -48,6 +48,8 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #endif
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 namespace {

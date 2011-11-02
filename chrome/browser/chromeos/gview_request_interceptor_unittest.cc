@@ -27,6 +27,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 namespace {

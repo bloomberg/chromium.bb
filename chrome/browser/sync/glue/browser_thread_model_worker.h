@@ -24,7 +24,8 @@ namespace browser_sync {
 // TODO(sync): Try to generalize other ModelWorkers (e.g. history, etc).
 class BrowserThreadModelWorker : public browser_sync::ModelSafeWorker {
  public:
-  BrowserThreadModelWorker(BrowserThread::ID thread, ModelSafeGroup group);
+  BrowserThreadModelWorker(content::BrowserThread::ID thread,
+                           ModelSafeGroup group);
   virtual ~BrowserThreadModelWorker();
 
   // ModelSafeWorker implementation. Called on the sync thread.
@@ -42,7 +43,7 @@ class BrowserThreadModelWorker : public browser_sync::ModelSafeWorker {
       UnrecoverableErrorInfo* error_info) = 0;
 
  private:
-  BrowserThread::ID thread_;
+  content::BrowserThread::ID thread_;
   ModelSafeGroup group_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserThreadModelWorker);

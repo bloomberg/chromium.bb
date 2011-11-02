@@ -17,10 +17,11 @@
 template <class T, typename Traits>
 class ThreadObserverHelper : public base::RefCountedThreadSafe<T, Traits> {
  public:
-  explicit ThreadObserverHelper(BrowserThread::ID id)
+  explicit ThreadObserverHelper(content::BrowserThread::ID id)
       : id_(id), done_event_(false, false) {}
 
   void Init() {
+    using content::BrowserThread;
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     BrowserThread::PostTask(
         id_,
@@ -30,7 +31,7 @@ class ThreadObserverHelper : public base::RefCountedThreadSafe<T, Traits> {
   }
 
   virtual ~ThreadObserverHelper() {
-    DCHECK(BrowserThread::CurrentlyOn(id_));
+    DCHECK(content::BrowserThread::CurrentlyOn(id_));
     registrar_.RemoveAll();
   }
 
@@ -48,23 +49,24 @@ class ThreadObserverHelper : public base::RefCountedThreadSafe<T, Traits> {
 
  private:
   void RegisterObserversTask() {
-    DCHECK(BrowserThread::CurrentlyOn(id_));
+    DCHECK(content::BrowserThread::CurrentlyOn(id_));
     RegisterObservers();
     done_event_.Signal();
   }
 
-  BrowserThread::ID id_;
+  content::BrowserThread::ID id_;
   base::WaitableEvent done_event_;
 };
 
 class DBThreadObserverHelper;
 typedef ThreadObserverHelper<
     DBThreadObserverHelper,
-    BrowserThread::DeleteOnDBThread> DBThreadObserverHelperBase;
+    content::BrowserThread::DeleteOnDBThread> DBThreadObserverHelperBase;
 
 class DBThreadObserverHelper : public DBThreadObserverHelperBase {
  public:
-  DBThreadObserverHelper() : DBThreadObserverHelperBase(BrowserThread::DB) {}
+  DBThreadObserverHelper() :
+      DBThreadObserverHelperBase(content::BrowserThread::DB) {}
 };
 
 #endif  // CHROME_TEST_BASE_THREAD_OBSERVER_HELPER_H_

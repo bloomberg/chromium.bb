@@ -16,6 +16,8 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
+using content::BrowserThread;
+
 SSLClientAuthHandler::SSLClientAuthHandler(
     net::URLRequest* request,
     net::SSLCertRequestInfo* cert_request_info)

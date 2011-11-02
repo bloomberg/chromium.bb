@@ -11,6 +11,8 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 FieldTrialSynchronizer::FieldTrialSynchronizer() {
   DCHECK(field_trial_synchronizer_ == NULL);
   field_trial_synchronizer_ = this;

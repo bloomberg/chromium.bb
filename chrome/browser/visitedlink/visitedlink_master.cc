@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
 using file_util::ScopedFILE;
 using file_util::OpenFile;
 using file_util::TruncateFile;

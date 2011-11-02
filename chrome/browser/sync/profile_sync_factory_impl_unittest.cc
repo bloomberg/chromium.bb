@@ -17,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::DataTypeController;
+using content::BrowserThread;
 
 class ProfileSyncFactoryImplTest : public testing::Test {
  protected:

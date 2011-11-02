@@ -11,6 +11,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros/chromeos_cryptohome.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 AuthAttemptState::AuthAttemptState(const std::string& username,

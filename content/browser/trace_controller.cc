@@ -11,6 +11,7 @@
 #include "content/browser/trace_message_filter.h"
 #include "content/common/child_process_messages.h"
 
+using content::BrowserThread;
 
 TraceController::TraceController() :
     subscriber_(NULL),

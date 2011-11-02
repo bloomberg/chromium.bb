@@ -18,6 +18,7 @@
 using base::Time;
 using base::TimeDelta;
 using bookmark_utils::GetTitleFromTreeIter;
+using content::BrowserThread;
 
 // Base class for bookmark editor tests. This class is a copy from
 // bookmark_editor_view_unittest.cc, and all the tests in this file are

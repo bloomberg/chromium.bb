@@ -13,6 +13,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/file_stream.h"
 
+using content::BrowserThread;
+
 DragDownloadFile::DragDownloadFile(
     const FilePath& file_name_or_path,
     linked_ptr<net::FileStream> file_stream,

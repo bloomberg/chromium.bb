@@ -28,8 +28,8 @@ using printing::PrintingContextCairo;
 // Needs to be freed on the UI thread to clean up its GTK members variables.
 class PrintDialogGtk
     : public printing::PrintDialogGtkInterface,
-      public base::RefCountedThreadSafe<PrintDialogGtk,
-                                        BrowserThread::DeleteOnUIThread> {
+      public base::RefCountedThreadSafe<
+          PrintDialogGtk, content::BrowserThread::DeleteOnUIThread> {
  public:
   // Creates and returns a print dialog.
   static printing::PrintDialogGtkInterface* CreatePrintDialog(
@@ -48,7 +48,8 @@ class PrintDialogGtk
   virtual void ReleaseDialog() OVERRIDE;
 
  private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class DeleteTask<PrintDialogGtk>;
 
   explicit PrintDialogGtk(PrintingContextCairo* context);

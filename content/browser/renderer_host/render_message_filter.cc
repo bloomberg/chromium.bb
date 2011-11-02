@@ -64,8 +64,9 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-using net::CookieStore;
+using content::BrowserThread;
 using content::PluginServiceFilter;
+using net::CookieStore;
 
 namespace {
 

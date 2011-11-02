@@ -8,6 +8,8 @@
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
 
+using content::BrowserThread;
+
 namespace media_stream {
 
 MediaStreamDispatcherHost::MediaStreamDispatcherHost(

@@ -12,6 +12,8 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace {
 // The time periods between successive polls of the wifi data.
 const int kDefaultPollingIntervalMilliseconds = 10 * 1000;  // 10s

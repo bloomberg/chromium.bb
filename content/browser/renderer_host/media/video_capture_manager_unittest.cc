@@ -22,6 +22,7 @@ using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::InSequence;
 using ::testing::Return;
+using content::BrowserThread;
 
 using content::BrowserThreadImpl;
 

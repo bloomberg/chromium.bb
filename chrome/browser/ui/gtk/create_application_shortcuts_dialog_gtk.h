@@ -14,6 +14,8 @@
 #include "googleurl/src/gurl.h"
 #include "ui/base/gtk/gtk_signal.h"
 
+using content::BrowserThread;
+
 typedef struct _GdkPixbuf GdkPixbuf;
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;

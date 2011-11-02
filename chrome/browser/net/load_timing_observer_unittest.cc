@@ -15,8 +15,9 @@
 
 namespace {
 
-using net::NetLog;
 using base::TimeDelta;
+using content::BrowserThread;
+using net::NetLog;
 
 // Serves to Identify the current thread as the IO thread.
 class LoadTimingObserverTest : public testing::Test {

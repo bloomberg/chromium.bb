@@ -100,7 +100,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   net::URLRequestContext* GetRequestContextForURL(const GURL& url);
 
  private:
-  friend class BrowserThread;
+  friend class content::BrowserThread;
   friend class DeleteTask<RenderMessageFilter>;
 
   class OpenChannelToNpapiPluginCallback;

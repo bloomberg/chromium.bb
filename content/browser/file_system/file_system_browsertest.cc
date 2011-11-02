@@ -15,6 +15,7 @@
 #include "content/public/common/content_switches.h"
 #include "webkit/quota/quota_manager.h"
 
+using content::BrowserThread;
 using quota::QuotaManager;
 
 // This browser test is aimed towards exercising the FileAPI bindings and

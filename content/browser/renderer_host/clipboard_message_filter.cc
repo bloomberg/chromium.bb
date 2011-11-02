@@ -20,6 +20,8 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/size.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Completes a clipboard write initiated by the renderer. The write must be

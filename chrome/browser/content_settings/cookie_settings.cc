@@ -23,6 +23,8 @@
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
 
+using content::BrowserThread;
+
 namespace {
 
 bool IsValidSetting(ContentSetting setting) {

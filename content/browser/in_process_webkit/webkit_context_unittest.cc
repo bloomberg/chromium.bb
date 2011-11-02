@@ -8,6 +8,7 @@
 #include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using content::BrowserThreadImpl;
 
 class MockDOMStorageContext : public DOMStorageContext {

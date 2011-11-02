@@ -38,6 +38,7 @@
 
 namespace browser_sync {
 
+using content::BrowserThread;
 using syncable::SESSIONS;
 
 namespace {

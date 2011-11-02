@@ -16,6 +16,8 @@
 #include "content/public/browser/notification_source.h"
 #include "crypto/hmac.h"
 
+using content::BrowserThread;
+
 namespace protector {
 
 Protector::Protector(Profile* profile)

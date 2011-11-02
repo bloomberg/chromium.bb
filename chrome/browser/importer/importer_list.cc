@@ -21,6 +21,8 @@
 #include "chrome/browser/importer/safari_importer.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 #if defined(OS_WIN)

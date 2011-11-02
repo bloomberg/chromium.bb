@@ -28,8 +28,8 @@
 // instances of this class.
 
 class ProtocolHandlerRegistry
-    : public base::RefCountedThreadSafe<ProtocolHandlerRegistry,
-                                        BrowserThread::DeleteOnIOThread> {
+    : public base::RefCountedThreadSafe<
+          ProtocolHandlerRegistry, content::BrowserThread::DeleteOnIOThread> {
  public:
   class DefaultClientObserver
       : public ShellIntegration::DefaultWebClientObserver {

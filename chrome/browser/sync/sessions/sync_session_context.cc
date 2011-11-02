@@ -9,6 +9,8 @@
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 namespace sessions {
 

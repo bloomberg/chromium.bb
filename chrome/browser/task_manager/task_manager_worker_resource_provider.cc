@@ -22,6 +22,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::BrowserThread;
+
 // Objects of this class are created on the IO thread and then passed to the UI
 // thread where they are passed to the task manager. All methods must be called
 // only on the UI thread. Destructor may be called on any thread.

@@ -53,6 +53,8 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #endif
 
+using content::BrowserThread;
+
 // Error messages.
 const char kFileError[] = "File error %d";
 const char kInvalidFileUrl[] = "Invalid file URL";

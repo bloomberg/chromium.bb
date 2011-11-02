@@ -9,6 +9,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "googleurl/src/gurl.h"
 
+using content::BrowserThread;
+
 ExtensionEventRouterForwarder::ExtensionEventRouterForwarder() {
 }
 

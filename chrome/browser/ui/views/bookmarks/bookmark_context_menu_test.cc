@@ -23,6 +23,8 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // PageNavigator implementation that records the URL.

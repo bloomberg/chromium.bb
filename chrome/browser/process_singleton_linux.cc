@@ -95,6 +95,8 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 const int ProcessSingleton::kTimeoutInSeconds;
 
 namespace {

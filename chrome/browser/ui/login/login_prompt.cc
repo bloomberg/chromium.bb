@@ -29,6 +29,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/text_elider.h"
 
+using content::BrowserThread;
 using webkit_glue::PasswordForm;
 
 class LoginHandlerImpl;

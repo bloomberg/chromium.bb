@@ -40,6 +40,7 @@ namespace policy {
 
 namespace em = enterprise_management;
 
+using content::BrowserThread;
 using testing::AnyNumber;
 using testing::DoAll;
 using testing::Invoke;

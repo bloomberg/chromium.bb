@@ -10,6 +10,8 @@
 #include "chrome/browser/sync/protocol/extension_setting_specifics.pb.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 SyncableExtensionSettingsStorage::SyncableExtensionSettingsStorage(
     const scoped_refptr<ObserverListThreadSafe<ExtensionSettingsObserver> >&
         observers,

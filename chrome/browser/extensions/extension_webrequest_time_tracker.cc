@@ -12,6 +12,8 @@
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/profiles/profile_manager.h"
 
+using content::BrowserThread;
+
 // TODO(mpcomplete): tweak all these constants.
 namespace {
 // The number of requests we keep track of at a time.

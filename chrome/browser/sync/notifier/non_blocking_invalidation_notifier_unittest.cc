@@ -24,6 +24,7 @@ namespace {
 
 using ::testing::InSequence;
 using ::testing::StrictMock;
+using content::BrowserThread;
 
 class NonBlockingInvalidationNotifierTest : public testing::Test {
  public:

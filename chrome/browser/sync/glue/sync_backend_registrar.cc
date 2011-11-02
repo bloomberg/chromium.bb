@@ -18,6 +18,8 @@
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 namespace {

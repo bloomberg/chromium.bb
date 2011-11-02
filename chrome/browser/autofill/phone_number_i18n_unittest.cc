@@ -12,6 +12,7 @@ using autofill_i18n::NormalizePhoneNumber;
 using autofill_i18n::ParsePhoneNumber;
 using autofill_i18n::ConstructPhoneNumber;
 using autofill_i18n::PhoneNumbersMatch;
+using content::BrowserThread;
 
 class PhoneNumberI18NTest : public testing::Test {
  public:

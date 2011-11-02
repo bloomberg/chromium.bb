@@ -26,6 +26,7 @@ namespace {
 
 using ::testing::InSequence;
 using ::testing::StrictMock;
+using content::BrowserThread;
 
 class InvalidationNotifierTest : public testing::Test {
  public:

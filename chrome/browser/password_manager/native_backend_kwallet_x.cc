@@ -19,6 +19,7 @@
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
 using webkit_glue::PasswordForm;
 
 // We could localize this string, but then changing your locale would cause

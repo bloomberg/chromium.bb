@@ -21,6 +21,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_filter.h"
 
+using content::BrowserThread;
+
 base::LazyInstance<AutomationResourceMessageFilter::RenderViewMap>
     AutomationResourceMessageFilter::filtered_render_views_(
         base::LINKER_INITIALIZED);

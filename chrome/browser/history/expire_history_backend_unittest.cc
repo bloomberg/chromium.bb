@@ -35,6 +35,7 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
+using content::BrowserThread;
 
 // Filename constants.
 static const FilePath::CharType kHistoryFile[] = FILE_PATH_LITERAL("History");

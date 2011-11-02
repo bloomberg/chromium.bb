@@ -16,6 +16,8 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
+using content::BrowserThread;
+
 namespace {
 
 ChromeWebUIDataSource* CreateTrackingHTMLSource() {

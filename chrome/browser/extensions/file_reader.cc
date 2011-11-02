@@ -9,6 +9,8 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 FileReader::FileReader(const ExtensionResource& resource, Callback* callback)
     : resource_(resource),
       callback_(callback),

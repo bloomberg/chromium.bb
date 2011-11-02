@@ -17,6 +17,8 @@
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request.h"
 
+using content::BrowserThread;
+
 NetworkDelayListener::NetworkDelayListener()
     : resource_queue_(NULL),
       extensions_ready_(true),

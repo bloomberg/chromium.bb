@@ -25,6 +25,7 @@
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 
+using content::BrowserThread;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Mock;

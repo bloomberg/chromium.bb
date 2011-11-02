@@ -13,6 +13,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 EnterpriseExtensionObserver::EnterpriseExtensionObserver(Profile* profile)

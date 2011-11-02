@@ -52,6 +52,8 @@
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // IDs and paths of CRX files used in tests.

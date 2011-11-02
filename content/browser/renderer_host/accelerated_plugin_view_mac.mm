@@ -14,6 +14,8 @@
 #include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
+using content::BrowserThread;
+
 @implementation AcceleratedPluginView
 
 - (void)drawView {

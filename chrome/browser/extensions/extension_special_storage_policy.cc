@@ -13,6 +13,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy(
     CookieSettings* cookie_settings)
     : cookie_settings_(cookie_settings) {}

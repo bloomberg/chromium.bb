@@ -24,6 +24,7 @@
 
 using browser_sync::DataTypeManager;
 using browser_sync::DataTypeManagerMock;
+using content::BrowserThread;
 using testing::_;
 using testing::AnyNumber;
 using testing::DoAll;

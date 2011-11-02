@@ -37,8 +37,8 @@ void parse_lpoptions(const FilePath& filepath, const std::string& printer_name,
 #endif
 
 class PrintSystemTaskProxy
-    : public base::RefCountedThreadSafe<PrintSystemTaskProxy,
-                                        BrowserThread::DeleteOnUIThread> {
+    : public base::RefCountedThreadSafe<
+          PrintSystemTaskProxy, content::BrowserThread::DeleteOnUIThread> {
  public:
   PrintSystemTaskProxy(const base::WeakPtr<PrintPreviewHandler>& handler,
                        printing::PrintBackend* print_backend,
@@ -51,7 +51,8 @@ class PrintSystemTaskProxy
   void GetPrinterCapabilities(const std::string& printer_name);
 
  private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class DeleteTask<PrintSystemTaskProxy>;
 
   void SendDefaultPrinter(const base::StringValue* default_printer,

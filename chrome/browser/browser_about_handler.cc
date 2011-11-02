@@ -90,6 +90,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using content::BrowserThread;
 
 #if defined(USE_TCMALLOC)
 // static

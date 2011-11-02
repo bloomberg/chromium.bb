@@ -28,8 +28,9 @@ class Value;
 // threads before destruction.
 class MediaInternalsProxy
     : public MediaInternalsObserver,
-      public base::RefCountedThreadSafe<MediaInternalsProxy,
-                                        BrowserThread::DeleteOnUIThread>,
+      public base::RefCountedThreadSafe<
+          MediaInternalsProxy,
+          content::BrowserThread::DeleteOnUIThread>,
       public ChromeNetLog::ThreadSafeObserverImpl,
       public content::NotificationObserver {
  public:
@@ -60,7 +61,8 @@ class MediaInternalsProxy
                           net::NetLog::EventParameters* params) OVERRIDE;
 
  private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class DeleteTask<MediaInternalsProxy>;
   virtual ~MediaInternalsProxy();
 

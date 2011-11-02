@@ -27,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
+using content::BrowserThread;
 
 namespace {
 

@@ -20,6 +20,7 @@
 
 using base::ListValue;
 using base::Value;
+using content::BrowserThread;
 using net::SSLConfig;
 using net::SSLConfigService;
 

@@ -18,6 +18,8 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // An implementation of the BrowsingDataFileSystemHelper interface that pulls

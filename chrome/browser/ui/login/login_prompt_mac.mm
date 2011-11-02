@@ -24,6 +24,7 @@
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
 using webkit_glue::PasswordForm;
 
 // ----------------------------------------------------------------------------

@@ -13,6 +13,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 MediaInternalsMessageHandler::MediaInternalsMessageHandler()
     : proxy_(new MediaInternalsProxy()) {}
 

@@ -31,6 +31,7 @@
 #include "content/public/browser/notification_source.h"
 
 using base::IntToString;
+using content::BrowserThread;
 namespace events = extension_event_names;
 
 namespace {

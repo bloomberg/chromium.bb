@@ -4,6 +4,8 @@
 
 #include "chrome/browser/mock_browsing_data_quota_helper.h"
 
+using content::BrowserThread;
+
 MockBrowsingDataQuotaHelper::MockBrowsingDataQuotaHelper(Profile* profile)
     : BrowsingDataQuotaHelper(BrowserThread::GetMessageLoopProxyForThread(
         BrowserThread::IO)) {}

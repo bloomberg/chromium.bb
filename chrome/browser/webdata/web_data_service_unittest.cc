@@ -38,6 +38,7 @@
 using base::Time;
 using base::TimeDelta;
 using base::WaitableEvent;
+using content::BrowserThread;
 using testing::_;
 using testing::DoDefault;
 using testing::ElementsAreArray;

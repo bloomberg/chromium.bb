@@ -15,6 +15,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
 
+using content::BrowserThread;
+
 ImageLoadingTracker::Observer::~Observer() {}
 
 ////////////////////////////////////////////////////////////////////////////////

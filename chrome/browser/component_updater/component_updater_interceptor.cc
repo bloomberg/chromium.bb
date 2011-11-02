@@ -9,6 +9,8 @@
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 ComponentUpdateInterceptor::ComponentUpdateInterceptor()
   : hit_count_(0) {
   net::URLRequest::Deprecated::RegisterRequestInterceptor(this);

@@ -49,6 +49,8 @@
 #include "chrome/browser/chromeos/frame/panel_browser_view.h"
 #endif
 
+using content::BrowserThread;
+
 static const char* kMediaPlayerAppName = "mediaplayer";
 static const int kPopupLeft = 0;
 static const int kPopupTop = 0;

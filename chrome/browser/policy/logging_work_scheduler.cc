@@ -10,6 +10,8 @@
 #include "base/message_loop.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace policy {
 
 // Objects of this class are used in the priority-queue of future tasks

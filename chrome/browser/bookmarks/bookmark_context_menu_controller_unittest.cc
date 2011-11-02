@@ -21,6 +21,8 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #endif
 
+using content::BrowserThread;
+
 // PageNavigator implementation that records the URL.
 class TestingPageNavigator : public PageNavigator {
  public:

@@ -7,6 +7,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_test_util.h"
 
+using content::BrowserThread;
+
 TestURLRequestContextGetter::TestURLRequestContextGetter() {}
 
 TestURLRequestContextGetter::~TestURLRequestContextGetter() {}

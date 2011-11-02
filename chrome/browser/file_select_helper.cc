@@ -28,6 +28,8 @@
 #include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // There is only one file-selection happening at any given time,

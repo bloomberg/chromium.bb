@@ -13,6 +13,8 @@
 #include "content/browser/download/download_item.h"
 #include "content/public/browser/notification_service.h"
 
+using content::BrowserThread;
+
 namespace download_crx_util {
 
 namespace {

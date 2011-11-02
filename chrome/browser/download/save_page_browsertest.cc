@@ -31,6 +31,8 @@
 #include "content/public/browser/notification_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 namespace {
 
 static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("save_page");

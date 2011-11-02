@@ -15,6 +15,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/rect.h"
 
+using content::BrowserThread;
+
 void PluginProcessHost::OnPluginSelectWindow(uint32 window_id,
                                              gfx::Rect window_rect,
                                              bool modal) {

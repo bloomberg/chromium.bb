@@ -14,6 +14,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_fetcher.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 namespace {

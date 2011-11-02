@@ -36,6 +36,8 @@
 #include "chrome/installer/util/work_item_list.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Helper function for ShellIntegration::GetAppId to generates profile id

@@ -32,6 +32,7 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context_getter.h"
 
+using content::BrowserThread;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 

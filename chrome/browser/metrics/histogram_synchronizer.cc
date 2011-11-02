@@ -15,6 +15,7 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
+using content::BrowserThread;
 
 // Negative numbers are never used as sequence numbers.  We explicitly pick a
 // negative number that is "so negative" that even when we add one (as is done

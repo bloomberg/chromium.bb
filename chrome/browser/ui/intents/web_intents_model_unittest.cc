@@ -14,6 +14,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_model.h"
 
+using content::BrowserThread;
+
 class WebIntentsModelTest : public testing::Test {
  public:
   WebIntentsModelTest()

@@ -110,6 +110,8 @@ void mark_lpoptions(const std::string& printer_name, ppd_file_t** ppd) {
 }  // printing_internal namespace
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 const char kDisableColorOption[] = "disableColorOption";

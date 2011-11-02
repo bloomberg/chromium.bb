@@ -26,6 +26,8 @@
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 
+using content::BrowserThread;
+
 namespace {
 
 void StopWorker(int document_cookie) {

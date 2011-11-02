@@ -16,6 +16,7 @@
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using content::BrowserThreadImpl;
 
 namespace {

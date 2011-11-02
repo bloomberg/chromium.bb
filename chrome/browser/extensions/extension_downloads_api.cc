@@ -41,6 +41,8 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 
+using content::BrowserThread;
+
 namespace constants = extension_downloads_api_constants;
 
 bool DownloadsFunctionInterface::RunImplImpl(

@@ -24,6 +24,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 namespace {
 // Overrides some of the component updater behaviors so it is easier to test
 // and loops faster. In actual usage it takes hours do to a full cycle.

@@ -17,6 +17,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 // The ProxyResolverInterface implementation used in production.

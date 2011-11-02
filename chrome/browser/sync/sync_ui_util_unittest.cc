@@ -13,6 +13,7 @@
 
 using ::testing::Return;
 using ::testing::NiceMock;
+using content::BrowserThread;
 
 namespace {
 

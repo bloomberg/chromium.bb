@@ -11,6 +11,7 @@
 
 using base::TimeDelta;
 using base::TimeTicks;
+using content::BrowserThread;
 
 typedef QuotaLimitHeuristic::Bucket Bucket;
 typedef QuotaLimitHeuristic::Config Config;

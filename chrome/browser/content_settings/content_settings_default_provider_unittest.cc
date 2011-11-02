@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using content::BrowserThread;
 
 class DefaultProviderTest : public testing::Test {
  public:

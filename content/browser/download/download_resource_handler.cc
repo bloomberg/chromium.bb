@@ -28,6 +28,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_context.h"
 
+using content::BrowserThread;
+
 DownloadResourceHandler::DownloadResourceHandler(
     ResourceDispatcherHost* rdh,
     int render_process_host_id,

@@ -12,7 +12,7 @@
 namespace {
 
 // Friendly names for the well-known threads.
-static const char* browser_thread_names[BrowserThread::ID_COUNT] = {
+static const char* browser_thread_names[content::BrowserThread::ID_COUNT] = {
   "",  // UI (name assembled in browser_main.cc).
   "Chrome_DBThread",  // DB
   "Chrome_WebKitThread",  // WEBKIT
@@ -129,10 +129,6 @@ bool BrowserThreadImpl::PostTaskHelper(
 
   return !!message_loop;
 }
-
-}  // namespace content
-
-using content::BrowserThreadImpl;
 
 // TODO(joi): Remove
 DeprecatedBrowserThread::DeprecatedBrowserThread(BrowserThread::ID identifier)
@@ -387,3 +383,5 @@ BrowserThread::GetMessageLoopProxyForThread(
       new BrowserThreadMessageLoopProxy(identifier));
   return proxy;
 }
+
+}  // namespace content

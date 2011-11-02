@@ -71,6 +71,8 @@
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 #endif  // defined(OS_CHROMEOS)
 
+using content::BrowserThread;
+
 namespace {
 
 // ----------------------------------------------------------------------------

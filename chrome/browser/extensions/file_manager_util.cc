@@ -32,6 +32,8 @@
 #include "chrome/browser/chromeos/media/media_player.h"
 #endif
 
+using content::BrowserThread;
+
 #define FILEBROWSER_DOMAIN "hhaomjibdihmijegdhdafkllkbggdgoj"
 const char kFileBrowserDomain[] = FILEBROWSER_DOMAIN;
 #define FILEBROWSER_URL(PATH) \

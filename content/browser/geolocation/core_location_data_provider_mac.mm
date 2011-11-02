@@ -17,6 +17,8 @@
 #include "content/browser/geolocation/core_location_provider_mac.h"
 #include "content/browser/geolocation/geolocation_provider.h"
 
+using content::BrowserThread;
+
 // A few required declarations since the CoreLocation headers are not available
 // with the Mac OS X 10.5 SDK.
 // TODO(jorgevillatoro): Remove these declarations when we build against 10.6

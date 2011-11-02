@@ -15,6 +15,8 @@
 #include "chrome/browser/password_manager/ie7_password.h"
 #endif
 
+using content::BrowserThread;
+
 InProcessImporterBridge::InProcessImporterBridge(ProfileWriter* writer,
                                                  ImporterHost* host)
     : writer_(writer),

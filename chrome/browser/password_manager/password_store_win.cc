@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/webdata/web_data_service.h"
 
+using content::BrowserThread;
 using webkit_glue::PasswordForm;
 
 namespace {

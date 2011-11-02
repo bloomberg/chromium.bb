@@ -28,6 +28,7 @@
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
 
 // C++ class that receives EXTENSION_LOADED notifications and proxies them back
 // to |controller|.

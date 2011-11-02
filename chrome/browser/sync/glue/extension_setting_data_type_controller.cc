@@ -13,6 +13,8 @@
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(

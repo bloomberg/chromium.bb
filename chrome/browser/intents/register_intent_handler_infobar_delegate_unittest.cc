@@ -15,6 +15,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/web_intent_service_data.h"
 
+using content::BrowserThread;
+
 namespace {
 
 class MockWebIntentsRegistry : public WebIntentsRegistry {

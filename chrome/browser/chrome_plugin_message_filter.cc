@@ -21,6 +21,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
 
+using content::BrowserThread;
+
 static const char kDefaultPluginFinderURL[] =
     "https://dl-ssl.google.com/edgedl/chrome/plugins/plugins2.xml";
 

@@ -31,6 +31,7 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 
 using base::Time;
+using content::BrowserThread;
 
 // Addition types data can be generated for. By default only urls/visits are
 // added.
@@ -235,8 +236,8 @@ int main(int argc, const char* argv[]) {
   ResourceBundle::InitSharedInstance("en-US");
   NotificationServiceImpl notification_service;
   MessageLoopForUI message_loop;
-  DeprecatedBrowserThread ui_thread(BrowserThread::UI, &message_loop);
-  DeprecatedBrowserThread db_thread(BrowserThread::DB, &message_loop);
+  content::DeprecatedBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::DeprecatedBrowserThread db_thread(BrowserThread::DB, &message_loop);
   TestingProfile profile;
   profile.CreateHistoryService(false, false);
   if (types & TOP_SITES) {

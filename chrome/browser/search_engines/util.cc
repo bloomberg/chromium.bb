@@ -16,6 +16,8 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 string16 GetDefaultSearchEngineName(Profile* profile) {
   if (!profile) {
     NOTREACHED();

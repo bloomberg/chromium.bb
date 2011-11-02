@@ -8,6 +8,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
+using content::BrowserThread;
+
 void UserMetrics::RecordAction(const UserMetricsAction& action) {
   Record(action.str_);
 }

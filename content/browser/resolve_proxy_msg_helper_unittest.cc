@@ -13,6 +13,7 @@
 #include "net/proxy/proxy_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using content::BrowserThreadImpl;
 
 // This ProxyConfigService always returns "http://pac" as the PAC url to use.

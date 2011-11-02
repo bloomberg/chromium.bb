@@ -9,6 +9,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_manager.h"
 
+using content::BrowserThread;
+
 namespace speech_input {
 
 SpeechInputManager::SpeechInputManager()

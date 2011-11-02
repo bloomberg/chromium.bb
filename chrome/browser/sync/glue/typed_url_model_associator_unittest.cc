@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::TypedUrlModelAssociator;
+using content::BrowserThread;
 
 class TypedUrlModelAssociatorTest : public testing::Test {
  public:

@@ -33,6 +33,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
+using content::BrowserThread;
 using content::BrowserThreadImpl;
 
 // TODO(eroman): Write unit tests for SafeBrowsing that exercise

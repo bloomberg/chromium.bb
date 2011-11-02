@@ -12,6 +12,8 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 typedef testing::Test BrowserAboutHandlerTest;
 
 TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {

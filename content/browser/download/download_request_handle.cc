@@ -12,6 +12,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 // IO Thread indirections to resource dispatcher host.
 // Provided as targets for PostTask from within this object
 // only.

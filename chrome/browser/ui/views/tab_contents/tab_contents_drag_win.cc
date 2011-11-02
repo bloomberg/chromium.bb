@@ -30,6 +30,7 @@
 #include "views/drag_utils.h"
 #include "webkit/glue/webdropdata.h"
 
+using content::BrowserThread;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebDragOperationCopy;
 using WebKit::WebDragOperationLink;

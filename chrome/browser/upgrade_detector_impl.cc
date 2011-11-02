@@ -29,6 +29,8 @@
 #include "base/version.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // How long (in milliseconds) to wait (each cycle) before checking whether

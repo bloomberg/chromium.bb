@@ -19,6 +19,7 @@ class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
 
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle handle,
                                            const WDTypedResult* result) {
+    using content::BrowserThread;
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     handle_ = handle;
     const WDResult<T>* wrapped_result =

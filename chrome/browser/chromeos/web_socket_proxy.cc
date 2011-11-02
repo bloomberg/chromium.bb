@@ -56,6 +56,8 @@
 #include "third_party/libevent/evdns.h"
 #include "third_party/libevent/event.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 namespace {

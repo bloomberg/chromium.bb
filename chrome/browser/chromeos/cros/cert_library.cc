@@ -19,6 +19,8 @@
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "unicode/coll.h"  // icu::Collator
 
+using content::BrowserThread;
+
 //////////////////////////////////////////////////////////////////////////////
 
 namespace {

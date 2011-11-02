@@ -13,6 +13,8 @@
 #include "webkit/quota/mock_storage_client.h"
 #include "webkit/quota/quota_manager.h"
 
+using content::BrowserThread;
+
 class BrowsingDataQuotaHelperTest : public testing::Test {
  public:
   typedef BrowsingDataQuotaHelper::QuotaInfo QuotaInfo;

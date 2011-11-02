@@ -13,6 +13,8 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/notification_types.h"
 
+using content::BrowserThread;
+
 static const int kMediaInternalsProxyEventDelayMilliseconds = 100;
 
 static const net::NetLog::EventType kNetEventTypeFilter[] = {

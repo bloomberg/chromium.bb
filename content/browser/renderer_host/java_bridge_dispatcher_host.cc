@@ -14,6 +14,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
+using content::BrowserThread;
+
 JavaBridgeDispatcherHost::JavaBridgeDispatcherHost(
     RenderViewHost* render_view_host)
     : render_view_host_(render_view_host) {

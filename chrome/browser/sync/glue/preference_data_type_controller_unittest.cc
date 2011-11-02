@@ -23,6 +23,7 @@ using browser_sync::DataTypeController;
 using browser_sync::ModelAssociatorMock;
 using browser_sync::PreferenceDataTypeController;
 using browser_sync::StartCallback;
+using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;

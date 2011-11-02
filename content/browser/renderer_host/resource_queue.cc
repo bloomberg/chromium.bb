@@ -9,6 +9,8 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 ResourceQueueDelegate::~ResourceQueueDelegate() {
 }
 

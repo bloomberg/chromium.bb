@@ -19,6 +19,8 @@
 #include "content/public/common/content_switches.h"
 #include "net/base/registry_controlled_domain.h"
 
+using content::BrowserThread;
+
 const int WorkerService::kMaxWorkerProcessesWhenSharing = 10;
 const int WorkerService::kMaxWorkersWhenSeparate = 64;
 const int WorkerService::kMaxWorkersPerTabWhenSeparate = 16;

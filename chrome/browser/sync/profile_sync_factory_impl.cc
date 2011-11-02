@@ -83,6 +83,7 @@ using browser_sync::TypedUrlChangeProcessor;
 using browser_sync::TypedUrlDataTypeController;
 using browser_sync::TypedUrlModelAssociator;
 using browser_sync::UnrecoverableErrorHandler;
+using content::BrowserThread;
 
 ProfileSyncFactoryImpl::ProfileSyncFactoryImpl(Profile* profile,
                                                CommandLine* command_line)

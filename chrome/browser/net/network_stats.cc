@@ -24,6 +24,8 @@
 #include "net/udp/udp_client_socket.h"
 #include "net/udp/udp_server_socket.h"
 
+using content::BrowserThread;
+
 namespace chrome_browser_net {
 
 // This specifies the number of bytes to be sent to the TCP/UDP servers as part

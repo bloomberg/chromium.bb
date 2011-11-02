@@ -33,6 +33,8 @@
 #include "chrome/browser/extensions/external_registry_extension_loader_win.h"
 #endif
 
+using content::BrowserThread;
+
 // Constants for keeping track of extension preferences in a dictionary.
 const char ExternalExtensionProviderImpl::kExternalCrx[] = "external_crx";
 const char ExternalExtensionProviderImpl::kExternalVersion[] =

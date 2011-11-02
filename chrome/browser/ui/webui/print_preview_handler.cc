@@ -58,6 +58,8 @@
 #include "chrome/common/chrome_switches.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 enum UserActionBuckets {

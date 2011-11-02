@@ -21,6 +21,7 @@
 
 using ::testing::Mock;
 using ::testing::StrictMock;
+using content::BrowserThread;
 
 // We don't have a way to do end-to-end SSL client auth testing, so this test
 // creates a certificate selector_ manually with a mocked

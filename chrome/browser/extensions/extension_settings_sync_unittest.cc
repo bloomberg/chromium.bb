@@ -19,6 +19,8 @@
 #include "chrome/browser/sync/api/sync_change_processor.h"
 #include "content/test/test_browser_thread.h"
 
+using content::BrowserThread;
+
 // TODO(kalman): Integration tests for sync.
 
 using namespace extension_settings_test_util;

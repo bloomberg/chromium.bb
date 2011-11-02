@@ -13,6 +13,8 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 namespace keys = extension_manifest_keys;
 
 class ExtensionSpecialStoragePolicyTest : public testing::Test {

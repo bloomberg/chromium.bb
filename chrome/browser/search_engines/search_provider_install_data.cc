@@ -23,6 +23,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 
+using content::BrowserThread;
+
 typedef SearchHostToURLsMap::TemplateURLSet TemplateURLSet;
 
 namespace {

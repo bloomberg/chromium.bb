@@ -15,6 +15,8 @@
 #include "chrome/test/ui/ui_test.h"
 #include "content/test/test_browser_thread.h"
 
+using content::BrowserThread;
+
 class FastShutdown : public UITest {
  protected:
   FastShutdown()

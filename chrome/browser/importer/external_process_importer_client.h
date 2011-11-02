@@ -50,7 +50,7 @@ class ExternalProcessImporterClient : public UtilityProcessHost::Client {
   virtual void Start();
 
   // Creates a new UtilityProcessHost, which launches the import process.
-  virtual void StartProcessOnIOThread(BrowserThread::ID thread_id);
+  virtual void StartProcessOnIOThread(content::BrowserThread::ID thread_id);
 
   // Called by the ExternalProcessImporterHost on import cancel.
   virtual void Cancel();

@@ -32,6 +32,8 @@
 #include "chrome/browser/nacl_host/nacl_broker_service_win.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 #if !defined(DISABLE_NACL)

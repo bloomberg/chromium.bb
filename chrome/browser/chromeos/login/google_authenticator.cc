@@ -37,6 +37,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using content::BrowserThread;
 using file_util::GetFileSize;
 using file_util::PathExists;
 using file_util::ReadFile;

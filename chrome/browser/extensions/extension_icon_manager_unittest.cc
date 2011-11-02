@@ -14,6 +14,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/skia_util.h"
 
+using content::BrowserThread;
+
 // Our test class that takes care of managing the necessary threads for loading
 // extension icons, and waiting for those loads to happen.
 class ExtensionIconManagerTest : public testing::Test {

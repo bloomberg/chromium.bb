@@ -57,6 +57,8 @@
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"
 
+using content::BrowserThread;
+
 // Done so that we can use PostTask on BrowsingDataRemovers and not have
 // BrowsingDataRemover implement RefCounted.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(BrowsingDataRemover);

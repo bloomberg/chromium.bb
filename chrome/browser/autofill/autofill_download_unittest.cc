@@ -23,6 +23,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "webkit/glue/form_data.h"
 
+using content::BrowserThread;
 using webkit_glue::FormData;
 using webkit_glue::FormField;
 using WebKit::WebInputElement;

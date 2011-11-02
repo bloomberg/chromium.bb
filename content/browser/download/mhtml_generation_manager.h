@@ -18,8 +18,8 @@ class FilePath;
 class TabContents;
 
 class CONTENT_EXPORT MHTMLGenerationManager
-    : public base::RefCountedThreadSafe<MHTMLGenerationManager,
-                                        BrowserThread::DeleteOnUIThread> {
+    : public base::RefCountedThreadSafe<
+          MHTMLGenerationManager, content::BrowserThread::DeleteOnUIThread> {
  public:
   MHTMLGenerationManager();
   ~MHTMLGenerationManager();

@@ -41,6 +41,8 @@
 #include "chrome/installer/util/browser_distribution.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // The default URL prefix where browser fetches chunk updates, hashes,

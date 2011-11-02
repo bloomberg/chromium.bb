@@ -62,6 +62,8 @@
 #include "ui/gfx/icon_util.h"
 #endif  // defined(OS_WIN)
 
+using content::BrowserThread;
+
 namespace {
 
 // Returns the appropriate message prefix ID for tabs and extensions,

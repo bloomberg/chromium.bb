@@ -28,6 +28,8 @@
 #include "net/base/net_errors.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 namespace {
 
 static BookmarkFaviconFetcher* fetcher = NULL;

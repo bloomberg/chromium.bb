@@ -23,6 +23,7 @@
 #include "webkit/glue/form_field.h"
 
 using base::WaitableEvent;
+using content::BrowserThread;
 using sync_datatype_helper::test;
 using testing::_;
 

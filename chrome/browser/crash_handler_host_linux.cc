@@ -31,6 +31,7 @@
 #include "chrome/common/env_vars.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
 using google_breakpad::ExceptionHandler;
 
 namespace {

@@ -22,6 +22,8 @@
 #include "chrome/browser/chromeos/proxy_config_service.h"
 #endif  // defined(OS_CHROMEOS)
 
+using content::BrowserThread;
+
 // static
 net::ProxyConfigService* ProxyServiceFactory::CreateProxyConfigService(
     PrefProxyConfigTracker* proxy_config_tracker) {

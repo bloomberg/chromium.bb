@@ -47,6 +47,7 @@ using browser_sync::PasswordDataTypeController;
 using browser_sync::PasswordModelAssociator;
 using browser_sync::TestIdFactory;
 using browser_sync::UnrecoverableErrorHandler;
+using content::BrowserThread;
 using sync_api::SyncManager;
 using sync_api::UserShare;
 using syncable::BASE_VERSION;

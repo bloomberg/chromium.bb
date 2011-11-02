@@ -35,6 +35,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using file_util::CloseFile;
 using file_util::CreateAndOpenTemporaryFile;
 using file_util::CreateAndOpenTemporaryFileInDir;

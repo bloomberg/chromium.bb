@@ -7,6 +7,8 @@
 #include "chrome/browser/ui/views/file_manager_dialog.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 // static
 SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

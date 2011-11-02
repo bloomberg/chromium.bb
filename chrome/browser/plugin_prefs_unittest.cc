@@ -13,6 +13,8 @@
 #include "webkit/plugins/npapi/mock_plugin_list.cc"
 #include "webkit/plugins/webplugininfo.h"
 
+using content::BrowserThread;
+
 class PluginPrefsTest : public ::testing::Test {
  public:
   virtual void SetUp() OVERRIDE {

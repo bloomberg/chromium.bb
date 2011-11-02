@@ -12,6 +12,8 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 class UpdateLibraryImpl : public UpdateLibrary {

@@ -28,6 +28,8 @@
 #include "grit/workers_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::BrowserThread;
+
 static const char kWorkersDataFile[] = "workers_data.json";
 
 static const char kOpenDevToolsCommand[]  = "openDevTools";

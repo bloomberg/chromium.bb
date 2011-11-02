@@ -10,6 +10,8 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 // static
 DesktopNotificationService* DesktopNotificationServiceFactory::GetForProfile(
     Profile* profile) {

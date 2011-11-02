@@ -35,6 +35,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
+using content::BrowserThread;
+
 namespace safe_browsing {
 
 const size_t ClientSideDetectionService::kMaxModelSizeBytes = 90 * 1024;

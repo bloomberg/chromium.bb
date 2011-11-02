@@ -14,6 +14,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
 
+using content::BrowserThread;
+
 // Subclass balloon controller and mock out the initialization of the RVH.
 @interface TestBalloonController : BalloonController {
 }

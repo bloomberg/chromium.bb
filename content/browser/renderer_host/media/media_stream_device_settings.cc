@@ -10,6 +10,8 @@
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace media_stream {
 
 typedef std::map<MediaStreamType, StreamDeviceInfoArray> DeviceMap;

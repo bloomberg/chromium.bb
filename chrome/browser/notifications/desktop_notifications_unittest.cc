@@ -11,6 +11,8 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/common/desktop_notification_messages.h"
 
+using content::BrowserThread;
+
 // static
 const int MockBalloonCollection::kMockBalloonSpace = 5;
 

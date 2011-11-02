@@ -21,6 +21,7 @@ using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::StrictMock;
+using content::BrowserThread;
 using syncable::FIRST_REAL_MODEL_TYPE;
 using syncable::AUTOFILL;
 using syncable::BOOKMARKS;

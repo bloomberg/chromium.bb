@@ -49,7 +49,8 @@ class CONTENT_EXPORT UtilityProcessHost : public BrowserChildProcessHost {
     DISALLOW_COPY_AND_ASSIGN(Client);
   };
 
-  UtilityProcessHost(Client* client, BrowserThread::ID client_thread_id);
+  UtilityProcessHost(Client* client,
+                     content::BrowserThread::ID client_thread_id);
   virtual ~UtilityProcessHost();
 
   // BrowserChildProcessHost override
@@ -87,7 +88,7 @@ class CONTENT_EXPORT UtilityProcessHost : public BrowserChildProcessHost {
 
   // A pointer to our client interface, who will be informed of progress.
   scoped_refptr<Client> client_;
-  BrowserThread::ID client_thread_id_;
+  content::BrowserThread::ID client_thread_id_;
   // True when running in batch mode, i.e., StartBatchMode() has been called
   // and the utility process will run until EndBatchMode().
   bool is_batch_mode_;

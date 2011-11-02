@@ -196,6 +196,7 @@
 #endif
 
 using base::Time;
+using content::BrowserThread;
 
 // Check to see that we're being called on only one thread.
 static bool IsSingleThreaded();

@@ -8,6 +8,8 @@
 #include "base/task.h"
 #include "base/threading/thread.h"
 
+using content::BrowserThread;
+
 ProfileSyncServiceObserverMock::ProfileSyncServiceObserverMock() {}
 
 ProfileSyncServiceObserverMock::~ProfileSyncServiceObserverMock() {}

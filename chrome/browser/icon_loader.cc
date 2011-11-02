@@ -12,6 +12,8 @@
 #include "base/mime_util.h"
 #endif
 
+using content::BrowserThread;
+
 IconLoader::IconLoader(const IconGroupID& group, IconSize size,
                        Delegate* delegate)
     : target_message_loop_(NULL),

@@ -31,6 +31,7 @@ using ::testing::SaveArg;
 using ::testing::StrEq;
 using ::testing::WithArg;
 using ::testing::_;
+using content::BrowserThread;
 using google::protobuf::RepeatedPtrField;
 
 namespace em = enterprise_management;

@@ -18,6 +18,8 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/result_codes.h"
 
+using content::BrowserThread;
+
 // static
 void ExtensionFunctionDeleteTraits::Destruct(const ExtensionFunction* x) {
   x->Destruct();

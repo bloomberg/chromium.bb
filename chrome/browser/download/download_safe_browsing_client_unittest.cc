@@ -9,6 +9,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 namespace {
 
 const char* kUrl1 = "http://127.0.0.1/";

@@ -23,6 +23,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 
+using content::BrowserThread;
+
 namespace imageburner {
 
 enum ProgressType {

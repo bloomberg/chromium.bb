@@ -32,6 +32,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 
+using content::BrowserThread;
+
 // The following macro makes histograms that record the length of paths
 // in this file much easier to read.
 // Windows has a short max path length. If the path length to a

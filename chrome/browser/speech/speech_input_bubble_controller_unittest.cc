@@ -12,6 +12,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 
+using content::BrowserThread;
+
 class SkBitmap;
 
 namespace speech_input {

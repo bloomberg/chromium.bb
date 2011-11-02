@@ -16,6 +16,8 @@
 #include "net/base/x509_certificate.h"
 #include "net/url_request/url_request.h"
 
+using content::BrowserThread;
+
 SSLAddCertHandler::SSLAddCertHandler(net::URLRequest* request,
                                      net::X509Certificate* cert,
                                      int render_process_host_id,

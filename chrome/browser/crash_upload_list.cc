@@ -17,6 +17,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 CrashUploadList::CrashInfo::CrashInfo(const std::string& c, const base::Time& t)
     : crash_id(c), crash_time(t) {}
 

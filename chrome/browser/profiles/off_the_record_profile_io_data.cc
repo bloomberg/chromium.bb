@@ -26,6 +26,8 @@
 #include "net/http/http_server_properties_impl.h"
 #include "webkit/database/database_tracker.h"
 
+using content::BrowserThread;
+
 OffTheRecordProfileIOData::Handle::Handle(Profile* profile)
     : io_data_(new OffTheRecordProfileIOData),
       profile_(profile),

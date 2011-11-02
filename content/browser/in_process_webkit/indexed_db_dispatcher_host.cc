@@ -30,6 +30,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::BrowserThread;
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
 using WebKit::WebIDBCallbacks;

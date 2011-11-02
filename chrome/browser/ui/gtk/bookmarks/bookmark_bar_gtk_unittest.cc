@@ -13,6 +13,8 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 // Dummy implementation that's good enough for the tests; we don't test
 // rendering here so all we need is a non-NULL object.
 class EmptyTabstripOriginProvider : public TabstripOriginProvider {

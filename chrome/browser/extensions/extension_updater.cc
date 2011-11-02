@@ -56,6 +56,7 @@ using base::RandDouble;
 using base::RandInt;
 using base::Time;
 using base::TimeDelta;
+using content::BrowserThread;
 using prefs::kExtensionBlacklistUpdateVersion;
 using prefs::kLastExtensionsUpdateCheck;
 using prefs::kNextExtensionsUpdateCheck;

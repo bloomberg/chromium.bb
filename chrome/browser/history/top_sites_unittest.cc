@@ -39,6 +39,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 
+using content::BrowserThread;
+
 namespace history {
 
 namespace {

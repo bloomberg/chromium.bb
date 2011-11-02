@@ -26,6 +26,8 @@
 #include "content/browser/file_metadata_mac.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 #define LOG_ERROR(o, e)  LogError(__FILE__, __LINE__, __FUNCTION__, o, e)

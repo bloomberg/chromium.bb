@@ -11,6 +11,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/test/test_browser_thread.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // The token store factory implementation expects to be used from any well-known

@@ -29,6 +29,8 @@
 using base::Time;
 using base::TimeDelta;
 
+using content::BrowserThread;
+
 namespace {
 
 struct TestShortcutInfo {

@@ -31,8 +31,8 @@ class GURL;
 // to notifications on there (and holds a NotificationRegistrar).
 class CONTENT_EXPORT HostZoomMap
     : public content::NotificationObserver,
-      public base::RefCountedThreadSafe<HostZoomMap,
-                                        BrowserThread::DeleteOnUIThread> {
+      public base::RefCountedThreadSafe<
+          HostZoomMap, content::BrowserThread::DeleteOnUIThread> {
  public:
   explicit HostZoomMap();
   explicit HostZoomMap(HostZoomMap* original);
@@ -81,9 +81,10 @@ class CONTENT_EXPORT HostZoomMap
   HostZoomMap* GetOriginal() const { return original_; }
 
  private:
-  friend class base::RefCountedThreadSafe<HostZoomMap,
-                                          BrowserThread::DeleteOnUIThread>;
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend class base::RefCountedThreadSafe<
+      HostZoomMap, content::BrowserThread::DeleteOnUIThread>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class DeleteTask<HostZoomMap>;
 
   typedef std::map<std::string, double> HostZoomLevels;

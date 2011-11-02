@@ -14,6 +14,8 @@
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/test/test_browser_thread.h"
 
+using content::BrowserThread;
+
 class FindBackendTest : public TabContentsWrapperTestHarness {
  public:
   FindBackendTest()

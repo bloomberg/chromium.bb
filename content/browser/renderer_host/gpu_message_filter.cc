@@ -13,6 +13,8 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 
+using content::BrowserThread;
+
 GpuMessageFilter::GpuMessageFilter(int render_process_id,
                                    RenderWidgetHelper* render_widget_helper)
     : gpu_host_id_(0),

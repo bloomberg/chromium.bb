@@ -11,6 +11,8 @@
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 // This is a specialized version of net::URLRequestTestJob that lets us specify
 // response data and make sure the response code is 200, which the autoupdate
 // code relies on.

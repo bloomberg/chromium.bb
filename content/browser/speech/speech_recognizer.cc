@@ -9,6 +9,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 
+using content::BrowserThread;
 using media::AudioInputController;
 using std::string;
 

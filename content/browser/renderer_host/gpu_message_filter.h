@@ -36,7 +36,7 @@ class GpuMessageFilter : public BrowserMessageFilter,
   virtual void OnDestruct() const;
 
  private:
-  friend class BrowserThread;
+  friend class content::BrowserThread;
   friend class DeleteTask<GpuMessageFilter>;
   virtual ~GpuMessageFilter();
 

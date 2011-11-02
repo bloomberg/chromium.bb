@@ -60,6 +60,7 @@
 #endif
 
 using base::Time;
+using content::BrowserThread;
 
 namespace {
 

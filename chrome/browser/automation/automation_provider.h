@@ -85,8 +85,8 @@ class AutomationProvider
     : public IPC::Channel::Listener,
       public IPC::Message::Sender,
       public base::SupportsWeakPtr<AutomationProvider>,
-      public base::RefCountedThreadSafe<AutomationProvider,
-                                        BrowserThread::DeleteOnUIThread>,
+      public base::RefCountedThreadSafe<
+          AutomationProvider, content::BrowserThread::DeleteOnUIThread>,
       public TraceSubscriber {
  public:
   explicit AutomationProvider(Profile* profile);
@@ -163,7 +163,8 @@ class AutomationProvider
       const DownloadItem* download);
 
  protected:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class DeleteTask<AutomationProvider>;
   virtual ~AutomationProvider();
 

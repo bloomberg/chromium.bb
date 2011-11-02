@@ -21,6 +21,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 HttpBridge::RequestContextGetter::RequestContextGetter(

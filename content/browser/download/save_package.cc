@@ -43,6 +43,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"
 
 using base::Time;
+using content::BrowserThread;
 using WebKit::WebPageSerializerClient;
 
 namespace {

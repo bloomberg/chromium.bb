@@ -41,6 +41,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_util.h"
 
+using content::BrowserThread;
+
 namespace history {
 
 // How many top sites to store in the cache.

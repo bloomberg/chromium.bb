@@ -8,6 +8,8 @@
 
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 // Called only from UI thread.
 // static
 void PowerSaveBlocker::ApplyBlock(PowerSaveBlockerType type) {

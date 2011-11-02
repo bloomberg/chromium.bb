@@ -18,6 +18,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 // This class is used to represent warnings if extensions misbehave.
 class ExtensionWarning {
  public:

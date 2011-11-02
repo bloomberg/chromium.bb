@@ -16,6 +16,8 @@
 #include "content/public/browser/notification_source.h"
 #include "net/url_request/url_request_context_getter.h"
 
+using content::BrowserThread;
+
 // Unfortunately kNumServices must be defined in the .h.
 // TODO(chron): Sync doesn't use the TalkToken anymore so we can stop
 //              requesting it.

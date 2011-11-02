@@ -19,6 +19,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_utils.h"
 
+using content::BrowserThread;
+
 class BrowserThemePackTest : public ::testing::Test {
  public:
   BrowserThemePackTest()

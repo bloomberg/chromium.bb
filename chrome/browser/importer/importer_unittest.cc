@@ -52,6 +52,8 @@
 #define MAYBE(x) x
 #endif
 
+using content::BrowserThread;
+
 class ImporterTest : public testing::Test {
  public:
   ImporterTest()

@@ -23,6 +23,8 @@
 #include "content/public/browser/notification_service.h"
 #include "ui/base/ui_base_switches.h"
 
+using content::BrowserThread;
+
 // ServiceProcessControl implementation.
 ServiceProcessControl::ServiceProcessControl() {
 }

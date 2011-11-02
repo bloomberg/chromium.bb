@@ -13,6 +13,8 @@
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
 
+using content::BrowserThread;
+
 // TODO(cwolfe): Fix the DEPs so that these can be pulled in from
 //               "chromeos/dbus/service_constants.h".
 namespace chromeos {

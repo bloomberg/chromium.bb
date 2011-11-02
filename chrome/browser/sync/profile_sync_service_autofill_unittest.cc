@@ -70,6 +70,7 @@ using browser_sync::GROUP_DB;
 using browser_sync::kAutofillTag;
 using browser_sync::SyncBackendHostForProfileSyncTest;
 using browser_sync::UnrecoverableErrorHandler;
+using content::BrowserThread;
 using syncable::CREATE_NEW_UPDATE_ITEM;
 using syncable::AUTOFILL;
 using syncable::BASE_VERSION;

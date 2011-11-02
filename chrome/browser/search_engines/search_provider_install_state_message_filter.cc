@@ -13,6 +13,8 @@
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 
+using content::BrowserThread;
+
 SearchProviderInstallStateMessageFilter::
 SearchProviderInstallStateMessageFilter(
     int render_process_id,

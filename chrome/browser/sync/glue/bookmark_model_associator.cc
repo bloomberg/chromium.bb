@@ -24,6 +24,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 // The sync protocol identifies top-level entities by means of well-known tags,

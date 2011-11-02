@@ -124,7 +124,7 @@ class CONTENT_EXPORT AudioRendererHost
 
  private:
   friend class AudioRendererHostTest;
-  friend class BrowserThread;
+  friend class content::BrowserThread;
   friend class DeleteTask<AudioRendererHost>;
   friend class MockAudioRendererHost;
   FRIEND_TEST_ALL_PREFIXES(AudioRendererHostTest, CreateMockStream);

@@ -10,6 +10,8 @@
 #include "content/public/common/content_switches.h"
 #include "webkit/quota/quota_manager.h"
 
+using content::BrowserThread;
+
 scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
         const FilePath& profile_path, bool is_incognito,
         quota::SpecialStoragePolicy* special_storage_policy,

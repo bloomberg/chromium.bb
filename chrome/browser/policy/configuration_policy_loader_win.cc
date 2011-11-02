@@ -11,6 +11,8 @@
 // userenv.dll is required for RegisterGPNotification().
 #pragma comment(lib, "userenv.lib")
 
+using content::BrowserThread;
+
 namespace policy {
 
 ConfigurationPolicyLoaderWin::ConfigurationPolicyLoaderWin(

@@ -129,6 +129,8 @@ static bool g_end_session_file_thread_has_completed = false;
 static const int kEndSessionTimeoutSeconds = 10;
 #endif
 
+using content::BrowserThread;
+
 BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
     : created_resource_dispatcher_host_(false),
       created_metrics_service_(false),
@@ -893,7 +895,7 @@ void BrowserProcessImpl::CreateCacheThread() {
   created_cache_thread_ = true;
 
   scoped_ptr<base::Thread> thread(
-      new DeprecatedBrowserThread(BrowserThread::CACHE));
+      new content::DeprecatedBrowserThread(BrowserThread::CACHE));
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   if (!thread->StartWithOptions(options))

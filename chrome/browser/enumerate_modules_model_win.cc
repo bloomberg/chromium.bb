@@ -30,6 +30,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 // The period of time (in milliseconds) to wait until checking to see if any
 // incompatible modules exist.
 static const int kModuleCheckDelayMs = 60 * 1000;

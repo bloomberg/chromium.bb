@@ -15,6 +15,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/test/test_browser_thread.h"
 
+using content::BrowserThread;
+
 using namespace extension_settings_test_util;
 
 class ExtensionSettingsFrontendTest : public testing::Test {

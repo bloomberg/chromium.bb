@@ -33,6 +33,7 @@ namespace browser_sync {
 
 namespace {
 
+using content::BrowserThread;
 using testing::_;
 using testing::AtLeast;
 using testing::AtMost;

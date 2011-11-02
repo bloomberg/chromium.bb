@@ -9,6 +9,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Install predicate used by AddFromExternalUpdateUrl().

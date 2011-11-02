@@ -16,6 +16,7 @@
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 
+using content::BrowserThread;
 using net::FileStream;
 
 namespace drag_download_util {

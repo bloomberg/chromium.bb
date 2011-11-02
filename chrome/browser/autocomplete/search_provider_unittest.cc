@@ -23,6 +23,8 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 // The following environment is configured for these tests:
 // . The TemplateURL default_t_url_ is set as the default provider.
 // . The TemplateURL keyword_t_url_ is added to the TemplateURLService. This

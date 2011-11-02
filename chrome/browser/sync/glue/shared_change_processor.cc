@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 
 using base::AutoLock;
+using content::BrowserThread;
 
 namespace browser_sync {
 

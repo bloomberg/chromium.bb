@@ -21,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::BrowserThread;
 using content::BrowserThreadImpl;
 
 class RenderViewHostManagerTest : public ChromeRenderViewHostTestHarness {

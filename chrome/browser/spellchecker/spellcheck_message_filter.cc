@@ -12,6 +12,8 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
 
+using content::BrowserThread;
+
 SpellCheckMessageFilter::SpellCheckMessageFilter(int render_process_id)
     : render_process_id_(render_process_id) {
 }

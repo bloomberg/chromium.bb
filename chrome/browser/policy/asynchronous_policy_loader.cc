@@ -8,6 +8,8 @@
 #include "base/message_loop.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace policy {
 
 AsynchronousPolicyLoader::AsynchronousPolicyLoader(

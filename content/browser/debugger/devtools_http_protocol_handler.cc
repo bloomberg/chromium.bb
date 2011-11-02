@@ -27,6 +27,8 @@
 #include "net/server/http_server_request_info.h"
 #include "net/url_request/url_request_context.h"
 
+using content::BrowserThread;
+
 const int kBufferSize = 16 * 1024;
 
 namespace {

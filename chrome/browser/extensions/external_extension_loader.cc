@@ -9,6 +9,8 @@
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 ExternalExtensionLoader::ExternalExtensionLoader()
     : owner_(NULL),
       running_(false) {

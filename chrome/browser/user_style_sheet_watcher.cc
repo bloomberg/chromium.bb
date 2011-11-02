@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_types.h"
 
 using ::base::files::FilePathWatcher;
+using content::BrowserThread;
 
 namespace {
 

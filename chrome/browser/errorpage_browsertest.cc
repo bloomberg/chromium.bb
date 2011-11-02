@@ -13,6 +13,8 @@
 #include "content/browser/net/url_request_failed_dns_job.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 
+using content::BrowserThread;
+
 class ErrorPageTest : public InProcessBrowserTest {
  public:
   enum HistoryNavigationDirection {

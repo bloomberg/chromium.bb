@@ -101,6 +101,8 @@
 
 #include "third_party/skia/include/core/SkBitmap.h"
 
+using content::BrowserThread;
+
 // This class creates the IO thread for the renderer when running in
 // single-process mode.  It's not used in multi-process mode.
 class RendererMainThread : public base::Thread {

@@ -24,6 +24,8 @@
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
 #endif
 
+using content::BrowserThread;
+
 ConstrainedWindowGtkDelegate::~ConstrainedWindowGtkDelegate() {
 }
 

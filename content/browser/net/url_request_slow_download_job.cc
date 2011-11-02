@@ -16,6 +16,8 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 
+using content::BrowserThread;
+
 const char URLRequestSlowDownloadJob::kUnknownSizeUrl[] =
   "http://url.handled.by.slow.download/download-unknown-size";
 const char URLRequestSlowDownloadJob::kKnownSizeUrl[] =

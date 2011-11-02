@@ -26,6 +26,8 @@
 #include <gdk/gdkx.h>  // NOLINT
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // One of the linux specific headers defines this as a macro.

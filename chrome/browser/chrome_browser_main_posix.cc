@@ -25,6 +25,8 @@
 #include "chrome/browser/printing/print_dialog_gtk.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // See comment in |PreEarlyInitialization()|, where sigaction is called.

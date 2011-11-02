@@ -30,6 +30,7 @@
 #include "sql/transaction.h"
 
 using base::Time;
+using content::BrowserThread;
 
 // This class is designed to be shared between any calling threads and the
 // database thread. It batches operations and commits them on a timer.

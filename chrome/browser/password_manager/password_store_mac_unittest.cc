@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/test/test_browser_thread.h"
 
+using content::BrowserThread;
 using webkit_glue::PasswordForm;
 using testing::_;
 using testing::DoAll;

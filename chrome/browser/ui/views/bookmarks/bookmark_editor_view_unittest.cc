@@ -16,6 +16,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using content::BrowserThread;
 
 // Base class for bookmark editor tests. Creates a BookmarkModel and populates
 // it with test data.

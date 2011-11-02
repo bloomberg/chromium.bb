@@ -35,6 +35,8 @@
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 
+using content::BrowserThread;
+
 namespace safe_browsing {
 
 // This class is instantiated each time a new toplevel URL loads, and

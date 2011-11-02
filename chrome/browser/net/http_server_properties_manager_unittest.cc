@@ -22,6 +22,7 @@ using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::StrictMock;
+using content::BrowserThread;
 
 class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
  public:

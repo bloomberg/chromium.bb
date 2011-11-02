@@ -1241,7 +1241,7 @@ class AutomationProviderGetPasswordsObserver : public PasswordStoreConsumer {
 class PasswordStoreLoginsChangedObserver
     : public base::RefCountedThreadSafe<
           PasswordStoreLoginsChangedObserver,
-          BrowserThread::DeleteOnUIThread>,
+          content::BrowserThread::DeleteOnUIThread>,
       public content::NotificationObserver {
  public:
   PasswordStoreLoginsChangedObserver(AutomationProvider* automation,
@@ -1259,7 +1259,8 @@ class PasswordStoreLoginsChangedObserver
                        const content::NotificationDetails& details);
 
  private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class DeleteTask<PasswordStoreLoginsChangedObserver>;
 
   // Registers the appropriate observers.  Called on the DB thread.
@@ -1464,7 +1465,7 @@ class AutofillDisplayedObserver : public content::NotificationObserver {
 class AutofillChangedObserver
     : public base::RefCountedThreadSafe<
           AutofillChangedObserver,
-          BrowserThread::DeleteOnUIThread>,
+          content::BrowserThread::DeleteOnUIThread>,
       public content::NotificationObserver {
  public:
   AutofillChangedObserver(AutomationProvider* automation,
@@ -1482,7 +1483,8 @@ class AutofillChangedObserver
                        const content::NotificationDetails& details);
 
  private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class DeleteTask<AutofillChangedObserver>;
 
   // Registers the appropriate observers.  Called on the DB thread.
@@ -1712,13 +1714,14 @@ class NewTabObserver : public content::NotificationObserver {
 class WaitForProcessLauncherThreadToGoIdleObserver
     : public base::RefCountedThreadSafe<
           WaitForProcessLauncherThreadToGoIdleObserver,
-          BrowserThread::DeleteOnUIThread> {
+          content::BrowserThread::DeleteOnUIThread> {
  public:
   WaitForProcessLauncherThreadToGoIdleObserver(
       AutomationProvider* automation, IPC::Message* reply_message);
 
  private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class DeleteTask<WaitForProcessLauncherThreadToGoIdleObserver>;
 
   virtual ~WaitForProcessLauncherThreadToGoIdleObserver();

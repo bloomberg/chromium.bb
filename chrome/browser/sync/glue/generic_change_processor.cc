@@ -18,6 +18,8 @@
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 GenericChangeProcessor::GenericChangeProcessor(

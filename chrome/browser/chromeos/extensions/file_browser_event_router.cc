@@ -21,6 +21,8 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 
+using content::BrowserThread;
+
 namespace {
   const char kDiskAddedEventType[] = "added";
   const char kDiskRemovedEventType[] = "removed";

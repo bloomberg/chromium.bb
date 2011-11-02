@@ -27,6 +27,8 @@
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // CRX hash. The extension id is: mimojjlkmoijpicakmndhoigimigcmbb.

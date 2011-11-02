@@ -18,6 +18,8 @@
 #include "chrome/app/breakpad_linux.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // Indicates that we're currently responding to an IO error (by shutting down).

@@ -24,6 +24,7 @@ namespace policy {
 using ::testing::AnyNumber;
 using ::testing::InSequence;
 using ::testing::_;
+using content::BrowserThread;
 
 class MockDeviceTokenFetcher : public DeviceTokenFetcher {
  public:

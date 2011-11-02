@@ -23,6 +23,7 @@
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
 
+using content::BrowserThread;
 using quota::QuotaManager;
 using webkit_database::DatabaseUtil;
 

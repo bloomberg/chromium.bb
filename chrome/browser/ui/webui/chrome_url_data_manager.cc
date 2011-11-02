@@ -25,6 +25,8 @@
 #include "base/win/windows_version.h"
 #endif
 
+using content::BrowserThread;
+
 // static
 base::Lock ChromeURLDataManager::delete_lock_;
 

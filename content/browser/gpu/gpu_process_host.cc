@@ -33,6 +33,8 @@
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #endif
 
+using content::BrowserThread;
+
 bool GpuProcessHost::gpu_enabled_ = true;
 
 namespace {

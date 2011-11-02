@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
+using content::BrowserThread;
 using webkit_glue::PasswordForm;
 
 // MigrateHelper handles migration from WebDB to PasswordStore. It runs

@@ -49,8 +49,8 @@ class URLRequestContextGetter;
 // Users should not hold the reference over the function scope because
 // the instance can be invalidated during the browser's lifecycle.
 class SpellCheckHost
-    : public base::RefCountedThreadSafe<SpellCheckHost,
-                                        BrowserThread::DeleteOnFileThread> {
+    : public base::RefCountedThreadSafe<
+          SpellCheckHost, content::BrowserThread::DeleteOnFileThread> {
  public:
   // Event types used for reporting the status of this class and its derived
   // classes to browser tests.

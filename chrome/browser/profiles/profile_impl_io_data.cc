@@ -30,6 +30,8 @@
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_job_factory.h"
 
+using content::BrowserThread;
+
 namespace {
 
 void ClearNetworkingHistorySinceOnIOThread(

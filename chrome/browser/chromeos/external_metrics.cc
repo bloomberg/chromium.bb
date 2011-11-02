@@ -23,6 +23,8 @@
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 // The interval between external metrics collections, in milliseconds.

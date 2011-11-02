@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
+using content::BrowserThread;
 using webkit::npapi::PluginList;
 
 PluginLoaderPosix::PluginLoaderPosix()

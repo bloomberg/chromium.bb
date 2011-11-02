@@ -11,6 +11,7 @@
 
 namespace chromeos {
 
+using content::BrowserThread;
 using testing::_;
 using testing::AnyNumber;
 using testing::Invoke;

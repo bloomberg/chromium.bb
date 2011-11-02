@@ -37,6 +37,8 @@
 #include <X11/X.h>  // ShiftMask, ControlMask, etc.
 #include <X11/Xutil.h>  // for XK_* macros.
 
+using content::BrowserThread;
+
 namespace {
 
 const char kIBusDaemonPath[] = "/usr/bin/ibus-daemon";

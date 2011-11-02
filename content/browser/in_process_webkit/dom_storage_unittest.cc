@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
+using content::BrowserThread;
 using content::BrowserThreadImpl;
 
 class DOMStorageTest : public testing::Test {

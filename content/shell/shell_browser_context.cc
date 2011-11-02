@@ -30,6 +30,8 @@
 #include "base/base_paths_win.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 class ShellGeolocationPermissionContext : public GeolocationPermissionContext {

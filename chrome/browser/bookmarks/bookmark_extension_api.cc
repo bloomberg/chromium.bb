@@ -41,6 +41,7 @@
 namespace keys = bookmark_extension_api_constants;
 
 using base::TimeDelta;
+using content::BrowserThread;
 typedef QuotaLimitHeuristic::Bucket Bucket;
 typedef QuotaLimitHeuristic::Config Config;
 typedef QuotaLimitHeuristic::BucketList BucketList;

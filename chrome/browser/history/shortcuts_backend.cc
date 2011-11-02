@@ -25,6 +25,8 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
+using content::BrowserThread;
+
 namespace history {
 
 ShortcutsBackend::ShortcutsBackend(const FilePath& db_folder_path,

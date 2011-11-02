@@ -17,6 +17,8 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 class SQLitePersistentCookieStoreTest : public testing::Test {
  public:
   SQLitePersistentCookieStoreTest()

@@ -15,6 +15,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // The HasPermission method of the DesktopNotificationService wants to be called

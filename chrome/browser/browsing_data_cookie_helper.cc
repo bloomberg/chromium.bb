@@ -13,6 +13,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
+using content::BrowserThread;
+
 BrowsingDataCookieHelper::BrowsingDataCookieHelper(Profile* profile)
   : is_fetching_(false),
     profile_(profile),

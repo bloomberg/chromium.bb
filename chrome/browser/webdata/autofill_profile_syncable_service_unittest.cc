@@ -20,6 +20,7 @@ using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::Return;
 using ::testing::Property;
+using content::BrowserThread;
 class AutofillProfile;
 
 class MockAutofillProfileSyncableService

@@ -33,6 +33,8 @@
 #include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/native_widget_types.h"
 
+using content::BrowserThread;
+
 #if defined(USE_X11)
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #endif

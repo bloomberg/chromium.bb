@@ -62,6 +62,7 @@ class RenderViewHostNotificationTask : public Task {
 template <typename Method, typename Params>
 inline void CallRenderViewHostHelper(int render_process_id, int render_view_id,
                                      Method method, const Params& params) {
+  using content::BrowserThread;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       new RenderViewHostNotificationTask<Method, Params>(render_process_id,
@@ -86,6 +87,7 @@ inline void CallRenderViewHostRendererManagementDelegateHelper(
     int render_view_id,
     Method method,
     const Params& params) {
+  using content::BrowserThread;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       new RenderViewHostNotificationTask<

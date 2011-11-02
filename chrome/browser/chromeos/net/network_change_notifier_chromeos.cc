@@ -8,6 +8,8 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Delay for online change notification reporting.

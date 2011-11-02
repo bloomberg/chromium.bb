@@ -45,6 +45,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/icon_util.h"
 
+using content::BrowserThread;
 
 namespace {
 

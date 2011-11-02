@@ -17,6 +17,8 @@
 #include "chrome/browser/rlz/rlz.h"
 #endif
 
+using content::BrowserThread;
+
 SearchTermsData::SearchTermsData() {
 }
 

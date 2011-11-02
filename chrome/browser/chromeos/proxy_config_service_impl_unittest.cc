@@ -19,6 +19,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 namespace {

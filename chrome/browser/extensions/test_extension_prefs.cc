@@ -23,6 +23,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Mock ExtensionPrefs class with artificial clock to guarantee that no two

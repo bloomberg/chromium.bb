@@ -19,6 +19,8 @@
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "unicode/ucnv.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // The maximum length of short list of recently user selected encodings is 3.

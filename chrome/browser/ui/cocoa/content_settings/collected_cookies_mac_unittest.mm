@@ -13,6 +13,8 @@
 #include "content/test/test_browser_thread.h"
 #include "chrome/test/base/testing_profile.h"
 
+using content::BrowserThread;
+
 namespace {
 
 class CollectedCookiesWindowControllerTest

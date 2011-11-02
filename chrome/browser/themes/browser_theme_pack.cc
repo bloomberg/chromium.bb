@@ -25,6 +25,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skbitmap_operations.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Version number of the current theme pack. We just throw out and rebuild

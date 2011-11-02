@@ -22,6 +22,8 @@
 #include "net/base/cookie_store.h"
 #include "net/http/http_util.h"
 
+using content::BrowserThread;
+
 class ChromeURLRequestContextFactory {
  public:
   ChromeURLRequestContextFactory() {}

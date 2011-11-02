@@ -21,6 +21,7 @@
 namespace helpers = extension_content_settings_helpers;
 namespace keys = extension_content_settings_api_constants;
 
+using content::BrowserThread;
 using content_settings::ConcatenationIterator;
 using content_settings::Rule;
 using content_settings::RuleIterator;

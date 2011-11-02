@@ -14,6 +14,8 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
+using content::BrowserThread;
+
 PrefProxyConfigTracker::PrefProxyConfigTracker(PrefService* pref_service)
     : pref_service_(pref_service) {
   config_state_ = ReadPrefConfig(&pref_config_);

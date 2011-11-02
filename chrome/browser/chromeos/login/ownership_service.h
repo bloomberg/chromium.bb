@@ -117,16 +117,16 @@ class OwnershipService : public content::NotificationObserver {
   void SetStatus(Status new_status);
 
   static void UpdateOwnerKey(OwnershipService* service,
-                             const BrowserThread::ID thread_id,
+                             const content::BrowserThread::ID thread_id,
                              const std::vector<uint8>& new_key,
                              OwnerManager::KeyUpdateDelegate* d);
   static void TryLoadOwnerKeyAttempt(OwnershipService* service);
   static void TrySigningAttempt(OwnershipService* service,
-                                const BrowserThread::ID thread_id,
+                                const content::BrowserThread::ID thread_id,
                                 const std::string& data,
                                 OwnerManager::Delegate* d);
   static void TryVerifyAttempt(OwnershipService* service,
-                               const BrowserThread::ID thread_id,
+                               const content::BrowserThread::ID thread_id,
                                const std::string& data,
                                const std::vector<uint8>& signature,
                                OwnerManager::Delegate* d);

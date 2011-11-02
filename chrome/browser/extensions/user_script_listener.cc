@@ -15,6 +15,8 @@
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request.h"
 
+using content::BrowserThread;
+
 struct UserScriptListener::ProfileData {
   // True if the user scripts contained in |url_patterns| are ready for
   // injection.

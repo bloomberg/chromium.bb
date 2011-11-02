@@ -18,6 +18,7 @@
 #include "webkit/database/database_util.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::BrowserThread;
 using webkit_database::DatabaseUtil;
 
 namespace {

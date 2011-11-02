@@ -29,8 +29,9 @@ typedef std::map<std::string, std::string> Statistics;
 // Each QuotaInternalsHandler instances creates and owns a instance of this
 // class.
 class QuotaInternalsProxy
-    : public base::RefCountedThreadSafe<QuotaInternalsProxy,
-                                        BrowserThread::DeleteOnIOThread> {
+    : public base::RefCountedThreadSafe<
+          QuotaInternalsProxy,
+          content::BrowserThread::DeleteOnIOThread> {
  public:
   explicit QuotaInternalsProxy(QuotaInternalsHandler* handler);
   ~QuotaInternalsProxy();
@@ -77,7 +78,8 @@ class QuotaInternalsProxy
   std::vector<PerHostStorageInfo> report_pending_;
 
   friend class QuotaInternalsHandler;
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::IO>;
   friend class DeleteTask<QuotaInternalsProxy>;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaInternalsProxy);

@@ -15,6 +15,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 
+using content::BrowserThread;
+
 namespace prerender {
 
 namespace {

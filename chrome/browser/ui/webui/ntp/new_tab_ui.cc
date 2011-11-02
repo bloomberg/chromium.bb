@@ -51,6 +51,8 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // The amount of time there must be no painting for us to consider painting

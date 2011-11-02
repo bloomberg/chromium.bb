@@ -25,6 +25,8 @@
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // The dimensions of the certificate selector table view, in pixels.

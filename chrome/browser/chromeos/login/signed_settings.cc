@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
+using content::BrowserThread;
 using google::protobuf::RepeatedPtrField;
 using std::string;
 

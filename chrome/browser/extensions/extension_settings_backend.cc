@@ -21,6 +21,8 @@
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Total quota for all settings per extension, in bytes.  100K should be enough

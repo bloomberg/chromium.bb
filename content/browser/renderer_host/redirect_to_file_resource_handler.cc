@@ -18,6 +18,7 @@
 #include "net/base/net_errors.h"
 #include "webkit/blob/deletable_file_reference.h"
 
+using content::BrowserThread;
 using webkit_blob::DeletableFileReference;
 
 // TODO(darin): Use the buffer sizing algorithm from AsyncResourceHandler.

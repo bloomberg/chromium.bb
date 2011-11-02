@@ -37,6 +37,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::BrowserThread;
+
 // GeolocationInfoBarQueueController ------------------------------------------
 
 // This class controls the geolocation infobar queue per profile, and it's an

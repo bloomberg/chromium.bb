@@ -33,6 +33,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
+using content::BrowserThread;
+
 namespace {
 
 RenderWidgetHost* GetRenderWidgetHost(NavigationController* tab) {

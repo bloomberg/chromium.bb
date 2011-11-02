@@ -12,6 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "webkit/quota/quota_manager.h"
 
+using content::BrowserThread;
+
 // static
 BrowsingDataQuotaHelper* BrowsingDataQuotaHelper::Create(Profile* profile) {
   return new BrowsingDataQuotaHelperImpl(

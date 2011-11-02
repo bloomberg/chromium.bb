@@ -13,6 +13,8 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 const char* kLibraryNotLoaded = "Cros Library not loaded";
 const char* kDeviceNotFound = "Device could not be found";
 

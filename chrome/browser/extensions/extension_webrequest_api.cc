@@ -44,6 +44,8 @@
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 namespace keys = extension_webrequest_api_constants;
 
 namespace {

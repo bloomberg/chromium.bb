@@ -25,6 +25,8 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
+using content::BrowserThread;
+
 namespace keys = extension_tabs_module_constants;
 
 ExecuteCodeInTabFunction::ExecuteCodeInTabFunction()

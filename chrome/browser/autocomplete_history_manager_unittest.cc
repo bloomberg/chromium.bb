@@ -21,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_data.h"
 
+using content::BrowserThread;
 using testing::_;
 using webkit_glue::FormData;
 

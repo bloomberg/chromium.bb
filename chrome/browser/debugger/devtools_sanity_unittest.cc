@@ -32,6 +32,8 @@
 #include "content/public/browser/notification_service.h"
 #include "net/test/test_server.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Used to block until a dev tools client window's browser is closed.

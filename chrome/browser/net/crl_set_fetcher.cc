@@ -17,6 +17,8 @@
 #include "net/base/crl_set.h"
 #include "net/base/ssl_config_service.h"
 
+using content::BrowserThread;
+
 CRLSetFetcher::CRLSetFetcher() {
 }
 

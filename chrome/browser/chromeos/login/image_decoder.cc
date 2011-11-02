@@ -9,6 +9,8 @@
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 ImageDecoder::ImageDecoder(Delegate* delegate,

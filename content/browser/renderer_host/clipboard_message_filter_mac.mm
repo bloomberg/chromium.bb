@@ -10,6 +10,8 @@
 #import "content/browser/find_pasteboard.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 // The number of utf16 code units that will be written to the find pasteboard,
 // longer texts are silently ignored. This is to prevent that a compromised
 // renderer can write unlimited amounts of data into the find pasteboard.

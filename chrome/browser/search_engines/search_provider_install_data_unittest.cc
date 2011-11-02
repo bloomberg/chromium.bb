@@ -22,6 +22,8 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 // Create a TemplateURL. The caller owns the returned TemplateURL*.
 static TemplateURL* CreateTemplateURL(const std::string& url,
                                       const std::string& keyword) {

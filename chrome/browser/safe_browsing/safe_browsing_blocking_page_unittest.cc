@@ -14,6 +14,8 @@
 #include "content/common/view_messages.h"
 #include "content/test/test_browser_thread.h"
 
+using content::BrowserThread;
+
 static const char* kGoogleURL = "http://www.google.com/";
 static const char* kGoodURL = "http://www.goodguys.com/";
 static const char* kBadURL = "http://www.badguys.com/";

@@ -37,6 +37,8 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "webkit/appcache/view_appcache_internals_job.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // X-WebKit-CSP is our development name for Content-Security-Policy.

@@ -12,6 +12,7 @@
 #include "net/base/net_util.h"
 #include "webkit/database/database_util.h"
 
+using content::BrowserThread;
 using quota::QuotaClient;
 using webkit_database::DatabaseUtil;
 

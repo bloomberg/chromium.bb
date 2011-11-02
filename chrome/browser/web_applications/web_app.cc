@@ -31,6 +31,8 @@
 #include "ui/gfx/icon_util.h"
 #endif  // defined(OS_WIN)
 
+using content::BrowserThread;
+
 namespace {
 
 #if defined(OS_WIN)

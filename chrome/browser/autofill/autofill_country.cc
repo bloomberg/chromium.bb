@@ -27,6 +27,8 @@
 #include "unicode/urename.h"
 #include "unicode/utypes.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // The maximum capacity needed to store a locale up to the country code.

@@ -34,6 +34,8 @@
 #include "base/metrics/histogram.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 FilePath GetFirstChoiceFilePath(const std::string& language) {

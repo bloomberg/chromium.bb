@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/webui/quota_internals_types.h"
 #include "net/base/net_util.h"
 
+using content::BrowserThread;
+
 namespace quota_internals {
 
 QuotaInternalsProxy::QuotaInternalsProxy(QuotaInternalsHandler* handler)

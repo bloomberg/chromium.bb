@@ -55,6 +55,7 @@
 
 using base::TimeDelta;
 using base::TimeTicks;
+using content::BrowserThread;
 using ui::ViewProp;
 using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;

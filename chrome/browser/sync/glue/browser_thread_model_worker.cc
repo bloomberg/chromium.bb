@@ -9,6 +9,7 @@
 #include "content/public/browser/browser_thread.h"
 
 using base::WaitableEvent;
+using content::BrowserThread;
 
 namespace browser_sync {
 

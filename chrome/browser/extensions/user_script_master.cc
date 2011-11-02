@@ -27,6 +27,8 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/notification_service.h"
 
+using content::BrowserThread;
+
 // Helper function to parse greasesmonkey headers
 static bool GetDeclarationValue(const base::StringPiece& line,
                                 const base::StringPiece& prefix,

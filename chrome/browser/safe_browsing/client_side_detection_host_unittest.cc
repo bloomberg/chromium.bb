@@ -37,6 +37,7 @@ using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
+using content::BrowserThread;
 
 namespace {
 const bool kFalse = false;

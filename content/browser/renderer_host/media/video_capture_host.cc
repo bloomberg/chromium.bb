@@ -11,6 +11,8 @@
 #include "content/browser/resource_context.h"
 #include "content/common/media/video_capture_messages.h"
 
+using content::BrowserThread;
+
 VideoCaptureHost::VideoCaptureHost(
     const content::ResourceContext* resource_context)
     : resource_context_(resource_context) {

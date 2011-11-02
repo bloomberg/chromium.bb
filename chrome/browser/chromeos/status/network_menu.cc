@@ -41,6 +41,8 @@
 #include "views/controls/menu/submenu_view.h"
 #include "views/widget/widget.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Offsets for views menu ids (main menu and submenu ids use the same

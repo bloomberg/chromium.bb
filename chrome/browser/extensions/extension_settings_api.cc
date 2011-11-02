@@ -9,6 +9,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace {
 const char* kUnsupportedArgumentType = "Unsupported argument type";
 }  // namespace

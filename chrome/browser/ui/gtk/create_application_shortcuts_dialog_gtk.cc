@@ -27,6 +27,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Size (in pixels) of the icon preview.

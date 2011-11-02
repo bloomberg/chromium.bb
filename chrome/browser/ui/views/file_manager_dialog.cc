@@ -20,6 +20,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace {
 
 const int kFileManagerWidth = 720;  // pixels

@@ -26,6 +26,8 @@
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
+using content::BrowserThread;
+
 namespace safe_browsing {
 
 BrowseInfo::BrowseInfo() : http_status_code(0) {}

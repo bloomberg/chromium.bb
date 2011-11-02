@@ -22,6 +22,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
+using content::BrowserThread;
+
 namespace {
 
 class ProfileSwitchObserver : public ProfileManagerObserver {

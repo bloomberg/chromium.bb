@@ -25,6 +25,7 @@ using browser_sync::FrontendDataTypeController;
 using browser_sync::FrontendDataTypeControllerMock;
 using browser_sync::ModelAssociatorMock;
 using browser_sync::StartCallback;
+using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;

@@ -126,6 +126,8 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // Handles rewriting Web UI URLs.

@@ -14,6 +14,8 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 PasswordDataTypeController::PasswordDataTypeController(

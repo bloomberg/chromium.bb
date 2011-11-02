@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 // Accessed only from the UI thread.
 int PowerSaveBlocker::blocker_count_[kPowerSaveBlockPreventStateCount];
 

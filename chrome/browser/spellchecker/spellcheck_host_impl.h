@@ -60,7 +60,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
   typedef SpellCheckProfileProvider::CustomWordList CustomWordList;
 
   // These two classes can destruct us.
-  friend class BrowserThread;
+  friend class content::BrowserThread;
   friend class DeleteTask<SpellCheckHostImpl>;
 
   virtual ~SpellCheckHostImpl();

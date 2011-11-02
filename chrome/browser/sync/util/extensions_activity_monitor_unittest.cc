@@ -17,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::ExtensionsActivityMonitor;
+using content::BrowserThread;
 namespace keys = extension_manifest_keys;
 
 namespace {

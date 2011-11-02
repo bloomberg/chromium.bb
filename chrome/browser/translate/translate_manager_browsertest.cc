@@ -40,6 +40,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/cld/languages/public/languages.h"
 
+using content::BrowserThread;
 using testing::_;
 using testing::Pointee;
 using testing::Property;

@@ -27,6 +27,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/common/page_transition_types.h"
 
+using content::BrowserThread;
+
 class BrowserCloseTest : public InProcessBrowserTest {
  public:
   // Structure defining test cases for DownloadsCloseCheck.

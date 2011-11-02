@@ -17,6 +17,8 @@
 #include "content/common/process_watcher.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 // Command used to configure GNOME 2 proxy settings.
 const char* kGNOME2ProxyConfigCommand[] = {"gnome-network-properties", NULL};
 // In GNOME 3, we might need to run gnome-control-center instead. We try this

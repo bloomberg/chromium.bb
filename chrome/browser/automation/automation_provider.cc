@@ -103,6 +103,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
+using content::BrowserThread;
 using WebKit::WebFindOptions;
 using base::Time;
 

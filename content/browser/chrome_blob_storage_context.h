@@ -25,8 +25,8 @@ class BlobStorageController;
 // All methods, except the ctor, are expected to be called on
 // the IO thread (unless specifically called out in doc comments).
 class CONTENT_EXPORT ChromeBlobStorageContext
-    : public base::RefCountedThreadSafe<ChromeBlobStorageContext,
-                                        BrowserThread::DeleteOnIOThread> {
+    : public base::RefCountedThreadSafe<
+          ChromeBlobStorageContext, content::BrowserThread::DeleteOnIOThread> {
  public:
   ChromeBlobStorageContext();
 
@@ -37,9 +37,9 @@ class CONTENT_EXPORT ChromeBlobStorageContext
   }
 
  private:
-  friend class base::RefCountedThreadSafe<ChromeBlobStorageContext,
-                                          BrowserThread::DeleteOnIOThread>;
-  friend class BrowserThread;
+  friend class base::RefCountedThreadSafe<
+      ChromeBlobStorageContext, content::BrowserThread::DeleteOnIOThread>;
+  friend class content::BrowserThread;
   friend class DeleteTask<ChromeBlobStorageContext>;
 
   virtual ~ChromeBlobStorageContext();

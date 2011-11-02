@@ -27,6 +27,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/web_intent_service_data.h"
 
+using content::BrowserThread;
 using testing::_;
 using testing::AtMost;
 using testing::DoAll;

@@ -29,6 +29,8 @@
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"
 
+using content::BrowserThread;
+
 namespace {
 
 const char kTestkOrigin1[] = "http://host1:1/";

@@ -23,8 +23,8 @@ namespace browser_sync {
 // Data type controllers need to be refcounted threadsafe, as they may
 // need to run model associator or change processor on other threads.
 class DataTypeController
-    : public base::RefCountedThreadSafe<DataTypeController,
-                                        BrowserThread::DeleteOnUIThread>,
+    : public base::RefCountedThreadSafe<
+          DataTypeController, content::BrowserThread::DeleteOnUIThread>,
       public UnrecoverableErrorHandler {
  public:
   enum State {
@@ -92,7 +92,8 @@ class DataTypeController
   virtual State state() const = 0;
 
  protected:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class DeleteTask<DataTypeController>;
   friend class ShutdownTask;
 

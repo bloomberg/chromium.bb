@@ -25,6 +25,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/quota/quota_types.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // If we requested larger quota than this threshold, show a different

@@ -15,6 +15,8 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
 
+using content::BrowserThread;
+
 AppNotifyChannelSetup::AppNotifyChannelSetup(
     Profile* profile,
     const std::string& client_id,

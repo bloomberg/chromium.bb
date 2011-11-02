@@ -17,6 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::BrowserThread;
 using WebKit::WebSecurityOrigin;
 
 BrowsingDataLocalStorageHelper::LocalStorageInfo::LocalStorageInfo()

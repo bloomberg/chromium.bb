@@ -29,6 +29,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using content::BrowserThread;
 
 // Maximum time, in seconds, from start up before we must issue an update query.
 static const int kSbTimerStartIntervalSec = 5 * 60;

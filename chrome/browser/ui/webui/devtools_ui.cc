@@ -19,6 +19,8 @@
 #include "grit/devtools_resources_map.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::BrowserThread;
+
 namespace {
 
 std::string PathWithoutParams(const std::string& path) {

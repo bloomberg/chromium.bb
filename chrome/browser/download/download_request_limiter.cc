@@ -20,6 +20,8 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
+using content::BrowserThread;
+
 // TabDownloadState ------------------------------------------------------------
 
 DownloadRequestLimiter::TabDownloadState::TabDownloadState(

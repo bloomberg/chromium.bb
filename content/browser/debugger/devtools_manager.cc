@@ -18,6 +18,8 @@
 #include "content/public/browser/content_browser_client.h"
 #include "googleurl/src/gurl.h"
 
+using content::BrowserThread;
+
 // static
 DevToolsManager* DevToolsManager::GetInstance() {
   return content::GetContentClient()->browser()->GetDevToolsManager();

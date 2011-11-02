@@ -36,6 +36,8 @@
 #include "views/views_delegate.h"
 #include "views/widget/widget.h"
 
+using content::BrowserThread;
+
 #if defined(OS_LINUX)
 // See http://crbug.com/40040 for details.
 #define MAYBE_DND DISABLED_DND

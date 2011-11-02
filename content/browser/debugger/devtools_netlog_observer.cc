@@ -18,6 +18,8 @@
 #include "net/url_request/url_request_netlog_params.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
+using content::BrowserThread;
+
 const size_t kMaxNumEntries = 1000;
 
 DevToolsNetLogObserver* DevToolsNetLogObserver::instance_ = NULL;

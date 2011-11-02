@@ -22,6 +22,8 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 const char kFlashMimeType[] = "application/x-shockwave-flash";

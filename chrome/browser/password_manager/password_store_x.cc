@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
+using content::BrowserThread;
 using std::vector;
 using webkit_glue::PasswordForm;
 

@@ -38,6 +38,8 @@
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/codec/png_codec.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Helper to launch xdg scripts. We don't want them to ask any questions on the

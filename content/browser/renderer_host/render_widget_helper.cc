@@ -12,6 +12,8 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 // A Task used with InvokeLater that we hold a pointer to in pending_paints_.
 // Instances are deleted by MessageLoop after it calls their Run method.
 class RenderWidgetHelper::UpdateMsgProxy : public Task {

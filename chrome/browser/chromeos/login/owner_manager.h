@@ -54,7 +54,7 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
   virtual ~OwnerManager();
 
   // Sets a new owner key from a provided memory buffer.
-  void UpdateOwnerKey(const BrowserThread::ID thread_id,
+  void UpdateOwnerKey(const content::BrowserThread::ID thread_id,
                       const std::vector<uint8>& key,
                       KeyUpdateDelegate* d);
 
@@ -73,7 +73,7 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
   // successful return code, passing the signaure blob in |payload|.
   // On failure, calls d->OnKeyOpComplete() on |thread_id| with an appropriate
   // error and passes an empty string for |payload|.
-  void Sign(const BrowserThread::ID thread_id,
+  void Sign(const content::BrowserThread::ID thread_id,
             const std::string& data,
             Delegate* d);
 
@@ -85,7 +85,7 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
   // successful return code, passing an empty string for |payload|.
   // On failure, calls d->OnKeyOpComplete() on |thread_id| with an appropriate
   // error code, passing an empty string for |payload|.
-  void Verify(const BrowserThread::ID thread_id,
+  void Verify(const content::BrowserThread::ID thread_id,
               const std::string& data,
               const std::vector<uint8>& signature,
               Delegate* d);

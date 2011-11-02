@@ -23,6 +23,7 @@
 #include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using content::BrowserThreadImpl;
 
 namespace {

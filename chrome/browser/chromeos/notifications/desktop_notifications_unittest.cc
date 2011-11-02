@@ -10,6 +10,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "content/common/desktop_notification_messages.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 // static

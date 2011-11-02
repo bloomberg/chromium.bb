@@ -56,7 +56,7 @@ class ImageDecoder : public UtilityProcessHost::Client {
 
   Delegate* delegate_;
   std::vector<unsigned char> image_data_;
-  BrowserThread::ID target_thread_id_;
+  content::BrowserThread::ID target_thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecoder);
 };

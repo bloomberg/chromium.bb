@@ -105,7 +105,7 @@ class CFUrlRequestUnittestRunner
   // on the main thread.
   FakeExternalTab fake_chrome_;
   scoped_ptr<ProcessSingletonSubclass> pss_subclass_;
-  scoped_ptr<DeprecatedBrowserThread> main_thread_;
+  scoped_ptr<content::DeprecatedBrowserThread> main_thread_;
   ScopedChromeFrameRegistrar registrar_;
   int test_result_;
 };

@@ -26,6 +26,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 // TODO(sanjeevr): Localize the product name?
 const char kCloudPrintProductName[] = "Google Cloud Print";
 

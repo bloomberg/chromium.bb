@@ -140,6 +140,7 @@
 #endif
 
 using automation_util::SendErrorIfModalDialogActive;
+using content::BrowserThread;
 
 namespace {
 

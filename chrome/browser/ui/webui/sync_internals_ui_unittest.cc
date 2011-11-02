@@ -26,6 +26,7 @@ namespace {
 using browser_sync::HasArgsAsList;
 using browser_sync::JsArgList;
 using browser_sync::JsEventDetails;
+using content::BrowserThread;
 using testing::_;
 using testing::Mock;
 using testing::NiceMock;

@@ -71,6 +71,7 @@ using browser_sync::ModelSafeWorker;
 using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::sessions::SyncSessionSnapshot;
 using browser_sync::WeakHandle;
+using content::BrowserThread;
 using syncable::GetAllRealModelTypes;
 using syncable::kEncryptedString;
 using syncable::ModelType;

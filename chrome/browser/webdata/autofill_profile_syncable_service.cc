@@ -20,6 +20,8 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Helper to compare the local value and cloud value of a field, merge into

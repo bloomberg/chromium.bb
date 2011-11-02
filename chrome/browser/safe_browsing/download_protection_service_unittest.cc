@@ -26,6 +26,7 @@
 
 using ::testing::Return;
 using ::testing::_;
+using content::BrowserThread;
 
 namespace safe_browsing {
 namespace {

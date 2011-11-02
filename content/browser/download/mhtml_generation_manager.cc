@@ -12,6 +12,8 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_types.h"
 
+using content::BrowserThread;
+
 MHTMLGenerationManager::Job::Job()
     : browser_file(base::kInvalidPlatformFileValue),
       renderer_file(IPC::InvalidPlatformFileForTransit()),

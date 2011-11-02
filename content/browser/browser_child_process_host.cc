@@ -28,6 +28,8 @@
 #include "base/synchronization/waitable_event.h"
 #endif  // OS_WIN
 
+using content::BrowserThread;
+
 namespace {
 
 typedef std::list<BrowserChildProcessHost*> ChildProcessList;

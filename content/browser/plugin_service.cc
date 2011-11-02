@@ -41,6 +41,7 @@
 using ::base::files::FilePathWatcher;
 #endif
 
+using content::BrowserThread;
 using content::PluginServiceFilter;
 
 namespace {

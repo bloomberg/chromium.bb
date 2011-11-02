@@ -36,6 +36,8 @@
 #define SPELLING_SERVICE_URL "http://127.0.0.1/rpc"
 #endif
 
+using content::BrowserThread;
+
 SpellingMenuObserver::SpellingMenuObserver(RenderViewContextMenuProxy* proxy)
     : proxy_(proxy),
       loading_frame_(0),

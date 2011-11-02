@@ -30,6 +30,7 @@ using browser_sync::GROUP_DB;
 using browser_sync::NewNonFrontendDataTypeController;
 using browser_sync::NewNonFrontendDataTypeControllerMock;
 using browser_sync::StartCallback;
+using content::BrowserThread;
 using syncable::AUTOFILL_PROFILE;
 using testing::_;
 using testing::DoAll;

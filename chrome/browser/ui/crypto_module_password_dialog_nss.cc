@@ -16,6 +16,8 @@
 #include "crypto/nss_util.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 bool ShouldShowDialog(const net::CryptoModule* module) {

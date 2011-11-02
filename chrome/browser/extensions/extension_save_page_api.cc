@@ -16,6 +16,8 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
+using content::BrowserThread;
+
 // Error messages.
 const char* const kFileTooBigError = "The MHTML file generated is too big.";
 const char* const kMHTMLGenerationFailedError = "Failed to generate MHTML.";

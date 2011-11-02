@@ -11,6 +11,8 @@
 #include "chrome/browser/history/top_sites_database.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace history {
 
 TopSitesBackend::TopSitesBackend()

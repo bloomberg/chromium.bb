@@ -47,6 +47,8 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // Profiles that should be deleted on shutdown.

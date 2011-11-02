@@ -44,6 +44,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 // Prerender tests work as follows:
 //
 // A page with a prefetch link to the test page is loaded.  Once prerendered,

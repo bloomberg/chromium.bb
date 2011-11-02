@@ -50,6 +50,8 @@
 #include <unistd.h>
 #endif  // ENABLE_FLAPPER_HACKS
 
+using content::BrowserThread;
+
 namespace {
 
 bool ValidateNetAddress(const PP_Flash_NetAddress& addr) {

@@ -32,8 +32,8 @@ class WebKitContext;
 // cookies for a given extension. This is used by
 // ExtensionService::ClearExtensionData() upon uninstalling an extension.
 class ExtensionDataDeleter
-  : public base::RefCountedThreadSafe<ExtensionDataDeleter,
-                                      BrowserThread::DeleteOnUIThread> {
+  : public base::RefCountedThreadSafe<
+        ExtensionDataDeleter, content::BrowserThread::DeleteOnUIThread> {
  public:
   // Starts removing data. The extension should not be running when this is
   // called. Cookies are deleted on the current thread, local storage and
@@ -46,7 +46,8 @@ class ExtensionDataDeleter
       bool is_storage_isolated);
 
  private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class DeleteTask<ExtensionDataDeleter>;
 
   ExtensionDataDeleter(

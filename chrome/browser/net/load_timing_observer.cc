@@ -14,6 +14,7 @@
 
 using base::Time;
 using base::TimeTicks;
+using content::BrowserThread;
 using webkit_glue::ResourceLoaderBridge;
 using webkit_glue::ResourceLoadTimingInfo;
 

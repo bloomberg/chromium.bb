@@ -208,6 +208,8 @@
 #include "ui/aura_shell/shell.h"
 #endif
 
+using content::BrowserThread;
+
 namespace net {
 class NetLog;
 }  // namespace net

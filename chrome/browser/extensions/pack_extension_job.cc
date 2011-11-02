@@ -13,6 +13,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 PackExtensionJob::PackExtensionJob(Client* client,
                                    const FilePath& root_directory,
                                    const FilePath& key_file)

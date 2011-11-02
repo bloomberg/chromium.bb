@@ -12,6 +12,8 @@
 #include "grit/theme_resources_standard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 // A mock ThemeSource (so we can override SendResponse to get at its data).
 class MockThemeSource : public ThemeSource {
  public:

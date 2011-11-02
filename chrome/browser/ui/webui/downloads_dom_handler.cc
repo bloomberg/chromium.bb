@@ -39,6 +39,8 @@
 #include "content/public/browser/browser_thread.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // Maximum number of downloads to show. TODO(glen): Remove this and instead

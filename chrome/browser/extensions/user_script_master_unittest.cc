@@ -19,6 +19,8 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 namespace {
 
 static void AddPattern(URLPatternSet* extent, const std::string& pattern) {

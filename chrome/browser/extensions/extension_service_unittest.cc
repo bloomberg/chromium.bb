@@ -71,6 +71,8 @@
 #include "webkit/database/database_util.h"
 #include "webkit/quota/quota_manager.h"
 
+using content::BrowserThread;
+
 namespace keys = extension_manifest_keys;
 
 namespace {

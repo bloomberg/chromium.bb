@@ -25,6 +25,8 @@
 #include "base/mac/mac_util.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // Filename suffix for the bloom filter.

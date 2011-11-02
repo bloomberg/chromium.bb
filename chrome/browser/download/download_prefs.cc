@@ -21,6 +21,8 @@
 #include "content/browser/download/save_package.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 DownloadPrefs::DownloadPrefs(PrefService* prefs) : prefs_(prefs) {
   prompt_for_download_.Init(prefs::kPromptForDownload, prefs, NULL);
   download_path_.Init(prefs::kDownloadDefaultDirectory, prefs, NULL);

@@ -31,7 +31,7 @@ ACTION_P(Notify, type) {
 }
 
 ACTION(QuitUIMessageLoop) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   MessageLoop::current()->Quit();
 }
 

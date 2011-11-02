@@ -82,6 +82,7 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
+using content::BrowserThread;
 using webkit_blob::DeletableFileReference;
 
 // ----------------------------------------------------------------------------

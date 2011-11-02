@@ -25,6 +25,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "views/window/non_client_view.h"
 
+using content::BrowserThread;
+
 namespace {
 
 const char kKeyNamePath[] = "path";

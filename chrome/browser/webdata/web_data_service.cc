@@ -43,6 +43,7 @@
 
 using base::Bind;
 using base::Time;
+using content::BrowserThread;
 using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
 using webkit_glue::WebIntentServiceData;

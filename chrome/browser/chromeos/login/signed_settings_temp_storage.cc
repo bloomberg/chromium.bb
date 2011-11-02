@@ -11,6 +11,8 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 // static

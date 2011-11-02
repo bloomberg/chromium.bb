@@ -18,6 +18,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
+using content::BrowserThread;
+
 //
 // ExtensionTabIdMap::TabObserver
 //

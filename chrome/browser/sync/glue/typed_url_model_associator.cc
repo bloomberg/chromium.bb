@@ -19,6 +19,8 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 // The server backend can't handle arbitrarily large node sizes, so to keep

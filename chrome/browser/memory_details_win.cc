@@ -23,6 +23,8 @@
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 // Known browsers which we collect details for.
 enum {
   CHROME_BROWSER = 0,

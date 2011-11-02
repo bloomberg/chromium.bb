@@ -44,10 +44,10 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                                  bool* message_was_ok);
   virtual void OnDestruct() const;
   virtual void OverrideThreadForMessage(const IPC::Message& message,
-                                        BrowserThread::ID* thread);
+                                        content::BrowserThread::ID* thread);
 
  private:
-  friend class BrowserThread;
+  friend class content::BrowserThread;
   friend class DeleteTask<ChromeRenderMessageFilter>;
 
   struct GetPluginInfo_Params;

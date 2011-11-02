@@ -21,6 +21,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 
 using base::TimeTicks;
+using content::BrowserThread;
+
 namespace {
 // The number of characters in the first part of the language code.
 const unsigned int kShortLanguageCodeSize = 2;

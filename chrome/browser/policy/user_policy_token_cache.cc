@@ -11,6 +11,8 @@
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Other places can sample on the same UMA counter, so make sure they all do

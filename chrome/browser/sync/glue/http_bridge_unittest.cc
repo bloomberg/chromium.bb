@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::HttpBridge;
+using content::BrowserThread;
 
 namespace {
 // TODO(timsteele): Should use PathService here. See Chromium Issue 3113.

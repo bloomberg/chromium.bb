@@ -23,6 +23,7 @@
 
 typedef long alsa_long_t;  // 'long' is required for ALSA API calls.
 
+using content::BrowserThread;
 using std::max;
 using std::min;
 using std::string;

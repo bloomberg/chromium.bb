@@ -43,6 +43,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
+using content::BrowserThread;
+
 DownloadId::Domain kValidIdDomain = "valid DownloadId::Domain";
 
 class DownloadManagerTest : public testing::Test {

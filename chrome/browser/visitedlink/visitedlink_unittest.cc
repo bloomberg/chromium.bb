@@ -25,6 +25,8 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // a nice long URL that we can append numbers to to get new URLs

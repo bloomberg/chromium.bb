@@ -11,6 +11,8 @@
 #include "content/public/common/result_codes.h"
 #include "ipc/ipc_sync_message.h"
 
+using content::BrowserThread;
+
 BrowserMessageFilter::BrowserMessageFilter()
     : channel_(NULL), peer_handle_(base::kNullProcessHandle) {
 }

@@ -27,6 +27,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 // Implementation of SelectFileDialog that shows a KDE common dialog for
 // choosing a file or folder. This acts as a modal dialog.
 class SelectFileDialogImplKDE : public SelectFileDialogImpl {

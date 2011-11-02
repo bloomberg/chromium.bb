@@ -57,6 +57,7 @@
 #include "ui/base/models/menu_model.h"
 #include "views/layout/grid_layout.h"
 
+using content::BrowserThread;
 using ui::ViewProp;
 
 static const char kWindowObjectKey[] = "ChromeWindowObject";

@@ -16,6 +16,8 @@
 #include "net/base/single_request_host_resolver.h"
 #include "net/base/sys_addrinfo.h"
 
+using content::BrowserThread;
+
 namespace content {
 
 class P2PSocketDispatcherHost::DnsRequest {

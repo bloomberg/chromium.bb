@@ -16,6 +16,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 
+using content::BrowserThread;
+
 PluginDataRemoverHelper::PluginDataRemoverHelper()
     : profile_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(factory_(this)) {}

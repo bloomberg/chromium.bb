@@ -27,6 +27,7 @@
 
 using base::TimeDelta;
 using base::TimeTicks;
+using content::BrowserThread;
 
 namespace {
 

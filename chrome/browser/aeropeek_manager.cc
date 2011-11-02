@@ -42,6 +42,8 @@
 
 #pragma comment(lib, "dwmapi.lib")
 
+using content::BrowserThread;
+
 namespace {
 
 // Sends a thumbnail bitmap to Windows. Windows assumes this function is called

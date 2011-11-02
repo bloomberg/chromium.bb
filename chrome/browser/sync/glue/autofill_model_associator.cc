@@ -30,6 +30,7 @@
 #include "net/base/escape.h"
 
 using base::TimeTicks;
+using content::BrowserThread;
 
 namespace browser_sync {
 

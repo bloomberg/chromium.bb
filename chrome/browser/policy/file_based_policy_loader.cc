@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 
 using ::base::files::FilePathWatcher;
+using content::BrowserThread;
 
 namespace {
 

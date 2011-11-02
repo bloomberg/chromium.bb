@@ -13,6 +13,8 @@
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_status.h"
 
+using content::BrowserThread;
+
 SaveFileResourceHandler::SaveFileResourceHandler(int render_process_host_id,
                                                  int render_view_id,
                                                  const GURL& url,

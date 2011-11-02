@@ -14,6 +14,8 @@
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 namespace system {
 namespace touchpad_settings {

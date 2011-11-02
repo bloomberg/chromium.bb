@@ -12,6 +12,8 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 class AddressTest : public testing::Test {
  public:
   // In order to access the application locale -- which the tested functions do

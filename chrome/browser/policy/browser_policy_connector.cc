@@ -40,6 +40,8 @@
 #include "chrome/browser/policy/device_policy_cache.h"
 #endif
 
+using content::BrowserThread;
+
 namespace policy {
 
 namespace {

@@ -14,6 +14,8 @@
 #include "chrome/browser/chromeos/login/auth_attempt_state_resolver.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 CryptohomeOp::CryptohomeOp(AuthAttemptState* current_attempt,

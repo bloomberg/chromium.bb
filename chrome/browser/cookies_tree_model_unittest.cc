@@ -27,6 +27,7 @@
 #include "base/utf_string_conversions.h"
 
 using ::testing::_;
+using content::BrowserThread;
 
 namespace {
 

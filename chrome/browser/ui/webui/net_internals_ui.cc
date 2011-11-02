@@ -71,6 +71,8 @@
 #include "chrome/browser/net/service_providers_win.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // Delay between when an event occurs and when it is passed to the Javascript

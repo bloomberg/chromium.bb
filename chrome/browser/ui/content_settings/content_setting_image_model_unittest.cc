@@ -16,6 +16,8 @@
 #include "net/base/cookie_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 class ContentSettingImageModelTest : public TabContentsWrapperTestHarness {
  public:
   ContentSettingImageModelTest()

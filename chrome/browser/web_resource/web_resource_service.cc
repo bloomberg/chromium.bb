@@ -28,6 +28,8 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
+using content::BrowserThread;
+
 class WebResourceService::WebResourceFetcher
     : public content::URLFetcherDelegate {
  public:

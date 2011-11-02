@@ -47,6 +47,8 @@
 #include "net/test/python_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 namespace {
 
 const FilePath::CharType kDataFile[] = FILE_PATH_LITERAL("testing_input.dat");

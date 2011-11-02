@@ -24,6 +24,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Throttle updates to the UI thread so that a fast moving download doesn't

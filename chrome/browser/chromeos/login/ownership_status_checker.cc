@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 OwnershipStatusChecker::OwnershipStatusChecker(const Callback& callback)

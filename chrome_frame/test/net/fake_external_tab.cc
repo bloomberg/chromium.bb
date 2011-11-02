@@ -55,6 +55,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // A special command line switch to allow developers to manually launch the
@@ -304,8 +306,8 @@ CFUrlRequestUnittestRunner::CFUrlRequestUnittestRunner(int argc, char** argv)
       registrar_(chrome_frame_test::GetTestBedType()),
       test_result_(0) {
   // Register the main thread by instantiating it, but don't call any methods.
-  main_thread_.reset(new DeprecatedBrowserThread(BrowserThread::UI,
-                                                 MessageLoop::current()));
+  main_thread_.reset(new content::DeprecatedBrowserThread(
+      BrowserThread::UI, MessageLoop::current()));
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   fake_chrome_.Initialize();
   pss_subclass_.reset(new ProcessSingletonSubclass(this));

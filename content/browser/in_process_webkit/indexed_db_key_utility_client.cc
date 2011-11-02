@@ -13,6 +13,8 @@
 #include "content/common/utility_messages.h"
 #include "content/public/common/serialized_script_value.h"
 
+using content::BrowserThread;
+
 // This class is used to obtain IndexedDBKeys from SerializedScriptValues
 // given an IDBKeyPath. It uses UtilityProcess to do this inside a sandbox
 // (a V8 lock is required there). At this level, all methods are synchronous

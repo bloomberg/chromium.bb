@@ -25,6 +25,7 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
+using content::BrowserThread;
 using quota::QuotaManager;
 using quota::QuotaManagerProxy;
 using quota::QuotaStatusCode;

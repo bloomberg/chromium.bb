@@ -21,6 +21,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
 using webkit_glue::PasswordForm;
 
 #define GNOME_KEYRING_DEFINE_POINTER(name) \

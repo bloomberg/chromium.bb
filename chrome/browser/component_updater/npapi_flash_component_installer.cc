@@ -21,6 +21,8 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // CRX hash. The extension id is: immdilkhigodmjbnngapbehchmihabbg.

@@ -26,6 +26,7 @@
 #endif
 
 using base::TimeDelta;
+using content::BrowserThread;
 
 using content::BrowserThreadImpl;
 

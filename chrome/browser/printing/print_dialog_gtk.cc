@@ -24,6 +24,7 @@
 #include "printing/print_settings.h"
 #include "printing/print_settings_initializer_gtk.h"
 
+using content::BrowserThread;
 using printing::PageRanges;
 using printing::PrintSettings;
 

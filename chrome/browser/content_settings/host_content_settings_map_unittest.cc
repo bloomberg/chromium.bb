@@ -22,6 +22,8 @@
 #include "net/base/static_cookie_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 using ::testing::_;
 
 namespace {

@@ -30,6 +30,7 @@ using browser_sync::DataTypeManagerImpl;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeControllerMock;
 using browser_sync::SyncBackendHostMock;
+using content::BrowserThread;
 using testing::_;
 using testing::AtLeast;
 using testing::DoAll;

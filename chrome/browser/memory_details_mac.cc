@@ -28,6 +28,8 @@
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 // TODO(viettrungluu): Many of the TODOs below are subsumed by a general need to
 // refactor the about:memory code (not just on Mac, but probably on other
 // platforms as well). I've filed crbug.com/25456.

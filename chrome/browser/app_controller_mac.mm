@@ -73,6 +73,8 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/accelerator_cocoa.h"
 
+using content::BrowserThread;
+
 // 10.6 adds a public API for the Spotlight-backed search menu item in the Help
 // menu.  Provide the declaration so it can be called below when building with
 // the 10.5 SDK.

@@ -12,6 +12,8 @@
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/worker_messages.h"
 
+using content::BrowserThread;
+
 ChromeWorkerMessageFilter::ChromeWorkerMessageFilter(WorkerProcessHost* process)
     : process_(process) {
   ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(

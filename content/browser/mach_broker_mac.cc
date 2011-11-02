@@ -19,6 +19,8 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 
+using content::BrowserThread;
+
 namespace {
 // Prints a string representation of a Mach error code.
 std::string MachErrorCode(kern_return_t err) {

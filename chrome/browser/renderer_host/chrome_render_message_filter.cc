@@ -52,6 +52,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #endif
 
+using content::BrowserThread;
 using WebKit::WebCache;
 using WebKit::WebSecurityOrigin;
 

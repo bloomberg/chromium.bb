@@ -33,6 +33,8 @@
 #include "content/browser/zygote_host_linux.h"
 #endif
 
+using content::BrowserThread;
+
 ProcessMemoryInformation::ProcessMemoryInformation()
     : pid(0),
       num_processes(0),

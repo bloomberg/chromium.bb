@@ -82,6 +82,8 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/rect.h"
 
+using content::BrowserThread;
+
 // Holds onto start and stop timestamps for a particular tab
 class InitialLoadObserver::TabTime {
  public:

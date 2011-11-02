@@ -218,7 +218,7 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   FilePath crx_path_;
 
   // Our client's thread. This is the thread we respond on.
-  BrowserThread::ID thread_identifier_;
+  content::BrowserThread::ID thread_identifier_;
 
   // ResourceDispatcherHost to pass to the utility process.
   ResourceDispatcherHost* rdh_;

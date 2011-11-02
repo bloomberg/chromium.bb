@@ -32,6 +32,8 @@
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "ui/gfx/size.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 namespace {

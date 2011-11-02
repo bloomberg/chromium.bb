@@ -25,6 +25,8 @@
 #include "chrome/browser/policy/url_blacklist_manager.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // If the |request| failed due to problems with a proxy, forward the error to

@@ -101,6 +101,8 @@
 // high-level flow (where the data is generated before even
 // bringing up the dialog) isn't what we want.
 
+using content::BrowserThread;
+
 namespace internal_cloud_print_helpers {
 
 // From the JSON parsed value, get the entries for the page setup

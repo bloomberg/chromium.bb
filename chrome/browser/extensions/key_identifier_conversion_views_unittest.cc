@@ -11,6 +11,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+using content::BrowserThread;
+
 namespace {
 
 class KeyEventFromKeyIdentifierTest : public testing::Test {

@@ -69,8 +69,8 @@ class DownloadManagerDelegate;
 
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManager
-    : public base::RefCountedThreadSafe<DownloadManager,
-                                        BrowserThread::DeleteOnUIThread>,
+    : public base::RefCountedThreadSafe<
+          DownloadManager, content::BrowserThread::DeleteOnUIThread>,
       public DownloadStatusUpdaterDelegate {
  public:
   DownloadManager(content::DownloadManagerDelegate* delegate,
@@ -295,9 +295,10 @@ class CONTENT_EXPORT DownloadManager
   friend class DownloadTest;
   friend class MockDownloadManager;
 
-  friend class base::RefCountedThreadSafe<DownloadManager,
-                                          BrowserThread::DeleteOnUIThread>;
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend class base::RefCountedThreadSafe<
+      DownloadManager, content::BrowserThread::DeleteOnUIThread>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class DeleteTask<DownloadManager>;
 
   virtual ~DownloadManager();

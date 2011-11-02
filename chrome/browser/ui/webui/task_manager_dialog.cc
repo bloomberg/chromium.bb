@@ -20,6 +20,8 @@
 #include "views/widget/widget.h"
 #endif
 
+using content::BrowserThread;
+
 class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
  public:
   TaskManagerDialogImpl();

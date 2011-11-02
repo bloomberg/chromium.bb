@@ -20,6 +20,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/notification_service_impl.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 // This is the threshold at which we start throttling sync updates for typed

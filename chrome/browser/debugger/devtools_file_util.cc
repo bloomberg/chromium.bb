@@ -12,6 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 
+using content::BrowserThread;
+
 namespace {
 
 class SaveAsDialog : public SelectFileDialog::Listener,

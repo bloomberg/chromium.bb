@@ -75,7 +75,7 @@ class CONTENT_EXPORT VideoCaptureHost
   virtual void OnReadyToDelete(const VideoCaptureControllerID& id);
 
  private:
-  friend class BrowserThread;
+  friend class content::BrowserThread;
   friend class DeleteTask<VideoCaptureHost>;
   friend class MockVideoCaptureHost;
   friend class VideoCaptureHostTest;

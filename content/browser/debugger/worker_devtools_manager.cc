@@ -20,6 +20,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
+using content::BrowserThread;
+
 class WorkerDevToolsManager::AgentHosts
     : private content::NotificationObserver {
 public:

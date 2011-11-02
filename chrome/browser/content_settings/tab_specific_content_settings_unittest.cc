@@ -10,6 +10,8 @@
 #include "net/base/cookie_monster.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 class TabSpecificContentSettingsTest : public ChromeRenderViewHostTestHarness {
  public:
   TabSpecificContentSettingsTest()

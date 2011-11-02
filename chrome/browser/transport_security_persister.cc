@@ -13,6 +13,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/transport_security_state.h"
 
+using content::BrowserThread;
+
 class TransportSecurityPersister::Loader {
  public:
   Loader(const base::WeakPtr<TransportSecurityPersister>& persister,

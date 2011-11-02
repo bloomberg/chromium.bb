@@ -21,6 +21,8 @@
 #include "jingle/notifier/listener/talk_mediator_impl.h"
 #include "net/base/host_port_pair.h"
 
+using content::BrowserThread;
+
 namespace sync_notifier {
 namespace {
 

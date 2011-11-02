@@ -12,6 +12,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 // These functions take scoped_refptr's to DownloadManager because they
 // are posted to message queues, and hence may execute arbitrarily after
 // their actual posting.  Once posted, there is no connection between

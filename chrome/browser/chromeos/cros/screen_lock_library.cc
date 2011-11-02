@@ -13,6 +13,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros/chromeos_screen_lock.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 class ScreenLockLibraryImpl : public ScreenLockLibrary {

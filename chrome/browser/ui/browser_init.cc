@@ -111,6 +111,8 @@
 #include "ui/base/touch/touch_factory.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // SetAsDefaultBrowserTask ----------------------------------------------------

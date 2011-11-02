@@ -19,6 +19,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
+using content::BrowserThread;
+
 using namespace speech_input;
 
 namespace constants = extension_speech_input_api_constants;

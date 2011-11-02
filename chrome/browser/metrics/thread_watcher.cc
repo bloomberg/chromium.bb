@@ -20,6 +20,8 @@
 #include "base/win/windows_version.h"
 #endif
 
+using content::BrowserThread;
+
 // ThreadWatcher methods and members.
 ThreadWatcher::ThreadWatcher(const WatchingParams& params)
     : thread_id_(params.thread_id),

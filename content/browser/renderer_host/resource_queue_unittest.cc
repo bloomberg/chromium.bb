@@ -14,6 +14,7 @@
 #include "net/url_request/url_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using content::BrowserThreadImpl;
 using content::DummyResourceHandler;
 

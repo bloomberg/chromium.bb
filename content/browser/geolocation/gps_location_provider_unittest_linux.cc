@@ -7,6 +7,7 @@
 #include "content/browser/geolocation/libgps_wrapper_linux.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using content::BrowserThreadImpl;
 
 struct gps_data_t {

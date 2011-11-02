@@ -23,6 +23,8 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/notification_service.h"
 
+using content::BrowserThread;
+
 namespace {
 
 const char kDispatchEvent[] = "Event.dispatchJSON";

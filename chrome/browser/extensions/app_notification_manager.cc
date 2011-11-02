@@ -16,6 +16,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
+using content::BrowserThread;
+
 typedef std::map<std::string, SyncData> SyncDataMap;
 
 namespace {

@@ -16,6 +16,8 @@
 #include "net/http/http_stream_factory.h"
 #include "net/url_request/url_request_throttler_manager.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Function (for NewRunnableFunction) to call the set_enforce_throttling

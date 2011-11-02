@@ -14,6 +14,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 FilePath* SelectFileDialogImpl::last_saved_path_ = NULL;
 FilePath* SelectFileDialogImpl::last_opened_path_ = NULL;
 

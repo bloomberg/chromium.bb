@@ -28,6 +28,8 @@
 using base::Time;
 using base::TimeDelta;
 
+using content::BrowserThread;
+
 struct TestURLInfo {
   std::string url;
   std::string title;

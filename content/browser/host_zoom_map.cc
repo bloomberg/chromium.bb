@@ -18,6 +18,7 @@
 #include "net/base/net_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
+using content::BrowserThread;
 using WebKit::WebView;
 
 HostZoomMap::HostZoomMap()

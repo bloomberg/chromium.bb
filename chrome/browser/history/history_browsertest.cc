@@ -16,6 +16,8 @@
 #include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Note: WaitableEvent is not used for synchronization between the main thread

@@ -14,6 +14,8 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 class WebApplicationTest : public TabContentsWrapperTestHarness {
  public:
   WebApplicationTest() : ui_thread_(BrowserThread::UI, &message_loop_) {

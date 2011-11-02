@@ -29,6 +29,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "views/widget/widget.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Check if the currently running instance can be updated by Google Update.

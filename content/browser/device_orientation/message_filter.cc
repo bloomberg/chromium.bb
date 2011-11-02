@@ -12,6 +12,8 @@
 #include "content/common/device_orientation_messages.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace device_orientation {
 
 MessageFilter::MessageFilter() : provider_(NULL) {

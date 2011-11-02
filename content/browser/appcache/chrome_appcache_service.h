@@ -34,8 +34,8 @@ class ResourceContext;
 // TODO(dpranke): Fix dependencies on AppCacheService so that we don't have
 // to worry about clients calling AppCacheService methods.
 class CONTENT_EXPORT ChromeAppCacheService
-    : public base::RefCountedThreadSafe<ChromeAppCacheService,
-                                        BrowserThread::DeleteOnIOThread>,
+    : public base::RefCountedThreadSafe<
+          ChromeAppCacheService, content::BrowserThread::DeleteOnIOThread>,
       NON_EXPORTED_BASE(public appcache::AppCacheService),
       NON_EXPORTED_BASE(public appcache::AppCachePolicy),
       public content::NotificationObserver {
@@ -48,9 +48,10 @@ class CONTENT_EXPORT ChromeAppCacheService
       scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy);
 
  private:
-  friend class base::RefCountedThreadSafe<ChromeAppCacheService,
-                                          BrowserThread::DeleteOnIOThread>;
-  friend class BrowserThread;
+  friend class base::RefCountedThreadSafe<
+      ChromeAppCacheService,
+      content::BrowserThread::DeleteOnIOThread>;
+  friend class content::BrowserThread;
   friend class DeleteTask<ChromeAppCacheService>;
 
   virtual ~ChromeAppCacheService();

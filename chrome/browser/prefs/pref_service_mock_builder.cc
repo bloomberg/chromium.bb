@@ -12,6 +12,8 @@
 #include "chrome/common/json_pref_store.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 PrefServiceMockBuilder::PrefServiceMockBuilder()
   : user_prefs_(new TestingPrefStore) {
 }

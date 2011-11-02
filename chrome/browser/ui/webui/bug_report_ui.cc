@@ -43,6 +43,8 @@
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 const char kScreenshotBaseUrl[] = "chrome://screenshots/";

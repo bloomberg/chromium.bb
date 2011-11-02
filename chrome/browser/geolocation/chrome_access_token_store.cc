@@ -15,6 +15,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
+using content::BrowserThread;
+
 namespace {
 // This was the default location service url for Chrome versions 14 and earlier
 // but is no longer supported.

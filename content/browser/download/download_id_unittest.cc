@@ -14,6 +14,7 @@
 #include "content/browser/download/mock_download_manager_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using content::BrowserThreadImpl;
 
 class DownloadIdTest : public testing::Test {

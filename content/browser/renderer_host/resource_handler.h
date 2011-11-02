@@ -30,7 +30,7 @@ class GURL;
 // See the implementations of this interface defined below.
 class ResourceHandler
     : public base::RefCountedThreadSafe<
-          ResourceHandler, BrowserThread::DeleteOnIOThread> {
+            ResourceHandler, content::BrowserThread::DeleteOnIOThread> {
  public:
   // Called as upload progress is made.
   virtual bool OnUploadProgress(int request_id,
@@ -87,7 +87,7 @@ class ResourceHandler
   virtual void OnDataDownloaded(int request_id, int bytes_downloaded) {}
 
  protected:
-  friend class BrowserThread;
+  friend class content::BrowserThread;
   friend class DeleteTask<ResourceHandler>;
 
   virtual ~ResourceHandler() {}

@@ -16,6 +16,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 namespace {
 // File name of the Pepper Flash plugin on different platforms.
 const FilePath::CharType kDataPath[] =

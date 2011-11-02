@@ -49,7 +49,7 @@ class PrefMemberBase : public content::NotificationObserver {
     // Takes ownership of |value|.
     virtual void UpdateValue(base::Value* value, bool is_managed) const;
 
-    void MoveToThread(BrowserThread::ID thread_id);
+    void MoveToThread(content::BrowserThread::ID thread_id);
 
     // See PrefMember<> for description.
     bool IsManaged() const {
@@ -71,7 +71,7 @@ class PrefMemberBase : public content::NotificationObserver {
 
     bool IsOnCorrectThread() const;
 
-    BrowserThread::ID thread_id_;
+    content::BrowserThread::ID thread_id_;
     mutable bool is_managed_;
 
     DISALLOW_COPY_AND_ASSIGN(Internal);
@@ -89,7 +89,7 @@ class PrefMemberBase : public content::NotificationObserver {
   // See PrefMember<> for description.
   void Destroy();
 
-  void MoveToThread(BrowserThread::ID thread_id);
+  void MoveToThread(content::BrowserThread::ID thread_id);
 
   // content::NotificationObserver
   virtual void Observe(int type,
@@ -155,7 +155,7 @@ class PrefMember : public subtle::PrefMemberBase {
   // via PostTask.
   // This method should only be used from the thread the PrefMember is currently
   // on, which is the UI thread by default.
-  void MoveToThread(BrowserThread::ID thread_id) {
+  void MoveToThread(content::BrowserThread::ID thread_id) {
     subtle::PrefMemberBase::MoveToThread(thread_id);
   }
 

@@ -22,6 +22,8 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_util.h"
 
+using content::BrowserThread;
+
 SaveFileManager::SaveFileManager(ResourceDispatcherHost* rdh)
     : next_id_(0),
       resource_dispatcher_host_(rdh) {

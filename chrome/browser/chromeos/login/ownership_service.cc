@@ -15,6 +15,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 static base::LazyInstance<OwnershipService> g_ownership_service(

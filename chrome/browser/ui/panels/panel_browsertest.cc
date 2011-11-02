@@ -30,6 +30,8 @@
 #include "content/public/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 class PanelBrowserTest : public BasePanelBrowserTest {
  public:
   PanelBrowserTest() : BasePanelBrowserTest() {

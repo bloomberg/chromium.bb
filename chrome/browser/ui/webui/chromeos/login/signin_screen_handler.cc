@@ -35,6 +35,8 @@
 #include "net/base/dnsrr_resolver.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 namespace {
 
 const char kDefaultDomain[] = "@gmail.com";

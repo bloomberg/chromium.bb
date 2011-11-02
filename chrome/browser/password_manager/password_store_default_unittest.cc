@@ -28,6 +28,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::WaitableEvent;
+using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
 using testing::ElementsAreArray;

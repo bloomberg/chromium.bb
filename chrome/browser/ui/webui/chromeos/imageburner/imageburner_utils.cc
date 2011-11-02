@@ -13,6 +13,8 @@
 #include "content/browser/download/download_types.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace imageburner {
 
 static const char kConfigFileUrl[] =

@@ -23,6 +23,8 @@
 #include "content/browser/plugin_service.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
+using content::BrowserThread;
+
 namespace helpers = extension_content_settings_helpers;
 namespace keys = extension_content_settings_api_constants;
 namespace pref_helpers = extension_preference_helpers;

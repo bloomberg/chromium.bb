@@ -18,6 +18,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
+using content::BrowserThread;
+
 namespace {
 
 class GetCookiesTask : public Task {

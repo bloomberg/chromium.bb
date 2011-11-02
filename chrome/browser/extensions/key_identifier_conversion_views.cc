@@ -12,6 +12,8 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/events/event.h"
 
+using content::BrowserThread;
+
 namespace {
 
 static const int kNumIdentifierTypes = 3;

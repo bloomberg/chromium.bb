@@ -31,6 +31,8 @@
 #include "content/public/browser/download_manager_delegate.h"
 #include "net/base/net_util.h"
 
+using content::BrowserThread;
+
 // A DownloadItem normally goes through the following states:
 //      * Created (when download starts)
 //      * Made visible to consumers (e.g. Javascript) after the

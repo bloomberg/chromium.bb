@@ -15,6 +15,8 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 TEST(UserStyleSheetWatcherTest, StyleLoad) {
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());

@@ -19,7 +19,7 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
   ClipboardMessageFilter();
 
   virtual void OverrideThreadForMessage(const IPC::Message& message,
-                                        BrowserThread::ID* thread);
+                                        content::BrowserThread::ID* thread);
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
  private:

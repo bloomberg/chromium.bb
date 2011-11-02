@@ -16,6 +16,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
+using content::BrowserThread;
+
 class Profile;
 
 namespace platform_util {

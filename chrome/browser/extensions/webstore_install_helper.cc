@@ -14,6 +14,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
+using content::BrowserThread;
+
 namespace {
 
 const char kImageDecodeError[] = "Image decode failed";

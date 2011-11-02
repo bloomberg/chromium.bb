@@ -26,6 +26,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
 
+using content::BrowserThread;
+
 namespace {
 
 const char kPropertyDevicePath[] = "devicePath";

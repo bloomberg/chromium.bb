@@ -31,6 +31,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Called on IO thread.  Adds an entry to the cache for the specified hostname.

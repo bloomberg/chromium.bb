@@ -48,6 +48,8 @@
 #include "chrome/app/breakpad_linux.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // A boolean pref of the EULA accepted flag.

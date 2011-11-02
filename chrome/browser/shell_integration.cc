@@ -16,6 +16,8 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 bool ShellIntegration::CanSetAsDefaultProtocolClient() {
   // Allowed as long as the browser can become the operating system default
   // browser.

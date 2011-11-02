@@ -40,6 +40,8 @@
 #include "chrome/browser/renderer_host/offline_resource_handler.h"
 #endif
 
+using content::BrowserThread;
+
 namespace {
 
 // Empty ResourceDispatcherHostLoginDelegate implementation used for instant.

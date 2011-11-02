@@ -18,6 +18,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 namespace {
 
 class DisableLaunchOnStartupTask : public Task {

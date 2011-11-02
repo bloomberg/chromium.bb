@@ -20,6 +20,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "policy/policy_constants.h"
 
+using content::BrowserThread;
+
 namespace policy {
 
 namespace {

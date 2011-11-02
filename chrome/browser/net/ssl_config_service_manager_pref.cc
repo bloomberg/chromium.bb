@@ -20,6 +20,8 @@
 #include "net/base/ssl_cipher_suite_names.h"
 #include "net/base/ssl_config_service.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Converts a ListValue of StringValues into a vector of strings. Any Values

@@ -15,6 +15,8 @@
 #include "printing/printed_document.h"
 #include "printing/printed_page.h"
 
+using content::BrowserThread;
+
 namespace printing {
 
 class PrintJobWorker::NotificationTask : public Task {

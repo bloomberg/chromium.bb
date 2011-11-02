@@ -19,6 +19,8 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 // TODO(lzheng): Get rid of the AddRef and Release after
 // SafeBrowsingService::Client is changed to RefCountedThreadSafe<>.
 

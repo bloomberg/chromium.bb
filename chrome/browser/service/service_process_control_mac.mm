@@ -11,6 +11,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/GTM/Foundation/GTMServiceManagement.h"
 
+using content::BrowserThread;
+
 void ServiceProcessControl::Launcher::DoRun() {
   base::mac::ScopedCFTypeRef<CFDictionaryRef> launchd_plist(
       CreateServiceProcessLaunchdPlist(cmd_line_.get(), false));

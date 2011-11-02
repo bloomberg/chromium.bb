@@ -31,6 +31,8 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 
+using content::BrowserThread;
+
 namespace {
 // Extends an omaha compatible update check url |query| string. Does
 // not mutate the string if it would be longer than |limit| chars.

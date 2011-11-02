@@ -15,6 +15,8 @@
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 
+using content::BrowserThread;
+
 SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
                                  net::URLRequest* request,
                                  ResourceType::Type resource_type)

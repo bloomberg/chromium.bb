@@ -19,6 +19,7 @@
 #include "webkit/glue/web_io_operators.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 
+using content::BrowserThread;
 using WebKit::WebSerializedScriptValue;
 
 // Enables calling WebKit::shutdown no matter where a "return" happens.

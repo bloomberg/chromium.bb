@@ -23,6 +23,8 @@
 #include "net/base/x509_certificate.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+using content::BrowserThread;
+
 @interface SFChooseIdentityPanel (SystemPrivate)
 // A system-private interface that dismisses a panel whose sheet was started by
 // beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:identities:message:

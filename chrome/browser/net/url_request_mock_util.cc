@@ -17,6 +17,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_filter.h"
 
+using content::BrowserThread;
+
 namespace chrome_browser_net {
 
 void SetUrlRequestMocksEnabled(bool enabled) {

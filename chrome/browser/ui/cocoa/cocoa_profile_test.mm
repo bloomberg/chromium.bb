@@ -8,6 +8,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/test/test_browser_thread.h"
 
+using content::BrowserThread;
+
 CocoaProfileTest::CocoaProfileTest()
     : ui_thread_(BrowserThread::UI, &message_loop_),
       profile_manager_(static_cast<TestingBrowserProcess*>(g_browser_process)),

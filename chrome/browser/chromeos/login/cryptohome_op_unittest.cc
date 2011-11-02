@@ -17,6 +17,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::Return;

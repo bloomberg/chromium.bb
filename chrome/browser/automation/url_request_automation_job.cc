@@ -25,6 +25,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using content::BrowserThread;
 
 // The list of filtered headers that are removed from requests sent via
 // StartAsync(). These must be lower case.

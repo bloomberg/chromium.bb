@@ -8,6 +8,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/file_stream.h"
 
+using content::BrowserThread;
+
 SaveFile::SaveFile(const SaveFileCreateInfo* info)
     : BaseFile(FilePath(), info->url, GURL(), 0, linked_ptr<net::FileStream>()),
       info_(info) {

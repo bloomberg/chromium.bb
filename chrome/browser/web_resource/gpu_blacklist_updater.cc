@@ -24,6 +24,8 @@
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_switches.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Delay on first fetch so we don't interfere with startup.

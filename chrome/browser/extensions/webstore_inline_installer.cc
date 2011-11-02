@@ -25,6 +25,8 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
+using content::BrowserThread;
+
 const char kManifestKey[] = "manifest";
 const char kIconUrlKey[] = "icon_url";
 const char kLocalizedNameKey[] = "localized_name";

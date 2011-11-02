@@ -16,6 +16,7 @@
 
 #include <set>
 
+using content::BrowserThread;
 using content::BrowserThreadImpl;
 
 namespace {

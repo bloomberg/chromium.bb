@@ -22,6 +22,8 @@
 #include "content/public/browser/notification_source.h"
 #include "net/base/cert_status_flags.h"
 
+using content::BrowserThread;
+
 // static
 void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
                                        net::URLRequest* request,

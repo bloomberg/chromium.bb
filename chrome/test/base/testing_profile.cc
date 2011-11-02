@@ -63,6 +63,7 @@
 #include "webkit/quota/quota_manager.h"
 
 using base::Time;
+using content::BrowserThread;
 using testing::NiceMock;
 using testing::Return;
 

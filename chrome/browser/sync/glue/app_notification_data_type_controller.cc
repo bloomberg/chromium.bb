@@ -15,6 +15,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 AppNotificationDataTypeController::AppNotificationDataTypeController(

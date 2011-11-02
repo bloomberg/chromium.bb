@@ -24,6 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/context_menu.h"
 
+using content::BrowserThread;
 using testing::_;
 using testing::AtLeast;
 using testing::Return;
