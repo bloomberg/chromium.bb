@@ -70,8 +70,8 @@ string16 PluginInstallerInfoBarDelegate::GetLinkText() const {
 bool PluginInstallerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   owner()->tab_contents()->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
-      "http://www.google.com/support/chrome/bin/answer.py?answer=95697&topic="
-      "14687")), GURL(),
+      "https://www.google.com/support/chrome/bin/answer.py?answer=142064")),
+      GURL(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK);
   return false;
