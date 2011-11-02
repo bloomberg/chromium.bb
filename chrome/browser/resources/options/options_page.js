@@ -857,7 +857,7 @@ cr.define('options', function() {
 
       var controlledByPolicy = false;
       var controlledByExtension = false;
-      var inputElements = this.pageDiv.querySelectorAll('input[controlledBy]');
+      var inputElements = this.pageDiv.querySelectorAll('input[controlled-by]');
       for (var i = 0, len = inputElements.length; i < len; i++) {
         if (inputElements[i].controlledBy == 'policy')
           controlledByPolicy = true;

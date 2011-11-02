@@ -118,9 +118,6 @@
       '-plugins.PluginsTest.testAllowPluginException',
       # crbug.com/85307
       '-plugins.PluginsTest.testKillAndReloadAllPlugins',
-      # crbug.com/102546
-      '-policy_prefs_ui.PolicyPrefsUITest.testPoliciesShowBanner',
-      '-policy_prefs_ui.PolicyPrefsUITest.testTogglePolicyTogglesBanner',
       # crbug.com/88574
       '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # crbug.com/88593
