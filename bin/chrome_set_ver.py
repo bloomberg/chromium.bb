@@ -7,8 +7,8 @@
 
 import optparse
 import os
+import re
 import sys
-import urlparse
 
 # Want to use correct version of libraries even when executed through symlink.
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -77,8 +77,11 @@ def _CreateCrosSymlink(repo_root):
 
 def _ExtractProjectFromUrl(repo_url):
   """Get the Gerrit project name from an url."""
-  project_path = urlparse.urlparse(repo_url).path.lstrip('/')
-  return os.path.splitext(project_path)[0]
+  # Example: 'ssh://gerrit-int.chromium.org:12121/my/project.git' would parse to
+  # 'my/project'.  See unit test for more examples.  For 'URL's like
+  # '../abc/efg' leave as-is to support unit tests.
+  mo = re.match(r'(?:[\w\+]+://[^/]+/)?(.*)', repo_url)
+  return os.path.splitext(mo.group(1))[0]
 
 
 def _ExtractProjectFromEntry(entry):

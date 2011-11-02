@@ -148,6 +148,25 @@ class DEPSFileTest(mox.MoxTestBase):
     self.assertRaises(TestEndedException, chrome_set_ver.main,
                       ['-d', os.path.join(self.test_base, 'test_7/DEPS.git')])
 
+  def testParseUrl(self):
+    """Test extracting of project name from url."""
+    url = 'http://git.chromium.org/external/libjingle.git'
+    self.assertEquals('external/libjingle',
+                      chrome_set_ver._ExtractProjectFromUrl(url))
+
+    url = 'ssh://gerrit-int.chromium.org:29419/chrome/data/page_cycler.git'
+    self.assertEquals('chrome/data/page_cycler',
+                      chrome_set_ver._ExtractProjectFromUrl(url))
+
+    url = 'git+ssh://gerrit-int.chromium.org:29419/chrome/data/page_cycler.git'
+    self.assertEquals('chrome/data/page_cycler',
+                      chrome_set_ver._ExtractProjectFromUrl(url))
+
+    url = '../chrome/data/page_cycler.git'
+    self.assertEquals('../chrome/data/page_cycler',
+                      chrome_set_ver._ExtractProjectFromUrl(url))
+
+
   def tearDown(self):
     os.chdir(self.old_dir)
     cros_lib.RunCommand(['rm', '-rf', self.tempdir])
