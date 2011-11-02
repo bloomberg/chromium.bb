@@ -36,6 +36,9 @@ class NTPLoginHandler : public WebUIMessageHandler,
   // for the given |profile|. |profile| must not be NULL.
   static bool ShouldShow(Profile* profile);
 
+  // Registers values (strings etc.) for the page.
+  static void GetLocalizedValues(Profile* profile, DictionaryValue* values);
+
  private:
   // User actions while on the NTP when clicking on or viewing the sync promo.
   enum NTPSignInPromoBuckets {
@@ -55,6 +58,15 @@ class NTPLoginHandler : public WebUIMessageHandler,
 
   // Records actions in SyncPromo.NTPPromo histogram.
   void RecordInHistogram(int type);
+
+  // Called from JS when the sync promo NTP bubble has been displayed. |args| is
+  // the list of arguments passed from JS and should be an empty list.
+  void HandleLoginMessageSeen(const ListValue* args);
+
+  // Called from JS when the user clicks on the advanced link the sync promo NTP
+  // bubble. Use use this to navigate to the sync settings page. |args| is the
+  // list of arguments passed from JS and should be an empty list.
+  void HandleShowAdvancedLoginUI(const ListValue* args);
 
   // Internal helper method
   void UpdateLogin();

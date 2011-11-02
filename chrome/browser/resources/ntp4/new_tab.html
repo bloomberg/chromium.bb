@@ -26,6 +26,7 @@ document.documentElement.setAttribute('touchui', true);
 </script>
 </if>
 
+<link rel="stylesheet" href="../shared/css/gradient_button.css">
 <link rel="stylesheet" href="../shared/css/bubble.css">
 <link rel="stylesheet" href="../shared/css/menu.css">
 <link rel="stylesheet" href="apps_page.css">
@@ -118,11 +119,28 @@ document.documentElement.setAttribute('touchui', true);
   <div i18n-content="ntp4_intro_message"></div>
   <a i18n-content="learn_more" target="_blank"></a>
 </div>
+
+<!-- Login status bubble -->
+<div id="login-status-bubble-contents" hidden>
+  <div id="login-status-message-container">
+    <span i18n-content="login_status_message"></span>
+    <a id="login-status-learn-more" i18n-content="login_status_learn_more"
+        i18n-values="href:login_status_url" target="_blank"></a>
+  </div>
+  <div id="login-status-action-area">
+    <div id="login-status-advanced-container">
+      <a id="login-status-advanced"
+          i18n-content="login_status_advanced" href="#"></a>
+    </div>
+    <button id="login-status-dismiss" i18n-content="login_status_dismiss"
+        class="gradient-button"></button>
+  </div>
+</div>
   
 <!-- Apps promo. -->
 <div id="apps-promo-extras-template" class="apps-promo-extras" hidden>
   <h3 class="apps-promo-heading"></h3>
-  <a class="apps-promo-link g-button-basic"><a/>
+  <a class="apps-promo-link g-button-basic"></a>
 </div>
 
 <!-- App Contents w/ Large Icon -->

@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -50,6 +51,12 @@ void NTPLoginHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui_->RegisterMessageCallback("showSyncLoginUI",
       base::Bind(&NTPLoginHandler::HandleShowSyncLoginUI,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("loginMessageSeen",
+      base::Bind(&NTPLoginHandler::HandleLoginMessageSeen,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("showAdvancedLoginUI",
+      base::Bind(&NTPLoginHandler::HandleShowAdvancedLoginUI,
                  base::Unretained(this)));
 }
 
@@ -113,10 +120,20 @@ void NTPLoginHandler::RecordInHistogram(int type) {
   }
 }
 
+void NTPLoginHandler::HandleLoginMessageSeen(const ListValue* args) {
+  Profile::FromWebUI(web_ui_)->GetPrefs()->SetBoolean(
+      prefs::kSyncPromoShowNTPBubble, false);
+}
+
+void NTPLoginHandler::HandleShowAdvancedLoginUI(const ListValue* args) {
+  Profile::FromWebUI(web_ui_)->GetProfileSyncService()->ShowLoginDialog();
+}
+
 void NTPLoginHandler::UpdateLogin() {
   Profile* profile = Profile::FromWebUI(web_ui_);
   std::string username = profile->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
+
   string16 header, sub_header;
   if (!username.empty()) {
     header = UTF8ToUTF16(username);
@@ -154,4 +171,26 @@ bool NTPLoginHandler::ShouldShow(Profile* profile) {
 
   return profile->GetOriginalProfile()->IsSyncAccessible();
 #endif
+}
+
+// static
+void NTPLoginHandler::GetLocalizedValues(Profile* profile,
+                                         DictionaryValue* values) {
+  PrefService* prefs = profile->GetPrefs();
+  if (prefs->GetString(prefs::kGoogleServicesUsername).empty() ||
+      !prefs->GetBoolean(prefs::kSyncPromoShowNTPBubble)) {
+    return;
+  }
+
+  values->SetString("login_status_message",
+      l10n_util::GetStringFUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+  values->SetString("login_status_url",
+      google_util::StringAppendGoogleLocaleParam(chrome::kSyncLearnMoreURL));
+  values->SetString("login_status_learn_more",
+      l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  values->SetString("login_status_advanced",
+      l10n_util::GetStringUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED));
+  values->SetString("login_status_dismiss",
+      l10n_util::GetStringUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_OK));
 }

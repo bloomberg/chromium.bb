@@ -6,10 +6,40 @@
 
 cr.define('cr.ui', function() {
 
+  // The arrow location specifies how the arrow and bubble are positioned in
+  // relation to the anchor node.
+  const ArrowLocation = {
+    // The arrow is positioned at the top and the start of the bubble. In left
+    // to right mode this is the top left. The entire bubble is positioned below
+    // the anchor node.
+    TOP_START : "top-start",
+    // The arrow is positioned at the top and the end of the bubble. In left to
+    // right mode this is the top right. The entire bubble is positioned below
+    // the anchor node.
+    TOP_END : "top-end",
+    // The arrow is positioned at the bottom and the start of the bubble. In
+    // left to right mode this is the bottom left. The entire bubble is
+    // positioned above the anchor node.
+    BOTTOM_START : "bottom-start",
+    // The arrow is positioned at the bottom and the end of the bubble. In
+    // left to right mode this is the bottom right. The entire bubble is
+    // positioned above the anchor node.
+    BOTTOM_END : "bottom-end"
+  };
+
+  // The horizontal distance between the tip of the arrow and the start or the
+  // end of the bubble (as specified by the arrow location).
+  const ARROW_OFFSET_X = 30;
+
+  // The vertical distance between the tip of the arrow and the bottom or top of
+  // the bubble (as specified by the arrow location). Note, if you change this
+  // then you should also change the "top" and "bottom" values for .bubble-arrow
+  // in bubble.css.
+  const ARROW_OFFSET_Y = 8;
+
   /**
    * Bubble is a free-floating informational bubble with a triangular arrow
-   * that points at a place of interest on the page. Currently the arrow is
-   * always positioned at the bottom left and points down.
+   * that points at a place of interest on the page.
    */
   var Bubble = cr.ui.define('div');
 
@@ -26,6 +56,7 @@ cr.define('cr.ui', function() {
 
       this.hidden = true;
       this.handleCloseEvent = this.hide;
+      this.deactivateToDismissDelay_ = 0;
     },
 
     /**
@@ -59,6 +90,44 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Sets the arrow location.
+     * @param {cr.ui.ArrowLocation} arrowLocation The new arrow location.
+     */
+    setArrowLocation: function(arrowLocation) {
+      this.isRight_ = arrowLocation == ArrowLocation.TOP_END ||
+                      arrowLocation == ArrowLocation.BOTTOM_END;
+      if (document.documentElement.dir == 'rtl')
+        this.isRight_ = !this.isRight_;
+      this.isTop_ = arrowLocation == ArrowLocation.TOP_START ||
+                    arrowLocation == ArrowLocation.TOP_END;
+
+      var bubbleArrow = this.querySelector('.bubble-arrow');
+      bubbleArrow.setAttribute('is-right', this.isRight_);
+      bubbleArrow.setAttribute('is-top', this.isTop_);
+
+      if (!this.hidden)
+        this.reposition();
+    },
+
+    /**
+     * Sets the delay before the user is allowed to click outside the bubble
+     * to dismiss it. Using a delay makes it less likely that the user will
+     * unintentionally dismiss the bubble.
+     * @param {int} delay The delay in miliseconds.
+     */
+    set deactivateToDismissDelay(delay) {
+      this.deactivateToDismissDelay_ = delay;
+    },
+
+    /**
+     * Hides or shows the close button.
+     * @param {Boolean} isVisible True if the close button should be visible.
+     */
+    setCloseButtonVisible: function(isVisible) {
+      this.querySelector('.bubble-close').hidden = !isVisible;
+    },
+
+    /**
      * Updates the position of the bubble. This is automatically called when
      * the window is resized, but should also be called any time the layout
      * may have changed.
@@ -66,10 +135,21 @@ cr.define('cr.ui', function() {
     reposition: function() {
       var node = this.anchorNode_;
       var clientRect = node.getBoundingClientRect();
+      var anchorMid = (clientRect.left + clientRect.right) / 2;
 
-      this.style.left = this.style.right =
-          (clientRect.left + clientRect.right) / 2 + 'px';
-      this.style.top = (clientRect.top - this.clientHeight) + 'px';
+      if (this.isRight_) {
+        this.style.left =
+            (anchorMid - this.clientWidth + ARROW_OFFSET_X) + 'px';
+      } else {
+        this.style.left = (anchorMid - ARROW_OFFSET_X) + 'px';
+      }
+
+      if (this.isTop_) {
+        this.style.top = (clientRect.bottom + ARROW_OFFSET_Y) + 'px';
+      } else {
+        this.style.top =
+            (clientRect.top - this.clientHeight - ARROW_OFFSET_Y) + 'px';
+      }
     },
 
     /**
@@ -83,6 +163,7 @@ cr.define('cr.ui', function() {
       document.body.appendChild(this);
       this.hidden = false;
       this.reposition();
+      this.showTime_ = Date.now();
 
       this.eventTracker_ = new EventTracker;
       this.eventTracker_.add(window, 'resize', this.reposition.bind(this));
@@ -114,10 +195,15 @@ cr.define('cr.ui', function() {
           break;
 
         case 'mousedown':
-          if (e.target == this.querySelector('.bubble-close'))
+          if (e.target == this.querySelector('.bubble-close')) {
             this.handleCloseEvent_();
-          else if (!this.contains(e.target))
+          } else if (!this.contains(e.target)) {
+            if (Date.now() - this.showTime_ < this.deactivateToDismissDelay_)
+              return;
             this.hide();
+          } else {
+            return;
+          }
           break;
       }
 
@@ -128,6 +214,7 @@ cr.define('cr.ui', function() {
   };
 
   return {
+    ArrowLocation : ArrowLocation,
     Bubble: Bubble
   };
 });

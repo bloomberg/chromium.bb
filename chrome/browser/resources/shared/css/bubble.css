@@ -4,10 +4,6 @@
  */
 
 .bubble {
-  /* These margins correlate to the difference between the tip of the arrow
-   * and the bottom left of the bubble. */
-  margin-left: -30px;
-  margin-top: -8px;
   position: absolute;
   /* Height is dynamic, width fixed. */
   width: 300px;
@@ -34,6 +30,11 @@
   top: 6px;
   width: 16px;
   z-index: 4;
+}
+
+html[dir='rtl'] .bubble-close {
+  left: 6px;
+  right: auto;
 }
 
 .bubble-close {
@@ -77,6 +78,19 @@
 .bubble-contents,
 .bubble-arrow {
   background: white;
+}
+
+.bubble-arrow[is-right='true'] {
+  left: auto;
+}
+
+.bubble-arrow[is-right='false'] {
+  right: auto;
+}
+
+.bubble-arrow[is-top='true'] {
+  bottom: auto;
+  top: -8px;
 }
 
 .bubble-shadow,

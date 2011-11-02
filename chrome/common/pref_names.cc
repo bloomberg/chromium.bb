@@ -1443,6 +1443,10 @@ const char kSyncPromoUserSkipped[] = "sync_promo.user_skipped";
 const char kSyncPromoShowOnFirstRunAllowed[] =
     "sync_promo.show_on_first_run_allowed";
 
+// Boolean that specifies if we should show a bubble in the new tab page.
+// The bubble is used to confirm that the user is signed into sync.
+const char kSyncPromoShowNTPBubble[] = "sync_promo.show_ntp_bubble";
+
 // Create web application shortcut dialog preferences.
 const char kWebAppCreateOnDesktop[] = "browser.web_app.create_on_desktop";
 const char kWebAppCreateInAppsMenu[] = "browser.web_app.create_in_apps_menu";

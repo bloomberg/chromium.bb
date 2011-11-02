@@ -124,6 +124,19 @@ cr.define('ntp4', function() {
   var infoBubble;
 
   /**
+   * If non-null, an bubble confirming that the user has signed into sync. It
+   * points at the login status at the top of the page.
+   * @type {!Element|undefined}
+   */
+  var loginBubble;
+
+  /**
+   * true if |loginBubble| should be shown.
+   * @type {Boolean}
+   */
+  var shouldShowLoginBubble = false;
+
+  /**
    * The time in milliseconds for most transitions.  This should match what's
    * in new_tab.css.  Unfortunately there's no better way to try to time
    * something to occur until after a transition has completed.
@@ -199,9 +212,36 @@ cr.define('ntp4', function() {
                    false);
     chrome.send('getMostVisited');
 
-    if (localStrings.getString('ntp4_intro_message')) {
+    if (localStrings.getString('login_status_message')) {
+      loginBubble = new cr.ui.Bubble;
+      loginBubble.anchorNode = $('login-container');
+      loginBubble.setArrowLocation(cr.ui.ArrowLocation.TOP_END);
+      loginBubble.deactivateToDismissDelay = 2000;
+      loginBubble.setCloseButtonVisible(false);
+
+      var bubbleContent = $('login-status-bubble-contents');
+      loginBubble.content = bubbleContent;
+      bubbleContent.hidden = false;
+
+      var learnMoreLink = loginBubble.querySelector('#login-status-learn-more');
+      learnMoreLink.onclick = loginBubble.hide.bind(loginBubble);
+
+      var advancedButton = loginBubble.querySelector('#login-status-advanced');
+      advancedButton.onclick = function() {
+        loginBubble.hide();
+        chrome.send('showAdvancedLoginUI');
+      }
+
+      var dismissButton = loginBubble.querySelector('#login-status-dismiss');
+      dismissButton.onclick = loginBubble.hide.bind(loginBubble);
+
+      // The anchor node won't be updated until updateLogin is called so don't
+      // show the bubble yet.
+      shouldShowLoginBubble = true;
+    } else if (localStrings.getString('ntp4_intro_message')) {
       infoBubble = new cr.ui.Bubble;
       infoBubble.anchorNode = mostVisitedPage.navigationDot;
+      infoBubble.setArrowLocation(cr.ui.ArrowLocation.BOTTOM_START);
       infoBubble.handleCloseEvent = function() {
         this.hide();
         chrome.send('introMessageDismissed');
@@ -216,7 +256,6 @@ cr.define('ntp4', function() {
       learnMoreLink.onclick = infoBubble.hide.bind(infoBubble);
 
       infoBubble.show();
-      chrome.send('introMessageSeen');
     }
 
     var bookmarkFeatures = localStrings.getString('bookmark_features');
@@ -932,6 +971,11 @@ cr.define('ntp4', function() {
     } else {
       $('login-container').hidden = true;
       $('card-slider-frame').classList.remove('showing-login-area');
+    }
+    if (shouldShowLoginBubble) {
+      window.setTimeout(loginBubble.show.bind(loginBubble), 0);
+      chrome.send('loginMessageSeen');
+      shouldShowLoginBubble = false;
     }
   }
 

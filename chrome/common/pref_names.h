@@ -519,6 +519,7 @@ extern const char kSyncPromoStartupCount[];
 extern const char kSyncPromoViewCount[];
 extern const char kSyncPromoUserSkipped[];
 extern const char kSyncPromoShowOnFirstRunAllowed[];
+extern const char kSyncPromoShowNTPBubble[];
 
 extern const char kWebAppCreateOnDesktop[];
 extern const char kWebAppCreateInAppsMenu[];

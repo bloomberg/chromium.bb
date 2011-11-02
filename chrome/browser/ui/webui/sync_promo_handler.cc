@@ -35,6 +35,8 @@ SyncPromoHandler::~SyncPromoHandler() {
 void SyncPromoHandler::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kSyncPromoViewCount, 0,
       PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kSyncPromoShowNTPBubble, false,
+      PrefService::UNSYNCABLE_PREF);
 }
 
 WebUIMessageHandler* SyncPromoHandler::Attach(WebUI* web_ui) {
@@ -126,6 +128,12 @@ void SyncPromoHandler::ShowSetupUI() {
 
 void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
   CloseSyncSetup();
+
+  // If the user has signed in then set the pref to show them NTP bubble
+  // confirming that they're signed in.
+  std::string username = prefs_->GetString(prefs::kGoogleServicesUsername);
+  if (!username.empty())
+    prefs_->SetBoolean(prefs::kSyncPromoShowNTPBubble, true);
 
   GURL url = SyncPromoUI::GetNextPageURLForSyncPromoURL(
       web_ui_->tab_contents()->GetURL());

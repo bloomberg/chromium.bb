@@ -175,7 +175,7 @@ html[dir='rtl'] #attribution {
   background: transparent none;
   border: none;
   cursor: pointer;
-  font-size: 84%;
+  font-size: 13px;
   /* Leave room for the scrollbar. */
   margin-right: 13px;
   margin-top: 5px;
@@ -195,6 +195,33 @@ html[dir='rtl'] #login-container {
 
 .link-span {
   text-decoration: underline;
+}
+
+#login-status-bubble-contents {
+  font-size: 13px;
+}
+
+#login-status-message-container {
+  margin-bottom: 13px;
+}
+
+#login-status-learn-more {
+  display: inline-block;
+}
+
+#login-status-action-area {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+  display: -webkit-box;
+}
+
+#login-status-advanced-container {
+  -webkit-box-flex: 1;
+}
+
+#login-status-dismiss {
+  min-width: 6em;
 }
 
 /* Trash. *********************************************************************/

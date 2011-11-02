@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/browser/ui/webui/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
@@ -377,6 +378,7 @@ void NTPResourceCache::CreateNewTabHTML() {
 #endif
 
   NewTabPageHandler::GetLocalizedValues(profile_, &localized_strings);
+  NTPLoginHandler::GetLocalizedValues(profile_, &localized_strings);
 
   SyncSetupHandler::GetStaticLocalizedValues(&localized_strings);
 
