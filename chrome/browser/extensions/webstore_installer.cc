@@ -4,17 +4,27 @@
 
 #include "chrome/browser/extensions/webstore_installer.h"
 
+#include "base/bind.h"
+#include "base/command_line.h"
+#include "base/file_util.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "content/browser/download/download_file.h"
+#include "content/browser/download/download_manager.h"
+#include "content/browser/download/download_types.h"
 #include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
@@ -30,6 +40,13 @@ const char kDefaultInstallSource[] = "";
 
 GURL GetWebstoreInstallURL(
     const std::string& extension_id, const std::string& install_source) {
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kAppsGalleryDownloadURL)) {
+    std::string download_url =
+        cmd_line->GetSwitchValueASCII(switches::kAppsGalleryDownloadURL);
+    return GURL(base::StringPrintf(download_url.c_str(),
+                                   extension_id.c_str()));
+  }
   std::vector<std::string> params;
   params.push_back("id=" + extension_id);
   if (!install_source.empty()) {
@@ -44,6 +61,20 @@ GURL GetWebstoreInstallURL(
   DCHECK(url.is_valid());
 
   return url;
+}
+
+// Must be executed on the FILE thread.
+void GetDownloadFilePath(const std::string& id,
+                         const base::Callback<void(FilePath)>& callback) {
+  FilePath file =
+      download_util::GetDefaultDownloadDirectory().AppendASCII(id + ".crx");
+
+  int uniquifier = DownloadFile::GetUniquePathNumber(file);
+  if (uniquifier > 0)
+    DownloadFile::AppendNumberToPath(&file, uniquifier);
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, file));
 }
 
 }  // namespace
@@ -71,6 +102,7 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile,
 WebstoreInstaller::~WebstoreInstaller() {}
 
 void WebstoreInstaller::Start() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   AddRef();  // Balanced in ReportSuccess and ReportFailure.
 
   if (!Extension::IdIsValid(id_)) {
@@ -78,22 +110,11 @@ void WebstoreInstaller::Start() {
     return;
   }
 
-  // TODO(mihaip): For inline installs, we pretend like the referrer is the
-  // gallery, even though this could be an inline install, in order to pass the
-  // checks in ExtensionService::IsDownloadFromGallery. We should instead pass
-  // the real referrer, track if this is an inline install in the whitelist
-  // entry and look that up when checking that this is a valid download.
-  GURL referrer = controller_->GetActiveEntry()->url();
-  if (flags_ & FLAG_INLINE_INSTALL)
-    referrer = GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + id_);
-
-  // The download url for the given extension is contained in |download_url_|.
-  // We will navigate the current tab to this url to start the download. The
-  // download system will then pass the crx to the CrxInstaller.
-  controller_->LoadURL(download_url_,
-                       referrer,
-                       content::PAGE_TRANSITION_LINK,
-                       std::string());
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&GetDownloadFilePath, id_,
+                 base::Bind(&WebstoreInstaller::StartDownload,
+                            base::Unretained(this))));
 
 }
 
@@ -126,6 +147,28 @@ void WebstoreInstaller::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void WebstoreInstaller::StartDownload(FilePath file) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // TODO(mihaip): For inline installs, we pretend like the referrer is the
+  // gallery, even though this could be an inline install, in order to pass the
+  // checks in ExtensionService::IsDownloadFromGallery. We should instead pass
+  // the real referrer, track if this is an inline install in the whitelist
+  // entry and look that up when checking that this is a valid download.
+  GURL referrer = controller_->GetActiveEntry()->url();
+  if (flags_ & FLAG_INLINE_INSTALL)
+    referrer = GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + id_);
+
+  DownloadSaveInfo save_info;
+  save_info.file_path = file;
+
+  // The download url for the given extension is contained in |download_url_|.
+  // We will navigate the current tab to this url to start the download. The
+  // download system will then pass the crx to the CrxInstaller.
+  profile_->GetDownloadManager()->DownloadUrlToFile(
+      download_url_, referrer, "", save_info, controller_->tab_contents());
 }
 
 void WebstoreInstaller::ReportFailure(const std::string& error) {

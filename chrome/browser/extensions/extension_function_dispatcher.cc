@@ -359,6 +359,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SetStoreLoginFunction>();
   RegisterFunction<BeginInstallWithManifestFunction>();
   RegisterFunction<CompleteInstallFunction>();
+  RegisterFunction<SilentlyInstallFunction>();
 
   // WebNavigation.
   RegisterFunction<GetFrameFunction>();

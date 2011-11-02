@@ -116,6 +116,11 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
     use_app_installed_bubble_ = use_bubble;
   }
 
+  // Whether or not to show the default UI after completing the installation.
+  void set_skip_post_install_ui(bool is_bundle) {
+    skip_post_install_ui_ = is_bundle;
+  }
+
   // This is called by the installer to verify whether the installation should
   // proceed. This is declared virtual for testing.
   //
@@ -214,6 +219,9 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // Whether to show an installed bubble on app install, or use the default
   // action of opening a new tab page.
   bool use_app_installed_bubble_;
+
+  // Whether or not to show the default UI after completing the installation.
+  bool skip_post_install_ui_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_H_

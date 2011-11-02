@@ -10,20 +10,27 @@ var appId = "iladmdjkfniedhfhcfoefgojhgaiaccc";
 
 var assertEq = chrome.test.assertEq;
 var assertNoLastError = chrome.test.assertNoLastError;
+var assertTrue = chrome.test.assertTrue;
 var callbackFail = chrome.test.callbackFail;
 var callbackPass = chrome.test.callbackPass;
 var listenOnce = chrome.test.listenOnce;
 var runTests = chrome.test.runTests;
 var succeed = chrome.test.succeed;
 
+// Calls |callback| with true/false indicating whether an item with the |id|
+// is installed.
+function checkItemInstalled(id, callback) {
+  chrome.management.getAll(function(extensions) {
+    callback(extensions.some(function(ext) {
+      return ext.id == id;
+    }));
+  });
+}
+
 // Calls |callback| with true/false indicating whether an item with an id of
 // extensionId is installed.
 function checkInstalled(callback) {
-  chrome.management.getAll(function(extensions) {
-    callback(extensions.some(function(ext) {
-      return ext.id == extensionId;
-    }));
-  });
+  checkItemInstalled(extensionId, callback);
 }
 
 var cachedIcon = null;

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
@@ -125,6 +129,47 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
   }
 };
 
+class ExtensionWebstorePrivateBundleTest
+    : public ExtensionWebstorePrivateApiTest {
+ public:
+  void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    ExtensionWebstorePrivateApiTest::SetUpInProcessBrowserTestFixture();
+
+    // The test server needs to have already started, so setup the switch here
+    // rather than in SetUpCommandLine.
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kAppsGalleryDownloadURL,
+        GetTestServerURL("bundle/%s.crx").spec());
+
+    PackCRX("begfmnajjkbjdgmffnjaojchoncnmngg");
+    PackCRX("bmfoocgfinpmkmlbjhcbofejhkhlbchk");
+    PackCRX("mpneghmdnmaolkljkipbhaienajcflfe");
+  }
+
+  void TearDownInProcessBrowserTestFixture() OVERRIDE {
+    ExtensionWebstorePrivateApiTest::TearDownInProcessBrowserTestFixture();
+    for (size_t i = 0; i < test_crx_.size(); ++i)
+      ASSERT_TRUE(file_util::Delete(test_crx_[i], false));
+  }
+
+ private:
+  void PackCRX(const std::string& id) {
+    FilePath data_path = test_data_dir_.AppendASCII("webstore_private/bundle");
+    FilePath dir_path = data_path.AppendASCII(id);
+    FilePath pem_path = data_path.AppendASCII(id + ".pem");
+    FilePath crx_path = data_path.AppendASCII(id + ".crx");
+    FilePath destination = PackExtensionWithOptions(
+        dir_path, crx_path, pem_path, FilePath());
+
+    ASSERT_FALSE(destination.empty());
+    ASSERT_EQ(destination, crx_path);
+
+    test_crx_.push_back(destination);
+  }
+
+  std::vector<FilePath> test_crx_;
+};
+
 // Test cases where the user accepts the install confirmation dialog.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
   ASSERT_TRUE(RunInstallTest("accepted.html", "extension.crx"));
@@ -177,4 +222,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
                        IconUrl) {
   ASSERT_TRUE(RunInstallTest("icon_url.html", "extension.crx"));
+}
+
+// Tests using silentlyInstall to install extensions.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest, SilentlyInstall) {
+  WebstorePrivateApi::SetTrustTestIDsForTesting(true);
+  ASSERT_TRUE(RunPageTest(GetTestServerURL("silently_install.html").spec()));
 }

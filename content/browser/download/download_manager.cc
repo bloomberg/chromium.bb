@@ -344,7 +344,6 @@ void DownloadManager::ContinueDownloadWithPath(DownloadItem* download,
   DCHECK(ContainsKey(active_downloads_, download_id));
 
   // Make sure the initial file name is set only once.
-  DCHECK(download->full_path().empty());
   download->OnPathDetermined(chosen_file);
 
   VLOG(20) << __FUNCTION__ << "()"

@@ -27,6 +27,10 @@ class WebstorePrivateApi {
   // Allows you to override the WebstoreInstaller delegate for testing.
   static void SetWebstoreInstallerDelegateForTesting(
       WebstoreInstaller::Delegate* delegate);
+
+  // If |allow| is true, then the extension IDs used by the SilentlyInstall
+  // apitest will be trusted.
+  static void SetTrustTestIDsForTesting(bool allow);
 };
 
 class BeginInstallWithManifestFunction
@@ -107,6 +111,37 @@ class BeginInstallWithManifestFunction
 class CompleteInstallFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.completeInstall");
+};
+
+class SilentlyInstallFunction : public AsyncExtensionFunction,
+                                public WebstoreInstallHelper::Delegate,
+                                public WebstoreInstaller::Delegate {
+ public:
+  SilentlyInstallFunction();
+
+  // WebstoreInstallHelper::Delegate implementation.
+  virtual void OnWebstoreParseSuccess(
+      const std::string& id,
+      const SkBitmap& icon,
+      base::DictionaryValue* parsed_manifest) OVERRIDE;
+  virtual void OnWebstoreParseFailure(
+      const std::string& id,
+      InstallHelperResultCode result_code,
+      const std::string& error_message) OVERRIDE;
+
+  // WebstoreInstaller::Delegate implementation.
+  virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
+  virtual void OnExtensionInstallFailure(const std::string& id,
+                                         const std::string& error) OVERRIDE;
+
+ protected:
+  virtual ~SilentlyInstallFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  std::string id_;
+  std::string manifest_;
+  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.silentlyInstall");
 };
 
 class GetBrowserLoginFunction : public SyncExtensionFunction {

@@ -1,0 +1,8 @@
+{
+  "name": "Bundle App 2",
+	"version": "1",
+	"app": {
+    "urls": [ "http://www.testapp2.com" ],
+    "launch": { "web_url": "http://www.testapp2.com" }
+  }
+}

@@ -43,6 +43,15 @@ class ExtensionBrowserTest
   // Return an empty FilePath if there were errors.
   FilePath PackExtension(const FilePath& dir_path);
 
+  // Pack the extension in |dir_path| into a crx file at |crx_path|, using the
+  // key |pem_path|. If |pem_path| does not exist, create a new key at
+  // |pem_out_path|.
+  // Return the path to the crx file, or an empty FilePath if there were errors.
+  FilePath PackExtensionWithOptions(const FilePath& dir_path,
+                                    const FilePath& crx_path,
+                                    const FilePath& pem_path,
+                                    const FilePath& pem_out_path);
+
   // |expected_change| indicates how many extensions should be installed (or
   // disabled, if negative).
   // 1 means you expect a new install, 0 means you expect an upgrade, -1 means

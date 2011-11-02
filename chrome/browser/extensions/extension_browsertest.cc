@@ -170,16 +170,29 @@ FilePath ExtensionBrowserTest::PackExtension(const FilePath& dir_path) {
     return FilePath();
   }
 
+  return PackExtensionWithOptions(dir_path, crx_path, FilePath(), pem_path);
+}
+
+FilePath ExtensionBrowserTest::PackExtensionWithOptions(
+    const FilePath& dir_path,
+    const FilePath& crx_path,
+    const FilePath& pem_path,
+    const FilePath& pem_out_path) {
   if (!file_util::PathExists(dir_path)) {
     ADD_FAILURE() << "Extension dir not found: " << dir_path.value();
+    return FilePath();
+  }
+
+  if (!file_util::PathExists(pem_path) && pem_out_path.empty()) {
+    ADD_FAILURE() << "Must specify a PEM file or PEM output path";
     return FilePath();
   }
 
   scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
   if (!creator->Run(dir_path,
                     crx_path,
-                    FilePath(),  // no existing pem, use empty path
-                    pem_path)) {
+                    pem_path,
+                    pem_out_path)) {
     ADD_FAILURE() << "ExtensionCreator::Run() failed: "
                   << creator->error_message();
     return FilePath();

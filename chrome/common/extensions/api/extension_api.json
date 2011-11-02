@@ -7904,11 +7904,41 @@
           {
             "name": "expected_id",
             "type": "string",
-            "description": "The id of the extension to be installled. This should match a previous call to beginInstallWithManifest3."
+            "description": "The id of the extension to be installed. This should match a previous call to beginInstallWithManifest3."
           },
           {
             "name": "callback",
             "type": "function",
+            "optional": "true",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "silentlyInstall",
+        "description": "Silently installs the specified extension, which must already be whitelisted in Chrome.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The id of the extension to be installled.",
+                "minLength": 32,
+                "maxLength": 32
+              },
+              "manifest": {
+                "type": "string",
+                "description": "A string with the contents of the extension's manifest.json file. During the install process, the browser will check that the downloaded extension's manifest matches what was passed in here.",
+                "minLength": 1
+              }
+            }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called when the extension installation has completed. chrome.extension.lastError may be set if the extension install failed.",
             "optional": "true",
             "parameters": []
           }

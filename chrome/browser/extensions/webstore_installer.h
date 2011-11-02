@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
+class FilePath;
 class NavigationController;
 class Profile;
 
@@ -60,6 +61,9 @@ class WebstoreInstaller : public content::NotificationObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  // Starts downloading the extension to |file_path|.
+  void StartDownload(FilePath file_path);
+
   // Reports an install |error| to the delegate for the given extension if this
   // managed its installation. This also removes the associated PendingInstall.
   void ReportFailure(const std::string& error);

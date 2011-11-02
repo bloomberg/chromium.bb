@@ -75,6 +75,10 @@ const char kAppsGalleryReturnTokens[]       = "apps-gallery-return-tokens";
 // The URL to use for the gallery link in the app launcher.
 const char kAppsGalleryURL[]                = "apps-gallery-url";
 
+// The URL that the webstore APIs download extensions from.
+// Note: the URL must contain one '%s' for the extension ID.
+const char kAppsGalleryDownloadURL[]        = "apps-gallery-download-url";
+
 // The update url used by gallery/webstore extensions.
 const char kAppsGalleryUpdateURL[]          = "apps-gallery-update-url";
 

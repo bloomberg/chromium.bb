@@ -198,7 +198,8 @@ ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
       delegate_(NULL),
       prompt_type_(NUM_PROMPT_TYPES),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
-      use_app_installed_bubble_(false) {
+      use_app_installed_bubble_(false),
+      skip_post_install_ui_(false) {
   // Remember the current theme in case the user presses undo.
   if (profile_) {
     const Extension* previous_theme =
@@ -255,6 +256,9 @@ void ExtensionInstallUI::ConfirmPermissions(
 
 void ExtensionInstallUI::OnInstallSuccess(const Extension* extension,
                                           SkBitmap* icon) {
+  if (skip_post_install_ui_)
+    return;
+
   extension_ = extension;
   SetIcon(icon);
 

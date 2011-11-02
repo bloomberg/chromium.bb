@@ -75,6 +75,9 @@ class CrxInstaller
     // Whether to use a bubble notification when an app is installed, instead of
     // the default behavior of transitioning to the new tab page.
     bool use_app_installed_bubble;
+
+    // Whether to skip the post install UI like the extension installed bubble.
+    bool skip_post_install_ui;
   };
 
   // Exempt the next extension install with |id| from displaying a confirmation
