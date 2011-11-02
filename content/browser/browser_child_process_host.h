@@ -8,6 +8,7 @@
 
 #include <list>
 
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/common/child_process_host.h"
@@ -126,6 +127,8 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   scoped_ptr<ChildProcessLauncher> child_process_;
 #if defined(OS_WIN)
   base::WaitableEventWatcher child_watcher_;
+#else
+  base::WeakPtrFactory<BrowserChildProcessHost> task_factory_;
 #endif
   bool disconnect_was_alive_;
 };

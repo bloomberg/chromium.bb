@@ -26,7 +26,9 @@
 
 #if defined(OS_WIN)
 #include "base/synchronization/waitable_event.h"
-#endif  // OS_WIN
+#else
+#include "base/bind.h"
+#endif
 
 using content::BrowserThread;
 
@@ -62,6 +64,9 @@ BrowserChildProcessHost::BrowserChildProcessHost(
     ChildProcessInfo::ProcessType type)
     : ChildProcessInfo(type, -1),
       ALLOW_THIS_IN_INITIALIZER_LIST(client_(this)),
+#if !defined(OS_WIN)
+      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
+#endif
       disconnect_was_alive_(false) {
   AddFilter(new TraceMessageFilter);
 
@@ -135,12 +140,13 @@ void BrowserChildProcessHost::OnChannelConnected(int32 peer_pid) {
   Notify(content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED);
 }
 
-// The ChildProcessHost default implementation calls OnChildDied() always
-// but at this layer and below we need to have the final child process exit
-// code to properly bucket crashes vs kills. At least on Windows we can do
-// this if we wait until the process handle is signaled, however this means
-// that this function can be called twice: once from the actual channel error
-// and once from OnWaitableEventSignaled().
+// The ChildProcessHost default implementation calls OnChildDied() always but at
+// this layer and below we need to have the final child process exit code to
+// properly bucket crashes vs kills. On Windows we can do this if we wait until
+// the process handle is signaled; on the rest of the platforms, we schedule a
+// delayed task to wait for an exit code. However, this means that this method
+// may be called twice: once from the actual channel error and once from
+// OnWaitableEventSignaled() or the delayed task.
 void BrowserChildProcessHost::OnChildDisconnected() {
   DCHECK(handle() != base::kNullProcessHandle);
   int exit_code;
@@ -172,14 +178,29 @@ void BrowserChildProcessHost::OnChildDisconnected() {
       break;
     }
     case base::TERMINATION_STATUS_STILL_RUNNING: {
-      // exit code not yet available.
+      // Exit code not yet available. Ensure we don't wait forever for an exit
+      // code.
+      if (disconnect_was_alive_) {
+        UMA_HISTOGRAM_ENUMERATION("ChildProcess.DisconnectedAlive",
+                                  this->type(), MAX_PROCESS);
+        break;
+      }
       disconnect_was_alive_ = true;
 #if defined(OS_WIN)
       child_watcher_.StartWatching(new base::WaitableEvent(handle()), this);
-      return;
 #else
-      break;
+      // On non-Windows platforms, give the child process some time to die after
+      // disconnecting the channel so that the exit code and termination status
+      // become available. This is best effort -- if the process doesn't die
+      // within the time limit, this object gets destroyed.
+      const int kExitCodeWaitMs = 250;
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&BrowserChildProcessHost::OnChildDisconnected,
+                     task_factory_.GetWeakPtr()),
+          kExitCodeWaitMs);
 #endif
+      return;
     }
 
     default:
