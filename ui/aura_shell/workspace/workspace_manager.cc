@@ -13,6 +13,7 @@
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/workspace/workspace.h"
+#include "ui/aura_shell/workspace/workspace_observer.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/screen.h"
@@ -146,22 +147,25 @@ void WorkspaceManager::RotateWindows(aura::Window* source,
     workspaces_[source_ws_index]->RotateWindows(source, target);
   } else {
     aura::Window* insert = source;
+    aura::Window* target_to_insert = target;
     if (source_ws_index < target_ws_index) {
       for (int i = target_ws_index; i >= source_ws_index; --i) {
         insert = workspaces_[i]->ShiftWindows(
-            insert, source, target, Workspace::SHIFT_TO_LEFT);
+            insert, source, target_to_insert, Workspace::SHIFT_TO_LEFT);
         // |target| can only be in the 1st workspace.
-        target = NULL;
+        target_to_insert = NULL;
       }
     } else {
       for (int i = target_ws_index; i <= source_ws_index; ++i) {
         insert = workspaces_[i]->ShiftWindows(
-            insert, source, target, Workspace::SHIFT_TO_RIGHT);
+            insert, source, target_to_insert, Workspace::SHIFT_TO_RIGHT);
         // |target| can only be in the 1st workspace.
-        target = NULL;
+        target_to_insert = NULL;
       }
     }
   }
+  FOR_EACH_OBSERVER(WorkspaceObserver, observers_,
+                    WindowMoved(this, source, target));
 }
 
 void WorkspaceManager::SetWorkspaceSize(const gfx::Size& workspace_size) {
@@ -169,6 +173,14 @@ void WorkspaceManager::SetWorkspaceSize(const gfx::Size& workspace_size) {
     return;
   workspace_size_ = workspace_size;
   LayoutWorkspaces();
+}
+
+void WorkspaceManager::AddObserver(WorkspaceObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void WorkspaceManager::RemoveObserver(WorkspaceObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -187,19 +199,32 @@ void WorkspaceManager::RemoveWorkspace(Workspace* workspace) {
                                      workspaces_.end(),
                                      workspace);
   DCHECK(i != workspaces_.end());
-  if (workspace == active_workspace_)
+  Workspace* old = NULL;
+
+  if (workspace == active_workspace_) {
+    old = active_workspace_;
     active_workspace_ = NULL;
+  }
   workspaces_.erase(i);
   LayoutWorkspaces();
+
+  if (old) {
+    FOR_EACH_OBSERVER(WorkspaceObserver, observers_,
+                      ActiveWorkspaceChanged(this, old));
+  }
 }
 
 void WorkspaceManager::SetActiveWorkspace(Workspace* workspace) {
   DCHECK(std::find(workspaces_.begin(), workspaces_.end(),
                    workspace) != workspaces_.end());
+  Workspace* old = active_workspace_;
   active_workspace_ = workspace;
 
   is_overview_ = false;
   UpdateViewport();
+
+  FOR_EACH_OBSERVER(WorkspaceObserver, observers_,
+                    ActiveWorkspaceChanged(this, old));
 }
 
 gfx::Rect WorkspaceManager::GetWorkAreaBounds(

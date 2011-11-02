@@ -180,6 +180,7 @@ void Workspace::Activate() {
 }
 
 void Workspace::Layout(aura::Window* ignore, aura::Window* no_animation) {
+  workspace_manager_->set_layout_in_progress(true);
   gfx::Rect work_area = workspace_manager_->GetWorkAreaBounds(bounds_);
   int total_width = GetTotalWindowsWidth();
   if (total_width < work_area.width()) {
@@ -210,6 +211,7 @@ void Workspace::Layout(aura::Window* ignore, aura::Window* no_animation) {
                    no_animation != windows_[1]);
     }
   }
+  workspace_manager_->set_layout_in_progress(false);
 }
 
 bool Workspace::ContainsFullscreenWindow() const {

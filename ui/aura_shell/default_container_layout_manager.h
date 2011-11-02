@@ -31,8 +31,7 @@ class WorkspaceManager;
 class AURA_SHELL_EXPORT DefaultContainerLayoutManager
     : public aura::LayoutManager {
  public:
-  DefaultContainerLayoutManager(aura::Window* owner,
-                                WorkspaceManager* workspace_manager);
+  explicit DefaultContainerLayoutManager(WorkspaceManager* workspace_manager);
   virtual ~DefaultContainerLayoutManager();
 
   // Returns the workspace manager for this container.
@@ -55,13 +54,6 @@ class AURA_SHELL_EXPORT DefaultContainerLayoutManager
   // Invoked when a user finished resizing window.
   void EndResize(aura::Window* drag, aura::MouseEvent* evnet);
 
-  // If true, |SetChildBounds| does not modify the requested bounds.
-  // Use in situations where you want to circumvent what
-  // SetChildBounds() would normally do.
-  void set_ignore_calculate_bounds(bool value) {
-    ignore_calculate_bounds_ = value;
-  }
-
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
   virtual void OnWindowAdded(aura::Window* child) OVERRIDE;
@@ -71,18 +63,12 @@ class AURA_SHELL_EXPORT DefaultContainerLayoutManager
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
  private:
-  aura::Window* owner_;
-
+  // Owned by WorkspaceController.
   WorkspaceManager* workspace_manager_;
 
   // A window that are currently moved or resized. Used to put
   // different constraints on drag window.
   aura::Window* drag_window_;
-
-  // A flag to control layout behavior. This is set to true while
-  // workspace manager is laying out children and LayoutManager
-  // ignores bounds check.
-  bool ignore_calculate_bounds_;
 
   scoped_ptr<ShowStateController> show_state_controller_;
 

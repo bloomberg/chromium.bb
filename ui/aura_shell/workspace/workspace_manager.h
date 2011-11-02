@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
 #include "ui/aura_shell/aura_shell_export.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/size.h"
@@ -25,12 +26,17 @@ class Rect;
 namespace aura_shell {
 namespace internal {
 class Workspace;
+class WorkspaceObserver;
 
 // WorkspaceManager manages multiple workspaces in the desktop.
 class AURA_SHELL_EXPORT WorkspaceManager {
  public:
   explicit WorkspaceManager(aura::Window* viewport);
   virtual ~WorkspaceManager();
+
+  // Returns the viewport window this WorkspaceManager layouts
+  // workspaces on.
+  aura::Window* viewport() { return viewport_; }
 
   // Create new workspace. Workspace objects are managed by
   // this WorkspaceManager. Deleting workspace will automatically
@@ -62,6 +68,19 @@ class AURA_SHELL_EXPORT WorkspaceManager {
   // Sets the size of a single workspace (all workspaces have the same size).
   void SetWorkspaceSize(const gfx::Size& workspace_size);
 
+  // Adds/Removes workspace observer.
+  void AddObserver(WorkspaceObserver* observer);
+  void RemoveObserver(WorkspaceObserver* observer);
+
+  // Returns true if this workspace manager is laying out windows.
+  // When true, LayoutManager must give windows their requested bounds.
+  bool layout_in_progress() const { return layout_in_progress_; }
+
+  // Sets the |layout_in_progress_| flag.
+  void set_layout_in_progress(bool layout_in_progress) {
+    layout_in_progress_ = layout_in_progress;
+  }
+
  private:
   friend class Workspace;
 
@@ -92,6 +111,11 @@ class AURA_SHELL_EXPORT WorkspaceManager {
 
   // True if the workspace manager is in overview mode.
   bool is_overview_;
+
+  // True if this layout manager is laying out windows.
+  bool layout_in_progress_;
+
+  ObserverList<WorkspaceObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceManager);
 };

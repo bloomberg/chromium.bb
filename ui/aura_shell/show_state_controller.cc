@@ -6,7 +6,6 @@
 
 #include "ui/aura/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/default_container_layout_manager.h"
 #include "ui/aura_shell/property_util.h"
 #include "ui/aura_shell/workspace/workspace.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"
@@ -16,8 +15,8 @@ namespace aura_shell {
 namespace internal {
 
 ShowStateController::ShowStateController(
-    DefaultContainerLayoutManager* layout_manager)
-    : layout_manager_(layout_manager) {
+    WorkspaceManager* workspace_manager)
+    : workspace_manager_(workspace_manager) {
 }
 
 ShowStateController::~ShowStateController() {
@@ -41,9 +40,7 @@ void ShowStateController::OnPropertyChanged(aura::Window* window,
     SetRestoreBounds(window, window->GetTargetBounds());
   }
 
-  layout_manager_->set_ignore_calculate_bounds(true);
-  layout_manager_->workspace_manager()->FindBy(window)->Layout(NULL, window);
-  layout_manager_->set_ignore_calculate_bounds(false);
+  workspace_manager_->FindBy(window)->Layout(NULL, window);
 }
 
 }  // namespace internal

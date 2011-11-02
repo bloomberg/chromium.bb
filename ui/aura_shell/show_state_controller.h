@@ -17,13 +17,13 @@ class Window;
 namespace aura_shell {
 namespace internal {
 
-class DefaultContainerLayoutManager;
+class WorkspaceManager;
 
 // ShowStateController controls the window's bounds when
 // the window's show state property has changed.
 class ShowStateController : public aura::WindowObserver {
 public:
-  explicit ShowStateController(DefaultContainerLayoutManager* layout_manager);
+  explicit ShowStateController(WorkspaceManager* layout_manager);
   virtual ~ShowStateController();
 
   // Invoked when window proparty has changed.
@@ -32,8 +32,8 @@ public:
                                  void* old) OVERRIDE;
 
  private:
-  // LayoutManager that downs this ShowStateController.
-  DefaultContainerLayoutManager* layout_manager_;
+  // |workspace_maanger_| is owned by |WorkspaceController|.
+  WorkspaceManager* workspace_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ShowStateController);
 };

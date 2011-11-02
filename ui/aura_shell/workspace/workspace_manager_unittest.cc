@@ -10,9 +10,66 @@
 #include "ui/aura/window.h"
 #include "ui/aura_shell/workspace/workspace.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"
+#include "ui/aura_shell/workspace/workspace_observer.h"
 #include "ui/base/ui_base_types.h"
 
+namespace {
+using aura_shell::internal::Workspace;
+using aura_shell::internal::WorkspaceManager;
 using aura::Window;
+
+class TestWorkspaceObserver : public aura_shell::internal::WorkspaceObserver {
+ public:
+  explicit TestWorkspaceObserver(WorkspaceManager* manager)
+      : manager_(manager),
+        move_source_(NULL),
+        move_target_(NULL),
+        active_workspace_(NULL),
+        old_active_workspace_(NULL) {
+    manager_->AddObserver(this);
+  }
+
+  virtual ~TestWorkspaceObserver() {
+    manager_->RemoveObserver(this);
+  }
+
+  Window* move_source() { return move_source_; }
+  Window* move_target() { return move_target_; }
+  Workspace* active_workspace() { return active_workspace_; }
+  Workspace* old_active_workspace() { return old_active_workspace_; }
+
+  // Resets the observer states.
+  void reset() {
+    active_workspace_ = NULL;
+    old_active_workspace_ = NULL;
+    move_source_ = NULL;
+    move_target_ = NULL;
+  }
+
+  // Overridden from WorkspaceObserver:
+  virtual void WindowMoved(WorkspaceManager* manager,
+                           Window* source,
+                           Window* target) {
+    move_source_ = source;
+    move_target_ = target;
+  }
+  virtual void ActiveWorkspaceChanged(WorkspaceManager* manager,
+                                      Workspace* old) {
+    old_active_workspace_ = old;
+    active_workspace_ = manager->GetActiveWorkspace();
+  }
+
+ private:
+  WorkspaceManager* manager_;
+  Window* move_source_;
+  Window* move_target_;
+  Workspace* active_workspace_;
+  Workspace* old_active_workspace_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWorkspaceObserver);
+};
+
+}  // namespace
 
 namespace aura_shell {
 namespace internal {
@@ -173,6 +230,7 @@ TEST_F(WorkspaceManagerTest, DISABLED_Overview) {
 }
 
 TEST_F(WorkspaceManagerTest, WorkspaceManagerActivate) {
+  TestWorkspaceObserver observer(manager_.get());
   Workspace* ws1 = manager_->CreateWorkspace();
   Workspace* ws2 = manager_->CreateWorkspace();
   EXPECT_EQ(NULL, manager_->GetActiveWorkspace());
@@ -180,14 +238,22 @@ TEST_F(WorkspaceManagerTest, WorkspaceManagerActivate) {
   // Activate ws1.
   ws1->Activate();
   EXPECT_EQ(ws1, manager_->GetActiveWorkspace());
+  EXPECT_EQ(NULL, observer.old_active_workspace());
+  EXPECT_EQ(ws1, observer.active_workspace());
+  observer.reset();
 
   // Activate ws2.
   ws2->Activate();
   EXPECT_EQ(ws2, manager_->GetActiveWorkspace());
+  EXPECT_EQ(ws1, observer.old_active_workspace());
+  EXPECT_EQ(ws2, observer.active_workspace());
+  observer.reset();
 
   // Deleting active workspace sets active workspace to NULL.
   delete ws2;
   EXPECT_EQ(NULL, manager_->GetActiveWorkspace());
+  EXPECT_EQ(ws2, observer.old_active_workspace());
+  EXPECT_EQ(NULL, observer.active_workspace());
   manager_.reset();
 }
 
@@ -250,6 +316,7 @@ TEST_F(WorkspaceManagerTest, FindRotateWindow) {
 }
 
 TEST_F(WorkspaceManagerTest, RotateWindows) {
+  TestWorkspaceObserver observer(manager_.get());
   Workspace* ws1 = manager_->CreateWorkspace();
   Workspace* ws2 = manager_->CreateWorkspace();
 
@@ -267,6 +334,8 @@ TEST_F(WorkspaceManagerTest, RotateWindows) {
 
   // Rotate right most to left most.
   manager_->RotateWindows(w22.get(), w11.get());
+  EXPECT_EQ(w22.get(), observer.move_source());
+  EXPECT_EQ(w11.get(), observer.move_target());
 
   EXPECT_EQ(0, ws1->GetIndexOf(w22.get()));
   EXPECT_EQ(0, ws2->GetIndexOf(w11.get()));
@@ -277,24 +346,32 @@ TEST_F(WorkspaceManagerTest, RotateWindows) {
   EXPECT_EQ(0, ws1->GetIndexOf(w11.get()));
   EXPECT_EQ(0, ws2->GetIndexOf(w21.get()));
   EXPECT_EQ(1, ws2->GetIndexOf(w22.get()));
+  EXPECT_EQ(w22.get(), observer.move_source());
+  EXPECT_EQ(w21.get(), observer.move_target());
 
   // Rotate left most to 1st element in 2nd workspace.
   manager_->RotateWindows(w11.get(), w21.get());
   EXPECT_EQ(0, ws1->GetIndexOf(w21.get()));
   EXPECT_EQ(0, ws2->GetIndexOf(w11.get()));
   EXPECT_EQ(1, ws2->GetIndexOf(w22.get()));
+  EXPECT_EQ(w11.get(), observer.move_source());
+  EXPECT_EQ(w21.get(), observer.move_target());
 
   // Rotate middle to right most.
   manager_->RotateWindows(w11.get(), w22.get());
   EXPECT_EQ(0, ws1->GetIndexOf(w21.get()));
   EXPECT_EQ(0, ws2->GetIndexOf(w22.get()));
   EXPECT_EQ(1, ws2->GetIndexOf(w11.get()));
+  EXPECT_EQ(w11.get(), observer.move_source());
+  EXPECT_EQ(w22.get(), observer.move_target());
 
   // Rotate middle to left most.
   manager_->RotateWindows(w22.get(), w21.get());
   EXPECT_EQ(0, ws1->GetIndexOf(w22.get()));
   EXPECT_EQ(0, ws2->GetIndexOf(w21.get()));
   EXPECT_EQ(1, ws2->GetIndexOf(w11.get()));
+  EXPECT_EQ(w22.get(), observer.move_source());
+  EXPECT_EQ(w21.get(), observer.move_target());
 
   // Reset now before windows are destroyed.
   manager_.reset();

@@ -76,6 +76,7 @@
         'workspace/workspace_controller.h',
         'workspace/workspace_manager.cc',
         'workspace/workspace_manager.h',
+        'workspace/workspace_observer.h',
       ],
     },
     {

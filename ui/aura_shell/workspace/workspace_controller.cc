@@ -13,11 +13,8 @@
 namespace aura_shell {
 namespace internal {
 
-WorkspaceController::WorkspaceController(aura::Window* window)
-    : workspace_manager_(new WorkspaceManager(window)),
-      layout_manager_(new internal::DefaultContainerLayoutManager(
-          window, workspace_manager_.get())) {
-  window->SetLayoutManager(layout_manager_);
+WorkspaceController::WorkspaceController(aura::Window* viewport)
+    : workspace_manager_(new WorkspaceManager(viewport)) {
   aura::Desktop::GetInstance()->AddObserver(this);
 }
 
@@ -30,9 +27,7 @@ void WorkspaceController::ToggleOverview() {
 }
 
 void WorkspaceController::OnDesktopResized(const gfx::Size& new_size) {
-  layout_manager_->set_ignore_calculate_bounds(true);
   workspace_manager_->SetWorkspaceSize(new_size);
-  layout_manager_->set_ignore_calculate_bounds(false);
 }
 
 void WorkspaceController::OnActiveWindowChanged(aura::Window* active) {

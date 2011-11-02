@@ -28,13 +28,14 @@ class WorkspaceManager;
 // events From DesktopObserver translating them to WorkspaceManager.
 class AURA_SHELL_EXPORT WorkspaceController : public aura::DesktopObserver {
  public:
-  explicit WorkspaceController(aura::Window* window);
+  explicit WorkspaceController(aura::Window* workspace_viewport);
   virtual ~WorkspaceController();
 
   void ToggleOverview();
 
-  internal::DefaultContainerLayoutManager* layout_manager() {
-    return layout_manager_;
+  // Returns the workspace manager that this controler owns.
+  WorkspaceManager* workspace_manager() {
+    return workspace_manager_.get();
   }
 
   // DesktopObserver overrides:
@@ -43,9 +44,6 @@ class AURA_SHELL_EXPORT WorkspaceController : public aura::DesktopObserver {
 
  private:
   scoped_ptr<WorkspaceManager> workspace_manager_;
-
-  // This is owned by the window it's installed on.
-  internal::DefaultContainerLayoutManager* layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceController);
 };

@@ -11,6 +11,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
 #include "ui/aura_shell/default_container_event_filter.h"
+#include "ui/aura_shell/default_container_layout_manager.h"
 #include "ui/aura_shell/desktop_layout_manager.h"
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/shell_delegate.h"
@@ -127,6 +128,9 @@ void Shell::Init() {
 
   workspace_controller_.reset(
       new internal::WorkspaceController(toplevel_container));
+  toplevel_container->SetLayoutManager(
+      new internal::DefaultContainerLayoutManager(
+          workspace_controller_->workspace_manager()));
 
   // Force a layout.
   desktop_layout->OnWindowResized();

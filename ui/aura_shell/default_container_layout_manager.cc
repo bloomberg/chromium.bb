@@ -4,7 +4,6 @@
 
 #include "ui/aura_shell/default_container_layout_manager.h"
 
-#include "base/auto_reset.h"
 #include "ui/aura/aura_constants.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
@@ -27,13 +26,10 @@ namespace internal {
 // DefaultContainerLayoutManager, public:
 
 DefaultContainerLayoutManager::DefaultContainerLayoutManager(
-    aura::Window* owner,
     WorkspaceManager* workspace_manager)
-    : owner_(owner),
-      workspace_manager_(workspace_manager),
+    : workspace_manager_(workspace_manager),
       drag_window_(NULL),
-      ignore_calculate_bounds_(false),
-      show_state_controller_(new ShowStateController(this)) {
+      show_state_controller_(new ShowStateController(workspace_manager)) {
 }
 
 DefaultContainerLayoutManager::~DefaultContainerLayoutManager() {}
@@ -53,8 +49,6 @@ void DefaultContainerLayoutManager::CancelMoveOrResize(
 void DefaultContainerLayoutManager::ProcessMove(
     aura::Window* drag,
     aura::MouseEvent* event) {
-  AutoReset<bool> reset(&ignore_calculate_bounds_, true);
-
   // TODO(oshima): Just zooming out may (and will) move/swap window without
   // a users's intent. We probably should scroll viewport, but that may not
   // be enough. See crbug.com/101826 for more discussion.
@@ -63,7 +57,7 @@ void DefaultContainerLayoutManager::ProcessMove(
   gfx::Point point_in_owner = event->location();
   aura::Window::ConvertPointToWindow(
       drag,
-      owner_,
+      workspace_manager_->viewport(),
       &point_in_owner);
   // TODO(oshima): We should support simply moving to another
   // workspace when the destination workspace has enough room to accomodate.
@@ -77,7 +71,6 @@ void DefaultContainerLayoutManager::EndMove(
     aura::Window* drag,
     aura::MouseEvent* evnet) {
   // TODO(oshima): finish moving window between workspaces.
-  AutoReset<bool> reset(&ignore_calculate_bounds_, true);
   drag_window_ = NULL;
 
   Workspace* workspace = workspace_manager_->FindBy(drag);
@@ -89,7 +82,6 @@ void DefaultContainerLayoutManager::EndMove(
 void DefaultContainerLayoutManager::EndResize(
     aura::Window* drag,
     aura::MouseEvent* evnet) {
-  AutoReset<bool> reset(&ignore_calculate_bounds_, true);
   drag_window_ = NULL;
   Workspace* workspace = workspace_manager_->GetActiveWorkspace();
   if (workspace)
@@ -113,8 +105,6 @@ void DefaultContainerLayoutManager::OnWindowAdded(aura::Window* child) {
 
   child->AddObserver(show_state_controller_.get());
 
-  AutoReset<bool> reset(&ignore_calculate_bounds_, true);
-
   Workspace* workspace = workspace_manager_->GetActiveWorkspace();
   if (workspace) {
     aura::Window* active = aura::Desktop::GetInstance()->active_window();
@@ -131,7 +121,6 @@ void DefaultContainerLayoutManager::OnWindowAdded(aura::Window* child) {
 }
 
 void DefaultContainerLayoutManager::OnWillRemoveWindow(aura::Window* child) {
-  AutoReset<bool> reset(&ignore_calculate_bounds_, true);
   child->RemoveObserver(show_state_controller_.get());
   ClearRestoreBounds(child);
 
@@ -156,7 +145,7 @@ void DefaultContainerLayoutManager::SetChildBounds(
 
   // First, calculate the adjusted bounds.
   if (child->type() != aura::WINDOW_TYPE_NORMAL ||
-      ignore_calculate_bounds_ ||
+      workspace_manager_->layout_in_progress() ||
       child->transient_parent()) {
     // Use the requested bounds as is.
   } else if (drag_window_) {
@@ -181,7 +170,7 @@ void DefaultContainerLayoutManager::SetChildBounds(
       show_state == ui::SHOW_STATE_FULLSCREEN) {
     // If the request is not from workspace manager,
     // remember the requested bounds.
-    if (!ignore_calculate_bounds_)
+    if (!workspace_manager_->layout_in_progress())
       SetRestoreBounds(child, adjusted_bounds);
 
     Workspace* workspace = workspace_manager_->FindBy(child);

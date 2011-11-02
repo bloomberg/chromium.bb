@@ -28,7 +28,7 @@ using aura_shell::internal::DefaultContainerLayoutManager;
 
 class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
  public:
-  DefaultContainerLayoutManagerTest() {}
+  DefaultContainerLayoutManagerTest() : layout_manager_(NULL) {}
   virtual ~DefaultContainerLayoutManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
@@ -37,7 +37,10 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
     container_.reset(
         CreateTestWindow(gfx::Rect(0, 0, 500, 400), desktop));
     workspace_controller_.reset(
-        new internal::WorkspaceController(container_.get()));
+        new aura_shell::internal::WorkspaceController(container_.get()));
+    layout_manager_ = new DefaultContainerLayoutManager(
+        workspace_controller_->workspace_manager());
+    container_->SetLayoutManager(layout_manager_);
 
     desktop->SetHostSize(gfx::Size(500, 400));
   }
@@ -64,17 +67,19 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
   aura::Window* container() { return container_.get(); }
 
   DefaultContainerLayoutManager* default_container_layout_manager() {
-    return workspace_controller_->layout_manager();
+    return layout_manager_;
   }
 
  protected:
   aura_shell::internal::WorkspaceManager* workspace_manager() {
-    return workspace_controller_->layout_manager()->workspace_manager();
+    return workspace_controller_->workspace_manager();
   }
 
  private:
   scoped_ptr<aura::Window> container_;
   scoped_ptr<aura_shell::internal::WorkspaceController> workspace_controller_;
+  // LayoutManager is owned by |container|.
+  aura_shell::internal::DefaultContainerLayoutManager* layout_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultContainerLayoutManagerTest);
