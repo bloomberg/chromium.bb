@@ -160,6 +160,7 @@ bool TestServer::WaitToStart() {
   if (!ReadData(read_fd.Get(), write_fd.Get(), sizeof(server_data_len),
                 reinterpret_cast<uint8*>(&server_data_len))) {
     LOG(ERROR) << "Could not read server_data_len";
+    DebugBreakProcess(process_handle_);
     return false;
   }
   std::string server_data(server_data_len, '\0');
