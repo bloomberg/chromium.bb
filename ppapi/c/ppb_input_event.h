@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_input_event.idl modified Wed Sep 21 12:32:06 2011. */
+/* From ppb_input_event.idl modified Wed Nov  2 09:59:40 2011. */
 
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
@@ -500,9 +500,9 @@ struct PPB_MouseInputEvent {
    * @return The change in position of the mouse, relative to the previous
    * position.
    *
-   * TODO(yzshen): This feature hasn't been supported yet. The returned value is
-   * always (0, 0) for system-generated mouse events (which are passed through
-   * the <code>HandleInputEvent</code>).
+   * TODO(yzshen): This feature hasn't been fully supported yet. For now,
+   * movement information is provided only if the mouse is locked. If the mouse
+   * is not locked, the returned value is (0, 0).
    */
   struct PP_Point (*GetMovement)(PP_Resource mouse_event);
 };
