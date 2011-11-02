@@ -74,6 +74,10 @@ void WebIntentPickerCocoa::SetDefaultServiceIcon(size_t index) {
 void WebIntentPickerCocoa::Close() {
 }
 
+TabContents* WebIntentPickerCocoa::SetInlineDisposition(const GURL& url) {
+  return NULL;
+}
+
 WebIntentPickerCocoa::~WebIntentPickerCocoa() {
 }
 

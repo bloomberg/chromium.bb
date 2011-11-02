@@ -202,23 +202,33 @@ class InvokingTabObserver : public TabContentsObserver {
 void WebIntentPickerController::OnServiceChosen(size_t index) {
   DCHECK(index < urls_.size());
 
-  // TODO(gbillock): This really only handles the 'window' disposition in a
-  // quite prototype way. We need to flesh out what happens to the picker during
-  // the lifetime of the service url context, and that may mean we need to pass
-  // more information into the injector to find the picker again and close it.
-  browser::NavigateParams params(NULL, urls_[index],
-                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.disposition = NEW_FOREGROUND_TAB;
-  params.profile = wrapper_->profile();
-  browser::Navigate(&params);
+  bool inline_disposition = service_data_[index].disposition ==
+      webkit_glue::WebIntentServiceData::DISPOSITION_INLINE;
+  TabContents* new_tab_contents = NULL;
+  if (inline_disposition)
+    new_tab_contents = picker_->SetInlineDisposition(urls_[index]);
 
-  IntentInjector* injector = new IntentInjector(
-      params.target_contents->tab_contents());
+  if (new_tab_contents == NULL) {
+    // TODO(gbillock): This really only handles the 'window' disposition in a
+    // quite prototype way. We need to flesh out what happens to the picker
+    // during the lifetime of the service url context, and that may mean we
+    // need to pass more information into the injector to find the picker again
+    // and close it. Also: the above conditional construction is just because
+    // there isn't Mac/Win support yet. When that's there, it'll be an else.
+    browser::NavigateParams params(NULL, urls_[index],
+                                   content::PAGE_TRANSITION_AUTO_BOOKMARK);
+    params.disposition = NEW_FOREGROUND_TAB;
+    params.profile = wrapper_->profile();
+    browser::Navigate(&params);
+    new_tab_contents = params.target_contents->tab_contents();
+
+    ClosePicker();
+  }
+
+  IntentInjector* injector = new IntentInjector(new_tab_contents);
   injector->SetIntent(new InvokingTabObserver(wrapper_, injector, routing_id_),
                       intent_,
                       intent_id_);
-
-  ClosePicker();
 }
 
 void WebIntentPickerController::OnCancelled() {
@@ -234,6 +244,7 @@ void WebIntentPickerController::OnWebIntentDataAvailable(
   for (size_t i = 0; i < services.size(); ++i) {
     urls_.push_back(services[i].service_url);
   }
+  service_data_ = services;
 
   // Tell the picker to initialize N urls to the default favicon
   picker_->SetServiceURLs(urls_);

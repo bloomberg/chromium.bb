@@ -107,6 +107,9 @@ class WebIntentPickerController : public content::NotificationObserver,
   // A list of URLs to display in the UI.
   std::vector<GURL> urls_;
 
+  // A list of the service data on display in the UI.
+  std::vector<webkit_glue::WebIntentServiceData> service_data_;
+
   // A count of the outstanding asynchronous calls.
   int pending_async_count_;
 

@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
@@ -22,6 +23,8 @@ class Browser;
 class CustomDrawButton;
 class GURL;
 class TabContents;
+class TabContentsContainerGtk;
+class TabContentsWrapper;
 class WebIntentController;
 class WebIntentPickerDelegate;
 
@@ -39,6 +42,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
   virtual void SetServiceIcon(size_t index, const SkBitmap& icon) OVERRIDE;
   virtual void SetDefaultServiceIcon(size_t index) OVERRIDE;
   virtual void Close() OVERRIDE;
+  virtual TabContents* SetInlineDisposition(const GURL& url) OVERRIDE;
 
   // BubbleDelegateGtk implementation.
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
@@ -48,6 +52,21 @@ class WebIntentPickerGtk : public WebIntentPicker,
   CHROMEGTK_CALLBACK_0(WebIntentPickerGtk, void, OnServiceButtonClick);
   // Callback when close button is clicked.
   CHROMEGTK_CALLBACK_0(WebIntentPickerGtk, void, OnCloseButtonClick);
+
+  // This class is the policy delegate for the rendered page in the intents
+  // inline disposition bubble.
+  // TODO(gbillock): Move up to WebIntentPicker?
+  class InlineDispositionDelegate : public TabContentsDelegate {
+   public:
+    InlineDispositionDelegate();
+    virtual ~InlineDispositionDelegate();
+    virtual TabContents* OpenURLFromTab(TabContents* source,
+                                        const OpenURLParams& params) OVERRIDE;
+    virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
+    virtual bool ShouldAddNavigationToHistory(
+      const history::HistoryAddPageArgs& add_page_args,
+      content::NavigationType navigation_type) OVERRIDE;
+  };
 
   // Initialize the contents of the bubble. After this call, contents_ will be
   // non-NULL.
@@ -76,6 +95,18 @@ class WebIntentPickerGtk : public WebIntentPicker,
 
   // A weak pointer to the bubble widget.
   BubbleGtk* bubble_;
+
+  // The browser we're in.
+  Browser* browser_;
+
+  // TabContentsDelegate for the inline disposition dialog.
+  scoped_ptr<InlineDispositionDelegate> inline_disposition_delegate_;
+
+  // Container for the HTML in the inline disposition case.
+  scoped_ptr<TabContentsWrapper> inline_disposition_tab_contents_;
+
+  // Widget for displaying the HTML in the inline disposition case.
+  scoped_ptr<TabContentsContainerGtk> tab_contents_container_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerGtk);
 };

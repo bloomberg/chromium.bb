@@ -111,6 +111,7 @@ class WebIntentPickerView : public views::View,
   virtual void SetServiceIcon(size_t index, const SkBitmap& icon) OVERRIDE;
   virtual void SetDefaultServiceIcon(size_t index) OVERRIDE;
   virtual void Close() OVERRIDE;
+  virtual TabContents* SetInlineDisposition(const GURL& url) OVERRIDE;
 
  private:
   // Create and initialize all of the views displayed in the bubble.
@@ -235,6 +236,11 @@ void WebIntentPickerView::SetDefaultServiceIcon(size_t index) {
 
 void WebIntentPickerView::Close() {
   bubble_->Close();
+}
+
+TabContents* WebIntentPickerView::SetInlineDisposition(const GURL& url) {
+  // TODO(gbillock): add support here.
+  return NULL;
 }
 
 void WebIntentPickerView::InitContents() {

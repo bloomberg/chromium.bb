@@ -12,6 +12,7 @@
 class Browser;
 class GURL;
 class SkBitmap;
+class TabContents;
 class TabContentsWrapper;
 class WebIntentPickerDelegate;
 
@@ -37,6 +38,9 @@ class WebIntentPicker {
 
   // Hides the UI for this picker, and destroys its UI.
   virtual void Close() = 0;
+
+  // Show the inline disposition UI for the given URL.
+  virtual TabContents* SetInlineDisposition(const GURL& url) = 0;
 
  protected:
   virtual ~WebIntentPicker() {}

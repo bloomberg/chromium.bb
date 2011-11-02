@@ -83,6 +83,8 @@ class WebIntentPickerMock : public WebIntentPicker {
   MOCK_METHOD1(SetDefaultServiceIcon, void(size_t index));
   MOCK_METHOD0(Show, void(void));
   MOCK_METHOD0(Close, void(void));
+
+  TabContents* SetInlineDisposition(const GURL& url) { return NULL; }
 };
 
 class WebIntentPickerFactoryMock : public WebIntentPickerFactory {
