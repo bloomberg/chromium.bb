@@ -231,26 +231,22 @@ void PluginList::RegisterInternalPlugin(const webkit::WebPluginInfo& info) {
     default_plugin_enabled_ = true;
 }
 
-void PluginList::RegisterInternalPlugin(const FilePath& filename,
-                                        const std::string& name,
-                                        const std::string& description,
-                                        const std::string& mime_type_str,
-                                        const PluginEntryPoints& entry_points) {
-  InternalPlugin plugin;
-  plugin.info.path = filename;
-  plugin.info.name = ASCIIToUTF16(name);
-  plugin.info.version = ASCIIToUTF16("1");
-  plugin.info.desc = ASCIIToUTF16(description);
-
-  webkit::WebPluginMimeType mime_type;
-  mime_type.mime_type = mime_type_str;
-  plugin.info.mime_types.push_back(mime_type);
-
-  plugin.entry_points = entry_points;
+void PluginList::RegisterInternalPlugin(const webkit::WebPluginInfo& info,
+                                        const PluginEntryPoints& entry_points,
+                                        bool add_at_beginning) {
+  InternalPlugin plugin = { info, entry_points };
 
   base::AutoLock lock(lock_);
-  internal_plugins_.push_back(plugin);
-  if (filename.value() == kDefaultPluginLibraryName)
+
+  if (add_at_beginning) {
+    // Newer registrations go earlier in the list so they can override the MIME
+    // types of older registrations.
+    internal_plugins_.insert(internal_plugins_.begin(), plugin);
+  } else {
+    internal_plugins_.push_back(plugin);
+  }
+
+  if (info.path.value() == kDefaultPluginLibraryName)
     default_plugin_enabled_ = true;
 }
 

@@ -85,16 +85,13 @@ class PluginList {
   // be loaded using PluginList::LoadPlugin().
   void RegisterInternalPlugin(const webkit::WebPluginInfo& info);
 
-  // This second version is for "plugins" that have been compiled
-  // directly into the binary -- callers must provide the metadata and
-  // the entry points.
-  // TODO(evan): we use file names here, but they're not really files, they're
-  // actually a string that uniquely identifies the plugin.
-  void RegisterInternalPlugin(const FilePath& filename,
-                              const std::string& name,
-                              const std::string& description,
-                              const std::string& mime_type,
-                              const PluginEntryPoints& entry_points);
+  // This second version is for "plugins" that have been compiled directly into
+  // the binary -- callers must provide the plugin information and the entry
+  // points. If |add_at_beginning| is true the plugin will be added earlier in
+  // the list so that it can override the MIME types of older registrations.
+  void RegisterInternalPlugin(const webkit::WebPluginInfo& info,
+                              const PluginEntryPoints& entry_points,
+                              bool add_at_beginning);
 
   // Removes a specified internal plugin from the list. The search will match
   // on the path from the version info previously registered.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "chrome/common/default_plugin.h"
-
 #include "chrome/default_plugin/plugin_main.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
@@ -23,12 +23,21 @@ void RegisterInternalDefaultPlugin() {
     default_plugin::NP_Shutdown
   };
 
+  webkit::WebPluginInfo info;
+  info.path = FilePath(webkit::npapi::kDefaultPluginLibraryName);
+  info.name = ASCIIToUTF16("Default Plug-in");
+  info.version = ASCIIToUTF16("1");
+  info.desc = ASCIIToUTF16("Provides functionality for installing third-party "
+                           "plug-ins");
+
+  webkit::WebPluginMimeType mimeType;
+  mimeType.mime_type = "*";
+  info.mime_types.push_back(mimeType);
+
   webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(
-      FilePath(webkit::npapi::kDefaultPluginLibraryName),
-      "Default Plug-in",
-      "Provides functionality for installing third-party plug-ins",
-      "*",
-      entry_points);
+      info,
+      entry_points,
+      false);
 #endif
 }
 
