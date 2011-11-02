@@ -23,6 +23,7 @@ namespace {
 
 const int kRouteId = 4;
 const int kCallbackId = 5;
+const char* kFakeExtensionId = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
 class TestDelegate : public AppNotifyChannelSetup::Delegate,
                      public base::SupportsWeakPtr<TestDelegate> {
@@ -144,6 +145,7 @@ class AppNotifyChannelSetupTest : public testing::Test {
 
     scoped_refptr<AppNotifyChannelSetup > setup =
         new AppNotifyChannelSetup(&profile_,
+                                  kFakeExtensionId,
                                   "1234",
                                   page_url,
                                   kRouteId,
@@ -169,6 +171,7 @@ TEST_F(AppNotifyChannelSetupTest, DidNotLogInToSync) {
   ui_->SetSyncSetupResult(false);
   scoped_refptr<AppNotifyChannelSetup > setup =
       new AppNotifyChannelSetup(&profile_,
+                                kFakeExtensionId,
                                 "1234",
                                 url,
                                 kRouteId,

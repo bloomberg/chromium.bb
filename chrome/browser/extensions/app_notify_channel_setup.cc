@@ -19,6 +19,7 @@ using content::BrowserThread;
 
 AppNotifyChannelSetup::AppNotifyChannelSetup(
     Profile* profile,
+    const std::string& extension_id,
     const std::string& client_id,
     const GURL& requestor_url,
     int return_route_id,
@@ -26,6 +27,7 @@ AppNotifyChannelSetup::AppNotifyChannelSetup(
     AppNotifyChannelUI* ui,
     base::WeakPtr<AppNotifyChannelSetup::Delegate> delegate)
     : profile_(profile),
+      extension_id_(extension_id),
       client_id_(client_id),
       requestor_url_(requestor_url),
       return_route_id_(return_route_id),

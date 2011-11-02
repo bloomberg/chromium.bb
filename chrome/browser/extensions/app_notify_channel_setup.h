@@ -34,6 +34,7 @@ class AppNotifyChannelSetup
 
   // Ownership of |ui| is transferred to this object.
   AppNotifyChannelSetup(Profile* profile,
+                        const std::string& extension_id,
                         const std::string& client_id,
                         const GURL& requestor_url,
                         int return_route_id,
@@ -61,6 +62,7 @@ class AppNotifyChannelSetup
   void ReportResult(const std::string& channel_id, const std::string& error);
 
   Profile* profile_;
+  std::string extension_id_;
   std::string client_id_;
   GURL requestor_url_;
   int return_route_id_;

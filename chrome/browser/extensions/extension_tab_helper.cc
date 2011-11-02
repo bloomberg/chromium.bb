@@ -192,6 +192,7 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
 
   scoped_refptr<AppNotifyChannelSetup> channel_setup(
       new AppNotifyChannelSetup(profile,
+                                extension->id(),
                                 client_id,
                                 requestor_url,
                                 return_route_id,
