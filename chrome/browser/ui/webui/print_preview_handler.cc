@@ -202,6 +202,8 @@ std::string* PrintPreviewHandler::last_used_printer_cloud_print_data_ = NULL;
 std::string* PrintPreviewHandler::last_used_printer_name_ = NULL;
 printing::ColorModels PrintPreviewHandler::last_used_color_model_ =
     printing::UNKNOWN_COLOR_MODEL;
+printing::MarginType PrintPreviewHandler::last_used_margins_type_ =
+    printing::DEFAULT_MARGINS;
 
 PrintPreviewHandler::PrintPreviewHandler()
     : print_backend_(printing::PrintBackend::CreateInstance(NULL)),
@@ -391,6 +393,12 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   if (!settings->GetInteger(printing::kSettingColor, &color_model))
     color_model = printing::GRAY;
   last_used_color_model_ = static_cast<printing::ColorModels>(color_model);
+
+  // Storing last used margin settings.
+  int margin_type;
+  if (!settings->GetInteger(printing::kSettingMarginsType, &margin_type))
+    margin_type = printing::DEFAULT_MARGINS;
+  last_used_margins_type_ = static_cast<printing::MarginType>(margin_type);
 
   bool print_to_pdf = false;
   settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
@@ -650,9 +658,12 @@ void PrintPreviewHandler::SendPrinterCapabilities(
 void PrintPreviewHandler::SendDefaultPrinter(
     const StringValue& default_printer,
     const StringValue& cloud_print_data) {
+  base::FundamentalValue margins_type(
+      PrintPreviewHandler::last_used_margins_type_);
   web_ui_->CallJavascriptFunction("setDefaultPrinter",
                                   default_printer,
-                                  cloud_print_data);
+                                  cloud_print_data,
+                                  margins_type);
 }
 
 void PrintPreviewHandler::SetupPrinterList(const ListValue& printers) {

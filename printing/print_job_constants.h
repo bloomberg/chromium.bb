@@ -118,8 +118,8 @@ enum ColorModels {
 enum MarginType {
   DEFAULT_MARGINS,  // Default varies depending on headers being enabled or not
   NO_MARGINS,
-  CUSTOM_MARGINS,
   PRINTABLE_AREA_MARGINS,
+  CUSTOM_MARGINS,
 };
 
 }  // namespace printing

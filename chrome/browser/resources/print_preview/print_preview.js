@@ -576,9 +576,13 @@ function fileSelectionCompleted() {
  * Set the default printer. If there is one, generate a print preview.
  * @param {string} printer Name of the default printer. Empty if none.
  * @param {string} cloudPrintData Cloud print related data to restore if
- *                 the default printer is a cloud printer.
+ *     the default printer is a cloud printer.
+ * @param {number} lastUsedMarginsType Indicates the last used margins type
+ *     (matches enum MarginType in printing/print_job_constants.h.
  */
-function setDefaultPrinter(printer_name, cloudPrintData) {
+function setDefaultPrinter(printer_name, cloudPrintData, lastUsedMarginsType) {
+  // Setting the margin selection to the last used one.
+  marginSettings.setLastUsedMarginsType(lastUsedMarginsType);
   // Add a placeholder value so the printer list looks valid.
   addDestinationListOption('', '', true, true, true);
   if (printer_name) {

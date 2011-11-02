@@ -151,13 +151,14 @@ cr.define('print_preview', function() {
   MarginSettings.POINTS_PER_INCH = 72;
   // Minimum allowed distance in points between top-bottom, left-right margins.
   MarginSettings.MINIMUM_MARGINS_DISTANCE = 36;
-  // Margin list values.
+  // Margin list values. Matches enum MarginType in
+  // printing/print_job_constants.h.
   MarginSettings.MARGINS_VALUE_DEFAULT = 0;
   MarginSettings.MARGINS_VALUE_NO_MARGINS = 1;
-  MarginSettings.MARGINS_VALUE_CUSTOM = 2;
-  MarginSettings.MARGINS_VALUE_MINIMUM = 3;
+  MarginSettings.MARGINS_VALUE_MINIMUM = 2;
+  MarginSettings.MARGINS_VALUE_CUSTOM = 3;
   // Default Margins option index.
-  MarginSettings.DEFAULT_MARGINS_OPTION_INDEX = 0;
+  MarginSettings.OPTION_INDEX_DEFAULT = 0;
   // Group name corresponding to the top margin.
   MarginSettings.TOP_GROUP = 'top';
   //  Group name corresponding to the left margin.
@@ -210,6 +211,16 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Sets the current margin selection to |lastUsedMarginsType|.
+     * @param {number} lastUsedMarginsType An integer value identifying a margin
+     *     type according to MarginType enum in printing/print_job_constants.h.
+     */
+    setLastUsedMarginsType: function(lastUsedMarginsType) {
+      this.marginList_.selectedIndex =
+          this.getMarginOptionIndexByValue_(lastUsedMarginsType);
+    },
+
+    /**
      * @return {number} The total width of the plugin in points.
      */
     get totalWidthInPoints() {
@@ -223,6 +234,23 @@ cr.define('print_preview', function() {
     get totalHeightInPoints() {
       var pageInformation = previewArea.pageLocationNormalized;
       return this.pageHeight_ / pageInformation.height;
+    },
+
+    /**
+     * Maps margin type values to indices within |this.marginList_|.
+     * @param {number} marginTypeValue An integer value identifying a margin
+     *     type according to MarginType enum in printing/print_job_constants.h.
+     * @return {number} The index within |this.marginList_| that corrsponds to
+     *     |marginTypeValue|.
+     * @private
+     */
+    getMarginOptionIndexByValue_: function(marginTypeValue) {
+      var options = this.marginList_.options;
+      for (var i = 0; i < options.length; i++) {
+        if (options[i].getAttribute('value') == marginTypeValue)
+          return i;
+      }
+      return MarginSettings.OPTION_INDEX_DEFAULT;
     },
 
     /**
@@ -596,7 +624,7 @@ cr.define('print_preview', function() {
     resetMarginsIfNeeded: function() {
       if (this.isCustomMarginsSelected()) {
         this.marginList_.options[
-            MarginSettings.DEFAULT_MARGINS_OPTION_INDEX].selected = true;
+            MarginSettings.OPTION_INDEX_DEFAULT].selected = true;
         this.removeCustomMarginEventListeners_();
         this.forceDisplayingMarginLines_ = true;
         this.lastSelectedOption_ = MarginSettings.MARGINS_VALUE_DEFAULT;
