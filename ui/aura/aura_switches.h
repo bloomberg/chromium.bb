@@ -6,10 +6,12 @@
 #define UI_AURA_AURA_SWITCHES_H_
 #pragma once
 
+#include "ui/aura/aura_export.h"
+
 namespace switches {
 
-extern const char kAuraHostWindowSize[];
-extern const char kAuraWindows[];
+AURA_EXPORT extern const char kAuraHostWindowSize[];
+AURA_EXPORT extern const char kAuraWindows[];
 
 }  // namespace switches
 
