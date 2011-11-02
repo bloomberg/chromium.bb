@@ -9,7 +9,7 @@
   ],
   ######################################################################
   'conditions': [
-    ['disable_untrusted==0 and target_arch!="arm"', {
+    ['target_arch!="arm"', {
       'targets' : [
         {
           'target_name': 'prep_toolchain',
@@ -116,7 +116,7 @@
         },
       ],
     }],
-    ['disable_untrusted==0 and target_arch=="x64"', {
+    ['target_arch=="x64"', {
       'targets' : [
         {
           'target_name': 'crt_platform_64',
@@ -139,7 +139,7 @@
         }
       ],
     }],
-    ['disable_untrusted==0 and target_arch=="ia32"', {
+    ['target_arch=="ia32"', {
       'targets' : [
         {
           'target_name': 'crt_platform_32',

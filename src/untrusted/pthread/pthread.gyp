@@ -18,7 +18,8 @@
     ],
   },
   'conditions': [
-    ['disable_untrusted==0 and target_arch!="arm"', {
+    # NOTE: We do not support untrusted gyp build on arm yet.
+    ['target_arch!="arm"', {
       'targets' : [
         {
           'target_name': 'pthread_lib',

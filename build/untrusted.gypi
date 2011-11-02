@@ -3,8 +3,16 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    # See native_client/Sconstruct for more details.
+    # Expected address for beginning of data in for the IRT.
+    'NACL_IRT_DATA_START': '0x3ef00000',
+    # Expected address for beginning of code in for the IRT.
+    'NACL_IRT_TEXT_START': '0x0fc00000',
+  },
   'conditions': [
-    ['disable_untrusted==0 and target_arch!="arm"', {
+    # NOTE: we do not support untrusted gyp build on arm yet.
+    ['target_arch!="arm"', {
       'target_defaults': {
         'conditions': [
           ['OS=="win"', {
@@ -52,7 +60,7 @@
         },
       },
     }],
-    ['disable_untrusted==0 and (target_arch=="x64" or OS=="win")', {
+    ['target_arch=="x64" or OS=="win"', {
       'target_defaults': {
         'target_conditions': [
            ['nexe_target!="" and build_newlib!=0 and enable_x86_64!=0', {
@@ -93,7 +101,7 @@
         ],
       },
     }],
-    ['disable_untrusted==0 and (target_arch=="x64" or OS=="win")', {
+    ['target_arch=="x64" or OS=="win"', {
       'target_defaults': {
         'target_conditions': [
            ['nlib_target!="" and build_newlib!=0 and enable_x86_64!=0', {
@@ -134,7 +142,7 @@
         ],
       },
     }],
-    ['disable_untrusted==0 and target_arch=="ia32"', {
+    ['target_arch=="ia32"', {
       'target_defaults': {
         'target_conditions': [
            ['nexe_target!="" and build_newlib!=0 and enable_x86_32!=0', {
@@ -175,7 +183,7 @@
         ],
       },
     }],
-    ['disable_untrusted==0 and target_arch=="ia32"', {
+    ['target_arch=="ia32"', {
       'target_defaults': {
         'target_conditions': [
            ['nlib_target!="" and build_newlib!=0 and enable_x86_32!=0', {

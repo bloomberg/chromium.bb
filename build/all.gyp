@@ -26,7 +26,7 @@
         '../src/trusted/service_runtime/service_runtime.gyp:*',
       ],
       'conditions': [
-        ['disable_untrusted==0 and target_arch!="arm"', {
+        ['target_arch!="arm"', {
           'dependencies': [
             '../src/untrusted/irt/irt.gyp:irt_core_nexe',
             '../src/untrusted/irt_stub/irt_stub.gyp:*',

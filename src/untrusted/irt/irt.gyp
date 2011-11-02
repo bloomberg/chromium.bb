@@ -43,7 +43,8 @@
     ],
   },
   'conditions': [
-    ['disable_untrusted==0 and target_arch!="arm"', {
+    # NOTE: We do not support untrusted gyp build on arm yet.
+    ['target_arch!="arm"', {
       'targets': [
         {
           'target_name': 'irt_core_nexe',
@@ -53,17 +54,11 @@
             'build_glibc': 0,
             'build_newlib': 1,
             'sources': ['<@(irt_sources)', '<@(irt_nonbrowser)'],
+            'link_flags': [
+              '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
+              '-Wl,-Ttext-segment=<(NACL_IRT_TEXT_START)',
+            ],
           },
-          'conditions': [
-            ['target_arch=="x64" or target_arch == "ia32"', {
-              'variables': {
-                'link_flags': [
-                  '-Wl,--section-start,.rodata=0x3ef00000',
-                  '-Wl,-Ttext-segment=0x0fc00000',
-                ],
-              },
-            }],
-          ],
           'dependencies': [
             '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
             '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',

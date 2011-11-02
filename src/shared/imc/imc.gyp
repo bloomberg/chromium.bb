@@ -95,8 +95,9 @@
     },
   ],
   'conditions': [
-    ['disable_untrusted==0 and target_arch!="arm"', {
-      'targets' : [
+    ['target_arch!="arm"', {
+      'targets': [
+        # NOTE: we do not support untrusted gyp build on arm yet.
         {
           'target_name': 'imc_lib',
           'type': 'none',
@@ -110,10 +111,6 @@
             '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
           ],
         },
-      ]
-    }],
-    ['target_arch!="arm"', {
-      'targets': [
         # NOTE: we cannot run this on ARM since we are using a cross compiler
         {
           'target_name': 'run_sigpipe_test',

@@ -9,7 +9,6 @@
     # such things as the set of warnings to enable, and whether warnings are
     # treated as errors.
     'chromium_code%': 0,
-    'disable_untrusted': 0,
 
     # Variables expected to be overriden on the GYP command line (-D) or by
     # ~/.gyp/include.gypi.

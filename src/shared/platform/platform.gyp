@@ -174,7 +174,8 @@
     # ----------------------------------------------------------------------
   ],
   'conditions': [
-    ['disable_untrusted==0 and target_arch!="arm"', {
+    # NOTE: we do not support untrusted gyp build on arm yet.
+    ['target_arch!="arm"', {
       'targets': [
       {
         'target_name': 'platform_lib',
