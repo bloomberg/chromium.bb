@@ -37,7 +37,6 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
-#include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -249,8 +248,8 @@ history::InMemoryURLIndex* HistoryService::InMemoryIndex() {
   // LoadBackendIfNecessary() here even though it won't affect the return value
   // for this call.
   LoadBackendIfNecessary();
-  if (history_backend_.get())
-    return history_backend_->InMemoryIndex();
+  if (in_memory_backend_.get())
+    return in_memory_backend_->InMemoryIndex();
   return NULL;
 }
 
@@ -801,8 +800,7 @@ void HistoryService::LoadBackendIfNecessary() {
 
   ++current_backend_id_;
   scoped_refptr<HistoryBackend> backend(
-      new HistoryBackend(profile_,
-                         history_dir_,
+      new HistoryBackend(history_dir_,
                          current_backend_id_,
                          new BackendDelegate(this, profile_),
                          bookmark_service_));

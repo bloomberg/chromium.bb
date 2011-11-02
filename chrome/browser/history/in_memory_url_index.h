@@ -23,12 +23,14 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/history/in_memory_url_index_cache.pb.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "sql/connection.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class Profile;
+
+namespace base {
+class Time;
+}
 
 namespace in_memory_url_index {
 class InMemoryURLIndexCacheItem;
@@ -39,9 +41,6 @@ namespace history {
 namespace imui = in_memory_url_index;
 
 class URLDatabase;
-struct URLsDeletedDetails;
-struct URLsModifiedDetails;
-struct URLVisitedDetails;
 
 // The URL history source.
 // Holds portions of the URL database in memory in an indexed form.  Used to
@@ -62,13 +61,12 @@ struct URLVisitedDetails;
 // will eliminate such words except in the case where a single character
 // is being searched on and which character occurs as the second char16 of a
 // multi-char16 instance.
-class InMemoryURLIndex : public content::NotificationObserver {
+class InMemoryURLIndex {
  public:
   // |history_dir| is a path to the directory containing the history database
   // within the profile wherein the cache and transaction journals will be
   // stored.
-  explicit InMemoryURLIndex(Profile* profile,
-                            const FilePath& history_dir);
+  explicit InMemoryURLIndex(const FilePath& history_dir);
   virtual ~InMemoryURLIndex();
 
   // Opens and indexes the URL history database.
@@ -109,18 +107,13 @@ class InMemoryURLIndex : public content::NotificationObserver {
   ScoredHistoryMatches HistoryItemsForTerms(const String16Vector& terms);
 
   // Updates or adds an history item to the index if it meets the minimum
-  // selection criteria.
-  void UpdateURL(const URLRow& row);
+  // 'quick' criteria.
+  void UpdateURL(URLID row_id, const URLRow& row);
 
   // Deletes indexing data for an history item. The item may not have actually
   // been indexed (which is the case if it did not previously meet minimum
   // 'quick' criteria).
-  void DeleteURL(const URLRow& row);
-
-  // Notification callback.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+  void DeleteURL(URLID row_id);
 
  private:
   friend class AddHistoryMatch;
@@ -260,11 +253,6 @@ class InMemoryURLIndex : public content::NotificationObserver {
   // Determines if |gurl| has a whitelisted scheme and returns true if so.
   bool URLSchemeIsWhitelisted(const GURL& gurl) const;
 
-  // Notification handlers.
-  void OnURLVisited(const URLVisitedDetails* details);
-  void OnURLsModified(const URLsModifiedDetails* details);
-  void OnURLsDeleted(const URLsDeletedDetails* details);
-
   // Utility functions supporting RestoreFromCache and SaveToCache.
 
   // Construct a file path for the cache file within the same directory where
@@ -289,8 +277,6 @@ class InMemoryURLIndex : public content::NotificationObserver {
   bool RestoreCharWordMap(const imui::InMemoryURLIndexCacheItem& cache);
   bool RestoreWordIDHistoryMap(const imui::InMemoryURLIndexCacheItem& cache);
   bool RestoreHistoryInfoMap(const imui::InMemoryURLIndexCacheItem& cache);
-
-  content::NotificationRegistrar registrar_;
 
   // Directory where cache file resides. This is, except when unit testing,
   // the same directory in which the profile's history database is found. It
