@@ -302,6 +302,9 @@ const char kDisableRemoteFonts[]            = "disable-remote-fonts";
 const char kDisableRestoreBackgroundContents[] =
     "disable-restore-background-contents";
 
+// Disables the ShortcutsProvider for autocomplete results.
+const char kDisableShortcutsProvider[]      = "disable-shortcuts-provider";
+
 // Disables site-specific tailoring to compatibility issues in WebKit.
 const char kDisableSiteSpecificQuirks[]     = "disable-site-specific-quirks";
 
@@ -528,9 +531,6 @@ const char kEnableSdch[]                    = "enable-sdch";
 // Enables the IsSearchProviderInstalled and InstallSearchProvider with an
 // extra parameter to indicate if the provider should be the default.
 const char kEnableSearchProviderApiV2[]     = "enable-search-provider-api-v2";
-
-// Enables the use of the ShortcutsProvider for autocomplete results.
-const char kEnableShortcutsProvider[]       = "enable-shortcuts-provider";
 
 // On platforms that support it, enables smooth scroll animation.
 const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";

@@ -76,6 +76,9 @@ void ShortcutsProvider::Start(const AutocompleteInput& input,
   if (input.type() == AutocompleteInput::INVALID)
     return;
 
+  if (input.text().empty())
+    return;
+
   if (!initialized_)
     return;
 

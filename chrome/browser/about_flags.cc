@@ -331,11 +331,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisablePanels)
   },
   {
-    "enable-shortcuts-provider",
-    IDS_FLAGS_ENABLE_SHORTCUTS_PROVIDER,
-    IDS_FLAGS_ENABLE_SHORTCUTS_PROVIDER_DESCRIPTION,
+    "disable-shortcuts-provider",
+    IDS_FLAGS_DISABLE_SHORTCUTS_PROVIDER,
+    IDS_FLAGS_DISABLE_SHORTCUTS_PROVIDER_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableShortcutsProvider)
+    SINGLE_VALUE_TYPE(switches::kDisableShortcutsProvider)
   },
 #if defined(OS_CHROMEOS)
   {

@@ -836,8 +836,8 @@ AutocompleteController::AutocompleteController(
                          switches::kDisableHistoryQuickProvider);
   if (hqp_enabled)
     providers_.push_back(new HistoryQuickProvider(this, profile));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableShortcutsProvider))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableShortcutsProvider))
     providers_.push_back(new ShortcutsProvider(this, profile));
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableHistoryURLProvider))

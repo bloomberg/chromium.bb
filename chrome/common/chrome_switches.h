@@ -90,6 +90,7 @@ extern const char kDisablePreconnect[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisableRemoteFonts[];
 extern const char kDisableRestoreBackgroundContents[];
+extern const char kDisableShortcutsProvider[];
 extern const char kDisableSiteSpecificQuirks[];
 extern const char kDisableSSL3[];
 extern const char kDisableSync[];
@@ -150,7 +151,6 @@ extern const char kEnablePreconnect[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSdch[];
 extern const char kEnableSearchProviderApiV2[];
-extern const char kEnableShortcutsProvider[];
 extern const char kEnableSmoothScrolling[];
 // TODO(kalman): Add to about:flags when UI for syncing extension settings has
 // been figured out.
