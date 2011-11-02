@@ -281,8 +281,7 @@ bool Desktop::DispatchKeyEvent(KeyEvent* event) {
 #if !defined(NDEBUG)
   if (event->type() == ui::ET_KEY_PRESSED &&
       (event->flags() & ui::EF_SHIFT_DOWN) &&
-      (event->flags() & ui::EF_ALT_DOWN) &&
-      event->is_char()) {
+      (event->flags() & ui::EF_ALT_DOWN)) {
 
     bool should_rotate = true;
     int new_degrees = 0;
