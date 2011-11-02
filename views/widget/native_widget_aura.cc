@@ -158,7 +158,6 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 }
 
 NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {
-  NOTIMPLEMENTED();
   return NULL;
 }
 
@@ -219,6 +218,7 @@ void NativeWidgetAura::ReorderLayers() {
 }
 
 void NativeWidgetAura::ViewRemoved(View* view) {
+  // DropTarget stuff. Most likely http://crbug.com/97845
   //NOTIMPLEMENTED();
 }
 
@@ -236,6 +236,7 @@ TooltipManager* NativeWidgetAura::GetTooltipManager() const {
 }
 
 bool NativeWidgetAura::IsScreenReaderActive() const {
+  // http://crbug.com/102570
   //NOTIMPLEMENTED();
   return false;
 }
@@ -243,6 +244,7 @@ bool NativeWidgetAura::IsScreenReaderActive() const {
 void NativeWidgetAura::SendNativeAccessibilityEvent(
     View* view,
     ui::AccessibilityTypes::Event event_type) {
+  // http://crbug.com/102570
   //NOTIMPLEMENTED();
 }
 
@@ -293,18 +295,22 @@ void NativeWidgetAura::SetWindowIcons(const SkBitmap& window_icon,
 }
 
 void NativeWidgetAura::SetAccessibleName(const string16& name) {
+  // http://crbug.com/102570
   //NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
+  // http://crbug.com/102570
   //NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::SetAccessibleState(ui::AccessibilityTypes::State state) {
+  // http://crbug.com/102570
   //NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::BecomeModal() {
+  // http://crbug.com/93936
   NOTIMPLEMENTED();
 }
 
@@ -331,19 +337,22 @@ void NativeWidgetAura::SetSize(const gfx::Size& size) {
 
 void NativeWidgetAura::SetBoundsConstrained(const gfx::Rect& bounds,
                                             Widget* other_widget) {
+  // http://crbug.com/102580
   NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::MoveAbove(gfx::NativeView native_view) {
+  // http://crbug.com/102578
   NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::MoveToTop() {
+  // http://crbug.com/102578
   NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::SetShape(gfx::NativeRegion region) {
-  NOTIMPLEMENTED();
+  // No need for this.
 }
 
 void NativeWidgetAura::Close() {
@@ -362,6 +371,7 @@ void NativeWidgetAura::CloseNow() {
 }
 
 void NativeWidgetAura::EnableClose(bool enable) {
+  // http://crbug.com/102581
   NOTIMPLEMENTED();
 }
 
@@ -408,6 +418,7 @@ bool NativeWidgetAura::IsActive() const {
 }
 
 void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {
+  // http://crbug.com/102582
   NOTIMPLEMENTED();
 }
 
@@ -416,7 +427,7 @@ void NativeWidgetAura::Maximize() {
 }
 
 void NativeWidgetAura::Minimize() {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 bool NativeWidgetAura::IsMaximized() const {
@@ -453,13 +464,15 @@ void NativeWidgetAura::SetUseDragFrame(bool use_drag_frame) {
 }
 
 bool NativeWidgetAura::IsAccessibleWidget() const {
-  NOTIMPLEMENTED();
+  // http://crbug.com/102570
+  //NOTIMPLEMENTED();
   return false;
 }
 
 void NativeWidgetAura::RunShellDrag(View* view,
                                    const ui::OSExchangeData& data,
                                    int operation) {
+  // http://crbug.com/97845
   NOTIMPLEMENTED();
 }
 
@@ -479,11 +492,13 @@ void NativeWidgetAura::ClearNativeFocus() {
 }
 
 void NativeWidgetAura::FocusNativeView(gfx::NativeView native_view) {
+  // http://crbug.com/102572
   NOTIMPLEMENTED();
 }
 
 bool NativeWidgetAura::ConvertPointFromAncestor(const Widget* ancestor,
                                                 gfx::Point* point) const {
+  // http://crbug.com/102573
   NOTIMPLEMENTED();
   return false;
 }
@@ -631,11 +646,13 @@ void NativeWidgetAura::OnWindowVisibilityChanged(bool visible) {
 
 // static
 void Widget::NotifyLocaleChanged() {
+  // http://crbug.com/102574
   NOTIMPLEMENTED();
 }
 
 // static
 void Widget::CloseAllSecondaryWidgets() {
+  // http://crbug.com/102575
   NOTIMPLEMENTED();
 }
 
@@ -708,11 +725,13 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
 // static
 void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
                                              gfx::NativeView new_parent) {
+  // http://crbug.com/102576
   NOTIMPLEMENTED();
 }
 
 // static
 bool NativeWidgetPrivate::IsMouseButtonDown() {
+  // http://crbug.com/102577
   NOTIMPLEMENTED();
   return false;
 }
