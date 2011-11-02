@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/tab_first_render_watcher.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/size.h"
 #include "views/widget/widget_delegate.h"
 
@@ -38,7 +38,7 @@ class HtmlDialogView
       public HtmlDialogTabContentsDelegate,
       public HtmlDialogUIDelegate,
       public views::WidgetDelegate,
-      public content::NotificationObserver {
+      public TabFirstRenderWatcher::Delegate {
  public:
   HtmlDialogView(Profile* profile, HtmlDialogUIDelegate* delegate);
   virtual ~HtmlDialogView();
@@ -84,38 +84,31 @@ class HtmlDialogView
       OVERRIDE;
   virtual void CloseContents(TabContents* source) OVERRIDE;
 
-  // Overridden from content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
  protected:
   // Register accelerators for this dialog.
   virtual void RegisterDialogAccelerators();
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(HtmlDialogBrowserTest, TestStateTransition);
+  // TabFirstRenderWatcher::Delegate implementation.
+  virtual void OnRenderHostCreated(RenderViewHost* host) OVERRIDE;
+  virtual void OnTabMainFrameLoaded() OVERRIDE;
+  virtual void OnTabMainFrameFirstRender() OVERRIDE;
 
-  // A state used to ensure that we show the window only after the
-  // renderer painted the full page.
-  enum DialogState {
-    NONE,
-    INITIALIZED,  // FreezeUpdates property is set to prevent WM from showing
-                  // the window until the property is remoevd.
-    LOADED,       // Renderer loaded the page.
-    PAINTED,      // 1st paint event after the page is loaded.
-                  // FreezeUpdates property is removed to tell WM to shows
-                  // the window.
-  };
-  DialogState state_;
+ private:
+  FRIEND_TEST_ALL_PREFIXES(HtmlDialogBrowserTest, WebContentRendered);
+
+  // Whether the view is initialized. That is, dialog acceleartors is registered
+  // and FreezeUpdates property is set to prevent WM from showing the window
+  // until the property is removed.
+  bool initialized_;
+
+  // Watches for TabContents rendering.
+  scoped_ptr<TabFirstRenderWatcher> tab_watcher_;
 
   // This view is a delegate to the HTML content since it needs to get notified
   // about when the dialog is closing. For all other actions (besides dialog
   // closing) we delegate to the creator of this view, which we keep track of
   // using this variable.
   HtmlDialogUIDelegate* delegate_;
-
-  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(HtmlDialogView);
 };
