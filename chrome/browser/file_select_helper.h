@@ -108,8 +108,9 @@ class FileSelectHelper
   // Helper method to get allowed extensions for select file dialog from
   // the specified accept types as defined in the spec:
   //   http://whatwg.org/html/number-state.html#attr-input-accept
+  // |accept_types| contains only valid lowercased MIME types.
   SelectFileDialog::FileTypeInfo* GetFileTypesFromAcceptType(
-      const string16& accept_types);
+      const std::vector<string16>& accept_types);
 
   // Profile used to set/retrieve the last used directory.
   Profile* profile_;

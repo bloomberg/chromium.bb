@@ -462,9 +462,9 @@ IPC_STRUCT_BEGIN(ViewHostMsg_RunFileChooser_Params)
   // Default file name to select in the dialog.
   IPC_STRUCT_MEMBER(FilePath, default_file_name)
 
-  // A comma-separated MIME types such as "audio/*,text/plain", that is used
-  // to restrict selectable files to such types.
-  IPC_STRUCT_MEMBER(string16, accept_types)
+  // A list of valid lower-cased MIME types specified in an input element. It is
+  // used to restrict selectable files to such types.
+  IPC_STRUCT_MEMBER(std::vector<string16>, accept_types)
 IPC_STRUCT_END()
 
 // This message is used for supporting popup menus on Mac OS X using native

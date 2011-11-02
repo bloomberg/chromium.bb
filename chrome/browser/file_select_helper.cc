@@ -196,14 +196,8 @@ void FileSelectHelper::OnListDone(int id, int error) {
 }
 
 SelectFileDialog::FileTypeInfo* FileSelectHelper::GetFileTypesFromAcceptType(
-    const string16& accept_types) {
+    const std::vector<string16>& accept_types) {
   if (accept_types.empty())
-    return NULL;
-
-  // Split the accept-type string on commas.
-  std::vector<string16> mime_types;
-  base::SplitStringUsingSubstr(accept_types, ASCIIToUTF16(","), &mime_types);
-  if (mime_types.empty())
     return NULL;
 
   // Create FileTypeInfo and pre-allocate for the first extension list.
@@ -216,13 +210,14 @@ SelectFileDialog::FileTypeInfo* FileSelectHelper::GetFileTypesFromAcceptType(
   // Find the correspondinge extensions.
   int valid_type_count = 0;
   int description_id = 0;
-  for (size_t i = 0; i < mime_types.size(); ++i) {
-    string16 mime_type = mime_types[i];
-    std::string ascii_mime_type = StringToLowerASCII(UTF16ToASCII(mime_type));
-
-    TrimWhitespace(ascii_mime_type, TRIM_ALL, &ascii_mime_type);
-    if (ascii_mime_type.empty())
-      continue;
+  for (size_t i = 0; i < accept_types.size(); ++i) {
+    std::string ascii_mime_type = UTF16ToASCII(accept_types[i]);
+    // WebKit normalizes MIME types.  See HTMLInputElement::acceptMIMETypes().
+    DCHECK(StringToLowerASCII(ascii_mime_type) == ascii_mime_type)
+        << "A MIME type contains uppercase letter: " << ascii_mime_type;
+    DCHECK(TrimWhitespaceASCII(ascii_mime_type, TRIM_ALL, &ascii_mime_type)
+        == TRIM_NONE)
+        << "A MIME type contains whitespace: '" << ascii_mime_type << "'";
 
     size_t old_extension_size = extensions->size();
     if (ascii_mime_type == "image/*") {
