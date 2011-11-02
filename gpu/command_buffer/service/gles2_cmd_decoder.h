@@ -122,6 +122,18 @@ class GLES2Decoder : public CommonDecoder {
   // Provides detail about a lost context if one occurred.
   virtual error::ContextLostReason GetContextLostReason() = 0;
 
+  // Clears a level of a texture
+  // Returns false if a GL error should be generated.
+  virtual bool ClearLevel(
+      unsigned service_id,
+      unsigned bind_target,
+      unsigned target,
+      int level,
+      unsigned format,
+      unsigned type,
+      int width,
+      int height) = 0;
+
  protected:
   GLES2Decoder();
 

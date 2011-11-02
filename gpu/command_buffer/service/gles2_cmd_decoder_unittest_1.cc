@@ -54,8 +54,16 @@ void GLES2DecoderTestBase::SpecializedSetup<GenerateMipmap, 0>(
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<CheckFramebufferStatus, 0>(
     bool /* valid */) {
+  // Give it a valid framebuffer.
+  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
+                    kServiceRenderbufferId);
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                     kServiceFramebufferId);
+  DoRenderbufferStorage(
+      GL_RENDERBUFFER, GL_RGBA4, GL_RGBA, 1, 1, GL_NO_ERROR);
+  DoFramebufferRenderbuffer(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+      client_renderbuffer_id_, kServiceRenderbufferId, GL_NO_ERROR);
 };
 
 template <>
@@ -91,7 +99,7 @@ void GLES2DecoderTestBase::SpecializedSetup<CopyTexSubImage2D, 0>(bool valid) {
     DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
     DoTexImage2D(
         GL_TEXTURE_2D, 2, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-        0, 0);
+        kSharedMemoryId, kSharedMemoryOffset);
   }
 };
 
@@ -116,13 +124,6 @@ void GLES2DecoderTestBase::SpecializedSetup<FramebufferRenderbuffer, 0>(
   if (valid) {
     EXPECT_CALL(*gl_, GetError())
         .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
-    // Return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT so the code
-    // doesn't try to clear the buffer. That is tested else where.
-    EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
-        .WillOnce(Return(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, GetError())
         .WillOnce(Return(GL_NO_ERROR))
         .RetiresOnSaturation();
   }
@@ -136,13 +137,6 @@ void GLES2DecoderTestBase::SpecializedSetup<FramebufferTexture2D, 0>(
   if (valid) {
     EXPECT_CALL(*gl_, GetError())
         .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
-    // Return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT so the code
-    // doesn't try to clear the buffer. That is tested else where.
-    EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
-        .WillOnce(Return(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, GetError())
         .WillOnce(Return(GL_NO_ERROR))
         .RetiresOnSaturation();
   }

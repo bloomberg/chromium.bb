@@ -66,6 +66,52 @@ class GLES2DecoderTestBase : public testing::Test {
   static const int kBackBufferWidth = 128;
   static const int kBackBufferHeight = 64;
 
+  static const GLuint kServiceVertexShaderId = 321;
+  static const GLuint kServiceFragmentShaderId = 322;
+
+  static const GLsizei kNumVertices = 100;
+  static const GLsizei kNumIndices = 10;
+  static const int kValidIndexRangeStart = 1;
+  static const int kValidIndexRangeCount = 7;
+  static const int kInvalidIndexRangeStart = 0;
+  static const int kInvalidIndexRangeCount = 7;
+  static const int kOutOfRangeIndexRangeEnd = 10;
+  static const GLuint kMaxValidIndex = 7;
+
+  static const GLint kMaxAttribLength = 10;
+  static const char* kAttrib1Name;
+  static const char* kAttrib2Name;
+  static const char* kAttrib3Name;
+  static const GLint kAttrib1Size = 1;
+  static const GLint kAttrib2Size = 1;
+  static const GLint kAttrib3Size = 1;
+  static const GLint kAttrib1Location = 0;
+  static const GLint kAttrib2Location = 1;
+  static const GLint kAttrib3Location = 2;
+  static const GLenum kAttrib1Type = GL_FLOAT_VEC4;
+  static const GLenum kAttrib2Type = GL_FLOAT_VEC2;
+  static const GLenum kAttrib3Type = GL_FLOAT_VEC3;
+  static const GLint kInvalidAttribLocation = 30;
+  static const GLint kBadAttribIndex = kNumVertexAttribs;
+
+  static const GLint kMaxUniformLength = 12;
+  static const char* kUniform1Name;
+  static const char* kUniform2Name;
+  static const char* kUniform3Name;
+  static const GLint kUniform1Size = 1;
+  static const GLint kUniform2Size = 3;
+  static const GLint kUniform3Size = 2;
+  static const GLint kUniform1Location = 3;
+  static const GLint kUniform2Location = 10;
+  static const GLint kUniform2ElementLocation = 12;
+  static const GLint kUniform3Location = 20;
+  static const GLenum kUniform1Type = GL_SAMPLER_2D;
+  static const GLenum kUniform2Type = GL_INT_VEC2;
+  static const GLenum kUniform3Type = GL_FLOAT_VEC3;
+  static const GLenum kUniformCubemapType = GL_SAMPLER_CUBE;
+  static const GLint kInvalidUniformLocation = 30;
+  static const GLint kBadUniformIndex = 1000;
+
   // Template to call glGenXXX functions.
   template <typename T>
   void GenHelper(GLuint client_id) {
@@ -197,6 +243,9 @@ class GLES2DecoderTestBase : public testing::Test {
 
   // Setups up a shader for testing glUniform.
   void SetupShaderForUniform();
+  void SetupDefaultProgram();
+  void SetupCubemapProgram();
+  void SetupTexture();
 
   // Note that the error is returned as GLint instead of GLenum.
   // This is because there is a mismatch in the types of GLenum and
@@ -228,14 +277,56 @@ class GLES2DecoderTestBase : public testing::Test {
   void DoDeleteShader(GLuint client_id, GLuint service_id);
   void DoDeleteTexture(GLuint client_id, GLuint service_id);
 
-  void DoTexImage2D(GLenum target, GLint level, GLenum internal_format,
-                    GLsizei width, GLsizei height, GLint border,
-                    GLenum format, GLenum type,
-                    uint32 shared_memory_id, uint32 shared_memory_offset);
+  void DoTexImage2D(
+      GLenum target, GLint level, GLenum internal_format,
+      GLsizei width, GLsizei height, GLint border,
+      GLenum format, GLenum type,
+      uint32 shared_memory_id, uint32 shared_memory_offset);
+  void DoRenderbufferStorage(
+      GLenum target, GLenum internal_format, GLenum actual_format,
+      GLsizei width, GLsizei height, GLenum error);
+  void DoFramebufferRenderbuffer(
+      GLenum target,
+      GLenum attachment,
+      GLenum renderbuffer_target,
+      GLuint renderbuffer_client_id,
+      GLuint renderbuffer_service_id,
+      GLenum error);
+  void DoFramebufferTexture2D(
+      GLenum target, GLenum attachment, GLenum tex_target,
+      GLuint texture_client_id, GLuint texture_service_id,
+      GLint level, GLenum error);
   void DoVertexAttribPointer(
       GLuint index, GLint size, GLenum type, GLsizei stride, GLuint offset);
 
-  void SetupExpectationsForFramebufferAttachment(
+  void DoEnableVertexAttribArray(GLint index);
+
+  void DoBufferData(GLenum target, GLsizei size);
+
+  void DoBufferSubData(
+      GLenum target, GLint offset, GLsizei size, const void* data);
+
+  void SetupVertexBuffer();
+
+  void SetupIndexBuffer();
+
+  void DeleteVertexBuffer();
+
+  void DeleteIndexBuffer();
+
+  void SetupClearTextureExpections(
+      GLuint service_id,
+      GLuint old_service_id,
+      GLenum bind_target,
+      GLenum target,
+      GLint level,
+      GLenum format,
+      GLenum type,
+      GLsizei width,
+      GLsizei height);
+
+  void SetupExpectationsForFramebufferClearing(
+    GLenum target,
     GLuint clear_bits,
     GLclampf restore_red,
     GLclampf restore_green,
@@ -257,6 +348,12 @@ class GLES2DecoderTestBase : public testing::Test {
     bool stencil_enabled);
 
   void SetupExpectationsForApplyingDefaultDirtyState();
+
+  void AddExpectationsForSimulatedAttrib0WithError(
+      GLsizei num_vertices, GLuint buffer_id, GLenum error);
+
+  void AddExpectationsForSimulatedAttrib0(
+      GLsizei num_vertices, GLuint buffer_id);
 
   GLvoid* BufferOffset(unsigned i) {
     return static_cast<int8 *>(NULL)+(i);
@@ -286,6 +383,8 @@ class GLES2DecoderTestBase : public testing::Test {
   GLuint client_shader_id_;
   GLuint client_texture_id_;
   GLuint client_element_buffer_id_;
+  GLuint client_vertex_shader_id_;
+  GLuint client_fragment_shader_id_;
 
   uint32 shared_memory_id_;
   uint32 shared_memory_offset_;
@@ -344,80 +443,13 @@ class GLES2DecoderTestBase : public testing::Test {
 class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
  public:
   GLES2DecoderWithShaderTestBase()
-      : GLES2DecoderTestBase(),
-        client_vertex_shader_id_(121),
-        client_fragment_shader_id_(122) {
+      : GLES2DecoderTestBase() {
   }
-
-  static const GLuint kServiceVertexShaderId = 321;
-  static const GLuint kServiceFragmentShaderId = 322;
-
-  static const GLsizei kNumVertices = 100;
-  static const GLsizei kNumIndices = 10;
-  static const int kValidIndexRangeStart = 1;
-  static const int kValidIndexRangeCount = 7;
-  static const int kInvalidIndexRangeStart = 0;
-  static const int kInvalidIndexRangeCount = 7;
-  static const int kOutOfRangeIndexRangeEnd = 10;
-  static const GLuint kMaxValidIndex = 7;
-
-  static const GLint kMaxAttribLength = 10;
-  static const char* kAttrib1Name;
-  static const char* kAttrib2Name;
-  static const char* kAttrib3Name;
-  static const GLint kAttrib1Size = 1;
-  static const GLint kAttrib2Size = 1;
-  static const GLint kAttrib3Size = 1;
-  static const GLint kAttrib1Location = 0;
-  static const GLint kAttrib2Location = 1;
-  static const GLint kAttrib3Location = 2;
-  static const GLenum kAttrib1Type = GL_FLOAT_VEC4;
-  static const GLenum kAttrib2Type = GL_FLOAT_VEC2;
-  static const GLenum kAttrib3Type = GL_FLOAT_VEC3;
-  static const GLint kInvalidAttribLocation = 30;
-  static const GLint kBadAttribIndex = kNumVertexAttribs;
-
-  static const GLint kMaxUniformLength = 12;
-  static const char* kUniform1Name;
-  static const char* kUniform2Name;
-  static const char* kUniform3Name;
-  static const GLint kUniform1Size = 1;
-  static const GLint kUniform2Size = 3;
-  static const GLint kUniform3Size = 2;
-  static const GLint kUniform1Location = 3;
-  static const GLint kUniform2Location = 10;
-  static const GLint kUniform2ElementLocation = 12;
-  static const GLint kUniform3Location = 20;
-  static const GLenum kUniform1Type = GL_SAMPLER_2D;
-  static const GLenum kUniform2Type = GL_INT_VEC2;
-  static const GLenum kUniform3Type = GL_FLOAT_VEC3;
-  static const GLint kInvalidUniformLocation = 30;
-  static const GLint kBadUniformIndex = 1000;
 
  protected:
   virtual void SetUp();
   virtual void TearDown();
 
-  void SetupDefaultProgram();
-  void SetupTexture();
-
-  void DoEnableVertexAttribArray(GLint index);
-
-  void DoBufferData(GLenum target, GLsizei size);
-
-  void DoBufferSubData(
-      GLenum target, GLint offset, GLsizei size, const void* data);
-
-  void SetupVertexBuffer();
-
-  void SetupIndexBuffer();
-
-  void DeleteVertexBuffer();
-
-  void DeleteIndexBuffer();
-
-  GLuint client_vertex_shader_id_;
-  GLuint client_fragment_shader_id_;
 };
 
 }  // namespace gles2
