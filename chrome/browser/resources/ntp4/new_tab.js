@@ -216,6 +216,8 @@ cr.define('ntp4', function() {
       loginBubble = new cr.ui.Bubble;
       loginBubble.anchorNode = $('login-container');
       loginBubble.setArrowLocation(cr.ui.ArrowLocation.TOP_END);
+      loginBubble.bubbleAlignment =
+          cr.ui.BubbleAlignment.BUBBLE_EDGE_TO_ANCHOR_EDGE;
       loginBubble.deactivateToDismissDelay = 2000;
       loginBubble.setCloseButtonVisible(false);
 

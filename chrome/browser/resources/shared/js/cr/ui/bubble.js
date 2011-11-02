@@ -27,6 +27,17 @@ cr.define('cr.ui', function() {
     BOTTOM_END : "bottom-end"
   };
 
+  // The bubble alignment specifies the horizontal position of the bubble in
+  // relation to the anchor node.
+  const BubbleAlignment = {
+    // The bubble is positioned so that the tip of the arrow points to the
+    // middle of the anchor node.
+    ARROW_TO_MID_ANCHOR : "arrow-to-mid-anchor",
+    // The bubble is positioned so that the edge nearest to the arrow is lined
+    // up with the edge of the anchor node.
+    BUBBLE_EDGE_TO_ANCHOR_EDGE : "bubble-edge-anchor-edge"
+  };
+
   // The horizontal distance between the tip of the arrow and the start or the
   // end of the bubble (as specified by the arrow location).
   const ARROW_OFFSET_X = 30;
@@ -57,6 +68,7 @@ cr.define('cr.ui', function() {
       this.hidden = true;
       this.handleCloseEvent = this.hide;
       this.deactivateToDismissDelay_ = 0;
+      this.bubbleAlignment = BubbleAlignment.ARROW_TO_MID_ANCHOR;
     },
 
     /**
@@ -110,6 +122,14 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Sets the bubble alignment.
+     * @param {cr.ui.BubbleAlignment} alignment The new bubble alignment.
+     */
+    set bubbleAlignment(alignment) {
+      this.bubbleAlignment_ = alignment;
+    },
+
+    /**
      * Sets the delay before the user is allowed to click outside the bubble
      * to dismiss it. Using a delay makes it less likely that the user will
      * unintentionally dismiss the bubble.
@@ -133,23 +153,23 @@ cr.define('cr.ui', function() {
      * may have changed.
      */
     reposition: function() {
-      var node = this.anchorNode_;
-      var clientRect = node.getBoundingClientRect();
-      var anchorMid = (clientRect.left + clientRect.right) / 2;
+      var clientRect = this.anchorNode_.getBoundingClientRect();
 
-      if (this.isRight_) {
-        this.style.left =
-            (anchorMid - this.clientWidth + ARROW_OFFSET_X) + 'px';
+      var left;
+      if (this.bubbleAlignment_ ==
+          BubbleAlignment.BUBBLE_EDGE_TO_ANCHOR_EDGE) {
+        left = this.isRight_ ? clientRect.right - this.clientWidth :
+            clientRect.left;
       } else {
-        this.style.left = (anchorMid - ARROW_OFFSET_X) + 'px';
+        var anchorMid = (clientRect.left + clientRect.right) / 2;
+        left = this.isRight_ ? anchorMid - this.clientWidth + ARROW_OFFSET_X :
+            anchorMid - ARROW_OFFSET_X;
       }
+      var top = this.isTop_ ? clientRect.bottom + ARROW_OFFSET_Y :
+          clientRect.top - this.clientHeight - ARROW_OFFSET_Y;
 
-      if (this.isTop_) {
-        this.style.top = (clientRect.bottom + ARROW_OFFSET_Y) + 'px';
-      } else {
-        this.style.top =
-            (clientRect.top - this.clientHeight - ARROW_OFFSET_Y) + 'px';
-      }
+      this.style.left = left + 'px';
+      this.style.top = top + 'px';
     },
 
     /**
@@ -215,6 +235,7 @@ cr.define('cr.ui', function() {
 
   return {
     ArrowLocation : ArrowLocation,
-    Bubble: Bubble
+    Bubble : Bubble,
+    BubbleAlignment : BubbleAlignment
   };
 });
