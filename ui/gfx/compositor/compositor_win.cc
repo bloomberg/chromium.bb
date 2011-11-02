@@ -219,25 +219,18 @@ void ViewTexture::SetCanvas(const SkCanvas& canvas,
     texture_desc.BindFlags = D3D10_BIND_SHADER_RESOURCE;
     texture_desc.CPUAccessFlags = 0;
     texture_desc.MiscFlags = 0;
-    D3D10_SUBRESOURCE_DATA texture_data;
-    texture_data.pSysMem = converted_data.get();
-    texture_data.SysMemPitch = texture_desc.Width * 4;
-    texture_data.SysMemSlicePitch = 0;
     RETURN_IF_FAILED(device_->CreateTexture2D(&texture_desc,
-                                              &texture_data,
-                                              texture_.Receive()));
+                                              NULL, texture_.Receive()));
     RETURN_IF_FAILED(
         device_->CreateShaderResourceView(texture_.get(), NULL,
                                           shader_view_.Receive()));
-  } else {
-    // Only part of the texture was updated.
-    DCHECK(texture_.get());
-    D3D10_BOX dst_box = { origin.x(), origin.y(), 0,
-                          origin.x() + bitmap.width(),
-                          origin.y() + bitmap.height(), 1 };
-    device_->UpdateSubresource(texture_.get(), 0, &dst_box,
-                               converted_data.get(), bitmap.width() * 4, 0);
   }
+  DCHECK(texture_.get());
+  D3D10_BOX dst_box = { origin.x(), origin.y(), 0,
+                        origin.x() + bitmap.width(),
+                        origin.y() + bitmap.height(), 1 };
+  device_->UpdateSubresource(texture_.get(), 0, &dst_box,
+                             converted_data.get(), bitmap.width() * 4, 0);
 }
 
 void ViewTexture::Draw(const ui::TextureDrawParams& params,

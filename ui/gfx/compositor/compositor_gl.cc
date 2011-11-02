@@ -354,7 +354,7 @@ void TextureGL::SetCanvas(const SkCanvas& canvas,
     glBindTexture(GL_TEXTURE_2D, texture_id_);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                  size_.width(), size_.height(), 0,
-                 GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+                 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -365,13 +365,13 @@ void TextureGL::SetCanvas(const SkCanvas& canvas,
     glBindTexture(GL_TEXTURE_2D, texture_id_);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                  size_.width(), size_.height(), 0,
-                 GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-  } else {  // Uploading partial texture.
+                 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  } else {
     glBindTexture(GL_TEXTURE_2D, texture_id_);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, origin.x(), origin.y(),
-                    bitmap.width(), bitmap.height(),
-                    GL_RGBA, GL_UNSIGNED_BYTE, pixels);
   }
+  glTexSubImage2D(GL_TEXTURE_2D, 0, origin.x(), origin.y(),
+                  bitmap.width(), bitmap.height(),
+                  GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 }
 
 void TextureGL::Draw(const ui::TextureDrawParams& params,
