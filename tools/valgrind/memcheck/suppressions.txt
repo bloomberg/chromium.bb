@@ -5144,9 +5144,9 @@
    bug_102049_a
    Memcheck:Leak
    fun:malloc
-   fun:_Z15sk_malloc_flagsjj
-   fun:_Z15sk_malloc_throwj
-   fun:_ZN8SkAAClip7RunHead5AllocEij
+   fun:_Z15sk_malloc_flags*
+   fun:_Z15sk_malloc_throw*
+   fun:_ZN8SkAAClip7RunHead5Alloc*
    fun:_ZN8SkAAClip7Builder6finishEPS_
    ...
    fun:_ZN8SkCanvas8clip*ERK6Sk*N8SkRegion2OpEb
@@ -5191,6 +5191,13 @@
    fun:_ZN15tracked_objects10ThreadData10InitializeEv
    fun:_ZN15tracked_objects10ThreadData30InitializeAndSetTrackingStatusEb
    fun:_ZN15tracked_objects10ThreadData29ShutdownSingleThreadedCleanupEb
+}
+{
+   bug_102614
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12*FinishPepperFlashUpdateRegistrationEP22ComponentUpdateServiceRK7Version
+   fun:_Z18DispatchToFunctionIPFvP22ComponentUpdateServiceRK7VersionES1_S2_EvT_RK6Tuple2IT0_T1_E
 }
 
 #-----------------------------------------------------------------------
