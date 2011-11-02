@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame_aura.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_aura.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -11,6 +12,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/aura_switches.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -160,10 +162,13 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
     : views::NativeWidgetAura(browser_frame),
       browser_view_(browser_view),
       browser_frame_(browser_frame) {
-  // Aura paints layers behind this view, so this must be a layer also.
-  browser_view_->SetPaintToLayer(true);
-  browser_view_->layer()->SetFillsBoundsOpaquely(false);
-  browser_view_->set_background(new ToolbarBackground(browser_view));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraWindows)) {
+    // Aura paints layers behind this view, so this must be a layer also.
+    // TODO: see if we can avoid this, layers are expensive.
+    browser_view_->SetPaintToLayer(true);
+    browser_view_->layer()->SetFillsBoundsOpaquely(false);
+    browser_view_->set_background(new ToolbarBackground(browser_view));
+  }
 }
 
 BrowserFrameAura::~BrowserFrameAura() {
