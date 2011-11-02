@@ -95,6 +95,56 @@
             </div>
           </dl>
         </div>
+
+        <!-- Individual subsections from the table of contents -->
+        <ol>
+          <li id="propertiesTocTemplate" jsdisplay="$this.properties">
+            <a href="#properties">Properties</a>
+            <ol>
+              <li jsselect="getPropertyListFromObject($this)">
+                <a jscontent="name"
+                   jsvalues=".href:'#property-' + name"
+                   href="#property-anchor">propertyName</a>
+              </li>
+            </ol>
+          </li>
+          <li id="methodsTocTemplate" jsdisplay="functions && functions.length > 0">
+            <a jsvalues=".href:'#' + getAnchorName('global', 'methods', $type)">Methods</a>
+            <ol>
+              <li jsselect="functions.sort(sortByName)"
+                  jsdisplay="!($this.nodoc)">
+                <a jscontent="name"
+                   jsvalues=".href:'#' + getAnchorName('method', name, $type)"
+                   href="#method-anchor">methodName</a>
+              </li>
+            </ol>
+          </li>
+          <li id="eventsTocTemplate" jsdisplay="events && events.length > 0">
+            <a jsvalues=".href:'#' + getAnchorName('global', 'events', $type)">Events</a>
+            <ol>
+              <li jsselect="events.sort(sortByName)"
+                  jsdisplay="!($this.nodoc)">
+                <a jscontent="name"
+                   jsvalues=".href:'#' + getAnchorName('event', name, $type)"
+                   href="#event-anchor">eventName</a>
+              </li>
+            </ol>
+          </li>
+          <li id="typesTocTemplate" jsdisplay="types && types.length > 0">
+            <a href="#types">Types</a>
+            <ol>
+              <li jsselect="types.sort(sortByName)">
+                <a jscontent="id"
+                   jsvalues=".href:'#type-' + id"
+                   href="#id-anchor">id</a>
+                <ol jsvalues="$type:id">
+                  <div transclude="methodsTocTemplate"></div>
+                  <div transclude="eventsTocTemplate"></div>
+                </ol>
+              </li>
+            </ol>
+          </li>
+        </ol>
       </div> <!-- /SUBTEMPLATES -->
 
   <a id="top"></a>
@@ -258,51 +308,13 @@
                 </li>
               </ol>
             </li>
-              <li jsselect="apiDefinition">
+              <li jsselect="apiDefinition" jsvalues="$type:''">
                 <a href="#apiReference" jscontent="'API reference: ' + getModuleName()">API reference</a>
                 <ol>
-                  <li jsdisplay="$this.properties">
-                    <a href="#properties">Properties</a>
-                    <ol>
-                      <li jsselect="getPropertyListFromObject($this)">
-                        <a jscontent="name"
-                           jsvalues=".href:'#property-' + name"
-                           href="#property-anchor">propertyName</a>
-                      </li>
-                    </ol>
-                  </li>
-                  <li jsdisplay="functions && functions.length > 0">
-                    <a jsvalues=".href:'#' + getAnchorName('global', 'methods')">Methods</a>
-                    <ol>
-                      <li jsselect="functions.sort(sortByName)"
-                          jsdisplay="!($this.nodoc)">
-                        <a jscontent="name"
-                           jsvalues=".href:'#' + getAnchorName('method', name)"
-                           href="#method-anchor">methodName</a>
-                      </li>
-                    </ol>
-                  </li>
-                  <li jsdisplay="events && events.length > 0">
-                    <a jsvalues=".href:'#' + getAnchorName('global', 'events')">Events</a>
-                    <ol>
-                      <li jsselect="events.sort(sortByName)"
-                          jsdisplay="!($this.nodoc)">
-                        <a jscontent="name"
-                           jsvalues=".href:'#' + getAnchorName('event', name)"
-                           href="#event-anchor">eventName</a>
-                      </li>
-                    </ol>
-                  </li>
-                  <li jsdisplay="types && types.length > 0">
-                    <a href="#types">Types</a>
-                    <ol>
-                      <li jsselect="types.sort(sortByName)">
-                        <a jscontent="id"
-                           jsvalues=".href:'#type-' + id"
-                           href="#id-anchor">id</a>
-                      </li>
-                    </ol>
-                  </li>
+                  <div transclude="propertiesTocTemplate"></div>
+                  <div transclude="methodsTocTemplate"></div>
+                  <div transclude="eventsTocTemplate"></div>
+                  <div transclude="typesTocTemplate"></div>
                 </ol>
               </li>
           </ol>
