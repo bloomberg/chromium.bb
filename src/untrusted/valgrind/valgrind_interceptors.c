@@ -730,7 +730,7 @@ void VG_NACL_ANN(AnnotateMutexIsNotPHB)(char *file, int line, void *mu) {
 
 void VG_NACL_ANN(AnnotateExpectRace)(char *file, int line, void *addr,
     void* desc) {
-  VG_CREQ_v_WWW(TSREQ_EXPECT_RACE, VALGRIND_SANDBOX_PTR((size_t)addr), 1,
+  VG_CREQ_v_WW(TSREQ_EXPECT_RACE, VALGRIND_SANDBOX_PTR((size_t)addr),
       VALGRIND_SANDBOX_PTR((size_t)desc));
 }
 
