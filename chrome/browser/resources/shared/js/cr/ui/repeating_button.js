@@ -142,6 +142,22 @@ cr.define('cr.ui', function() {
      */
     buttonHeld_: function() {
       cr.dispatchSimpleEvent(this, RepeatingButton.Event.BUTTON_HELD);
+    },
+
+    /**
+     * Getter for the initial delay before repeating.
+     * @type {number} The delay in milliseconds.
+     */
+    get repeatDelay() {
+      return this.holdDelayTime_;
+    },
+
+    /**
+     * Getter for the repeat interval.
+     * @type {number} The repeat interval in milliseconds.
+     */
+    get repeatInterval() {
+      return this.holdRepeatIntervalTime_;
     }
   };
 
