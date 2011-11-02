@@ -24,6 +24,7 @@ class Message;
 
 class Browser;
 class BrowserWindow;
+class DevToolsAgentHost;
 class PrefService;
 class Profile;
 class RenderViewHost;
@@ -44,6 +45,9 @@ class DevToolsWindow
   static TabContentsWrapper* GetDevToolsContents(TabContents* inspected_tab);
   static DevToolsWindow* FindDevToolsWindow(RenderViewHost* window_rvh);
 
+  static DevToolsWindow* OpenDevToolsWindowForWorker(
+      Profile* profile,
+      DevToolsAgentHost* worker_agent);
   static DevToolsWindow* CreateDevToolsWindowForWorker(Profile* profile);
   static DevToolsWindow* OpenDevToolsWindow(RenderViewHost* inspected_rvh);
   static DevToolsWindow* ToggleDevToolsWindow(RenderViewHost* inspected_rvh,

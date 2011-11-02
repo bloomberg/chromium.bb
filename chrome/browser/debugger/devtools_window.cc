@@ -81,6 +81,26 @@ DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
 }
 
 // static
+DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
+    Profile* profile,
+    DevToolsAgentHost* worker_agent) {
+  DevToolsWindow* window;
+  DevToolsClientHost* client =
+      DevToolsManager::GetInstance()->GetDevToolsClientHostFor(worker_agent);
+  if (client) {
+    window = AsDevToolsWindow(client);
+    if (!window)
+      return NULL;
+  } else {
+    window = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
+    DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(worker_agent,
+                                                                  window);
+  }
+  window->Show(DEVTOOLS_TOGGLE_ACTION_NONE);
+  return window;
+}
+
+// static
 DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
     Profile* profile) {
   return Create(profile, NULL, false, true);

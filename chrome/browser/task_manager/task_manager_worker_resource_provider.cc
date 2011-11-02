@@ -10,7 +10,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "content/browser/browser_child_process_host.h"
+#include "content/browser/debugger/worker_devtools_manager.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/browser/worker_host/worker_service.h"
 #include "content/browser/worker_host/worker_service_observer.h"
@@ -46,6 +48,8 @@ class TaskManagerSharedWorkerResource : public TaskManager::Resource {
   virtual SkBitmap GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual bool CanInspect() const OVERRIDE;
+  virtual void Inspect() const OVERRIDE;
 
   virtual bool SupportNetworkUsage() const OVERRIDE;
   virtual void SetSupportNetworkUsage() OVERRIDE;
@@ -109,6 +113,23 @@ base::ProcessHandle TaskManagerSharedWorkerResource::GetProcess() const {
 
 TaskManager::Resource::Type TaskManagerSharedWorkerResource::GetType() const {
   return WORKER;
+}
+
+bool TaskManagerSharedWorkerResource::CanInspect() const {
+  return true;
+}
+
+void TaskManagerSharedWorkerResource::Inspect() const {
+  // TODO(yurys): would be better to get profile from one of the tabs connected
+  // to the worker.
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  if (!profile)
+    return;
+  DevToolsAgentHost* agent_host =
+      WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
+          process_info_.id(),
+          routing_id_);
+  DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
 }
 
 bool TaskManagerSharedWorkerResource::SupportNetworkUsage() const {

@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/worker_devtools_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
@@ -147,13 +146,7 @@ void WorkersDOMHandler::HandleOpenDevTools(const ListValue* args) {
       WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
           worker_process_host_id,
           worker_route_id);
-  if (DevToolsManager::GetInstance()->GetDevToolsClientHostFor(agent_host))
-    return;
-  DevToolsWindow* window = DevToolsWindow::CreateDevToolsWindowForWorker(
-      profile);
-  window->Show(DEVTOOLS_TOGGLE_ACTION_NONE);
-  DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(agent_host,
-                                                                window);
+  DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
 }
 
 static void TerminateWorker(int worker_process_id, int worker_route_id) {
