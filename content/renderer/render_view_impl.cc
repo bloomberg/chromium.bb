@@ -271,6 +271,8 @@ static const int kMaximumNumberOfUnacknowledgedPopups = 25;
 
 static const float kScalingIncrement = 0.1f;
 
+static const float kScalingIncrementForGesture = 0.01f;
+
 static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   WebVector<WebURL> urls;
   ds->redirectChain(urls);
@@ -599,6 +601,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_FindReplyACK, OnFindReplyAck)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevel, OnSetZoomLevel)
+    IPC_MESSAGE_HANDLER(ViewMsg_ZoomFactor, OnZoomFactor)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingURL,
                         OnSetZoomLevelForLoadingURL)
     IPC_MESSAGE_HANDLER(ViewMsg_ExitFullscreen, OnExitFullscreen)
@@ -3555,17 +3558,36 @@ void RenderViewImpl::OnZoom(content::PageZoom zoom) {
   }
   webview()->setZoomLevel(false, zoom_level);
 #else
+  ZoomFactorHelper(zoom, 0, 0, kScalingIncrement);
+#endif
+  zoomLevelChanged();
+}
+
+void RenderViewImpl::OnZoomFactor(content::PageZoom zoom,
+                                  int zoom_center_x, int zoom_center_y) {
+  ZoomFactorHelper(zoom, zoom_center_x, zoom_center_y,
+                   kScalingIncrementForGesture);
+}
+
+void RenderViewImpl::ZoomFactorHelper(content::PageZoom zoom,
+                                      int zoom_center_x,
+                                      int zoom_center_y,
+                                      float scaling_increment) {
+  if (!webview())  // Not sure if this can happen, but no harm in being safe.
+    return;
+
   double old_page_scale_factor = webview()->pageScaleFactor();
   double page_scale_factor;
   if (zoom == content::PAGE_ZOOM_RESET) {
     page_scale_factor = 1.0;
   } else {
     page_scale_factor = old_page_scale_factor +
-        (zoom > 0 ? kScalingIncrement : -kScalingIncrement);
+        (zoom > 0 ? scaling_increment : -scaling_increment);
   }
-  webview()->scalePage(page_scale_factor, WebPoint(0, 0));
-#endif
-  zoomLevelChanged();
+  if (page_scale_factor > 0) {
+    webview()->scalePage(page_scale_factor,
+                         WebPoint(zoom_center_x, zoom_center_y));
+  }
 }
 
 void RenderViewImpl::OnSetZoomLevel(double zoom_level) {
