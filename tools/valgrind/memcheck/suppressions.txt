@@ -5199,6 +5199,12 @@
    fun:_ZN12*FinishPepperFlashUpdateRegistrationEP22ComponentUpdateServiceRK7Version
    fun:_Z18DispatchToFunctionIPFvP22ComponentUpdateServiceRK7VersionES1_S2_EvT_RK6Tuple2IT0_T1_E
 }
+{
+   bug_102622
+   Memcheck:Cond
+   fun:bcmp
+   fun:_ZN31InputEventFilterTest_Basic_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
