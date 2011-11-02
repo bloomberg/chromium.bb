@@ -200,21 +200,8 @@ void BluetoothOptionsHandler::DeviceFound(const std::string& adapter_id,
                                           chromeos::BluetoothDevice* device) {
   VLOG(2) << "Device found on " << adapter_id;
   DCHECK(device);
-
-  // TODO(vlaviano): eliminate inconsistencies between the javascript rep and
-  // BluetoothDevice so that we can use BluetoothDevice::AsDictionary() here.
-  DictionaryValue device_js_rep;
-  device_js_rep.SetString("deviceName", device->GetName());
-  device_js_rep.SetString("deviceId", device->GetAddress());
-  device_js_rep.SetString("deviceType", device->GetIcon());
-  if (device->IsPaired()) {
-    device_js_rep.SetString("deviceStatus", "bluetoothDeviceConnected");
-  } else {
-    device_js_rep.SetString("deviceStatus", "bluetoothDeviceNotPaired");
-  }
-
   web_ui_->CallJavascriptFunction(
-      "options.SystemOptions.addBluetoothDevice", device_js_rep);
+      "options.SystemOptions.addBluetoothDevice", device->AsDictionary());
 }
 
 void BluetoothOptionsHandler::ValidateDefaultAdapter(
@@ -232,22 +219,36 @@ void BluetoothOptionsHandler::GenerateFakeDeviceList() {
   //               process of discovering bluetooth devices takes time.
   //               Fire each notification using OneShotTimer with a
   //               varying delay.
-  std::string data[9] = {
-    "Fake Wireless Keyboard", "01-02-03-04-05", "keyboard",
-    "Fake Wireless Mouse",  "02-03-04-05-01", "mouse",
-    "Fake Wireless Headset", "03-04-05-01-02", "headset"};
-
-  for (int i = 0; i < 3; i++) {
-    DictionaryValue device;
-    device.SetString("deviceName", data[3*i]);
-    device.SetString("deviceId", data[3*i+1]);
-    device.SetString("deviceType", data[3*i+2]);
-    device.SetString("deviceStatus", "bluetoothDeviceNotPaired");
-    web_ui_->CallJavascriptFunction(
-        "options.SystemOptions.addBluetoothDevice", device);
-  }
+  GenerateFakeDiscoveredDevice(
+    "Fake Wireless Keyboard",
+    "01-02-03-04-05-06",
+    "keyboard");
+  GenerateFakeDiscoveredDevice(
+    "Fake Wireless Mouse",
+    "02-03-04-05-06-01",
+    "mouse");
+  GenerateFakeDiscoveredDevice(
+    "Fake Wireless Headset",
+    "03-04-05-06-01-02",
+    "headset");
   web_ui_->CallJavascriptFunction(
       "options.SystemOptions.notifyBluetoothSearchComplete");
+}
+
+void BluetoothOptionsHandler::GenerateFakeDiscoveredDevice(
+    const std::string& name,
+    const std::string& address,
+    const std::string& icon)
+{
+  DictionaryValue device;
+  device.SetString("name", name);
+  device.SetString("address", address);
+  device.SetString("icon", icon);
+  device.SetBoolean("paired", false);
+  device.SetBoolean("connected", false);
+  web_ui_->CallJavascriptFunction(
+      "options.SystemOptions.addBluetoothDevice", device);
+
 }
 
 }  // namespace chromeos

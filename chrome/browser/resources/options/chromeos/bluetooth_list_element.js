@@ -75,7 +75,7 @@ cr.define('options.system.bluetooth', function() {
       var item = new BluetoothItem(device);
       var candidate = this.firstChild;
       while (candidate) {
-        if (candidate.data.deviceId  == device.deviceId) {
+        if (candidate.data.address  == device.address) {
           this.replaceChild(item, candidate);
           return;
         }
@@ -91,7 +91,7 @@ cr.define('options.system.bluetooth', function() {
      * @private
      */
     isSupported_: function(device) {
-      var target = device.deviceType;
+      var target = device.icon;
       for (var key in Constants.DEVICE_TYPE) {
         if (Constants.DEVICE_TYPE[key] == target)
           return true;
@@ -135,59 +135,59 @@ cr.define('options.system.bluetooth', function() {
       this.className = 'network-item';
       this.connected = this.data.connected;
       if (this.data.deviceId)
-        this.id = this.data.deviceId;
+        this.id = this.data.address;
 
       // |textDiv| holds icon, name and status text.
       var textDiv = this.ownerDocument.createElement('div');
       textDiv.className = 'network-item-text';
 
-      var deviceSpecificClassName = 'bluetooth-' + this.data.deviceType;
+      var deviceSpecificClassName = 'bluetooth-' + this.data.icon;
       this.classList.add(deviceSpecificClassName);
 
       var nameEl = this.ownerDocument.createElement('div');
       nameEl.className = 'network-name-label';
-      nameEl.textContent = this.data.deviceName;
+      nameEl.textContent = this.data.name;
       textDiv.appendChild(nameEl);
       var buttonsDiv = null;
-
-      var status = this.data.deviceStatus;
-      if (status) {
-        var statusMessage = templateData[status];
-        if (statusMessage) {
-          var statusEl = this.ownerDocument.createElement('div');
-          statusEl.className = 'network-status-label';
-          statusEl.textContent = statusMessage;
-          textDiv.appendChild(statusEl);
+      var status = (this.data.connected) ?
+           Constants.DEVICE_STATUS.CONNECTED :
+           Constants.DEVICE_STATUS.NOT_PAIRED;
+      var statusMessage = templateData[status];
+      if (statusMessage) {
+        var statusEl = this.ownerDocument.createElement('div');
+        statusEl.className = 'network-status-label';
+        statusEl.textContent = statusMessage;
+        textDiv.appendChild(statusEl);
+      }
+      buttonsDiv = this.ownerDocument.createElement('div');
+      buttonsDiv.className = 'bluetooth-button-group';
+      var buttonLabelKey = null;
+      var callbackType = null;
+      if (status == Constants.DEVICE_STATUS.CONNECTED) {
+        buttonLabelKey = 'bluetoothDisconnectDevice';
+        callbackType = 'disconnect';
+      } else if (status == Constants.DEVICE_STATUS.NOT_PAIRED) {
+        buttonLabelKey = 'bluetoothConnectDevice';
+        callbackType = 'connect';
+      }
+      if (buttonLabelKey && callbackType) {
+        var buttonEl = this.ownerDocument.createElement('button');
+        buttonEl.textContent = localStrings.getString(buttonLabelKey);
+        var self = this;
+        var callback = function(e) {
+          chrome.send('updateBluetoothDevice',
+              [self.data.address, callbackType]);
         }
-        buttonsDiv = this.ownerDocument.createElement('div');
-        buttonsDiv.className = 'bluetooth-button-group';
-        var buttonLabelKey = null;
-        var callbackType = null;
-        if (status == Constants.DEVICE_STATUS.CONNECTED) {
-          this.connected = true;
-          buttonLabelKey = 'bluetoothDisconnectDevice';
-          callbackType = 'disconnect';
-        } else if (status == Constants.DEVICE_STATUS.NOT_PAIRED) {
-          buttonLabelKey = 'bluetoothConnectDevice';
-          callbackType = 'connect';
-        }
-        if (buttonLabelKey && callbackType) {
-          var buttonEl = this.ownerDocument.createElement('button');
-          buttonEl.textContent = localStrings.getString(buttonLabelKey);
-          var self = this;
-          var callback = function(e) {
-            chrome.send('updateBluetoothDevice',
-                [self.data.deviceId, callbackType]);
-          }
-          buttonEl.addEventListener('click', callback);
-          buttonsDiv.appendChild(buttonEl);
-        }
+        buttonEl.addEventListener('click', callback);
+        buttonsDiv.appendChild(buttonEl);
       }
       this.appendChild(textDiv);
       if (buttonsDiv)
         this.appendChild(buttonsDiv);
     }
   };
+
+  cr.defineProperty(BluetoothItem, 'connected', cr.PropertyKind.BOOL_ATTR);
 
   return {
     Constants: Constants,

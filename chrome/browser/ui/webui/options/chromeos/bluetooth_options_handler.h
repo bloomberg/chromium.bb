@@ -74,6 +74,16 @@ class BluetoothOptionsHandler : public chromeos::CrosOptionsPageUIHandler,
   // Called when emulating ChromeOS from a desktop environment.
   void GenerateFakeDeviceList();
 
+  // Simulates the discovery of a Bluetooth device.  Used when emulating
+  // ChromeOS from a desktop environment.
+  // |name| is the display name for the device.
+  // |address| is the unique Mac address of the device.
+  // |icon| is the base name of the icon to use for the device and corresponds
+  // to the general device category (e.g. mouse or keyboard)
+  void GenerateFakeDiscoveredDevice(const std::string& name,
+                                    const std::string& address,
+                                    const std::string& icon);
+
   // The id of the current default bluetooth adapter.
   // The empty string represents "none".
   std::string default_adapter_id_;
