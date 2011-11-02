@@ -80,7 +80,7 @@ using testing::WithArgs;
 
 class HistoryBackendMock : public HistoryBackend {
  public:
-  HistoryBackendMock() : HistoryBackend(FilePath(), 0, NULL, NULL) {}
+  HistoryBackendMock() : HistoryBackend(NULL, FilePath(), 0, NULL, NULL) {}
   MOCK_METHOD1(GetAllTypedURLs, bool(std::vector<history::URLRow>* entries));
   MOCK_METHOD3(GetMostRecentVisitsForURL, bool(history::URLID id,
                                                int max_visits,
