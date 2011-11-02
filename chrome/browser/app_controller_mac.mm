@@ -51,6 +51,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
+#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -1248,6 +1249,17 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 
 - (BookmarkMenuBridge*)bookmarkMenuBridge {
   return bookmarkMenuBridge_.get();
+}
+
+- (void)applicationDidChangeScreenParameters:(NSNotification *)notification {
+  // During this callback the working area is not always already updated. Defer.
+  [self performSelector:@selector(delayedPanelManagerScreenParametersUpdate)
+             withObject:nil
+             afterDelay:0];
+}
+
+- (void)delayedPanelManagerScreenParametersUpdate {
+  PanelManager::GetInstance()->OnDisplayChanged();
 }
 
 @end  // @implementation AppController
