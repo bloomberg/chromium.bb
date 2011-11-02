@@ -58,7 +58,7 @@ class MediaTest : public UITest {
 // http://crbug.com/88834 - VideoBearTheora, VideoBearWav and VideoBearWebm
 // are flaky on Mac.
 #define MAYBE_VideoBearTheora FLAKY_VideoBearTheora
-#define MAYBE_VideoBearWav FLAKY_VideoBearWav
+#define MAYBE_VideoBearWavPcm FLAKY_VideoBearWavPcm
 #define MAYBE_VideoBearWebm FLAKY_VideoBearWebm
 #else
 #define MAYBE_VideoBearTheora VideoBearTheora
