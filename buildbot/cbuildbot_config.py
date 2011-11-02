@@ -258,6 +258,30 @@ full = {
   'git_sync' : True,
 }
 
+pfq = {
+  'important': True,
+  'uprev' : True,
+  'overlays': 'public',
+  'manifest_version': True,
+  'trybot_list' : True,
+}
+
+# Pre Flight Queue branch builders uprev and push on both overlays.
+pfq_branch = pfq.copy()
+pfq_branch.update({
+  'overlays': 'both',
+  'push_overlays': 'both',
+})
+
+commit_queue = {
+  'important': True,
+  'build_type': constants.COMMIT_QUEUE_TYPE,
+  'uprev' : True,
+  'overlays': 'public',
+  'prebuilts': False,
+  'manifest_version': True,
+}
+
 chrome_pfq = {
   'build_type': constants.CHROME_PFQ_TYPE,
   'important': True,
@@ -349,42 +373,42 @@ add_config('refresh-packages', [default, {
   'build_type' : constants.REFRESH_PACKAGES_TYPE,
 }])
 
-add_config('x86-generic-pre-flight-queue', [{
+add_config('x86-generic-pre-flight-queue', [pfq, {
   'board' : 'x86-generic',
   'master' : True,
-  'important': True,
-
-  'uprev' : True,
-  'overlays': 'public',
-  'push_overlays': 'public',
-  'manifest_version': True,
-
-  'trybot_list' : True,
+  'push_overlays' : 'public',
   'description' : 'x86-generic PFQ',
 }])
 
-add_config('x86-generic-commit-queue', [{
-  'board' : 'x86-generic',
-  'master' : True,
-  'important': True,
-  'build_type': constants.COMMIT_QUEUE_TYPE,
-
-  'uprev' : True,
-  'overlays': 'public',
-  'push_overlays': None,
-  'prebuilts': False,
-  'manifest_version': True,
+add_config('arm-generic-bin', [arm, pfq, {
+  'board' : 'arm-generic',
+  'description' : 'arm-generic PFQ',
 }])
 
-add_config('arm-generic-commit-queue', [{
+add_config('arm-tegra2-bin', [arm, pfq, {
+  'board' : 'tegra2',
+  'description' : 'arm-tegra2 PFQ',
+}])
+
+add_config('x86-generic-commit-queue', [commit_queue, {
+  'board' : 'x86-generic',
+  'master' : True,
+}])
+
+add_config('arm-generic-commit-queue', [commit_queue, {
   'board' : 'arm-generic',
   'important': False,
-  'build_type': constants.COMMIT_QUEUE_TYPE,
+}])
 
-  'uprev' : True,
-  'overlays': 'public',
-  'prebuilts': False,
-  'manifest_version': True,
+add_config('arm-tegra2-commit-queue', [commit_queue, {
+  'board' : 'tegra2',
+  'important': False,
+}])
+
+add_config('x86-mario-commit-queue', [commit_queue, internal, {
+  'board' : 'x86-mario',
+  'master': True,
+  'overlays': 'private',
 }])
 
 add_config('x86-generic-chrome-pre-flight-queue', [chrome_pfq, {
@@ -420,44 +444,6 @@ add_config('arm-tegra2-tot-chrome-pfq-informational', [chrome_pfq_info, arm, {
 add_config('patch-tot-chrome-pfq-informational', [chrome_pfq_info, arm, {
   'board' : 'arm-generic',
   'useflags' : ['touchui_patches'],
-}])
-
-
-# TODO(sosa): Remove x86-pineview bin.
-add_config('x86-pineview-bin', [{
-  'board' : 'x86-pineview',
-
-  'uprev' : True,
-  'overlays': 'public',
-  'push_overlays': None,
-  'important': False,
-  'manifest_version': True,
-}])
-
-add_config('arm-generic-bin', [arm, {
-  'board' : 'arm-generic',
-
-  'uprev' : True,
-  'overlays': 'public',
-  'push_overlays': None,
-  'important': True,
-  'manifest_version': True,
-
-  'trybot_list' : True,
-  'description' : 'arm-generic PFQ',
-}])
-
-add_config('arm-tegra2-bin', [arm, {
-  'board' : 'tegra2',
-
-  'uprev' : True,
-  'overlays': 'public',
-  'push_overlays': None,
-  'important': True,
-  'manifest_version': True,
-
-  'trybot_list' : True,
-  'description' : 'arm-tegra2 PFQ',
 }])
 
 add_config('arm-generic-full', [arm, full, {
@@ -522,38 +508,25 @@ add_config('x86-generic-asan', [{
 # Internal Builds
 #
 
-add_config('x86-mario-pre-flight-queue', [internal, {
+add_config('x86-mario-pre-flight-queue', [internal, pfq, {
   'board' : 'x86-mario',
   'master' : True,
-  'important': True,
 
-  'uprev' : True,
   'vm_tests': constants.SIMPLE_AU_TEST_TYPE,
   'overlays': 'private',
   'push_overlays': 'private',
   'gs_path': 'gs://chromeos-x86-mario/pre-flight-master',
-  'manifest_version' : True,
 
-  'trybot_list' : True,
   'description' : 'internal x86 PFQ',
 }])
 
-add_config('x86-alex-pre-flight-branch', [internal, {
+add_config('x86-alex-pre-flight-branch', [internal, pfq_branch, {
   'board' : 'x86-alex',
-  'master' : False,
-
-  'uprev' : True,
-  'overlays': 'both',
-  'push_overlays': 'both',
 }])
 
-add_config('x86-mario-pre-flight-branch', [internal, {
+add_config('x86-mario-pre-flight-branch', [internal, pfq_branch, {
   'board' : 'x86-mario',
   'master' : True,
-
-  'uprev' : True,
-  'overlays': 'both',
-  'push_overlays': 'both',
 }])
 
 add_config('arm-tegra2_seaboard-private-bin', [internal, arm, binary, {
