@@ -224,14 +224,10 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
-  ClientDownloadResponse response;
-  response.set_verdict(ClientDownloadResponse::SAFE);
   FakeURLFetcherFactory factory;
   // Empty response means SAFE.
   factory.SetFakeResponse(
-      DownloadProtectionService::kDownloadRequestUrl,
-      response.SerializeAsString(),
-      true);
+      DownloadProtectionService::kDownloadRequestUrl, "", true);
 
   EXPECT_CALL(*sb_service_, MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
@@ -248,11 +244,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   EXPECT_EQ(DownloadProtectionService::SAFE, result_);
 
   // Invalid response should be safe too.
-  response.Clear();
   factory.SetFakeResponse(
-      DownloadProtectionService::kDownloadRequestUrl,
-      response.SerializePartialAsString(),
-      true);
+      DownloadProtectionService::kDownloadRequestUrl, "bla", true);
 
   download_service_->CheckClientDownload(
       info,
@@ -260,20 +253,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
                  base::Unretained(this)));
   msg_loop_.Run();
   EXPECT_EQ(DownloadProtectionService::SAFE, result_);
-
-  // If the response is dangerous the result should also be marked as dangerous.
-  response.set_verdict(ClientDownloadResponse::DANGEROUS);
-  factory.SetFakeResponse(
-      DownloadProtectionService::kDownloadRequestUrl,
-      response.SerializeAsString(),
-      true);
-
-  download_service_->CheckClientDownload(
-      info,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  msg_loop_.Run();
-  EXPECT_EQ(DownloadProtectionService::DANGEROUS, result_);
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {

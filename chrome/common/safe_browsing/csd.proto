@@ -146,14 +146,3 @@ message ClientDownloadRequest {
   // True if the download was user initiated.
   optional bool user_initiated = 6;
 }
-
-message ClientDownloadResponse {
-  enum Verdict {
-    // Download is considered safe.
-    SAFE = 0;
-    // Download is considered dangerous.  Chrome should show a warning to the
-    // user.
-    DANGEROUS = 1;
-  }
-  required Verdict verdict = 1;
-}

@@ -51,7 +51,7 @@ class DownloadProtectionService {
 
   enum DownloadCheckResult {
     SAFE,
-    DANGEROUS,
+    MALICIOUS,
     // In the future we may introduce a third category which corresponds to
     // suspicious downloads that are not known to be malicious.
   };
@@ -98,8 +98,6 @@ class DownloadProtectionService {
     REASON_INVALID_RESPONSE_PROTO,
     REASON_NOT_BINARY_FILE,
     REASON_REQUEST_CANCELED,
-    REASON_DOWNLOAD_DANGEROUS,
-    REASON_DOWNLOAD_SAFE,
     REASON_MAX  // Always add new values before this one.
   };
 

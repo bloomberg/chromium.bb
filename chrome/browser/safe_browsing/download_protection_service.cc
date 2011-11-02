@@ -186,26 +186,26 @@ class DownloadProtectionService::CheckClientDownloadRequest
             << info_.download_url_chain.back() << ": success="
             << source->GetStatus().is_success() << " response_code="
             << source->GetResponseCode();
-    DownloadCheckResultReason reason = REASON_SERVER_PING_FAILED;
-    DownloadCheckResult result = SAFE;
+    DownloadCheckResultReason reason = REASON_MAX;
+    reason = REASON_SERVER_PING_FAILED;
     if (source->GetStatus().is_success() &&
         RC_REQUEST_OK == source->GetResponseCode()) {
-      ClientDownloadResponse response;
       std::string data;
-      DCHECK(source->GetResponseAsString(&data));
-      if (!response.ParseFromString(data)) {
+      source->GetResponseAsString(&data);
+      if (data.size() > 0) {
+        // For now no matter what we'll always say the download is safe.
+        // TODO(noelutz): Parse the response body to see exactly what's going
+        // on.
         reason = REASON_INVALID_RESPONSE_PROTO;
-      } else if (response.verdict() == ClientDownloadResponse::DANGEROUS) {
-        reason = REASON_DOWNLOAD_DANGEROUS;
-        result = DANGEROUS;
-      } else {
-        reason = REASON_DOWNLOAD_SAFE;
       }
+    }
+
+    if (reason != REASON_MAX) {
+      RecordStats(reason);
     }
     // We don't need the fetcher anymore.
     fetcher_.reset();
-    RecordStats(reason);
-    FinishRequest(result);
+    FinishRequest(SAFE);
   }
 
  private:
