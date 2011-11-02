@@ -556,7 +556,6 @@ BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD newlib-libc-script
 		      --enable-newlib-io-long-double \
 		      --enable-newlib-io-c99-formats \
 		      --enable-newlib-mb \
-		      libc_cv_initfinit_array=yes \
 	    --prefix=$(PREFIX) \
 	    CFLAGS="-O2 $(CFLAGS)" \
 	    CFLAGS_FOR_TARGET='$(NEWLIB_CFLAGS)' \
