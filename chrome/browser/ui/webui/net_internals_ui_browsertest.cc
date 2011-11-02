@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -85,12 +86,17 @@ class NetInternalsTestMessageHandler : public WebUIMessageHandler {
  private:
   virtual void RegisterMessages() OVERRIDE;
 
-  // Opens the given URL in a new tab.
+  // Opens the given URL in a new background tab.
   void OpenNewTab(const ListValue* list_value);
 
   // Adds a new entry to the host cache.  Takes in hostname, ip address,
   // net error code, and expiration time (as number of days from now).
   void AddCacheEntry(const ListValue* list_value);
+
+  // Navigates to the prerender in the background tab. This assumes that
+  // there is a "Click()" function in the background tab which will navigate
+  // there, and that the background tab exists at slot 1.
+  void NavigateToPrerender(const ListValue* list_value);
 
   Browser* browser_;
 
@@ -110,6 +116,9 @@ void NetInternalsTestMessageHandler::RegisterMessages() {
       "addCacheEntry",
       base::Bind(&NetInternalsTestMessageHandler::AddCacheEntry,
                  base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("navigateToPrerender",
+       base::Bind(&NetInternalsTestMessageHandler::NavigateToPrerender,
+                  base::Unretained(this)));
 }
 
 void NetInternalsTestMessageHandler::OpenNewTab(const ListValue* list_value) {
@@ -149,6 +158,12 @@ void NetInternalsTestMessageHandler::AddCacheEntry(
                  static_cast<int>(expire_days_from_now)));
 }
 
+void NetInternalsTestMessageHandler::NavigateToPrerender(
+    const ListValue* list_value) {
+  RenderViewHost* host = browser_->GetTabContentsAt(1)->render_view_host();
+  host->ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16("Click()"));
+}
+
 class NetInternalsTest : public WebUIBrowserTest {
  public:
   NetInternalsTest();
@@ -158,6 +173,20 @@ class NetInternalsTest : public WebUIBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
+
+ protected:
+  GURL CreatePrerenderLoaderUrl(const GURL& prerender_url) {
+    std::vector<net::TestServer::StringPair> replacement_text;
+    replacement_text.push_back(
+        make_pair("REPLACE_WITH_PRERENDER_URL", prerender_url.spec()));
+    std::string replacement_path;
+    EXPECT_TRUE(net::TestServer::GetFilePathWithReplacements(
+        "files/prerender/prerender_loader.html",
+        replacement_text,
+        &replacement_path));
+    GURL url_loader = test_server()->GetURL(replacement_path);
+    return url_loader;
+  }
 
  private:
   virtual WebUIMessageHandler* GetMockMessageHandler() OVERRIDE {
@@ -393,27 +422,29 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsHSTSViewAddTwice) {
 // Prerender a page and navigate to it, once prerendering starts.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsPrerenderViewSucceed) {
   ASSERT_TRUE(test_server()->Start());
-  EXPECT_TRUE(RunJavascriptAsyncTest(
-      "netInternalsPrerenderView",
-      // URL that can be prerendered.
-      Value::CreateStringValue(
-          test_server()->GetURL("files/title1.html").spec()),
-      Value::CreateBooleanValue(true),
-      Value::CreateStringValue(
-          prerender::NameFromFinalStatus(prerender::FINAL_STATUS_USED))));
+  GURL prerender_url = test_server()->GetURL("files/title1.html");
+  GURL loader_url = CreatePrerenderLoaderUrl(prerender_url);
+  ConstValueVector args;
+  args.push_back(Value::CreateStringValue(prerender_url.spec()));
+  args.push_back(Value::CreateStringValue(loader_url.spec()));
+  args.push_back(Value::CreateBooleanValue(true));
+  args.push_back(Value::CreateStringValue(
+      prerender::NameFromFinalStatus(prerender::FINAL_STATUS_USED)));
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsPrerenderView", args));
 }
 
 // Prerender a page that is expected to fail.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsPrerenderViewFail) {
   ASSERT_TRUE(test_server()->Start());
-  EXPECT_TRUE(RunJavascriptAsyncTest(
-      "netInternalsPrerenderView",
-      // URL that can't be prerendered, since it triggers a download.
-      Value::CreateStringValue(
-          test_server()->GetURL("files/download-test1.lib").spec()),
-      Value::CreateBooleanValue(false),
-      Value::CreateStringValue(
-          prerender::NameFromFinalStatus(prerender::FINAL_STATUS_DOWNLOAD))));
+  GURL prerender_url = test_server()->GetURL("files/download-test1.lib");
+  GURL loader_url = CreatePrerenderLoaderUrl(prerender_url);
+  ConstValueVector args;
+  args.push_back(Value::CreateStringValue(prerender_url.spec()));
+  args.push_back(Value::CreateStringValue(loader_url.spec()));
+  args.push_back(Value::CreateBooleanValue(false));
+  args.push_back(Value::CreateStringValue(
+      prerender::NameFromFinalStatus(prerender::FINAL_STATUS_DOWNLOAD)));
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsPrerenderView", args));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

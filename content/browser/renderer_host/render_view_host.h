@@ -472,6 +472,10 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   // (and what action to take regarding the selection).
   void StopFinding(const ViewMsg_StopFinding_Params& params);
 
+  SessionStorageNamespace* session_storage_namespace() {
+    return session_storage_namespace_.get();
+  }
+
   // NOTE: Do not add functions that just send an IPC message that are called in
   // one or two places.  Have the caller send the IPC message directly.
 

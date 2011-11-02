@@ -1,0 +1,37 @@
+<html>
+<head>
+<title>Preloader</title>
+
+<script>
+  function Click() {
+    var eventObject = document.createEvent('MouseEvents');
+    eventObject.initMouseEvent('click');
+    document.getElementById('toClick').dispatchEvent(eventObject);
+  }
+
+</script>
+
+</head>
+<body>
+<script>
+  function loader() {
+    var storage = window.sessionStorage;
+    var oldCounter = 0;
+    if (storage.counter) {
+      oldCounter = parseInt(storage.counter);
+    } else {
+       document.write(
+           '<link rel="prerender" href="REPLACE_WITH_PRERENDER_URL"/>');
+    }
+    storage.counter = oldCounter + 1;
+  }
+
+  function DidBackToOriginalPagePass() {
+    return window.sessionStorage.counter == '2';
+  }
+
+  window.onload = loader;
+</script>
+<a id="toClick" href="REPLACE_WITH_PRERENDER_URL">Link to click</a>
+</body>
+</html>

@@ -38,6 +38,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
@@ -1037,8 +1038,11 @@ void AutocompleteEditModel::DoPrerender(const AutocompleteMatch& match) {
     TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
     prerender::PrerenderManager* prerender_manager =
         prerender::PrerenderManagerFactory::GetForProfile(tab->profile());
-    if (prerender_manager)
-      prerender_manager->AddPrerenderFromOmnibox(match.destination_url);
+    if (prerender_manager) {
+      RenderViewHost* current_host = tab->tab_contents()->render_view_host();
+      prerender_manager->AddPrerenderFromOmnibox(
+          match.destination_url, current_host->session_storage_namespace());
+    }
   }
 }
 

@@ -34,6 +34,7 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
+#include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -274,10 +275,13 @@ bool PrerenderManager::AddPrerenderFromLinkRelPrerender(int process_id,
                                                            route_id);
 
   return AddPrerender(ORIGIN_LINK_REL_PRERENDER, child_route_id_pair,
-                      url, referrer);
+                      url, referrer, NULL);
 }
 
-bool PrerenderManager::AddPrerenderFromOmnibox(const GURL& url) {
+bool PrerenderManager::AddPrerenderFromOmnibox(
+    const GURL& url,
+    SessionStorageNamespace* session_storage_namespace) {
+  DCHECK(session_storage_namespace);
   if (!IsOmniboxEnabled(profile_))
     return false;
 
@@ -296,14 +300,16 @@ bool PrerenderManager::AddPrerenderFromOmnibox(const GURL& url) {
       break;
   };
 
-  return AddPrerender(origin, std::make_pair(-1, -1), url, GURL());
+  return AddPrerender(origin, std::make_pair(-1, -1), url, GURL(),
+                      session_storage_namespace);
 }
 
 bool PrerenderManager::AddPrerender(
     Origin origin,
     const std::pair<int, int>& child_route_id_pair,
     const GURL& url_arg,
-    const GURL& referrer) {
+    const GURL& referrer,
+    SessionStorageNamespace* session_storage_namespace) {
   DCHECK(CalledOnValidThread());
 
   if (origin == ORIGIN_LINK_REL_PRERENDER && IsGoogleSearchResultURL(referrer))
@@ -358,7 +364,6 @@ bool PrerenderManager::AddPrerender(
   }
 
   RenderViewHost* source_render_view_host = NULL;
-  // This test should fail only during unit tests.
   if (child_route_id_pair.first != -1) {
     source_render_view_host =
         RenderViewHost::FromID(child_route_id_pair.first,
@@ -372,8 +377,13 @@ bool PrerenderManager::AddPrerender(
     }
   }
 
-  PrerenderContents* prerender_contents =
-      CreatePrerenderContents(url, referrer, origin, experiment);
+  if (!session_storage_namespace && source_render_view_host) {
+    session_storage_namespace =
+        source_render_view_host->session_storage_namespace();
+  }
+
+  PrerenderContents* prerender_contents = CreatePrerenderContents(
+      url, referrer, origin, experiment);
   if (!prerender_contents || !prerender_contents->Init())
     return false;
 
@@ -386,7 +396,8 @@ bool PrerenderManager::AddPrerender(
     data.contents_->set_final_status(FINAL_STATUS_CONTROL_GROUP);
   } else {
     last_prerender_start_time_ = GetCurrentTimeTicks();
-    data.contents_->StartPrerendering(source_render_view_host);
+    data.contents_->StartPrerendering(source_render_view_host,
+                                      session_storage_namespace);
   }
   while (prerender_list_.size() > config_.max_elements) {
     data = prerender_list_.front();
@@ -537,6 +548,19 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
     return false;
   }
 
+  // If the session storage namespaces don't match, cancel the prerender.
+  RenderViewHost* old_render_view_host = tab_contents->render_view_host();
+  RenderViewHost* new_render_view_host =
+      prerender_contents->prerender_contents()->render_view_host();
+  DCHECK(old_render_view_host);
+  DCHECK(new_render_view_host);
+  if (old_render_view_host->session_storage_namespace() !=
+      new_render_view_host->session_storage_namespace()) {
+    prerender_contents.release()->Destroy(
+        FINAL_STATUS_SESSION_STORAGE_NAMESPACE_MISMATCH);
+    return false;
+  }
+
   int child_id, route_id;
   CHECK(prerender_contents->GetChildId(&child_id));
   CHECK(prerender_contents->GetRouteId(&route_id));
@@ -556,11 +580,8 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
   histograms_->RecordPerSessionCount(++prerenders_per_session_count_);
   prerender_contents->set_final_status(FINAL_STATUS_USED);
 
-  RenderViewHost* render_view_host =
-      prerender_contents->prerender_contents()->render_view_host();
-  DCHECK(render_view_host);
-  render_view_host->Send(
-      new ChromeViewMsg_SetIsPrerendering(render_view_host->routing_id(),
+  new_render_view_host->Send(
+      new ChromeViewMsg_SetIsPrerendering(new_render_view_host->routing_id(),
                                           false));
 
   TabContentsWrapper* new_tab_contents =
@@ -656,7 +677,8 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
     uint8 experiment_id) {
   DCHECK(CalledOnValidThread());
   return prerender_contents_factory_->CreatePrerenderContents(
-      this, prerender_tracker_, profile_, url, referrer, origin, experiment_id);
+      this, prerender_tracker_, profile_, url,
+      referrer, origin, experiment_id);
 }
 
 bool PrerenderManager::IsPendingDelete(PrerenderContents* entry) const {

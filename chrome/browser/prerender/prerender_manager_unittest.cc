@@ -26,8 +26,8 @@ class DummyPrerenderContents : public PrerenderContents {
                          PrerenderTracker* prerender_tracker,
                          const GURL& url,
                          FinalStatus expected_final_status)
-      : PrerenderContents(prerender_manager, prerender_tracker, NULL, url,
-                          GURL(), ORIGIN_LINK_REL_PRERENDER,
+      : PrerenderContents(prerender_manager, prerender_tracker,
+                          NULL, url, GURL(), ORIGIN_LINK_REL_PRERENDER,
                           PrerenderManager::kNoExperiment),
         has_started_(false),
         expected_final_status_(expected_final_status) {
@@ -38,7 +38,8 @@ class DummyPrerenderContents : public PrerenderContents {
   }
 
   virtual void StartPrerendering(
-      const RenderViewHost* source_render_view_host) OVERRIDE {
+      const RenderViewHost* source_render_view_host,
+      SessionStorageNamespace* session_storage_namespace) OVERRIDE {
     has_started_ = true;
   }
 

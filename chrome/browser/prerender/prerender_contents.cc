@@ -24,6 +24,7 @@
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
@@ -170,17 +171,19 @@ void PrerenderContents::StartPendingPrerenders() {
     prerender_manager_->AddPrerender(it->origin,
                                      std::make_pair(child_id_, route_id_),
                                      it->url,
-                                     it->referrer);
+                                     it->referrer,
+                                     NULL);
   }
 }
 
-PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
-                                     PrerenderTracker* prerender_tracker,
-                                     Profile* profile,
-                                     const GURL& url,
-                                     const GURL& referrer,
-                                     Origin origin,
-                                     uint8 experiment_id)
+PrerenderContents::PrerenderContents(
+    PrerenderManager* prerender_manager,
+    PrerenderTracker* prerender_tracker,
+    Profile* profile,
+    const GURL& url,
+    const GURL& referrer,
+    Origin origin,
+    uint8 experiment_id)
     : prerender_manager_(prerender_manager),
       prerender_tracker_(prerender_tracker),
       prerender_url_(url),
@@ -209,14 +212,15 @@ PrerenderContents::Factory* PrerenderContents::CreateFactory() {
 }
 
 void PrerenderContents::StartPrerendering(
-    const RenderViewHost* source_render_view_host) {
+    const RenderViewHost* source_render_view_host,
+    SessionStorageNamespace* session_storage_namespace) {
   DCHECK(profile_ != NULL);
   DCHECK(!prerendering_has_started_);
   DCHECK(prerender_contents_.get() == NULL);
 
   prerendering_has_started_ = true;
   TabContents* new_contents = new TabContents(profile_, NULL, MSG_ROUTING_NONE,
-                                              NULL, NULL);
+                                              NULL, session_storage_namespace);
   prerender_contents_.reset(new TabContentsWrapper(new_contents));
   TabContentsObserver::Observe(new_contents);
 

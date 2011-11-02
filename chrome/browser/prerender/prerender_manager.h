@@ -101,8 +101,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Adds a prerender for |url| if valid. As the prerender request is coming
   // from a source without a RenderViewHost (i.e., the omnibox) we don't have a
   // child or route id, or a referrer. This method uses sensible values for
-  // those.
-  bool AddPrerenderFromOmnibox(const GURL& url);
+  // those. The |session_storage_namespace| matches the namespace of the active
+  // tab at the time the prerender is generated from the omnibox.
+  bool AddPrerenderFromOmnibox(
+      const GURL& url,
+      SessionStorageNamespace* session_storage_namespace);
 
   // Destroy all prerenders for the given child route id pair and assign a final
   // status to them.
@@ -245,12 +248,15 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Adds a prerender for |url| from referrer |referrer| initiated from the
   // RenderViewHost specified by |child_route_id_pair|. The |origin| specifies
-  // how the prerender was added.
+  // how the prerender was added. If the |session_storage_namespace| is NULL,
+  // it is discovered using the RenderViewHost specified by
+  // |child_route_id_pair|.
   bool AddPrerender(
       Origin origin,
       const std::pair<int, int>& child_route_id_pair,
       const GURL& url,
-      const GURL& referrer);
+      const GURL& referrer,
+      SessionStorageNamespace* session_storage_namespace);
 
   // Adds a pending preload issued by the prerendering RenderView identified by
   // |child_route_id_pair|.  If and when that prerendering RenderView is used,
@@ -293,10 +299,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void DeleteOldEntries();
   virtual base::Time GetCurrentTime() const;
   virtual base::TimeTicks GetCurrentTimeTicks() const;
-  virtual PrerenderContents* CreatePrerenderContents(const GURL& url,
-                                                     const GURL& referrer,
-                                                     Origin origin,
-                                                     uint8 experiment_id);
+  virtual PrerenderContents* CreatePrerenderContents(
+      const GURL& url,
+      const GURL& referrer,
+      Origin origin,
+      uint8 experiment_id);
 
   // Checks if the PrerenderContents has been added to the pending delete list.
   bool IsPendingDelete(PrerenderContents* entry) const;

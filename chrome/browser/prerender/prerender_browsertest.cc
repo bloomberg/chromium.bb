@@ -97,6 +97,7 @@ bool ShouldRenderPrerenderedPageCorrectly(FinalStatus status) {
     case FINAL_STATUS_RENDERER_CRASHED:
     case FINAL_STATUS_CANCELLED:
     case FINAL_STATUS_DEVTOOLS_ATTACHED:
+    case FINAL_STATUS_SESSION_STORAGE_NAMESPACE_MISMATCH:
       return true;
     default:
       return false;
@@ -114,8 +115,8 @@ class TestPrerenderContents : public PrerenderContents {
       const GURL& referrer,
       int expected_number_of_loads,
       FinalStatus expected_final_status)
-      : PrerenderContents(prerender_manager, prerender_tracker, profile,
-                          url, referrer, ORIGIN_LINK_REL_PRERENDER,
+      : PrerenderContents(prerender_manager, prerender_tracker,
+                          profile, url, referrer, ORIGIN_LINK_REL_PRERENDER,
                           PrerenderManager::kNoExperiment),
         number_of_loads_(0),
         expected_number_of_loads_(expected_number_of_loads),
@@ -561,6 +562,23 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(original_prerender_page);
   }
 
+  // Goes back to the page that was active before the prerender was swapped
+  // in. This must be called when the prerendered page is the current page
+  // in the active tab.
+  void GoBackToPageBeforePrerender(Browser* browser) {
+    ui_test_utils::WindowedNotificationObserver back_nav_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::NotificationService::AllSources());
+    browser->GoBack(CURRENT_TAB);
+    back_nav_observer.Wait();
+    bool js_result;
+    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+        browser->GetSelectedTabContents()->render_view_host(), L"",
+        L"window.domAutomationController.send(DidBackToOriginalPagePass())",
+        &js_result));
+    EXPECT_TRUE(js_result);
+  }
+
   // Should be const but test_server()->GetURL(...) is not const.
   void NavigateToURL(const std::string& dest_html_file) {
     GURL dest_url = test_server()->GetURL(dest_html_file);
@@ -805,42 +823,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibility) {
 // Checks that the visibility API works when the prerender is quickly opened
 // in a new tab before it stops loading.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibilityQuickSwitch) {
-  PrerenderTestURL("files/prerender/prerender_visibility_quick.html",
-                   FINAL_STATUS_USED, 0);
-  NavigateToDestURL();
-}
-
-// Checks that the visibility API works when opening a page in a new hidden
-// tab.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibilityBackgroundTab) {
-  PrerenderTestURL("files/prerender/prerender_visibility_hidden.html",
-                   FINAL_STATUS_USED,
-                   1);
-  NavigateToDestURLWithDisposition(NEW_BACKGROUND_TAB);
-}
-
-// Checks that the visibility API works when opening a page in a new hidden
-// tab, which is switched to before it stops loading.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderVisibilityBackgroundTabQuickSwitch) {
-  PrerenderTestURL("files/prerender/prerender_visibility_hidden_quick.html",
-                   FINAL_STATUS_USED, 0);
-  NavigateToDestURLWithDisposition(NEW_BACKGROUND_TAB);
-}
-
-// Checks that the visibility API works when opening a page in a new foreground
-// tab.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibilityForegroundTab) {
-  PrerenderTestURL("files/prerender/prerender_visibility.html",
-                   FINAL_STATUS_USED,
-                   1);
-  NavigateToDestURLWithDisposition(NEW_FOREGROUND_TAB);
-}
-
-// Checks that the visibility API works when the prerender is quickly opened
-// in a new tab foreground before it stops loading.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderVisibilityForegroundTabQuickSwitch) {
   PrerenderTestURL("files/prerender/prerender_visibility_quick.html",
                    FINAL_STATUS_USED, 0);
   NavigateToDestURL();
@@ -1550,31 +1532,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   OpenDestURLViaClickTarget();
 }
 
-// Checks that if a page is opened in a new window by javascript and both the
-// pages are in different domains, the prerendered page is used.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderCrossDomainWindowOpenerWindowOpen) {
-  PrerenderTestURL(
-      GetCrossDomainTestUrl("files/prerender/prerender_page.html"),
-      FINAL_STATUS_USED,
-      1);
-  OpenDestURLViaWindowOpen();
-}
-
-// Checks that if a page is opened due to click on a href with target="_blank"
-// and both pages are in different domains, the prerendered page is used.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderCrossDomainWindowOpenerClickTarget) {
-  PrerenderTestURL(
-      GetCrossDomainTestUrl("files/prerender/prerender_page.html"),
-      FINAL_STATUS_USED,
-      1);
-  OpenDestURLViaClickTarget();
-}
-
-// TODO(shishir): Add a test for the case when the page having the
-// prerendering link already has an opener set.
-
 // Checks that a top-level page which would normally request an SSL client
 // certificate will never be seen since it's an https top-level resource.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertTopLevel) {
@@ -1841,72 +1798,25 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNavigateGoBack) {
   GoBackToPrerender(browser());
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderClickNewWindowClickGoBack) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewWindow) {
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
-                   FINAL_STATUS_USED,
+                   FINAL_STATUS_SESSION_STORAGE_NAMESPACE_MISMATCH,
                    1);
   OpenDestURLViaClickNewWindow();
-  Browser* new_browser = BrowserList::GetLastActive();
-  NavigateToNextPageAfterPrerender(new_browser);
-  GoBackToPrerender(new_browser);
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderClickNewWindowNavigateGoBack) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewForegroundTab) {
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
-                   FINAL_STATUS_USED,
-                   1);
-  OpenDestURLViaClickNewWindow();
-  Browser* new_browser = BrowserList::GetLastActive();
-  ClickToNextPageAfterPrerender(new_browser);
-  GoBackToPrerender(new_browser);
-}
-
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderClickNewForegroundTabClickGoBack) {
-  PrerenderTestURL("files/prerender/prerender_page_with_link.html",
-                   FINAL_STATUS_USED,
+                   FINAL_STATUS_SESSION_STORAGE_NAMESPACE_MISMATCH,
                    1);
   OpenDestURLViaClickNewForegroundTab();
-  NavigateToNextPageAfterPrerender(browser());
-  GoBackToPrerender(browser());
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderClickNewForegroundTabNavigateGoBack) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewBackgroundTab) {
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
-                   FINAL_STATUS_USED,
-                   1);
-  OpenDestURLViaClickNewForegroundTab();
-  ClickToNextPageAfterPrerender(browser());
-  GoBackToPrerender(browser());
-}
-
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderClickNewBackgroundTabClickGoBack) {
-  PrerenderTestURL("files/prerender/prerender_page_with_link.html",
-                   FINAL_STATUS_USED,
+                   FINAL_STATUS_SESSION_STORAGE_NAMESPACE_MISMATCH,
                    1);
   OpenDestURLViaClickNewBackgroundTab();
-  // SelectNextTab completes synchronously, in terms of
-  // updating the active index.
-  browser()->SelectNextTab();
-  NavigateToNextPageAfterPrerender(browser());
-  GoBackToPrerender(browser());
-}
-
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderClickNewBackgroundTabNavigateGoBack) {
-  PrerenderTestURL("files/prerender/prerender_page_with_link.html",
-                   FINAL_STATUS_USED,
-                   1);
-  OpenDestURLViaClickNewBackgroundTab();
-  // SelectNextTab completes synchronously, in terms of
-  // updating the active index.
-  browser()->SelectNextTab();
-  ClickToNextPageAfterPrerender(browser());
-  GoBackToPrerender(browser());
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
@@ -1920,6 +1830,17 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   const char* url = "files/prerender/prerender_page.html";
   PrerenderTestURL(url, FINAL_STATUS_DEVTOOLS_ATTACHED, 1);
   NavigateToURL(url);
+}
+
+// Validate that the sessionStorage namespace remains the same when swapping
+// in a prerendered page.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSessionStorage) {
+  set_loader_path("files/prerender/prerender_loader_with_session_storage.html");
+  PrerenderTestURL(GetCrossDomainTestUrl("files/prerender/prerender_page.html"),
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+  GoBackToPageBeforePrerender(browser());
 }
 
 }  // namespace prerender

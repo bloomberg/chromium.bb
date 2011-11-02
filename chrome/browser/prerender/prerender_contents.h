@@ -20,6 +20,7 @@
 class Profile;
 class RenderViewHost;
 class RenderViewHostDelegate;
+class SessionStorageNamespace;
 class TabContents;
 class TabContentsWrapper;
 struct FaviconURL;
@@ -86,9 +87,10 @@ class PrerenderContents : public content::NotificationObserver,
   static Factory* CreateFactory();
 
   // |source_render_view_host| is the RenderViewHost that initiated
-  // prerendering.  It must be non-NULL and have its own view.  It is used
-  // solely to determine the window bounds while prerendering.
-  virtual void StartPrerendering(const RenderViewHost* source_render_view_host);
+  // prerendering.
+  virtual void StartPrerendering(
+      const RenderViewHost* source_render_view_host,
+      SessionStorageNamespace* session_storage_namespace);
 
   // Verifies that the prerendering is not using too many resources, and kills
   // it if not.
