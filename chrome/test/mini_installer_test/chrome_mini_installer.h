@@ -71,6 +71,10 @@ class ChromeMiniInstaller {
   // This method will perform a over install
   void OverInstall();
 
+  // Launch Chrome, assert process started.
+  // If |kill|, kill process after launch.
+  void LaunchChrome(bool kill);
+
  private:
   // Will clean up the machine if Chrome install is messed up.
   void CleanChromeInstall();
@@ -107,10 +111,6 @@ class ChromeMiniInstaller {
 
   // Get user data directory path.
   FilePath GetUserDataDirPath();
-
-  // Launch Chrome, assert process started.
-  // If |kill|, kill process after launch.
-  void LaunchChrome(bool kill);
 
   // This method verifies if Chrome/Chrome Frame installed correctly.
   void VerifyInstall(bool over_install);

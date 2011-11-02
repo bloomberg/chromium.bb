@@ -212,8 +212,8 @@ void ChromeMiniInstaller::InstallChromeUsingMultiInstall() {
   RunInstaller(cmd);
 
   // Verify installation.
-  InstallationValidator::InstallationType type =
-      installer::ExpectValidInstallation(system_install_);
+  InstallationValidator::InstallationType type;
+  InstallationValidator::ValidateInstallationType(system_install_, &type);
   BrowserDistribution* dist = GetCurrentBrowserDistribution();
   ASSERT_TRUE(InstallUtil::IsMultiInstall(dist, system_install_));
   EXPECT_TRUE(type & InstallationValidator::ProductBits::CHROME_MULTI);
