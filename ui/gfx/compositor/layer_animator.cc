@@ -10,7 +10,8 @@
 #include "ui/base/animation/animation_container.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
-#include "ui/gfx/compositor/layer_animator_delegate.h"
+#include "ui/gfx/compositor/layer_animation_delegate.h"
+#include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
 
 namespace ui {
@@ -55,8 +56,9 @@ void LayerAnimator::SetTransform(const Transform& transform) {
   if (transition_duration_ == base::TimeDelta())
     delegate_->SetTransformFromAnimation(transform);
   else
-    StartAnimationElement(LayerAnimationElement::CreateTransformElement(
-        transform, transition_duration_));
+    StartAnimation(new LayerAnimationSequence(
+        LayerAnimationElement::CreateTransformElement(
+            transform, transition_duration_)));
 }
 
 Transform LayerAnimator::GetTargetTransform() const {
@@ -69,8 +71,9 @@ void LayerAnimator::SetBounds(const gfx::Rect& bounds) {
   if (transition_duration_ == base::TimeDelta())
     delegate_->SetBoundsFromAnimation(bounds);
   else
-    StartAnimationElement(LayerAnimationElement::CreateBoundsElement(
-        bounds, transition_duration_));
+    StartAnimation(new LayerAnimationSequence(
+        LayerAnimationElement::CreateBoundsElement(
+            bounds, transition_duration_)));
 }
 
 gfx::Rect LayerAnimator::GetTargetBounds() const {
@@ -83,8 +86,9 @@ void LayerAnimator::SetOpacity(float opacity) {
   if (transition_duration_ == base::TimeDelta())
     delegate_->SetOpacityFromAnimation(opacity);
   else
-    StartAnimationElement(LayerAnimationElement::CreateOpacityElement(
-        opacity, transition_duration_));
+    StartAnimation(new LayerAnimationSequence(
+        LayerAnimationElement::CreateOpacityElement(
+            opacity, transition_duration_)));
 }
 
 float LayerAnimator::GetTargetOpacity() const {
@@ -93,12 +97,13 @@ float LayerAnimator::GetTargetOpacity() const {
   return target.opacity;
 }
 
-void LayerAnimator::SetDelegate(LayerAnimatorDelegate* delegate) {
+void LayerAnimator::SetDelegate(LayerAnimationDelegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
 }
 
 void LayerAnimator::StartAnimation(LayerAnimationSequence* animation) {
+  OnScheduled(animation);
   if (!StartSequenceImmediately(animation)) {
     // Attempt to preempt a running animation.
     switch (preemption_strategy_) {
@@ -126,6 +131,7 @@ void LayerAnimator::StartAnimation(LayerAnimationSequence* animation) {
 }
 
 void LayerAnimator::ScheduleAnimation(LayerAnimationSequence* animation) {
+  OnScheduled(animation);
   if (is_animating()) {
     animation_queue_.push_back(make_linked_ptr(animation));
     ProcessQueue();
@@ -162,20 +168,16 @@ void LayerAnimator::ScheduleTogether(
   UpdateAnimationState();
 }
 
-void LayerAnimator::StartAnimationElement(LayerAnimationElement* animation) {
-  StartAnimation(new LayerAnimationSequence(animation));
-}
-
-void LayerAnimator::ScheduleAnimationElement(LayerAnimationElement* animation) {
-  ScheduleAnimation(new LayerAnimationSequence(animation));
-}
-
-void LayerAnimator::ScheduleElementsTogether(
-    const std::vector<LayerAnimationElement*>& animations) {
-  std::vector<LayerAnimationSequence*> sequences;
-  for (size_t i = 0; i < animations.size(); ++i)
-    sequences.push_back(new LayerAnimationSequence(animations[i]));
-  ScheduleTogether(sequences);
+bool LayerAnimator::IsAnimatingProperty(
+    LayerAnimationElement::AnimatableProperty property) const {
+  for (AnimationQueue::const_iterator queue_iter = animation_queue_.begin();
+       queue_iter != animation_queue_.end(); ++queue_iter) {
+    if ((*queue_iter)->properties().find(property) !=
+        (*queue_iter)->properties().end()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void LayerAnimator::StopAnimatingProperty(
@@ -193,6 +195,15 @@ void LayerAnimator::StopAnimating() {
     FinishAnimation(running_animations_[0].sequence);
 }
 
+void LayerAnimator::AddObserver(LayerAnimationObserver* observer) {
+  if (!observers_.HasObserver(observer))
+    observers_.AddObserver(observer);
+}
+
+void LayerAnimator::RemoveObserver(LayerAnimationObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 LayerAnimator::ScopedSettings::ScopedSettings(LayerAnimator* animator)
     : animator_(animator),
       old_transition_duration_(animator->transition_duration_) {
@@ -201,6 +212,15 @@ LayerAnimator::ScopedSettings::ScopedSettings(LayerAnimator* animator)
 
 LayerAnimator::ScopedSettings::~ScopedSettings() {
   animator_->transition_duration_ = old_transition_duration_;
+  std::set<LayerAnimationObserver*>::const_iterator i = observers_.begin();
+  for (;i != observers_.end(); ++i)
+    animator_->RemoveObserver(*i);
+}
+
+void LayerAnimator::ScopedSettings::AddObserver(
+    LayerAnimationObserver* observer) {
+  observers_.insert(observer);
+  animator_->AddObserver(observer);
 }
 
 void LayerAnimator::ScopedSettings::SetTransitionDuration(
@@ -277,7 +297,6 @@ void LayerAnimator::RemoveAnimation(LayerAnimationSequence* sequence) {
 
 void LayerAnimator::FinishAnimation(LayerAnimationSequence* sequence) {
   sequence->Progress(sequence->duration(), delegate());
-  delegate()->OnLayerAnimationEnded(sequence);
   RemoveAnimation(sequence);
   ProcessQueue();
   UpdateAnimationState();
@@ -293,7 +312,6 @@ void LayerAnimator::FinishAnyAnimationWithZeroDuration() {
     if (running_animations_[i].sequence->duration() == base::TimeDelta()) {
       running_animations_[i].sequence->Progress(
           running_animations_[i].sequence->duration(), delegate());
-      delegate()->OnLayerAnimationEnded(running_animations_[i].sequence);
       RemoveAnimation(running_animations_[i].sequence);
     } else {
       ++i;
@@ -356,7 +374,6 @@ void LayerAnimator::RemoveAllAnimationsWithACommonProperty(
       } else {
         running_animations_[i].sequence->Progress(
             running_animations_[i].sequence->duration(), delegate());
-        delegate()->OnLayerAnimationEnded(running_animations_[i].sequence);
       }
       RemoveAnimation(running_animations_[i].sequence);
     } else {
@@ -384,7 +401,6 @@ void LayerAnimator::ImmediatelySetNewTarget(LayerAnimationSequence* sequence) {
   const bool abort = false;
   RemoveAllAnimationsWithACommonProperty(sequence, abort);
   sequence->Progress(sequence->duration(), delegate());
-  delegate()->OnLayerAnimationEnded(sequence);
   RemoveAnimation(sequence);
 }
 
@@ -498,6 +514,17 @@ void LayerAnimator::GetTargetValue(
        iter != running_animations_.end(); ++iter) {
     (*iter).sequence->GetTargetValue(target);
   }
+}
+
+void LayerAnimator::OnScheduled(LayerAnimationSequence* sequence) {
+  if (observers_.might_have_observers()) {
+    ObserverListBase<LayerAnimationObserver>::Iterator it(observers_);
+    LayerAnimationObserver* obs;
+    while ((obs = it.GetNext()) != NULL) {
+      sequence->AddObserver(obs);
+    }
+  }
+  sequence->OnScheduled();
 }
 
 }  // namespace ui

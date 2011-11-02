@@ -42,10 +42,6 @@ class ColoredLayer : public Layer, public LayerDelegate {
     canvas->GetSkCanvas()->drawColor(color_);
   }
 
-  virtual void OnLayerAnimationEnded(
-      const LayerAnimationSequence* animation) OVERRIDE {
-  }
-
  private:
   SkColor color_;
 };
@@ -131,9 +127,6 @@ class TestLayerDelegate : public LayerDelegate {
                      gfx::Rect(gfx::Point(), paint_size_));
     color_index_ = (color_index_ + 1) % static_cast<int>(colors_.size());
   }
-  virtual void OnLayerAnimationEnded(
-      const LayerAnimationSequence* animation) OVERRIDE {
-  }
 
  private:
   std::vector<SkColor> colors_;
@@ -160,9 +153,6 @@ class DrawTreeLayerDelegate : public LayerDelegate {
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
     painted_ = true;
   }
-  virtual void OnLayerAnimationEnded(
-      const LayerAnimationSequence* animation) OVERRIDE {
-  }
 
   bool painted_;
 
@@ -178,9 +168,6 @@ class NullLayerDelegate : public LayerDelegate {
  private:
   // Overridden from LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
-  }
-  virtual void OnLayerAnimationEnded(
-      const LayerAnimationSequence* animation) OVERRIDE {
   }
 
   DISALLOW_COPY_AND_ASSIGN(NullLayerDelegate);

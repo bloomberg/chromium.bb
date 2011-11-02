@@ -11,9 +11,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
-#include "ui/gfx/compositor/dummy_layer_animation_delegate.h"
 #include "ui/gfx/compositor/layer_animation_delegate.h"
 #include "ui/gfx/compositor/layer_animation_element.h"
+#include "ui/gfx/compositor/test_layer_animation_delegate.h"
+#include "ui/gfx/compositor/test_layer_animation_observer.h"
 #include "ui/gfx/compositor/test_utils.h"
 
 namespace ui {
@@ -33,10 +34,10 @@ TEST(LayerAnimationSequenceTest, NoElement) {
 // a single element.
 TEST(LayerAnimationSequenceTest, SingleElement) {
   LayerAnimationSequence sequence;
-  DummyLayerAnimationDelegate delegate;
-  float start = 0.0;
-  float middle = 0.5;
-  float target = 1.0;
+  TestLayerAnimationDelegate delegate;
+  float start = 0.0f;
+  float middle = 0.5f;
+  float target = 1.0f;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
   sequence.AddElement(
       LayerAnimationElement::CreateOpacityElement(target, delta));
@@ -61,10 +62,10 @@ TEST(LayerAnimationSequenceTest, SingleElement) {
 // multiple elements. Note, see the layer animator tests for cyclic sequences.
 TEST(LayerAnimationSequenceTest, MultipleElement) {
   LayerAnimationSequence sequence;
-  DummyLayerAnimationDelegate delegate;
-  float start_opacity = 0.0;
-  float middle_opacity = 0.5;
-  float target_opacity = 1.0;
+  TestLayerAnimationDelegate delegate;
+  float start_opacity = 0.0f;
+  float middle_opacity = 0.5f;
+  float target_opacity = 1.0f;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
   sequence.AddElement(
       LayerAnimationElement::CreateOpacityElement(target_opacity, delta));
@@ -93,7 +94,7 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
     EXPECT_FLOAT_EQ(middle_opacity, delegate.GetOpacityForAnimation());
     sequence.Progress(base::TimeDelta::FromMilliseconds(1000), &delegate);
     EXPECT_FLOAT_EQ(target_opacity, delegate.GetOpacityForAnimation());
-    DummyLayerAnimationDelegate copy = delegate;
+    TestLayerAnimationDelegate copy = delegate;
 
     // In the middle of the pause -- nothing should have changed.
     sequence.Progress(base::TimeDelta::FromMilliseconds(1500), &delegate);
@@ -129,9 +130,9 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
 // Check that a sequence can still be aborted if it has cycled many times.
 TEST(LayerAnimationSequenceTest, AbortingCyclicSequence) {
   LayerAnimationSequence sequence;
-  DummyLayerAnimationDelegate delegate;
-  float start_opacity = 0.0;
-  float target_opacity = 1.0;
+  TestLayerAnimationDelegate delegate;
+  float start_opacity = 0.0f;
+  float target_opacity = 1.0f;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
   sequence.AddElement(
       LayerAnimationElement::CreateOpacityElement(target_opacity, delta));
@@ -157,9 +158,9 @@ TEST(LayerAnimationSequenceTest, AbortingCyclicSequence) {
 // Also check that this has no effect if the sequence is cyclic.
 TEST(LayerAnimationSequenceTest, SetTarget) {
   LayerAnimationSequence sequence;
-  DummyLayerAnimationDelegate delegate;
-  float start_opacity = 0.0;
-  float target_opacity = 1.0;
+  TestLayerAnimationDelegate delegate;
+  float start_opacity = 0.0f;
+  float target_opacity = 1.0f;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
   sequence.AddElement(
       LayerAnimationElement::CreateOpacityElement(target_opacity, delta));
@@ -173,6 +174,22 @@ TEST(LayerAnimationSequenceTest, SetTarget) {
   target_value.opacity = start_opacity;
   sequence.GetTargetValue(&target_value);
   EXPECT_FLOAT_EQ(start_opacity, target_value.opacity);
+}
+
+TEST(LayerAnimationSequenceTest, AddObserver) {
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+  LayerAnimationSequence sequence;
+  sequence.AddElement(
+      LayerAnimationElement::CreateOpacityElement(1.0f, delta));
+  for (int i = 0; i < 2; ++i) {
+    TestLayerAnimationObserver observer;
+    TestLayerAnimationDelegate delegate;
+    sequence.AddObserver(&observer);
+    EXPECT_TRUE(!observer.last_ended_sequence());
+    sequence.Progress(delta, &delegate);
+    EXPECT_EQ(observer.last_ended_sequence(), &sequence);
+    sequence.RemoveObserver(&observer);
+  }
 }
 
 } // namespace

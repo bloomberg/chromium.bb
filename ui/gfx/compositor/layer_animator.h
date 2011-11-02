@@ -7,10 +7,12 @@
 #pragma once
 
 #include <deque>
+#include <set>
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/time.h"
 #include "ui/base/animation/animation_container_element.h"
 #include "ui/gfx/compositor/compositor_export.h"
@@ -24,7 +26,8 @@ namespace ui {
 class Animation;
 class Layer;
 class LayerAnimationSequence;
-class LayerAnimatorDelegate;
+class LayerAnimationDelegate;
+class LayerAnimationObserver;
 class Transform;
 
 // When a property of layer needs to be changed it is set by way of
@@ -62,7 +65,7 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
 
   // Sets the layer animation delegate the animator is associated with. The
   // animator does not own the delegate.
-  void SetDelegate(LayerAnimatorDelegate* delegate);
+  void SetDelegate(LayerAnimationDelegate* delegate);
 
   // Sets the animation preemption strategy. This determines the behaviour if
   // a property is set during an animation. The default is
@@ -85,17 +88,15 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   // animation sequences.
   void ScheduleTogether(const std::vector<LayerAnimationSequence*>& animations);
 
-  // These are cover functions that create sequences for you to wrap the given
-  // elements. These sequences are then passed to the corresponding function
-  // above.
-  void StartAnimationElement(LayerAnimationElement* element);
-  void ScheduleAnimationElement(LayerAnimationElement* element);
-  void ScheduleElementsTogether(
-      const std::vector<LayerAnimationElement*>& element);
-
   // Returns true if there is an animation in the queue (animations remain in
-  // the queue until they complete).
+  // the queue until they complete, so this includes running animations).
   bool is_animating() const { return !animation_queue_.empty(); }
+
+  // Returns true if there is an animation in the queue that animates the given
+  // property (animations remain in the queue until they complete, so this
+  // includes running animations).
+  bool IsAnimatingProperty(
+      LayerAnimationElement::AnimatableProperty property) const;
 
   // Stops animating the given property. No effect if there is no running
   // animation for the given property. Skips to the final state of the
@@ -112,6 +113,11 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   }
   base::TimeTicks get_last_step_time_for_test() { return last_step_time_; }
 
+  // These functions are used for adding or removing observers from the observer
+  // list. The observers are notified when animations end.
+  void AddObserver(LayerAnimationObserver* observer);
+  void RemoveObserver(LayerAnimationObserver* observer);
+
   // Scoped settings allow you to temporarily change the animator's settings and
   // these changes are reverted when the object is destroyed. NOTE: when the
   // settings object is created, it applies the default transition duration
@@ -121,20 +127,22 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
     explicit ScopedSettings(LayerAnimator* animator);
     virtual ~ScopedSettings();
 
+    void AddObserver(LayerAnimationObserver* observer);
     void SetTransitionDuration(base::TimeDelta duration);
 
    private:
     LayerAnimator* animator_;
     base::TimeDelta old_transition_duration_;
+    std::set<LayerAnimationObserver*> observers_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedSettings);
   };
 
  protected:
-  LayerAnimatorDelegate* delegate() { return delegate_; }
+  LayerAnimationDelegate* delegate() { return delegate_; }
 
  private:
-  friend class TransientSettings;
+  friend class ScopedSettings;
 
   // We need to keep track of the start time of every running animation.
   struct RunningAnimation {
@@ -211,11 +219,15 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   // allowed to finish.
   void GetTargetValue(LayerAnimationElement::TargetValue* target) const;
 
+  // Called whenever an animation is added to the animation queue. Either by
+  // starting the animation or adding to the queue.
+  void OnScheduled(LayerAnimationSequence* sequence);
+
   // This is the queue of animations to run.
   AnimationQueue animation_queue_;
 
   // The target of all layer animations.
-  LayerAnimatorDelegate* delegate_;
+  LayerAnimationDelegate* delegate_;
 
   // The currently running animations.
   RunningAnimations running_animations_;
@@ -235,6 +247,10 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   // This prevents the animator from automatically stepping through animations
   // and allows for manual stepping.
   bool disable_timer_for_test_;
+
+  // Observers are notified when layer animations end, are scheduled or are
+  // aborted.
+  ObserverList<LayerAnimationObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimator);
 };

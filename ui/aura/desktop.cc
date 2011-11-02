@@ -305,8 +305,10 @@ bool Desktop::DispatchKeyEvent(KeyEvent* event) {
       if (degrees != 0) {
         layer()->GetAnimator()->set_preemption_strategy(
             ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-        layer()->GetAnimator()->ScheduleAnimationElement(
-            new ScreenRotation(degrees));
+        scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
+            new ui::LayerAnimationSequence(new ScreenRotation(degrees)));
+        screen_rotation->AddObserver(this);
+        layer()->GetAnimator()->ScheduleAnimation(screen_rotation.release());
         return true;
       }
     }
@@ -564,6 +566,14 @@ Desktop* Desktop::GetDesktop() {
 void Desktop::OnLayerAnimationEnded(
     const ui::LayerAnimationSequence* animation) {
   OnHostResized(host_->GetSize());
+}
+
+void Desktop::OnLayerAnimationScheduled(
+    const ui::LayerAnimationSequence* animation) {
+}
+
+void Desktop::OnLayerAnimationAborted(
+    const ui::LayerAnimationSequence* animation) {
 }
 
 void Desktop::SetFocusedWindow(Window* focused_window) {

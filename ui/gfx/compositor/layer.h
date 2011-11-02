@@ -18,7 +18,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/compositor/compositor.h"
-#include "ui/gfx/compositor/layer_animator_delegate.h"
+#include "ui/gfx/compositor/layer_animation_delegate.h"
 #include "ui/gfx/compositor/layer_delegate.h"
 
 class SkCanvas;
@@ -39,7 +39,7 @@ class Texture;
 // delete a Layer and it has children, the parent of each child layer is set to
 // NULL, but the children are not deleted.
 class COMPOSITOR_EXPORT Layer :
-    public LayerAnimatorDelegate,
+    public LayerAnimationDelegate,
     NON_EXPORTED_BASE(public WebKit::WebLayerClient),
     NON_EXPORTED_BASE(public WebKit::WebContentLayerClient) {
  public:
@@ -281,7 +281,6 @@ class COMPOSITOR_EXPORT Layer :
   virtual const gfx::Rect& GetBoundsForAnimation() const OVERRIDE;
   virtual const Transform& GetTransformForAnimation() const OVERRIDE;
   virtual float GetOpacityForAnimation() const OVERRIDE;
-  virtual void OnLayerAnimationEnded(LayerAnimationSequence* sequence) OVERRIDE;
 
 #if defined(USE_WEBKIT_COMPOSITOR)
   void CreateWebLayer();

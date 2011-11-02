@@ -654,11 +654,6 @@ float Layer::GetOpacityForAnimation() const {
   return opacity();
 }
 
-void Layer::OnLayerAnimationEnded(LayerAnimationSequence* sequence) {
-  if (delegate_)
-    delegate_->OnLayerAnimationEnded(sequence);
-}
-
 #if defined(USE_WEBKIT_COMPOSITOR)
 void Layer::CreateWebLayer() {
   web_layer_ = WebKit::WebContentLayer::create(this, this);

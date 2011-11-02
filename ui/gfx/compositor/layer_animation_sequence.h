@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
+#include "base/observer_list.h"
 #include "base/time.h"
 #include "ui/gfx/compositor/compositor_export.h"
 #include "ui/gfx/compositor/layer_animation_element.h"
@@ -16,6 +17,7 @@
 namespace ui {
 
 class LayerAnimationDelegate;
+class LayerAnimationObserver;
 
 // Contains a collection of layer animation elements to be played one after
 // another. Although it has a similar interface to LayerAnimationElement, it is
@@ -67,8 +69,25 @@ class COMPOSITOR_EXPORT LayerAnimationSequence {
   bool HasCommonProperty(
       const LayerAnimationElement::AnimatableProperties& other) const;
 
+  // These functions are used for adding or removing observers from the observer
+  // list. The observers are notified when animations end.
+  void AddObserver(LayerAnimationObserver* observer);
+  void RemoveObserver(LayerAnimationObserver* observer);
+
+  // Called when the animator schedules this sequence.
+  void OnScheduled();
+
  private:
   typedef std::vector<linked_ptr<LayerAnimationElement> > Elements;
+
+  // Notifies the observers that this sequence has been scheduled.
+  void NotifyScheduled();
+
+  // Notifies the observers that this sequence has ended.
+  void NotifyEnded();
+
+  // Notifies the observers that this sequence has been aborted.
+  void NotifyAborted();
 
   // The sum of the durations of all the elements in the sequence.
   base::TimeDelta duration_;
@@ -85,6 +104,9 @@ class COMPOSITOR_EXPORT LayerAnimationSequence {
   // These are used when animating to efficiently find the next element.
   size_t last_element_;
   base::TimeDelta last_start_;
+
+  // These parties are notified when layer animations end.
+  ObserverList<LayerAnimationObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimationSequence);
 };

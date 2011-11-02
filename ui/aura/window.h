@@ -297,8 +297,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnLayerAnimationEnded(
-      const ui::LayerAnimationSequence* animation) OVERRIDE;
 
   WindowType type_;
 

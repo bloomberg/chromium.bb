@@ -17,6 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/events.h"
 #include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 
@@ -42,7 +43,8 @@ class TouchEvent;
 // Desktop is responsible for hosting a set of windows.
 class AURA_EXPORT Desktop : public ui::CompositorDelegate,
                             public Window,
-                            public internal::FocusManager {
+                            public internal::FocusManager,
+                            public ui::LayerAnimationObserver {
  public:
   Desktop();
   virtual ~Desktop();
@@ -146,8 +148,12 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   virtual internal::FocusManager* GetFocusManager() OVERRIDE;
   virtual Desktop* GetDesktop() OVERRIDE;
 
-  // Overridden from ui::LayerDelegate:
+  // Overridden from ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(
+      const ui::LayerAnimationSequence* animation) OVERRIDE;
+  virtual void OnLayerAnimationScheduled(
+      const ui::LayerAnimationSequence* animation) OVERRIDE;
+  virtual void OnLayerAnimationAborted(
       const ui::LayerAnimationSequence* animation) OVERRIDE;
 
   // Overridden from FocusManager:

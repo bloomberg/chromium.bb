@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_COMPOSITOR_DUMMY_LAYER_ANIMATION_DELEGATE_H_
-#define UI_GFX_COMPOSITOR_DUMMY_LAYER_ANIMATION_DELEGATE_H_
+#ifndef UI_GFX_COMPOSITOR_TEST_LAYER_ANIMATION_DELEGATE_H_
+#define UI_GFX_COMPOSITOR_TEST_LAYER_ANIMATION_DELEGATE_H_
 #pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/compositor/compositor_export.h"
-#include "ui/gfx/compositor/layer_animator_delegate.h"
+#include "ui/gfx/compositor/layer_animation_delegate.h"
 
 namespace ui {
 
 class LayerAnimationSequence;
 
-class COMPOSITOR_EXPORT DummyLayerAnimationDelegate
-    : public LayerAnimatorDelegate {
+class COMPOSITOR_EXPORT TestLayerAnimationDelegate
+    : public LayerAnimationDelegate {
  public:
-  DummyLayerAnimationDelegate();
-  DummyLayerAnimationDelegate(const LayerAnimationDelegate& other);
-  virtual ~DummyLayerAnimationDelegate();
+  TestLayerAnimationDelegate();
+  TestLayerAnimationDelegate(const LayerAnimationDelegate& other);
+  virtual ~TestLayerAnimationDelegate();
 
   // Implementation of LayerAnimationDelegate
   virtual void SetBoundsFromAnimation(const gfx::Rect& bounds) OVERRIDE;
@@ -31,9 +31,6 @@ class COMPOSITOR_EXPORT DummyLayerAnimationDelegate
   virtual const gfx::Rect& GetBoundsForAnimation() const OVERRIDE;
   virtual const Transform& GetTransformForAnimation() const OVERRIDE;
   virtual float GetOpacityForAnimation() const OVERRIDE;
-
-  // Implementation of LayerAnimatorDelegate
-  virtual void OnLayerAnimationEnded(LayerAnimationSequence* sequence) OVERRIDE;
 
  private:
   gfx::Rect bounds_;
@@ -45,4 +42,4 @@ class COMPOSITOR_EXPORT DummyLayerAnimationDelegate
 
 }  // namespace ui
 
-#endif  // UI_GFX_COMPOSITOR_DUMMY_LAYER_ANIMATION_DELEGATE_H_
+#endif  // UI_GFX_COMPOSITOR_TEST_LAYER_ANIMATION_DELEGATE_H_

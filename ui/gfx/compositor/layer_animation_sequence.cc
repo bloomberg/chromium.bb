@@ -10,6 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "ui/gfx/compositor/layer_animation_delegate.h"
 #include "ui/gfx/compositor/layer_animation_element.h"
+#include "ui/gfx/compositor/layer_animation_observer.h"
 
 namespace ui {
 
@@ -65,6 +66,7 @@ void LayerAnimationSequence::Progress(base::TimeDelta elapsed,
   if (!is_cyclic_ && elapsed == duration_) {
     last_element_ = 0;
     last_start_ = base::TimeDelta::FromMilliseconds(0);
+    NotifyEnded();
   }
 }
 
@@ -85,6 +87,7 @@ void LayerAnimationSequence::Abort() {
   }
   last_element_ = 0;
   last_start_ = base::TimeDelta::FromMilliseconds(0);
+  NotifyAborted();
 }
 
 void LayerAnimationSequence::AddElement(LayerAnimationElement* element) {
@@ -104,6 +107,37 @@ bool LayerAnimationSequence::HasCommonProperty(
                         other.begin(), other.end(),
                         ii);
   return intersection.size() > 0;
+}
+
+void LayerAnimationSequence::AddObserver(LayerAnimationObserver* observer) {
+  if (!observers_.HasObserver(observer))
+    observers_.AddObserver(observer);
+}
+
+void LayerAnimationSequence::RemoveObserver(LayerAnimationObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void LayerAnimationSequence::OnScheduled() {
+  NotifyScheduled();
+}
+
+void LayerAnimationSequence::NotifyScheduled() {
+  FOR_EACH_OBSERVER(LayerAnimationObserver,
+                    observers_,
+                    OnLayerAnimationScheduled(this));
+}
+
+void LayerAnimationSequence::NotifyEnded() {
+  FOR_EACH_OBSERVER(LayerAnimationObserver,
+                    observers_,
+                    OnLayerAnimationEnded(this));
+}
+
+void LayerAnimationSequence::NotifyAborted() {
+  FOR_EACH_OBSERVER(LayerAnimationObserver,
+                    observers_,
+                    OnLayerAnimationAborted(this));
 }
 
 }  // namespace ui
