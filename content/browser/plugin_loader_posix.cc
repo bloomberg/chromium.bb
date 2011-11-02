@@ -101,10 +101,11 @@ void PluginLoaderPosix::LoadPluginsInternal() {
   process_host_->Send(new UtilityMsg_LoadPlugins(canonical_list_));
 }
 
-void PluginLoaderPosix::OnPluginLoaded(const webkit::WebPluginInfo& plugin) {
-  if (plugin.path.value() != canonical_list_[next_load_index_].value()) {
+void PluginLoaderPosix::OnPluginLoaded(uint32_t index,
+                                       const webkit::WebPluginInfo& plugin) {
+  if (index != next_load_index_) {
     LOG(ERROR) << "Received unexpected plugin load message for "
-               << plugin.path.value();
+               << plugin.path.value() << "; index=" << index;
     return;
   }
 
@@ -116,10 +117,11 @@ void PluginLoaderPosix::OnPluginLoaded(const webkit::WebPluginInfo& plugin) {
   MaybeRunPendingCallbacks();
 }
 
-void PluginLoaderPosix::OnPluginLoadFailed(const FilePath& plugin_path) {
-  if (plugin_path.value() != canonical_list_[next_load_index_].value()) {
+void PluginLoaderPosix::OnPluginLoadFailed(uint32_t index,
+                                           const FilePath& plugin_path) {
+  if (index != next_load_index_) {
     LOG(ERROR) << "Received unexpected plugin load failure message for "
-               << plugin_path.value();
+               << plugin_path.value() << "; index=" << index;
     return;
   }
 

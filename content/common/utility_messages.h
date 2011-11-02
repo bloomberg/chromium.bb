@@ -69,10 +69,12 @@ IPC_MESSAGE_CONTROL1(UtilityHostMsg_InjectIDBKey_Finished,
 #if defined(OS_POSIX)
 // Notifies the browser when a plugin failed to load so the two processes can
 // keep the canonical list in sync.
-IPC_SYNC_MESSAGE_CONTROL1_0(UtilityHostMsg_LoadPluginFailed,
+IPC_SYNC_MESSAGE_CONTROL2_0(UtilityHostMsg_LoadPluginFailed,
+                            uint32_t /* index in the vector */,
                             FilePath /* path of plugin */)
 
 // Notifies the browser that a plugin in the vector sent by it has been loaded.
-IPC_SYNC_MESSAGE_CONTROL1_0(UtilityHostMsg_LoadedPlugin,
+IPC_SYNC_MESSAGE_CONTROL2_0(UtilityHostMsg_LoadedPlugin,
+                            uint32_t /* index in the vector */,
                             webkit::WebPluginInfo /* plugin info */)
 #endif  // OS_POSIX

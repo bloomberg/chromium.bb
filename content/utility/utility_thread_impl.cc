@@ -127,21 +127,19 @@ void UtilityThreadImpl::OnLoadPlugins(
   webkit::npapi::PluginList* plugin_list =
       webkit::npapi::PluginList::Singleton();
 
-  for (std::vector<FilePath>::const_iterator it = plugin_paths.begin();
-       it != plugin_paths.end();
-       ++it) {
+  for (size_t i = 0; i < plugin_paths.size(); ++i) {
     ScopedVector<webkit::npapi::PluginGroup> plugin_groups;
-    plugin_list->LoadPlugin(*it, &plugin_groups);
+    plugin_list->LoadPlugin(plugin_paths[i], &plugin_groups);
 
     if (plugin_groups.empty()) {
-      Send(new UtilityHostMsg_LoadPluginFailed(*it));
+      Send(new UtilityHostMsg_LoadPluginFailed(i, plugin_paths[i]));
       continue;
     }
 
     const webkit::npapi::PluginGroup* group = plugin_groups[0];
     DCHECK_EQ(group->web_plugin_infos().size(), 1u);
 
-    Send(new UtilityHostMsg_LoadedPlugin(group->web_plugin_infos().front()));
+    Send(new UtilityHostMsg_LoadedPlugin(i, group->web_plugin_infos().front()));
   }
 
   ReleaseProcessIfNeeded();

@@ -77,8 +77,8 @@ class CONTENT_EXPORT PluginLoaderPosix : public UtilityProcessHost::Client,
   virtual void LoadPluginsInternal();
 
   // Message handlers.
-  void OnPluginLoaded(const webkit::WebPluginInfo& plugin);
-  void OnPluginLoadFailed(const FilePath& plugin_path);
+  void OnPluginLoaded(uint32_t index, const webkit::WebPluginInfo& plugin);
+  void OnPluginLoadFailed(uint32_t index, const FilePath& plugin_path);
 
   // Checks if the plugin path is an internal plugin, and, if it is, adds it to
   // |loaded_plugins_|.

@@ -45,12 +45,12 @@ class MockPluginLoaderPosix : public PluginLoaderPosix {
     PluginLoaderPosix::LoadPluginsInternal();
   }
 
-  void TestOnPluginLoaded(const webkit::WebPluginInfo& plugin) {
-    OnPluginLoaded(plugin);
+  void TestOnPluginLoaded(uint32_t index, const webkit::WebPluginInfo& plugin) {
+    OnPluginLoaded(index, plugin);
   }
 
-  void TestOnPluginLoadFailed(const FilePath& path) {
-    OnPluginLoadFailed(path);
+  void TestOnPluginLoadFailed(uint32_t index, const FilePath& path) {
+    OnPluginLoadFailed(index, path);
   }
 };
 
@@ -115,7 +115,7 @@ TEST_F(PluginLoaderPosixTest, QueueRequests) {
 
   EXPECT_EQ(0, did_callback);
 
-  plugin_loader()->TestOnPluginLoaded(plugin1_);
+  plugin_loader()->TestOnPluginLoaded(0, plugin1_);
   message_loop()->RunAllPending();
 
   EXPECT_EQ(2, did_callback);
@@ -139,7 +139,7 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoads) {
   const std::vector<webkit::WebPluginInfo>& plugins(
       plugin_loader()->loaded_plugins());
 
-  plugin_loader()->TestOnPluginLoaded(plugin1_);
+  plugin_loader()->TestOnPluginLoaded(0, plugin1_);
   EXPECT_EQ(1u, plugin_loader()->next_load_index());
   EXPECT_EQ(1u, plugins.size());
   EXPECT_EQ(plugin1_.name, plugins[0].name);
@@ -147,7 +147,7 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoads) {
   message_loop()->RunAllPending();
   EXPECT_EQ(0, did_callback);
 
-  plugin_loader()->TestOnPluginLoaded(plugin2_);
+  plugin_loader()->TestOnPluginLoaded(1, plugin2_);
   EXPECT_EQ(2u, plugin_loader()->next_load_index());
   EXPECT_EQ(2u, plugins.size());
   EXPECT_EQ(plugin2_.name, plugins[1].name);
@@ -155,7 +155,7 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoads) {
   message_loop()->RunAllPending();
   EXPECT_EQ(0, did_callback);
 
-  plugin_loader()->TestOnPluginLoaded(plugin3_);
+  plugin_loader()->TestOnPluginLoaded(2, plugin3_);
   EXPECT_EQ(3u, plugins.size());
   EXPECT_EQ(plugin3_.name, plugins[2].name);
 
@@ -180,14 +180,14 @@ TEST_F(PluginLoaderPosixTest, TwoFailures) {
   const std::vector<webkit::WebPluginInfo>& plugins(
       plugin_loader()->loaded_plugins());
 
-  plugin_loader()->TestOnPluginLoadFailed(plugin1_.path);
+  plugin_loader()->TestOnPluginLoadFailed(0, plugin1_.path);
   EXPECT_EQ(1u, plugin_loader()->next_load_index());
   EXPECT_EQ(0u, plugins.size());
 
   message_loop()->RunAllPending();
   EXPECT_EQ(0, did_callback);
 
-  plugin_loader()->TestOnPluginLoaded(plugin2_);
+  plugin_loader()->TestOnPluginLoaded(1, plugin2_);
   EXPECT_EQ(2u, plugin_loader()->next_load_index());
   EXPECT_EQ(1u, plugins.size());
   EXPECT_EQ(plugin2_.name, plugins[0].name);
@@ -195,7 +195,7 @@ TEST_F(PluginLoaderPosixTest, TwoFailures) {
   message_loop()->RunAllPending();
   EXPECT_EQ(0, did_callback);
 
-  plugin_loader()->TestOnPluginLoadFailed(plugin3_.path);
+  plugin_loader()->TestOnPluginLoadFailed(2, plugin3_.path);
   EXPECT_EQ(1u, plugins.size());
 
   message_loop()->RunAllPending();
@@ -219,7 +219,7 @@ TEST_F(PluginLoaderPosixTest, CrashedProcess) {
   const std::vector<webkit::WebPluginInfo>& plugins(
       plugin_loader()->loaded_plugins());
 
-  plugin_loader()->TestOnPluginLoaded(plugin1_);
+  plugin_loader()->TestOnPluginLoaded(0, plugin1_);
   EXPECT_EQ(1u, plugin_loader()->next_load_index());
   EXPECT_EQ(1u, plugins.size());
   EXPECT_EQ(plugin1_.name, plugins[0].name);
@@ -257,7 +257,7 @@ TEST_F(PluginLoaderPosixTest, InternalPlugin) {
   const std::vector<webkit::WebPluginInfo>& plugins(
       plugin_loader()->loaded_plugins());
 
-  plugin_loader()->TestOnPluginLoaded(plugin1_);
+  plugin_loader()->TestOnPluginLoaded(0, plugin1_);
   EXPECT_EQ(1u, plugin_loader()->next_load_index());
   EXPECT_EQ(1u, plugins.size());
   EXPECT_EQ(plugin1_.name, plugins[0].name);
@@ -267,7 +267,7 @@ TEST_F(PluginLoaderPosixTest, InternalPlugin) {
 
   // Internal plugins can fail to load if they're built-in with manual
   // entrypoint functions.
-  plugin_loader()->TestOnPluginLoadFailed(plugin2_.path);
+  plugin_loader()->TestOnPluginLoadFailed(1, plugin2_.path);
   EXPECT_EQ(2u, plugin_loader()->next_load_index());
   EXPECT_EQ(2u, plugins.size());
   EXPECT_EQ(plugin2_.name, plugins[1].name);
@@ -276,7 +276,7 @@ TEST_F(PluginLoaderPosixTest, InternalPlugin) {
   message_loop()->RunAllPending();
   EXPECT_EQ(0, did_callback);
 
-  plugin_loader()->TestOnPluginLoaded(plugin3_);
+  plugin_loader()->TestOnPluginLoaded(2, plugin3_);
   EXPECT_EQ(3u, plugins.size());
   EXPECT_EQ(plugin3_.name, plugins[2].name);
 
