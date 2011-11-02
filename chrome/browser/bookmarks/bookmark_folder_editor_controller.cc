@@ -50,7 +50,9 @@ BookmarkFolderEditorController::BookmarkFolderEditorController(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME) :
       node_->GetTitle();
 
-  dialog_ = InputWindowDialog::Create(wnd, title, label, contents, this);
+  dialog_ = InputWindowDialog::Create(wnd, title, label, contents, this,
+      is_new_ ? InputWindowDialog::BUTTON_TYPE_ADD
+              : InputWindowDialog::BUTTON_TYPE_SAVE);
   dialog_->Show();
 }
 

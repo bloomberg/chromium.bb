@@ -16,24 +16,22 @@ InputWindowDialog* InputWindowDialog::Create(gfx::NativeWindow parent,
                                              const string16& window_title,
                                              const string16& label,
                                              const string16& contents,
-                                             Delegate* delegate) {
+                                             Delegate* delegate,
+                                             ButtonType type) {
 #if defined(USE_AURA)
-  return new InputWindowDialogWebUI(window_title,
-                                    label,
-                                    contents,
-                                    delegate);
+  // TODO(tfarina): Implement ButtonType into WebUI dialog too.
+  return new InputWindowDialogWebUI(window_title, label, contents, delegate);
 #else
   if (ChromeWebUI::IsMoreWebUI()) {
-    return new InputWindowDialogWebUI(window_title,
-                                      label,
-                                      contents,
-                                      delegate);
+    // TODO(tfarina): Implement ButtonType into WebUI dialog too.
+    return new InputWindowDialogWebUI(window_title, label, contents, delegate);
   } else {
     return new InputWindowDialogGtk(parent,
                                     UTF16ToUTF8(window_title),
                                     UTF16ToUTF8(label),
                                     UTF16ToUTF8(contents),
-                                    delegate);
+                                    delegate,
+                                    type);
   }
 #endif
 }

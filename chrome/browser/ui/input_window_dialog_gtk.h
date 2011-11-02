@@ -22,7 +22,8 @@ class InputWindowDialogGtk : public InputWindowDialog {
                        const std::string& window_title,
                        const std::string& label,
                        const std::string& contents,
-                       Delegate* delegate);
+                       Delegate* delegate,
+                       ButtonType type);
   virtual ~InputWindowDialogGtk();
 
   virtual void Show();

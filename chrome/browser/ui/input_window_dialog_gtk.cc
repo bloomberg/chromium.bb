@@ -14,13 +14,15 @@ InputWindowDialogGtk::InputWindowDialogGtk(GtkWindow* parent,
                                            const std::string& window_title,
                                            const std::string& label,
                                            const std::string& contents,
-                                           Delegate* delegate)
+                                           Delegate* delegate,
+                                           ButtonType type)
     : dialog_(gtk_dialog_new_with_buttons(
                   window_title.c_str(),
                   parent,
                   GTK_DIALOG_MODAL,
                   GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
-                  GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+                  type == BUTTON_TYPE_ADD ? GTK_STOCK_ADD : GTK_STOCK_SAVE,
+                  GTK_RESPONSE_ACCEPT,
                   NULL)),
       delegate_(delegate) {
   gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_ACCEPT);

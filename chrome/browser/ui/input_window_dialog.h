@@ -13,6 +13,11 @@
 // Cross platform access to a modal input window.
 class InputWindowDialog {
  public:
+  enum ButtonType {
+    BUTTON_TYPE_ADD,
+    BUTTON_TYPE_SAVE,
+  };
+
   class Delegate {
    public:
     virtual ~Delegate() {}
@@ -33,7 +38,8 @@ class InputWindowDialog {
                                    const string16& window_title,
                                    const string16& label,
                                    const string16& contents,
-                                   Delegate* delegate);
+                                   Delegate* delegate,
+                                   ButtonType type);
 
   // Displays the window.
   virtual void Show() = 0;

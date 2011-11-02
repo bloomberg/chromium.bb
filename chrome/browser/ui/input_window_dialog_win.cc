@@ -25,14 +25,14 @@ const int kTextfieldWidth = 200;
 }  // namespace
 
 // The Windows implementation of the cross platform input dialog interface.
-class WinInputWindowDialog : public InputWindowDialog {
+class InputWindowDialogWin : public InputWindowDialog {
  public:
-  WinInputWindowDialog(gfx::NativeWindow parent,
+  InputWindowDialogWin(gfx::NativeWindow parent,
                        const string16& window_title,
                        const string16& label,
                        const string16& contents,
                        Delegate* delegate);
-  virtual ~WinInputWindowDialog();
+  virtual ~InputWindowDialogWin();
 
   // Overridden from InputWindowDialog:
   virtual void Show() OVERRIDE;
@@ -62,11 +62,11 @@ class WinInputWindowDialog : public InputWindowDialog {
 class ContentView : public views::DialogDelegateView,
                     public views::TextfieldController {
  public:
-  explicit ContentView(WinInputWindowDialog* delegate);
+  explicit ContentView(InputWindowDialogWin* delegate);
 
   // views::DialogDelegateView:
   virtual bool IsDialogButtonEnabled(
-      MessageBoxFlags::DialogButton button) const OVERRIDE;
+      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
@@ -98,7 +98,7 @@ class ContentView : public views::DialogDelegateView,
 
   // The delegate that the ContentView uses to communicate changes to the
   // caller.
-  WinInputWindowDialog* delegate_;
+  InputWindowDialogWin* delegate_;
 
   // Helps us set focus to the first Textfield in the window.
   ScopedRunnableMethodFactory<ContentView> focus_grabber_factory_;
@@ -108,7 +108,7 @@ class ContentView : public views::DialogDelegateView,
 
 ///////////////////////////////////////////////////////////////////////////////
 // ContentView
-ContentView::ContentView(WinInputWindowDialog* delegate)
+ContentView::ContentView(InputWindowDialogWin* delegate)
     : delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)) {
     DCHECK(delegate_);
@@ -118,8 +118,8 @@ ContentView::ContentView(WinInputWindowDialog* delegate)
 // ContentView, views::DialogDelegate implementation:
 
 bool ContentView::IsDialogButtonEnabled(
-    MessageBoxFlags::DialogButton button) const {
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK &&
+    ui::MessageBoxFlags::DialogButton button) const {
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK &&
       !delegate_->delegate()->IsValid(text_field_->text())) {
     return false;
   }
@@ -180,21 +180,19 @@ void ContentView::ViewHierarchyChanged(bool is_add,
 
 void ContentView::InitControlLayout() {
   text_field_ = new views::Textfield;
-  text_field_->SetText(UTF16ToWideHack(delegate_->contents()));
+  text_field_->SetText(delegate_->contents());
   text_field_->SetController(this);
 
-  using views::GridLayout;
-
   // TODO(sky): Vertical alignment should be baseline.
-  GridLayout* layout = GridLayout::CreatePanel(this);
+  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   views::ColumnSet* c1 = layout->AddColumnSet(0);
-  c1->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
-                GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
+                views::GridLayout::USE_PREF, 0, 0);
   c1->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-  c1->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
-                GridLayout::USE_PREF, kTextfieldWidth, kTextfieldWidth);
+  c1->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
+                views::GridLayout::USE_PREF, kTextfieldWidth, kTextfieldWidth);
 
   layout->StartRow(0, 0);
   views::Label* label = new views::Label(delegate_->label());
@@ -211,7 +209,7 @@ void ContentView::FocusFirstFocusableControl() {
   text_field_->RequestFocus();
 }
 
-WinInputWindowDialog::WinInputWindowDialog(gfx::NativeWindow parent,
+InputWindowDialogWin::InputWindowDialogWin(gfx::NativeWindow parent,
                                            const string16& window_title,
                                            const string16& label,
                                            const string16& contents,
@@ -225,14 +223,14 @@ WinInputWindowDialog::WinInputWindowDialog(gfx::NativeWindow parent,
   window_->client_view()->AsDialogClientView()->UpdateDialogButtons();
 }
 
-WinInputWindowDialog::~WinInputWindowDialog() {
+InputWindowDialogWin::~InputWindowDialogWin() {
 }
 
-void WinInputWindowDialog::Show() {
+void InputWindowDialogWin::Show() {
   window_->Show();
 }
 
-void WinInputWindowDialog::Close() {
+void InputWindowDialogWin::Close() {
   window_->Close();
 }
 
@@ -241,7 +239,8 @@ InputWindowDialog* InputWindowDialog::Create(gfx::NativeWindow parent,
                                              const string16& window_title,
                                              const string16& label,
                                              const string16& contents,
-                                             Delegate* delegate) {
-  return new WinInputWindowDialog(
+                                             Delegate* delegate,
+                                             ButtonType type) {
+  return new InputWindowDialogWin(
       parent, window_title, label, contents, delegate);
 }
