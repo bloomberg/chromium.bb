@@ -30,6 +30,7 @@ TestService::TestService(const Options& options)
 }
 
 TestService::~TestService() {
+  Stop();
 }
 
 bool TestService::StartService() {

@@ -123,8 +123,6 @@ class IOThread : public base::Thread {
   }
 
   ~IOThread() {
-    // We cannot rely on our base class to stop the thread since we want our
-    // CleanUp function to run.
     Stop();
   }
 

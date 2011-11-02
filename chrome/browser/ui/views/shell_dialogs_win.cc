@@ -383,6 +383,9 @@ bool SaveFileAs(HWND owner,
 class ShellDialogThread : public base::Thread {
  public:
   ShellDialogThread() : base::Thread("Chrome_ShellDialogThread") { }
+  ~ShellDialogThread() {
+    Stop();
+  }
 
  protected:
   void Init() {

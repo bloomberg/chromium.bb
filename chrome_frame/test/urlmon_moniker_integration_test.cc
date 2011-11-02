@@ -59,6 +59,10 @@ class RunTestServer : public base::Thread {
       ready_(::CreateEvent(NULL, TRUE, FALSE, NULL)) {
   }
 
+  ~RunTestServer() {
+    Stop();
+  }
+
   bool Start() {
     bool ret = StartWithOptions(Options(MessageLoop::TYPE_UI, 0));
     if (ret) {

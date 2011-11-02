@@ -1413,6 +1413,7 @@ UrlmonUrlRequestManager::ResourceFetcherThread::ResourceFetcherThread(
 }
 
 UrlmonUrlRequestManager::ResourceFetcherThread::~ResourceFetcherThread() {
+  Stop();
 }
 
 void UrlmonUrlRequestManager::ResourceFetcherThread::Init() {

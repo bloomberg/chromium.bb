@@ -630,8 +630,6 @@ WatchDogThread::WatchDogThread() : Thread("BrowserWatchdog") {
 }
 
 WatchDogThread::~WatchDogThread() {
-  // We cannot rely on our base class to stop the thread since we want our
-  // CleanUp function to run.
   Stop();
 }
 

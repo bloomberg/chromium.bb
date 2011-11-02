@@ -387,6 +387,9 @@ STDMETHODIMP QueryInterfaceIfDelegateSupports(void* obj, REFIID iid,
 class STAThread : public base::Thread {
  public:
   explicit STAThread(const char *name) : Thread(name) {}
+  ~STAThread() {
+    Stop();
+  }
   bool Start() {
     return StartWithOptions(Options(MessageLoop::TYPE_UI, 0));
   }

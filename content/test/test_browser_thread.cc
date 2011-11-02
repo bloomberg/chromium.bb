@@ -15,6 +15,7 @@ TestBrowserThread::TestBrowserThread(ID identifier, MessageLoop* message_loop)
 }
 
 TestBrowserThread::~TestBrowserThread() {
+  Stop();
 }
 
 }  // namespace content

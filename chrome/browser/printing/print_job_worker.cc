@@ -68,6 +68,7 @@ PrintJobWorker::~PrintJobWorker() {
   // cancels printing or in the case of print preview, the worker is destroyed
   // on the I/O thread.
   DCHECK_EQ(owner_->message_loop(), MessageLoop::current());
+  Stop();
 }
 
 void PrintJobWorker::SetNewOwner(PrintJobWorkerOwner* new_owner) {

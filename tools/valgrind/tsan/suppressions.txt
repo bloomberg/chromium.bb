@@ -593,18 +593,6 @@
   fun:HostContentSettingsMap::GetDefaultContentSetting
 }
 {
-  bug_102134a
-  ThreadSanitizer:Race
-  fun:content::BrowserThreadImpl::~BrowserThreadImpl
-  fun:content::TestBrowserThread::~TestBrowserThread
-}
-{
-  bug_102134b
-  ThreadSanitizer:Race
-  fun:content::BrowserThread::~BrowserThread
-  fun:content::DeprecatedBrowserThread::~DeprecatedBrowserThread
-}
-{
   bug_102327_a
   ThreadSanitizer:Race
   fun:tracked_objects::ThreadData::Initialize

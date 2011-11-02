@@ -62,8 +62,6 @@ class ServiceIOThread : public base::Thread {
 
 ServiceIOThread::ServiceIOThread(const char* name) : base::Thread(name) {}
 ServiceIOThread::~ServiceIOThread() {
-  // We cannot rely on our base class to stop the thread since we want our
-  // CleanUp function to run.
   Stop();
 }
 
