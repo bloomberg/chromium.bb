@@ -10,4 +10,4 @@
  *    been examined, and _start's call would get an undefined reference.
  */
 
-EXTERN ( main exit _exit )
+EXTERN ( main exit _exit __nacl_read_tp )

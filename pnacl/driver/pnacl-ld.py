@@ -45,8 +45,6 @@ EXTRA_ENV = {
   'STDLIB'   : '1',
   'RELOCATABLE': '0',
 
-  'BAREBONES_LINK' : '0',
-
   'STRIP_MODE' : 'none',
 
   'STRIP_FLAGS'      : '${STRIP_FLAGS_%STRIP_MODE%}',
@@ -73,10 +71,7 @@ EXTRA_ENV = {
                    '${#LD_SCRIPT ? -T ${LD_SCRIPT} : -Ttext=0x20000}',
 
   'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
-                      '-plugin-opt=emit-llvm ' +
-                      '${LIBMODE_NEWLIB && !BAREBONES_LINK ? ' +
-                      '-plugin-opt=-add-nacl-read-tp-dependency ' +
-                      '-plugin-opt=-add-libgcc-dependencies}',
+                      '-plugin-opt=emit-llvm',
 
    # Symbols to wrap
   'WRAP_SYMBOLS': '',
@@ -165,8 +160,6 @@ LDPatterns = [
 
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
-
-  ( '-barebones-link',       "env.set('BAREBONES_LINK', '1')"),
 
   ( '-shared',         "env.set('SHARED', '1')"),
 
@@ -260,7 +253,6 @@ def main(argv):
     if env.getbool('SHARED'):
       Log.Fatal("-r and -shared may not be used together")
     env.set('STATIC', '0')
-    env.set('BAREBONES_LINK', '1')
 
   if env.getbool('LIBMODE_NEWLIB'):
     if env.getbool('SHARED'):
