@@ -34,6 +34,58 @@ bool IsBinaryFile(const FilePath& file) {
           file.MatchesExtension(FILE_PATH_LITERAL(".cab")) ||
           file.MatchesExtension(FILE_PATH_LITERAL(".msi")));
 }
+
+// List of extensions for which we track some UMA stats.
+enum MaliciousExtensionType {
+  EXTENSION_EXE,
+  EXTENSION_MSI,
+  EXTENSION_CAB,
+  EXTENSION_SYS,
+  EXTENSION_SCR,
+  EXTENSION_DRV,
+  EXTENSION_BAT,
+  EXTENSION_ZIP,
+  EXTENSION_RAR,
+  EXTENSION_DLL,
+  EXTENSION_PIF,
+  EXTENSION_COM,
+  EXTENSION_JAR,
+  EXTENSION_CLASS,
+  EXTENSION_PDF,
+  EXTENSION_VB,
+  EXTENSION_REG,
+  EXTENSION_GRP,
+  EXTENSION_OTHER,  // Groups all other extensions into one bucket.
+  EXTENSION_MAX,
+};
+
+MaliciousExtensionType GetExtensionType(const FilePath& f) {
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".exe"))) return EXTENSION_EXE;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".msi"))) return EXTENSION_MSI;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".cab"))) return EXTENSION_CAB;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".sys"))) return EXTENSION_SYS;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".scr"))) return EXTENSION_SCR;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".drv"))) return EXTENSION_DRV;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".bat"))) return EXTENSION_BAT;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".zip"))) return EXTENSION_ZIP;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".rar"))) return EXTENSION_RAR;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".dll"))) return EXTENSION_DLL;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".pif"))) return EXTENSION_PIF;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".com"))) return EXTENSION_COM;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".jar"))) return EXTENSION_JAR;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".class"))) return EXTENSION_CLASS;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".pdf"))) return EXTENSION_PDF;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".vb"))) return EXTENSION_VB;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".reg"))) return EXTENSION_REG;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".grp"))) return EXTENSION_GRP;
+  return EXTENSION_OTHER;
+}
+
+void RecordFileExtensionType(const FilePath& file) {
+  UMA_HISTOGRAM_ENUMERATION("SBClientDownload.DownloadExtensions",
+                            GetExtensionType(file),
+                            EXTENSION_MAX);
+}
 }  // namespace
 
 DownloadProtectionService::DownloadInfo::DownloadInfo()
@@ -91,6 +143,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
       PostFinishTask(SAFE);
       return;  // For now we only support HTTP download URLs.
     }
+    RecordFileExtensionType(info_.local_file);
 
     if (!IsBinaryFile(info_.local_file)) {
       RecordStats(REASON_NOT_BINARY_FILE);
