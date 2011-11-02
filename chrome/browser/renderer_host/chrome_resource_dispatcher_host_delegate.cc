@@ -34,6 +34,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "net/base/load_flags.h"
+#include "net/base/ssl_config_service.h"
 
 // TODO(oshima): Enable this for other platforms.
 #if defined(OS_CHROMEOS)
@@ -312,15 +313,32 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     ResourceMessageFilter* filter) {
   LoadTimingObserver::PopulateTimingInfo(request, response);
 
+  ResourceDispatcherHostRequestInfo* info =
+      resource_dispatcher_host_->InfoForRequest(request);
+
+  if (request->url().SchemeIsSecure()) {
+    const net::URLRequestContext* context = request->context();
+    net::TransportSecurityState* state = context->transport_security_state();
+    if (state) {
+      net::TransportSecurityState::DomainState domain_state;
+      bool has_sni = net::SSLConfigService::IsSNIAvailable(
+          context->ssl_config_service());
+      if (state->IsEnabledForHost(
+              &domain_state, request->url().host(), has_sni) ||
+          state->HasPinsForHost(
+              &domain_state, request->url().host(), has_sni)) {
+        filter->Send(new ChromeViewMsg_AddStrictSecurityHost(
+            info->route_id(), request->url().host()));
+      }
+    }
+  }
+
   // We must send the content settings for the URL before sending response
   // headers to the renderer.
   const content::ResourceContext& resource_context = filter->resource_context();
   ProfileIOData* io_data =
       reinterpret_cast<ProfileIOData*>(resource_context.GetUserData(NULL));
   HostContentSettingsMap* map = io_data->GetHostContentSettingsMap();
-
-  ResourceDispatcherHostRequestInfo* info =
-      resource_dispatcher_host_->InfoForRequest(request);
   filter->Send(new ChromeViewMsg_SetContentSettingsForLoadingURL(
       info->route_id(), request->url(),
       map->GetContentSettings(request->url())));

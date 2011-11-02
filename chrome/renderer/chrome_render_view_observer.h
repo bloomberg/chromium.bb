@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_CHROME_RENDER_VIEW_OBSERVER_H_
 #pragma once
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -127,6 +128,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
   void OnStartFrameSniffer(const string16& frame_name);
   void OnGetFPS();
+  void OnAddStrictSecurityHost(const std::string& host);
 
   // Captures the thumbnail and text contents for indexing for the given load
   // ID. If the view's load ID is different than the parameter, this call is
@@ -174,6 +176,9 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // Decodes a data: URL image or returns an empty image in case of failure.
   SkBitmap ImageFromDataUrl(const GURL&) const;
 
+  // Determines if a host is in the strict security host set.
+  bool IsStrictSecurityHost(const std::string& host);
+
   // Save the JavaScript to preload if a ViewMsg_WebUIJavaScript is received.
   scoped_ptr<WebUIJavaScript> webui_javascript_;
 
@@ -197,6 +202,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // Insecure content may be permitted for the duration of this render view.
   bool allow_displaying_insecure_content_;
   bool allow_running_insecure_content_;
+  std::set<std::string> strict_security_hosts_;
 
   // Allows JS to access DOM automation. The JS object is only exposed when the
   // DOM automation bindings are enabled.

@@ -261,6 +261,8 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_StartFrameSniffer, OnStartFrameSniffer)
 #endif
     IPC_MESSAGE_HANDLER(ChromeViewMsg_GetFPS, OnGetFPS)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_AddStrictSecurityHost,
+                        OnAddStrictSecurityHost)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -351,6 +353,11 @@ void ChromeRenderViewObserver::OnSetAllowDisplayingInsecureContent(bool allow) {
 void ChromeRenderViewObserver::OnSetAllowRunningInsecureContent(bool allow) {
   allow_running_insecure_content_ = allow;
   OnSetAllowDisplayingInsecureContent(allow);
+}
+
+void ChromeRenderViewObserver::OnAddStrictSecurityHost(
+    const std::string& host) {
+  strict_security_hosts_.insert(host);
 }
 
 void ChromeRenderViewObserver::Navigate(const GURL& url) {
@@ -451,48 +458,48 @@ bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
     WebKit::WebFrame* frame,
     bool allowed_per_settings,
     const WebKit::WebSecurityOrigin& origin,
-    const WebKit::WebURL& url) {
+    const WebKit::WebURL& resource_url) {
   SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY);
 
-  std::string host(origin.host().utf8());
-  GURL frame_url(frame->document().url());
-  if (isHostInDomain(host, kGoogleDotCom)) {
+  std::string origin_host(origin.host().utf8());
+  GURL frame_gurl(frame->document().url());
+  if (isHostInDomain(origin_host, kGoogleDotCom)) {
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_GOOGLE);
-    if (StartsWithASCII(frame_url.path(), kGoogleSupportPathPrefix, false)) {
+    if (StartsWithASCII(frame_gurl.path(), kGoogleSupportPathPrefix, false)) {
       SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_SUPPORT);
-    } else if (StartsWithASCII(frame_url.path(),
+    } else if (StartsWithASCII(frame_gurl.path(),
                                kGoogleIntlPathPrefix,
                                false)) {
       SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_INTL);
     }
   }
 
-  if (host == kWWWDotGoogleDotCom) {
+  if (origin_host == kWWWDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_WWW_GOOGLE);
-    if (StartsWithASCII(frame_url.path(), kGoogleReaderPathPrefix, false))
+    if (StartsWithASCII(frame_gurl.path(), kGoogleReaderPathPrefix, false))
       SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_READER);
-  } else if (host == kMailDotGoogleDotCom) {
+  } else if (origin_host == kMailDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_MAIL_GOOGLE);
-  } else if (host == kPlusDotGoogleDotCom) {
+  } else if (origin_host == kPlusDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_PLUS_GOOGLE);
-  } else if (host == kDocsDotGoogleDotCom) {
+  } else if (origin_host == kDocsDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_DOCS_GOOGLE);
-  } else if (host == kSitesDotGoogleDotCom) {
+  } else if (origin_host == kSitesDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_SITES_GOOGLE);
-  } else if (host == kPicasawebDotGoogleDotCom) {
+  } else if (origin_host == kPicasawebDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_PICASAWEB_GOOGLE);
-  } else if (host == kCodeDotGoogleDotCom) {
+  } else if (origin_host == kCodeDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_CODE_GOOGLE);
-  } else if (host == kGroupsDotGoogleDotCom) {
+  } else if (origin_host == kGroupsDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_GROUPS_GOOGLE);
-  } else if (host == kMapsDotGoogleDotCom) {
+  } else if (origin_host == kMapsDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_MAPS_GOOGLE);
-  } else if (host == kWWWDotYoutubeDotCom) {
+  } else if (origin_host == kWWWDotYoutubeDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_YOUTUBE);
   }
 
-  GURL gurl(url);
-  if (EndsWith(gurl.path(), kDotHTML, false))
+  GURL resource_gurl(resource_url);
+  if (EndsWith(resource_gurl.path(), kDotHTML, false))
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HTML);
 
   if (allowed_per_settings || allow_displaying_insecure_content_)
@@ -506,76 +513,78 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
     WebKit::WebFrame* frame,
     bool allowed_per_settings,
     const WebKit::WebSecurityOrigin& origin,
-    const WebKit::WebURL& url) {
-  // Single value to control permissive mixed content behaviour.
-  const bool enforce_insecure_content_on_all_domains = true;
+    const WebKit::WebURL& resource_url) {
+  // Single value to control permissive mixed content behaviour.  We flip
+  // this at the present between beta / stable releases.
+  const bool block_insecure_content_on_all_domains = false;
 
-  std::string host(origin.host().utf8());
-  GURL frame_url(frame->document().url());
-  bool is_google = isHostInDomain(host, kGoogleDotCom);
+  std::string origin_host(origin.host().utf8());
+  GURL frame_gurl(frame->document().url());
+  DCHECK_EQ(frame_gurl.host(), origin_host);
+
+  bool is_google = isHostInDomain(origin_host, kGoogleDotCom);
   if (is_google) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GOOGLE);
-    if (StartsWithASCII(frame_url.path(), kGoogleSupportPathPrefix, false)) {
+    if (StartsWithASCII(frame_gurl.path(), kGoogleSupportPathPrefix, false)) {
       SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GOOGLE_SUPPORT);
-    } else if (StartsWithASCII(frame_url.path(),
+    } else if (StartsWithASCII(frame_gurl.path(),
                                kGoogleIntlPathPrefix,
                                false)) {
       SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GOOGLE_INTL);
     }
   }
 
-  if (host == kWWWDotGoogleDotCom) {
+  if (origin_host == kWWWDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_WWW_GOOGLE);
-    if (StartsWithASCII(frame_url.path(), kGoogleReaderPathPrefix, false))
+    if (StartsWithASCII(frame_gurl.path(), kGoogleReaderPathPrefix, false))
       SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GOOGLE_READER);
-  } else if (host == kMailDotGoogleDotCom) {
+  } else if (origin_host == kMailDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_MAIL_GOOGLE);
-  } else if (host == kPlusDotGoogleDotCom) {
+  } else if (origin_host == kPlusDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_PLUS_GOOGLE);
-  } else if (host == kDocsDotGoogleDotCom) {
+  } else if (origin_host == kDocsDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_DOCS_GOOGLE);
-  } else if (host == kSitesDotGoogleDotCom) {
+  } else if (origin_host == kSitesDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_SITES_GOOGLE);
-  } else if (host == kPicasawebDotGoogleDotCom) {
+  } else if (origin_host == kPicasawebDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_PICASAWEB_GOOGLE);
-  } else if (host == kCodeDotGoogleDotCom) {
+  } else if (origin_host == kCodeDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_CODE_GOOGLE);
-  } else if (host == kGroupsDotGoogleDotCom) {
+  } else if (origin_host == kGroupsDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GROUPS_GOOGLE);
-  } else if (host == kMapsDotGoogleDotCom) {
+  } else if (origin_host == kMapsDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_MAPS_GOOGLE);
-  } else if (host == kWWWDotYoutubeDotCom) {
+  } else if (origin_host == kWWWDotYoutubeDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_YOUTUBE);
-  } else if (EndsWith(host, kDotGoogleUserContentDotCom, false)) {
+  } else if (EndsWith(origin_host, kDotGoogleUserContentDotCom, false)) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GOOGLEUSERCONTENT);
   }
 
-  GURL gurl(url);
-  if (gurl.host() == kWWWDotYoutubeDotCom)
+  GURL resource_gurl(resource_url);
+  if (resource_gurl.host() == kWWWDotYoutubeDotCom)
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_TARGET_YOUTUBE);
 
-  if (EndsWith(gurl.path(), kDotJS, false))
+  if (EndsWith(resource_gurl.path(), kDotJS, false))
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_JS);
-  else if (EndsWith(gurl.path(), kDotCSS, false))
+  else if (EndsWith(resource_gurl.path(), kDotCSS, false))
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_CSS);
-  else if (EndsWith(gurl.path(), kDotSWF, false))
+  else if (EndsWith(resource_gurl.path(), kDotSWF, false))
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_SWF);
 
-  if (allow_running_insecure_content_ || allowed_per_settings)
-    return true;
-
-  if (!(enforce_insecure_content_on_all_domains ||
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kNoRunningInsecureContent))) {
-    bool mandatory_enforcement = (is_google ||
-                                  isHostInDomain(host, kFacebookDotCom) ||
-                                  isHostInDomain(host, kTwitterDotCom));
-    if (!mandatory_enforcement)
-      return true;
+  if (!allow_running_insecure_content_ &&
+      !allowed_per_settings &&
+      (block_insecure_content_on_all_domains ||
+       CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kNoRunningInsecureContent) ||
+       is_google ||
+       isHostInDomain(origin_host, kFacebookDotCom) ||
+       isHostInDomain(origin_host, kTwitterDotCom) ||
+       IsStrictSecurityHost(origin_host))) {
+    Send(new ChromeViewHostMsg_DidBlockRunningInsecureContent(routing_id()));
+    return false;
   }
 
-  Send(new ChromeViewHostMsg_DidBlockRunningInsecureContent(routing_id()));
-  return false;
+  return true;
 }
 
 void ChromeRenderViewObserver::didNotAllowPlugins(WebFrame* frame) {
@@ -1024,4 +1033,8 @@ SkBitmap ChromeRenderViewObserver::ImageFromDataUrl(const GURL& url) const {
     return decoder.Decode(src_data, data.size());
   }
   return SkBitmap();
+}
+
+bool ChromeRenderViewObserver::IsStrictSecurityHost(const std::string& host) {
+  return (strict_security_hosts_.find(host) != strict_security_hosts_.end());
 }
