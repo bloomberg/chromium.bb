@@ -39,7 +39,7 @@ using WebKit::WebInputEvent;
 TabContentsViewViews::TabContentsViewViews(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       native_tab_contents_view_(NULL),
-      sad_tab_(NULL),
+      sad_tab_widget_(NULL),
       close_tab_after_drag_ends_(false),
       focus_manager_(NULL) {
   last_focused_view_storage_id_ =
@@ -90,9 +90,9 @@ RenderWidgetHostView* TabContentsViewViews::CreateViewForWidget(
   }
 
   // If we were showing sad tab, remove it now.
-  if (sad_tab_) {
-    SetContentsView(new views::View());
-    sad_tab_ = NULL;
+  if (sad_tab_widget_) {
+    sad_tab_widget_->Close();
+    sad_tab_widget_ = NULL;
   }
 
   return native_tab_contents_view_->CreateRenderWidgetHostView(
@@ -136,15 +136,19 @@ void TabContentsViewViews::OnTabCrashed(base::TerminationStatus status,
   if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)
     return;
 
-  // Force an invalidation to render sad tab.
   // Note that it's possible to get this message after the window was destroyed.
   if (GetNativeView()) {
     SadTabView::Kind kind =
         status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
         SadTabView::KILLED : SadTabView::CRASHED;
-    sad_tab_ = new SadTabView(tab_contents_, kind);
-    SetContentsView(sad_tab_);
-    sad_tab_->SchedulePaint();
+    views::Widget::InitParams sad_tab_widget_params(
+        views::Widget::InitParams::TYPE_CONTROL);
+    sad_tab_widget_params.parent_widget = this;
+    sad_tab_widget_params.bounds =
+        gfx::Rect(GetClientAreaScreenBounds().size());
+    sad_tab_widget_ = new views::Widget;
+    sad_tab_widget_->Init(sad_tab_widget_params);
+    sad_tab_widget_->SetContentsView(new SadTabView(tab_contents_, kind));
   }
 }
 
@@ -169,8 +173,8 @@ void TabContentsViewViews::Focus() {
     return;
   }
 
-  if (tab_contents_->is_crashed() && sad_tab_ != NULL) {
-    sad_tab_->RequestFocus();
+  if (tab_contents_->is_crashed() && sad_tab_widget_ != NULL) {
+    sad_tab_widget_->GetContentsView()->RequestFocus();
     return;
   }
 
@@ -381,7 +385,7 @@ TabContents* TabContentsViewViews::GetTabContents() {
 }
 
 bool TabContentsViewViews::IsShowingSadTab() const {
-  return tab_contents_->is_crashed() && sad_tab_;
+  return tab_contents_->is_crashed() && sad_tab_widget_;
 }
 
 void TabContentsViewViews::OnNativeTabContentsViewShown() {
@@ -464,4 +468,11 @@ void TabContentsViewViews::OnNativeWidgetVisibilityChanged(bool visible) {
   } else {
     tab_contents_->HideContents();
   }
+}
+
+void TabContentsViewViews::OnNativeWidgetSizeChanged(
+    const gfx::Size& new_size) {
+  if (sad_tab_widget_)
+    sad_tab_widget_->SetBounds(gfx::Rect(new_size));
+  views::Widget::OnNativeWidgetSizeChanged(new_size);
 }

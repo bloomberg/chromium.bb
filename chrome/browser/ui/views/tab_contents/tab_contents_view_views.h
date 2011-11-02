@@ -116,13 +116,14 @@ class TabContentsViewViews : public views::Widget,
   virtual void OnNativeTabContentsViewMouseDown() OVERRIDE;
   virtual void OnNativeTabContentsViewMouseMove(bool motion) OVERRIDE;
   virtual void OnNativeTabContentsViewDraggingEnded() OVERRIDE;
-  virtual views::internal::NativeWidgetDelegate* AsNativeWidgetDelegate()
-      OVERRIDE;
+  virtual views::internal::NativeWidgetDelegate*
+      AsNativeWidgetDelegate() OVERRIDE;
 
   // Overridden from views::Widget:
   virtual views::FocusManager* GetFocusManager() OVERRIDE;
   virtual const views::FocusManager* GetFocusManager() const OVERRIDE;
   virtual void OnNativeWidgetVisibilityChanged(bool visible) OVERRIDE;
+  virtual void OnNativeWidgetSizeChanged(const gfx::Size& new_size) OVERRIDE;
 
   // A helper method for closing the tab.
   void CloseTab();
@@ -151,9 +152,10 @@ class TabContentsViewViews : public views::Widget,
 
   NativeTabContentsView* native_tab_contents_view_;
 
-  // Used to render the sad tab. This will be non-NULL only when the sad tab is
-  // visible.
-  SadTabView* sad_tab_;
+  // If non-null we're showing a sad tab. SadTabView is hosted in a separate
+  // widget so that TabContentsViewViews does not need to draw, and can be
+  // created without a texture.
+  views::Widget* sad_tab_widget_;
 
   // The id used in the ViewStorage to store the last focused view.
   int last_focused_view_storage_id_;
