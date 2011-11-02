@@ -290,11 +290,14 @@ are declared in build/common.gypi.
       </message>
 
       <!-- Generic terms -->
-      <message name="IDS_OK" desc="Used for Ok on buttons">
+      <message name="IDS_OK" desc="Used for OK on buttons">
         OK
       </message>
       <message name="IDS_CANCEL" desc="Used for Cancel on buttons">
         Cancel
+      </message>
+      <message name="IDS_ADD" desc="Used for Add on buttons">
+        Add
       </message>
       <message name="IDS_EDIT" desc="Edit menu item">
         &amp;Edit

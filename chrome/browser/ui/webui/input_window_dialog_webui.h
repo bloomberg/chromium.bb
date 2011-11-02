@@ -26,7 +26,8 @@ class InputWindowDialogWebUI : public InputWindowDialog,
   InputWindowDialogWebUI(const string16& window_title,
                          const string16& label,
                          const string16& contents,
-                         InputWindowDialog::Delegate* delegate);
+                         Delegate* delegate,
+                         ButtonType type);
   virtual ~InputWindowDialogWebUI();
 
   // InputWindowDialog methods
@@ -55,7 +56,8 @@ class InputWindowDialogWebUI : public InputWindowDialog,
   string16 contents_;
   bool closed_;
 
-  InputWindowDialog::Delegate* delegate_;
+  Delegate* delegate_;
+  ButtonType type_;
 
   DISALLOW_COPY_AND_ASSIGN(InputWindowDialogWebUI);
 };

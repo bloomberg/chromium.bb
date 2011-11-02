@@ -36,6 +36,7 @@ cr.define('inputWindowDialog', function() {
     var args = JSON.parse(chrome.dialogArguments);
     $('name-label').textContent = args.label;
     $('name').value = args.contents;
+    $('ok').textContent = args.ok_button_title;
 
     $('cancel').onclick = function() {
       closeWithResult(false);

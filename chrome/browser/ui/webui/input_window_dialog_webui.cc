@@ -16,28 +16,31 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
 const int kInputWindowDialogWidth = 240;
 const int kInputWindowDialogHeight = 120;
 
-}
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // InputWindowWebUIDailog private methods
 
-InputWindowDialogWebUI::InputWindowDialogWebUI(
-    const string16& window_title,
-    const string16& label,
-    const string16& contents,
-    InputWindowDialog::Delegate* delegate)
+InputWindowDialogWebUI::InputWindowDialogWebUI(const string16& window_title,
+                                               const string16& label,
+                                               const string16& contents,
+                                               Delegate* delegate,
+                                               ButtonType type)
     : handler_(new InputWindowDialogHandler(delegate)),
       window_title_(window_title),
       label_(label),
       contents_(contents),
       closed_(true),
-      delegate_(delegate) {
+      delegate_(delegate),
+      type_(type) {
 }
 
 InputWindowDialogWebUI::~InputWindowDialogWebUI() {
@@ -82,6 +85,9 @@ std::string InputWindowDialogWebUI::GetDialogArgs() const {
   DictionaryValue value;
   value.SetString("label", label_);
   value.SetString("contents", contents_);
+  string16 ok_button_title = l10n_util::GetStringUTF16(
+      type_ == BUTTON_TYPE_ADD ? IDS_ADD : IDS_SAVE);
+  value.SetString("ok_button_title", ok_button_title);
   std::string json;
   base::JSONWriter::Write(&value, false, &json);
   return json;
