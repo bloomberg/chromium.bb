@@ -113,7 +113,6 @@ readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/libstdc++-v3"
 readonly TC_SRC_BINUTILS="${PNACL_HG_ROOT}/binutils"
 readonly TC_SRC_NEWLIB="${PNACL_HG_ROOT}/newlib"
 readonly TC_SRC_COMPILER_RT="${PNACL_HG_ROOT}/compiler-rt"
-readonly TC_SRC_GOOGLE_PERFTOOLS="${PNACL_HG_ROOT}/google-perftools"
 
 # LLVM sources (svn)
 readonly PNACL_SVN_ROOT="${NACL_ROOT}/hg"
@@ -151,7 +150,6 @@ readonly TC_BUILD_BINUTILS_LIBERTY="${TC_BUILD}/binutils-liberty"
 readonly TC_BUILD_NEWLIB="${TC_BUILD}/newlib"
 readonly TC_BUILD_LIBSTDCPP="${TC_BUILD_LLVM_GCC}-arm/libstdcpp"
 readonly TC_BUILD_COMPILER_RT="${TC_BUILD}/compiler_rt"
-readonly TC_BUILD_GOOGLE_PERFTOOLS="${TC_BUILD}/google-perftools"
 readonly TC_BUILD_GCC="${TC_BUILD}/gcc"
 readonly TC_BUILD_GMP="${TC_BUILD}/gmp"
 readonly TC_BUILD_MPFR="${TC_BUILD}/mpfr"
@@ -254,7 +252,6 @@ readonly UPSTREAM_REV=${UPSTREAM_REV:-56ebe98ee194}
 readonly NEWLIB_REV=c6358617f3fd
 readonly BINUTILS_REV=17a01203bd48
 readonly COMPILER_RT_REV=1a3a6ffb31ea
-readonly GOOGLE_PERFTOOLS_REV=ad820959663d
 
 readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-143276}
 readonly LLVM_MASTER_REV=${LLVM_PROJECT_REV}
@@ -267,7 +264,6 @@ readonly REPO_UPSTREAM="nacl-llvm-branches.upstream"
 readonly REPO_NEWLIB="nacl-llvm-branches.newlib"
 readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
 readonly REPO_COMPILER_RT="nacl-llvm-branches.compiler-rt"
-readonly REPO_GOOGLE_PERFTOOLS="nacl-llvm-branches.google-perftools"
 
 # LLVM repos (svn)
 readonly REPO_LLVM_MASTER="http://llvm.org/svn/llvm-project/llvm/trunk"
@@ -385,7 +381,6 @@ hg-info-all() {
   hg-info "${TC_SRC_NEWLIB}"     ${NEWLIB_REV}
   hg-info "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
   hg-info "${TC_SRC_COMPILER_RT}" ${COMPILER_RT_REV}
-  hg-info "${TC_SRC_GOOGLE_PERFTOOLS}" ${GOOGLE_PERFTOOLS_REV}
 }
 
 update-all() {
@@ -395,7 +390,6 @@ update-all() {
   hg-update-newlib
   hg-update-binutils
   hg-update-compiler-rt
-  hg-update-google-perftools
 }
 
 hg-assert-safe-to-update() {
@@ -584,12 +578,6 @@ hg-update-compiler-rt() {
   hg-update-common "compiler-rt" ${COMPILER_RT_REV} "${TC_SRC_COMPILER_RT}"
 }
 
-#@ hg-update-google-perftools - Update google-perftools to the stable revision
-hg-update-google-perftools() {
-  hg-update-common "google-perftools" ${GOOGLE_PERFTOOLS_REV} \
-    "${TC_SRC_GOOGLE_PERFTOOLS}"
-}
-
 #@ hg-pull-all           - Pull all repos. (but do not update working copy)
 #@ hg-pull-REPO          - Pull repository REPO.
 #@                         (REPO can be llvm-gcc, llvm, newlib, binutils)
@@ -599,7 +587,6 @@ hg-pull-all() {
   hg-pull-newlib
   hg-pull-binutils
   hg-pull-compiler-rt
-  hg-pull-google-perftools
 }
 
 hg-pull-upstream() {
@@ -618,10 +605,6 @@ hg-pull-compiler-rt() {
   hg-pull "${TC_SRC_COMPILER_RT}"
 }
 
-hg-pull-google-perftools() {
-  hg-pull "${TC_SRC_GOOGLE_PERFTOOLS}"
-}
-
 #@ checkout-all          - check out repos needed to build toolchain
 #@                          (skips repos which are already checked out)
 checkout-all() {
@@ -632,7 +615,6 @@ checkout-all() {
   hg-checkout-binutils
   hg-checkout-newlib
   hg-checkout-compiler-rt
-  hg-checkout-google-perftools
   git-sync
 }
 
@@ -671,11 +653,6 @@ hg-checkout-newlib() {
 
 hg-checkout-compiler-rt() {
   hg-checkout ${REPO_COMPILER_RT} "${TC_SRC_COMPILER_RT}" ${COMPILER_RT_REV}
-}
-
-hg-checkout-google-perftools() {
-  hg-checkout ${REPO_GOOGLE_PERFTOOLS} "${TC_SRC_GOOGLE_PERFTOOLS}" \
-    ${GOOGLE_PERFTOOLS_REV}
 }
 
 #@ hg-clean              - Remove all repos. (WARNING: local changes are lost)
@@ -2486,14 +2463,6 @@ llvm-sb-make() {
     build_with_srpc=1
   fi
 
-  local use_tcmalloc=0
-  # TODO(dschuff): Decide whether we should switch back to tcmalloc
-  #if ${LIBMODE_NEWLIB} && ! ${SB_JIT}; then
-  #  # only use tcmalloc with newlib (glibc malloc should be pretty good)
-  #  # (also, SB_JIT implies building with glibc, but for now it uses nacl-gcc)
-  #  use_tcmalloc=1
-  #fi
-
   RunWithLog ${LLVM_SB_LOG_PREFIX}.make \
       env -i PATH="/usr/bin:/bin" \
       ONLY_TOOLS="llc lli"\
@@ -2501,8 +2470,7 @@ llvm-sb-make() {
       NACL_SRPC=${build_with_srpc} \
       KEEP_SYMBOLS=1 \
       VERBOSE=1 \
-      make USE_TCMALLOC=$use_tcmalloc \
-           ${MAKE_OPTS} tools-only
+      make ${MAKE_OPTS} tools-only
 
   ts-touch-commit "${objdir}"
 
@@ -2603,90 +2571,6 @@ translate-and-install-sb-tool() {
     mkdir -p "${bindir_tarch}"
     ${installer} "${nexe}" "${bindir_tarch}/${name}"
   done
-}
-
-google-perftools-clean() {
-  rm -rf "${TC_BUILD_GOOGLE_PERFTOOLS}"
-}
-
-google-perftools-needs-configure() {
-  [ ! -f "${TC_BUILD_GOOGLE_PERFTOOLS}/config.status" ]
-  return $?
-}
-
-google-perftools-needs-make() {
-  local srcdir="${TC_SRC_GOOGLE_PERFTOOLS}"
-  local objdir="${TC_BUILD_GOOGLE_PERFTOOLS}"
-  ts-modified "${srcdir}" "${objdir}"
-}
-
-#+ google-perftools-configure - conifgure tcmalloc-minimal for bitcode
-google-perftools-configure() {
-  local src="${TC_SRC_GOOGLE_PERFTOOLS}"/google-perftools
-  local flags="-static"
-  local configure_env=(
-    CC="${PNACL_CC} ${flags}" \
-    CXX="${PNACL_CXX} ${flags}" \
-    LD="${PNACL_LD} ${flags}" \
-    AR="${PNACL_AR}" \
-    RANLIB="${PNACL_RANLIB}")
-  local install="${TC_BUILD_GOOGLE_PERFTOOLS}"/install
-
-  StepBanner "GOOGLE-PERFTOOLS" "Configure"
-  mkdir -p "${TC_BUILD_GOOGLE_PERFTOOLS}"
-  mkdir -p "${install}"
-  spushd "${TC_BUILD_GOOGLE_PERFTOOLS}"
-  RunWithLog google-perftools.configure \
-      ${src}/configure --prefix="${install}" \
-      --enable-minimal \
-      --host=nacl \
-      "${configure_env[@]}"
-  spopd
-}
-
-#+ google-perftools-make - Make tcmalloc-minimal in bitcode
-google-perftools-make() {
-  local objdir="${TC_BUILD_GOOGLE_PERFTOOLS}"
-  spushd "${objdir}"
-  StepBanner "GOOGLE-PERFTOOLS" "Make"
-  ts-touch-open "${objdir}"
-  RunWithLog google-perftools.make \
-    make -j ${PNACL_CONCURRENCY}
-  ts-touch-commit "${objdir}"
-  spopd
-}
-
-#+ google-perftools-install - Install libtcmalloc_minimal.a into toolchain
-google-perftools-install() {
-  StepBanner "GOOGLE-PERFTOOLS" "Install"
-  spushd "${TC_BUILD_GOOGLE_PERFTOOLS}"
-  RunWithLog google-perftools.install \
-    make install
-
-  mkdir -p "${INSTALL_LIB}"
-  cp "${TC_BUILD_GOOGLE_PERFTOOLS}"/install/lib/libtcmalloc_minimal.a \
-    "${INSTALL_LIB}"
-  spopd
-}
-
-#+ google-perftools - Build libtcmalloc_minimal for use with newlib
-#                           sandboxed binaries
-google-perftools() {
-  StepBanner "GOOGLE-PERFTOOLS (tcmalloc)"
-
-  if google-perftools-needs-configure; then
-    google-perftools-clean
-    google-perftools-configure
-  else
-    SkipBanner "GOOGLE-PERFTOOLS" "Configure"
-  fi
-
-  if google-perftools-needs-make; then
-      google-perftools-make
-  else
-    SkipBanner "GOOGLE-PERFTOOLS" "Make"
-  fi
-  google-perftools-install
 }
 
 #---------------------------------------------------------------------
@@ -2902,10 +2786,6 @@ install-translators() {
     exit -1
   fi
 
-  # TODO(dschuff): Decide whether we should switch back to tcmalloc
-  #if ${LIBMODE_NEWLIB}; then
-  #    google-perftools
-  #fi
   local srpc_kind=$1
   check-sb-mode ${srpc_kind}
 
