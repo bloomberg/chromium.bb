@@ -17,7 +17,7 @@ from selenium.webdriver.chrome import service
 class ChromeDriverFactory(object):
   """"Factory that creates ChromeDriver instances for pyauto.
 
-  Starts a single chromedriver server when necessary. Users should call 'Stop'
+  Starts a single ChromeDriver server when necessary. Users should call 'Stop'
   when no longer using the factory.
   """
 
@@ -29,11 +29,12 @@ class ChromeDriverFactory(object):
 
     This instance will connect to a new automation provider of an already
     running Chrome.
+
     Args:
       pyauto: pyauto.PyUITest instance
 
     Returns:
-      selenium.webdriver.remote.webdriver.WebDriver instance
+      selenium.webdriver.remote.webdriver.WebDriver instance.
     """
     self._StartServerIfNecessary()
     channel_id = 'testing' + hex(random.getrandbits(20 * 4))[2:-1]

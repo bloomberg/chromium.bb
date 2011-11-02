@@ -174,7 +174,7 @@ class _DevToolsSocketRequest(object):
   instance when interacting with the renderer process of a given webpage.
   Requests and results are passed as specially-formatted JSON messages,
   according to a communication protocol defined in WebKit.  The string
-  reprentation of this request will be a JSON message that is properly
+  representation of this request will be a JSON message that is properly
   formatted according to the communication protocol.
 
   Public Attributes:
@@ -367,6 +367,7 @@ class _DevToolsSocketClient(asyncore.dispatcher):
   def handle_error(self):
     """Called when an exception is raised; overridden from asyncore."""
     self.close()
+    self.snapshotter.NotifySocketClientException()
     asyncore.dispatcher.handle_error(self)
 
 
@@ -384,6 +385,9 @@ class _PerformanceSnapshotterThread(threading.Thread):
                  received from the remote Chrome instance (which would have been
                  sent in response to an earlier request).  Called by the
                  _DevToolsSocketClient.
+    NotifySocketClientException: Notifies the current object that the
+                                 _DevToolsSocketClient encountered an exception.
+                                 Called by the _DevToolsSocketClient.
     run: Starts the thread of execution for this object.  Invoked implicitly
          by calling the start() method on this object.
 
@@ -440,6 +444,9 @@ class _PerformanceSnapshotterThread(threading.Thread):
     self._current_heap_snapshot = []
     self._url = ''
     self.collected_heap_snapshot_data = []
+    self.last_snapshot_start_time = 0
+
+    self._killed = False
 
     # Create a DevToolsSocket client and wait for it to complete the remote
     # debugging protocol handshake with the remote Chrome instance.
@@ -449,7 +456,7 @@ class _PerformanceSnapshotterThread(threading.Thread):
         result['path'])
     self._client.snapshotter = self
     while asyncore.socket_map:
-      if self._client.handshake_done:
+      if self._client.handshake_done or self._killed:
         break
       asyncore.loop(timeout=1, count=1)
 
@@ -481,12 +488,20 @@ class _PerformanceSnapshotterThread(threading.Thread):
       elif reply_dict['method'] == 'Profiler.finishHeapSnapshot':
         # A heap snapshot has been completed.  Analyze and output the data.
         self._logger.debug('Heap snapshot taken: %s', self._url)
+        self._logger.debug('Time to request snapshot raw data: %.2f sec',
+                           time.time() - self.last_snapshot_start_time)
         # TODO(dennisjeffrey): Parse the heap snapshot on-the-fly as the data
         # is coming in over the wire, so we can avoid storing the entire
         # snapshot string in memory.
         self._logger.debug('Now analyzing heap snapshot...')
         parser = _V8HeapSnapshotParser()
-        result = parser.ParseSnapshotData(''.join(self._current_heap_snapshot))
+        time_start = time.time()
+        raw_snapshot_data = ''.join(self._current_heap_snapshot)
+        self._logger.debug('Raw snapshot data size: %.2f MB',
+                           len(raw_snapshot_data) / (1024.0 * 1024.0))
+        result = parser.ParseSnapshotData(raw_snapshot_data)
+        self._logger.debug('Time to parse data: %.2f sec',
+                           time.time() - time_start)
         num_nodes = result['total_node_count']
         total_size = result['total_shallow_size']
         total_size_str = self._ConvertBytesToHumanReadableString(total_size)
@@ -510,6 +525,10 @@ class _PerformanceSnapshotterThread(threading.Thread):
         self._logger.debug('Heap snapshot analysis complete (%s).',
                            total_size_str)
 
+  def NotifySocketClientException(self):
+    """Notifies that the _DevToolsSocketClient encountered an exception."""
+    self._killed = True
+
   @staticmethod
   def _ConvertBytesToHumanReadableString(num_bytes):
     """Converts an integer number of bytes into a human-readable string.
@@ -521,11 +540,11 @@ class _PerformanceSnapshotterThread(threading.Thread):
       A human-readable string representation of the given number of bytes.
     """
     if num_bytes < 1024:
-      return '%dB' % num_bytes
+      return '%d B' % num_bytes
     elif num_bytes < 1048576:
-      return '%.2fKB' % (num_bytes / 1024.0)
+      return '%.2f KB' % (num_bytes / 1024.0)
     else:
-      return '%.2fMB' % (num_bytes / 1048576.0)
+      return '%.2f MB' % (num_bytes / 1048576.0)
 
   def _IdentifyDevToolsSocketConnectionInfo(self, tab_index):
     """Identifies DevToolsSocket connection info from a remote Chrome instance.
@@ -653,7 +672,16 @@ class _PerformanceSnapshotterThread(threading.Thread):
         request.params = {'type': 'HEAP', 'uid': last_req.results['uid']}
 
   def _TakeHeapSnapshot(self):
-    """Takes a heap snapshot by communicating with _DevToolsSocketClient."""
+    """Takes a heap snapshot by communicating with _DevToolsSocketClient.
+
+    Returns:
+      A boolean indicating whether the heap snapshot was taken successfully.
+      This can be False if the current thread is killed before the snapshot
+      is finished being taken.
+    """
+    if self._killed:
+      return False
+    self.last_snapshot_start_time = time.time()
     self._logger.debug('Taking heap snapshot...')
     self._ResetRequests()
 
@@ -669,7 +697,10 @@ class _PerformanceSnapshotterThread(threading.Thread):
       self._FillInParams(request)
       self._client.SendMessage(str(request))
       while not request.is_complete:
-        time.sleep(0.5)
+        if self._killed:
+          return False
+        time.sleep(0.1)
+    return True
 
   def run(self):
     """Start _PerformanceSnapshotterThread; overridden from threading.Thread."""
@@ -679,7 +710,8 @@ class _PerformanceSnapshotterThread(threading.Thread):
       while True:
         inp = raw_input('Enter "s" to take a heap snapshot, or "q" to quit> ')
         if inp.lower() in ['s']:
-          self._TakeHeapSnapshot()
+          if not self._TakeHeapSnapshot():
+            return
         elif inp.lower() in ['q', 'quit']:
           self._client.close()
           self._logger.debug('Snapshotter thread finished.')
@@ -690,14 +722,16 @@ class _PerformanceSnapshotterThread(threading.Thread):
         # Snapshot indefinitely until the user manually terminates the process.
         self._logger.debug('Entering forever snapshot mode.')
         while True:
-          self._TakeHeapSnapshot()
+          if not self._TakeHeapSnapshot():
+            return
           self._logger.debug('Waiting %d seconds...', self._interval)
           time.sleep(self._interval)
       else:
         # Perform the requested number of snapshots, then terminate.
         self._logger.debug('Entering %d snapshot mode.', self._num_snapshots)
         for snapshot_num in range(self._num_snapshots):
-          self._TakeHeapSnapshot()
+          if not self._TakeHeapSnapshot():
+            return
           self._logger.debug('Completed snapshot %d of %d.', snapshot_num + 1,
                              self._num_snapshots)
           if snapshot_num + 1 < self._num_snapshots:
@@ -773,6 +807,8 @@ class PerformanceSnapshotter(object):
     snapshotter_thread.start()
     try:
       while asyncore.socket_map:
+        if not snapshotter_thread.is_alive():
+          break
         asyncore.loop(timeout=1, count=1)
     except KeyboardInterrupt:
       pass
