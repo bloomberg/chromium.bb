@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/interrupt_reasons.h"
 
 namespace download_stats {
@@ -175,6 +176,23 @@ void RecordDownloadMimeType(const std::string& mime_type_string) {
   UMA_HISTOGRAM_ENUMERATION("Download.ContentType",
                             download_content,
                             DOWNLOAD_CONTENT_MAX);
+}
+
+void RecordFileThreadReceiveBuffers(size_t num_buffers) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Download.FileThreadReceiveBuffers", num_buffers, 1,
+      DownloadResourceHandler::kLoadsToWrite,
+      DownloadResourceHandler::kLoadsToWrite);
+}
+
+void RecordBandwidth(double actual_bandwidth, double potential_bandwidth) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Download.ActualBandwidth", actual_bandwidth, 1, 1000000000, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Download.PotentialBandwidth", potential_bandwidth, 1, 1000000000, 50);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "Download.BandwidthUsed",
+      (int) ((actual_bandwidth * 100)/ potential_bandwidth));
 }
 
 void RecordOpen(const base::Time& end, bool first) {

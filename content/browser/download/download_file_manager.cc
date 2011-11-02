@@ -17,6 +17,7 @@
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_request_handle.h"
+#include "content/browser/download/download_stats.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
@@ -155,6 +156,8 @@ void DownloadFileManager::UpdateDownload(
     DownloadId global_id, content::DownloadBuffer* buffer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_ptr<content::ContentVector> contents(buffer->ReleaseContents());
+
+  download_stats::RecordFileThreadReceiveBuffers(contents->size());
 
   DownloadFile* download_file = GetDownloadFile(global_id);
   bool had_error = false;

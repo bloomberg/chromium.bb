@@ -33,6 +33,8 @@ class DownloadResourceHandler : public ResourceHandler {
   typedef base::Callback<void(DownloadId, net::Error)>
     OnStartedCallback;
 
+  static const size_t kLoadsToWrite = 100;  // number of data buffers queued
+
   // started_cb will be called exactly once.
   DownloadResourceHandler(ResourceDispatcherHost* rdh,
                           int render_process_host_id,
@@ -103,8 +105,9 @@ class DownloadResourceHandler : public ResourceHandler {
   bool is_paused_;
   base::OneShotTimer<DownloadResourceHandler> pause_timer_;
   base::TimeTicks download_start_time_;  // used to collect stats.
+  base::TimeTicks last_read_time_;        // used to collect stats.
+  size_t last_buffer_size_;               // used to collect stats.
   static const int kReadBufSize = 32768;  // bytes
-  static const size_t kLoadsToWrite = 100;  // number of data buffers queued
   static const int kThrottleTimeMs = 200;  // milliseconds
 
   DISALLOW_COPY_AND_ASSIGN(DownloadResourceHandler);

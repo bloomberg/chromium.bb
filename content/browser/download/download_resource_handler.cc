@@ -156,6 +156,7 @@ bool DownloadResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
   DCHECK(buf && buf_size);
   if (!read_buffer_) {
     *buf_size = min_size < 0 ? kReadBufSize : min_size;
+    last_buffer_size_ = *buf_size;
     read_buffer_ = new net::IOBuffer(*buf_size);
   }
   *buf = read_buffer_.get();
@@ -164,6 +165,20 @@ bool DownloadResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
 
 // Pass the buffer to the download file writer.
 bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
+  base::TimeTicks now(base::TimeTicks::Now());
+  if (!last_read_time_.is_null()) {
+    double seconds_since_last_read = (now - last_read_time_).InSecondsF();
+    if (now == last_read_time_)
+      // Use 1/10 ms as a "very small number" so that we avoid
+      // divide-by-zero error and still record a very high potential bandwidth.
+      seconds_since_last_read = 0.00001;
+
+    double actual_bandwidth = (*bytes_read)/seconds_since_last_read;
+    double potential_bandwidth = last_buffer_size_/seconds_since_last_read;
+    download_stats::RecordBandwidth(actual_bandwidth, potential_bandwidth);
+  }
+  last_read_time_ = now;
+
   if (!*bytes_read)
     return true;
   DCHECK(read_buffer_);

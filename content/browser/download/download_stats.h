@@ -92,6 +92,14 @@ void RecordDownloadWriteSize(size_t data_len);
 // Record WRITE_LOOP_COUNT and number of loops.
 void RecordDownloadWriteLoopCount(int count);
 
+// Record the number of buffers piled up by the IO thread
+// before the file thread gets to draining them.
+void RecordFileThreadReceiveBuffers(size_t num_buffers);
+
+// Record the bandwidth seen in DownloadResourceHandler
+// |actual_bandwidth| and |potential_bandwidth| are in bytes/second.
+void RecordBandwidth(double actual_bandwidth, double potential_bandwidth);
+
 // Record the time of both the first open and all subsequent opens since the
 // download completed.
 void RecordOpen(const base::Time& end, bool first);
