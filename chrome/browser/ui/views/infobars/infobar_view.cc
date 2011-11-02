@@ -94,6 +94,7 @@ views::Link* InfoBarView::CreateLink(const string16& text,
   link->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   link->set_listener(listener);
   link->SetBackgroundColor(background()->get_color());
+  link->set_focusable(true);
   return link;
 }
 
@@ -112,6 +113,7 @@ views::MenuButton* InfoBarView::CreateMenuButton(
   menu_button->SetHighlightColor(SK_ColorBLACK);
   menu_button->SetHoverColor(SK_ColorBLACK);
   menu_button->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+  menu_button->set_focusable(true);
   return menu_button;
 }
 
@@ -151,6 +153,7 @@ views::TextButton* InfoBarView::CreateTextButton(
     }
   }
 #endif
+  text_button->set_focusable(true);
   return text_button;
 }
 

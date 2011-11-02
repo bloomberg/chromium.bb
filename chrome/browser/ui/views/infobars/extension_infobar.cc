@@ -76,6 +76,7 @@ void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
 
   menu_ = new views::MenuButton(NULL, string16(), this, false);
   menu_->SetVisible(false);
+  menu_->set_focusable(true);
   AddChildView(menu_);
 
   ExtensionHost* extension_host = GetDelegate()->extension_host();

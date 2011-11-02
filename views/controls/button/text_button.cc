@@ -34,13 +34,21 @@ static const int kMinHeightDLUs = 14;
 // Default space between the icon and text.
 static const int kDefaultIconTextSpacing = 5;
 
-// Preferred padding between text and edge
+// Preferred padding between text and edge.
 static const int kPreferredPaddingHorizontal = 6;
 static const int kPreferredPaddingVertical = 5;
 
-// Preferred padding between text and edge for NativeTheme border
+// Preferred padding between text and edge for NativeTheme border.
 static const int kPreferredNativeThemePaddingHorizontal = 12;
 static const int kPreferredNativeThemePaddingVertical = 5;
+
+// By default the focus rect is drawn at the border of the view.
+// For a button, we inset the focus rect by 3 pixels so that it
+// doesn't draw on top of the button's border. This roughly matches
+// how the Windows native focus rect for buttons looks. A subclass
+// that draws a button with different padding may need to
+// override OnPaintFocusBorder and do something different.
+static const int kFocusRectInset = 3;
 
 // Default background color for buttons.
 const SkColor kBackgroundColor = SkColorSetRGB(0xde, 0xde, 0xde);
@@ -744,6 +752,14 @@ std::string TextButton::GetClassName() const {
   return kViewClassName;
 }
 
+void TextButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
+  if ((IsFocusable() || IsAccessibilityFocusableInRootView()) && HasFocus()) {
+    gfx::Rect rect(GetLocalBounds());
+    rect.Inset(kFocusRectInset, kFocusRectInset);
+    canvas->DrawFocusRect(rect);
+  }
+}
+
 gfx::NativeTheme::Part TextButton::GetThemePart() const {
   return gfx::NativeTheme::kPushButton;
 }
@@ -825,11 +841,9 @@ std::string NativeTextButton::GetClassName() const {
 
 void NativeTextButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
 #if defined(OS_WIN)
-  // On windows, make sure the focus border is inset wrt the entire button so
-  // that the native text button appears more like a windows button.
   if ((IsFocusable() || IsAccessibilityFocusableInRootView()) && HasFocus()) {
     gfx::Rect rect(GetLocalBounds());
-    rect.Inset(3, 3);
+    rect.Inset(kFocusRectInset, kFocusRectInset);
     canvas->DrawFocusRect(rect);
   }
 #else
