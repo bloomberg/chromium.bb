@@ -12,7 +12,6 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
-#include "chrome/test/base/signaling_task.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"

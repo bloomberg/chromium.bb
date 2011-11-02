@@ -4,15 +4,15 @@
 
 // A simple callback that you can use to wait for events on a thread.
 
-#ifndef CHROME_TEST_BASE_SIGNALING_TASK_H_
-#define CHROME_TEST_BASE_SIGNALING_TASK_H_
+#ifndef BASE_TEST_SIGNALING_TASK_H_
+#define BASE_TEST_SIGNALING_TASK_H_
 #pragma once
 
 #include "base/task.h"
 
 namespace base {
+
 class WaitableEvent;
-}
 
 class SignalingTask : public Task {
  public:
@@ -23,6 +23,9 @@ class SignalingTask : public Task {
 
  private:
   base::WaitableEvent* event_;
+  DISALLOW_COPY_AND_ASSIGN(SignalingTask);
 };
 
-#endif  // CHROME_TEST_BASE_SIGNALING_TASK_H_
+}  // namespace base
+
+#endif  // BASE_TEST_SIGNALING_TASK_H_

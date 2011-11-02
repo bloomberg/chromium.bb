@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/signaling_task.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
@@ -19,7 +20,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/json_pref_store.h"
-#include "chrome/test/base/signaling_task.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -74,7 +74,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
     base::WaitableEvent io_finished(false, false);
     pref_service_->SavePersistentPrefs();
     EXPECT_TRUE(BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                                        new SignalingTask(&io_finished)));
+                                        new base::SignalingTask(&io_finished)));
 
     // If the FILE thread is in fact the current thread (possible in testing
     // scenarios), we have to ensure the task has a chance to run. If the FILE

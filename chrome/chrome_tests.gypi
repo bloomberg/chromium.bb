@@ -196,8 +196,6 @@
         'test/base/model_test_utils.h',
         'test/base/profile_mock.cc',
         'test/base/profile_mock.h',
-        'test/base/signaling_task.cc',
-        'test/base/signaling_task.h',
         'test/base/test_browser_window.cc',
         'test/base/test_browser_window.h',
         'test/base/test_html_dialog_observer.cc',

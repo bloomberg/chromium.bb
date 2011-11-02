@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/signaling_task.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -96,7 +97,7 @@ void TokenServiceTestHarness::WaitForDBLoadCompletion() {
   // operations should be complete.
   base::WaitableEvent done(false, false);
   BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE, new SignalingTask(&done));
+      BrowserThread::DB, FROM_HERE, new base::SignalingTask(&done));
   done.Wait();
 
   // Notifications should be returned from the DB thread onto the UI thread.
