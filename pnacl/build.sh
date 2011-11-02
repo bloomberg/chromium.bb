@@ -917,6 +917,7 @@ glibc() {
   # Copy the glibc headers
   cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/include \
         "${GLIBC_INSTALL_DIR}"
+  install-unwind-header
 }
 
 #@ all                   - Alias for 'everything'
@@ -1812,6 +1813,16 @@ llvm-gcc-make() {
 #########################################################################
 #########################################################################
 
+install-unwind-header() {
+  # TODO(pdox):
+  # We need to establish an unwind ABI, since this is part of the ABI
+  # exposed to the bitcode by the translator. This header should not vary
+  # across compilers or C libraries.
+  INSTALL="/usr/bin/install -c -m 644"
+  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/unwind-generic.h \
+             ${LLVM_INSTALL_DIR}/lib/clang/3.1/include/unwind.h
+}
+
 #+ build-libgcc_eh - build/install libgcc_eh
 build-libgcc_eh() {
   # TODO(pdox): This process needs some major renovation.
@@ -1820,13 +1831,7 @@ build-libgcc_eh() {
   # NOTE: For simplicity we piggyback the libgcc_eh build onto a preconfigured
   #       objdir. So, to be safe, you have to run gcc-stage1-make first
 
-  # NOTE: this is only useful for the clang frontend. For draggon egg we use the
-  #       llvm-gcc install step to copy unwind.h to the proper place.
-  #       Doing the copying here seems to be the right thing to do as
-  #       libgcc_eh alternatives such as libunwind might provide their own unwind.h
-  INSTALL="/usr/bin/install -c -m 644"
-  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/unwind-generic.h \
-             ${LLVM_INSTALL_DIR}/lib/clang/3.1/include/unwind.h
+  install-unwind-header
 
   local arch=$1
   local srcdir="${TC_SRC_LLVM_GCC}"
