@@ -62,7 +62,7 @@ class MediaTest : public UITest {
 #define MAYBE_VideoBearWebm FLAKY_VideoBearWebm
 #else
 #define MAYBE_VideoBearTheora VideoBearTheora
-#define MAYBE_VideoBearWav  VideoBearWav
+#define MAYBE_VideoBearWavPcm  VideoBearWavPcm
 #define MAYBE_VideoBearWebm VideoBearWebm
 #endif
 
@@ -92,8 +92,44 @@ TEST_F(MediaTest, VideoBearSilentMp4) {
 }
 #endif
 
-TEST_F(MediaTest, MAYBE_VideoBearWav) {
-  PlayVideo("bear.wav");
+#if defined(OS_CHROMEOS)
+#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+TEST_F(MediaTest, VideoBearAviMp3Mpeg4) {
+  PlayVideo("bear_mpeg4_mp3.avi");
+}
+
+TEST_F(MediaTest, VideoBearAviMp3Divx) {
+  PlayVideo("bear_divx_mp3.avi");
+}
+
+TEST_F(MediaTest, VideoBear3gpAacH264) {
+  PlayVideo("bear_h264_aac.3gp");
+}
+
+TEST_F(MediaTest, VideoBear3gpAmrnbMpeg4) {
+  PlayVideo("bear_mpeg4_amrnb.3gp");
+}
+
+// TODO(ihf): Enable these audio codecs for CrOS.
+// TEST_F(MediaTest, VideoBearWavAlaw) {
+//   PlayVideo("bear_alaw.wav");
+// }
+// TEST_F(MediaTest, VideoBearWavGsmms) {
+//   PlayVideo("bear_gsmms.wav");
+// }
+
+TEST_F(MediaTest, VideoBearWavMulaw) {
+  PlayVideo("bear_mulaw.wav");
+}
+
+TEST_F(MediaTest, VideoBearFlac) {
+  PlayVideo("bear.flac");
+}
+#endif
+#endif
+
+TEST_F(MediaTest, MAYBE_VideoBearWavPcm) {
+  PlayVideo("bear_pcm.wav");
 }
 
 #if defined(OS_MACOSX)
