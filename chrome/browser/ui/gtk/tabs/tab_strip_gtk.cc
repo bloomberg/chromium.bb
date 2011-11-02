@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/gtk/tabs/dragged_tab_controller_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_menu_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
@@ -708,9 +707,6 @@ TabStripGtk::TabStripGtk(TabStripModel* model, BrowserWindowGtk* window)
       weak_factory_(this),
       added_as_message_loop_observer_(false),
       hover_tab_selector_(model) {
-  theme_service_->InitThemesFor(this);
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 content::Source<ThemeService>(theme_service_));
 }
 
 TabStripGtk::~TabStripGtk() {
@@ -1303,20 +1299,6 @@ void TabStripGtk::DidProcessEvent(GdkEvent* event) {
       break;
     default:
       break;
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// TabStripGtk, content::NotificationObserver implementation:
-
-void TabStripGtk::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
-    TabRendererGtk::SetSelectedTitleColor(theme_service_->GetColor(
-        ThemeService::COLOR_TAB_TEXT));
-    TabRendererGtk::SetUnselectedTitleColor(theme_service_->GetColor(
-        ThemeService::COLOR_BACKGROUND_TAB_TEXT));
   }
 }
 

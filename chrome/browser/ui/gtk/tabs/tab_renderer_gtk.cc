@@ -151,8 +151,6 @@ gfx::Font* TabRendererGtk::title_font_ = NULL;
 int TabRendererGtk::title_font_height_ = 0;
 int TabRendererGtk::close_button_width_ = 0;
 int TabRendererGtk::close_button_height_ = 0;
-SkColor TabRendererGtk::selected_title_color_ = SK_ColorBLACK;
-SkColor TabRendererGtk::unselected_title_color_ = SkColorSetRGB(64, 64, 64);
 
 ////////////////////////////////////////////////////////////////////////////////
 // TabRendererGtk::LoadingAnimation, public:
@@ -281,8 +279,14 @@ TabRendererGtk::TabRendererGtk(GtkThemeService* theme_service)
       background_offset_y_(kInactiveTabBackgroundOffsetY),
       theme_service_(theme_service),
       close_button_color_(0),
-      is_active_(false) {
+      is_active_(false),
+      selected_title_color_(SK_ColorBLACK),
+      unselected_title_color_(SkColorSetRGB(64, 64, 64)) {
   InitResources();
+
+  theme_service_->InitThemesFor(this);
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+                 content::Source<ThemeService>(theme_service_));
 
   tab_.Own(gtk_fixed_new());
   gtk_widget_set_app_paintable(tab_.get(), TRUE);
@@ -299,6 +303,16 @@ TabRendererGtk::TabRendererGtk(GtkThemeService* theme_service)
 
 TabRendererGtk::~TabRendererGtk() {
   tab_.Destroy();
+}
+
+void TabRendererGtk::Observe(int type,
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
+  DCHECK(chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
+  selected_title_color_ =
+      theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT);
+  unselected_title_color_ =
+      theme_service_->GetColor(ThemeService::COLOR_BACKGROUND_TAB_TEXT);
 }
 
 void TabRendererGtk::UpdateData(TabContents* contents,
@@ -550,16 +564,6 @@ int TabRendererGtk::GetContentHeight() {
   // the title text and the close button graphic.
   int content_height = std::max(gfx::kFaviconSize, title_font_height_);
   return std::max(content_height, close_button_height_);
-}
-
-// static
-void TabRendererGtk::SetSelectedTitleColor(SkColor color) {
-  selected_title_color_ = color;
-}
-
-// static
-void TabRendererGtk::SetUnselectedTitleColor(SkColor color) {
-  unselected_title_color_ = color;
 }
 
 gfx::Rect TabRendererGtk::GetNonMirroredBounds(GtkWidget* parent) const {

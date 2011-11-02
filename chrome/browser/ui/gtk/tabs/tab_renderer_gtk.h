@@ -37,7 +37,8 @@ class SlideAnimation;
 class ThrobAnimation;
 }
 
-class TabRendererGtk : public ui::AnimationDelegate {
+class TabRendererGtk : public ui::AnimationDelegate,
+                       public content::NotificationObserver {
  public:
   // Possible animation states.
   enum AnimationState {
@@ -97,6 +98,11 @@ class TabRendererGtk : public ui::AnimationDelegate {
 
   explicit TabRendererGtk(GtkThemeService* theme_service);
   virtual ~TabRendererGtk();
+
+  // Provide content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // TabContents. If only the loading state was updated, the loading_only flag
   // should be specified. If other things change, set this flag to false to
@@ -179,10 +185,6 @@ class TabRendererGtk : public ui::AnimationDelegate {
 
   // Returns the width for mini-tabs. Mini-tabs always have this width.
   static int GetMiniWidth();
-
-  // Sets the colors used for painting text on the tabs.
-  static void SetSelectedTitleColor(SkColor color);
-  static void SetUnselectedTitleColor(SkColor color);
 
   static gfx::Font* title_font() { return title_font_; }
 
@@ -358,8 +360,7 @@ class TabRendererGtk : public ui::AnimationDelegate {
   static int close_button_width_;
   static int close_button_height_;
 
-  static SkColor selected_title_color_;
-  static SkColor unselected_title_color_;
+  content::NotificationRegistrar registrar_;
 
   // The GtkDrawingArea we draw the tab on.
   ui::OwnedWidgetGtk tab_;
@@ -415,6 +416,12 @@ class TabRendererGtk : public ui::AnimationDelegate {
 
   // Indicates whether this tab is the active one.
   bool is_active_;
+
+  // Color of the title text on the selected tab.
+  SkColor selected_title_color_;
+
+  // Color of the title text on an unselected tab.
+  SkColor unselected_title_color_;
 
   DISALLOW_COPY_AND_ASSIGN(TabRendererGtk);
 };
