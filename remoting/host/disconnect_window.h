@@ -13,6 +13,11 @@ class ChromotingHost;
 
 class DisconnectWindow {
  public:
+
+  enum {
+    kMaximumConnectedNameWidthInPixels = 400
+  };
+
   virtual ~DisconnectWindow() {}
 
   // Show the disconnect window allowing the user to shut down |host|.

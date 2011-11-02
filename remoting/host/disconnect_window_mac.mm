@@ -43,7 +43,6 @@ void DisconnectWindowMac::Show(remoting::ChromotingHost* host,
   NSString* nsUsername = base::SysUTF8ToNSString(username);
   window_controller_ =
       [[DisconnectWindowController alloc] initWithHost:host
-                                                window:this
                                               username:nsUsername];
   [window_controller_ showWindow:nil];
 }
@@ -63,28 +62,22 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
 
 @interface DisconnectWindowController()
 @property (nonatomic, assign) remoting::ChromotingHost* host;
-@property (nonatomic, assign) remoting::DisconnectWindowMac* disconnectWindow;
 @property (nonatomic, copy) NSString* username;
+
+- (BOOL)isRToL;
+
 @end
 
 @implementation DisconnectWindowController
 
 @synthesize host = host_;
-@synthesize disconnectWindow = disconnectWindow_;
 @synthesize username = username_;
 
-- (void)close {
-  self.host = NULL;
-  [super close];
-}
-
 - (id)initWithHost:(remoting::ChromotingHost*)host
-            window:(remoting::DisconnectWindowMac*)disconnectWindow
           username:(NSString*)username {
   self = [super initWithWindowNibName:@"disconnect_window"];
   if (self) {
     host_ = host;
-    disconnectWindow_ = disconnectWindow;
     username_ = [username copy];
   }
   return self;
@@ -100,7 +93,15 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
     self.host->Shutdown(NULL);
     self.host = NULL;
   }
-  self.disconnectWindow = NULL;
+}
+
+- (BOOL)isRToL {
+  return host_->ui_strings().direction == remoting::UiStrings::RTL;
+}
+
+- (void)close {
+  self.host = NULL;
+  [super close];
 }
 
 - (void)windowDidLoad {
@@ -116,16 +117,26 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
   // Resize the window dynamically based on the content.
   CGFloat oldConnectedWidth = NSWidth([connectedToField_ bounds]);
   [connectedToField_ sizeToFit];
-  CGFloat newConnectedWidth = NSWidth([connectedToField_ bounds]);
+  NSRect connectedToFrame = [connectedToField_ frame];
+  CGFloat newConnectedWidth = NSWidth(connectedToFrame);
+
+  // Set a max width for the connected to text field.
+  if (newConnectedWidth >
+      remoting::DisconnectWindow::kMaximumConnectedNameWidthInPixels) {
+    newConnectedWidth
+        = remoting::DisconnectWindow::kMaximumConnectedNameWidthInPixels;
+    connectedToFrame.size.width = newConnectedWidth;
+    [connectedToField_ setFrame:connectedToFrame];
+  }
 
   CGFloat oldDisconnectWidth = NSWidth([disconnectButton_ bounds]);
   [disconnectButton_ sizeToFit];
-  NSRect disconnectBounds = [disconnectButton_ frame];
-  CGFloat newDisconnectWidth = NSWidth(disconnectBounds);
+  NSRect disconnectFrame = [disconnectButton_ frame];
+  CGFloat newDisconnectWidth = NSWidth(disconnectFrame);
 
   // Move the disconnect button appropriately.
-  disconnectBounds.origin.x += newConnectedWidth - oldConnectedWidth;
-  [disconnectButton_ setFrame:disconnectBounds];
+  disconnectFrame.origin.x += newConnectedWidth - oldConnectedWidth;
+  [disconnectButton_ setFrame:disconnectFrame];
 
   // Then resize the window appropriately
   NSWindow *window = [self window];
@@ -133,6 +144,17 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
   windowFrame.size.width += (newConnectedWidth - oldConnectedWidth +
                              newDisconnectWidth - oldDisconnectWidth);
   [window setFrame:windowFrame display:NO];
+
+  if ([self isRToL]) {
+    // Handle right to left case
+    CGFloat buttonInset = NSWidth(windowFrame) - NSMaxX(disconnectFrame);
+    CGFloat buttonTextSpacing
+        = NSMinX(disconnectFrame) - NSMaxX(connectedToFrame);
+    disconnectFrame.origin.x = buttonInset;
+    connectedToFrame.origin.x = NSMaxX(disconnectFrame) + buttonTextSpacing;
+    [connectedToField_ setFrame:connectedToFrame];
+    [disconnectButton_ setFrame:disconnectFrame];
+  }
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -140,6 +162,11 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
   [self autorelease];
 }
 
+@end
+
+
+@interface DisconnectWindow()
+- (BOOL)isRToL;
 @end
 
 @implementation DisconnectWindow
@@ -166,13 +193,28 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
   return self;
 }
 
+- (BOOL)isRToL {
+  DCHECK([[self windowController] respondsToSelector:@selector(isRToL)]);
+  return [[self windowController] isRToL];
+}
+
+@end
+
+
+@interface DisconnectView()
+- (BOOL)isRToL;
 @end
 
 @implementation DisconnectView
 
+- (BOOL)isRToL {
+  DCHECK([[self window] isKindOfClass:[DisconnectWindow class]]);
+  return [static_cast<DisconnectWindow*>([self window]) isRToL];
+}
+
 - (void)drawRect:(NSRect)rect {
   // All magic numbers taken from screen shots provided by UX.
-  NSRect bounds = NSInsetRect([self bounds], 1.5, 1.5);
+  NSRect bounds = NSInsetRect([self bounds], 1, 1);
 
   NSBezierPath *path = [NSBezierPath bezierPathWithRoundedRect:bounds
                                                        xRadius:5
@@ -180,7 +222,7 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
   NSColor *gray = [NSColor colorWithCalibratedWhite:0.91 alpha:1.0];
   [gray setFill];
   [path fill];
-  [path setLineWidth:3];
+  [path setLineWidth:4];
   NSColor *green = [NSColor colorWithCalibratedRed:0.13
                                              green:0.69
                                               blue:0.11
@@ -188,9 +230,12 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
   [green setStroke];
   [path stroke];
 
-  // Draw drag handle on left hand side
-  const CGFloat height = 21.0;
-  const CGFloat inset = 12.0;
+
+  // Draw drag handle on proper side
+  const CGFloat kHeight = 21.0;
+  const CGFloat kBaseInset = 12.0;
+  const CGFloat kDragHandleWidth = 5.0;
+
   NSColor *dark = [NSColor colorWithCalibratedWhite:0.70 alpha:1.0];
   NSColor *light = [NSColor colorWithCalibratedWhite:0.97 alpha:1.0];
 
@@ -199,8 +244,12 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
   BOOL alias = [context shouldAntialias];
   [context setShouldAntialias:NO];
 
-  NSPoint top = NSMakePoint(inset, NSMidY(bounds) - height / 2.0);
-  NSPoint bottom = NSMakePoint(inset, top.y + height);
+  // Handle bidirectional locales properly.
+  CGFloat inset = [self isRToL] ? NSMaxX(bounds) - kBaseInset - kDragHandleWidth
+                                : kBaseInset;
+
+  NSPoint top = NSMakePoint(inset, NSMidY(bounds) - kHeight / 2.0);
+  NSPoint bottom = NSMakePoint(inset, top.y + kHeight);
 
   path = [NSBezierPath bezierPath];
   [path moveToPoint:top];
@@ -236,4 +285,3 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
 }
 
 @end
-
