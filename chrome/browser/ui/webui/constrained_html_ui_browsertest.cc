@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
-#include "chrome/browser/ui/webui/test_html_dialog_ui_delegate.h"
+#include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -17,6 +17,39 @@
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
 namespace {
+
+class TestHtmlDialogUIDelegate : public HtmlDialogUIDelegate {
+ public:
+  TestHtmlDialogUIDelegate() {}
+  virtual ~TestHtmlDialogUIDelegate() {}
+
+  // HTMLDialogUIDelegate implementation:
+  virtual bool IsDialogModal() const OVERRIDE {
+    return true;
+  }
+  virtual string16 GetDialogTitle() const OVERRIDE {
+    return UTF8ToUTF16("Test");
+  }
+  virtual GURL GetDialogContentURL() const OVERRIDE {
+    return GURL(chrome::kChromeUIConstrainedHTMLTestURL);
+  }
+  virtual void GetWebUIMessageHandlers(
+      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE {}
+  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE {
+    size->set_width(400);
+    size->set_height(400);
+  }
+  virtual std::string GetDialogArgs() const OVERRIDE {
+    return std::string();
+  }
+  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE { }
+  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
+      OVERRIDE {
+    if (out_close_dialog)
+      *out_close_dialog = true;
+  }
+  virtual bool ShouldShowDialogTitle() const OVERRIDE { return true; }
+};
 
 class ConstrainedHtmlDialogBrowserTestObserver : public TabContentsObserver {
  public:
@@ -51,8 +84,7 @@ class ConstrainedHtmlDialogBrowserTest : public InProcessBrowserTest {
 // Tests that opening/closing the constrained window won't crash it.
 IN_PROC_BROWSER_TEST_F(ConstrainedHtmlDialogBrowserTest, BasicTest) {
   // The delegate deletes itself.
-  HtmlDialogUIDelegate* delegate = new test::TestHtmlDialogUIDelegate(
-      GURL(chrome::kChromeUIConstrainedHTMLTestURL));
+  HtmlDialogUIDelegate* delegate = new TestHtmlDialogUIDelegate();
   TabContentsWrapper* wrapper = browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(wrapper);
 
@@ -69,8 +101,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedHtmlDialogBrowserTest, BasicTest) {
 IN_PROC_BROWSER_TEST_F(ConstrainedHtmlDialogBrowserTest,
                        ReleaseTabContentsOnDialogClose) {
   // The delegate deletes itself.
-  HtmlDialogUIDelegate* delegate = new test::TestHtmlDialogUIDelegate(
-      GURL(chrome::kChromeUIConstrainedHTMLTestURL));
+  TestHtmlDialogUIDelegate* delegate = new TestHtmlDialogUIDelegate();
   TabContentsWrapper* wrapper = browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(wrapper);
 

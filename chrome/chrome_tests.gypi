@@ -2520,7 +2520,6 @@
         'browser/speech/speech_input_bubble_browsertest.cc',
         'browser/spellchecker/spellcheck_host_browsertest.cc',
         'browser/ssl/ssl_browser_tests.cc',
-        'browser/tab_first_render_watcher_browsertest.cc',
         'browser/task_manager/task_manager_browsertest.cc',
         'browser/task_manager/task_manager_browsertest_util.cc',
         'browser/task_manager/task_manager_browsertest_util.h',
@@ -2566,8 +2565,6 @@
         'browser/ui/webui/options/password_manager_browsertest.js',
         'browser/ui/webui/options/personal_options_browsertest.js',
         'browser/ui/webui/options/search_engine_manager_browsertest.js',
-        'browser/ui/webui/test_html_dialog_ui_delegate.cc',
-        'browser/ui/webui/test_html_dialog_ui_delegate.h',
         'browser/ui/webui/web_ui_browsertest.cc',
         'browser/ui/webui/web_ui_browsertest.h',
         'browser/ui/webui/web_ui_test_handler.cc',
@@ -2852,7 +2849,6 @@
         }, { # else: toolkit_views == 0
           'sources!': [
             'browser/extensions/browser_action_test_util_views.cc',
-            'browser/tab_first_render_watcher_browsertest.cc',
             'browser/ui/panels/panel_browser_view_browsertest.cc',
             'browser/ui/views/browser_actions_container_browsertest.cc',
             'browser/ui/views/dom_view_browsertest.cc',

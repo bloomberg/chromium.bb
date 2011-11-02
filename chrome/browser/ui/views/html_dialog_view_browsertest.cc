@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
-#include "chrome/browser/ui/webui/test_html_dialog_ui_delegate.h"
+#include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -28,33 +28,37 @@ namespace {
 const int kMinimumWidthToTestFor = 20;
 const int kMinimumHeightToTestFor = 30;
 
-// Initial size of HTMLDialog for SizeWindow test case. They must be different
-// from the above kMinimumWidthToTestFor/kMinimumHeightToTestFor.
-const int kInitialWidth = 40;
-const int kInitialHeight = 40;
-
-class TestHtmlDialogView: public HtmlDialogView {
+class TestHtmlDialogUIDelegate : public HtmlDialogUIDelegate {
  public:
-  TestHtmlDialogView(Profile* profile, HtmlDialogUIDelegate* delegate)
-      : HtmlDialogView(profile, delegate),
-        painted_(false) {
+  TestHtmlDialogUIDelegate() {}
+  virtual ~TestHtmlDialogUIDelegate() {}
+
+  // HTMLDialogUIDelegate implementation:
+  virtual bool IsDialogModal() const OVERRIDE {
+    return true;
   }
-
-  bool painted() const {
-    return painted_;
+  virtual string16 GetDialogTitle() const OVERRIDE {
+    return ASCIIToUTF16("Test");
   }
-
- protected:
-  virtual void OnTabMainFrameFirstRender() OVERRIDE {
-    HtmlDialogView::OnTabMainFrameFirstRender();
-    painted_ = true;
-    MessageLoop::current()->Quit();
+  virtual GURL GetDialogContentURL() const OVERRIDE {
+    return GURL(chrome::kChromeUIChromeURLsURL);
   }
-
- private:
-  bool painted_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestHtmlDialogView);
+  virtual void GetWebUIMessageHandlers(
+      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE { }
+  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE {
+    size->set_width(40);
+    size->set_height(40);
+  }
+  virtual std::string GetDialogArgs() const OVERRIDE {
+    return std::string();
+  }
+  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE { }
+  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
+      OVERRIDE {
+    if (out_close_dialog)
+      *out_close_dialog = true;
+  }
+  virtual bool ShouldShowDialogTitle() const OVERRIDE { return true; }
 };
 
 }  // namespace
@@ -128,9 +132,7 @@ class HtmlDialogBrowserTest : public InProcessBrowserTest {
 #endif
 
 IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
-  test::TestHtmlDialogUIDelegate* delegate = new test::TestHtmlDialogUIDelegate(
-      GURL(chrome::kChromeUIChromeURLsURL));
-  delegate->set_size(kInitialWidth, kInitialHeight);
+  HtmlDialogUIDelegate* delegate = new TestHtmlDialogUIDelegate();
 
   HtmlDialogView* html_view =
       new HtmlDialogView(browser()->profile(), delegate);
@@ -212,25 +214,29 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
 }
 
 // This is timing out about 5~10% of runs. See crbug.com/86059.
-IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, DISABLED_WebContentRendered) {
-  HtmlDialogUIDelegate* delegate = new test::TestHtmlDialogUIDelegate(
-      GURL(chrome::kChromeUIChromeURLsURL));
+IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, DISABLED_TestStateTransition) {
+  HtmlDialogUIDelegate* delegate = new TestHtmlDialogUIDelegate();
 
-  TestHtmlDialogView* html_view =
-      new TestHtmlDialogView(browser()->profile(), delegate);
+  HtmlDialogView* html_view =
+      new HtmlDialogView(browser()->profile(), delegate);
   TabContents* tab_contents = browser()->GetSelectedTabContents();
   ASSERT_TRUE(tab_contents != NULL);
   views::Widget::CreateWindowWithParent(html_view,
                                         tab_contents->GetDialogRootWindow());
-  EXPECT_TRUE(html_view->initialized_);
+  // Test if the state transitions from INITIALIZED to -> PAINTED
+  EXPECT_EQ(HtmlDialogView::INITIALIZED, html_view->state_);
 
   html_view->InitDialog();
   html_view->GetWidget()->Show();
 
-  // TestHtmlDialogView::OnTabMainFrameFirstRender() will Quit().
-  MessageLoopForUI::current()->Run();
+  MessageLoopForUI::current()->AddObserver(
+      WindowChangedObserver::GetInstance());
+  // We use busy loop because the state is updated in notifications.
+  while (html_view->state_ != HtmlDialogView::PAINTED)
+    MessageLoop::current()->RunAllPending();
 
-  EXPECT_TRUE(html_view->painted());
+  EXPECT_EQ(HtmlDialogView::PAINTED, html_view->state_);
 
-  html_view->GetWidget()->Close();
+  MessageLoopForUI::current()->RemoveObserver(
+      WindowChangedObserver::GetInstance());
 }
