@@ -4,6 +4,8 @@
 
 #include "chrome/browser/google/google_update.h"
 
+#include <iostream>
+
 #include <atlbase.h>
 #include <atlcom.h>
 
@@ -42,10 +44,15 @@ GoogleUpdateErrorCode CanUpdateCurrentChrome(
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   FilePath user_exe_path = installer::GetChromeInstallPath(false, dist);
   FilePath machine_exe_path = installer::GetChromeInstallPath(true, dist);
+  std::cout  << "About to compare: \n" << chrome_exe_path.value().c_str()
+             << " to \n"
+             << user_exe_path.value().c_str() << " and \n"
+             << machine_exe_path.value().c_str() << "\n";
   if (!FilePath::CompareEqualIgnoreCase(chrome_exe_path.value(),
                                         user_exe_path.value()) &&
       !FilePath::CompareEqualIgnoreCase(chrome_exe_path.value(),
                                         machine_exe_path.value())) {
+    std::cout << "Drop into if\n";
     LOG(ERROR) << L"Google Update cannot update Chrome installed in a "
                << L"non-standard location: " << chrome_exe_path.value().c_str()
                << L". The standard location is: "
@@ -53,6 +60,7 @@ GoogleUpdateErrorCode CanUpdateCurrentChrome(
                << L" or " << machine_exe_path.value().c_str() << L".";
     return CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY;
   }
+  std::cout << "We continue\n";
 
   string16 app_guid = installer::GetAppGuidForUpdates(
       !InstallUtil::IsPerUserInstall(chrome_exe_path.value().c_str()));
@@ -168,6 +176,7 @@ class GoogleUpdateJobObserver
       case COMPLETION_CODE_ERROR:
         error_message_ = text;
       default: {
+        std::cout << "Error message: " << error_message_.c_str();
         NOTREACHED();
         result_ = UPGRADE_ERROR;
         break;
