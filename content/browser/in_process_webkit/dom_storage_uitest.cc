@@ -103,7 +103,8 @@ TEST_F(DOMStorageTest, RootLayoutTests) {
   RunTests(kRootFiles);
 }
 
-TEST_F(DOMStorageTest, EventLayoutTests) {
+// Flakily fails on all platforms.  http://crbug.com/102641
+TEST_F(DOMStorageTest, FLAKY_EventLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("events"),
                           kNoHttpPort);
   AddJSTestResources();
