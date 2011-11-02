@@ -57,6 +57,10 @@ class PRINTING_EXPORT PrintingContextMac : public PrintingContext {
   // Returns true if the printer was set else returns false.
   bool SetPrinter(const std::string& device_name);
 
+  // Updates |print_info_| page format with user default paper information.
+  // Returns true if the paper was set else returns false.
+  bool UpdatePageFormatWithPaperInfo();
+
   // Sets |copies| in PMPrintSettings.
   // Returns true if the number of copies is set.
   bool SetCopiesInPrintSettings(int copies);
