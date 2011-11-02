@@ -469,6 +469,93 @@ class CompletionCallbackFactory {
     return cc;
   }
 
+  /// NewCallback() allocates a new, single-use
+  /// <code>CompletionCallback</code>.
+  /// The <code>CompletionCallback</code> must be run in order for the memory
+  /// allocated by the methods to be freed.
+  /// NewCallback() is equivalent to NewRequiredCallback() below.
+  ///
+  /// @param method The method taking the callback. Method should be of type:
+  /// <code>
+  /// void (T::*)(int32_t result, const A& a, const B& b, const C& c)
+  /// </code>
+  ///
+  /// @param[in] a Passed to <code>method</code> when the completion callback
+  /// runs.
+  ///
+  /// @param[in] b Passed to <code>method</code> when the completion callback
+  /// runs.
+  ///
+  /// @param[in] c Passed to <code>method</code> when the completion callback
+  /// runs.
+  ///
+  /// @return A <code>CompletionCallback</code>.
+  template <typename Method, typename A, typename B, typename C>
+  CompletionCallback NewCallback(Method method, const A& a, const B& b,
+                                 const C& c) {
+    PP_DCHECK(object_);
+    return NewCallbackHelper(Dispatcher3<Method, A, B, C>(method, a, b, c));
+  }
+
+  /// NewRequiredCallback() allocates a new, single-use
+  /// <code>CompletionCallback</code> that will always run. The
+  /// <code>CompletionCallback</code> must be run in order for the memory
+  /// allocated by the methods to be freed.
+  ///
+  /// @param method The method taking the callback. Method should be of type:
+  /// <code>
+  /// void (T::*)(int32_t result, const A& a, const B& b, const C& c)
+  /// </code>
+  ///
+  /// @param[in] a Passed to <code>method</code> when the completion callback
+  /// runs.
+  ///
+  /// @param[in] b Passed to <code>method</code> when the completion callback
+  /// runs.
+  ///
+  /// @param[in] c Passed to <code>method</code> when the completion callback
+  /// runs.
+  ///
+  /// @return A <code>CompletionCallback</code>.
+  template <typename Method, typename A, typename B, typename C>
+  CompletionCallback NewRequiredCallback(Method method, const A& a,
+                                         const B& b, const C& c) {
+    CompletionCallback cc = NewCallback(method, a, b, c);
+    cc.set_flags(cc.flags() & ~PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
+    return cc;
+  }
+
+  /// NewOptionalCallback() allocates a new, single-use
+  /// <code>CompletionCallback</code> that might not run if the method
+  /// taking it can complete synchronously. Thus, if after passing the
+  /// CompletionCallback to a Pepper method, the method does not return
+  /// PP_OK_COMPLETIONPENDING, then you should manually call the
+  /// CompletionCallback's Run method, or memory will be leaked.
+  ///
+  /// @param[in] method The method taking the callback. Method should be of
+  /// type:
+  /// <code>
+  /// void (T::*)(int32_t result, const A& a, const B& b, const C& c)
+  /// </code>
+  ///
+  /// @param[in] a Passed to <code>method</code> when the completion callback
+  /// runs.
+  ///
+  /// @param[in] b Passed to <code>method</code> when the completion callback
+  /// runs.
+  ///
+  /// @param[in] c Passed to <code>method</code> when the completion callback
+  /// runs.
+  ///
+  /// @return A <code>CompletionCallback</code>.
+  template <typename Method, typename A, typename B, typename C>
+  CompletionCallback NewOptionalCallback(Method method, const A& a,
+                                         const B& b, const C& c) {
+    CompletionCallback cc = NewCallback(method, a, b, c);
+    cc.set_flags(cc.flags() | PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
+    return cc;
+  }
+
  private:
   class BackPointer {
    public:
@@ -569,6 +656,25 @@ class CompletionCallbackFactory {
     Method method_;
     A a_;
     B b_;
+  };
+
+  template <typename Method, typename A, typename B, typename C>
+  class Dispatcher3 {
+   public:
+    Dispatcher3(Method method, const A& a, const B& b, const C& c)
+        : method_(method),
+          a_(a),
+          b_(b),
+          c_(c) {
+    }
+    void operator()(T* object, int32_t result) {
+      (object->*method_)(result, a_, b_, c_);
+    }
+   private:
+    Method method_;
+    A a_;
+    B b_;
+    C c_;
   };
 
   void InitBackPointer() {
