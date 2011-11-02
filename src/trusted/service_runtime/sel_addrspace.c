@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -37,7 +37,17 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
   }
 
   nap->mem_start = (uintptr_t) mem;
-  NaClLog(2, "allocated memory at 0x%08"NACL_PRIxPTR"\n", nap->mem_start);
+  /*
+   * The following should not be NaClLog(2, ...) because logging with
+   * any detail level higher than LOG_INFO is disabled in the release
+   * builds.  This was to reduce logging overhead, so as to eliminate
+   * at least a function call as well as possibly a TLS/TSD read if
+   * module-specific logging verbosity level comparisons are needed.
+   */
+  NaClLog(LOG_INFO,
+          ("Native Client module will be loaded at"
+           " base address 0x%016"NACL_PRIxPTR"\n"),
+          nap->mem_start);
 
   hole_start = NaClRoundAllocPage(nap->data_end);
 
