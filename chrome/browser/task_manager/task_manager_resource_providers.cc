@@ -789,16 +789,10 @@ TaskManager::Resource::Type TaskManagerChildProcessResource::GetType() const {
   // Translate types to TaskManager::ResourceType, since ChildProcessInfo's type
   // is not available for all TaskManager resources.
   switch (child_process_.type()) {
-    case ChildProcessInfo::BROWSER_PROCESS:
-      return TaskManager::Resource::BROWSER;
-    case ChildProcessInfo::RENDER_PROCESS:
-      return TaskManager::Resource::RENDERER;
     case ChildProcessInfo::PLUGIN_PROCESS:
     case ChildProcessInfo::PPAPI_PLUGIN_PROCESS:
     case ChildProcessInfo::PPAPI_BROKER_PROCESS:
       return TaskManager::Resource::PLUGIN;
-    case ChildProcessInfo::WORKER_PROCESS:
-      return TaskManager::Resource::WORKER;
     case ChildProcessInfo::NACL_LOADER_PROCESS:
     case ChildProcessInfo::NACL_BROKER_PROCESS:
       return TaskManager::Resource::NACL;
@@ -871,9 +865,6 @@ string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
     case ChildProcessInfo::NACL_LOADER_PROCESS:
       return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_NACL_PREFIX, title);
 
-    case ChildProcessInfo::WORKER_PROCESS:
-      return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_WORKER_PREFIX, title);
-
     // These types don't need display names or get them from elsewhere.
     case ChildProcessInfo::BROWSER_PROCESS:
     case ChildProcessInfo::RENDER_PROCESS:
@@ -881,6 +872,10 @@ string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
     case ChildProcessInfo::SANDBOX_HELPER_PROCESS:
     case ChildProcessInfo::MAX_PROCESS:
       NOTREACHED();
+      break;
+
+    case ChildProcessInfo::WORKER_PROCESS:
+      NOTREACHED() << "Workers are not handled by this provider.";
       break;
 
     case ChildProcessInfo::UNKNOWN_PROCESS:
@@ -976,6 +971,9 @@ void TaskManagerChildProcessResourceProvider::Add(
     const ChildProcessInfo& child_process_info) {
   if (!updating_)
     return;
+  // Workers are handled by TaskManagerWorkerResourceProvider.
+  if (child_process_info.type() == ChildProcessInfo::WORKER_PROCESS)
+    return;
   std::map<ChildProcessInfo, TaskManagerChildProcessResource*>::
       const_iterator iter = resources_.find(child_process_info);
   if (iter != resources_.end()) {
@@ -991,6 +989,8 @@ void TaskManagerChildProcessResourceProvider::Add(
 void TaskManagerChildProcessResourceProvider::Remove(
     const ChildProcessInfo& child_process_info) {
   if (!updating_)
+    return;
+  if (child_process_info.type() == ChildProcessInfo::WORKER_PROCESS)
     return;
   std::map<ChildProcessInfo, TaskManagerChildProcessResource*>
       ::iterator iter = resources_.find(child_process_info);

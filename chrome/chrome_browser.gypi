@@ -2371,6 +2371,8 @@
         'browser/task_manager/task_manager_notification_resource_provider.cc',
         'browser/task_manager/task_manager_resource_providers.cc',
         'browser/task_manager/task_manager_resource_providers.h',
+        'browser/task_manager/task_manager_worker_resource_provider.cc',
+        'browser/task_manager/task_manager_worker_resource_provider.h',
         'browser/themes/browser_theme_pack.cc',
         'browser/themes/browser_theme_pack.h',
         'browser/themes/theme_service.cc',
