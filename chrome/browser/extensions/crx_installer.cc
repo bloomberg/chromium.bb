@@ -135,23 +135,17 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
 CrxInstaller::~CrxInstaller() {
   // Delete the temp directory and crx file as necessary. Note that the
   // destructor might be called on any thread, so we post a task to the file
-  // thread to make sure the delete happens there.
+  // thread to make sure the delete happens there. This is a best effort
+  // operation since the browser can be shutting down so there might not
+  // be a file thread to post to.
   if (!temp_dir_.value().empty()) {
-    if (!BrowserThread::PostTask(
-            BrowserThread::FILE, FROM_HERE,
-            base::Bind(
-                &extension_file_util::DeleteFile, temp_dir_, true)))
-      NOTREACHED();
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+        base::Bind(&extension_file_util::DeleteFile, temp_dir_, true));
   }
-
   if (delete_source_) {
-    if (!BrowserThread::PostTask(
-            BrowserThread::FILE, FROM_HERE,
-            base::Bind(
-                &extension_file_util::DeleteFile, source_file_, false)))
-      NOTREACHED();
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+        base::Bind(&extension_file_util::DeleteFile, source_file_, false));
   }
-
   // Make sure the UI is deleted on the ui thread.
   BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, client_);
   client_ = NULL;
