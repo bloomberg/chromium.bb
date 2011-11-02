@@ -25,7 +25,7 @@ std::wstring ChromiumBinariesDistribution::GetAppGuid() {
 }
 
 std::wstring ChromiumBinariesDistribution::GetApplicationName() {
-  NOTREACHED() << "GetApplicationName unsupported";
+  NOTREACHED();
   return std::wstring();
 }
 
@@ -34,12 +34,12 @@ std::wstring ChromiumBinariesDistribution::GetAppShortCutName() {
 }
 
 std::wstring ChromiumBinariesDistribution::GetAlternateApplicationName() {
-  NOTREACHED() << "GetApplicationName unsupported";
+  NOTREACHED();
   return std::wstring();
 }
 
 std::wstring ChromiumBinariesDistribution::GetBrowserAppId() {
-  NOTREACHED() << "GetApplicationName unsupported";
+  NOTREACHED();
   return std::wstring();
 }
 
@@ -48,22 +48,22 @@ std::wstring ChromiumBinariesDistribution::GetInstallSubDir() {
 }
 
 std::wstring ChromiumBinariesDistribution::GetPublisherName() {
-  NOTREACHED() << "GetApplicationName unsupported";
+  NOTREACHED();
   return std::wstring();
 }
 
 std::wstring ChromiumBinariesDistribution::GetAppDescription() {
-  NOTREACHED() << "GetApplicationName unsupported";
+  NOTREACHED();
   return std::wstring();
 }
 
 std::wstring ChromiumBinariesDistribution::GetLongAppDescription() {
-  NOTREACHED() << "GetApplicationName unsupported";
+  NOTREACHED();
   return std::wstring();
 }
 
 std::string ChromiumBinariesDistribution::GetSafeBrowsingName() {
-  NOTREACHED() << "GetApplicationName unsupported";
+  NOTREACHED();
   return std::string();
 }
 
@@ -76,12 +76,12 @@ std::wstring ChromiumBinariesDistribution::GetStateMediumKey() {
 }
 
 std::wstring ChromiumBinariesDistribution::GetUninstallLinkName() {
-  NOTREACHED() << "GetApplicationName unsupported";
+  NOTREACHED();
   return std::wstring();
 }
 
 std::wstring ChromiumBinariesDistribution::GetUninstallRegPath() {
-  NOTREACHED() << "GetApplicationName unsupported";
+  NOTREACHED();
   return std::wstring();
 }
 
@@ -90,16 +90,16 @@ std::wstring ChromiumBinariesDistribution::GetVersionKey() {
 }
 
 bool ChromiumBinariesDistribution::CanSetAsDefault() {
-  NOTREACHED() << "GetApplicationName unsupported";
+  NOTREACHED();
   return false;
 }
 
 int ChromiumBinariesDistribution::GetIconIndex() {
-  NOTREACHED() << "GetApplicationName unsupported";
+  NOTREACHED();
   return 0;
 }
 
 bool ChromiumBinariesDistribution::GetChromeChannel(std::wstring* channel) {
-  NOTREACHED() << "GetApplicationName unsupported";
+  NOTREACHED();
   return false;
 }

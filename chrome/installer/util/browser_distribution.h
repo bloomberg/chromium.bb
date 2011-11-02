@@ -70,8 +70,11 @@ class BrowserDistribution {
 
   virtual std::wstring GetAppGuid();
 
+  // Returns the name by which the program is registered with Default Programs.
+  // This is not a localized string suitable for presenting to a user.
   virtual std::wstring GetApplicationName();
 
+  // Returns the localized name of the program.
   virtual std::wstring GetAppShortCutName();
 
   virtual std::wstring GetAlternateApplicationName();

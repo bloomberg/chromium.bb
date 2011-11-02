@@ -23,13 +23,14 @@ class MasterPreferences;
 // system level install and setting as default browser.
 class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
  public:
-  virtual std::wstring GetAppShortCutName();
-  virtual std::wstring GetBrowserAppId();
-  virtual std::wstring GetInstallSubDir();
-  virtual std::wstring GetUninstallRegPath();
-  virtual bool CanSetAsDefault();
-  virtual int GetIconIndex();
-  virtual bool GetChromeChannel(std::wstring* channel);
+  virtual std::wstring GetApplicationName() OVERRIDE;
+  virtual std::wstring GetAppShortCutName() OVERRIDE;
+  virtual std::wstring GetBrowserAppId() OVERRIDE;
+  virtual std::wstring GetInstallSubDir() OVERRIDE;
+  virtual std::wstring GetUninstallRegPath() OVERRIDE;
+  virtual bool CanSetAsDefault() OVERRIDE;
+  virtual int GetIconIndex() OVERRIDE;
+  virtual bool GetChromeChannel(std::wstring* channel) OVERRIDE;
   // returns the channel name for GoogleChromeSxSDistribution
   static std::wstring ChannelName();
  private:

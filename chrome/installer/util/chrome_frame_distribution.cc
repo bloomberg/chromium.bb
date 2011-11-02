@@ -34,6 +34,10 @@ std::wstring ChromeFrameDistribution::GetAppGuid() {
 }
 
 std::wstring ChromeFrameDistribution::GetApplicationName() {
+  return L"Google Chrome Frame";
+}
+
+std::wstring ChromeFrameDistribution::GetAppShortCutName() {
   const std::wstring& product_name =
       installer::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
   return product_name;

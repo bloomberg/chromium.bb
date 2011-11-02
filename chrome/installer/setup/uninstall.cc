@@ -217,26 +217,29 @@ void CloseChromeFrameHelperProcess() {
 }
 
 // This method tries to figure out if current user has registered Chrome.
-// It returns true iff:
-// - Software\Clients\StartMenuInternet\Chromium\"" key has a valid value.
-// - The value is same as chrome.exe path for the current installation.
-bool CurrentUserHasDefaultBrowser(const InstallerState& installer_state,
-                                  const Product& product) {
-  std::wstring reg_key(ShellUtil::kRegStartMenuInternet);
-  reg_key.append(1, L'\\')
-      .append(product.distribution()->GetApplicationName())
-      .append(ShellUtil::kRegShellOpen);
-  RegKey key(HKEY_LOCAL_MACHINE, reg_key.c_str(), KEY_READ);
+// It returns true iff there is a registered browser that will launch the
+// same chrome.exe as the current installation.
+bool CurrentUserHasDefaultBrowser(const InstallerState& installer_state) {
+  using base::win::RegistryKeyIterator;
+  const HKEY root = HKEY_LOCAL_MACHINE;
+  ProgramCompare open_command_pred(
+      installer_state.target_path().Append(kChromeExe));
+  std::wstring client_open_path;
+  RegKey client_open_key;
   std::wstring reg_exe;
-  if (key.ReadValue(L"", &reg_exe) == ERROR_SUCCESS && reg_exe.length() > 2) {
-    FilePath chrome_exe(installer_state.target_path()
-        .Append(installer::kChromeExe));
-    // The path in the registry will always have quotes.
-    reg_exe = reg_exe.substr(1, reg_exe.length() - 2);
-    if (FilePath::CompareEqualIgnoreCase(reg_exe, chrome_exe.value()))
+  for (RegistryKeyIterator iter(root, ShellUtil::kRegStartMenuInternet);
+       iter.Valid(); ++iter) {
+    client_open_path.assign(ShellUtil::kRegStartMenuInternet)
+        .append(1, L'\\')
+        .append(iter.Name())
+        .append(ShellUtil::kRegShellOpen);
+    if (client_open_key.Open(root, client_open_path.c_str(),
+                             KEY_QUERY_VALUE) == ERROR_SUCCESS &&
+        client_open_key.ReadValue(L"", &reg_exe) == ERROR_SUCCESS &&
+        open_command_pred.Evaluate(reg_exe)) {
       return true;
+    }
   }
-
   return false;
 }
 
@@ -526,24 +529,47 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
     return true;
   }
 
+  FilePath chrome_exe(target_path.Append(kChromeExe));
+
   // Delete Software\Classes\ChromeHTML,
   std::wstring html_prog_id(ShellUtil::kRegClasses);
   file_util::AppendToPath(&html_prog_id, ShellUtil::kChromeHTMLProgId);
   html_prog_id.append(browser_entry_suffix);
   InstallUtil::DeleteRegistryKey(root, html_prog_id);
 
-  // Delete Software\Clients\StartMenuInternet\Chromium
-  std::wstring set_access_key(ShellUtil::kRegStartMenuInternet);
-  file_util::AppendToPath(&set_access_key, dist->GetApplicationName());
-  set_access_key.append(browser_entry_suffix);
-  InstallUtil::DeleteRegistryKey(root, set_access_key);
-
-  // We have renamed the StartMenuInternet\chrome.exe to
-  // StartMenuInternet\Chromium so for old users we still need to delete
-  // the old key.
-  std::wstring old_set_access_key(ShellUtil::kRegStartMenuInternet);
-  file_util::AppendToPath(&old_set_access_key, installer::kChromeExe);
-  InstallUtil::DeleteRegistryKey(root, old_set_access_key);
+  // Delete all Start Menu Internet registrations that refer to this Chrome.
+  {
+    using base::win::RegistryKeyIterator;
+    ProgramCompare open_command_pred(chrome_exe);
+    std::wstring client_name;
+    std::wstring client_key;
+    std::wstring open_key;
+    for (RegistryKeyIterator iter(root, ShellUtil::kRegStartMenuInternet);
+         iter.Valid(); ++iter) {
+      client_name.assign(iter.Name());
+      client_key.assign(ShellUtil::kRegStartMenuInternet)
+          .append(1, L'\\')
+          .append(client_name);
+      open_key.assign(client_key).append(ShellUtil::kRegShellOpen);
+      if (InstallUtil::DeleteRegistryKeyIf(root, client_key, open_key, L"",
+              open_command_pred) != InstallUtil::NOT_FOUND) {
+        // Delete the default value of SOFTWARE\Clients\StartMenuInternet if it
+        // references this Chrome (i.e., if it was made the default browser).
+        InstallUtil::DeleteRegistryValueIf(
+            root, ShellUtil::kRegStartMenuInternet, L"",
+            InstallUtil::ValueEquals(client_name));
+        // Also delete the value for the default user if we're operating in
+        // HKLM.
+        if (root == HKEY_LOCAL_MACHINE) {
+          InstallUtil::DeleteRegistryValueIf(
+              HKEY_USERS,
+              std::wstring(L".DEFAULT\\").append(
+                  ShellUtil::kRegStartMenuInternet).c_str(),
+              L"", InstallUtil::ValueEquals(client_name));
+        }
+      }
+    }
+  }
 
   // Delete Software\RegisteredApplications\Chromium
   InstallUtil::DeleteRegistryValue(root, ShellUtil::kRegRegisteredApplications,
@@ -573,14 +599,16 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
   // Cleanup in case Chrome had been made the default browser.
 
   // Delete the default value of SOFTWARE\Clients\StartMenuInternet if it
-  // references this Chrome.
+  // references this Chrome.  Do this explicitly here for the case where HKCU is
+  // being processed; the iteration above will have no hits since registration
+  // lives in HKLM.
   InstallUtil::DeleteRegistryValueIf(
       root, ShellUtil::kRegStartMenuInternet, L"",
       InstallUtil::ValueEquals(dist->GetApplicationName() +
                                browser_entry_suffix));
 
   // Delete each protocol association if it references this Chrome.
-  ProgramCompare open_command_pred(target_path.Append(kChromeExe));
+  ProgramCompare open_command_pred(chrome_exe);
   std::wstring parent_key(ShellUtil::kRegClasses);
   const std::wstring::size_type base_length = parent_key.size();
   std::wstring child_key;
@@ -610,7 +638,7 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
   return true;
 }
 
-void RemoveLegacyRegistryKeys(BrowserDistribution* dist) {
+void RemoveChromeLegacyRegistryKeys(BrowserDistribution* dist) {
   // We used to register Chrome to handle crx files, but this turned out
   // to be not worth the hassle. Remove these old registry entries if
   // they exist. See: http://codereview.chromium.org/210007
@@ -690,8 +718,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     // another uninstaller (silent) in elevated mode to do HKLM cleanup.
     // And continue uninstalling in the current process also to do HKCU cleanup.
     if (remove_all &&
-        (!suffix.empty() ||
-         CurrentUserHasDefaultBrowser(installer_state, product)) &&
+        (!suffix.empty() || CurrentUserHasDefaultBrowser(installer_state)) &&
         !::IsUserAnAdmin() &&
         base::win::GetVersion() >= base::win::VERSION_VISTA &&
         !cmd_line.HasSwitch(installer::switches::kRunAsAdmin)) {
@@ -747,8 +774,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // Registration data is put in HKLM for system level and possibly user level
   // installs (when Chrome is made the default browser at install-time).
   if (installer_state.system_install() || remove_all &&
-      (!suffix.empty() || CurrentUserHasDefaultBrowser(installer_state,
-                                                       product))) {
+      (!suffix.empty() || CurrentUserHasDefaultBrowser(installer_state))) {
     DeleteChromeRegistrationKeys(product.distribution(), HKEY_LOCAL_MACHINE,
                                  suffix, installer_state.target_path(), &ret);
   }

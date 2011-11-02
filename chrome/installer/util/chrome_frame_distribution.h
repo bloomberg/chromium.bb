@@ -25,6 +25,8 @@ class ChromeFrameDistribution : public BrowserDistribution {
 
   virtual std::wstring GetApplicationName() OVERRIDE;
 
+  virtual std::wstring GetAppShortCutName() OVERRIDE;
+
   virtual std::wstring GetAlternateApplicationName() OVERRIDE;
 
   virtual std::wstring GetInstallSubDir() OVERRIDE;

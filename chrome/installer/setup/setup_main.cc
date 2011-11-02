@@ -717,10 +717,10 @@ installer::InstallStatus InstallProductsHelper(
           }
         } else if ((install_status == installer::NEW_VERSION_UPDATED) ||
                    (install_status == installer::IN_USE_UPDATED)) {
-          for (size_t i = 0; i < products.size(); ++i) {
-            installer::RemoveLegacyRegistryKeys(
-                products[i]->distribution());
-          }
+          const Product* chrome = installer_state.FindProduct(
+              BrowserDistribution::CHROME_BROWSER);
+          if (chrome != NULL)
+            installer::RemoveChromeLegacyRegistryKeys(chrome->distribution());
         }
       }
     }
@@ -1323,7 +1323,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
         ::MessageBoxW(NULL,
                       installer::GetLocalizedString(
                           IDS_UNINSTALL_COMPLETE_BASE).c_str(),
-                      cf_install->distribution()->GetApplicationName().c_str(),
+                      cf_install->distribution()->GetAppShortCutName().c_str(),
                       MB_OK);
       }
     }

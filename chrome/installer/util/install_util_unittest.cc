@@ -190,8 +190,10 @@ TEST_F(InstallUtilTest, DeleteRegistryKeyIf) {
       EXPECT_CALL(pred, Evaluate(_)).Times(0);
       ASSERT_FALSE(RegKey(root, parent_key_path.c_str(),
                           KEY_QUERY_VALUE).Valid());
-      EXPECT_TRUE(InstallUtil::DeleteRegistryKeyIf(
-          root, parent_key_path, child_key_path, value_name, pred));
+      EXPECT_EQ(InstallUtil::NOT_FOUND,
+                InstallUtil::DeleteRegistryKeyIf(root, parent_key_path,
+                                                 child_key_path, value_name,
+                                                 pred));
       EXPECT_FALSE(RegKey(root, parent_key_path.c_str(),
                           KEY_QUERY_VALUE).Valid());
     }
@@ -202,8 +204,10 @@ TEST_F(InstallUtilTest, DeleteRegistryKeyIf) {
 
       EXPECT_CALL(pred, Evaluate(_)).Times(0);
       ASSERT_TRUE(RegKey(root, parent_key_path.c_str(), KEY_SET_VALUE).Valid());
-      EXPECT_TRUE(InstallUtil::DeleteRegistryKeyIf(
-          root, parent_key_path, child_key_path, value_name, pred));
+      EXPECT_EQ(InstallUtil::NOT_FOUND,
+                InstallUtil::DeleteRegistryKeyIf(root, parent_key_path,
+                                                 child_key_path, value_name,
+                                                 pred));
       EXPECT_TRUE(RegKey(root, parent_key_path.c_str(),
                          KEY_QUERY_VALUE).Valid());
     }
@@ -214,8 +218,10 @@ TEST_F(InstallUtilTest, DeleteRegistryKeyIf) {
 
       EXPECT_CALL(pred, Evaluate(_)).Times(0);
       ASSERT_TRUE(RegKey(root, child_key_path.c_str(), KEY_SET_VALUE).Valid());
-      EXPECT_TRUE(InstallUtil::DeleteRegistryKeyIf(
-          root, parent_key_path, child_key_path, value_name, pred));
+      EXPECT_EQ(InstallUtil::NOT_FOUND,
+                InstallUtil::DeleteRegistryKeyIf(root, parent_key_path,
+                                                 child_key_path, value_name,
+                                                 pred));
       EXPECT_TRUE(RegKey(root, parent_key_path.c_str(),
                          KEY_QUERY_VALUE).Valid());
     }
@@ -228,8 +234,10 @@ TEST_F(InstallUtilTest, DeleteRegistryKeyIf) {
       ASSERT_EQ(ERROR_SUCCESS,
                 RegKey(root, child_key_path.c_str(),
                        KEY_SET_VALUE).WriteValue(value_name, L"foosball!"));
-      EXPECT_TRUE(InstallUtil::DeleteRegistryKeyIf(
-          root, parent_key_path, child_key_path, value_name, pred));
+      EXPECT_EQ(InstallUtil::NOT_FOUND,
+                InstallUtil::DeleteRegistryKeyIf(root, parent_key_path,
+                                                 child_key_path, value_name,
+                                                 pred));
       EXPECT_TRUE(RegKey(root, parent_key_path.c_str(),
                          KEY_QUERY_VALUE).Valid());
     }
@@ -242,8 +250,10 @@ TEST_F(InstallUtilTest, DeleteRegistryKeyIf) {
       ASSERT_EQ(ERROR_SUCCESS,
                 RegKey(root, child_key_path.c_str(),
                        KEY_SET_VALUE).WriteValue(value_name, value));
-      EXPECT_TRUE(InstallUtil::DeleteRegistryKeyIf(
-          root, parent_key_path, child_key_path, value_name, pred));
+      EXPECT_EQ(InstallUtil::DELETED,
+                InstallUtil::DeleteRegistryKeyIf(root, parent_key_path,
+                                                 child_key_path, value_name,
+                                                 pred));
       EXPECT_FALSE(RegKey(root, parent_key_path.c_str(),
                           KEY_QUERY_VALUE).Valid());
     }
@@ -265,8 +275,9 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
 
       EXPECT_CALL(pred, Evaluate(_)).Times(0);
       ASSERT_FALSE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
-      EXPECT_TRUE(InstallUtil::DeleteRegistryValueIf(
-          root, key_path.c_str(), value_name, pred));
+      EXPECT_EQ(InstallUtil::NOT_FOUND,
+                InstallUtil::DeleteRegistryValueIf(root, key_path.c_str(),
+                                                   value_name, pred));
       EXPECT_FALSE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
     }
 
@@ -276,8 +287,9 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
 
       EXPECT_CALL(pred, Evaluate(_)).Times(0);
       ASSERT_TRUE(RegKey(root, key_path.c_str(), KEY_SET_VALUE).Valid());
-      EXPECT_TRUE(InstallUtil::DeleteRegistryValueIf(
-          root, key_path.c_str(), value_name, pred));
+      EXPECT_EQ(InstallUtil::NOT_FOUND,
+                InstallUtil::DeleteRegistryValueIf(root, key_path.c_str(),
+                                                   value_name, pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
     }
 
@@ -289,8 +301,9 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
       ASSERT_EQ(ERROR_SUCCESS,
                 RegKey(root, key_path.c_str(),
                        KEY_SET_VALUE).WriteValue(value_name, L"foosball!"));
-      EXPECT_TRUE(InstallUtil::DeleteRegistryValueIf(
-          root, key_path.c_str(), value_name, pred));
+      EXPECT_EQ(InstallUtil::NOT_FOUND,
+                InstallUtil::DeleteRegistryValueIf(root, key_path.c_str(),
+                                                   value_name, pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
       EXPECT_TRUE(RegKey(root, key_path.c_str(),
                          KEY_QUERY_VALUE).HasValue(value_name));
@@ -304,8 +317,9 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
       ASSERT_EQ(ERROR_SUCCESS,
                 RegKey(root, key_path.c_str(),
                        KEY_SET_VALUE).WriteValue(value_name, value));
-      EXPECT_TRUE(InstallUtil::DeleteRegistryValueIf(
-          root, key_path.c_str(), value_name, pred));
+      EXPECT_EQ(InstallUtil::DELETED,
+                InstallUtil::DeleteRegistryValueIf(root, key_path.c_str(),
+                                                   value_name, pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
       EXPECT_FALSE(RegKey(root, key_path.c_str(),
                           KEY_QUERY_VALUE).HasValue(value_name));
@@ -323,8 +337,9 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
       ASSERT_EQ(ERROR_SUCCESS,
                 RegKey(root, key_path.c_str(),
                        KEY_SET_VALUE).WriteValue(L"", value));
-      EXPECT_TRUE(InstallUtil::DeleteRegistryValueIf(
-          root, key_path.c_str(), L"", pred));
+      EXPECT_EQ(InstallUtil::DELETED,
+                InstallUtil::DeleteRegistryValueIf(root, key_path.c_str(), L"",
+                                                   pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
       EXPECT_FALSE(RegKey(root, key_path.c_str(),
                           KEY_QUERY_VALUE).HasValue(L""));

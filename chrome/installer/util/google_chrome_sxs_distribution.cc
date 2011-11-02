@@ -25,6 +25,10 @@ GoogleChromeSxSDistribution::GoogleChromeSxSDistribution()
   GoogleChromeDistribution::set_product_guid(kChromeSxSGuid);
 }
 
+std::wstring GoogleChromeSxSDistribution::GetApplicationName() {
+  return L"Google Chrome Canary";
+}
+
 std::wstring GoogleChromeSxSDistribution::GetAppShortCutName() {
   const std::wstring& shortcut_name =
       installer::GetLocalizedString(IDS_SXS_SHORTCUT_NAME_BASE);
