@@ -840,6 +840,8 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['usepkg_chroot'] = True
     self.build_config['usepkg_setup_board'] = True
     self.build_config['usepkg_build_packages'] = True
+    self.build_config['images'] = ['base', 'dev', 'test', 'factory_test',
+                                   'factory_install']
     self.build_config['fast'] = True
     self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE']
     self.build_config['skip_toolchain_update'] = False
@@ -858,7 +860,7 @@ class BuildTargetStageTest(AbstractStageTest):
 
     commands.BuildImage(self.build_root,
                         self.build_config['board'],
-                        True,
+                        ['test', 'base', 'dev'],
                         extra_env=proper_env)
     commands.BuildVMImageForTesting(self.build_root, self.build_config['board'],
                                     extra_env=proper_env)
@@ -881,7 +883,7 @@ class BuildTargetStageTest(AbstractStageTest):
                    extra_env={})
     commands.BuildImage(self.build_root,
                         self.build_config['board'],
-                        False,
+                        ['test', 'base', 'dev'],
                         extra_env={})
 
     self.mox.ReplayAll()
@@ -915,7 +917,7 @@ class BuildTargetStageTest(AbstractStageTest):
 
     commands.BuildImage(self.build_root,
                         self.build_config['board'],
-                        True,
+                        ['test', 'base', 'dev'],
                         extra_env=proper_env)
 
     self.mox.ReplayAll()

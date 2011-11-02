@@ -461,15 +461,14 @@ class BuildTargetStage(bs.BuilderStage):
                    nowithdebug=self._build_config['nowithdebug'],
                    extra_env=env)
 
-    if self._options.tests and (self._build_config['vm_tests'] or
-                                self._options.hw_tests):
-      mod_for_test = True
-    else:
-      mod_for_test = self._build_config['test_mod']
+    # We only build base, dev, and test images from this stage.
+    images_can_build = set(['base', 'dev', 'test'])
+    images_to_build = set(self._build_config['images']).intersection(
+        images_can_build)
 
     commands.BuildImage(self._build_root,
                         self._build_config['board'],
-                        mod_for_test,
+                        list(images_to_build),
                         extra_env=env)
 
     if self._build_config['vm_tests']:
@@ -523,7 +522,7 @@ class VMTestStage(bs.BuilderStage):
     commands.SetNiceness(foreground=True)
 
     # Build autotest tarball, which is used in archive step.
-    if self._build_config['test_mod']:
+    if self._build_config['archive_build_debug']:
       filename = None
       try:
         filename = commands.BuildAutotestTarball(self._build_root,
@@ -866,13 +865,13 @@ class ArchiveStage(NonHaltingBuilderStage):
 
       # Build factory test image and create symlink to it.
       factory_test_symlink = None
-      if config['factory_test_mod']:
+      if 'factory_test' in config['images']:
         alias = commands.BuildFactoryTestImage(buildroot, board, extra_env)
         factory_test_symlink = self.GetImageDirSymlink(alias)
 
       # Build factory install image and create a symlink to it.
       factory_install_symlink = None
-      if config['factory_install_mod']:
+      if 'factory_install' in config['images']:
         alias = commands.BuildFactoryInstallImage(buildroot, board, extra_env)
         factory_install_symlink = self.GetImageDirSymlink(alias)
         if config['factory_install_netboot']:
@@ -887,7 +886,7 @@ class ArchiveStage(NonHaltingBuilderStage):
     def ArchiveRegularImages():
       """Build and archive image.zip and the hwqual image."""
 
-      if config['test_mod']:
+      if config['archive_build_debug']:
         # Wait for the autotest tarball to be ready. This tarball will be
         # included in the zip file.
         self._GetAutotestTarball()
