@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/speech_synthesizer_client.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/file_reader.h"
 #include "chrome/browser/profiles/profile.h"
@@ -110,11 +111,9 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
       GetRawDataResource(IDR_CHROMEVOX_MANIFEST).as_string();
   FilePath path = FilePath(extension_misc::kAccessExtensionPath)
       .AppendASCII(extension_misc::kChromeVoxDirectoryName);
-  ExtensionService::ComponentExtensionInfo info(manifest, path);
   if (enabled) { // Load ChromeVox
-    extension_service->register_component_extension(info);
     const Extension* extension =
-        extension_service->LoadComponentExtension(info);
+        extension_service->component_loader()->Add(manifest, path);
 
     if (login_web_ui) {
       RenderViewHost* render_view_host =
@@ -136,8 +135,7 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
 
     LOG(INFO) << "ChromeVox was Loaded.";
   } else { // Unload ChromeVox
-    extension_service->UnloadComponentExtension(info);
-    extension_service->UnregisterComponentExtension(info);
+    extension_service->component_loader()->Remove(manifest);
     LOG(INFO) << "ChromeVox was Unloaded.";
   }
 }

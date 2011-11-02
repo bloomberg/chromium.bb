@@ -12,12 +12,14 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -66,7 +68,10 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
     content::NotificationRegistrar registrar;
     registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                   content::NotificationService::AllSources());
-    service->LoadExtension(path, false);
+    scoped_refptr<extensions::UnpackedInstaller> installer(
+        extensions::UnpackedInstaller::Create(service));
+    installer->set_prompt_for_plugins(false);
+    installer->Load(path);
     ui_test_utils::RunMessageLoop();
   }
 
@@ -147,8 +152,7 @@ bool ExtensionBrowserTest::LoadExtensionAsComponent(const FilePath& path) {
                                    &manifest))
     return false;
 
-  service->LoadComponentExtension(
-      ExtensionService::ComponentExtensionInfo(manifest, path));
+  service->component_loader()->Add(manifest, path);
 
   return true;
 }
@@ -269,7 +273,7 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
       return false;
 
     scoped_refptr<CrxInstaller> installer(
-        service->MakeCrxInstaller(install_ui));
+        CrxInstaller::Create(service, install_ui));
     installer->set_expected_id(id);
     installer->set_is_gallery_install(from_webstore);
     installer->InstallCrx(crx_path);

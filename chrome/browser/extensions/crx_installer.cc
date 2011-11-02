@@ -62,6 +62,13 @@ CrxInstaller::WhitelistEntry::WhitelistEntry()
 CrxInstaller::WhitelistEntry::~WhitelistEntry() {}
 
 // static
+scoped_refptr<CrxInstaller> CrxInstaller::Create(
+    ExtensionService* frontend,
+    ExtensionInstallUI* client) {
+  return new CrxInstaller(frontend->AsWeakPtr(), client);
+}
+
+// static
 void CrxInstaller::SetWhitelistedInstallId(const std::string& id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   g_whitelisted_install_data.Get().ids.insert(id);

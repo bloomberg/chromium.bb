@@ -877,7 +877,7 @@ void AppLauncherHandler::OnFaviconForApp(FaviconService::Handle handle,
   }
 
   scoped_refptr<CrxInstaller> installer(
-      extension_service_->MakeCrxInstaller(NULL));
+      CrxInstaller::Create(extension_service_, NULL));
   installer->set_page_index(install_info->page_index);
   installer->InstallWebApp(*web_app);
   attempted_bookmark_app_install_ = true;

@@ -5,6 +5,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/network_delay_listener.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -119,7 +120,7 @@ class NetworkDelayListenerTest
         .AppendASCII(id)
         .AppendASCII("1.0");
 
-    service_->LoadExtension(extension_path);
+    extensions::UnpackedInstaller::Create(service_)->Load(extension_path);
     MessageLoop::current()->RunAllPending();
   }
 

@@ -12,6 +12,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -211,7 +212,7 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
           new CancelableQuitTask("Extension load timed out.");
       MessageLoop::current()->PostDelayedTask(FROM_HERE, delayed_quit,
           4*1000);
-      service->LoadExtension(path);
+      extensions::UnpackedInstaller::Create(service)->Load(path);
       ui_test_utils::RunMessageLoop();
       delayed_quit->cancel();
     }

@@ -26,6 +26,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -35,9 +36,11 @@
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/external_pref_extension_loader.h"
+#include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/pack_extension_job.cc"
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -590,8 +593,7 @@ class ExtensionServiceTest
   void StartCrxInstall(const FilePath& crx_path, bool from_webstore) {
     ASSERT_TRUE(file_util::PathExists(crx_path))
         << "Path does not exist: "<< crx_path.value().c_str();
-    scoped_refptr<CrxInstaller> installer(
-        service_->MakeCrxInstaller(NULL));
+    scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
     installer->set_allow_silent_install(true);
     installer->set_is_gallery_install(from_webstore);
     installer->InstallCrx(crx_path);
@@ -609,7 +611,7 @@ class ExtensionServiceTest
     ASSERT_TRUE(file_util::PathExists(crx_path))
         << "Path does not exist: "<< crx_path.value().c_str();
     // no client (silent install)
-    scoped_refptr<CrxInstaller> installer(service_->MakeCrxInstaller(NULL));
+    scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
 
     installer->set_install_source(install_location);
     installer->InstallCrx(crx_path);
@@ -1374,8 +1376,7 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
              .AppendASCII("user_script_basic.user.js");
 
   ASSERT_TRUE(file_util::PathExists(path));
-  scoped_refptr<CrxInstaller> installer(
-      service_->MakeCrxInstaller(NULL));
+  scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
   installer->set_allow_silent_install(true);
   installer->InstallUserScript(
       path,
@@ -1763,7 +1764,7 @@ TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
   FilePath extension_path = data_dir_
       .AppendASCII("theme_i18n");
 
-  service_->LoadExtension(extension_path);
+  extensions::UnpackedInstaller::Create(service_)->Load(extension_path);
   loop_.RunAllPending();
   EXPECT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
@@ -2179,7 +2180,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
   JSONFileValueSerializer serializer(manifest_path);
   ASSERT_TRUE(serializer.Serialize(manifest));
 
-  service_->LoadExtension(extension_path);
+  extensions::UnpackedInstaller::Create(service_)->Load(extension_path);
   loop_.RunAllPending();
 
   EXPECT_EQ(0u, GetErrors().size());
@@ -2193,7 +2194,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
   manifest.SetString("version", "1.0");
   ASSERT_TRUE(serializer.Serialize(manifest));
 
-  service_->LoadExtension(extension_path);
+  extensions::UnpackedInstaller::Create(service_)->Load(extension_path);
   loop_.RunAllPending();
 
   EXPECT_EQ(0u, GetErrors().size());
@@ -2622,8 +2623,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
   std::string manifest;
   ASSERT_TRUE(file_util::ReadFileToString(
       path.Append(Extension::kManifestFilename), &manifest));
-  service_->register_component_extension(
-      ExtensionService::ComponentExtensionInfo(manifest, path));
+  service_->component_loader()->Add(manifest, path);
   service_->Init();
 
   // Extension should be installed despite blacklist.
@@ -3074,7 +3074,7 @@ TEST_F(ExtensionServiceTest, LoadExtension) {
       .AppendASCII("Extensions")
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
       .AppendASCII("1.0.0.0");
-  service_->LoadExtension(ext1);
+  extensions::UnpackedInstaller::Create(service_)->Load(ext1);
   loop_.RunAllPending();
   EXPECT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
@@ -3088,7 +3088,7 @@ TEST_F(ExtensionServiceTest, LoadExtension) {
       // .AppendASCII("Extensions")
       .AppendASCII("cccccccccccccccccccccccccccccccc")
       .AppendASCII("1");
-  service_->LoadExtension(no_manifest);
+  extensions::UnpackedInstaller::Create(service_)->Load(no_manifest);
   loop_.RunAllPending();
   EXPECT_EQ(1u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
@@ -3111,7 +3111,7 @@ TEST_F(ExtensionServiceTest, GenerateID) {
 
 
   FilePath no_id_ext = data_dir_.AppendASCII("no_id");
-  service_->LoadExtension(no_id_ext);
+  extensions::UnpackedInstaller::Create(service_)->Load(no_id_ext);
   loop_.RunAllPending();
   EXPECT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
@@ -3123,7 +3123,7 @@ TEST_F(ExtensionServiceTest, GenerateID) {
   std::string previous_id = loaded_[0]->id();
 
   // If we reload the same path, we should get the same extension ID.
-  service_->LoadExtension(no_id_ext);
+  extensions::UnpackedInstaller::Create(service_)->Load(no_id_ext);
   loop_.RunAllPending();
   ASSERT_EQ(1u, loaded_.size());
   ASSERT_EQ(previous_id, loaded_[0]->id());
@@ -3252,7 +3252,7 @@ void ExtensionServiceTest::TestExternalProvider(
 
     // Should still be at 0.
     loaded_.clear();
-    service_->LoadAllExtensions();
+    extensions::InstalledLoader(service_).LoadAllExtensions();
     loop_.RunAllPending();
     ASSERT_EQ(0u, loaded_.size());
     ValidatePrefKeyCount(1);
@@ -3703,9 +3703,9 @@ TEST_F(ExtensionServiceTest, StorageQuota) {
   FilePath unlimited_quota_ext2 =
       extensions_path.AppendASCII("unlimited_quota")
       .AppendASCII("2.0");
-  service_->LoadExtension(limited_quota_ext);
-  service_->LoadExtension(unlimited_quota_ext);
-  service_->LoadExtension(unlimited_quota_ext2);
+  extensions::UnpackedInstaller::Create(service_)->Load(limited_quota_ext);
+  extensions::UnpackedInstaller::Create(service_)->Load(unlimited_quota_ext);
+  extensions::UnpackedInstaller::Create(service_)->Load(unlimited_quota_ext2);
   loop_.RunAllPending();
 
   ASSERT_EQ(3u, loaded_.size());
@@ -3719,7 +3719,7 @@ TEST_F(ExtensionServiceTest, StorageQuota) {
       loaded_[2]->url()));
 }
 
-// Tests ExtensionService::register_component_extension().
+// Tests ComponentLoader::Add().
 TEST_F(ExtensionServiceTest, ComponentExtensions) {
   InitializeEmptyExtensionService();
 
@@ -3736,8 +3736,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensions) {
   ASSERT_TRUE(file_util::ReadFileToString(
       path.Append(Extension::kManifestFilename), &manifest));
 
-  service_->register_component_extension(
-      ExtensionService::ComponentExtensionInfo(manifest, path));
+  service_->component_loader()->Add(manifest, path);
   service_->Init();
 
   // Note that we do not pump messages -- the extension should be loaded
@@ -3748,7 +3747,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensions) {
   EXPECT_EQ(Extension::COMPONENT, loaded_[0]->location());
   EXPECT_EQ(1u, service_->extensions()->size());
 
-  // Component extensions shouldn't get recourded in the prefs.
+  // Component extensions shouldn't get recorded in the prefs.
   ValidatePrefKeyCount(0);
 
   // Reload all extensions, and make sure it comes back.

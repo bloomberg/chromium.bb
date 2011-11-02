@@ -12,6 +12,7 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -264,12 +265,12 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, ExtensionAppProvider) {
   FilePath test_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
   // Load a packaged app.
-  service->LoadExtension(test_dir.AppendASCII("extensions")
-                                 .AppendASCII("packaged_app"));
+  extensions::UnpackedInstaller::Create(service)->Load(
+      test_dir.AppendASCII("extensions").AppendASCII("packaged_app"));
   WaitForExtensionLoad();
   // Load a hosted app.
-  service->LoadExtension(test_dir.AppendASCII("extensions")
-                                 .AppendASCII("app"));
+  extensions::UnpackedInstaller::Create(service)->Load(
+      test_dir.AppendASCII("extensions").AppendASCII("app"));
   WaitForExtensionLoad();
   ASSERT_EQ(extension_count + 2U, service->extensions()->size());
 

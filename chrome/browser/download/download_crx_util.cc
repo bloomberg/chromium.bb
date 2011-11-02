@@ -57,7 +57,7 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
   CHECK(service);
 
   scoped_refptr<CrxInstaller> installer(
-      service->MakeCrxInstaller(CreateExtensionInstallUI(profile)));
+      CrxInstaller::Create(service, CreateExtensionInstallUI(profile)));
   installer->set_delete_source(true);
 
   if (UserScript::IsURLUserScript(download_item.GetURL(),

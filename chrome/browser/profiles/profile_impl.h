@@ -175,8 +175,6 @@ class ProfileImpl : public Profile,
 
   void EnsureSessionServiceCreated();
 
-  void RegisterComponentExtensions();
-
   ExtensionPrefValueMap* GetExtensionPrefValueMap();
 
   void CreateQuotaManagerAndClients();

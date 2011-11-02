@@ -48,6 +48,13 @@ class CrxInstaller
     : public SandboxedExtensionUnpackerClient,
       public ExtensionInstallUI::Delegate {
  public:
+  // Extensions will be installed into frontend->install_directory(),
+  // then registered with |frontend|. Any install UI will be displayed
+  // using |client|. Pass NULL for |client| for silent install.
+  static scoped_refptr<CrxInstaller> Create(
+      ExtensionService* frontend,
+      ExtensionInstallUI* client);
+
   // This is pretty lame, but given the difficulty of connecting a particular
   // ExtensionFunction to a resulting download in the download manager, it's
   // currently necessary. This is the |id| of an extension to be installed
@@ -92,13 +99,6 @@ class CrxInstaller
   // only be called on the UI thread.
   static bool ClearWhitelistedInstallId(const std::string& id);
 
-  // Constructor.  Extensions will be installed into
-  // frontend_weak->install_directory() then registered with
-  // |frontend_weak|. Any install UI will be displayed using
-  // |client|. Pass NULL for |client| for silent install.
-  CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
-               ExtensionInstallUI* client);
-
   // Install the crx in |source_file|.
   void InstallCrx(const FilePath& source_file);
 
@@ -141,8 +141,10 @@ class CrxInstaller
     return (creation_flags_ & Extension::FROM_WEBSTORE) > 0;
   }
   void set_is_gallery_install(bool val) {
-    if (val) creation_flags_ |= Extension::FROM_WEBSTORE;
-    else creation_flags_ &= ~Extension::FROM_WEBSTORE;
+    if (val)
+      creation_flags_ |= Extension::FROM_WEBSTORE;
+    else
+      creation_flags_ &= ~Extension::FROM_WEBSTORE;
   }
 
   // The original download URL should be set when the WebstoreInstaller is
@@ -181,6 +183,8 @@ class CrxInstaller
  private:
   friend class ExtensionUpdaterTest;
 
+  CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
+               ExtensionInstallUI* client);
   virtual ~CrxInstaller();
 
   // Converts the source user script to an extension.

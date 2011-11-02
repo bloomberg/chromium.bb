@@ -330,7 +330,7 @@ scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
       Extension::STRICT_ERROR_CHECKS, &error);
   EXPECT_TRUE(extension.get());
   EXPECT_STREQ("", error.c_str());
-  browser()->GetProfile()->GetExtensionService()->OnLoadSingleExtension(
-      extension.get(), false);
+  browser()->GetProfile()->GetExtensionService()->
+      OnExtensionInstalled(extension.get(), false, -1);
   return extension;
 }

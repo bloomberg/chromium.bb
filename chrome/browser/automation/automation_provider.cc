@@ -50,6 +50,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -858,13 +859,17 @@ void AutomationProvider::InstallExtension(
     if (extension_path.MatchesExtension(FILE_PATH_LITERAL(".crx"))) {
       ExtensionInstallUI* client =
           (with_ui ? new ExtensionInstallUI(profile_) : NULL);
-      scoped_refptr<CrxInstaller> installer(service->MakeCrxInstaller(client));
+      scoped_refptr<CrxInstaller> installer(
+          CrxInstaller::Create(service, client));
       if (!with_ui)
         installer->set_allow_silent_install(true);
       installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);
       installer->InstallCrx(extension_path);
     } else {
-      service->LoadExtension(extension_path, with_ui);
+      scoped_refptr<extensions::UnpackedInstaller> installer(
+          extensions::UnpackedInstaller::Create(service));
+      installer->set_prompt_for_plugins(with_ui);
+      installer->Load(extension_path);
     }
   } else {
     AutomationMsg_InstallExtension::WriteReplyParams(reply_message, 0);

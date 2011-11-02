@@ -53,15 +53,14 @@ class ExtensionCookiesEventRouter;
 class ExtensionDownloadsEventRouter;
 class ExtensionFileBrowserEventRouter;
 class ExtensionGlobalError;
-class HistoryExtensionEventRouter;
 class ExtensionInstallUI;
 class ExtensionManagementEventRouter;
 class ExtensionPreferenceEventRouter;
-class ExtensionServiceBackend;
 class ExtensionSyncData;
 class ExtensionToolbarModel;
 class ExtensionUpdater;
 class ExtensionWebNavigationEventRouter;
+class HistoryExtensionEventRouter;
 class GURL;
 class PendingExtensionManager;
 class Profile;
@@ -70,7 +69,11 @@ class Version;
 
 namespace chromeos {
 class ExtensionInputMethodEventRouter;
-}  // namespace chromeos
+}
+
+namespace extensions {
+class ComponentLoader;
+}
 
 // This is an interface class to encapsulate the dependencies that
 // various classes have on ExtensionService. This allows easy mocking.
@@ -116,25 +119,10 @@ class ExtensionServiceInterface : public SyncableService {
 class ExtensionService
     : public ExtensionServiceInterface,
       public ExternalExtensionProviderInterface::VisitorInterface,
+      public base::SupportsWeakPtr<ExtensionService>,
       public content::NotificationObserver {
  public:
-  // Information about a registered component extension.
-  struct ComponentExtensionInfo {
-    ComponentExtensionInfo(const std::string& manifest,
-                           const FilePath& root_directory)
-        : manifest(manifest),
-          root_directory(root_directory) {
-    }
-
-    bool Equals(const ComponentExtensionInfo& other) const;
-
-    // The extension's manifest. This is required for component extensions so
-    // that ExtensionService doesn't need to go to disk to load them.
-    std::string manifest;
-
-    // Directory where the extension is stored.
-    FilePath root_directory;
-  };
+  using base::SupportsWeakPtr<ExtensionService>::AsWeakPtr;
 
   // The name of the directory inside the profile where extensions are
   // installed to.
@@ -193,14 +181,6 @@ class ExtensionService
 
   // Gets the object managing the set of pending extensions.
   virtual PendingExtensionManager* pending_extension_manager() OVERRIDE;
-
-  // Registers an extension to be loaded as a component extension.
-  void register_component_extension(const ComponentExtensionInfo& info) {
-    component_extension_manifests_.push_back(info);
-  }
-
-  // Unregisters a component extension from the list of extensions to be loaded
-  void UnregisterComponentExtension(const ComponentExtensionInfo& info);
 
   const FilePath& install_directory() const { return install_directory_; }
 
@@ -325,28 +305,6 @@ class ExtensionService
   void UpdateActivePermissions(const Extension* extension,
                                const ExtensionPermissionSet* permissions);
 
-  // Loads the extension from the directory |extension_path|.
-  void LoadExtension(const FilePath& extension_path);
-
-  // Loads the extension from the directory |extension_path|.
-  // This version of this method is intended for testing only.
-  void LoadExtension(const FilePath& extension_path, bool prompt_for_plugins);
-
-  // Same as above, but for use with command line switch --load-extension=path.
-  void LoadExtensionFromCommandLine(const FilePath& extension_path);
-
-  // Loads any component extensions.
-  void LoadComponentExtensions();
-
-  // Loads particular component extension.
-  const Extension* LoadComponentExtension(const ComponentExtensionInfo& info);
-
-  // Unloads particular component extension.
-  void UnloadComponentExtension(const ComponentExtensionInfo& info);
-
-  // Loads all known extensions (used by startup and testing code).
-  void LoadAllExtensions();
-
   // Check for updates (or potentially new extensions from external providers)
   void CheckForExternalUpdates();
 
@@ -401,10 +359,6 @@ class ExtensionService
   // been loaded from a file and installed.
   void AddExtension(const Extension* extension);
 
-  // Called by the backend when an unpacked extension has been loaded.
-  void OnLoadSingleExtension(const Extension* extension,
-                             bool prompt_for_plugins);
-
   // Called by the backend when an extension has been installed.
   void OnExtensionInstalled(
       const Extension* extension, bool from_webstore, int page_index);
@@ -458,8 +412,11 @@ class ExtensionService
   ExtensionContentSettingsStore* GetExtensionContentSettingsStore();
 
   // Whether the extension service is ready.
-  // TODO(skerner): Get rid of this method.  crbug.com/63756
   bool is_ready() { return ready_; }
+
+  extensions::ComponentLoader* component_loader() {
+    return component_loader_.get();
+  }
 
   // Note that this may return NULL if autoupdate is not turned on.
   ExtensionUpdater* updater();
@@ -492,7 +449,10 @@ class ExtensionService
 #endif
 
   // Notify the frontend that there was an error loading an extension.
-  // This method is public because ExtensionServiceBackend can post to here.
+  // This method is public because UnpackedInstaller and InstalledLoader
+  // can post to here.
+  // TODO(aa): Remove this. It doesn't do enough to be worth the dependency
+  // of these classes on ExtensionService.
   void ReportExtensionLoadError(const FilePath& extension_path,
                                 const std::string& error,
                                 bool be_noisy);
@@ -564,9 +524,6 @@ class ExtensionService
   // need to be made more efficient.
   static void RecordPermissionMessagesHistogram(
       const Extension* e, const char* histogram);
-
-  // |client| can be NULL for a silent install.
-  scoped_refptr<CrxInstaller> MakeCrxInstaller(ExtensionInstallUI* client);
 
 #if defined(UNIT_TEST)
   void TrackTerminatedExtensionForTest(const Extension* extension) {
@@ -679,9 +636,6 @@ class ExtensionService
   // Helper that updates the active extension list used for crash reporting.
   void UpdateActiveExtensionsInCrashReporter();
 
-  // Helper method. Loads extension from prefs.
-  void LoadInstalledExtension(const ExtensionInfo& info, bool write_to_prefs);
-
   // We implement some Pepper plug-ins using NaCl to take advantage of NaCl's
   // strong sandbox. Typically, these NaCl modules are stored in extensions
   // and registered here. Not all NaCl modules need to register for a MIME
@@ -696,13 +650,6 @@ class ExtensionService
   void UpdatePluginListWithNaClModules();
 
   NaClModuleInfoList::iterator FindNaClModule(const GURL& url);
-
-  // Returns the flags that should be used with Extension::Create() for an
-  // extension that is already installed.
-  int GetExtensionCreateFlagsForInstalledExtension(
-      const ExtensionInfo* info);
-
-  base::WeakPtrFactory<ExtensionService> weak_ptr_factory_;
 
   // The profile this ExtensionService is part of.
   Profile* profile_;
@@ -746,9 +693,6 @@ class ExtensionService
   // Whether to notify users when they attempt to install an extension.
   bool show_extensions_prompts_;
 
-  // The backend that will do IO on behalf of this instance.
-  scoped_refptr<ExtensionServiceBackend> backend_;
-
   // Used by dispatchers to limit API quota for individual extensions.
   ExtensionsQuotaService quota_service_;
 
@@ -782,6 +726,9 @@ class ExtensionService
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 
+  // Keeps track of loading and unloading component extensions.
+  scoped_ptr<extensions::ComponentLoader> component_loader_;
+
   // Keeps track of menu items added by extensions.
   ExtensionMenuManager menu_manager_;
 
@@ -794,10 +741,6 @@ class ExtensionService
   // Keeps track of favicon-sized omnibox icons for extensions.
   ExtensionIconManager omnibox_icon_manager_;
   ExtensionIconManager omnibox_popup_icon_manager_;
-
-  // List of registered component extensions (see Extension::Location).
-  typedef std::vector<ComponentExtensionInfo> RegisteredComponentExtensions;
-  RegisteredComponentExtensions component_extension_manifests_;
 
   // Manages the promotion of the web store.
   AppsPromo apps_promo_;

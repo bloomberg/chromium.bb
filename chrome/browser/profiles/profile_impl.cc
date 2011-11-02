@@ -29,6 +29,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_settings_backend.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
@@ -86,7 +88,6 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_permission_set.h"
@@ -106,11 +107,9 @@
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "grit/browser_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/transport_security_state.h"
 #include "net/http/http_server_properties.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -158,34 +157,12 @@ enum ContextType {
   kMediaContext
 };
 
-typedef std::list<std::pair<FilePath::StringType, int> >
-    ComponentExtensionList;
-
 // Helper method needed because PostTask cannot currently take a Callback
 // function with non-void return type.
 // TODO(jhawkins): Remove once IgnoreReturn is fixed.
 void CreateDirectoryNoResult(const FilePath& path) {
   file_util::CreateDirectory(path);
 }
-
-#if defined(FILE_MANAGER_EXTENSION)
-void AddFileManagerExtension(ComponentExtensionList* component_extensions) {
-#ifndef NDEBUG
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kFileManagerExtensionPath)) {
-    FilePath filemgr_extension_path =
-        command_line->GetSwitchValuePath(switches::kFileManagerExtensionPath);
-    component_extensions->push_back(std::make_pair(
-        filemgr_extension_path.value(),
-        IDR_FILEMANAGER_MANIFEST));
-    return;
-  }
-#endif  // NDEBUG
-  component_extensions->push_back(std::make_pair(
-      FILE_PATH_LITERAL("file_manager"),
-      IDR_FILEMANAGER_MANIFEST));
-}
-#endif  // defined(FILE_MANAGER_EXTENSION)
 
 // Gets the cache parameters from the command line. |type| is the type of
 // request context that we need, |cache_path| will be set to the user provided
@@ -479,15 +456,17 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
       autoupdate_enabled,
       extensions_enabled));
 
-  RegisterComponentExtensions();
+  extension_service_->component_loader()->AddDefaultComponentExtensions();
   extension_service_->Init();
 
   if (extensions_enabled) {
     // Load any extensions specified with --load-extension.
+    // TODO(yoz): Seems like this should move into ExtensionService::Init.
     if (command_line->HasSwitch(switches::kLoadExtension)) {
       FilePath path = command_line->GetSwitchValuePath(
           switches::kLoadExtension);
-      extension_service_->LoadExtensionFromCommandLine(path);
+      extensions::UnpackedInstaller::Create(extension_service_.get())->
+        LoadFromCommandLine(path);
     }
   }
 
@@ -514,106 +493,6 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
       extension_service_->InitEventRouters();
     }
   }
-}
-
-void ProfileImpl::RegisterComponentExtensions() {
-  // Register the component extensions.
-  //
-  // Component extension manifest must contain a 'key' property with a unique
-  // public key, serialized in base64. You can create a suitable value with the
-  // following commands on a unixy system:
-  //
-  //   ssh-keygen -t rsa -b 1024 -N '' -f /tmp/key.pem
-  //   openssl rsa -pubout -outform DER < /tmp/key.pem 2>/dev/null | base64 -w 0
-  typedef std::list<std::pair<FilePath::StringType, int> >
-      ComponentExtensionList;
-  ComponentExtensionList component_extensions;
-
-  // Bookmark manager.
-  component_extensions.push_back(std::make_pair(
-      FILE_PATH_LITERAL("bookmark_manager"),
-      IDR_BOOKMARKS_MANIFEST));
-
-#if defined(FILE_MANAGER_EXTENSION)
-  AddFileManagerExtension(&component_extensions);
-#endif
-
-#if defined(USE_VIRTUAL_KEYBOARD)
-  component_extensions.push_back(std::make_pair(
-      FILE_PATH_LITERAL("keyboard"),
-      IDR_KEYBOARD_MANIFEST));
-#endif
-
-#if defined(OS_CHROMEOS)
-    component_extensions.push_back(std::make_pair(
-        FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile"),
-        IDR_MOBILE_MANIFEST));
-
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
-      FilePath auth_extension_path =
-          command_line->GetSwitchValuePath(switches::kAuthExtensionPath);
-      component_extensions.push_back(std::make_pair(
-          auth_extension_path.value(),
-          IDR_GAIA_TEST_AUTH_MANIFEST));
-    } else {
-      component_extensions.push_back(std::make_pair(
-          FILE_PATH_LITERAL("/usr/share/chromeos-assets/gaia_auth"),
-          IDR_GAIA_AUTH_MANIFEST));
-    }
-
-#if defined(OFFICIAL_BUILD)
-    if (browser_defaults::enable_help_app) {
-      component_extensions.push_back(std::make_pair(
-          FILE_PATH_LITERAL("/usr/share/chromeos-assets/helpapp"),
-          IDR_HELP_MANIFEST));
-    }
-#endif
-#endif
-
-  // Web Store.
-  component_extensions.push_back(std::make_pair(
-      FILE_PATH_LITERAL("web_store"),
-      IDR_WEBSTORE_MANIFEST));
-
-#if !defined(OS_CHROMEOS)
-  // Cloud Print component app. Not required on Chrome OS.
-  component_extensions.push_back(std::make_pair(
-      FILE_PATH_LITERAL("cloud_print"),
-      IDR_CLOUDPRINT_MANIFEST));
-#endif  // !defined(OS_CHROMEOS)
-
-  for (ComponentExtensionList::iterator iter = component_extensions.begin();
-    iter != component_extensions.end(); ++iter) {
-    FilePath path(iter->first);
-    if (!path.IsAbsolute()) {
-      if (PathService::Get(chrome::DIR_RESOURCES, &path)) {
-        path = path.Append(iter->first);
-      } else {
-        NOTREACHED();
-      }
-    }
-
-    std::string manifest =
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            iter->second).as_string();
-    extension_service_->register_component_extension(
-        ExtensionService::ComponentExtensionInfo(manifest, path));
-  }
-
-#if defined(OS_CHROMEOS)
-  // Register access extensions only if accessibility is enabled.
-  if (g_browser_process->local_state()->
-      GetBoolean(prefs::kAccessibilityEnabled)) {
-    FilePath path = FilePath(extension_misc::kAccessExtensionPath)
-        .AppendASCII(extension_misc::kChromeVoxDirectoryName);
-    std::string manifest =
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_CHROMEVOX_MANIFEST).as_string();
-    extension_service_->register_component_extension(
-        ExtensionService::ComponentExtensionInfo(manifest, path));
-  }
-#endif
 }
 
 void ProfileImpl::InitPromoResources() {

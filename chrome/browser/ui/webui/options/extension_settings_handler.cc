@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
@@ -427,7 +428,8 @@ void ExtensionSettingsHandler::HandleLoadMessage(const ListValue* args) {
   FilePath::StringType string_path;
   CHECK_EQ(1U, args->GetSize()) << args->GetSize();
   CHECK(args->GetString(0, &string_path));
-  extension_service_->LoadExtension(FilePath(string_path));
+  extensions::UnpackedInstaller::Create(extension_service_)->
+      Load(FilePath(string_path));
 }
 
 void ExtensionSettingsHandler::ShowAlert(const std::string& message) {
