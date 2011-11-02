@@ -97,7 +97,7 @@ cr.define('tracing', function() {
 
       var text = '';
       if (selection.length == 1) {
-        var c0Width = 10;
+        var c0Width = 14;
         var slice = selection[0].slice;
         text = 'Selected item:\n';
         text += leftAlign('Title', c0Width) + ': ' + slice.title + '\n';
@@ -105,6 +105,8 @@ cr.define('tracing', function() {
             tsRound(slice.start) + ' ms\n';
         text += leftAlign('Duration', c0Width) + ': ' +
             tsRound(slice.duration) + ' ms\n';
+        text += leftAlign('Duration (U)', c0Width) + ': ' +
+            tsRound(slice.durationInUserTime) + ' ms\n';
 
         var n = 0;
         for (var argName in slice.args) {

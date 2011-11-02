@@ -264,6 +264,23 @@ function testThreadNames() {
   assertEquals('Thread 2', m.processes[2].threads[2].name);
 }
 
+// User time
+function testUserTime() {
+  var events = [
+    {name: 'thread_name', args: {name: 'Thread 1'},
+      pid: 1, ts: 0, tid: 1, ph:  'M'},
+    {name: 'a', args: {}, pid: 1, ts: 1, uts: 70, cat: 'foo', tid: 1, ph: 'B'},
+    {name: 'a', args: {}, pid: 1, ts: 2, uts: 77, cat: 'foo', tid: 1, ph: 'E'},
+    {name: 'a', args: {}, pid: 1, ts: 2 , uts: 80, cat: 'foo', tid: 1, ph: 'I'},
+  ];
+  var m = new tracing.TimelineModel(events);
+  var subRow = m.processes[1].threads[1].subRows[0];
+  assertEquals(subRow[0].startInUserTime, 70);
+  assertEquals(subRow[0].durationInUserTime, 7);
+  assertEquals(subRow[1].startInUserTime, 80);
+  assertEquals(subRow[1].durationInUserTime, 0);
+}
+
 
 function testImmediateParsing() {
   var events = [

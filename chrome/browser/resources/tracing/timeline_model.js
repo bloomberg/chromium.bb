@@ -248,6 +248,10 @@ cr.define('tracing', function() {
             { index: eI,
               slice: new TimelineSlice(event.name, colorId, event.ts,
                                        event.args) };
+
+        if (event.uts)
+          slice.slice.startInUserTime = event.uts;
+
         if (event.args['ui-nest'] === '0') {
           var sliceID = event.name;
           for (var x in event.args)
@@ -274,6 +278,8 @@ cr.define('tracing', function() {
           if (!slice)
             return;
           slice.slice.duration = event.ts - slice.slice.start;
+          if (event.uts)
+            slice.durationInUserTime = event.uts - slice.slice.startInUserTime;
 
           // Store the slice in a non-nested subrow.
           var thread = self.getOrCreateProcess(event.pid).
@@ -287,6 +293,8 @@ cr.define('tracing', function() {
           }
           var slice = state.openSlices.pop().slice;
           slice.duration = event.ts - slice.start;
+          if (event.uts)
+            slice.durationInUserTime = event.uts - slice.startInUserTime;
 
           // Store the slice on the correct subrow.
           var thread = self.getOrCreateProcess(event.pid)
@@ -411,6 +419,10 @@ cr.define('tracing', function() {
             var slice = subRow[tS];
             slice.start = (slice.start - timeBase) / 1000;
             slice.duration /= 1000;
+            if (slice.startInUserTime)
+              slice.startInUserTime /= 1000;
+            if (slice.durationInUserTime)
+              slice.durationInUserTime /= 1000;
           }
         };
         for (var tSR = 0; tSR < thread.subRows.length; tSR++) {
