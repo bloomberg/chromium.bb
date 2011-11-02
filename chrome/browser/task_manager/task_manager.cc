@@ -102,10 +102,6 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
 }
 
 TaskManagerModel::~TaskManagerModel() {
-  for (ResourceProviderList::iterator iter = providers_.begin();
-       iter != providers_.end(); ++iter) {
-    (*iter)->Release();
-  }
 }
 
 int TaskManagerModel::ResourceCount() const {
@@ -649,8 +645,6 @@ void TaskManagerModel::StopUpdating() {
 void TaskManagerModel::AddResourceProvider(
     TaskManager::ResourceProvider* provider) {
   DCHECK(provider);
-  // AddRef matched with Release in destructor.
-  provider->AddRef();
   providers_.push_back(provider);
 }
 

@@ -433,7 +433,8 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   };
 
   typedef std::vector<TaskManager::Resource*> ResourceList;
-  typedef std::vector<TaskManager::ResourceProvider*> ResourceProviderList;
+  typedef std::vector<scoped_refptr<TaskManager::ResourceProvider> >
+      ResourceProviderList;
   typedef std::map<base::ProcessHandle, ResourceList*> GroupMap;
   typedef std::map<base::ProcessHandle, base::ProcessMetrics*> MetricsMap;
   typedef std::map<base::ProcessHandle, double> CPUUsageMap;
