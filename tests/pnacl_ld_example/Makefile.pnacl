@@ -1,24 +1,20 @@
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-#
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 # simple example that tries to build a mostly sandboxed shared lib
 # which is then loaded by a regular (non-sandboxed) images
 
-PNACL_ROOT=../../toolchain/pnacl_linux_x86_64_newlib
-PNACL_CC=$(PNACL_ROOT)/bin/pnacl-gcc
+PNACL_ROOT=../../toolchain/pnacl_linux_x86_64_glibc
+PNACL_CC=$(PNACL_ROOT)/bin/pnacl-clang
 PNACL_LD=$(PNACL_ROOT)/bin/pnacl-ld
 
 ARM_CC=../../toolchain/linux_arm-trusted/arm-2009q3/bin/arm-none-linux-gnueabi-gcc
 QEMU= ../../toolchain/linux_arm-trusted/qemu_tool.sh run
 
 # NOTE: built this using:
-# ./scons platform=x86-32 ncval
-NCVAL_X86_32=../../scons-out/opt-linux-x86-32/staging/ncval
-# NOTE: built this using:
-# ./scons buildplatform=x86-64 targetplatform=arm  arm-ncval-core
-NCVAL_ARM=../../scons-out/opt-linux-x86-64-to-arm/staging/arm-ncval-core
+# ./scons targetplatform=arm  arm-ncval-core
+NCVAL_ARM=../../scons-out/opt-linux-x86-32-to-arm/staging/arm-ncval-core
 #DEBUG_FLAGS= --pnacl-driver-verbose --pnacl-driver-debug
 DEBUG_FLAGS=
 
@@ -26,10 +22,7 @@ DEBUG_FLAGS=
 # tools needed
 ######################################################################
 preparation.arm:
-	cd ../.. ; ./scons MODE=opt-linux buildplatform=x86-64 targetplatform=arm arm-ncval-core
-
-preparation.x86-32:
-	cd ../.. ; ./scons MODE=opt-linux platform=x86-32 ncval
+	cd ../.. ; ./scons MODE=opt-linux targetplatform=arm arm-ncval-core
 
 ######################################################################
 # Platform neutral
@@ -50,40 +43,8 @@ fortytwo2.bc:  fortytwo2.c
 	$(PNACL_CC)  -c -fPIC -I../../.. $(DEBUG_FLAGS) -o $@ $^
 
 ######################################################################
-LD_X86_ARGS= --pnacl-driver-set-LD_SCRIPT_X8632=ld_script_x86_32_shared
-LLC_X86_ARGS= --add-translate-option=-sfi-x86-jmp-mask=-1 -nobitcode-intrinsics
-X86_FLAGS= $(DEBUG_FLAGS) $(LD_X86_ARGS) $(LLC_X86_ARGS)
-
-# mostly sandboxed
-libsimple1.x86-32.so: hello.bc fortytwo.bc
-	$(PNACL_LD) -shared -fPIC  -arch x86-32 $(X86_FLAGS) -o $@ $^
-	# TODO(robertm): enable this once ncval has been fixed
-	#	$(NCVAL_X86_32) $@
-
-# mostly sandboxed
-libsimple2.x86-32.so: hello2.bc fortytwo2.bc
-	$(PNACL_LD) -shared -fPIC  -arch x86-32 $(X86_FLAGS) -o $@ $^
-	# TODO(robertm): enable this once ncval has been fixed
-	# $(NCVAL_X86_32) $@
-
-# *not* sanboxed
-main.x86-32: main.c libsimple1.x86-32.so
-	gcc -m32 -o $@ -L. -lsimple1.x86-32 main.c
-
-main2.x86-32: main.c libsimple1.x86-32.so libsimple2.x86-32.so
-	gcc -m32 -o $@ -L. -lsimple1.x86-32 -lsimple2.x86-32 main2.c
-
-run.x86-32: main.x86-32
-	LD_LIBRARY_PATH=. ./main.x86-32
-	echo "success"
-
-run2.x86-32: main2.x86-32
-	LD_LIBRARY_PATH=. ./main2.x86-32
-	echo "success"
-
-######################################################################
-LD_ARM_ARGS= --pnacl-driver-set-LD_SCRIPT_ARM=ld_script_arm_shared
-LLC_ARM_ARGS= --add-translate-option=-sfi-zero-mask -nobitcode-intrinsics
+LD_ARM_ARGS= -T ld_script_arm_shared
+LLC_ARM_ARGS= --add-translate-option=-sfi-zero-mask
 ARM_FLAGS= $(DEBUG_FLAGS) $(LD_ARM_ARGS) $(LLC_ARM_ARGS)
 
 # mostly sandboxed

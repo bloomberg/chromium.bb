@@ -202,9 +202,9 @@ test-arm-newlib()    { scons-tests arm newlib "$@" ; }
 test-x86-32-newlib() { scons-tests x86-32 newlib "$@" ; }
 test-x86-64-newlib() { scons-tests x86-64 newlib "$@" ; }
 
+# ARM PIC is tested independently because there is no GlibC for ARM yet.
+# BUG= http://code.google.com/p/nativeclient/issues/detail?id=1081
 test-arm-pic()    { scons-tests arm pic "$@" ; }
-test-x86-32-pic() { scons-tests x86-32 pic "$@" ; }
-test-x86-64-pic() { scons-tests x86-64 pic "$@" ; }
 
 test-arm-sbtc()    { scons-tests arm sbtc "$@" ; }
 test-x86-32-sbtc() { scons-tests x86-32 sbtc "$@" ; }

@@ -168,8 +168,14 @@ scons-tests() {
   local platform=$1
   local extra=$2
   local test=$3
+
   single-scons-test ${platform} "${extra}" "${test}"
-  single-scons-test ${platform} "${extra} nacl_pic=1" "${test}"
+  # Run the scons PIC tests on ARM only, since
+  # the GlibC scons tests already test PIC mode for X86.
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=1081
+  if [ "${platform}" == arm ]; then
+    single-scons-test ${platform} "${extra} nacl_pic=1" "${test}"
+  fi
   build-sbtc-prerequisites ${platform}
   single-scons-test ${platform} "${extra} use_sandboxed_translator=1" "${test}"
 }
@@ -198,9 +204,7 @@ mode-trybot-arm() {
   install-lkgr-toolchains
   scons-tests "arm" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
   browser-tests "arm" "--mode=opt-host,nacl -k"
-  # TODO(pdox): Reenable when glibc-based PNaCl toolchain is building
-  # on the bots
-  #ad-hoc-shared-lib-tests "arm"
+  ad-hoc-shared-lib-tests "arm"
 }
 
 mode-trybot-x8632() {
@@ -209,7 +213,6 @@ mode-trybot-x8632() {
   install-lkgr-toolchains
   scons-tests "x86-32" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
   browser-tests "x86-32" "--mode=opt-host,nacl -k"
-  #ad-hoc-shared-lib-tests "x86-32"
 }
 
 mode-trybot-x8664() {
@@ -218,7 +221,6 @@ mode-trybot-x8664() {
   install-lkgr-toolchains
   scons-tests "x86-64" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
   browser-tests "x86-64" "--mode=opt-host,nacl -k"
-  # no adhoc tests for x86-64
 }
 
 mode-buildbot-x8632() {
@@ -230,7 +232,6 @@ mode-buildbot-x8632() {
   # Then test (not all nexes which are build are also tested)
   scons-tests "x86-32" "--mode=opt-host,nacl -k" "smoke_tests"
   browser-tests "x86-32" "--mode=opt-host,nacl -k"
-  #ad-hoc-shared-lib-tests "x86-32"
 }
 
 mode-buildbot-x8664() {
@@ -280,7 +281,7 @@ mode-buildbot-arm() {
   scons-tests "arm" "${mode} -k" "medium_tests"
   scons-tests "arm" "${mode} -k" "large_tests"
   browser-tests "arm" "${mode}"
-  #ad-hoc-shared-lib-tests "arm"
+  ad-hoc-shared-lib-tests "arm"
 }
 
 mode-buildbot-arm-dbg() {
@@ -357,7 +358,7 @@ mode-test-all() {
   browser-tests "arm" "--verbose --mode=opt-host,nacl -j1"
   browser-tests "x86-32" "--verbose --mode=opt-host,nacl -j1"
   browser-tests "x86-64" "--verbose --mode=opt-host,nacl -j1"
-  # ad-hoc-shared-lib-tests "arm"
+  ad-hoc-shared-lib-tests "arm"
 }
 
 ######################################################################

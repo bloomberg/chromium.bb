@@ -49,7 +49,7 @@ case ${BUILD_OS}-${BUILD_ARCH}-${BUILD_LIBMODE} in
     # We can't build 64-bit trusted components on a 32-bit system.
     # Arm disabled on 32-bit because it runs out of memory.
     TOOLCHAIN_LABEL=pnacl_linux_i686_newlib
-    RUN_TESTS="x86-32 x86-32-pic x86-32-browser"
+    RUN_TESTS="x86-32 x86-32-browser"
     ;;
   linux-32-glibc)
     TOOLCHAIN_LABEL=pnacl_linux_i686_glibc
@@ -59,9 +59,9 @@ case ${BUILD_OS}-${BUILD_ARCH}-${BUILD_LIBMODE} in
     ;;
   linux-64-newlib)
     TOOLCHAIN_LABEL=pnacl_linux_x86_64_newlib
-    RUN_TESTS="x86-32 x86-32-pic x86-32-browser"
+    RUN_TESTS="x86-32 x86-32-browser"
     RUN_TESTS+=" arm arm-pic arm-browser"
-    RUN_TESTS+=" x86-64 x86-64-pic x86-64-browser"
+    RUN_TESTS+=" x86-64 x86-64-browser"
     ;;
   linux-64-glibc)
     TOOLCHAIN_LABEL=pnacl_linux_x86_64_glibc
@@ -75,7 +75,7 @@ case ${BUILD_OS}-${BUILD_ARCH}-${BUILD_LIBMODE} in
     # We can't test ARM because we do not have QEMU for Mac.
     # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
     TOOLCHAIN_LABEL=pnacl_darwin_i386_newlib
-    RUN_TESTS="x86-32 x86-32-pic x86-32-browser"
+    RUN_TESTS="x86-32 x86-32-browser"
     ;;
   mac-32-glibc)
     export PNACL_VERBOSE=true
@@ -86,12 +86,12 @@ case ${BUILD_OS}-${BUILD_ARCH}-${BUILD_LIBMODE} in
     ;;
   win-32-newlib)
     TOOLCHAIN_LABEL=pnacl_windows_i686_newlib
-    RUN_TESTS="x86-32 x86-32-pic x86-32-browser"
+    RUN_TESTS="x86-32 x86-32-browser"
     ;;
   win-64-newlib)
     TOOLCHAIN_LABEL=pnacl_windows_i686_newlib
     BUILD_32BIT_PLUGIN=true
-    RUN_TESTS="x86-64 x86-64-pic x86-64-browser"
+    RUN_TESTS="x86-64 x86-64-browser"
     ;;
   *)
     echo -n "*** UNRECOGNIZED CONFIGURATION: "
