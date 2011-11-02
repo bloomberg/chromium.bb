@@ -12,7 +12,6 @@
 #include "base/task.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/proto/internal.pb.h"
-#include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_manager.h"
