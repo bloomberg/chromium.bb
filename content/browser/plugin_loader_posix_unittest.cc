@@ -41,6 +41,10 @@ class MockPluginLoaderPosix : public PluginLoaderPosix {
     return &internal_plugins_;
   }
 
+  void RealLoadPluginsInternal() {
+    PluginLoaderPosix::LoadPluginsInternal();
+  }
+
   void TestOnPluginLoaded(const webkit::WebPluginInfo& plugin) {
     OnPluginLoaded(plugin);
   }
@@ -278,4 +282,37 @@ TEST_F(PluginLoaderPosixTest, InternalPlugin) {
 
   message_loop()->RunAllPending();
   EXPECT_EQ(1, did_callback);
+}
+
+TEST_F(PluginLoaderPosixTest, AllCrashed) {
+  int did_callback = 0;
+  PluginService::GetPluginsCallback callback =
+      base::Bind(&VerifyCallback, base::Unretained(&did_callback));
+
+  plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
+
+  // Spin the loop so that the canonical list of plugins can be set.
+  EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
+  message_loop()->RunAllPending();
+  AddThreePlugins();
+
+  EXPECT_EQ(0u, plugin_loader()->next_load_index());
+
+  // Mock the first two calls like normal.
+  testing::Expectation first =
+      EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(2);
+  // On the last call, go through the default impl.
+  EXPECT_CALL(*plugin_loader(), LoadPluginsInternal())
+      .After(first)
+      .WillOnce(
+          testing::Invoke(plugin_loader(),
+                          &MockPluginLoaderPosix::RealLoadPluginsInternal));
+  plugin_loader()->OnProcessCrashed(42);
+  plugin_loader()->OnProcessCrashed(42);
+  plugin_loader()->OnProcessCrashed(42);
+
+  message_loop()->RunAllPending();
+  EXPECT_EQ(1, did_callback);
+
+  EXPECT_EQ(0u, plugin_loader()->loaded_plugins().size());
 }
