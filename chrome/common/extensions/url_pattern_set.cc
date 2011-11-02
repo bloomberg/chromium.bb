@@ -90,6 +90,16 @@ bool URLPatternSet::MatchesURL(const GURL& url) const {
   return false;
 }
 
+bool URLPatternSet::MatchesSecurityOrigin(const GURL& origin) const {
+  for (URLPatternSet::const_iterator pattern = patterns_.begin();
+       pattern != patterns_.end(); ++pattern) {
+    if (pattern->MatchesSecurityOrigin(origin))
+      return true;
+  }
+
+  return false;
+}
+
 bool URLPatternSet::OverlapsWith(const URLPatternSet& other) const {
   // Two extension extents overlap if there is any one URL that would match at
   // least one pattern in each of the extents.

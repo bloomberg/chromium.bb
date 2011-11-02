@@ -608,23 +608,19 @@ void ChromeRenderMessageFilter::GetPluginInfo(
   status->value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
 }
 
-void ChromeRenderMessageFilter::OnCanTriggerClipboardRead(const GURL& url,
-                                                          bool* allowed) {
-  const Extension* extension =
-      extension_info_map_->extensions().GetByURL(url);
-  *allowed = extension &&
-      extension->HasAPIPermission(ExtensionAPIPermission::kClipboardRead);
+void ChromeRenderMessageFilter::OnCanTriggerClipboardRead(
+    const GURL& origin, bool* allowed) {
+  *allowed = extension_info_map_->SecurityOriginHasAPIPermission(
+      origin, render_process_id_, ExtensionAPIPermission::kClipboardRead);
 }
 
-void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(const GURL& url,
-                                                           bool* allowed) {
+void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(
+    const GURL& origin, bool* allowed) {
   // Since all extensions could historically write to the clipboard, preserve it
   // for compatibility.
-  const Extension* extension =
-      extension_info_map_->extensions().GetByURL(url);
-  *allowed = url.SchemeIs(chrome::kExtensionScheme) ||
-      (extension &&
-       extension->HasAPIPermission(ExtensionAPIPermission::kClipboardWrite));
+  *allowed = (origin.SchemeIs(chrome::kExtensionScheme) ||
+      extension_info_map_->SecurityOriginHasAPIPermission(
+          origin, render_process_id_, ExtensionAPIPermission::kClipboardWrite));
 }
 
 void ChromeRenderMessageFilter::OnGetCookies(

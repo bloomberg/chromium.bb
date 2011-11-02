@@ -584,10 +584,10 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_CancelPrerenderForPrinting)
 // Sent by the renderer to check if a URL has permission to trigger a clipboard
 // read/write operation from the DOM.
 IPC_SYNC_MESSAGE_ROUTED1_1(ChromeViewHostMsg_CanTriggerClipboardRead,
-                           GURL /* url */,
+                           GURL /* origin */,
                            bool /* allowed */)
 IPC_SYNC_MESSAGE_ROUTED1_1(ChromeViewHostMsg_CanTriggerClipboardWrite,
-                           GURL /* url */,
+                           GURL /* origin */,
                            bool /* allowed */)
 
 // Sent when the renderer was prevented from displaying insecure content in

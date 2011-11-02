@@ -379,7 +379,8 @@ void RenderMessageFilter::OnMsgCreateWindow(
     const ViewHostMsg_CreateWindow_Params& params,
     int* route_id, int64* cloned_session_storage_namespace_id) {
   if (!content::GetContentClient()->browser()->CanCreateWindow(
-          params.opener_url, params.window_container_type, resource_context_)) {
+          GURL(params.opener_security_origin), params.window_container_type,
+          resource_context_, render_process_id_)) {
     *route_id = MSG_ROUTING_NONE;
     return;
   }
@@ -637,9 +638,10 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
 }
 
 void RenderMessageFilter::OnCheckNotificationPermission(
-    const GURL& source_url, int* result) {
+    const GURL& source_origin, int* result) {
   *result = content::GetContentClient()->browser()->
-      CheckDesktopNotificationPermission(source_url, resource_context_);
+      CheckDesktopNotificationPermission(source_origin, resource_context_,
+                                         render_process_id_);
 }
 
 void RenderMessageFilter::OnAllocateSharedMemory(

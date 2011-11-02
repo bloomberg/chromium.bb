@@ -183,8 +183,9 @@ void MockContentBrowserClient::RequestDesktopNotificationPermission(
 
 WebKit::WebNotificationPresenter::Permission
     MockContentBrowserClient::CheckDesktopNotificationPermission(
-        const GURL& source_url,
-        const content::ResourceContext& context) {
+        const GURL& source_origin,
+        const content::ResourceContext& context,
+        int render_process_id) {
   return WebKit::WebNotificationPresenter::PermissionAllowed;
 }
 
@@ -202,9 +203,10 @@ void MockContentBrowserClient::CancelDesktopNotification(
 }
 
 bool MockContentBrowserClient::CanCreateWindow(
-    const GURL& source_url,
+    const GURL& source_origin,
     WindowContainerType container_type,
-    const content::ResourceContext& context) {
+    const content::ResourceContext& context,
+    int render_process_id) {
   return true;
 }
 

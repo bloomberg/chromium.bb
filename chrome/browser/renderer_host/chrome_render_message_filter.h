@@ -148,8 +148,8 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                      ChromeViewHostMsg_GetPluginInfo_Status* status,
                      webkit::WebPluginInfo* plugin,
                      std::string* actual_mime_type);
-  void OnCanTriggerClipboardRead(const GURL& url, bool* allowed);
-  void OnCanTriggerClipboardWrite(const GURL& url, bool* allowed);
+  void OnCanTriggerClipboardRead(const GURL& origin, bool* allowed);
+  void OnCanTriggerClipboardWrite(const GURL& origin, bool* allowed);
   void OnGetCookies(const GURL& url,
                     const GURL& first_party_for_cookies,
                     IPC::Message* reply_msg);

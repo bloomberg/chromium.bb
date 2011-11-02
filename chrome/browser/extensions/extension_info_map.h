@@ -66,6 +66,12 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   bool IsExtensionInProcess(const std::string& extension_id,
                             int process_id) const;
 
+  // Returns true if there is exists an extension with the same origin as
+  // |origin| in |process_id| with |permission|.
+  bool SecurityOriginHasAPIPermission(
+      const GURL& origin, int process_id,
+      ExtensionAPIPermission::ID permission) const;
+
  private:
   // Extra dynamic data related to an extension.
   struct ExtraData;

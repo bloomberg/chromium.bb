@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -123,4 +125,24 @@ bool ExtensionInfoMap::IsExtensionInProcess(
       extension_process_ids_.end(),
       ExtensionProcessIDMap::value_type(extension_id, process_id)) !=
           extension_process_ids_.end();
+}
+
+bool ExtensionInfoMap::SecurityOriginHasAPIPermission(
+    const GURL& origin, int process_id,
+    ExtensionAPIPermission::ID permission) const {
+  if (origin.SchemeIs(chrome::kExtensionScheme)) {
+    const std::string& id = origin.host();
+    return extensions_.GetByID(id)->HasAPIPermission(permission) &&
+           IsExtensionInProcess(id, process_id);
+  }
+
+  ExtensionSet::ExtensionMap::const_iterator i = extensions_.begin();
+  for (; i != extensions_.end(); ++i) {
+    if (i->second->web_extent().MatchesSecurityOrigin(origin) &&
+        IsExtensionInProcess(i->first, process_id) &&
+        i->second->HasAPIPermission(permission)) {
+      return true;
+    }
+  }
+  return false;
 }

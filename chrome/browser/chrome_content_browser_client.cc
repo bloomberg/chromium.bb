@@ -766,23 +766,24 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
 
 WebKit::WebNotificationPresenter::Permission
     ChromeContentBrowserClient::CheckDesktopNotificationPermission(
-        const GURL& source_url,
-        const content::ResourceContext& context) {
+        const GURL& source_origin,
+        const content::ResourceContext& context,
+        int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data =
       reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
 
-  const Extension* extension =
-      io_data->GetExtensionInfoMap()->extensions().GetByURL(source_url);
-  if (extension &&
-      extension->HasAPIPermission(ExtensionAPIPermission::kNotification)) {
+  if (io_data->GetExtensionInfoMap()->SecurityOriginHasAPIPermission(
+        source_origin, render_process_id,
+        ExtensionAPIPermission::kNotification))
     return WebKit::WebNotificationPresenter::PermissionAllowed;
-  }
 
   // Fall back to the regular notification preferences, which works on an
   // origin basis.
+  // TODO(dcheng): Change to just source_origin once WebKit side is cleaned up.
   return io_data->GetNotificationService() ?
-      io_data->GetNotificationService()->HasPermission(source_url.GetOrigin()) :
+      io_data->GetNotificationService()->HasPermission(
+          source_origin.GetOrigin()) :
       WebKit::WebNotificationPresenter::PermissionNotAllowed;
 }
 
@@ -828,19 +829,18 @@ void ChromeContentBrowserClient::CancelDesktopNotification(
 }
 
 bool ChromeContentBrowserClient::CanCreateWindow(
-    const GURL& source_url,
+    const GURL& source_origin,
     WindowContainerType container_type,
-    const content::ResourceContext& context) {
+    const content::ResourceContext& context,
+    int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // If the opener is trying to create a background window but doesn't have
   // the appropriate permission, fail the attempt.
   if (container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
     ProfileIOData* io_data =
         reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
-    const Extension* extension =
-        io_data->GetExtensionInfoMap()->extensions().GetByURL(source_url);
-    return (extension &&
-            extension->HasAPIPermission(ExtensionAPIPermission::kBackground));
+    return io_data->GetExtensionInfoMap()->SecurityOriginHasAPIPermission(
+        source_origin, render_process_id, ExtensionAPIPermission::kBackground);
   }
   return true;
 }

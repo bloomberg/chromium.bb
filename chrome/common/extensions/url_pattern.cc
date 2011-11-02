@@ -307,24 +307,25 @@ bool URLPattern::SetPort(const std::string& port) {
   return false;
 }
 
-bool URLPattern::MatchesURL(const GURL &test) const {
+bool URLPattern::MatchesURL(const GURL& test) const {
   if (!MatchesScheme(test.scheme()))
     return false;
 
   if (match_all_urls_)
     return true;
 
-  // Ignore hostname if scheme is file://.
-  if (scheme_ != chrome::kFileScheme && !MatchesHost(test))
+  return MatchesSecurityOriginHelper(test) &&
+         MatchesPath(test.PathForRequest());
+}
+
+bool URLPattern::MatchesSecurityOrigin(const GURL& test) const {
+  if (!MatchesScheme(test.scheme()))
     return false;
 
-  if (!MatchesPath(test.PathForRequest()))
-    return false;
+  if (match_all_urls_)
+    return true;
 
-  if (!MatchesPort(test.EffectiveIntPort()))
-    return false;
-
-  return true;
+  return MatchesSecurityOriginHelper(test);
 }
 
 bool URLPattern::MatchesScheme(const std::string& test) const {
@@ -461,6 +462,17 @@ bool URLPattern::MatchesAnyScheme(
   }
 
   return false;
+}
+
+bool URLPattern::MatchesSecurityOriginHelper(const GURL& test) const {
+  // Ignore hostname if scheme is file://.
+  if (scheme_ != chrome::kFileScheme && !MatchesHost(test))
+    return false;
+
+  if (!MatchesPort(test.EffectiveIntPort()))
+    return false;
+
+  return true;
 }
 
 std::vector<std::string> URLPattern::GetExplicitSchemes() const {

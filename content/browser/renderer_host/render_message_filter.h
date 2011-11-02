@@ -179,7 +179,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
                      const GURL& url,
                      const GURL& referrer,
                      const string16& suggested_name);
-  void OnCheckNotificationPermission(const GURL& source_url,
+  void OnCheckNotificationPermission(const GURL& source_origin,
                                      int* permission_level);
 
   void OnGetHardwareInputSampleRate(double* sample_rate);

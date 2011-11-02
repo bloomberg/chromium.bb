@@ -108,8 +108,9 @@ class ShellContentBrowserClient : public ContentBrowserClient
       int render_view_id) OVERRIDE;
   virtual WebKit::WebNotificationPresenter::Permission
       CheckDesktopNotificationPermission(
-          const GURL& source_url,
-          const content::ResourceContext& context) OVERRIDE;
+          const GURL& origin,
+          const content::ResourceContext& context,
+          int render_process_id) OVERRIDE;
   virtual void ShowDesktopNotification(
       const DesktopNotificationHostMsg_Show_Params& params,
       int render_process_id,
@@ -120,9 +121,10 @@ class ShellContentBrowserClient : public ContentBrowserClient
       int render_view_id,
       int notification_id) OVERRIDE;
   virtual bool CanCreateWindow(
-      const GURL& source_url,
+      const GURL& origin,
       WindowContainerType container_type,
-      const content::ResourceContext& context) OVERRIDE;
+      const content::ResourceContext& context,
+      int render_process_id) OVERRIDE;
   virtual std::string GetWorkerProcessTitle(
       const GURL& url, const content::ResourceContext& context) OVERRIDE;
   virtual ResourceDispatcherHost* GetResourceDispatcherHost() OVERRIDE;

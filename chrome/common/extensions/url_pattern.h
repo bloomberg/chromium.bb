@@ -191,6 +191,9 @@ class URLPattern {
   // Returns true if this instance matches the specified URL.
   bool MatchesURL(const GURL& test) const;
 
+  // Returns true if this instance matches the specified security origin.
+  bool MatchesSecurityOrigin(const GURL& test) const;
+
   // Returns true if |test| matches our scheme.
   bool MatchesScheme(const std::string& test) const;
 
@@ -242,6 +245,8 @@ class URLPattern {
  private:
   // Returns true if any of the |schemes| items matches our scheme.
   bool MatchesAnyScheme(const std::vector<std::string>& schemes) const;
+
+  bool MatchesSecurityOriginHelper(const GURL& test) const;
 
   // If the URLPattern contains a wildcard scheme, returns a list of
   // equivalent literal schemes, otherwise returns the current scheme.

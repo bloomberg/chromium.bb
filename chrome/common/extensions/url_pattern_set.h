@@ -56,6 +56,8 @@ class URLPatternSet {
   // Test if the extent contains a URL.
   bool MatchesURL(const GURL& url) const;
 
+  bool MatchesSecurityOrigin(const GURL& origin) const;
+
   // Returns true if there is a single URL that would be in two extents.
   bool OverlapsWith(const URLPatternSet& other) const;
 

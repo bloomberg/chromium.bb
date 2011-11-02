@@ -76,5 +76,5 @@ IPC_MESSAGE_ROUTED2(DesktopNotificationHostMsg_RequestPermission,
                     int /* callback_context */)
 
 IPC_SYNC_MESSAGE_ROUTED1_1(DesktopNotificationHostMsg_CheckPermission,
-                           GURL /* source page */,
+                           GURL /* origin */,
                            int /* permission_result */)

@@ -198,8 +198,9 @@ void ShellContentBrowserClient::RequestDesktopNotificationPermission(
 
 WebKit::WebNotificationPresenter::Permission
     ShellContentBrowserClient::CheckDesktopNotificationPermission(
-        const GURL& source_url,
-        const content::ResourceContext& context) {
+        const GURL& source_origin,
+        const content::ResourceContext& context,
+        int render_process_id) {
   return WebKit::WebNotificationPresenter::PermissionAllowed;
 }
 
@@ -217,9 +218,10 @@ void ShellContentBrowserClient::CancelDesktopNotification(
 }
 
 bool ShellContentBrowserClient::CanCreateWindow(
-    const GURL& source_url,
+    const GURL& origin,
     WindowContainerType container_type,
-    const content::ResourceContext& context) {
+    const content::ResourceContext& context,
+    int render_process_id) {
   return true;
 }
 

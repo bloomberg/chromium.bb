@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class NotificationProvider : public content::RenderViewObserver,
   virtual void cancel(const WebKit::WebNotification& proxy);
   virtual void objectDestroyed(const WebKit::WebNotification& proxy);
   virtual WebKit::WebNotificationPresenter::Permission checkPermission(
-      const WebKit::WebURL& url);
+      const WebKit::WebURL& origin);
   virtual void requestPermission(const WebKit::WebSecurityOrigin& origin,
       WebKit::WebNotificationPermissionCallback* callback);
 

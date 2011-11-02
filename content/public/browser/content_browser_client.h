@@ -252,7 +252,8 @@ class ContentBrowserClient {
   virtual WebKit::WebNotificationPresenter::Permission
       CheckDesktopNotificationPermission(
           const GURL& source_url,
-          const content::ResourceContext& context) = 0;
+          const content::ResourceContext& context,
+          int render_process_id) = 0;
 
   // Show a desktop notification.  If |worker| is true, the request came from an
   // HTML5 web worker, otherwise, it came from a renderer.
@@ -272,9 +273,10 @@ class ContentBrowserClient {
   // type.
   // This is called on the IO thread.
   virtual bool CanCreateWindow(
-      const GURL& source_url,
+      const GURL& source_origin,
       WindowContainerType container_type,
-      const content::ResourceContext& context) = 0;
+      const content::ResourceContext& context,
+      int render_process_id) = 0;
 
   // Returns a title string to use in the task manager for a process host with
   // the given URL, or the empty string to fall back to the default logic.
