@@ -423,9 +423,7 @@ bool RenderWidgetHostViewAura::OnKeyEvent(aura::KeyEvent* event) {
 }
 
 gfx::NativeCursor RenderWidgetHostViewAura::GetCursor(const gfx::Point& point) {
-  // http://crbug.com/102562
-  // NOTIMPLEMENTED();
-  return gfx::kNullCursor;
+  return current_cursor_.GetNativeCursor();
 }
 
 int RenderWidgetHostViewAura::GetNonClientComponent(
@@ -515,7 +513,14 @@ void RenderWidgetHostViewAura::OnCompositingEnded(ui::Compositor* compositor) {
 // RenderWidgetHostViewAura, private:
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
-  // http://crbug.com/102562
-  // NOTIMPLEMENTED();
-  // TODO(beng): See RenderWidgetHostViewWin.
+  const gfx::Point screen_point = gfx::Screen::GetCursorScreenPoint();
+  aura::Desktop* desktop = aura::Desktop::GetInstance();
+  if (desktop->GetEventHandlerForPoint(screen_point) != window_)
+    return;
+
+  gfx::NativeCursor cursor = current_cursor_.GetNativeCursor();
+  if (is_loading_ && cursor == aura::kCursorPointer)
+    cursor = aura::kCursorProgress;
+
+  aura::Desktop::GetInstance()->SetCursor(cursor);
 }

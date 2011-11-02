@@ -650,8 +650,6 @@ void RenderWidgetHostViewWin::UpdateCursorIfOverSelf() {
   CPoint pt;
   GetCursorPos(&pt);
   if (WindowFromPoint(pt) == m_hWnd) {
-    BOOL result = ::ScreenToClient(m_hWnd, &pt);
-    DCHECK(result);
     // We cannot pass in NULL as the module handle as this would only work for
     // standard win32 cursors. We can also receive cursor types which are
     // defined as webkit resources. We need to specify the module handle of
