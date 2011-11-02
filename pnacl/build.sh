@@ -195,6 +195,7 @@ readonly BINUTILS_INSTALL_DIR="${INSTALL_PKG}/binutils"
 readonly BFD_PLUGIN_DIR="${BINUTILS_INSTALL_DIR}/lib/bfd-plugins"
 readonly SYSROOT_DIR="${INSTALL_ROOT}/sysroot"
 readonly LDSCRIPTS_DIR="${INSTALL_ROOT}/ldscripts"
+readonly FAKE_INSTALL_DIR="${INSTALL_PKG}/fake"
 readonly LLVM_GCC_VER="4.2.1"
 
 # Location of PNaCl gcc/g++/as
@@ -1571,6 +1572,52 @@ dragonegg-plugin() {
   cp dragonegg.so "${GCC_INSTALL_DIR}/lib"
   spopd
 }
+
+new-libgcc_eh() {
+  local arch=$1
+  local objdir="${TC_BUILD}/new-libgcc"
+  local subdir="${objdir}/fake-target/libgcc"
+  rm -rf "${objdir}"
+
+  # Setup fake gcc build directory.
+  mkdir -p "${objdir}"/gcc
+  cp -a ${PNACL_ROOT}/scripts/libgcc.mvars "${objdir}"/gcc
+  touch "${objdir}/gcc/tconfig.h"
+  touch "${objdir}/gcc/tm.h"
+
+  # Install unwind.h
+  cp "${TC_SRC_GCC}"/gcc/unwind-generic.h \
+     ${LLVM_INSTALL_DIR}/lib/clang/3.1/include/unwind.h
+
+  mkdir -p "${subdir}"
+  spushd "${subdir}"
+  local flags="-arch ${arch} --pnacl-bias=${arch} --pnacl-allow-translate"
+  StepBanner "NEW-LIBGCC_EH" "Configure"
+  RunWithLog libgcc.${arch}.configure \
+    env -i \
+      PATH="/usr/bin:/bin" \
+      CC="${PNACL_CC} ${flags}" \
+      CXX="${PNACL_CXX} ${flags}" \
+      AR="${PNACL_AR}" \
+      NM="${PNACL_NM}" \
+      RANLIB="${PNACL_RANLIB}" \
+      /bin/sh \
+      "${TC_SRC_GCC}"/libgcc/configure \
+        --prefix="${FAKE_INSTALL_DIR}" \
+        --enable-shared
+        # --enable-shared is needed because the EH functions now end
+        # up in libgcc.a if shared libs are disabled.
+
+  StepBanner "NEW-LIBGCC_EH" "Make"
+  RunWithLog libgcc.${arch}.make \
+    make libgcc_eh.a
+  spopd
+
+  StepBanner "NEW-LIBGCC_EH" "Install"
+  mkdir -p "${INSTALL_LIB}-${arch}"
+  cp ${subdir}/libgcc_eh.a "${INSTALL_LIB}-${arch}"
+}
+
 
 #########################################################################
 #     < GCC STAGE 1 >
