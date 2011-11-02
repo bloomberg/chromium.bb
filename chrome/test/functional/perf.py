@@ -297,13 +297,19 @@ class BenchmarkPerfTest(BasePerfTest):
     logging.info('Total: %.2f ms' % float(total))
     self._OutputPerfGraphValue('ms_SunSpider-total', float(total))
 
-    for match_category in re.finditer('\s\s(\w+):.+?<br><br>', results):
+    for match_category in re.finditer('\s\s(\w+):\s*([\d.]+)ms.+?<br><br>',
+                                      results):
       category_name = match_category.group(1)
+      category_result = match_category.group(2)
+      logging.info('Benchmark "%s": %.2f ms', category_name,
+                   float(category_result))
+      self._OutputPerfGraphValue('ms_SunSpider-%s' % category_name,
+                                 float(category_result))
       for match_result in re.finditer('<br>\s\s\s\s([\w-]+):\s*([\d.]+)ms',
                                       match_category.group(0)):
         result_name = match_result.group(1)
         result_value = match_result.group(2)
-        logging.info('Result %s-%s: %.2f ms', category_name, result_name,
+        logging.info('  Result "%s-%s": %.2f ms', category_name, result_name,
                      float(result_value))
         self._OutputPerfGraphValue(
             'ms_SunSpider-%s-%s' % (category_name, result_name),
