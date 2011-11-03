@@ -6,6 +6,13 @@
 
 #include <string>
 
+// When testing the javacript code, it is cumbersome to have to keep
+// re-building the resouces package and reloading the browser. To solve
+// this, enable the following flag to read the webapp's source files
+// directly off disk, so all you have to do is refresh the page to
+// test the modifications.
+//#define USE_SOURCE_FILES_DIRECTLY
+
 #include "base/bind.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,9 +23,68 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
+#ifdef USE_SOURCE_FILES_DIRECTLY
+#include "base/base_paths.h"
+#include "base/file_util.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/path_service.h"
+#endif  //  USE_SOURCE_FILES_DIRECTLY
+
 using content::BrowserThread;
 
 namespace {
+
+#ifdef USE_SOURCE_FILES_DIRECTLY
+
+class TrackingWebUIDataSource : public ChromeURLDataManager::DataSource {
+ public:
+  TrackingWebUIDataSource()
+      : DataSource(chrome::kChromeUITrackingHost2, MessageLoop::current()) {
+  }
+
+ protected:
+  // ChromeURLDataManager
+  virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
+    if (EndsWith(path, ".js", false))
+      return "application/javascript";
+    return "text/html";
+  }
+
+  virtual void StartDataRequest(const std::string& path,
+                                bool is_incognito,
+                                int request_id) OVERRIDE {
+    FilePath base_path;
+    PathService::Get(base::DIR_SOURCE_ROOT, &base_path);
+    base_path = base_path.AppendASCII("chrome");
+    base_path = base_path.AppendASCII("browser");
+    base_path = base_path.AppendASCII("resources");
+
+    // If no resource was specified, default to tracking.html.
+    std::string filename = path.empty() ? "tracking.html" : path;
+
+    FilePath file_path;
+    file_path = base_path.AppendASCII(filename);
+
+    // Read the file synchronously and send it as the response.
+    base::ThreadRestrictions::ScopedAllowIO allow;
+    std::string file_contents;
+    if (!file_util::ReadFileToString(file_path, &file_contents))
+      LOG(ERROR) << "Couldn't read file: " << file_path.value();
+    scoped_refptr<base::RefCountedString> response =
+        new base::RefCountedString();
+    response->data() = file_contents;
+    SendResponse(request_id, response);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TrackingWebUIDataSource);
+};
+
+ChromeURLDataManager::DataSource* CreateTrackingHTMLSource() {
+  return new TrackingWebUIDataSource();
+}
+
+#else  // USE_SOURCE_FILES_DIRECTLY
 
 ChromeWebUIDataSource* CreateTrackingHTMLSource() {
   // TODO(eroman): Use kChromeUITrackingHost instead of kChromeUITrackingHost2
@@ -31,6 +97,8 @@ ChromeWebUIDataSource* CreateTrackingHTMLSource() {
   source->set_default_resource(IDR_TRACKING_HTML);
   return source;
 }
+
+#endif
 
 // This class receives javascript messages from the renderer.
 // Note that the WebUI infrastructure runs on the UI thread, therefore all of
