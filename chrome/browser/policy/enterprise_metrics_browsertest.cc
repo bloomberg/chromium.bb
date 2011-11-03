@@ -142,7 +142,7 @@ class EnterpriseMetricsTest : public testing::Test {
     // when the instance is created.
     chromeos::system::StatisticsProvider::GetInstance();
     // Run the FILE thread's message loop to process the task.
-    file_thread_.message_loop()->RunAllPending();
+    file_thread_.DeprecatedGetThreadObject()->message_loop()->RunAllPending();
 #endif
   }
 
