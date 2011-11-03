@@ -174,16 +174,6 @@ class PolicyPrefsUITest(pyauto.PyUITest):
     'NotificationsAllowedForUrls': ([ '[*.]google.com' ], []),
     'NotificationsBlockedForUrls': ([ '[*.]google.com' ], []),
     'Disable3DAPIs': (True, []),
-    'PolicyRefreshRate': (300000, [], [ 'chromeos' ]),
-    # Only valid on chrome_frame.
-    'ChromeFrameRendererSettings': (0, [], []),
-    # Only valid on chrome_frame.
-    'RenderInChromeFrameList': ([ 'google.com' ], [], []),
-    # Only valid on chrome_frame.
-    'RenderInHostList': ([ 'google.com' ], [], []),
-    # Only valid on chrome_frame.
-    'ChromeFrameContentTypes': ([ 'text/xml' ], [], []),
-    'ChromeOsLockOnIdleSuspend': (True, [ PERSONAL ], [ 'chromeos' ]),
     'InstantEnabled': (False, [ BROWSER ]),
     'TranslateEnabled': (False, [ ADVANCED ]),
     'AllowOutdatedPlugins': (False, []),
@@ -192,12 +182,6 @@ class PolicyPrefsUITest(pyauto.PyUITest):
     'EditBookmarksEnabled': (False, []),
     'AllowFileSelectionDialogs': (False, [ ADVANCED ],
                                   [ 'win', 'mac', 'linux' ]),
-    # Only valid on chrome_frame.
-    'GCFUserDataDir': ('${user_name}/test-frame', [], []),
-    # device_only.
-    'DevicePolicyRefreshRate': (300000, [], []),
-    # device_only.
-    'ChromeOsReleaseChannel': ('stable-channel', [], []),
     'ImportBookmarks': (False, [], [ 'win', 'mac', 'linux' ]),
     'ImportHistory': (False, [], [ 'win', 'mac', 'linux' ]),
     'ImportHomepage': (False, [], [ 'win', 'mac', 'linux' ]),
@@ -207,6 +191,23 @@ class PolicyPrefsUITest(pyauto.PyUITest):
     'HideWebStorePromo': (True, []),
     'URLBlacklist': ([ 'google.com' ], []),
     'URLWhitelist': ([ 'google.com' ], []),
+
+    # ChromeOS-only policies:
+    'ChromeOsLockOnIdleSuspend': (True, [ PERSONAL ], [ 'chromeos' ]),
+    'PolicyRefreshRate': (300000, [], [ 'chromeos' ]),
+    'OpenNetworkConfiguration': ('', [], [ 'chromeos' ]),
+
+    # ChromeOS Device policies:
+    'DevicePolicyRefreshRate': (300000, [], []),
+    'ChromeOsReleaseChannel': ('stable-channel', [], []),
+    'DeviceOpenNetworkConfiguration': ('', [], []),
+
+    # Chrome Frame policies:
+    'ChromeFrameRendererSettings': (0, [], []),
+    'RenderInChromeFrameList': ([ 'google.com' ], [], []),
+    'RenderInHostList': ([ 'google.com' ], [], []),
+    'ChromeFrameContentTypes': ([ 'text/xml' ], [], []),
+    'GCFUserDataDir': ('${user_name}/test-frame', [], []),
   }
 
   def GetPlatform(self):
