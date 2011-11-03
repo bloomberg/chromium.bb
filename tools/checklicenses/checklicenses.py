@@ -78,6 +78,7 @@ WHITELISTED_LICENSES = [
     'Public domain',
     'libpng',
     'zlib/libpng',
+    'SGI Free Software License B',
 ]
 
 
@@ -114,20 +115,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
     'googleurl': [  # http://code.google.com/p/google-url/issues/detail?id=15
-        'UNKNOWN',
-    ],
-
-    # http://crbug.com/98097
-    'gpu/GLES2': [
-        'UNKNOWN',
-    ],
-    'gpu/KHR': [
-        'UNKNOWN',
-    ],
-    'gpu/gles2_conform_support/egl/native/EGL': [
-        'UNKNOWN',
-    ],
-    'gpu/EGL': [
         'UNKNOWN',
     ],
 

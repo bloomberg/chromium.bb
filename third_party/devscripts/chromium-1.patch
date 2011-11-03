@@ -1,5 +1,5 @@
---- licensecheck.pl.orig	2011-10-21 14:02:13.282141718 -0700
-+++ licensecheck.pl	2011-10-21 14:07:54.802155126 -0700
+--- licensecheck.pl.orig	2011-11-02 20:24:19.000000000 +0000
++++ licensecheck.pl	2011-11-02 20:24:38.000000000 +0000
 @@ -241,6 +241,12 @@
  my @find_args = ();
  my $files_count = @ARGV;
@@ -72,15 +72,18 @@
  	$license = "GPL (unversioned/unknown version) $license";
      }
  
-@@ -437,7 +426,7 @@
+@@ -437,9 +426,9 @@
  	$license = "QPL $license";
      }
  
 -    if ($licensetext =~ /http:\/\/opensource\.org\/licenses\/mit-license\.php/) {
 +    if ($licensetext =~ /opensource\.org\/licenses\/mit-license\.php/) {
  	$license = "MIT/X11 (BSD like) $license";
-     } elsif ($licensetext =~ /Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files \(the Software\), to deal in the Software/) {
+-    } elsif ($licensetext =~ /Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files \(the Software\), to deal in the Software/) {
++    } elsif ($licensetext =~ /Permission is hereby granted, free of charge, to any person obtaining a copy of this software and(\/or)? associated documentation files \(the (Software|Materials)\), to deal in the (Software|Materials)/) {
  	$license = "MIT/X11 (BSD like) $license";
+     }
+ 
 @@ -448,15 +437,21 @@
      }
  
@@ -117,7 +120,12 @@
  	$license = "Apache (v$1) $license";
      }
  
-@@ -495,7 +492,7 @@
+@@ -491,11 +488,11 @@
+ 	$license = "CeCILL-$1 $license";
+     }
+ 
+-    if ($licensetext =~ /under the SGI Free Software License B/) {
++    if ($licensetext =~ /under the SGI Free Software (B License|License B)/) {
  	$license = "SGI Free Software License B $license";
      }
  

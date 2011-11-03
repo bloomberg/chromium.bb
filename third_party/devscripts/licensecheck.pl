@@ -428,7 +428,7 @@ sub parselicense($) {
 
     if ($licensetext =~ /opensource\.org\/licenses\/mit-license\.php/) {
 	$license = "MIT/X11 (BSD like) $license";
-    } elsif ($licensetext =~ /Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files \(the Software\), to deal in the Software/) {
+    } elsif ($licensetext =~ /Permission is hereby granted, free of charge, to any person obtaining a copy of this software and(\/or)? associated documentation files \(the (Software|Materials)\), to deal in the (Software|Materials)/) {
 	$license = "MIT/X11 (BSD like) $license";
     }
 
@@ -488,7 +488,7 @@ sub parselicense($) {
 	$license = "CeCILL-$1 $license";
     }
 
-    if ($licensetext =~ /under the SGI Free Software License B/) {
+    if ($licensetext =~ /under the SGI Free Software (B License|License B)/) {
 	$license = "SGI Free Software License B $license";
     }
 
