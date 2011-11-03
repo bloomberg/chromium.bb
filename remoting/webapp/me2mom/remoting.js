@@ -46,13 +46,11 @@ remoting.init = function() {
 
   remoting.setMode(getAppStartupMode_());
   if (isHostModeSupported_()) {
-    var unsupported = document.getElementById('client-footer-text-cros');
-    unsupported.parentNode.removeChild(unsupported);
+    var noShare = document.getElementById('chrome-os-no-share');
+    noShare.parentNode.removeChild(noShare);
   } else {
-    var footer = document.getElementById('client-footer-text');
-    footer.parentNode.removeChild(footer);
-    document.getElementById('client-footer-text-cros').id =
-        'client-footer-text';
+    var button = document.getElementById('share-button');
+    button.disabled = true;
   }
 
   window.addEventListener('blur', pluginLostFocus_, false);
@@ -151,14 +149,8 @@ function getEmail_() {
  * @return {remoting.AppMode} The mode to start in.
  */
 function getAppStartupMode_() {
-  if (!remoting.oauth2.isAuthenticated()) {
-    return remoting.AppMode.UNAUTHENTICATED;
-  }
-  if (isHostModeSupported_()) {
-    return remoting.AppMode.HOME;
-  } else {
-    return remoting.AppMode.CLIENT_UNCONNECTED;
-  }
+  return remoting.oauth2.isAuthenticated() ? remoting.AppMode.HOME
+      : remoting.AppMode.UNAUTHENTICATED;
 }
 
 /**

@@ -180,6 +180,11 @@ label {
   overflow-y: hidden;
 }
 
+.small-print {
+  font-size: 13px;
+  color: #AAA;
+}
+
 .top-primary {
   font-size: 14px;
   position: absolute;

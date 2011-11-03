@@ -103,10 +103,6 @@
     "message": "The server failed to respond to the network request.",
     "description": "Error displayed by the client if the server does not respond to a network request."
   },
-  "FOOTER_CHROME_OS": {
-    "message": "Sharing your Chromebook will be supported in a future update\u2026 stay tuned.",
-    "description": "Footer text displayed on ChromeOS in lieu of the mode switch hyperlink."
-  },
   "FOOTER_WAITING": {
     "message": "waiting for connection\u2026",
     "description": "Footer text displayed at the host after an access code has been generated, but before a client connects."
@@ -134,6 +130,10 @@
   "HOME_SHARE_DESCRIPTION": {
     "message": "Share this computer for another user to see and control.",
     "description": "Description of the 'share' or 'host' functionality, displayed next to a button that instigates a share operation."
+  },
+  "HOME_SHARE_DESCRIPTION_CHROME_OS": {
+    "message": "(this feature is not yet available for Chromebooks\u2026 stay tuned)",
+    "description": "Text displayed below the description of the 'share' or 'host' functionality on ChromeOS devices, where it is not yet supported."
   },
   "INSTRUCTIONS_SHARE_ABOVE": {
     "message": "To begin sharing your desktop, give the access code below to the person who will be assisting you.",

@@ -112,10 +112,16 @@ found in the LICENSE file.
              i18n-value-1="<a href='http://g.co/remote'>g.co/remote</a>"></div>
         <table class="mode-select-table">
           <tr>
-            <td i18n-content="HOME_SHARE_DESCRIPTION"
-                class="mode-select-label"></td>
             <td>
-              <button i18n-content="HOME_SHARE_BUTTON"
+              <div i18n-content="HOME_SHARE_DESCRIPTION"
+                  class="mode-select-label"></div>
+              <div id="chrome-os-no-share"
+                   i18n-content="HOME_SHARE_DESCRIPTION_CHROME_OS"
+                   class="small-print"></div>
+            </td>
+            <td>
+              <button id="share-button"
+                      i18n-content="HOME_SHARE_BUTTON"
                       onclick="remoting.tryShare();"
                       class="mode-select-button"
                       type="button"></button>
@@ -254,10 +260,6 @@ found in the LICENSE file.
            data-ui-mode="auth host client">
 
       <footer class="choice-footer">
-
-        <div id="client-footer-text-cros" data-ui-mode="client.unconnected"
-             i18n-content="FOOTER_CHROME_OS">
-        </div> <!-- client-footer-text-cros -->
 
         <div id="waiting-footer"
              data-ui-mode="host.waiting-for-connection host.waiting-for-code client.connecting">
