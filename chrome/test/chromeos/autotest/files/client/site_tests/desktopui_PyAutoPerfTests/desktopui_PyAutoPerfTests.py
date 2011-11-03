@@ -76,6 +76,11 @@ class desktopui_PyAutoPerfTests(chrome_test.ChromeTestBase):
                           help='Maximum number of automation timeouts to '
                                'ignore before failing the test. Defaults to '
                                'the value given in perf.py.')
+        parser.add_option('--suite', dest='suite', type='string',
+                          default='CHROMEOS_PERF',
+                          help='Name of the suite to run, as specified in the '
+                               '"PYAUTO_TESTS" suite file. Defaults to '
+                               '%default, which runs all perf tests.')
         # Preprocess the args to remove quotes before/after each one if they
         # exist.  This is necessary because arguments passed via
         # run_remote_tests.sh may be individually quoted, and those quotes must
@@ -84,6 +89,8 @@ class desktopui_PyAutoPerfTests(chrome_test.ChromeTestBase):
 
     def run_once(self, args=[]):
         """Runs the PyAuto performance tests."""
+        if isinstance(args, str):
+          args = args.split()
         options, test_args = self.parse_args(args)
         test_args = ' '.join(test_args)
 
@@ -100,8 +107,8 @@ class desktopui_PyAutoPerfTests(chrome_test.ChromeTestBase):
         # Run the PyAuto performance tests.
         functional_cmd = cros_ui.xcommand_as(
             '%s/chrome_test/test_src/chrome/test/functional/'
-            'pyauto_functional.py --suite=CHROMEOS_PERF -v %s' % (
-                deps_dir, test_args))
+            'pyauto_functional.py --suite=%s -v %s' % (
+                deps_dir, options.suite, test_args))
         environment = os.environ.copy()
         if options.num_iterations:
           environment['NUM_ITERATIONS'] = str(options.num_iterations)

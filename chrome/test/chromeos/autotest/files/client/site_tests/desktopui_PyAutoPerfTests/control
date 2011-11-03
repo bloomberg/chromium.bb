@@ -14,6 +14,30 @@ TEST_TYPE = "client"
 DOC = """
 This is a wrapper test for Chrome pyauto-based performance tests.
 http://dev.chromium.org/developers/testing/pyauto
+
+Sample usage:
+
+  # Run all performance tests with the default set of arguments.
+  ./run_remote_tests.sh --remote=<DEVICE_IP> desktopui_PyAutoPerfTests
+
+  # Run a single performance test.
+  ./run_remote_tests.sh --remote=<DEVICE_IP> desktopui_PyAutoPerfTests \
+      -a 'perf.ScrollTest.testTextScroll'
+
+  # Run a single performance test for 10 iterations, rather than the default
+  # number of iterations (only applies to perf tests that run iteratively).
+  ./run_remote_tests.sh --remote=<DEVICE_IP> desktopui_PyAutoPerfTests \
+      -a 'perf.ScrollTest.testTextScroll --iterations=10'
+
+  # Run a different pyauto suite rather than the default "CHROMEOS_PERF"
+  # (see the file "PYAUTO_TESTS" in the Chrome tree).
+  ./run_remote_tests.sh --remote=<DEVICE_IP> desktopui_PyAutoPerfTests \
+      -a '--suite=OTHER_SUITE_NAME'
+
+  # Pass arguments to the autotest via an autotest suite control file
+  # (use "args" for the key, and the argument string as the value).
+  ('desktopui_PyAutoPerfTests', \
+   {'args': 'perf.ScrollTest.testTextScroll --iterations=10'})
 """
 
 job.run_test('desktopui_PyAutoPerfTests', args=args)
