@@ -29,13 +29,11 @@ class HttpBridgeTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_IO;
-    io_thread_.StartWithOptions(options);
+    io_thread_.StartIOThread();
   }
 
   virtual void TearDown() {
-    io_thread_loop()->ReleaseSoon(FROM_HERE,
+    GetIOThreadLoop()->ReleaseSoon(FROM_HERE,
         fake_default_request_context_getter_);
     io_thread_.Stop();
     fake_default_request_context_getter_ = NULL;
@@ -70,7 +68,9 @@ class HttpBridgeTest : public testing::Test {
     main_message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask);
   }
 
-  MessageLoop* io_thread_loop() { return io_thread_.message_loop(); }
+  MessageLoop* GetIOThreadLoop() {
+    return io_thread_.DeprecatedGetThreadObject()->message_loop();
+  }
 
   // Note this is lazy created, so don't call this before your bridge.
   TestURLRequestContextGetter* GetTestRequestContextGetter() {
@@ -102,20 +102,20 @@ class ShuntedHttpBridge : public HttpBridge {
                    test_(test), never_finishes_(never_finishes) { }
  protected:
   virtual void MakeAsynchronousPost() {
-    ASSERT_TRUE(MessageLoop::current() == test_->io_thread_loop());
+    ASSERT_TRUE(MessageLoop::current() == test_->GetIOThreadLoop());
     if (never_finishes_)
       return;
 
     // We don't actually want to make a request for this test, so just callback
     // as if it completed.
-    test_->io_thread_loop()->PostTask(FROM_HERE,
+    test_->GetIOThreadLoop()->PostTask(FROM_HERE,
         NewRunnableMethod(this, &ShuntedHttpBridge::CallOnURLFetchComplete));
   }
  private:
   ~ShuntedHttpBridge() {}
 
   void CallOnURLFetchComplete() {
-    ASSERT_TRUE(MessageLoop::current() == test_->io_thread_loop());
+    ASSERT_TRUE(MessageLoop::current() == test_->GetIOThreadLoop());
     // We return no cookies and a dummy content response.
     net::ResponseCookies cookies;
 

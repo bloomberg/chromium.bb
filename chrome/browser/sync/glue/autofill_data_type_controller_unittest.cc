@@ -116,7 +116,8 @@ class AutofillDataTypeControllerTest : public testing::Test {
 
   virtual void SetUp() {
     db_thread_.Start();
-    db_notification_service_ = new ThreadNotificationService(&db_thread_);
+    db_notification_service_ = new ThreadNotificationService(
+        db_thread_.DeprecatedGetThreadObject());
     db_notification_service_->Init();
     web_data_service_ = new WebDataServiceFake();
     EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
@@ -162,7 +163,8 @@ TEST_F(AutofillDataTypeControllerTest, StartWDSNotReady) {
   autofill_dtc_->set_state(DataTypeController::MODEL_STARTING);
   EXPECT_FALSE(autofill_dtc_->StartModels());
 
-  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&ui_thread_));
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
+      ui_thread_.DeprecatedGetThreadObject()));
   autofill_dtc_->Observe(
       chrome::NOTIFICATION_WEB_DATABASE_LOADED,
       content::Source<WebDataService>(web_data_service_.get()),

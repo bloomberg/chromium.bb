@@ -35,7 +35,7 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
   virtual void SetUp() {
     base::Thread::Options options;
     options.message_loop_type = MessageLoop::TYPE_IO;
-    io_thread_.StartWithOptions(options);
+    io_thread_.StartIOThread();
     request_context_getter_ = new TestURLRequestContextGetter;
     notifier::NotifierOptions notifier_options;
     notifier_options.request_context_getter = request_context_getter_;

@@ -65,9 +65,7 @@ class TemplateURLServiceTestingProfile : public TestingProfile {
   // Starts the I/O thread. This isn't done automatically because not every test
   // needs this.
   void StartIOThread() {
-    base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_IO;
-    io_thread_.StartWithOptions(options);
+    io_thread_.StartIOThread();
   }
 
   virtual WebDataService* GetWebDataService(ServiceAccessType access) {

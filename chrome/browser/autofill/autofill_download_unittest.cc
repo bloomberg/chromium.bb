@@ -71,9 +71,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
   }
 
   virtual void SetUp() {
-    base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_IO;
-    io_thread_.StartWithOptions(options);
+    io_thread_.StartIOThread();
     profile_.CreateRequestContext();
   }
 
@@ -135,8 +133,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
   AutofillDownloadManager download_manager_;
 
  private:
-  // |request_context_getter_| must be released on the IO thread.
-  MessageLoop* io_thread_loop() { return io_thread_.message_loop(); }
+  // The profile's request context must be released on the IO thread.
   content::TestBrowserThread io_thread_;
 };
 

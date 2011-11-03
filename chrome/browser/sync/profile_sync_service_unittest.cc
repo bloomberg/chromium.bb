@@ -49,9 +49,7 @@ class ProfileSyncServiceTest : public testing::Test {
   virtual ~ProfileSyncServiceTest() {}
 
   virtual void SetUp() {
-    base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_IO;
-    io_thread_.StartWithOptions(options);
+    io_thread_.StartIOThread();
     profile_.reset(new TestingProfile());
     profile_->CreateRequestContext();
 

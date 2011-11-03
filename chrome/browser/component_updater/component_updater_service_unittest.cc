@@ -232,7 +232,7 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   content::TestBrowserThread file_thread(BrowserThread::FILE);
   content::TestBrowserThread io_thread(BrowserThread::IO);
 
-  io_thread.StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
+  io_thread.StartIOThread();
   file_thread.Start();
 
   scoped_refptr<ComponentUpdateInterceptor>
@@ -316,7 +316,7 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   content::TestBrowserThread file_thread(BrowserThread::FILE);
   content::TestBrowserThread io_thread(BrowserThread::IO);
 
-  io_thread.StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
+  io_thread.StartIOThread();
   file_thread.Start();
 
   scoped_refptr<ComponentUpdateInterceptor>
@@ -382,7 +382,7 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
   content::TestBrowserThread file_thread(BrowserThread::FILE);
   content::TestBrowserThread io_thread(BrowserThread::IO);
 
-  io_thread.StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
+  io_thread.StartIOThread();
   file_thread.Start();
 
   scoped_refptr<ComponentUpdateInterceptor>

@@ -354,7 +354,8 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
         WillRepeatedly(Return(web_data_service_.get()));
     personal_data_manager_->Init(&profile_);
 
-    notification_service_ = new ThreadNotificationService(&db_thread_);
+    notification_service_ = new ThreadNotificationService(
+        db_thread_.DeprecatedGetThreadObject());
     notification_service_->Init();
 
     // Note: This must be called *after* the notification service is created.
@@ -943,7 +944,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddEntry) {
 
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::ADD, added_entry.key()));
-  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
+      db_thread_.DeprecatedGetThreadObject()));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
                    content::Source<WebDataService>(web_data_service_.get()),
                    content::Details<AutofillChangeList>(&changes));
@@ -972,7 +974,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
 
   AutofillProfileChange change(AutofillProfileChange::ADD,
       added_profile.guid(), &added_profile);
-  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
+      db_thread_.DeprecatedGetThreadObject()));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
                    content::Source<WebDataService>(web_data_service_.get()),
                    content::Details<AutofillProfileChange>(&change));
@@ -1005,7 +1008,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateEntry) {
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::UPDATE,
                                    updated_entry.key()));
-  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
+      db_thread_.DeprecatedGetThreadObject()));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
                    content::Source<WebDataService>(web_data_service_.get()),
                    content::Details<AutofillChangeList>(&changes));
@@ -1034,7 +1038,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveEntry) {
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::REMOVE,
                                    original_entry.key()));
-  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
+      db_thread_.DeprecatedGetThreadObject()));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
                    content::Source<WebDataService>(web_data_service_.get()),
                    content::Details<AutofillChangeList>(&changes));
@@ -1072,7 +1077,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
 
   AutofillProfileChange change(AutofillProfileChange::REMOVE,
                                sync_profile.guid(), NULL);
-  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
+      db_thread_.DeprecatedGetThreadObject()));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
                    content::Source<WebDataService>(web_data_service_.get()),
                    content::Details<AutofillProfileChange>(&change));

@@ -162,7 +162,8 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     profile_.CreateRequestContext();
     password_store_ = new MockPasswordStore();
 
-    notification_service_ = new ThreadNotificationService(&db_thread_);
+    notification_service_ = new ThreadNotificationService(
+        db_thread_.DeprecatedGetThreadObject());
     notification_service_->Init();
     registrar_.Add(&observer_,
         chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,

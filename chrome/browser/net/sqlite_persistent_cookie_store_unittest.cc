@@ -189,17 +189,19 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
     temp_dir_.path().Append(chrome::kCookieFilename));
   // Posting a blocking task to db_thread_ makes sure that the DB thread waits
   // until both Load and LoadCookiesForKey have been posted to its task queue.
-  db_thread_.PostTask(BrowserThread::DB, FROM_HERE,
-    base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
-               base::Unretained(this)));
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
+                 base::Unretained(this)));
   store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
                           base::Unretained(this)));
   store_->LoadCookiesForKey("aaa.com",
     base::Bind(&SQLitePersistentCookieStoreTest::OnKeyLoaded,
                base::Unretained(this)));
-  db_thread_.PostTask(BrowserThread::DB, FROM_HERE,
-    base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
-               base::Unretained(this)));
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
+                 base::Unretained(this)));
 
   // Now the DB-thread queue contains:
   // (active:)

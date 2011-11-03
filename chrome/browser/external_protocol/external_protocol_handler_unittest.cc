@@ -99,9 +99,7 @@ class ExternalProtocolHandlerTest : public testing::Test {
         file_thread_(BrowserThread::FILE) {}
 
   virtual void SetUp() {
-    base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_DEFAULT;
-    file_thread_.StartWithOptions(options);
+    file_thread_.Start();
   }
 
   void DoTest(ExternalProtocolHandler::BlockState block_state,

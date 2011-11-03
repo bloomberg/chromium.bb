@@ -115,17 +115,15 @@ class ExtensionsActivityMonitorTest : public testing::Test {
   virtual void SetUp() {
     ui_thread_.Start();
     base::WaitableEvent service_created(false, false);
-    ui_thread_.message_loop()->PostTask(FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         new DoUIThreadSetupTask(&service_, &service_created));
     service_created.Wait();
   }
 
   virtual void TearDown() {
-    ui_thread_.message_loop()->DeleteSoon(FROM_HERE, service_);
+    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, service_);
     ui_thread_.Stop();
   }
-
-  MessageLoop* ui_loop() { return ui_thread_.message_loop(); }
 
   static std::string GetExtensionIdForPath(
       const FilePath::StringType& extension_path) {
@@ -182,7 +180,7 @@ TEST_F(ExtensionsActivityMonitorTest, Basic) {
   EXPECT_EQ(writes_by_extension1, results[id1].bookmark_write_count);
   EXPECT_EQ(writes_by_extension2, results[id2].bookmark_write_count);
 
-  ui_loop()->DeleteSoon(FROM_HERE, monitor);
+  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, monitor);
 }
 
 TEST_F(ExtensionsActivityMonitorTest, Put) {
@@ -219,7 +217,7 @@ TEST_F(ExtensionsActivityMonitorTest, Put) {
   EXPECT_EQ(id2, new_records[id2].extension_id);
   EXPECT_EQ(5U, new_records[id1].bookmark_write_count);
   EXPECT_EQ(8U + 2U, new_records[id2].bookmark_write_count);
-  ui_loop()->DeleteSoon(FROM_HERE, monitor);
+  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, monitor);
 }
 
 TEST_F(ExtensionsActivityMonitorTest, MultiGet) {
@@ -246,5 +244,5 @@ TEST_F(ExtensionsActivityMonitorTest, MultiGet) {
   EXPECT_EQ(1U, results.size());
   EXPECT_EQ(3U, results[id1].bookmark_write_count);
 
-  ui_loop()->DeleteSoon(FROM_HERE, monitor);
+  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, monitor);
 }

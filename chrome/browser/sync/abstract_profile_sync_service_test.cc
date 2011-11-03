@@ -105,9 +105,7 @@ AbstractProfileSyncServiceTest::~AbstractProfileSyncServiceTest() {}
 
 void AbstractProfileSyncServiceTest::SetUp() {
   db_thread_.Start();
-  base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
-  io_thread_.StartWithOptions(options);
+  io_thread_.StartIOThread();
 }
 
 void AbstractProfileSyncServiceTest::TearDown() {

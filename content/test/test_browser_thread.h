@@ -6,17 +6,50 @@
 #define CONTENT_TEST_TEST_BROWSER_BROWSER_THREAD_H_
 #pragma once
 
-#include "content/browser/browser_thread_impl.h"
+#include "base/memory/scoped_ptr.h"
+#include "content/public/browser/browser_thread.h"
+
+class MessageLoop;
+
+namespace base {
+class Thread;
+}
 
 namespace content {
 
+class BrowserThreadImpl;
+
 // A BrowserThread for unit tests; this lets unit tests in chrome/
 // create BrowserThread instances.
-class TestBrowserThread : public BrowserThreadImpl {
+class TestBrowserThread {
  public:
-  explicit TestBrowserThread(ID identifier);
-  TestBrowserThread(ID identifier, MessageLoop* message_loop);
-  virtual ~TestBrowserThread();
+  explicit TestBrowserThread(BrowserThread::ID identifier);
+  TestBrowserThread(BrowserThread::ID identifier, MessageLoop* message_loop);
+  ~TestBrowserThread();
+
+  // We provide a subset of the capabilities of the Thread interface
+  // to enable certain unit tests.  To avoid a stronger dependency of
+  // the internals of BrowserThread, we do not provide the full Thread
+  // interface.
+
+  // Starts the thread with a generic message loop.
+  bool Start();
+
+  // Starts the thread with an IOThread message loop.
+  bool StartIOThread();
+
+  // Stops the thread.
+  void Stop();
+
+  // Returns true if the thread is running.
+  bool IsRunning();
+
+  // Returns a Thread pointer for the thread. This should not be used
+  // in new tests.
+  base::Thread* DeprecatedGetThreadObject();
+
+ private:
+  scoped_ptr<BrowserThreadImpl> impl;
 };
 
 }  // namespace content

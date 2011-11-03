@@ -233,13 +233,10 @@ class ProtocolHandlerRegistryTest : public testing::Test {
     ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
                                                     MessageLoop::current()));
     io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
-    base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_IO;
-    io_thread_->StartWithOptions(options);
+    io_thread_->StartIOThread();
 
     file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE));
-    options.message_loop_type = MessageLoop::TYPE_DEFAULT;
-    file_thread_->StartWithOptions(options);
+    file_thread_->Start();
 
     profile_.reset(new TestingProfile());
     profile_->SetPrefService(new TestingPrefService());

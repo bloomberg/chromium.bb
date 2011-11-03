@@ -166,9 +166,7 @@ class ProfileSyncServiceSessionTest
   virtual void SetUp() {
     // BrowserWithTestWindowTest implementation.
     BrowserWithTestWindowTest::SetUp();
-    base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_IO;
-    io_thread_.StartWithOptions(options);
+    io_thread_.StartIOThread();
     profile()->CreateRequestContext();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     SessionService* session_service = new SessionService(temp_dir_.path());

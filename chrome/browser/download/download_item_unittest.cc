@@ -68,7 +68,7 @@ class DownloadItemTest : public testing::Test {
     // to ensure that all resources are cleaned up before the test exits.
     download_manager_ = NULL;
     profile_.reset(NULL);
-    ui_thread_.message_loop()->RunAllPending();
+    ui_thread_.DeprecatedGetThreadObject()->message_loop()->RunAllPending();
   }
 
   DownloadItem* CreateDownloadItem(DownloadItem::DownloadState state) {
