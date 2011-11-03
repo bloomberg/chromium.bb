@@ -7,4 +7,4 @@
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
 
-BUGCASEQ LINUX GPU : media/media-document-audio-repaint.html = IMAGE
+BUGCASEQ SLOW MAC : platform/chromium/compositing/zoom-animator-scale-test2.html = PASS MISSING
