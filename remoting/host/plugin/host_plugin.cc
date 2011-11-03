@@ -490,7 +490,7 @@ EXPORT NPError API_CALL NP_Shutdown() {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 EXPORT const char* API_CALL NP_GetMIMEDescription(void) {
   VLOG(2) << "NP_GetMIMEDescription";
-  return STRINGIZE(HOST_PLUGIN_MIME_TYPE) ":"
+  return HOST_PLUGIN_MIME_TYPE ":"
       HOST_PLUGIN_NAME ":"
       HOST_PLUGIN_DESCRIPTION;
 }
