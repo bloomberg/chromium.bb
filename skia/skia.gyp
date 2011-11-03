@@ -467,12 +467,13 @@
         '../third_party/skia/src/pdf/SkPDFTypes.cpp',
         '../third_party/skia/src/pdf/SkPDFUtils.cpp',
 
+        '../third_party/skia/src/ports/FontHostConfiguration_android.cpp',
         #'../third_party/skia/src/ports/SkFontHost_FONTPATH.cpp',
         '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
-        #'../third_party/skia/src/ports/SkFontHost_android.cpp',
+        '../third_party/skia/src/ports/SkFontHost_android.cpp',
         #'../third_party/skia/src/ports/SkFontHost_ascender.cpp',
         '../third_party/skia/src/ports/SkFontHost_tables.cpp',
-        #'../third_party/skia/src/ports/SkFontHost_gamma.cpp',
+        '../third_party/skia/src/ports/SkFontHost_gamma.cpp',
         '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
         #'../third_party/skia/src/ports/SkFontHost_linux.cpp',
         '../third_party/skia/src/ports/SkFontHost_mac.cpp',
@@ -487,7 +488,7 @@
         #'../third_party/skia/src/ports/SkOSEvent_dummy.cpp',
         '../third_party/skia/src/ports/SkOSFile_stdio.cpp',
         #'../third_party/skia/src/ports/SkThread_none.cpp',
-        #'../third_party/skia/src/ports/SkThread_pthread.cpp',
+        '../third_party/skia/src/ports/SkThread_pthread.cpp',
         '../third_party/skia/src/ports/SkThread_win.cpp',
         '../third_party/skia/src/ports/SkTime_Unix.cpp',
         #'../third_party/skia/src/ports/SkXMLParser_empty.cpp',
@@ -683,6 +684,7 @@
         'ext/SkThread_chrome.cc',
         'ext/platform_canvas.cc',
         'ext/platform_canvas.h',
+        'ext/platform_canvas_android.cc',
         'ext/platform_canvas_linux.cc',
         'ext/platform_canvas_mac.cc',
         'ext/platform_canvas_win.cc',
@@ -732,22 +734,21 @@
         '../third_party/skia/include/core/SkTypes.h',
       ],
       'conditions': [
+        [ 'OS != "android"', {
+          'sources/': [
+            ['exclude', '_android\\.(cc|cpp)$'],
+          ],
+          'sources!': [
+            # Below files are only used by Android
+            '../third_party/skia/src/ports/SkFontHost_gamma.cpp',
+            '../third_party/skia/src/ports/SkThread_pthread.cpp',
+          ],
+        }],
         [ 'OS != "mac"', {
           'sources/': [
             ['exclude', '_mac\\.(cc|cpp|mm?)$'],
             ['exclude', '/mac/']
           ],
-        }],
-        [ 'OS == "android"', {
-          'sources/': [
-            ['include', 'ext/platform_device_linux.cc'],
-            ['include', 'ext/platform_canvas_linux.cc'],
-          ],
-          'defines': [
-            'SK_BUILD_FOR_ANDROID_NDK',
-          ],
-        }, { # OS != "android"
-          'sources/': [ ['exclude', '_android\\.(cc|cpp)$'] ],
         }],
         [ 'OS != "win"', {
           'sources/': [ ['exclude', '_win\\.(cc|cpp)$'] ],
@@ -801,6 +802,53 @@
           ],
         }, {  # toolkit_uses_gtk == 0
           'sources/': [ ['exclude', '_gtk\\.(cc|cpp)$'] ],
+        }],
+        [ 'OS == "android"', {
+          'defines': [
+            'SK_BUILD_FOR_ANDROID_NDK',
+          ],
+          'conditions': [
+            [ '_toolset == "target"', {
+              'defines': [
+                'HAVE_ENDIAN_H',
+                'HAVE_PTHREADS',
+                'OS_ANDROID',
+                'USE_CHROMIUM_SKIA',
+              ],
+              'dependencies': [
+                '../third_party/freetype/freetype.gyp:ft2',
+                '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz',
+                '../third_party/expat/expat.gyp:expat',
+                'skia_opts'
+              ],
+              'dependencies!': [
+                # Android doesn't use Skia's PDF generation, which is what uses
+                # sfntly.
+                '../third_party/sfntly/sfntly.gyp:sfntly',
+              ],
+              # This exports a hard dependency because it needs to run its
+              # symlink action in order to expose the skia header files.
+              'hard_dependency': 1,
+              'include_dirs': [
+                '../third_party/expat/files/lib',
+              ],
+              'sources!': [
+                'ext/SkThread_chrome.cc',
+                'ext/vector_platform_device_skia.cc',
+                '../third_party/skia/src/core/SkTypefaceCache.cpp',
+                '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
+              ],
+              'export_dependent_settings': [
+                '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz',
+              ],
+            }],
+            [ '_toolset=="host" and host_os=="linux"', {
+              'sources': [
+                'ext/platform_device_linux.cc',
+                'ext/platform_canvas_linux.cc',
+              ],
+            }],
+          ],
         }],
         [ 'OS == "mac"', {
           'defines': [
@@ -892,6 +940,18 @@
             'defines': [
               'SK_BUILD_FOR_ANDROID_NDK',
             ],
+            'conditions': [
+              [ '_toolset == "target"', {
+                'defines': [
+                  'HAVE_ENDIAN_H',
+                  'SK_RELEASE',  # Assume platform has a release build.
+                ],
+                'dependencies!': [
+                  'skia_opts',
+                  '../third_party/zlib/zlib.gyp:zlib',
+                ],
+              }],
+            ],
           }],
           ['OS=="mac"', {
             'include_dirs': [
@@ -934,7 +994,7 @@
         '../third_party/skia/src/core',
       ],
       'conditions': [
-        [ 'os_posix == 1 and OS != "mac" and target_arch != "arm"', {
+        [ 'os_posix == 1 and OS != "mac" and OS != "android" and target_arch != "arm"', {
           'cflags': [
             '-msse2',
           ],
@@ -992,6 +1052,14 @@
             '../third_party/skia/src/opts/memset16_neon.S',
             '../third_party/skia/src/opts/memset32_neon.S',
         ],
+        }],
+        [ 'target_arch == "arm" and armv7 != 1', {
+          'sources': [
+            '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
+          ],
+          'sources!': [
+            '../third_party/skia/src/opts/SkBlitRow_opts_arm.cpp',
+          ],
         }],
       ],
     },
