@@ -31,7 +31,7 @@ include_rules = [
   "+chrome/third_party/hunspell",
   "+chrome/third_party/mozilla_security_manager",
   "+libxml",  # For search engine definition parsing.
-  "+third_party/apple",  # Apple code ImageAndTextCell.
+  "+third_party/apple_sample_code",  # Apple code ImageAndTextCell.
   "+third_party/cld",
   "+third_party/expat",
   "+third_party/iaccessible2",
