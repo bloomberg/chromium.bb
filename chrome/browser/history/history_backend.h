@@ -27,7 +27,6 @@
 
 class BookmarkService;
 struct DownloadPersistentStoreInfo;
-class Profile;
 class TestingProfile;
 struct ThumbnailScore;
 
@@ -105,8 +104,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // may be NULL.
   //
   // This constructor is fast and does no I/O, so can be called at any time.
-  HistoryBackend(Profile* profile,
-                 const FilePath& history_dir,
+  HistoryBackend(const FilePath& history_dir,
                  int id,
                  Delegate* delegate,
                  BookmarkService* bookmark_service);
@@ -258,13 +256,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void RemoveDownloadsBetween(const base::Time remove_begin,
                               const base::Time remove_end);
   void RemoveDownloads(const base::Time remove_end);
-
-  // InMemoryURLIndex ----------------------------------------------------------
-
-  // Returns the quick history index.
-  history::InMemoryURLIndex* InMemoryIndex() const {
-    return in_memory_url_index_.get();
-  }
 
   // Segment usage -------------------------------------------------------------
 
@@ -582,9 +573,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Full text database manager, possibly NULL if the database could not be
   // created.
   scoped_ptr<TextDatabaseManager> text_database_;
-
-  // The index used for quick history lookups.
-  scoped_ptr<history::InMemoryURLIndex> in_memory_url_index_;
 
   // Manages expiration between the various databases.
   ExpireHistoryBackend expirer_;

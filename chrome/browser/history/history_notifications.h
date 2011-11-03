@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ struct HistoryDetails {
   virtual ~HistoryDetails() {}
 };
 
-// Details for NOTIFICATION_HISTORY_URL_VISITED.
+// Details for HISTORY_URL_VISITED.
 struct URLVisitedDetails : public HistoryDetails {
   URLVisitedDetails();
   virtual ~URLVisitedDetails();
@@ -40,7 +40,7 @@ struct URLVisitedDetails : public HistoryDetails {
   history::RedirectList redirects;
 };
 
-// Details for NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED.
+// Details for NOTIFY_HISTORY_TYPED_URLS_MODIFIED.
 struct URLsModifiedDetails : public HistoryDetails {
   URLsModifiedDetails();
   virtual ~URLsModifiedDetails();
@@ -49,7 +49,7 @@ struct URLsModifiedDetails : public HistoryDetails {
   std::vector<URLRow> changed_urls;
 };
 
-// Details for NOTIFICATION_HISTORY_URLS_DELETED.
+// Details for NOTIFY_HISTORY_URLS_DELETED.
 struct URLsDeletedDetails : public HistoryDetails {
   URLsDeletedDetails();
   virtual ~URLsDeletedDetails();
@@ -57,14 +57,9 @@ struct URLsDeletedDetails : public HistoryDetails {
   // Set when all history was deleted. False means just a subset was deleted.
   bool all_history;
 
-  // The URLRows which have been deleted.
-  std::vector<URLRow> rows;
-
   // The list of unique URLs affected. This is valid only when a subset of
   // history is deleted. When all of it is deleted, this will be empty, since
-  // we do not bother to list all URLs. (This information can be gleaned from
-  // |rows| but, since there are several clients that need the set, we
-  // pre-build it so that the clients don't have to.)
+  // we do not bother to list all URLs.
   std::set<GURL> urls;
 };
 
