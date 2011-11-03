@@ -44,6 +44,8 @@
         'compositor_cc.h',
         'compositor_observer.h',
         'compositor_stub.cc',
+        'compositor_switches.cc',
+        'compositor_switches.h',
         'compositor_win.cc',
         'layer.cc',
         'layer.h',

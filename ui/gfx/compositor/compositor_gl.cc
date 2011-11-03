@@ -5,6 +5,7 @@
 #include "ui/gfx/compositor/compositor_gl.h"
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
@@ -17,6 +18,7 @@
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkScalar.h"
+#include "ui/gfx/compositor/compositor_switches.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/gl/gl_bindings.h"
@@ -116,23 +118,44 @@ GLuint CompileShader(GLenum type, const GLchar* source) {
 }
 
 bool TextureProgramNoSwizzleGL::Initialize() {
-  const GLchar* frag_shader_source =
-      "#ifdef GL_ES\n"
-      "precision mediump float;\n"
-      "#endif\n"
-      "uniform float u_alpha;"
-      "uniform sampler2D u_tex;"
-      "varying vec2 v_texCoord;"
-      "void main()"
-      "{"
-      "  gl_FragColor = texture2D(u_tex, v_texCoord);"
-      "  if (u_alpha > 0.0)"
-      "    gl_FragColor.a = u_alpha;"
-      "  else"
-      "    gl_FragColor.a = gl_FragColor.a * -u_alpha;"
-      "}";
+  const bool debug_overdraw = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCompositorOverdrawDebugging);
 
-  frag_shader_ = CompileShader(GL_FRAGMENT_SHADER, frag_shader_source);
+  if (debug_overdraw) {
+    const GLchar* frag_shader_source =
+        "#ifdef GL_ES\n"
+        "precision mediump float;\n"
+        "#endif\n"
+        "uniform sampler2D u_tex;"
+        "varying vec2 v_texCoord;"
+        "void main()"
+        "{"
+        "  gl_FragColor = texture2D(u_tex, v_texCoord);"
+        "  gl_FragColor.a = 1.0;"
+        "  gl_FragColor = gl_FragColor * 0.25;"
+        "  gl_FragColor = gl_FragColor + vec4(0.75, 0.75, 0.75, 0.75);"
+        "  gl_FragColor = gl_FragColor * 0.3333333;"
+        "}";
+    frag_shader_ = CompileShader(GL_FRAGMENT_SHADER, frag_shader_source);
+  } else {
+    const GLchar* frag_shader_source =
+        "#ifdef GL_ES\n"
+        "precision mediump float;\n"
+        "#endif\n"
+        "uniform float u_alpha;"
+        "uniform sampler2D u_tex;"
+        "varying vec2 v_texCoord;"
+        "void main()"
+        "{"
+        "  gl_FragColor = texture2D(u_tex, v_texCoord);"
+        "  if (u_alpha > 0.0)"
+        "    gl_FragColor.a = u_alpha;"
+        "  else"
+        "    gl_FragColor.a = gl_FragColor.a * -u_alpha;"
+        "}";
+    frag_shader_ = CompileShader(GL_FRAGMENT_SHADER, frag_shader_source);
+  }
+
   if (!frag_shader_)
     return false;
 
@@ -140,23 +163,44 @@ bool TextureProgramNoSwizzleGL::Initialize() {
 }
 
 bool TextureProgramSwizzleGL::Initialize() {
-  const GLchar* frag_shader_source =
-      "#ifdef GL_ES\n"
-      "precision mediump float;\n"
-      "#endif\n"
-      "uniform float u_alpha;"
-      "uniform sampler2D u_tex;"
-      "varying vec2 v_texCoord;"
-      "void main()"
-      "{"
-      "  gl_FragColor = texture2D(u_tex, v_texCoord).zyxw;"
-      "  if (u_alpha > 0.0)"
-      "    gl_FragColor.a = u_alpha;"
-      "  else"
-      "    gl_FragColor.a = gl_FragColor.a * -u_alpha;"
-      "}";
+  const bool debug_overdraw = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCompositorOverdrawDebugging);
 
-  frag_shader_ = CompileShader(GL_FRAGMENT_SHADER, frag_shader_source);
+  if (debug_overdraw) {
+    const GLchar* frag_shader_source =
+        "#ifdef GL_ES\n"
+        "precision mediump float;\n"
+        "#endif\n"
+        "uniform sampler2D u_tex;"
+        "varying vec2 v_texCoord;"
+        "void main()"
+        "{"
+        "  gl_FragColor = texture2D(u_tex, v_texCoord).zyxw;"
+        "  gl_FragColor.a = 1.0;"
+        "  gl_FragColor = gl_FragColor * 0.25;"
+        "  gl_FragColor = gl_FragColor + vec4(0.75, 0.75, 0.75, 0.75);"
+        "  gl_FragColor = gl_FragColor * 0.3333333;"
+        "}";
+    frag_shader_ = CompileShader(GL_FRAGMENT_SHADER, frag_shader_source);
+  } else {
+    const GLchar* frag_shader_source =
+        "#ifdef GL_ES\n"
+        "precision mediump float;\n"
+        "#endif\n"
+        "uniform float u_alpha;"
+        "uniform sampler2D u_tex;"
+        "varying vec2 v_texCoord;"
+        "void main()"
+        "{"
+        "  gl_FragColor = texture2D(u_tex, v_texCoord).zyxw;"
+        "  if (u_alpha > 0.0)"
+        "    gl_FragColor.a = u_alpha;"
+        "  else"
+        "    gl_FragColor.a = gl_FragColor.a * -u_alpha;"
+        "}";
+    frag_shader_ = CompileShader(GL_FRAGMENT_SHADER, frag_shader_source);
+  }
+
   if (!frag_shader_)
     return false;
 
@@ -499,7 +543,14 @@ CompositorGL::CompositorGL(CompositorDelegate* delegate,
   gl_context_->MakeCurrent(gl_surface_.get());
   gl_context_->SetSwapInterval(1);
   glColorMask(true, true, true, true);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  const bool debug_overdraw = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCompositorOverdrawDebugging);
+
+  if (debug_overdraw)
+    glBlendFunc(GL_ONE, GL_ONE);
+  else
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 CompositorGL::~CompositorGL() {
