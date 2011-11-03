@@ -395,6 +395,10 @@ void RenderWidgetHost::LostCapture() {
   Send(new ViewMsg_MouseCaptureLost(routing_id_));
 }
 
+void RenderWidgetHost::SetActive(bool active) {
+  Send(new ViewMsg_SetActive(routing_id_, active));
+}
+
 void RenderWidgetHost::LostMouseLock() {
   Send(new ViewMsg_MouseLockLost(routing_id_));
 }

@@ -1065,10 +1065,8 @@ gfx::Rect RenderWidgetHostViewMac::GetViewCocoaBounds() const {
 }
 
 void RenderWidgetHostViewMac::SetActive(bool active) {
-  if (render_widget_host_) {
-    render_widget_host_->Send(new ViewMsg_SetActive(
-        render_widget_host_->routing_id(), active));
-  }
+  if (render_widget_host_)
+    render_widget_host_->SetActive(active);
   if (HasFocus())
     SetTextInputActive(active);
   if (!active) {

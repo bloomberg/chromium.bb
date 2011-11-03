@@ -226,6 +226,7 @@ class RenderWidgetHostViewGtkWidget {
                             RenderWidgetHostViewGtk* host_view) {
     host_view->ShowCurrentCursor();
     host_view->GetRenderWidgetHost()->GotFocus();
+    host_view->GetRenderWidgetHost()->SetActive(true);
 
     // The only way to enable a GtkIMContext object is to call its focus in
     // handler.
@@ -242,8 +243,10 @@ class RenderWidgetHostViewGtkWidget {
     gdk_window_set_cursor(widget->window, NULL);
     // If we are showing a context menu, maintain the illusion that webkit has
     // focus.
-    if (!host_view->is_showing_context_menu_)
+    if (!host_view->is_showing_context_menu_) {
+      host_view->GetRenderWidgetHost()->SetActive(false);
       host_view->GetRenderWidgetHost()->Blur();
+    }
 
     // Prevents us from stealing input context focus in OnGrabNotify() handler.
     host_view->was_imcontext_focused_before_grab_ = false;

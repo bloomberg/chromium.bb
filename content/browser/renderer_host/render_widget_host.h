@@ -196,6 +196,12 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   void Blur();
   virtual void LostCapture();
 
+  // Sets whether the renderer should show controls in an active state.  On all
+  // platforms except mac, that's the same as focused. On mac, the frontmost
+  // window will show active controls even if the focus is not in the web
+  // contents, but e.g. in the omnibox.
+  void SetActive(bool active);
+
   // Called to notify the RenderWidget that it has lost the mouse lock.
   virtual void LostMouseLock();
 

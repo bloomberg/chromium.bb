@@ -1095,13 +1095,17 @@ LRESULT RenderWidgetHostViewWin::OnSetCursor(HWND window, UINT hittest_code,
 void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
   if (browser_accessibility_manager_.get())
     browser_accessibility_manager_->GotFocus();
-  if (render_widget_host_)
+  if (render_widget_host_) {
     render_widget_host_->GotFocus();
+    render_widget_host_->SetActive(true);
+  }
 }
 
 void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
-  if (render_widget_host_)
+  if (render_widget_host_) {
+    render_widget_host_->SetActive(false);
     render_widget_host_->Blur();
+  }
 }
 
 void RenderWidgetHostViewWin::OnCaptureChanged(HWND window) {

@@ -914,8 +914,10 @@ void RenderWidgetHostViewViews::Focus() {
 void RenderWidgetHostViewViews::Blur() {
   // TODO(estade): We should be clearing native focus as well, but I know of no
   // way to do that without focusing another widget.
-  if (host_)
+  if (host_) {
+    host_->SetActive(false);
     host_->Blur();
+  }
 }
 
 void RenderWidgetHostViewViews::OnFocus() {
@@ -926,6 +928,7 @@ void RenderWidgetHostViewViews::OnFocus() {
   View::OnFocus();
   ShowCurrentCursor();
   host_->GotFocus();
+  host_->SetActive(true);
   host_->SetInputMethodActive(GetInputMethod()->IsActive());
 
   UpdateTouchSelectionController();
