@@ -122,6 +122,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_userAction.html")) << message_;
 
+  TabContents* tab = browser()->GetSelectedTabContents();
+  ui_test_utils::WaitForLoadStop(tab);
+
   ResultCatcher catcher;
 
   ExtensionService* service = browser()->profile()->GetExtensionService();
@@ -132,7 +135,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   // This corresponds to "Open link in new tab".
-  TabContents* tab = browser()->GetSelectedTabContents();
   ContextMenuParams params;
   params.is_editable = false;
   params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
@@ -156,6 +158,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationRequestOpenTab) {
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_requestOpenTab.html"))
       << message_;
 
+  TabContents* tab = browser()->GetSelectedTabContents();
+  ui_test_utils::WaitForLoadStop(tab);
+
   ResultCatcher catcher;
 
   ExtensionService* service = browser()->profile()->GetExtensionService();
@@ -172,7 +177,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationRequestOpenTab) {
   mouse_event.x = 7;
   mouse_event.y = 7;
   mouse_event.clickCount = 1;
-  TabContents* tab = browser()->GetSelectedTabContents();
   tab->render_view_host()->ForwardMouseEvent(mouse_event);
   mouse_event.type = WebKit::WebInputEvent::MouseUp;
   tab->render_view_host()->ForwardMouseEvent(mouse_event);
