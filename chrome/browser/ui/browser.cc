@@ -4167,15 +4167,19 @@ void Browser::ConfirmSetDefaultSearchProvider(TabContents* tab_contents,
 
 void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,
                                        Profile* profile) {
-  // If we are using web UI dialogs, then redirect this dialog to the web UI
-  // version.  Otherwise, call the existing framework, which is called by way of
-  // window()->ConfirmAddSearchProvider.
-  if (ChromeWebUI::IsMoreWebUI()) {
-    // Call a clean API to confirm adding a search provider.
+#if defined(OS_CHROMEOS) || defined(USE_AURA)
+  // Use a WebUI implementation of the dialog.
+  browser::ConfirmAddSearchProvider(template_url, profile);
+#else
+  // TODO(rbyers): Remove the IsMoreWebUI check and (ideally) all #ifdefs once
+  // we can select exactly one version of this dialog to use for each platform
+  // at build time.
+  if (ChromeWebUI::IsMoreWebUI())
     browser::ConfirmAddSearchProvider(template_url, profile);
-  } else {
+  else
+    // Platform-specific implementation of the dialog.
     window()->ConfirmAddSearchProvider(template_url, profile);
-  }
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

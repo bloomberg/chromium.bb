@@ -28,18 +28,21 @@ const int kDefaultHeight = 600;
 
 }  // namespace
 
-// Shows a certificate using the native or WebUI certificate viewer.
+// Shows a certificate using the native or WebUI certificate viewer on
+// platforms where we supply our own (Mac and Windows have one built into the
+// OS we use instead).
 void ShowCertificateViewer(gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
-#if defined(USE_AURA)
-  // TODO(saintlou): Aura uses always "more WebUI".
+#if defined(USE_AURA) || defined(OS_CHROMEOS)
   CertificateViewerDialog::ShowDialog(parent, cert);
 #else
-  if (ChromeWebUI::IsMoreWebUI()) {
+  // TODO(rbyers): Decide whether to replace the GTK certificate viewier on
+  // Linux with the WebUI version, and (either way) remove this IsMoreWebUI
+  // check.
+  if (ChromeWebUI::IsMoreWebUI())
     CertificateViewerDialog::ShowDialog(parent, cert);
-  } else {
+  else
     ShowNativeCertificateViewer(parent, cert);
-  }
 #endif
 }
 
