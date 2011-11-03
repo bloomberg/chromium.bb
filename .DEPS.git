@@ -77,9 +77,9 @@ deps = {
     'src/third_party/sfntly/src/sfntly':
         Var('git_url') + '/external/sfntly/cpp/src/sfntly.git@f5e2e4d0b7db0926f6519b0ed1e1d06c4f0b6f05',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@f55b7b0fd06113bb80b75a409cf7331532af4341',
+        Var('git_url') + '/external/skia/include.git@92ee4759961df56774f3bd3f90062a362ac1a0d7',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@bf9d55cc106df051c048aa8e75f30ef44f433915',
+        Var('git_url') + '/external/skia/src.git@aa0b1e6c76ccb02242f798f4a0b63e36e60c5c84',
     'src/third_party/skia/third_party/glu':
         Var('git_url') + '/external/skia/third_party/glu.git@c988402115946ed3cb7fb347f6eef4a8cec543e2',
     'src/third_party/smhasher/src':
