@@ -243,8 +243,6 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
                        TestAboutChromeViewAccObj) {
-  LOG(ERROR) << "Starting TestAboutChromeViewAccObj test\n";
-
   //  Firstly, test that the WindowDelegate got updated.
   views::Widget* about_chrome_window =
       GetBrowserView()->DoShowAboutChromeDialog();
@@ -253,8 +251,6 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_ABOUT_CHROME_TITLE)).c_str());
   EXPECT_EQ(about_chrome_window->widget_delegate()->GetAccessibleWindowRole(),
             ui::AccessibilityTypes::ROLE_DIALOG);
-
-  LOG(ERROR) << "Test object directly\n";
 
   // Also test the accessibility object directly.
   IAccessible* acc_obj = NULL;
@@ -266,14 +262,10 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   ASSERT_EQ(S_OK, hr);
   ASSERT_TRUE(NULL != acc_obj);
 
-  LOG(ERROR) << "TestAccessibilityInfo\n";
-
   TestAccessibilityInfo(
       acc_obj,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_ABOUT_CHROME_TITLE)),
       ROLE_SYSTEM_DIALOG);
 
   acc_obj->Release();
-
-  LOG(ERROR) << "Done\n";
 }

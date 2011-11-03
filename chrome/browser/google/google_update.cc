@@ -44,10 +44,6 @@ GoogleUpdateErrorCode CanUpdateCurrentChrome(
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   FilePath user_exe_path = installer::GetChromeInstallPath(false, dist);
   FilePath machine_exe_path = installer::GetChromeInstallPath(true, dist);
-  LOG(ERROR) << "About to compare: \n" << chrome_exe_path.value().c_str()
-             << " to \n"
-             << user_exe_path.value().c_str() << " and \n"
-             << machine_exe_path.value().c_str() << "\n";
   if (!FilePath::CompareEqualIgnoreCase(chrome_exe_path.value(),
                                         user_exe_path.value()) &&
       !FilePath::CompareEqualIgnoreCase(chrome_exe_path.value(),
@@ -59,7 +55,6 @@ GoogleUpdateErrorCode CanUpdateCurrentChrome(
                << L" or " << machine_exe_path.value().c_str() << L".";
     return CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY;
   }
-  LOG(ERROR) << "We continue\n";
 
   string16 app_guid = installer::GetAppGuidForUpdates(
       !InstallUtil::IsPerUserInstall(chrome_exe_path.value().c_str()));
@@ -175,7 +170,6 @@ class GoogleUpdateJobObserver
       case COMPLETION_CODE_ERROR:
         error_message_ = text;
       default: {
-        LOG(ERROR) << "Error message: " << error_message_.c_str();
         NOTREACHED();
         result_ = UPGRADE_ERROR;
         break;
