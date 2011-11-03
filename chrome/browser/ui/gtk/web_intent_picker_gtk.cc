@@ -173,13 +173,12 @@ void WebIntentPickerGtk::Close() {
 
 void WebIntentPickerGtk::BubbleClosing(BubbleGtk* bubble,
                                        bool closed_by_escape) {
-  delegate_->OnCancelled();
+  delegate_->OnClosing();
 }
 
 void WebIntentPickerGtk::OnCloseButtonClick(GtkWidget* button) {
   delegate_->OnCancelled();
-
-  // TODO(gbillock): Need to do something about the renderer?
+  delegate_->OnClosing();
 }
 
 void WebIntentPickerGtk::OnServiceButtonClick(GtkWidget* button) {

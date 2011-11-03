@@ -105,6 +105,7 @@ class TestWebIntentPickerController : public WebIntentPickerController {
 
   MOCK_METHOD1(OnServiceChosen, void(size_t index));
   MOCK_METHOD0(OnCancelled, void(void));
+  MOCK_METHOD0(OnClosing, void(void));
 
   // helper functions to forward to the base class.
   void BaseOnServiceChosen(size_t index) {
@@ -113,6 +114,10 @@ class TestWebIntentPickerController : public WebIntentPickerController {
 
   void BaseOnCancelled() {
     WebIntentPickerController::OnCancelled();
+  }
+
+  void BaseOnClosing() {
+    WebIntentPickerController::OnClosing();
   }
 };
 
@@ -253,12 +258,13 @@ TEST_F(WebIntentPickerControllerTest, Cancel) {
 
   EXPECT_CALL(*controller_, OnServiceChosen(0))
       .Times(0);
-  EXPECT_CALL(*controller_, OnCancelled())
+  EXPECT_CALL(*controller_, OnCancelled()).Times(0);
+  EXPECT_CALL(*controller_, OnClosing())
       .WillOnce(Invoke(controller_.get(),
-                       &TestWebIntentPickerController::BaseOnCancelled));
+                       &TestWebIntentPickerController::BaseOnClosing));
   EXPECT_CALL(*picker_factory_, ClosePicker(_));
 
   controller_->ShowDialog(NULL, kAction1, kType);
   WaitForDialogToShow();
-  delegate_->OnCancelled();
+  delegate_->OnClosing();
 }

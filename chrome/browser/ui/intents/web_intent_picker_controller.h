@@ -63,6 +63,7 @@ class WebIntentPickerController : public content::NotificationObserver,
   // WebIntentPickerDelegate implementation.
   virtual void OnServiceChosen(size_t index) OVERRIDE;
   virtual void OnCancelled() OVERRIDE;
+  virtual void OnClosing() OVERRIDE;
 
  private:
   friend class WebIntentPickerControllerTest;

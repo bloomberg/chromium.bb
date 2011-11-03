@@ -235,6 +235,9 @@ void WebIntentPickerController::OnCancelled() {
   InvokingTabObserver forwarder(wrapper_, NULL, routing_id_);
   forwarder.Send(new IntentsMsg_WebIntentReply(
       0, webkit_glue::WEB_INTENT_PICKER_CANCELLED, string16(), intent_id_));
+}
+
+void WebIntentPickerController::OnClosing() {
   ClosePicker();
 }
 

@@ -18,6 +18,7 @@ class FakeIntentPickerDelegate : public WebIntentPickerDelegate {
 
   // Callback called when the user cancels out of the dialog.
   virtual void OnCancelled() {};
+  virtual void OnClosing() {};
 };
 
 }  // namespace

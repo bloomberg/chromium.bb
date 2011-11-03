@@ -16,8 +16,13 @@ class WebIntentPickerDelegate {
   // Callback called when the user has chosen a service.
   virtual void OnServiceChosen(size_t index) = 0;
 
-  // Callback called when the user cancels out of the dialog.
+  // Callback called when the user cancels out of the dialog, whether by closing
+  // it manually or otherwise purposefully.
   virtual void OnCancelled() = 0;
+
+  // Callback called when the dialog wants to stop showing (can happen by
+  // cancellation or by the user choosing a service).
+  virtual void OnClosing() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_INTENTS_WEB_INTENT_PICKER_DELEGATE_H_
