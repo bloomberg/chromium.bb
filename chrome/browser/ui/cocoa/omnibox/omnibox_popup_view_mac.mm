@@ -386,7 +386,7 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   bool animate = (NSHeight(popupFrame) < NSHeight(currentPopupFrame) &&
                   NSWidth(popupFrame) == NSWidth(currentPopupFrame));
 
-  NSDictionary* savedAnimations = nil;
+  scoped_nsobject<NSDictionary> savedAnimations;
   if (!animate) {
     // In an ideal world, running a zero-length animation would cancel any
     // running animations and set the new frame value immediately.  In practice,
@@ -395,7 +395,7 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
     // running the animation with a non-zero(!!) duration.  This somehow
     // convinces AppKit to do the right thing.  Save off the current animations
     // dictionary so it can be restored later.
-    savedAnimations = [[popup_ animations] copy];
+    savedAnimations.reset([[popup_ animations] copy]);
     [popup_ setAnimations:
               [NSDictionary dictionaryWithObjectsAndKeys:[NSNull null],
                                                          @"frame", nil]];
