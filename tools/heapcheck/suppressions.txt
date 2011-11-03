@@ -1649,3 +1649,21 @@
    fun:base::Callback::Run
    fun:MessageLoop::RunTask
 }
+{
+   bug_102831_a
+   Heapcheck:Leak
+   ...
+   fun:PluginLoaderPosix::LoadPluginsInternal
+}
+{
+   bug_102831_b
+   Heapcheck:Leak
+   ...
+   fun:PluginLoaderPosix::LoadPlugins
+}
+{
+   bug_102831_c
+   Heapcheck:Leak
+   ...
+   fun:PluginLoaderPosix::GetPluginsToLoad
+}
