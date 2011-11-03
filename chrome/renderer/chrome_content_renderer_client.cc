@@ -80,6 +80,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
+#include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 
 using WebKit::WebCache;
 using WebKit::WebDataSource;
@@ -133,11 +134,9 @@ namespace chrome {
 
 ChromeContentRendererClient::ChromeContentRendererClient()
     : spellcheck_provider_(NULL) {
-  chrome::InitializePPAPI();
 }
 
 ChromeContentRendererClient::~ChromeContentRendererClient() {
-  chrome::UninitializePPAPI();
 }
 
 void ChromeContentRendererClient::RenderThreadStarted() {
@@ -837,6 +836,11 @@ bool ChromeContentRendererClient::IsAdblockPlusWithWebRequestInstalled() {
 
 bool ChromeContentRendererClient::IsOtherExtensionWithWebRequestInstalled() {
   return extension_dispatcher_->IsOtherExtensionWithWebRequestInstalled();
+}
+
+void ChromeContentRendererClient::RegisterPPAPIInterfaceFactories(
+    webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) {
+  factory_manager->RegisterFactory(ChromePPAPIInterfaceFactory);
 }
 
 }  // namespace chrome

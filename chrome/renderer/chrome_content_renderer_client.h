@@ -105,6 +105,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   // and start over.
   void OnPurgeMemory();
 
+  virtual void RegisterPPAPIInterfaceFactories(
+      webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) OVERRIDE;
+
  private:
   WebKit::WebPlugin* CreatePlugin(
       content::RenderView* render_view,

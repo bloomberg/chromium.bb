@@ -121,4 +121,8 @@ bool ShellContentRendererClient::IsProtocolSupportedForMedia(const GURL& url) {
   return false;
 }
 
+void ShellContentRendererClient::RegisterPPAPIInterfaceFactories(
+    webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) {
+}
+
 }  // namespace content

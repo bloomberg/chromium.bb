@@ -88,16 +88,4 @@ const void* ChromePPAPIInterfaceFactory(const std::string& interface_name) {
   return NULL;
 }
 
-void InitializePPAPI() {
-  webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager =
-      webkit::ppapi::PpapiInterfaceFactoryManager::GetInstance();
-  factory_manager->RegisterFactory(ChromePPAPIInterfaceFactory);
-}
-
-void UninitializePPAPI() {
-  webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager =
-      webkit::ppapi::PpapiInterfaceFactoryManager::GetInstance();
-  factory_manager->UnregisterFactory(ChromePPAPIInterfaceFactory);
-}
-
 }  // namespace chrome

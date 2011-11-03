@@ -25,6 +25,12 @@ struct WebPluginParams;
 struct WebURLError;
 }
 
+namespace webkit {
+namespace ppapi {
+class PpapiInterfaceFactoryManager;
+}
+}
+
 namespace v8 {
 class Context;
 template<class T> class Handle;
@@ -142,6 +148,9 @@ class ContentRendererClient {
   // True if the protocol implemented to serve |url| supports features required
   // by the media engine.
   virtual bool IsProtocolSupportedForMedia(const GURL& url) = 0;
+
+  virtual void RegisterPPAPIInterfaceFactories(
+    webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) = 0;
 };
 
 }  // namespace content

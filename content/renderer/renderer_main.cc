@@ -21,10 +21,12 @@
 #include "content/common/pepper_plugin_registry.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "ui/base/ui_base_switches.h"
+#include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 
 #if defined(OS_MACOSX)
 #include <Carbon/Carbon.h>
@@ -150,6 +152,11 @@ int RendererMain(const content::MainFunctionParams& parameters) {
   HandleRendererErrorTestParameters(parsed_command_line);
 
   RendererMainPlatformDelegate platform(parameters);
+
+  webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager =
+      webkit::ppapi::PpapiInterfaceFactoryManager::GetInstance();
+  content::GetContentClient()->renderer()->RegisterPPAPIInterfaceFactories(
+      factory_manager);
 
   base::StatsScope<base::StatsCounterTimer>
       startup_timer(content::Counters::renderer_main());

@@ -6,12 +6,12 @@
 #define CHROME_RENDERER_CHROME_PPAPI_INTERFACES_H_
 #pragma once
 
+#include <string>
+
 namespace chrome {
 
-// The following 2 functions perform Chrome specific initialzation/
-// uninitialization for PPAPI.
-void InitializePPAPI();
-void UninitializePPAPI();
+const void* ChromePPAPIInterfaceFactory(const std::string& interface_name);
+
 }  // chrome
 
 #endif  // CHROME_RENDERER_CHROME_PPAPI_INTERFACES_H_
