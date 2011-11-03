@@ -612,14 +612,18 @@ NSDictionary* attributeToMethodNameMap = nil;
     return @"";
   } else if ([role isEqualToString:NSAccessibilityCheckBoxRole] ||
              [role isEqualToString:NSAccessibilityRadioButtonRole]) {
-    int checkOrRadioValue = GetState(
+    int value = 0;
+    value = GetState(
         browserAccessibility_, WebAccessibility::STATE_CHECKED) ? 1 : 0;
+    value = GetState(
+        browserAccessibility_, WebAccessibility::STATE_SELECTED) ? 1 : value;
+
     bool mixed = false;
     browserAccessibility_->GetBoolAttribute(
         WebAccessibility::ATTR_BUTTON_MIXED, &mixed);
     if (mixed)
-      checkOrRadioValue = 2;
-    return [NSNumber numberWithInt:checkOrRadioValue];
+      value = 2;
+    return [NSNumber numberWithInt:value];
   } else if ([role isEqualToString:NSAccessibilityProgressIndicatorRole] ||
              [role isEqualToString:NSAccessibilitySliderRole] ||
              [role isEqualToString:NSAccessibilityScrollBarRole]) {
