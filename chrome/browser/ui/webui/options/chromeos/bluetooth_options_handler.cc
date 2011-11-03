@@ -77,6 +77,12 @@ void BluetoothOptionsHandler::Initialize() {
   web_ui_->CallJavascriptFunction(
       "options.SystemOptions.showBluetoothSettings");
 
+  // TODO(kevers): Determine whether bluetooth adapter is powered.
+  bool bluetooth_on = true;
+  base::FundamentalValue checked(bluetooth_on);
+  web_ui_->CallJavascriptFunction(
+      "options.SystemOptions.setBluetoothCheckboxState", checked);
+
   chromeos::BluetoothManager* bluetooth_manager =
       chromeos::BluetoothManager::GetInstance();
   DCHECK(bluetooth_manager);
@@ -102,7 +108,12 @@ void BluetoothOptionsHandler::RegisterMessages() {
 
 void BluetoothOptionsHandler::EnableChangeCallback(
     const ListValue* args) {
+  bool bluetooth_enabled;
+  args->GetBoolean(0, &bluetooth_enabled);
   // TODO(kevers): Call Bluetooth API to enable or disable.
+  base::FundamentalValue checked(bluetooth_enabled);
+  web_ui_->CallJavascriptFunction(
+      "options.SystemOptions.setBluetoothCheckboxState", checked);
 }
 
 void BluetoothOptionsHandler::FindDevicesCallback(

@@ -48,11 +48,12 @@ cr.define('options', function() {
 
       // TODO(kevers): Populate list of connected bluetooth devices.
       //               Set state of 'Enable bluetooth' checkbox.
-
-      $('bluetooth-find-devices').disabled =
-          $('enable-bluetooth-label') ? false : true;
       $('bluetooth-find-devices').onclick = function(event) {
         findBluetoothDevices_();
+      };
+      $('enable-bluetooth-check').onchange = function(event) {
+        chrome.send('bluetoothEnableChange',
+                    [Boolean($('enable-bluetooth-check').checked)]);
       };
 
       $('language-button').onclick = function(event) {
@@ -138,6 +139,25 @@ cr.define('options', function() {
   };
 
   /**
+   * Sets the state of the checkbox indicating if bluetooth is turned on. The
+   * state of the "Find devices" button and the list of discovered devices may
+   * also be affected by a change to the state.
+   * @param {boolean} checked Flag Indicating if Bluetooth is turned on.
+   */
+  SystemOptions.setBluetoothCheckboxState = function(checked) {
+    $('enable-bluetooth-check').checked = checked;
+    $('bluetooth-find-devices').disabled = !checked;
+    // Flush list of previously discovered devices if bluetooth is turned off.
+    if (!checked) {
+      var devices = $('bluetooth-device-list').childNodes;
+      for (var i = devices.length - 1; i >= 0; i--) {
+        var device = devices.item(i);
+        $('bluetooth-device-list').removeChild(device);
+      }
+    }
+  }
+
+  /**
    * Adds an element to the list of available bluetooth devices.
    * @param{{'deviceName': string,
    *         'deviceId': string,
@@ -154,12 +174,8 @@ cr.define('options', function() {
    * search is in progress.
    */
   SystemOptions.notifyBluetoothSearchComplete = function() {
-    // TODO (kevers) - Reset state immediately once results are received
-    //                 asynchronously.
-    setTimeout(function() {
-      setVisibility_('bluetooth-scanning-label', false);
-      setVisibility_('bluetooth-scanning-icon', false);
-    }, 2000);
+    setVisibility_('bluetooth-scanning-label', false);
+    setVisibility_('bluetooth-scanning-icon', false);
   };
 
   /**
