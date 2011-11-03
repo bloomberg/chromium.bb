@@ -4,7 +4,8 @@
 
 #include "chrome/browser/chromeos/accessibility_util.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
@@ -56,8 +57,8 @@ class ContentScriptLoader {
 
     ExtensionResource resource = resources_.front();
     resources_.pop();
-    scoped_refptr<FileReader> reader(new FileReader(resource, NewCallback(
-        this, &ContentScriptLoader::OnFileLoaded)));
+    scoped_refptr<FileReader> reader(new FileReader(resource, base::Bind(
+        &ContentScriptLoader::OnFileLoaded, base::Unretained(this))));
     reader->Start();
   }
 

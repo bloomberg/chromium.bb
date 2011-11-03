@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/extensions/extension_resource.h"
 
@@ -21,9 +21,9 @@ class MessageLoop;
 class FileReader : public base::RefCountedThreadSafe<FileReader> {
  public:
   // Reports success or failure and the data of the file upon success.
-  typedef Callback2<bool, const std::string&>::Type Callback;
+  typedef base::Callback<void(bool, const std::string&)> Callback;
 
-  FileReader(const ExtensionResource& resource, Callback* callback);
+  FileReader(const ExtensionResource& resource, const Callback& callback);
 
   // Called to start reading the file on a background thread.  Upon completion,
   // the callback will be notified of the results.
@@ -35,10 +35,9 @@ class FileReader : public base::RefCountedThreadSafe<FileReader> {
   virtual ~FileReader();
 
   void ReadFileOnBackgroundThread();
-  void RunCallback(bool success, const std::string& data);
 
   ExtensionResource resource_;
-  Callback* callback_;
+  Callback callback_;
   MessageLoop* origin_loop_;
 };
 

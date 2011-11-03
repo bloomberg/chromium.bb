@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -34,8 +35,8 @@ class Receiver {
   Receiver() : succeeded_(false) {
   }
 
-  FileReader::Callback* NewCallback() {
-    return ::NewCallback(this, &Receiver::DidReadFile);
+  FileReader::Callback NewCallback() {
+    return base::Bind(&Receiver::DidReadFile, base::Unretained(this));
   }
 
   bool succeeded() const { return succeeded_; }
