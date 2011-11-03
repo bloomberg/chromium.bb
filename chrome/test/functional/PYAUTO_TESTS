@@ -590,6 +590,15 @@
     ],
   },
 
+  # Subset of performance tests for seaboard.
+  'CHROMEOS_PERF_SEABOARD': {
+    'chromeos': [
+      'perf.ScrollTest.testBlankPageScroll',
+      'perf.ScrollTest.testGooglePlusScroll',
+      'perf.ScrollTest.testTextScroll',
+    ],
+  },
+
   # HTML5 media performance tests.
   'AV_PERF': {
      'linux': [
