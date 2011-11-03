@@ -52,7 +52,8 @@ cr.define('cr.ui', function() {
 
       if (i != oldSelectedIndex) {
         this.beginChange();
-        this.selectedIndex_ = i
+        this.selectedIndex_ = i;
+        this.leadIndex_ = this.anchorIndex_ = i;
         this.endChange();
       }
     },
