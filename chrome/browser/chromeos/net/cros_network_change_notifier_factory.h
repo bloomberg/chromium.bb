@@ -11,7 +11,7 @@
 
 namespace chromeos {
 
-class NetworkChangeNotifier;
+class NetworkChangeNotifierChromeos;
 
 // CrosNetworkChangeNotifierFactory creates ChromeOS-specific specialization of
 // NetworkChangeNotifier.
@@ -22,6 +22,10 @@ class CrosNetworkChangeNotifierFactory
 
   // Overrides of net::NetworkChangeNotifierFactory.
   virtual net::NetworkChangeNotifier* CreateInstance() OVERRIDE;
+
+  // Gets the instance of the NetworkChangeNotifier for Chrome OS.
+  // This is used for setting up the notifier at startup.
+  static NetworkChangeNotifierChromeos* GetInstance();
 };
 
 }  // namespace net

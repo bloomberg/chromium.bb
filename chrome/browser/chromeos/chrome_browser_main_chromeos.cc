@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/login/session_manager_observer.h"
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
+#include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/common/chrome_switches.h"
@@ -158,4 +159,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   if (parsed_command_line().HasSwitch(switches::kEnableBluetooth)) {
     chromeos::BluetoothManager::Initialize();
   }
+
+  // Initialize the network change notifier for Chrome OS. The network
+  // change notifier starts to monitor changes from the power manager and
+  // the network manager.
+  chromeos::CrosNetworkChangeNotifierFactory::GetInstance()->Init();
 }

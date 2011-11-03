@@ -26,6 +26,10 @@ class NetworkChangeNotifierChromeos
   NetworkChangeNotifierChromeos();
   virtual ~NetworkChangeNotifierChromeos();
 
+  // Initializes the network change notifier. Starts to observe changes
+  // from the power manager and the network manager.
+  void Init();
+
  private:
   friend class OnlineStatusReportThreadTask;
 
@@ -72,6 +76,6 @@ class NetworkChangeNotifierChromeos
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierChromeos);
 };
 
-}  // namespace net
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_NET_NETWORK_CHANGE_NOTIFIER_CHROMEOS_H_
