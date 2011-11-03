@@ -1,0 +1,7 @@
+Name: WebKit private system interface
+URL: http://svn.webkit.org/repository/webkit/trunk/WebKitLibraries/libWebKitSystemInterfaceLeopard.a@99107
+SVN Revision: r99107
+Date: 2 November 2011
+
+Local changes:
+Added the contents of LICENSE to WebKitSystemInterface.h.

@@ -4362,8 +4362,8 @@
           ],
           'sources': [
             # Build Apple sample code
-            '../third_party/apple/ImageAndTextCell.h',
-            '../third_party/apple/ImageAndTextCell.m',
+            '../third_party/apple_sample_code/ImageAndTextCell.h',
+            '../third_party/apple_sample_code/ImageAndTextCell.m',
             # Build the necessary GTM sources
             '../third_party/GTM/AppKit/GTMFadeTruncatingTextFieldCell.h',
             '../third_party/GTM/AppKit/GTMFadeTruncatingTextFieldCell.m',
