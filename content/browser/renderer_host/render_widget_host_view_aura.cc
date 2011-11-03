@@ -74,6 +74,24 @@ void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event,
   }
 }
 
+bool CanRendererHandleEvent(const base::NativeEvent& native_event) {
+#if defined(OS_WIN)
+  // Renderer cannot handle WM_XBUTTON events.
+  switch (native_event.message) {
+    case WM_XBUTTONDOWN:
+    case WM_XBUTTONUP:
+    case WM_XBUTTONDBLCLK:
+    case WM_NCXBUTTONDOWN:
+    case WM_NCXBUTTONUP:
+    case WM_NCXBUTTONDBLCLK:
+      return false;
+    default:
+      break;
+  }
+#endif
+  return true;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -435,7 +453,7 @@ int RenderWidgetHostViewAura::GetNonClientComponent(
 bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSEWHEEL)
     host_->ForwardWheelEvent(content::MakeWebMouseWheelEvent(event));
-  else
+  else if (CanRendererHandleEvent(event->native_event()))
     host_->ForwardMouseEvent(content::MakeWebMouseEvent(event));
 
   // Return true so that we receive released/drag events.
