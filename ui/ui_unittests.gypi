@@ -94,7 +94,6 @@
             'base/dragdrop/os_exchange_data_win_unittest.cc',
             'base/view_prop_unittest.cc',
             # TODO(brettw) re-enable this when the dependencies on WindowImpl are fixed!
-            'gfx/canvas_direct2d_unittest.cc',
             'gfx/icon_util_unittest.cc',
             'gfx/native_theme_win_unittest.cc',
           ],
