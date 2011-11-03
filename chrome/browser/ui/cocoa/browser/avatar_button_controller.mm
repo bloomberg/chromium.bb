@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
@@ -174,6 +175,8 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
              name:NSWindowWillCloseNotification
            object:[menuController_ window]];
   [menuController_ showWindow:self];
+
+  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 
 // Private /////////////////////////////////////////////////////////////////////

@@ -1988,6 +1988,8 @@
         'browser/profiles/profile_keyed_service_factory.h',
         'browser/profiles/profile_manager.cc',
         'browser/profiles/profile_manager.h',
+        'browser/profiles/profile_metrics.cc',
+        'browser/profiles/profile_metrics.h',
         'browser/protector/default_search_provider_change.cc',
         'browser/protector/histograms.cc',
         'browser/protector/histograms.h',

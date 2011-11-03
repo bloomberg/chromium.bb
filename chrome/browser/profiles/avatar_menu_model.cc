@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -82,6 +83,7 @@ void AvatarMenuModel::SwitchToProfile(size_t index) {
   ProfileSwitchObserver* observer = new ProfileSwitchObserver();
   g_browser_process->profile_manager()->CreateProfileAsync(
       path, observer);
+  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::SWITCH_PROFILE_ICON);
 }
 
 void AvatarMenuModel::EditProfile(size_t index) {
@@ -99,6 +101,8 @@ void AvatarMenuModel::EditProfile(size_t index) {
 
 void AvatarMenuModel::AddNewProfile() {
   ProfileManager::CreateMultiProfileAsync();
+  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ADD_NEW_USER);
+  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ADD_NEW_USER_ICON);
 }
 
 size_t AvatarMenuModel::GetNumberOfItems() {

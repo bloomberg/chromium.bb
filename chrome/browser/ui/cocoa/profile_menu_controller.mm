@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_interface.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
@@ -81,6 +82,7 @@ class Observer : public BrowserList::Observer,
 
 - (IBAction)switchToProfile:(id)sender {
   model_->SwitchToProfile([sender tag]);
+  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::SWITCH_PROFILE_MENU);
 }
 
 - (IBAction)editProfile:(id)sender {
@@ -89,6 +91,8 @@ class Observer : public BrowserList::Observer,
 
 - (IBAction)newProfile:(id)sender {
   model_->AddNewProfile();
+  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ADD_NEW_USER);
+  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ADD_NEW_USER_MENU);
 }
 
 // Private /////////////////////////////////////////////////////////////////////

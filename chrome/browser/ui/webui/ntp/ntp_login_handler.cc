@@ -15,6 +15,7 @@
 #include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/ui/browser.h"
@@ -106,6 +107,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
     DCHECK(success);
     gfx::Rect rect(x, y, width, height);
     browser->window()->ShowAvatarBubble(web_ui_->tab_contents(), rect);
+    ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::NTP_AVATAR_BUBBLE);
   }
 }
 

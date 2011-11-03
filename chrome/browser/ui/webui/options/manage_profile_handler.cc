@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
@@ -129,11 +130,16 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
       !cache.IsDefaultAvatarIconUrl(UTF16ToUTF8(icon_url), &new_icon_index))
     return;
 
+  ProfileMetrics::LogProfileAvatarSelection(new_icon_index);
   cache.SetAvatarIconOfProfileAtIndex(profile_index, new_icon_index);
+
+  ProfileMetrics::LogProfileUpdate(profile_file_path);
 }
 
 void ManageProfileHandler::DeleteProfile(const ListValue* args) {
   DCHECK(args);
+
+  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::PROFILE_DELETED);
 
   Value* file_path_value;
   FilePath profile_file_path;

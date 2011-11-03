@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/gtk/avatar_menu_button_gtk.h"
 
 #include "base/i18n/rtl.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/gtk/avatar_menu_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "ui/gfx/gtk_util.h"
@@ -43,6 +44,7 @@ gboolean AvatarMenuButtonGtk::OnButtonPressed(GtkWidget* widget,
     return FALSE;
 
   ShowAvatarBubble();
+  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
   return TRUE;
 }
 

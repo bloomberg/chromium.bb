@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
@@ -424,6 +425,13 @@ void SyncSetupHandler::ShowSetupDone(const std::wstring& user) {
   // Suppress the sync promo once the user signs into sync. This way the user
   // doesn't see the sync promo even if they sign out of sync later on.
   SyncPromoUI::SetUserSkippedSyncPromo(Profile::FromWebUI(web_ui_));
+
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  ProfileSyncService* service = profile->GetProfileSyncService();
+  if (!service->HasSyncSetupCompleted()) {
+    FilePath profile_file_path = profile->GetPath();
+    ProfileMetrics::LogProfileSyncSignIn(profile_file_path);
+  }
 }
 
 void SyncSetupHandler::SetFlow(SyncSetupFlow* flow) {
@@ -487,6 +495,17 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
 
   DCHECK(flow_);
   flow_->OnUserConfigured(configuration);
+
+  ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_CUSTOMIZE);
+  if (configuration.encrypt_all) {
+    ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_ENCRYPT);
+  }
+  if (configuration.set_secondary_passphrase) {
+    ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_PASSPHRASE);
+  }
+  if (!configuration.sync_everything) {
+    ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_CHOOSE);
+  }
 }
 
 void SyncSetupHandler::HandlePassphraseEntry(const ListValue* args) {

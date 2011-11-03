@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -161,6 +162,8 @@ void AvatarMenuButton::ShowAvatarBubble() {
       views::BubbleBorder::TOP_LEFT,
       views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bubble_view, bubble_view);
   bubble_->AddObserver(this);
+
+  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 
 void AvatarMenuButton::OnBubbleClosing() {
