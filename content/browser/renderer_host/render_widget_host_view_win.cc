@@ -225,6 +225,9 @@ bool DecodeZoomGesture(HWND hwnd, const GESTUREINFO& gi,
   zoom_second.y = gi.ptsLocation.y;
   ScreenToClient(hwnd, &zoom_second);
 
+  if (zoom_first.x == zoom_second.x && zoom_first.y == zoom_second.y)
+    return false;
+
   zoom_center->x = (zoom_first.x + zoom_second.x) / 2;
   zoom_center->y = (zoom_first.y + zoom_second.y) / 2;
 
