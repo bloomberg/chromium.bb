@@ -3,8 +3,112 @@
 <head>
 <meta charset="utf-8">
 <script src="tracking.js"></script>
+<script src="chrome://resources/js/util.js"></script>
+
+<style>
+
+body {
+  font-family: sans-serif;
+}
+
+/*
+ * The following styles are for a TABLE that uses a thin collapsed border, and
+ * has a blue heading. When you hover over rows, they turn yellow.
+ */
+table.results-table {
+  border-collapse:collapse;
+}
+
+table.results-table,
+.results-table th,
+.results-table td {
+  border: 1px solid #777;
+  padding-right: 4px;
+  padding-left: 4px;
+
+  overflow: auto;
+  max-width: 30em;
+}
+
+.results-table th {
+  background: rgb(224,236,255);
+}
+
+.results-table tbody tr:hover {
+  background-color:#ffb;
+}
+
+/*
+ * This is row which displays aggregate totals for each column.
+ */
+.results-table .aggregator-row {
+  background: #FFCC99;
+}
+
+/*---------------------------------------------------------------------------*/
+
+/*
+ * When grouping data, the table for each bucket is wrapped in a DIV with this
+ * class. Used to add a bit of spacing between groups.
+ */
+.group-container {
+  margin-top: 2ex;
+  margin-bottom: 2ex;
+}
+
+/*
+ * The title for each group is enclosed in a DIV of the following class.
+ */
+.group-title-container {
+  font-size: 140%;
+  margin-bottom: 1ex;
+}
+
+</style>
 </head>
 <body>
-  This page is under construction!
+  <table width=100%>
+    <tr>
+      <td>
+        <b>Group by: </b> <span id=group-by-container></span> 
+        <b>Sort by: </b> <span id=sort-by-container></span> 
+      </td>
+      <td align=right>
+        <a href=# id=edit-columns-link>[Edit columns]</a>
+        <input type='search' incremental id='filter-search' />
+        <a href='#' id=filter-help-link>?</a>
+      </td>
+    </tr>
+    <tr id=edit-columns-row style='display:none'>
+      <td colspan=2 id=column-toggles-container></td>
+    </tr>
+    <tr id=filter-help-container style='display:none'>
+      <td colspan=2>
+        <div style='border: 1px dashed black; padding: 1em'>
+          <p>You can filter elements either by entering a case insensitive
+             substring to match, or by entering a javascript boolean expression
+             (solved using 'eval()').</p>
+          <u>Examples:</u>
+          <ul>
+            <li>
+              <pre style='display:inline'>BrowserWatchdog</pre>
+            </li>
+            <li>
+              <pre style='display:inline'>browser/net/sqlite</pre>
+            </li>
+            <li>
+              <pre style='display:inline'>(x.avg_queue_ms &gt; 0.5 || x.death_data.count &gt; 1000) &amp;&amp; x.birth_thread == 'CrBrowserMain'</pre>
+            </li>
+          </ul>
+          <u>All property names:</u>
+          <ul id='filter-help-property-names-ul'></ul>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <hr/>
+
+  <div id='results-div'></div>
 </body>
 </html>

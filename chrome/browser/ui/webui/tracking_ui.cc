@@ -68,11 +68,10 @@ void TrackingMessageHandler::RegisterMessages() {
 }
 
 void TrackingMessageHandler::OnGetData(const ListValue* list) {
-  // TODO(eroman): Gather all the task tracking information into a Value.
-  ListValue values;
-
   // Send the data to the renderer.
-  web_ui_->CallJavascriptFunction("g_browserBridge.receivedData", values);
+  scoped_ptr<Value> data_values(tracked_objects::ThreadData::ToValue());
+  web_ui_->CallJavascriptFunction("g_browserBridge.receivedData",
+                                  *data_values.get());
 }
 
 void TrackingMessageHandler::OnResetData(const ListValue* list) {
