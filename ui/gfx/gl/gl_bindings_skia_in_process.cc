@@ -580,6 +580,7 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   interface->fDrawBuffers = StubGLDrawBuffers;
   interface->fDrawElements = StubGLDrawElements;
   interface->fEnable = StubGLEnable;
+  interface->fEnableVertexAttribArray = StubGLEnableVertexAttribArray;
   interface->fEndQuery = StubGLEndQuery;
   interface->fFinish = StubGLFinish;
   interface->fFlush = StubGLFlush;
