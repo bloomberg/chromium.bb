@@ -16,6 +16,7 @@ class GlobalError;
 // about a global error.
 @interface GlobalErrorBubbleController : BaseBubbleController {
  @private
+  // |error_| can be NULL after -close is called.
   GlobalError* error_;
 
   IBOutlet NSImageView* iconView_;

@@ -86,7 +86,9 @@ const CGFloat kWrenchBubblePointOffsetY = 6;
 }
 
 - (void)close {
-  error_->BubbleViewDidClose();
+  if (error_)
+    error_->BubbleViewDidClose();
+  error_ = NULL;
   BrowserWindowController* bwc = [BrowserWindowController
       browserWindowControllerForWindow:[self parentWindow]];
   [bwc releaseBarVisibilityForOwner:self withAnimation:YES delay:NO];
