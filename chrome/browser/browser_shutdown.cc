@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -300,8 +301,7 @@ void ReadLastShutdownInfo() {
   // Read and delete the file on the file thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(
-          &ReadLastShutdownFile, type, num_procs, num_procs_slow));
+      base::Bind(&ReadLastShutdownFile, type, num_procs, num_procs_slow));
 }
 
 void SetTryingToQuit(bool quitting) {
