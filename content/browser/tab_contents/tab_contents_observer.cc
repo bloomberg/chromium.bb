@@ -104,12 +104,12 @@ void TabContentsObserver::AppCacheAccessed(const GURL& manifest_url,
 }
 
 TabContentsObserver::TabContentsObserver(TabContents* tab_contents)
-    : tab_contents_(NULL), routing_id_(MSG_ROUTING_NONE) {
+    : tab_contents_(NULL) {
   Observe(tab_contents);
 }
 
 TabContentsObserver::TabContentsObserver()
-    : tab_contents_(NULL), routing_id_(MSG_ROUTING_NONE) {
+    : tab_contents_(NULL) {
 }
 
 TabContentsObserver::~TabContentsObserver() {
@@ -122,7 +122,6 @@ void TabContentsObserver::Observe(TabContents* tab_contents) {
     tab_contents_->RemoveObserver(this);
   tab_contents_ = tab_contents;
   if (tab_contents_) {
-    routing_id_ = tab_contents->render_view_host()->routing_id();
     tab_contents_->AddObserver(this);
   }
 }

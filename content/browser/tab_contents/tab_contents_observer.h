@@ -128,9 +128,6 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
 
   TabContents* tab_contents_;
 
-  // The routing ID of the associated TabContents.
-  int routing_id_;
-
   DISALLOW_COPY_AND_ASSIGN(TabContentsObserver);
 };
 
