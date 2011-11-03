@@ -582,9 +582,10 @@ RenderViewHost* Panel::GetRenderViewHost() const {
 
 void Panel::RequestRenderViewHostToDisableScrollbars(
     RenderViewHost* render_view_host) {
-  DCHECK(render_view_host);
-  render_view_host->DisableScrollbarsForThreshold(
-      native_panel_->ContentSizeFromWindowSize(max_size_));
+  if (render_view_host) {
+    render_view_host->DisableScrollbarsForThreshold(
+        native_panel_->ContentSizeFromWindowSize(max_size_));
+  }
 }
 
 void Panel::OnWindowSizeAvailable() {
