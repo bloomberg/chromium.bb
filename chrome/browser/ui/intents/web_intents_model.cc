@@ -91,12 +91,15 @@ void WebIntentsModel::GetWebIntentsTreeNodeDictionary(
     const WebIntentsTreeNode& node,
     base::DictionaryValue* dict) {
   if (node.Type() == WebIntentsTreeNode::TYPE_ROOT) {
+    dict->SetBoolean("hasChildren", !node.empty());
+    dict->SetInteger("numChildren", node.child_count());
     return;
   }
 
   if (node.Type() == WebIntentsTreeNode::TYPE_ORIGIN) {
     dict->SetString("site", node.GetTitle());
     dict->SetBoolean("hasChildren", !node.empty());
+    dict->SetInteger("numChildren", node.child_count());
     return;
   }
 
@@ -114,6 +117,19 @@ void WebIntentsModel::GetWebIntentsTreeNodeDictionary(
   }
 }
 
+WebIntentsTreeNode* WebIntentsModel::GetNodeForHost(const std::string& host) {
+  WebIntentsTreeNode* root = GetRoot();
+  for (int i = 0; i < root->child_count(); ++i) {
+    if (UTF16ToASCII(root->GetChild(i)->GetTitle()) == host)
+      return root->GetChild(i);
+  }
+
+  // Couldn't find an existing matching node; create a new one.
+  WebIntentsTreeNode* origin = new WebIntentsTreeNode(ASCIIToUTF16(host));
+  Add(GetRoot(), origin, GetRoot()->child_count());
+  return origin;
+}
+
 void WebIntentsModel::LoadModel() {
   NotifyObserverBeginBatch();
   intents_registry_->GetAllIntentProviders(this);
@@ -123,10 +139,7 @@ void WebIntentsModel::OnIntentsQueryDone(
     WebIntentsRegistry::QueryID query_id,
     const std::vector<webkit_glue::WebIntentServiceData>& services) {
   for (size_t i = 0; i < services.size(); ++i) {
-    // Eventually do some awesome sorting, grouping, clustering stuff here.
-    // For now, just stick it in the model flat.
-    WebIntentsTreeNode* n = new WebIntentsTreeNode(ASCIIToUTF16(
-        services[i].service_url.host()));
+    WebIntentsTreeNode* n = GetNodeForHost(services[i].service_url.host());
     ServiceTreeNode* ns = new ServiceTreeNode(ASCIIToUTF16(
         services[i].service_url.host()));
     ns->SetServiceName(services[i].title);
@@ -135,9 +148,7 @@ void WebIntentsModel::OnIntentsQueryDone(
     ns->SetIconUrl(ASCIIToUTF16(icon_url.spec()));
     ns->SetAction(services[i].action);
     ns->AddType(services[i].type);
-    // Won't generate a notification. OK for now as the next line will.
-    n->Add(ns, 0);
-    Add(GetRoot(), n, GetRoot()->child_count());
+    Add(n, ns, n->child_count());
   }
 
   NotifyObserverEndBatch();

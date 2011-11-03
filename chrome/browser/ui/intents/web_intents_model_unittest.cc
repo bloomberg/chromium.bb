@@ -84,7 +84,7 @@ class WaitingWebIntentsObserver : public WebIntentsModel::Observer {
 
   virtual void TreeModelEndBatch(WebIntentsModel* model) {
     event_.Signal();
-     MessageLoop::current()->Quit();
+    MessageLoop::current()->Quit();
   }
 
   virtual void TreeNodesAdded(ui::TreeModel* model,
@@ -106,7 +106,6 @@ class WaitingWebIntentsObserver : public WebIntentsModel::Observer {
   void Wait() {
     MessageLoop::current()->Run();
     event_.Wait();
-    LOG(INFO) << "DONE!";
   }
 
   base::WaitableEvent event_;
@@ -162,7 +161,7 @@ TEST_F(WebIntentsModelTest, LoadFromWebData) {
   WebIntentsModel intents_model(&registry_);
   intents_model.AddWebIntentsTreeObserver(&obs);
   obs.Wait();
-  EXPECT_EQ(3, obs.added_);
+  EXPECT_EQ(6, obs.added_);
 
   WebIntentsTreeNode* node = intents_model.GetTreeNode("www.google.com");
   ASSERT_NE(static_cast<WebIntentsTreeNode*>(NULL), node);
@@ -184,4 +183,29 @@ TEST_F(WebIntentsModelTest, LoadFromWebData) {
   ASSERT_NE(static_cast<WebIntentsTreeNode*>(NULL), node);
   EXPECT_EQ(WebIntentsTreeNode::TYPE_ORIGIN, node->Type());
   EXPECT_EQ(ASCIIToUTF16("www.digg.com"), node->GetTitle());
+}
+
+TEST_F(WebIntentsModelTest, TestMultipleIntentsOnHost) {
+  LoadRegistry();
+  webkit_glue::WebIntentServiceData service;
+  service.service_url = GURL("http://www.google.com/edit");
+  service.action = ASCIIToUTF16("EDIT");
+  service.type = ASCIIToUTF16("text/plain");
+  service.title = ASCIIToUTF16("Edit");
+  registry_.RegisterIntentProvider(service);
+
+  WaitingWebIntentsObserver obs;
+  WebIntentsModel intents_model(&registry_);
+  intents_model.AddWebIntentsTreeObserver(&obs);
+  obs.Wait();
+  EXPECT_EQ(7, obs.added_);
+
+  WebIntentsTreeNode* node = intents_model.GetTreeNode("www.google.com");
+  ASSERT_EQ(2, node->child_count());
+  node = node->GetChild(1);
+  ASSERT_EQ(WebIntentsTreeNode::TYPE_SERVICE, node->Type());
+  ASSERT_EQ(WebIntentsTreeNode::TYPE_SERVICE, node->Type());
+  ServiceTreeNode* snode = static_cast<ServiceTreeNode*>(node);
+  EXPECT_EQ(ASCIIToUTF16("EDIT"), snode->Action());
+  EXPECT_EQ(ASCIIToUTF16("http://www.google.com/edit"), snode->ServiceUrl());
 }

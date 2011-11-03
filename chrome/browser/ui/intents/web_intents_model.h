@@ -110,6 +110,9 @@ class WebIntentsModel : public ui::TreeNodeModel<WebIntentsTreeNode>,
   // TODO(gbillock): need an observer on that to absorb async updates?
   void LoadModel();
 
+  // Get the model node for a particular host.
+  WebIntentsTreeNode* GetNodeForHost(const std::string& host);
+
   // Do batch-specific notifies for updates coming from the LoadModel.
   void NotifyObserverBeginBatch();
   void NotifyObserverEndBatch();

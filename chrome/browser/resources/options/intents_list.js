@@ -179,7 +179,6 @@ cr.define('options', function() {
      * This implementation scans the descendants to update the text.
      */
     updateOrigin: function() {
-      console.log('IntentsListItem.updateOrigin');
       var text = '';
       for (var i = 0; i < this.origin.children.length; ++i) {
         if (text.length > 0)
@@ -296,8 +295,6 @@ cr.define('options', function() {
      * @param {number} index The index at which to insert the node.
      */
     insertAt: function(data, index) {
-      console.log('IntentsTreeNode.insertAt adding ' +
-                  JSON.stringify(data) + ' at ' + index);
       var child = new IntentsTreeNode(data);
       this.children.splice(index, 0, child);
       child.parent = this;
@@ -443,7 +440,6 @@ cr.define('options', function() {
 
       if (this.data && this.data.hasChildren &&
           !this.children.length && !lookupRequests[this.pathId]) {
-        console.log('SENDING loadIntents');
         lookupRequests[this.pathId] = true;
         chrome.send('loadIntents', [this.pathId]);
       }
@@ -694,8 +690,6 @@ cr.define('options', function() {
      * @param {Array} children The immediate children of parent node.
      */
     loadChildren: function(parentId, children) {
-      console.log('Loading intents view: ' +
-                  parentId + ' ' + JSON.stringify(children));
       if (parentId)
         delete lookupRequests[parentId];
       var parent = parentId ? parentLookup[parentId] : this;
