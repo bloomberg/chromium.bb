@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
+#include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
@@ -78,6 +79,7 @@ WDKeywordsResult::~WDKeywordsResult() {}
 WebDataService::WebDataService()
   : is_running_(false),
     db_(NULL),
+    autocomplete_syncable_service_(NULL),
     autofill_profile_syncable_service_(NULL),
     failed_init_(false),
     should_commit_(false),
@@ -644,8 +646,10 @@ void WebDataService::InitializeDatabaseIfNecessary() {
 
 void WebDataService::InitializeSyncableServices() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(!autocomplete_syncable_service_);
   DCHECK(!autofill_profile_syncable_service_);
 
+  autocomplete_syncable_service_ = new AutocompleteSyncableService(this);
   autofill_profile_syncable_service_ = new AutofillProfileSyncableService(this);
 }
 
@@ -670,6 +674,8 @@ void WebDataService::ShutdownDatabase() {
 void WebDataService::ShutdownSyncableServices() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
+  delete autocomplete_syncable_service_;
+  autocomplete_syncable_service_ = NULL;
   delete autofill_profile_syncable_service_;
   autofill_profile_syncable_service_ = NULL;
 }
@@ -1400,6 +1406,15 @@ AutofillProfileSyncableService*
 
   return autofill_profile_syncable_service_;
 }
+
+AutocompleteSyncableService* WebDataService::GetAutocompleteSyncableService()
+    const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(autocomplete_syncable_service_);  // Make sure we're initialized.
+
+  return autocomplete_syncable_service_;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //

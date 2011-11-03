@@ -45,7 +45,7 @@ class AutofillProfileDataTypeController
    virtual bool StartModels() OVERRIDE;
    virtual bool StartAssociationAsync() OVERRIDE;
    virtual base::WeakPtr<SyncableService> GetWeakPtrToSyncableService()
-      const OVERRIDE;
+       const OVERRIDE;
    virtual void StopModels() OVERRIDE;
    virtual void StopLocalServiceAsync() OVERRIDE;
    virtual void RecordUnrecoverableError(

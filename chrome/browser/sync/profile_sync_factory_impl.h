@@ -40,12 +40,10 @@ class ProfileSyncFactoryImpl : public ProfileSyncFactory {
       ProfileSyncService* profile_sync_service,
       browser_sync::UnrecoverableErrorHandler* error_handler);
 
-  virtual SyncComponents CreateAutofillSyncComponents(
-      ProfileSyncService* profile_sync_service,
-      WebDatabase* web_database,
-      browser_sync::UnrecoverableErrorHandler* error_handler);
-
   virtual base::WeakPtr<SyncableService> GetAutofillProfileSyncableService(
+      WebDataService* web_data_service) const;
+
+  virtual base::WeakPtr<SyncableService> GetAutocompleteSyncableService(
       WebDataService* web_data_service) const;
 
   virtual SyncComponents CreateBookmarkSyncComponents(

@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "sql/init_status.h"
 
+class AutocompleteSyncableService;
 class AutofillChange;
 class AutofillProfile;
 class AutofillProfileSyncableService;
@@ -518,11 +519,15 @@ class WebDataService
       const base::Time& delete_begin,
       const base::Time& delete_end);
 
-  // TODO(georgey): Add support for autocomplete as well: http://crbug.com/95759
   // Returns the syncable service for Autofill addresses and credit cards stored
   // in this table. The returned service is owned by |this| object.
   virtual AutofillProfileSyncableService*
       GetAutofillProfileSyncableService() const;
+
+  // Returns the syncable service for field autocomplete stored in this table.
+  // The returned service is owned by |this| object.
+  virtual AutocompleteSyncableService*
+      GetAutocompleteSyncableService() const;
 
   // Testing
 #ifdef UNIT_TEST
@@ -692,8 +697,9 @@ class WebDataService
   // Syncable services for the database data.  We own the services, but don't
   // use |scoped_ptr|s because the lifetimes must be managed on the database
   // thread.
-  // Currently only Autofill profiles (and credit cards) use the new Sync API,
-  // but all the database data should migrate to this API over time.
+  // Currently only Autocomplete and Autofill profiles use the new Sync API, but
+  // all the database data should migrate to this API over time.
+  AutocompleteSyncableService* autocomplete_syncable_service_;
   AutofillProfileSyncableService* autofill_profile_syncable_service_;
 
   // Whether the database failed to initialize.  We use this to avoid

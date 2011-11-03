@@ -1566,7 +1566,6 @@
         'browser/sync/internal_api/read_node_mock.h',
         'browser/sync/glue/app_notification_data_type_controller_unittest.cc',
         'browser/sync/glue/autofill_data_type_controller_unittest.cc',
-        'browser/sync/glue/autofill_model_associator_unittest.cc',
         'browser/sync/glue/bookmark_data_type_controller_unittest.cc',
         'browser/sync/glue/browser_thread_model_worker_unittest.cc',
         'browser/sync/glue/change_processor_mock.cc',

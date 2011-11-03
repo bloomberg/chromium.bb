@@ -92,18 +92,16 @@ class ProfileSyncFactory {
       ProfileSyncService* profile_sync_service,
       browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 
-  // Instantiates both a model associator and change processor for the
-  // autofill data type.  The pointers in the return struct are owned
-  // by the caller.
-  virtual SyncComponents CreateAutofillSyncComponents(
-      ProfileSyncService* profile_sync_service,
-      WebDatabase* web_database,
-      browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
-
   // Returns a weak pointer to the SyncableService associated with the datatype.
   // The SyncableService is not owned by Sync, but by the backend service
   // itself.
   virtual base::WeakPtr<SyncableService> GetAutofillProfileSyncableService(
+      WebDataService* web_data_service) const = 0;
+
+  // Returns a weak pointer to the SyncableService associated with the datatype.
+  // The SyncableService is not owned by Sync, but by the backend service
+  // itself.
+  virtual base::WeakPtr<SyncableService> GetAutocompleteSyncableService(
       WebDataService* web_data_service) const = 0;
 
   // Instantiates both a model associator and change processor for the

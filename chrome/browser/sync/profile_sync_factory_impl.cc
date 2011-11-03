@@ -13,9 +13,7 @@
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/glue/app_data_type_controller.h"
 #include "chrome/browser/sync/glue/app_notification_data_type_controller.h"
-#include "chrome/browser/sync/glue/autofill_change_processor.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
-#include "chrome/browser/sync/glue/autofill_model_associator.h"
 #include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
@@ -44,6 +42,7 @@
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/signin_manager.h"
+#include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -52,10 +51,8 @@
 
 using browser_sync::AppDataTypeController;
 using browser_sync::AppNotificationDataTypeController;
-using browser_sync::AutofillChangeProcessor;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillProfileDataTypeController;
-using browser_sync::AutofillModelAssociator;
 using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkDataTypeController;
 using browser_sync::BookmarkModelAssociator;
@@ -232,28 +229,16 @@ ProfileSyncFactoryImpl::CreateAppSyncComponents(
   return SyncComponents(sync_service_adapter, change_processor);
 }
 
-ProfileSyncFactory::SyncComponents
-ProfileSyncFactoryImpl::CreateAutofillSyncComponents(
-    ProfileSyncService* profile_sync_service,
-    WebDatabase* web_database,
-    browser_sync::UnrecoverableErrorHandler* error_handler) {
-
-  AutofillModelAssociator* model_associator =
-      new AutofillModelAssociator(profile_sync_service,
-                                  web_database,
-                                  profile_sync_service->profile());
-  AutofillChangeProcessor* change_processor =
-      new AutofillChangeProcessor(model_associator,
-                                  web_database,
-                                  profile_sync_service->profile(),
-                                  error_handler);
-  return SyncComponents(model_associator, change_processor);
-}
-
 base::WeakPtr<SyncableService>
 ProfileSyncFactoryImpl::GetAutofillProfileSyncableService(
     WebDataService* web_data_service) const {
   return web_data_service->GetAutofillProfileSyncableService()->AsWeakPtr();
+}
+
+base::WeakPtr<SyncableService>
+ProfileSyncFactoryImpl::GetAutocompleteSyncableService(
+    WebDataService* web_data_service) const {
+  return web_data_service->GetAutocompleteSyncableService()->AsWeakPtr();
 }
 
 ProfileSyncFactory::SyncComponents

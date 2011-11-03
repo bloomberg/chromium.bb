@@ -41,12 +41,10 @@ class ProfileSyncFactoryMock : public ProfileSyncFactory {
   MOCK_METHOD2(CreateAppSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
                      browser_sync::UnrecoverableErrorHandler* error_handler));
-  MOCK_METHOD3(CreateAutofillSyncComponents,
-               SyncComponents(
-                   ProfileSyncService* profile_sync_service,
-                   WebDatabase* web_database,
-                   browser_sync::UnrecoverableErrorHandler* error_handler));
   MOCK_CONST_METHOD1(GetAutofillProfileSyncableService,
+                     base::WeakPtr<SyncableService>(
+                         WebDataService* web_data_service));
+  MOCK_CONST_METHOD1(GetAutocompleteSyncableService,
                      base::WeakPtr<SyncableService>(
                          WebDataService* web_data_service));
   MOCK_METHOD2(CreateBookmarkSyncComponents,
