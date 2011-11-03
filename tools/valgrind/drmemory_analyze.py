@@ -78,7 +78,8 @@ class DrMemoryAnalyze:
         self.ReadLine()
         while self.line_.strip() != "":
           line = self.line_.strip()
-          (count, name) = re.match(" *([0-9]+)x: (.*)", line).groups()
+          (count, name) = re.match(" *([0-9]+)x(?: \(leaked .*\))?: (.*)",
+                                   line).groups()
           self.used_suppressions.append("%7s %s" % (count, name))
           self.ReadLine()
         break

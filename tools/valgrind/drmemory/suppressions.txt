@@ -607,66 +607,87 @@ CRYPT32.dll!I_CertSyncStore
 ############################
 # Intentional errors in Chromium tests (ToolsSanityTests)
 LEAK
+name=sanity test 01 (memory leak)
 base_unittests.exe!operator new
 base_unittests.exe!operator new[]
 base_unittests.exe!base::ToolsSanityTest_MemoryLeak_Test::TestBody
 
+# "..." is needed due to http://code.google.com/p/drmemory/issues/detail?id=666
 UNADDRESSABLE ACCESS
+name=sanity test 02 (malloc/read left)
 base_unittests.exe!*ReadValueOutOfArrayBoundsLeft
-base_unittests.exe!*MakeSomeErrors
+...
 base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
+name=sanity test 03 (malloc/read right)
 base_unittests.exe!*ReadValueOutOfArrayBoundsRight
 base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
+name=sanity test 04 (malloc/write left)
 base_unittests.exe!*WriteValueOutOfArrayBoundsLeft
 base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
+name=sanity test 05 (malloc/write right)
 base_unittests.exe!*WriteValueOutOfArrayBoundsRight
 base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
-UNINITIALIZED READ
-base_unittests.exe!*ReadUninitializedValue
-base_unittests.exe!*MakeSomeErrors
-base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
-
-# Write after free
+# "..." is needed due to http://code.google.com/p/drmemory/issues/detail?id=666
 UNADDRESSABLE ACCESS
-base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
-
-UNADDRESSABLE ACCESS
+name=sanity test 06 (new/read left)
 base_unittests.exe!*ReadValueOutOfArrayBoundsLeft
-base_unittests.exe!*MakeSomeErrors
+...
 base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
+name=sanity test 07 (new/read right)
 base_unittests.exe!*ReadValueOutOfArrayBoundsRight
 base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
+name=sanity test 08 (new/write left)
 base_unittests.exe!*WriteValueOutOfArrayBoundsLeft
 base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
+name=sanity test 09 (new/write right)
 base_unittests.exe!*WriteValueOutOfArrayBoundsRight
 base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
-UNINITIALIZED READ
-base_unittests.exe!*ReadUninitializedValue
-base_unittests.exe!*MakeSomeErrors
+UNADDRESSABLE ACCESS
+name=sanity test 10 (write after free)
+base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
+
+UNADDRESSABLE ACCESS
+name=sanity test 11 (write after delete)
 base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
-# Write after delete []
-UNADDRESSABLE ACCESS
+INVALID HEAP ARGUMENT
+name=sanity test 12 (array deleted without [])
+base_unittests.exe!base::ToolsSanityTest_ArrayDeletedWithoutBraces_Test::TestBody
+
+INVALID HEAP ARGUMENT
+name=sanity test 13 (single element deleted with [])
+base_unittests.exe!base::ToolsSanityTest_SingleElementDeletedWithBraces_Test::TestBody
+
+UNINITIALIZED READ
+name=sanity test 14 (malloc/read uninit)
+base_unittests.exe!*ReadUninitializedValue
+base_unittests.exe!*MakeSomeErrors
+base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
+
+UNINITIALIZED READ
+name=sanity test 15 (new/read uninit)
+base_unittests.exe!*ReadUninitializedValue
+base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
@@ -747,6 +768,18 @@ UNADDRESSABLE ACCESS
 name=bizarre cl-generated read-beyond-TOS
 instruction=mov    0xfffffffc(%esp) -> %eax
 chrome.dll!WebCore::RenderStyle::resetBorder*
+
+INVALID HEAP ARGUMENT
+name=http://crbug.com/101537
+*!scoped_ptr<_TOKEN_USER>*
+
+INVALID HEAP ARGUMENT
+name=http://crbug.com/101717 (1)
+*!scoped_ptr<_TOKEN_DEFAULT_DACL>*
+
+INVALID HEAP ARGUMENT
+name=http://crbug.com/101717 (2)
+*!sandbox::PolicyBase::~PolicyBase
 
 ############################
 # Real issues in Chromium
