@@ -1,0 +1,81 @@
+diff -r 55cf8bf30cd9 mongoose.c
+--- a/mongoose.c	Fri Aug 26 21:30:20 2011 +0100
++++ b/mongoose.c	Thu Nov 03 02:16:22 2011 +0000
+@@ -23,7 +23,9 @@
+ #else
+ #define _XOPEN_SOURCE 600 // For flockfile() on Linux
+ #define _LARGEFILE_SOURCE // Enable 64-bit file offsets
++#ifndef __STDC_FORMAT_MACROS
+ #define __STDC_FORMAT_MACROS // <inttypes.h> wants this for C++
++#endif // __STDC_FORMAT_MACROS
+ #endif
+ 
+ #if defined(__SYMBIAN32__)
+@@ -51,8 +53,12 @@
+ #include <stdio.h>
+ 
+ #if defined(_WIN32) && !defined(__SYMBIAN32__) // Windows specific
++  #ifdef _WIN32_WINNT
++    #undef _WIN32_WINNT
++  #endif
+ #define _WIN32_WINNT 0x0400 // To make it link in VS2005
+ #include <windows.h>
++#include <winsock2.h>
+ 
+ #ifndef PATH_MAX
+ #define PATH_MAX MAX_PATH
+@@ -63,7 +69,6 @@
+ #include <direct.h>
+ #include <io.h>
+ #else // _WIN32_WCE
+-#include <winsock2.h>
+ #define NO_CGI // WinCE has no pipes
+ 
+ typedef long off_t;
+@@ -849,7 +854,9 @@
+ }
+ 
+ static int pthread_cond_wait(pthread_cond_t *cv, pthread_mutex_t *mutex) {
+-  HANDLE handles[] = {cv->signal, cv->broadcast};
++  HANDLE handles[2];
++  handles[0] = cv->signal;
++  handles[1] = cv->broadcast;
+   ReleaseMutex(*mutex);
+   WaitForMultipleObjects(2, handles, FALSE, INFINITE);
+   return WaitForSingleObject(*mutex, INFINITE) == WAIT_OBJECT_0? 0 : -1;
+@@ -3424,6 +3431,10 @@
+   struct vec vec;
+   struct socket so, *listener;
+ 
++  struct linger linger;
++  linger.l_onoff = 1;
++  linger.l_linger = 1;
++
+   while (success && (list = next_option(list, &vec, NULL)) != NULL) {
+     if (!parse_port_string(&vec, &so)) {
+       cry(fc(ctx), "%s: %.*s: invalid port spec. Expecting list of: %s",
+@@ -3448,6 +3459,8 @@
+                // Thanks to Igor Klopov who suggested the patch.
+                setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, (void *) &on,
+                           sizeof(on)) != 0 ||
++               setsockopt(sock, SOL_SOCKET, SO_LINGER, (void *) &linger,
++                          sizeof(linger)) ||
+                bind(sock, &so.lsa.u.sa, so.lsa.len) != 0 ||
+                listen(sock, 100) != 0) {
+       closesocket(sock);
+@@ -3768,15 +3781,8 @@
+ 
+ static void close_socket_gracefully(SOCKET sock) {
+   char buf[BUFSIZ];
+-  struct linger linger;
+   int n;
+ 
+-  // Set linger option to avoid socket hanging out after close. This prevent
+-  // ephemeral port exhaust problem under high QPS.
+-  linger.l_onoff = 1;
+-  linger.l_linger = 1;
+-  setsockopt(sock, SOL_SOCKET, SO_LINGER, (void *) &linger, sizeof(linger));
+-
+   // Send FIN to the client
+   (void) shutdown(sock, SHUT_WR);
+   set_non_blocking_mode(sock);

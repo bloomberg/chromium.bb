@@ -63,7 +63,7 @@
 
 namespace webdriver {
 
-void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
+void InitCallbacks(Dispatcher* dispatcher,
                    base::WaitableEvent* shutdown_event,
                    bool forbid_other_requests) {
   dispatcher->AddShutdown("/shutdown", shutdown_event);
@@ -151,31 +151,40 @@ void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
 
 }  // namespace webdriver
 
-// Configures mongoose according to the given command line flags.
-// Returns true on success.
-bool SetMongooseOptions(struct mg_context* ctx,
-                        const std::string& port,
-                        const std::string& root) {
-  if (!mg_set_option(ctx, "ports", port.c_str())) {
-    std::cout << "ChromeDriver cannot bind to port ("
-              << port.c_str() << ")" << std::endl;
-    return false;
+namespace {
+
+void* ProcessHttpRequest(mg_event event_raised,
+                         struct mg_connection* connection,
+                         const struct mg_request_info* request_info) {
+  bool handler_result_code = false;
+  if (event_raised == MG_NEW_REQUEST) {
+    handler_result_code =
+        reinterpret_cast<webdriver::Dispatcher*>(request_info->user_data)->
+            ProcessHttpRequest(connection, request_info);
   }
-  if (root.length())
-    mg_set_option(ctx, "root", root.c_str());
-  // Lower the default idle time to 1 second. Idle time refers to how long a
-  // worker thread will wait for new connections before exiting.
-  // This is so mongoose quits in a reasonable amount of time.
-  mg_set_option(ctx, "idle_time", "1");
-  return true;
+
+  return reinterpret_cast<void*>(handler_result_code);
 }
 
+void MakeMongooseOptions(const std::string& port,
+                         const std::string& root,
+                         std::vector<std::string>* out_options) {
+  out_options->push_back("listening_ports");
+  out_options->push_back(port);
+  out_options->push_back("enable_keep_alive");
+  out_options->push_back("yes");
+  if (!root.empty()) {
+    out_options->push_back("document_root");
+    out_options->push_back(root);
+  }
+}
+
+}  // namespace
 
 // Sets up and runs the Mongoose HTTP server for the JSON over HTTP
 // protcol of webdriver.  The spec is located at:
 // http://code.google.com/p/selenium/wiki/JsonWireProtocol.
 int main(int argc, char *argv[]) {
-  struct mg_context *ctx;
   base::AtExitManager exit;
   base::WaitableEvent shutdown_event(false, false);
   CommandLine::Init(argc, argv);
@@ -216,21 +225,30 @@ int main(int argc, char *argv[]) {
   manager->set_port(port);
   manager->set_url_base(url_base);
 
+  webdriver::Dispatcher dispatcher(url_base);
+  webdriver::InitCallbacks(&dispatcher, &shutdown_event, root.empty());
+
+  std::vector<std::string> args;
+  MakeMongooseOptions(port, root, &args);
+  scoped_array<const char*> options(new const char*[args.size() + 1]);
+  for (size_t i = 0; i < args.size(); ++i) {
+    options[i] = args[i].c_str();
+  }
+  options[args.size()] = NULL;
+
   // Initialize SHTTPD context.
   // Listen on port 9515 or port specified on command line.
   // TODO(jmikhail) Maybe add port 9516 as a secure connection.
-  ctx = mg_start();
-  if (!SetMongooseOptions(ctx, port, root)) {
-    mg_stop(ctx);
+  struct mg_context* ctx = mg_start(&ProcessHttpRequest,
+                                    &dispatcher,
+                                    options.get());
+  if (ctx == NULL) {
 #if defined(OS_WIN)
     return WSAEADDRINUSE;
 #else
     return EADDRINUSE;
 #endif
   }
-
-  webdriver::Dispatcher dispatcher(ctx, url_base);
-  webdriver::InitCallbacks(ctx, &dispatcher, &shutdown_event, root.empty());
 
   // The tests depend on parsing the first line ChromeDriver outputs,
   // so all other logging should happen after this.

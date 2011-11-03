@@ -183,9 +183,13 @@ TEST_F(ParseRequestInfoTest, ParseRequestWithEmptyUrlBase) {
   Response response;
 
   SessionManager::GetInstance()->set_url_base("");
-  EXPECT_TRUE(internal::ParseRequestInfo(&request_info, &method,
-                                         &path_segments, &parameters,
-                                         &response));
+  EXPECT_TRUE(internal::ParseRequestInfo(
+      &request_info,
+      NULL, //NULL is ok because GET not POST is used
+      &method,
+      &path_segments,
+      &parameters,
+      &response));
   EXPECT_EQ("GET", method);
   ASSERT_EQ(4u, path_segments.size());
   EXPECT_EQ("", path_segments[0]);
@@ -205,9 +209,13 @@ TEST_F(ParseRequestInfoTest, ParseRequestStripsNonEmptyUrlBaseFromPath) {
   Response response;
 
   SessionManager::GetInstance()->set_url_base("/foo");
-  EXPECT_TRUE(internal::ParseRequestInfo(&request_info, &method,
-                                         &path_segments, &parameters,
-                                         &response));
+  EXPECT_TRUE(internal::ParseRequestInfo(
+      &request_info,
+      NULL, //NULL is ok because GET not POST is used
+      &method,
+      &path_segments,
+      &parameters,
+      &response));
   EXPECT_EQ("GET", method);
   ASSERT_EQ(3u, path_segments.size());
   EXPECT_EQ("", path_segments[0]);
