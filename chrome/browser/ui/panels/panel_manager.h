@@ -76,6 +76,9 @@ class PanelManager : public PanelMouseWatcher::Observer,
   int num_panels() const { return panels_.size(); }
   bool is_dragging_panel() const;
 
+  int GetMaxPanelWidth() const;
+  int GetMaxPanelHeight() const;
+
   // Overridden from PanelMouseWatcher::Observer:
   virtual void OnMouseMove(const gfx::Point& mouse_position) OVERRIDE;
 
@@ -161,8 +164,6 @@ class PanelManager : public PanelMouseWatcher::Observer,
   // the delayed action.
   void DelayedBringUpOrDownTitlebarsCheck();
 
-  int GetMaxPanelWidth() const;
-  int GetMaxPanelHeight() const;
   int GetRightMostAvailablePosition() const;
 
   Panels panels_;

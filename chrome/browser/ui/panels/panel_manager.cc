@@ -23,7 +23,7 @@ const int kPanelDefaultHeight = 290;
 
 // Maxmium width and height of a panel based on the factor of the working
 // area.
-const double kPanelMaxWidthFactor = 1.0;
+const double kPanelMaxWidthFactor = 0.35;
 const double kPanelMaxHeightFactor = 0.5;
 
 // Occasionally some system, like Windows, might not bring up or down the bottom
