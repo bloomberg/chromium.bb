@@ -125,7 +125,8 @@ void PrerenderManager::SetMode(PrerenderManagerMode mode) {
 bool PrerenderManager::IsPrerenderingPossible() {
   return GetMode() == PRERENDER_MODE_ENABLED ||
          GetMode() == PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP ||
-         GetMode() == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP;
+         GetMode() == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP ||
+         GetMode() == PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP;
 }
 
 // static
@@ -558,6 +559,15 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
       new_render_view_host->session_storage_namespace()) {
     prerender_contents.release()->Destroy(
         FINAL_STATUS_SESSION_STORAGE_NAMESPACE_MISMATCH);
+    return false;
+  }
+
+  // If we don't want to use prerenders at all, we are done.
+  // For bookkeeping purposes, we need to mark this TabContents to
+  // reflect that it would have been prerendered.
+  if (GetMode() == PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP) {
+    MarkTabContentsAsWouldBePrerendered(tab_contents);
+    prerender_contents.release()->Destroy(FINAL_STATUS_NO_USE_GROUP);
     return false;
   }
 

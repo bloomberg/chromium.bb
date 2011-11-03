@@ -48,6 +48,7 @@ const char* kFinalStatusNames[] = {
   "Cross-Site Navigation Pending",
   "DevTools Attached To The Tab",
   "Session Storage Namespace Mismatch",
+  "No Use Group",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,
