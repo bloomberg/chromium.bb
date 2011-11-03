@@ -214,10 +214,6 @@ readonly PNACL_SIZE="${INSTALL_BIN}/size"
 readonly PNACL_STRIP="${INSTALL_BIN}/pnacl-strip"
 readonly ILLEGAL_TOOL="${INSTALL_BIN}"/pnacl-illegal
 
-readonly PNACL_AS_ARM="${INSTALL_BIN}/pnacl-arm-as"
-readonly PNACL_AS_X8632="${INSTALL_BIN}/pnacl-i686-as"
-readonly PNACL_AS_X8664="${INSTALL_BIN}/pnacl-x86_64-as"
-
 # Set the default frontend.
 # Can be default, clang, llvm-gcc, or dragonegg
 # "Default" uses whatever is known to work, preferring Clang by default.
@@ -1756,22 +1752,7 @@ llvm-gcc-configure() {
   mkdir -p "${objdir}"
   spushd "${objdir}"
 
-  # NOTE: hack, assuming presence of x86/32 toolchain (used for both 32/64)
   local config_opts=""
-  case ${LLVM_GCC_ARCH} in
-      arm)
-          config_opts="--with-as=${PNACL_AS_ARM} \
-                       --with-arch=${ARM_ARCH} \
-                       --with-fpu=${ARM_FPU}"
-          ;;
-      x86-32)
-          config_opts="--with-as=${PNACL_AS_X8632}"
-          ;;
-      x86-64)
-          config_opts="--with-as=${PNACL_AS_X8664}"
-          ;;
-  esac
-
   local flags=""
   if ${LIBMODE_NEWLIB}; then
     flags+="--with-newlib"
