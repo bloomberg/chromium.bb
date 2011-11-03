@@ -14,15 +14,13 @@
     }
   </style>
   <script>
-    var fullscreen = false;
     function ToggleFullscreen() {
-      if (fullscreen) {
+      if (document.webkitIsFullScreen) {
         document.webkitCancelFullScreen();
       } else {
         document.getElementById('container').webkitRequestFullScreen(
             Element.ALLOW_KEYBOARD_INPUT);
       }
-      fullscreen = !fullscreen;
     }
   </script>
 </head>
