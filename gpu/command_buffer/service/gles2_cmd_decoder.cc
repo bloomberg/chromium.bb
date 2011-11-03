@@ -2765,7 +2765,7 @@ error::Error GLES2DecoderImpl::DoCommand(
   error::Error result = error::kNoError;
   if (debug()) {
     // TODO(gman): Change output to something useful for NaCl.
-    DLOG(INFO) << "[" << this << "]" << "cmd: " << GetCommandName(command);
+    LOG(INFO) << "[" << this << "]" << "cmd: " << GetCommandName(command);
   }
   unsigned int command_index = command - kStartPoint - 1;
   if (command_index < arraysize(g_command_info)) {
