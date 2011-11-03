@@ -410,19 +410,11 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
   if (old_bounds == new_bounds)
     return;
 
-  bool was_move = old_bounds.size() == new_bounds.size();
   layer_->SetBounds(new_bounds);
-
   if (layout_manager_.get())
     layout_manager_->OnWindowResized();
   if (delegate_)
     delegate_->OnBoundsChanged(old_bounds, new_bounds);
-  if (IsVisible()) {
-    if (was_move)
-      layer()->ScheduleDraw();
-    else
-      SchedulePaint();
-  }
 }
 
 void Window::SetVisible(bool visible) {

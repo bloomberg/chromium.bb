@@ -142,6 +142,10 @@ class COMPOSITOR_EXPORT Layer :
   void SetFillsBoundsOpaquely(bool fills_bounds_opaquely);
   bool fills_bounds_opaquely() const { return fills_bounds_opaquely_; }
 
+  // Returns the invalid rectangle. That is, the region of the layer that needs
+  // to be repainted. This is exposed for testing and isn't generally useful.
+  const gfx::Rect& invalid_rect() const { return invalid_rect_; }
+
   const gfx::Rect& hole_rect() const {  return hole_rect_; }
 
   // The compositor.

@@ -546,7 +546,17 @@ bool Layer::GetTransformRelativeTo(const Layer* ancestor,
 }
 
 void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
+  if (bounds == bounds_)
+    return;
+
+  bool was_move = bounds_.size() == bounds.size();
   bounds_ = bounds;
+  if (IsDrawn()) {
+    if (was_move)
+      ScheduleDraw();
+    else
+      SchedulePaint(gfx::Rect(bounds.size()));
+  }
 
   if (parent())
     parent()->RecomputeHole();

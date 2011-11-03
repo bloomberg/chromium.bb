@@ -222,14 +222,14 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_Hierarchy) {
   DrawTree(l1.get());
 }
 
-class LayerWithDelegateTest : public testing::Test {
+class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
  public:
-  LayerWithDelegateTest() {}
+  LayerWithDelegateTest() : schedule_draw_invoked_(false) {}
   virtual ~LayerWithDelegateTest() {}
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    compositor_ = new TestCompositor(NULL);
+    compositor_ = new TestCompositor(this);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -272,6 +272,15 @@ class LayerWithDelegateTest : public testing::Test {
   void Draw() {
     compositor_->Draw(false);
   }
+
+  // CompositorDelegate overrides.
+  virtual void ScheduleDraw() OVERRIDE {
+    schedule_draw_invoked_ = true;
+  }
+
+ protected:
+  // Set to true when ScheduleDraw (CompositorDelegate override) is invoked.
+  bool schedule_draw_invoked_;
 
  private:
   scoped_refptr<TestCompositor> compositor_;
@@ -432,7 +441,7 @@ class LayerWithNullDelegateTest : public LayerWithDelegateTest {
   virtual void TearDown() OVERRIDE {
   }
 
-  Layer* CreateLayer (Layer::LayerType type) OVERRIDE {
+  Layer* CreateLayer(Layer::LayerType type) OVERRIDE {
     Layer* layer = new Layer(compositor(), type);
     layer->set_delegate(default_layer_delegate_.get());
     return layer;
@@ -713,6 +722,29 @@ TEST_F(LayerWithNullDelegateTest, Visibility) {
 #if defined(USE_WEBKIT_COMPOSITOR)
   EXPECT_EQ(1.f, l1->web_layer().opacity());
 #endif
+}
+
+// Verifies SetBounds triggers the appropriate painting/drawing.
+TEST_F(LayerWithNullDelegateTest, SetBoundsSchedulesPaint) {
+  scoped_ptr<Layer> l1(CreateTextureLayer(gfx::Rect(0, 0, 200, 200)));
+  compositor()->SetRootLayer(l1.get());
+
+  Draw();
+  schedule_draw_invoked_ = false;
+  // After a draw the invalid rect should be empty.
+  EXPECT_TRUE(l1->invalid_rect().IsEmpty());
+  l1->SetBounds(gfx::Rect(5, 5, 200, 200));
+  // After a move the invalid rect should be empty.
+  EXPECT_TRUE(l1->invalid_rect().IsEmpty());
+  // But the CompositorDelegate (us) should have been told to draw.
+  EXPECT_TRUE(schedule_draw_invoked_);
+
+  schedule_draw_invoked_ = false;
+  l1->SetBounds(gfx::Rect(5, 5, 100, 100));
+  // Bounds change should trigger both the invalid rect to update as well as
+  // CompositorDelegate being told to draw.
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100), l1->invalid_rect());
+  EXPECT_TRUE(schedule_draw_invoked_);
 }
 
 // Checks that pixels are actually drawn to the screen with a read back.
