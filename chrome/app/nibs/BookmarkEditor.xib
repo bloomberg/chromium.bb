@@ -67,7 +67,7 @@
 									<object class="NSButtonCell" key="NSCell" id="137649770">
 										<int key="NSCellFlags">604110336</int>
 										<int key="NSCellFlags2">134217728</int>
-										<string key="NSContents">^IDS_APP_OK</string>
+										<string key="NSContents">^IDS_SAVE</string>
 										<object class="NSFont" key="NSSupport" id="899171858">
 											<string key="NSName">LucidaGrande</string>
 											<double key="NSSize">13</double>
