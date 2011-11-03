@@ -223,6 +223,18 @@ var MainView = (function() {
   // Key properties
   // --------------------------------------------------------------------------
 
+  // Custom comparator for thread names (sorts main thread and IO thread
+  // higher than would happen lexicographically.)
+  var threadNameComparator =
+      createLexicographicComparatorWithExceptions([
+          'CrBrowserMain',
+          'Chrome_IOThread',
+          'Chrome_FileThread',
+          'Chrome_HistoryThread',
+          'Chrome_DBThread',
+          'Still_Alive',
+      ]);
+
   /**
    * Enumerates information about various keys. Such as whether their data is
    * expected to be numeric or is a string, a descriptive name (title) for the
@@ -235,12 +247,14 @@ var MainView = (function() {
     name: 'Birth thread',
     type: 'string',
     aggregator: UniquifyAggregator,
+    comparator: threadNameComparator,
   };
 
   KEY_PROPERTIES[KEY_DEATH_THREAD] = {
     name: 'Death thread',
     type: 'string',
     aggregator: UniquifyAggregator,
+    comparator: threadNameComparator,
   };
 
   KEY_PROPERTIES[KEY_FUNCTION_NAME] = {
@@ -325,6 +339,10 @@ var MainView = (function() {
     KEY_LINE_NUMBER,
   ];
 
+  // --------------------------------------------------------------------------
+  // Default settings
+  // --------------------------------------------------------------------------
+
   /**
    * List of keys for those properties which we want to initially omit
    * from the table. (They can be re-enabled by clicking [Edit columns]).
@@ -375,13 +393,6 @@ var MainView = (function() {
    */
   var INITIAL_GROUP_KEYS = [KEY_DEATH_THREAD];
 
-  /**
-   * @constructor
-   */
-  function MainView() {
-    this.init_();
-  }
-
   // --------------------------------------------------------------------------
   // General utility functions
   // --------------------------------------------------------------------------
@@ -422,6 +433,37 @@ var MainView = (function() {
     if (a < b)
       return -1;
     return 1;
+  }
+
+  /**
+   * Returns a comparator function that compares values lexicographically,
+   * but special-cases the values in |orderedList| to have a higher
+   * rank.
+   */
+  function createLexicographicComparatorWithExceptions(orderedList) {
+    var valueToRankMap = {};
+    for (var i = 0; i < orderedList.length; ++i)
+      valueToRankMap[orderedList[i]] = i;
+
+    function getCustomRank(x) {
+      var rank = valueToRankMap[x];
+      if (rank == undefined)
+        rank = Infinity;  // Unmatched.
+      return rank;
+    }
+
+    return function(a, b) {
+      var aRank = getCustomRank(a);
+      var bRank = getCustomRank(b);
+
+      // Not matched by any of our exceptions.
+      if (aRank == bRank)
+        return simpleCompare(a, b);
+
+      if (aRank < bRank)
+        return -1;
+      return 1;
+    };
   }
 
   /**
@@ -520,10 +562,10 @@ var MainView = (function() {
     for (var i = 0; i < rows.length; ++i) {
       var e = rows[i];
 
+      augmentDataRow(e);
+
       if (!filterFunc(e))
         continue;  // Not matched by our filter, discard the row.
-
-      augmentDataRow(e);
 
       var groupKey = entryToGroupKeyFunc(e);
 
@@ -755,7 +797,26 @@ var MainView = (function() {
     }
   }
 
+  /**
+   * Comparator for property |key|, having values |value1| and |value2|.
+   * If the key has defined a custom comparator use it. Otherwise use a
+   * default "less than" comparison.
+   */
+  function compareValuesForKey(key, value1, value2) {
+    var comparator = KEY_PROPERTIES[key].comparator;
+    if (comparator)
+      return comparator(value1, value2);
+    return simpleCompare(value1, value2);
+  }
+
   // --------------------------------------------------------------------------
+
+  /**
+   * @constructor
+   */
+  function MainView() {
+    this.init_();
+  }
 
   MainView.prototype = {
     setData: function(data) {
@@ -777,7 +838,7 @@ var MainView = (function() {
 
       // Figure out a display order for the groups.
       var groupKeys = getDictionaryKeys(groupedData);
-      groupKeys.sort();
+      groupKeys.sort(this.getGroupSortingFunction_());
 
       // Clear the results div, sine we may be overwriting older data.
       var parent = $(RESULTS_DIV_ID);
@@ -951,13 +1012,35 @@ var MainView = (function() {
           var propA = getPropertyByPath(a, key);
           var propB = getPropertyByPath(b, key);
 
-          var comparison = simpleCompare(propA, propB) * factor;
+          var comparison = compareValuesForKey(key, propA, propB);
+          comparison *= factor;  // Possibly reverse the ordering.
+
           if (comparison != 0)
             return comparison;
         }
 
         // Tie breaker.
         return simpleCompare(JSON.stringify(a), JSON.stringify(b));
+      };
+    },
+
+    getGroupSortingFunction_: function() {
+      return function(a, b) {
+        var groupKey1 = JSON.parse(a);
+        var groupKey2 = JSON.parse(b);
+
+        for (var i = 0; i < groupKey1.length; ++i) {
+          var comparison = compareValuesForKey(
+              groupKey1[i].key,
+              groupKey1[i].value,
+              groupKey2[i].value);
+
+          if (comparison != 0)
+            return comparison;
+        }
+
+        // Tie breaker.
+        return simpleCompare(a, b);
       };
     },
 
