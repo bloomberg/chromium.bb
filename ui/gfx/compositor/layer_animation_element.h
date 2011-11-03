@@ -30,8 +30,10 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   };
 
   struct TargetValue {
-   public:
     TargetValue();
+    // Initializes the target value to match the delegate. NULL may be supplied.
+    explicit TargetValue(const LayerAnimationDelegate* delegate);
+
     gfx::Rect bounds;
     Transform transform;
     float opacity;

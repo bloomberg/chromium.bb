@@ -150,7 +150,15 @@ class OpacityTransition : public LayerAnimationElement {
 
 // LayerAnimationElement::TargetValue ------------------------------------------
 
-LayerAnimationElement::TargetValue::TargetValue() : opacity(0.0f) {
+LayerAnimationElement::TargetValue::TargetValue()
+    : opacity(0.0f) {
+}
+
+LayerAnimationElement::TargetValue::TargetValue(
+    const LayerAnimationDelegate* delegate)
+    : bounds(delegate ? delegate->GetBoundsForAnimation() : gfx::Rect()),
+      transform(delegate ? delegate->GetTransformForAnimation() : Transform()),
+      opacity(delegate ? delegate->GetOpacityForAnimation() : 0.0f) {
 }
 
 // LayerAnimationElement -------------------------------------------------------

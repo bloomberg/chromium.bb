@@ -692,12 +692,12 @@ TEST(LayerAnimatorTest, AddObserverImplicit) {
   animator->SetDelegate(&delegate);
   animator->AddObserver(&observer);
 
-  // Should not end a sequence with the default animator.
+  // Should end a sequence with the default animator.
   EXPECT_TRUE(!observer.last_ended_sequence());
   animator->SetOpacity(1.0f);
   base::TimeTicks start_time = base::TimeTicks::Now();
   element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
-  EXPECT_TRUE(!observer.last_ended_sequence());
+  EXPECT_TRUE(observer.last_ended_sequence());
 
   TestLayerAnimationObserver scoped_observer;
   {
@@ -720,6 +720,33 @@ TEST(LayerAnimatorTest, AddObserverImplicit) {
   start_time = base::TimeTicks::Now();
   element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
   EXPECT_TRUE(!scoped_observer.last_ended_sequence());
+}
+
+// Check that setting a property during an animation with a default animator
+// cancels the original animation.
+TEST(LayerAnimatorTest, SettingPropertyDuringAnAnimation) {
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  animator->set_disable_timer_for_test(true);
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+
+  double start_opacity(0.0);
+  double target_opacity(1.0);
+
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+
+  delegate.SetOpacityFromAnimation(start_opacity);
+
+  scoped_ptr<LayerAnimationSequence> sequence(
+      new LayerAnimationSequence(
+          LayerAnimationElement::CreateOpacityElement(target_opacity, delta)));
+
+  animator->StartAnimation(sequence.release());
+
+  animator->SetOpacity(0.5);
+
+  EXPECT_FALSE(animator->is_animating());
+  EXPECT_EQ(0.5, animator->GetTargetOpacity());
 }
 
 } // namespace

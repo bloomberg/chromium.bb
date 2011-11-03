@@ -30,10 +30,10 @@ LayerAnimationSequence::~LayerAnimationSequence() {
 
 void LayerAnimationSequence::Progress(base::TimeDelta elapsed,
                                       LayerAnimationDelegate* delegate) {
-  if (elements_.size() == 0 || duration_ == base::TimeDelta())
+  if (elements_.empty())
     return;
 
-  if (is_cyclic_) {
+  if (is_cyclic_ && duration_ > base::TimeDelta()) {
     // If delta = elapsed - last_start_ is huge, we can skip ahead by complete
     // loops to save time.
     base::TimeDelta delta = elapsed - last_start_;

@@ -165,7 +165,7 @@ TEST(LayerAnimationSequenceTest, SetTarget) {
   sequence.AddElement(
       LayerAnimationElement::CreateOpacityElement(target_opacity, delta));
 
-  LayerAnimationElement::TargetValue target_value;
+  LayerAnimationElement::TargetValue target_value(&delegate);
   target_value.opacity = start_opacity;
   sequence.GetTargetValue(&target_value);
   EXPECT_FLOAT_EQ(target_opacity, target_value.opacity);

@@ -19,7 +19,8 @@ class COMPOSITOR_EXPORT LayerAnimationObserver  {
   virtual void OnLayerAnimationEnded(
       const LayerAnimationSequence* sequence) = 0;
 
-  // Called if |sequence| is aborted for any reason.
+  // Called if |sequence| is aborted for any reason. Should never do anything
+  // that may cause another animation to be started.
   virtual void OnLayerAnimationAborted(
       const LayerAnimationSequence* sequence) = 0;
 

@@ -597,6 +597,8 @@ TEST_F(LayerWithNullDelegateTest, HoleWithNinetyDegreeTransforms) {
   EXPECT_TRUE(!parent->hole_rect().IsEmpty());
 
   for (int i = -4; i <= 4; ++i) {
+    SCOPED_TRACE(::testing::Message() << "Iteration " << i);
+
     ui::Transform t;
     // Need to rotate in local coordinates.
     t.SetTranslate(-25, -25);

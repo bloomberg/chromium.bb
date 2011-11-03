@@ -114,9 +114,7 @@ void ScreenRotation::OnAbort() {
 const ui::LayerAnimationElement::AnimatableProperties&
 ScreenRotation::GetProperties() {
   static LayerAnimationElement::AnimatableProperties properties;
-  if (properties.size() == 0) {
+  if (properties.empty())
     properties.insert(LayerAnimationElement::TRANSFORM);
-    properties.insert(LayerAnimationElement::BOUNDS);
-  }
   return properties;
 }

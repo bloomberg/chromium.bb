@@ -10,6 +10,7 @@
 #include <set>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -140,6 +141,7 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
 
  protected:
   LayerAnimationDelegate* delegate() { return delegate_; }
+  const LayerAnimationDelegate* delegate() const { return delegate_; }
 
  private:
   friend class ScopedSettings;
@@ -167,7 +169,10 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   void UpdateAnimationState();
 
   // Removes the sequences from both the running animations and the queue.
-  void RemoveAnimation(LayerAnimationSequence* sequence);
+  // Returns a pointer to the removed animation, if any. NOTE: the caller is
+  // responsible for deleting the returned pointer.
+  LayerAnimationSequence* RemoveAnimation(
+      LayerAnimationSequence* sequence) WARN_UNUSED_RESULT;
 
   // Progresses to the end of the sequence before removing it.
   void FinishAnimation(LayerAnimationSequence* sequence);

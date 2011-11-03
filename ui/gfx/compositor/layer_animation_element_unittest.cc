@@ -44,7 +44,7 @@ TEST(LayerAnimationElementTest, TransformElement) {
                             delegate.GetTransformForAnimation());
   }
 
-  LayerAnimationElement::TargetValue target_value;
+  LayerAnimationElement::TargetValue target_value(&delegate);
   element->GetTargetValue(&target_value);
   CheckApproximatelyEqual(target_transform, target_value.transform);
 
@@ -74,7 +74,7 @@ TEST(LayerAnimationElementTest, BoundsElement) {
     CheckApproximatelyEqual(target, delegate.GetBoundsForAnimation());
   }
 
-  LayerAnimationElement::TargetValue target_value;
+  LayerAnimationElement::TargetValue target_value(&delegate);
   element->GetTargetValue(&target_value);
   CheckApproximatelyEqual(target, target_value.bounds);
 
@@ -102,7 +102,7 @@ TEST(LayerAnimationElementTest, OpacityElement) {
     EXPECT_FLOAT_EQ(target, delegate.GetOpacityForAnimation());
   }
 
-  LayerAnimationElement::TargetValue target_value;
+  LayerAnimationElement::TargetValue target_value(&delegate);
   element->GetTargetValue(&target_value);
   EXPECT_FLOAT_EQ(target, target_value.opacity);
 
