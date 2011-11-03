@@ -589,6 +589,26 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     else:
       os.kill(pid, signal.SIGTERM)
 
+  @staticmethod
+  def ChromeFlagsForSyncTestServer(port, xmpp_port):
+    """Creates the flags list for the browser to connect to the sync server.
+
+    Use the |ExtraBrowser| class to launch a new browser with these flags.
+
+    Args:
+      port: The HTTP port number.
+      xmpp_port: The XMPP port number.
+
+    Returns:
+      A list with the flags.
+    """
+    return [
+      '--sync-url=http://127.0.0.1:%s/chromiumsync' % port,
+      '--sync-allow-insecure-xmpp-connection',
+      '--sync-notification-host=127.0.0.1:%s' % xmpp_port,
+      '--sync-notification-method=p2p',
+    ]
+
   def GetPrivateInfo(self):
     """Fetch info from private_tests_info.txt in private dir.
 
@@ -652,6 +672,28 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                     function, expect_retval, retval))
       time.sleep(retry_sleep)
     return False
+
+  def StartSyncServer(self):
+    """Start a local sync server.
+
+    Adds a dictionary attribute 'ports' in returned object.
+
+    Returns:
+      A handle to Sync Server, an instance of TestServer
+    """
+    sync_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_SYNC,
+         pyautolib.FilePath(''))
+    assert sync_server.Start(), 'Could not start sync server'
+    sync_server.ports = dict(port=sync_server.GetPort(),
+                              xmpp_port=sync_server.GetSyncXmppPort())
+    logging.debug('Started sync server at ports %s.' % sync_server.ports)
+    return sync_server
+
+  def StopSyncServer(self, sync_server):
+    """Stop the local sync server."""
+    assert sync_server, 'Sync Server not yet started'
+    assert sync_server.Stop(), 'Could not stop sync server'
+    logging.debug('Stopped sync server at ports %s.' % sync_server.ports)
 
   def StartFTPServer(self, data_dir):
     """Start a local file server hosting data files over ftp://
@@ -1039,7 +1081,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       an instance of prefs_info.PrefsInfo
     """
     return prefs_info.PrefsInfo(
-        self._SendJSONRequest(-1,
+        self._SendJSONRequest(0,
                               json.dumps({'command': 'GetLocalStatePrefsInfo'}),
                               self.action_max_timeout_ms()))
 
@@ -1070,7 +1112,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'path': path,
       'value': value,
     }
-    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    self._GetResultFromJSONRequest(cmd_dict)
 
   def GetPrefsInfo(self):
     """Return info about preferences.
@@ -4140,6 +4182,34 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return self._GetResultFromJSONRequest(cmd_dict)
 
   ## ChromeOS section -- end
+
+
+class ExtraBrowser(PyUITest):
+  """Launches a new browser with some extra flags.
+
+  The new browser is launched with its own fresh profile.
+  This class does not apply to ChromeOS.
+  """
+  def __init__(self, chrome_flags=[], methodName='runTest', **kwargs):
+    """Accepts extra chrome flags for launching a new browser instance.
+
+    Args:
+      chrome_flags: list of extra flags when launching a new browser.
+    """
+    assert not PyUITest.IsChromeOS(), \
+        'This function cannot be used to launch a new browser in ChromeOS.'
+    PyUITest.__init__(self, methodName=methodName, **kwargs)
+    self._chrome_flags = chrome_flags
+    PyUITest.setUp(self)
+
+  def __del__(self):
+    """Tears down the browser and then calls super class's destructor"""
+    PyUITest.tearDown(self)
+    PyUITest.__del__(self)
+
+  def ExtraChromeFlags(self):
+    """Prepares the browser to launch with specified Chrome flags."""
+    return PyUITest.ExtraChromeFlags(self) + self._chrome_flags
 
 
 class _RemoteProxy():

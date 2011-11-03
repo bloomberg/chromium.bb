@@ -5,6 +5,7 @@
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import test_utils
 
 
 class SyncTest(pyauto.PyUITest):
@@ -12,27 +13,15 @@ class SyncTest(pyauto.PyUITest):
 
   def testSignInToSync(self):
     """Sign in to sync."""
-    creds = self.GetPrivateInfo()['test_google_account']
-    username = creds['username']
-    password = creds['password']
     new_timeout = pyauto.PyUITest.ActionTimeoutChanger(self,
                                                        60 * 1000)  # 1 min.
-    self.assertTrue(self.GetSyncInfo()['summary'] == 'OFFLINE_UNUSABLE')
-    self.assertTrue(self.GetSyncInfo()['last synced'] == 'Never')
-    self.assertTrue(self.SignInToSync(username, password))
-    self.assertTrue(self.GetSyncInfo()['summary'] == 'READY')
-    self.assertTrue(self.GetSyncInfo()['last synced'] == 'Just now')
+    test_utils.SignInToSyncAndVerifyState(self, 'test_google_account')
 
   def testDisableAndEnableDatatypes(self):
     """Sign in, disable and then enable sync for multiple sync datatypes."""
-    creds = self.GetPrivateInfo()['test_google_account']
-    username = creds['username']
-    password = creds['password']
     new_timeout = pyauto.PyUITest.ActionTimeoutChanger(self,
                                                        2 * 60 * 1000)  # 2 min.
-    self.assertTrue(self.SignInToSync(username, password))
-    self.assertTrue(self.GetSyncInfo()['summary'] == 'READY')
-    self.assertTrue(self.GetSyncInfo()['last synced'] == 'Just now')
+    test_utils.SignInToSyncAndVerifyState(self, 'test_google_account')
     self.assertTrue(self.DisableSyncForDatatypes(['Apps', 'Autofill',
         'Bookmarks', 'Extensions', 'Preferences', 'Themes']))
     self.assertFalse('Apps' in self.GetSyncInfo()['synced datatypes'])
@@ -54,14 +43,9 @@ class SyncTest(pyauto.PyUITest):
 
   def testRestartBrowser(self):
     """Sign in to sync and restart the browser."""
-    creds = self.GetPrivateInfo()['test_google_account']
-    username = creds['username']
-    password = creds['password']
     new_timeout = pyauto.PyUITest.ActionTimeoutChanger(self,
                                                        2 * 60 * 1000)  # 2 min.
-    self.assertTrue(self.SignInToSync(username, password))
-    self.assertTrue(self.GetSyncInfo()['summary'] == 'READY')
-    self.assertTrue(self.GetSyncInfo()['last synced'] == 'Just now')
+    test_utils.SignInToSyncAndVerifyState(self, 'test_google_account')
     self.RestartBrowser(clear_profile=False)
     self.assertTrue(self.AwaitSyncRestart())
     self.assertTrue(self.GetSyncInfo()['summary'] == 'READY')
@@ -109,6 +93,65 @@ class SyncTest(pyauto.PyUITest):
         lambda: self.FindInPage(customize_button, tab_index=1)['match_count'],
                 expect_retval=1),
         'No customize sync button.')
+
+
+class SyncIntegrationTest(pyauto.PyUITest):
+  """Test integration between sync and other components."""
+
+  def ExtraChromeFlags(self):
+    """Prepares the browser to launch with the specified extra Chrome flags.
+
+    |ChromeFlagsForTestServer()| is invoked to create the flags list.
+    """
+    return pyauto.PyUITest.ExtraChromeFlags(self) + \
+        self.ChromeFlagsForSyncTestServer(**self._sync_server.ports)
+
+  def setUp(self):
+    # LaunchPythonSyncServer() executes before pyauto.PyUITest.setUp() because
+    # the latter invokes ExtraChromeFlags() which requires the server's ports.
+    self._sync_server = self.StartSyncServer()
+    pyauto.PyUITest.setUp(self)
+
+  def tearDown(self):
+    pyauto.PyUITest.tearDown(self)
+    self.StopSyncServer(self._sync_server)
+
+  def testAddBookmarkAndVerifySync(self):
+    """Verify a bookmark syncs between two browsers.
+
+    Integration tests between the bookmarks and sync features. A bookmark is
+    added to one instance of the browser, the bookmark is synced to the account,
+    a new instance of the browser is launched, the account is synced and the
+    bookmark info is synced on the new browser.
+    """
+    # Launch a new instance of the browser with a clean profile (Browser 2)
+    browser2 = pyauto.ExtraBrowser(
+        self.ChromeFlagsForSyncTestServer(**self._sync_server.ports))
+
+    account_key = 'test_sync_account'
+    test_utils.SignInToSyncAndVerifyState(self, account_key)
+
+    # Add a bookmark.
+    bookmarks = self.GetBookmarkModel()
+    bar_id = bookmarks.BookmarkBar()['id']
+    name = 'Google'
+    url  = 'http://www.google.com'
+    self.NavigateToURL(url)
+    self.AddBookmarkURL(bar_id, 0, name, url)
+
+    # Refresh the bookmarks in the first browser.
+    bookmarks = self.GetBookmarkModel()
+
+    # Log into the account and sync the browser to the account.
+    test_utils.SignInToSyncAndVerifyState(browser2, account_key)
+
+    # Verify browser 2 contains the bookmark.
+    browser2_bookmarks = browser2.GetBookmarkModel()
+    self.assertEqual(browser2_bookmarks.NodeCount(), bookmarks.NodeCount())
+    bar_child = browser2_bookmarks.BookmarkBar()['children'][0]
+    self.assertEqual(bar_child['type'], 'url')
+    self.assertEqual(bar_child['name'], name)
+    self.assertTrue(url in bar_child['url'])
 
 
 if __name__ == '__main__':

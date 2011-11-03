@@ -314,3 +314,20 @@ def GetCredsKey():
   node = platform.uname()[1].split('.')[0]
   creds_key = 'test_google_acct_%s_%s' % (system_name, node)
   return creds_key
+
+
+def SignInToSyncAndVerifyState(test, account_key):
+  """Sign into sync and verify that it was successful.
+
+  Args:
+    test: derived from pyauto.PyUITest - base class for UI test cases.
+    account_key: the credentials key in the private account dictionary file.
+  """
+  creds = test.GetPrivateInfo()[account_key]
+  username = creds['username']
+  password = creds['password']
+  test.assertTrue(test.GetSyncInfo()['summary'] == 'OFFLINE_UNUSABLE')
+  test.assertTrue(test.GetSyncInfo()['last synced'] == 'Never')
+  test.assertTrue(test.SignInToSync(username, password))
+  test.assertTrue(test.GetSyncInfo()['summary'] == 'READY')
+  test.assertTrue(test.GetSyncInfo()['last synced'] == 'Just now')
