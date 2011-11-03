@@ -88,6 +88,12 @@ class CONTENT_EXPORT VideoCaptureHost
   // between a VideCaptureMessageFilter and a VideoCaptureHost.
   void OnStartCapture(int device_id,
                       const media::VideoCaptureParams& params);
+  void OnControllerAdded(
+      int device_id, const media::VideoCaptureParams& params,
+      VideoCaptureController* controller);
+  void DoControllerAddedOnIOThreead(
+      int device_id, const media::VideoCaptureParams params,
+      VideoCaptureController* controller);
 
   // IPC message: Stop capture on device referenced by |device_id|.
   void OnStopCapture(int device_id);
@@ -125,12 +131,19 @@ class CONTENT_EXPORT VideoCaptureHost
   // Handle error coming from VideoCaptureDevice.
   void DoHandleError(int device_id);
 
-  typedef std::map<VideoCaptureControllerID,
-                   scoped_refptr<VideoCaptureController> >EntryMap;
+  // Helpers.
+  media_stream::VideoCaptureManager* GetVideoCaptureManager();
 
+  typedef std::map<VideoCaptureControllerID,
+                   scoped_refptr<VideoCaptureController> > EntryMap;
   // A map of VideoCaptureControllerID to VideoCaptureController
   // objects that is currently active.
   EntryMap entries_;
+
+  typedef std::map<VideoCaptureControllerID,
+                   media::VideoCapture::State> EntryState;
+  // Record state of each VideoCaptureControllerID.
+  EntryState entry_state_;
 
   // Used to get a pointer to VideoCaptureManager to start/stop capture devices.
   const content::ResourceContext* resource_context_;

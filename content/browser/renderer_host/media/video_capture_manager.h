@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// VideoCaptureManager is used to open/close, start/stop as well as enumerate
-// available video capture devices. All functions are expected to be called from
-// the Browser::IO thread. VideoCaptureManager will open OS dependent instances
-// of VideoCaptureDevice. A device can only be opened once.
+// VideoCaptureManager is used to open/close, start/stop, enumerate available
+// video capture devices, and manage VideoCaptureController's.
+// All functions are expected to be called from Browser::IO thread.
+// VideoCaptureManager will open OS dependent instances of VideoCaptureDevice.
+// A device can only be opened once.
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_MANAGER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_MANAGER_H_
 
+#include <list>
 #include <map>
 
 #include "base/threading/thread.h"
@@ -18,6 +20,9 @@
 #include "content/common/media/media_stream_options.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
+
+class VideoCaptureController;
+class VideoCaptureControllerEventHandler;
 
 namespace media_stream {
 
@@ -66,7 +71,21 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   void UseFakeDevice();
   MessageLoop* GetMessageLoop();
 
+  // Called by VideoCaptureHost to get a controller for |capture_params|.
+  // The controller is returned via calling |added_cb|.
+  void AddController(
+      const media::VideoCaptureParams& capture_params,
+      VideoCaptureControllerEventHandler* handler,
+      base::Callback<void(VideoCaptureController*)> added_cb);
+  // Called by VideoCaptureHost to remove the |controller|.
+  void RemoveController(
+      VideoCaptureController* controller,
+      VideoCaptureControllerEventHandler* handler);
+
  private:
+  typedef std::list<VideoCaptureControllerEventHandler*> Handlers;
+  struct Controller;
+
   // Called by the public functions, executed on vc_device_thread_.
   void OnEnumerateDevices();
   void OnOpen(int capture_session_id, const StreamDeviceInfo& device);
@@ -75,6 +94,13 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
                media::VideoCaptureDevice::EventHandler* video_capture_receiver);
   void OnStop(const media::VideoCaptureSessionId capture_session_id,
               base::Closure stopped_cb);
+  void DoAddControllerOnDeviceThread(
+      const media::VideoCaptureParams capture_params,
+      VideoCaptureControllerEventHandler* handler,
+      base::Callback<void(VideoCaptureController*)> added_cb);
+  void DoRemoveControllerOnDeviceThread(
+      VideoCaptureController* controller,
+      VideoCaptureControllerEventHandler* handler);
 
   // Executed on Browser::IO thread to call Listener.
   void OnOpened(int capture_session_id);
@@ -94,6 +120,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   bool DeviceOpened(const media::VideoCaptureDevice::Name& device_name);
   bool DeviceOpened(const StreamDeviceInfo& device_info);
   bool IsOnCaptureDeviceThread() const;
+  media::VideoCaptureDevice* GetDeviceInternal(int capture_session_id);
 
   // Thread for all calls to VideoCaptureDevice.
   base::Thread vc_device_thread_;
@@ -110,6 +137,13 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
 
   // Set to true if using fake devices for testing, false by default.
   bool use_fake_device_;
+
+  // Only accessed from vc_device_thread_.
+  // VideoCaptureManager owns all VideoCaptureController's and is responsible
+  // for deleting the instances when they are not used any longer.
+  // VideoCaptureDevice is one-to-one mapped to VideoCaptureController.
+  typedef std::map<media::VideoCaptureDevice*, Controller*> Controllers;
+  Controllers controllers_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureManager);
 };

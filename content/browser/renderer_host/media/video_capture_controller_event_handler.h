@@ -11,9 +11,10 @@
 
 // ID used for identifying an object of VideoCaptureController.
 struct CONTENT_EXPORT VideoCaptureControllerID {
-  VideoCaptureControllerID(int device_id);
+  explicit VideoCaptureControllerID(int device_id);
 
   bool operator<(const VideoCaptureControllerID& vc) const;
+  bool operator==(const VideoCaptureControllerID& vc) const;
 
   int device_id;
 };

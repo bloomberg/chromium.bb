@@ -274,17 +274,17 @@ class VideoCaptureHostTest : public testing::Test {
 
   void StartCapture() {
     InSequence s;
-    // 1. Newly created buffers will arrive.
+    // 1. First - get info about the new resolution
+    EXPECT_CALL(*host_, OnDeviceInfo(kDeviceId));
+
+    // 2. Change state to started
+    EXPECT_CALL(*host_, OnStateChanged(kDeviceId,
+                                       media::VideoCapture::kStarted));
+
+    // 3. Newly created buffers will arrive.
     EXPECT_CALL(*host_, OnNewBufferCreated(kDeviceId, _, _, _))
         .Times(AnyNumber())
         .WillRepeatedly(Return());
-
-    // 2. First - get info about the new resolution
-    EXPECT_CALL(*host_, OnDeviceInfo(kDeviceId));
-
-    // 3. Change state to started
-    EXPECT_CALL(*host_, OnStateChanged(kDeviceId,
-                                       media::VideoCapture::kStarted));
 
     // 4. First filled buffer will arrive.
     EXPECT_CALL(*host_, OnBufferFilled(kDeviceId, _, _))

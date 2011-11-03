@@ -5,12 +5,13 @@
 // VideoCaptureController is the glue between VideoCaptureHost,
 // VideoCaptureManager and VideoCaptureDevice.
 // It provides functions for VideoCaptureHost to start a VideoCaptureDevice and
-// is responsible for keeping track of TransportDIBs and filling them with I420
+// is responsible for keeping track of shared DIBs and filling them with I420
 // video frames for IPC communication between VideoCaptureHost and
 // VideoCaptureMessageFilter.
 // It implements media::VideoCaptureDevice::EventHandler to get video frames
 // from a VideoCaptureDevice object and do color conversion straight into the
-// TransportDIBs to avoid a memory copy.
+// shared DIBs to avoid a memory copy.
+// It serves multiple VideoCaptureControllerEventHandlers.
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_CONTROLLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_CONTROLLER_H_
@@ -18,14 +19,15 @@
 #include <list>
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/process.h"
 #include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
+#include "media/video/capture/video_capture.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
-#include "ui/gfx/surface/transport_dib.h"
 
 namespace media_stream {
 class VideoCaptureManager;
@@ -36,65 +38,96 @@ class VideoCaptureController
       public media::VideoCaptureDevice::EventHandler {
  public:
   VideoCaptureController(
-      const VideoCaptureControllerID& id,
-      base::ProcessHandle render_process,
-      VideoCaptureControllerEventHandler* event_handler,
       media_stream::VideoCaptureManager* video_capture_manager);
   virtual ~VideoCaptureController();
 
-  // Starts video capturing and tries to use the resolution specified in
-  // params.
-  // When capturing has started VideoCaptureControllerEventHandler::OnFrameInfo
-  // is called with resolution that best matches the requested that the video
+  // Start video capturing and try to use the resolution specified in
+  // |params|.
+  // When capturing has started, the |event_handler| receives a call OnFrameInfo
+  // with resolution that best matches the requested that the video
   // capture device support.
-  void StartCapture(const media::VideoCaptureParams& params);
+  void StartCapture(const VideoCaptureControllerID& id,
+                    VideoCaptureControllerEventHandler* event_handler,
+                    base::ProcessHandle render_process,
+                    const media::VideoCaptureParams& params);
 
   // Stop video capture.
-  // When the capture is stopped and all TransportDIBS have been returned
+  // When the capture is stopped and all DIBs have been returned,
   // VideoCaptureControllerEventHandler::OnReadyToDelete will be called.
-  // |stopped_cb| may be NULL. But a non-NULL Closure can be used to get
-  // a notification when the device is stopped, regardless of
-  // VideoCaptureController's state.
-  void StopCapture(base::Closure stopped_cb);
+  // |force_buffer_return| allows controller to take back all buffers used
+  // by |event_handler|.
+  void StopCapture(const VideoCaptureControllerID& id,
+                   VideoCaptureControllerEventHandler* event_handler,
+                   bool force_buffer_return);
 
   // Return a buffer previously given in
   // VideoCaptureControllerEventHandler::OnBufferReady.
-  void ReturnBuffer(int buffer_id);
+  void ReturnBuffer(const VideoCaptureControllerID& id,
+                    VideoCaptureControllerEventHandler* event_handler,
+                    int buffer_id);
 
   // Implement media::VideoCaptureDevice::EventHandler.
   virtual void OnIncomingCapturedFrame(const uint8* data,
                                        int length,
-                                       base::Time timestamp);
-  virtual void OnError();
-  virtual void OnFrameInfo(const media::VideoCaptureDevice::Capability& info);
+                                       base::Time timestamp) OVERRIDE;
+  virtual void OnError() OVERRIDE;
+  virtual void OnFrameInfo(
+      const media::VideoCaptureDevice::Capability& info) OVERRIDE;
 
  private:
-  // Called by VideoCaptureManager when a device have been stopped.
-  void OnDeviceStopped(base::Closure stopped_cb);
+  struct ControllerClient;
+  typedef std::list<ControllerClient*> ControllerClients;
+
+  // Callback when manager has stopped device.
+  void OnDeviceStopped();
+
+  // Worker functions on IO thread.
+  void DoIncomingCapturedFrameOnIOThread(int buffer_id, base::Time timestamp);
+  void DoFrameInfoOnIOThread(const media::VideoCaptureDevice::Capability info);
+  void DoErrorOnIOThread();
+  void DoDeviceStateOnIOThread(bool in_use);
+  void DoDeviceStoppedOnIOThread();
+
+  // Send frame info and init buffers to |client|.
+  void SendFrameInfoAndBuffers(ControllerClient* client, int buffer_size);
+
+  // Helpers.
+  // Find a client of |id| and |handler| in |clients|.
+  ControllerClient* FindClient(
+      const VideoCaptureControllerID& id,
+      VideoCaptureControllerEventHandler* handler,
+      const ControllerClients& clients);
+  // Decide what to do after kStopping state. Dependent on events, controller
+  // can stay in kStopping state, or go to kStopped, or restart capture.
+  void PostStopping();
+  // Check if any DIB is used by client.
+  bool ClientHasDIB();
 
   // Lock to protect free_dibs_ and owned_dibs_.
   base::Lock lock_;
-  // Handle to the render process that will receive the DIBs.
-  base::ProcessHandle render_handle_;
-  bool report_ready_to_delete_;
-  typedef std::list<int> DIBHandleList;
-  typedef std::map<int, base::SharedMemory*> DIBMap;
 
-  // Free DIBS that can be filled with video frames.
-  DIBHandleList free_dibs_;
-
-  // All DIBS created by this object.
+  struct SharedDIB;
+  typedef std::map<int /*buffer_id*/, SharedDIB*> DIBMap;
+  // All DIBs created by this object.
+  // It's modified only on IO thread.
   DIBMap owned_dibs_;
-  VideoCaptureControllerEventHandler* event_handler_;
 
-  // The parameter that was requested when starting the capture device.
-  media::VideoCaptureParams params_;
+  // All clients served by this controller.
+  ControllerClients controller_clients_;
 
-  // ID used for identifying this object.
-  VideoCaptureControllerID id_;
+  // All clients waiting for service.
+  ControllerClients pending_clients_;
+
+  // The parameter that currently used for the capturing.
+  media::VideoCaptureParams current_params_;
+
   media::VideoCaptureDevice::Capability frame_info_;
+  bool frame_info_available_;
 
   media_stream::VideoCaptureManager* video_capture_manager_;
+
+  bool device_in_use_;
+  media::VideoCapture::State state_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureController);
 };

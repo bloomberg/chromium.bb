@@ -12,3 +12,8 @@ bool VideoCaptureControllerID::operator<(
     const VideoCaptureControllerID& vc) const {
   return this->device_id < vc.device_id;
 }
+
+bool VideoCaptureControllerID::operator==(
+    const VideoCaptureControllerID& vc) const {
+  return this->device_id == vc.device_id;
+}
