@@ -93,7 +93,7 @@ void PanelBrowserView::Deactivate() {
   else
     ::SetFocus(NULL);
 #else
-  // TODO(jianli): to be implemented for other platform.
+  NOTIMPLEMENTED();
   BrowserView::Deactivate();
 #endif
 }
@@ -146,17 +146,13 @@ void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
                                                  bool active) {
   ::BrowserView::OnWidgetActivationChanged(widget, active);
 
-#if defined(USE_AURA)
-  // TODO(beng):
-  NOTIMPLEMENTED();
-  bool focused = active;
-#elif defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // The panel window is in focus (actually accepting keystrokes) if it is
   // active and belongs to a foreground application.
   bool focused = active &&
       GetFrameView()->GetWidget()->GetNativeView() == ::GetForegroundWindow();
 #else
-  // TODO(jianli): Investigate focus behavior for ChromeOS
+  NOTIMPLEMENTED();
   bool focused = active;
 #endif
 
@@ -511,7 +507,7 @@ void NativePanelTestingWin::ReleaseMouseButtonTitlebar() {
 void NativePanelTestingWin::DragTitlebar(int delta_x, int delta_y) {
   // TODO(jianli): Need a comment here that explains why we use
   // mouse_pressed_point_ and not current bounds as obtained by
-  // GetRestoredBounds().
+  // GetRestoredBounds(). http://crbug.com/102730
   panel_browser_view_->OnTitlebarMouseDragged(gfx::Point(
       panel_browser_view_->mouse_pressed_point_.x() + delta_x,
       panel_browser_view_->mouse_pressed_point_.y() + delta_y));

@@ -182,10 +182,6 @@ void BasePanelBrowserTest::SetUpOnMainThread() {
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 }
 
-// TODO(prasadt): If we start having even more of these WaitFor* pattern
-// methods, refactor. The only way to refactor would be to pass in a function
-// pointer, it may not be worth complicating the code till we have more of
-// these.
 void BasePanelBrowserTest::WaitForPanelActiveState(
     Panel* panel, ActiveState expected_state) {
   DCHECK(expected_state == SHOW_AS_ACTIVE ||

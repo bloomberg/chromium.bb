@@ -429,10 +429,9 @@ void PanelManager::BringUpOrDownTitlebars(bool bring_up) {
   // it makes it possible to hit the titlebar on OSX if Dock has Magnifying
   // enabled - the panels stay up for a while after Dock magnification effect
   // stops covering the panels.
-  // TODO(dimich): when there is implementation which has both delays to be
-  // different from zero, figure out what shoudl be the combined delay.
-  if (!bring_up &&
-      task_delay_milliseconds < kMillisecondsBeforeCollapsingFromTitleOnlyState)
+  // Currently, no platforms use both delays.
+  DCHECK(task_delay_milliseconds == 0);
+  if (!bring_up)
     task_delay_milliseconds = kMillisecondsBeforeCollapsingFromTitleOnlyState;
 
   // OnAutoHidingDesktopBarVisibilityChanged will handle this.

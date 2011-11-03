@@ -172,7 +172,7 @@ void Panel::Close() {
 // TODO(dimich): Only implemented fully async on Mac. Need to update other
 // platforms. The panel should be removed from PanelManager when and if it
 // was actually closed. The closing can be cancelled because of onbeforeunload
-// handler on the web page.
+// handler on the web page. http://crbug.com/102720
 #if !defined(OS_MACOSX)
   manager()->Remove(this);
 #endif
@@ -207,7 +207,7 @@ BrowserWindowTesting* Panel::GetBrowserWindowTesting() {
 }
 
 StatusBubble* Panel::GetStatusBubble() {
-  // TODO(jennb): Implement.
+  // TODO(jennb): Implement. http://crbug.com/102723
   return NULL;
 }
 
@@ -233,7 +233,8 @@ void Panel::UpdateLoadingAnimations(bool should_animate) {
 }
 
 void Panel::SetStarredState(bool is_starred) {
-  // TODO(jennb): Figure out if this applies to Panels.
+  // Since panels are typically not bookmarked extension UI windows, they don't
+  // have starred state.
 }
 
 gfx::Rect Panel::GetRestoredBounds() const {
@@ -248,7 +249,7 @@ gfx::Rect Panel::GetBounds() const {
 }
 
 bool Panel::IsMaximized() const {
-  // TODO(jennb): Figure out how this applies to Panels. Means isZoomed.
+  // Size of panels is managed by PanelManager, they are never 'zoomed'.
   return false;
 }
 
@@ -290,7 +291,7 @@ void Panel::SetFocusToLocationBar(bool select_all) {
 }
 
 void Panel::UpdateReloadStopState(bool is_loading, bool force) {
-  // TODO(jennb): Implement.
+  // Panels don't have stop/reload indicator.
 }
 
 void Panel::UpdateToolbar(TabContentsWrapper* contents,

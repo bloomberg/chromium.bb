@@ -218,7 +218,6 @@ void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(GdkEvent* event) {
 base::MessagePumpObserver::EventStatus
 PanelBrowserFrameView::MouseWatcher::WillProcessXEvent(
     XEvent* xevent) {
-  // TODO(saintlou): This is dummy code, but a value must be returned.
   NOTIMPLEMENTED();
   return EVENT_CONTINUE;
 }

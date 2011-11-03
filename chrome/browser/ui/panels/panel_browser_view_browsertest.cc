@@ -245,6 +245,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     // TODO(dimich): Either remove this test in favor of platform-independent
     // one, or fix it. It is broken because are_titlebars_up_ in PanelManager
     // is not in sync with requested state of titlebars.
+    // http://crbug.com/102733
 /*
     mock_auto_hiding_desktop_bar()->SetVisibility(
         AutoHidingDesktopBar::ALIGN_BOTTOM, AutoHidingDesktopBar::VISIBLE);
@@ -585,6 +586,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest,
 }
 
 // TODO(jianli): Investigate why this fails on win trunk build.
+// http://crbug.com/102734
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, DISABLED_DrawAttention) {
   TestDrawAttention();
 }

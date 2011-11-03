@@ -221,6 +221,7 @@ class PanelManager : public PanelMouseWatcher::Observer,
   // Minimum width and height of a panel.
   // Note: The minimum size of a widget (see widget.cc) is fixed to 100x100.
   // TODO(jianli): Need to fix this to support smaller panel.
+  // http://crbug.com/102708
   static const int kPanelMinWidth = 100;
   static const int kPanelMinHeight = 100;
 

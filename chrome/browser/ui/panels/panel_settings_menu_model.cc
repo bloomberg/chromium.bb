@@ -91,6 +91,7 @@ void PanelSettingsMenuModel::ExecuteCommand(int command_id) {
     case COMMAND_UNINSTALL:
       // TODO(jianli): Need to handle the case that the extension API requests
       // the panel to be closed when the uninstall dialog is still showing.
+      // http://crbug.com/102742
       extension_uninstall_dialog_.reset(
           ExtensionUninstallDialog::Create(browser->GetProfile(), this));
       extension_uninstall_dialog_->ConfirmUninstall(extension);

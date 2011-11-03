@@ -75,8 +75,6 @@ enum PanelDragState {
 - (void)didChangeMainWindow:(NSNotification*)notification;
 
 // Helpers to control title drag operation, called from more then one place.
-// TODO(dimich): replace BOOL parameter that we have to explicitly specify at
-// callsites with an enum defined in PanelManager.
 - (void)startDrag;
 - (void)endDrag:(BOOL)cancelled;
 - (void)dragWithDeltaX:(int)deltaX;

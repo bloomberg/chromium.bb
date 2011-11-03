@@ -705,7 +705,7 @@ bool NativePanelTestingGtk::VerifyDrawingAttention() const {
 }
 
 bool NativePanelTestingGtk::VerifyActiveState(bool is_active) {
-  // TODO(jianli): to be implemented.
+  // TODO(jianli): to be implemented. http://crbug.com/102737
   return false;
 }
 
