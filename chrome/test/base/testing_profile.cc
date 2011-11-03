@@ -200,6 +200,9 @@ TestingProfile::~TestingProfile() {
 
   if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
+
+  // Close the handles so that proper cleanup can be done.
+  db_tracker_ = NULL;
 }
 
 void TestingProfile::CreateFaviconService() {
