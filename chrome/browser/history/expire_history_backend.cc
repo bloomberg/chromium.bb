@@ -351,8 +351,10 @@ void ExpireHistoryBackend::BroadcastDeleteNotifications(
     // determine if they care whether anything was deleted).
     URLsDeletedDetails* deleted_details = new URLsDeletedDetails;
     deleted_details->all_history = false;
-    for (size_t i = 0; i < dependencies->deleted_urls.size(); i++)
+    for (size_t i = 0; i < dependencies->deleted_urls.size(); i++) {
+      deleted_details->rows.push_back(dependencies->deleted_urls[i]);
       deleted_details->urls.insert(dependencies->deleted_urls[i].url());
+    }
     delegate_->BroadcastNotifications(
         chrome::NOTIFICATION_HISTORY_URLS_DELETED, deleted_details);
   }
