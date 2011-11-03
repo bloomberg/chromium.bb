@@ -1,4 +1,4 @@
-
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       watchdog_(watchdog),
       software_(software),
       handle_messages_scheduled_(false),
+      processed_get_state_fast_(false),
       num_contexts_preferring_discrete_gpu_(0),
       task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(gpu_channel_manager);
@@ -79,9 +80,26 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
     return OnControlMessageReceived(message);
 
   if (message.type() == GpuCommandBufferMsg_GetStateFast::ID) {
-    // Move GetStateFast commands to the head of the queue, so the renderer
-    // doesn't have to wait any longer than necessary.
-    deferred_messages_.push_front(new IPC::Message(message));
+    if (processed_get_state_fast_) {
+      // Require a non-GetStateFast message in between two GetStateFast
+      // messages, to ensure progress is made.
+      std::deque<IPC::Message*>::iterator point = deferred_messages_.begin();
+
+      while (point != deferred_messages_.end() &&
+             (*point)->type() == GpuCommandBufferMsg_GetStateFast::ID) {
+        ++point;
+      }
+
+      if (point != deferred_messages_.end()) {
+        ++point;
+      }
+
+      deferred_messages_.insert(point, new IPC::Message(message));
+    } else {
+      // Move GetStateFast commands to the head of the queue, so the renderer
+      // doesn't have to wait any longer than necessary.
+      deferred_messages_.push_front(new IPC::Message(message));
+    }
   } else {
     deferred_messages_.push_back(new IPC::Message(message));
   }
@@ -234,6 +252,8 @@ void GpuChannel::HandleMessage() {
   if (!deferred_messages_.empty()) {
     scoped_ptr<IPC::Message> message(deferred_messages_.front());
     deferred_messages_.pop_front();
+    processed_get_state_fast_ =
+        (message->type() == GpuCommandBufferMsg_GetStateFast::ID);
     // Handle deferred control messages.
     if (message->routing_id() == MSG_ROUTING_CONTROL)
       OnControlMessageReceived(*message);

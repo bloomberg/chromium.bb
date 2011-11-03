@@ -188,6 +188,7 @@ class GpuChannel : public IPC::Channel::Listener,
   GpuWatchdog* watchdog_;
   bool software_;
   bool handle_messages_scheduled_;
+  bool processed_get_state_fast_;
   int32 num_contexts_preferring_discrete_gpu_;
 
   ScopedRunnableMethodFactory<GpuChannel> task_factory_;
