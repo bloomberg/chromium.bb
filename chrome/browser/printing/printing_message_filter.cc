@@ -243,7 +243,6 @@ void PrintingMessageFilter::OnScriptedPrint(
       this,
       &PrintingMessageFilter::OnScriptedPrintReply,
       printer_query,
-      params.routing_id,
       reply_msg);
 
   printer_query->GetSettings(printing::PrinterQuery::ASK_USER,
@@ -256,7 +255,6 @@ void PrintingMessageFilter::OnScriptedPrint(
 
 void PrintingMessageFilter::OnScriptedPrintReply(
     scoped_refptr<printing::PrinterQuery> printer_query,
-    int routing_id,
     IPC::Message* reply_msg) {
   PrintMsg_PrintPages_Params params;
   if (printer_query->last_status() != printing::PrintingContext::OK ||

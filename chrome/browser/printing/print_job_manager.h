@@ -19,9 +19,7 @@ class PrefService;
 namespace printing {
 
 class JobEventDetails;
-class PrintedDocument;
 class PrintJob;
-class PrintedPage;
 class PrinterQuery;
 
 class PrintJobManager : public content::NotificationObserver {
@@ -73,10 +71,14 @@ class PrintJobManager : public content::NotificationObserver {
   // Used to serialize access to queued_workers_.
   base::Lock lock_;
 
-  // Printing is enabled/disabled. This variable is checked at only one place,
-  // by RenderMessageFilter::OnGetDefaultPrintSettings. If its value is true
+  // Printing is enabled/disabled. For printing with the native print dialog,
+  // this variable is checked at only one place, by
+  // PrintingMessageFilter::OnGetDefaultPrintSettings. If its value is true
   // at that point, then the initiated print flow will complete itself,
   // even if the value of this variable changes afterwards.
+  // In the print preview workflow, this variable is checked in
+  // PrintingMessageFilter::OnUpdatePrintSettings, which gets called multiple
+  // times in the print preview workflow.
   BooleanPrefMember printing_enabled_;
 
   PrinterQueries queued_queries_;
