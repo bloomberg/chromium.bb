@@ -242,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       FAILS_TestAboutChromeViewAccObj) {
+                       TestAboutChromeViewAccObj) {
   LOG(ERROR) << "Starting TestAboutChromeViewAccObj test\n";
 
   //  Firstly, test that the WindowDelegate got updated.

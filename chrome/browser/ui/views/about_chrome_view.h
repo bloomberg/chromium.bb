@@ -109,6 +109,7 @@ class AboutChromeView : public views::DialogDelegateView,
   gfx::Rect open_source_url_rect_;
   views::Link* terms_of_service_url_;
   gfx::Rect terms_of_service_url_rect_;
+  // NULL in non-official builds.
   views::Label* error_label_;
   // UI elements we add to the parent view.
   scoped_ptr<views::Throbber> throbber_;

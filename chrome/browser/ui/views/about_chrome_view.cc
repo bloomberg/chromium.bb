@@ -99,6 +99,7 @@ AboutChromeView::AboutChromeView(Profile* profile)
       chromium_url_(NULL),
       open_source_url_(NULL),
       terms_of_service_url_(NULL),
+      error_label_(NULL),
       restart_button_visible_(false),
       chromium_url_appears_first_(true),
       text_direction_is_rtl_(false) {
@@ -344,12 +345,14 @@ void AboutChromeView::Layout() {
   // And the error label at the bottom of the main content. This does not fit on
   // screen until EnlargeWindowSizeIfNeeded has been called (which happens when
   // an error is returned from Google Update).
-  sz.set_height(error_label_->GetHeightForWidth(sz.width()));
-  error_label_->SetBounds(main_text_label_->bounds().x(),
-                          main_text_label_->bounds().y() +
-                              main_text_label_->height() +
-                              kErrorLabelVerticalSpacing,
-                          sz.width(), sz.height());
+  if (error_label_) {
+    sz.set_height(error_label_->GetHeightForWidth(sz.width()));
+    error_label_->SetBounds(main_text_label_->bounds().x(),
+                            main_text_label_->bounds().y() +
+                            main_text_label_->height() +
+                            kErrorLabelVerticalSpacing,
+                            sz.width(), sz.height());
+  }
 
   // Get the y-coordinate of our parent so we can position the text left of the
   // buttons at the bottom.
@@ -726,7 +729,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
     }
     case UPGRADE_ERROR: {
       UserMetrics::RecordAction(UserMetricsAction("UpgradeCheck_Error"));
-      if (!error_message.empty()) {
+      if (!error_message.empty() && error_label_) {
         error_label_->SetText(
             l10n_util::GetStringFUTF16(IDS_ABOUT_BOX_ERROR_DURING_UPDATE_CHECK,
                 error_message));
@@ -769,7 +772,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
 }
 
 int AboutChromeView::EnlargeWindowSizeIfNeeded() {
-  if (error_label_->GetText().empty())
+  if (!error_label_ || error_label_->GetText().empty())
     return 0;
 
   // This will enlarge the window each time the function is called, which is
