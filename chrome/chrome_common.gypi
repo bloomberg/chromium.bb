@@ -23,13 +23,13 @@
         #  shared with the 64-bit target, but it does not work due to a gyp
         # issue.
         'app/policy/cloud_policy_codegen.gyp:policy',
-        'chrome_resources',
-        'chrome_strings',
+        'chrome_resources.gyp:chrome_resources',
+        'chrome_resources.gyp:chrome_strings',
+        'chrome_resources.gyp:theme_resources',
         'common_constants',
         'common_net',
         'common_version',
         'default_plugin/default_plugin.gyp:default_plugin',
-        'theme_resources',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:base_static',
@@ -263,7 +263,7 @@
             'common/native_web_keyboard_event_views.cc',
             'common/native_web_keyboard_event_views.h',
           ],
-        }],  
+        }],
         ['use_aura==1', {
           'dependencies!': [
            'default_plugin/default_plugin.gyp:default_plugin',
@@ -380,8 +380,8 @@
         'common/net/x509_certificate_model.h',
       ],
       'dependencies': [
-        'chrome_resources',
-        'chrome_strings',
+        'chrome_resources.gyp:chrome_resources',
+        'chrome_resources.gyp:chrome_strings',
         '../base/base.gyp:base',
         '../crypto/crypto.gyp:crypto',
         '../gpu/gpu.gyp:gpu_ipc',

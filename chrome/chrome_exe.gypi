@@ -400,8 +400,8 @@
             }],
           ],
           'dependencies': [
-            'packed_extra_resources',
-            'packed_resources',
+            'chrome_resources.gyp:packed_extra_resources',
+            'chrome_resources.gyp:packed_resources',
             # Copy Flash Player files to PRODUCT_DIR if applicable. Let the .gyp
             # file decide what to do on a per-OS basis; on Mac, internal plugins
             # go inside the framework, so this dependency is in chrome_dll.gypi.

@@ -99,8 +99,8 @@
             'installer_util_strings',
             '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
             'common_constants',
-            'chrome_resources',
-            'chrome_strings',
+            'chrome_resources.gyp:chrome_resources',
+            'chrome_resources.gyp:chrome_strings',
             '../content/content.gyp:content_common',
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -174,8 +174,8 @@
           'type': 'static_library',
           'dependencies': [
             'common_constants',
-            'chrome_resources',
-            'chrome_strings',
+            'chrome_resources.gyp:chrome_resources',
+            'chrome_resources.gyp:chrome_strings',
           ],
           'sources': [
             'installer/util/master_preferences.cc',
