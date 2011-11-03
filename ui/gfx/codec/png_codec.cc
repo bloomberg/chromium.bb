@@ -700,7 +700,6 @@ bool PNGCodec::EncodeWithCompressionLevel(const unsigned char* input,
       input_color_components = 3;
       output_color_components = 3;
       png_output_color_type = PNG_COLOR_TYPE_RGB;
-      discard_transparency = false;
       break;
 
     case FORMAT_RGBA:
