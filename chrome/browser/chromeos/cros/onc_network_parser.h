@@ -42,6 +42,10 @@ class OncNetworkParser : public NetworkParser {
   // (0-based). Returns NULL if there's a parse error or if n is out of range.
   Network* ParseNetwork(int n);
 
+  // Call to parse and import the nth certificate in the certificate
+  // list.  Returns false on failure.
+  bool ParseCertificate(int n);
+
   virtual Network* CreateNetworkFromInfo(const std::string& service_path,
       const base::DictionaryValue& info) OVERRIDE;
 
@@ -58,6 +62,14 @@ class OncNetworkParser : public NetworkParser {
   std::string GetTypeFromDictionary(const base::DictionaryValue& info);
 
  private:
+  bool ParseServerOrCaCertificate(
+    int cert_index,
+    const std::string& cert_type,
+    base::DictionaryValue* certificate);
+  bool ParseClientCertificate(
+    int cert_index,
+    base::DictionaryValue* certificate);
+
   scoped_ptr<base::DictionaryValue> root_dict_;
   base::ListValue* network_configs_;
   base::ListValue* certificates_;

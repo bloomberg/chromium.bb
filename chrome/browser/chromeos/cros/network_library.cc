@@ -2782,6 +2782,14 @@ void NetworkLibraryImplBase::SwitchToPreferredNetwork() {
 bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob) {
   OncNetworkParser parser(onc_blob);
 
+  for (int i = 0; i < parser.GetCertificatesSize(); i++) {
+    // Insert each of the available certs into the certificate DB.
+    if (!parser.ParseCertificate(i)) {
+      DLOG(WARNING) << "Cannot parse certificate in ONC file";
+      return false;
+    }
+  }
+
   for (int i = 0; i < parser.GetNetworkConfigsSize(); i++) {
     // Parse Open Network Configuration blob into a temporary Network object.
     Network* network = parser.ParseNetwork(i);

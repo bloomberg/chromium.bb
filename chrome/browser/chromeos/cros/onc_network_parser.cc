@@ -4,12 +4,16 @@
 
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
 
+#include "base/base64.h"
+#include "base/json/json_value_serializer.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "base/json/json_value_serializer.h"
+#include "net/base/cert_database.h"
+#include "net/base/net_errors.h"
+#include "net/base/x509_certificate.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -75,15 +79,18 @@ OncNetworkParser::OncNetworkParser(const std::string& onc_blob)
     LOG(WARNING) << "OncNetworkParser received bad ONC file: " << error_msg;
   } else {
     root_dict_.reset(static_cast<DictionaryValue*>(root.release()));
-    if (!root_dict_->GetList("NetworkConfigurations", &network_configs_)) {
-      LOG(WARNING) << "ONC file missing NetworkConfigurations";
+    // At least one of NetworkConfigurations or Certificates is required.
+    if (!root_dict_->GetList("NetworkConfigurations", &network_configs_) &&
+        !root_dict_->GetList("Certificates", &certificates_)) {
+      LOG(WARNING) << "ONC file has no NetworkConfigurations or Certificates.";
     }
-    // Certificates is optional
-    root_dict_->GetList("Certificates", &certificates_);
   }
 }
 
-OncNetworkParser::OncNetworkParser() : NetworkParser(get_onc_mapper()) {
+OncNetworkParser::OncNetworkParser()
+    : NetworkParser(get_onc_mapper()),
+      network_configs_(NULL),
+      certificates_(NULL) {
 }
 
 OncNetworkParser::~OncNetworkParser() {
@@ -100,6 +107,45 @@ int OncNetworkParser::GetNetworkConfigsSize() const {
 
 int OncNetworkParser::GetCertificatesSize() const {
   return certificates_ ? certificates_->GetSize() : 0;
+}
+
+bool OncNetworkParser::ParseCertificate(int cert_index) {
+  CHECK(certificates_);
+  CHECK(static_cast<size_t>(cert_index) < certificates_->GetSize());
+  CHECK(cert_index >= 0);
+  base::DictionaryValue* certificate = NULL;
+  certificates_->GetDictionary(cert_index, &certificate);
+  CHECK(certificate);
+
+  // Get out the attributes of the given cert.
+  std::string guid;
+  bool remove = false;
+  if (!certificate->GetString("GUID", &guid) || guid.empty()) {
+    LOG(WARNING) << "ONC File: certificate missing identifier at index"
+                 << cert_index;
+    return false;
+  }
+
+  if (!certificate->GetBoolean("Remove", &remove))
+    remove = false;
+
+  net::CertDatabase cert_database;
+  if (remove)
+    return cert_database.DeleteCertAndKeyByLabel(guid);
+
+  // Not removing, so let's get the data we need to add this cert.
+  std::string cert_type;
+  certificate->GetString("Type", &cert_type);
+  if (cert_type == "Server" || cert_type == "Authority") {
+    return ParseServerOrCaCertificate(cert_index, cert_type, certificate);
+  }
+  if (cert_type == "Client") {
+    return ParseClientCertificate(cert_index, certificate);
+  }
+
+  LOG(WARNING) << "ONC File: certificate of unknown type: " << cert_type
+               << " at index " << cert_index;
+  return false;
 }
 
 Network* OncNetworkParser::ParseNetwork(int n) {
@@ -162,6 +208,111 @@ std::string OncNetworkParser::GetTypeFromDictionary(
   return type_string;
 }
 
+bool OncNetworkParser::ParseServerOrCaCertificate(
+    int cert_index,
+    const std::string& cert_type,
+    base::DictionaryValue* certificate) {
+  net::CertDatabase cert_database;
+  bool web_trust = false;
+  base::ListValue* trust_list = NULL;
+  if (certificate->GetList("Trust", &trust_list)) {
+    for (size_t i = 0; i < trust_list->GetSize(); ++i) {
+      std::string trust_type;
+      if (!trust_list->GetString(i, &trust_type)) {
+        LOG(WARNING) << "ONC File: certificate trust is invalid at index "
+                     << cert_index;
+        return false;
+      }
+      if (trust_type == "Web") {
+        web_trust = true;
+      } else {
+        LOG(WARNING) << "ONC File: certificate contains unknown "
+                     << "trust type: " << trust_type
+                     << " at index " << cert_index;
+        return false;
+      }
+    }
+  }
+
+  std::string x509_data;
+  if (!certificate->GetString("X509", &x509_data) || x509_data.empty()) {
+    LOG(WARNING) << "ONC File: certificate missing appropriate "
+                 << "certificate data for type: " << cert_type
+                 << " at index " << cert_index;
+    return false;
+  }
+
+  std::string decoded_x509;
+  if (!base::Base64Decode(x509_data, &decoded_x509)) {
+    LOG(WARNING) << "Unable to base64 decode X509 data: \""
+                 << x509_data << "\".";
+    return false;
+  }
+
+  scoped_refptr<net::X509Certificate> x509_cert(
+      net::X509Certificate::CreateFromBytes(decoded_x509.c_str(),
+                                            decoded_x509.size()));
+  if (!x509_cert.get()) {
+    LOG(WARNING) << "Unable to create X509 certificate from bytes.";
+    return false;
+  }
+  net::CertificateList cert_list;
+  cert_list.push_back(x509_cert);
+  net::CertDatabase::ImportCertFailureList failures;
+  bool success = false;
+  if (cert_type == "Server") {
+    success = cert_database.ImportServerCert(cert_list, &failures);
+  } else { // Authority cert
+    net::CertDatabase::TrustBits trust = web_trust ?
+                                         net::CertDatabase::TRUSTED_SSL :
+                                         net::CertDatabase::UNTRUSTED;
+    success = cert_database.ImportCACerts(cert_list, trust, &failures);
+  }
+  if (!failures.empty()) {
+    LOG(WARNING) << "ONC File: Error ("
+                 << net::ErrorToString(failures[0].net_error)
+                 << ") importing " << cert_type << " certificate at index "
+                 << cert_index;
+    return false;
+  }
+  if (!success) {
+    LOG(WARNING) << "ONC File: Unknown error importing " << cert_type
+                 << " certificate at index " << cert_index;
+    return false;
+  }
+  return true;
+}
+
+bool OncNetworkParser::ParseClientCertificate(
+    int cert_index,
+    base::DictionaryValue* certificate) {
+  net::CertDatabase cert_database;
+  std::string pkcs12_data;
+  if (!certificate->GetString("PKCS12", &pkcs12_data) ||
+      pkcs12_data.empty()) {
+    LOG(WARNING) << "ONC File: PKCS12 data is missing for Client "
+                 << "certificate at index " << cert_index;
+    return false;
+  }
+
+  std::string decoded_pkcs12;
+  if (!base::Base64Decode(pkcs12_data, &decoded_pkcs12)) {
+    LOG(WARNING) << "Unable to base64 decode PKCS#12 data: \""
+                 << pkcs12_data << "\".";
+    return false;
+  }
+
+  // Since this has a private key, always use the private module.
+  int result = cert_database.ImportFromPKCS12(
+      cert_database.GetPrivateModule(), decoded_pkcs12, string16(), false);
+  if (result != net::OK) {
+    LOG(WARNING) << "ONC File: Unable to import Client certificate at index "
+                 << cert_index
+                 << " (error " << net::ErrorToString(result) << ").";
+    return false;
+  }
+  return true;
+}
 
 // -------------------- OncWirelessNetworkParser --------------------
 

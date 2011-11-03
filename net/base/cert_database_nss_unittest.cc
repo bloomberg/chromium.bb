@@ -174,7 +174,7 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12AsExtractableAndExportAgain) {
   EXPECT_EQ("testusercert",
             cert->subject().common_name);
 
-  // TODO(mattm): move export test to seperate test case?
+  // TODO(mattm): move export test to separate test case?
   std::string exported_data;
   EXPECT_EQ(1, cert_db_.ExportToPKCS12(cert_list, ASCIIToUTF16("exportpw"),
                                        &exported_data));
