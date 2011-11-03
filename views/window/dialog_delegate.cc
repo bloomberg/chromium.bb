@@ -42,11 +42,11 @@ bool DialogDelegate::GetSizeExtraViewHeightToButtons() {
 }
 
 int DialogDelegate::GetDefaultDialogButton() const {
-  if (GetDialogButtons() & MessageBoxFlags::DIALOGBUTTON_OK)
-    return MessageBoxFlags::DIALOGBUTTON_OK;
-  if (GetDialogButtons() & MessageBoxFlags::DIALOGBUTTON_CANCEL)
-    return MessageBoxFlags::DIALOGBUTTON_CANCEL;
-  return MessageBoxFlags::DIALOGBUTTON_NONE;
+  if (GetDialogButtons() & ui::MessageBoxFlags::DIALOGBUTTON_OK)
+    return ui::MessageBoxFlags::DIALOGBUTTON_OK;
+  if (GetDialogButtons() & ui::MessageBoxFlags::DIALOGBUTTON_CANCEL)
+    return ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  return ui::MessageBoxFlags::DIALOGBUTTON_NONE;
 }
 
 bool DialogDelegate::IsDialogButtonEnabled(
@@ -75,7 +75,7 @@ View* DialogDelegate::GetInitiallyFocusedView() {
   // Focus the default button if any.
   const DialogClientView* dcv = GetDialogClientView();
   int default_button = GetDefaultDialogButton();
-  if (default_button == MessageBoxFlags::DIALOGBUTTON_NONE)
+  if (default_button == ui::MessageBoxFlags::DIALOGBUTTON_NONE)
     return NULL;
 
   if ((default_button & GetDialogButtons()) == 0) {
@@ -84,9 +84,9 @@ View* DialogDelegate::GetInitiallyFocusedView() {
     return NULL;
   }
 
-  if (default_button & MessageBoxFlags::DIALOGBUTTON_OK)
+  if (default_button & ui::MessageBoxFlags::DIALOGBUTTON_OK)
     return dcv->ok_button();
-  if (default_button & MessageBoxFlags::DIALOGBUTTON_CANCEL)
+  if (default_button & ui::MessageBoxFlags::DIALOGBUTTON_CANCEL)
     return dcv->cancel_button();
   return NULL;
 }

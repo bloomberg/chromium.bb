@@ -1253,7 +1253,7 @@ class TestDialog : public DialogDelegate, public ButtonListener {
 
   // DialogDelegate implementation:
   virtual int GetDefaultDialogButton() const OVERRIDE {
-    return MessageBoxFlags::DIALOGBUTTON_OK;
+    return ui::MessageBoxFlags::DIALOGBUTTON_OK;
   }
 
   virtual View* GetContentsView() OVERRIDE {

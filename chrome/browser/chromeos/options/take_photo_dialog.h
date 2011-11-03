@@ -39,7 +39,7 @@ class TakePhotoDialog : public views::DialogDelegateView,
 
   // views::DialogDelegateView overrides.
   virtual bool IsDialogButtonEnabled(
-      MessageBoxFlags::DialogButton button) const OVERRIDE;
+      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
 

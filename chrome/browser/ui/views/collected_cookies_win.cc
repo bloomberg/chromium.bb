@@ -360,7 +360,7 @@ string16 CollectedCookiesWin::GetWindowTitle() const {
 }
 
 int CollectedCookiesWin::GetDialogButtons() const {
-  return MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  return ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
 }
 
 string16 CollectedCookiesWin::GetDialogButtonLabel(

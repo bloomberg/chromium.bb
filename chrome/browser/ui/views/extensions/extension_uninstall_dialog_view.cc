@@ -70,7 +70,7 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
       ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
 
   virtual int GetDefaultDialogButton() const OVERRIDE {
-    return MessageBoxFlags::DIALOGBUTTON_CANCEL;
+    return ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
   }
 
   virtual bool Accept() OVERRIDE;

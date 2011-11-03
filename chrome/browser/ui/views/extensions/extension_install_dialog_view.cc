@@ -260,7 +260,7 @@ string16 ExtensionInstallDialogView::GetDialogButtonLabel(
   switch (button) {
     case ui::MessageBoxFlags::DIALOGBUTTON_OK:
       return prompt_.GetAcceptButtonLabel();
-    case MessageBoxFlags::DIALOGBUTTON_CANCEL:
+    case ui::MessageBoxFlags::DIALOGBUTTON_CANCEL:
       return prompt_.HasAbortButtonLabel() ?
           prompt_.GetAbortButtonLabel() :
           l10n_util::GetStringUTF16(IDS_CANCEL);
@@ -271,7 +271,7 @@ string16 ExtensionInstallDialogView::GetDialogButtonLabel(
 }
 
 int ExtensionInstallDialogView::GetDefaultDialogButton() const {
-  return MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  return ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
 }
 
 bool ExtensionInstallDialogView::Cancel() {

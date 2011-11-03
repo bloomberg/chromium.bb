@@ -52,7 +52,7 @@ class NetworkConfigView : public views::DialogDelegateView,
   virtual string16 GetDialogButtonLabel(
       ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(
-      MessageBoxFlags::DialogButton button) const OVERRIDE;
+      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual views::View* GetExtraView() OVERRIDE;

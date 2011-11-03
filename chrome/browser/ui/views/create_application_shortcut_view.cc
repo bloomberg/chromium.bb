@@ -331,8 +331,8 @@ string16 CreateApplicationShortcutView::GetDialogButtonLabel(
 }
 
 bool CreateApplicationShortcutView::IsDialogButtonEnabled(
-    MessageBoxFlags::DialogButton button) const {
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK)
+    ui::MessageBoxFlags::DialogButton button) const {
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
     return desktop_check_box_->checked() ||
            ((menu_check_box_ != NULL) &&
             menu_check_box_->checked()) ||
@@ -359,7 +359,7 @@ string16 CreateApplicationShortcutView::GetWindowTitle() const {
 }
 
 bool CreateApplicationShortcutView::Accept() {
-  if (!IsDialogButtonEnabled(MessageBoxFlags::DIALOGBUTTON_OK))
+  if (!IsDialogButtonEnabled(ui::MessageBoxFlags::DIALOGBUTTON_OK))
     return false;
 
   shortcut_info_.create_on_desktop = desktop_check_box_->checked();

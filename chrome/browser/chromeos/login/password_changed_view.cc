@@ -50,7 +50,7 @@ bool PasswordChangedView::Accept() {
 }
 
 int PasswordChangedView::GetDialogButtons() const {
-  return MessageBoxFlags::DIALOGBUTTON_OK;
+  return ui::MessageBoxFlags::DIALOGBUTTON_OK;
 }
 
 views::View* PasswordChangedView::GetInitiallyFocusedView() {

@@ -111,15 +111,15 @@ gfx::Size DownloadInProgressDialogView::GetPreferredSize() {
 
 string16 DownloadInProgressDialogView::GetDialogButtonLabel(
     ui::MessageBoxFlags::DialogButton button) const {
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK)
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
     return ok_button_text_;
 
-  DCHECK_EQ(MessageBoxFlags::DIALOGBUTTON_CANCEL, button);
+  DCHECK_EQ(ui::MessageBoxFlags::DIALOGBUTTON_CANCEL, button);
   return cancel_button_text_;
 }
 
 int DownloadInProgressDialogView::GetDefaultDialogButton() const {
-  return MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  return ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
 }
 
 bool DownloadInProgressDialogView::Cancel() {

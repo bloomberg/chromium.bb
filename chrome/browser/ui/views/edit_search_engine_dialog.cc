@@ -84,11 +84,11 @@ string16 EditSearchEngineDialog::GetWindowTitle() const {
 }
 
 bool EditSearchEngineDialog::IsDialogButtonEnabled(
-    MessageBoxFlags::DialogButton button) const {
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return (controller_->IsKeywordValid(WideToUTF16(keyword_tf_->text())) &&
-            controller_->IsTitleValid(WideToUTF16(title_tf_->text())) &&
-            controller_->IsURLValid(WideToUTF8(url_tf_->text())));
+    ui::MessageBoxFlags::DialogButton button) const {
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK) {
+    return (controller_->IsKeywordValid(keyword_tf_->text()) &&
+            controller_->IsTitleValid(title_tf_->text()) &&
+            controller_->IsURLValid(UTF16ToUTF8(url_tf_->text())));
   }
   return true;
 }
@@ -99,9 +99,8 @@ bool EditSearchEngineDialog::Cancel() {
 }
 
 bool EditSearchEngineDialog::Accept() {
-  controller_->AcceptAddOrEdit(WideToUTF16(title_tf_->text()),
-                               WideToUTF16(keyword_tf_->text()),
-                               WideToUTF8(url_tf_->text()));
+  controller_->AcceptAddOrEdit(title_tf_->text(), keyword_tf_->text(),
+                               UTF16ToUTF8(url_tf_->text()));
   return true;
 }
 
@@ -241,13 +240,12 @@ Textfield* EditSearchEngineDialog::CreateTextfield(const std::wstring& text,
 }
 
 void EditSearchEngineDialog::UpdateImageViews() {
-  UpdateImageView(keyword_iv_,
-                  controller_->IsKeywordValid(WideToUTF16(keyword_tf_->text())),
+  UpdateImageView(keyword_iv_, controller_->IsKeywordValid(keyword_tf_->text()),
                   IDS_SEARCH_ENGINES_INVALID_KEYWORD_TT);
-  UpdateImageView(url_iv_, controller_->IsURLValid(WideToUTF8(url_tf_->text())),
+  UpdateImageView(url_iv_,
+                  controller_->IsURLValid(UTF16ToUTF8(url_tf_->text())),
                   IDS_SEARCH_ENGINES_INVALID_URL_TT);
-  UpdateImageView(title_iv_,
-                  controller_->IsTitleValid(WideToUTF16(title_tf_->text())),
+  UpdateImageView(title_iv_, controller_->IsTitleValid(title_tf_->text()),
                   IDS_SEARCH_ENGINES_INVALID_TITLE_TT);
 }
 

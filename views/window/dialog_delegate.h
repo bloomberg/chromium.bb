@@ -12,8 +12,6 @@
 #include "views/widget/widget_delegate.h"
 #include "views/window/dialog_client_view.h"
 
-using ui::MessageBoxFlags;
-
 namespace views {
 
 class View;
@@ -128,7 +126,6 @@ class VIEWS_EXPORT DialogDelegateView : public DialogDelegate,
  private:
   DISALLOW_COPY_AND_ASSIGN(DialogDelegateView);
 };
-
 
 }  // namespace views
 

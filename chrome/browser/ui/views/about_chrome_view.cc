@@ -551,16 +551,18 @@ string16 AboutChromeView::GetWindowTitle() const {
 }
 
 bool AboutChromeView::IsDialogButtonEnabled(
-    MessageBoxFlags::DialogButton button) const {
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK && !restart_button_visible_)
+    ui::MessageBoxFlags::DialogButton button) const {
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK &&
+      !restart_button_visible_)
     return false;
 
   return true;
 }
 
 bool AboutChromeView::IsDialogButtonVisible(
-    MessageBoxFlags::DialogButton button) const {
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK && !restart_button_visible_)
+    ui::MessageBoxFlags::DialogButton button) const {
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK &&
+      !restart_button_visible_)
     return false;
 
   return true;
@@ -571,7 +573,7 @@ bool AboutChromeView::IsDialogButtonVisible(
 // OK button (which is the dialog cancel button, see GetDialogButtonLabel
 // above).
 int AboutChromeView::GetDefaultDialogButton() const {
-  return MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  return ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
 }
 
 bool AboutChromeView::CanResize() const {

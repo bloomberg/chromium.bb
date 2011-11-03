@@ -178,7 +178,7 @@ void SSLClientCertificateSelector::DeleteDelegate() {
 
 bool SSLClientCertificateSelector::IsDialogButtonEnabled(
     ui::MessageBoxFlags::DialogButton button) const {
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK)
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
     return !!GetSelectedCert();
   return true;
 }

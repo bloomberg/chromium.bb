@@ -46,7 +46,7 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
   virtual string16 GetDialogButtonLabel(
       ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(
-      MessageBoxFlags::DialogButton button) const OVERRIDE;
+      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
   virtual bool IsModal() const OVERRIDE;

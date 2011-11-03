@@ -383,12 +383,12 @@ int HungRendererDialogView::GetDialogButtons() const {
   // the OK button to wait for responsiveness (and close the dialog) and our
   // additional button (which we create) to kill the process (which will result
   // in the dialog being destroyed).
-  return MessageBoxFlags::DIALOGBUTTON_OK;
+  return ui::MessageBoxFlags::DIALOGBUTTON_OK;
 }
 
 string16 HungRendererDialogView::GetDialogButtonLabel(
     ui::MessageBoxFlags::DialogButton button) const {
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK)
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT);
   return string16();
 }

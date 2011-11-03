@@ -69,9 +69,9 @@ string16 NetworkConfigView::GetDialogButtonLabel(
 }
 
 bool NetworkConfigView::IsDialogButtonEnabled(
-    MessageBoxFlags::DialogButton button) const {
+    ui::MessageBoxFlags::DialogButton button) const {
   // Disable connect button if cannot login.
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK)
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
     return child_config_view_->CanLogin();
   return true;
 }

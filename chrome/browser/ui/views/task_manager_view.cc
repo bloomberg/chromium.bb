@@ -661,7 +661,7 @@ std::string TaskManagerView::GetWindowName() const {
 }
 
 int TaskManagerView::GetDialogButtons() const {
-  return MessageBoxFlags::DIALOGBUTTON_NONE;
+  return ui::MessageBoxFlags::DIALOGBUTTON_NONE;
 }
 
 void TaskManagerView::WindowClosing() {
