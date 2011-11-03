@@ -61,6 +61,9 @@ class AURA_SHELL_EXPORT Shell : public aura::DesktopDelegate {
  private:
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
 
+  // Enables WorkspaceManager.
+  void EnableWorkspaceManager();
+
   // Overridden from aura::DesktopDelegate:
   virtual void AddChildToDefaultParent(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetTopmostWindowToActivate(

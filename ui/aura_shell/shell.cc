@@ -5,6 +5,8 @@
 #include "ui/aura_shell/shell.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
+#include "ui/aura/aura_switches.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/toplevel_window_container.h"
@@ -43,8 +45,6 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
 
   aura::Window* default_container = new aura::ToplevelWindowContainer;
   default_container->set_id(internal::kShellWindowId_DefaultContainer);
-  default_container->SetEventFilter(
-      new internal::DefaultContainerEventFilter(default_container));
   containers->push_back(default_container);
 
   aura::Window* always_on_top_container = new aura::ToplevelWindowContainer;
@@ -126,11 +126,8 @@ void Shell::Init() {
           launcher_->widget()->GetWindowScreenBounds().height(),
           kWorkAreaHorizontalMargin));
 
-  workspace_controller_.reset(
-      new internal::WorkspaceController(toplevel_container));
-  toplevel_container->SetLayoutManager(
-      new internal::DefaultContainerLayoutManager(
-          workspace_controller_->workspace_manager()));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraWindows))
+    EnableWorkspaceManager();
 
   // Force a layout.
   desktop_layout->OnWindowResized();
@@ -150,7 +147,24 @@ const aura::Window* Shell::GetContainer(int container_id) const {
 }
 
 void Shell::ToggleOverview() {
-  workspace_controller_->ToggleOverview();
+  if (workspace_controller_.get())
+    workspace_controller_->ToggleOverview();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Shell, private:
+
+void Shell::EnableWorkspaceManager() {
+  aura::Window* default_container =
+      GetContainer(internal::kShellWindowId_DefaultContainer);
+
+  workspace_controller_.reset(
+      new internal::WorkspaceController(default_container));
+  default_container->SetEventFilter(
+      new internal::DefaultContainerEventFilter(default_container));
+  default_container->SetLayoutManager(
+      new internal::DefaultContainerLayoutManager(
+          workspace_controller_->workspace_manager()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
