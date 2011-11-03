@@ -20,6 +20,31 @@
 #include "webkit/plugins/npapi/plugin_lib.h"
 #include "webkit/plugins/plugin_switches.h"
 
+namespace {
+
+static const char kApplicationOctetStream[] = "application/octet-stream";
+
+base::LazyInstance<webkit::npapi::PluginList> g_singleton(
+    base::LINKER_INITIALIZED);
+
+bool AllowMimeTypeMismatch(const std::string& orig_mime_type,
+                           const std::string& actual_mime_type) {
+  if (orig_mime_type == actual_mime_type) {
+    NOTREACHED();
+    return true;
+  }
+
+  // We do not permit URL-sniff based plug-in MIME type overrides aside from
+  // the case where the "type" was initially missing or generic
+  // (application/octet-stream).
+  // We collected stats to determine this approach isn't a major compat issue,
+  // and we defend against content confusion attacks in various cases, such
+  // as when the user doesn't have the Flash plug-in enabled.
+  return orig_mime_type.empty() || orig_mime_type == kApplicationOctetStream;
+}
+
+}
+
 namespace webkit {
 namespace npapi {
 
@@ -174,8 +199,6 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
     "http://www.linuxsecurity.com/content/section/3/170/" },
 };
 #endif
-
-base::LazyInstance<PluginList> g_singleton(base::LINKER_INITIALIZED);
 
 // static
 PluginList* PluginList::Singleton() {
@@ -574,7 +597,8 @@ void PluginList::GetPluginInfoArray(
         if (SupportsExtension(plugins[i], extension, &actual_mime_type)) {
           FilePath path = plugins[i].path;
           if (path.value() != kDefaultPluginLibraryName &&
-              visited_plugins.insert(path).second) {
+              visited_plugins.insert(path).second &&
+              AllowMimeTypeMismatch(mime_type, actual_mime_type)) {
             info->push_back(plugins[i]);
             if (actual_mime_types)
               actual_mime_types->push_back(actual_mime_type);

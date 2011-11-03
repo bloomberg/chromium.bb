@@ -100,17 +100,6 @@ using content::RenderThread;
 
 namespace {
 
-// Constants for UMA statistic collection.
-static const char kPluginTypeMismatch[] = "Plugin.PluginTypeMismatch";
-static const char kApplicationOctetStream[] = "application/octet-stream";
-enum {
-  PLUGIN_TYPE_MISMATCH_NONE = 0,
-  PLUGIN_TYPE_MISMATCH_ORIG_EMPTY,
-  PLUGIN_TYPE_MISMATCH_ORIG_OCTETSTREAM,
-  PLUGIN_TYPE_MISMATCH_ORIG_OTHER,
-  PLUGIN_TYPE_MISMATCH_NUM_EVENTS,
-};
-
 static void AppendParams(const std::vector<string16>& additional_names,
                          const std::vector<string16>& additional_values,
                          WebVector<WebString>* existing_names,
@@ -308,31 +297,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   if (plugin.path.value() == webkit::npapi::kDefaultPluginLibraryName) {
     MissingPluginReporter::GetInstance()->ReportPluginMissing(
         orig_mime_type, url);
-  }
-
-  if (orig_mime_type == actual_mime_type) {
-    UMA_HISTOGRAM_ENUMERATION(kPluginTypeMismatch,
-                              PLUGIN_TYPE_MISMATCH_NONE,
-                              PLUGIN_TYPE_MISMATCH_NUM_EVENTS);
-  } else if (orig_mime_type.empty()) {
-    UMA_HISTOGRAM_ENUMERATION(kPluginTypeMismatch,
-                              PLUGIN_TYPE_MISMATCH_ORIG_EMPTY,
-                              PLUGIN_TYPE_MISMATCH_NUM_EVENTS);
-  } else if (orig_mime_type == kApplicationOctetStream) {
-    UMA_HISTOGRAM_ENUMERATION(kPluginTypeMismatch,
-                              PLUGIN_TYPE_MISMATCH_ORIG_OCTETSTREAM,
-                              PLUGIN_TYPE_MISMATCH_NUM_EVENTS);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(kPluginTypeMismatch,
-                              PLUGIN_TYPE_MISMATCH_ORIG_OTHER,
-                              PLUGIN_TYPE_MISMATCH_NUM_EVENTS);
-    // We do not permit URL-sniff based plug-in MIME type overrides aside from
-    // the case where the "type" was initially missing or generic
-    // (application/octet-stream).
-    // We collected stats to determine this approach isn't a major compat issue,
-    // and we defend against content confusion attacks in various cases, such
-    // as when the user doesn't have the Flash plug-in enabled.
-    return NULL;
   }
 
   scoped_ptr<webkit::npapi::PluginGroup> group(
