@@ -161,6 +161,8 @@ class RenderWidgetHostViewAura : public RenderWidgetHostView,
       accelerated_surface_containers_;
 #endif
 
+  bool skip_schedule_paint_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };
 

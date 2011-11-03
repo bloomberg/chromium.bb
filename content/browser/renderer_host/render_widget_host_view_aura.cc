@@ -84,7 +84,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
       is_fullscreen_(false),
       popup_parent_host_view_(NULL),
-      is_loading_(false) {
+      is_loading_(false),
+      skip_schedule_paint_(false) {
   host_->SetView(this);
   window_->SetProperty(aura::kTooltipTextKey, &tooltip_);
 }
@@ -226,7 +227,7 @@ void RenderWidgetHostViewAura::ImeCancelComposition() {
 void RenderWidgetHostViewAura::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
     const std::vector<gfx::Rect>& copy_rects) {
-  if (!window_->IsVisible())
+  if (!window_->IsVisible() || skip_schedule_paint_)
     return;
 
   if (!scroll_rect.IsEmpty())
@@ -473,7 +474,9 @@ void RenderWidgetHostViewAura::OnCaptureLost() {
 void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
   if (!window_->IsVisible())
     return;
+  skip_schedule_paint_ = true;
   BackingStore* backing_store = host_->GetBackingStore(true);
+  skip_schedule_paint_ = false;
   if (backing_store) {
     static_cast<BackingStoreSkia*>(backing_store)->SkiaShowRect(gfx::Point(),
                                                                 canvas);
