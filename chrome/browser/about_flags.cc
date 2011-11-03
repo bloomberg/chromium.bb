@@ -25,6 +25,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gl/gl_switches.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/aura_switches.h"
+#endif
+
 namespace about_flags {
 
 // Macros to simplify specifying the type.
@@ -443,6 +447,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableMediaSource)
   },
+#if defined(USE_AURA)
+  {
+    "aura-windows",
+    IDS_FLAGS_AURA_WINDOWS_NAME,
+    IDS_FLAGS_AURA_WINDOWS_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kAuraWindows)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;
