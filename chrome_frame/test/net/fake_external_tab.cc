@@ -560,17 +560,28 @@ class ObligatoryModule: public CAtlExeModuleT<ObligatoryModule> {
 
 ObligatoryModule g_obligatory_atl_module;
 
-int main(int argc, char** argv) {
-  if (chrome_frame_test::GetInstalledIEVersion() == IE_9) {
-    // Adding this here as the command line and the logging stuff gets
-    // initialized in the NetTestSuite constructor. Did not want to break that.
-    base::AtExitManager at_exit_manager;
-    CommandLine::Init(argc, argv);
-    CFUrlRequestUnittestRunner::InitializeLogging();
-    LOG(INFO) << "Not running ChromeFrame net tests on IE9";
-    return 0;
+const char* IEVersionToString(IEVersion version) {
+  switch (version) {
+    case IE_6:
+      return "IE6";
+    case IE_7:
+      return "IE7";
+    case IE_8:
+      return "IE8";
+    case IE_9:
+      return "IE9";
+    case IE_10:
+      return "IE10";
+    case IE_UNSUPPORTED:
+      return "Unknown IE Version";
+    case NON_IE:
+      return "Could not find IE";
+    default:
+      return "Error.";
   }
+}
 
+int main(int argc, char** argv) {
   google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
       InitializeCrashReporting(HEADLESS));
 
@@ -579,6 +590,12 @@ int main(int argc, char** argv) {
   // the instance of the AtExitManager that RegisterPathProvider() and others
   // below require. So we have to instantiate this first.
   CFUrlRequestUnittestRunner test_suite(argc, argv);
+
+  // Display the IE version we run with. This must be done after
+  // CFUrlRequestUnittestRunner is constructed since that initializes logging.
+  IEVersion ie_version = chrome_frame_test::GetInstalledIEVersion();
+  LOG(INFO) << "Running CF net tests with IE version: "
+            << IEVersionToString(ie_version);
 
   base::ProcessHandle crash_service = chrome_frame_test::StartCrashService();
 
