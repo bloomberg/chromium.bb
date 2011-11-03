@@ -20,8 +20,7 @@
 #include "remoting/host/ui_strings.h"
 
 // TODO(garykac): Lots of duplicated code in this file and
-// continue_window_win.cc. These global floating windows are temporary so
-// they should be deleted soon. If we need to expand this then we should
+// continue_window_win.cc. If we need to expand this then we should
 // create a class with the shared code.
 
 // HMODULE from DllMain/WinMain. This is needed to find our dialog resource.
@@ -184,6 +183,22 @@ void DisconnectWindowWin::Show(ChromotingHost* host,
   }
 
   SetStrings(host->ui_strings(), username);
+
+  // Try to center the window above the task-bar. If that fails, use the
+  // primary monitor. If that fails (very unlikely), use the default position.
+  HWND taskbar = FindWindow(L"Shell_TrayWnd", NULL);
+  HMONITOR monitor = MonitorFromWindow(taskbar, MONITOR_DEFAULTTOPRIMARY);
+  MONITORINFO monitor_info = {sizeof(monitor_info)};
+  RECT window_rect;
+  if (GetMonitorInfo(monitor, &monitor_info) &&
+      GetWindowRect(hwnd_, &window_rect)) {
+    int window_width = window_rect.right - window_rect.left;
+    int window_height = window_rect.bottom - window_rect.top;
+    int top = monitor_info.rcWork.bottom - window_height;
+    int left = (monitor_info.rcWork.right + monitor_info.rcWork.left -
+        window_width) / 2;
+    SetWindowPos(hwnd_, NULL, left, top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+  }
   ShowWindow(hwnd_, SW_SHOW);
 }
 
