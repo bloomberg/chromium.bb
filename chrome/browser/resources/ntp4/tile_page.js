@@ -304,7 +304,7 @@ cr.define('ntp4', function() {
       if (this.firstChild.classList.contains('new-tile-contents'))
         this.firstChild.classList.remove('new-tile-contents');
       if (this.firstChild.classList.contains('removing-tile-contents'))
-        this.tilePage.removeTile(this);
+        this.tilePage.removeTile(this, true);
     },
   };
 
@@ -544,7 +544,7 @@ cr.define('ntp4', function() {
      * Removes the given tile and animates the respositioning of the other
      * tiles.
      * @param {HTMLElement} tile The tile to remove from |tileGrid_|.
-     * @param {?boolean} animate If true, tiles will animate.
+     * @param {?boolean} animate If true, remaining tiles will animate.
      */
     removeTile: function(tile, animate) {
       if (animate)
@@ -552,9 +552,7 @@ cr.define('ntp4', function() {
       var index = tile.index;
       tile.parentNode.removeChild(tile);
       this.calculateLayoutValues_();
-      for (var i = index; i < this.tileElements_.length; i++) {
-        this.positionTile_(i);
-      }
+      this.cleanupDrag();
     },
 
     /**

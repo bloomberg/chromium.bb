@@ -557,9 +557,7 @@ cr.define('ntp4', function() {
      */
     removeFromChrome: function() {
       chrome.send('uninstallApp', [this.appData_.id, true]);
-
-      this.tile.tilePage.cleanupDrag();
-      this.tile.parentNode.removeChild(this.tile);
+      this.tile.tilePage.removeTile(this.tile, true);
     },
 
     /**
