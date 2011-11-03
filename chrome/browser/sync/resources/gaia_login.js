@@ -87,8 +87,8 @@ function showCaptcha(args) {
   g_is_captcha_challenge_active = true;
 
   // The captcha takes up lots of space, so make room.
+  $('top-blurb-error').hidden = true;
   setElementVisible('top-blurb', false);
-  setElementVisible('top-blurb-error', false);
   setElementVisible('create-account-div', false);
   document.getElementById('create-account-cell').height = 0;
 
@@ -200,7 +200,7 @@ function setBlurbError(error_message) {
     document.getElementById('error-signing-in').hidden = false;
     document.getElementById('error-custom').hidden = true;
   }
-  document.getElementById('top-blurb-error').style.visibility = 'visible';
+  document.getElementById('top-blurb-error').hidden = false;
   document.getElementById('email').disabled = false;
   document.getElementById('passwd').disabled = false;
 }

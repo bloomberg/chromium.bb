@@ -177,22 +177,23 @@
   margin: 0 10px;
 }
 
-#cancel-space-no-captcha {
-  height: 22px;
-}
-
 #top-blurb-error {
-  -webkit-border-radius: 2px;
+  -webkit-transition: margin-top .33s ease-out, opacity .66s ease-out;
   background: #f9edbe;
   border: 1px solid #f0c36d;
   display: block;
   font-weight: bold;
   line-height: 1.5em;
-  margin: 10px auto;
-  padding:0 16px;
-  text-align: center;
-  visibility: hidden;
-  width: 70%;
+  margin-bottom: 10px;
+  opacity: 1;
+  padding: 8px 25px;
+  position: relative;
+}
+
+#top-blurb-error[hidden] {
+  display: block;
+  margin-top: -37px;
+  opacity: 0;
 }
 
 #password-row {
@@ -284,7 +285,7 @@ html[dir='rtl'] #learn-more-link {
 /* Sign in box. */
 
 .sign-in {
-  margin: 0 auto;
+  margin: 20px auto;
   width: 335px;
 }
 

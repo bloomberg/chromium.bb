@@ -84,6 +84,11 @@ html[dir='rtl'] #sync-setup-login-content-column {
   color: #d14836;
 }
 
+/* When showing the full page promo, remove top margin from sign-in box. */
+#sync-promo .sign-in {
+  margin-top: 0;
+}
+
 #sync-setup-login h1 {
   color: #222;
   font-size: 27px;

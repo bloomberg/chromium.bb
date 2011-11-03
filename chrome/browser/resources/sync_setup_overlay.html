@@ -6,16 +6,11 @@
         <h1 id="sync-setup-overlay-title"
             i18n-content="syncSetupOverlayTitle">
         </h1>
-        <!-- top-blurb-error's reset state is handled differently from most
-             elements. Instead of being [hidden] it is visibility:hidden so it
-             still takes up space. But it is also [hidden] when we display the
-             captcha, so when it is reset, it needs to be shown. -->
-        <div id="top-blurb-error"
-            class="reset-shown reset-visibility-hidden">
-          <span id="error-signing-in" i18n-content="errorSigningIn"></span>
-          <span id="error-custom" hidden></span>
-        </div>
         <div class="sign-in">
+          <div id="top-blurb-error" class="reset-hidden" hidden>
+            <span id="error-signing-in" i18n-content="errorSigningIn"></span>
+            <span id="error-custom" hidden></span>
+          </div>
           <div class="signin-box">
             <div id="signin-header">
               <h2 i18n-content="signinHeader"></h2>

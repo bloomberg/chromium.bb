@@ -609,8 +609,6 @@ cr.define('options', function() {
           function(elt) { elt.disabled = true; });
       forEach(page.getElementsByClassName('reset-enabled'),
           function(elt) { elt.disabled = false; });
-      forEach(page.getElementsByClassName('reset-visibility-hidden'),
-          function(elt) { elt.style.visibility = 'hidden'; });
       forEach(page.getElementsByClassName('reset-value'),
           function(elt) { elt.value = ''; });
       forEach(page.getElementsByClassName('reset-opaque'),
@@ -696,7 +694,7 @@ cr.define('options', function() {
         $('error-custom').hidden = true;
       }
 
-      $('top-blurb-error').style.visibility = "visible";
+      $('top-blurb-error').hidden = false;
       $('gaia-email').disabled = false;
       $('gaia-passwd').disabled = false;
     },
@@ -773,7 +771,7 @@ cr.define('options', function() {
 
     showSuccessAndSettingUp_: function() {
       $('sign-in').value = localStrings.getString('settingUp');
-      $('top-blurb-error').style.visibility = "hidden";
+      $('top-blurb-error').hidden = true;
     },
 
     /**
