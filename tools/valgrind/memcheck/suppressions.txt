@@ -4313,7 +4313,7 @@
    fun:avcodec_decode_video2
    fun:_ZN5media23FFmpegVideoDecodeEngine11DecodeFrameE13scoped_refptrINS_6BufferEE
    fun:_ZN5media23FFmpegVideoDecodeEngine18ConsumeVideoSampleE13scoped_refptrINS_6BufferEE
-   fun:_ZN5media18FFmpegVideoDecoder18OnReadCompleteTaskE13scoped_refptrINS_6BufferEE
+   fun:_ZN5media18FFmpegVideoDecoder18OnReadCompleteTaskERK13scoped_refptrINS_6BufferEE
 }
 {
    bug_94195
