@@ -218,11 +218,13 @@ class SyncManager::SyncInternal
   // Whether or not the Nigori node is encrypted using an explicit passphrase.
   bool IsUsingExplicitPassphrase();
 
-  // Update the Cryptographer from the current nigori node.
+  // Update the Cryptographer from the current nigori node and write back any
+  // necessary changes to the nigori node. We also detect missing encryption
+  // keys and write them into the nigori node.
   // Note: opens a transaction and can trigger an ON_PASSPHRASE_REQUIRED, so
   // should only be called after syncapi is fully initialized.
   // Returns true if cryptographer is ready, false otherwise.
-  bool UpdateCryptographerFromNigori();
+  bool UpdateCryptographerAndNigori();
 
   // Updates the nigori node with any new encrypted types and then
   // encrypts the nodes for those new data types as well as other
@@ -835,12 +837,12 @@ bool SyncManager::SyncInternal::Init(
   return signed_in;
 }
 
-bool SyncManager::SyncInternal::UpdateCryptographerFromNigori() {
+bool SyncManager::SyncInternal::UpdateCryptographerAndNigori() {
   DCHECK(initialized_);
   syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
   if (!lookup.good()) {
     NOTREACHED()
-        << "UpdateCryptographerFromNigori: lookup not good so bailing out";
+        << "UpdateCryptographerAndNigori: lookup not good so bailing out";
     return false;
   }
   if (!lookup->initial_sync_ended_for_type(syncable::NIGORI))
@@ -859,6 +861,13 @@ bool SyncManager::SyncInternal::UpdateCryptographerFromNigori() {
   if (result == Cryptographer::NEEDS_PASSPHRASE) {
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                       OnPassphraseRequired(sync_api::REASON_DECRYPTION));
+  }
+
+  // Due to http://crbug.com/102526, we must check if the encryption keys
+  // are present in the nigori node. If they're not, we write the current set of
+  // keys.
+  if (!nigori.has_encrypted() && cryptographer->is_ready()) {
+    cryptographer->GetKeys(nigori.mutable_encrypted());
   }
 
   // Ensure the nigori node reflects the most recent set of sensitive types
@@ -2001,7 +2010,7 @@ UserShare* SyncManager::GetUserShare() const {
 
 void SyncManager::RefreshEncryption() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (data_->UpdateCryptographerFromNigori())
+  if (data_->UpdateCryptographerAndNigori())
     data_->RefreshEncryption();
 }
 
