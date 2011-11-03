@@ -48,9 +48,8 @@ def ShowUpdatedDEPS(base_url, version, nacl_newlib_only):
     version: revision of the toolchain to use.
     nacl_newlib_only: flag indicating to only consider non-pnacl newlib flavors.
   """
-  new_deps = GetUpdatedDEPS(base_url, version, nacl_newlib_only).iteritems()
-  new_deps.sort()
-  for key, value in new_deps:
+  for key, value in sorted(GetUpdatedDEPS(base_url, version,
+                                          nacl_newlib_only).iteritems()):
     print '  "%s":' % key
     print '      "%s",' % value
     sys.stdout.flush()
