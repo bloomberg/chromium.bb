@@ -80,25 +80,27 @@ class BookmarkEditorView : public BookmarkEditor,
 
   virtual ~BookmarkEditorView();
 
-  // DialogDelegate methods:
+  // views::DialogDelegateView:
+  virtual string16 GetDialogButtonLabel(
+      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(
-      MessageBoxFlags::DialogButton button) const OVERRIDE;
+      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
   virtual bool CanResize() const  OVERRIDE;
   virtual string16 GetWindowTitle() const  OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool AreAcceleratorsEnabled(
-      MessageBoxFlags::DialogButton button) OVERRIDE;
+      ui::MessageBoxFlags::DialogButton button) OVERRIDE;
   virtual views::View* GetContentsView()  OVERRIDE;
 
-  // views::View.
+  // views::View:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child) OVERRIDE;
 
-  // views::TreeViewObserver.
+  // views::TreeViewObserver:
   virtual void OnTreeViewSelectionChanged(
       views::TreeView* tree_view) OVERRIDE;
   virtual bool CanEdit(views::TreeView* tree_view,

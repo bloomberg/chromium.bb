@@ -9,6 +9,7 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
@@ -31,7 +32,8 @@ class InputWindowDialogWin : public InputWindowDialog {
                        const string16& window_title,
                        const string16& label,
                        const string16& contents,
-                       Delegate* delegate);
+                       Delegate* delegate,
+                       ButtonType type);
   virtual ~InputWindowDialogWin();
 
   // Overridden from InputWindowDialog:
@@ -42,7 +44,8 @@ class InputWindowDialogWin : public InputWindowDialog {
   const string16& label() const { return label_; }
   const string16& contents() const { return contents_; }
 
-  InputWindowDialog::Delegate* delegate() { return delegate_.get(); }
+  Delegate* delegate() { return delegate_.get(); }
+  ButtonType type() const { return type_; }
 
  private:
   // Our chrome views window.
@@ -55,6 +58,9 @@ class InputWindowDialogWin : public InputWindowDialog {
 
   // Our delegate. Consumes the window's output.
   scoped_ptr<InputWindowDialog::Delegate> delegate_;
+  const ButtonType type_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputWindowDialogWin);
 };
 
 // ContentView, as the name implies, is the content view for the InputWindow.
@@ -65,6 +71,8 @@ class ContentView : public views::DialogDelegateView,
   explicit ContentView(InputWindowDialogWin* delegate);
 
   // views::DialogDelegateView:
+  virtual string16 GetDialogButtonLabel(
+      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(
       ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
@@ -116,6 +124,16 @@ ContentView::ContentView(InputWindowDialogWin* delegate)
 
 ///////////////////////////////////////////////////////////////////////////////
 // ContentView, views::DialogDelegate implementation:
+
+string16 ContentView::GetDialogButtonLabel(
+      ui::MessageBoxFlags::DialogButton button) const {
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK) {
+    return l10n_util::GetStringUTF16(
+        delegate_->type() == InputWindowDialog::BUTTON_TYPE_ADD ? IDS_ADD
+                                                                : IDS_SAVE);
+  }
+  return string16();
+}
 
 bool ContentView::IsDialogButtonEnabled(
     ui::MessageBoxFlags::DialogButton button) const {
@@ -213,11 +231,13 @@ InputWindowDialogWin::InputWindowDialogWin(gfx::NativeWindow parent,
                                            const string16& window_title,
                                            const string16& label,
                                            const string16& contents,
-                                           Delegate* delegate)
+                                           Delegate* delegate,
+                                           ButtonType type)
     : window_title_(window_title),
       label_(label),
       contents_(contents),
-      delegate_(delegate) {
+      delegate_(delegate),
+      type_(type) {
   window_ = views::Widget::CreateWindowWithParent(new ContentView(this),
                                                   parent);
   window_->client_view()->AsDialogClientView()->UpdateDialogButtons();
@@ -241,6 +261,6 @@ InputWindowDialog* InputWindowDialog::Create(gfx::NativeWindow parent,
                                              const string16& contents,
                                              Delegate* delegate,
                                              ButtonType type) {
-  return new InputWindowDialogWin(
-      parent, window_title, label, contents, delegate);
+  return new InputWindowDialogWin(parent, window_title, label, contents,
+                                  delegate, type);
 }
