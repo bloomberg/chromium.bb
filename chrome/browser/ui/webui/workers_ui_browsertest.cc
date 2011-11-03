@@ -27,13 +27,9 @@ class WorkersUITest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WorkersUITest);
 };
 
-// The test fails on Mac OS X, see crbug.com/89583
-#if defined(OS_MACOSX)
-#define MAYBE_SharedWorkersList DISABLED_SharedWorkersList
-#else
-#define MAYBE_SharedWorkersList SharedWorkersList
-#endif
-IN_PROC_BROWSER_TEST_F(WorkersUITest, MAYBE_SharedWorkersList) {
+// The test fails on Win Interactive Tests (dbg),
+// Linux Tests (dbg)(2) and Mac OS X, see crbug.com/89583
+IN_PROC_BROWSER_TEST_F(WorkersUITest, DISABLED_SharedWorkersList) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL(kSharedWorkerTestPage);
   ui_test_utils::NavigateToURL(browser(), url);
@@ -59,4 +55,3 @@ IN_PROC_BROWSER_TEST_F(WorkersUITest, MAYBE_SharedWorkersList) {
 }
 
 }  // namespace
-
