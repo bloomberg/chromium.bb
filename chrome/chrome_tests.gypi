@@ -1301,6 +1301,7 @@
         'browser/debugger/devtools_remote_listen_socket_unittest.h',
         'browser/debugger/devtools_remote_message_unittest.cc',
         'browser/diagnostics/diagnostics_model_unittest.cc',
+        'browser/download/download_item_unittest.cc',
         'browser/download/download_manager_unittest.cc',
         'browser/download/download_request_infobar_delegate_unittest.cc',
         'browser/download/download_request_limiter_unittest.cc',

@@ -558,7 +558,8 @@ void DownloadManager::DownloadCancelledInternal(DownloadItem* download) {
   // should already have been updated.
   AssertQueueStateConsistent(download);
 
-  download->OffThreadCancel(file_manager_);
+  if (file_manager_)
+    download->OffThreadCancel(file_manager_);
 }
 
 void DownloadManager::OnDownloadInterrupted(int32 download_id,
