@@ -4074,8 +4074,6 @@
             # 'browser_tests',
             '../ipc/ipc.gyp:ipc_tests',
             '../media/media.gyp:media_unittests',
-            'nacl_sandbox_tests',
-            'nacl_ui_tests',
             '../net/net.gyp:net_unittests',
             '../printing/printing.gyp:printing_unittests',
             '../remoting/remoting.gyp:remoting_unittests',
