@@ -326,8 +326,9 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
   }
 }
 
+// See http://crbug.com/102725
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestRendererAccessibilityTree) {
+                       FAILS_TestRendererAccessibilityTree) {
   ui_test_utils::WindowedNotificationObserver tree_updated_observer1(
       content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
       content::NotificationService::AllSources());
