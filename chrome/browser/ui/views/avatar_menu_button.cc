@@ -158,7 +158,8 @@ void AvatarMenuButton::ShowAvatarBubble() {
   AvatarMenuBubbleView* bubble_view = new AvatarMenuBubbleView(browser_);
   // Bubble::Show() takes ownership of the view.
   bubble_ = Bubble::Show(browser_view->GetWidget(), bounds,
-      views::BubbleBorder::TOP_LEFT, bubble_view, bubble_view);
+      views::BubbleBorder::TOP_LEFT,
+      views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bubble_view, bubble_view);
   bubble_->AddObserver(this);
 }
 

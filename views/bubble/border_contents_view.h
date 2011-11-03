@@ -27,6 +27,9 @@ class VIEWS_EXPORT BorderContentsView : public View {
   // Sets the background color.
   void SetBackgroundColor(SkColor color);
 
+  // Sets the bubble alignment.
+  void SetAlignment(views::BubbleBorder::BubbleAlignment alignment);
+
   // Given the size of the contents and the rect to point at, returns the bounds
   // of both the border and the contents inside the bubble.
   // |arrow_location| specifies the preferred location for the arrow

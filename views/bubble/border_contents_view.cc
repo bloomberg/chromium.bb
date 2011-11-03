@@ -87,6 +87,11 @@ void BorderContentsView::SetBackgroundColor(SkColor color) {
   bubble_border_->set_background_color(color);
 }
 
+void BorderContentsView::SetAlignment(
+    views::BubbleBorder::BubbleAlignment alignment) {
+  bubble_border_->set_alignment(alignment);
+}
+
 void BorderContentsView::SizeAndGetBounds(
     const gfx::Rect& position_relative_to,
     BubbleBorder::ArrowLocation arrow_location,

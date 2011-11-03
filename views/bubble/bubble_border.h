@@ -34,9 +34,18 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
     FLOAT = 9   // No arrow. Centered over the supplied rect.
   };
 
+  // The position of the bubble in relation to the anchor.
+  enum BubbleAlignment {
+    // The tip of the arrow points to the middle of the anchor.
+    ALIGN_ARROW_TO_MID_ANCHOR,
+    // The edge nearest to the arrow is lined up with the edge of the anchor.
+    ALIGN_EDGE_TO_ANCHOR_EDGE
+  };
+
   explicit BubbleBorder(ArrowLocation arrow_location)
       : override_arrow_offset_(0),
         arrow_location_(arrow_location),
+        alignment_(ALIGN_ARROW_TO_MID_ANCHOR),
         background_color_(SK_ColorWHITE) {
     InitClass();
   }
@@ -55,6 +64,10 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
     arrow_location_ = arrow_location;
   }
   ArrowLocation arrow_location() const { return arrow_location_; }
+
+  // Sets the alignment.
+  void set_alignment(BubbleAlignment alignment) { alignment_ = alignment; }
+  BubbleAlignment alignment() const { return alignment_; }
 
   static ArrowLocation horizontal_mirror(ArrowLocation loc) {
     return loc >= NONE ? loc : static_cast<ArrowLocation>(loc ^ 1);
@@ -150,6 +163,7 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
   int override_arrow_offset_;
 
   ArrowLocation arrow_location_;
+  BubbleAlignment alignment_;
   SkColor background_color_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleBorder);

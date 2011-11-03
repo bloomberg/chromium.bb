@@ -112,6 +112,7 @@ class Bubble
   static Bubble* Show(views::Widget* parent,
                       const gfx::Rect& position_relative_to,
                       views::BubbleBorder::ArrowLocation arrow_location,
+                      views::BubbleBorder::BubbleAlignment alignment,
                       views::View* contents,
                       BubbleDelegate* delegate);
 
@@ -126,6 +127,7 @@ class Bubble
       views::Widget* parent,
       const gfx::Rect& position_relative_to,
       views::BubbleBorder::ArrowLocation arrow_location,
+      views::BubbleBorder::BubbleAlignment alignment,
       views::View* contents,
       BubbleDelegate* delegate,
       bool show_while_screen_is_locked);
@@ -181,6 +183,7 @@ class Bubble
   virtual void InitBubble(views::Widget* parent,
                           const gfx::Rect& position_relative_to,
                           views::BubbleBorder::ArrowLocation arrow_location,
+                          views::BubbleBorder::BubbleAlignment alignment,
                           views::View* contents,
                           BubbleDelegate* delegate);
 

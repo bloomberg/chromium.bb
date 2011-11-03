@@ -316,12 +316,12 @@ void CapsLockMenuButton::CreateAndShowBubble() {
   gfx::Rect button_bounds = GetScreenBounds();
   button_bounds.set_y(button_bounds.y() + 1);  // See login/message_bubble.cc.
 
-  bubble_ = Bubble::ShowFocusless(GetWidget(),
-                                  button_bounds,
-                                  views::BubbleBorder::TOP_RIGHT,
-                                  new CapsLockMenuButton::StatusView(this),
-                                  NULL /* no delegate */,
-                                  true /* show_while_screen_is_locked */);
+  bubble_ = Bubble::ShowFocusless(GetWidget(), button_bounds,
+      views::BubbleBorder::TOP_RIGHT,
+      views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
+      new CapsLockMenuButton::StatusView(this),
+      NULL /* no delegate */,
+      true /* show_while_screen_is_locked */);
 }
 
 void CapsLockMenuButton::HideBubble() {

@@ -510,7 +510,8 @@ FirstRunBubble* FirstRunBubble::Show(
   }
   bubble->set_view(view);
   bubble->InitBubble(
-      parent, position_relative_to, arrow_location, view, bubble);
+      parent, position_relative_to, arrow_location,
+      views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, view, bubble);
   bubble->GetWidget()->GetFocusManager()->AddFocusChangeListener(view);
   view->BubbleShown();
   return bubble;

@@ -144,6 +144,7 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
           profile, tab_contents->tab_contents());
   bubble_ = Bubble::Show(GetWidget(), screen_bounds,
                          views::BubbleBorder::TOP_RIGHT,
+                         views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
                          bubble_contents, this);
   bubble_contents->set_bubble(bubble_);
 }

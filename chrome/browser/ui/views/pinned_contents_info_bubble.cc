@@ -44,6 +44,7 @@ PinnedContentsInfoBubble* PinnedContentsInfoBubble::Show(
   PinnedContentsInfoBubble* bubble =
       new PinnedContentsInfoBubble(bubble_anchor);
   bubble->InitBubble(parent, position_relative_to, arrow_location,
+                     views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
                      contents, delegate);
   return bubble;
 }

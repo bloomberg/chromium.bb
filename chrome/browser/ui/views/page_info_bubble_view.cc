@@ -502,6 +502,7 @@ void ShowPageInfoBubble(BrowserView* browser_view,
   Bubble* bubble =
       Bubble::Show(browser_view->GetWidget(), bounds,
                    views::BubbleBorder::TOP_LEFT,
+                   views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
                    page_info_bubble, page_info_bubble);
   page_info_bubble->set_bubble(bubble);
 }

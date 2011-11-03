@@ -171,7 +171,8 @@ void GlobalError::ShowBubbleView(Browser* browser, GlobalError* error) {
       new GlobalErrorBubbleView(browser, error);
   // Bubble::Show() takes ownership of the view.
   Bubble* bubble = Bubble::Show(
-      browser_view->GetWidget(), bounds,
-      views::BubbleBorder::TOP_RIGHT, bubble_view, bubble_view);
+      browser_view->GetWidget(), bounds, views::BubbleBorder::TOP_RIGHT,
+      views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,  bubble_view,
+      bubble_view);
   bubble_view->set_bubble(bubble);
 }

@@ -52,6 +52,7 @@ void ConfirmBubbleModel::Show(gfx::NativeView view,
   ConfirmBubbleView* bubble_view = new ConfirmBubbleView(model);
   Bubble* bubble = Bubble::Show(parent, gfx::Rect(origin, gfx::Size()),
                                 views::BubbleBorder::NONE,
+                                views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
                                 bubble_view, bubble_view);
   bubble->SizeToContents();
 #else

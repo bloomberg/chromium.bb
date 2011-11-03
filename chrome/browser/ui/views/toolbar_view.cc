@@ -731,6 +731,7 @@ void ToolbarView::ShowCriticalNotification() {
   Bubble* bubble = Bubble::Show(GetWidget(),
                                 gfx::Rect(screen_loc, app_menu_->size()),
                                 views::BubbleBorder::TOP_RIGHT,
+                                views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
                                 critical_notification_bubble,
                                 critical_notification_bubble);
   bubble->set_close_on_deactivate(false);

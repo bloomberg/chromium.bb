@@ -168,7 +168,9 @@ WebIntentPickerView::WebIntentPickerView(Browser* browser,
   bounds.set_width(kIconHorizontalOffset);
 
   bubble_ = Bubble::Show(browser_view->GetWidget(), bounds,
-                         views::BubbleBorder::TOP_LEFT, this, this);
+                         views::BubbleBorder::TOP_LEFT,
+                         views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
+                         this, this);
 }
 
 WebIntentPickerView::~WebIntentPickerView() {

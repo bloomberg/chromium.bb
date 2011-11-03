@@ -364,8 +364,9 @@ void SpeechInputBubbleImpl::Show() {
     }
     bubble_ = Bubble::Show(toplevel_widget,
                            target_rect,
-                           views::BubbleBorder::TOP_LEFT, bubble_content_,
-                           this);
+                           views::BubbleBorder::TOP_LEFT,
+                           views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
+                           bubble_content_, this);
     // We don't want fade outs when closing because it makes speech recognition
     // appear slower than it is. Also setting it to false allows |Close| to
     // destroy the bubble immediately instead of waiting for the fade animation

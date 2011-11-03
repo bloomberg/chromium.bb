@@ -150,6 +150,7 @@ MessageBubble* MessageBubble::ShowWithLinks(
       views::Widget::InitParams::TYPE_POPUP, parent, image, text, links,
       true, delegate);
   bubble->InitBubble(parent, position_relative_to, arrow_location,
+                     views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
                      bubble->text_->parent(), delegate);
   return bubble;
 }
@@ -171,6 +172,7 @@ MessageBubble* MessageBubble::ShowNoGrab(
       views::Widget::InitParams::TYPE_CONTROL, parent, image, text, links,
       false, delegate);
   bubble->InitBubble(parent, position_relative_to, arrow_location,
+                     views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
                      bubble->text_->parent(), delegate);
   return bubble;
 }

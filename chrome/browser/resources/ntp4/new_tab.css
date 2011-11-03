@@ -177,8 +177,10 @@ html[dir='rtl'] #attribution {
   cursor: pointer;
   font-size: 13px;
   /* Leave room for the scrollbar. */
+  margin-left: 13px;
   margin-right: 13px;
   margin-top: 5px;
+  padding: 0;
   position: fixed;
   right: 0;
   text-align: right;
