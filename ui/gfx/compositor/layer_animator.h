@@ -122,7 +122,7 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   // these changes are reverted when the object is destroyed. NOTE: when the
   // settings object is created, it applies the default transition duration
   // (200ms).
-  class ScopedSettings {
+  class COMPOSITOR_EXPORT ScopedSettings {
    public:
     explicit ScopedSettings(LayerAnimator* animator);
     virtual ~ScopedSettings();
