@@ -261,11 +261,9 @@ string16 ElideUrl(const GURL& url,
   // the pixel width of kEllipsis. Otherwise, subdomain remains,
   // which means that this case has been resolved earlier.
   string16 url_elided_domain = url_subdomain + url_domain;
-  int pixel_width_url_elided_domain = pixel_width_url_domain;
   if (pixel_width_url_subdomain > kPixelWidthDotsTrailer) {
     if (!url_subdomain.empty()) {
       url_elided_domain = kEllipsisAndSlash[0] + url_domain;
-      pixel_width_url_elided_domain += kPixelWidthDotsTrailer;
     } else {
       url_elided_domain = url_domain;
     }
