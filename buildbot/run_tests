@@ -1,27 +1,75 @@
 #!/bin/bash
 
-# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+
+# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This is a very lazy way to get all the unittests running at once, but
-# also very quick to write.
+# This is a less lazy way to get all the unittests running at once, but
+# took longer to write.
 
-cd $(readlink -f $(dirname $0))
-
-IN_CHROOT=../../src/scripts/enter_chroot.sh
+IN_CHROOT=cros_sdk
+OUTSIDE_CHROOT_BUILDBOT=$(dirname $0)
 CHROOT_BUILDBOT=../../chromite/buildbot
 
-set -e
-set -o verbose
+declare -a FAILED_TESTS
+declare -a FAILED_LOGS
 
-./cbuildbot_unittest.py
-./cbuildbot_config_unittest.py
-./cbuildbot_commands_unittest.py
-./cbuildbot_stages_unittest.py
-./manifest_version_unittest.py
-./lkgm_manager_unittest.py
-${IN_CHROOT} -- ${CHROOT_BUILDBOT}/cros_mark_as_stable_unittest.py
-${IN_CHROOT} -- ${CHROOT_BUILDBOT}/cros_mark_chrome_as_stable_unittest.py
-./patch_unittest.py
-./prebuilt_unittest.py
+set -eu
+
+# Helper function to add failed logs/tests to be printed out later.
+# $1 test that failed.
+# $2 log file where we stored the output of the failed test.
+append_failed_test() {
+  echo "ERROR: $1 failed.  Log will be output at end of run!!!"
+  FAILED_TESTS+=($1)
+  FAILED_LOGS+=($2)
+}
+
+# Wrapper to run unittest.  Hides output unless test fails.
+# $1 test to run.  Must be in chromite/buildbot.
+# $2 If set, run inside the chroot.
+run_test() {
+  local log_file=$(mktemp)
+  echo "Running unittest $1"
+
+  if [ $# -gt 1 ]; then
+    ${IN_CHROOT} -- $CHROOT_BUILDBOT/$1 &> $log_file ||
+      append_failed_test $1 $log_file
+  else
+    $OUTSIDE_CHROOT_BUILDBOT/$1 &> $log_file ||
+      append_failed_test $1 $log_file
+  fi
+}
+
+run_test cbuildbot_unittest.py
+run_test cbuildbot_config_unittest.py
+run_test cbuildbot_commands_unittest.py
+run_test cbuildbot_stages_unittest.py
+run_test gerrit_helper_unittest.py
+run_test lkgm_manager_unittest.py
+run_test manifest_version_unittest.py
+run_test patch_unittest.py
+run_test prebuilt_unittest.py
+run_test validation_pool_unittest.py
+run_test cros_mark_as_stable_unittest.py yes
+run_test cros_mark_chrome_as_stable_unittest.py yes
+
+if [ ${#FAILED_TESTS[@]} -gt 0 ]; then
+  index=0
+  for test in "${FAILED_TESTS[@]}"; do
+
+    echo
+    echo "FAIL: Unittest $test failed output:"
+    echo
+
+    cat ${FAILED_LOGS[$index]}
+    rm ${FAILED_LOGS[$index]}
+    index=$(( index + 1 ))
+  done
+  echo
+  echo "FAIL: The following tests failed ${FAILED_TESTS[@]}"
+  exit 1
+else
+  echo "All tests succeeded!"
+fi

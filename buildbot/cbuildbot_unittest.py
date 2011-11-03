@@ -225,18 +225,6 @@ class InterfaceTest(mox.MoxTestBase):
     self.assertRaises(Exception, cbuildbot._PostParseCheck, options)
     self.mox.VerifyAll()
 
-  def testBuildBotWithBadChromeRevOption(self):
-    """chrome_rev can't get passed an invalid option."""
-    args = [
-        '--buildroot=/tmp',
-        '--chrome_rev=TERRIBLEOPTION',
-        self._X86_PREFLIGHT]
-    self.mox.StubOutWithMock(optparse, 'OptionValueError')
-    optparse.OptionValueError(mox.IgnoreArg()).AndRaise(Exception)
-    self.mox.ReplayAll()
-    self.assertRaises(Exception, self.parser.parse_args, args)
-    self.mox.VerifyAll()
-
   def testBuildBotWithBadChromeRevOptionLocal(self):
     """chrome_rev can't be local without chrome_root."""
     args = [

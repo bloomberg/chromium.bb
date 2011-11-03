@@ -233,8 +233,8 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PrepSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PushSpecChanges')
 
-    my_info = manifest_version.VersionInfo('1.2.3.4')
-    most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3.4-rc12')
+    my_info = manifest_version.VersionInfo('1.2.3')
+    most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
 
     lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
@@ -244,7 +244,7 @@ class LKGMManagerTest(mox.MoxTestBase):
         mox.StrContains(most_recent_candidate.VersionString()))
 
     self.mox.ReplayAll()
-    self.manager.latest_unprocessed = '1.2.3.4-rc12'
+    self.manager.latest_unprocessed = '1.2.3-rc12'
     candidate = self.manager.GetLatestCandidate()
     self.assertEqual(candidate, self._GetPathToManifest(most_recent_candidate))
     self.mox.VerifyAll()
