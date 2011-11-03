@@ -315,6 +315,72 @@ class BenchmarkPerfTest(BasePerfTest):
             'ms_SunSpider-%s-%s' % (category_name, result_name),
             float(result_value))
 
+  def testDromaeoSuite(self):
+    """Measures results from Dromaeo benchmark suite."""
+    url = self.GetFileURLForDataPath('dromaeo', 'index.html')
+    self.assertTrue(self.AppendTab(pyauto.GURL(url + '?dromaeo')),
+                    msg='Failed to append tab for Dromaeo benchmark suite.')
+
+    js_is_ready = """
+        var val = document.getElementById('pause').value;
+        window.domAutomationController.send(val);
+    """
+    self.assertTrue(
+        self.WaitUntil(
+            lambda: self.ExecuteJavascript(js_is_ready, tab_index=1),
+            timeout=30, expect_retval='Run', retry_sleep=1),
+        msg='Timed out when waiting for Dromaeo benchmark to load.')
+
+    js_run = """
+        $('#pause').val('Run').click();
+        window.domAutomationController.send('done');
+    """
+    self.ExecuteJavascript(js_run, tab_index=1)
+
+    js_is_done = """
+        var val = document.getElementById('timebar').innerHTML;
+        window.domAutomationController.send(val);
+    """
+    self.assertTrue(
+        self.WaitUntil(
+            lambda: 'Total' in self.ExecuteJavascript(js_is_done, tab_index=1),
+            timeout=900, expect_retval=True, retry_sleep=2),
+        msg='Timed out when waiting for Dromaeo benchmark to complete.')
+
+    js_get_results = """
+        var result = {};
+        result['total_result'] = $('#timebar strong').html();
+        result['all_results'] = {};
+        $('.result-item.done').each(function (i) {
+            var group_name = $(this).find('.test b').html().replace(':', '');
+            var group_results = {};
+            group_results['result'] =
+                $(this).find('span').html().replace('runs/s', '')
+
+            group_results['sub_groups'] = {}
+            $(this).find('li').each(function (i) {
+                var sub_name = $(this).find('b').html().replace(':', '');
+                group_results['sub_groups'][sub_name] =
+                    $(this).text().match(/: ([\d.]+)/)[1]
+            });
+            result['all_results'][group_name] = group_results;
+        });
+        window.domAutomationController.send(JSON.stringify(result));
+    """
+    results = eval(self.ExecuteJavascript(js_get_results, tab_index=1))
+    total_result = results['total_result']
+    logging.info('Total result: ' + total_result)
+    self._OutputPerfGraphValue('runsPerSec_Dromaeo-total', float(total_result))
+
+    for group_name, group in results['all_results'].iteritems():
+      logging.info('Benchmark "%s": %s', group_name, group['result'])
+      self._OutputPerfGraphValue(
+          'runsPerSec_Dromaeo-%s' % group_name.replace(' ', ''),
+          float(group['result']))
+
+      for benchmark_name, benchmark_score in group['sub_groups'].iteritems():
+        logging.info('  Result "%s": %s', benchmark_name, benchmark_score)
+
 
 class LiveWebappLoadTest(BasePerfTest):
   """Tests that involve performance measurements of live webapps.
