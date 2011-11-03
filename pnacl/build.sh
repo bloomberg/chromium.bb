@@ -176,9 +176,6 @@ readonly INSTALL_LIB_X8664="${INSTALL_ROOT}/lib-x86-64"
 
 # PNaCl client-translators (sandboxed) binary locations
 readonly INSTALL_SB_TOOLS="${INSTALL_ROOT}/tools-sb"
-readonly INSTALL_SB_TOOLS_X8632="${INSTALL_SB_TOOLS}/x8632"
-readonly INSTALL_SB_TOOLS_X8664="${INSTALL_SB_TOOLS}/x8664"
-readonly INSTALL_SB_TOOLS_UNIVERSAL="${INSTALL_SB_TOOLS}/universal"
 
 # Component installation directories
 readonly INSTALL_PKG="${INSTALL_ROOT}/pkg"
@@ -2302,7 +2299,7 @@ check-sb-arch() {
     fi
   done
 
-  Fatal "ERROR: Unsupported arch. Choose one of: x8632, x8664, arm, universal"
+  Fatal "ERROR: Unsupported arch [$1]. Must be: x8632, x8664, arm, or universal"
 }
 
 LLVM_SB_SETUP=false
@@ -2402,6 +2399,7 @@ llvm-sb-setup-jit() {
 #+ llvm-sb <arch> <mode> - Build and install llvm tools (sandboxed)
 llvm-sb() {
   llvm-sb-setup "$@"
+  StepBanner "LLVM-SB" "Sandboxed llc + lli [$*]"
   local srcdir="${TC_SRC_LLVM}"
   assert-dir "${srcdir}" "You need to checkout llvm."
 
@@ -2612,28 +2610,24 @@ binutils-sb-setup() {
     return 0
   fi
 
-  if [ $# -ne 2 ] ; then
-    Fatal "Please specify arch and mode"
+  if [ $# -ne 1 ] ; then
+    Fatal "Please specify arch"
   fi
 
   BINUTILS_SB_SETUP=true
 
   BINUTILS_SB_ARCH=$1
-  BINUTILS_SB_MODE=$2
   check-sb-arch ${BINUTILS_SB_ARCH}
-  check-sb-mode ${BINUTILS_SB_MODE}
+  BINUTILS_SB_LOG_PREFIX="binutils.sb.${BINUTILS_SB_ARCH}"
+  BINUTILS_SB_OBJDIR="${TC_BUILD}/binutils-sb-${BINUTILS_SB_ARCH}"
+  BINUTILS_SB_INSTALL_DIR="${INSTALL_SB_TOOLS}/${arch}/srpc"
 
-  BINUTILS_SB_LOG_PREFIX="binutils.sb.${BINUTILS_SB_ARCH}.${BINUTILS_SB_MODE}"
-  BINUTILS_SB_OBJDIR="${TC_BUILD}/"\
-"binutils-sb-${BINUTILS_SB_ARCH}-${BINUTILS_SB_MODE}"
   if ${LIBMODE_NEWLIB}; then
     flags+=" -static"
   fi
 
-  case ${BINUTILS_SB_MODE} in
-    srpc)    flags+=" -DNACL_SRPC" ;;
-    nonsrpc) ;;
-  esac
+  # we do not support the non-srpc mode anymore
+  flags+=" -DNACL_SRPC"
 
   if [ ! -f "${TC_BUILD_BINUTILS_LIBERTY}/libiberty/libiberty.a" ] ; then
     echo "ERROR: Missing lib. Run this script with binutils-liberty option"
@@ -2655,12 +2649,24 @@ binutils-sb-setup() {
     RANLIB="${PNACL_RANLIB}" \
     LDFLAGS_FOR_BUILD="-L${TC_BUILD_BINUTILS_LIBERTY}/libiberty/" \
     LDFLAGS="")
+
+
+  case ${BINUTILS_SB_ARCH} in
+    x8632)     BINUTILS_SB_ELF_TARGETS=i686-pc-nacl ;;
+    x8664)     BINUTILS_SB_ELF_TARGETS=x86_64-pc-nacl ;;
+    arm)       BINUTILS_SB_ELF_TARGETS=arm-pc-nacl ;;
+    universal) BINUTILS_SB_ELF_TARGETS=arm-pc-nacl,i686-pc-nacl,x86_64-pc-nacl ;;
+  esac
+
+
 }
 
 #+-------------------------------------------------------------------------
 #+ binutils-sb <arch> <mode> - Build and install binutils (sandboxed)
 binutils-sb() {
   binutils-sb-setup "$@"
+  StepBanner "BINUTILS-SB" "Sandboxed ld [$*]"
+
   local srcdir="${TC_SRC_BINUTILS}"
   assert-dir "${srcdir}" "You need to checkout binutils."
 
@@ -2689,7 +2695,7 @@ binutils-sb-needs-configure() {
 # binutils-sb-clean - Clean binutils (sandboxed)
 binutils-sb-clean() {
   binutils-sb-setup "$@"
-  StepBanner "BINUTILS-SB" "Clean ${BINUTILS_SB_ARCH} ${BINUTILS_SB_MODE}"
+  StepBanner "BINUTILS-SB" "Clean"
   local objdir="${BINUTILS_SB_OBJDIR}"
 
   rm -rf "${objdir}"
@@ -2700,17 +2706,10 @@ binutils-sb-clean() {
 binutils-sb-configure() {
   binutils-sb-setup "$@"
 
-  StepBanner "BINUTILS-SB" "Configure ${BINUTILS_SB_ARCH} ${BINUTILS_SB_MODE}"
+  StepBanner "BINUTILS-SB" "Configure"
   local srcdir="${TC_SRC_BINUTILS}"
   local objdir="${BINUTILS_SB_OBJDIR}"
-  local installdir="${INSTALL_SB_TOOLS}/${BINUTILS_SB_ARCH}/${BINUTILS_SB_MODE}"
-
-  case ${BINUTILS_SB_ARCH} in
-    x8632) targets=i686-pc-nacl ;;
-    x8664) targets=x86_64-pc-nacl ;;
-    arm) targets=arm-pc-nacl ;;
-    universal) targets=arm-pc-nacl,i686-pc-nacl,x86_64-pc-nacl ;;
-  esac
+  local installdir="${BINUTILS_SB_INSTALL_DIR}"
 
   spushd "${objdir}"
   RunWithLog \
@@ -2722,7 +2721,7 @@ binutils-sb-configure() {
         --prefix=${installdir} \
         --host=nacl \
         --target=${BINUTILS_TARGET} \
-        --enable-targets=${targets} \
+        --enable-targets=${BINUTILS_SB_ELF_TARGETS} \
         --disable-nls \
         --disable-werror \
         --enable-static \
@@ -2740,20 +2739,15 @@ binutils-sb-needs-make() {
 binutils-sb-make() {
   binutils-sb-setup "$@"
 
-  StepBanner "BINUTILS-SB" "Make ${BINUTILS_SB_ARCH} ${BINUTILS_SB_MODE}"
+  StepBanner "BINUTILS-SB" "Make"
   local objdir="${BINUTILS_SB_OBJDIR}"
 
   spushd "${objdir}"
   ts-touch-open "${objdir}"
 
-  local build_with_srpc=0
-  if [ "${BINUTILS_SB_MODE}" == "srpc" ]; then
-    build_with_srpc=1
-  fi
-
   RunWithLog ${BINUTILS_SB_LOG_PREFIX}.make \
       env -i PATH="/usr/bin:/bin" \
-      NACL_SRPC=${build_with_srpc} \
+      NACL_SRPC=1 \
       make ${MAKE_OPTS} all-ld
 
   ts-touch-commit "${objdir}"
@@ -2765,7 +2759,7 @@ binutils-sb-make() {
 binutils-sb-install() {
   binutils-sb-setup "$@"
 
-  StepBanner "BINUTILS-SB" "Install ${BINUTILS_SB_ARCH} ${BINUTILS_SB_MODE}"
+  StepBanner "BINUTILS-SB" "Install"
   local objdir="${BINUTILS_SB_OBJDIR}"
   spushd "${objdir}"
 
@@ -2776,7 +2770,7 @@ binutils-sb-install() {
   spopd
 
   # First rename and *strip* the installed file. (Beware for debugging).
-  local installdir="${INSTALL_SB_TOOLS}/${BINUTILS_SB_ARCH}/${BINUTILS_SB_MODE}"
+  local installdir="${BINUTILS_SB_INSTALL_DIR}"
   ${PNACL_STRIP} "${installdir}/bin/${BINUTILS_TARGET}-ld" \
     -o "${installdir}/bin/ld"
   # Remove old file plus a redundant file.
@@ -2784,7 +2778,7 @@ binutils-sb-install() {
   rm "${installdir}/bin/${BINUTILS_TARGET}-ld.bfd"
 
   # Then translate.
-  translate-and-install-sb-tool ${BINUTILS_SB_ARCH} ${BINUTILS_SB_MODE} ld
+  translate-and-install-sb-tool ${BINUTILS_SB_ARCH} srpc ld
 }
 
 #+ tools-sb {arch} {mode} - Build all sandboxed tools for arch, mode
@@ -2792,10 +2786,8 @@ tools-sb() {
   local arch=$1
   local mode=$2
 
-  StepBanner "${arch}"    "Sandboxing"
-  StepBanner "----------" "--------------------------------------"
   llvm-sb ${arch} ${mode}
-  binutils-sb ${arch} ${mode}
+  binutils-sb ${arch}
 }
 
 
@@ -2847,28 +2839,25 @@ prune-translator-install() {
   local srpc_kind=$1
   check-sb-mode ${srpc_kind}
 
-  StepBanner "PRUNE" "Pruning translator installs (${srpc_kind})"
-
-  spushd "${INSTALL_SB_TOOLS_X8632}/${srpc_kind}"
-  rm -rf include lib nacl share
-  rm -rf bin/llvm-config bin/tblgen
-  spopd
-
-  spushd "${INSTALL_SB_TOOLS_X8664}/${srpc_kind}"
-  rm -rf include lib nacl64 share
-  rm -rf bin/llvm-config bin/tblgen
-  spopd
+  StepBanner "PRUNE" "Pruning translator installs [${srpc_kind}]"
+  for arch in ${SBTC_BUILD_WITH_PNACL} ; do
+    StepBanner "PRUNE" "llvm cruft [${arch}]"
+    spushd "${INSTALL_SB_TOOLS}/${arch}/${srpc_kind}"
+    rm -rf include lib nacl share
+    rm -rf bin/llvm-config bin/tblgen
+    spopd
+  done
 
   if ! ${SBTC_PRODUCTION}; then
-    rm -rf "${INSTALL_SB_TOOLS_UNIVERSAL}"
+    rm -rf "${INSTALL_SB_TOOLS}/universal"
   fi
 
-  echo "Stripping tools-sb nexes"
+  StepBanner "PRUNE" "Stripping tools-sb nexes"
   for arch in ${SBTC_BUILD_WITH_PNACL} ; do
     ${PNACL_STRIP} "${INSTALL_SB_TOOLS}/${arch}/${srpc_kind}"/bin/*
   done
 
-  echo "remove driver log"
+  StepBanner "PRUNE" "remove driver log"
   rm -f "${INSTALL_ROOT}"/driver.log
 
   echo "Done"
