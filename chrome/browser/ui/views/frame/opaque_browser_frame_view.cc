@@ -152,6 +152,12 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   minimize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_MINIMIZE));
   AddChildView(minimize_button_);
+#if defined(USE_AURA)
+  // TODO(jamescook): Remove this when Aura uses its own custom window frame,
+  // BrowserNonClientFrameViewAura.  Layout code depends on this button's
+  // position, so just hide it.
+  minimize_button_->SetVisible(false);
+#endif
 
   maximize_button_->SetImage(views::CustomButton::BS_NORMAL,
                              tp->GetBitmapNamed(IDR_MAXIMIZE));
@@ -589,16 +595,27 @@ gfx::Rect OpaqueBrowserFrameView::IconBounds() const {
 void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   ui::ThemeProvider* tp = GetThemeProvider();
 
+#if defined(USE_AURA)
+  // TODO(jamescook): Remove this when Aura defaults to its own window frame,
+  // BrowserNonClientFrameViewAura.  Until then, use custom square corners to
+  // avoid performance penalties associated with transparent layers.
+  SkBitmap* top_left_corner = tp->GetBitmapNamed(IDR_AURA_WINDOW_TOP_LEFT);
+  SkBitmap* top_right_corner = tp->GetBitmapNamed(IDR_AURA_WINDOW_TOP_RIGHT);
+  SkBitmap* bottom_left_corner =
+      tp->GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_LEFT);
+  SkBitmap* bottom_right_corner =
+      tp->GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_RIGHT);
+#else
   SkBitmap* top_left_corner = tp->GetBitmapNamed(IDR_WINDOW_TOP_LEFT_CORNER);
-  SkBitmap* top_right_corner =
-      tp->GetBitmapNamed(IDR_WINDOW_TOP_RIGHT_CORNER);
-  SkBitmap* top_edge = tp->GetBitmapNamed(IDR_WINDOW_TOP_CENTER);
-  SkBitmap* right_edge = tp->GetBitmapNamed(IDR_WINDOW_RIGHT_SIDE);
-  SkBitmap* left_edge = tp->GetBitmapNamed(IDR_WINDOW_LEFT_SIDE);
+  SkBitmap* top_right_corner = tp->GetBitmapNamed(IDR_WINDOW_TOP_RIGHT_CORNER);
   SkBitmap* bottom_left_corner =
       tp->GetBitmapNamed(IDR_WINDOW_BOTTOM_LEFT_CORNER);
   SkBitmap* bottom_right_corner =
       tp->GetBitmapNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER);
+#endif
+  SkBitmap* top_edge = tp->GetBitmapNamed(IDR_WINDOW_TOP_CENTER);
+  SkBitmap* right_edge = tp->GetBitmapNamed(IDR_WINDOW_RIGHT_SIDE);
+  SkBitmap* left_edge = tp->GetBitmapNamed(IDR_WINDOW_LEFT_SIDE);
   SkBitmap* bottom_edge = tp->GetBitmapNamed(IDR_WINDOW_BOTTOM_CENTER);
 
   // Fill with the frame color first so we have a constant background for
@@ -609,16 +626,6 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
     top_area_height = std::max(top_area_height,
       GetBoundsForTabStrip(browser_view_->tabstrip()).bottom());
   }
-#if defined(USE_AURA)
-  // TODO(jamescook): Remove this when Aura defaults to its own window frame,
-  // BrowserNonClientFrameViewAura.  Until then, don't draw background colored
-  // rectangles, use images with colors baked in.  This allows us to have alpha
-  // rounded window corners without a window mask.  Also avoid overlapping the
-  // frame image with the corners.
-  canvas->TileImageInt(*theme_frame, top_left_corner->width(), 0,
-      width() - top_left_corner->width() - top_right_corner->width(),
-      theme_frame->height());
-#else
   SkColor frame_color = GetFrameColor();
   canvas->FillRect(frame_color, gfx::Rect(0, 0, width(), top_area_height));
 
@@ -644,7 +651,6 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 
   // Draw the theme frame.
   canvas->TileImageInt(*theme_frame, 0, 0, width(), theme_frame->height());
-#endif
 
   // Draw the theme frame overlay.
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
@@ -1032,7 +1038,7 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
       close_button_size.width() + right_extra_width,
       close_button_size.height());
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
   // LayoutWindowControls could be triggered from
   // NativeWidgetGtk::UpdateWindowTitle(), which could happen when user
   // navigates in fullscreen mode. And because
@@ -1082,7 +1088,11 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
                             caption_y, visible_button_size.width(),
                             visible_button_size.height());
 
+#if !defined(USE_AURA)
+  // TODO(jamescook): Go back to showing minimize button when Aura uses its
+  // own custom window frame, BrowserNonClientFrameViewAura.
   minimize_button_->SetVisible(true);
+#endif
   minimize_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
                                       views::ImageButton::ALIGN_BOTTOM);
   gfx::Size minimize_button_size = minimize_button_->GetPreferredSize();

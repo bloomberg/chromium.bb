@@ -167,6 +167,7 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
     // TODO: see if we can avoid this, layers are expensive.
     browser_view_->SetPaintToLayer(true);
     browser_view_->layer()->SetFillsBoundsOpaquely(false);
+    // Background only needed for Aura-style windows.
     browser_view_->set_background(new ToolbarBackground(browser_view));
   }
 }

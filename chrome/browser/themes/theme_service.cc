@@ -65,18 +65,15 @@ SkColor IncreaseLightness(SkColor color, double percent) {
 #if defined(USE_AURA)
 // TODO(jamescook): Revert this when Aura is using its own window frame
 // implementation by default, specifically BrowserNonClientFrameViewAura.
-const SkColor kDefaultColorFrame = SkColorSetRGB(185, 185, 185);
-const SkColor kDefaultColorFrameInactive = SkColorSetRGB(201, 201, 201);
-const SkColor kDefaultColorFrameIncognito = SkColorSetRGB(83, 106, 139);
-const SkColor kDefaultColorFrameIncognitoInactive =
-    SkColorSetRGB(126, 139, 156);
+const SkColor kDefaultColorFrame = SkColorSetRGB(109, 109, 109);
+const SkColor kDefaultColorFrameInactive = SkColorSetRGB(176, 176, 176);
 #else
 const SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
+#endif  // USE_AURA
 const SkColor kDefaultColorFrameIncognito = SkColorSetRGB(83, 106, 139);
 const SkColor kDefaultColorFrameIncognitoInactive =
     SkColorSetRGB(126, 139, 156);
-#endif  // USE_AURA
 #if defined(OS_MACOSX)
 const SkColor kDefaultColorToolbar = SkColorSetRGB(230, 230, 230);
 #else
