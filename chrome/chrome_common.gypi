@@ -27,6 +27,7 @@
         'chrome_strings',
         'common_constants',
         'common_net',
+        'common_version',
         'default_plugin/default_plugin.gyp:default_plugin',
         'theme_resources',
         '../base/base.gyp:base',
@@ -268,10 +269,39 @@
            'default_plugin/default_plugin.gyp:default_plugin',
           ],
         }],
-        ['os_posix == 1 and OS != "mac"', {
-          'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)',
+        ['OS=="linux" and selinux==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:selinux',
           ],
+        }],
+        ['OS=="mac"', {
+          'dependencies': [
+            '../third_party/mach_override/mach_override.gyp:mach_override',
+          ],
+          'include_dirs': [
+            '../third_party/GTM',
+          ],
+        }],
+        ['remoting==1', {
+          'dependencies': [
+            '../remoting/remoting.gyp:remoting_client_plugin',
+          ],
+        }],
+      ],
+      'export_dependent_settings': [
+        '../base/base.gyp:base',
+      ],
+    },
+    {
+      'target_name': 'common_version',
+      'type': 'none',
+      'conditions': [
+        ['os_posix == 1 and OS != "mac"', {
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(SHARED_INTERMEDIATE_DIR)',
+            ],
+          },
           # Because posix_version generates a header, we must set the
           # hard_dependency flag.
           'hard_dependency': 1,
@@ -320,27 +350,6 @@
             },
           ],
         }],
-        ['OS=="linux" and selinux==1', {
-          'dependencies': [
-            '../build/linux/system.gyp:selinux',
-          ],
-        }],
-        ['OS=="mac"', {
-          'dependencies': [
-            '../third_party/mach_override/mach_override.gyp:mach_override',
-          ],
-          'include_dirs': [
-            '../third_party/GTM',
-          ],
-        }],
-        ['remoting==1', {
-          'dependencies': [
-            '../remoting/remoting.gyp:remoting_client_plugin',
-          ],
-        }],
-      ],
-      'export_dependent_settings': [
-        '../base/base.gyp:base',
       ],
     },
     {
