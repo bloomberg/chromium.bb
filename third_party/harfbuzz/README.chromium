@@ -16,3 +16,5 @@ The patch in chromium.patch was applied on top of this; I will talk with
 upstream about it.  (Note that chromium.patch is just a record of our
 changes against upstream; you must also apply any changes that you make to
 the checked-in copy of the source.)
+
+Added support for building on Android.
