@@ -4079,8 +4079,8 @@
           ],
           'sources!': [
             'browser/background/background_mode_manager_gtk.cc',
-            'browser/extensions/default_apps_provider.cc',
-            'browser/extensions/default_apps_provider.h',
+            'browser/extensions/default_apps.cc',
+            'browser/extensions/default_apps.h',
             'browser/first_run/upgrade_util.cc',
             'browser/first_run/upgrade_util.h',
             'browser/first_run/upgrade_util_linux.cc',
