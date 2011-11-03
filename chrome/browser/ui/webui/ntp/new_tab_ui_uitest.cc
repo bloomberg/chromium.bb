@@ -161,24 +161,3 @@ TEST_F(NewTabUIProcessPerTabTest, MAYBE_NavBeforeNTPCommits) {
   ASSERT_TRUE(tab2.get());
   ASSERT_TRUE(tab2->NavigateToURL(GURL("data:text/html,hello world")));
 }
-
-// Fails about ~5% of the time on all platforms. http://crbug.com/45001
-TEST_F(NewTabUITest, FLAKY_ChromeInternalLoadsNTP) {
-  scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(window.get());
-
-  // Go to the "new tab page" using its old url, rather than chrome://newtab.
-  scoped_refptr<TabProxy> tab = window->GetTab(0);
-  ASSERT_TRUE(tab.get());
-  ASSERT_TRUE(tab->NavigateToURLAsync(GURL("chrome-internal:")));
-  int load_time;
-  ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
-
-  // Ensure there are some thumbnails loaded in the page.
-  int thumbnails_count = -1;
-  ASSERT_TRUE(tab->ExecuteAndExtractInt(L"",
-      L"window.domAutomationController.send("
-      L"document.getElementsByClassName('thumbnail-container').length)",
-      &thumbnails_count));
-  EXPECT_GT(thumbnails_count, 0);
-}
