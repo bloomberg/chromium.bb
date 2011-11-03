@@ -16,6 +16,10 @@
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(OFFICIAL_BUILD)
+#include "chrome/browser/defaults.h"
+#endif
+
 namespace {
 
 typedef std::list<std::pair<FilePath::StringType, int> >
