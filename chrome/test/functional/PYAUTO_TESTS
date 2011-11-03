@@ -169,6 +169,8 @@
       # crbug.com/98526
       '-pyauto_webdriver.PyAutoWebDriverTest.testCanConnectToRestartedBrowser',
       '-pyauto_webdriver.PyAutoWebDriverTest.testTypeIntoTextBox',
+      # crbug.com/95031
+      '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
     ],
 
     'mac': [
