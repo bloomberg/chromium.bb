@@ -6,7 +6,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -24,22 +23,6 @@ const char kPromoLogo[] = "chrome://theme/IDR_WEBSTORE_ICON";
 const char kPromoExpire[] = "No thanks.";
 const int kPromoUserGroup =
     AppsPromo::USERS_NEW | AppsPromo::USERS_EXISTING;
-
-void ExpectAppsSectionMaximized(PrefService* prefs, bool maximized) {
-  EXPECT_EQ(maximized,
-            (ShownSectionsHandler::GetShownSections(prefs) & APPS) != 0);
-  EXPECT_EQ(!maximized,
-            (ShownSectionsHandler::GetShownSections(prefs) & THUMB) != 0);
-}
-
-void ExpectAppsPromoHidden(PrefService* prefs) {
-  // Hiding the promo places the apps section in menu mode and maximizes the
-  // most visited section.
-  EXPECT_TRUE((ShownSectionsHandler::GetShownSections(prefs) &
-               APPS) == 0);
-  EXPECT_TRUE((ShownSectionsHandler::GetShownSections(prefs) &
-               (MENU_APPS | THUMB)) != 0);
-}
 
 } // namespace
 
@@ -212,106 +195,6 @@ TEST_F(ExtensionAppsPromo, PromoPrefs) {
   GURL expected_source("https://www.google.com/images/test.png");
   AppsPromo::SetSourcePromoLogoURL(expected_source);
   EXPECT_EQ(expected_source, AppsPromo::GetSourcePromoLogoURL());
-}
-
-// Tests maximizing the promo for USERS_NONE.
-TEST_F(ExtensionAppsPromo, UpdatePromoFocus_UsersNone) {
-  // Verify that the apps section is not already maximized.
-  ExpectAppsSectionMaximized(prefs(), false);
-
-  // The promo shouldn't maximize for anyone.
-  AppsPromo::PromoData promo_data(kPromoId, kPromoHeader, kPromoButton,
-                                  GURL(kPromoLink), kPromoExpire, GURL(""),
-                                  AppsPromo::USERS_NONE);
-  AppsPromo::SetPromo(promo_data);
-  apps_promo()->MaximizeAppsIfNecessary();
-  ExpectAppsSectionMaximized(prefs(), false);
-
-  // The promo still shouldn't maximize if we change it's ID.
-  promo_data.id = "lkksdf";
-  AppsPromo::SetPromo(promo_data);
-  apps_promo()->MaximizeAppsIfNecessary();
-  ExpectAppsSectionMaximized(prefs(), false);
-}
-
-// Tests maximizing the promo for USERS_EXISTING.
-TEST_F(ExtensionAppsPromo, UpdatePromoFocus_UsersExisting) {
-  // Verify that the apps section is not already maximized.
-  ExpectAppsSectionMaximized(prefs(), false);
-
-  // Set the promo content.
-  AppsPromo::PromoData promo_data(kPromoId, kPromoHeader, kPromoButton,
-                                  GURL(kPromoLink), kPromoExpire, GURL(""),
-                                  AppsPromo::USERS_EXISTING);
-  AppsPromo::SetPromo(promo_data);
-  // This is a new user so the apps section shouldn't maximize.
-  apps_promo()->MaximizeAppsIfNecessary();
-  ExpectAppsSectionMaximized(prefs(), false);
-
-  // Set a new promo and now it should maximize.
-  promo_data.id = "lksdf";
-  AppsPromo::SetPromo(promo_data);
-
-  apps_promo()->MaximizeAppsIfNecessary();
-  ExpectAppsSectionMaximized(prefs(), true);
-
-  apps_promo()->HidePromo();
-  ExpectAppsPromoHidden(prefs());
-}
-
-// Tests maximizing the promo for USERS_NEW.
-TEST_F(ExtensionAppsPromo, UpdatePromoFocus_UsersNew) {
-  // Verify that the apps section is not already maximized.
-  ExpectAppsSectionMaximized(prefs(), false);
-
-  // The promo should maximize for new users.
-  AppsPromo::PromoData promo_data(kPromoId, kPromoHeader, kPromoButton,
-                                  GURL(kPromoLink), kPromoExpire, GURL(""),
-                                  AppsPromo::USERS_NEW);
-  AppsPromo::SetPromo(promo_data);
-  apps_promo()->MaximizeAppsIfNecessary();
-  ExpectAppsSectionMaximized(prefs(), true);
-
-  // Try hiding the promo.
-  apps_promo()->HidePromo();
-  ExpectAppsPromoHidden(prefs());
-
-  // The same promo should not maximize twice.
-  apps_promo()->MaximizeAppsIfNecessary();
-  ExpectAppsSectionMaximized(prefs(), false);
-
-  // Another promo targetting new users should not maximize.
-  promo_data.id = "lksdf";
-  AppsPromo::SetPromo(promo_data);
-  apps_promo()->MaximizeAppsIfNecessary();
-  ExpectAppsSectionMaximized(prefs(), false);
-}
-
-// Tests maximizing the promo for USERS_NEW | USERS_EXISTING.
-TEST_F(ExtensionAppsPromo, UpdatePromoFocus_UsersAll) {
-  // Verify that the apps section is not already maximized.
-  ExpectAppsSectionMaximized(prefs(), false);
-
-  // The apps section should maximize for all users.
-  AppsPromo::PromoData promo_data(
-      kPromoId, kPromoHeader, kPromoButton, GURL(kPromoLink), kPromoExpire,
-      GURL(""), AppsPromo::USERS_NEW | AppsPromo::USERS_EXISTING);
-  AppsPromo::SetPromo(promo_data);
-  apps_promo()->MaximizeAppsIfNecessary();
-  ExpectAppsSectionMaximized(prefs(), true);
-
-  apps_promo()->HidePromo();
-  ExpectAppsPromoHidden(prefs());
-
-  // The same promo should not maximize twice.
-  apps_promo()->MaximizeAppsIfNecessary();
-  ExpectAppsSectionMaximized(prefs(), false);
-
-  // A promo with a new ID should maximize though.
-  promo_data.id = "lkksdf";
-  AppsPromo::SetPromo(promo_data);
-  apps_promo()->MaximizeAppsIfNecessary();
-  ExpectAppsSectionMaximized(prefs(), true);
 }
 
 TEST_F(ExtensionAppsPromo, PromoHiddenByPref) {

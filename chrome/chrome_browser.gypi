@@ -3791,8 +3791,6 @@
         'browser/ui/webui/ntp/ntp_resource_cache_factory.h',
         'browser/ui/webui/ntp/recently_closed_tabs_handler.cc',
         'browser/ui/webui/ntp/recently_closed_tabs_handler.h',
-        'browser/ui/webui/ntp/shown_sections_handler.cc',
-        'browser/ui/webui/ntp/shown_sections_handler.h',
         'browser/ui/webui/ntp/thumbnail_source.cc',
         'browser/ui/webui/ntp/thumbnail_source.h',
         'browser/ui/webui/options/advanced_options_handler.cc',

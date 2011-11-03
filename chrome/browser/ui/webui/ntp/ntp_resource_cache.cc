@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
-#include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/browser/ui/webui/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
@@ -183,7 +182,6 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
   pref_change_registrar_.Add(prefs::kSyncAcknowledgedSyncTypes, this);
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
   pref_change_registrar_.Add(prefs::kHomePageIsNewTabPage, this);
-  pref_change_registrar_.Add(prefs::kNTPShownSections, this);
   pref_change_registrar_.Add(prefs::kNTPShownPage, this);
 }
 
@@ -402,11 +400,6 @@ void NTPResourceCache::CreateNewTabHTML() {
   tp->GetDisplayProperty(ThemeService::NTP_BACKGROUND_ALIGNMENT, &alignment);
   localized_strings.SetString("themegravity",
       (alignment & ThemeService::ALIGN_RIGHT) ? "right" : "");
-
-  // Pass the shown_sections pref early so that we can prevent flicker.
-  const int shown_sections = ShownSectionsHandler::GetShownSections(
-      profile_->GetPrefs());
-  localized_strings.SetInteger("shown_sections", shown_sections);
 
   // If the user has preferences for a start and end time for a custom logo,
   // and the time now is between these two times, show the custom logo.

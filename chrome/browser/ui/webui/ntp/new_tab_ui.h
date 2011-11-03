@@ -35,8 +35,6 @@ class NewTabUI : public ChromeWebUI,
   virtual void RenderViewReused(RenderViewHost* render_view_host) OVERRIDE;
 
   static void RegisterUserPrefs(PrefService* prefs);
-  static void MigrateUserPrefs(PrefService* prefs, int old_pref_version,
-                               int new_pref_version);
 
   // Adds "url", "title", and "direction" keys on incoming dictionary, setting
   // title as the url as a fallback on empty title.
@@ -88,10 +86,6 @@ class NewTabUI : public ChromeWebUI,
 
   void StartTimingPaint(RenderViewHost* render_view_host);
   void PaintTimeout();
-
-  // Updates the user prefs version and calls |MigrateUserPrefs| if needed.
-  // Returns true if the version was updated.
-  static bool UpdateUserPrefsVersion(PrefService* prefs);
 
   // Overridden from ChromeWebUI. Determines if the bookmarks bar can be shown
   // detached from the location bar.

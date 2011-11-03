@@ -10,7 +10,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -275,26 +274,10 @@ void AppsPromo::ExpireDefaultApps() {
   SetPromoCounter(kDefaultAppsCounterMax + 1);
 }
 
-void AppsPromo::MaximizeAppsIfNecessary() {
-  PromoData promo = GetPromo();
-
-  // Maximize the apps section of the NTP if this is the first time viewing the
-  // specific promo and the current user group is targetted.
-  if (GetLastPromoId() != promo.id) {
-    if ((promo.user_group & GetCurrentUserGroup()) != 0)
-      ShownSectionsHandler::SetShownSection(prefs_, APPS);
-    SetLastPromoId(promo.id);
-  }
-}
-
 void AppsPromo::HidePromo() {
   UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppsPromoHistogram,
                             extension_misc::PROMO_CLOSE,
                             extension_misc::PROMO_BUCKET_BOUNDARY);
-
-  // Put the apps section into menu mode, and maximize the recent section.
-  ShownSectionsHandler::SetShownSection(prefs_, MENU_APPS);
-  ShownSectionsHandler::SetShownSection(prefs_, THUMB);
 
   ExpireDefaultApps();
 }

@@ -1841,7 +1841,6 @@
         'browser/ui/webui/chromeos/enterprise_enrollment_ui_unittest.cc',
         'browser/ui/webui/chromeos/imageburner/imageburner_utils_unittest.cc',
         'browser/ui/webui/html_dialog_tab_contents_delegate_unittest.cc',
-        'browser/ui/webui/ntp/shown_sections_handler_unittest.cc',
         'browser/ui/webui/options/chromeos/virtual_keyboard_manager_handler_unittest.cc',
         'browser/ui/webui/options/language_options_handler_unittest.cc',
         'browser/ui/webui/print_preview_ui_unittest.cc',

@@ -1257,17 +1257,6 @@ const char kNTPShownBookmarksFolder[] = "ntp.shown_bookmarks_folder";
 // Which page should be visible on the new tab page v4
 const char kNTPShownPage[] = "ntp.shown_page";
 
-// Which sections should be visible on the new tab page
-// 1 - Show the most visited sites in a grid
-// 2 - Show the most visited sites as a list
-// 4 - Show the recent section
-// 8 - (Show tips -- DEPRECATED)
-// 16 - Show sync status
-const char kNTPShownSections[] = "ntp.shown_sections";
-
-// This pref is used for migrating the prefs for the NTP
-const char kNTPPrefVersion[] = "ntp.pref_version";
-
 // Dates between which the NTP should show a custom logo rather than the
 // standard one.
 const char kNTPCustomLogoStart[] = "ntp.alt_logo_start";

@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/ntp/recently_closed_tabs_handler.h"
-#include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -84,8 +83,6 @@ NewTabUI::NewTabUI(TabContents* contents)
   link_transition_type_ = content::PAGE_TRANSITION_AUTO_BOOKMARK;
 
   if (!GetProfile()->IsOffTheRecord()) {
-    PrefService* pref_service = GetProfile()->GetPrefs();
-    AddMessageHandler((new ShownSectionsHandler(pref_service))->Attach(this));
     AddMessageHandler((new browser_sync::ForeignSessionHandler())->
         Attach(this));
     AddMessageHandler((new MostVisitedHandler())->Attach(this));
@@ -227,36 +224,11 @@ void NewTabUI::InitializeCSSCaches() {
 
 // static
 void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kNTPPrefVersion,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-
   NewTabPageHandler::RegisterUserPrefs(prefs);
   AppLauncherHandler::RegisterUserPrefs(prefs);
   MostVisitedHandler::RegisterUserPrefs(prefs);
-  ShownSectionsHandler::RegisterUserPrefs(prefs);
   if (NTP4Enabled())
     BookmarksHandler::RegisterUserPrefs(prefs);
-
-  UpdateUserPrefsVersion(prefs);
-}
-
-// static
-bool NewTabUI::UpdateUserPrefsVersion(PrefService* prefs) {
-  const int old_pref_version = prefs->GetInteger(prefs::kNTPPrefVersion);
-  if (old_pref_version != current_pref_version()) {
-    MigrateUserPrefs(prefs, old_pref_version, current_pref_version());
-    prefs->SetInteger(prefs::kNTPPrefVersion, current_pref_version());
-    return true;
-  }
-  return false;
-}
-
-// static
-void NewTabUI::MigrateUserPrefs(PrefService* prefs, int old_pref_version,
-                                int new_pref_version) {
-  ShownSectionsHandler::MigrateUserPrefs(prefs, old_pref_version,
-                                         current_pref_version());
 }
 
 // static

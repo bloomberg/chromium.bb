@@ -451,8 +451,6 @@ extern const char kNTPPromoResourceServer[];
 extern const char kNTPDateResourceServer[];
 extern const char kNTPShownBookmarksFolder[];
 extern const char kNTPShownPage[];
-extern const char kNTPShownSections[];
-extern const char kNTPPrefVersion[];
 extern const char kNTPCustomLogoStart[];
 extern const char kNTPCustomLogoEnd[];
 extern const char kNTPPromoVersion[];

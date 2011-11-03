@@ -100,11 +100,6 @@ class AppsPromo {
   // Called to hide the promo from the apps section.
   void HidePromo();
 
-  // Maximizes the apps section on the NTP if the following conditions are met:
-  //  (a) the existing promo has not already been maximized
-  //  (b) the current user group is targetted by the promo
-  void MaximizeAppsIfNecessary();
-
   // Returns true if the app launcher should be displayed on the NTP.
   bool ShouldShowAppLauncher(const ExtensionIdSet& installed_ids);
 

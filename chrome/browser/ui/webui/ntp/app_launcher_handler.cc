@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
-#include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -510,11 +509,9 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   //    prefchange-triggered refresh as a promo 'view'.
   AppsPromo* apps_promo = extension_service_->apps_promo();
   Profile* profile = Profile::FromWebUI(web_ui_);
-  PrefService* prefs = profile->GetPrefs();
   bool apps_promo_just_expired = false;
   if (apps_promo->ShouldShowPromo(extension_service_->GetAppIds(),
                                   &apps_promo_just_expired)) {
-    apps_promo->MaximizeAppsIfNecessary();
     dictionary.SetBoolean("showPromo", true);
     FillPromoDictionary(&dictionary);
     promo_active_ = true;
@@ -529,7 +526,6 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     ignore_changes_ = true;
     UninstallDefaultApps();
     ignore_changes_ = false;
-    ShownSectionsHandler::SetShownSection(prefs, THUMB);
   }
 
   SetAppToBeHighlighted();

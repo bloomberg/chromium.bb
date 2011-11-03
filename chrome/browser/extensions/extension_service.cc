@@ -71,7 +71,6 @@
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
-#include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -2059,7 +2058,6 @@ void ExtensionService::OnExtensionInstalled(
         extension, "Extensions.Permissions_Install");
   }
 
-  ShownSectionsHandler::OnExtensionInstalled(profile_->GetPrefs(), extension);
   extension_prefs_->OnExtensionInstalled(
       extension,
       initial_enable ? Extension::ENABLED : Extension::DISABLED,

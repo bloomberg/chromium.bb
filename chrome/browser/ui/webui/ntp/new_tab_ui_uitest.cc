@@ -182,32 +182,3 @@ TEST_F(NewTabUITest, FLAKY_ChromeInternalLoadsNTP) {
       &thumbnails_count));
   EXPECT_GT(thumbnails_count, 0);
 }
-
-// Bug 87200: Disable UpdateUserPrefsVersion for Windows
-#if defined(OS_WIN)
-#define MAYBE_UpdateUserPrefsVersion DISABLED_UpdateUserPrefsVersion
-#else
-#define MAYBE_UpdateUserPrefsVersion UpdateUserPrefsVersion
-#endif
-TEST_F(NewTabUITest, MAYBE_UpdateUserPrefsVersion) {
-  // PrefService with JSON user-pref file only, no enforced or advised prefs.
-  scoped_ptr<PrefService> prefs(new TestingPrefService);
-
-  // Does the migration
-  NewTabUI::RegisterUserPrefs(prefs.get());
-
-  ASSERT_EQ(NewTabUI::current_pref_version(),
-            prefs->GetInteger(prefs::kNTPPrefVersion));
-
-  // Reset the version
-  prefs->ClearPref(prefs::kNTPPrefVersion);
-  ASSERT_EQ(0, prefs->GetInteger(prefs::kNTPPrefVersion));
-
-  bool migrated = NewTabUI::UpdateUserPrefsVersion(prefs.get());
-  ASSERT_TRUE(migrated);
-  ASSERT_EQ(NewTabUI::current_pref_version(),
-            prefs->GetInteger(prefs::kNTPPrefVersion));
-
-  migrated = NewTabUI::UpdateUserPrefsVersion(prefs.get());
-  ASSERT_FALSE(migrated);
-}

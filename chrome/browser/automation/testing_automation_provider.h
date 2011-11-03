@@ -847,28 +847,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void SendWebKeyPressEventAsync(int key_code,
                                  TabContents* tab_contents);
 
-  // Determines whether each relevant section of the NTP is in thumbnail mode.
-  void GetNTPThumbnailMode(Browser* browser,
-                           base::DictionaryValue* args,
-                           IPC::Message* reply_message);
-
-  // Puts or removes the specified section of the NTP into/from thumbnail mode.
-  // If the section is put into thumbnail mode, all other relevant sections are
-  // removed from thumbnail mode.
-  void SetNTPThumbnailMode(Browser* browser,
-                           base::DictionaryValue* args,
-                           IPC::Message* reply_message);
-
-  // Determines whether each relevant section of the NTP is in menu mode.
-  void GetNTPMenuMode(Browser* browser,
-                      base::DictionaryValue* args,
-                      IPC::Message* reply_message);
-
-  // Puts or removes the specified section of the NTP into/from menu mode.
-  void SetNTPMenuMode(Browser* browser,
-                      base::DictionaryValue* args,
-                      IPC::Message* reply_message);
-
   // Launches the specified app from the currently-selected tab.
   void LaunchApp(Browser* browser,
                  base::DictionaryValue* args,
