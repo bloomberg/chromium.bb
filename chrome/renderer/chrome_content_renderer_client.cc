@@ -784,15 +784,6 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
     old_url = frame->top()->opener()->top()->document().url();
   }
 
-  // If this is a reload, check whether it has the wrong process type.  We
-  // should send it to the browser if it's an extension URL (e.g., hosted app)
-  // in a normal process, or if it's a process for an extension that has been
-  // uninstalled.
-  if (old_url == new_url) {
-    if (is_extension_url != extension_dispatcher_->is_extension_process())
-      return true;
-  }
-
   // TODO(creis): Temporary workaround for crbug.com/59285: Only return true if
   // we would enter an extension app's extent from a non-app, or if we leave an
   // extension with no web extent.  We avoid swapping processes to exit a hosted

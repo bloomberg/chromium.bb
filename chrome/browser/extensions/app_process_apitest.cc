@@ -288,7 +288,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessRedirectBack) {
 
 // Ensure that reloading a URL after installing or uninstalling it as an app
 // correctly swaps the process.  (http://crbug.com/80621)
-IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
+// Disabled until we get a correct fix for 80621.  See http://crbug.com/102408.
+IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
@@ -368,7 +369,6 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
   EXPECT_FALSE(extension_process_manager->IsExtensionProcess(
       contents->render_view_host()->process()->id()));
 }
-
 
 // Tests that if we have a non-app process (path3/container.html) that has an
 // iframe with  a URL in the app's extent (path1/iframe.html), then opening a

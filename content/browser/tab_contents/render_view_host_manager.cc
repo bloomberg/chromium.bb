@@ -387,15 +387,9 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   NavigationController& controller = delegate_->GetControllerForRenderManager();
   content::BrowserContext* browser_context = controller.browser_context();
 
-  // If the entry has an instance already we should use it, unless the URL
-  // is part of an app that has been installed or uninstalled since the last
-  // visit.
-  if (entry.site_instance()) {
-    if (entry.site_instance()->HasWrongProcessForURL(dest_url))
-      return curr_instance->GetRelatedSiteInstance(dest_url);
-    else
-      return entry.site_instance();
-  }
+  // If the entry has an instance already we should use it.
+  if (entry.site_instance())
+    return entry.site_instance();
 
   // (UGLY) HEURISTIC, process-per-site only:
   //
