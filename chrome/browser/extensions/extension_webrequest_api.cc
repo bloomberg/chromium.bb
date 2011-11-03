@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -309,6 +310,10 @@ void NotifyWebRequestAPIUsed(void* profile_id, const Extension* extension) {
   }
 }
 
+void ClearCacheOnNavigationOnUI() {
+  WebCacheManager::GetInstance()->ClearCacheOnNavigation();
+}
+
 }  // namespace
 
 // Represents a single unique listener to an event, along with whatever filter
@@ -524,6 +529,9 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   // TODO(jochen): Figure out what to do with events from the system context.
   if (!profile)
     return net::OK;
+
+  if (IsPageLoad(request))
+    NotifyPageLoad();
 
   if (!HasWebRequestScheme(request->url()))
     return net::OK;
@@ -1066,6 +1074,34 @@ void ExtensionWebRequestEventRouter::OnOTRProfileDestroyed(
   cross_profile_map_.erase(original_profile);
 }
 
+void ExtensionWebRequestEventRouter::AddCallbackForPageLoad(
+    const base::Closure& callback) {
+  callbacks_for_page_load_.push_back(callback);
+}
+
+bool ExtensionWebRequestEventRouter::IsPageLoad(
+    net::URLRequest* request) const {
+  bool is_main_frame = false;
+  int64 frame_id = -1;
+  int tab_id = -1;
+  int window_id = -1;
+  ResourceType::Type resource_type = ResourceType::LAST_TYPE;
+
+  ExtractRequestInfoDetails(request, &is_main_frame, &frame_id, &tab_id,
+                            &window_id, &resource_type);
+
+  return resource_type == ResourceType::MAIN_FRAME;
+}
+
+void ExtensionWebRequestEventRouter::NotifyPageLoad() {
+  for (CallbacksForPageLoad::const_iterator i =
+           callbacks_for_page_load_.begin();
+       i != callbacks_for_page_load_.end(); ++i) {
+    i->Run();
+  }
+  callbacks_for_page_load_.clear();
+}
+
 void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     void* profile,
     ExtensionInfoMap* extension_info_map,
@@ -1556,6 +1592,73 @@ void ExtensionWebRequestEventRouter::ClearSignaled(uint64 request_id,
   iter->second &= ~event_type;
 }
 
+// Special QuotaLimitHeuristic for WebRequestHandlerBehaviorChanged.
+//
+// Each call of webRequest.handlerBehaviorChanged() clears the in-memory cache
+// of WebKit at the time of the next page load (top level navigation event).
+// This quota heuristic is intended to limit the number of times the cache is
+// cleared by an extension.
+//
+// As we want to account for the number of times the cache is really cleared
+// (opposed to the number of times webRequest.handlerBehaviorChanged() is
+// called), we cannot decide whether a call of
+// webRequest.handlerBehaviorChanged() should trigger a quota violation at the
+// time it is called. Instead we only decrement the bucket counter at the time
+// when the cache is cleared (when page loads happen).
+class ClearCacheQuotaHeuristic : public QuotaLimitHeuristic {
+ public:
+  ClearCacheQuotaHeuristic(const Config& config, BucketMapper* map)
+      : QuotaLimitHeuristic(config, map),
+        callback_registered_(false),
+        weak_ptr_factory_(this) {}
+  virtual ~ClearCacheQuotaHeuristic() {}
+  virtual bool Apply(Bucket* bucket,
+                     const base::TimeTicks& event_time) OVERRIDE;
+
+ private:
+  // Callback that is triggered by the ExtensionWebRequestEventRouter on a page
+  // load.
+  //
+  // We don't need to take care of the life time of |bucket|: It is owned by the
+  // BucketMapper of our base class in |QuotaLimitHeuristic::bucket_mapper_|. As
+  // long as |this| exists, the respective BucketMapper and its bucket will
+  // exist as well.
+  void OnPageLoad(Bucket* bucket);
+
+  // Flag to prevent that we register more than one call back in-between
+  // clearing the cache.
+  bool callback_registered_;
+
+  base::WeakPtrFactory<ClearCacheQuotaHeuristic> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClearCacheQuotaHeuristic);
+};
+
+bool ClearCacheQuotaHeuristic::Apply(Bucket* bucket,
+                                     const base::TimeTicks& event_time) {
+  if (event_time > bucket->expiration())
+    bucket->Reset(config(), event_time);
+
+  // Call bucket->DeductToken() on a new page load, this is when
+  // webRequest.handlerBehaviorChanged() clears the cache.
+  if (!callback_registered_) {
+    ExtensionWebRequestEventRouter::GetInstance()->AddCallbackForPageLoad(
+        base::Bind(&ClearCacheQuotaHeuristic::OnPageLoad,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   bucket));
+    callback_registered_ = true;
+  }
+
+  // We only check whether tokens are left here. Deducting a token happens in
+  // OnPageLoad().
+  return bucket->has_tokens();
+}
+
+void ClearCacheQuotaHeuristic::OnPageLoad(Bucket* bucket) {
+  callback_registered_ = false;
+  bucket->DeductToken();
+}
+
 bool WebRequestAddEventListener::RunImpl() {
   // Argument 0 is the callback, which we don't use here.
 
@@ -1717,8 +1820,38 @@ bool WebRequestEventHandled::RunImpl() {
 }
 
 bool WebRequestHandlerBehaviorChanged::RunImpl() {
-  WebCacheManager::GetInstance()->ClearCacheOnNavigation();
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&ClearCacheOnNavigationOnUI));
   return true;
+}
+
+void WebRequestHandlerBehaviorChanged::GetQuotaLimitHeuristics(
+    std::list<QuotaLimitHeuristic*>* heuristics) const {
+  QuotaLimitHeuristic::Config config = {
+    20,                               // Refill 20 tokens per interval.
+    base::TimeDelta::FromMinutes(10)  // 10 minutes refill interval.
+  };
+  QuotaLimitHeuristic::BucketMapper* bucket_mapper =
+      new QuotaLimitHeuristic::SingletonBucketMapper();
+  ClearCacheQuotaHeuristic* heuristic =
+      new ClearCacheQuotaHeuristic(config, bucket_mapper);
+  heuristics->push_back(heuristic);
+}
+
+void WebRequestHandlerBehaviorChanged::OnQuotaExceeded() {
+  // Post warning message.
+  std::set<std::string> extension_ids;
+  extension_ids.insert(extension_id());
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&ExtensionWarningSet::NotifyWarningsOnUI,
+                 profile_id(),
+                 extension_ids,
+                 ExtensionWarningSet::kRepeatedCacheFlushes));
+
+  // Continue gracefully.
+  Run();
 }
 
 void SendExtensionWebRequestStatusToHost(RenderProcessHost* host) {

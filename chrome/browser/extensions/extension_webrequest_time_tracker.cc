@@ -64,7 +64,7 @@ void DefaultDelegate::NotifyExcessiveDelays(
   // BrowserThread::PostTask(
   //     BrowserThread::UI,
   //     FROM_HERE,
-  //     base::Bind(&NotifyNetworkDelaysOnUI,
+  //     base::Bind(&ExtensionWarningSet::NotifyWarningsOnUI,
   //                profile,
   //                extension_ids,
   //                ExtensionWarningSet::kNetworkDelay));
@@ -81,7 +81,7 @@ void DefaultDelegate::NotifyModerateDelays(
   // BrowserThread::PostTask(
   //     BrowserThread::UI,
   //     FROM_HERE,
-  //     base::Bind(&NotifyNetworkDelaysOnUI,
+  //     base::Bind(&ExtensionWarningSet::NotifyWarningsOnUI,
   //                profile,
   //                extension_ids,
   //                ExtensionWarningSet::kNetworkDelay));

@@ -83,6 +83,10 @@ string16 ExtensionWarningSet::GetLocalizedWarning(
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
     case kNetworkConflict:
       return l10n_util::GetStringUTF16(IDS_EXTENSION_WARNINGS_NETWORK_CONFLICT);
+    case kRepeatedCacheFlushes:
+      return l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_WARNINGS_NETWORK_DELAY,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   }
   NOTREACHED();  // Switch statement has no default branch.
   return string16();

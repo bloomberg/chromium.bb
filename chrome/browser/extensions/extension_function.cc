@@ -64,6 +64,11 @@ IOThreadExtensionFunction* ExtensionFunction::AsIOThreadExtensionFunction() {
   return NULL;
 }
 
+void ExtensionFunction::OnQuotaExceeded() {
+  error_ = QuotaLimitHeuristic::kGenericOverQuotaError;
+  SendResponse(false);
+}
+
 void ExtensionFunction::SetArgs(const ListValue* args) {
   DCHECK(!args_.get());  // Should only be called once.
   args_.reset(args->DeepCopy());

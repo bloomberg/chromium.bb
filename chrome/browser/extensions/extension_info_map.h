@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
 
@@ -72,6 +73,8 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
       const GURL& origin, int process_id,
       ExtensionAPIPermission::ID permission) const;
 
+  ExtensionsQuotaService* quota_service() { return &quota_service_; }
+
  private:
   // Extra dynamic data related to an extension.
   struct ExtraData;
@@ -86,6 +89,9 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
 
   typedef std::multimap<std::string, int> ExtensionProcessIDMap;
   ExtensionProcessIDMap extension_process_ids_;
+
+  // Used by dispatchers to limit API quota for individual extensions.
+  ExtensionsQuotaService quota_service_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INFO_MAP_H_

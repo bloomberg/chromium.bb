@@ -19,6 +19,7 @@
 #include <map>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -139,6 +140,20 @@ class QuotaLimitHeuristic {
     // handled by the ExtensionFunction itself so we don't concern ourselves.
     virtual void GetBucketsForArgs(const ListValue* args,
                                    BucketList* buckets) = 0;
+  };
+
+  // Maps all calls to the same bucket, regardless of |args|, for this
+  // QuotaLimitHeuristic.
+  class SingletonBucketMapper : public BucketMapper {
+   public:
+    SingletonBucketMapper() {}
+    virtual ~SingletonBucketMapper() {}
+    virtual void GetBucketsForArgs(const ListValue* args,
+                                   BucketList* buckets) OVERRIDE;
+
+   private:
+    Bucket bucket_;
+    DISALLOW_COPY_AND_ASSIGN(SingletonBucketMapper);
   };
 
   // Ownership of |mapper| is given to the new QuotaLimitHeuristic.

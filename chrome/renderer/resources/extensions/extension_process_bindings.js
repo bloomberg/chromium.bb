@@ -933,6 +933,13 @@ var chrome = chrome || {};
                   {forIOThread: true});
     };
 
+    apiFunctions["experimental.webRequest.handlerBehaviorChanged"].
+        handleRequest = function() {
+      var args = Array.prototype.slice.call(arguments);
+      sendRequest(this.name, args, this.definition.parameters,
+                  {forIOThread: true});
+    };
+
     apiFunctions["contextMenus.create"].customCallback =
         function(name, request, response) {
       if (chrome.extension.lastError) {

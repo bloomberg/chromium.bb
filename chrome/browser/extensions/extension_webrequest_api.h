@@ -271,6 +271,10 @@ class ExtensionWebRequestEventRouter {
   void OnOTRProfileDestroyed(void* original_profile,
                              void* otr_profile);
 
+  // Registers a |callback| that is executed when the next page load happens.
+  // The callback is then deleted.
+  void AddCallbackForPageLoad(const base::Closure& callback);
+
  private:
   friend struct DefaultSingletonTraits<ExtensionWebRequestEventRouter>;
   struct EventListener;
@@ -281,6 +285,7 @@ class ExtensionWebRequestEventRouter {
   // Map of request_id -> bit vector of EventTypes already signaled
   typedef std::map<uint64, int> SignaledRequestMap;
   typedef std::map<void*, void*> CrossProfileMap;
+  typedef std::list<base::Closure> CallbacksForPageLoad;
 
   ExtensionWebRequestEventRouter();
   ~ExtensionWebRequestEventRouter();
@@ -369,6 +374,12 @@ class ExtensionWebRequestEventRouter {
       BlockedRequest* request,
       std::set<std::string>* conflicting_extensions) const;
 
+  // Returns whether |request| represents a top level window navigation.
+  bool IsPageLoad(net::URLRequest* request) const;
+
+  // Called on a page load to process all registered callbacks.
+  void NotifyPageLoad();
+
   // A map for each profile that maps an event name to a set of extensions that
   // are listening to that event.
   ListenerMap listeners_;
@@ -389,6 +400,8 @@ class ExtensionWebRequestEventRouter {
   // webRequest API.
   scoped_ptr<ExtensionWebRequestTimeTracker> request_time_tracker_;
 
+  CallbacksForPageLoad callbacks_for_page_load_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
 };
 
@@ -404,11 +417,18 @@ class WebRequestEventHandled : public SyncIOThreadExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.webRequest.eventHandled");
 };
 
-class WebRequestHandlerBehaviorChanged : public AsyncExtensionFunction {
+class WebRequestHandlerBehaviorChanged : public SyncIOThreadExtensionFunction {
  public:
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.webRequest.handlerBehaviorChanged");
+
+ private:
+  virtual void GetQuotaLimitHeuristics(
+      std::list<QuotaLimitHeuristic*>* heuristics) const OVERRIDE;
+  // Handle quota exceeded gracefully: Only warn the user but still execute the
+  // function.
+  virtual void OnQuotaExceeded() OVERRIDE;
 };
 
 // Send updates to |host| with information about what webRequest-related

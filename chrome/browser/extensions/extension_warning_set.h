@@ -29,6 +29,9 @@ class ExtensionWarningSet {
     // This extension failed to modify a network request because the
     // modification conflicted with a modification of another extension.
     kNetworkConflict,
+    // The extension repeatedly flushed WebKit's in-memory cache, which slows
+    // down the overall performance.
+    kRepeatedCacheFlushes,
     kMaxWarningType
   };
 

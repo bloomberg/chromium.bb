@@ -519,7 +519,7 @@ void ExtensionFunctionDispatcher::ResetFunctions() {
 
 // static
 void ExtensionFunctionDispatcher::DispatchOnIOThread(
-    const ExtensionInfoMap* extension_info_map,
+    ExtensionInfoMap* extension_info_map,
     void* profile,
     int render_process_id,
     base::WeakPtr<ChromeRenderMessageFilter> ipc_sender,
@@ -552,7 +552,14 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
   function_io->set_extension_info_map(extension_info_map);
   function->set_include_incognito(
       extension_info_map->IsIncognitoEnabled(extension->id()));
-  function->Run();
+
+  ExtensionsQuotaService* quota = extension_info_map->quota_service();
+  if (quota->Assess(extension->id(), function, &params.arguments,
+                    base::TimeTicks::Now())) {
+    function->Run();
+  } else {
+    function->OnQuotaExceeded();
+  }
 }
 
 ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(Profile* profile,
@@ -647,9 +654,7 @@ void ExtensionFunctionDispatcher::Dispatch(
 
     function->Run();
   } else {
-    render_view_host->Send(new ExtensionMsg_Response(
-        render_view_host->routing_id(), function->request_id(), false,
-        std::string(), QuotaLimitHeuristic::kGenericOverQuotaError));
+    function->OnQuotaExceeded();
   }
 }
 
