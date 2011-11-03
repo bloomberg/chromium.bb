@@ -68,6 +68,14 @@ class FlashTest(pyauto.PyUITest):
     self.NavigateToURL(flash_url)
     flash_process_id1 = self._GetFlashProcessesInfo()[0]['pid']
     self.Kill(flash_process_id1)
+
+    def _GotFlashProcess(pid):
+      flash_processes = self._GetFlashProcessesInfo()
+      return len(flash_processes) == 1 and flash_processes[0]['pid'] == pid
+
+    self.assertTrue(self.WaitUntil(
+        lambda: not _GotFlashProcess(flash_process_id1)),
+        msg='Flash process did not go away after killing.')
     self.ReloadActiveTab()
     flash_processes = self._GetFlashProcessesInfo()
     self.assertEqual(1, len(flash_processes))
