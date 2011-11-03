@@ -39,6 +39,7 @@ class WebDriverCommand : public Command {
 
  protected:
   Session* session_;
+  std::string session_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDriverCommand);
 };

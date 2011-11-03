@@ -403,9 +403,6 @@ class Session {
   std::string alert_prompt_text_;
   bool has_alert_prompt_text_;
 
-  // True if the session has started the termination process.
-  bool terminated_;
-
   Options options_;
 
   DISALLOW_COPY_AND_ASSIGN(Session);

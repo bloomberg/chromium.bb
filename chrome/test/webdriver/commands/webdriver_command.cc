@@ -27,17 +27,17 @@ WebDriverCommand::~WebDriverCommand() {}
 
 bool WebDriverCommand::Init(Response* const response) {
   // There should be at least 3 path segments to match "/session/$id".
-  std::string session_id = GetPathVariable(2);
-  if (session_id.length() == 0) {
+  session_id_ = GetPathVariable(2);
+  if (session_id_.length() == 0) {
     response->SetError(
         new Error(kBadRequest, "No session ID specified"));
     return false;
   }
 
-  session_ = SessionManager::GetInstance()->GetSession(session_id);
+  session_ = SessionManager::GetInstance()->GetSession(session_id_);
   if (session_ == NULL) {
     response->SetError(
-        new Error(kSessionNotFound, "Session not found: " + session_id));
+        new Error(kSessionNotFound, "Session not found: " + session_id_));
     return false;
   }
 
@@ -46,11 +46,14 @@ bool WebDriverCommand::Init(Response* const response) {
     response->SetError(error);
     return false;
   }
-  response->SetField("sessionId", Value::CreateStringValue(session_id));
+  response->SetField("sessionId", Value::CreateStringValue(session_id_));
   return true;
 }
 
 void WebDriverCommand::Finish() {
+  // The session may have been terminated as a result of the command.
+  if (!SessionManager::GetInstance()->Has(session_id_))
+    return;
   scoped_ptr<Error> error(session_->AfterExecuteCommand());
   if (error.get()) {
     LOG(WARNING) << "Command did not finish successfully: "
