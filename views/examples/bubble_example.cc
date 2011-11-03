@@ -44,7 +44,6 @@ class ExampleBubbleDelegateView : public views::BubbleDelegateView {
   virtual void Init() OVERRIDE {
     SetLayoutManager(new views::FillLayout());
     views::Label* label = new views::Label(label_);
-    label->set_border(views::Border::CreateSolidBorder(10, GetColor()));
     AddChildView(label);
   }
 

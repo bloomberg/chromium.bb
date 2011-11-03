@@ -75,6 +75,7 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble, Widget* parent) {
 
 BubbleDelegateView::BubbleDelegateView()
     : close_on_esc_(true),
+      allow_bubble_offscreen_(true),
       arrow_location_(BubbleBorder::TOP_LEFT),
       color_(SK_ColorWHITE),
       border_widget_(NULL) {
@@ -87,6 +88,7 @@ BubbleDelegateView::BubbleDelegateView(
     BubbleBorder::ArrowLocation arrow_location,
     const SkColor& color)
     : close_on_esc_(true),
+      allow_bubble_offscreen_(true),
       anchor_point_(anchor_point),
       arrow_location_(arrow_location),
       color_(color),
@@ -129,7 +131,8 @@ View* BubbleDelegateView::GetContentsView() {
 NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView() {
   return new BubbleFrameView(GetArrowLocation(),
                              GetPreferredSize(),
-                             GetColor());
+                             GetColor(),
+                             allow_bubble_offscreen_);
 }
 
 gfx::Point BubbleDelegateView::GetAnchorPoint() {

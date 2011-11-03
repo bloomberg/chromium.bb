@@ -63,6 +63,8 @@
         'border.h',
         'bubble/bubble_border.cc',
         'bubble/bubble_border.h',
+        'bubble/border_contents_view.cc',
+        'bubble/border_contents_view.h',
         'bubble/bubble_delegate.cc',
         'bubble/bubble_delegate.h',
         'bubble/bubble_frame_view.cc',

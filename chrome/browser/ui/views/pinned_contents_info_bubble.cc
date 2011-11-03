@@ -18,9 +18,9 @@ void PinnedContentsBorderContents::SizeAndGetBounds(
   offset -= bubble_anchor_.x();
 
   gfx::Insets insets;
-  bubble_border_->GetInsets(&insets);
+  bubble_border()->GetInsets(&insets);
   offset += content_margins().left() + insets.left() + 1;
-  bubble_border_->SetArrowOffset(offset, contents_size);
+  bubble_border()->SetArrowOffset(offset, contents_size);
 
   BorderContents::SizeAndGetBounds(
       position_relative_to, arrow_location,

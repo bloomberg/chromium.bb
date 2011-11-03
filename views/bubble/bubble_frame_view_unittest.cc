@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "views/bubble/bubble_border.h"
+#include "views/bubble/border_contents_view.h"
 #include "views/bubble/bubble_delegate.h"
 #include "views/bubble/bubble_frame_view.h"
 #include "views/test/views_test_base.h"
@@ -12,35 +14,37 @@
 
 namespace views {
 
-namespace {
-
 typedef ViewsTestBase BubbleFrameViewBasicTest;
 
 const BubbleBorder::ArrowLocation kArrow =  BubbleBorder::LEFT_BOTTOM;
 const gfx::Rect kRect(10, 10, 200, 200);
 const SkColor kBackgroundColor = SK_ColorRED;
+const bool kAllowBubbleOffscreen = true;
 
 TEST_F(BubbleFrameViewBasicTest, GetBoundsForClientView) {
-  BubbleFrameView frame(kArrow, kRect.size(), kBackgroundColor);
+  BubbleFrameView frame(kArrow, kRect.size(), kBackgroundColor,
+                        kAllowBubbleOffscreen);
   EXPECT_EQ(frame.GetWindowBoundsForClientBounds(kRect).size(), frame.size());
-  BubbleBorder* bubble_border = static_cast<BubbleBorder*>(frame.border());
-  EXPECT_EQ(kArrow, bubble_border->arrow_location());
-  EXPECT_EQ(kBackgroundColor, bubble_border->background_color());
+  EXPECT_EQ(kArrow, frame.bubble_border()->arrow_location());
+  EXPECT_EQ(kBackgroundColor, frame.bubble_border()->background_color());
 
-  gfx::Insets expected_insets(frame.GetInsets());
-  EXPECT_EQ(expected_insets.left(), frame.GetBoundsForClientView().x());
-  EXPECT_EQ(expected_insets.top(), frame.GetBoundsForClientView().y());
+  int margin_x = frame.border_contents_->content_margins().left();
+  int margin_y = frame.border_contents_->content_margins().top();
+  gfx::Insets insets;
+  frame.bubble_border()->GetInsets(&insets);
+  EXPECT_EQ(insets.left() + margin_x, frame.GetBoundsForClientView().x());
+  EXPECT_EQ(insets.top() + margin_y, frame.GetBoundsForClientView().y());
 }
 
-}  // namespace
+namespace {
 
 class SizedBubbleDelegateView : public BubbleDelegateView {
  public:
-   SizedBubbleDelegateView() {}
-   virtual ~SizedBubbleDelegateView() {}
+  SizedBubbleDelegateView() {}
+  virtual ~SizedBubbleDelegateView() {}
 
-   // View overrides:
-   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  // View overrides:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SizedBubbleDelegateView);
@@ -48,8 +52,10 @@ class SizedBubbleDelegateView : public BubbleDelegateView {
 
 gfx::Size SizedBubbleDelegateView::GetPreferredSize() { return kRect.size(); }
 
+}  // namespace
+
 TEST_F(BubbleFrameViewBasicTest, NonClientHitTest) {
-  SizedBubbleDelegateView* delegate = new SizedBubbleDelegateView();
+  BubbleDelegateView* delegate = new SizedBubbleDelegateView();
   scoped_ptr<Widget> widget(BubbleDelegateView::CreateBubble(delegate, NULL));
   delegate->Show();
   gfx::Point kPtInBound(100, 100);

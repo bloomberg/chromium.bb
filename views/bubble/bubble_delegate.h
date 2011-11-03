@@ -44,6 +44,11 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   bool close_on_esc() const { return close_on_esc_; }
   void set_close_on_esc(bool close_on_esc) { close_on_esc_ = close_on_esc; }
 
+  bool allow_bubble_offscreen() const { return allow_bubble_offscreen_; }
+  void set_allow_bubble_offscreen(bool allow_bubble_offscreen) {
+    allow_bubble_offscreen_ = allow_bubble_offscreen;
+  }
+
   // Get the arrow's anchor point in screen space.
   virtual gfx::Point GetAnchorPoint();
 
@@ -97,6 +102,10 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
   // Should this bubble close on the escape key?
   bool close_on_esc_;
+
+  // Whether the bubble is allowed to be displayed offscreen, or if auto
+  // re-positioning should be performed.
+  bool allow_bubble_offscreen_;
 
   // The screen point where this bubble's arrow is anchored.
   gfx::Point anchor_point_;

@@ -6,10 +6,13 @@
 #define VIEWS_BUBBLE_BUBBLE_FRAME_VIEW_H_
 #pragma once
 
+#include "base/gtest_prod_util.h"
 #include "views/bubble/bubble_border.h"
 #include "views/window/non_client_view.h"
 
 namespace views {
+
+class BorderContentsView;
 
 //  BubbleFrameView to render BubbleBorder.
 //
@@ -18,7 +21,8 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
  public:
   BubbleFrameView(BubbleBorder::ArrowLocation location,
                   const gfx::Size& client_size,
-                  SkColor color);
+                  SkColor color,
+                  bool allow_bubble_offscreen);
   virtual ~BubbleFrameView();
 
   // NonClientFrameView overrides:
@@ -33,10 +37,18 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
   virtual void UpdateWindowIcon() OVERRIDE {}
 
   // View overrides:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
+  // Accessor for bubble border inside border contents.
+  BubbleBorder* bubble_border() const;
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewBasicTest, GetBoundsForClientView);
+
+  BorderContentsView* border_contents_;
+  BubbleBorder::ArrowLocation location_;
+  bool allow_bubble_offscreen_;
+
   DISALLOW_COPY_AND_ASSIGN(BubbleFrameView);
 };
 

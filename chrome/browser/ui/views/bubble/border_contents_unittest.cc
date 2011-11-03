@@ -15,7 +15,9 @@ class TestBorderContents : public BorderContents {
     monitor_bounds_ = bounds;
   }
 
-  views::BubbleBorder* bubble_border() const { return bubble_border_; }
+  views::BubbleBorder* bubble_border() const {
+    return BorderContents::bubble_border();
+  }
 
  protected:
   virtual gfx::Rect GetMonitorBounds(const gfx::Rect& rect) {

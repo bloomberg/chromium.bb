@@ -18,8 +18,8 @@ TEST_F(BubbleDelegateTest, CreateDelegate) {
   EXPECT_EQ(bubble_delegate, bubble_widget->widget_delegate());
   EXPECT_EQ(bubble_widget, bubble_delegate->GetWidget());
 
-  BubbleBorder* border = static_cast<BubbleBorder*>(
-      bubble_delegate->GetBubbleFrameView()->border());
+  BubbleBorder* border =
+      bubble_delegate->GetBubbleFrameView()->bubble_border();
   EXPECT_EQ(bubble_delegate->GetArrowLocation(), border->arrow_location());
   EXPECT_EQ(bubble_delegate->GetColor(), border->background_color());
 
