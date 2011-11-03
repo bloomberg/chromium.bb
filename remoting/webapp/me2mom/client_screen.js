@@ -12,18 +12,6 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-/** @enum {string} */
-remoting.ClientError = {
-  NO_RESPONSE: /*i18n-content*/'ERROR_NO_RESPONSE',
-  INVALID_ACCESS_CODE: /*i18n-content*/'ERROR_INVALID_ACCESS_CODE',
-  MISSING_PLUGIN: /*i18n-content*/'ERROR_MISSING_PLUGIN',
-  OAUTH_FETCH_FAILED: /*i18n-content*/'ERROR_AUTHENTICATION_FAILED',
-  HOST_IS_OFFLINE: /*i18n-content*/'ERROR_HOST_IS_OFFLINE',
-  INCOMPATIBLE_PROTOCOL: /*i18n-content*/'ERROR_INCOMPATIBLE_PROTOCOL',
-  BAD_PLUGIN_VERSION: /*i18n-content*/'ERROR_BAD_PLUGIN_VERSION',
-  OTHER_ERROR: /*i18n-content*/'ERROR_GENERIC'
-};
-
 (function() {
 
 /**
@@ -70,7 +58,7 @@ remoting.tryConnect = function() {
       if (remoting.oauth2.needsNewAccessToken()) {
         // Failed to get access token
         remoting.debug.log('tryConnect: OAuth2 token fetch failed');
-        showConnectError_(remoting.ClientError.OAUTH_FETCH_FAILED);
+        showConnectError_(remoting.Error.AUTHENTICATION_FAILED);
         return;
       }
       tryConnectWithAccessToken_();
@@ -175,14 +163,14 @@ function tryConnectWithWcs_(success) {
     var kAccessCodeLen = kSupportIdLen + kHostSecretLen;
     if (remoting.accessCode.length != kAccessCodeLen) {
       remoting.debug.log('Bad access code length');
-      showConnectError_(remoting.ClientError.INVALID_ACCESS_CODE);
+      showConnectError_(remoting.Error.INVALID_ACCESS_CODE);
     } else {
       var supportId = remoting.accessCode.substring(0, kSupportIdLen);
       remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
       resolveSupportId(supportId);
     }
   } else {
-    showConnectError_(remoting.ClientError.OAUTH_FETCH_FAILED);
+    showConnectError_(remoting.Error.AUTHENTICATION_FAILED);
   }
 }
 
@@ -205,7 +193,7 @@ function onClientStateChange_(oldState) {
     remoting.debug.log('Created plugin');
 
   } else if (state == remoting.ClientSession.State.BAD_PLUGIN_VERSION) {
-    showConnectError_(remoting.ClientError.BAD_PLUGIN_VERSION);
+    showConnectError_(remoting.Error.BAD_PLUGIN_VERSION);
 
   } else if (state == remoting.ClientSession.State.CONNECTING) {
     remoting.debug.log('Connecting as ' + remoting.oauth2.getCachedEmail());
@@ -231,7 +219,7 @@ function onClientStateChange_(oldState) {
       // The transition from CONNECTING to CLOSED state may happen
       // only with older client plugins. Current version should go the
       // FAILED state when connection fails.
-      showConnectError_(remoting.ClientError.INVALID_ACCESS_CODE);
+      showConnectError_(remoting.Error.INVALID_ACCESS_CODE);
     }
 
   } else if (state == remoting.ClientSession.State.CONNECTION_FAILED) {
@@ -239,25 +227,25 @@ function onClientStateChange_(oldState) {
                        remoting.clientSession.error);
     if (remoting.clientSession.error ==
         remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE) {
-      showConnectError_(remoting.ClientError.HOST_IS_OFFLINE);
+      showConnectError_(remoting.Error.HOST_IS_OFFLINE);
     } else if (remoting.clientSession.error ==
                remoting.ClientSession.ConnectionError.SESSION_REJECTED) {
-      showConnectError_(remoting.ClientError.INVALID_ACCESS_CODE);
+      showConnectError_(remoting.Error.INVALID_ACCESS_CODE);
     } else if (remoting.clientSession.error ==
                remoting.ClientSession.ConnectionError.INCOMPATIBLE_PROTOCOL) {
-      showConnectError_(remoting.ClientError.INCOMPATIBLE_PROTOCOL);
+      showConnectError_(remoting.Error.INCOMPATIBLE_PROTOCOL);
     } else if (remoting.clientSession.error ==
                remoting.ClientSession.ConnectionError.NETWORK_FAILURE) {
-      showConnectError_(remoting.ClientError.OTHER_ERROR);
+      showConnectError_(remoting.Error.GENERIC);
     } else {
-      showConnectError_(remoting.ClientError.OTHER_ERROR);
+      showConnectError_(remoting.Error.GENERIC);
     }
 
   } else {
     remoting.debug.log('Unexpected client plugin state: ' + state);
     // This should only happen if the web-app and client plugin get out of
     // sync, and even then the version check should allow compatibility.
-    showConnectError_(remoting.ClientError.MISSING_PLUGIN);
+    showConnectError_(remoting.Error.MISSING_PLUGIN);
   }
 }
 
@@ -288,7 +276,7 @@ function startSession_() {
 /**
  * Show a client-side error message.
  *
- * @param {remoting.ClientError} errorTag The error to be localized and
+ * @param {remoting.Error} errorTag The error to be localized and
  *     displayed.
  * @return {void} Nothing.
  */
@@ -325,11 +313,11 @@ function parseServerResponse_(xhr) {
       return;
     }
   }
-  var errorMsg = remoting.ClientError.OTHER_ERROR;
+  var errorMsg = remoting.Error.GENERIC;
   if (xhr.status == 404) {
-    errorMsg = remoting.ClientError.INVALID_ACCESS_CODE;
+    errorMsg = remoting.Error.INVALID_ACCESS_CODE;
   } else if (xhr.status == 0) {
-    errorMsg = remoting.ClientError.NO_RESPONSE;
+    errorMsg = remoting.Error.NO_RESPONSE;
   } else {
     remoting.debug.log('The server responded: ' + xhr.responseText);
   }

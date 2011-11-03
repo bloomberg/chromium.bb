@@ -33,7 +33,7 @@ remoting.tryShare = function() {
     remoting.oauth2.refreshAccessToken(function() {
       if (remoting.oauth2.needsNewAccessToken()) {
         // If we still need it, we're going to infinite loop.
-        showShareError_(/*i18n-content*/'ERROR_AUTHENTICATION_FAILED');
+        showShareError_(remoting.Error.AUTHENTICATION_FAILED);
         throw 'Unable to get access token';
       }
       remoting.tryShare();
@@ -125,7 +125,7 @@ function onHostStateChanged_(state) {
 
   } else if (state == remoting.HostSession.State.ERROR) {
     remoting.debug.log('Host plugin state: ERROR');
-    showShareError_(/*i18n-content*/'ERROR_GENERIC');
+    showShareError_(remoting.Error.GENERIC);
   } else {
     remoting.debug.log('Unknown state -> ' + state);
   }
@@ -172,7 +172,7 @@ remoting.cancelShare = function() {
     // the host plugin, like we do for the client, which should handle crash
     // reporting and it should use a more detailed error message than the
     // default 'generic' one. See crbug.com/94624
-    showShareError_(/*i18n-content*/'ERROR_GENERIC');
+    showShareError_(remoting.Error.GENERIC);
   }
   disableTimeoutCountdown_();
 };

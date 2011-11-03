@@ -335,8 +335,6 @@
             'webapp/me2mom/choice.html',
             'webapp/me2mom/manifest.json',
             'webapp/me2mom/remoting.js',
-            'webapp/me2mom/client_screen.js',
-            'webapp/me2mom/host_screen.js',
             'host/plugin/host_script_object.cc',
           ],
           'outputs': [
@@ -350,8 +348,6 @@
             'webapp/me2mom/choice.html',
             'webapp/me2mom/manifest.json',
             'webapp/me2mom/remoting.js',
-            'webapp/me2mom/client_screen.js',
-            'webapp/me2mom/host_screen.js',
             'host/plugin/host_script_object.cc',
          ],
         },

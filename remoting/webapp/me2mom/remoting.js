@@ -9,6 +9,20 @@ var remoting = remoting || {};
 
 /** @type {remoting.HostSession} */ remoting.hostSession = null;
 
+/**
+ * @enum {string} All error messages from messages.json
+ */
+remoting.Error = {
+  NO_RESPONSE: /*i18n-content*/'ERROR_NO_RESPONSE',
+  INVALID_ACCESS_CODE: /*i18n-content*/'ERROR_INVALID_ACCESS_CODE',
+  MISSING_PLUGIN: /*i18n-content*/'ERROR_MISSING_PLUGIN',
+  AUTHENTICATION_FAILED: /*i18n-content*/'ERROR_AUTHENTICATION_FAILED',
+  HOST_IS_OFFLINE: /*i18n-content*/'ERROR_HOST_IS_OFFLINE',
+  INCOMPATIBLE_PROTOCOL: /*i18n-content*/'ERROR_INCOMPATIBLE_PROTOCOL',
+  BAD_PLUGIN_VERSION: /*i18n-content*/'ERROR_BAD_PLUGIN_VERSION',
+  GENERIC: /*i18n-content*/'ERROR_GENERIC'
+};
+
 (function() {
 
 /**
@@ -130,6 +144,7 @@ function getEmail_() {
   var result = window.localStorage.getItem(KEY_EMAIL_);
   return typeof result == 'string' ? result : null;
 }
+
 /**
  * Gets the major-mode that this application should start up in.
  *

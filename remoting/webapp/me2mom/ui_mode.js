@@ -33,7 +33,7 @@ remoting.AppMode = {
 /**
  * @type {remoting.AppMode} The current app mode
  */
-remoting.currentMode;
+remoting.currentMode = remoting.AppMode.HOME;
 
 /**
  * Change the app's modal state to |mode|, which is considered to be a dotted
