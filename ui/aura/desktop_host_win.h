@@ -24,6 +24,7 @@ class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
   virtual void SetDesktop(Desktop* desktop) OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
+  virtual void ToggleFullScreen() OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
@@ -56,6 +57,11 @@ class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
   void OnSize(UINT param, const CSize& size);
 
   Desktop* desktop_;
+
+  bool fullscreen_;
+  RECT saved_window_rect_;
+  DWORD saved_window_style_;
+  DWORD saved_window_ex_style_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopHostWin);
 };

@@ -234,6 +234,7 @@ class DesktopHostLinux : public DesktopHost {
   virtual void SetDesktop(Desktop* desktop) OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
+  virtual void ToggleFullScreen() OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor_type) OVERRIDE;
@@ -421,6 +422,10 @@ gfx::AcceleratedWidget DesktopHostLinux::GetAcceleratedWidget() {
 
 void DesktopHostLinux::Show() {
   XMapWindow(xdisplay_, xwindow_);
+}
+
+void DesktopHostLinux::ToggleFullScreen() {
+  NOTIMPLEMENTED();
 }
 
 gfx::Size DesktopHostLinux::GetSize() const {

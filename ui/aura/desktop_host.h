@@ -43,6 +43,9 @@ class DesktopHost : public MessageLoop::Dispatcher {
   // Shows the DesktopHost.
   virtual void Show() = 0;
 
+  // Toggles the host's full screen state.
+  virtual void ToggleFullScreen() = 0;
+
   // Gets/Sets the size of the DesktopHost.
   virtual gfx::Size GetSize() const = 0;
   virtual void SetSize(const gfx::Size& size) = 0;

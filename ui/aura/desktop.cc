@@ -159,6 +159,50 @@ void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
   }
 }
 
+bool MaybeFullScreen(DesktopHost* host, KeyEvent* event) {
+  if (event->key_code() == ui::VKEY_F11) {
+    host->ToggleFullScreen();
+    return true;
+  }
+  return false;
+}
+
+bool MaybeRotate(Desktop* desktop, KeyEvent* event) {
+  if ((event->flags() & ui::EF_SHIFT_DOWN) &&
+      (event->flags() & ui::EF_ALT_DOWN)) {
+    bool should_rotate = true;
+    int new_degrees = 0;
+    switch (event->key_code()) {
+      case ui::VKEY_UP: new_degrees = 0; break;
+      case ui::VKEY_DOWN: new_degrees = 180; break;
+      case ui::VKEY_RIGHT: new_degrees = 90; break;
+      case ui::VKEY_LEFT: new_degrees = -90; break;
+      default: should_rotate = false; break;
+    }
+
+    if (should_rotate) {
+      float rotation = 0.0f;
+      int degrees = 0;
+      const ui::Transform& transform = desktop->layer()->GetTargetTransform();
+      if (ui::InterpolatedTransform::FactorTRS(transform,
+                                               NULL, &rotation, NULL))
+        degrees = NormalizeAngle(new_degrees - SymmetricRound(rotation));
+
+      if (degrees != 0) {
+        desktop->layer()->GetAnimator()->set_preemption_strategy(
+            ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+        scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
+            new ui::LayerAnimationSequence(new ScreenRotation(degrees)));
+        screen_rotation->AddObserver(desktop);
+        desktop->layer()->GetAnimator()->ScheduleAnimation(
+            screen_rotation.release());
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 Desktop* Desktop::instance_ = NULL;
@@ -279,38 +323,10 @@ bool Desktop::DispatchMouseEvent(MouseEvent* event) {
 
 bool Desktop::DispatchKeyEvent(KeyEvent* event) {
 #if !defined(NDEBUG)
-  if (event->type() == ui::ET_KEY_PRESSED &&
-      (event->flags() & ui::EF_SHIFT_DOWN) &&
-      (event->flags() & ui::EF_ALT_DOWN)) {
-
-    bool should_rotate = true;
-    int new_degrees = 0;
-    switch (event->key_code()) {
-      case ui::VKEY_UP: new_degrees = 0; break;
-      case ui::VKEY_DOWN: new_degrees = 180; break;
-      case ui::VKEY_RIGHT: new_degrees = 90; break;
-      case ui::VKEY_LEFT: new_degrees = -90; break;
-      default: should_rotate = false; break;
-    }
-
-    if (should_rotate) {
-      float rotation = 0.0f;
-      int degrees = 0;
-      const ui::Transform& transform = layer()->GetTargetTransform();
-      if (ui::InterpolatedTransform::FactorTRS(transform,
-                                               NULL, &rotation, NULL))
-        degrees = NormalizeAngle(new_degrees - SymmetricRound(rotation));
-
-      if (degrees != 0) {
-        layer()->GetAnimator()->set_preemption_strategy(
-            ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-        scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
-            new ui::LayerAnimationSequence(new ScreenRotation(degrees)));
-        screen_rotation->AddObserver(this);
-        layer()->GetAnimator()->ScheduleAnimation(screen_rotation.release());
-        return true;
-      }
-    }
+  // TODO(beng): replace this hack with global keyboard event handlers.
+  if (event->type() == ui::ET_KEY_PRESSED) {
+    if (MaybeFullScreen(host_.get(), event) || MaybeRotate(this, event))
+      return true;
   }
 #endif
 
