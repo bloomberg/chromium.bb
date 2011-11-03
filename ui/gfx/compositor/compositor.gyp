@@ -129,7 +129,6 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:test_support_base',
-        '<(DEPTH)/chrome/chrome_resources.gyp:packed_resources',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
@@ -166,6 +165,11 @@
           'dependencies': [
             '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
           ],
+        }],
+        ['OS!="mac"', {
+          'dependencies': [
+            '<(DEPTH)/chrome/chrome.gyp:packed_resources',
+           ],
         }],
       ],
     },

@@ -33,8 +33,8 @@
               'dependencies': [
                 # On Windows, link the dependencies (libraries) that make
                 # up actual Chromium functionality into this .dll.
-                'chrome_resources.gyp:chrome_resources',
                 'chrome_version_resources',
+                'chrome_resources',
                 'installer_util_strings',
                 '../content/content.gyp:content_worker',
                 '../crypto/crypto.gyp:crypto',
@@ -290,12 +290,6 @@
                 'app/theme/star.pdf',
                 'app/theme/star_lit.pdf',
                 'browser/mac/install.sh',
-                 '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak',
-                 '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak',
-                '<!@pymod_do_main(repack_locales -o -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(locales))',
-                # Note: pseudo_locales are generated via the packed_resources
-                # dependency but not copied to the final target.  See
-                # common.gypi for more info.
               ],
               'mac_bundle_resources!': [
                 'app/framework-Info.plist',
@@ -308,8 +302,6 @@
                 # dependency here. flash_player.gyp will copy the Flash bundle
                 # into PRODUCT_DIR.
                 '../third_party/adobe/flash/flash_player.gyp:flash_player',
-                'chrome_resources.gyp:packed_extra_resources',
-                'chrome_resources.gyp:packed_resources',
               ],
               'rules': [
                 {
@@ -337,8 +329,151 @@
                 'repack_path': '../tools/grit/grit/format/repack.py',
               },
               'actions': [
+                # TODO(mark): These actions are duplicated for Linux and
+                # FreeBSD in the chrome target.  Can they be unified?
                 {
-                  'includes': ['chrome_repack_theme_resources_large.gypi']
+                  'action_name': 'repack_chrome',
+                  'variables': {
+                    'pak_inputs': [
+                      '<(grit_out_dir)/browser_resources.pak',
+                      '<(grit_out_dir)/common_resources.pak',
+                      '<(grit_out_dir)/default_plugin_resources/default_plugin_resources.pak',
+                      '<(grit_out_dir)/renderer_resources.pak',
+                      '<(grit_out_dir)/theme_resources.pak',
+                      '<(grit_out_dir)/theme_resources_standard.pak',
+                      '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
+                      '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.pak',
+                      '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.pak',
+                      '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
+                      '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
+                    ],
+                  },
+                  'inputs': [
+                    '<(repack_path)',
+                    '<@(pak_inputs)',
+                  ],
+                  'outputs': [
+                    '<(INTERMEDIATE_DIR)/repack/chrome.pak',
+                  ],
+                  'action': ['python', '<(repack_path)', '<@(_outputs)',
+                             '<@(pak_inputs)'],
+                  'process_outputs_as_mac_bundle_resources': 1,
+                },
+                {
+                  'action_name': 'repack_theme_resources_large',
+                  'variables': {
+                    'pak_inputs': [
+                      '<(grit_out_dir)/theme_resources_large.pak',
+                    ],
+                  },
+                  'inputs': [
+                    '<(repack_path)',
+                    '<@(pak_inputs)',
+                  ],
+                  'outputs': [
+                    '<(INTERMEDIATE_DIR)/repack/theme_resources_large.pak',
+                  ],
+                  'action': ['python', '<(repack_path)', '<@(_outputs)',
+                             '<@(pak_inputs)'],
+                  'process_outputs_as_mac_bundle_resources': 1,
+                },
+                {
+                  'action_name': 'repack_locales',
+                  'process_outputs_as_mac_bundle_resources': 1,
+                  'variables': {
+                    'conditions': [
+                      ['branding=="Chrome"', {
+                        'branding_flag': ['-b', 'google_chrome',],
+                      }, {  # else: branding!="Chrome"
+                        'branding_flag': ['-b', 'chromium',],
+                      }],
+                    ],
+                  },
+                  'inputs': [
+                    'tools/build/repack_locales.py',
+                    # NOTE: Ideally the common command args would be shared
+                    # amongst inputs/outputs/action, but the args include shell
+                    # variables which need to be passed intact, and command
+                    # expansion wants to expand the shell variables. Adding the
+                    # explicit quoting here was the only way it seemed to work.
+                    '>!@(<(repack_locales_cmd) -i <(branding_flag) -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
+                  ],
+                  'outputs': [
+                    '>!@(<(repack_locales_cmd) -o -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
+                  ],
+                  'action': [
+                    '<@(repack_locales_cmd)',
+                    '<@(branding_flag)',
+                    '-g', '<(grit_out_dir)',
+                    '-s', '<(SHARED_INTERMEDIATE_DIR)',
+                    '-x', '<(INTERMEDIATE_DIR)',
+                    '<@(locales)',
+                  ],
+                },
+                {
+                  # This is an exact copy of the above phase, except for two
+                  # changes:
+                  # 1. process_outputs_as_mac_bundle_resources is omitted.
+                  # 2. We pass 'pseudo_locales' instead of 'locales' wherever
+                  #    'locales' is used.
+                  # The result is a build phase that builds all pseudo locales
+                  # but doesn't copy them to the final dll/framework.
+                  'action_name': 'repack_pseudo_locales',
+                  'variables': {
+                    'conditions': [
+                      ['branding=="Chrome"', {
+                        'branding_flag': ['-b', 'google_chrome',],
+                      }, {  # else: branding!="Chrome"
+                        'branding_flag': ['-b', 'chromium',],
+                      }],
+                    ],
+                  },
+                  'inputs': [
+                    'tools/build/repack_locales.py',
+                    # NOTE: Ideally the common command args would be shared
+                    # amongst inputs/outputs/action, but the args include shell
+                    # variables which need to be passed intact, and command
+                    # expansion wants to expand the shell variables. Adding the
+                    # explicit quoting here was the only way it seemed to work.
+                    '>!@(<(repack_locales_cmd) -i <(branding_flag) -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(pseudo_locales))',
+                  ],
+                  'outputs': [
+                    '<(INTERMEDIATE_DIR)/<(pseudo_locales).pak'
+                  ],
+                  'action': [
+                    '<@(repack_locales_cmd)',
+                    '<@(branding_flag)',
+                    '-g', '<(grit_out_dir)',
+                    '-s', '<(SHARED_INTERMEDIATE_DIR)',
+                    '-x', '<(INTERMEDIATE_DIR)',
+                    '<@(pseudo_locales)',
+                  ],
+                },
+                {
+                  'action_name': 'repack_resources',
+                  'variables': {
+                    'pak_inputs': [
+                      '<(grit_out_dir)/component_extension_resources.pak',
+                      '<(grit_out_dir)/devtools_frontend_resources.pak',
+                      '<(grit_out_dir)/devtools_resources.pak',
+                      '<(grit_out_dir)/net_internals_resources.pak',
+                      '<(grit_out_dir)/options_resources.pak',
+                      '<(grit_out_dir)/quota_internals_resources.pak',
+                      '<(grit_out_dir)/shared_resources.pak',
+                      '<(grit_out_dir)/sync_internals_resources.pak',
+                      '<(grit_out_dir)/workers_resources.pak',
+                    ],
+                  },
+                  'inputs': [
+                    '<(repack_path)',
+                    '<@(pak_inputs)',
+                  ],
+                  'outputs': [
+                    '<(INTERMEDIATE_DIR)/repack/resources.pak',
+                  ],
+                  'action': ['python', '<(repack_path)', '<@(_outputs)',
+                             '<@(pak_inputs)'],
+                  'process_outputs_as_mac_bundle_resources': 1,
                 },
               ],
               'postbuilds': [
@@ -418,17 +553,15 @@
                   ],
                 },
                 {
-                  # Copy of resources used by tests.
                   'destination': '<(PRODUCT_DIR)',
                   'files': [
-                      '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak'
+                      '<(INTERMEDIATE_DIR)/repack/resources.pak'
                   ],
                 },
                 {
-                  # Copy of resources used by tests.
                   'destination': '<(PRODUCT_DIR)/pseudo_locales',
                   'files': [
-                      '<(SHARED_INTERMEDIATE_DIR)/<(pseudo_locales).pak'
+                      '<(INTERMEDIATE_DIR)/<(pseudo_locales).pak'
                   ],
                 },
                 {

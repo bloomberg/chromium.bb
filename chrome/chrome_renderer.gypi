@@ -10,8 +10,8 @@
       'dependencies': [
         'common',
         'common_net',
-        'chrome_resources.gyp:chrome_resources',
-        'chrome_resources.gyp:chrome_strings',
+        'chrome_resources',
+        'chrome_strings',
         'safe_browsing_proto',
         '../content/content.gyp:content_renderer',
         '../net/net.gyp:net',

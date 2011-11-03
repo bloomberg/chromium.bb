@@ -110,7 +110,6 @@
       'type': 'executable',
       'dependencies': [
         '../../base/base.gyp:test_support_base',
-        '../../chrome/chrome_resources.gyp:packed_resources',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
         '../gfx/compositor/compositor.gyp:compositor_test_support',
@@ -143,6 +142,11 @@
           'dependencies': [
             '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
           ],
+        }],
+        ['OS!="mac"', {
+          'dependencies': [
+            '../../chrome/chrome.gyp:packed_resources',
+           ],
         }],
       ],
     },

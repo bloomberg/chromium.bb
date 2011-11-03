@@ -34,10 +34,10 @@
   ],
   'target_defaults': {
     'dependencies': [
-      '../chrome/chrome_resources.gyp:chrome_resources',
-      '../chrome/chrome_resources.gyp:chrome_strings',
-      '../chrome/chrome_resources.gyp:packed_resources',
-      '../chrome/chrome_resources.gyp:theme_resources',
+      '../chrome/chrome.gyp:chrome_resources',
+      '../chrome/chrome.gyp:chrome_strings',
+      '../chrome/chrome.gyp:packed_resources',
+      '../chrome/chrome.gyp:theme_resources',
       '../skia/skia.gyp:skia',
     ],
     'defines': [ 'ISOLATION_AWARE_ENABLED=1' ],
@@ -376,10 +376,10 @@
       'dependencies': [
         '../base/base.gyp:test_support_base',
         '../chrome/chrome.gyp:browser',
+        '../chrome/chrome.gyp:chrome_resources',
         '../chrome/chrome.gyp:debugger',
         '../chrome/chrome.gyp:renderer',
         '../chrome/chrome.gyp:syncapi_core',
-        '../chrome/chrome_resources.gyp:chrome_resources',
         '../content/content.gyp:content_gpu',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
