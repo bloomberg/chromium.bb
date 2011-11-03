@@ -25,7 +25,8 @@ class GLShareGroup;
 
 namespace ui {
 
-class COMPOSITOR_EXPORT SharedResourcesCC : public SharedResources {
+class COMPOSITOR_EXPORT SharedResourcesCC
+    : NON_EXPORTED_BASE(public SharedResources) {
  public:
   static SharedResourcesCC* GetInstance();
 
@@ -73,9 +74,10 @@ class COMPOSITOR_EXPORT TextureCC : public Texture {
   DISALLOW_COPY_AND_ASSIGN(TextureCC);
 };
 
-class COMPOSITOR_EXPORT CompositorCC : public Compositor,
-                                       public WebKit::WebLayerTreeViewClient,
-                                       public WebKit::WebLayerClient {
+class COMPOSITOR_EXPORT CompositorCC
+    : public Compositor,
+      NON_EXPORTED_BASE(public WebKit::WebLayerTreeViewClient),
+      NON_EXPORTED_BASE(public WebKit::WebLayerClient) {
  public:
   CompositorCC(CompositorDelegate* delegate,
                gfx::AcceleratedWidget widget,
