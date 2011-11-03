@@ -311,6 +311,14 @@ def main(argv=None):
   else:
     cros_lib.DebugLevel.SetDebugLevel(cros_lib.DebugLevel.WARNING)
 
+  if cros_lib.IsInsideChroot():
+    ssh_path = '/usr/bin/ssh_no_update'
+    if os.path.isfile(ssh_path):
+      os.environ['GIT_SSH'] = ssh_path
+    else:
+      cros_lib.Warning("Can't find %s.  Run build_packages or setup_board to "
+                       'update your chooot.' % ssh_path)
+
   repo_root = cros_lib.FindRepoCheckoutRoot()
   chromium_src_root = os.path.join(repo_root, _CHROMIUM_SRC_ROOT)
   if not os.path.isdir(chromium_src_root):
