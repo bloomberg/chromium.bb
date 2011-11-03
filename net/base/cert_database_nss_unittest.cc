@@ -31,89 +31,30 @@ namespace psm = mozilla_security_manager;
 
 namespace net {
 
-namespace {
-
-// Returns a FilePath object representing the src/net/data/ssl/certificates
-// directory in the source tree.
-FilePath GetTestCertsDirectory() {
-  FilePath certs_dir;
-  PathService::Get(base::DIR_SOURCE_ROOT, &certs_dir);
-  certs_dir = certs_dir.AppendASCII("net");
-  certs_dir = certs_dir.AppendASCII("data");
-  certs_dir = certs_dir.AppendASCII("ssl");
-  certs_dir = certs_dir.AppendASCII("certificates");
-  return certs_dir;
-}
-
-CertificateList ListCertsInSlot(PK11SlotInfo* slot) {
-  CertificateList result;
-  CERTCertList* cert_list = PK11_ListCertsInSlot(slot);
-  for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
-       !CERT_LIST_END(node, cert_list);
-       node = CERT_LIST_NEXT(node)) {
-    result.push_back(X509Certificate::CreateFromHandle(
-        node->cert, X509Certificate::OSCertHandles()));
-  }
-  CERT_DestroyCertList(cert_list);
-
-  // Sort the result so that test comparisons can be deterministic.
-  std::sort(result.begin(), result.end(), X509Certificate::LessThan());
-  return result;
-}
-
-bool CleanupSlotContents(PK11SlotInfo* slot) {
-  CertDatabase cert_db;
-  bool ok = true;
-  CertificateList certs = ListCertsInSlot(slot);
-  for (size_t i = 0; i < certs.size(); ++i) {
-    if (!cert_db.DeleteCertAndKey(certs[i]))
-      ok = false;
-  }
-  return ok;
-}
-
-std::string ReadTestFile(const std::string& name) {
-  std::string result;
-  FilePath cert_path = GetTestCertsDirectory().AppendASCII(name);
-  EXPECT_TRUE(file_util::ReadFileToString(cert_path, &result));
-  return result;
-}
-
-bool ReadCertIntoList(const std::string& name, CertificateList* certs) {
-  std::string cert_data = ReadTestFile(name);
-  if (cert_data.empty())
-    return false;
-
-  X509Certificate* cert = X509Certificate::CreateFromBytes(
-      cert_data.data(), cert_data.size());
-  if (!cert)
-    return false;
-
-  certs->push_back(cert);
-  return true;
-}
-
-}  // namespace
-
 // TODO(mattm): when https://bugzilla.mozilla.org/show_bug.cgi?id=588269 is
 // fixed, switch back to using a separate userdb for each test.
 // (When doing so, remember to add some standalone tests of DeleteCert since it
 // won't be tested by TearDown anymore.)
 class CertDatabaseNSSTest : public testing::Test {
  public:
+  static void SetUpTestCase() {
+    ASSERT_TRUE(temp_db_dir_.Get().CreateUniqueTempDir());
+    ASSERT_TRUE(
+        crypto::OpenTestNSSDB(temp_db_dir_.Get().path(),
+                              "CertDatabaseNSSTest db"));
+  }
+
+  static void TearDownTestCase() {
+    ASSERT_TRUE(temp_db_dir_.Get().Delete());
+  }
+
   virtual void SetUp() {
-    if (!temp_db_initialized_) {
-      ASSERT_TRUE(temp_db_dir_.Get().CreateUniqueTempDir());
-      ASSERT_TRUE(
-          crypto::OpenTestNSSDB(temp_db_dir_.Get().path(),
-                                "CertDatabaseNSSTest db"));
-      temp_db_initialized_ = true;
-    }
     slot_ = cert_db_.GetPublicModule();
 
     // Test db should be empty at start of test.
     EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
   }
+
   virtual void TearDown() {
     // Don't try to cleanup if the setup failed.
     ASSERT_TRUE(slot_->os_module_handle());
@@ -123,18 +64,77 @@ class CertDatabaseNSSTest : public testing::Test {
   }
 
  protected:
+  static std::string ReadTestFile(const std::string& name) {
+    std::string result;
+    FilePath cert_path = GetTestCertsDirectory().AppendASCII(name);
+    EXPECT_TRUE(file_util::ReadFileToString(cert_path, &result));
+    return result;
+  }
+
+  static bool ReadCertIntoList(const std::string& name,
+                               CertificateList* certs) {
+    std::string cert_data = ReadTestFile(name);
+    if (cert_data.empty())
+      return false;
+
+    X509Certificate* cert = X509Certificate::CreateFromBytes(
+        cert_data.data(), cert_data.size());
+    if (!cert)
+      return false;
+
+    certs->push_back(cert);
+    return true;
+  }
+
+  static CertificateList ListCertsInSlot(PK11SlotInfo* slot) {
+    CertificateList result;
+    CERTCertList* cert_list = PK11_ListCertsInSlot(slot);
+    for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
+         !CERT_LIST_END(node, cert_list);
+         node = CERT_LIST_NEXT(node)) {
+      result.push_back(X509Certificate::CreateFromHandle(
+          node->cert, X509Certificate::OSCertHandles()));
+    }
+    CERT_DestroyCertList(cert_list);
+
+    // Sort the result so that test comparisons can be deterministic.
+    std::sort(result.begin(), result.end(), X509Certificate::LessThan());
+    return result;
+  }
+
   scoped_refptr<CryptoModule> slot_;
   CertDatabase cert_db_;
 
  private:
+  // Returns a FilePath object representing the src/net/data/ssl/certificates
+  // directory in the source tree.
+  static FilePath GetTestCertsDirectory() {
+    FilePath certs_dir;
+    PathService::Get(base::DIR_SOURCE_ROOT, &certs_dir);
+    certs_dir = certs_dir.AppendASCII("net");
+    certs_dir = certs_dir.AppendASCII("data");
+    certs_dir = certs_dir.AppendASCII("ssl");
+    certs_dir = certs_dir.AppendASCII("certificates");
+    return certs_dir;
+  }
+
+  static bool CleanupSlotContents(PK11SlotInfo* slot) {
+    CertDatabase cert_db;
+    bool ok = true;
+    CertificateList certs = ListCertsInSlot(slot);
+    for (size_t i = 0; i < certs.size(); ++i) {
+      if (!cert_db.DeleteCertAndKey(certs[i]))
+        ok = false;
+    }
+    return ok;
+  }
+
   static base::LazyInstance<ScopedTempDir> temp_db_dir_;
-  static bool temp_db_initialized_;
 };
 
 // static
 base::LazyInstance<ScopedTempDir> CertDatabaseNSSTest::temp_db_dir_(
     base::LINKER_INITIALIZED);
-bool CertDatabaseNSSTest::temp_db_initialized_ = false;
 
 TEST_F(CertDatabaseNSSTest, ListCerts) {
   // This test isn't terribly useful, though it will at least let valgrind test
