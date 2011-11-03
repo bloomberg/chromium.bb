@@ -33,7 +33,6 @@ class GpuMessageFilter : public BrowserMessageFilter,
   // BrowserMessageFilter methods:
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
-  virtual void OnDestruct() const;
 
  private:
   friend class content::BrowserThread;

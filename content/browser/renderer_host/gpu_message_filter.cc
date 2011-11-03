@@ -20,12 +20,11 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id,
     : gpu_host_id_(0),
       render_process_id_(render_process_id),
       render_widget_helper_(render_widget_helper) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-// WeakPtrs to a GpuMessageFilter need to be Invalidated from
-// the same thread from which they were created.
 GpuMessageFilter::~GpuMessageFilter() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 bool GpuMessageFilter::OnMessageReceived(
@@ -42,10 +41,6 @@ bool GpuMessageFilter::OnMessageReceived(
   return handled;
 }
 
-void GpuMessageFilter::OnDestruct() const {
-  BrowserThread::DeleteOnUIThread::Destruct(this);
-}
-
 // Callbacks used in this file.
 namespace {
 
@@ -57,6 +52,7 @@ class EstablishChannelCallback
   EstablishChannelCallback(GpuMessageFilter* filter, IPC::Message* reply)
       : filter_(filter->AsWeakPtr()),
         reply_(reply) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   }
 
   virtual void RunWithParams(const TupleType& params) {
@@ -66,6 +62,8 @@ class EstablishChannelCallback
   void Send(const IPC::ChannelHandle& channel,
             base::ProcessHandle gpu_process_for_browser,
             const content::GPUInfo& gpu_info) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
     if (!filter_)
       return;
 
@@ -130,6 +128,8 @@ class CreateCommandBufferCallback : public CallbackRunner<Tuple1<int32> > {
 void GpuMessageFilter::OnEstablishGpuChannel(
     content::CauseForGpuLaunch cause_for_gpu_launch,
     IPC::Message* reply) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   scoped_ptr<EstablishChannelCallback> callback(
       new EstablishChannelCallback(this, reply));
 
@@ -160,6 +160,8 @@ void GpuMessageFilter::OnCreateViewCommandBuffer(
     int32 render_view_id,
     const GPUCreateCommandBufferConfig& init_params,
     IPC::Message* reply) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
 
   gfx::PluginWindowHandle compositing_surface =
