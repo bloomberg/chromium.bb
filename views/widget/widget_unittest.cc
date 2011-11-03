@@ -133,6 +133,8 @@ Widget* CreateChildPlatformWidget(gfx::NativeView parent_native_view) {
   return child;
 }
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+// On Windows, it is possible for us to have a child window that is TYPE_POPUP.
 Widget* CreateChildPopupPlatformWidget(gfx::NativeView parent_native_view) {
   Widget* child = new Widget;
   Widget::InitParams child_params(Widget::InitParams::TYPE_POPUP);
@@ -143,6 +145,7 @@ Widget* CreateChildPopupPlatformWidget(gfx::NativeView parent_native_view) {
   child->SetContentsView(new View);
   return child;
 }
+#endif
 
 Widget* CreateTopLevelNativeWidgetViews() {
   Widget* toplevel = new Widget;
@@ -329,11 +332,9 @@ TEST_F(WidgetTest, Visibility) {
   gfx::NativeView parent = toplevel->GetNativeView();
 #endif
   Widget* child = CreateChildPlatformWidget(parent);
-  Widget* child_popup = CreateChildPopupPlatformWidget(parent);
 
   EXPECT_FALSE(toplevel->IsVisible());
   EXPECT_FALSE(child->IsVisible());
-  EXPECT_FALSE(child_popup->IsVisible());
 
   child->Show();
 
@@ -344,6 +345,26 @@ TEST_F(WidgetTest, Visibility) {
 
   EXPECT_TRUE(toplevel->IsVisible());
   EXPECT_TRUE(child->IsVisible());
+
+  toplevel->CloseNow();
+  // |child| should be automatically destroyed with |toplevel|.
+}
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+// On Windows, it is possible to have child window that are TYPE_POPUP.  Unlike
+// regular child windows, these should be created as hidden and must be shown
+// explicitly.
+TEST_F(WidgetTest, Visibility_ChildPopup) {
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+  Widget* child_popup = CreateChildPopupPlatformWidget(
+      toplevel->GetNativeView());
+
+  EXPECT_FALSE(toplevel->IsVisible());
+  EXPECT_FALSE(child_popup->IsVisible());
+
+  toplevel->Show();
+
+  EXPECT_TRUE(toplevel->IsVisible());
   EXPECT_FALSE(child_popup->IsVisible());
 
   child_popup->Show();
@@ -351,8 +372,9 @@ TEST_F(WidgetTest, Visibility) {
   EXPECT_TRUE(child_popup->IsVisible());
 
   toplevel->CloseNow();
-  // |child| should be automatically destroyed with |toplevel|.
+  // |child_popup| should be automatically destroyed with |toplevel|.
 }
+#endif
 
 // Tests visibility of synthetic child widgets.
 TEST_F(WidgetTest, Visibility_Synthetic) {
