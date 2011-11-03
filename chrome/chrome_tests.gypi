@@ -250,6 +250,10 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+          ],
+        }],
+        ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
+          'dependencies': [
             '../build/linux/system.gyp:ssl',
           ],
         }],
@@ -543,8 +547,12 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
-            '../build/linux/system.gyp:ssl',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+          ],
+        }],
+        ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
+          'dependencies': [
+            '../build/linux/system.gyp:ssl',
           ],
         }],
         ['toolkit_uses_gtk == 1 and toolkit_views == 0', {
@@ -2072,7 +2080,6 @@
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../build/linux/system.gyp:gtk',
-            '../build/linux/system.gyp:ssl',
             '../dbus/dbus.gyp:dbus_test_support',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
@@ -2084,6 +2091,11 @@
             'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
             'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
             '../views/focus/accelerator_handler_gtk_unittest.cc',
+          ],
+        }],
+        ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
+          'dependencies': [
+            '../build/linux/system.gyp:ssl',
           ],
         }],
         ['use_gnome_keyring == 0', {
@@ -2786,12 +2798,16 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
-            '../build/linux/system.gyp:ssl',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
           'sources': [
             # TODO(estade): port to win/mac.
             'browser/ui/webui/constrained_html_ui_browsertest.cc',
+          ],
+        }],
+        ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
+          'dependencies': [
+            '../build/linux/system.gyp:ssl',
           ],
         }],
         ['OS=="mac"', {
@@ -3227,6 +3243,10 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+          ],
+        }],
+        ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
+          'dependencies': [
             '../build/linux/system.gyp:ssl',
           ],
         }],
@@ -3359,8 +3379,12 @@
         ['toolkit_uses_gtk == 1', {
            'dependencies': [
              '../build/linux/system.gyp:gtk',
-             '../build/linux/system.gyp:ssl',
            ],
+        }],
+        ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
+          'dependencies': [
+            '../build/linux/system.gyp:ssl',
+          ],
         }],
         ['OS=="mac"', {
           # See the comment in this section of the unit_tests target for an
@@ -3484,8 +3508,12 @@
         ['toolkit_uses_gtk == 1', {
            'dependencies': [
              '../build/linux/system.gyp:gtk',
-             '../build/linux/system.gyp:ssl',
            ],
+        }],
+        ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
+          'dependencies': [
+            '../build/linux/system.gyp:ssl',
+          ],
         }],
         ['OS=="mac"', {
           # See the comment in this section of the unit_tests target for an
@@ -3648,8 +3676,12 @@
         ['toolkit_uses_gtk == 1', {
            'dependencies': [
              '../build/linux/system.gyp:gtk',
-             '../build/linux/system.gyp:ssl',
            ],
+        }],
+        ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
+          'dependencies': [
+            '../build/linux/system.gyp:ssl',
+          ],
         }],
         ['toolkit_views==1', {
           'dependencies': [
