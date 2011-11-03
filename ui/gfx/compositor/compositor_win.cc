@@ -105,6 +105,8 @@ class CompositorWin : public Compositor {
 
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
 
+  virtual void ReadPixels(SkBitmap* bitmap) OVERRIDE;
+
  protected:
   virtual void OnNotifyStart(bool clear) OVERRIDE;
   virtual void OnNotifyEnd() OVERRIDE;
@@ -499,6 +501,10 @@ void CompositorWin::Blur(const gfx::Rect& bounds) {
   device_->IASetVertexBuffers(0, 1, &vertex_buffer, &stride, &offset);
   device_->IASetIndexBuffer(index_buffer_.get(), DXGI_FORMAT_R32_UINT, 0);
 #endif
+}
+
+void CompositorWin::ReadPixels(SkBitmap* bitmap) {
+  NOTIMPLEMENTED();
 }
 
 void CompositorWin::OnWidgetSizeChanged() {

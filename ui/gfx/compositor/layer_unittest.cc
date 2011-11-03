@@ -183,12 +183,14 @@ class NullLayerDelegate : public LayerDelegate {
 #define MAYBE_DrawTree DISABLED_DrawTree
 #define MAYBE_Hierarchy DISABLED_Hierarchy
 #define MAYBE_HierarchyNoTexture DISABLED_HierarchyNoTexture
+#define MAYBE_DrawPixels DISABLED_DrawPixels
 #else
 #define MAYBE_Delegate Delegate
 #define MAYBE_Draw Draw
 #define MAYBE_DrawTree DrawTree
 #define MAYBE_Hierarchy Hierarchy
 #define MAYBE_HierarchyNoTexture HierarchyNoTexture
+#define MAYBE_DrawPixels DrawPixels
 #endif
 
 TEST_F(LayerWithRealCompositorTest, MAYBE_Draw) {
@@ -711,6 +713,24 @@ TEST_F(LayerWithNullDelegateTest, Visibility) {
 #if defined(USE_WEBKIT_COMPOSITOR)
   EXPECT_EQ(1.f, l1->web_layer().opacity());
 #endif
+}
+
+// Checks that pixels are actually drawn to the screen with a read back.
+TEST_F(LayerWithRealCompositorTest, MAYBE_DrawPixels) {
+  scoped_ptr<Layer> layer(CreateColorLayer(SK_ColorRED,
+                                           gfx::Rect(0, 0, 500, 500)));
+  DrawTree(layer.get());
+
+  SkBitmap bitmap;
+  GetCompositor()->ReadPixels(&bitmap);
+
+  SkAutoLockPixels lock(bitmap);
+  bool is_all_red = true;
+  for (int x = 0; is_all_red && x < 500; x++)
+    for (int y = 0; is_all_red && y < 500; y++)
+      is_all_red = is_all_red && (bitmap.getColor(x, y) == SK_ColorRED);
+
+  EXPECT_TRUE(is_all_red);
 }
 
 } // namespace ui

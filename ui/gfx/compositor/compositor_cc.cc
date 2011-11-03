@@ -174,6 +174,10 @@ void CompositorCC::DrawTree() {
   host_.composite();
 }
 
+void CompositorCC::ReadPixels(SkBitmap* bitmap) {
+  NOTIMPLEMENTED();
+}
+
 void CompositorCC::animateAndLayout(double frameBeginTime) {
 }
 

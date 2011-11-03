@@ -95,6 +95,7 @@ class COMPOSITOR_EXPORT CompositorCC : public Compositor,
   virtual void OnWidgetSizeChanged() OVERRIDE;
   virtual void OnRootLayerChanged() OVERRIDE;
   virtual void DrawTree() OVERRIDE;
+  virtual void ReadPixels(SkBitmap* bitmap) OVERRIDE;
 
   // WebLayerTreeViewClient implementation.
   virtual void animateAndLayout(double frameBeginTime) OVERRIDE;

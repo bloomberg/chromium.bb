@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread_restrictions.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPoint.h"
@@ -503,6 +504,53 @@ CompositorGL::CompositorGL(CompositorDelegate* delegate,
 
 CompositorGL::~CompositorGL() {
   gl_context_ = NULL;
+}
+
+void CompositorGL::ReadPixels(SkBitmap* bitmap) {
+  MakeCurrent();
+
+  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
+                    size().width(),
+                    size().height());
+  bitmap->allocPixels();
+  SkAutoLockPixels lock(*bitmap);
+  unsigned char* pixels = static_cast<unsigned char*>(bitmap->getPixels());
+
+  // Check that it's a tight pixel packing
+  DCHECK_EQ(bitmap->rowBytes(),
+            SkBitmap::ComputeRowBytes(bitmap->config(), bitmap->width()));
+
+  GLint current_alignment = 0;
+  glGetIntegerv(GL_PACK_ALIGNMENT, &current_alignment);
+  glPixelStorei(GL_PACK_ALIGNMENT, 4);
+  glReadPixels(0,
+               0,
+               size().width(),
+               size().height(),
+               GL_RGBA,
+               GL_UNSIGNED_BYTE,
+               pixels);
+  glPixelStorei(GL_PACK_ALIGNMENT, current_alignment);
+
+  // Swizzle from RGBA to BGRA
+  size_t bitmap_size = 4 * size().width() * size().height();
+  for(size_t i = 0; i < bitmap_size; i += 4)
+    std::swap(pixels[i], pixels[i + 2]);
+
+  // Vertical flip to transform from GL co-ords
+  size_t row_size = 4 * size().width();
+  scoped_array<unsigned char> tmp_row(new unsigned char[row_size]);
+  for(int row = 0; row < size().height() / 2; row++) {
+    memcpy(tmp_row.get(),
+           &pixels[row * row_size],
+           row_size);
+    memcpy(&pixels[row * row_size],
+           &pixels[bitmap_size - (row + 1) * row_size],
+           row_size);
+    memcpy(&pixels[bitmap_size - (row + 1) * row_size],
+           tmp_row.get(),
+           row_size);
+  }
 }
 
 void CompositorGL::MakeCurrent() {

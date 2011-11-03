@@ -13,6 +13,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
+class SkBitmap;
 class SkCanvas;
 namespace gfx {
 class Point;
@@ -126,6 +127,9 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   // |force_clear| is true, this will cause the compositor to clear before
   // compositing.
   void Draw(bool force_clear);
+
+  // Reads the contents of the last rendered frame into the given bitmap.
+  virtual void ReadPixels(SkBitmap* bitmap) = 0;
 
   // Notifies the compositor that the size of the widget that it is
   // drawing to has changed.
