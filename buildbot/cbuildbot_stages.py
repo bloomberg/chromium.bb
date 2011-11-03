@@ -373,11 +373,16 @@ class BuildBoardStage(bs.BuilderStage):
   def _PerformStage(self):
     chroot_path = os.path.join(self._build_root, 'chroot')
     if not os.path.isdir(chroot_path) or self._build_config['chroot_replace']:
+      env = {}
+      if self._options.clobber:
+        env['IGNORE_PREFLIGHT_BINHOST'] = '1'
+
       commands.MakeChroot(
           buildroot=self._build_root,
           replace=self._build_config['chroot_replace'],
           use_sdk=self._build_config['use_sdk'],
-          chrome_root=self._options.chrome_root)
+          chrome_root=self._options.chrome_root,
+          extra_env=env)
     else:
       commands.RunChrootUpgradeHooks(self._build_root)
 
@@ -394,6 +399,9 @@ class BuildBoardStage(bs.BuilderStage):
       env = {}
       if self._build_config['gcc_46']:
         env['GCC_PV'] = '4.6.0'
+
+      if self._options.clobber:
+        env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
       latest_toolchain = self._build_config['latest_toolchain']
 
@@ -447,6 +455,9 @@ class BuildTargetStage(bs.BuilderStage):
 
     if self._options.chrome_root:
       env['CHROME_ORIGIN'] = 'LOCAL_SOURCE'
+
+    if self._options.clobber:
+      env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
     # If we are using ToT toolchain, don't attempt to update
     # the toolchain during build_packages.

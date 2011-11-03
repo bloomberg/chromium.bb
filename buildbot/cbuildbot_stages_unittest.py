@@ -327,7 +327,9 @@ class BuildBoardTest(AbstractStageTest):
     commands.MakeChroot(buildroot=self.build_root,
                         replace=True,
                         use_sdk=True,
-                        chrome_root=None)
+                        chrome_root=None,
+                        extra_env=mox.IgnoreArg()
+                        )
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(False)
     commands.SetupBoard(self.build_root,
@@ -354,7 +356,9 @@ class BuildBoardTest(AbstractStageTest):
     commands.MakeChroot(buildroot=self.build_root,
                         replace=True,
                         use_sdk=True,
-                        chrome_root=None)
+                        chrome_root=None,
+                        extra_env=mox.IgnoreArg()
+                        )
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(False)
     commands.SetupBoard(self.build_root,
@@ -382,7 +386,9 @@ class BuildBoardTest(AbstractStageTest):
     commands.MakeChroot(buildroot=self.build_root,
                         replace=True,
                         use_sdk=True,
-                        chrome_root=None)
+                        chrome_root=None,
+                        extra_env=mox.IgnoreArg()
+                        )
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(False)
     commands.SetupBoard(self.build_root,
@@ -423,7 +429,9 @@ class BuildBoardTest(AbstractStageTest):
     commands.MakeChroot(buildroot=self.build_root,
                         replace=self.build_config['chroot_replace'],
                         use_sdk=self.build_config['use_sdk'],
-                        chrome_root=None)
+                        chrome_root=None,
+                        extra_env=mox.IgnoreArg()
+                        )
 
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(False)

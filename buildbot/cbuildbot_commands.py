@@ -144,7 +144,7 @@ def ManifestCheckout(buildroot, tracking_branch, next_manifest, url):
   repo.ExportManifest('/dev/stderr')
 
 
-def MakeChroot(buildroot, replace, use_sdk, chrome_root=None):
+def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None):
   """Wrapper around make_chroot."""
   cmd = ['cros_sdk']
   if use_sdk:
@@ -158,7 +158,7 @@ def MakeChroot(buildroot, replace, use_sdk, chrome_root=None):
   if chrome_root:
     cmd.append('--chrome_root=%s' % chrome_root)
 
-  cros_lib.OldRunCommand(cmd, cwd=buildroot)
+  cros_lib.RunCommand(cmd, cwd=buildroot, extra_env=extra_env)
 
 
 def RunChrootUpgradeHooks(buildroot, chrome_root=None):
