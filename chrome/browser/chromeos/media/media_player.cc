@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/media/media_player.h"
 
+#include <string>
+
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -207,8 +210,9 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &MediaPlayer::PopupMediaPlayer,
-                          static_cast<Browser*>(NULL)));
+        base::Bind(&MediaPlayer::PopupMediaPlayer,
+                   base::Unretained(this),  // this class is a singleton.
+                   static_cast<Browser*>(NULL)));
     return;
   }
   if (mediaplayer_browser_)
