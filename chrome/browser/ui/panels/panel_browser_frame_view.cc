@@ -24,6 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/menu_button.h"
@@ -349,6 +350,20 @@ int PanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 
 void PanelBrowserFrameView::GetWindowMask(const gfx::Size& size,
                                           gfx::Path* window_mask) {
+  // For minimized panel, the window shape is rectangle with top-left and
+  // top-right corners rounded.
+  if (size.height() <= Panel::kMinimizedPanelHeight) {
+    window_mask->moveTo(0, 2);
+    window_mask->lineTo(0, 1);
+    window_mask->lineTo(1, 0);
+    window_mask->lineTo(SkIntToScalar(size.width()) - 1, 0);
+    window_mask->lineTo(SkIntToScalar(size.width()), 1);
+    window_mask->lineTo(SkIntToScalar(size.width()), 2);
+    window_mask->lineTo(SkIntToScalar(size.width()),
+                        SkIntToScalar(size.height()));
+    window_mask->lineTo(0, SkIntToScalar(size.height()));
+    return;
+  }
   views::GetDefaultWindowMask(size, window_mask);
 }
 
