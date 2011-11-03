@@ -6,7 +6,6 @@
 #define UI_AURA_TEST_EVENT_GENERATOR_H_
 #pragma once
 
-#include "ui/aura/aura_export.h"
 #include "base/basictypes.h"
 #include "ui/gfx/point.h"
 
@@ -18,7 +17,7 @@ namespace test {
 
 // EventGenerator is a tool that generates and dispatch events.
 // TODO(oshima): Support key events.
-class AURA_EXPORT EventGenerator {
+class EventGenerator {
  public:
   // Creates an EventGenerator with the mouse location (0,0).
   EventGenerator();

@@ -179,6 +179,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   Window* GetChildById(int id);
   const Window* GetChildById(int id) const;
 
+  // Converts |point| from |source|'s coordinates to |target|'s. If |source| is
+  // NULL, the function returns without modifying |point|. |target| cannot be
+  // NULL.
   static void ConvertPointToWindow(const Window* source,
                                    const Window* target,
                                    gfx::Point* point);

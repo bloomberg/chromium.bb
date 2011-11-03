@@ -203,6 +203,17 @@ TEST_F(WindowTest, GetChildById) {
   EXPECT_EQ(w111.get(), w1->GetChildById(111));
 }
 
+TEST_F(WindowTest, ConvertPointToWindow) {
+  // Window::ConvertPointToWindow is mostly identical to
+  // Layer::ConvertPointToLayer, except NULL values for |source| are permitted,
+  // in which case the function just returns.
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  gfx::Point reference_point(100, 100);
+  gfx::Point test_point = reference_point;
+  Window::ConvertPointToWindow(NULL, w1.get(), &test_point);
+  EXPECT_EQ(reference_point, test_point);
+}
+
 TEST_F(WindowTest, HitTest) {
   Window w1(new ColorTestWindowDelegate(SK_ColorWHITE));
   w1.set_id(1);

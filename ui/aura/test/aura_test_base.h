@@ -6,7 +6,6 @@
 #define UI_AURA_TEST_AURA_TEST_BASE_H_
 #pragma once
 
-#include "ui/aura/aura_export.h"
 #include "base/compiler_specific.h"
 #include "base/basictypes.h"
 #include "base/message_loop.h"
@@ -18,7 +17,7 @@ namespace test {
 class TestDesktopDelegate;
 
 // A base class for aura unit tests.
-class AURA_EXPORT AuraTestBase : public testing::Test {
+class AuraTestBase : public testing::Test {
  public:
   AuraTestBase();
   virtual ~AuraTestBase();

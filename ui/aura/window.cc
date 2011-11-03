@@ -261,6 +261,8 @@ const Window* Window::GetChildById(int id) const {
 void Window::ConvertPointToWindow(const Window* source,
                                   const Window* target,
                                   gfx::Point* point) {
+  if (!source)
+    return;
   ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
 }
 
