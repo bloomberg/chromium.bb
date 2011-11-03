@@ -108,6 +108,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestNewTab) {
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_newTab.html"))
       << message_;
 
+  TabContents* tab = browser()->GetSelectedTabContents();
+  ui_test_utils::WaitForLoadStop(tab);
+
   ResultCatcher catcher;
 
   ExtensionService* service = browser()->profile()->GetExtensionService();
@@ -125,7 +128,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestNewTab) {
   mouse_event.x = 7;
   mouse_event.y = 7;
   mouse_event.clickCount = 1;
-  TabContents* tab = browser()->GetSelectedTabContents();
   tab->render_view_host()->ForwardMouseEvent(mouse_event);
   mouse_event.type = WebKit::WebInputEvent::MouseUp;
   tab->render_view_host()->ForwardMouseEvent(mouse_event);
