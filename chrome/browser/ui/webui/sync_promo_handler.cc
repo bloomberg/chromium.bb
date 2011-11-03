@@ -165,6 +165,7 @@ void SyncPromoHandler::HandleShowAdvancedSettings(
   url += chrome::kSyncSetupSubPage;
   web_ui_->tab_contents()->OpenURL(GURL(url), GURL(), CURRENT_TAB,
                                    content::PAGE_TRANSITION_LINK);
+  RecordUserFlowAction(extension_misc::SYNC_PROMO_ADVANCED_CLICKED);
 }
 
 void SyncPromoHandler::HandleUserFlowAction(const base::ListValue* args) {
