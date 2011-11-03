@@ -101,7 +101,7 @@ class InstantController : public InstantLoaderDelegate {
   // false a commit does not result in committing the last url passed to update.
   // A return value of false happens if we're in the process of determining if
   // the page supports instant.
-  bool IsCurrent();
+  bool IsCurrent() const;
 
   // Returns true if the caller should proceed with committing the preview. A
   // return value of false means that there is no valid preview to commit. This
@@ -149,7 +149,7 @@ class InstantController : public InstantLoaderDelegate {
   TabContentsWrapper* tab_contents() const { return tab_contents_; }
 
   // The preview TabContents; may be null.
-  TabContentsWrapper* GetPreviewContents();
+  TabContentsWrapper* GetPreviewContents() const;
 
   // Returns true if the preview TabContents is ready to be displayed. In some
   // situations this may return false yet GetPreviewContents() returns non-NULL.

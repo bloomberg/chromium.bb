@@ -226,7 +226,7 @@ void InstantController::Hide() {
   }
 }
 
-bool InstantController::IsCurrent() {
+bool InstantController::IsCurrent() const {
   // TODO(mmenke):  See if we can do something more intelligent in the
   //                navigation pending case.
   return is_displayable_ && !loader_->IsNavigationPending() &&
@@ -410,7 +410,7 @@ void InstantController::CompleteRelease(TabContentsWrapper* tab) {
   tab->blocked_content_tab_helper()->SetAllContentsBlocked(false);
 }
 
-TabContentsWrapper* InstantController::GetPreviewContents() {
+TabContentsWrapper* InstantController::GetPreviewContents() const {
   return loader_.get() ? loader_->preview_contents() : NULL;
 }
 

@@ -3513,8 +3513,6 @@ void TestingAutomationProvider::GetInstantInfo(Browser* browser,
   if (browser->instant()) {
     InstantController* instant = browser->instant();
     info->SetBoolean("enabled", true);
-    info->SetBoolean("showing", instant->is_displayable());
-    // TODO: can we remove this?
     info->SetBoolean("active", (instant->GetPreviewContents() != NULL));
     info->SetBoolean("current", instant->IsCurrent());
     if (instant->GetPreviewContents() &&
