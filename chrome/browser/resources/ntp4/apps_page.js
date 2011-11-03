@@ -296,30 +296,58 @@ cr.define('ntp4', function() {
       this.classList.remove('icon-loading');
     },
 
-    // Shows a notification text below the app icon and stuffs the attributes
-    // necessary to show the bubble when the user clicks on the notification
-    // text.
-    setupNotification_: function(notification) {
-      // Remove the old notification from this node (if any).
-      if (this.appNotification_ && this.appNotification_.parentNode)
-        this.appNotification_.parentNode.removeChild(this.appNotification_);
+    /**
+     * Creates a bubble node.
+     * @param {Object} notification The notification to show in the bubble.
+     * @param {boolean} full Whether we want the headline or just the content.
+     * @private
+     */
+    createBubbleNode_: function(notification, full) {
+      if (!full) {
+        var titleItem = this.ownerDocument.createElement('span');
+        titleItem.textContent = notification['title'];
+        return titleItem;
+      } else {
+        var container = this.ownerDocument.createElement('div');
 
-      if (notification) {
-        // Add a new notification to this node.
-        var appNotification = this.ownerDocument.createElement('span');
-        appNotification.className = 'app-notification';
-        appNotification.textContent = notification['title'];
-        appNotification.addEventListener('click',
-                                         this.onNotificationClick_.bind(this));
-        appNotification.notificationTitle = notification['title'];
-        appNotification.notificationMessage = notification['body'];
-        if (typeof notification['linkUrl'] != 'undefined' &&
-            typeof notification['linkText'] != 'undefined') {
-          appNotification.notificationLink = notification['linkUrl'];
-          appNotification.notificationLinkText = notification['linkText'];
+        var messageItem = this.ownerDocument.createElement('div');
+        messageItem.textContent = notification['body'];
+        container.appendChild(messageItem);
+
+        if (notification['linkUrl'] && notification['linkText']) {
+          var anchor = this.ownerDocument.createElement('a');
+          anchor.href = notification['linkUrl'];
+          anchor.textContent = notification['linkText'];
+          container.appendChild(anchor);
         }
-        this.appNotification_ = appNotification;
-        this.appendChild(appNotification);
+
+        return container;
+      }
+    },
+
+    /**
+     * Sets up a notification for the app icon.
+     * @param {Object} notification The notification to show in the bubble.
+     * @private
+     */
+    setupNotification_: function(notification) {
+      if (notification) {
+        var infoBubble;
+        if (!this.currentBubbleShowing_) {
+          // Create a new bubble.
+          infoBubble = new cr.ui.ExpandableBubble;
+          infoBubble.anchorNode = this;
+        } else {
+          // Reuse the old bubble instead of popping up a new bubble over
+          // the old one.
+          infoBubble = this.currentBubbleShowing_;
+          infoBubble.collapseBubble_();
+        }
+        infoBubble.contentTitle = this.createBubbleNode_(notification, false);
+        infoBubble.content = this.createBubbleNode_(notification, true);
+        infoBubble.show();
+
+        this.currentBubbleShowing_ = infoBubble;
       }
     },
 
@@ -426,46 +454,6 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Invoked when an app notification is clicked. This will show the
-     * notification bubble, containing the details of the notification.
-     * @param {Event} e The click event.
-     * @private
-     */
-    onNotificationClick_: function(e) {
-      var title = this.appNotification_.notificationTitle;
-      var message = this.appNotification_.notificationMessage;
-      var link = this.appNotification_.notificationLink;
-      var linkMessage = this.appNotification_.notificationLinkText;
-
-      if (!title || !message)
-        return;
-
-      var container = this.ownerDocument.createElement('div');
-      var titleItem = this.ownerDocument.createElement('strong');
-      titleItem.textContent = title;
-      container.appendChild(titleItem);
-      var messageDiv = this.ownerDocument.createElement('div');
-      messageDiv.textContent = message;
-      container.appendChild(messageDiv);
-      if (link && linkMessage) {
-        var anchor = this.ownerDocument.createElement('a');
-        anchor.href = link;
-        anchor.textContent = linkMessage;
-        container.appendChild(anchor);
-      }
-
-      var infoBubble = new cr.ui.Bubble;
-      infoBubble.appId = this.appData_.id;
-      infoBubble.anchorNode = e.target;
-      infoBubble.content = container;
-      infoBubble.handleCloseEvent = function() {
-        chrome.send('closeNotification', [this.appId]);
-        this.hide();
-      };
-      infoBubble.show();
-    },
-
-    /**
      * Adds a node to the list of targets that will launch the app. This list
      * is also used in onMousedown to determine whether the app contents should
      * be shown as active (if we don't do this, then clicking anywhere in
@@ -558,6 +546,9 @@ cr.define('ntp4', function() {
     removeFromChrome: function() {
       chrome.send('uninstallApp', [this.appData_.id, true]);
       this.tile.tilePage.removeTile(this.tile, true);
+
+      if (this.currentBubbleShowing_)
+        currentBubbleShowing_.hide();
     },
 
     /**

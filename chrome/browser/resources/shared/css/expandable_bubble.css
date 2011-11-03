@@ -1,0 +1,110 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.expandable-bubble {
+  position: absolute;
+}
+
+.expandable-bubble[expanded] {
+  width: 300px;
+}
+
+.expandable-bubble-contents {
+  color: black;
+  left: 1px;
+  line-height: 150%;
+  padding: 6px 3px 5px 6px;
+  position: relative;
+  right: 1px;
+  top: 1px;
+  z-index: 3;
+}
+
+.expandable-bubble[expanded] > .expandable-bubble-close { 
+  z-index : 8;
+}
+.expandable-bubble[expanded] > .expandable-bubble-contents {
+  z-index : 7;
+}
+.expandable-bubble[expanded] > .expandable-bubble-arrow {
+  z-index : 6;
+}
+.expandable-bubble[expanded] > .expandable-bubble-shadow {
+  z-index : 5;  /* One higher then the close button on an unexpanded bubble. */
+}
+
+.expandable-bubble-title {
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.expandable-bubble[expanded] > .expandable-bubble-contents > .expandable-bubble-title {
+  text-align: left;
+}
+
+.expandable-bubble-close {
+  background-image: no-repeat 50% 50%;  
+  height: 16px;
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 16px;
+  z-index: 4;
+}
+
+.expandable-bubble-close {
+  background-image: url('chrome://theme/IDR_CLOSE_BAR');
+}
+
+.expandable-bubble-close:hover {
+  background-image: url('chrome://theme/IDR_CLOSE_BAR_H');
+}
+
+.expandable-bubble-close:active {
+  background-image: url('chrome://theme/IDR_CLOSE_BAR_P');
+}
+
+.expandable-bubble-shadow {
+  bottom: -2px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+}
+
+.expandable-bubble-arrow {
+  /* The tip of the arrow.  */
+  border-bottom-right-radius: 1px;
+  /* No border on the right or top (inner sides of the rotated square) because
+   * it would overlap/darken the content shadow. */
+  border-right: none;
+  border-top: none;
+  bottom: -9px;
+  height: 15px;
+  position: absolute;
+  right: 15px;
+  width: 15px;
+  z-index: 2;
+  -webkit-transform: rotate(45deg);
+}
+
+.expandable-bubble-contents,
+.expandable-bubble-arrow {
+  background: white;
+}
+
+.expandable-bubble-shadow,
+.expandable-bubble-arrow {
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  -webkit-box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.expandable-bubble-shadow,
+.expandable-bubble-contents {
+  border-radius: 6px;
+  box-sizing: border-box;
+}
