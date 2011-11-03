@@ -397,5 +397,209 @@ function recenterToolbar_() {
   toolbar.style['left'] = toolbarX + 'px';
 }
 
+/**
+ * Query the Remoting Directory for the user's list of hosts.
+ *
+ * @return {void} Nothing.
+ */
+remoting.refreshHostList = function() {
+  // Fetch a new Access Token for the user, if necessary.
+  if (remoting.oauth2.needsNewAccessToken()) {
+    remoting.oauth2.refreshAccessToken(function(xhr) {
+        if (remoting.oauth2.needsNewAccessToken()) {
+          // Failed to get access token
+          remoting.debug.log('tryConnect: OAuth2 token fetch failed');
+          showConnectError_(remoting.ClientError.OAUTH_FETCH_FAILED);
+          return;
+        }
+        remoting.refreshHostList();
+      });
+  }
 
+  var headers = {
+    'Authorization': 'OAuth ' + remoting.oauth2.getAccessToken()
+  };
+
+  var xhr = remoting.xhr.get(
+      'https://www.googleapis.com/chromoting/v1/@me/hosts',
+      parseHostListResponse_,
+      '',
+      headers);
+}
+
+/**
+ * Handle the results of the host list request.  A success response will
+ * include a JSON-encoded list of host descriptions, which we display if we're
+ * able to successfully parse it.
+ *
+ * @param {XMLHttpRequest} xhr The XHR object for the host list request.
+ * @return {void} Nothing.
+ */
+function parseHostListResponse_(xhr) {
+  // Ignore host list responses if we're not on the Home screen. This mainly
+  // ensures that errors don't cause an unexpected mode switch.
+  if (remoting.currentMode != remoting.AppMode.HOME) {
+    return;
+  }
+
+  if (xhr.readyState != 4) {
+    return;
+  }
+
+  try {
+    if (xhr.status == 200) {
+      var parsed_response =
+          /** @type {{data: {items: Array}}} */ JSON.parse(xhr.responseText);
+      if (parsed_response.data && parsed_response.data.items) {
+        replaceHostList_(parsed_response.data.items);
+      }
+    } else {
+      // Some other error.  Log for now, pretty-print in future.
+      remoting.debug.log('Error: Bad status on host list query: ' +
+                  xhr.status + ' ' + xhr.statusText);
+      var errorResponse =
+          /** @type {{error: {code: *, message: *}}} */
+          JSON.parse(xhr.responseText);
+      if (errorResponse.error &&
+          errorResponse.error.code &&
+          errorResponse.error.message) {
+        remoting.debug.log('Error code ' + errorResponse.error.code);
+        remoting.debug.log('Error message ' + errorResponse.error.message);
+      } else {
+        remoting.debug.log('Error response: ' + xhr.responseText);
+      }
+
+      // If the error is unlikely to be recoverable then notify the user.
+      if (xhr.status >= 400 && xhr.status <= 499) {
+        // TODO(wez): We need to replace this with a more general showError_().
+        showConnectError_(remoting.ClientError.OTHER_ERROR);
+      }
+    }
+  } catch(er) {
+    // Error parsing response...
+    remoting.debug.log('Error: Error processing response: "' +
+                xhr.status + ' ' + xhr.statusText);
+    remoting.debug.log(xhr.responseText);
+  }
+}
+
+/**
+ * Cache of the latest host list and status information.
+ *
+ * @type {Array.<{hostName: string, hostId: string, status: string,
+ *                jabberId: string, publicKey: string}>}
+ *
+ */
+remoting.hostList_ = new Array();
+
+/**
+ * Refresh the host list display with up to date host details.
+ *
+ * @param {Array.<{hostName: string, hostId: string, status: string,
+ *                jabberId: string, publicKey: string}>} hostList
+ *     The new list of registered hosts.
+ * @return {void} Nothing.
+ */
+function replaceHostList_(hostList) {
+  var hostListDiv = document.getElementById('host-list-div');
+  var hostListTable = document.getElementById('host-list');
+
+  remoting.hostList_ = hostList;
+
+  // Clear the table before adding the host info.
+  hostListTable.innerHTML = '';
+
+  // Show/hide the div depending on whether there are hosts to list.
+  hostListDiv.hidden = (hostList.length == 0);
+
+  for (var i = 0; i < hostList.length; ++i) {
+    var host = hostList[i];
+    if (!host.hostName || !host.hostId || !host.status || !host.jabberId ||
+        !host.publicKey)
+      continue;
+    var hostEntry = document.createElement('tr');
+
+    var hostName = document.createElement('td');
+    hostName.setAttribute('class', 'mode-select-label');
+    hostName.appendChild(document.createTextNode(host.hostName));
+    hostEntry.appendChild(hostName);
+
+    var hostStatus = document.createElement('td');
+    if (host.status == 'ONLINE') {
+      var connectButton = document.createElement('button');
+      connectButton.setAttribute('class', 'mode-select-button');
+      connectButton.setAttribute('type', 'button');
+      connectButton.setAttribute('onclick',
+                                 'remoting.connectHost("'+host.hostId+'")');
+      connectButton.innerHTML =
+          chrome.i18n.getMessage(/*i18n-content*/'CONNECT_BUTTON');
+      hostStatus.appendChild(connectButton);
+    } else {
+      hostStatus.innerHTML = chrome.i18n.getMessage(/*i18n-content*/'OFFLINE');
+    }
+    hostEntry.appendChild(hostStatus);
+
+    hostListTable.appendChild(hostEntry);
+  }
+}
+
+/**
+ * Start a connection to the specified host, using the stored details.
+ *
+ * @param {string} hostId The Id of the host to connect to.
+ * @return {void} Nothing.
+ */
+remoting.connectHost = function(hostId) {
+  var hostList = remoting.hostList_;
+  for (var i = 0; i < hostList.length; ++i) {
+    var host = remoting.hostList_[i];
+    if (host.hostId != hostId)
+      continue;
+
+    remoting.hostJid = host.jabberId;
+    remoting.hostPublicKey = host.publicKey;
+    document.getElementById('connected-to').innerText = host.hostName;
+
+    remoting.debug.log('Connecting to host...');
+
+    if (!remoting.wcsLoader) {
+      remoting.wcsLoader = new remoting.WcsLoader();
+    }
+    /** @param {function(string):void} setToken The callback function. */
+    var callWithToken = function(setToken) {
+      remoting.oauth2.callWithToken(setToken);
+    };
+    remoting.wcsLoader.start(
+        remoting.oauth2.getAccessToken(),
+        callWithToken,
+        remoting.connectHostWithWcs);
+    break;
+  }
+}
+
+/**
+ * Continue making the connection to a host, once WCS has initialized.
+ *
+ * @return {void} Nothing.
+ */
+remoting.connectHostWithWcs = function() {
+  remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+
+  remoting.clientSession =
+  new remoting.ClientSession(
+      remoting.hostJid, remoting.hostPublicKey,
+      '', /** @type {string} */ (remoting.oauth2.getCachedEmail()),
+      onClientStateChange_);
+  /** @param {string} token The auth token. */
+  var createPluginAndConnect = function(token) {
+    remoting.clientSession.createPluginAndConnect(
+        document.getElementById('session-mode'),
+        token);
+  };
+
+  remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+  remoting.oauth2.callWithToken(createPluginAndConnect);
+}
+
+// Don't delete this!
 }());

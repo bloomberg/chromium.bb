@@ -67,6 +67,9 @@ remoting.setMode = function(mode) {
   } else {
     document.addEventListener('keydown', remoting.DebugLog.onKeydown, false);
   }
+  if (mode == remoting.AppMode.HOME) {
+    remoting.refreshHostList();
+  }
 };
 
 /**
