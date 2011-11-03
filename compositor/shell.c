@@ -1002,9 +1002,18 @@ bind_desktop_shell(struct wl_client *client,
 		   void *data, uint32_t version, uint32_t id)
 {
 	struct wl_shell *shell = data;
+	struct wl_resource *resource;
 
-	wl_client_add_object(client, &desktop_shell_interface,
-			     &desktop_shell_implementation, id, shell);
+	resource = wl_client_add_object(client, &desktop_shell_interface,
+					&desktop_shell_implementation,
+					id, shell);
+
+	if (client == shell->child.client)
+		return;
+
+	wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
+			       "permission to bind desktop_shell denied");
+	wl_resource_destroy(resource, 0);
 }
 
 int
