@@ -52,7 +52,7 @@ bool ReadData(HANDLE read_fd, HANDLE write_fd,
   thread.message_loop()->PostDelayedTask(
       FROM_HERE,
       NewRunnableFunction(UnblockPipe, write_fd, bytes_max, &unblocked),
-      TestTimeouts::action_timeout_ms());
+      45000);
 
   DWORD bytes_read = 0;
   while (bytes_read < bytes_max) {
@@ -160,7 +160,6 @@ bool TestServer::WaitToStart() {
   if (!ReadData(read_fd.Get(), write_fd.Get(), sizeof(server_data_len),
                 reinterpret_cast<uint8*>(&server_data_len))) {
     LOG(ERROR) << "Could not read server_data_len";
-    DebugBreakProcess(process_handle_);
     return false;
   }
   std::string server_data(server_data_len, '\0');
