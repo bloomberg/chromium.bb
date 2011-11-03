@@ -178,12 +178,11 @@ void BrowserMainLoop::EarlyInitialization() {
   for (size_t i = 0; i < parts_list_.size(); ++i)
     parts_list_[i]->PreEarlyInitialization();
 
-  // Start watching for jank during shutdown. It gets disarmed when
-
 #if defined(OS_WIN)
   net::EnsureWinsockInit();
 #endif
 
+#if !defined(USE_OPENSSL)
   // Use NSS for SSL by default.
   // The default client socket factory uses NSS for SSL by default on
   // Windows and Mac.
@@ -201,6 +200,7 @@ void BrowserMainLoop::EarlyInitialization() {
     // We want to be sure to init NSPR on the main thread.
     crypto::EnsureNSPRInit();
   }
+#endif  // !defined(USE_OPENSSL)
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   SetupSandbox(parsed_command_line_);
