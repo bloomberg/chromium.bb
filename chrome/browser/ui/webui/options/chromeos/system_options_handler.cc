@@ -126,7 +126,8 @@ void SystemOptionsHandler::Initialize() {
 
 void SystemOptionsHandler::TouchpadExists(bool* exists) {
   if (*exists)
-    web_ui_->CallJavascriptFunction("options.SystemOptions.showTapToClick");
+    web_ui_->CallJavascriptFunction(
+        "options.SystemOptions.showTouchpadControls");
   delete exists;
 }
 

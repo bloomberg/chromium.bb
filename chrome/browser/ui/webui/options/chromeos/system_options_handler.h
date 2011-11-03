@@ -38,10 +38,10 @@ class SystemOptionsHandler
   void DecreaseScreenBrightnessCallback(const base::ListValue* args);
   void IncreaseScreenBrightnessCallback(const base::ListValue* args);
 
+ private:
   // Callback for TouchpadHelper.
   void TouchpadExists(bool* exists);
 
- private:
   DISALLOW_COPY_AND_ASSIGN(SystemOptionsHandler);
 };
 

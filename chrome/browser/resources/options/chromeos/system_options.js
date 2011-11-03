@@ -179,10 +179,10 @@ cr.define('options', function() {
   };
 
   /**
-   * Enables the Tap-To-Click radio button when we detect a touchpad.
+   * Displays the Touchpad Controls section when we detect a touchpad.
    */
-  SystemOptions.showTapToClick = function() {
-    $('tap-to-click').hidden = false;
+  SystemOptions.showTouchpadControls = function() {
+    $('touchpad-controls').hidden = false;
   };
 
   // Export

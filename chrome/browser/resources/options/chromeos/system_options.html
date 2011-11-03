@@ -21,7 +21,7 @@
         </div>
       </div>
     </section>
-    <section>
+    <section id="touchpad-controls" hidden>
       <h3 i18n-content="screen"></h3>
       <div id="brightness-value">
         <span i18n-content="brightness"></span>
@@ -35,7 +35,7 @@
       <h3 i18n-content="touchpad"></h3>
       <div class="option-control-table">
         <span class="option-name" i18n-content="sensitivity"></span>
-	<div id="touchpad-value">
+	      <div id="touchpad-value">
           <div id="slider-control">
             <input id="sensitivity-range" type="range" min="1" max="5"
                 pref="settings.touchpad.sensitivity2" class="touch-slider">
@@ -46,7 +46,7 @@
             </div>
           </div>
         </div>
-        <div id="tap-to-click" class="checkbox" hidden>
+        <div id="tap-to-click" class="checkbox">
           <label>
             <input id="tap-to-click-check"
                 pref="settings.touchpad.enable_tap_to_click"
