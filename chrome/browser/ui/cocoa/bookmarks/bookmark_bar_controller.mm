@@ -2444,6 +2444,16 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)info {
+  // Only close the folder menu if the user dragged up past the BMB. If the user
+  // dragged to below the BMB, they might be trying to drop a link into the open
+  // folder menu.
+  // TODO(asvitkine): Need a way to close the menu if the user dragged below but
+  //                  not into the menu.
+  NSRect bounds = [[self view] bounds];
+  NSPoint origin = [[self view] convertPoint:bounds.origin toView:nil];
+  if ([info draggingLocation].y > origin.y + bounds.size.height)
+    [self closeFolderAndStopTrackingMenus];
+
   // NOT the same as a cancel --> we may have moved the mouse into the submenu.
   if (hoverButton_) {
     [NSObject cancelPreviousPerformRequestsWithTarget:[hoverButton_ target]];

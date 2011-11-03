@@ -165,6 +165,8 @@
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)info {
+  [controller_ draggingExited:info];
+
   // Regardless of the type of dragging which ended, we need to get rid of the
   // drop indicator if one was shown.
   if (dropIndicatorShown_) {
@@ -174,6 +176,8 @@
 }
 
 - (void)draggingEnded:(id<NSDraggingInfo>)info {
+  [controller_ draggingEnded:info];
+
   [[BookmarkButton draggedButton] setHidden:NO];
   if (dropIndicatorShown_) {
     dropIndicatorShown_ = NO;
