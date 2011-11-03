@@ -11,6 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/gl/scoped_make_current.h"
 #include "ui/gfx/size.h"
 
 namespace gfx {
@@ -31,6 +32,10 @@ class COMPOSITOR_EXPORT SharedResourcesGL : public SharedResources {
   static SharedResourcesGL* GetInstance();
 
   virtual bool MakeSharedContextCurrent();
+
+  // Creates an instance of ScopedMakeCurrent.
+  // Note: Caller is responsible for managing lifetime of returned pointer.
+  gfx::ScopedMakeCurrent* GetScopedMakeCurrent();
 
   // Creates a context that shares the resources hosted by this singleton.
   scoped_refptr<gfx::GLContext> CreateContext(gfx::GLSurface* surface);

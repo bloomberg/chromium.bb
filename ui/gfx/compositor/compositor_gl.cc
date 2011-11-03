@@ -349,6 +349,10 @@ bool SharedResourcesGL::MakeSharedContextCurrent() {
     return context_->MakeCurrent(surface_.get());
 }
 
+gfx::ScopedMakeCurrent* SharedResourcesGL::GetScopedMakeCurrent() {
+  return new gfx::ScopedMakeCurrent(context_.get(), surface_.get());
+}
+
 scoped_refptr<gfx::GLContext> SharedResourcesGL::CreateContext(
     gfx::GLSurface* surface) {
   if (initialized_)
@@ -374,7 +378,7 @@ TextureGL::~TextureGL() {
   if (texture_id_) {
     SharedResourcesGL* instance = SharedResourcesGL::GetInstance();
     DCHECK(instance);
-    instance->MakeSharedContextCurrent();
+    scoped_ptr<gfx::ScopedMakeCurrent> bind(instance->GetScopedMakeCurrent());
     glDeleteTextures(1, &texture_id_);
   }
 }
