@@ -397,8 +397,10 @@
 <p>
 Debugger API serves as an alternate transport for Chrome's
 <a href="http://code.google.com/chrome/devtools/docs/remote-debugging.html">
-remote debugging protocol</a>. Use debugger to attach to a tab, instrument its
-network interaction, debug JavaScript, mutate page's DOM and CSS, etc.
+remote debugging protocol</a>. Use <code>chrome.experimental.debugger</code>
+to attach to one or more tabs to instrument network interaction, debug
+JavaScript, mutate the DOM  and CSS, etc. Use the Debuggee tabId to target tabs
+with sendCommand and route events by <code>tabId</code> from onEvent callbacks. 
 </p>
 
 <p>
@@ -651,7 +653,7 @@ You can find samples of this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>If an error occurs while attaching to the target, the callback will be called with no arguments and <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
+          <dd>Called once the attach operation succeeds or fails. Callback receives no arguments. If the attach fails, <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -849,7 +851,7 @@ You can find samples of this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>If an error occurs while detaching from the target, the callback will be called with no arguments and <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
+          <dd>Called once the detach operation succeeds or fails. Callback receives no arguments. If the detach fails, <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

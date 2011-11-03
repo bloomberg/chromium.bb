@@ -5,8 +5,10 @@
 <p>
 Debugger API serves as an alternate transport for Chrome's
 <a href="http://code.google.com/chrome/devtools/docs/remote-debugging.html">
-remote debugging protocol</a>. Use debugger to attach to a tab, instrument its
-network interaction, debug JavaScript, mutate page's DOM and CSS, etc.
+remote debugging protocol</a>. Use <code>chrome.experimental.debugger</code>
+to attach to one or more tabs to instrument network interaction, debug
+JavaScript, mutate the DOM  and CSS, etc. Use the Debuggee tabId to target tabs
+with sendCommand and route events by <code>tabId</code> from onEvent callbacks. 
 </p>
 
 <p>

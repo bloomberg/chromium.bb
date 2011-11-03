@@ -8564,7 +8564,7 @@
             "name": "callback",
             "optional": true,
             "parameters": [],
-            "description": "If an error occurs while attaching to the target, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
+            "description": "Called once the attach operation succeeds or fails. Callback receives no arguments. If the attach fails, <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
           }
         ]
       },
@@ -8583,7 +8583,7 @@
             "name": "callback",
             "optional": true,
             "parameters": [],
-            "description": "If an error occurs while detaching from the target, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
+            "description": "Called once the detach operation succeeds or fails. Callback receives no arguments. If the detach fails, <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
           }
         ]
       },
