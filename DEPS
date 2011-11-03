@@ -286,6 +286,9 @@ deps = {
     (Var("sourceforge_url") % {"repo": "jsoncpp"}) +
         "/trunk/jsoncpp/src/lib_json@" + Var("jsoncpp_revision"),
 
+  "src/third_party/libyuv":
+    (Var("googlecode_url") % "libyuv") + "/trunk@49",
+
   "src/third_party/mozc/session":
     (Var("googlecode_url") % "mozc") + "/trunk/src/session@58",
 
