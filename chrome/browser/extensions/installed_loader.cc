@@ -19,6 +19,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/browser/user_metrics.h"
 
+using content::BrowserThread;
+
 namespace errors = extension_manifest_errors;
 
 namespace {

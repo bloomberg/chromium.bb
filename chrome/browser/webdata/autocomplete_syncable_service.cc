@@ -19,6 +19,8 @@
 #include "content/public/browser/notification_service.h"
 #include "net/base/escape.h"
 
+using content::BrowserThread;
+
 namespace {
 
 const char kAutofillEntryNamespaceTag[] = "autofill_entry|";

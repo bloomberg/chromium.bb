@@ -57,6 +57,7 @@
 #include "webkit/glue/form_field.h"
 
 using base::TimeTicks;
+using content::BrowserThread;
 using switches::kEnableAutofillFeedback;
 using webkit_glue::FormData;
 using webkit_glue::FormDataPredictions;

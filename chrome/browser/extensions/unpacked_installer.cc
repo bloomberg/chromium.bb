@@ -13,6 +13,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 
+using content::BrowserThread;
+
 namespace {
 
 // Manages an ExtensionInstallUI for a particular extension.

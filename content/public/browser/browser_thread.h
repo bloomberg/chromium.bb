@@ -251,8 +251,4 @@ class CONTENT_EXPORT DeprecatedBrowserThread : public BrowserThread {
 
 }  // namespace content
 
-// TODO(joi): Remove these ASAP.
-using content::BrowserThread;
-using content::DeprecatedBrowserThread;
-
 #endif  // CONTENT_PUBLIC_BROWSER_BROWSER_THREAD_H_

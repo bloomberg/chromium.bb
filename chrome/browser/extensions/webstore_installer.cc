@@ -30,6 +30,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 
+using content::BrowserThread;
+
 namespace {
 
 const char kInvalidIdError[] = "Invalid id";
