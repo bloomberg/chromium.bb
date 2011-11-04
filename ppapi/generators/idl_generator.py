@@ -12,7 +12,7 @@ from idl_option import GetOption, Option, ParseOptions
 GeneratorList = []
 
 Option('release', 'Which release to generate.', default='')
-Option('range', 'Which ranges in the form of MIN,MAX.', default='M13,M16')
+Option('range', 'Which ranges in the form of MIN,MAX.', default='start,end')
 
 
 #
@@ -66,6 +66,8 @@ class Generator(object):
     rangestr = GetOption('range')
     releasestr = GetOption('release')
 
+    print "Found releases: %s" % ast.releases
+
     # Check for a range option which over-rides a release option
     if not releasestr and rangestr:
       range_list = rangestr.split(',')
@@ -75,6 +77,13 @@ class Generator(object):
       else:
         vmin = range_list[0]
         vmax = range_list[1]
+
+        # Generate 'start' and 'end' represent first and last found.
+        if vmin == 'start':
+            vmin = ast.releases[0]
+        if vmax == 'end':
+            vmax = ast.releases[-1]
+
         vmin = ast.releases.index(vmin)
         vmax = ast.releases.index(vmax) + 1
         range = ast.releases[vmin:vmax]
