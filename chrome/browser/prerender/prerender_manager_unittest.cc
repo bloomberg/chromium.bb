@@ -8,7 +8,6 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"

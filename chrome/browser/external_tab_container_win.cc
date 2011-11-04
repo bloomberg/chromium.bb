@@ -38,7 +38,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/load_notification_details.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/tab_contents/navigation_details.h"

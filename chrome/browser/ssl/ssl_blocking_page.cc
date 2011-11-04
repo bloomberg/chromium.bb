@@ -14,7 +14,6 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "content/browser/cert_store.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/tab_contents/navigation_controller.h"

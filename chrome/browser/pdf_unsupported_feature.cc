@@ -21,7 +21,6 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/plugin_service.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/view_messages.h"

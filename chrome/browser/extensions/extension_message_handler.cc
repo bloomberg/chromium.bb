@@ -8,9 +8,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/renderer_host/render_process_host.h"
 
 ExtensionMessageHandler::ExtensionMessageHandler(
     RenderViewHost* render_view_host)
