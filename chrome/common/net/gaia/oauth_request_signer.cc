@@ -16,6 +16,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "crypto/hmac.h"
@@ -321,7 +322,7 @@ bool OAuthRequestSigner::Decode(const std::string& text,
       DCHECK(low >= 0 || low < kHexBase);
 
       char decoded = static_cast<char>(high * kHexBase + low);
-      DCHECK(!isalnum(decoded));
+      DCHECK(!(IsAsciiAlpha(decoded) || IsAsciiDigit(decoded)));
       DCHECK(!(decoded && strchr("-._~", decoded)));
       accumulator += decoded;
     } else {
@@ -339,7 +340,7 @@ std::string OAuthRequestSigner::Encode(const std::string& text) {
   std::string::const_iterator limit;
   for (limit = text.end(), cursor = text.begin(); cursor != limit; ++cursor) {
     char character = *cursor;
-    if (isalnum(character)) {
+    if (IsAsciiAlpha(character) || IsAsciiDigit(character)) {
       result += character;
     } else {
       switch (character) {
