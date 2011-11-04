@@ -49,7 +49,7 @@ var BrowserBridge = (function() {
     //--------------------------------------------------------------------------
 
     receivedData: function(data) {
-      g_mainView.setData(data);
+      g_mainView.addData(data);
     },
   };
 
@@ -115,7 +115,9 @@ var MainView = (function() {
   var KEY_LINE_NUMBER = 'location.line_number';
   var KEY_COUNT = 'death_data.count';
   var KEY_QUEUE_TIME = 'death_data.queue_ms';
+  var KEY_MAX_QUEUE_TIME = 'death_data.queue_ms_max';
   var KEY_RUN_TIME = 'death_data.run_ms';
+  var KEY_MAX_RUN_TIME = 'death_data.run_ms_max';
 
   // The following are computed properties which we add to each row. They
   // are not present in the original JSON stream.
@@ -219,6 +221,30 @@ var MainView = (function() {
     };
   })();
 
+  /**
+   * This aggregator finds the maximum for a numeric field.
+   */
+  var MaxAggregator = (function() {
+    function Aggregator(key) {
+      this.key_ = key;
+      this.max_ = -Infinity;
+    }
+
+    Aggregator.prototype = {
+      consume: function(e) {
+        this.max_ = Math.max(this.max_, getPropertyByPath(e, this.key_));
+      },
+
+      getValueAsText: function() {
+        return formatNumberAsText(this.max_);
+      },
+    };
+
+    return {
+      create: function(key) { return new Aggregator(key); }
+    };
+  })();
+
   // --------------------------------------------------------------------------
   // Key properties
   // --------------------------------------------------------------------------
@@ -282,13 +308,19 @@ var MainView = (function() {
   };
 
   KEY_PROPERTIES[KEY_QUEUE_TIME] = {
-    name: 'Queue time',
+    name: 'Total queue time',
     type: 'number',
     aggregator: SumAggregator,
   };
 
+  KEY_PROPERTIES[KEY_MAX_QUEUE_TIME] = {
+    name: 'Max queue time',
+    type: 'number',
+    aggregator: MaxAggregator,
+  };
+
   KEY_PROPERTIES[KEY_RUN_TIME] = {
-    name: 'Run time',
+    name: 'Total run time',
     type: 'number',
     aggregator: SumAggregator,
   };
@@ -297,6 +329,12 @@ var MainView = (function() {
     name: 'Avg run time',
     type: 'number',
     aggregator: AvgAggregator.create(KEY_RUN_TIME, KEY_COUNT),
+  };
+
+  KEY_PROPERTIES[KEY_MAX_RUN_TIME] = {
+    name: 'Max run time',
+    type: 'number',
+    aggregator: MaxAggregator,
   };
 
   KEY_PROPERTIES[KEY_AVG_QUEUE_TIME] = {
@@ -329,8 +367,10 @@ var MainView = (function() {
     KEY_COUNT,
     KEY_RUN_TIME,
     KEY_AVG_RUN_TIME,
+    KEY_MAX_RUN_TIME,
     KEY_QUEUE_TIME,
     KEY_AVG_QUEUE_TIME,
+    KEY_MAX_QUEUE_TIME,
     KEY_BIRTH_THREAD,
     KEY_DEATH_THREAD,
     KEY_FUNCTION_NAME,
@@ -850,8 +890,20 @@ var MainView = (function() {
   }
 
   MainView.prototype = {
-    setData: function(data) {
+    addData: function(data) {
+      if (this.allData_) {
+        // TODO(eroman): once the browser is calling receivedData() multiple
+        // times, will need to concatenate it. For now disregard any call after
+        // the first. This way when the C++ side change lands to call multiple
+        // times, the javascript will keep working until I upgrade it.
+        return;
+      }
       this.allData_ = data;
+      this.redrawData_();
+    },
+
+    redrawData_: function() {
+      var data = this.allData_;
 
       // Figure out what columns to include, based on the selected checkboxes.
       var columns = [];
@@ -997,21 +1049,21 @@ var MainView = (function() {
     onChangedGrouping_: function(select, i) {
       updateKeyListFromDropdown(this.currentGroupingKeys_, i, select);
       this.fillGroupingDropdowns_();
-      this.setData(this.allData_);
+      this.redrawData_();
     },
 
     onChangedSorting_: function(select, i) {
       updateKeyListFromDropdown(this.currentSortKeys_, i, select);
       this.fillSortingDropdowns_();
-      this.setData(this.allData_);
+      this.redrawData_();
     },
 
     onSelectCheckboxChanged_: function() {
-      this.setData(this.allData_);
+      this.redrawData_();
     },
 
     onChangedFilter_: function() {
-      this.setData(this.allData_);
+      this.redrawData_();
     },
 
     getSortingFunction_: function() {
