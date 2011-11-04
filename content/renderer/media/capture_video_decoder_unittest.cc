@@ -12,6 +12,7 @@
 #include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
 #include "media/base/pipeline_status.h"
+#include "media/video/capture/video_capture_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -19,6 +20,9 @@ using ::testing::AnyNumber;
 using ::testing::Return;
 using ::testing::StrictMock;
 
+static const int kWidth = 176;
+static const int kHeight = 144;
+static const int kFPS = 30;
 static const media::VideoCaptureSessionId kVideoStreamId = 1;
 
 ACTION_P3(CreateDataBufferFromCapture, decoder, vc_impl, data_buffer_number) {
@@ -85,9 +89,9 @@ class CaptureVideoDecoderTest : public ::testing::Test {
         base::MessageLoopProxy::current().get();
     vc_manager_ = new MockVideoCaptureImplManager();
     media::VideoCapture::VideoCaptureCapability capability;
-    capability.width = 176;
-    capability.height = 144;
-    capability.max_fps = 30;
+    capability.width = kWidth;
+    capability.height = kHeight;
+    capability.max_fps = kFPS;
     capability.expected_capture_delay = 0;
     capability.raw_type = media::VideoFrame::I420;
     capability.interlaced = false;
@@ -100,6 +104,9 @@ class CaptureVideoDecoderTest : public ::testing::Test {
 
     read_cb_ = base::Bind(&CaptureVideoDecoderTest::FrameReady,
                           base::Unretained(this));
+
+    vc_impl_.reset(new MockVideoCaptureImpl(
+        kVideoStreamId, message_loop_proxy_, new VideoCaptureMessageFilter()));
   }
 
   virtual ~CaptureVideoDecoderTest() {
@@ -111,11 +118,60 @@ class CaptureVideoDecoderTest : public ::testing::Test {
                       base::Unretained(&statistics_callback_object_));
   }
 
+  void Initialize() {
+    EXPECT_CALL(*vc_manager_, AddDevice(_, _))
+        .WillOnce(Return(vc_impl_.get()));
+    decoder_->Initialize(NULL,
+                         media::NewExpectedClosure(),
+                         NewStatisticsCallback());
+    message_loop_->RunAllPending();
+  }
+
+  void Start() {
+    // Issue a read.
+    EXPECT_CALL(*this, FrameReady(_));
+    decoder_->Read(read_cb_);
+
+    // Issue a seek.
+    int buffer_count = 1;
+    EXPECT_CALL(*vc_impl_, StartCapture(capture_client(), _))
+        .Times(1)
+        .WillOnce(CreateDataBufferFromCapture(capture_client(),
+                                              vc_impl_.get(),
+                                              buffer_count));
+    EXPECT_CALL(*vc_impl_, FeedBuffer(_))
+        .Times(buffer_count)
+        .WillRepeatedly(DeleteDataBuffer());
+    decoder_->Seek(base::TimeDelta(),
+                   media::NewExpectedStatusCB(media::PIPELINE_OK));
+    message_loop_->RunAllPending();
+  }
+
+  void Play() {
+    decoder_->Play(media::NewExpectedClosure());
+    message_loop_->RunAllPending();
+  }
+
+  void Stop() {
+    EXPECT_CALL(*vc_impl_, StopCapture(capture_client()))
+        .Times(1)
+        .WillOnce(CaptureStopped(capture_client(), vc_impl_.get()));
+    EXPECT_CALL(*vc_manager_, RemoveDevice(_, _))
+        .WillOnce(Return());
+    decoder_->Stop(media::NewExpectedClosure());
+    message_loop_->RunAllPending();
+  }
+
+  media::VideoCapture::EventHandler* capture_client() {
+    return static_cast<media::VideoCapture::EventHandler*>(decoder_);
+  }
+
   MOCK_METHOD1(FrameReady, void(scoped_refptr<media::VideoFrame>));
 
   // Fixture members.
   scoped_refptr<CaptureVideoDecoder> decoder_;
   scoped_refptr<MockVideoCaptureImplManager> vc_manager_;
+  scoped_ptr<MockVideoCaptureImpl> vc_impl_;
   media::MockStatisticsCallback statistics_callback_object_;
   StrictMock<media::MockFilterHost> host_;
   scoped_ptr<MessageLoop> message_loop_;
@@ -126,42 +182,44 @@ class CaptureVideoDecoderTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CaptureVideoDecoderTest);
 };
 
+TEST_F(CaptureVideoDecoderTest, Initialize) {
+  // Test basic initialize and teardown.
+  Initialize();
+
+  // Natural size should be initialized to default capability.
+  EXPECT_EQ(kWidth, decoder_->natural_size().width());
+  EXPECT_EQ(kHeight, decoder_->natural_size().height());
+
+  Stop();
+}
+
 TEST_F(CaptureVideoDecoderTest, Play) {
-  int data_buffer_number = 1;
-  media::VideoCapture::EventHandler* capture_client =
-      static_cast<media::VideoCapture::EventHandler*>(decoder_);
-  scoped_ptr<MockVideoCaptureImpl> vc_impl(
-      new MockVideoCaptureImpl(kVideoStreamId,
-                               message_loop_proxy_,
-                               new VideoCaptureMessageFilter()));
+  // Test basic initialize, play, and teardown sequence.
+  Initialize();
+  Start();
+  Play();
+  Stop();
+}
 
-  EXPECT_CALL(*vc_manager_, AddDevice(_, _))
-      .WillOnce(Return(vc_impl.get()));
-  decoder_->Initialize(NULL,
-                       media::NewExpectedClosure(),
-                       NewStatisticsCallback());
+TEST_F(CaptureVideoDecoderTest, OnDeviceInfoReceived) {
+  // Test that natural size gets updated as device information is sent.
+  Initialize();
+  Start();
+
+  gfx::Size expected_size(kWidth * 2, kHeight * 2);
+
+  media::VideoCaptureParams params;
+  params.width = expected_size.width();
+  params.height = expected_size.height();
+  params.frame_per_second = kFPS;
+  params.session_id = kVideoStreamId;
+
+  EXPECT_CALL(host_, SetNaturalVideoSize(expected_size));
+  decoder_->OnDeviceInfoReceived(vc_impl_.get(), params);
   message_loop_->RunAllPending();
 
-  EXPECT_CALL(*this, FrameReady(_));
-  decoder_->Read(read_cb_);
+  EXPECT_EQ(expected_size.width(), decoder_->natural_size().width());
+  EXPECT_EQ(expected_size.height(), decoder_->natural_size().height());
 
-  EXPECT_CALL(*vc_impl, StartCapture(capture_client, _))
-      .Times(1)
-      .WillOnce(CreateDataBufferFromCapture(capture_client, vc_impl.get(),
-                                            data_buffer_number));
-  EXPECT_CALL(*vc_impl, FeedBuffer(_))
-      .Times(data_buffer_number)
-      .WillRepeatedly(DeleteDataBuffer());
-  decoder_->Seek(base::TimeDelta(),
-                 media::NewExpectedStatusCB(media::PIPELINE_OK));
-  decoder_->Play(media::NewExpectedClosure());
-  message_loop_->RunAllPending();
-
-  EXPECT_CALL(*vc_impl, StopCapture(capture_client))
-      .Times(1)
-      .WillOnce(CaptureStopped(capture_client, vc_impl.get()));
-  EXPECT_CALL(*vc_manager_, RemoveDevice(_, _))
-      .WillOnce(Return());
-  decoder_->Stop(media::NewExpectedClosure());
-  message_loop_->RunAllPending();
+  Stop();
 }

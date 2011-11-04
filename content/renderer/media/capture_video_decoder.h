@@ -86,6 +86,9 @@ class CONTENT_EXPORT CaptureVideoDecoder
   void OnBufferReadyOnDecoderThread(
       media::VideoCapture* capture,
       scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf);
+  void OnDeviceInfoReceivedOnDecoderThread(
+      media::VideoCapture* capture,
+      const media::VideoCaptureParams& device_info);
 
   // Delivers the frame to |read_cb_| and resets the callback.
   void DeliverFrame(const scoped_refptr<media::VideoFrame>& video_frame);

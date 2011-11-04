@@ -119,14 +119,17 @@ void CaptureVideoDecoder::OnBufferReady(
 void CaptureVideoDecoder::OnDeviceInfoReceived(
     media::VideoCapture* capture,
     const media::VideoCaptureParams& device_info) {
-  NOTIMPLEMENTED();
+  message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&CaptureVideoDecoder::OnDeviceInfoReceivedOnDecoderThread,
+                 this, capture, device_info));
 }
 
 void CaptureVideoDecoder::InitializeOnDecoderThread(
     media::DemuxerStream* demuxer_stream,
     const base::Closure& filter_callback,
     const media::StatisticsCallback& stat_callback) {
-  VLOG(1) << "InitializeOnDecoderThread.";
+  DVLOG(1) << "InitializeOnDecoderThread";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
   capture_engine_ = vc_manager_->AddDevice(video_stream_id_, this);
@@ -143,20 +146,20 @@ void CaptureVideoDecoder::ReadOnDecoderThread(const ReadCB& callback) {
 }
 
 void CaptureVideoDecoder::PlayOnDecoderThread(const base::Closure& callback) {
-  VLOG(1) << "PlayOnDecoderThread.";
+  DVLOG(1) << "PlayOnDecoderThread";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   callback.Run();
 }
 
 void CaptureVideoDecoder::PauseOnDecoderThread(const base::Closure& callback) {
-  VLOG(1) << "PauseOnDecoderThread.";
+  DVLOG(1) << "PauseOnDecoderThread";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   state_ = kPaused;
   media::VideoDecoder::Pause(callback);
 }
 
 void CaptureVideoDecoder::StopOnDecoderThread(const base::Closure& callback) {
-  VLOG(1) << "StopOnDecoderThread.";
+  DVLOG(1) << "StopOnDecoderThread";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   pending_stop_cb_ = callback;
   state_ = kStopped;
@@ -165,7 +168,7 @@ void CaptureVideoDecoder::StopOnDecoderThread(const base::Closure& callback) {
 
 void CaptureVideoDecoder::SeekOnDecoderThread(base::TimeDelta time,
                                               const media::FilterStatusCB& cb) {
-  VLOG(1) << "SeekOnDecoderThread.";
+  DVLOG(1) << "SeekOnDecoderThread";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
   cb.Run(media::PIPELINE_OK);
@@ -175,11 +178,22 @@ void CaptureVideoDecoder::SeekOnDecoderThread(base::TimeDelta time,
 
 void CaptureVideoDecoder::OnStoppedOnDecoderThread(
     media::VideoCapture* capture) {
-  VLOG(1) << "OnStoppedOnDecoderThread.";
+  DVLOG(1) << "OnStoppedOnDecoderThread";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   if (!pending_stop_cb_.is_null())
     media::ResetAndRunCB(&pending_stop_cb_);
   vc_manager_->RemoveDevice(video_stream_id_, this);
+}
+
+void CaptureVideoDecoder::OnDeviceInfoReceivedOnDecoderThread(
+    media::VideoCapture* capture,
+    const media::VideoCaptureParams& device_info) {
+  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+  if (device_info.width != natural_size_.width() ||
+      device_info.height != natural_size_.height()) {
+    natural_size_.SetSize(device_info.width, device_info.height);
+    host()->SetNaturalVideoSize(natural_size_);
+  }
 }
 
 void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
@@ -192,9 +206,11 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
     return;
   }
 
-  if (buf->width != capability_.width || buf->height != capability_.height) {
-    capability_.width = buf->width;
-    capability_.height = buf->height;
+  // TODO(wjia): should we always expect device to send device info before
+  // any buffer, and buffers should have dimension stated in device info?
+  // Or should we be flexible as in following code?
+  if (buf->width != natural_size_.width() ||
+      buf->height != natural_size_.height()) {
     natural_size_.SetSize(buf->width, buf->height);
     host()->SetNaturalVideoSize(natural_size_);
   }
@@ -211,13 +227,13 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
 
   uint8* buffer = buf->memory_pointer;
 
-  // Assume YV12 format.
-  // TODO(vrk): This DCHECK fails in content_unittests ... it should not!
-  // DCHECK(capability_.raw_type == media::VideoFrame::YV12);
-  int y_width = capability_.width;
-  int y_height = capability_.height;
-  int uv_width = capability_.width / 2;
-  int uv_height = capability_.height / 2;  // YV12 format.
+  // Assume YV12 format. Note that camera gives YUV and media pipeline video
+  // renderer asks for YVU. The following code did the conversion.
+  DCHECK_EQ(capability_.raw_type, media::VideoFrame::I420);
+  int y_width = buf->width;
+  int y_height = buf->height;
+  int uv_width = buf->width / 2;
+  int uv_height = buf->height / 2;  // YV12 format.
   CopyYPlane(buffer, y_width, y_height, video_frame);
   buffer += y_width * y_height;
   CopyUPlane(buffer, uv_width, uv_height, video_frame);
