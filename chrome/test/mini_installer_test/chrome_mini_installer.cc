@@ -663,20 +663,14 @@ FilePath ChromeMiniInstaller::GetStartMenuShortcutPath() {
   return path_name;
 }
 
-// Returns Chrome pv registry key value
-bool ChromeMiniInstaller::GetChromeVersionFromRegistry(
-    std::string* build_key_value) {
+bool ChromeMiniInstaller::GetChromeVersionFromRegistry(std::string* value) {
   BrowserDistribution* dist = GetCurrentBrowserDistribution();
-  RegKey key(GetRootRegistryKey(), dist->GetVersionKey().c_str(), KEY_READ);
-  std::wstring value;
-  LONG result = key.ReadValue(L"pv", &value);
-  if (result != ERROR_SUCCESS) {
-    LOG(WARNING) << "Registry read for Chrome version error: " << result;
+  scoped_ptr<Version> version(
+      InstallUtil::GetChromeVersion(dist, system_install_));
+  if (!version.get())
     return false;
-  }
-  *build_key_value = WideToASCII(value);
-  LOG(INFO) << "Build key value is " << build_key_value;
-  return true;
+  *value = version->GetString();
+  return !value->empty();
 }
 
 // Get HKEY based on install type.

@@ -104,7 +104,7 @@ class ChromeMiniInstaller {
   HKEY GetRootRegistryKey();
 
   // Returns Chrome pv registry key value.
-  bool GetChromeVersionFromRegistry(std::string* reg_key_value);
+  bool GetChromeVersionFromRegistry(std::string* value);
 
   // This method gets the shortcut path from start menu based on install type.
   FilePath GetStartMenuShortcutPath();
