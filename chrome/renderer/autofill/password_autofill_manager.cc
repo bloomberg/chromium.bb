@@ -405,6 +405,10 @@ bool PasswordAutofillManager::InputElementClicked(
   return false;
 }
 
+bool PasswordAutofillManager::InputElementLostFocus() {
+  return false;
+}
+
 void PasswordAutofillManager::OnFillPasswordForm(
     const webkit_glue::PasswordFormFillData& form_data) {
   FormElementsList forms;

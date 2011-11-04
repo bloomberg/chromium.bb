@@ -123,6 +123,10 @@ bool AutofillAgent::InputElementClicked(const WebInputElement& element,
   return false;
 }
 
+bool AutofillAgent::InputElementLostFocus() {
+  return false;
+}
+
 void AutofillAgent::didAcceptAutofillSuggestion(const WebNode& node,
                                                 const WebString& value,
                                                 const WebString& label,

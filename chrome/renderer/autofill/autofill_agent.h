@@ -68,6 +68,7 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual bool InputElementClicked(const WebKit::WebInputElement& element,
                                    bool was_focused,
                                    bool is_focused) OVERRIDE;
+  virtual bool InputElementLostFocus() OVERRIDE;
 
   // WebKit::WebAutofillClient:
   virtual void didAcceptAutofillSuggestion(const WebKit::WebNode& node,

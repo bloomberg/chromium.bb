@@ -82,6 +82,9 @@ class RenderViewTest : public testing::Test {
   // Sends one native key event over IPC.
   void SendNativeKeyEvent(const NativeWebKeyboardEvent& key_event);
 
+  // Send a raw keyboard event to the renderer.
+  void SendWebKeyboardEvent(const WebKit::WebKeyboardEvent& key_event);
+
   // Returns the bounds (coordinates and size) of the element with id
   // |element_id|.  Returns an empty rect if such an element was not found.
   gfx::Rect GetElementBounds(const std::string& element_id);

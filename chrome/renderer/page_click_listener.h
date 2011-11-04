@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,12 @@ class PageClickListener {
   virtual bool InputElementClicked(const WebKit::WebInputElement& element,
                                    bool was_focused,
                                    bool is_focused) = 0;
+
+  // If the previously focused element was an input field, listeners are
+  // informed that the text field has lost its focus.
+  // If this method returns true, the notification will not be propagated to
+  // other listeners.
+  virtual bool InputElementLostFocus() = 0;
 
  protected:
   virtual ~PageClickListener() {}

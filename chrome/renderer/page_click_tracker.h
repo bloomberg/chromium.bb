@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,11 @@ class PageClickTracker : public content::RenderViewObserver,
 
   // WebKit::WebDOMEventListener implementation.
   virtual void handleEvent(const WebKit::WebDOMEvent& event);
+
+  // Checks to see if a text field is losing focus and inform listeners if
+  // it is.
+  void HandleTextFieldMaybeLosingFocus(
+      const WebKit::WebNode& newly_clicked_node);
 
   // The last node that was clicked and had focus.
   WebKit::WebNode last_node_clicked_;
