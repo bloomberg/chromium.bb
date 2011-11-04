@@ -16,17 +16,17 @@ TEST(StringOrdinalTest, IsValid) {
 }
 
 TEST(StringOrdinalTest, LessThan) {
-  StringOrdinal small("b");
-  StringOrdinal middle("n");
-  StringOrdinal big("z");
+  StringOrdinal small_value("b");
+  StringOrdinal middle_value("n");
+  StringOrdinal big_value("z");
 
-  EXPECT_TRUE(small.LessThan(middle));
-  EXPECT_TRUE(small.LessThan(big));
-  EXPECT_TRUE(middle.LessThan(big));
+  EXPECT_TRUE(small_value.LessThan(middle_value));
+  EXPECT_TRUE(small_value.LessThan(big_value));
+  EXPECT_TRUE(middle_value.LessThan(big_value));
 
-  EXPECT_FALSE(big.LessThan(small));
-  EXPECT_FALSE(big.LessThan(middle));
-  EXPECT_FALSE(middle.LessThan(small));
+  EXPECT_FALSE(big_value.LessThan(small_value));
+  EXPECT_FALSE(big_value.LessThan(middle_value));
+  EXPECT_FALSE(middle_value.LessThan(small_value));
 }
 
 // Tests the CreateBetween StringOrdinal function by calling
