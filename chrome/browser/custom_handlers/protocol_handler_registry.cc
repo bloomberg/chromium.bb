@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -124,7 +125,7 @@ void ProtocolHandlerRegistry::Enable() {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(this, &ProtocolHandlerRegistry::EnableIO));
+      base::Bind(&ProtocolHandlerRegistry::EnableIO, this));
   ProtocolHandlerMap::const_iterator p;
   for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
     delegate_->RegisterExternalHandler(p->first);
@@ -142,7 +143,7 @@ void ProtocolHandlerRegistry::Disable() {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(this, &ProtocolHandlerRegistry::DisableIO));
+      base::Bind(&ProtocolHandlerRegistry::DisableIO, this));
   ProtocolHandlerMap::const_iterator p;
   for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
     delegate_->DeregisterExternalHandler(p->first);
@@ -203,8 +204,8 @@ void ProtocolHandlerRegistry::Load() {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        NewRunnableMethod(this, enabled_ ? &ProtocolHandlerRegistry::EnableIO :
-                          &ProtocolHandlerRegistry::DisableIO));
+        base::Bind(enabled_ ? &ProtocolHandlerRegistry::EnableIO :
+                   &ProtocolHandlerRegistry::DisableIO, this));
   }
   std::vector<const DictionaryValue*> registered_handlers =
       GetHandlersFromPref(prefs::kRegisteredProtocolHandlers);
@@ -372,8 +373,8 @@ void ProtocolHandlerRegistry::RemoveHandler(
     } else {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(this, &ProtocolHandlerRegistry::ClearDefaultIO,
-                            q->second.protocol()));
+          base::Bind(&ProtocolHandlerRegistry::ClearDefaultIO, this,
+                     q->second.protocol()));
       default_handlers_.erase(q);
     }
   }
@@ -530,7 +531,7 @@ void ProtocolHandlerRegistry::SetDefault(const ProtocolHandler& handler) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(this, &ProtocolHandlerRegistry::SetDefaultIO, handler));
+      base::Bind(&ProtocolHandlerRegistry::SetDefaultIO, this, handler));
 }
 
 void ProtocolHandlerRegistry::ClearDefault(const std::string& scheme) {
@@ -539,8 +540,7 @@ void ProtocolHandlerRegistry::ClearDefault(const std::string& scheme) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &ProtocolHandlerRegistry::ClearDefaultIO, scheme));
+      base::Bind(&ProtocolHandlerRegistry::ClearDefaultIO, this, scheme));
   Save();
   NotifyChanged();
 }

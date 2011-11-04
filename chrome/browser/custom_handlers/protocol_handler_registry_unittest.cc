@@ -651,7 +651,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestMaybeCreateTaskWorksFromIOThread) {
   GURL url("mailto:someone@something.com");
   scoped_refptr<ProtocolHandlerRegistry> r(registry());
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          NewRunnableFunction(MakeRequest, url, r));
+                          base::Bind(MakeRequest, url, r));
   MessageLoop::current()->Run();
 }
 
@@ -670,7 +670,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestIsHandledProtocolWorksOnIOThread) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableFunction(CheckIsHandled, scheme, true, r));
+      base::Bind(CheckIsHandled, scheme, true, r));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestRemovingDefaultFallsBackToOldDefault) {
@@ -719,7 +719,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestClearDefaultGetsPropagatedToIO) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableFunction(CheckIsHandled, scheme, false, r));
+      base::Bind(CheckIsHandled, scheme, false, r));
 }
 
 static void QuitUILoop() {
@@ -731,7 +731,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestLoadEnabledGetsPropogatedToIO) {
   registry()->Disable();
   ReloadProtocolHandlerRegistry();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          NewRunnableFunction(QuitUILoop));
+                          base::Bind(QuitUILoop));
   MessageLoop::current()->Run();
   ASSERT_FALSE(enabled_io());
 }
