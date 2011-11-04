@@ -125,33 +125,40 @@ static NSString* NSWritingDirectionAttributeName = @"NSWritingDirection";
   // Set up the button cell, converting to NSView coordinates. The menu is
   // positioned such that the currently selected menu item appears over the
   // popup button, which is the expected Mac popup menu behavior.
-  NSPopUpButtonCell* button = [[NSPopUpButtonCell alloc] initTextCell:@""
-                                                            pullsDown:NO];
-  [button autorelease];
-  [button setMenu:menu_];
+  scoped_nsobject<NSPopUpButtonCell>
+      cell([[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:NO]);
+  [cell setMenu:menu_];
   // We use selectItemWithTag below so if the index is out-of-bounds nothing
   // bad happens.
-  [button selectItemWithTag:index];
+  [cell selectItemWithTag:index];
 
   if (rightAligned_ &&
-      [button respondsToSelector:@selector(setUserInterfaceLayoutDirection:)]) {
-    [button setUserInterfaceLayoutDirection:
+      [cell respondsToSelector:@selector(setUserInterfaceLayoutDirection:)]) {
+    [cell setUserInterfaceLayoutDirection:
         NSUserInterfaceLayoutDirectionRightToLeft];
   }
 
-  // Create a dummy view to associate the popup with, since the OS will use
-  // that view for positioning the menu.
-  NSView* dummyView = [[[NSView alloc] initWithFrame:bounds] autorelease];
+  // When popping up a menu near the Dock, Cocoa restricts the menu
+  // size to not overlap the Dock, with a scroll arrow.  Below a
+  // certain point this doesn't work.  At that point the menu is
+  // popped up above the element, so that the current item can be
+  // selected without mouse-tracking selecting a different item
+  // immediately.
+  //
+  // Unfortunately, instead of popping up above the passed |bounds|,
+  // it pops up above the bounds of the view passed to inView:.  Use a
+  // dummy view to fake this out.
+  scoped_nsobject<NSView> dummyView([[NSView alloc] initWithFrame:bounds]);
   [view addSubview:dummyView];
-  NSRect dummyBounds = [dummyView convertRect:bounds fromView:view];
 
   // Display the menu, and set a flag if a menu item was chosen.
-  [button performClickWithFrame:dummyBounds inView:dummyView];
-
-  if ([self menuItemWasChosen])
-    index_ = [button indexOfSelectedItem];
+  [cell attachPopUpWithFrame:[dummyView bounds] inView:dummyView];
+  [cell performClickWithFrame:[dummyView bounds] inView:dummyView];
 
   [dummyView removeFromSuperview];
+
+  if ([self menuItemWasChosen])
+    index_ = [cell indexOfSelectedItem];
 }
 
 - (int)indexOfSelectedItem {
