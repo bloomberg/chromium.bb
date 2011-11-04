@@ -1092,8 +1092,8 @@ class WindowObserverTest : public WindowTest,
       : added_count_(0),
         removed_count_(0),
         destroyed_count_(0),
-        old_property_value_(NULL),
-        new_property_value_(NULL) {
+        old_property_value_(0),
+        new_property_value_(0) {
   }
 
   virtual ~WindowObserverTest() {}
@@ -1125,13 +1125,13 @@ class WindowObserverTest : public WindowTest,
   // OnPropertyChanged callback.
   std::string PropertyChangeInfoAndClear() {
     std::string result(
-        base::StringPrintf("name=%s old=%p new=%p",
+        base::StringPrintf("name=%s old=%ld new=%ld",
                            property_name_.c_str(),
                            old_property_value_,
                            new_property_value_));
     property_name_.clear();
-    old_property_value_ = NULL;
-    new_property_value_ = NULL;
+    old_property_value_ = 0;
+    new_property_value_ = 0;
     return result;
   }
 
@@ -1159,8 +1159,8 @@ class WindowObserverTest : public WindowTest,
                                  const char* name,
                                  void* old) OVERRIDE {
     property_name_ = std::string(name);
-    old_property_value_ = old;
-    new_property_value_ = window->GetProperty(name);
+    old_property_value_ = reinterpret_cast<intptr_t>(old);
+    new_property_value_ = reinterpret_cast<intptr_t>(window->GetProperty(name));
   }
 
   int added_count_;
@@ -1168,8 +1168,8 @@ class WindowObserverTest : public WindowTest,
   int destroyed_count_;
   scoped_ptr<VisibilityInfo> visibility_info_;
   std::string property_name_;
-  void* old_property_value_;
-  void* new_property_value_;
+  intptr_t old_property_value_;
+  intptr_t new_property_value_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowObserverTest);
 };
@@ -1259,16 +1259,20 @@ TEST_F(WindowObserverTest, WindowDestroyed) {
 TEST_F(WindowObserverTest, PropertyChanged) {
   // Setting property should fire a property change notification.
   scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  const char* key = "test";
+
   w1->AddObserver(this);
-  w1->SetIntProperty("test", 1);
-  EXPECT_EQ("name=test old=(nil) new=0x1", PropertyChangeInfoAndClear());
-  w1->SetIntProperty("test", 2);
-  EXPECT_EQ("name=test old=0x1 new=0x2", PropertyChangeInfoAndClear());
-  w1->SetProperty("test", NULL);
-  EXPECT_EQ("name=test old=0x2 new=(nil)", PropertyChangeInfoAndClear());
+  w1->SetIntProperty(key, 1);
+  EXPECT_EQ("name=test old=0 new=1", PropertyChangeInfoAndClear());
+  w1->SetIntProperty(key, 2);
+  EXPECT_EQ(2, w1->GetIntProperty(key));
+  EXPECT_EQ(reinterpret_cast<void*>(2), w1->GetProperty(key));
+  EXPECT_EQ("name=test old=1 new=2", PropertyChangeInfoAndClear());
+  w1->SetProperty(key, NULL);
+  EXPECT_EQ("name=test old=2 new=0", PropertyChangeInfoAndClear());
 
   // Sanity check to see if |PropertyChangeInfoAndClear| really clears.
-  EXPECT_EQ("name= old=(nil) new=(nil)", PropertyChangeInfoAndClear());
+  EXPECT_EQ("name= old=0 new=0", PropertyChangeInfoAndClear());
 }
 
 class DesktopObserverTest : public WindowTest,
