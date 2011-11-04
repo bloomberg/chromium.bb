@@ -6,12 +6,10 @@
 #define CHROME_BROWSER_UI_VIEWS_JS_MODAL_DIALOG_VIEWS_H_
 #pragma once
 
-#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
-
 #include <string>
 
+#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
-#include "ui/base/message_box_flags.h"
 #include "views/window/dialog_delegate.h"
 
 namespace views {
@@ -40,8 +38,7 @@ class JSModalDialogViews : public NativeAppModalDialog,
   virtual void DeleteDelegate() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
-  virtual string16 GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
   virtual bool IsModal() const OVERRIDE;

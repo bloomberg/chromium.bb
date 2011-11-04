@@ -103,13 +103,13 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_view_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/chrome_view_types.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -120,7 +120,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/base/message_box_flags.h"
+#include "ui/base/ui_base_types.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -2077,7 +2077,7 @@ void TestingAutomationProvider::GetShowingAppModalDialog(bool* showing_dialog,
       AppModalDialogQueue::GetInstance()->active_dialog();
   if (!active_dialog) {
     *showing_dialog = false;
-    *dialog_button = ui::MessageBoxFlags::DIALOGBUTTON_NONE;
+    *dialog_button = ui::DIALOG_BUTTON_NONE;
     return;
   }
   NativeAppModalDialog* native_dialog = active_dialog->native_dialog();
@@ -2085,7 +2085,7 @@ void TestingAutomationProvider::GetShowingAppModalDialog(bool* showing_dialog,
   if (*showing_dialog)
     *dialog_button = native_dialog->GetAppModalDialogButtons();
   else
-    *dialog_button = ui::MessageBoxFlags::DIALOGBUTTON_NONE;
+    *dialog_button = ui::DIALOG_BUTTON_NONE;
 }
 
 void TestingAutomationProvider::ClickAppModalDialogButton(int button,
@@ -2096,13 +2096,11 @@ void TestingAutomationProvider::ClickAppModalDialogButton(int button,
       AppModalDialogQueue::GetInstance()->active_dialog()->native_dialog();
   if (native_dialog &&
       (native_dialog->GetAppModalDialogButtons() & button) == button) {
-    if ((button & ui::MessageBoxFlags::DIALOGBUTTON_OK) ==
-        ui::MessageBoxFlags::DIALOGBUTTON_OK) {
+    if ((button & ui::DIALOG_BUTTON_OK) == ui::DIALOG_BUTTON_OK) {
       native_dialog->AcceptAppModalDialog();
       *success =  true;
     }
-    if ((button & ui::MessageBoxFlags::DIALOGBUTTON_CANCEL) ==
-        ui::MessageBoxFlags::DIALOGBUTTON_CANCEL) {
+    if ((button & ui::DIALOG_BUTTON_CANCEL) == ui::DIALOG_BUTTON_CANCEL) {
       DCHECK(!*success) << "invalid param, OK and CANCEL specified";
       native_dialog->CancelAppModalDialog();
       *success =  true;

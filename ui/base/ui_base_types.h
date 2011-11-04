@@ -21,6 +21,13 @@ enum WindowShowState {
   SHOW_STATE_END        = 6   // The end of show state enum.
 };
 
+// Dialog button identifiers used to specify which buttons to show the user.
+enum DialogButton {
+  DIALOG_BUTTON_NONE   = 0,
+  DIALOG_BUTTON_OK     = 1,
+  DIALOG_BUTTON_CANCEL = 2,
+};
+
 }  // namespace ui
 
 #endif  // UI_BASE_UI_BASE_TYPES_H_

@@ -12,11 +12,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/platform_thread.h"
 #include "base/process_util.h"
-#include "base/time.h"
-#include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/platform_thread.h"
+#include "base/threading/thread.h"
+#include "base/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
@@ -25,7 +25,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
-#include "ui/base/message_box_flags.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
 
 class BrowserProxy;
@@ -127,11 +127,10 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Returns whether an app modal dialog window is showing right now (i.e., a
   // javascript alert), and what buttons it contains.
   bool GetShowingAppModalDialog(bool* showing_app_modal_dialog,
-      ui::MessageBoxFlags::DialogButton* button) WARN_UNUSED_RESULT;
+                                ui::DialogButton* button) WARN_UNUSED_RESULT;
 
   // Simulates a click on a dialog button. Synchronous.
-  bool ClickAppModalDialogButton(
-      ui::MessageBoxFlags::DialogButton button) WARN_UNUSED_RESULT;
+  bool ClickAppModalDialogButton(ui::DialogButton button) WARN_UNUSED_RESULT;
 
   // Block the thread until a modal dialog is displayed. Returns true on
   // success.

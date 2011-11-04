@@ -10,10 +10,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
 #include "base/memory/ref_counted.h"
+#include "base/string16.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
-#include "ui/base/message_box_flags.h"
 #include "views/controls/button/button.h"
 #include "views/controls/table/table_view_observer.h"
 #include "views/view.h"
@@ -54,8 +53,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
   virtual bool CanResize() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
-  virtual bool IsDialogButtonEnabled(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;

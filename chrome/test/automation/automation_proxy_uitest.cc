@@ -39,8 +39,8 @@
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 #include "testing/gmock_mutant.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/message_box_flags.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/rect.h"
 
@@ -1401,12 +1401,11 @@ TEST_F(AutomationProxyTest, FLAKY_AppModalDialogTest) {
   ASSERT_TRUE(tab.get());
 
   bool modal_dialog_showing = false;
-  ui::MessageBoxFlags::DialogButton button =
-      ui::MessageBoxFlags::DIALOGBUTTON_NONE;
+  ui::DialogButton button = ui::DIALOG_BUTTON_NONE;
   EXPECT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
                                                      &button));
   EXPECT_FALSE(modal_dialog_showing);
-  EXPECT_EQ(ui::MessageBoxFlags::DIALOGBUTTON_NONE, button);
+  EXPECT_EQ(ui::DIALOG_BUTTON_NONE, button);
 
   // Show a simple alert.
   std::string content =
@@ -1419,19 +1418,19 @@ TEST_F(AutomationProxyTest, FLAKY_AppModalDialogTest) {
   EXPECT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
                                                      &button));
   EXPECT_TRUE(modal_dialog_showing);
-  EXPECT_EQ(ui::MessageBoxFlags::DIALOGBUTTON_OK, button);
+  EXPECT_EQ(ui::DIALOG_BUTTON_OK, button);
 
   // Test that clicking missing button fails graciously and does not close the
   // dialog.
   EXPECT_FALSE(automation()->ClickAppModalDialogButton(
-      ui::MessageBoxFlags::DIALOGBUTTON_CANCEL));
+      ui::DIALOG_BUTTON_CANCEL));
   EXPECT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
                                                      &button));
   EXPECT_TRUE(modal_dialog_showing);
 
   // Now click OK, that should close the dialog.
   EXPECT_TRUE(automation()->ClickAppModalDialogButton(
-      ui::MessageBoxFlags::DIALOGBUTTON_OK));
+      ui::DIALOG_BUTTON_OK));
   EXPECT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
                                                      &button));
   EXPECT_FALSE(modal_dialog_showing);
@@ -1447,12 +1446,10 @@ TEST_F(AutomationProxyTest, FLAKY_AppModalDialogTest) {
   EXPECT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
                                                      &button));
   EXPECT_TRUE(modal_dialog_showing);
-  EXPECT_EQ(ui::MessageBoxFlags::DIALOGBUTTON_OK |
-            ui::MessageBoxFlags::DIALOGBUTTON_CANCEL, button);
+  EXPECT_EQ(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL, button);
 
   // Click OK.
-  EXPECT_TRUE(automation()->ClickAppModalDialogButton(
-      ui::MessageBoxFlags::DIALOGBUTTON_OK));
+  EXPECT_TRUE(automation()->ClickAppModalDialogButton(ui::DIALOG_BUTTON_OK));
   EXPECT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
                                                      &button));
   EXPECT_FALSE(modal_dialog_showing);
@@ -1469,12 +1466,11 @@ TEST_F(AutomationProxyTest, FLAKY_AppModalDialogTest) {
   EXPECT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
                                                      &button));
   EXPECT_TRUE(modal_dialog_showing);
-  EXPECT_EQ(ui::MessageBoxFlags::DIALOGBUTTON_OK |
-            ui::MessageBoxFlags::DIALOGBUTTON_CANCEL, button);
+  EXPECT_EQ(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL, button);
 
   // Click Cancel this time.
   EXPECT_TRUE(automation()->ClickAppModalDialogButton(
-      ui::MessageBoxFlags::DIALOGBUTTON_CANCEL));
+      ui::DIALOG_BUTTON_CANCEL));
   EXPECT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
                                                      &button));
   EXPECT_FALSE(modal_dialog_showing);

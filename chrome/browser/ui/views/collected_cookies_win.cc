@@ -360,11 +360,11 @@ string16 CollectedCookiesWin::GetWindowTitle() const {
 }
 
 int CollectedCookiesWin::GetDialogButtons() const {
-  return ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_CANCEL;
 }
 
 string16 CollectedCookiesWin::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
+    ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 

@@ -98,7 +98,7 @@ class TpmInfoView : public views::DialogDelegateView {
   virtual bool IsModal() const OVERRIDE { return true; }
   virtual views::View* GetContentsView() OVERRIDE { return this; }
   virtual int GetDialogButtons() const OVERRIDE {
-    return ui::MessageBoxFlags::DIALOGBUTTON_OK;
+    return ui::DIALOG_BUTTON_OK;
   }
 
   // views::View overrides:

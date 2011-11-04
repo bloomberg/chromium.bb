@@ -84,8 +84,8 @@ string16 EditSearchEngineDialog::GetWindowTitle() const {
 }
 
 bool EditSearchEngineDialog::IsDialogButtonEnabled(
-    ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK) {
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK) {
     return (controller_->IsKeywordValid(keyword_tf_->text()) &&
             controller_->IsTitleValid(title_tf_->text()) &&
             controller_->IsURLValid(UTF16ToUTF8(url_tf_->text())));

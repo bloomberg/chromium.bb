@@ -12,9 +12,9 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/platform_thread.h"
 #include "base/process_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_version_info.h"
@@ -290,9 +290,8 @@ bool AutomationProxy::WaitForWindowCountToBecome(int count) {
   return wait_success;
 }
 
-bool AutomationProxy::GetShowingAppModalDialog(
-    bool* showing_app_modal_dialog,
-    ui::MessageBoxFlags::DialogButton* button) {
+bool AutomationProxy::GetShowingAppModalDialog(bool* showing_app_modal_dialog,
+                                               ui::DialogButton* button) {
   if (!showing_app_modal_dialog || !button) {
     NOTREACHED();
     return false;
@@ -305,12 +304,11 @@ bool AutomationProxy::GetShowingAppModalDialog(
     return false;
   }
 
-  *button = static_cast<ui::MessageBoxFlags::DialogButton>(button_int);
+  *button = static_cast<ui::DialogButton>(button_int);
   return true;
 }
 
-bool AutomationProxy::ClickAppModalDialogButton(
-    ui::MessageBoxFlags::DialogButton button) {
+bool AutomationProxy::ClickAppModalDialogButton(ui::DialogButton button) {
   bool succeeded = false;
 
   if (!Send(new AutomationMsg_ClickAppModalDialogButton(

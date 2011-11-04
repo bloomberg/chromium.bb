@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/window.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/message_box_flags.h"
 #include "views/controls/message_box_view.h"
 #include "views/widget/widget.h"
 
@@ -86,16 +87,15 @@ int SimpleMessageBoxViews::GetDialogButtons() const {
   // NOTE: It seems unsafe to assume that the flags for OK/cancel will always
   // have the same value as the button ids.
   return (dialog_flags_ & ui::MessageBoxFlags::kFlagHasOKButton
-      ? ui::MessageBoxFlags::DIALOGBUTTON_OK : 0) |
+      ? ui::DIALOG_BUTTON_OK : 0) |
       (dialog_flags_ & ui::MessageBoxFlags::kFlagHasCancelButton
-          ? ui::MessageBoxFlags::DIALOGBUTTON_CANCEL : 0);
+          ? ui::DIALOG_BUTTON_CANCEL : 0);
 }
 
 string16 SimpleMessageBoxViews::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
-  return button == ui::MessageBoxFlags::DIALOGBUTTON_OK ?
-      l10n_util::GetStringUTF16(IDS_OK) :
-      l10n_util::GetStringUTF16(IDS_CLOSE);
+    ui::DialogButton button) const {
+  return button == ui::DIALOG_BUTTON_OK ? l10n_util::GetStringUTF16(IDS_OK)
+                                        : l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
 bool SimpleMessageBoxViews::ShouldShowWindowTitle() const {

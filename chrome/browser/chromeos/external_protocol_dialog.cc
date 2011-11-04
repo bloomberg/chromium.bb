@@ -49,11 +49,11 @@ ExternalProtocolDialog::~ExternalProtocolDialog() {
 // ExternalProtocolDialog, views::DialogDelegate implementation:
 
 int ExternalProtocolDialog::GetDialogButtons() const {
-  return ui::MessageBoxFlags::DIALOGBUTTON_OK;
+  return ui::DIALOG_BUTTON_OK;
 }
 
 string16 ExternalProtocolDialog::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
+    ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT);
 }
 

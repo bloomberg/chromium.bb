@@ -238,8 +238,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
-  virtual string16 GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual views::View* GetExtraView() OVERRIDE;
   virtual bool Accept(bool window_closing)  OVERRIDE;
   virtual views::View* GetContentsView()  OVERRIDE;
@@ -383,12 +382,12 @@ int HungRendererDialogView::GetDialogButtons() const {
   // the OK button to wait for responsiveness (and close the dialog) and our
   // additional button (which we create) to kill the process (which will result
   // in the dialog being destroyed).
-  return ui::MessageBoxFlags::DIALOGBUTTON_OK;
+  return ui::DIALOG_BUTTON_OK;
 }
 
 string16 HungRendererDialogView::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT);
   return string16();
 }

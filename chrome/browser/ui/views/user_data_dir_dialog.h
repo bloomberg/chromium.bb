@@ -34,8 +34,7 @@ class UserDataDirDialog : public views::DialogDelegate,
   FilePath user_data_dir() const { return user_data_dir_; }
 
   // views::DialogDelegate methods:
-  virtual string16 GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual bool Accept() OVERRIDE;

@@ -33,8 +33,7 @@ class ImportLockDialogView : public views::DialogDelegateView {
   virtual void Layout() OVERRIDE;
 
   // views::DialogDelegate:
-  virtual string16 GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual bool Accept() OVERRIDE;

@@ -111,12 +111,12 @@ void ImportProgressDialogView::ViewHierarchyChanged(bool is_add,
 }
 
 int ImportProgressDialogView::GetDialogButtons() const {
-  return ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_CANCEL;
 }
 
 string16 ImportProgressDialogView::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
-  DCHECK_EQ(button, ui::MessageBoxFlags::DIALOGBUTTON_CANCEL);
+    ui::DialogButton button) const {
+  DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
   return l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_CANCEL);
 }
 

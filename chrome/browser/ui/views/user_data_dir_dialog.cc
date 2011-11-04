@@ -43,12 +43,12 @@ UserDataDirDialog::~UserDataDirDialog() {
 }
 
 string16 UserDataDirDialog::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
+    ui::DialogButton button) const {
   switch (button) {
-    case ui::MessageBoxFlags::DIALOGBUTTON_OK:
+    case ui::DIALOG_BUTTON_OK:
       return l10n_util::GetStringUTF16(
           IDS_CANT_WRITE_USER_DIRECTORY_CHOOSE_DIRECTORY_BUTTON);
-    case ui::MessageBoxFlags::DIALOGBUTTON_CANCEL:
+    case ui::DIALOG_BUTTON_CANCEL:
       return l10n_util::GetStringUTF16(
           IDS_CANT_WRITE_USER_DIRECTORY_EXIT_BUTTON);
     default:

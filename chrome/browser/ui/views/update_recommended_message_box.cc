@@ -40,15 +40,13 @@ bool UpdateRecommendedMessageBox::Accept() {
 }
 
 int UpdateRecommendedMessageBox::GetDialogButtons() const {
-  return ui::MessageBoxFlags::DIALOGBUTTON_OK |
-         ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
 string16 UpdateRecommendedMessageBox::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
-  DCHECK(button == ui::MessageBoxFlags::DIALOGBUTTON_OK ||
-         button == ui::MessageBoxFlags::DIALOGBUTTON_CANCEL);
-  return button == ui::MessageBoxFlags::DIALOGBUTTON_OK ?
+    ui::DialogButton button) const {
+  DCHECK(button == ui::DIALOG_BUTTON_OK || button == ui::DIALOG_BUTTON_CANCEL);
+  return button == ui::DIALOG_BUTTON_OK ?
       l10n_util::GetStringUTF16(IDS_RELAUNCH_AND_UPDATE) :
       l10n_util::GetStringUTF16(IDS_NOT_NOW);
 }

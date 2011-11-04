@@ -62,16 +62,15 @@ gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {
 }
 
 string16 NetworkConfigView::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_CONNECT);
   return string16();
 }
 
-bool NetworkConfigView::IsDialogButtonEnabled(
-    ui::MessageBoxFlags::DialogButton button) const {
+bool NetworkConfigView::IsDialogButtonEnabled(ui::DialogButton button) const {
   // Disable connect button if cannot login.
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
+  if (button == ui::DIALOG_BUTTON_OK)
     return child_config_view_->CanLogin();
   return true;
 }

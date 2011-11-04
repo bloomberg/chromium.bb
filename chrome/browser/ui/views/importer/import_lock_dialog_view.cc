@@ -66,10 +66,10 @@ void ImportLockDialogView::Layout() {
 }
 
 string16 ImportLockDialogView::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_OK);
-  else if (button == ui::MessageBoxFlags::DIALOGBUTTON_CANCEL)
+  else if (button == ui::DIALOG_BUTTON_CANCEL)
     return l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_CANCEL);
   return string16();
 }

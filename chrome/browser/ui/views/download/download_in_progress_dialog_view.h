@@ -34,8 +34,7 @@ class DownloadInProgressDialogView : public views::DialogDelegateView {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // views::DialogDelegateView:
-  virtual string16 GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual int GetDefaultDialogButton() const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;

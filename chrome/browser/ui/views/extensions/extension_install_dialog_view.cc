@@ -71,8 +71,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
 
  private:
   // views::DialogDelegateView:
-  virtual string16 GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual int GetDefaultDialogButton() const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
@@ -256,11 +255,11 @@ ExtensionInstallDialogView::~ExtensionInstallDialogView() {
 }
 
 string16 ExtensionInstallDialogView::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
+    ui::DialogButton button) const {
   switch (button) {
-    case ui::MessageBoxFlags::DIALOGBUTTON_OK:
+    case ui::DIALOG_BUTTON_OK:
       return prompt_.GetAcceptButtonLabel();
-    case ui::MessageBoxFlags::DIALOGBUTTON_CANCEL:
+    case ui::DIALOG_BUTTON_CANCEL:
       return prompt_.HasAbortButtonLabel() ?
           prompt_.GetAbortButtonLabel() :
           l10n_util::GetStringUTF16(IDS_CANCEL);
@@ -271,7 +270,7 @@ string16 ExtensionInstallDialogView::GetDialogButtonLabel(
 }
 
 int ExtensionInstallDialogView::GetDefaultDialogButton() const {
-  return ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_CANCEL;
 }
 
 bool ExtensionInstallDialogView::Cancel() {

@@ -15,6 +15,7 @@
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/message_box_flags.h"
+#include "ui/base/ui_base_types.h"
 
 // Helper object that receives the notification that the dialog/sheet is
 // going away. Is responsible for cleaning itself up.
@@ -166,10 +167,9 @@ int JSModalDialogCocoa::GetAppModalDialogButtons() const {
   int num_buttons = [[alert_ buttons] count];
   switch (num_buttons) {
     case 1:
-      return ui::MessageBoxFlags::DIALOGBUTTON_OK;
+      return ui::DIALOG_BUTTON_OK;
     case 2:
-      return ui::MessageBoxFlags::DIALOGBUTTON_OK |
-             ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
+      return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
     default:
       NOTREACHED();
       return 0;

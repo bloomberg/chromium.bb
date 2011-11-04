@@ -14,7 +14,7 @@
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "ui/base/events.h"
-#include "ui/base/message_box_flags.h"
+#include "ui/base/ui_base_types.h"
 
 const std::string NOLISTENERS_HTML =
     "<html><head><title>nolisteners</title></head><body></body></html>";
@@ -154,9 +154,9 @@ class UnloadTest : public UITest {
     EXPECT_TRUE(CloseBrowser(browser.get(), &application_closed));
   }
 
-  void ClickModalDialogButton(ui::MessageBoxFlags::DialogButton button) {
+  void ClickModalDialogButton(ui::DialogButton button) {
     bool modal_dialog_showing = false;
-    ui::MessageBoxFlags::DialogButton available_buttons;
+    ui::DialogButton available_buttons;
     EXPECT_TRUE(automation()->WaitForAppModalDialog());
     EXPECT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
         &available_buttons));
@@ -284,7 +284,7 @@ TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, L"beforeunload");
 
   CloseBrowserAsync(browser.get());
-  ClickModalDialogButton(ui::MessageBoxFlags::DIALOGBUTTON_OK);
+  ClickModalDialogButton(ui::DIALOG_BUTTON_OK);
 
   int exit_code = -1;
   ASSERT_TRUE(launcher_->WaitForBrowserProcessToQuit(
@@ -300,14 +300,14 @@ TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, L"beforeunload");
 
   CloseBrowserAsync(browser.get());
-  ClickModalDialogButton(ui::MessageBoxFlags::DIALOGBUTTON_CANCEL);
+  ClickModalDialogButton(ui::DIALOG_BUTTON_CANCEL);
 
   // There's no real graceful way to wait for something _not_ to happen, so
   // we just wait a short period.
   base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
 
   CloseBrowserAsync(browser.get());
-  ClickModalDialogButton(ui::MessageBoxFlags::DIALOGBUTTON_OK);
+  ClickModalDialogButton(ui::DIALOG_BUTTON_OK);
 
   int exit_code = -1;
   ASSERT_TRUE(launcher_->WaitForBrowserProcessToQuit(
@@ -344,7 +344,7 @@ TEST_F(UnloadTest, MAYBE_BrowserCloseWithInnerFocusedFrame) {
   NavigateToDataURL(INNER_FRAME_WITH_FOCUS_HTML, L"innerframewithfocus");
 
   CloseBrowserAsync(browser.get());
-  ClickModalDialogButton(ui::MessageBoxFlags::DIALOGBUTTON_OK);
+  ClickModalDialogButton(ui::DIALOG_BUTTON_OK);
 
   int exit_code = -1;
   ASSERT_TRUE(launcher_->WaitForBrowserProcessToQuit(

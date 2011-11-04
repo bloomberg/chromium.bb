@@ -45,8 +45,7 @@ class EditSearchEngineDialog : public views::TextfieldController,
   // views::DialogDelegate:
   virtual bool IsModal() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual bool IsDialogButtonEnabled(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;

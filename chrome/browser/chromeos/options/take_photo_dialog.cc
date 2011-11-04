@@ -41,11 +41,10 @@ TakePhotoDialog::TakePhotoDialog(Delegate* delegate)
 TakePhotoDialog::~TakePhotoDialog() {
 }
 
-bool TakePhotoDialog::IsDialogButtonEnabled(
-    ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_CANCEL)
+bool TakePhotoDialog::IsDialogButtonEnabled(ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_CANCEL)
     return true;
-  else if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
+  else if (button == ui::DIALOG_BUTTON_OK)
     return !take_photo_view_->is_capturing();
   NOTREACHED();
   return false;

@@ -66,13 +66,10 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
 
  private:
   // views::DialogDelegate:
-  virtual string16 GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
-
+  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual int GetDefaultDialogButton() const OVERRIDE {
-    return ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
+    return ui::DIALOG_BUTTON_CANCEL;
   }
-
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
@@ -160,11 +157,11 @@ ExtensionUninstallDialogDelegateView::~ExtensionUninstallDialogDelegateView() {
 }
 
 string16 ExtensionUninstallDialogDelegateView::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
+    ui::DialogButton button) const {
   switch (button) {
-    case ui::MessageBoxFlags::DIALOGBUTTON_OK:
+    case ui::DIALOG_BUTTON_OK:
       return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON);
-    case ui::MessageBoxFlags::DIALOGBUTTON_CANCEL:
+    case ui::DIALOG_BUTTON_CANCEL:
       return l10n_util::GetStringUTF16(IDS_CANCEL);
     default:
       NOTREACHED();

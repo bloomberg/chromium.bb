@@ -324,15 +324,15 @@ gfx::Size CreateApplicationShortcutView::GetPreferredSize() {
 }
 
 string16 CreateApplicationShortcutView::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_COMMIT);
   return string16();
 }
 
 bool CreateApplicationShortcutView::IsDialogButtonEnabled(
-    ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK)
     return desktop_check_box_->checked() ||
            ((menu_check_box_ != NULL) &&
             menu_check_box_->checked()) ||
@@ -359,7 +359,7 @@ string16 CreateApplicationShortcutView::GetWindowTitle() const {
 }
 
 bool CreateApplicationShortcutView::Accept() {
-  if (!IsDialogButtonEnabled(ui::MessageBoxFlags::DIALOGBUTTON_OK))
+  if (!IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK))
     return false;
 
   shortcut_info_.create_on_desktop = desktop_check_box_->checked();

@@ -20,7 +20,6 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/message_box_flags.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/button/text_button.h"
@@ -165,7 +164,7 @@ views::View* DefaultSearchView::GetContentsView() {
 }
 
 int DefaultSearchView::GetDialogButtons() const {
-  return ui::MessageBoxFlags::DIALOGBUTTON_NONE;
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 bool DefaultSearchView::Accept() {

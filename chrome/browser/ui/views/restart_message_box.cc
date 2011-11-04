@@ -22,12 +22,12 @@ void RestartMessageBox::ShowMessageBox(gfx::NativeWindow parent_window) {
 }
 
 int RestartMessageBox::GetDialogButtons() const {
-  return ui::MessageBoxFlags::DIALOGBUTTON_OK;
+  return ui::DIALOG_BUTTON_OK;
 }
 
 string16 RestartMessageBox::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
-  DCHECK(button == ui::MessageBoxFlags::DIALOGBUTTON_OK);
+    ui::DialogButton button) const {
+  DCHECK_EQ(button, ui::DIALOG_BUTTON_OK);
   return l10n_util::GetStringUTF16(IDS_OK);
 }
 

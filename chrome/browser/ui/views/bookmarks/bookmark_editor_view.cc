@@ -88,14 +88,13 @@ BookmarkEditorView::~BookmarkEditorView() {
 }
 
 string16 BookmarkEditorView::GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
+      ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_SAVE);
   return string16();
 }
-bool BookmarkEditorView::IsDialogButtonEnabled(
-    ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK) {
+bool BookmarkEditorView::IsDialogButtonEnabled(ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK) {
     if (details_.type == EditDetails::NEW_FOLDER)
       return !title_tf_.text().empty();
 
@@ -118,7 +117,7 @@ string16 BookmarkEditorView::GetWindowTitle() const {
 }
 
 bool BookmarkEditorView::Accept() {
-  if (!IsDialogButtonEnabled(ui::MessageBoxFlags::DIALOGBUTTON_OK)) {
+  if (!IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
     if (details_.type != EditDetails::NEW_FOLDER) {
       // The url is invalid, focus the url field.
       url_tf_->SelectAll();
@@ -131,8 +130,7 @@ bool BookmarkEditorView::Accept() {
   return true;
 }
 
-bool BookmarkEditorView::AreAcceleratorsEnabled(
-    ui::MessageBoxFlags::DialogButton button) {
+bool BookmarkEditorView::AreAcceleratorsEnabled(ui::DialogButton button) {
   return !show_tree_ || !tree_view_->GetEditingNode();
 }
 

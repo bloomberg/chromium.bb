@@ -81,16 +81,13 @@ class BookmarkEditorView : public BookmarkEditor,
   virtual ~BookmarkEditorView();
 
   // views::DialogDelegateView:
-  virtual string16 GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
-  virtual bool IsDialogButtonEnabled(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
   virtual bool CanResize() const  OVERRIDE;
   virtual string16 GetWindowTitle() const  OVERRIDE;
   virtual bool Accept() OVERRIDE;
-  virtual bool AreAcceleratorsEnabled(
-      ui::MessageBoxFlags::DialogButton button) OVERRIDE;
+  virtual bool AreAcceleratorsEnabled(ui::DialogButton button) OVERRIDE;
   virtual views::View* GetContentsView()  OVERRIDE;
 
   // views::View:

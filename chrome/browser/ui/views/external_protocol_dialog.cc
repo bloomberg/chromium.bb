@@ -56,12 +56,12 @@ ExternalProtocolDialog::~ExternalProtocolDialog() {
 // ExternalProtocolDialog, views::DialogDelegate implementation:
 
 int ExternalProtocolDialog::GetDefaultDialogButton() const {
-  return ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_CANCEL;
 }
 
 string16 ExternalProtocolDialog::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT);
   else
     return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT);

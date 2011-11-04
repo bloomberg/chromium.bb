@@ -116,17 +116,16 @@ bool UninstallView::Cancel() {
   return true;
 }
 
-string16 UninstallView::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
+string16 UninstallView::GetDialogButtonLabel(ui::DialogButton button) const {
   // We only want to give custom name to OK button - 'Uninstall'. Cancel
   // button remains same.
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
+  if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_UNINSTALL_BUTTON_TEXT);
   return string16();
 }
 
-void UninstallView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
+void UninstallView::ButtonPressed(views::Button* sender,
+                                  const views::Event& event) {
   if (change_default_browser_ == sender) {
     // Disable the browsers combobox if the user unchecks the checkbox.
     DCHECK(browsers_combo_);

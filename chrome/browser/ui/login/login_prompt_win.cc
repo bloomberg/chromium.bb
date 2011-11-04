@@ -45,8 +45,8 @@ class LoginHandlerWin : public LoginHandler,
 
   // views::DialogDelegate methods:
   virtual string16 GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE {
-    if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
+      ui::DialogButton button) const OVERRIDE {
+    if (button == ui::DIALOG_BUTTON_OK)
       return l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_OK_BUTTON_LABEL);
     return DialogDelegate::GetDialogButtonLabel(button);
   }

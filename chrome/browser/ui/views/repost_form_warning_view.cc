@@ -55,10 +55,10 @@ string16 RepostFormWarningView::GetWindowTitle() const {
 }
 
 string16 RepostFormWarningView::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING_RESEND);
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_CANCEL)
+  if (button == ui::DIALOG_BUTTON_CANCEL)
     return l10n_util::GetStringUTF16(IDS_CANCEL);
   return string16();
 }

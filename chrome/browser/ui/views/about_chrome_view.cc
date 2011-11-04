@@ -529,11 +529,10 @@ void AboutChromeView::ViewHierarchyChanged(bool is_add,
 ////////////////////////////////////////////////////////////////////////////////
 // AboutChromeView, views::DialogDelegate implementation:
 
-string16 AboutChromeView::GetDialogButtonLabel(
-    ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK) {
+string16 AboutChromeView::GetDialogButtonLabel(ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK) {
     return l10n_util::GetStringUTF16(IDS_RELAUNCH_AND_UPDATE);
-  } else if (button == ui::MessageBoxFlags::DIALOGBUTTON_CANCEL) {
+  } else if (button == ui::DIALOG_BUTTON_CANCEL) {
     if (restart_button_visible_)
       return l10n_util::GetStringUTF16(IDS_NOT_NOW);
     // The OK button (which is the default button) has been re-purposed to be
@@ -550,19 +549,15 @@ string16 AboutChromeView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_ABOUT_CHROME_TITLE);
 }
 
-bool AboutChromeView::IsDialogButtonEnabled(
-    ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK &&
-      !restart_button_visible_)
+bool AboutChromeView::IsDialogButtonEnabled(ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK && !restart_button_visible_)
     return false;
 
   return true;
 }
 
-bool AboutChromeView::IsDialogButtonVisible(
-    ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK &&
-      !restart_button_visible_)
+bool AboutChromeView::IsDialogButtonVisible(ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK && !restart_button_visible_)
     return false;
 
   return true;
@@ -573,7 +568,7 @@ bool AboutChromeView::IsDialogButtonVisible(
 // OK button (which is the dialog cancel button, see GetDialogButtonLabel
 // above).
 int AboutChromeView::GetDefaultDialogButton() const {
-  return ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_CANCEL;
 }
 
 bool AboutChromeView::CanResize() const {

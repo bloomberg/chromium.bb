@@ -56,12 +56,9 @@ class AboutChromeView : public views::DialogDelegateView,
                                     views::View* child) OVERRIDE;
 
   // Overridden from views::DialogDelegate:
-  virtual string16 GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
-  virtual bool IsDialogButtonEnabled(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
-  virtual bool IsDialogButtonVisible(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
+  virtual bool IsDialogButtonVisible(ui::DialogButton button) const OVERRIDE;
   virtual int GetDefaultDialogButton() const OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;

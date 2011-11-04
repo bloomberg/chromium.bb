@@ -8,7 +8,7 @@
 
 #include "base/string16.h"
 #include "ui/base/accessibility/accessibility_types.h"
-#include "ui/base/message_box_flags.h"
+#include "ui/base/ui_base_types.h"
 #include "views/widget/widget_delegate.h"
 #include "views/window/dialog_client_view.h"
 
@@ -39,15 +39,27 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // To use the extra button you need to override GetDialogButtons()
   virtual int GetDialogButtons() const;
 
+  // Returns the default dialog button. This should not be a mask as only
+  // one button should ever be the default button.  Return
+  // ui::DIALOG_BUTTON_NONE if there is no default.  Default
+  // behavior is to return ui::DIALOG_BUTTON_OK or
+  // ui::DIALOG_BUTTON_CANCEL (in that order) if they are
+  // present, ui::DIALOG_BUTTON_NONE otherwise.
+  virtual int GetDefaultDialogButton() const;
+
+  // Returns the label of the specified dialog button.
+  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const;
+
+  // Returns whether the specified dialog button is enabled.
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const;
+
+  // Returns whether the specified dialog button is visible.
+  virtual bool IsDialogButtonVisible(ui::DialogButton button) const;
+
   // Returns whether accelerators are enabled on the button. This is invoked
   // when an accelerator is pressed, not at construction time. This
   // returns true.
-  virtual bool AreAcceleratorsEnabled(
-      ui::MessageBoxFlags::DialogButton button);
-
-  // Returns the label of the specified DialogButton.
-  virtual string16 GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const;
+  virtual bool AreAcceleratorsEnabled(ui::DialogButton button);
 
   // Override this function if with a view which will be shown in the same
   // row as the OK and CANCEL buttons but flush to the left and extending
@@ -59,22 +71,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // height. By returning true the height becomes
   // max(extra_view preferred height, buttons preferred height).
   virtual bool GetSizeExtraViewHeightToButtons();
-
-  // Returns the default dialog button. This should not be a mask as only
-  // one button should ever be the default button.  Return
-  // ui::MessageBoxFlags::DIALOGBUTTON_NONE if there is no default.  Default
-  // behavior is to return ui::MessageBoxFlags::DIALOGBUTTON_OK or
-  // ui::MessageBoxFlags::DIALOGBUTTON_CANCEL (in that order) if they are
-  // present, ui::MessageBoxFlags::DIALOGBUTTON_NONE otherwise.
-  virtual int GetDefaultDialogButton() const;
-
-  // Returns whether the specified dialog button is enabled.
-  virtual bool IsDialogButtonEnabled(
-      ui::MessageBoxFlags::DialogButton button) const;
-
-  // Returns whether the specified dialog button is visible.
-  virtual bool IsDialogButtonVisible(
-      ui::MessageBoxFlags::DialogButton button) const;
 
   // For Dialog boxes, if there is a "Cancel" button, this is called when the
   // user presses the "Cancel" button or the Close button on the window or

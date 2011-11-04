@@ -71,10 +71,8 @@ class ContentView : public views::DialogDelegateView,
   explicit ContentView(InputWindowDialogWin* delegate);
 
   // views::DialogDelegateView:
-  virtual string16 GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
-  virtual bool IsDialogButtonEnabled(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
@@ -125,9 +123,8 @@ ContentView::ContentView(InputWindowDialogWin* delegate)
 ///////////////////////////////////////////////////////////////////////////////
 // ContentView, views::DialogDelegate implementation:
 
-string16 ContentView::GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK) {
+string16 ContentView::GetDialogButtonLabel(ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK) {
     return l10n_util::GetStringUTF16(
         delegate_->type() == InputWindowDialog::BUTTON_TYPE_ADD ? IDS_ADD
                                                                 : IDS_SAVE);
@@ -135,9 +132,8 @@ string16 ContentView::GetDialogButtonLabel(
   return string16();
 }
 
-bool ContentView::IsDialogButtonEnabled(
-    ui::MessageBoxFlags::DialogButton button) const {
-  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK &&
+bool ContentView::IsDialogButtonEnabled(ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK &&
       !delegate_->delegate()->IsValid(text_field_->text())) {
     return false;
   }

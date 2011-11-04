@@ -29,16 +29,14 @@ class RepostFormWarningView : public views::DialogDelegate {
   RepostFormWarningView(gfx::NativeWindow parent_window,
                         TabContents* tab_contents);
 
-  // views::DialogDelegate Methods:
+  // views::DialogDelegate:
   virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual string16 GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
-
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
-  // views::WidgetDelegate Methods:
+  // views::WidgetDelegate:
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;

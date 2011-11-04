@@ -14,6 +14,7 @@
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/message_box_flags.h"
+#include "ui/base/ui_base_types.h"
 
 namespace {
 
@@ -149,14 +150,13 @@ JSModalDialogGtk::~JSModalDialogGtk() {
 int JSModalDialogGtk::GetAppModalDialogButtons() const {
   switch (dialog_->dialog_flags()) {
     case ui::MessageBoxFlags::kIsJavascriptAlert:
-      return ui::MessageBoxFlags::DIALOGBUTTON_OK;
+      return ui::DIALOG_BUTTON_OK;
 
     case ui::MessageBoxFlags::kIsJavascriptConfirm:
-      return ui::MessageBoxFlags::DIALOGBUTTON_OK |
-        ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
+      return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 
     case ui::MessageBoxFlags::kIsJavascriptPrompt:
-      return ui::MessageBoxFlags::DIALOGBUTTON_OK;
+      return ui::DIALOG_BUTTON_OK;
 
     default:
       NOTREACHED();
