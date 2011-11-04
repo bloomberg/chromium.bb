@@ -53,10 +53,10 @@ void AppNotification::ToDictionaryValue(DictionaryValue* result) {
     result->SetString(kTitleKey, title_);
   if (!body_.empty())
     result->SetString(kBodyKey, body_);
-  if (!link_url_.is_empty()) {
+  if (!link_url_.is_empty())
     result->SetString(kLinkUrlKey, link_url_.possibly_invalid_spec());
+  if (!link_text_.empty())
     result->SetString(kLinkTextKey, link_text_);
-  }
 }
 
 // static
@@ -78,16 +78,17 @@ AppNotification* AppNotification::FromDictionaryValue(
   if (value.HasKey(kBodyKey) && !value.GetString(kBodyKey, &result->body_))
     return NULL;
   if (value.HasKey(kLinkUrlKey)) {
-    if (!value.HasKey(kLinkTextKey))
-      return NULL;
     std::string url;
-    if (!value.GetString(kLinkUrlKey, &url) ||
-        !value.GetString(kLinkTextKey, &result->link_text_))
+    if (!value.GetString(kLinkUrlKey, &url))
       return NULL;
     GURL gurl(url);
     if (!gurl.is_valid())
       return NULL;
     result->set_link_url(gurl);
+  }
+  if (value.HasKey(kLinkTextKey) &&
+      !value.GetString(kLinkTextKey, &result->link_text_)) {
+    return NULL;
   }
 
   return result.release();
