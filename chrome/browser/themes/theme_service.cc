@@ -604,7 +604,7 @@ void ThemeService::LoadThemePrefs() {
 }
 
 void ThemeService::NotifyThemeChanged() {
-  VLOG(1) << "Sending BROWSER_THEME_CHANGED";
+  DVLOG(1) << "Sending BROWSER_THEME_CHANGED";
   // Redraw!
   content::NotificationService* service =
       content::NotificationService::current();
