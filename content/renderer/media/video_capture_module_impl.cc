@@ -14,6 +14,7 @@ VideoCaptureModuleImpl::VideoCaptureModuleImpl(
     : webrtc::videocapturemodule::VideoCaptureImpl(id),
       session_id_(id),
       thread_("VideoCaptureModuleImpl"),
+      stopped_event_(false, false),
       vc_manager_(vc_manager),
       state_(media::VideoCapture::kStopped),
       width_(-1),
@@ -21,14 +22,18 @@ VideoCaptureModuleImpl::VideoCaptureModuleImpl(
       frame_rate_(-1),
       video_type_(webrtc::kVideoI420),
       capture_engine_(NULL),
-      pending_start_(false),
       ref_count_(0) {
   DCHECK(vc_manager_);
   Init();
 }
 
 VideoCaptureModuleImpl::~VideoCaptureModuleImpl() {
+  // Ensure to stop capture in case user doesn't do it.
+  StopCapture();
   vc_manager_->RemoveDevice(session_id_, this);
+  // Ensure capture stopped by |capture_engine_| since all tasks posted on this
+  // thread will be executed and VCMImpl is waiting for OnStopped signal from
+  // |capture_engine_|.
   thread_.Stop();
 }
 
@@ -39,15 +44,15 @@ void VideoCaptureModuleImpl::Init() {
 }
 
 int32_t VideoCaptureModuleImpl::AddRef() {
-  VLOG(1) << "VideoCaptureModuleImpl::AddRef()";
+  DVLOG(1) << "VideoCaptureModuleImpl::AddRef()";
   return base::subtle::Barrier_AtomicIncrement(&ref_count_, 1);
 }
 
 int32_t VideoCaptureModuleImpl::Release() {
-  VLOG(1) << "VideoCaptureModuleImpl::Release()";
+  DVLOG(1) << "VideoCaptureModuleImpl::Release()";
   int ret = base::subtle::Barrier_AtomicIncrement(&ref_count_, -1);
   if (ret == 0) {
-    VLOG(1) << "Reference count is zero, hence this object is now deleted.";
+    DVLOG(1) << "Reference count is zero, hence this object is now deleted.";
     delete this;
   }
   return ret;
@@ -89,11 +94,7 @@ void VideoCaptureModuleImpl::OnStarted(media::VideoCapture* capture) {
 }
 
 void VideoCaptureModuleImpl::OnStopped(media::VideoCapture* capture) {
-  message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoCaptureModuleImpl::OnStoppedOnCaptureThread,
-                 base::Unretained(this),
-                 capture));
+  stopped_event_.Signal();
 }
 
 void VideoCaptureModuleImpl::OnPaused(media::VideoCapture* capture) {
@@ -129,15 +130,8 @@ void VideoCaptureModuleImpl::StartCaptureOnCaptureThread(
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   DCHECK_NE(state_, media::VideoCapture::kStarted);
 
-  if (state_ == media::VideoCapture::kStopping) {
-    VLOG(1) << "Got a new StartCapture in Stopping state!!! ";
-    pending_start_ = true;
-    pending_cap_ = capability;
-    return;
-  }
-
-  VLOG(1) << "StartCaptureOnCaptureThread: " << capability.width << ", "
-          << capability.height;
+  DVLOG(1) << "StartCaptureOnCaptureThread: " << capability.width << ", "
+           << capability.height;
 
   StartCaptureInternal(capability);
   return;
@@ -165,39 +159,22 @@ void VideoCaptureModuleImpl::StartCaptureInternal(
 void VideoCaptureModuleImpl::StopCaptureOnCaptureThread() {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
-  if (pending_start_) {
-    VLOG(1) << "Got a StopCapture with one pending start!!! ";
-    pending_start_ = false;
-    return;
-  }
-
   if (state_ != media::VideoCapture::kStarted) {
-    VLOG(1) << "Got a StopCapture while not started!!! ";
+    DVLOG(1) << "Got a StopCapture while not started!!! ";
     return;
   }
 
-  VLOG(1) << "StopCaptureOnCaptureThread. ";
-  state_ = media::VideoCapture::kStopping;
-
+  DVLOG(1) << "StopCaptureOnCaptureThread. ";
   capture_engine_->StopCapture(this);
-  return;
-}
-
-void VideoCaptureModuleImpl::OnStoppedOnCaptureThread(
-    media::VideoCapture* capture) {
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-
-  VLOG(1) << "Capture Stopped!!! ";
+  // Need to use synchronous mode here to make sure |capture_engine_| will
+  // not call VCMImpl after this function returns. Otherwise, there could be
+  // use-after-free, especially when StopCapture() is called from dtor.
+  stopped_event_.Wait();
+  DVLOG(1) << "Capture Stopped!!! ";
   state_ = media::VideoCapture::kStopped;
   width_ = -1;
   height_ = -1;
   frame_rate_ = -1;
-
-  if (pending_start_) {
-    VLOG(1) << "restart pending start ";
-    pending_start_ = false;
-    StartCaptureInternal(pending_cap_);
-  }
 }
 
 void VideoCaptureModuleImpl::OnBufferReadyOnCaptureThread(
