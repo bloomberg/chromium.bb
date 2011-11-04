@@ -1,0 +1,68 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# Case-by-case calling Convention Test for PNaCl and nacl-gcc compatibility.
+
+# We make 4 modules.
+# CC1 emits MODULE0 and CC2 MODULE1, CC2 emits MODULE2 and CC1 MODULE3
+# For the call test:
+# MODULE0(cc1) -> MODULE0(cc1) -> MODULE1(cc2) -> MODULE2(cc2) -> MODULE3(cc1).
+# For the return test, the dataflow is reversed.
+
+# Environments for building module sources
+envlist = []
+
+# For nacl-gcc, only do a self-test.
+# For ARM, there is no nacl-gcc so only do a self-test.
+# Otherwise, mix them up!
+if not env.Bit('bitcode') or env.Bit('target_arm'):
+  if not env.Bit('bitcode'):
+    # Assume that for nacl-gcc, the bots have at least sse2.
+    env.Append(CCFLAGS=['-msse2'])
+  for i in xrange(4):
+    envlist.append(env.Clone()) # Same CC for all...
+  link_env = env
+else:
+  # For module0
+  cc1_env = env.Clone()
+  cc1_env.PNaClForceNative()
+  envlist.append(cc1_env)
+  # For module1
+  cc2_env = env.PNaClGetNNaClEnv()
+  # Assume that for nacl-gcc, the bots have at least sse2.
+  cc2_env.Append(CCFLAGS=['-msse2'])
+  # Add nacl-gcc compatibility flag (to be committed).
+  # cc2_env.Append(CCFLAGS=['-mstructs-on-stack'])
+  envlist.append(cc2_env)
+  envlist.append(cc2_env.Clone()) # For module2
+  envlist.append(cc1_env.Clone()) # For module3
+
+  link_env = cc1_env # To allow linking native objects (from ForceNative).
+
+for (i, e) in enumerate(envlist):
+  # Add -Wno-long-long because we use c99 long long constants in C++ code.
+  e.Append(CCFLAGS=['-DMODULE' + str(i), '-Wno-long-long'])
+
+
+# Once the gcc flag is added (and/or if we do something with llvm).
+tis_broken = env.Bit('bitcode') and env.Bit('target_x86_64')
+
+for test_source in ["return_structs.cc",
+                    "call_structs.cc"]:
+  test_name = test_source.split('.')[0]
+  objfiles = []
+  for (i, e) in enumerate(envlist):
+    obj = e.ComponentObject(test_name + '.' + str(i), test_source)
+    objfiles.append(obj)
+  prog = link_env.ComponentProgram(test_name,
+                                   objfiles,
+                                   EXTRA_LIBS=['${NONIRT_LIBS}'])
+  node = env.CommandSelLdrTestNacl(test_name + '.out',
+                                   prog)
+  env.AddNodeToTestSuite(node, ['small_tests'],
+                         'run_' + test_name + '_test',
+                         is_broken=tis_broken)

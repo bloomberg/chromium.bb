@@ -3075,6 +3075,7 @@ irt_variant_tests = [
     'tests/browser_startup_time/nacl.scons',
     'tests/bundle_size/nacl.scons',
     'tests/callingconv/nacl.scons',
+    'tests/callingconv_case_by_case/nacl.scons',
     'tests/computed_gotos/nacl.scons',
     'tests/data_not_executable/nacl.scons',
     'tests/debug_stub/nacl.scons',

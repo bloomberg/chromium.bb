@@ -1,0 +1,101 @@
+/*
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* Repeat some macros for all types (that make sense) in "useful_structs.h".
+ * This doesn't have an include guard since it can be included more than once.
+ */
+
+#if !defined(DO_FOR_TYPE)
+#error "MUST define DO_FOR_TYPE when including for_each_type.inc!"
+#endif
+
+/* Skip EMPTY struct for now -- may want to just test that with inline code
+ * since there are no real values to check. The only thing to check is that
+ * it didn't take up a register or stack slot (or if our calling convention
+ * is dumb and uses a slot, check that it consistently takes up a slot).
+ */
+
+DO_FOR_TYPE(I32)
+DO_FOR_TYPE(CHAR_I32)
+DO_FOR_TYPE(I32_I32)
+DO_FOR_TYPE(CHAR_I64)
+DO_FOR_TYPE(I64_I64)
+DO_FOR_TYPE(I32_FLOAT)
+DO_FOR_TYPE(FLOAT_FLOAT)
+DO_FOR_TYPE(STRUCT_STRUCT)
+DO_FOR_TYPE(DOUBLE_DOUBLE)
+DO_FOR_TYPE(CHAR_BOOL_I32_BOOL)
+DO_FOR_TYPE(I32_ALIGN16)
+DO_FOR_TYPE(I32_CHAR12)
+DO_FOR_TYPE(ARRAY_I32_4)
+DO_FOR_TYPE(ARRAY_FLOAT_4)
+DO_FOR_TYPE(DOUBLE_DOUBLE_DOUBLE)
+DO_FOR_TYPE(CHAR_I64_I32)
+
+DO_FOR_TYPE(BITFIELD_STRADDLE)
+DO_FOR_TYPE(NONBITFIELD_STRADDLE)
+
+/* TODO(jvoung): Turn on this test when the following bug is fixed:
+ * http://code.google.com/p/nativeclient/issues/detail?id=2356
+ */
+/* DO_FOR_TYPE(I32_CHAR_ALIGN32) */
+
+DO_FOR_TYPE(U_I64_DOUBLE)
+DO_FOR_TYPE(U_DOUBLE_I64)
+DO_FOR_TYPE(U_DOUBLE_ARRAY_I16_4)
+DO_FOR_TYPE(U_ARRAY_I16_4_DOUBLE)
+DO_FOR_TYPE(U_STRADDLE_BF_NONBF)
+DO_FOR_TYPE(U_I16_STRUCT)
+
+
+DO_FOR_TYPE(ENUM1)
+DO_FOR_TYPE(ENUM1_PACKED8)
+DO_FOR_TYPE(ENUM1_PACKED16)
+DO_FOR_TYPE(ENUM1_PACKED24)
+DO_FOR_TYPE(ENUM1_PACKED32)
+
+DO_FOR_TYPE(CLASS_I32_I32)
+DO_FOR_TYPE(CLASS_DOUBLE_DOUBLE)
+DO_FOR_TYPE(U_CLASS_INT_CLASS)
+
+/* These are currently borked for callsites on 32-bit and 64-bit PNaCl
+ * calling into 32-bit and 64-bit NNaCl, even with the compatibility
+ * flag "-mstructs-on-stack". See:
+ * http://code.google.com/p/nativeclient/issues/detail?id=2403
+ *
+ * Returning is fine, since that doesn't involve a superfluous "byval".
+ */
+ /* (should be fixed when we do a pull down of the latest clang)
+DO_FOR_TYPE(NONTRIV_CLASS_I32_I32)
+DO_FOR_TYPE(NONTRIV_CLASS_DOUBLE_DOUBLE)
+*/
+
+DO_FOR_TYPE(MEMBER_PTRS)
+DO_FOR_TYPE(MEMBER_FUN_PTRS)
+
+/*
+ * Vector arguments currently have different name mangling (gcc < 4.5 bug).
+ * http://code.google.com/p/nativeclient/issues/detail?id=2399
+ *
+ * pnacl: error: undefined reference to 'mod2a___m128(float __vector(4))'
+ * _Z12mod1b___m128Dv4_f (clang default)
+ * vs
+ * nnacl: error: undefined reference to 'mod1b___m128(float __vector)'
+ * _Z12mod1b___m128U8__vectorf (gcc default)
+ *
+ * If these were exported as C, it would be okay. Set extern "C" for now.
+ * Be careful not to do extern "C" in contexts which are not declarations
+ * or definitions.
+ */
+#if !defined(NOT_DECLARING_DEFINING) && defined(__cplusplus)
+extern "C" {
+#endif
+
+DO_FOR_TYPE(__m128)
+
+#if !defined(NOT_DECLARING_DEFINING) && defined(__cplusplus)
+}
+#endif
