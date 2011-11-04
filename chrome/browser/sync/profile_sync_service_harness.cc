@@ -1068,7 +1068,7 @@ bool ProfileSyncServiceHarness::EnableEncryptionForType(
   service_->GetEncryptedDataTypes(&encrypted_types);
   if (encrypted_types.count(type) > 0)
     return true;
-  service_->SetEncryptEverything(true);
+  service_->EnableEncryptEverything();
 
   // In order to kick off the encryption we have to reconfigure. Just grab the
   // currently synced types and use them.

@@ -8,6 +8,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 
@@ -20,6 +21,7 @@ using typed_urls_helper::AssertAllProfilesHaveSameURLsAsVerifier;
 using typed_urls_helper::AssertURLRowVectorsAreEqual;
 using typed_urls_helper::DeleteUrlFromHistory;
 using typed_urls_helper::GetTypedUrlsFromClient;
+using typed_urls_helper::GetUrlFromClient;
 using typed_urls_helper::GetVisitsFromClient;
 using typed_urls_helper::RemoveVisitsFromClient;
 
@@ -366,4 +368,27 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   for (size_t i = 0; i < urls.size(); ++i) {
     ASSERT_NE(imported_url, urls[i].url());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, BookmarksWithTypedVisit) {
+  GURL bookmark_url("http://www.bookmark.google.com/");
+  ASSERT_TRUE(SetupClients());
+  // Create a bookmark - this should yield a row in the DB.
+  const BookmarkNode* node = bookmarks_helper::AddURL(
+      0, bookmarks_helper::IndexedURLTitle(0), bookmark_url);
+  bookmarks_helper::SetFavicon(0, node, bookmarks_helper::CreateFavicon(254));
+  history::URLRow row;
+  ASSERT_TRUE(GetUrlFromClient(0, bookmark_url, &row));
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  // Now, add a typed visit to the bookmark URL and sync it over - this should
+  // not cause a crash.
+  AddUrlToHistory(0, bookmark_url);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  AssertAllProfilesHaveSameURLsAsVerifier();
+  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  ASSERT_EQ(1U, urls.size());
+  ASSERT_EQ(bookmark_url, urls[0].url());
+  ASSERT_EQ(1, GetVisitCountForFirstURL(0));
 }

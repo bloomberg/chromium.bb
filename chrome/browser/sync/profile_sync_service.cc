@@ -1333,16 +1333,12 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase,
   }
 }
 
-void ProfileSyncService::SetEncryptEverything(bool encrypt_everything) {
+void ProfileSyncService::EnableEncryptEverything() {
   // Tests override sync_initialized() to always return true, so we
   // must check that instead of |backend_initialized_|.
   // TODO(akalin): Fix the above. :/
   DCHECK(sync_initialized());
-  // Callers shouldn't try to disable encrypt everything once it has
-  // already succeeded.
-  if (!encrypt_everything)
-    DCHECK(!encrypt_everything_);
-  encryption_pending_ = encrypt_everything;
+  encryption_pending_ = true;
 }
 
 bool ProfileSyncService::encryption_pending() const {

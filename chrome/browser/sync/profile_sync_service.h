@@ -453,10 +453,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void SetPassphrase(const std::string& passphrase,
                              bool is_explicit);
 
-  // If |encrypt_all| is true, turns on encryption for all sync data. Else, only
-  // sensitive types are encrypted (see cryptographer.h for the list of
-  // sensitive types). Passwords is always considered a sensitive type.
-  virtual void SetEncryptEverything(bool encrypt_all);
+  // Turns on encryption for all data. Callers must call OnUserChoseDatatypes()
+  // after calling this to force the encryption to occur.
+  virtual void EnableEncryptEverything();
 
   // Returns true if we are currently set to encrypt all the sync data. Note:
   // this is based on the cryptographer's settings, so if the user has recently

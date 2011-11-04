@@ -54,6 +54,30 @@ class GetTypedUrlsTask : public HistoryDBTask {
   base::WaitableEvent* wait_event_;
 };
 
+class GetUrlTask : public HistoryDBTask {
+ public:
+  GetUrlTask(const GURL& url,
+             history::URLRow* row,
+             bool* found,
+             base::WaitableEvent* event)
+      : url_(url), row_(row), wait_event_(event), found_(found) {}
+
+  virtual bool RunOnDBThread(history::HistoryBackend* backend,
+                             history::HistoryDatabase* db) OVERRIDE {
+    // Fetch the typed URLs.
+    *found_ = backend->GetURL(url_, row_);
+    wait_event_->Signal();
+    return true;
+  }
+
+  virtual void DoneRunOnMainThread() OVERRIDE {}
+ private:
+  GURL url_;
+  history::URLRow* row_;
+  base::WaitableEvent* wait_event_;
+  bool* found_;
+};
+
 class GetVisitsTask : public HistoryDBTask {
  public:
   GetVisitsTask(history::URLID id,
@@ -138,6 +162,17 @@ std::vector<history::URLRow> GetTypedUrlsFromHistoryService(
   return rows;
 }
 
+bool GetUrlFromHistoryService(HistoryService* service,
+                              const GURL& url, history::URLRow* row) {
+  CancelableRequestConsumer cancelable_consumer;
+  base::WaitableEvent wait_event(true, false);
+  bool found;
+  service->ScheduleDBTask(new GetUrlTask(url, row, &found, &wait_event),
+                          &cancelable_consumer);
+  wait_event.Wait();
+  return found;
+}
+
 history::VisitVector GetVisitsFromHistoryService(HistoryService* service,
                                                  history::URLID id) {
   CancelableRequestConsumer cancelable_consumer;
@@ -168,6 +203,12 @@ std::vector<history::URLRow> GetTypedUrlsFromClient(int index) {
   HistoryService* service =
       test()->GetProfile(index)->GetHistoryServiceWithoutCreating();
   return GetTypedUrlsFromHistoryService(service);
+}
+
+bool GetUrlFromClient(int index, const GURL& url, history::URLRow* row) {
+  HistoryService* service =
+      test()->GetProfile(index)->GetHistoryServiceWithoutCreating();
+  return GetUrlFromHistoryService(service, url, row);
 }
 
 history::VisitVector GetVisitsFromClient(int index, history::URLID id) {

@@ -289,7 +289,9 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
   Advance(SyncSetupWizard::SETTING_UP);
 
   // Note: encryption will not occur until OnUserChoseDatatypes is called.
-  service_->SetEncryptEverything(configuration.encrypt_all);
+  if (configuration.encrypt_all)
+    service_->EnableEncryptEverything();
+
   bool set_new_decryption_passphrase = false;
   if (configuration.set_gaia_passphrase) {
     // Caller passed a gaia passphrase. This is illegal if we are currently

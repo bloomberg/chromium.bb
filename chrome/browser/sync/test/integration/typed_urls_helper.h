@@ -20,6 +20,10 @@ namespace typed_urls_helper {
 // Gets the typed URLs from a specific sync profile.
 std::vector<history::URLRow> GetTypedUrlsFromClient(int index);
 
+// Gets a specific url from a specific sync profile. Returns false if the URL
+// was not found in the history DB.
+bool GetUrlFromClient(int index, const GURL& url, history::URLRow* row);
+
 // Gets the visits for a URL from a specific sync profile.
 history::VisitVector GetVisitsFromClient(int index, history::URLID id);
 

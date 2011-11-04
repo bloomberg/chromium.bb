@@ -504,11 +504,10 @@ bool TypedUrlModelAssociator::WriteToHistoryBackend(
   if (updated_urls) {
     for (TypedUrlUpdateVector::const_iterator url = updated_urls->begin();
          url != updated_urls->end(); ++url) {
-      // This is an existing URL, so it should have a non-zero visit_count. It
-      // may not have a non-zero typed_count, however, as it could be a
-      // non-typed URL that is now transitioning to typed as the result of a
-      // new typed visit.
-      DCHECK(url->second.visit_count());
+      // This is an existing entry in the URL database. We don't verify the
+      // visit_count or typed_count values here, because either one (or both)
+      // could be zero in the case of bookmarks, or in the case of a URL
+      // transitioning from non-typed to typed as a result of this sync.
       DCHECK(IsAssociated(url->second.url().spec()));
       if (!history_backend_->UpdateURL(url->first, url->second)) {
         LOG(ERROR) << "Could not update page: " << url->second.url().spec();
