@@ -4,6 +4,7 @@
 
 #include "chrome/browser/bookmarks/bookmark_storage.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
@@ -89,8 +90,8 @@ class BookmarkStorage::LoadTask : public Task {
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            storage_.get(), &BookmarkStorage::OnLoadFinished,
+        base::Bind(
+            &BookmarkStorage::OnLoadFinished, storage_.get(),
             bookmark_file_exists, path_));
   }
 
