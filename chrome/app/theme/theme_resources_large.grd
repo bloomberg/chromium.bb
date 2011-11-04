@@ -151,10 +151,13 @@
         <include name="IDR_THEME_FRAME_INCOGNITO_LEFT" file="theme_frame_default2_incognito_upper_left.png" type="BINDATA" />
         <include name="IDR_THEME_FRAME_INCOGNITO_RIGHT" file="theme_frame_default2_incognito_upper_right.png" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="pp_ifdef('use_aura')">
+        <include name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background_aura.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('chromeos') and not pp_ifdef('use_aura')">
         <include name="IDR_THEME_TAB_BACKGROUND" file="large_theme_tab_background2.png" type="BINDATA" />
       </if>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not pp_ifdef('chromeos') and not pp_ifdef('use_aura')">
         <include name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('chromeos') or is_macosx">
