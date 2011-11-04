@@ -36,7 +36,6 @@ class FileSystemFileUtilProxy {
   typedef base::FileUtilProxy::Entry Entry;
 
   typedef base::FileUtilProxy::StatusCallback StatusCallback;
-  typedef base::FileUtilProxy::CreateOrOpenCallback CreateOrOpenCallback;
   typedef base::Callback<void(PlatformFileError,
                               bool /* created */
                               )> EnsureFileExistsCallback;
@@ -51,23 +50,6 @@ class FileSystemFileUtilProxy {
   typedef Callback2<PlatformFileError /* error code */,
                     const FilePath& /* local_path, where possible */
                     >::Type GetLocalPathCallback;
-
-  // Creates or opens a file with the given flags.  It is invalid to pass NULL
-  // for the callback.
-  // If PLATFORM_FILE_CREATE is set in |file_flags| it always tries to create
-  // a new file at the given |file_path| and calls back with
-  // PLATFORM_FILE_ERROR_FILE_EXISTS if the |file_path| already exists.
-  static bool CreateOrOpen(const FileSystemOperationContext& context,
-                           scoped_refptr<MessageLoopProxy> message_loop_proxy,
-                           const FilePath& file_path,
-                           int file_flags,
-                           const CreateOrOpenCallback& callback);
-
-  // Close the given file handle.
-  static bool Close(const FileSystemOperationContext& context,
-                    scoped_refptr<MessageLoopProxy> message_loop_proxy,
-                    PlatformFile,
-                    const StatusCallback& callback);
 
   // Ensures that the given |file_path| exist.  This creates a empty new file
   // at |file_path| if the |file_path| does not exist.

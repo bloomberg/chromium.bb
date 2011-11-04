@@ -71,10 +71,17 @@ FileSystemOperation::FileSystemOperation(
 }
 
 FileSystemOperation::~FileSystemOperation() {
-  if (file_writer_delegate_.get())
-    FileSystemFileUtilProxy::Close(
-        operation_context_, proxy_, file_writer_delegate_->file(),
+  if (file_writer_delegate_.get()) {
+    FileSystemOperationContext* c =
+        new FileSystemOperationContext(operation_context_);
+    base::FileUtilProxy::RelayClose(
+        proxy_,
+        base::Bind(&FileSystemFileUtil::Close,
+                   base::Unretained(c->src_file_util()),
+                   base::Owned(c)),
+        file_writer_delegate_->file(),
         FileSystemFileUtilProxy::StatusCallback());
+  }
 }
 
 void FileSystemOperation::OpenFileSystem(
@@ -366,12 +373,19 @@ void FileSystemOperation::DelayedWriteForQuota(quota::QuotaStatusCode status,
       operation_context_.src_origin_url(),
       operation_context_.src_type()));
 
-  FileSystemFileUtilProxy::CreateOrOpen(
-      operation_context_,
+  int file_flags = base::PLATFORM_FILE_OPEN |
+                   base::PLATFORM_FILE_WRITE |
+                   base::PLATFORM_FILE_ASYNC;
+
+  base::FileUtilProxy::RelayCreateOrOpen(
       proxy_,
-      src_virtual_path_,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE |
-          base::PLATFORM_FILE_ASYNC,
+      base::Bind(&FileSystemFileUtil::CreateOrOpen,
+                 base::Unretained(operation_context_.src_file_util()),
+                 base::Unretained(&operation_context_),
+                 src_virtual_path_, file_flags),
+      base::Bind(&FileSystemFileUtil::Close,
+                 base::Unretained(operation_context_.src_file_util()),
+                 base::Unretained(&operation_context_)),
       base::Bind(&FileSystemOperation::OnFileOpenedForWrite,
                  weak_factory_.GetWeakPtr()));
 }
@@ -478,8 +492,15 @@ void FileSystemOperation::DelayedOpenFileForQuota(quota::QuotaStatusCode status,
       operation_context_.src_origin_url(),
       operation_context_.src_type()));
 
-  FileSystemFileUtilProxy::CreateOrOpen(
-      operation_context_, proxy_, src_virtual_path_, file_flags_,
+  base::FileUtilProxy::RelayCreateOrOpen(
+      proxy_,
+      base::Bind(&FileSystemFileUtil::CreateOrOpen,
+                 base::Unretained(operation_context_.src_file_util()),
+                 base::Unretained(&operation_context_),
+                 src_virtual_path_, file_flags_),
+      base::Bind(&FileSystemFileUtil::Close,
+                 base::Unretained(operation_context_.src_file_util()),
+                 base::Unretained(&operation_context_)),
       base::Bind(&FileSystemOperation::DidOpenFile,
                  weak_factory_.GetWeakPtr()));
 }
