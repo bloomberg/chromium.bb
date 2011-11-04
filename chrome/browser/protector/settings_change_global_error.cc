@@ -134,12 +134,6 @@ string16 SettingsChangeGlobalError::GetBubbleViewMessage() {
 
 string16 SettingsChangeGlobalError::GetBubbleViewAcceptButtonLabel() {
   SettingChange* change = changes_.front();
-  return l10n_util::GetStringFUTF16(kBubbleChangeSettingIDs[change->type()],
-                                    change->GetNewSetting());
-}
-
-string16 SettingsChangeGlobalError::GetBubbleViewCancelButtonLabel() {
-  SettingChange* change = changes_.front();
   string16 old_setting = change->GetOldSetting();
   if (old_setting.empty()) {
     return l10n_util::GetStringUTF16(IDS_SETTINGS_CHANGE_OPEN_SETTINGS);
@@ -150,22 +144,24 @@ string16 SettingsChangeGlobalError::GetBubbleViewCancelButtonLabel() {
   }
 }
 
-bool SettingsChangeGlobalError::IsAcceptButtonDefault() {
-  return false;
+string16 SettingsChangeGlobalError::GetBubbleViewCancelButtonLabel() {
+  SettingChange* change = changes_.front();
+  return l10n_util::GetStringFUTF16(kBubbleChangeSettingIDs[change->type()],
+                                    change->GetNewSetting());
 }
 
 void SettingsChangeGlobalError::BubbleViewAcceptButtonPressed() {
   closed_by_button_ = true;
   DCHECK(delegate_);
-  VLOG(1) << "Apply changes";
-  delegate_->OnApplyChanges();
+  VLOG(1) << "Discard changes";
+  delegate_->OnDiscardChanges();
 }
 
 void SettingsChangeGlobalError::BubbleViewCancelButtonPressed() {
   closed_by_button_ = true;
   DCHECK(delegate_);
-  VLOG(1) << "Discard changes";
-  delegate_->OnDiscardChanges();
+  VLOG(1) << "Apply changes";
+  delegate_->OnApplyChanges();
 }
 
 void SettingsChangeGlobalError::RemoveFromProfile() {

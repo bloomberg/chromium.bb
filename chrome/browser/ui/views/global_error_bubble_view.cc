@@ -53,18 +53,16 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(Browser* browser,
   message_label_->SetMultiLine(true);
   message_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
-  bool accept_default = error_->IsAcceptButtonDefault();
   string16 accept_string(error_->GetBubbleViewAcceptButtonLabel());
   scoped_ptr<views::TextButton> accept_button(
       new views::NativeTextButton(this, accept_string));
-  accept_button->SetIsDefault(accept_default);
+  accept_button->SetIsDefault(true);
   accept_button->set_tag(TAG_ACCEPT_BUTTON);
 
   string16 cancel_string(error_->GetBubbleViewCancelButtonLabel());
   scoped_ptr<views::TextButton> cancel_button;
   if (!cancel_string.empty()) {
     cancel_button.reset(new views::NativeTextButton(this, cancel_string));
-    cancel_button->SetIsDefault(!accept_default);
     cancel_button->set_tag(TAG_CANCEL_BUTTON);
   }
 
@@ -103,11 +101,11 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(Browser* browser,
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 
   layout->StartRow(0, 2);
+  layout->AddView(accept_button.release());
   if (cancel_button.get())
     layout->AddView(cancel_button.release());
   else
     layout->SkipColumns(1);
-  layout->AddView(accept_button.release());
 }
 
 GlobalErrorBubbleView::~GlobalErrorBubbleView() {

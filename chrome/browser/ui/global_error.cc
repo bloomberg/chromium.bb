@@ -34,7 +34,3 @@ void GlobalError::ShowBubbleView(Browser* browser) {
 int GlobalError::GetBubbleViewIconResourceID() {
   return IDR_INPUT_ALERT;
 }
-
-bool GlobalError::IsAcceptButtonDefault() {
-  return true;
-}

@@ -50,7 +50,6 @@ class SettingsChangeGlobalError : public GlobalError {
   virtual string16 GetBubbleViewMessage() OVERRIDE;
   virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
   virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
-  virtual bool IsAcceptButtonDefault() OVERRIDE;
   virtual void BubbleViewDidClose() OVERRIDE;
   virtual void BubbleViewAcceptButtonPressed() OVERRIDE;
   virtual void BubbleViewCancelButtonPressed() OVERRIDE;

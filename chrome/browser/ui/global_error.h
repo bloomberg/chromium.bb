@@ -50,9 +50,6 @@ class GlobalError {
   // Returns the cancel button label for the bubble view. To hide the cancel
   // button return an empty string.
   virtual string16 GetBubbleViewCancelButtonLabel() = 0;
-  // Returns true if the accept button should be the default one (activated by
-  // Enter). Otherwise, the cancel button is default.
-  virtual bool IsAcceptButtonDefault();
   // Called when the bubble view is closed.
   virtual void BubbleViewDidClose() = 0;
   // Called when the user clicks on the accept button.

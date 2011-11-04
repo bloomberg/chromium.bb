@@ -91,12 +91,7 @@ GlobalErrorBubble::GlobalErrorBubble(Profile* profile,
   gtk_box_pack_start(GTK_BOX(bottom), accept_button, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(content), bottom, FALSE, FALSE, 0);
 
-  if (error_->IsAcceptButtonDefault())
-    gtk_widget_grab_focus(accept_button);
-  else if (cancel_button)
-    gtk_widget_grab_focus(cancel_button);
-  else
-    NOTREACHED();
+  gtk_widget_grab_focus(accept_button);
 
   g_signal_connect(accept_button, "clicked",
                    G_CALLBACK(OnAcceptButtonThunk), this);
