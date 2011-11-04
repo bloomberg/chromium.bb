@@ -344,5 +344,23 @@ namespace base {
 enum LinkerInitialized { LINKER_INITIALIZED };
 }  // base
 
+// UnaligndLoad32 is put here instead of base/port.h to
+// avoid the circular dependency between port.h and basictypes.h
+// ARM does not support unaligned memory access.
+#if defined(ARCH_CPU_X86_FAMILY)
+// x86 and x86-64 can perform unaligned loads/stores directly;
+inline uint32 UnalignedLoad32(const void* p) {
+  return *reinterpret_cast<const uint32*>(p);
+}
+#else
+#define NEED_ALIGNED_LOADS
+// If target architecture does not support unaligned loads and stores,
+// use memcpy version of UNALIGNED_LOAD32.
+inline uint32 UnalignedLoad32(const void* p) {
+  uint32 t;
+  memcpy(&t, reinterpret_cast<const uint8*>(p), sizeof(t));
+  return t;
+}
 
+#endif
 #endif  // BASE_BASICTYPES_H_

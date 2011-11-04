@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "base/basictypes.h"
 #include "encodings/lang_enc.h"
 #include "encodings/compact_lang_det/utf8propjustletter.h"
 #include "encodings/compact_lang_det/utf8propletterscriptnum.h"
@@ -339,6 +340,11 @@ int ScriptScanner::SkipToFrontOfSpan(const char* src, int len, int* script) {
   return skip;
 }
 
+#ifdef NEED_ALIGNED_LOADS
+static const bool kNeedsAlignedLoads = true;
+#else
+static const bool kNeedsAlignedLoads = false;
+#endif
 
 
 // Copy next run of same-script non-tag letters to buffer [NUL terminated]
@@ -409,7 +415,7 @@ bool ScriptScanner::GetOneScriptSpan(getone::LangSpan* span) {
         // Real letter, safely copy up to 4 bytes, increment by 1..4
         // Will update by 1..4 bytes at Advance, below
         tlen = plen = cld_UniLib::OneCharLen(next_byte_ + take);
-        if (take < (byte_length_ - 3)) {
+        if (!kNeedsAlignedLoads && (take < (byte_length_ - 3))) {
           // Fast case
           *reinterpret_cast<uint32*>(script_buffer_ + put) =
             *reinterpret_cast<const uint32*>(next_byte_ + take);

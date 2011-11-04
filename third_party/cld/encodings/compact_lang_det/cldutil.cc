@@ -4,6 +4,8 @@
 
 #include <string>
 #include "encodings/compact_lang_det/cldutil.h"
+
+#include "base/basictypes.h"
 #include "encodings/compact_lang_det/cldutil_dbg.h"
 #include "encodings/compact_lang_det/generated/compact_lang_det_generated_meanscore.h"
 #include "encodings/compact_lang_det/utf8propletterscriptnum.h"
@@ -95,17 +97,16 @@ uint32 cld::BiHashV25(const char* word_ptr, int bytecount) {
   if (bytecount == 0) {
     return 0;
   }
-  const uint32* word_ptr32 = reinterpret_cast<const uint32*>(word_ptr);
   uint32 word0, word1;
   if (bytecount <= 4) {
-    word0 = word_ptr32[0] & kWordMask0[bytecount & 3];
+    word0 = UnalignedLoad32(word_ptr) & kWordMask0[bytecount & 3];
     word0 = word0 ^ (word0 >> 3);
     return word0;
   }
   // Else do 8 bytes
-  word0 = word_ptr32[0];
+  word0 = UnalignedLoad32(word_ptr);
   word0 = word0 ^ (word0 >> 3);
-  word1 = word_ptr32[1] & kWordMask0[bytecount & 3];
+  word1 = UnalignedLoad32(word_ptr + 4) & kWordMask0[bytecount & 3];
   word1 = word1 ^ (word1 << 18);
   return word0 + word1;
 }
@@ -153,25 +154,24 @@ uint32 cld::BiHashV25(const char* word_ptr, int bytecount) {
 // OVERSHOOTS up to 3 bytes
 // For runtime use of tables
 uint32 QuadHashV25Mix(const char* word_ptr, int bytecount, uint32 prepost) {
-  const uint32* word_ptr32 = reinterpret_cast<const uint32*>(word_ptr);
   uint32 word0, word1, word2;
   if (bytecount <= 4) {
-    word0 = word_ptr32[0] & kWordMask0[bytecount & 3];
+    word0 = UnalignedLoad32(word_ptr) & kWordMask0[bytecount & 3];
     word0 = word0 ^ (word0 >> 3);
     return word0 ^ prepost;
   } else if (bytecount <= 8) {
-    word0 = word_ptr32[0];
+    word0 = UnalignedLoad32(word_ptr);
     word0 = word0 ^ (word0 >> 3);
-    word1 = word_ptr32[1] & kWordMask0[bytecount & 3];
+    word1 = UnalignedLoad32(word_ptr + 4) & kWordMask0[bytecount & 3];
     word1 = word1 ^ (word1 << 4);
     return (word0 ^ prepost) + word1;
   }
   // else do 12 bytes
-  word0 = word_ptr32[0];
+  word0 = UnalignedLoad32(word_ptr);
   word0 = word0 ^ (word0 >> 3);
-  word1 = word_ptr32[1];
+  word1 = UnalignedLoad32(word_ptr + 4);
   word1 = word1 ^ (word1 << 4);
-  word2 = word_ptr32[2] & kWordMask0[bytecount & 3];
+  word2 = UnalignedLoad32(word_ptr + 8) & kWordMask0[bytecount & 3];
   word2 = word2 ^ (word2 << 2);
   return (word0 ^ prepost) + word1 + word2;
 }
@@ -223,7 +223,6 @@ uint32 cld::QuadHashV25Underscore(const char* word_ptr, int bytecount) {
 // The high 8 bits are a simple sum of all bytes, shifted by 0/1/2/3 bits each
 // For runtime use of tables V3
 uint64 OctaHash40Mix(const char* word_ptr, int bytecount, uint64 prepost) {
-  const uint32* word_ptr32 = reinterpret_cast<const uint32*>(word_ptr);
   uint64 word0;
   uint64 word1;
   uint64 sum;
@@ -232,91 +231,91 @@ uint64 OctaHash40Mix(const char* word_ptr, int bytecount, uint64 prepost) {
   if (word_ptr[bytecount] == ' ') {prepost |= kPostSpaceIndicator;}
   switch ((bytecount - 1) >> 2) {
   case 0:       // 1..4 bytes
-    word0 = word_ptr32[0] & kWordMask0[bytecount & 3];
+    word0 = UnalignedLoad32(word_ptr) & kWordMask0[bytecount & 3];
     sum = word0;
     word0 = word0 ^ (word0 >> 3);
     break;
   case 1:       // 5..8 bytes
-    word0 = word_ptr32[0];
+    word0 = UnalignedLoad32(word_ptr);
     sum = word0;
     word0 = word0 ^ (word0 >> 3);
-    word1 = word_ptr32[1] & kWordMask0[bytecount & 3];
+    word1 = UnalignedLoad32(word_ptr + 4) & kWordMask0[bytecount & 3];
     sum += word1;
     word1 = word1 ^ (word1 << 4);
     word0 += word1;
     break;
   case 2:       // 9..12 bytes
-    word0 = word_ptr32[0];
+    word0 = UnalignedLoad32(word_ptr);
     sum = word0;
     word0 = word0 ^ (word0 >> 3);
-    word1 = word_ptr32[1];
+    word1 = UnalignedLoad32(word_ptr + 4);
     sum += word1;
     word1 = word1 ^ (word1 << 4);
     word0 += word1;
-    word1 = word_ptr32[2] & kWordMask0[bytecount & 3];
+    word1 = UnalignedLoad32(word_ptr + 8) & kWordMask0[bytecount & 3];
     sum += word1;
     word1 = word1 ^ (word1 << 2);
     word0 += word1;
     break;
   case 3:       // 13..16 bytes
-    word0 = word_ptr32[0];
+    word0 = UnalignedLoad32(word_ptr);
     sum = word0;
     word0 = word0 ^ (word0 >> 3);
-    word1 = word_ptr32[1];
+    word1 = UnalignedLoad32(word_ptr + 4);
     sum += word1;
     word1 = word1 ^ (word1 << 4);
     word0 += word1;
-    word1 = word_ptr32[2];
+    word1 = UnalignedLoad32(word_ptr + 8);
     sum += word1;
     word1 = word1 ^ (word1 << 2);
     word0 += word1;
-    word1 = word_ptr32[3] & kWordMask0[bytecount & 3];
+    word1 = UnalignedLoad32(word_ptr + 12) & kWordMask0[bytecount & 3];
     sum += word1;
     word1 = word1 ^ (word1 >> 8);
     word0 += word1;
     break;
   case 4:       // 17..20 bytes
-    word0 = word_ptr32[0];
+    word0 = UnalignedLoad32(word_ptr);
     sum = word0;
     word0 = word0 ^ (word0 >> 3);
-    word1 = word_ptr32[1];
+    word1 = UnalignedLoad32(word_ptr + 4);
     sum += word1;
     word1 = word1 ^ (word1 << 4);
     word0 += word1;
-    word1 = word_ptr32[2];
+    word1 = UnalignedLoad32(word_ptr + 8);
     sum += word1;
     word1 = word1 ^ (word1 << 2);
     word0 += word1;
-    word1 = word_ptr32[3];
+    word1 = UnalignedLoad32(word_ptr + 12);
     sum += word1;
     word1 = word1 ^ (word1 >> 8);
     word0 += word1;
-    word1 = word_ptr32[4] & kWordMask0[bytecount & 3];
+    word1 = UnalignedLoad32(word_ptr + 16) & kWordMask0[bytecount & 3];
     sum += word1;
     word1 = word1 ^ (word1 >> 4);
     word0 += word1;
     break;
   default:      // 21..24 bytes and higher (ignores beyond 24)
-    word0 = word_ptr32[0];
+    word0 = UnalignedLoad32(&word_ptr);
     sum = word0;
     word0 = word0 ^ (word0 >> 3);
-    word1 = word_ptr32[1];
+    word1 = UnalignedLoad32(word_ptr + 4);
     sum += word1;
     word1 = word1 ^ (word1 << 4);
     word0 += word1;
-    word1 = word_ptr32[2];
+    word1 = UnalignedLoad32(word_ptr + 8);
     sum += word1;
     word1 = word1 ^ (word1 << 2);
     word0 += word1;
-    word1 = word_ptr32[3];
+    word1 = UnalignedLoad32(word_ptr + 12);
     sum += word1;
     word1 = word1 ^ (word1 >> 8);
     word0 += word1;
-    word1 = word_ptr32[4];
+    word1 = UnalignedLoad32(word_ptr + 16);
     sum += word1;
     word1 = word1 ^ (word1 >> 4);
     word0 += word1;
-    word1 = word_ptr32[5] & kWordMask0[bytecount & 3];
+    word1 = UnalignedLoad32(word_ptr + 20) & kWordMask0[bytecount & 3];
     sum += word1;
     word1 = word1 ^ (word1 >> 6);
     word0 += word1;

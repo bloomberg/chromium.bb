@@ -4,6 +4,8 @@
 
 #include "encodings/compact_lang_det/win/cld_utf8statetable.h"
 
+#include "base/basictypes.h"
+
 // Return true if current Tbl pointer is within state0 range
 // Note that unsigned compare checks both ends of range simultaneously
 static inline bool InStateZero(const UTF8ScanObj* st, const uint8* Tbl) {
@@ -158,8 +160,8 @@ DoAgain:
   uint32 losub = st->losub;
   uint32 hiadd = st->hiadd;
   while (src < srclimit8) {
-    uint32 s0123 = (reinterpret_cast<const uint32 *>(src))[0];
-    uint32 s4567 = (reinterpret_cast<const uint32 *>(src))[1];
+    uint32 s0123 = UnalignedLoad32(src);
+    uint32 s4567 = UnalignedLoad32(src + 4);
     src += 8;
     // This is a fast range check for all bytes in [lowsub..0x80-hiadd)
     uint32 temp = (s0123 - losub) | (s0123 + hiadd) |
