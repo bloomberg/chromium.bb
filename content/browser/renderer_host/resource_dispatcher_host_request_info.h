@@ -46,6 +46,8 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
       int request_id,
       bool is_main_frame,
       int64 frame_id,
+      bool parent_is_main_frame,
+      int64 parent_frame_id,
       ResourceType::Type resource_type,
       content::PageTransition transition_type,
       uint64 upload_size,
@@ -111,6 +113,13 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
 
   // Frame ID that sent this resource request. -1 if unknown / invalid.
   int64 frame_id() const { return frame_id_; }
+
+  // True if |parent_frame_id_| represents a main frame in the RenderView.
+  bool parent_is_main_frame() const { return parent_is_main_frame_; }
+
+  // Frame ID of parent frame of frame that sent this resource request.
+  // -1 if unknown / invalid.
+  int64 parent_frame_id() const { return parent_frame_id_; }
 
   // Number of messages we've sent to the renderer that we haven't gotten an
   // ACK for. This allows us to avoid having too many messages in flight.
@@ -220,6 +229,8 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   int request_id_;
   bool is_main_frame_;
   int64 frame_id_;
+  bool parent_is_main_frame_;
+  int64 parent_frame_id_;
   int pending_data_count_;
   bool is_download_;
   bool allow_download_;

@@ -14,6 +14,7 @@ namespace extension_webrequest_api_constants {
 extern const char kChallengerKey[];
 extern const char kErrorKey[];
 extern const char kFrameIdKey[];
+extern const char kParentFrameIdKey[];
 extern const char kFromCache[];
 extern const char kHostKey[];
 extern const char kIpKey[];

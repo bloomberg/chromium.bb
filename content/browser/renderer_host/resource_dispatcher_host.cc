@@ -597,6 +597,8 @@ void ResourceDispatcherHost::BeginRequest(
           request_id,
           request_data.is_main_frame,
           request_data.frame_id,
+          request_data.parent_is_main_frame,
+          request_data.parent_frame_id,
           request_data.resource_type,
           request_data.transition_type,
           upload_size,
@@ -746,21 +748,24 @@ ResourceDispatcherHostRequestInfo* ResourceDispatcherHost::CreateRequestInfo(
     int route_id,
     bool download,
     const content::ResourceContext& context) {
-  return new ResourceDispatcherHostRequestInfo(handler,
-                                               ChildProcessInfo::RENDER_PROCESS,
-                                               child_id,
-                                               route_id,
-                                               0,
-                                               request_id_,
-                                               false,     // is_main_frame
-                                               -1,        // frame_id
-                                               ResourceType::SUB_RESOURCE,
-                                               content::PAGE_TRANSITION_LINK,
-                                               0,         // upload_size
-                                               download,  // is_download
-                                               download,  // allow_download
-                                               false,     // has_user_gesture
-                                               &context);
+  return new ResourceDispatcherHostRequestInfo(
+      handler,
+      ChildProcessInfo::RENDER_PROCESS,
+      child_id,
+      route_id,
+      0,
+      request_id_,
+      false,     // is_main_frame
+      -1,        // frame_id
+      false,     // parent_is_main_frame
+      -1,        // parent_frame_id
+      ResourceType::SUB_RESOURCE,
+      content::PAGE_TRANSITION_LINK,
+      0,         // upload_size
+      download,  // is_download
+      download,  // allow_download
+      false,     // has_user_gesture
+      &context);
 }
 
 void ResourceDispatcherHost::OnSwapOutACK(

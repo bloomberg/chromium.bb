@@ -2648,8 +2648,12 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
     transition_type = data_state->transition_type();
   }
 
-  request.setExtraData(new RequestExtraData((frame == top_frame),
-      frame->identifier(), transition_type));
+  request.setExtraData(
+      new RequestExtraData((frame == top_frame),
+                           frame->identifier(),
+                           frame->parent() == top_frame,
+                           frame->parent() ? frame->parent()->identifier() : -1,
+                           transition_type));
 
   NavigationState* top_data_state =
       NavigationState::FromDataSource(top_data_source);

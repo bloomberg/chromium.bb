@@ -204,6 +204,8 @@ bool ParseResourceType(const std::string& type_str,
 void ExtractRequestInfoDetails(net::URLRequest* request,
                                bool* is_main_frame,
                                int64* frame_id,
+                               bool* parent_is_main_frame,
+                               int64* parent_frame_id,
                                int* tab_id,
                                int* window_id,
                                ResourceType::Type* resource_type) {
@@ -216,6 +218,8 @@ void ExtractRequestInfoDetails(net::URLRequest* request,
       info->child_id(), info->route_id(), tab_id, window_id);
   *frame_id = info->frame_id();
   *is_main_frame = info->is_main_frame();
+  *parent_frame_id = info->parent_frame_id();
+  *parent_is_main_frame = info->parent_is_main_frame();
 
   // Restrict the resource type to the values we care about.
   ResourceType::Type* iter =
@@ -231,19 +235,26 @@ void ExtractRequestInfoDetails(net::URLRequest* request,
 void ExtractRequestInfo(net::URLRequest* request, DictionaryValue* out) {
   bool is_main_frame = false;
   int64 frame_id = -1;
+  bool parent_is_main_frame = false;
+  int64 parent_frame_id = -1;
   int frame_id_for_extension = -1;
+  int parent_frame_id_for_extension = -1;
   int tab_id = -1;
   int window_id = -1;
   ResourceType::Type resource_type = ResourceType::LAST_TYPE;
-  ExtractRequestInfoDetails(request, &is_main_frame, &frame_id, &tab_id,
+  ExtractRequestInfoDetails(request, &is_main_frame, &frame_id,
+                            &parent_is_main_frame, &parent_frame_id, &tab_id,
                             &window_id, &resource_type);
   frame_id_for_extension = GetFrameId(is_main_frame, frame_id);
+  parent_frame_id_for_extension = GetFrameId(parent_is_main_frame,
+                                             parent_frame_id);
 
   out->SetString(keys::kRequestIdKey,
                  base::Uint64ToString(request->identifier()));
   out->SetString(keys::kUrlKey, request->url().spec());
   out->SetString(keys::kMethodKey, request->method());
   out->SetInteger(keys::kFrameIdKey, frame_id_for_extension);
+  out->SetInteger(keys::kParentFrameIdKey, parent_frame_id_for_extension);
   out->SetInteger(keys::kTabIdKey, tab_id);
   out->SetString(keys::kTypeKey, ResourceTypeToString(resource_type));
   out->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
@@ -1083,12 +1094,15 @@ bool ExtensionWebRequestEventRouter::IsPageLoad(
     net::URLRequest* request) const {
   bool is_main_frame = false;
   int64 frame_id = -1;
+  bool parent_is_main_frame = false;
+  int64 parent_frame_id = -1;
   int tab_id = -1;
   int window_id = -1;
   ResourceType::Type resource_type = ResourceType::LAST_TYPE;
 
-  ExtractRequestInfoDetails(request, &is_main_frame, &frame_id, &tab_id,
-                            &window_id, &resource_type);
+  ExtractRequestInfoDetails(request, &is_main_frame, &frame_id,
+                            &parent_is_main_frame, &parent_frame_id,
+                            &tab_id, &window_id, &resource_type);
 
   return resource_type == ResourceType::MAIN_FRAME;
 }
@@ -1167,13 +1181,16 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
 
   bool is_main_frame = false;
   int64 frame_id = -1;
+  bool parent_is_main_frame = false;
+  int64 parent_frame_id = -1;
   int tab_id = -1;
   int window_id = -1;
   ResourceType::Type resource_type = ResourceType::LAST_TYPE;
   const GURL& url = request->url();
 
-  ExtractRequestInfoDetails(request, &is_main_frame, &frame_id, &tab_id,
-                            &window_id, &resource_type);
+  ExtractRequestInfoDetails(request, &is_main_frame, &frame_id,
+                            &parent_is_main_frame, &parent_frame_id,
+                            &tab_id, &window_id, &resource_type);
 
   std::vector<const ExtensionWebRequestEventRouter::EventListener*>
       matching_listeners;

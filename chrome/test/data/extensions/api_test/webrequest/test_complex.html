@@ -26,7 +26,9 @@ runTests([
           details: {
             type: "sub_frame",
             url: getURL("complexLoad/b.html"),
-            frameUrl: getURL("complexLoad/b.html")
+            frameUrl: getURL("complexLoad/b.html"),
+            frameId: 1,
+            parentFrameId: 0,
           }
         },
         { label: "b.jpg-onBeforeRequest",
@@ -34,7 +36,9 @@ runTests([
           details: {
             type: "image",
             url: getURL("complexLoad/b.jpg"),
-            frameUrl: getURL("complexLoad/b.html")
+            frameUrl: getURL("complexLoad/b.html"),
+            frameId: 1,
+            parentFrameId: 0,
           }
         },
         { label: "a.html-onResponseStarted",
@@ -56,6 +60,8 @@ runTests([
             fromCache: false,
             statusCode: 200,
             statusLine: "HTTP/1.1 200 OK",
+            frameId: 1,
+            parentFrameId: 0,
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -67,6 +73,8 @@ runTests([
             fromCache: false,
             statusCode: 200,
             statusLine: "HTTP/1.1 200 OK",
+            frameId: 1,
+            parentFrameId: 0,
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -89,6 +97,8 @@ runTests([
             fromCache: false,
             statusCode: 200,
             statusLine: "HTTP/1.1 200 OK",
+            frameId: 1,
+            parentFrameId: 0,
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -100,6 +110,8 @@ runTests([
             fromCache: false,
             statusCode: 200,
             statusLine: "HTTP/1.1 200 OK",
+            frameId: 1,
+            parentFrameId: 0,
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -134,7 +146,9 @@ runTests([
             type: "image",
             url: getURL("complexLoad/b.jpg"),
             // As we do not listed to sub-frames we do not know the frameUrl.
-            frameUrl: "unknown frame URL"
+            frameUrl: "unknown frame URL",
+            frameId: 1,
+            parentFrameId: 0,
           }
         },
         { label: "a-onResponseStarted",
@@ -156,6 +170,8 @@ runTests([
             fromCache: false,
             statusCode: 200,
             statusLine: "HTTP/1.1 200 OK",
+            frameId: 1,
+            parentFrameId: 0,
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -178,6 +194,8 @@ runTests([
             fromCache: false,
             statusCode: 200,
             statusLine: "HTTP/1.1 200 OK",
+            frameId: 1,
+            parentFrameId: 0,
             // Request to chrome-extension:// url has no IP.
           }
         },

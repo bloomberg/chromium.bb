@@ -9,6 +9,7 @@ var capturedEventData;
 var expectedEventOrder;
 var tabId;
 var tabIdMap;
+var frameIdMap;
 var testServerPort;
 var testServer = "www.a.com";
 var eventsCaptured;
@@ -66,17 +67,24 @@ function expect(data, order, filter, extraInfoSpec) {
   expectedEventOrder = order;
   eventsCaptured = chrome.test.callbackAdded();
   tabAndFrameUrls = {};  // Maps "{tabId}-{frameId}" to the URL of the frame.
+  frameIdMap = {"-1": -1};
   removeListeners();
   initListeners(filter || {}, extraInfoSpec || []);
   // Fill in default values.
   for (var i = 0; i < expectedEventData.length; ++i) {
-    if (!expectedEventData[i].details.method) {
+    if (!('method' in expectedEventData[i].details)) {
       expectedEventData[i].details.method = "GET";
     }
-    if (!expectedEventData[i].details.tabId) {
+    if (!('tabId' in expectedEventData[i].details)) {
       expectedEventData[i].details.tabId = tabIdMap[tabId];
     }
-    if (!expectedEventData[i].details.type) {
+    if (!('frameId' in expectedEventData[i].details)) {
+      expectedEventData[i].details.frameId = 0;
+    }
+    if (!('parentFrameId' in expectedEventData[i].details)) {
+      expectedEventData[i].details.parentFrameId = -1;
+    }
+    if (!('type' in expectedEventData[i].details)) {
       expectedEventData[i].details.type = "main_frame";
     }
   }
@@ -162,7 +170,17 @@ function captureEvent(name, details, callback) {
     }
     details.frameUrl = tabAndFrameUrls[key] || "unknown frame URL";
   }
-  delete details.frameId;
+
+  // This assigns unique IDs to frames. The new IDs are only deterministic, if
+  // the frames documents are loaded in order. Don't write browser tests with
+  // more than one frame ID and rely on their numbers.
+  if (!(details.frameId in frameIdMap)) {
+    // Subtract one to discount for {"-1": -1} mapping that always exists.
+    // This gives the first frame the ID 0.
+    frameIdMap[details.frameId] = Object.keys(frameIdMap).length - 1;
+  }
+  details.frameId = frameIdMap[details.frameId];
+  details.parentFrameId = frameIdMap[details.parentFrameId];
 
   // This assigns unique IDs to newly opened tabs. However, the new IDs are only
   // deterministic, if the order in which the tabs are opened is deterministic.

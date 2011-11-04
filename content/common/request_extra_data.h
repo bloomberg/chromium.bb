@@ -18,16 +18,22 @@ class CONTENT_EXPORT RequestExtraData
  public:
   RequestExtraData(bool is_main_frame,
                    int64 frame_id,
+                   bool parent_is_main_frame,
+                   int64 parent_frame_id,
                    content::PageTransition transition_type);
   virtual ~RequestExtraData();
 
   bool is_main_frame() const { return is_main_frame_; }
   int64 frame_id() const { return frame_id_; }
+  bool parent_is_main_frame() const { return parent_is_main_frame_; }
+  int64 parent_frame_id() const { return parent_frame_id_; }
   content::PageTransition transition_type() const { return transition_type_; }
 
  private:
   bool is_main_frame_;
   int64 frame_id_;
+  bool parent_is_main_frame_;
+  int64 parent_frame_id_;
   content::PageTransition transition_type_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);

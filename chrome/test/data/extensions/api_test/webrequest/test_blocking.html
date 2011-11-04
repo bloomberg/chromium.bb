@@ -48,14 +48,7 @@ runTests([
       ],
       {},  // filter
       ["blocking"]);
-    navigateAndWait(getURL("complexLoad/b.html"), function() {
-      // Workaround for hanging test. For some reason, if we try to load
-      // a new URL in the current tab, it hangs on the buildbot.
-      // See http://crbug.com/91715
-      chrome.tabs.create({url: "about:blank"}, pass(function(tab) {
-        tabId = tab.id;
-      }));
-    });
+    navigateAndWait(getURL("complexLoad/b.html"));
   },
 
   // Navigates to a page with subresources, with a blocking handler that
@@ -68,7 +61,6 @@ runTests([
           event: "onBeforeRequest",
           details: {
             method: "GET",
-            tabId: tabId,
             type: "main_frame",
             url: getURLHttpSimpleLoad(),
             frameUrl: getURLHttpSimpleLoad()
@@ -260,7 +252,6 @@ runTests([
           event: "onBeforeRequest",
           details: {
             method: "GET",
-            tabId: tabId,
             type: "main_frame",
             url: getURLSetCookie(),
             frameUrl: getURLSetCookie()

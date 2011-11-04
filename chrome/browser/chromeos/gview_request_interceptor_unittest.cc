@@ -178,21 +178,24 @@ class GViewRequestInterceptorTest : public testing::Test {
     content::ResourceContext* context =
         content::MockResourceContext::GetInstance();
     ResourceDispatcherHostRequestInfo* info =
-        new ResourceDispatcherHostRequestInfo(handler_,
-                                              ChildProcessInfo::RENDER_PROCESS,
-                                              -1,          // child_id
-                                              MSG_ROUTING_NONE,
-                                              0,           // origin_pid
-                                              request->identifier(),
-                                              false,       // is_main_frame
-                                              -1,          // frame_id
-                                              ResourceType::MAIN_FRAME,
-                                              content::PAGE_TRANSITION_LINK,
-                                              0,           // upload_size
-                                              false,       // is_download
-                                              true,        // allow_download
-                                              false,       // has_user_gesture
-                                              context);
+        new ResourceDispatcherHostRequestInfo(
+            handler_,
+            ChildProcessInfo::RENDER_PROCESS,
+            -1,          // child_id
+            MSG_ROUTING_NONE,
+            0,           // origin_pid
+            request->identifier(),
+            false,       // is_main_frame
+            -1,          // frame_id
+            false,       // parent_is_main_frame
+            -1,          // parent_frame_id
+            ResourceType::MAIN_FRAME,
+            content::PAGE_TRANSITION_LINK,
+            0,           // upload_size
+            false,       // is_download
+            true,        // allow_download
+            false,       // has_user_gesture
+            context);
     request->SetUserData(NULL, info);
     request->set_context(context->request_context());
   }
