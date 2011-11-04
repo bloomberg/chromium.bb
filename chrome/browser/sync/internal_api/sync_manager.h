@@ -599,6 +599,10 @@ class SyncManager {
 
 bool InitialSyncEndedForTypes(syncable::ModelTypeSet types, UserShare* share);
 
+syncable::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
+    const syncable::ModelTypeSet types,
+    sync_api::UserShare* share);
+
 // Returns the string representation of a PassphraseRequiredReason value.
 std::string PassphraseRequiredReasonToString(PassphraseRequiredReason reason);
 

@@ -966,14 +966,25 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
 
   if (pending_config_mode_state_->added_types.empty() &&
       !core_->sync_manager()->InitialSyncEndedForAllEnabledTypes()) {
-    SLOG(WARNING) << "No new types, but initial sync not finished."
-                  << "Possible sync db corruption / removal.";
+
+    syncable::ModelTypeSet enabled_types;
+    ModelSafeRoutingInfo routing_info;
+    registrar_->GetModelSafeRoutingInfo(&routing_info);
+    for (ModelSafeRoutingInfo::const_iterator i = routing_info.begin();
+         i != routing_info.end(); ++i) {
+      enabled_types.insert(i->first);
+    }
+
     // TODO(tim): Log / UMA / count this somehow?
-    // TODO(tim): If no added types, we could (should?) config only for
-    // types that are needed... but this is a rare corruption edge case or
-    // implies the user mucked around with their syncdb, so for now do all.
+    // Add only the types with empty progress markers. Note: it is possible
+    // that some types have their initial_sync_ended be false but with non
+    // empty progress marker. Which is ok as the rest of the changes would
+    // be downloaded on a regular nudge and initial_sync_ended should be set
+    // to true. However this is a very corner case. So it is not explicitly
+    // handled.
     pending_config_mode_state_->added_types =
-        pending_config_mode_state_->types_to_add;
+        sync_api::GetTypesWithEmptyProgressMarkerToken(enabled_types,
+                                                       GetUserShare());
   }
 
   // If we've added types, we always want to request a nudge/config (even if
@@ -989,6 +1000,11 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
     syncable::ModelTypeSet types_to_config =
         pending_download_state_->added_types;
     if (IsNigoriEnabled()) {
+      // Note: Nigori is the only type that gets added with a nonempty
+      // progress marker during config. If the server returns a migration
+      // error then we will go into unrecoverable error. We dont handle it
+      // explicitly because server might help us out here by not sending a
+      // migraiton error for nigori during config.
       types_to_config.insert(syncable::NIGORI);
     }
     SVLOG(1) << "Types " << ModelTypeSetToString(types_to_config)

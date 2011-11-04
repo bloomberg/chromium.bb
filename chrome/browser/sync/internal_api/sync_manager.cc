@@ -2091,4 +2091,28 @@ bool InitialSyncEndedForTypes(syncable::ModelTypeSet types,
   return true;
 }
 
+syncable::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
+    const syncable::ModelTypeSet types,
+    sync_api::UserShare* share) {
+  syncable::ScopedDirLookup lookup(share->dir_manager.get(),
+                                   share->name);
+  if (!lookup.good()) {
+    NOTREACHED() << "ScopedDirLookup failed for "
+                  << "GetTypesWithEmptyProgressMarkerToken";
+    return syncable::ModelTypeSet();
+  }
+
+  syncable::ModelTypeSet result;
+  for (syncable::ModelTypeSet::const_iterator i = types.begin();
+       i != types.end(); ++i) {
+    sync_pb::DataTypeProgressMarker marker;
+    lookup->GetDownloadProgress(*i, &marker);
+
+    if (marker.token().empty())
+      result.insert(*i);
+
+  }
+  return result;
+}
+
 }  // namespace sync_api
