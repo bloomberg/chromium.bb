@@ -338,7 +338,7 @@
    bug_100026
    ThreadSanitizer:Race
    ...
-   fun:std::ostream::operator*
+   fun:std::*
    ...
    fun:logging::LogMessage::*LogMessage
    fun:base::PlatformThread::SetThreadPriority
@@ -525,11 +525,9 @@
   ...
   fun:avcodec_close
   ...
-  fun:media::FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine
+  fun:media::FFmpegVideoDecodeEngine::Uninitialize
   ...
-  fun:scoped_ptr::*
-  ...
-  fun:media::FFmpegVideoDecode*Test::~FFmpegVideoDecode*Test
+  fun:media::FFmpegVideoDecode*Test::*
 }
 {
   bug_93932_b
@@ -548,8 +546,7 @@
   fun:memcpy
   fun:media::CopyPlane
   ...
-  fun:media::FFmpegVideoDecodeEngine::DecodeFrame
-  fun:media::FFmpegVideoDecodeEngine::ConsumeVideoSample
+  fun:media::FFmpegVideoDecodeEngine::Decode*
 }
 {
   bug_93932_d
@@ -609,4 +606,10 @@
   fun:base::PosixDynamicThreadPool::WaitForTask
   fun:base::::WorkerThread::ThreadMain
   fun:base::::ThreadFunc
+}
+{
+  bug_103004
+  ThreadSanitizer:Race
+  fun:VideoCaptureController::OnIncomingCapturedFrame
+  fun:media::FakeVideoCaptureDevice::OnCaptureTask
 }
