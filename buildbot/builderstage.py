@@ -31,6 +31,10 @@ class BuilderStage(object):
   # Class variable that stores the branch to build and test
   _tracking_branch = None
 
+  # Class should set this if they have a corresponding no<stage> option that
+  # skips their stage.
+  option_name = None
+
   @staticmethod
   def SetTrackingBranch(tracking_branch):
     BuilderStage._tracking_branch = tracking_branch
@@ -216,8 +220,11 @@ class BuilderStage(object):
 
   def Run(self):
     """Have the builder execute the stage."""
+    run_stage = True
+    if self.option_name:
+      run_stage = getattr(self._options, self.option_name)
 
-    if results_lib.Results.PreviouslyCompleted(self.name):
+    if results_lib.Results.PreviouslyCompleted(self.name) or not run_stage:
       self._PrintLoudly('Skipping Stage %s' % self.name)
       results_lib.Results.Record(self.name, results_lib.Results.SKIPPED)
       return

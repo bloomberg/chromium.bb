@@ -170,7 +170,7 @@ class Results:
 
       elif result == cls.SKIPPED:
         # The stage was executed previously, and skipped this time
-        file.write('%s %s previously completed\n' %
+        file.write('%s %s previously completed or did not need to run.\n' %
                    (edge, name))
       elif result == cls.FORGIVEN:
         # The stage was executed previously, and skipped this time

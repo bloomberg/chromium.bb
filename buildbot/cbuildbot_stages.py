@@ -56,6 +56,9 @@ class CleanUpStage(bs.BuilderStage):
   This stage cleans up previous KVM state, temporary git commits,
   clobbers, and wipes tmp inside the chroot.
   """
+
+  option_name = 'clean'
+
   def _PerformStage(self):
     if not self._options.buildbot and self._options.clobber:
       if not commands.ValidateClobber(self._build_root):
@@ -84,6 +87,8 @@ class CleanUpStage(bs.BuilderStage):
 class SyncStage(bs.BuilderStage):
   """Stage that performs syncing for the builder."""
 
+  option_name = 'sync'
+
   def _PerformStage(self):
     commands.ManifestCheckout(self._build_root, self._tracking_branch,
                               repository.RepoRepository.DEFAULT_MANIFEST,
@@ -104,7 +109,6 @@ class PatchChangesStage(bs.BuilderStage):
                      None.
     """
     bs.BuilderStage.__init__(self, bot_id, options, build_config)
-    assert(gerrit_patches is not None and local_patches is not None)
     self.gerrit_patches = gerrit_patches
     self.local_patches = local_patches
 
@@ -117,7 +121,7 @@ class PatchChangesStage(bs.BuilderStage):
       cros_patch.RemovePatchRoot(patch_root)
 
 
-class ManifestVersionedSyncStage(bs.BuilderStage):
+class ManifestVersionedSyncStage(SyncStage):
   """Stage that generates a unique manifest file, and sync's to it."""
 
   manifest_manager = None
@@ -290,6 +294,8 @@ class LKGMSyncStage(ManifestVersionedSyncStage):
 class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
   """Stage that records board specific results for a unique manifest file."""
 
+  option_name = 'sync'
+
   def __init__(self, bot_id, options, build_config, success):
     bs.BuilderStage.__init__(self, bot_id, options, build_config)
     self.success = success
@@ -316,7 +322,11 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     if not self._build_config['master']:
       return True
 
-    builders = self._GetImportantBuildersForMaster(cbuildbot_config.config)
+    if self._options.debug:
+      builders = []
+    else:
+      builders = self._GetImportantBuildersForMaster(cbuildbot_config.config)
+
     statuses = ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
         builders, os.path.join(self._build_root, constants.VERSION_FILE))
     success = True
@@ -370,6 +380,9 @@ class RefreshPackageStatusStage(bs.BuilderStage):
 
 class BuildBoardStage(bs.BuilderStage):
   """Stage that is responsible for building host pkgs and setting up a board."""
+
+  option_name = 'build'
+
   def _PerformStage(self):
     chroot_path = os.path.join(self._build_root, 'chroot')
     if not os.path.isdir(chroot_path) or self._build_config['chroot_replace']:
@@ -420,6 +433,9 @@ class UprevStage(bs.BuilderStage):
   """Stage that uprevs Chromium OS packages that the builder intends to
   validate.
   """
+
+  option_name = 'uprev'
+
   def _PerformStage(self):
     # Perform chrome uprev.
     chrome_atom_to_build = None
@@ -446,6 +462,9 @@ class BuildTargetStage(bs.BuilderStage):
 
   Specifically, we build Chromium OS packages and perform imaging to get
   the images we want per the build spec."""
+
+  option_name = 'build'
+
   def _PerformStage(self):
     build_autotest = (self._build_config['build_tests'] and
                       self._options.tests)
@@ -498,6 +517,9 @@ class BuildTargetStage(bs.BuilderStage):
 
 class UnitTestStage(bs.BuilderStage):
   """Run unit tests."""
+
+  option_name = 'tests'
+
   def _PerformStage(self):
     if self._build_config['unittests'] and self._options.tests:
       commands.RunUnitTests(self._build_root,
@@ -508,6 +530,9 @@ class UnitTestStage(bs.BuilderStage):
 
 class VMTestStage(bs.BuilderStage):
   """Run autotests in a virtual machine."""
+
+  option_name = 'tests'
+
   def __init__(self, bot_id, options, build_config, archive_stage):
     super(VMTestStage, self).__init__(bot_id, options, build_config)
     self._archive_stage = archive_stage
@@ -583,6 +608,9 @@ class VMTestStage(bs.BuilderStage):
 
 class HWTestStage(NonHaltingBuilderStage):
   """Stage that performs testing on actual HW."""
+
+  option_name = 'hw_tests'
+
   def _PerformStage(self):
     if not self._build_config['hw_tests']:
       return
@@ -638,6 +666,9 @@ class SDKTestStage(bs.BuilderStage):
 
 class RemoteTestStatusStage(bs.BuilderStage):
   """Stage that performs testing steps."""
+
+  option_name = 'remote_test_status'
+
   def _PerformStage(self):
     test_status_cmd = ['./crostools/get_test_status.py',
                        '--board=%s' % self._build_config['board'],
@@ -652,6 +683,8 @@ class RemoteTestStatusStage(bs.BuilderStage):
 
 class ArchiveStage(NonHaltingBuilderStage):
   """Archives build and test artifacts for developer consumption."""
+
+  option_name = 'archive'
 
   # This stage is intended to run in the background, in parallel with tests.
   # When the tests have completed, TestStageComplete method must be
@@ -961,7 +994,13 @@ class ArchiveStage(NonHaltingBuilderStage):
 
 class UploadPrebuiltsStage(bs.BuilderStage):
   """Uploads binaries generated by this build for developer use."""
+
+  option_name = 'prebuilts'
+
   def _PerformStage(self):
+    if not self._build_config['prebuilts']:
+      return
+
     manifest_manager = ManifestVersionedSyncStage.manifest_manager
     overlay_config = self._build_config['overlays']
     prebuilt_type = self._prebuilt_type
@@ -980,7 +1019,8 @@ class UploadPrebuiltsStage(bs.BuilderStage):
 
     if prebuilt_type == constants.CHROOT_BUILDER_TYPE:
       board = 'amd64'
-    elif prebuilt_type != constants.BUILD_FROM_SOURCE_TYPE:
+    elif prebuilt_type not in [constants.BUILD_FROM_SOURCE_TYPE,
+                               constants.CANARY_TYPE]:
       assert prebuilt_type in (constants.PFQ_TYPE, constants.CHROME_PFQ_TYPE)
 
       push_overlays = self._build_config['push_overlays']

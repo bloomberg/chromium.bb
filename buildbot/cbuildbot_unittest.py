@@ -70,22 +70,22 @@ class RunBuildStagesTest(mox.MoxTestBase):
 
   def testChromeosOfficialSet(self):
     """Verify that CHROMEOS_OFFICIAL is set correctly."""
-
     self.build_config['chromeos_official'] = True
-
-
 
     # Clean up before
     if 'CHROMEOS_OFFICIAL' in os.environ:
       del os.environ['CHROMEOS_OFFICIAL']
 
+    self.mox.StubOutWithMock(os, 'readlink')
+    os.readlink(mox.IgnoreArg()).AndReturn('/some/path')
+
     self.mox.ReplayAll()
 
     self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
 
-    cbuildbot.RunBuildStages(self.bot_id,
-                             self.options,
-                             self.build_config)
+    cbuildbot.SimpleBuilder(self.bot_id,
+                            self.options,
+                            self.build_config).Run()
 
     self.assertTrue('CHROMEOS_OFFICIAL' in os.environ)
 
@@ -104,13 +104,16 @@ class RunBuildStagesTest(mox.MoxTestBase):
     if 'CHROMEOS_OFFICIAL' in os.environ:
       del os.environ['CHROMEOS_OFFICIAL']
 
+    self.mox.StubOutWithMock(os, 'readlink')
+    os.readlink(mox.IgnoreArg()).AndReturn('/some/path')
+
     self.mox.ReplayAll()
 
     self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
 
-    cbuildbot.RunBuildStages(self.bot_id,
-                             self.options,
-                             self.build_config)
+    cbuildbot.SimpleBuilder(self.bot_id,
+                            self.options,
+                            self.build_config).Run()
 
     self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
 

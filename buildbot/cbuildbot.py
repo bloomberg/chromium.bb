@@ -37,6 +37,9 @@ from chromite.lib import cros_build_lib as cros_lib
 _BUILDBOT_LOG_FILE = 'cbuildbot.log'
 _DEFAULT_EXT_BUILDROOT = 'trybot'
 _DEFAULT_INT_BUILDROOT = 'trybot-internal'
+_PATH_TO_CBUILDBOT = 'chromite/buildbot/cbuildbot'
+_DISTRIBUTED_TYPES = [constants.COMMIT_QUEUE_TYPE, constants.PFQ_TYPE,
+                      constants.CANARY_TYPE, constants.CHROME_PFQ_TYPE ]
 
 
 def _PrintValidConfigs(trybot_only=True):
@@ -172,188 +175,221 @@ def _LaunchSudoKeepAliveProcess():
   return queue
 
 
-def _RunStages(stagelist, version):
-  """Run the stages in |stagelist|, do a Results.Report, then return Success."""
-  for stage in stagelist:
-    stage.Run()
+class Builder(object):
+  """Parent class for all builder types.
 
-  results_lib.Results.Report(sys.stdout, current_version=version)
-  return results_lib.Results.Success()
+  This class functions as a parent class for various build types.  It's intended
+  use is builder_instance.Run().
 
+  Vars:
+    bot_id:  Name of the build configuration.
+    build_config:  The configuration dictionary from cbuildbot_config.
+    options:  The options provided from optparse in main().
+    completed_stages_file: Where we store resume state.
+    archive_url:  Where our artifacts for this builder will be archived.
+    tracking_branch: The tracking branch for this build.
+    release_tag:  The associated "chrome os version" of this build.
+    gerrit_patches: Gerrit patches to be included in build.
+    local_patches: Local patches to be included in build.
+  """
 
-def RunBuildStages(bot_id, options, build_config):
-  """Run the requested build stages."""
-  completed_stages_file = os.path.join(options.buildroot, '.completed_stages')
+  def __init__(self, bot_id, options, build_config):
+    """Initializes instance variables. Must be called by all subclasses."""
+    self.bot_id = bot_id
+    self.build_config = build_config
+    self.options = options
 
-  tracking_branch = _GetChromiteTrackingBranch()
-  bs.BuilderStage.SetTrackingBranch(tracking_branch)
+    # TODO, Remove here and in config after bug chromium-os:14649 is fixed.
+    if self.build_config['chromeos_official']:
+      os.environ['CHROMEOS_OFFICIAL'] = '1'
 
-  # Process patches ASAP, before the clean stage.
-  gerrit_patches, local_patches = _PreProcessPatches(options.gerrit_patches,
-                                                     options.local_patches,
-                                                     tracking_branch)
-  # Check branch matching early.
-  if _IsIncrementalBuild(options.buildroot, options.clobber):
-    _CheckBuildRootBranch(options.buildroot, tracking_branch)
+    self.completed_stages_file = os.path.join(options.buildroot,
+                                              '.completed_stages')
+    self.archive_url = None
+    self.release_tag = None
+    self.tracking_branch = _GetChromiteTrackingBranch()
+    self.gerrit_patches = None
+    self.local_patches = None
 
-  if options.clean: stages.CleanUpStage(bot_id, options, build_config).Run()
+  def Initialize(self):
+    """Runs through the initialization steps of an actual build."""
+    self.gerrit_patches, self.local_patches = _PreProcessPatches(
+        self.options.gerrit_patches, self.options.local_patches,
+        self.tracking_branch)
 
-  if options.resume and os.path.exists(completed_stages_file):
-    with open(completed_stages_file, 'r') as load_file:
-      results_lib.Results.RestoreCompletedStages(load_file)
+    bs.BuilderStage.SetTrackingBranch(self.tracking_branch)
 
-  # TODO, Remove here and in config after bug chromium-os:14649 is fixed.
-  if build_config['chromeos_official']: os.environ['CHROMEOS_OFFICIAL'] = '1'
+    # Check branch matching early.
+    if _IsIncrementalBuild(self.options.buildroot, self.options.clobber):
+      _CheckBuildRootBranch(self.options.buildroot, self.tracking_branch)
 
-  # Determine the stages to use for syncing and completion.
-  sync_stage_class = stages.SyncStage
-  completion_stage_class = None
+    if self.options.resume and os.path.exists(self.completed_stages_file):
+      with open(self.completed_stages_file, 'r') as load_file:
+        results_lib.Results.RestoreCompletedStages(load_file)
 
-  # Determine proper chrome_rev.  Options override config.
-  chrome_rev = build_config['chrome_rev']
-  if options.chrome_rev: chrome_rev = options.chrome_rev
+    self._RunStage(stages.CleanUpStage)
 
-  # Trybots will sync to TOT for now unless --lkgm option is specified.
-  # TODO(rcui): have trybots default to patch to LKGM.
-  if options.lkgm or (options.buildbot and build_config['use_lkgm']):
-    sync_stage_class = stages.LKGMSyncStage
-  elif (options.buildbot and build_config['manifest_version']
-        and chrome_rev not in [constants.CHROME_REV_TOT,
-                               constants.CHROME_REV_SPEC]):
-    # TODO(sosa): Fix temporary hack for chrome_rev tot.
-    if build_config['build_type'] in (constants.PFQ_TYPE,
-                                      constants.CHROME_PFQ_TYPE):
-      sync_stage_class = stages.LKGMCandidateSyncStage
-      completion_stage_class = stages.LKGMCandidateSyncCompletionStage
-    elif build_config['build_type'] == constants.COMMIT_QUEUE_TYPE:
-      sync_stage_class = stages.CommitQueueSyncStage
-      completion_stage_class = stages.CommitQueueCompletionStage
-    else:
-      sync_stage_class = stages.ManifestVersionedSyncStage
-      completion_stage_class = stages.ManifestVersionedSyncCompletionStage
+  def _GetStageInstance(self, stage, *args, **kwargs):
+    """Helper function to get an instance given the args.
 
-  build_and_test_success = False
-  prebuilts = options.prebuilts and build_config['prebuilts']
-  bg = background.BackgroundSteps()
-  bg_started = False
-  archive_stage = None
-  archive_url = None
-  version = None
+    Useful as almost all stages just take in bot_id, options, and build_config.
+    """
+    return stage(self.bot_id, self.options, self.build_config, *args, **kwargs)
 
-  try:
-    if options.sync:
-      sync_stage_class(bot_id, options, build_config).Run()
-      manifest_manager = stages.ManifestVersionedSyncStage.manifest_manager
-      if manifest_manager:
-        version = manifest_manager.current_version
+  def _RunStage(self, stage, *args, **kwargs):
+    """Wrapper to run a stage."""
+    stage_instance = self._GetStageInstance(stage, *args, **kwargs)
+    return stage_instance.Run()
 
-    if gerrit_patches or local_patches:
-      stages.PatchChangesStage(bot_id, options, build_config, gerrit_patches,
-                               local_patches).Run()
+  def Sync(self):
+    """Subclasses must override this method.  Syncs the appropriate code."""
+    raise NotImplementedError()
 
-    if options.build:
-      stages.BuildBoardStage(bot_id, options, build_config).Run()
+  def RunStages(self):
+    """Subclasses must override this method.  Runs the appropriate code."""
+    raise NotImplementedError()
 
-    if build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
-      stagelist = [stages.SDKTestStage(bot_id, options, build_config),
-                   stages.UploadPrebuiltsStage(bot_id, options, build_config)]
-      return _RunStages(stagelist, version)
-
-    if build_config['build_type'] == constants.REFRESH_PACKAGES_TYPE:
-      stagelist = [stages.RefreshPackageStatusStage(bot_id, options,
-                                                    build_config)]
-      return _RunStages(stagelist, version)
-
-    if options.uprev:
-      stages.UprevStage(bot_id, options, build_config).Run()
-
-    if options.build:
-      stages.BuildTargetStage(bot_id, options, build_config).Run()
-
-    if options.archive:
-      archive_stage = stages.ArchiveStage(bot_id, options, build_config)
-      archive_url = archive_stage.GetDownloadUrl()
-      bg.AddStep(archive_stage.Run)
-
-    vm_test_stage = stages.VMTestStage(bot_id, options, build_config,
-                                       archive_stage)
-    unit_test_stage = stages.UnitTestStage(bot_id, options, build_config)
+  def Run(self):
+    """Main runner for this builder class.  Runs build and prints summary."""
     try:
-      # Kick off the background stages. This is inside a 'finally' clause so
-      # that we guarantee that 'TestStageExited' is always called, even if the
-      # test phase throws an exception and does not pass the right data to
-      # the archive stage.
-      if not bg.Empty():
-        bg.start()
-        bg_started = True
+      self.Initialize()
+      self.Sync()
+      if self.gerrit_patches or self.local_patches:
+        self._RunStage(stages.PatchChangesStage, self.gerrit_patches,
+                       self.local_patches)
 
-      steps = [vm_test_stage.Run, unit_test_stage.Run]
-      if prebuilts:
-        upload_prebuilts_stage = stages.UploadPrebuiltsStage(
-            bot_id, options, build_config)
-        steps.append(upload_prebuilts_stage.Run)
-
-      # Run the steps in parallel. If any exceptions occur, RunParallelSteps
-      # will combine them into a single BackgroundException and throw it.
-      background.RunParallelSteps(steps)
+      self.RunStages()
     finally:
-      if archive_stage:
-        # Tell the archive_stage not to wait for any more data from the test
-        # phase. If the test phase failed strangely, this failsafe ensures
-        # that the archive stage doesn't sit around waiting for data.
+      with open(self.completed_stages_file, 'w+') as save_file:
+        results_lib.Results.SaveCompletedStages(save_file)
+
+      print '\n\n\n@@@BUILD_STEP Report@@@\n'
+      results_lib.Results.Report(sys.stdout, self.archive_url, self.release_tag)
+
+    return results_lib.Results.Success()
+
+
+class SimpleBuilder(Builder):
+  """Builder that performs basic vetting operations."""
+  def Sync(self):
+    """Sync to lkgm or TOT as necessary."""
+    if self.options.lkgm or self.build_config['use_lkgm']:
+      self._RunStage(stages.LKGMSyncStage)
+    else:
+      self._RunStage(stages.SyncStage)
+
+  def RunStages(self):
+    """Runs through build process."""
+    self._RunStage(stages.BuildBoardStage)
+
+    # TODO(sosa): Split these out into classes.
+    if self.build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
+      self._RunStage(stages.SDKTestStage)
+      self._RunStage(stages.UploadPrebuiltsStage)
+      return
+    elif self.build_config['build_type'] == constants.REFRESH_PACKAGES_TYPE:
+      self._RunStage(stages.SDKTestStage)
+      self._RunStage(stages.UploadPrebuiltsStage)
+      return
+
+    self._RunStage(stages.UprevStage)
+    self._RunStage(stages.BuildTargetStage)
+
+    bg = background.BackgroundSteps()
+    build_and_test_success = False
+
+    archive_stage = self._GetStageInstance(stages.ArchiveStage)
+    self.archive_url = archive_stage.GetDownloadUrl()
+    vm_test_stage = self._GetStageInstance(stages.VMTestStage, archive_stage)
+    unit_test_stage = self._GetStageInstance(stages.UnitTestStage)
+    prebuilts_stage = self._GetStageInstance(stages.UploadPrebuiltsStage)
+    try:
+      bg.AddStep(archive_stage.Run)
+      bg.start()
+      # Tell the archive_stage not to wait for any more data from the test
+      # phase. If the test phase failed strangely, this failsafe ensures
+      # that the archive stage doesn't sit around waiting for data.
+      try:
+        # Run the steps in parallel. If any exceptions occur, RunParallelSteps
+        # will combine them into a single BackgroundException and throw it.
+        steps = [vm_test_stage.Run, unit_test_stage.Run, prebuilts_stage.Run]
+        background.RunParallelSteps(steps)
+      finally:
         archive_stage.TestStageExited()
 
-    # Run hardware tests. Since HWTestStage is a NonHaltingBuilderStage,
-    # exceptions are ignored here.
-    if options.hw_tests:
-      stages.HWTestStage(bot_id, options, build_config).Run()
+      self._RunStage(stages.HWTestStage)
+      self._RunStage(stages.RemoteTestStatusStage)
+      build_and_test_success = True
 
-    if options.remote_test_status:
-      stages.RemoteTestStatusStage(bot_id, options, build_config).Run()
+    # We skipped out of this build block early, so one of the tests we ran in
+    # the background or in parallel must have failed.
+    except (bs.NonBacktraceBuildException, background.BackgroundException):
+      pass
 
-    build_and_test_success = True
-
-  except (bs.NonBacktraceBuildException, background.BackgroundException):
-    # We skipped out of this build block early, all we need to do.
-    pass
-
-  completion_stage = None
-  if (options.sync and completion_stage_class and
-      stages.ManifestVersionedSyncStage.manifest_manager):
-    completion_stage = completion_stage_class(bot_id, options, build_config,
-                                              success=build_and_test_success)
-
-  publish_changes = (options.buildbot and build_config['master'] and
-                     build_and_test_success)
-
-  if completion_stage:
-    # Wait for slave builds to complete.
-    completion_stage.Run()
-
-    # Don't publish changes if a slave build failed.
-    name = completion_stage.name
-    if not results_lib.Results.WasStageSuccessfulOrSkipped(name):
-      publish_changes = False
-
-  if publish_changes:
-    stages.PublishUprevChangesStage(bot_id, options, build_config).Run()
-
-  # Wait for remaining stages to finish. Ignore any errors.
-  if bg_started:
-    while not bg.Empty():
-      bg.WaitForStep()
+    # Wait for remaining stages to finish. Ignore any errors.
+    while not bg.Empty(): bg.WaitForStep()
     bg.join()
 
-  if os.path.exists(options.buildroot):
-    with open(completed_stages_file, 'w+') as save_file:
-      results_lib.Results.SaveCompletedStages(save_file)
+    return build_and_test_success
 
-  # Tell the buildbot to break out the report as a final step
-  print '\n\n\n@@@BUILD_STEP Report@@@\n'
 
-  results_lib.Results.Report(sys.stdout, archive_url, version)
+class DistributedBuilder(SimpleBuilder):
+  """Build class that has special logic to handle distributed builds.
 
-  return results_lib.Results.Success()
+  These builds sync using git/manifest logic in manifest_versions.  In general
+  they use a non-distributed builder code for the bulk of the work.
+  """
+  def __init__(self, bot_id, options, build_config):
+    """Initializes a buildbot builder.
+
+    Extra variables:
+      completion_stage_class:  Stage used to complete a build.  Set in the Sync
+        stage.
+    """
+    super(DistributedBuilder, self).__init__(bot_id, options, build_config)
+    self.completion_stage_class = None
+
+  def Sync(self):
+    """Syncs the tree using one of the distributed sync logic paths."""
+    # Determine sync class to use.
+    if self.build_config['build_type'] in (constants.PFQ_TYPE,
+                                           constants.CHROME_PFQ_TYPE):
+      sync_stage_class = stages.LKGMCandidateSyncStage
+      self.completion_stage_class = stages.LKGMCandidateSyncCompletionStage
+    elif self.build_config['build_type'] == constants.COMMIT_QUEUE_TYPE:
+      sync_stage_class = stages.CommitQueueSyncStage
+      self.completion_stage_class = stages.CommitQueueCompletionStage
+    else:
+      sync_stage_class = stages.ManifestVersionedSyncStage
+      self.completion_stage_class = stages.ManifestVersionedSyncCompletionStage
+
+    self._RunStage(sync_stage_class)
+
+    # Extract version we have decided to build into self.release_tag.
+    manifest_manager = stages.ManifestVersionedSyncStage.manifest_manager
+    if manifest_manager:
+      self.release_tag = manifest_manager.current_version
+
+  def Publish(self, was_build_successful):
+    """Completes build by publishing any required information."""
+    completion_stage = self._GetStageInstance(self.completion_stage_class,
+                                              was_build_successful)
+    completion_stage.Run()
+    name = completion_stage.name
+    if not results_lib.Results.WasStageSuccessfulOrSkipped(name):
+      should_publish_changes = False
+    else:
+      should_publish_changes = (self.build_config['master'] and
+                                was_build_successful)
+
+    if should_publish_changes:
+      self._RunStage(stages.PublishUprevChangesStage)
+
+  def RunStages(self):
+    """Runs simple builder logic and publishes information to overlays."""
+    was_build_successful = super(DistributedBuilder, self).RunStages()
+    self.Publish(was_build_successful)
+    return was_build_successful
 
 
 def _ConfirmBuildRoot(buildroot):
@@ -394,6 +430,20 @@ def _DetermineDefaultBuildRoot(internal_build):
 
 def _RunBuildStagesWrapper(bot_id, options, build_config):
   """Helper function that wraps RunBuildStages()."""
+  def IsDistributedBuilder():
+    """Determines whether the build_config should be a DistributedBuilder."""
+    if not options.buildbot:
+      return False
+    elif build_config['build_type'] in _DISTRIBUTED_TYPES:
+      chrome_rev = build_config['chrome_rev']
+      if options.chrome_rev: chrome_rev = options.chrome_rev
+      # We don't do distributed logic to TOT Chrome PFQ's.
+      if chrome_rev not in [constants.CHROME_REV_TOT,
+                            constants.CHROME_REV_SPEC]:
+        return True
+
+    return False
+
   # Start tee-ing output to file.
   log_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                           _BUILDBOT_LOG_FILE)
@@ -402,7 +452,12 @@ def _RunBuildStagesWrapper(bot_id, options, build_config):
   tee_proc.start()
 
   try:
-    if not RunBuildStages(bot_id, options, build_config):
+    if IsDistributedBuilder():
+      buildbot = DistributedBuilder(bot_id, options, build_config)
+    else:
+      buildbot = SimpleBuilder(bot_id, options, build_config)
+
+    if not buildbot.Run():
       sys.exit(1)
   finally:
     tee_proc.stop()

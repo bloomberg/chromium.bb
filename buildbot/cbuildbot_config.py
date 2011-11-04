@@ -314,6 +314,7 @@ release = {
   # Typical matching cbuild command line
   # --autorev --official --officialversion --chromeos --with-pdf
   #   --bvt --clean --no-gstorage --ctest
+  'build_type' : constants.CANARY_TYPE,
   'build_tests' : True,
   'chrome_tests' : True,
   'manifest_version' : True,

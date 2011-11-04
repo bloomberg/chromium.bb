@@ -88,6 +88,9 @@ CHROME_PFQ_TYPE = 'chrome'
 # chroot before the start of every build and no not use a BINHOST.
 BUILD_FROM_SOURCE_TYPE = 'full'
 
+# Full but with versioned logic.
+CANARY_TYPE = 'canary'
+
 # Special build type for Chroot builders.  These builds focus on building
 # toolchains and validate that they work.
 CHROOT_BUILDER_TYPE = 'chroot'
