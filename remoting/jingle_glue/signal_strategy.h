@@ -15,8 +15,6 @@ class XmlElement;
 
 namespace remoting {
 
-class IqRequest;
-
 class SignalStrategy {
  public:
   class StatusObserver {
@@ -44,22 +42,19 @@ class SignalStrategy {
   virtual void Init(StatusObserver* observer) = 0;
   virtual void Close() = 0;
 
-  // Set a listener that can listen to all incoming messages. Doesn't
-  // take ownership of the |listener|. Can be called with |listener|
-  // set to NULL to unset current listener. It must be unset before
-  // object is destroyed.
-  virtual void SetListener(Listener* listener) = 0;
+  // Add a |listener| that can listen to all incoming
+  // messages. Doesn't take ownership of the |listener|.
+  virtual void AddListener(Listener* listener) = 0;
+
+  // Remove a |listener| previously added with AddListener().
+  virtual void RemoveListener(Listener* listener) = 0;
 
   // Sends a raw XMPP stanza. Takes ownership of the |stanza|.
-  virtual void SendStanza(buzz::XmlElement* stanza) = 0;
+  virtual bool SendStanza(buzz::XmlElement* stanza) = 0;
 
   // Returns new ID that should be used for the next outgoing IQ
   // request.
   virtual std::string GetNextId() = 0;
-
-  // TODO(sergeyu): Do we really need this method to be part of this
-  // interface?
-  virtual IqRequest* CreateIqRequest() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SignalStrategy);

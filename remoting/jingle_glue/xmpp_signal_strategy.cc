@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
-#include "remoting/jingle_glue/iq_request.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/xmpp_socket_adapter.h"
 #include "third_party/libjingle/source/talk/base/asyncsocket.h"
@@ -24,12 +23,11 @@ XmppSignalStrategy::XmppSignalStrategy(JingleThread* jingle_thread,
      auth_token_(auth_token),
      auth_token_service_(auth_token_service),
      xmpp_client_(NULL),
-     observer_(NULL),
-     listener_(NULL) {
+     observer_(NULL) {
 }
 
 XmppSignalStrategy::~XmppSignalStrategy() {
-  DCHECK(listener_ == NULL);
+  DCHECK(listeners_.empty());
   Close();
 }
 
@@ -69,20 +67,29 @@ void XmppSignalStrategy::Close() {
   }
 }
 
-void XmppSignalStrategy::SetListener(Listener* listener) {
-  // Don't overwrite an listener without explicitly going
-  // through "NULL" first.
-  DCHECK(listener_ == NULL || listener == NULL);
-  listener_ = listener;
+void XmppSignalStrategy::AddListener(Listener* listener) {
+  DCHECK(std::find(listeners_.begin(), listeners_.end(), listener) ==
+         listeners_.end());
+  listeners_.push_back(listener);
 }
 
-void XmppSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
+void XmppSignalStrategy::RemoveListener(Listener* listener) {
+  std::vector<Listener*>::iterator it =
+      std::find(listeners_.begin(), listeners_.end(), listener);
+  CHECK(it != listeners_.end());
+  listeners_.erase(it);
+}
+
+bool XmppSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
   if (!xmpp_client_) {
     LOG(INFO) << "Dropping signalling message because XMPP "
         "connection has been terminated.";
-    return;
+    delete stanza;
+    return false;
   }
-  xmpp_client_->SendStanza(stanza);
+
+  buzz::XmppReturnStatus status = xmpp_client_->SendStanza(stanza);
+  return status == buzz::XMPP_RETURN_OK || status == buzz::XMPP_RETURN_PENDING;
 }
 
 std::string XmppSignalStrategy::GetNextId() {
@@ -94,14 +101,13 @@ std::string XmppSignalStrategy::GetNextId() {
   return xmpp_client_->NextId();
 }
 
-IqRequest* XmppSignalStrategy::CreateIqRequest() {
-  return new IqRequest(this, &iq_registry_);
-}
-
 bool XmppSignalStrategy::HandleStanza(const buzz::XmlElement* stanza) {
-  if (listener_ && listener_->OnIncomingStanza(stanza))
-    return true;
-  return iq_registry_.OnIncomingStanza(stanza);
+  for (std::vector<Listener*>::iterator it = listeners_.begin();
+       it != listeners_.end(); ++it) {
+    if ((*it)->OnIncomingStanza(stanza))
+      return true;
+  }
+  return false;
 }
 
 void XmppSignalStrategy::OnConnectionStateChanged(

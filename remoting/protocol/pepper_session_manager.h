@@ -30,6 +30,7 @@ class SocketAddress;
 
 namespace remoting {
 
+class IqSender;
 class JingleInfoRequest;
 
 namespace protocol {
@@ -74,7 +75,7 @@ class PepperSessionManager : public SessionManager,
       const std::vector<std::string>& relay_hosts,
       const std::vector<talk_base::SocketAddress>& stun_hosts);
 
-  IqRequest* CreateIqRequest();
+  IqSender* iq_sender() { return iq_sender_.get(); }
   void SendReply(const buzz::XmlElement* original_stanza,
                  const JingleMessageReply& reply);
 
@@ -85,6 +86,7 @@ class PepperSessionManager : public SessionManager,
 
   std::string local_jid_;
   SignalStrategy* signal_strategy_;
+  scoped_ptr<IqSender> iq_sender_;
   SessionManager::Listener* listener_;
   scoped_ptr<crypto::RSAPrivateKey> private_key_;
   std::string certificate_;

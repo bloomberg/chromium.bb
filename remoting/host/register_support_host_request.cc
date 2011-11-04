@@ -11,7 +11,7 @@
 #include "base/time.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/host_config.h"
-#include "remoting/jingle_glue/iq_request.h"
+#include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
@@ -59,12 +59,11 @@ void RegisterSupportHostRequest::OnSignallingConnected(
 
   message_loop_ = MessageLoop::current();
 
-  request_.reset(signal_strategy->CreateIqRequest());
-  request_->set_callback(base::Bind(
-      &RegisterSupportHostRequest::ProcessResponse, base::Unretained(this)));
-
-  request_->SendIq(IqRequest::MakeIqStanza(
-      buzz::STR_SET, kChromotingBotJid, CreateRegistrationRequest(jid)));
+  iq_sender_.reset(new IqSender(signal_strategy));
+  request_.reset(iq_sender_->SendIq(
+      buzz::STR_SET, kChromotingBotJid, CreateRegistrationRequest(jid),
+      base::Bind(&RegisterSupportHostRequest::ProcessResponse,
+                 base::Unretained(this))));
 }
 
 void RegisterSupportHostRequest::OnSignallingDisconnected() {
@@ -78,6 +77,7 @@ void RegisterSupportHostRequest::OnSignallingDisconnected() {
   }
   DCHECK_EQ(message_loop_, MessageLoop::current());
   request_.reset();
+  iq_sender_.reset();
 }
 
 // Ignore any notifications other than signalling
@@ -129,7 +129,10 @@ bool RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
   }
 
   // This method must only be called for error or result stanzas.
-  DCHECK_EQ(std::string(buzz::STR_RESULT), type);
+  if (type != buzz::STR_RESULT) {
+    LOG(ERROR) << "Received unexpect stanza of type \"" << type << "\"";
+    return false;
+  }
 
   const XmlElement* result_element = response->FirstNamed(QName(
       kChromotingXmlNamespace, kRegisterQueryResultTag));

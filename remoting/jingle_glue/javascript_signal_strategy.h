@@ -7,11 +7,12 @@
 
 #include "remoting/jingle_glue/signal_strategy.h"
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "remoting/jingle_glue/iq_request.h"
 #include "remoting/jingle_glue/xmpp_proxy.h"
 
 namespace remoting {
@@ -30,10 +31,10 @@ class JavascriptSignalStrategy : public SignalStrategy,
   // SignalStrategy interface.
   virtual void Init(StatusObserver* observer) OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual void SetListener(Listener* listener) OVERRIDE;
-  virtual void SendStanza(buzz::XmlElement* stanza) OVERRIDE;
+  virtual void AddListener(Listener* listener) OVERRIDE;
+  virtual void RemoveListener(Listener* listener) OVERRIDE;
+  virtual bool SendStanza(buzz::XmlElement* stanza) OVERRIDE;
   virtual std::string GetNextId() OVERRIDE;
-  virtual IqRequest* CreateIqRequest() OVERRIDE;
 
   // XmppProxy::ResponseCallback interface.
   virtual void OnIq(const std::string& stanza);
@@ -41,9 +42,8 @@ class JavascriptSignalStrategy : public SignalStrategy,
  private:
   std::string your_jid_;
   scoped_refptr<XmppProxy> xmpp_proxy_;
-  IqRegistry iq_registry_;
 
-  Listener* listener_;
+  std::vector<Listener*> listeners_;
 
   int last_id_;
 

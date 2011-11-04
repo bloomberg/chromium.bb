@@ -9,7 +9,7 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
-#include "remoting/jingle_glue/iq_request.h"
+#include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/pepper_session_manager.h"
@@ -81,10 +81,10 @@ void PepperSession::StartConnection(
   message.from = session_manager_->local_jid_;
   message.description.reset(
       new ContentDescription(candidate_config_->Clone(), initiator_token_, ""));
-  initiate_request_.reset(session_manager_->CreateIqRequest());
-  initiate_request_->set_callback(base::Bind(
-      &PepperSession::OnSessionInitiateResponse, base::Unretained(this)));
-  initiate_request_->SendIq(message.ToXml());
+  initiate_request_.reset(session_manager_->iq_sender()->SendIq(
+      message.ToXml(),
+      base::Bind(&PepperSession::OnSessionInitiateResponse,
+                 base::Unretained(this))));
 
   SetState(CONNECTING);
 }
@@ -196,9 +196,9 @@ void PepperSession::Close() {
     // Send session-terminate message.
     JingleMessage message(peer_jid_, JingleMessage::SESSION_TERMINATE,
                           session_id_);
-    scoped_ptr<IqRequest>  terminate_request(
-        session_manager_->CreateIqRequest());
-    terminate_request->SendIq(message.ToXml());
+    scoped_ptr<IqRequest> terminate_request(
+        session_manager_->iq_sender()->SendIq(
+            message.ToXml(), IqSender::ReplyCallback()));
   }
 
   CloseInternal(false);
@@ -330,8 +330,8 @@ void PepperSession::OnDeleteChannel(PepperChannel* channel) {
 void PepperSession::SendTransportInfo() {
   JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
   message.candidates.swap(pending_candidates_);
-  scoped_ptr<IqRequest> request(session_manager_->CreateIqRequest());
-  request->SendIq(message.ToXml());
+  scoped_ptr<IqRequest> request(session_manager_->iq_sender()->SendIq(
+      message.ToXml(), IqSender::ReplyCallback()));
 }
 
 void PepperSession::CreateChannels() {

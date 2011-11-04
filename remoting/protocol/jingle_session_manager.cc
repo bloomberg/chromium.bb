@@ -100,8 +100,7 @@ void JingleSessionManager::Init(
 
   // If NAT traversal is enabled then we need to request STUN/Relay info.
   if (allow_nat_traversal) {
-    jingle_info_request_.reset(
-        new JingleInfoRequest(signal_strategy_->CreateIqRequest()));
+    jingle_info_request_.reset(new JingleInfoRequest(signal_strategy_));
     jingle_info_request_->Send(base::Bind(
         &JingleSessionManager::OnJingleInfo, base::Unretained(this)));
   } else {

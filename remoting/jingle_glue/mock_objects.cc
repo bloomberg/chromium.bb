@@ -9,7 +9,4 @@ namespace remoting {
 MockSignalStrategy::MockSignalStrategy() { }
 MockSignalStrategy::~MockSignalStrategy() { }
 
-MockIqRequest::MockIqRequest() { }
-MockIqRequest::~MockIqRequest() { }
-
 }  // namespace remoting

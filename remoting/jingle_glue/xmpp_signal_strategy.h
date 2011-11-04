@@ -12,8 +12,9 @@
 
 #include "remoting/jingle_glue/signal_strategy.h"
 
+#include <vector>
+
 #include "base/compiler_specific.h"
-#include "remoting/jingle_glue/iq_request.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 
@@ -34,10 +35,10 @@ class XmppSignalStrategy : public SignalStrategy,
   // SignalStrategy interface.
   virtual void Init(StatusObserver* observer) OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual void SetListener(Listener* listener) OVERRIDE;
-  virtual void SendStanza(buzz::XmlElement* stanza) OVERRIDE;
+  virtual void AddListener(Listener* listener) OVERRIDE;
+  virtual void RemoveListener(Listener* listener) OVERRIDE;
+  virtual bool SendStanza(buzz::XmlElement* stanza) OVERRIDE;
   virtual std::string GetNextId() OVERRIDE;
-  virtual IqRequest* CreateIqRequest() OVERRIDE;
 
   // buzz::XmppStanzaHandler interface.
   virtual bool HandleStanza(const buzz::XmlElement* stanza) OVERRIDE;
@@ -53,10 +54,9 @@ class XmppSignalStrategy : public SignalStrategy,
   std::string auth_token_;
   std::string auth_token_service_;
   buzz::XmppClient* xmpp_client_;
-  IqRegistry iq_registry_;
 
   StatusObserver* observer_;
-  Listener* listener_;
+  std::vector<Listener*> listeners_;
 
 
   DISALLOW_COPY_AND_ASSIGN(XmppSignalStrategy);

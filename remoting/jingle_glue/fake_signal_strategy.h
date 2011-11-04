@@ -10,7 +10,7 @@
 
 #include "base/task.h"
 #include "base/threading/non_thread_safe.h"
-#include "remoting/jingle_glue/iq_request.h"
+#include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 
 namespace remoting {
@@ -26,10 +26,10 @@ class FakeSignalStrategy : public SignalStrategy,
   // SignalStrategy interface.
   virtual void Init(StatusObserver* observer) OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual void SetListener(Listener* listener) OVERRIDE;
-  virtual void SendStanza(buzz::XmlElement* stanza) OVERRIDE;
+  virtual void AddListener(Listener* listener) OVERRIDE;
+  virtual void RemoveListener(Listener* listener) OVERRIDE;
+  virtual bool SendStanza(buzz::XmlElement* stanza) OVERRIDE;
   virtual std::string GetNextId() OVERRIDE;
-  virtual IqRequest* CreateIqRequest() OVERRIDE;
 
  private:
   // Called by the |peer_|. Takes ownership of |stanza|.
@@ -39,8 +39,7 @@ class FakeSignalStrategy : public SignalStrategy,
 
   std::string jid_;
   FakeSignalStrategy* peer_;
-  Listener* listener_;
-  IqRegistry iq_registry_;
+  std::vector<Listener*> listeners_;
 
   int last_id_;
 

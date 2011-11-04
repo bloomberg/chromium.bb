@@ -10,18 +10,15 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "net/base/net_util.h"
-#include "remoting/jingle_glue/iq_request.h"
+#include "remoting/jingle_glue/iq_sender.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"
 
 namespace remoting {
 
-
-JingleInfoRequest::JingleInfoRequest(IqRequest* request)
-    : request_(request) {
-  request_->set_callback(base::Bind(&JingleInfoRequest::OnResponse,
-                                    base::Unretained(this)));
+JingleInfoRequest::JingleInfoRequest(SignalStrategy* signal_strategy)
+    : iq_sender_(signal_strategy) {
 }
 
 JingleInfoRequest::~JingleInfoRequest() {
@@ -29,9 +26,11 @@ JingleInfoRequest::~JingleInfoRequest() {
 
 void JingleInfoRequest::Send(const OnJingleInfoCallback& callback) {
   on_jingle_info_cb_ = callback;
-  request_->SendIq(IqRequest::MakeIqStanza(
-      buzz::STR_GET, buzz::STR_EMPTY,
-      new buzz::XmlElement(buzz::QN_JINGLE_INFO_QUERY, true)));
+  buzz::XmlElement* iq_body =
+      new buzz::XmlElement(buzz::QN_JINGLE_INFO_QUERY, true);
+  request_.reset(iq_sender_.SendIq(
+      buzz::STR_GET, buzz::STR_EMPTY, iq_body,
+      base::Bind(&JingleInfoRequest::OnResponse, base::Unretained(this))));
 }
 
 void JingleInfoRequest::OnResponse(const buzz::XmlElement* stanza) {

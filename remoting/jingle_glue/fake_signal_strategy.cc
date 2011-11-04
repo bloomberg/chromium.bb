@@ -24,7 +24,6 @@ void FakeSignalStrategy::Connect(FakeSignalStrategy* peer1,
 FakeSignalStrategy::FakeSignalStrategy(const std::string& jid)
     : jid_(jid),
       peer_(NULL),
-      listener_(NULL),
       last_id_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
 
@@ -35,6 +34,7 @@ FakeSignalStrategy::~FakeSignalStrategy() {
     delete pending_messages_.front();
     pending_messages_.pop();
   }
+  DCHECK(listeners_.empty());
 }
 
 void FakeSignalStrategy::Init(StatusObserver* observer) {
@@ -46,39 +46,40 @@ void FakeSignalStrategy::Init(StatusObserver* observer) {
 
 void FakeSignalStrategy::Close() {
   DCHECK(CalledOnValidThread());
-  listener_ = NULL;
 }
 
-void FakeSignalStrategy::SetListener(Listener* listener) {
+void FakeSignalStrategy::AddListener(Listener* listener) {
   DCHECK(CalledOnValidThread());
-
-  // Don't overwrite an listener without explicitly going
-  // through "NULL" first.
-  DCHECK(listener_ == NULL || listener == NULL);
-  listener_ = listener;
+  DCHECK(std::find(listeners_.begin(), listeners_.end(), listener) ==
+         listeners_.end());
+  listeners_.push_back(listener);
 }
 
-void FakeSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
+void FakeSignalStrategy::RemoveListener(Listener* listener) {
+  DCHECK(CalledOnValidThread());
+  std::vector<Listener*>::iterator it =
+      std::find(listeners_.begin(), listeners_.end(), listener);
+  CHECK(it != listeners_.end());
+  listeners_.erase(it);
+}
+
+bool FakeSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
   DCHECK(CalledOnValidThread());
 
   stanza->SetAttr(buzz::QN_FROM, jid_);
 
   if (peer_) {
     peer_->OnIncomingMessage(stanza);
+    return true;
   } else {
     delete stanza;
+    return false;
   }
 }
 
 std::string FakeSignalStrategy::GetNextId() {
   ++last_id_;
   return base::IntToString(last_id_);
-}
-
-IqRequest* FakeSignalStrategy::CreateIqRequest() {
-  DCHECK(CalledOnValidThread());
-
-  return new IqRequest(this, &iq_registry_);
 }
 
 void FakeSignalStrategy::OnIncomingMessage(buzz::XmlElement* stanza) {
@@ -99,9 +100,11 @@ void FakeSignalStrategy::DeliverIncomingMessages() {
       return;
     }
 
-    if (listener_)
-      listener_->OnIncomingStanza(stanza);
-    iq_registry_.OnIncomingStanza(stanza);
+    for (std::vector<Listener*>::iterator it = listeners_.begin();
+         it != listeners_.end(); ++it) {
+      if ((*it)->OnIncomingStanza(stanza))
+        break;
+    }
 
     pending_messages_.pop();
     delete stanza;

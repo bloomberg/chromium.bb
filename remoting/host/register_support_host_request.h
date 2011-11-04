@@ -27,6 +27,7 @@ class TimeDelta;
 namespace remoting {
 
 class IqRequest;
+class IqSender;
 class MutableHostConfig;
 
 // RegisterSupportHostRequest sends support host registeration request
@@ -77,6 +78,7 @@ class RegisterSupportHostRequest : public HostStatusObserver {
 
   MessageLoop* message_loop_;
   RegisterCallback callback_;
+  scoped_ptr<IqSender> iq_sender_;
   scoped_ptr<IqRequest> request_;
   HostKeyPair key_pair_;
 

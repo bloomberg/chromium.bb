@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/heartbeat_sender.h"
+
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
-#include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/in_memory_host_config.h"
 #include "remoting/host/test_key_pair.h"
-#include "remoting/jingle_glue/iq_request.h"
+#include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,6 +36,7 @@ namespace {
 const char kHostId[] = "0";
 const char kTestJid[] = "user@gmail.com/chromoting123";
 const int64 kTestTime = 123123123;
+const char kStanzaId[] = "123";
 }  // namespace
 
 class HeartbeatSenderTest : public testing::Test {
@@ -53,23 +55,19 @@ class HeartbeatSenderTest : public testing::Test {
 // Call Start() followed by Stop(), and makes sure an Iq stanza is
 // being sent.
 TEST_F(HeartbeatSenderTest, DoSendStanza) {
-  // |iq_request| is freed by HeartbeatSender.
-  MockIqRequest* iq_request = new MockIqRequest();
-  iq_request->Init();
-
-  EXPECT_CALL(*iq_request, set_callback(_)).Times(1);
+  SignalStrategy::Listener* listener;
+  EXPECT_CALL(signal_strategy_, AddListener(NotNull()))
+      .WillOnce(SaveArg<0>(&listener));
 
   scoped_ptr<HeartbeatSender> heartbeat_sender(
-      new HeartbeatSender(base::MessageLoopProxy::current(),
-                          config_));
+      new HeartbeatSender(base::MessageLoopProxy::current(), config_));
   ASSERT_TRUE(heartbeat_sender->Init());
 
-  EXPECT_CALL(signal_strategy_, CreateIqRequest())
-      .WillOnce(Return(iq_request));
-
   XmlElement* sent_iq = NULL;
-  EXPECT_CALL(*iq_request, SendIq(NotNull()))
-      .WillOnce(SaveArg<0>(&sent_iq));
+  EXPECT_CALL(signal_strategy_, GetNextId())
+      .WillOnce(Return(kStanzaId));
+  EXPECT_CALL(signal_strategy_, SendStanza(NotNull()))
+      .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
   heartbeat_sender->OnSignallingConnected(&signal_strategy_, kTestJid);
   message_loop_.RunAllPending();
@@ -80,6 +78,8 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
   EXPECT_EQ(stanza->Attr(buzz::QName("", "to")),
             std::string(kChromotingBotJid));
   EXPECT_EQ(stanza->Attr(buzz::QName("", "type")), "set");
+
+  EXPECT_CALL(signal_strategy_, RemoveListener(listener));
 
   heartbeat_sender->OnSignallingDisconnected();
   message_loop_.RunAllPending();
@@ -125,7 +125,7 @@ TEST_F(HeartbeatSenderTest, CreateHeartbeatMessage) {
 
 // Verify that ProcessResponse parses set-interval result.
 TEST_F(HeartbeatSenderTest, ProcessResponse) {
-  scoped_ptr<XmlElement> response(new XmlElement(QName("", "iq")));
+  scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
   response->AddAttr(QName("", "type"), "result");
 
   XmlElement* result = new XmlElement(

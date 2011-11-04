@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "remoting/jingle_glue/iq_request.h"
 #include "third_party/libjingle/source/talk/p2p/base/sessionmanager.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
@@ -36,7 +35,7 @@ JingleSignalingConnector::JingleSignalingConnector(
   session_manager_->SignalOutgoingMessage.connect(
       this, &JingleSignalingConnector::OnOutgoingMessage);
 
-  signal_strategy_->SetListener(this);
+  signal_strategy_->AddListener(this);
 
   // Assume that signaling is ready from the beginning.
   session_manager_->SignalRequestSignaling.connect(
@@ -44,7 +43,7 @@ JingleSignalingConnector::JingleSignalingConnector(
 }
 
 JingleSignalingConnector::~JingleSignalingConnector() {
-  signal_strategy_->SetListener(NULL);
+  signal_strategy_->RemoveListener(this);
   STLDeleteContainerPairSecondPointers(pending_requests_.begin(),
                                        pending_requests_.end());
 }

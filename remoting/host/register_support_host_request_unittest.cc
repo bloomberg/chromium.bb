@@ -12,7 +12,7 @@
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/in_memory_host_config.h"
 #include "remoting/host/test_key_pair.h"
-#include "remoting/jingle_glue/iq_request.h"
+#include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,6 +35,7 @@ const char kTestJid[] = "user@gmail.com/chromoting123";
 const int64 kTestTime = 123123123;
 const char kSupportId[] = "AB4RF3";
 const char kSupportIdLifetime[] = "300";
+const char kStanzaId[] = "123";
 
 class MockCallback {
  public:
@@ -62,22 +63,21 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   // |iq_request| is freed by RegisterSupportHostRequest.
   int64 start_time = static_cast<int64>(base::Time::Now().ToDoubleT());
 
+  SignalStrategy::Listener* listener;
+  EXPECT_CALL(signal_strategy_, AddListener(NotNull()))
+      .WillOnce(SaveArg<0>(&listener));
+
   scoped_ptr<RegisterSupportHostRequest> request(
       new RegisterSupportHostRequest());
   ASSERT_TRUE(request->Init(
       config_, base::Bind(&MockCallback::OnResponse,
                           base::Unretained(&callback_))));
 
-  MockIqRequest* iq_request = new MockIqRequest();
-  iq_request->Init();
-  EXPECT_CALL(*iq_request, set_callback(_)).Times(1);
-
-  EXPECT_CALL(signal_strategy_, CreateIqRequest())
-      .WillOnce(Return(iq_request));
-
   XmlElement* sent_iq = NULL;
-  EXPECT_CALL(*iq_request, SendIq(NotNull()))
-      .WillOnce(SaveArg<0>(&sent_iq));
+  EXPECT_CALL(signal_strategy_, GetNextId())
+      .WillOnce(Return(kStanzaId));
+  EXPECT_CALL(signal_strategy_, SendStanza(NotNull()))
+      .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
   request->OnSignallingConnected(&signal_strategy_, kTestJid);
   message_loop_.RunAllPending();
@@ -116,8 +116,9 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   EXPECT_CALL(callback_, OnResponse(true, kSupportId,
                                     base::TimeDelta::FromSeconds(300)));
 
-  scoped_ptr<XmlElement> response(new XmlElement(QName("", "iq")));
+  scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
   response->AddAttr(QName("", "type"), "result");
+  response->AddAttr(QName("", "id"), kStanzaId);
 
   XmlElement* result = new XmlElement(
       QName(kChromotingXmlNamespace, "register-support-host-result"));
@@ -133,8 +134,10 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   support_id_lifetime->AddText(kSupportIdLifetime);
   result->AddElement(support_id_lifetime);
 
-  iq_request->callback().Run(response.get());
+  EXPECT_TRUE(listener->OnIncomingStanza(response.get()));
   message_loop_.RunAllPending();
+
+  EXPECT_CALL(signal_strategy_, RemoveListener(listener));
 }
 
 }  // namespace remoting

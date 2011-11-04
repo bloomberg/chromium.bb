@@ -13,17 +13,21 @@
 #include "base/timer.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_status_observer.h"
-#include "remoting/jingle_glue/iq_request.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
+#include "base/gtest_prod_util.h"
 
 namespace base {
 class MessageLoopProxy;
 }  // namespace base
 
+namespace buzz {
+class XmlElement;
+}  // namespace buzz
+
 namespace remoting {
 
-class IqRequest;
 class HostKeyPair;
+class IqRequest;
+class IqSender;
 class MutableHostConfig;
 
 // HeartbeatSender periodically sends heartbeat stanzas to the Chromoting Bot.
@@ -106,6 +110,7 @@ class HeartbeatSender : public HostStatusObserver {
   std::string host_id_;
   HostKeyPair key_pair_;
   std::string full_jid_;
+  scoped_ptr<IqSender> iq_sender_;
   scoped_ptr<IqRequest> request_;
   int interval_ms_;
   base::RepeatingTimer<HeartbeatSender> timer_;
