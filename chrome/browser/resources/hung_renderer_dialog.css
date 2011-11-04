@@ -33,6 +33,11 @@ html, body {
   width: 100%;
 }
 
+#top-box {
+  display: -webkit-box;
+  padding: 9px 9px 0 9px;
+}
+
 #theme-graphic {
   margin: 2px 20px 2px 2px;
 }
@@ -67,7 +72,7 @@ html, body {
   display: block;
   height: 16px;
   line-height: 16px;
-  margin: 2px 2px 2px 2px;
+  margin: 2px;
 }
 
 html[dir=rtl] #tab-table li {
