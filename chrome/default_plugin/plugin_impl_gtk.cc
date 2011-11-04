@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,8 +49,8 @@ bool PluginInstallerImpl::Initialize(void* module_handle, NPP instance,
   instance_ = instance;
   mime_type_ = mime_type;
 
-  return PluginInstallerBase::Initialize(module_handle, instance, mime_type,
-                                         argc, argn, argv);
+  PluginInstallerBase::SetRoutingIds(argc, argn, argv);
+  return true;
 }
 
 bool PluginInstallerImpl::NPP_SetWindow(NPWindow* window_info) {

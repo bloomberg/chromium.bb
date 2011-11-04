@@ -14,8 +14,9 @@ class PluginInstallerBase {
   PluginInstallerBase();
   virtual ~PluginInstallerBase();
 
-  bool Initialize(void* module_handle, NPP instance, NPMIMEType mime_type,
-                  int16 argc, char* argn[], char* argv[]);
+  // Parses the arguments passed in to the plug-in for the IDs of the renderer
+  // process and RenderView.
+  void SetRoutingIds(int16 argc, char* argn[], char* argv[]);
 
   int renderer_process_id() const {
     return renderer_process_id_;

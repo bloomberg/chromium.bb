@@ -57,8 +57,8 @@ bool PluginInstallerImpl::Initialize(void* module_handle, NPP instance,
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   image_ = rb.GetNativeImageNamed(IDR_PLUGIN_ICON);
 
-  return PluginInstallerBase::Initialize(module_handle, instance, mime_type,
-                                         argc, argn, argv);
+  PluginInstallerBase::SetRoutingIds(argc, argn, argv);
+  return true;
 }
 
 bool PluginInstallerImpl::NPP_SetWindow(NPWindow* window_info) {

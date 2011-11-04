@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,6 +87,9 @@ bool PluginInstallerImpl::Initialize(HINSTANCE module_handle, NPP instance,
 
   InitializeResources(module_handle);
 
+  // Set the routing IDs before downloading the plug-in file, so we can
+  // immediately notify the browser if a plug-in is available.
+  PluginInstallerBase::SetRoutingIds(argc, argn, argv);
   if (!disable_plugin_finder_) {
     if (!installation_job_monitor_thread_->Initialize()) {
       NOTREACHED() << "Failed to initialize plugin install job";
@@ -98,8 +101,7 @@ bool PluginInstallerImpl::Initialize(HINSTANCE module_handle, NPP instance,
   } else {
     DisplayStatus(IDS_DEFAULT_PLUGIN_GET_PLUGIN_MSG_PLUGIN_FINDER_DISABLED);
   }
-  return PluginInstallerBase::Initialize(module_handle, instance, mime_type,
-                                         argc, argn, argv);
+  return true;
 }
 
 void PluginInstallerImpl::Shutdown() {
@@ -265,6 +267,12 @@ void PluginInstallerImpl::URLNotify(const char* url, NPReason reason) {
 
     if (plugin_available) {
       DVLOG(1) << "Plugin available for mime type " << mime_type_;
+      // Show the infobar only once.
+      if (show_install_infobar_) {
+        show_install_infobar_ = false;
+        NotifyPluginStatus(
+            webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE);
+      }
       DisplayAvailablePluginStatus();
     } else {
       DLOG(WARNING) << "No plugin available for mime type " << mime_type_;
@@ -328,12 +336,6 @@ bool PluginInstallerImpl::NPP_SetWindow(NPWindow* window_info) {
   UpdateWindow(hwnd());
   ShowWindow(hwnd(), SW_SHOW);
 
-  // Show the infobar only once.
-  if (show_install_infobar_) {
-    show_install_infobar_ = false;
-    NotifyPluginStatus(
-        webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE);
-  }
   return true;
 }
 

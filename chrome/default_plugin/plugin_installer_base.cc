@@ -16,9 +16,9 @@ PluginInstallerBase::PluginInstallerBase()
 PluginInstallerBase::~PluginInstallerBase() {
 }
 
-bool PluginInstallerBase::Initialize(void* module_handle, NPP instance,
-                                     NPMIMEType mime_type, int16 argc,
-                                     char* argn[], char* argv[]) {
+void PluginInstallerBase::SetRoutingIds(int16 argc,
+                                        char* argn[],
+                                        char* argv[]) {
   for (int16_t index = 0; index < argc; ++index) {
     if (!base::strncasecmp(argn[index],
                            content::kDefaultPluginRenderProcessId,
@@ -30,5 +30,4 @@ bool PluginInstallerBase::Initialize(void* module_handle, NPP instance,
       base::StringToInt(argv[index], &render_view_id_);
     }
   }
-  return true;
 }

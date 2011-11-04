@@ -36,8 +36,8 @@ bool PluginInstallerImpl::Initialize(void* module_handle,
     return false;
   }
 
-  return PluginInstallerBase::Initialize(module_handle, instance, mime_type,
-                                         argc, argn, argv);
+  PluginInstallerBase::SetRoutingIds(argc, argn, argv);
+  return true;
 }
 
 bool PluginInstallerImpl::NPP_SetWindow(NPWindow* window_info) {
