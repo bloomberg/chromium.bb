@@ -114,6 +114,8 @@
       <include name="IDR_WINDOW_TOP_CENTER" file="window_top_center.png" type="BINDATA" />
       <include name="IDR_WINDOW_TOP_LEFT_CORNER" file="window_top_left_corner.png" type="BINDATA" />
       <include name="IDR_WINDOW_TOP_RIGHT_CORNER" file="window_top_right_corner.png" type="BINDATA" />
+      <include name="IDR_PANEL_BOTTOM_LEFT_CORNER" file="panel_bottom_left_corner.png" type="BINDATA" />
+      <include name="IDR_PANEL_BOTTOM_RIGHT_CORNER" file="panel_bottom_right_corner.png" type="BINDATA" />
 
       <!-- Images only used by the Views toolkit. -->
       <if expr="pp_ifdef('toolkit_views')">

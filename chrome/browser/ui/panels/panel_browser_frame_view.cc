@@ -34,7 +34,6 @@
 #include "views/controls/label.h"
 #include "views/painter.h"
 #include "views/widget/widget_delegate.h"
-#include "views/window/window_shape.h"
 
 #if !defined(OS_WIN)
 #include "views/window/hit_test.h"
@@ -122,8 +121,8 @@ void LoadImageResources() {
   frame_edges.SetResources(
       IDR_WINDOW_TOP_LEFT_CORNER, IDR_WINDOW_TOP_CENTER,
       IDR_WINDOW_TOP_RIGHT_CORNER, IDR_WINDOW_RIGHT_SIDE,
-      IDR_WINDOW_BOTTOM_RIGHT_CORNER, IDR_WINDOW_BOTTOM_CENTER,
-      IDR_WINDOW_BOTTOM_LEFT_CORNER, IDR_WINDOW_LEFT_SIDE);
+      IDR_PANEL_BOTTOM_RIGHT_CORNER, IDR_WINDOW_BOTTOM_CENTER,
+      IDR_PANEL_BOTTOM_LEFT_CORNER, IDR_WINDOW_LEFT_SIDE);
 
   client_edges.SetResources(
       IDR_APP_TOP_LEFT, IDR_APP_TOP_CENTER,
@@ -349,21 +348,34 @@ int PanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 
 void PanelBrowserFrameView::GetWindowMask(const gfx::Size& size,
                                           gfx::Path* window_mask) {
-  // For minimized panel, the window shape is rectangle with top-left and
-  // top-right corners rounded.
+  // For panel, the window shape is rectangle with top-left and top-right
+  // corners rounded.
   if (size.height() <= Panel::kMinimizedPanelHeight) {
-    window_mask->moveTo(0, 2);
+    // For minimize panel, we need to produce the window mask applicable to
+    // the 3-pixel lines.
+    window_mask->moveTo(0, SkIntToScalar(size.height()));
     window_mask->lineTo(0, 1);
     window_mask->lineTo(1, 0);
     window_mask->lineTo(SkIntToScalar(size.width()) - 1, 0);
     window_mask->lineTo(SkIntToScalar(size.width()), 1);
-    window_mask->lineTo(SkIntToScalar(size.width()), 2);
+    window_mask->lineTo(SkIntToScalar(size.width()),
+                        SkIntToScalar(size.height()));
+  } else {
+    window_mask->moveTo(0, 3);
+    window_mask->lineTo(1, 2);
+    window_mask->lineTo(1, 1);
+    window_mask->lineTo(2, 1);
+    window_mask->lineTo(3, 0);
+    window_mask->lineTo(SkIntToScalar(size.width() - 3), 0);
+    window_mask->lineTo(SkIntToScalar(size.width() - 2), 1);
+    window_mask->lineTo(SkIntToScalar(size.width() - 1), 1);
+    window_mask->lineTo(SkIntToScalar(size.width() - 1), 2);
+    window_mask->lineTo(SkIntToScalar(size.width()), 3);
     window_mask->lineTo(SkIntToScalar(size.width()),
                         SkIntToScalar(size.height()));
     window_mask->lineTo(0, SkIntToScalar(size.height()));
-    return;
   }
-  views::GetDefaultWindowMask(size, window_mask);
+  window_mask->close();
 }
 
 void PanelBrowserFrameView::EnableClose(bool enable) {
