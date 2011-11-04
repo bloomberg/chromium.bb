@@ -23,6 +23,11 @@
 class BrowserAccessibilityManagerWin;
 class BrowserAccessibilityRelation;
 
+namespace ui {
+enum TextBoundaryDirection;
+enum TextBoundaryType;
+}
+
 using webkit_glue::WebAccessibility;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -416,17 +421,20 @@ BrowserAccessibilityWin
   CONTENT_EXPORT STDMETHODIMP get_text(LONG start_offset, LONG end_offset,
                                        BSTR* text);
 
-  CONTENT_EXPORT STDMETHODIMP get_textAtOffset(LONG offset,
+  CONTENT_EXPORT STDMETHODIMP get_textAtOffset(
+      LONG offset,
       enum IA2TextBoundaryType boundary_type,
       LONG* start_offset, LONG* end_offset,
       BSTR* text);
 
-  CONTENT_EXPORT STDMETHODIMP get_textBeforeOffset(LONG offset,
+  CONTENT_EXPORT STDMETHODIMP get_textBeforeOffset(
+      LONG offset,
       enum IA2TextBoundaryType boundary_type,
       LONG* start_offset, LONG* end_offset,
       BSTR* text);
 
-  CONTENT_EXPORT STDMETHODIMP get_textAfterOffset(LONG offset,
+  CONTENT_EXPORT STDMETHODIMP get_textAfterOffset(
+      LONG offset,
       enum IA2TextBoundaryType boundary_type,
       LONG* start_offset, LONG* end_offset,
       BSTR* text);
@@ -677,13 +685,16 @@ BrowserAccessibilityWin
   // value of offset and returns, otherwise offset remains unchanged.
   void HandleSpecialTextOffset(const string16& text, LONG* offset);
 
-  // Search forwards (direction == 1) or backwards (direction == -1) from
-  // the given offset until the given IAccessible2 boundary (like word,
-  // sentence) is found, and return its offset.
+  // Convert from a IA2TextBoundaryType to a ui::TextBoundaryType.
+  ui::TextBoundaryType IA2TextBoundaryToTextBoundary(IA2TextBoundaryType type);
+
+  // Search forwards (direction == 1) or backwards (direction == -1)
+  // from the given offset until the given boundary is found, and
+  // return the offset of that boundary.
   LONG FindBoundary(const string16& text,
-                    IA2TextBoundaryType boundary,
+                    IA2TextBoundaryType ia2_boundary,
                     LONG start_offset,
-                    LONG direction);
+                    ui::TextBoundaryDirection direction);
 
   // Return a pointer to the object corresponding to the given renderer_id,
   // does not make a new reference.

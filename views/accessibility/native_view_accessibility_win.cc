@@ -5,9 +5,12 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
+#include <vector>
+
 #include "views/accessibility/native_view_accessibility_win.h"
 
 #include "third_party/iaccessible2/ia2_api_all.h"
+#include "ui/base/accessibility/accessible_text_utils.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/view_prop.h"
 #include "views/widget/native_widget_win.h"
@@ -634,8 +637,8 @@ STDMETHODIMP NativeViewAccessibilityWin::get_selection(LONG selection_index,
 }
 
 STDMETHODIMP NativeViewAccessibilityWin::get_text(LONG start_offset,
-                                                 LONG end_offset,
-                                                 BSTR* text) {
+                                                  LONG end_offset,
+                                                  BSTR* text) {
   if (!view_)
     return E_FAIL;
 
@@ -676,6 +679,82 @@ STDMETHODIMP NativeViewAccessibilityWin::get_text(LONG start_offset,
   *text = SysAllocString(substr.c_str());
   DCHECK(*text);
   return S_OK;
+}
+
+STDMETHODIMP NativeViewAccessibilityWin::get_textAtOffset(
+    LONG offset,
+    enum IA2TextBoundaryType boundary_type,
+    LONG* start_offset, LONG* end_offset,
+    BSTR* text) {
+  if (!start_offset || !end_offset || !text)
+    return E_INVALIDARG;
+
+  // The IAccessible2 spec says we don't have to implement the "sentence"
+  // boundary type, we can just let the screenreader handle it.
+  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE) {
+    *start_offset = 0;
+    *end_offset = 0;
+    *text = NULL;
+    return S_FALSE;
+  }
+
+  const string16& text_str = TextForIAccessibleText();
+
+  *start_offset = FindBoundary(
+      text_str, boundary_type, offset, ui::BACKWARDS_DIRECTION);
+  *end_offset = FindBoundary(
+      text_str, boundary_type, offset, ui::FORWARDS_DIRECTION);
+  return get_text(*start_offset, *end_offset, text);
+}
+
+STDMETHODIMP NativeViewAccessibilityWin::get_textBeforeOffset(
+    LONG offset,
+    enum IA2TextBoundaryType boundary_type,
+    LONG* start_offset, LONG* end_offset,
+    BSTR* text) {
+  if (!start_offset || !end_offset || !text)
+    return E_INVALIDARG;
+
+  // The IAccessible2 spec says we don't have to implement the "sentence"
+  // boundary type, we can just let the screenreader handle it.
+  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE) {
+    *start_offset = 0;
+    *end_offset = 0;
+    *text = NULL;
+    return S_FALSE;
+  }
+
+  const string16& text_str = TextForIAccessibleText();
+
+  *start_offset = FindBoundary(
+      text_str, boundary_type, offset, ui::BACKWARDS_DIRECTION);
+  *end_offset = offset;
+  return get_text(*start_offset, *end_offset, text);
+}
+
+STDMETHODIMP NativeViewAccessibilityWin::get_textAfterOffset(
+    LONG offset,
+    enum IA2TextBoundaryType boundary_type,
+    LONG* start_offset, LONG* end_offset,
+    BSTR* text) {
+  if (!start_offset || !end_offset || !text)
+    return E_INVALIDARG;
+
+  // The IAccessible2 spec says we don't have to implement the "sentence"
+  // boundary type, we can just let the screenreader handle it.
+  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE) {
+    *start_offset = 0;
+    *end_offset = 0;
+    *text = NULL;
+    return S_FALSE;
+  }
+
+  const string16& text_str = TextForIAccessibleText();
+
+  *start_offset = offset;
+  *end_offset = FindBoundary(
+      text_str, boundary_type, offset, ui::FORWARDS_DIRECTION);
+  return get_text(*start_offset, *end_offset, text);
 }
 
 STDMETHODIMP NativeViewAccessibilityWin::get_offsetAtPoint(
@@ -912,4 +991,40 @@ string16 NativeViewAccessibilityWin::TextForIAccessibleText() {
     return state.value;
   else
     return state.name;
+}
+
+void NativeViewAccessibilityWin::HandleSpecialTextOffset(
+    const string16& text, LONG* offset) {
+  if (*offset == IA2_TEXT_OFFSET_LENGTH) {
+    *offset = static_cast<LONG>(text.size());
+  } else if (*offset == IA2_TEXT_OFFSET_CARET) {
+    get_caretOffset(offset);
+  }
+}
+
+ui::TextBoundaryType NativeViewAccessibilityWin::IA2TextBoundaryToTextBoundary(
+    IA2TextBoundaryType ia2_boundary) {
+  switch(ia2_boundary) {
+    case IA2_TEXT_BOUNDARY_CHAR: return ui::CHAR_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_WORD: return ui::WORD_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_LINE: return ui::LINE_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_SENTENCE: return ui::SENTENCE_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_PARAGRAPH: return ui::PARAGRAPH_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_ALL: return ui::ALL_BOUNDARY;
+    default:
+      NOTREACHED();
+      return ui::CHAR_BOUNDARY;
+  }
+}
+
+LONG NativeViewAccessibilityWin::FindBoundary(
+    const string16& text,
+    IA2TextBoundaryType ia2_boundary,
+    LONG start_offset,
+    ui::TextBoundaryDirection direction) {
+  HandleSpecialTextOffset(text, &start_offset);
+  ui::TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
+  std::vector<int32> line_breaks;
+  return ui::FindAccessibleTextBoundary(
+      text, line_breaks, boundary, start_offset, direction);
 }

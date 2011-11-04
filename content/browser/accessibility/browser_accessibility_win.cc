@@ -11,6 +11,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/common/view_messages.h"
 #include "net/base/escape.h"
+#include "ui/base/accessibility/accessible_text_utils.h"
 
 using webkit_glue::WebAccessibility;
 
@@ -1746,8 +1747,10 @@ STDMETHODIMP BrowserAccessibilityWin::get_textAtOffset(
 
   const string16& text_str = TextForIAccessibleText();
 
-  *start_offset = FindBoundary(text_str, boundary_type, offset, -1);
-  *end_offset = FindBoundary(text_str, boundary_type, offset, 1);
+  *start_offset = FindBoundary(
+      text_str, boundary_type, offset, ui::BACKWARDS_DIRECTION);
+  *end_offset = FindBoundary(
+      text_str, boundary_type, offset, ui::FORWARDS_DIRECTION);
   return get_text(*start_offset, *end_offset, text);
 }
 
@@ -1773,7 +1776,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_textBeforeOffset(
 
   const string16& text_str = TextForIAccessibleText();
 
-  *start_offset = FindBoundary(text_str, boundary_type, offset, -1);
+  *start_offset = FindBoundary(
+      text_str, boundary_type, offset, ui::BACKWARDS_DIRECTION);
   *end_offset = offset;
   return get_text(*start_offset, *end_offset, text);
 }
@@ -1801,7 +1805,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_textAfterOffset(
   const string16& text_str = TextForIAccessibleText();
 
   *start_offset = offset;
-  *end_offset = FindBoundary(text_str, boundary_type, offset, 1);
+  *end_offset = FindBoundary(
+      text_str, boundary_type, offset, ui::FORWARDS_DIRECTION);
   return get_text(*start_offset, *end_offset, text);
 }
 
@@ -2530,87 +2535,30 @@ void BrowserAccessibilityWin::HandleSpecialTextOffset(
   }
 }
 
+ui::TextBoundaryType BrowserAccessibilityWin::IA2TextBoundaryToTextBoundary(
+    IA2TextBoundaryType ia2_boundary) {
+  switch(ia2_boundary) {
+    case IA2_TEXT_BOUNDARY_CHAR: return ui::CHAR_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_WORD: return ui::WORD_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_LINE: return ui::LINE_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_SENTENCE: return ui::SENTENCE_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_PARAGRAPH: return ui::PARAGRAPH_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_ALL: return ui::ALL_BOUNDARY;
+    default:
+      NOTREACHED();
+      return ui::CHAR_BOUNDARY;
+  }
+}
+
 LONG BrowserAccessibilityWin::FindBoundary(
     const string16& text,
-    IA2TextBoundaryType boundary,
+    IA2TextBoundaryType ia2_boundary,
     LONG start_offset,
-    LONG direction) {
-  LONG text_size = static_cast<LONG>(text.size());
-  DCHECK((start_offset >= 0 && start_offset <= text_size) ||
-         start_offset == IA2_TEXT_OFFSET_LENGTH ||
-         start_offset == IA2_TEXT_OFFSET_CARET);
-  DCHECK(direction == 1 || direction == -1);
-
+    ui::TextBoundaryDirection direction) {
   HandleSpecialTextOffset(text, &start_offset);
-
-  if (boundary == IA2_TEXT_BOUNDARY_CHAR) {
-    if (direction == 1 && start_offset < text_size)
-      return start_offset + 1;
-    else
-      return start_offset;
-  } else if (boundary == IA2_TEXT_BOUNDARY_LINE) {
-    if (direction == 1) {
-      for (int j = 0; j < static_cast<int>(line_breaks_.size()); ++j) {
-        if (line_breaks_[j] > start_offset)
-          return line_breaks_[j];
-      }
-      return text_size;
-    } else {
-      for (int j = static_cast<int>(line_breaks_.size()) - 1; j >= 0; j--) {
-        if (line_breaks_[j] <= start_offset)
-          return line_breaks_[j];
-      }
-      return 0;
-    }
-  }
-
-  LONG result = start_offset;
-  for (;;) {
-    LONG pos;
-    if (direction == 1) {
-      if (result >= text_size)
-        return text_size;
-      pos = result;
-    } else {
-      if (result <= 0)
-        return 0;
-      pos = result - 1;
-    }
-
-    switch (boundary) {
-      case IA2_TEXT_BOUNDARY_CHAR:
-      case IA2_TEXT_BOUNDARY_LINE:
-        NOTREACHED();  // These are handled above.
-        break;
-      case IA2_TEXT_BOUNDARY_WORD:
-        if (IsWhitespace(text[pos]))
-          return result;
-        break;
-      case IA2_TEXT_BOUNDARY_PARAGRAPH:
-        if (text[pos] == '\n')
-          return result;
-      case IA2_TEXT_BOUNDARY_SENTENCE:
-        // Note that we don't actually have to implement sentence support;
-        // currently IAccessibleText functions return S_FALSE so that
-        // screenreaders will handle it on their own.
-        if ((text[pos] == '.' || text[pos] == '!' || text[pos] == '?') &&
-            (pos == text_size - 1 || IsWhitespace(text[pos + 1]))) {
-          return result;
-        }
-      case IA2_TEXT_BOUNDARY_ALL:
-      default:
-        break;
-    }
-
-    if (direction > 0) {
-      result++;
-    } else if (direction < 0) {
-      result--;
-    } else {
-      NOTREACHED();
-      return result;
-    }
-  }
+  ui::TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
+  return ui::FindAccessibleTextBoundary(
+      text, line_breaks_, boundary, start_offset, direction);
 }
 
 BrowserAccessibilityWin* BrowserAccessibilityWin::GetFromRendererID(

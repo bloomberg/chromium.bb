@@ -17,6 +17,11 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/view.h"
 
+namespace ui {
+enum TextBoundaryDirection;
+enum TextBoundaryType;
+}
+
 // Note: do not put NativeViewAccessibilityWin in the namespace "views";
 // Visual Studio 2005 does not allow an ATL::CComObject symbol in a namespace.
 
@@ -208,6 +213,21 @@ NativeViewAccessibilityWin
 
   STDMETHODIMP get_text(LONG start_offset, LONG end_offset, BSTR* text);
 
+  STDMETHODIMP get_textAtOffset(LONG offset,
+                                enum IA2TextBoundaryType boundary_type,
+                                LONG* start_offset, LONG* end_offset,
+                                BSTR* text);
+
+  STDMETHODIMP get_textBeforeOffset(LONG offset,
+                                    enum IA2TextBoundaryType boundary_type,
+                                    LONG* start_offset, LONG* end_offset,
+                                    BSTR* text);
+
+  STDMETHODIMP get_textAfterOffset(LONG offset,
+                                   enum IA2TextBoundaryType boundary_type,
+                                   LONG* start_offset, LONG* end_offset,
+                                   BSTR* text);
+
   STDMETHODIMP get_offsetAtPoint(LONG x, LONG y,
       enum IA2CoordinateType coord_type,
       LONG* offset);
@@ -216,24 +236,6 @@ NativeViewAccessibilityWin
   // IAccessibleText methods not implemented.
   //
 
-  STDMETHODIMP get_textAtOffset(LONG offset,
-      enum IA2TextBoundaryType boundary_type,
-      LONG* start_offset, LONG* end_offset,
-      BSTR* text) {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP get_textBeforeOffset(LONG offset,
-      enum IA2TextBoundaryType boundary_type,
-      LONG* start_offset, LONG* end_offset,
-      BSTR* text) {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP get_textAfterOffset(LONG offset,
-      enum IA2TextBoundaryType boundary_type,
-      LONG* start_offset, LONG* end_offset,
-      BSTR* text) {
-    return E_NOTIMPL;
-  }
   STDMETHODIMP get_newText(IA2TextSegment* new_text) {
     return E_NOTIMPL;
   }
@@ -319,6 +321,21 @@ NativeViewAccessibilityWin
 
   // Return the text to use for IAccessibleText.
   string16 TextForIAccessibleText();
+
+  // If offset is a member of IA2TextSpecialOffsets this function updates the
+  // value of offset and returns, otherwise offset remains unchanged.
+  void HandleSpecialTextOffset(const string16& text, LONG* offset);
+
+  // Convert from a IA2TextBoundaryType to a ui::TextBoundaryType.
+  ui::TextBoundaryType IA2TextBoundaryToTextBoundary(IA2TextBoundaryType type);
+
+  // Search forwards (direction == 1) or backwards (direction == -1)
+  // from the given offset until the given boundary is found, and
+  // return the offset of that boundary.
+  LONG FindBoundary(const string16& text,
+                    IA2TextBoundaryType ia2_boundary,
+                    LONG start_offset,
+                    ui::TextBoundaryDirection direction);
 
   // Give CComObject access to the class constructor.
   template <class Base> friend class CComObject;
