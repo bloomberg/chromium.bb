@@ -7,6 +7,7 @@
 #pragma once
 
 #include "build/build_config.h"
+#include "ui/gfx/native_widget_types.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindow
@@ -24,7 +25,10 @@ class ConstrainedWindow {
   virtual void CloseConstrainedWindow() = 0;
 
   // Sets focus on the Constrained Window.
-  virtual void FocusConstrainedWindow() {}
+  virtual void FocusConstrainedWindow();
+
+  // Returns the native window of the constrained window.
+  virtual gfx::NativeWindow GetNativeWindow();
 
  protected:
   virtual ~ConstrainedWindow() {}

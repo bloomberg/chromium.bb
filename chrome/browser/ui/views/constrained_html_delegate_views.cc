@@ -41,7 +41,7 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
   }
   virtual void WindowClosing() OVERRIDE {
     if (!closed_via_webui_)
-      html_delegate_->OnDialogClosed("");
+      html_delegate_->OnDialogClosed(std::string());
   }
   virtual views::Widget* GetWidget() OVERRIDE {
     return View::GetWidget();
@@ -56,6 +56,9 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
 
   // HtmlDialogTabContentsDelegate interface.
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) OVERRIDE {}
+  virtual void CloseContents(TabContents* source) OVERRIDE {
+    window_->CloseConstrainedWindow();
+  }
 
   // Overridden from TabContentsContainer.
   virtual gfx::Size GetPreferredSize() OVERRIDE {

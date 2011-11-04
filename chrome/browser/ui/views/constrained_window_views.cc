@@ -644,6 +644,10 @@ void ConstrainedWindowViews::FocusConstrainedWindow() {
   }
 }
 
+gfx::NativeView ConstrainedWindowViews::GetNativeWindow() {
+  return Widget::GetNativeWindow();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindowViews, views::Window overrides:
 

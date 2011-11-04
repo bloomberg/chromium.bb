@@ -69,6 +69,7 @@ class ConstrainedWindowViews : public views::Widget,
   virtual void ShowConstrainedWindow() OVERRIDE;
   virtual void CloseConstrainedWindow() OVERRIDE;
   virtual void FocusConstrainedWindow() OVERRIDE;
+  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
 
  private:
   // Overridden from views::Widget:

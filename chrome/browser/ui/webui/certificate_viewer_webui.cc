@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/webui/certificate_viewer_webui.h"
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
@@ -12,13 +14,18 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/certificate_dialogs.h"
-#include "chrome/browser/ui/webui/certificate_viewer.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "grit/generated_resources.h"
+
+#if defined(USE_AURA)
+#include "chrome/browser/ui/constrained_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/constrained_html_ui.h"
+#endif
 
 namespace {
 
@@ -69,9 +76,19 @@ CertificateViewerDialog::~CertificateViewerDialog() {
 }
 
 void CertificateViewerDialog::Show(gfx::NativeWindow parent) {
+  // TODO(oshima): Should get browser from parent.
   Browser* browser = BrowserList::GetLastActive();
   DCHECK(browser);
+#if defined(USE_AURA)
+  TabContentsWrapper* current_wrapper =
+      browser->GetSelectedTabContentsWrapper();
+  window_ = ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
+      current_wrapper->profile(),
+      this,
+      current_wrapper)->window()->GetNativeWindow();
+#else
   window_ = browser->BrowserShowHtmlDialog(this, parent);
+#endif
 }
 
 bool CertificateViewerDialog::IsDialogModal() const {

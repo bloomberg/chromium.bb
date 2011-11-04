@@ -88,12 +88,12 @@ void ShowCryptoModulePasswordDialog(
 
 }  // namespace browser
 
-
+#if defined(OS_WIN)
 void ShowCertificateViewer(gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
-  // TODO(beng);
-  NOTIMPLEMENTED();
+  // No certificate viewer on Windows.
 }
+#endif
 
 // static
 FirstRunBubble* FirstRunBubble::Show(

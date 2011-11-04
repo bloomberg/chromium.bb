@@ -49,11 +49,11 @@ class HtmlDialogTabContentsDelegate : public TabContentsDelegate {
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
-                              bool user_gesture);
-  virtual bool IsPopup(const TabContents* source) const;
+                              bool user_gesture) OVERRIDE;
+  virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
-      content::NavigationType navigation_type);
+      content::NavigationType navigation_type) OVERRIDE;
 
  private:
   Profile* profile_;  // Weak pointer.  Always an original profile.

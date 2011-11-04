@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_CERTIFICATE_VIEWER_H_
-#define CHROME_BROWSER_UI_WEBUI_CERTIFICATE_VIEWER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CERTIFICATE_VIEWER_WEBUI_H_
+#define CHROME_BROWSER_UI_WEBUI_CERTIFICATE_VIEWER_WEBUI_H_
 #pragma once
 
 #include "base/values.h"
@@ -103,4 +103,4 @@ class CertificateViewerDialogHandler : public WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(CertificateViewerDialogHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_CERTIFICATE_VIEWER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CERTIFICATE_VIEWER_WEBUI_H_

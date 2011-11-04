@@ -83,7 +83,8 @@ void HtmlDialogTabContentsDelegate::AddNewContents(
   }
 }
 
-bool HtmlDialogTabContentsDelegate::IsPopup(const TabContents* source) const {
+bool HtmlDialogTabContentsDelegate::IsPopupOrPanel(
+    const TabContents* source) const {
   // This needs to return true so that we are allowed to be resized by our
   // contents.
   return true;

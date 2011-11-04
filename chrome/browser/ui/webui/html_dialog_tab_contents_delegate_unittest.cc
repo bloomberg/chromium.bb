@@ -53,7 +53,7 @@ class HtmlDialogTabContentsDelegateTest : public BrowserWithTestWindowTest {
 
 TEST_F(HtmlDialogTabContentsDelegateTest, DoNothingMethodsTest) {
   // None of the following calls should do anything.
-  EXPECT_TRUE(test_tab_contents_delegate_->IsPopup(NULL));
+  EXPECT_TRUE(test_tab_contents_delegate_->IsPopupOrPanel(NULL));
   scoped_refptr<history::HistoryAddPageArgs> should_add_args(
       new history::HistoryAddPageArgs(
           GURL(), base::Time::Now(), 0, 0, GURL(), history::RedirectList(),
