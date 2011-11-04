@@ -644,7 +644,7 @@ void ConstrainedWindowViews::FocusConstrainedWindow() {
   }
 }
 
-gfx::NativeView ConstrainedWindowViews::GetNativeWindow() {
+gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
   return Widget::GetNativeWindow();
 }
 
