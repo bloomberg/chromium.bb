@@ -34,7 +34,7 @@ scoped_refptr<gfx::GLContext> InitializeGLContext(gfx::GLSurface* surface) {
   scoped_refptr<gfx::GLContext> context(
       gfx::GLContext::CreateGLContext(NULL,
                                       surface,
-                                      gfx::PreferIntegratedGpu));
+                                      gfx::PreferDiscreteGpu));
   if (!context.get()) {
     LOG(ERROR) << "gfx::GLContext::CreateGLContext failed";
     return NULL;
