@@ -72,6 +72,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
 
+  const string16 title() const { return title_; }
+  void set_title(const string16& title) { title_ = title; }
+
   ui::Layer* layer() { return layer_.get(); }
   const ui::Layer* layer() const { return layer_.get(); }
 
@@ -326,6 +329,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   int id_;
   std::string name_;
+
+  string16 title_;
 
   scoped_ptr<EventFilter> event_filter_;
   scoped_ptr<LayoutManager> layout_manager_;

@@ -286,7 +286,7 @@ void NativeWidgetAura::GetWindowPlacement(
 }
 
 void NativeWidgetAura::SetWindowTitle(const string16& title) {
-  // Aura doesn't have native window frames.
+  window_->set_title(title);
 }
 
 void NativeWidgetAura::SetWindowIcons(const SkBitmap& window_icon,

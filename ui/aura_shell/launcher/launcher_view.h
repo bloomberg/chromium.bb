@@ -6,6 +6,8 @@
 #define UI_AURA_SHELL_LAUNCHER_VIEW_H_
 #pragma once
 
+#include <vector>
+
 #include "ui/aura_shell/launcher/launcher_button_host.h"
 #include "ui/aura_shell/launcher/launcher_model_observer.h"
 #include "views/controls/button/button.h"
@@ -14,6 +16,7 @@
 namespace views {
 class BoundsAnimator;
 class ImageButton;
+class MenuRunner;
 }
 
 namespace aura_shell {
@@ -41,6 +44,7 @@ class LauncherView : public views::WidgetDelegateView,
   struct IdealBounds {
     gfx::Rect new_browser_bounds;
     gfx::Rect show_apps_bounds;
+    gfx::Rect overflow_bounds;
   };
 
   // Sets the bounds of each view to its ideal bounds.
@@ -50,6 +54,10 @@ class LauncherView : public views::WidgetDelegateView,
   // item in the model is set in |view_model_|, the bounds of the
   // |new_browser_button_| and |show_apps_button_| is set in |bounds|.
   void CalculateIdealBounds(IdealBounds* bounds);
+
+  // Returns the index of the last view whose max x-coordinate is less than
+  // |max_x|. Returns -1 if nothing fits, or there are no views.
+  int DetermineLastVisibleIndex(int max_x);
 
   // Animates the bounds of each view to its ideal bounds.
   void AnimateToIdealBounds();
@@ -73,8 +81,15 @@ class LauncherView : public views::WidgetDelegateView,
   // Common setup done for all children.
   void ConfigureChildView(views::View* view);
 
+  // Returns the windows whose icon is not show because it doesn't fit.
+  void GetOverflowWindows(std::vector<aura::Window*>* names);
+
+  // Shows the overflow menu.
+  void ShowOverflowMenu();
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
   // Overridden from LauncherModelObserver:
   virtual void LauncherItemAdded(int model_index) OVERRIDE;
@@ -107,6 +122,8 @@ class LauncherView : public views::WidgetDelegateView,
 
   views::ImageButton* show_apps_button_;
 
+  views::ImageButton* overflow_button_;
+
   // Are we dragging? This is only set if the mouse is dragged far enough to
   // trigger a drag.
   bool dragging_;
@@ -120,6 +137,8 @@ class LauncherView : public views::WidgetDelegateView,
 
   // Index |drag_view_| was initially at.
   int start_drag_index_;
+
+  scoped_ptr<views::MenuRunner> overflow_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };

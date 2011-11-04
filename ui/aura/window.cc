@@ -100,12 +100,11 @@ bool Window::IsVisible() const {
 }
 
 gfx::Rect Window::GetScreenBounds() const {
-  const gfx::Rect local_bounds = bounds();
-  gfx::Point origin = local_bounds.origin();
+  gfx::Point origin = bounds().origin();
   Window::ConvertPointToWindow(parent_,
                                aura::Desktop::GetInstance(),
                                &origin);
-  return gfx::Rect(origin, local_bounds.size());
+  return gfx::Rect(origin, bounds().size());
 }
 
 void Window::Activate() {

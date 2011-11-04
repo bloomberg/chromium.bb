@@ -13,13 +13,17 @@
 #include "ui/aura_shell/launcher/view_model_utils.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_delegate.h"
+#include "ui/aura/window.h"
 #include "ui/base/animation/animation.h"
 #include "ui/base/animation/throb_animation.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/image/image.h"
 #include "views/animation/bounds_animator.h"
 #include "views/controls/button/image_button.h"
+#include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/widget/widget.h"
 
 using ui::Animation;
@@ -46,6 +50,37 @@ static const int kMinimumDragDistance = 8;
 static const float kDimmedButtonOpacity = .8f;
 
 namespace {
+
+// ui::SimpleMenuModel::Delegate implementation that remembers the id of the
+// menu that was activated.
+class MenuDelegateImpl : public ui::SimpleMenuModel::Delegate {
+ public:
+  MenuDelegateImpl() : activated_command_id_(-1) {}
+
+  int activated_command_id() const { return activated_command_id_; }
+
+  // ui::SimpleMenuModel::Delegate overrides:
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
+    return false;
+  }
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
+    return true;
+  }
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE {
+    return false;
+  }
+  virtual void ExecuteCommand(int command_id) OVERRIDE {
+    activated_command_id_ = command_id;
+  }
+
+ private:
+  // ID of the command passed to ExecuteCommand.
+  int activated_command_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(MenuDelegateImpl);
+};
 
 // ImageButton subclass that animates transition changes using the opacity of
 // the layer.
@@ -195,6 +230,7 @@ LauncherView::LauncherView(LauncherModel* model)
       view_model_(new ViewModel),
       new_browser_button_(NULL),
       show_apps_button_(NULL),
+      overflow_button_(NULL),
       dragging_(NULL),
       drag_view_(NULL),
       drag_offset_(0),
@@ -232,7 +268,15 @@ void LauncherView::Init() {
   ConfigureChildView(show_apps_button_);
   AddChildView(show_apps_button_);
 
-  LayoutToIdealBounds();
+  overflow_button_ = new FadeButton(this);
+  // TODO: need image for this.
+  overflow_button_->SetImage(
+      views::CustomButton::BS_NORMAL,
+      rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW).ToSkBitmap());
+  ConfigureChildView(overflow_button_);
+  AddChildView(overflow_button_);
+
+  // We'll layout when our bounds change.
 }
 
 void LauncherView::LayoutToIdealBounds() {
@@ -244,6 +288,10 @@ void LauncherView::LayoutToIdealBounds() {
 }
 
 void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
+  int available_width = width();
+  if (!available_width)
+    return;
+
   // new_browser_button first.
   int x = kLeadingInset;
   gfx::Size pref = new_browser_button_->GetPreferredSize();
@@ -260,12 +308,45 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     x += pref.width() + kHorizontalPadding;
   }
 
-  // And the show_apps_button.
-  pref = show_apps_button_->GetPreferredSize();
+  // Show apps button and overflow button.
+  bounds->show_apps_bounds.set_size(show_apps_button_->GetPreferredSize());
+  bounds->overflow_bounds.set_size(overflow_button_->GetPreferredSize());
+  int last_visible_index = DetermineLastVisibleIndex(
+      available_width - kLeadingInset - bounds->show_apps_bounds.width() -
+      kHorizontalPadding - bounds->overflow_bounds.width() -
+      kHorizontalPadding);
+  bool show_overflow = (last_visible_index + 1 != view_model_->view_size());
+  if (overflow_button_->IsVisible() != show_overflow) {
+    // Only change visibility of the views if the visibility of the overflow
+    // button changes. Otherwise we'll effect the insertion animation, which
+    // changes the visibility.
+    for (int i = 0; i <= last_visible_index; ++i)
+      view_model_->view_at(i)->SetVisible(true);
+    for (int i = last_visible_index + 1; i < view_model_->view_size(); ++i)
+      view_model_->view_at(i)->SetVisible(false);
+  }
+
+  overflow_button_->SetVisible(show_overflow);
+  if (show_overflow) {
+    DCHECK_NE(0, view_model_->view_size());
+    x = view_model_->ideal_bounds(last_visible_index).right() +
+        kHorizontalPadding;
+    bounds->overflow_bounds.set_x(x);
+    bounds->overflow_bounds.set_y(
+        (kPreferredHeight - bounds->overflow_bounds.height()) / 2);
+    x = bounds->overflow_bounds.right() + kHorizontalPadding;
+  }
   // TODO(sky): -8 is a hack, remove when we get better images.
-  bounds->show_apps_bounds = gfx::Rect(
-      x - 8, (kPreferredHeight - pref.width()) / 2, pref.width(),
-      pref.height());
+  bounds->show_apps_bounds.set_x(x - 8);
+  bounds->show_apps_bounds.set_y(
+      (kPreferredHeight - bounds->show_apps_bounds.height()) / 2);
+}
+
+int LauncherView::DetermineLastVisibleIndex(int max_x) {
+  int index = view_model_->view_size() - 1;
+  while (index >= 0 && view_model_->ideal_bounds(index).right() > max_x)
+    index--;
+  return index;
 }
 
 void LauncherView::AnimateToIdealBounds() {
@@ -279,6 +360,7 @@ void LauncherView::AnimateToIdealBounds() {
   }
   bounds_animator_->AnimateViewTo(show_apps_button_,
                                   ideal_bounds.show_apps_bounds);
+  overflow_button_->SetBoundsRect(ideal_bounds.overflow_bounds);
 }
 
 views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
@@ -351,6 +433,51 @@ void LauncherView::ConfigureChildView(views::View* view) {
   view->layer()->SetFillsBoundsOpaquely(false);
 }
 
+void LauncherView::GetOverflowWindows(std::vector<aura::Window*>* names) {
+  int index = 0;
+  while (index < view_model_->view_size() &&
+         view_model_->view_at(index)->IsVisible()) {
+    index++;
+  }
+  while (index < view_model_->view_size()) {
+    names->push_back(model_->items()[index].window);
+    index++;
+  }
+}
+
+void LauncherView::ShowOverflowMenu() {
+  std::vector<aura::Window*> windows;
+  GetOverflowWindows(&windows);
+  if (windows.empty())
+    return;
+
+  MenuDelegateImpl menu_delegate;
+  ui::SimpleMenuModel menu_model(&menu_delegate);
+  for (size_t i = 0; i < windows.size(); ++i)
+    menu_model.AddItem(static_cast<int>(i), windows[i]->title());
+  views::MenuModelAdapter menu_adapter(&menu_model);
+  overflow_menu_runner_.reset(new views::MenuRunner(menu_adapter.CreateMenu()));
+  gfx::Rect bounds(overflow_button_->size());
+  gfx::Point origin;
+  ConvertPointToScreen(overflow_button_, &origin);
+  if (overflow_menu_runner_->RunMenuAt(GetWidget(), NULL,
+          gfx::Rect(origin, size()), views::MenuItemView::TOPLEFT, 0) ==
+      views::MenuRunner::MENU_DELETED ||
+      menu_delegate.activated_command_id() == -1)
+    return;
+
+  aura::Window* activated_window =
+      windows[menu_delegate.activated_command_id()];
+  LauncherItems::const_iterator window_iter =
+      model_->ItemByWindow(activated_window);
+  if (window_iter == model_->items().end())
+    return;  // Window was deleted while menu was up.
+  ShellDelegate* delegate = Shell::GetInstance()->delegate();
+  if (!delegate)
+    return;
+  delegate->LauncherItemClicked(*window_iter);
+}
+
 void LauncherView::CancelDrag(views::View* deleted_view) {
   if (!drag_view_)
     return;
@@ -376,6 +503,10 @@ gfx::Size LauncherView::GetPreferredSize() {
                    kPreferredHeight);
 }
 
+void LauncherView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  LayoutToIdealBounds();
+}
+
 void LauncherView::LauncherItemAdded(int model_index) {
   CancelDrag(NULL);
 
@@ -389,8 +520,10 @@ void LauncherView::LauncherItemAdded(int model_index) {
   // hidden, so it visually appears as though we are providing space for
   // it. When done we'll fade the view in.
   AnimateToIdealBounds();
-  bounds_animator_->SetAnimationDelegate(
-      view, new StartFadeAnimationDelegate(this, view), true);
+  if (!overflow_button_->IsVisible()) {
+    bounds_animator_->SetAnimationDelegate(
+        view, new StartFadeAnimationDelegate(this, view), true);
+  }
 }
 
 void LauncherView::LauncherItemRemoved(int model_index) {
@@ -466,6 +599,8 @@ void LauncherView::ButtonPressed(views::Button* sender,
     delegate->CreateNewWindow();
   } else if (sender == show_apps_button_) {
     delegate->ShowApps();
+  } else if (sender == overflow_button_) {
+    ShowOverflowMenu();
   } else {
     int view_index = view_model_->GetIndexOfView(sender);
     // May be -1 while in the process of animating closed.
