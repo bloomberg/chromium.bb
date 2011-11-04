@@ -11,10 +11,8 @@
 #include "native_client/src/untrusted/nacl/nacl_startup.h"
 
 
-void __libc_init_array(void) __attribute__((weak));
-void __libc_fini_array(void) __attribute__((weak));
-void _init(void) __attribute__((weak));
-void _fini(void) __attribute__((weak));
+void __libc_init_array(void);
+void __libc_fini_array(void);
 
 void __pthread_initialize(void);
 
@@ -42,17 +40,11 @@ void _start(uint32_t *info) {
   if (fini != NULL)
     atexit(fini);
 
-  if (&__libc_fini_array)
-    atexit(&__libc_fini_array);
-  else
-    atexit(&_fini);
+  atexit(&__libc_fini_array);
 
   __pthread_initialize();
 
-  if (&__libc_init_array)
-    __libc_init_array();
-  else
-    _init();
+  __libc_init_array();
 
   exit(main(argc, argv, envp));
 

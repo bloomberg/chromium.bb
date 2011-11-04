@@ -11,22 +11,6 @@
 typedef void (*FUN_PTR)();
 
 /*
- * src/untrusted/nacl/start.c uses weak to check for definitions of these two
- * functions, and calls _init and _fini if there are no definitions.
- * Calling them from a dead function here forces the definitions in the library
- * to be needed, hence providing strong definitions for the two symbols.
- * This makes start.c call them rather than _init/_fini.
- * TODO(sehr,mcgrathr): remove these when we only use init_array/fini_array.
- */
-void __libc_init_array(void);
-void __libc_fini_array(void);
-
-static void __attribute__((used)) init_fini_kludge(void) {
-  __libc_init_array();
-  __libc_fini_array();
-}
-
-/*
  * pnacl handles init/fini through the .init_array and .fini_array sections
  * rather than .init/.fini.  We provide stubs here because they are still
  * called from newlib's startup routine in libc/misc/init.c.
