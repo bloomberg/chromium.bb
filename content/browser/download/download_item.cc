@@ -643,7 +643,8 @@ bool DownloadItem::MatchesQuery(const string16& query) const {
   //   L"/\x4f60\x597d\x4f60\x597d",
   //   "/%E4%BD%A0%E5%A5%BD%E4%BD%A0%E5%A5%BD"
   std::string languages;
-  TabContents* tab = request_handle_->GetTabContents();
+  TabContents* tab = (request_handle_.get() ?
+                      request_handle_->GetTabContents() : NULL);
   if (tab)
     languages = content::GetContentClient()->browser()->GetAcceptLangs(tab);
   string16 url_formatted(net::FormatUrl(GetURL(), languages));
