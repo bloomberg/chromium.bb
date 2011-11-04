@@ -37,6 +37,15 @@ class GerritHelper():
     assert isinstance(query_list, list), 'Query command must be list.'
     return self.ssh_prefix + ['gerrit', 'query', '--format=json'] + query_list
 
+  def GetGerritSqlCommand(self, command_list):
+    """Returns array corresponding to Gerrit Review command.
+
+    Review can be used to modify a changelist.  Specifically it can change
+    scores, abandon, restore or submit it.  Pass in |command|.
+    """
+    assert isinstance(command_list, list), 'Sql command must be list.'
+    return self.ssh_prefix + ['gerrit', 'gsql'] + command_list
+
   def GetGerritReviewCommand(self, command_list):
     """Returns array corresponding to Gerrit Review command.
 

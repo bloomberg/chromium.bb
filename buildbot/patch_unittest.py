@@ -197,12 +197,19 @@ class GerritPatchTest(mox.MoxTestBase):
     git_rev_list_obj.output = '\n'.join(['1234abcd', '1234abce'])
     self.GerritDepenedenciesHelper(git_rev_list_obj, ['1234abcd', '1234abce'])
 
-
   def testGerritNoDependencies(self):
     """Tests that we return an empty tuple if the commit has no deps."""
     git_rev_list_obj = self.mox.CreateMock(cros_lib.CommandResult)
     git_rev_list_obj.output = ''
     self.GerritDepenedenciesHelper(git_rev_list_obj, [])
+
+  def NotestMockRemoveCommitReady(self):
+    """Tests against sosa's test patch to remove Commit Ready bit on failure."""
+    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
+    my_patch.gerrit_number = 8366 # Sosa's test change.
+    my_patch.patch_number = 1 # Sosa's test patch.
+    helper = gerrit_helper.GerritHelper(False)
+    my_patch.HandleCouldNotVerify(helper, 'some_url', False)
 
 
 class PrepareLocalPatchesTests(mox.MoxTestBase):

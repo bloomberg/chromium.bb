@@ -225,9 +225,9 @@ class GerritPatch(Patch):
     msg = self.ConstructErrorMessage(msg)
 
     cmd = helper.GetGerritReviewCommand(
-        ['--verified=-1', '-m', '"%s"' % msg, '%s,%s' % (self.gerrit_number,
-                                                         self.patch_number)])
+        ['-m', '"%s"' % msg, '%s,%s' % (self.gerrit_number, self.patch_number)])
     GerritPatch._RunCommand(cmd, dryrun)
+    self.RemoveCommitReady(helper, dryrun)
 
   def HandleCouldNotVerify(self, helper, build_log, dryrun=False):
     """Handler for when the Commit Queue fails to validate a change.
@@ -244,14 +244,22 @@ class GerritPatch(Patch):
 
     """
     msg = ('The Commit Queue failed to verify your change in %s . '
-           'If you believe this happened in error, you can remove the '
-           'chrome-bot reviewer from your review by hitting the |X| next to '
-           'its name.  Your change will then get automatically retried.' %
+           'If you believe this happened in error, just re-mark your commit as '
+           'ready. Your change will then get automatically retried.' %
            build_log)
     msg = self.ConstructErrorMessage(msg)
     cmd = helper.GetGerritReviewCommand(
-        ['--verified=-1', '-m', '"%s"' % msg, '%s,%s' % (self.gerrit_number,
-                                                         self.patch_number)])
+        ['-m', '"%s"' % msg, '%s,%s' % (self.gerrit_number, self.patch_number)])
+    GerritPatch._RunCommand(cmd, dryrun)
+    self.RemoveCommitReady(helper, dryrun)
+
+  def RemoveCommitReady(self, helper, dryrun=False):
+    """Remove any commit ready bits associated with CL."""
+    query = ['-c',
+             '"delete from patch_set_approvals where change_id=%s'
+             ' AND category_id=\'COMR\';"' % self.gerrit_number
+            ]
+    cmd = helper.GetGerritSqlCommand(query)
     GerritPatch._RunCommand(cmd, dryrun)
 
   def HandleCouldNotApply(self, helper, build_log, dryrun=False):
@@ -268,9 +276,9 @@ class GerritPatch(Patch):
            'Please re-sync, rebase, and re-upload your change.' % build_log)
     msg = self.ConstructErrorMessage(msg)
     cmd = helper.GetGerritReviewCommand(
-        ['--verified=-1', '-m', '"%s"' % msg, '%s,%s' % (self.gerrit_number,
-                                                         self.patch_number)])
+        ['-m', '"%s"' % msg, '%s,%s' % (self.gerrit_number, self.patch_number)])
     GerritPatch._RunCommand(cmd, dryrun)
+    self.RemoveCommitReady(helper, dryrun)
 
   def GerritDependencies(self, buildroot):
     """Returns an ordered list of revisions that this patch depends on.
