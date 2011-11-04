@@ -43,6 +43,7 @@ class AURA_EXPORT LayoutManager {
   // before applying, or ignore the request.
   virtual void SetChildBounds(Window* child,
                               const gfx::Rect& requested_bounds) = 0;
+
  protected:
   // Sets the child's bounds forcibly. LayoutManager is responsible
   // for checking the state and make sure the bounds are correctly

@@ -16,6 +16,11 @@ void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
   window->SetProperty(aura::kRestoreBoundsKey, new gfx::Rect(bounds));
 }
 
+void SetRestoreBoundsIfNotSet(aura::Window* window) {
+  if (!GetRestoreBounds(window))
+    SetRestoreBounds(window, window->bounds());
+}
+
 const gfx::Rect* GetRestoreBounds(aura::Window* window) {
   return reinterpret_cast<gfx::Rect*>(
       window->GetProperty(aura::kRestoreBoundsKey));

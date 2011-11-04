@@ -16,9 +16,13 @@ class Rect;
 
 namespace aura_shell {
 
-// Sets the restore bounds property on |window|. Deletes
-// existing bounds value if exists.
-void SetRestoreBounds(aura::Window* window, const gfx::Rect&);
+// Sets the restore bounds property on |window|. Deletes existing bounds value
+// if exists.
+void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds);
+
+// Same as SetRestoreBounds(), but does nothing if the restore bounds have
+// already been set. The bounds used are the bounds of the window.
+void SetRestoreBoundsIfNotSet(aura::Window* window);
 
 // Returns the restore bounds property on |window|. NULL if the
 // restore bounds property does not exist for |window|. |window|

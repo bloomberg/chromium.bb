@@ -19,6 +19,7 @@
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/aura_shell/shell_window_ids.h"
+#include "ui/aura_shell/toplevel_layout_manager.h"
 #include "ui/aura_shell/workspace/workspace_controller.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
@@ -28,9 +29,6 @@
 namespace aura_shell {
 
 namespace {
-
-// The right/left margin of work area in the screen.
-const int kWorkAreaHorizontalMargin = 15;
 
 using views::Widget;
 
@@ -120,14 +118,13 @@ void Shell::Init() {
   desktop_layout->set_launcher_widget(launcher_->widget());
   desktop_layout->set_status_area_widget(internal::CreateStatusArea());
 
-  desktop_window->screen()->set_work_area_insets(
-      gfx::Insets(
-          0, kWorkAreaHorizontalMargin,
-          launcher_->widget()->GetWindowScreenBounds().height(),
-          kWorkAreaHorizontalMargin));
+  desktop_window->screen()->set_work_area_insets(gfx::Insets(
+      0, 0, launcher_->widget()->GetWindowScreenBounds().height(), 0));
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraWindows))
     EnableWorkspaceManager();
+  else
+    toplevel_container->SetLayoutManager(new internal::ToplevelLayoutManager());
 
   // Force a layout.
   desktop_layout->OnWindowResized();
