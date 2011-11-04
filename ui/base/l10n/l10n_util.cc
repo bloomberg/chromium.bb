@@ -780,7 +780,9 @@ void SortStrings16(const std::string& locale,
 }
 
 const std::vector<std::string>& GetAvailableLocales() {
-  static std::vector<std::string> locales;
+  // Allocate this on the heap and leak it, so that no destructor needs to run
+  // at exit time.
+  static std::vector<std::string>& locales = *new std::vector<std::string>;
   if (locales.empty()) {
     int num_locales = uloc_countAvailable();
     for (int i = 0; i < num_locales; ++i) {

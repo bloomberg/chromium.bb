@@ -58,8 +58,7 @@ string16 BuildPathFromComponents(const string16& path_prefix,
                                  const std::vector<string16>& path_elements,
                                  const string16& filename,
                                  size_t num_components) {
-  static const string16 kEllipsisAndSlash = UTF8ToUTF16(kEllipsis) +
-                                            kForwardSlash;
+  const string16 kEllipsisAndSlash = UTF8ToUTF16(kEllipsis) + kForwardSlash;
 
   // Add the initial elements of the path.
   string16 path = path_prefix;
@@ -87,8 +86,7 @@ string16 ElideComponentizedPath(const string16& url_path_prefix,
                                 int available_pixel_width) {
   size_t url_path_number_of_elements = url_path_elements.size();
 
-  static const string16 kEllipsisAndSlash = UTF8ToUTF16(kEllipsis) +
-                                            kForwardSlash;
+  const string16 kEllipsisAndSlash = UTF8ToUTF16(kEllipsis) + kForwardSlash;
 
   for (size_t i = url_path_number_of_elements - 1; i > 0; --i) {
     string16 elided_path = BuildPathFromComponents(url_path_prefix,
@@ -165,7 +163,7 @@ string16 ElideUrl(const GURL& url,
   size_t domain_start_index = url_host.find(url_domain);
   if (domain_start_index > 0)
     url_subdomain = url_host.substr(0, domain_start_index);
-  static const string16 kWwwPrefix = UTF8ToUTF16("www.");
+  const string16 kWwwPrefix = UTF8ToUTF16("www.");
   if ((url_subdomain == kWwwPrefix || url_subdomain.empty() ||
       url.SchemeIsFile())) {
     url_subdomain.clear();
@@ -183,7 +181,7 @@ string16 ElideUrl(const GURL& url,
       url_domain.clear();
       url_subdomain.clear();
 
-      static const string16 kColon = UTF8ToUTF16(":");
+      const string16 kColon = UTF8ToUTF16(":");
       url_host = url_domain = file_path_split.at(0).substr(1) + kColon;
       url_path_query_etc = url_path = file_path_split.at(1);
     }

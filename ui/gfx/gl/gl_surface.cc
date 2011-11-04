@@ -4,13 +4,19 @@
 
 #include "ui/gfx/gl/gl_surface.h"
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/threading/thread_local.h"
 #include "ui/gfx/gl/gl_context.h"
 
 namespace gfx {
 
-static base::ThreadLocalPointer<GLSurface> current_surface_;
+namespace {
+base::LazyInstance<
+    base::ThreadLocalPointer<GLSurface>,
+    base::LeakyLazyInstanceTraits<base::ThreadLocalPointer<GLSurface> > >
+        current_surface_(base::LINKER_INITIALIZED);
+}  // namespace
 
 GLSurface::GLSurface() {
 }
@@ -62,11 +68,11 @@ unsigned GLSurface::GetFormat() {
 }
 
 GLSurface* GLSurface::GetCurrent() {
-  return current_surface_.Get();
+  return current_surface_.Pointer()->Get();
 }
 
 void GLSurface::SetCurrent(GLSurface* surface) {
-  current_surface_.Set(surface);
+  current_surface_.Pointer()->Set(surface);
 }
 
 GLSurfaceAdapter::GLSurfaceAdapter(GLSurface* surface) : surface_(surface) {

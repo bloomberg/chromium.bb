@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/threading/thread_local.h"
 #include "ui/gfx/gl/gl_context.h"
@@ -15,7 +16,12 @@
 
 namespace gfx {
 
-static base::ThreadLocalPointer<GLContext> current_context_;
+namespace {
+base::LazyInstance<
+    base::ThreadLocalPointer<GLContext>,
+    base::LeakyLazyInstanceTraits<base::ThreadLocalPointer<GLContext> > >
+        current_context_(base::LINKER_INITIALIZED);
+}  // namespace
 
 GLContext::GLContext(GLShareGroup* share_group) : share_group_(share_group) {
   if (!share_group_.get())
@@ -69,11 +75,11 @@ bool GLContext::LosesAllContextsOnContextLost()
 }
 
 GLContext* GLContext::GetCurrent() {
-  return current_context_.Get();
+  return current_context_.Pointer()->Get();
 }
 
 void GLContext::SetCurrent(GLContext* context, GLSurface* surface) {
-  current_context_.Set(context);
+  current_context_.Pointer()->Set(context);
   GLSurface::SetCurrent(surface);
 }
 
