@@ -190,6 +190,7 @@ class InterfaceTest(mox.MoxTestBase):
 
     os.path.exists(self._BUILD_ROOT).AndReturn(True)
     commands.GetInput(mox.IgnoreArg()).AndReturn('y')
+    commands.GetInput(mox.IgnoreArg()).AndReturn('No')
 
     self.mox.ReplayAll()
     self.assertFalse(commands.ValidateClobber(self._BUILD_ROOT))
