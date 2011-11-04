@@ -228,11 +228,11 @@ net::LoadState AppCacheURLRequestJob::GetLoadState() const {
   if (!has_been_started())
     return net::LOAD_STATE_IDLE;
   if (!has_delivery_orders())
-    return net::LOAD_STATE_WAITING_FOR_CACHE;
+    return net::LOAD_STATE_WAITING_FOR_APPCACHE;
   if (delivery_type_ != APPCACHED_DELIVERY)
     return net::LOAD_STATE_IDLE;
   if (!info_.get())
-    return net::LOAD_STATE_WAITING_FOR_CACHE;
+    return net::LOAD_STATE_WAITING_FOR_APPCACHE;
   if (reader_.get() && reader_->IsReadPending())
     return net::LOAD_STATE_READING_RESPONSE;
   return net::LOAD_STATE_IDLE;

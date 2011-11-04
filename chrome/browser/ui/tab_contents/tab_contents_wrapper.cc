@@ -481,6 +481,8 @@ string16 TabContentsWrapper::GetStatusText() const {
                                         tab_contents()->load_state().param);
     case net::LOAD_STATE_WAITING_FOR_CACHE:
       return l10n_util::GetStringUTF16(IDS_LOAD_STATE_WAITING_FOR_CACHE);
+    case net::LOAD_STATE_WAITING_FOR_APPCACHE:
+      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_WAITING_FOR_APPCACHE);
     case net::LOAD_STATE_ESTABLISHING_PROXY_TUNNEL:
       return
           l10n_util::GetStringUTF16(IDS_LOAD_STATE_ESTABLISHING_PROXY_TUNNEL);
