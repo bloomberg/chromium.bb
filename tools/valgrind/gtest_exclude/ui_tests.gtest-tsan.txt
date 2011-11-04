@@ -21,3 +21,8 @@ ErrorPageTest.DNSError_GoBack2
 # Tests timing out, see http://crbug.com/92717
 NewTabUIProcessPerTabTest.NavBeforeNTPCommits
 NewTabUITest.ChromeHangInNTP
+
+# Fail flakily only under TSan, see http://crbug.com/103020
+DOMStorageTest.LocalStorageLayoutTests
+DOMStorageTest.RootLayoutTests
+DOMStorageTest.SessionStorageLayoutTests
