@@ -21,9 +21,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionClipboardApiTest, WriteAndReadTest) {
 #else  // !defined(OS_WIN)
 #if defined(OS_MACOSX)
   ASSERT_TRUE(RunExtensionTest("clipboard_api/extension_mac")) << message_;
-#else  // !defined(OS_WIN) && !defiend(OS_MACOSX)
+#else  // !defined(OS_WIN) && !defined(OS_MACOSX)
   ASSERT_TRUE(RunExtensionTest("clipboard_api/extension"))  << message_;
-#endif  // defined(OS_MAOSX)
+#endif  // defined(OS_MACOSX)
 #endif  // defiend(OS_WIN)
 };
 

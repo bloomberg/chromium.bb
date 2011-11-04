@@ -303,7 +303,7 @@ int GetTestTerminationTimeout(const std::string& test_name,
 int RunTest(TestLauncherDelegate* launcher_delegate,
             const std::string& test_name,
             int default_timeout_ms) {
-#if defined(OS_MACOSXS)
+#if defined(OS_MACOSX)
   // Some of the below method calls will leak objects if there is no
   // autorelease pool in place.
   base::mac::ScopedNSAutoreleasePool pool;

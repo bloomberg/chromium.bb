@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOX)
+#if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -105,11 +105,11 @@ class Command {
   const std::vector<std::string> path_segments_;
   const scoped_ptr<const DictionaryValue> parameters_;
 
-#if defined(OS_MACOX)
+#if defined(OS_MACOSX)
   // An autorelease pool must exist on any thread where Objective C is used,
   // even implicitly. Otherwise the warning:
   //   "Objects autoreleased with no pool in place."
-  // is printed for every object deallocted.  Since every incomming command to
+  // is printed for every object deallocated.  Since every incoming command to
   // chrome driver is allocated a new thread, the release pool is declared here.
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif

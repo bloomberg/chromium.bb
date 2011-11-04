@@ -206,7 +206,7 @@ TEST_F(ThumbnailGeneratorTest, DiscardBackingStore) {
   ASSERT_TRUE(result.isNull());
 }
 
-#endif  // !defined(OS_MAC)
+#endif  // !defined(OS_MACOSX)
 
 typedef testing::Test ThumbnailGeneratorSimpleTest;
 
