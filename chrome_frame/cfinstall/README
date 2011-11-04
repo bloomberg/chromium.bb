@@ -1,0 +1,7 @@
+This directory contains the source code for CFInstall.min.js, a useful site for
+prompting web site visitors to install Chrome Frame.
+
+Please visit the following page for further information about compiling and
+using these scripts:
+
+https://sites.google.com/a/chromium.org/dev/developers/how-tos/chrome-frame-cfinstall

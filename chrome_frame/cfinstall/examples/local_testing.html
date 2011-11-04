@@ -1,0 +1,38 @@
+<!--
+  Copyright 2011 Google Inc. All rights reserved.
+-->
+<html>
+  <head>
+    <script src='../out/CFInstall.min.js'> </script>
+    <script>
+      // This is only required if you are hosting your own copy of the
+      // implementation script and have not set the implementation path during
+      // compilation. (See build.sh -l 'PATH').
+      CFInstall.setImplementationUrl('../out/cf-xd-install-impl.js');
+
+      // The following are only required when running this example from a local
+      // file. The default behaviour is to use the same scheme as this page,
+      // which is file://, and thus wrong.
+      CFInstall.setDownloadPageUrl('http://google.com/chromeframe/eula.html');
+      CFInstall.setSameDomainResourceUri('http://example.com/robots.txt');
+    </script>
+  </head>
+  <body>
+    <b>Chrome Frame Installed?:</b>
+    <span class="labeled" id="ChromeInstalled"></span><br />
+    <p>
+      Note that Chrome Frame will never render local pages (i.e., from 'file://'
+      URLs). The above message will, however, tell you whether Chrome Frame is
+      installed.
+    </p>
+    <script>
+      document.getElementById('ChromeInstalled').innerHTML =
+        CFInstall.isAvailable() ? "Yes" : "No";
+    </script>
+    <p>
+      <a href="javascript:CFInstall.require()">
+        This site requires Google Chrome Frame. Click here to install it now.
+      </a>
+    </p>
+  </body>
+</html>

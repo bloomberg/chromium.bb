@@ -1,0 +1,71 @@
+<!--
+  Copyright 2011 Google Inc. All rights reserved.
+-->
+<html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css"
+          rel="stylesheet" type="text/css"/>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js">
+    </script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js">
+    </script>
+
+    <script src='//google.com/tools/dlpage/res/chromeframe/script/CFInstall.min.js'> </script>
+    <script>
+      $(document).ready(function() {
+        var interactionDelegate = {
+          dialog: null,
+          getIFrameContainer: function() {
+            var self = this;
+            this.dialog = $("#dialog").dialog(
+              {modal: true,
+               width: 'auto',
+               height: 'auto',
+               resizable: false,
+               close: function() {
+                 var el = document.getElementById('dialog');
+                 if (el.firstChild)
+                   el.removeChild(el.firstChild);
+               }
+              });
+            var widget = this.dialog.dialog('widget')[0];
+            widget.style.left = -5000;
+            widget.style.top = -5000;
+            return document.getElementById('dialog');
+          },
+          show: function() {
+            var dialogEl = $("#dialog");
+            dialogEl.width($("#dialog iframe").outerWidth(true) +
+                           dialogEl.innerWidth() - dialogEl.width());
+            var widgetEl = this.dialog.dialog('widget');
+            widgetEl.width(dialogEl.outerWidth(true) +
+                           widgetEl.innerWidth() - widgetEl.width());
+            dialogEl.height('auto');
+            this.dialog.dialog('option', 'position', 'center')
+          },
+          customizeIFrame: function(iframe) {},
+          reset: function() {
+            this.dialog.dialog('close');
+          }
+        };
+        CFInstall.setInteractionDelegate(interactionDelegate);
+      });
+    </script>
+  </head>
+  <body>
+    <b>Chrome Renderer Active?:</b>
+    <span class="labeled" id="ChromeActive"></span><br />
+    <script>
+      var ua = navigator.userAgent.toLowerCase();
+      document.getElementById('ChromeActive').innerHTML =
+        ua.indexOf('chrome/') >= 0 ? "Yes" : "No";
+    </script>
+    <p>
+      <a href="javascript:CFInstall.require()">
+        This site requires Google Chrome Frame. Click here to install it now.
+      </a>
+    </p>
+    <div id="dialog" style="padding:0px; height:auto;"></div>
+  </body>
+</html>

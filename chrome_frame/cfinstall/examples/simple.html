@@ -1,0 +1,25 @@
+<!--
+  Copyright 2011 Google Inc. All rights reserved.
+-->
+<html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <script
+        src='//google.com/tools/dlpage/res/chromeframe/script/CFInstall.min.js'>
+    </script>
+  </head>
+  <body>
+    <b>Chrome Renderer Active?:</b>
+    <span class="labeled" id="ChromeActive"></span><br />
+    <script>
+      var ua = navigator.userAgent.toLowerCase();
+      document.getElementById('ChromeActive').innerHTML =
+        ua.indexOf('chrome/') >= 0 ? "Yes" : "No";
+    </script>
+    <p>
+      <a href="javascript:CFInstall.require()">
+        This site requires Google Chrome Frame. Click here to install it now.
+      </a>
+    </p>
+  </body>
+</html>
