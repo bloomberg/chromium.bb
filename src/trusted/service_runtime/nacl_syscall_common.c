@@ -138,7 +138,6 @@ int32_t NaClSetBreak(struct NaClAppThread *natp,
     nap->break_addr = new_break;
     break_addr = new_break;
   } else {
-
     /*
      * See if page containing new_break is in mem_map; if so, we are
      * essentially done -- just update break_addr.  Otherwise, we
@@ -220,6 +219,11 @@ int32_t NaClSetBreak(struct NaClAppThread *natp,
       nap->break_addr = new_break;
       break_addr = new_break;
     }
+    /*
+     * Zero out memory between old break and new break.
+     */
+    ASSERT(sys_new_break > sys_break);
+    memset((void *) sys_break, 0, sys_new_break - sys_break);
   }
 
 
