@@ -90,8 +90,6 @@
       '-downloads.DownloadsTest.testBigZip',
       '-downloads.DownloadsTest.testFileRenaming',
       '-downloads.DownloadsTest.testCrazyFilenames',
-      # crbug.com/102537 - Broken by webkit roll at r108053
-      '-indexeddb.IndexedDBTest.testIndexedDBNullKeyPathPersistence',
       # crbug.com/99506
       '-notifications.NotificationsTest.testSpecialURLNotification',
       # crbug.com/71715
