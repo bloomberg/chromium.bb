@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/string_split.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -1245,11 +1246,19 @@ WebString WebGraphicsContext3DInProcessImpl::getString(WGC3Denum name) {
   makeContextCurrent();
   std::string result(reinterpret_cast<const char*>(glGetString(name)));
   if (name == GL_EXTENSIONS) {
-    // GL_CHROMIUM_copy_texture_to_parent_texture requires the
-    // desktopGL-only function glGetTexLevelParameteriv (GLES2
-    // doesn't support it).
-    if (!is_gles2_)
+    if (!is_gles2_) {
+      std::vector<std::string> split;
+      base::SplitString(result, ' ', &split);
+      if (std::find(split.begin(), split.end(), "GL_EXT_bgra") != split.end()) {
+        // If we support GL_EXT_bgra, pretend we support a couple of GLES2
+        // extension that are a subset of it.
+        result += " GL_EXT_texture_format_BGRA8888 GL_EXT_read_format_bgra";
+      }
+      // GL_CHROMIUM_copy_texture_to_parent_texture requires the
+      // desktopGL-only function glGetTexLevelParameteriv (GLES2
+      // doesn't support it).
       result += " GL_CHROMIUM_copy_texture_to_parent_texture";
+    }
   }
   return WebString::fromUTF8(result.c_str());
 }
