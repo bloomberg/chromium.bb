@@ -534,13 +534,21 @@ that trigger them.
   </td>
   <td>
     <!-- HasEffectiveBrowsingHistoryPermission -->
-     "tabs" permission
+    Any of the following:
+    <ul>
+      <li> "tabs" permission </li>
+      <li> "webNavigation" permission </li>
+    </ul>
   </td>
   <td>
     <p>
       The "tabs" permission is required by the
       <a href="tabs.html"><code>chrome.tabs</code></a> and 
       <a href="windows.html"><code>chrome.windows</code></a> modules.
+    </p>
+    <p>
+      The "webNavigation" permission is required by the
+      <a href="webNavigation.html"><code>chrome.webNavigation</code></a> module.
     </p>
   </td>
 </tr>
