@@ -1065,3 +1065,26 @@ TEST_F(HostContentSettingsMapTest, SettingDefaultContentSettingsWhenManaged) {
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_PLUGINS, NULL));
 }
+
+TEST_F(HostContentSettingsMapTest, ShouldAllowAllContent) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+
+  GURL host("http://example.com/");
+  GURL embedder("chrome://foo");
+  ContentSettingsPattern pattern =
+       ContentSettingsPattern::FromString("[*.]example.com");
+  host_content_settings_map->SetContentSetting(
+      pattern,
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_IMAGES,
+      std::string(),
+      CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                embedder, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+}

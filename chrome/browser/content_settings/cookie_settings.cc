@@ -201,8 +201,7 @@ ContentSetting CookieSettings::GetCookieSetting(
     const GURL& first_party_url,
     bool setting_cookie) const {
   if (HostContentSettingsMap::ShouldAllowAllContent(
-          first_party_url,
-          CONTENT_SETTINGS_TYPE_COOKIES)) {
+          url, CONTENT_SETTINGS_TYPE_COOKIES)) {
     return CONTENT_SETTING_ALLOW;
   }
 

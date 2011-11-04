@@ -184,7 +184,7 @@ base::Value* HostContentSettingsMap::GetContentSettingValue(
          resource_identifier.empty());
 
   // Check if the scheme of the requesting url is whitelisted.
-  if (ShouldAllowAllContent(secondary_url, content_type))
+  if (ShouldAllowAllContent(primary_url, content_type))
     return Value::CreateIntegerValue(CONTENT_SETTING_ALLOW);
 
   // The list of |content_settings_providers_| is ordered according to their
