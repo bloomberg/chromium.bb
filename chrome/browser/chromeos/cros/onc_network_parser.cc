@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "net/base/cert_database.h"
+#include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/base/x509_certificate.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -303,8 +304,9 @@ bool OncNetworkParser::ParseClientCertificate(
   }
 
   // Since this has a private key, always use the private module.
+  scoped_refptr<net::CryptoModule> module(cert_database.GetPrivateModule());
   int result = cert_database.ImportFromPKCS12(
-      cert_database.GetPrivateModule(), decoded_pkcs12, string16(), false);
+      module.get(), decoded_pkcs12, string16(), false);
   if (result != net::OK) {
     LOG(WARNING) << "ONC File: Unable to import Client certificate at index "
                  << cert_index

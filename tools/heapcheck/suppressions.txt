@@ -99,7 +99,6 @@
    fun:crypto::::NSSInitSingleton::OpenUserDB
    fun:crypto::::NSSInitSingleton::OpenTestNSSDB
    fun:crypto::OpenTestNSSDB
-   fun:net::CertDatabaseNSSTest::SetUpTestCase
 }
 {
    bug_66941_a
@@ -1666,22 +1665,4 @@
    Heapcheck:Leak
    ...
    fun:PluginLoaderPosix::GetPluginsToLoad
-}
-{
-   bug_102988_a
-   Heapcheck:Leak
-   fun:net::CryptoModule::CreateFromHandle
-   fun:net::CertDatabase::GetPrivateModule
-   fun:chromeos::OncNetworkParser::ParseClientCertificate
-   fun:chromeos::OncNetworkParser::ParseCertificate
-   fun:chromeos::OncNetworkParserTest_TestAddClientCertificate_Test::TestBody
-}
-{
-   bug_102988_b
-   Heapcheck:Leak
-   ...
-   fun:crypto::::NSSInitSingleton::OpenUserDB
-   fun:crypto::::NSSInitSingleton::OpenTestNSSDB
-   fun:crypto::OpenTestNSSDB
-   fun:chromeos::OncNetworkParserTest::SetUpTestCase
 }
