@@ -753,11 +753,7 @@ libs() {
 
   if ${LIBMODE_NEWLIB}; then
     build-compiler-rt
-    # NOTE: this currently depends on "llvm-gcc arm"
-    build-libgcc_eh arm
-    build-libgcc_eh x86-32
-    build-libgcc_eh x86-64
-
+    libgcc_eh-all
     libstdcpp
   fi
 }
@@ -1566,17 +1562,24 @@ dragonegg-plugin() {
   spopd
 }
 
-new-libgcc_eh() {
+libgcc_eh-all() {
+  StepBanner "LIBGCC_EH (from GCC 4.6)"
+  libgcc_eh arm
+  libgcc_eh x86-32
+  libgcc_eh x86-64
+}
+
+libgcc_eh() {
   local arch=$1
-  local objdir="${TC_BUILD}/new-libgcc"
+  local objdir="${TC_BUILD}/libgcc_eh-${arch}"
   local subdir="${objdir}/fake-target/libgcc"
   rm -rf "${objdir}"
 
   # Setup fake gcc build directory.
   mkdir -p "${objdir}"/gcc
-  cp -a ${PNACL_ROOT}/scripts/libgcc.mvars "${objdir}"/gcc
-  touch "${objdir}/gcc/tconfig.h"
-  touch "${objdir}/gcc/tm.h"
+  cp -a "${PNACL_ROOT}"/scripts/libgcc.mvars "${objdir}"/gcc
+  cp -a "${PNACL_ROOT}"/scripts/libgcc-tconfig.h "${objdir}"/gcc/tconfig.h
+  touch "${objdir}"/gcc/tm.h
 
   # Install unwind.h
   cp "${TC_SRC_GCC}"/gcc/unwind-generic.h \
@@ -1585,7 +1588,8 @@ new-libgcc_eh() {
   mkdir -p "${subdir}"
   spushd "${subdir}"
   local flags="-arch ${arch} --pnacl-bias=${arch} --pnacl-allow-translate"
-  StepBanner "NEW-LIBGCC_EH" "Configure"
+  flags+=" -DENABLE_RUNTIME_CHECKING"
+  StepBanner "LIBGCC_EH" "Configure ${arch}"
   RunWithLog libgcc.${arch}.configure \
     env -i \
       PATH="/usr/bin:/bin" \
@@ -1597,16 +1601,22 @@ new-libgcc_eh() {
       /bin/sh \
       "${TC_SRC_GCC}"/libgcc/configure \
         --prefix="${FAKE_INSTALL_DIR}" \
-        --enable-shared
-        # --enable-shared is needed because the EH functions now end
+        --enable-shared \
+        --host=i686-nacl
+        # --enable-shared is needed because the EH functions end
         # up in libgcc.a if shared libs are disabled.
+        #
+        # The "--host" field is needed to enable cross-compiling.
+        # It introduces extra configuration files in libgcc/config, but these
+        # appear to affect libgcc, not libgcc_eh.
+        # TODO(pdox): Create a fake target to get rid of i686 here.
 
-  StepBanner "NEW-LIBGCC_EH" "Make"
+  StepBanner "LIBGCC_EH" "Make ${arch}"
   RunWithLog libgcc.${arch}.make \
     make libgcc_eh.a
   spopd
 
-  StepBanner "NEW-LIBGCC_EH" "Install"
+  StepBanner "LIBGCC_EH" "Install ${arch}"
   mkdir -p "${INSTALL_LIB}-${arch}"
   cp ${subdir}/libgcc_eh.a "${INSTALL_LIB}-${arch}"
 }
