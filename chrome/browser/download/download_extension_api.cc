@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_downloads_api.h"
+#include "chrome/browser/download/download_extension_api.h"
 
 #include <algorithm>
 #include <cctype>
@@ -24,7 +24,6 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/extensions/extension_downloads_api_constants.h"
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/icon_loader.h"
@@ -43,7 +42,66 @@
 
 using content::BrowserThread;
 
-namespace constants = extension_downloads_api_constants;
+namespace {
+
+// Error messages
+const char kNotImplemented[] = "NotImplemented";
+const char kGenericError[] = "I'm afraid I can't do that.";
+const char kInvalidURL[] = "Invalid URL";
+
+// Parameter keys
+const char kBodyKey[] = "body";
+const char kBytesReceivedKey[] = "bytesReceived";
+const char kDangerAcceptedKey[] = "dangerAccepted";
+const char kDangerFile[] = "file";
+const char kDangerKey[] = "danger";
+const char kDangerSafe[] = "safe";
+const char kDangerUrl[] = "url";
+const char kEndTimeKey[] = "endTime";
+const char kErrorKey[] = "error";
+const char kFileSizeKey[] = "fileSize";
+const char kFilenameKey[] = "filename";
+const char kHeaderNameKey[] = "name";
+const char kHeaderValueKey[] = "value";
+const char kHeadersKey[] = "headers";
+const char kIdKey[] = "id";
+const char kMethodKey[] = "method";
+const char kMimeKey[] = "mime";
+const char kPausedKey[] = "paused";
+const char kSaveAsKey[] = "saveAs";
+const char kStartTimeKey[] = "startTime";
+const char kStateComplete[] = "complete";
+const char kStateInProgress[] = "in_progress";
+const char kStateInterrupted[] = "interrupted";
+const char kStateKey[] = "state";
+const char kTotalBytesKey[] = "totalBytes";
+const char kUrlKey[] = "url";
+
+const char* DangerString(DownloadItem::DangerType danger) {
+  switch (danger) {
+    case DownloadItem::NOT_DANGEROUS: return kDangerSafe;
+    case DownloadItem::DANGEROUS_FILE: return kDangerFile;
+    case DownloadItem::DANGEROUS_URL: return kDangerUrl;
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
+const char* StateString(DownloadItem::DownloadState state) {
+  switch (state) {
+    case DownloadItem::IN_PROGRESS: return kStateInProgress;
+    case DownloadItem::COMPLETE: return kStateComplete;
+    case DownloadItem::INTERRUPTED:  // fall through
+    case DownloadItem::CANCELLED: return kStateInterrupted;
+    case DownloadItem::REMOVING:  // fall through
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
+}  // namespace
 
 bool DownloadsFunctionInterface::RunImplImpl(
     DownloadsFunctionInterface* pimpl) {
@@ -110,36 +168,36 @@ bool DownloadsDownloadFunction::ParseArgs() {
   std::string url;
   iodata_.reset(new IOData());
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &options));
-  EXTENSION_FUNCTION_VALIDATE(options->GetString(constants::kUrlKey, &url));
+  EXTENSION_FUNCTION_VALIDATE(options->GetString(kUrlKey, &url));
   iodata_->url = GURL(url);
   if (!iodata_->url.is_valid()) {
-    error_ = constants::kInvalidURL;
+    error_ = kInvalidURL;
     return false;
   }
-  if (options->HasKey(constants::kFilenameKey))
+  if (options->HasKey(kFilenameKey))
     EXTENSION_FUNCTION_VALIDATE(options->GetString(
-        constants::kFilenameKey, &iodata_->filename));
+        kFilenameKey, &iodata_->filename));
   // TODO(benjhayden): More robust validation of filename.
   if (((iodata_->filename[0] == L'.') && (iodata_->filename[1] == L'.')) ||
       (iodata_->filename[0] == L'/')) {
-    error_ = constants::kGenericError;
+    error_ = kGenericError;
     return false;
   }
-  if (options->HasKey(constants::kSaveAsKey))
+  if (options->HasKey(kSaveAsKey))
     EXTENSION_FUNCTION_VALIDATE(options->GetBoolean(
-        constants::kSaveAsKey, &iodata_->save_as));
-  if (options->HasKey(constants::kMethodKey))
+        kSaveAsKey, &iodata_->save_as));
+  if (options->HasKey(kMethodKey))
     EXTENSION_FUNCTION_VALIDATE(options->GetString(
-        constants::kMethodKey, &iodata_->method));
+        kMethodKey, &iodata_->method));
   // It's ok to use a pointer to extra_headers without DeepCopy()ing because
   // |args_| (which owns *extra_headers) is guaranteed to live as long as
   // |this|.
-  if (options->HasKey(constants::kHeadersKey))
+  if (options->HasKey(kHeadersKey))
     EXTENSION_FUNCTION_VALIDATE(options->GetList(
-        constants::kHeadersKey, &iodata_->extra_headers));
-  if (options->HasKey(constants::kBodyKey))
+        kHeadersKey, &iodata_->extra_headers));
+  if (options->HasKey(kBodyKey))
     EXTENSION_FUNCTION_VALIDATE(options->GetString(
-        constants::kBodyKey, &iodata_->post_body));
+        kBodyKey, &iodata_->post_body));
   if (iodata_->extra_headers != NULL) {
     for (size_t index = 0; index < iodata_->extra_headers->GetSize(); ++index) {
       base::DictionaryValue* header = NULL;
@@ -147,11 +205,11 @@ bool DownloadsDownloadFunction::ParseArgs() {
       EXTENSION_FUNCTION_VALIDATE(iodata_->extra_headers->GetDictionary(
             index, &header));
       EXTENSION_FUNCTION_VALIDATE(header->GetString(
-            constants::kHeaderNameKey, &name));
+            kHeaderNameKey, &name));
       EXTENSION_FUNCTION_VALIDATE(header->GetString(
-            constants::kHeaderValueKey, &value));
+            kHeaderValueKey, &value));
       if (!net::HttpUtil::IsSafeHeader(name)) {
-        error_ = constants::kGenericError;
+        error_ = kGenericError;
         return false;
       }
     }
@@ -167,7 +225,7 @@ void DownloadsDownloadFunction::RunInternal() {
   VLOG(1) << __FUNCTION__ << " " << iodata_->url.spec();
   if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
           &DownloadsDownloadFunction::BeginDownloadOnIOThread, this))) {
-    error_ = constants::kGenericError;
+    error_ = kGenericError;
     SendResponse(error_.empty());
   }
 }
@@ -234,7 +292,7 @@ DownloadsSearchFunction::~DownloadsSearchFunction() {}
 bool DownloadsSearchFunction::ParseArgs() {
   base::DictionaryValue* query_json = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &query_json));
-  error_ = constants::kNotImplemented;
+  error_ = kNotImplemented;
   return false;
 }
 
@@ -252,7 +310,7 @@ bool DownloadsPauseFunction::ParseArgs() {
   int dl_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   VLOG(1) << __FUNCTION__ << " " << dl_id;
-  error_ = constants::kNotImplemented;
+  error_ = kNotImplemented;
   return false;
 }
 
@@ -270,7 +328,7 @@ bool DownloadsResumeFunction::ParseArgs() {
   int dl_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   VLOG(1) << __FUNCTION__ << " " << dl_id;
-  error_ = constants::kNotImplemented;
+  error_ = kNotImplemented;
   return false;
 }
 
@@ -288,7 +346,7 @@ bool DownloadsCancelFunction::ParseArgs() {
   int dl_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   VLOG(1) << __FUNCTION__ << " " << dl_id;
-  error_ = constants::kNotImplemented;
+  error_ = kNotImplemented;
   return false;
 }
 
@@ -305,7 +363,7 @@ DownloadsEraseFunction::~DownloadsEraseFunction() {}
 bool DownloadsEraseFunction::ParseArgs() {
   base::DictionaryValue* query_json = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &query_json));
-  error_ = constants::kNotImplemented;
+  error_ = kNotImplemented;
   return false;
 }
 
@@ -325,7 +383,7 @@ bool DownloadsSetDestinationFunction::ParseArgs() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &path));
   VLOG(1) << __FUNCTION__ << " " << dl_id << " " << &path;
-  error_ = constants::kNotImplemented;
+  error_ = kNotImplemented;
   return false;
 }
 
@@ -343,7 +401,7 @@ bool DownloadsAcceptDangerFunction::ParseArgs() {
   int dl_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   VLOG(1) << __FUNCTION__ << " " << dl_id;
-  error_ = constants::kNotImplemented;
+  error_ = kNotImplemented;
   return false;
 }
 
@@ -361,7 +419,7 @@ bool DownloadsShowFunction::ParseArgs() {
   int dl_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   VLOG(1) << __FUNCTION__ << " " << dl_id;
-  error_ = constants::kNotImplemented;
+  error_ = kNotImplemented;
   return false;
 }
 
@@ -379,7 +437,7 @@ bool DownloadsDragFunction::ParseArgs() {
   int dl_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   VLOG(1) << __FUNCTION__ << " " << dl_id;
-  error_ = constants::kNotImplemented;
+  error_ = kNotImplemented;
   return false;
 }
 
@@ -390,28 +448,24 @@ void DownloadsDragFunction::RunInternal() {
 namespace {
 base::DictionaryValue* DownloadItemToJSON(DownloadItem* item) {
   base::DictionaryValue* json = new base::DictionaryValue();
-  json->SetInteger(constants::kIdKey, item->id());
-  json->SetString(constants::kUrlKey, item->original_url().spec());
-  json->SetString(constants::kFilenameKey,
-                  item->full_path().LossyDisplayName());
-  json->SetString(constants::kDangerKey,
-                  constants::DangerString(item->GetDangerType()));
-  json->SetBoolean(constants::kDangerAcceptedKey,
+  json->SetInteger(kIdKey, item->id());
+  json->SetString(kUrlKey, item->original_url().spec());
+  json->SetString(kFilenameKey, item->full_path().LossyDisplayName());
+  json->SetString(kDangerKey, DangerString(item->GetDangerType()));
+  json->SetBoolean(kDangerAcceptedKey,
       item->safety_state() == DownloadItem::DANGEROUS_BUT_VALIDATED);
-  json->SetString(constants::kStateKey,
-                  constants::StateString(item->state()));
-  json->SetBoolean(constants::kPausedKey, item->is_paused());
-  json->SetString(constants::kMimeKey, item->mime_type());
-  json->SetInteger(constants::kStartTimeKey,
+  json->SetString(kStateKey, StateString(item->state()));
+  json->SetBoolean(kPausedKey, item->is_paused());
+  json->SetString(kMimeKey, item->mime_type());
+  json->SetInteger(kStartTimeKey,
       (item->start_time() - base::Time::UnixEpoch()).InMilliseconds());
-  json->SetInteger(constants::kBytesReceivedKey, item->received_bytes());
-  json->SetInteger(constants::kTotalBytesKey, item->total_bytes());
+  json->SetInteger(kBytesReceivedKey, item->received_bytes());
+  json->SetInteger(kTotalBytesKey, item->total_bytes());
   if (item->state() == DownloadItem::INTERRUPTED)
-    json->SetInteger(constants::kErrorKey,
-                     static_cast<int>(item->last_reason()));
+    json->SetInteger(kErrorKey, static_cast<int>(item->last_reason()));
   // TODO(benjhayden): Implement endTime and fileSize.
-  // json->SetInteger(constants::kEndTimeKey, -1);
-  json->SetInteger(constants::kFileSizeKey, item->total_bytes());
+  // json->SetInteger(kEndTimeKey, -1);
+  json->SetInteger(kFileSizeKey, item->total_bytes());
   return json;
 }
 }  // anonymous namespace
