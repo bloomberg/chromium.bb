@@ -4,6 +4,10 @@
 
 #include "ipc/ipc_platform_file.h"
 
+#if defined(OS_ANDROID)
+#include <unistd.h>
+#endif
+
 namespace IPC {
 
 PlatformFileForTransit GetFileHandleForProcess(base::PlatformFile handle,

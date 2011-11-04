@@ -818,7 +818,8 @@ LogFunctionMap g_log_function_mapping;
   class LoggerRegisterHelper##msg_class {                               \
  public:                                                                \
     LoggerRegisterHelper##msg_class() {                                 \
-      g_log_function_mapping[msg_class::ID] = msg_class::Log;           \
+      const uint32 msg_id = static_cast<uint32>(msg_class::ID);         \
+      g_log_function_mapping[msg_id] = msg_class::Log;                  \
     }                                                                   \
   };                                                                    \
   LoggerRegisterHelper##msg_class g_LoggerRegisterHelper##msg_class;
