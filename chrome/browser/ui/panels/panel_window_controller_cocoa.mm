@@ -74,6 +74,9 @@ enum {
     windowShim_.reset(window);
     animateOnBoundsChange_ = YES;
   }
+  contentsController_.reset(
+      [[TabContentsController alloc] initWithContents:nil
+                                             delegate:nil]);
   return self;
 }
 
@@ -131,14 +134,8 @@ enum {
   frame.size.height = panelBounds.height();
   [window setFrame:frame display:NO];
 
-  // Attach the RenderWigetHostView to the view hierarchy, it will render
-  // HTML content.
-  // TODO(jennb): Find a better way to add tabcontentsview dynamically.
-  NSView* tabContentsView = [self tabContentsView];
-  if (tabContentsView) {
-    [[window contentView] addSubview:tabContentsView];
-    [self enableTabContentsViewAutosizing];
-  }
+  [[window contentView] addSubview:[contentsController_ view]];
+  [self enableTabContentsViewAutosizing];
 }
 
 - (void)mouseEntered:(NSEvent*)event {
@@ -150,26 +147,21 @@ enum {
 }
 
 - (void)disableTabContentsViewAutosizing {
-  NSView* tabContentView = [self tabContentsView];
-  if (!tabContentView)
-    return;
-
-  DCHECK([tabContentView superview] == [[self window] contentView]);
-  [tabContentView setAutoresizingMask:NSViewNotSizable];
+  [[[self window] contentView] setAutoresizesSubviews:NO];
 }
 
 - (void)enableTabContentsViewAutosizing {
-  NSView* tabContentView = [self tabContentsView];
-  if (!tabContentView)
-    return;
+  NSView* contentView = [[self window] contentView];
+  NSView* controllerView = [contentsController_ view];
 
-  DCHECK([tabContentView superview] == [[self window] contentView]);
+  DCHECK([controllerView superview] == contentView);
+  DCHECK([controllerView autoresizingMask] & NSViewHeightSizable);
+  DCHECK([controllerView autoresizingMask] & NSViewWidthSizable);
 
   // Parent's bounds is child's frame.
-  NSRect frame = [[[self window] contentView] bounds];
-  [tabContentView setFrame:frame];
-  [tabContentView
-      setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
+  [controllerView setFrame:[contentView bounds]];
+  [contentView setAutoresizesSubviews:YES];
+  [contentsController_ ensureContentsVisible];
 }
 
 - (void)revealAnimatedWithFrame:(const NSRect&)frame {
@@ -177,8 +169,7 @@ enum {
 
   // Disable subview resizing while resizing the window to avoid renderer
   // resizes during intermediate stages of animation.
-  NSView* contentView = [window contentView];
-  [contentView setAutoresizesSubviews:NO];
+  [self disableTabContentsViewAutosizing];
 
   // We grow the window from the bottom up to produce a 'reveal' animation.
   NSRect startFrame = NSMakeRect(NSMinX(frame), NSMinY(frame),
@@ -193,14 +184,13 @@ enum {
   // we always deactivate the controls here. If we're created as an active
   // panel, we'll get a NSWindowDidBecomeKeyNotification and reactivate the web
   // view properly. See crbug.com/97831 for more details.
-  TabContents* tab_contents =
-      windowShim_->panel()->browser()->GetSelectedTabContents();
+  TabContents* tab_contents = [contentsController_ tabContents];
   // RWHV may be NULL in unit tests.
   if (tab_contents && tab_contents->GetRenderWidgetHostView())
     tab_contents->GetRenderWidgetHostView()->SetActive(false);
   [window setFrame:frame display:YES animate:YES];
 
-  [contentView setAutoresizesSubviews:YES];
+  [self enableTabContentsViewAutosizing];
 }
 
 - (void)updateTitleBar {
@@ -261,11 +251,13 @@ enum {
   [findBarCocoaController positionFindBarViewAtMaxY:maxY maxWidth:maxWidth];
 }
 
-- (NSView*)tabContentsView {
-  TabContents* contents = windowShim_->browser()->GetSelectedTabContents();
-  if (contents)
-    return contents->GetNativeView();
-  return NULL;
+- (void)tabInserted:(TabContents*)contents {
+  [contentsController_ changeTabContents:contents];
+}
+
+- (void)tabDetached:(TabContents*)contents {
+  DCHECK(contents == [contentsController_ tabContents]);
+  [contentsController_ changeTabContents:NULL];
 }
 
 - (PanelTitlebarViewCocoa*)titlebarView {
@@ -377,7 +369,13 @@ enum {
   // Avoid callbacks from a nonblocking animation in progress, if any.
   [self terminateBoundsAnimation];
   windowShim_->DidCloseNativeWindow();
-  [self autorelease];
+  // Call |-autorelease| after a zero-length delay to avoid deadlock from
+  // code in the current run loop that waits on BROWSER_CLOSED notification.
+  // The notification is sent when this object is freed, but this object
+  // cannot be freed until the current run loop completes.
+  [self performSelector:@selector(autorelease)
+             withObject:nil
+             afterDelay:0];
 }
 
 - (void)runSettingsMenu:(NSView*)button {
@@ -505,8 +503,7 @@ enum {
 
   // We need to activate the controls (in the "WebView"). To do this, get the
   // selected TabContents's RenderWidgetHostViewMac and tell it to activate.
-  if (TabContents* contents =
-          windowShim_->browser()->GetSelectedTabContents()) {
+  if (TabContents* contents = [contentsController_ tabContents]) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(true);
   }
@@ -534,8 +531,7 @@ enum {
 
   // We need to deactivate the controls (in the "WebView"). To do this, get the
   // selected TabContents's RenderWidgetHostView and tell it to deactivate.
-  if (TabContents* contents =
-          windowShim_->browser()->GetSelectedTabContents()) {
+  if (TabContents* contents = [contentsController_ tabContents]) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(false);
   }

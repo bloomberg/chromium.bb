@@ -511,6 +511,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateBigPanel) {
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FindBar) {
   Panel* panel = CreatePanelWithBounds("PanelTest", gfx::Rect(0, 0, 400, 400));
   Browser* browser = panel->browser();
+  // FindBar needs tab contents.
+  CreateTestTabContents(browser);
   browser->ShowFindBar();
   ASSERT_TRUE(browser->GetFindBarController()->find_bar()->IsFindBarVisible());
   panel->Close();
@@ -968,6 +970,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
   Panel* panel1 = CreatePanelWithParams(params1);
   CreatePanelParams params2("Active", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel2 = CreatePanelWithParams(params2);
+  // Need tab contents in order to trigger deactivation upon close.
+  CreateTestTabContents(panel2->browser());
 
   ASSERT_FALSE(panel1->IsActive());
   ASSERT_TRUE(panel2->IsActive());

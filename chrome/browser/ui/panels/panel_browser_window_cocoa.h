@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "ui/gfx/rect.h"
 
@@ -19,7 +20,8 @@ class Panel;
 // Bridges between C++ and the Cocoa NSWindow. Cross-platform code will
 // interact with this object when it needs to manipulate the window.
 
-class PanelBrowserWindowCocoa : public NativePanel {
+class PanelBrowserWindowCocoa : public NativePanel,
+                                public TabStripModelObserver {
  public:
   PanelBrowserWindowCocoa(Browser* browser, Panel* panel,
                           const gfx::Rect& bounds);
@@ -60,6 +62,12 @@ class PanelBrowserWindowCocoa : public NativePanel {
   virtual gfx::Size ContentSizeFromWindowSize(
       const gfx::Size& window_size) const OVERRIDE;
   virtual int TitleOnlyHeight() const OVERRIDE;
+
+  // Overridden from TabStripModelObserver.
+  virtual void TabInsertedAt(TabContentsWrapper* contents,
+                             int index,
+                             bool foreground) OVERRIDE;
+  virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
 
   Panel* panel() { return panel_.get(); }
   Browser* browser() const { return browser_.get(); }

@@ -21,11 +21,9 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
@@ -59,12 +57,6 @@ class PanelBrowserWindowCocoaTest : public CocoaProfileTest {
                                                    panel_name,
                                                    gfx::Rect(),
                                                    profile());
-
-    TabContentsWrapper* tab_contents = new TabContentsWrapper(
-        new TestTabContents(profile(), NULL));
-    panel_browser->AddTab(tab_contents, content::PAGE_TRANSITION_LINK);
-
-    // We just created one new panel.
     EXPECT_EQ(panels_count + 1, manager->num_panels());
 
     Panel* panel = static_cast<Panel*>(panel_browser->window());

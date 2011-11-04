@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 
 #include "base/logging.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
 namespace {
@@ -55,9 +57,11 @@ PanelBrowserWindowCocoa::PanelBrowserWindowCocoa(Browser* browser,
     is_shown_(false),
     has_find_bar_(false) {
   controller_ = [[PanelWindowControllerCocoa alloc] initWithBrowserWindow:this];
+  browser_->tabstrip_model()->AddObserver(this);
 }
 
 PanelBrowserWindowCocoa::~PanelBrowserWindowCocoa() {
+  browser_->tabstrip_model()->RemoveObserver(this);
 }
 
 bool PanelBrowserWindowCocoa::isClosed() {
@@ -267,6 +271,17 @@ gfx::Size PanelBrowserWindowCocoa::ContentSizeFromWindowSize(
 
 int PanelBrowserWindowCocoa::TitleOnlyHeight() const {
   return [controller_ titlebarHeightInScreenCoordinates];
+}
+
+void PanelBrowserWindowCocoa::TabInsertedAt(TabContentsWrapper* contents,
+                                            int index,
+                                            bool foreground) {
+  [controller_ tabInserted:contents->tab_contents()];
+}
+
+void PanelBrowserWindowCocoa::TabDetachedAt(TabContentsWrapper* contents,
+                                            int index) {
+  [controller_ tabDetached:contents->tab_contents()];
 }
 
 // NativePanelTesting implementation.

@@ -238,11 +238,7 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
                                                  browser()->profile());
   EXPECT_TRUE(panel_browser->is_type_panel());
 
-  if (params.url.is_empty()) {
-    TabContentsWrapper* tab_contents =
-        new TabContentsWrapper(new TestTabContents(browser()->profile(), NULL));
-    panel_browser->AddTab(tab_contents, content::PAGE_TRANSITION_LINK);
-  } else {
+  if (!params.url.is_empty()) {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
@@ -303,6 +299,12 @@ Panel* BasePanelBrowserTest::CreatePanelWithBounds(
 Panel* BasePanelBrowserTest::CreatePanel(const std::string& panel_name) {
   CreatePanelParams params(panel_name, gfx::Rect(), SHOW_AS_ACTIVE);
   return CreatePanelWithParams(params);
+}
+
+void BasePanelBrowserTest::CreateTestTabContents(Browser* browser) {
+  TabContentsWrapper* tab_contents =
+      new TabContentsWrapper(new TestTabContents(browser->profile(), NULL));
+  browser->AddTab(tab_contents, content::PAGE_TRANSITION_LINK);
 }
 
 scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(

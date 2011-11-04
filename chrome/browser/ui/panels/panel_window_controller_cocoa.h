@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
+#import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/themed_browser_window.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
@@ -45,6 +46,7 @@ class PanelBrowserWindowCocoa;
   IBOutlet PanelTitlebarViewCocoa* titlebar_view_;
   scoped_ptr<PanelBrowserWindowCocoa> windowShim_;
   scoped_nsobject<NSString> pendingWindowTitle_;
+  scoped_nsobject<TabContentsController> contentsController_;
   NSViewAnimation* boundsAnimation_;  // Lifetime controlled manually, needs
                                       // more then just |release| to terminate.
   BOOL animateOnBoundsChange_;
@@ -59,9 +61,8 @@ class PanelBrowserWindowCocoa;
 - (ThemedWindowStyle)themedWindowStyle;
 - (NSPoint)themePatternPhase;
 
-// Returns the TabContents' native view. It renders the content of the web page
-// in the Panel.
-- (NSView*)tabContentsView;
+- (void)tabInserted:(TabContents*)contents;
+- (void)tabDetached:(TabContents*)contents;
 
 // Sometimes (when we animate the size of the window) we want to stop resizing
 // the TabContents' cocoa view to avoid unnecessary rendering and issues
