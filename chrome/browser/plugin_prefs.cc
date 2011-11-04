@@ -480,7 +480,7 @@ void PluginPrefs::SetPolicyEnforcedPluginPatterns(
 webkit::npapi::PluginList* PluginPrefs::GetPluginList() {
   if (plugin_list_)
     return plugin_list_;
-  return webkit::npapi::PluginList::Singleton();
+  return PluginService::GetInstance()->GetPluginList();
 }
 
 void PluginPrefs::GetPreferencesDataOnFileThread() {
