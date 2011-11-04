@@ -355,6 +355,7 @@ MenuItemView* MenuController::Run(Widget* parent,
       // another blocking loop. We need to make sure all menus are hidden
       // before that happens otherwise the menus will stay on screen.
       CloseAllNestedMenus();
+      SetSelection(NULL, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
 
       // Set exit_all_, which makes sure all nested loops exit immediately.
       if (exit_type_ != EXIT_DESTROYED)
