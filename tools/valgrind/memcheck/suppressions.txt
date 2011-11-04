@@ -5197,6 +5197,16 @@
    fun:_ZN8remoting8IqSender6SendIqERKSsS2_PN4buzz10XmlElementERKN4base8CallbackIFvPKS4_EEE
    fun:_ZN8remoting24IqSenderTest_SendIq_Test8TestBodyEv
 }
+{
+   bug_102988
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net12CryptoModule16CreateFromHandleEP15PK11SlotInfoStr
+   fun:_ZNK3net12CertDatabase16GetPrivateModuleEv
+   fun:_ZN8chromeos16OncNetworkParser22ParseClientCertificateEiPN4base15DictionaryValueE
+   fun:_ZN8chromeos16OncNetworkParser16ParseCertificateEi
+   fun:_ZN8chromeos50OncNetworkParserTest_TestAddClientCertificate_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
