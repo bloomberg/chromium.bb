@@ -57,6 +57,16 @@ void NotificationProvider::objectDestroyed(
 }
 
 WebNotificationPresenter::Permission NotificationProvider::checkPermission(
+    const WebSecurityOrigin& origin) {
+  int permission;
+  Send(new DesktopNotificationHostMsg_CheckPermission(
+          routing_id(),
+          GURL(origin.toString()),
+          &permission));
+  return static_cast<WebNotificationPresenter::Permission>(permission);
+}
+
+WebNotificationPresenter::Permission NotificationProvider::checkPermission(
     const WebURL& origin) {
   int permission;
   Send(new DesktopNotificationHostMsg_CheckPermission(
