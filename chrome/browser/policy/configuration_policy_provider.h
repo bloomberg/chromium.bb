@@ -27,9 +27,9 @@ class ConfigurationPolicyProvider {
  public:
   class Observer {
    public:
-    virtual ~Observer() {}
+    virtual ~Observer();
     virtual void OnUpdatePolicy() = 0;
-    virtual void OnProviderGoingAway() = 0;
+    virtual void OnProviderGoingAway();
   };
 
   explicit ConfigurationPolicyProvider(const PolicyDefinitionList* policy_list);
@@ -102,6 +102,8 @@ class ConfigurationPolicyObserverRegistrar
   // ConfigurationPolicyProvider::Observer implementation:
   virtual void OnUpdatePolicy();
   virtual void OnProviderGoingAway();
+
+  ConfigurationPolicyProvider* provider() { return provider_; }
 
  private:
   ConfigurationPolicyProvider* provider_;

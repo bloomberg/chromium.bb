@@ -8,6 +8,10 @@
 
 namespace policy {
 
+ConfigurationPolicyProvider::Observer::~Observer() {}
+
+void ConfigurationPolicyProvider::Observer::OnProviderGoingAway() {}
+
 // Class ConfigurationPolicyProvider.
 
 ConfigurationPolicyProvider::ConfigurationPolicyProvider(

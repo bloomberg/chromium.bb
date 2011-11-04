@@ -27,6 +27,9 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   virtual bool ProvideInternal(PolicyMap* policies) OVERRIDE;
   virtual bool IsInitializationComplete() const OVERRIDE;
 
+  // Make public for tests.
+  using ConfigurationPolicyProvider::NotifyPolicyUpdated;
+
  private:
 
   PolicyMap policy_map_;

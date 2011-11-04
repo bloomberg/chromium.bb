@@ -15,6 +15,7 @@
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/network_configuration_updater.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/user_policy_cache.h"
@@ -355,6 +356,11 @@ BrowserPolicyConnector::BrowserPolicyConnector()
 
 #if defined(OS_CHROMEOS)
   InitializeDevicePolicy();
+
+  network_configuration_updater_.reset(
+      new NetworkConfigurationUpdater(
+          managed_cloud_provider_.get(),
+          chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
 #endif
   policy_handlers_.reset(ConfigurationPolicyHandler::CreateHandlerList());
 }
