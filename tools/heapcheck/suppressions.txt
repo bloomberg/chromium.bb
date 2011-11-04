@@ -99,7 +99,7 @@
    fun:crypto::::NSSInitSingleton::OpenUserDB
    fun:crypto::::NSSInitSingleton::OpenTestNSSDB
    fun:crypto::OpenTestNSSDB
-   fun:net::CertDatabaseNSSTest::SetUp
+   fun:net::CertDatabaseNSSTest::SetUpTestCase
 }
 {
    bug_66941_a
