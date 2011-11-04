@@ -127,6 +127,16 @@ bool PyUITestBase::RunCommand(int browser_command, int window_index) {
   return browser_proxy->RunCommand(browser_command);
 }
 
+bool PyUITestBase::IsMenuCommandEnabled(int id, int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(window_index);
+  EXPECT_TRUE(browser_proxy.get());
+  bool enabled = false;
+  if (browser_proxy.get())
+    EXPECT_TRUE(browser_proxy->IsMenuCommandEnabled(id, &enabled));
+  return enabled;
+}
+
 bool PyUITestBase::ActivateTab(int tab_index, int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(window_index);

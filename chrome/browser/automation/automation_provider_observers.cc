@@ -27,6 +27,7 @@
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -69,6 +70,7 @@
 #include "chrome/browser/ui/webui/ntp/recently_closed_tabs_handler.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -1164,6 +1166,8 @@ DomOperationObserver::DomOperationObserver() {
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
                  content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
+                 content::NotificationService::AllSources());
 }
 
 DomOperationObserver::~DomOperationObserver() {}
@@ -1176,6 +1180,17 @@ void DomOperationObserver::Observe(
     OnDomOperationCompleted(dom_op_details->json());
   } else if (type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN) {
     OnModalDialogShown();
+  } else if (type == chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED) {
+    TabContents* tab_contents = content::Source<TabContents>(source).ptr();
+    if (tab_contents) {
+      TabContentsWrapper* wrapper =
+          TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+      if (wrapper &&
+          wrapper->content_settings()->IsContentBlocked(
+              CONTENT_SETTINGS_TYPE_JAVASCRIPT)) {
+        OnJavascriptBlocked();
+      }
+    }
   }
 }
 
@@ -1211,6 +1226,14 @@ void DomOperationMessageSender::OnModalDialogShown() {
     AutomationJSONReply(automation_, reply_message_.release())
         .SendError("Could not complete script execution because a modal "
                        "dialog is active");
+    delete this;
+  }
+}
+
+void DomOperationMessageSender::OnJavascriptBlocked() {
+  if (automation_ && use_json_interface_) {
+    AutomationJSONReply(automation_, reply_message_.release())
+        .SendError("Javascript execution was blocked");
     delete this;
   }
 }
@@ -1933,7 +1956,6 @@ void PageSnapshotTaker::Observe(int type,
                                 const content::NotificationDetails& details) {
   SendMessage(false, "a modal dialog is active");
 }
-
 
 void PageSnapshotTaker::SendMessage(bool success,
                                     const std::string& error_msg) {

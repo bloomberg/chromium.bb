@@ -8,6 +8,7 @@
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_store_observer_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -204,8 +205,6 @@ INSTANTIATE_TEST_CASE_P(
                     prefs::kShowHomeButton),
         TypeAndName(kPolicyPrintingEnabled,
                     prefs::kPrintingEnabled),
-        TypeAndName(kPolicyJavascriptEnabled,
-                    prefs::kWebKitJavascriptEnabled),
         TypeAndName(kPolicyRemoteAccessHostFirewallTraversal,
                     prefs::kRemoteAccessHostFirewallTraversal),
         TypeAndName(kPolicyCloudPrintProxyEnabled,
@@ -253,7 +252,9 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyImportSearchEngine,
                     prefs::kImportSearchEngine),
         TypeAndName(kPolicyImportSavedPasswords,
-                    prefs::kImportSavedPasswords)));
+                    prefs::kImportSavedPasswords),
+        TypeAndName(kPolicyDeveloperToolsDisabled,
+                    prefs::kDevToolsDisabled)));
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(
@@ -288,6 +289,18 @@ INSTANTIATE_TEST_CASE_P(
     ConfigurationPolicyPrefStoreIntegerTestInstance,
     ConfigurationPolicyPrefStoreIntegerTest,
     testing::Values(
+        TypeAndName(kPolicyDefaultCookiesSetting,
+                    prefs::kManagedDefaultCookiesSetting),
+        TypeAndName(kPolicyDefaultImagesSetting,
+                    prefs::kManagedDefaultImagesSetting),
+        TypeAndName(kPolicyDefaultPluginsSetting,
+                    prefs::kManagedDefaultPluginsSetting),
+        TypeAndName(kPolicyDefaultPopupsSetting,
+                    prefs::kManagedDefaultPopupsSetting),
+        TypeAndName(kPolicyDefaultNotificationsSetting,
+                    prefs::kManagedDefaultNotificationsSetting),
+        TypeAndName(kPolicyDefaultGeolocationSetting,
+                    prefs::kManagedDefaultGeolocationSetting),
         TypeAndName(kPolicyRestoreOnStartup,
                     prefs::kRestoreOnStartup),
         TypeAndName(kPolicyPolicyRefreshRate,
@@ -902,7 +915,7 @@ class ConfigurationPolicyPrefStoreAutofillTest
 
 TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Default) {
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
-            store_->GetValue(prefs::kSyncManaged, NULL));
+            store_->GetValue(prefs::kAutofillEnabled, NULL));
 }
 
 TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Enabled) {
@@ -910,7 +923,7 @@ TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Enabled) {
   store_->OnUpdatePolicy();
   // Enabling Autofill should not set the pref.
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
-            store_->GetValue(prefs::kSyncManaged, NULL));
+            store_->GetValue(prefs::kAutofillEnabled, NULL));
 }
 
 TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Disabled) {
@@ -979,6 +992,48 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Initialization) {
   store_->OnUpdatePolicy();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(store_->IsInitializationComplete());
+}
+
+// Tests for policies that don't quite fit the previous patterns.
+class ConfigurationPolicyPrefStoreOthersTest
+    : public ConfigurationPolicyPrefStoreTestBase<testing::Test> {
+};
+
+TEST_F(ConfigurationPolicyPrefStoreOthersTest, JavascriptEnabled) {
+  // This is a boolean policy, but affects an integer preference.
+  EXPECT_EQ(PrefStore::READ_NO_VALUE,
+            store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
+  provider_.AddPolicy(kPolicyJavascriptEnabled,
+                      Value::CreateBooleanValue(true));
+  store_->OnUpdatePolicy();
+  EXPECT_EQ(PrefStore::READ_NO_VALUE,
+            store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
+  provider_.AddPolicy(kPolicyJavascriptEnabled,
+                      Value::CreateBooleanValue(false));
+  store_->OnUpdatePolicy();
+  const Value* value = NULL;
+  EXPECT_EQ(PrefStore::READ_OK,
+            store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, &value));
+  EXPECT_TRUE(base::FundamentalValue(CONTENT_SETTING_BLOCK).Equals(value));
+}
+
+TEST_F(ConfigurationPolicyPrefStoreOthersTest, JavascriptEnabledOverridden) {
+  EXPECT_EQ(PrefStore::READ_NO_VALUE,
+            store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
+  provider_.AddPolicy(kPolicyJavascriptEnabled,
+                      Value::CreateBooleanValue(false));
+  store_->OnUpdatePolicy();
+  const Value* value = NULL;
+  EXPECT_EQ(PrefStore::READ_OK,
+            store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, &value));
+  EXPECT_TRUE(base::FundamentalValue(CONTENT_SETTING_BLOCK).Equals(value));
+  // DefaultJavaScriptSetting overrides JavascriptEnabled.
+  provider_.AddPolicy(kPolicyDefaultJavaScriptSetting,
+                      Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+  store_->OnUpdatePolicy();
+  EXPECT_EQ(PrefStore::READ_OK,
+            store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, &value));
+  EXPECT_TRUE(base::FundamentalValue(CONTENT_SETTING_ALLOW).Equals(value));
 }
 
 }  // namespace policy

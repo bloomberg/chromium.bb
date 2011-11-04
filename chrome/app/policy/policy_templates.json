@@ -263,14 +263,19 @@
       'type': 'main',
       'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 0},
+      'deprecated': True,
       'example_value': True,
       'id': 9,
       'caption': '''Enable JavaScript''',
-      'desc': '''Enables JavaScript in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+      'desc': '''This policy is deprecated, please use DefaultJavaScriptSetting instead.
+
+      Enables JavaScript in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       If this setting is enabled or not configured, web pages can use JavaScript.
 
-      If this setting is disabled, web pages cannot use JavaScript.''',
+      If this setting is disabled, web pages cannot use JavaScript.
+
+      The DefaultJavaScriptSetting policy will override this policy when both are set.''',
     },
     {
       'name': 'IncognitoEnabled',

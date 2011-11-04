@@ -3,8 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
+
 import pyauto_functional  # must come before pyauto.
 import pyauto
+from pyauto_errors import JSONInterfaceError
 
 
 class PolicyTest(pyauto.PyUITest):
@@ -26,11 +29,16 @@ class PolicyTest(pyauto.PyUITest):
     self.assertEqual(blocked, ret)
     return blocked
 
-  def GetInnerHeight(self):
-    """Returns the inner height of the content area."""
-    ret = self.ExecuteJavascript(
-        'domAutomationController.send(innerHeight.toString());');
-    return int(ret)
+  def IsJavascriptEnabled(self):
+    try:
+      ret = self.ExecuteJavascript('domAutomationController.send("done");')
+      return ret == 'done'
+    except JSONInterfaceError as e:
+      if 'Javascript execution was blocked' == str(e):
+        logging.debug('The previous failure was expected')
+        return False
+      else:
+        raise e
 
   def testBlacklistPolicy(self):
     """Tests the URLBlacklist and URLWhitelist policies."""
@@ -92,6 +100,65 @@ class PolicyTest(pyauto.PyUITest):
     # When disabled by policy, it should never be displayed at all,
     # not even on the NTP.
     self.assertFalse(self.IsBookmarkBarDetached())
+
+  def testJavascriptPolicies(self):
+    """Tests the Javascript policies."""
+    # The navigation to about:blank after each policy reset is to reset the
+    # content settings state.
+    policy = {}
+    self.SetPolicies(policy)
+    self.assertTrue(self.IsJavascriptEnabled())
+    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS))
+    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS_CONSOLE))
+
+    policy['DeveloperToolsDisabled'] = True
+    self.SetPolicies(policy)
+    self.assertTrue(self.IsJavascriptEnabled())
+    self.assertFalse(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS))
+    self.assertFalse(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS_CONSOLE))
+
+    policy['DeveloperToolsDisabled'] = False
+    self.SetPolicies(policy)
+    self.assertTrue(self.IsJavascriptEnabled())
+    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS))
+    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS_CONSOLE))
+
+    # The Developer Tools still work when javascript is disabled.
+    policy['JavascriptEnabled'] = False
+    self.SetPolicies(policy)
+    self.assertFalse(self.IsJavascriptEnabled())
+    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS))
+    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS_CONSOLE))
+    # Javascript is always enabled for internal Chrome pages.
+    self.NavigateToURL('chrome://settings')
+    self.assertTrue(self.IsJavascriptEnabled())
+
+    # The Developer Tools can be explicitly disabled.
+    policy['DeveloperToolsDisabled'] = True
+    self.SetPolicies(policy)
+    self.NavigateToURL('about:blank')
+    self.assertFalse(self.IsJavascriptEnabled())
+    self.assertFalse(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS))
+    self.assertFalse(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS_CONSOLE))
+
+    # Javascript can also be disabled with content settings policies.
+    policy = {
+      'DefaultJavaScriptSetting': 2,
+    }
+    self.SetPolicies(policy)
+    self.NavigateToURL('about:blank')
+    self.assertFalse(self.IsJavascriptEnabled())
+    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS))
+    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS_CONSOLE))
+
+    # The content setting overrides JavascriptEnabled.
+    policy = {
+      'DefaultJavaScriptSetting': 1,
+      'JavascriptEnabled': False,
+    }
+    self.SetPolicies(policy)
+    self.NavigateToURL('about:blank')
+    self.assertTrue(self.IsJavascriptEnabled())
 
 
 if __name__ == '__main__':

@@ -264,6 +264,9 @@ class PyUITestBase {
   %feature("docstring", "Like ApplyAccelerator, except that it waits for "
            "the command to execute.") RunCommand;
   bool RunCommand(int browser_command, int window_index = 0);
+  %feature("docstring", "Returns true if the given command id is enabled on "
+           "the given window.") IsMenuCommandEnabled;
+  bool IsMenuCommandEnabled(int browser_command, int window_index = 0);
 
   // Get/fetch properties
   %feature("docstring",

@@ -1244,53 +1244,44 @@ bool JavascriptPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
     errors->AddError(kPolicyJavascriptEnabled,
                      IDS_POLICY_TYPE_ERROR,
                      ValueTypeToString(Value::TYPE_BOOLEAN));
-    javascript_enabled = NULL;
   }
 
   if (default_setting && !default_setting->IsType(Value::TYPE_INTEGER)) {
     errors->AddError(kPolicyDefaultJavaScriptSetting,
                      IDS_POLICY_TYPE_ERROR,
                      ValueTypeToString(Value::TYPE_INTEGER));
-    default_setting = NULL;
   }
 
-  bool enabled;
-  int setting;
-  if (javascript_enabled &&
-      default_setting &&
-      javascript_enabled->GetAsBoolean(&enabled) &&
-      default_setting->GetAsInteger(&setting) &&
-      !enabled &&
-      setting != CONTENT_SETTING_BLOCK) {
-    errors->AddError(kPolicyDefaultJavaScriptSetting,
+  if (javascript_enabled && default_setting) {
+    errors->AddError(kPolicyJavascriptEnabled,
                      IDS_POLICY_OVERRIDDEN,
-                     GetPolicyName(kPolicyJavascriptEnabled));
+                     GetPolicyName(kPolicyDefaultJavaScriptSetting));
   }
+
   return true;
 }
 
 void JavascriptPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                   PrefValueMap* prefs) {
-  const Value* javascript_enabled = policies.Get(kPolicyJavascriptEnabled);
+  int setting = CONTENT_SETTING_DEFAULT;
   const Value* default_setting = policies.Get(kPolicyDefaultJavaScriptSetting);
 
-  int setting = CONTENT_SETTING_DEFAULT;
-  if (default_setting)
+  if (default_setting) {
     default_setting->GetAsInteger(&setting);
-
-  bool enabled = true;
-  if (javascript_enabled && javascript_enabled->GetAsBoolean(&enabled)) {
-    prefs->SetValue(prefs::kWebKitJavascriptEnabled,
-                    javascript_enabled->DeepCopy());
-    // Force the javascript content setting to BLOCK when this policy disables
-    // javascript globally.
-    if (!enabled)
+  } else {
+    const Value* javascript_enabled = policies.Get(kPolicyJavascriptEnabled);
+    bool enabled = true;
+    if (javascript_enabled &&
+        javascript_enabled->GetAsBoolean(&enabled) &&
+        !enabled) {
       setting = CONTENT_SETTING_BLOCK;
+    }
   }
 
-  if (setting != CONTENT_SETTING_DEFAULT)
+  if (setting != CONTENT_SETTING_DEFAULT) {
     prefs->SetValue(prefs::kManagedDefaultJavaScriptSetting,
                     Value::CreateIntegerValue(setting));
+  }
 }
 
 

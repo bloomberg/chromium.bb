@@ -601,6 +601,7 @@ class DomOperationObserver : public content::NotificationObserver {
 
   virtual void OnDomOperationCompleted(const std::string& json) = 0;
   virtual void OnModalDialogShown() = 0;
+  virtual void OnJavascriptBlocked() = 0;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -619,6 +620,7 @@ class DomOperationMessageSender : public DomOperationObserver {
 
   virtual void OnDomOperationCompleted(const std::string& json) OVERRIDE;
   virtual void OnModalDialogShown() OVERRIDE;
+  virtual void OnJavascriptBlocked() OVERRIDE;
 
  private:
   base::WeakPtr<AutomationProvider> automation_;

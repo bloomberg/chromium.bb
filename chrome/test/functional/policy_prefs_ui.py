@@ -80,8 +80,7 @@ class PolicyPrefsUITest(pyauto.PyUITest):
     'DnsPrefetchingEnabled': (False, [ ADVANCED ]),
     'DisableSpdy': (True, []),
     'DisabledSchemes': ( ['file' ], []),
-    # TODO(joaodasilva): Should be CONTENT. http://crbug.com/102136
-    'JavascriptEnabled': (False, []),
+    'JavascriptEnabled': (False, [ CONTENT ]),
     'IncognitoEnabled': (False, []),
     'IncognitoModeAvailability': (1, []),
     'SavingBrowserHistoryDisabled': (True, []),

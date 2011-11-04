@@ -101,6 +101,9 @@ class PyUITestBase : public UITestBase {
   // Like ApplyAccelerator except that it waits for the command to execute.
   bool RunCommand(int browser_command, int window_index = 0);
 
+  // Returns true if the given command id is enabled on the given window.
+  bool IsMenuCommandEnabled(int browser_command, int window_index = 0);
+
   // Shows or hides the download shelf.
   void SetDownloadShelfVisible(bool is_visible, int window_index = 0);
 
