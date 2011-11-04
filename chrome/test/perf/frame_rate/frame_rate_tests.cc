@@ -225,7 +225,6 @@ INSTANTIATE_TEST_CASE_P(, FrameRateNoVsyncCanvasInternalTest, ::testing::Values(
                         kInternal | kHasRedirect | kDisableVsync |
                           kRequiresGpu | kUseReferenceBuild));
 
-INTERNAL_FRAME_RATE_TEST_CANVAS_WITH_AND_WITHOUT_NOVSYNC(speedreading)
 INTERNAL_FRAME_RATE_TEST_CANVAS_WITH_AND_WITHOUT_NOVSYNC(fishbowl)
 
 typedef FrameRateTest FrameRateGpuCanvasInternalTest;
@@ -249,5 +248,6 @@ INSTANTIATE_TEST_CASE_P(, FrameRateGpuCanvasInternalTest, ::testing::Values(
 
 INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(fireflies)
 INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(FishIE)
+INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(speedreading)
 
 }  // namespace
