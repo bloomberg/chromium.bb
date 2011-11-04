@@ -15,8 +15,11 @@
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_error_map.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/user_policy_cache.h"
 #include "chrome/browser/policy/user_policy_token_cache.h"
+#include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,6 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
 
 #if defined(OS_WIN)
@@ -313,9 +317,28 @@ const CloudPolicyDataStore*
   return user_data_store_.get();
 }
 
-const ConfigurationPolicyHandler::HandlerList*
-    BrowserPolicyConnector::GetConfigurationPolicyHandlerList() const {
-  return policy_handlers_.get();
+void BrowserPolicyConnector::GetPoliciesAsPreferences(
+    const PolicyMap& policies,
+    PrefValueMap* prefs,
+    PolicyErrorMap* errors) {
+  PolicyErrorMap scoped_errors;
+  if (!errors)
+    errors = &scoped_errors;
+
+  ConfigurationPolicyHandler::HandlerList::const_iterator handler;
+  for (handler = policy_handlers_->begin();
+       handler != policy_handlers_->end();
+       ++handler) {
+    if ((*handler)->CheckPolicySettings(policies, errors) && prefs)
+      (*handler)->ApplyPolicySettings(policies, prefs);
+  }
+
+  for (PolicyMap::const_iterator it = policies.begin();
+       it != policies.end();
+       ++it) {
+    if (IsDeprecatedPolicy(it->first))
+      errors->AddError(it->first, IDS_POLICY_DEPRECATED);
+  }
 }
 
 BrowserPolicyConnector::BrowserPolicyConnector()

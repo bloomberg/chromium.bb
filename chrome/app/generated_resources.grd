@@ -4456,6 +4456,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POLICY_OVERRIDDEN" desc="The text displayed in the status column when the corresponding policy is being ignored because another policy is overriding it.">
         Ignored because it was overridden by <ph name="POLICY_NAME">$1<ex>ProxyMode</ex></ph>.
       </message>
+      <message name="IDS_POLICY_DEPRECATED" desc="The text displayed in the status column when the corresponding policy is deprecated.">
+        This policy has been deprecated.
+      </message>
 
       <!-- about:flags -->
       <message name="IDS_FLAGS_LONG_TITLE" desc="Long version of the title for the about:flags page.">

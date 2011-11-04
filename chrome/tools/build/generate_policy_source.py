@@ -74,15 +74,18 @@ def _OutputGeneratedWarningForC(f, template_file_path):
 
 
 # Returns a tuple with details about the given policy:
-# (name, type, list_of_platforms, is_device_policy)
+# (name, type, list_of_platforms, is_deprecated, is_device_policy)
 def _GetPolicyDetails(policy):
+  name = policy['name']
   if not TYPE_MAP.has_key(policy['type']):
-    print "Unknown policy type for %s: %s" % (policy['name'], policy['type'])
+    print "Unknown policy type for %s: %s" % (name, policy['type'])
     sys.exit(3)
+  vtype = TYPE_MAP[policy['type']]
   # platforms is a list of "chrome", "chrome_os" and/or "chrome_frame".
   platforms = [ x.split('.')[0].split(':')[0] for x in policy['supported_on'] ]
+  is_deprecated = policy.get('deprecated', False)
   is_device_policy = policy.get('device_only', False)
-  return (policy['name'], TYPE_MAP[policy['type']], platforms, is_device_policy)
+  return (name, vtype, platforms, is_deprecated, is_device_policy)
 
 
 def _GetPolicyList(template_file_contents):
@@ -100,21 +103,27 @@ def _GetPolicyList(template_file_contents):
 
 
 def _GetPolicyNameList(template_file_contents):
-  return [name for (name, _, _, _) in _GetPolicyList(template_file_contents)]
+  return [name for (name, _, _, _, _) in _GetPolicyList(template_file_contents)]
 
 
 def _GetChromePolicyList(template_file_contents):
-  return [(name, vtype) for (name, vtype, platforms, is_device_only)
+  return [(name, vtype) for (name, vtype, platforms, _, is_device_only)
                         in _GetPolicyList(template_file_contents)
                         if 'chrome' in platforms and not is_device_only]
 
 
 def _GetChromeOSPolicyList(template_file_contents):
-  return [(name, vtype) for (name, vtype, platforms, is_device_only)
+  return [(name, vtype) for (name, vtype, platforms, _, is_device_only)
                         in _GetPolicyList(template_file_contents)
                         if 'chrome_os' in platforms
                           and not 'chrome' in platforms
                           and not is_device_only]
+
+
+def _GetDeprecatedPolicyList(template_file_contents):
+  return [name for (name, _, _, is_deprecated, _)
+               in _GetPolicyList(template_file_contents)
+               if is_deprecated]
 
 
 def _LoadJSONFile(json_file):
@@ -159,6 +168,9 @@ def _WritePolicyConstantHeader(template_file_contents, args, opts):
             '// Gets the policy name for the given policy type.\n'
             'const char* GetPolicyName(ConfigurationPolicyType type);\n'
             '\n'
+            '// Returns true if the given policy is deprecated.\n'
+            'bool IsDeprecatedPolicy(ConfigurationPolicyType type);\n'
+            '\n'
             '// Returns the default policy definition list for Chrome.\n'
             'const PolicyDefinitionList* GetChromePolicyDefinitionList();\n\n')
     f.write('// Key names for the policy settings.\n'
@@ -184,7 +196,7 @@ def _WritePolicyConstantSource(template_file_contents, args, opts):
 
     f.write('namespace {\n\n')
 
-    f.write('PolicyDefinitionList::Entry entries[] = {\n')
+    f.write('const PolicyDefinitionList::Entry kEntries[] = {\n')
     for (name, vtype) in _GetChromePolicyList(template_file_contents):
       f.write('  { kPolicy%s, Value::%s, key::k%s },\n' % (name, vtype, name))
     f.write('\n#if defined(OS_CHROMEOS)\n')
@@ -193,15 +205,21 @@ def _WritePolicyConstantSource(template_file_contents, args, opts):
     f.write('#endif\n'
             '};\n\n')
 
-    f.write('PolicyDefinitionList chrome_policy_list = {\n'
-            '  entries,\n'
-            '  entries + arraysize(entries),\n'
+    f.write('const PolicyDefinitionList kChromePolicyList = {\n'
+            '  kEntries,\n'
+            '  kEntries + arraysize(kEntries),\n'
             '};\n\n')
 
     f.write('// Maps a policy-type enum value to the policy name.\n'
-            'const char* policy_name_map[] = {\n');
+            'const char* kPolicyNameMap[] = {\n');
     for name in _GetPolicyNameList(template_file_contents):
       f.write('  key::k%s,\n' % name)
+    f.write('};\n\n')
+
+    f.write('// List of deprecated policies.\n'
+            'const ConfigurationPolicyType kDeprecatedPolicyList[] = {\n')
+    for name in _GetDeprecatedPolicyList(template_file_contents):
+      f.write('  kPolicy%s,\n' % name)
     f.write('};\n\n')
 
     f.write('}  // namespace\n\n')
@@ -217,12 +235,21 @@ def _WritePolicyConstantSource(template_file_contents, args, opts):
 
     f.write('const char* GetPolicyName(ConfigurationPolicyType type) {\n'
             '  CHECK(type >= 0 && '
-              'static_cast<size_t>(type) < arraysize(policy_name_map));\n'
-            '  return policy_name_map[type];\n'
+              'static_cast<size_t>(type) < arraysize(kPolicyNameMap));\n'
+            '  return kPolicyNameMap[type];\n'
+            '}\n'
+            '\n'
+            'bool IsDeprecatedPolicy(ConfigurationPolicyType type) {\n'
+            '  for (size_t i = 0; i < arraysize(kDeprecatedPolicyList);'
+              ' ++i) {\n'
+            '    if (kDeprecatedPolicyList[i] == type)\n'
+            '      return true;\n'
+            '  }\n'
+            '  return false;\n'
             '}\n'
             '\n'
             'const PolicyDefinitionList* GetChromePolicyDefinitionList() {\n'
-            '  return &chrome_policy_list;\n'
+            '  return &kChromePolicyList;\n'
             '}\n\n')
 
     f.write('namespace key {\n\n')

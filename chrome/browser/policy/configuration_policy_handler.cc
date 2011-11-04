@@ -45,7 +45,7 @@ class TypeCheckingPolicyHandler : public ConfigurationPolicyHandler {
                             base::Value::Type value_type);
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap* policies,
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
                                    PolicyErrorMap* errors) OVERRIDE;
 
  protected:
@@ -72,7 +72,7 @@ class SimplePolicyHandler : public TypeCheckingPolicyHandler {
   virtual ~SimplePolicyHandler();
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap* policies,
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
@@ -89,7 +89,7 @@ class SyncPolicyHandler : public TypeCheckingPolicyHandler {
   virtual ~SyncPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap* policies,
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
@@ -103,7 +103,7 @@ class AutofillPolicyHandler : public TypeCheckingPolicyHandler {
   virtual ~AutofillPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap* policies,
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
@@ -117,7 +117,7 @@ class DownloadDirPolicyHandler : public TypeCheckingPolicyHandler {
   virtual ~DownloadDirPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap* policies,
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
@@ -131,7 +131,7 @@ class DiskCacheDirPolicyHandler : public TypeCheckingPolicyHandler {
   virtual ~DiskCacheDirPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap* policies,
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
@@ -145,7 +145,7 @@ class FileSelectionDialogsHandler : public TypeCheckingPolicyHandler {
   virtual ~FileSelectionDialogsHandler();
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap* policies,
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
@@ -159,9 +159,9 @@ class IncognitoModePolicyHandler : public ConfigurationPolicyHandler {
   virtual ~IncognitoModePolicyHandler();
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap* policies,
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
                                    PolicyErrorMap* errors) OVERRIDE;
-  virtual void ApplyPolicySettings(const PolicyMap* policies,
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
@@ -178,7 +178,7 @@ class DefaultSearchEncodingsPolicyHandler : public TypeCheckingPolicyHandler {
   virtual ~DefaultSearchEncodingsPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap* policies,
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
@@ -192,33 +192,33 @@ class DefaultSearchPolicyHandler : public ConfigurationPolicyHandler {
   virtual ~DefaultSearchPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap* policies,
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
                                    PolicyErrorMap* errors) OVERRIDE;
-  virtual void ApplyPolicySettings(const PolicyMap* policies,
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
   // Calls |CheckPolicySettings()| on each of the handlers in |handlers_|
   // and returns true if all of the calls return true and false otherwise.
-  bool CheckIndividualPolicies(const PolicyMap* policies,
+  bool CheckIndividualPolicies(const PolicyMap& policies,
                                PolicyErrorMap* errors);
 
   // Returns true if there is a value for |policy_type| in |policies| and false
   // otherwise.
-  bool HasDefaultSearchPolicy(const PolicyMap* policies,
+  bool HasDefaultSearchPolicy(const PolicyMap& policies,
                               ConfigurationPolicyType policy_type);
 
   // Returns true if any default search policies are specified in |policies| and
   // false otherwise.
-  bool AnyDefaultSearchPoliciesSpecified(const PolicyMap* policies);
+  bool AnyDefaultSearchPoliciesSpecified(const PolicyMap& policies);
 
   // Returns true if the default search provider is disabled and false
   // otherwise.
-  bool DefaultSearchProviderIsDisabled(const PolicyMap* policies);
+  bool DefaultSearchProviderIsDisabled(const PolicyMap& policies);
 
   // Returns true if the default search URL was set and is valid and false
   // otherwise.
-  bool DefaultSearchURLIsValid(const PolicyMap* policies);
+  bool DefaultSearchURLIsValid(const PolicyMap& policies);
 
   // Make sure that the |path| if present in |prefs_|.  If not, set it to
   // a blank string.
@@ -237,19 +237,19 @@ class ProxyPolicyHandler : public ConfigurationPolicyHandler {
   virtual ~ProxyPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap* policies,
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
                                    PolicyErrorMap* errors) OVERRIDE;
-  virtual void ApplyPolicySettings(const PolicyMap* policies,
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
-  const Value* GetProxyPolicyValue(const PolicyMap* policies,
+  const Value* GetProxyPolicyValue(const PolicyMap& policies,
                                    ConfigurationPolicyType policy);
 
   // Converts the deprecated ProxyServerMode policy value to a ProxyMode value
   // and places the result in |mode_value|. Returns true if the conversion
   // succeeded and false otherwise.
-  bool CheckProxyModeAndServerMode(const PolicyMap* policies,
+  bool CheckProxyModeAndServerMode(const PolicyMap& policies,
                                    PolicyErrorMap* errors,
                                    std::string* mode_value);
 
@@ -263,9 +263,9 @@ class JavascriptPolicyHandler : public ConfigurationPolicyHandler {
   virtual ~JavascriptPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap* policies,
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
                                    PolicyErrorMap* errors) OVERRIDE;
-  virtual void ApplyPolicySettings(const PolicyMap* policies,
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
@@ -554,9 +554,9 @@ ConfigurationPolicyType TypeCheckingPolicyHandler::policy_type() const {
   return policy_type_;
 }
 
-bool TypeCheckingPolicyHandler::CheckPolicySettings(const PolicyMap* policies,
+bool TypeCheckingPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                                                     PolicyErrorMap* errors) {
-  const Value* value = policies->Get(policy_type_);
+  const Value* value = policies.Get(policy_type_);
   if (value && value_type_ != value->GetType()) {
     errors->AddError(policy_type_,
                      IDS_POLICY_TYPE_ERROR,
@@ -580,9 +580,9 @@ SimplePolicyHandler::SimplePolicyHandler(
 SimplePolicyHandler::~SimplePolicyHandler() {
 }
 
-void SimplePolicyHandler::ApplyPolicySettings(const PolicyMap* policies,
+void SimplePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                               PrefValueMap* prefs) {
-  const Value* value = policies->Get(policy_type());
+  const Value* value = policies.Get(policy_type());
   if (value)
     prefs->SetValue(pref_path_, value->DeepCopy());
 }
@@ -598,9 +598,9 @@ SyncPolicyHandler::SyncPolicyHandler()
 SyncPolicyHandler::~SyncPolicyHandler() {
 }
 
-void SyncPolicyHandler::ApplyPolicySettings(const PolicyMap* policies,
+void SyncPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                             PrefValueMap* prefs) {
-  const Value* value = policies->Get(policy_type());
+  const Value* value = policies.Get(policy_type());
   bool disable_sync;
   if (value && value->GetAsBoolean(&disable_sync) && disable_sync)
     prefs->SetValue(prefs::kSyncManaged, value->DeepCopy());
@@ -617,9 +617,9 @@ AutofillPolicyHandler::AutofillPolicyHandler()
 AutofillPolicyHandler::~AutofillPolicyHandler() {
 }
 
-void AutofillPolicyHandler::ApplyPolicySettings(const PolicyMap* policies,
+void AutofillPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                 PrefValueMap* prefs) {
-  const Value* value = policies->Get(policy_type());
+  const Value* value = policies.Get(policy_type());
   bool auto_fill_enabled;
   if (value && value->GetAsBoolean(&auto_fill_enabled) && !auto_fill_enabled) {
     prefs->SetValue(prefs::kAutofillEnabled,
@@ -638,9 +638,9 @@ DownloadDirPolicyHandler::DownloadDirPolicyHandler()
 DownloadDirPolicyHandler::~DownloadDirPolicyHandler() {
 }
 
-void DownloadDirPolicyHandler::ApplyPolicySettings(const PolicyMap* policies,
+void DownloadDirPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                    PrefValueMap* prefs) {
-  const Value* value = policies->Get(policy_type());
+  const Value* value = policies.Get(policy_type());
   FilePath::StringType string_value;
   if (!value || !value->GetAsString(&string_value))
     return;
@@ -670,9 +670,9 @@ DiskCacheDirPolicyHandler::DiskCacheDirPolicyHandler()
 DiskCacheDirPolicyHandler::~DiskCacheDirPolicyHandler() {
 }
 
-void DiskCacheDirPolicyHandler::ApplyPolicySettings(const PolicyMap* policies,
+void DiskCacheDirPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                     PrefValueMap* prefs) {
-  const Value* value = policies->Get(policy_type());
+  const Value* value = policies.Get(policy_type());
   FilePath::StringType string_value;
   if (value && value->GetAsString(&string_value)) {
     FilePath::StringType expanded_value =
@@ -693,10 +693,10 @@ FileSelectionDialogsHandler::FileSelectionDialogsHandler()
 FileSelectionDialogsHandler::~FileSelectionDialogsHandler() {
 }
 
-void FileSelectionDialogsHandler::ApplyPolicySettings(const PolicyMap* policies,
+void FileSelectionDialogsHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                       PrefValueMap* prefs) {
   bool allow_dialogs;
-  const Value* value = policies->Get(policy_type());
+  const Value* value = policies.Get(policy_type());
   if (value && value->GetAsBoolean(&allow_dialogs)) {
     prefs->SetValue(prefs::kAllowFileSelectionDialogs,
                     Value::CreateBooleanValue(allow_dialogs));
@@ -717,10 +717,10 @@ IncognitoModePolicyHandler::IncognitoModePolicyHandler() {
 IncognitoModePolicyHandler::~IncognitoModePolicyHandler() {
 }
 
-bool IncognitoModePolicyHandler::CheckPolicySettings(const PolicyMap* policies,
+bool IncognitoModePolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                                                      PolicyErrorMap* errors) {
   int int_value = IncognitoModePrefs::ENABLED;
-  const Value* availability = policies->Get(kPolicyIncognitoModeAvailability);
+  const Value* availability = policies.Get(kPolicyIncognitoModeAvailability);
 
   if (availability) {
     if (availability->GetAsInteger(&int_value)) {
@@ -739,7 +739,7 @@ bool IncognitoModePolicyHandler::CheckPolicySettings(const PolicyMap* policies,
       return false;
     }
   } else {
-    const Value* deprecated_enabled = policies->Get(kPolicyIncognitoEnabled);
+    const Value* deprecated_enabled = policies.Get(kPolicyIncognitoEnabled);
     if (deprecated_enabled &&
         !deprecated_enabled->IsType(Value::TYPE_BOOLEAN)) {
       errors->AddError(kPolicyIncognitoEnabled,
@@ -751,10 +751,10 @@ bool IncognitoModePolicyHandler::CheckPolicySettings(const PolicyMap* policies,
   return true;
 }
 
-void IncognitoModePolicyHandler::ApplyPolicySettings(const PolicyMap* policies,
+void IncognitoModePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                      PrefValueMap* prefs) {
-  const Value* availability = policies->Get(kPolicyIncognitoModeAvailability);
-  const Value* deprecated_enabled = policies->Get(kPolicyIncognitoEnabled);
+  const Value* availability = policies.Get(kPolicyIncognitoModeAvailability);
+  const Value* deprecated_enabled = policies.Get(kPolicyIncognitoEnabled);
   if (availability) {
     int int_value = IncognitoModePrefs::ENABLED;
     IncognitoModePrefs::Availability availability_enum_value;
@@ -792,11 +792,11 @@ DefaultSearchEncodingsPolicyHandler::~DefaultSearchEncodingsPolicyHandler() {
 }
 
 void DefaultSearchEncodingsPolicyHandler::ApplyPolicySettings(
-    const PolicyMap* policies, PrefValueMap* prefs) {
+    const PolicyMap& policies, PrefValueMap* prefs) {
   // The DefaultSearchProviderEncodings policy has type list, but the related
   // preference has type string. Convert one into the other here, using
   // ';' as a separator.
-  const Value* value = policies->Get(policy_type());
+  const Value* value = policies.Get(policy_type());
   const ListValue* list;
   if (!value || !value->GetAsList(&list))
     return;
@@ -837,7 +837,7 @@ DefaultSearchPolicyHandler::~DefaultSearchPolicyHandler() {
   STLDeleteElements(&handlers_);
 }
 
-bool DefaultSearchPolicyHandler::CheckPolicySettings(const PolicyMap* policies,
+bool DefaultSearchPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                                                      PolicyErrorMap* errors) {
   if (!CheckIndividualPolicies(policies, errors))
     return false;
@@ -857,7 +857,7 @@ bool DefaultSearchPolicyHandler::CheckPolicySettings(const PolicyMap* policies,
   }
 
   const Value* search_url =
-      policies->Get(kPolicyDefaultSearchProviderSearchURL);
+      policies.Get(kPolicyDefaultSearchProviderSearchURL);
   if (!search_url && AnyDefaultSearchPoliciesSpecified(policies)) {
     errors->AddError(kPolicyDefaultSearchProviderSearchURL,
                      IDS_POLICY_NOT_SPECIFIED_ERROR);
@@ -872,7 +872,7 @@ bool DefaultSearchPolicyHandler::CheckPolicySettings(const PolicyMap* policies,
   return true;
 }
 
-void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap* policies,
+void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                      PrefValueMap* prefs) {
   if (DefaultSearchProviderIsDisabled(policies)) {
     // If default search is disabled, the other fields are ignored.
@@ -887,7 +887,7 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap* policies,
   }
 
   const Value* search_url =
-      policies->Get(kPolicyDefaultSearchProviderSearchURL);
+      policies.Get(kPolicyDefaultSearchProviderSearchURL);
   // The search URL is required.
   if (!search_url)
     return;
@@ -924,7 +924,7 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap* policies,
 }
 
 bool DefaultSearchPolicyHandler::CheckIndividualPolicies(
-    const PolicyMap* policies,
+    const PolicyMap& policies,
     PolicyErrorMap* errors) {
   HandlerList::const_iterator handler = handlers_.begin();
   for ( ; handler != handlers_.end(); ++handler) {
@@ -935,24 +935,24 @@ bool DefaultSearchPolicyHandler::CheckIndividualPolicies(
 }
 
 bool DefaultSearchPolicyHandler::HasDefaultSearchPolicy(
-    const PolicyMap* policies,
+    const PolicyMap& policies,
     ConfigurationPolicyType policy_type) {
-  return policies->Get(policy_type) != NULL;
+  return policies.Get(policy_type) != NULL;
 }
 
 bool DefaultSearchPolicyHandler::AnyDefaultSearchPoliciesSpecified(
-    const PolicyMap* policies) {
+    const PolicyMap& policies) {
   for (size_t i = 0; i < arraysize(kDefaultSearchPolicyMap); ++i) {
-    if (policies->Get(kDefaultSearchPolicyMap[i].policy_type))
+    if (policies.Get(kDefaultSearchPolicyMap[i].policy_type))
       return true;
   }
   return false;
 }
 
 bool DefaultSearchPolicyHandler::DefaultSearchProviderIsDisabled(
-    const PolicyMap* policies) {
+    const PolicyMap& policies) {
   const Value* provider_enabled =
-      policies->Get(kPolicyDefaultSearchProviderEnabled);
+      policies.Get(kPolicyDefaultSearchProviderEnabled);
   bool enabled = true;
   return provider_enabled &&
          provider_enabled->GetAsBoolean(&enabled) &&
@@ -960,9 +960,9 @@ bool DefaultSearchPolicyHandler::DefaultSearchProviderIsDisabled(
 }
 
 bool DefaultSearchPolicyHandler::DefaultSearchURLIsValid(
-    const PolicyMap* policies) {
+    const PolicyMap& policies) {
   const Value* search_url =
-      policies->Get(kPolicyDefaultSearchProviderSearchURL);
+      policies.Get(kPolicyDefaultSearchProviderSearchURL);
   if (!search_url)
     return false;
 
@@ -993,7 +993,7 @@ ProxyPolicyHandler::ProxyPolicyHandler() {
 ProxyPolicyHandler::~ProxyPolicyHandler() {
 }
 
-bool ProxyPolicyHandler::CheckPolicySettings(const PolicyMap* policies,
+bool ProxyPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                                              PolicyErrorMap* errors) {
   const Value* mode = GetProxyPolicyValue(policies, kPolicyProxyMode);
   const Value* server = GetProxyPolicyValue(policies, kPolicyProxyServer);
@@ -1048,7 +1048,7 @@ bool ProxyPolicyHandler::CheckPolicySettings(const PolicyMap* policies,
   return true;
 }
 
-void ProxyPolicyHandler::ApplyPolicySettings(const PolicyMap* policies,
+void ProxyPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                              PrefValueMap* prefs) {
   const Value* mode = GetProxyPolicyValue(policies, kPolicyProxyMode);
   const Value* server = GetProxyPolicyValue(policies, kPolicyProxyServer);
@@ -1129,8 +1129,8 @@ void ProxyPolicyHandler::ApplyPolicySettings(const PolicyMap* policies,
 }
 
 const Value* ProxyPolicyHandler::GetProxyPolicyValue(
-    const PolicyMap* policies, ConfigurationPolicyType policy) {
-  const Value* value = policies->Get(policy);
+    const PolicyMap& policies, ConfigurationPolicyType policy) {
+  const Value* value = policies.Get(policy);
   std::string tmp;
   if (!value ||
       value->IsType(Value::TYPE_NULL) ||
@@ -1142,7 +1142,7 @@ const Value* ProxyPolicyHandler::GetProxyPolicyValue(
   return value;
 }
 
-bool ProxyPolicyHandler::CheckProxyModeAndServerMode(const PolicyMap* policies,
+bool ProxyPolicyHandler::CheckProxyModeAndServerMode(const PolicyMap& policies,
                                                      PolicyErrorMap* errors,
                                                      std::string* mode_value) {
   const Value* mode = GetProxyPolicyValue(policies, kPolicyProxyMode);
@@ -1235,10 +1235,10 @@ JavascriptPolicyHandler::JavascriptPolicyHandler() {
 JavascriptPolicyHandler::~JavascriptPolicyHandler() {
 }
 
-bool JavascriptPolicyHandler::CheckPolicySettings(const PolicyMap* policies,
+bool JavascriptPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                                                   PolicyErrorMap* errors) {
-  const Value* javascript_enabled = policies->Get(kPolicyJavascriptEnabled);
-  const Value* default_setting = policies->Get(kPolicyDefaultJavaScriptSetting);
+  const Value* javascript_enabled = policies.Get(kPolicyJavascriptEnabled);
+  const Value* default_setting = policies.Get(kPolicyDefaultJavaScriptSetting);
 
   if (javascript_enabled && !javascript_enabled->IsType(Value::TYPE_BOOLEAN)) {
     errors->AddError(kPolicyJavascriptEnabled,
@@ -1269,10 +1269,10 @@ bool JavascriptPolicyHandler::CheckPolicySettings(const PolicyMap* policies,
   return true;
 }
 
-void JavascriptPolicyHandler::ApplyPolicySettings(const PolicyMap* policies,
+void JavascriptPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                   PrefValueMap* prefs) {
-  const Value* javascript_enabled = policies->Get(kPolicyJavascriptEnabled);
-  const Value* default_setting = policies->Get(kPolicyDefaultJavaScriptSetting);
+  const Value* javascript_enabled = policies.Get(kPolicyJavascriptEnabled);
+  const Value* default_setting = policies.Get(kPolicyDefaultJavaScriptSetting);
 
   int setting = CONTENT_SETTING_DEFAULT;
   if (default_setting)

@@ -13,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -76,14 +75,9 @@ void ConfigurationPolicyStatusKeeper::GetPoliciesFromProvider(
   if (!provider->Provide(&policies))
     DLOG(WARNING) << "Failed to get policy from provider.";
 
-  const ConfigurationPolicyHandler::HandlerList* handlers =
-      g_browser_process->browser_policy_connector()->
-          GetConfigurationPolicyHandlerList();
-
   PolicyErrorMap errors;
-  ConfigurationPolicyHandler::HandlerList::const_iterator handler;
-  for (handler = handlers->begin(); handler != handlers->end(); ++handler)
-    (*handler)->CheckPolicySettings(&policies, &errors);
+  g_browser_process->browser_policy_connector()->GetPoliciesAsPreferences(
+      policies, NULL, &errors);
 
   PolicyMap::const_iterator policy = policies.begin();
   for ( ; policy != policies.end(); ++policy) {

@@ -30,12 +30,12 @@ class ConfigurationPolicyHandler {
   // ConfigurationPolicyHandler can be applied and false otherwise. Fills
   // |errors| with error messages or warnings. |errors| may contain error
   // messages even when |CheckPolicySettings()| returns true.
-  virtual bool CheckPolicySettings(const PolicyMap* policies,
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
                                    PolicyErrorMap* errors) = 0;
 
   // Processes the policies handled by this ConfigurationPolicyHandler and sets
   // the appropriate preferences in |prefs|.
-  virtual void ApplyPolicySettings(const PolicyMap* policies,
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
                                    PrefValueMap* prefs) = 0;
 
   // Creates a new HandlerList with all the known handlers and returns it.

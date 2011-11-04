@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class PrefValueMap;
 class TestingBrowserProcess;
 class TokenService;
 
@@ -25,6 +26,8 @@ namespace policy {
 class CloudPolicyProvider;
 class CloudPolicySubsystem;
 class ConfigurationPolicyProvider;
+class PolicyErrorMap;
+class PolicyMap;
 class UserPolicyTokenCache;
 
 // Manages the lifecycle of browser-global policy infrastructure, such as the
@@ -109,8 +112,12 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   const CloudPolicyDataStore* GetDeviceCloudPolicyDataStore() const;
   const CloudPolicyDataStore* GetUserCloudPolicyDataStore() const;
 
-  const ConfigurationPolicyHandler::HandlerList*
-      GetConfigurationPolicyHandlerList() const;
+  // Translates |policies| to their corresponding preferences in |prefs|.
+  // Any errors found while processing the policies are stored in |errors|.
+  // |prefs| or |errors| can be NULL, and won't be filled in that case.
+  void GetPoliciesAsPreferences(const PolicyMap& policies,
+                                PrefValueMap* prefs,
+                                PolicyErrorMap* errors);
 
  private:
   friend class ::TestingBrowserProcess;
