@@ -30,7 +30,7 @@ vars = {
   "libvpx_revision": "107145",
   "ffmpeg_revision": "108357",
   "sfntly_revision": "98",
-  "skia_revision": "2596",
+  "skia_revision": "2600",
   "v8_revision": "9637",
   "webrtc_revision": "883",
   "jsoncpp_revision": "246",
