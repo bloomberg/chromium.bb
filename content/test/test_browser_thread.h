@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_TEST_BROWSER_BROWSER_THREAD_H_
-#define CONTENT_TEST_TEST_BROWSER_BROWSER_THREAD_H_
+#ifndef CONTENT_TEST_TEST_BROWSER_THREAD_H_
+#define CONTENT_TEST_TEST_BROWSER_THREAD_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -49,9 +50,11 @@ class TestBrowserThread {
   base::Thread* DeprecatedGetThreadObject();
 
  private:
-  scoped_ptr<BrowserThreadImpl> impl;
+  scoped_ptr<BrowserThreadImpl> impl_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestBrowserThread);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_TEST_BROWSER_BROWSER_THREAD_H_
+#endif  // CONTENT_TEST_TEST_BROWSER_THREAD_H_
