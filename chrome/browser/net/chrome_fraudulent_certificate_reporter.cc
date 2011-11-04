@@ -32,28 +32,6 @@ ChromeFraudulentCertificateReporter::~ChromeFraudulentCertificateReporter() {
   STLDeleteElements(&inflight_requests_);
 }
 
-// TODO(palmer): Move this to some globally-visible utility module.
-static bool DerToPem(const std::string& der_certificate, std::string* output) {
-  std::string b64_encoded;
-  if (!base::Base64Encode(der_certificate, &b64_encoded))
-    return false;
-
-  *output = "-----BEGIN CERTIFICATE-----\r\n";
-
-  size_t size = b64_encoded.size();
-  for (size_t i = 0; i < size; ) {
-    size_t todo = size - i;
-    if (todo > 64)
-      todo = 64;
-    *output += b64_encoded.substr(i, todo);
-    *output += "\r\n";
-    i += todo;
-  }
-
-  *output += "-----END CERTIFICATE-----\r\n";
-  return true;
-}
-
 static std::string BuildReport(
     const std::string& hostname,
     const net::SSLInfo& ssl_info) {
@@ -62,30 +40,13 @@ static std::string BuildReport(
   request.set_time_usec(now.ToInternalValue());
   request.set_hostname(hostname);
 
-  std::string der_encoded, pem_encoded;
-
-  net::X509Certificate* certificate = ssl_info.cert;
-  if (!net::X509Certificate::GetDEREncoded(certificate->os_cert_handle(),
-                                           &der_encoded) ||
-      !DerToPem(der_encoded, &pem_encoded)) {
-    LOG(ERROR) << "Could not PEM encode DER certificate";
+  std::vector<std::string> pem_encoded_chain;
+  if (!ssl_info.cert->GetPEMEncodedChain(&pem_encoded_chain)) {
+    LOG(ERROR) << "Could not get PEM encoded chain.";
   }
-
   std::string* cert_chain = request.mutable_cert_chain();
-  *cert_chain += pem_encoded;
-
-  const net::X509Certificate::OSCertHandles& intermediates =
-      certificate->GetIntermediateCertificates();
-  for (size_t i = 0; i < intermediates.size(); ++i) {
-    if (!net::X509Certificate::GetDEREncoded(intermediates[i],
-                                             &der_encoded) ||
-        !DerToPem(der_encoded, &pem_encoded)) {
-      LOG(ERROR) << "Could not PEM encode DER certificate";
-      continue;
-    }
-
-    *cert_chain += pem_encoded;
-  }
+  for (size_t i = 0; i < pem_encoded_chain.size(); ++i)
+    *cert_chain += pem_encoded_chain[i];
 
   std::string out;
   request.SerializeToString(&out);
