@@ -171,7 +171,7 @@ be available for now. -->
           Chromium Frame Update.
         </message>
         <message name="IDS_VERSIONMISMATCH">
-          Chromium Frame has been updated. Please relaunch your browser. Chrome version: <ph name="TODO_0001">%ls<ex>TODO</ex></ph>, Chromium Frame version: <ph name="TODO_0002">%ls<ex>TODO</ex></ph>
+          Chromium Frame has been updated. Please relaunch your browser. Chromium version: <ph name="TODO_0001">%ls<ex>TODO</ex></ph>, Chromium Frame version: <ph name="TODO_0002">%ls<ex>TODO</ex></ph>
         </message>
         <message name="IDS_VERSIONUNKNOWN">
           Unknown version.
@@ -290,7 +290,7 @@ be available for now. -->
         Welcome to Chromium
       </message>
       <message name="IDS_NTP4_INTRO_MESSAGE" desc="Message explaning the navigation bar at the bottom of the new NTP.">
-        Chromium's New Tab page has been remodeled. Switch between sections by clicking these labels. Chrome will remember your preference for next time.
+        Chromium's New Tab page has been remodeled. Switch between sections by clicking these labels. Chromium will remember your preference for next time.
       </message>
       <if expr="not pp_ifdef('chromeos')">
         <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
