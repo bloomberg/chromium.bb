@@ -37,9 +37,6 @@ readonly NACL_ROOT="$(pwd)"
 SetScriptPath "${NACL_ROOT}/pnacl/build.sh"
 SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
 
-# NOTE: gcc and llvm have to be synchronized
-#       we have chosen toolchains which both are based on gcc-4.2.1
-
 # For different levels of make parallelism change this in your env
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
 readonly PNACL_MERGE_TESTING=${PNACL_MERGE_TESTING:-false}
@@ -108,8 +105,7 @@ readonly THIRD_PARTY_MPC="${NACL_ROOT}/../third_party/mpc/${MPC_VER}.tar.gz"
 readonly PNACL_HG_ROOT="${NACL_ROOT}/hg"
 readonly TC_SRC_UPSTREAM="${PNACL_HG_ROOT}/upstream"
 readonly TC_SRC_LLVM="${TC_SRC_UPSTREAM}/llvm"
-readonly TC_SRC_LLVM_GCC="${TC_SRC_UPSTREAM}/llvm-gcc"
-readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/libstdc++-v3"
+readonly TC_SRC_LIBSTDCPP="${TC_SRC_UPSTREAM}/llvm-gcc/libstdc++-v3"
 readonly TC_SRC_BINUTILS="${PNACL_HG_ROOT}/binutils"
 readonly TC_SRC_NEWLIB="${PNACL_HG_ROOT}/newlib"
 readonly TC_SRC_COMPILER_RT="${PNACL_HG_ROOT}/compiler-rt"
@@ -117,7 +113,6 @@ readonly TC_SRC_COMPILER_RT="${PNACL_HG_ROOT}/compiler-rt"
 # LLVM sources (svn)
 readonly PNACL_SVN_ROOT="${NACL_ROOT}/hg"
 readonly TC_SRC_LLVM_MASTER="${PNACL_SVN_ROOT}/llvm-master"
-readonly TC_SRC_LLVM_GCC_MASTER="${PNACL_SVN_ROOT}/llvm-gcc-master"
 readonly TC_SRC_CLANG="${PNACL_SVN_ROOT}/clang"
 readonly TC_SRC_DRAGONEGG="${PNACL_SVN_ROOT}/dragonegg"
 
@@ -144,11 +139,10 @@ readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib-trunk/newlib/libc/include"
 
 readonly TC_BUILD="${NACL_ROOT}/toolchain/hg-build-${LIBMODE}"
 readonly TC_BUILD_LLVM="${TC_BUILD}/llvm"
-readonly TC_BUILD_LLVM_GCC="${TC_BUILD}/llvm-gcc"
 readonly TC_BUILD_BINUTILS="${TC_BUILD}/binutils"
 readonly TC_BUILD_BINUTILS_LIBERTY="${TC_BUILD}/binutils-liberty"
 readonly TC_BUILD_NEWLIB="${TC_BUILD}/newlib"
-readonly TC_BUILD_LIBSTDCPP="${TC_BUILD_LLVM_GCC}-arm/libstdcpp"
+readonly TC_BUILD_LIBSTDCPP="${TC_BUILD}/libstdcpp"
 readonly TC_BUILD_COMPILER_RT="${TC_BUILD}/compiler_rt"
 readonly TC_BUILD_GCC="${TC_BUILD}/gcc"
 readonly TC_BUILD_GMP="${TC_BUILD}/gmp"
@@ -182,7 +176,6 @@ readonly INSTALL_PKG="${INSTALL_ROOT}/pkg"
 readonly NEWLIB_INSTALL_DIR="${INSTALL_PKG}/newlib"
 readonly GLIBC_INSTALL_DIR="${INSTALL_PKG}/glibc"
 readonly LLVM_INSTALL_DIR="${INSTALL_PKG}/llvm"
-readonly LLVM_GCC_INSTALL_DIR="${INSTALL_PKG}/llvm-gcc"
 readonly GCC_INSTALL_DIR="${INSTALL_PKG}/gcc"
 readonly GMP_INSTALL_DIR="${INSTALL_PKG}/gmp"
 readonly MPFR_INSTALL_DIR="${INSTALL_PKG}/mpfr"
@@ -193,7 +186,6 @@ readonly BFD_PLUGIN_DIR="${BINUTILS_INSTALL_DIR}/lib/bfd-plugins"
 readonly SYSROOT_DIR="${INSTALL_ROOT}/sysroot"
 readonly LDSCRIPTS_DIR="${INSTALL_ROOT}/ldscripts"
 readonly FAKE_INSTALL_DIR="${INSTALL_PKG}/fake"
-readonly LLVM_GCC_VER="4.2.1"
 
 # Location of PNaCl gcc/g++/as
 readonly PNACL_DGCC="${INSTALL_BIN}/pnacl-dgcc"
@@ -212,7 +204,7 @@ readonly PNACL_STRIP="${INSTALL_BIN}/pnacl-strip"
 readonly ILLEGAL_TOOL="${INSTALL_BIN}"/pnacl-illegal
 
 # Set the default frontend.
-# Can be default, clang, llvm-gcc, or dragonegg
+# Can be default, clang, or dragonegg
 # "Default" uses whatever is known to work, preferring Clang by default.
 readonly DEFAULT_FRONTEND="clang"
 readonly FRONTEND="${FRONTEND:-default}"
@@ -249,7 +241,6 @@ readonly COMPILER_RT_REV=1a3a6ffb31ea
 
 readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-143276}
 readonly LLVM_MASTER_REV=${LLVM_PROJECT_REV}
-readonly LLVM_GCC_MASTER_REV=${LLVM_PROJECT_REV}
 readonly CLANG_REV=${LLVM_PROJECT_REV}
 readonly DRAGONEGG_REV=${LLVM_PROJECT_REV}
 
@@ -261,12 +252,9 @@ readonly REPO_COMPILER_RT="nacl-llvm-branches.compiler-rt"
 
 # LLVM repos (svn)
 readonly REPO_LLVM_MASTER="http://llvm.org/svn/llvm-project/llvm/trunk"
-readonly REPO_LLVM_GCC_MASTER="http://llvm.org/svn/llvm-project/llvm-gcc-4.2/trunk"
 readonly REPO_CLANG="http://llvm.org/svn/llvm-project/cfe/trunk"
 readonly REPO_DRAGONEGG="http://llvm.org/svn/llvm-project/dragonegg/trunk"
 
-# TODO(espindola): This should be ${CXX:-}, but llvm-gcc's configure has a
-# bug that brakes the build if we do that.
 CC=${CC:-gcc}
 CXX=${CXX:-g++}
 if ${HOST_ARCH_X8632} ; then
@@ -535,11 +523,6 @@ svn-update-llvm-master() {
   svn-update-common "llvm-master" ${LLVM_MASTER_REV} "${TC_SRC_LLVM_MASTER}"
 }
 
-svn-update-llvm-gcc-master() {
-  svn-update-common "llvm-gcc-master" ${LLVM_GCC_MASTER_REV} \
-                    "${TC_SRC_LLVM_GCC_MASTER}"
-}
-
 svn-update-clang() {
   svn-update-common "clang" ${CLANG_REV} "${TC_SRC_CLANG}"
 }
@@ -621,11 +604,6 @@ hg-checkout-upstream() {
 
 svn-checkout-llvm-master() {
   svn-checkout "${REPO_LLVM_MASTER}" "${TC_SRC_LLVM_MASTER}" ${LLVM_MASTER_REV}
-}
-
-svn-checkout-llvm-gcc-master() {
-  svn-checkout "${REPO_LLVM_GCC_MASTER}" "${TC_SRC_LLVM_GCC_MASTER}" \
-               ${LLVM_GCC_MASTER_REV}
 }
 
 svn-checkout-clang() {
@@ -730,7 +708,7 @@ download-toolchains() {
 
 libc() {
   if ${LIBMODE_NEWLIB} ; then
-    # TODO(pdox): Why is this step needed?
+    # TODO(pdox): Why is sysroot needed? What uses it?
     sysroot
     newlib
   elif ${LIBMODE_GLIBC} ; then
@@ -795,13 +773,6 @@ everything-post-hg() {
   binutils
   llvm
   driver
-
-  # we do not neeed to build the compiler anymore but we build
-  # libstdc++ and libgcc_eh from the source which *may* require
-  # this step.
-  # This will go away completely when we use gcc 4.6 to provide
-  # these libraries.
-  llvm-gcc arm
 
   libs
 
@@ -899,7 +870,6 @@ status() {
 
   status-helper "BINUTILS"          binutils
   status-helper "LLVM"              llvm
-  status-helper "GCC-STAGE1"        llvm-gcc
 
   status-helper "NEWLIB"            newlib
   status-helper "LIBSTDCPP"         libstdcpp
@@ -1036,8 +1006,10 @@ prune() {
   echo "removing some static libs we do not have any use for"
   rm  -f "${NEWLIB_INSTALL_DIR}"/lib/lib*.a
 
-  echo "stripping binaries (llvm-gcc, llvm, binutils)"
+  echo "stripping binaries (binutils)"
   strip "${BINUTILS_INSTALL_DIR}"/bin/*
+
+  echo "stripping binaries (llvm)"
   if ! strip "${LLVM_INSTALL_DIR}"/bin/* ; then
     echo "NOTE: some failures during stripping are expected"
   fi
@@ -1162,7 +1134,6 @@ llvm-configure() {
              --enable-targets=x86,x86_64,arm \
              --target=${CROSS_TARGET_ARM} \
              --prefix="${LLVM_INSTALL_DIR}" \
-             --with-llvmgccdir="${LLVM_GCC_INSTALL_DIR}" \
              ${LLVM_EXTRA_OPTIONS}
 
 
@@ -1581,9 +1552,7 @@ libgcc_eh() {
   cp -a "${PNACL_ROOT}"/scripts/libgcc-tconfig.h "${objdir}"/gcc/tconfig.h
   touch "${objdir}"/gcc/tm.h
 
-  # Install unwind.h
-  cp "${TC_SRC_GCC}"/gcc/unwind-generic.h \
-     ${LLVM_INSTALL_DIR}/lib/clang/3.1/include/unwind.h
+  install-unwind-header
 
   mkdir -p "${subdir}"
   spushd "${subdir}"
@@ -1621,106 +1590,9 @@ libgcc_eh() {
   cp ${subdir}/libgcc_eh.a "${INSTALL_LIB}-${arch}"
 }
 
-
-#########################################################################
-#     < GCC STAGE 1 >
-#########################################################################
-
-# Build "pregcc" which is a gcc that does not depend on having glibc/newlib
-# already compiled. This also generates some important headers (confirm this).
-#
-# NOTE: depends on newlib source being set up so we can use it to set
-#       up a sysroot.
-#
-
-
-LLVM_GCC_SETUP=false
-llvm-gcc-setup() {
-  # If this is an internal invocation, don't setup again.
-  if ${LLVM_GCC_SETUP} && [ $# -eq 0 ]; then
-    return 0
-  fi
-
-  if [ $# -ne 1 ] ; then
-    Fatal "Please specify architecture: x86-32, x86-64, arm"
-  fi
-  local arch=$1
-
-  case ${arch} in
-    arm) LLVM_GCC_TARGET=${CROSS_TARGET_ARM} ;;
-    x86-32) LLVM_GCC_TARGET=${CROSS_TARGET_X86_32} ;;
-    x86-64) LLVM_GCC_TARGET=${CROSS_TARGET_X86_64} ;;
-    *) Fatal "Unrecognized architecture ${arch}" ;;
-  esac
-  LLVM_GCC_SETUP=true
-  LLVM_GCC_ARCH=${arch}
-  LLVM_GCC_BUILD_DIR="${TC_BUILD_LLVM_GCC}-${LLVM_GCC_ARCH}"
-  return 0
-}
-
-#+-------------------------------------------------------------------------
-#+ llvm-gcc             - configure pre-gcc and install headers
-llvm-gcc() {
-  llvm-gcc-setup "$@"
-  StepBanner "LLVM-GCC (HOST) for ${LLVM_GCC_ARCH}"
-
-  if llvm-gcc-needs-configure; then
-    llvm-gcc-clean
-    llvm-gcc-configure
-  else
-    SkipBanner "LLVM-GCC ${LLVM_GCC_ARCH}" "configure"
-  fi
-
-  # see comment below
-  llvm-gcc-make
-  # this is only used for dragon egg
-  install-pre-gcc-headers
-}
-
-install-pre-gcc-headers() {
-  # NOTE: this is only used for draggon egg and should be moved to 4.6.2 or later
-  # TODO(robertm): remove unneeed cruft such as arm and ppc intrinsics.
-  #                also see whether the header replication can be eliminated
-  llvm-gcc-setup "$@"
-  INSTALL="/usr/bin/install -c -m 644"
-  dst="${LLVM_GCC_INSTALL_DIR}/lib/gcc/arm-none-linux-gnueabi/4.2.1"
-  mkdir -p ${dst}/
-  mkdir -p ${dst}/include
-  mkdir -p ${dst}/install-tools
-  mkdir -p ${dst}/install-tools/include
-  for file in ${TC_SRC_LLVM_GCC}/gcc/ginclude/decfloat.h \
-              ${TC_SRC_LLVM_GCC}/gcc/ginclude/float.h \
-              ${TC_SRC_LLVM_GCC}/gcc/ginclude/iso646.h \
-              ${TC_SRC_LLVM_GCC}/gcc/ginclude/ppc_intrinsics.h \
-              ${TC_SRC_LLVM_GCC}/gcc/ginclude/stdarg.h \
-              ${TC_SRC_LLVM_GCC}/gcc/ginclude/stdbool.h \
-              ${TC_SRC_LLVM_GCC}/gcc/ginclude/stddef.h \
-              ${TC_SRC_LLVM_GCC}/gcc/ginclude/tgmath.h \
-              ${TC_SRC_LLVM_GCC}/gcc/ginclude/varargs.h \
-              ${TC_SRC_LLVM_GCC}/gcc/config/arm/mmintrin.h \
-              ${TC_SRC_LLVM_GCC}/gcc/config/arm/arm_neon.h \
-              ${TC_SRC_LLVM_GCC}/gcc/config/arm/arm_neon_std.h \
-              ${TC_SRC_LLVM_GCC}/gcc/config/arm/arm_neon_gcc.h; do
-    realfile=$(basename ${file})
-    ${INSTALL} ${file} ${dst}/install-tools/include/${realfile}
-    ${INSTALL} ${file} ${dst}/include/${realfile}
-  done
-
-  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/unwind-generic.h ${dst}/install-tools/include/unwind.h
-  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/unwind-generic.h ${dst}/include/unwind.h
-
-  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/gsyslimits.h ${dst}/install-tools/gsyslimits.h
-  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/gsyslimits.h ${dst}/include/syslimits.h
-
-  # NOTE: this header is usually found in the build dir as gcc/xlimit.h
-  #       but is identical to the source dir'gcc/glimits.h
-  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/glimits.h ${dst}/install-tools/include/limits.h
-  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/glimits.h ${dst}/include/limits.h
-}
-
 #+ sysroot               - setup initial sysroot
 sysroot() {
-  StepBanner "LLVM-GCC" "Setting up initial sysroot"
+  StepBanner "SYSROOT" "Setting up initial sysroot"
 
   local sys_include="${SYSROOT_DIR}/include"
   local sys_include2="${SYSROOT_DIR}/sys-include"
@@ -1731,156 +1603,14 @@ sysroot() {
   cp -r "${NEWLIB_INCLUDE_DIR}"/* "${sys_include}"
 }
 
-#+ llvm-gcc-clean      - Clean gcc stage 1
-llvm-gcc-clean() {
-  llvm-gcc-setup "$@"
-  StepBanner "LLVM-GCC" "Clean"
-  local objdir="${LLVM_GCC_BUILD_DIR}"
-  rm -rf "${objdir}"
-}
-
-llvm-gcc-needs-configure() {
-  llvm-gcc-setup "$@"
-  speculative-check "llvm" && return 0
-  ts-newer-than "${TC_BUILD_LLVM}" \
-                "${LLVM_GCC_BUILD_DIR}" && return 0
-  [ ! -f "${LLVM_GCC_BUILD_DIR}/config.status" ]
-  return $?
-}
-
-#+ llvm-gcc-configure  - Configure GCC stage 1
-llvm-gcc-configure() {
-  llvm-gcc-setup "$@"
-  StepBanner "LLVM-GCC" "Configure ${LLVM_GCC_TARGET}"
-
-  local srcdir="${TC_SRC_LLVM_GCC}"
-  local objdir="${LLVM_GCC_BUILD_DIR}"
-
-  mkdir -p "${objdir}"
-  spushd "${objdir}"
-
-  local config_opts=""
-  local flags=""
-  if ${LIBMODE_NEWLIB}; then
-    flags+="--with-newlib"
-  fi
-
-  RunWithLog llvm-pregcc-${LLVM_GCC_ARCH}.configure \
-      env -i PATH=/usr/bin/:/bin \
-             CC="${CC}" \
-             CXX="${CXX}" \
-             CFLAGS="-Dinhibit_libc" \
-             AR_FOR_TARGET="${PNACL_AR}" \
-             RANLIB_FOR_TARGET="${PNACL_RANLIB}" \
-             NM_FOR_TARGET="${PNACL_NM}" \
-             ${srcdir}/configure \
-               --prefix="${LLVM_GCC_INSTALL_DIR}" \
-               --enable-llvm="${LLVM_INSTALL_DIR}" \
-               ${flags} \
-               --disable-libmudflap \
-               --disable-decimal-float \
-               --disable-libssp \
-               --disable-libgomp \
-               --disable-multilib \
-               --enable-languages=c,c++ \
-               --disable-threads \
-               --disable-libstdcxx-pch \
-               --disable-shared \
-               --without-headers \
-               ${config_opts} \
-               --target=${LLVM_GCC_TARGET}
-
-  spopd
-}
-
-# TODO(robertm): this still builds the pre-gcccompiler.
-#                we only need it to configure enough to be able
-#                to build libgcc_eh but it is hard to separate the two
-#                Switching to the gcc 4.6 should solve this problem.
-llvm-gcc-make() {
-  llvm-gcc-setup "$@"
-  local srcdir="${TC_SRC_LLVM_GCC}"
-  local objdir="${LLVM_GCC_BUILD_DIR}"
-  spushd ${objdir}
-
-  StepBanner "LLVM-GCC" "Make (Stage 1)"
-
-  ts-touch-open "${objdir}"
-
-  RunWithLog llvm-pregcc-${LLVM_GCC_ARCH}.make \
-       env -i PATH=/usr/bin/:/bin \
-              CC="${CC}" \
-              CXX="${CXX}" \
-              CFLAGS="-Dinhibit_libc" \
-              make ${MAKE_OPTS} all-gcc
-
-  ts-touch-commit "${objdir}"
-
-  spopd
-}
-
-#########################################################################
-#########################################################################
-#     < LIBGCC_EH >
-#########################################################################
-#########################################################################
-
 install-unwind-header() {
   # TODO(pdox):
   # We need to establish an unwind ABI, since this is part of the ABI
   # exposed to the bitcode by the translator. This header should not vary
   # across compilers or C libraries.
   INSTALL="/usr/bin/install -c -m 644"
-  ${INSTALL} ${TC_SRC_LLVM_GCC}/gcc/unwind-generic.h \
+  ${INSTALL} ${TC_SRC_GCC}/gcc/unwind-generic.h \
              ${LLVM_INSTALL_DIR}/lib/clang/3.1/include/unwind.h
-}
-
-#+ build-libgcc_eh - build/install libgcc_eh
-build-libgcc_eh() {
-  # TODO(pdox): This process needs some major renovation.
-  # We are using the llvm-gcc ARM build directory, but varying '-arch'
-  # to get different versions of libgcc_eh.
-  # NOTE: For simplicity we piggyback the libgcc_eh build onto a preconfigured
-  #       objdir. So, to be safe, you have to run gcc-stage1-make first
-
-  install-unwind-header
-
-  local arch=$1
-  local srcdir="${TC_SRC_LLVM_GCC}"
-  local objdir="${TC_BUILD_LLVM_GCC}-arm"
-  spushd "${objdir}"/gcc
-  StepBanner "libgcc_eh-${arch}" "cleaning"
-  RunWithLog libgcc_eh.clean \
-      env -i PATH=/usr/bin/:/bin \
-             make clean-target-libgcc
-  rm -f "${objdir}"/gcc/libgcc_eh.a
-
-  # NOTE: usually gcc/libgcc.mk is generate and invoked implicitly by
-  #       gcc/Makefile.
-  #       Since we are calling it directly we need to make up for some
-  #       missing flags, e.g.  include paths ann defines like
-  #       'ATTRIBUTE_UNUSED' which is used to mark unused function
-  #       parameters.
-  #       The arguments were gleaned from build logs.
-  StepBanner "libgcc_eh-${arch}" "building ($1)"
-  local flags
-  flags="-arch ${arch} --pnacl-bias=${arch} --pnacl-allow-translate"
-  flags+=" -DATTRIBUTE_UNUSED= -DHOST_BITS_PER_INT=32 -Dinhibit_libc"
-  flags+=" -DIN_GCC -DCROSS_DIRECTORY_STRUCTURE "
-
-  setup-libstdcpp-env
-  RunWithLog libgcc_eh.${arch}.make \
-       env -i PATH=/usr/bin/:/bin \
-              "${STD_ENV_FOR_LIBSTDCPP[@]}" \
-              "INCLUDES=-I${srcdir}/include -I${srcdir}/gcc -I." \
-              "LIBGCC2_CFLAGS=${flags}" \
-              "AR_CREATE_FOR_TARGET=${PNACL_AR} rc" \
-              make ${MAKE_OPTS} -f libgcc.mk libgcc_eh.a
-  spopd
-
-  StepBanner "libgcc_eh-${arch}" "installing"
-  mkdir -p "${INSTALL_LIB}-${arch}"
-  cp "${objdir}"/gcc/libgcc_eh.a "${INSTALL_LIB}-${arch}"
 }
 
 #########################################################################
@@ -1955,8 +1685,7 @@ libstdcpp-clean() {
 }
 
 libstdcpp-needs-configure() {
-  speculative-check "llvm-gcc" && return 0
-  ts-newer-than "${TC_BUILD_LLVM_GCC}-${CROSS_TARGET_ARM}" \
+  ts-newer-than "${TC_BUILD_LLVM}" \
                 "${TC_BUILD_LIBSTDCPP}" && return 0
   [ ! -f "${TC_BUILD_LIBSTDCPP}/config.status" ]
   return #?
@@ -1966,9 +1695,10 @@ libstdcpp-configure() {
   StepBanner "LIBSTDCPP" "Configure"
   local srcdir="${TC_SRC_LIBSTDCPP}"
   local objdir="${TC_BUILD_LIBSTDCPP}"
+  local subdir="${TC_BUILD_LIBSTDCPP}/pnacl-target"
 
-  mkdir -p "${objdir}"
-  spushd "${objdir}"
+  mkdir -p "${subdir}"
+  spushd "${subdir}"
 
   local flags=""
   if ${LIBMODE_NEWLIB}; then
@@ -1981,7 +1711,7 @@ libstdcpp-configure() {
   fi
 
   setup-libstdcpp-env
-  RunWithLog llvm-gcc.configure_libstdcpp \
+  RunWithLog libstdcpp.configure \
       env -i PATH=/usr/bin/:/bin \
         "${STD_ENV_FOR_LIBSTDCPP[@]}" \
         "${srcdir}"/configure \
@@ -2012,9 +1742,9 @@ libstdcpp-make() {
 
   ts-touch-open "${objdir}"
 
-  spushd "${objdir}"
+  spushd "${objdir}/pnacl-target"
   setup-libstdcpp-env
-  RunWithLog llvm-gcc.make_libstdcpp \
+  RunWithLog libstdcpp.make \
     env -i PATH=/usr/bin/:/bin \
         make \
         "${STD_ENV_FOR_LIBSTDCPP[@]}" \
@@ -2028,20 +1758,20 @@ libstdcpp-install() {
   StepBanner "LIBSTDCPP" "Install"
   local objdir="${TC_BUILD_LIBSTDCPP}"
 
-  spushd "${objdir}"
+  spushd "${objdir}/pnacl-target"
 
   # install headers (=install-data)
   # for good measure make sure we do not keep any old headers
   rm -rf "${INSTALL_ROOT}/include/c++"
   setup-libstdcpp-env
-  RunWithLog llvm-gcc.install_libstdcpp \
+  RunWithLog libstdcpp.install \
     make \
     "${STD_ENV_FOR_LIBSTDCPP[@]}" \
     ${MAKE_OPTS} install-data
 
   # Install bitcode library
   mkdir -p "${INSTALL_LIB}"
-  cp "${objdir}/src/.libs/libstdc++.a" "${INSTALL_LIB}"
+  cp "${objdir}/pnacl-target/src/.libs/libstdc++.a" "${INSTALL_LIB}"
 
   spopd
 }
@@ -2904,9 +2634,8 @@ newlib-clean() {
 }
 
 newlib-needs-configure() {
-  speculative-check "llvm-gcc" && return 0
-  ts-newer-than "${TC_BUILD_LLVM_GCC}-${CROSS_TARGET_ARM}" \
-                   "${TC_BUILD_NEWLIB}" && return 0
+  ts-newer-than "${TC_BUILD_LLVM}" \
+                "${TC_BUILD_NEWLIB}" && return 0
 
   [ ! -f "${TC_BUILD_NEWLIB}/config.status" ]
   return #?

@@ -33,7 +33,6 @@ readonly MERGE_LOG_FILE="${NACL_ROOT}/merge.log"
 readonly TC_SRC="$(pwd)/hg"
 readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
 readonly TC_SRC_LLVM_MASTER="${TC_SRC}/llvm-master"
-readonly TC_SRC_LLVM_GCC_MASTER="${TC_SRC}/llvm-gcc-master"
 
 readonly PREDIFF="${TC_SRC}/prediff"
 readonly POSTDIFF="${TC_SRC}/postdiff"
@@ -82,8 +81,6 @@ set-master-revision() {
   export LLVM_PROJECT_REV=${MERGE_REVISION}
   pnacl-build svn-checkout-llvm-master
   pnacl-build svn-update-llvm-master
-  pnacl-build svn-checkout-llvm-gcc-master
-  pnacl-build svn-update-llvm-gcc-master
 }
 
 get-upstream() {
@@ -150,7 +147,6 @@ final-banner() {
 
 assert-clean() {
   svn-assert-no-changes "${TC_SRC_LLVM_MASTER}"
-  svn-assert-no-changes "${TC_SRC_LLVM_GCC_MASTER}"
 
   hg-assert-no-changes "${TC_SRC_UPSTREAM}"
   hg-assert-no-outgoing "${TC_SRC_UPSTREAM}"
@@ -178,7 +174,6 @@ clean-upstream() {
     hg rollback
   fi
   rm -rf llvm
-  rm -rf llvm-gcc
   hg update -C ${UPSTREAM_BRANCH}
   spopd
 
@@ -189,12 +184,8 @@ clean-upstream() {
 #+ check-revisions       - Make sure the repostiory revision is set correctly.
 check-revisions() {
   local llvm_rev=$(svn-get-revision "${TC_SRC_LLVM_MASTER}")
-  local llvm_gcc_rev=$(svn-get-revision "${TC_SRC_LLVM_GCC_MASTER}")
   if [ "${llvm_rev}" -ne "${MERGE_REVISION}" ]; then
     Fatal "llvm-master revision does not match"
-  fi
-  if [ "${llvm_gcc_rev}" -ne "${MERGE_REVISION}" ]; then
-    Fatal "llvm-gcc-master revision does not match"
   fi
 
   # Make sure MERGE_REVISION >= upstream_vendor_rev
@@ -242,9 +233,6 @@ commit-vendor() {
   StepBanner "Exporting svn to hg"
   rm -rf "${TC_SRC_UPSTREAM}/llvm"
   svn export "${TC_SRC_LLVM_MASTER}" "${TC_SRC_UPSTREAM}/llvm"
-
-  rm -rf "${TC_SRC_UPSTREAM}/llvm-gcc"
-  svn export "${TC_SRC_LLVM_GCC_MASTER}" "${TC_SRC_UPSTREAM}/llvm-gcc"
 
   StepBanner "Updating hg file list"
   spushd "${TC_SRC_UPSTREAM}"
