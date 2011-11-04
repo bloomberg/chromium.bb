@@ -16,8 +16,8 @@ cr.define('options.system.bluetooth', function() {
   Constants.DEVICE_TYPE = {
     COMPUTER: 'computer',
     HEADSET: 'headset',
-    KEYBOARD: 'keyboard',
-    MOUSE: 'mouse',
+    KEYBOARD: 'input-keyboard',
+    MOUSE: 'input-mouse',
     PHONE: 'phone',
   };
 

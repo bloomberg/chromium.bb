@@ -55,8 +55,8 @@ html[dir=rtl] .touchpad-sensitivity-more {
 }
 
 .bluetooth-headset,
-.bluetooth-keyboard,
-.bluetooth-mouse {
+.bluetooth-input-keyboard,
+.bluetooth-input-mouse {
   background-repeat: no-repeat;
 }
 
@@ -64,10 +64,10 @@ html[dir=rtl] .touchpad-sensitivity-more {
   background-image: url("headset.png");
 }
 
-.bluetooth-keyboard {
+.bluetooth-input-keyboard {
   background-image: url("keyboard.png");
 }
 
-.bluetooth-mouse {
+.bluetooth-input-mouse {
   background-image: url("mouse.png");
 }

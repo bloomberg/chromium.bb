@@ -233,11 +233,11 @@ void BluetoothOptionsHandler::GenerateFakeDeviceList() {
   GenerateFakeDiscoveredDevice(
     "Fake Wireless Keyboard",
     "01-02-03-04-05-06",
-    "keyboard");
+    "input-keyboard");
   GenerateFakeDiscoveredDevice(
     "Fake Wireless Mouse",
     "02-03-04-05-06-01",
-    "mouse");
+    "input-mouse");
   GenerateFakeDiscoveredDevice(
     "Fake Wireless Headset",
     "03-04-05-06-01-02",
