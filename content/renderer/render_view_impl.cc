@@ -1686,6 +1686,10 @@ void RenderViewImpl::UpdateTargetURL(const GURL& url,
     pending_target_url_ = latest_url;
     target_url_status_ = TARGET_PENDING;
   } else {
+    // URLs larger than |content::kMaxURLChars| cannot be sent through IPC -
+    // see |ParamTraits<GURL>|.
+    if (latest_url.possibly_invalid_spec().size() > content::kMaxURLChars)
+      latest_url = GURL();
     Send(new ViewHostMsg_UpdateTargetURL(routing_id_, page_id_, latest_url));
     target_url_ = latest_url;
     target_url_status_ = TARGET_INFLIGHT;
