@@ -62,8 +62,9 @@ TEST_F(IqSenderTest, SendIq) {
       .WillOnce(Return(kStanzaId));
   EXPECT_CALL(signal_strategy_, SendStanza(_))
       .WillOnce(DoAll(SaveArg<0>(&sent_stanza), Return(true)));
-  sender_->SendIq(kType, kTo, iq_body, base::Bind(
-      &MockCallback::OnReply, base::Unretained(&callback_)));
+  scoped_ptr<IqRequest> request(
+      sender_->SendIq(kType, kTo, iq_body, base::Bind(
+          &MockCallback::OnReply, base::Unretained(&callback_))));
 
   std::string expected_xml_string =
       base::StringPrintf(

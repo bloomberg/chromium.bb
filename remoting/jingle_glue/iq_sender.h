@@ -37,14 +37,15 @@ class IqSender : public SignalStrategy::Listener {
   // received. Destroy the returned IqRequest to cancel the callback.
   // Takes ownership of |stanza|. Caller must take ownership of the
   // result. Result must be destroyed before sender is destroyed.
-  IqRequest* SendIq(buzz::XmlElement* stanza, const ReplyCallback& callback);
+  IqRequest* SendIq(buzz::XmlElement* stanza,
+                    const ReplyCallback& callback) WARN_UNUSED_RESULT;
 
   // Same as above, but also formats the message. Takes ownership of
   // |iq_body|.
   IqRequest* SendIq(const std::string& type,
                     const std::string& addressee,
                     buzz::XmlElement* iq_body,
-                    const ReplyCallback& callback);
+                    const ReplyCallback& callback) WARN_UNUSED_RESULT;
 
   // SignalStrategy::Listener implementation.
   virtual bool OnIncomingStanza(const buzz::XmlElement* stanza) OVERRIDE;

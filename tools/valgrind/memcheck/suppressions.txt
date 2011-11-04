@@ -5186,14 +5186,6 @@
    fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IM17PluginLoaderPosixFvvE13scoped_refptrIS3_EEES5_E8DoInvokeEPNS0_18InvokerStorageBaseE
 }
 {
-   bug_102983
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8remoting8IqSender6SendIqEPN4buzz10XmlElementERKN4base8CallbackIFvPKS2_EEE
-   fun:_ZN8remoting8IqSender6SendIqERKSsS2_PN4buzz10XmlElementERKN4base8CallbackIFvPKS4_EEE
-   fun:_ZN8remoting24IqSenderTest_SendIq_Test8TestBodyEv
-}
-{
    bug_102988
    Memcheck:Leak
    fun:_Znw*
