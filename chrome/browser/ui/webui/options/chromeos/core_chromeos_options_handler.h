@@ -8,15 +8,19 @@
 
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 
+class PrefSetObserver;
+
 namespace chromeos {
 
 // CoreChromeOSOptionsHandler handles ChromeOS settings.
 class CoreChromeOSOptionsHandler : public CoreOptionsHandler {
  public:
   CoreChromeOSOptionsHandler();
+  virtual ~CoreChromeOSOptionsHandler();
 
  protected:
   // ::CoreOptionsHandler overrides
+  virtual void Initialize();
   virtual Value* FetchPref(const std::string& pref_name);
   virtual void ObservePref(const std::string& pref_name);
   virtual void SetPref(const std::string& pref_name,
@@ -36,6 +40,8 @@ class CoreChromeOSOptionsHandler : public CoreOptionsHandler {
   // Keeps the track of change caused by the handler to make sure
   // it does not signal itself again.
   bool handling_change_;
+
+  scoped_ptr<PrefSetObserver> proxy_prefs_;
 };
 
 }  // namespace chromeos

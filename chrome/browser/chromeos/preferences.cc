@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/system/touchpad_settings.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -27,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "googleurl/src/gurl.h"
 #include "unicode/timezone.h"
 
 namespace chromeos {
@@ -195,11 +195,6 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                              true,
                              PrefService::UNSYNCABLE_PREF);
 
-  // Use shared proxies default to off.
-  prefs->RegisterBooleanPref(prefs::kUseSharedProxies,
-                             false,
-                             PrefService::SYNCABLE_PREF);
-
   // OAuth1 all access token and secret pair.
   prefs->RegisterStringPref(prefs::kOAuth1Token,
                             "",
@@ -274,8 +269,6 @@ void Preferences::Init(PrefService* prefs) {
       prefs::kLanguageXkbAutoRepeatInterval, prefs, this);
 
   enable_screen_lock_.Init(prefs::kEnableScreenLock, prefs, this);
-
-  use_shared_proxies_.Init(prefs::kUseSharedProxies, prefs, this);
 
   // Initialize preferences to currently saved state.
   NotifyPrefChanged(NULL);
@@ -465,11 +458,6 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kEnableScreenLock) {
     CrosLibrary::Get()->GetPowerLibrary()->EnableScreenLock(
         enable_screen_lock_.GetValue());
-  }
-
-  if (!pref_name || *pref_name == prefs::kUseSharedProxies) {
-    g_browser_process->chromeos_proxy_config_service_impl()->
-        UISetUseSharedProxies(use_shared_proxies_.GetValue());
   }
 }
 

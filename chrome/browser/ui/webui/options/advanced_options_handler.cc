@@ -245,8 +245,10 @@ WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {
 
   auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
   default_font_size_.Init(prefs::kWebKitDefaultFontSize, prefs, this);
+#if !defined(OS_CHROMEOS)
   proxy_prefs_.reset(
       PrefSetObserver::CreateProxyPrefSetObserver(prefs, this));
+#endif  // !defined(OS_CHROMEOS)
 
   // Return result from the superclass.
   return handler;
@@ -308,8 +310,10 @@ void AdvancedOptionsHandler::Observe(
     std::string* pref_name = content::Details<std::string>(details).ptr();
     if (*pref_name == prefs::kDownloadExtensionsToOpen) {
       SetupAutoOpenFileTypesDisabledAttribute();
+#if !defined(OS_CHROMEOS)
     } else if (proxy_prefs_->IsObserved(*pref_name)) {
       SetupProxySettingsSection();
+#endif  // !defined(OS_CHROMEOS)
     } else if ((*pref_name == prefs::kCloudPrintEmail) ||
                (*pref_name == prefs::kCloudPrintProxyEnabled)) {
 #if !defined(OS_CHROMEOS)
@@ -547,6 +551,7 @@ void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
 }
 
 void AdvancedOptionsHandler::SetupProxySettingsSection() {
+#if !defined(OS_CHROMEOS)
   // Disable the button if proxy settings are managed by a sysadmin or
   // overridden by an extension.
   PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
@@ -570,6 +575,7 @@ void AdvancedOptionsHandler::SetupProxySettingsSection() {
 
   web_ui_->CallJavascriptFunction(
       "options.AdvancedOptions.SetupProxySettingsSection", disabled, label);
+#endif  // !defined(OS_CHROMEOS)
 }
 
 void AdvancedOptionsHandler::SetupSSLConfigSettings() {

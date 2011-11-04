@@ -78,6 +78,13 @@ class ProfileManagerTest : public testing::Test {
     MOCK_METHOD2(OnProfileCreated, void(Profile* profile, Status status));
   };
 
+#if defined(OS_CHROMEOS)
+  // Do not change order of stub_cros_enabler_, which needs to be constructed
+  // before io_thread_ which requires CrosLibrary to be initialized to construct
+  // its data member pref_proxy_config_tracker_ on ChromeOS.
+  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
+#endif
+
   // The path to temporary directory used to contain the test operations.
   ScopedTempDir temp_dir_;
   ScopedTestingLocalState local_state_;
@@ -91,10 +98,6 @@ class ProfileManagerTest : public testing::Test {
   IOThread io_thread_;
 
   scoped_ptr<base::SystemMonitor> system_monitor_dummy_;
-
-#if defined(OS_CHROMEOS)
-  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
-#endif
 
   // Also will test profile deletion.
   scoped_ptr<ProfileManager> profile_manager_;

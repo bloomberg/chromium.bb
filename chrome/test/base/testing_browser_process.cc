@@ -131,11 +131,6 @@ net::URLRequestContextGetter* TestingBrowserProcess::system_request_context() {
 }
 
 #if defined(OS_CHROMEOS)
-chromeos::ProxyConfigServiceImpl*
-TestingBrowserProcess::chromeos_proxy_config_service_impl() {
-  return NULL;
-}
-
 browser::OomPriorityManager* TestingBrowserProcess::oom_priority_manager() {
   return NULL;
 }

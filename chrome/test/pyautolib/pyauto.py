@@ -3621,7 +3621,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                self.PROXY_TYPE_PAC: 'Automatic proxy configuration' }
     return values[proxy_type]
 
-  def GetProxySettingsOnChromeOS(self):
+  def GetProxySettingsOnChromeOS(self, windex=0):
     """Get current proxy settings on Chrome OS.
 
     Returns:
@@ -3648,9 +3648,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = { 'command': 'GetProxySettings' }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
-  def SetProxySettingsOnChromeOS(self, key, value):
+  def SetProxySettingsOnChromeOS(self, key, value, windex=0):
     """Set a proxy setting on Chrome OS.
 
     Owner must be logged in for these to persist.
@@ -3702,7 +3702,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'key': key,
         'value': value,
     }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
   def ForgetWifiNetwork(self, service_path):
     """Forget a remembered network by its service path.

@@ -30,7 +30,6 @@
 #include "chrome/browser/net/chrome_fraudulent_certificate_reporter.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
@@ -69,6 +68,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
+#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
@@ -243,9 +243,11 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       DesktopNotificationServiceFactory::GetForProfile(profile);
   params->protocol_handler_registry = profile->GetProtocolHandlerRegistry();
 
-  params->proxy_config_service.reset(
-      ProxyServiceFactory::CreateProxyConfigService(
-          profile->GetProxyConfigTracker()));
+  ChromeProxyConfigService* proxy_config_service =
+      ProxyServiceFactory::CreateProxyConfigService();
+  params->proxy_config_service.reset(proxy_config_service);
+  profile->GetProxyConfigTracker()->SetChromeProxyConfigService(
+      proxy_config_service);
   params->profile = profile;
   profile_params_.reset(params.release());
 

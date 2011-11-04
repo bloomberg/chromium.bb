@@ -24,7 +24,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/passive_log_collector.h"
-#include "chrome/browser/net/pref_proxy_config_service.h"
+#include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -61,6 +61,10 @@
 #if defined(USE_NSS)
 #include "net/ocsp/nss_ocsp.h"
 #endif  // defined(USE_NSS)
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
 
@@ -360,7 +364,8 @@ IOThread::IOThread(
   auth_delegate_whitelist_ = local_state->GetString(
       prefs::kAuthNegotiateDelegateWhitelist);
   gssapi_library_name_ = local_state->GetString(prefs::kGSSAPILibraryName);
-  pref_proxy_config_tracker_ = new PrefProxyConfigTracker(local_state);
+  pref_proxy_config_tracker_.reset(
+      ProxyServiceFactory::CreatePrefProxyConfigTracker(local_state));
   ChromeNetworkDelegate::InitializeReferrersEnabled(&system_enable_referrers_,
                                                     local_state);
   ssl_config_service_manager_.reset(
@@ -371,7 +376,7 @@ IOThread::IOThread(
 }
 
 IOThread::~IOThread() {
-  if (pref_proxy_config_tracker_)
+  if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
   // We cannot rely on our base class to stop the thread since we want our
   // CleanUp function to run.
@@ -579,9 +584,13 @@ void IOThread::InitSystemRequestContext() {
   // If we're in unit_tests, IOThread may not be run.
   if (!message_loop())
     return;
-  system_proxy_config_service_.reset(
-      ProxyServiceFactory::CreateProxyConfigService(
-          pref_proxy_config_tracker_));
+  ChromeProxyConfigService* proxy_config_service =
+      ProxyServiceFactory::CreateProxyConfigService();
+  system_proxy_config_service_.reset(proxy_config_service);
+  if (pref_proxy_config_tracker_.get()) {
+    pref_proxy_config_tracker_->SetChromeProxyConfigService(
+        proxy_config_service);
+  }
   system_url_request_context_getter_ =
       new SystemURLRequestContextGetter(this);
   message_loop()->PostTask(

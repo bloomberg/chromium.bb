@@ -66,7 +66,7 @@ namespace chromeos {
 ProxySettingsUI::ProxySettingsUI(TabContents* contents)
     : ChromeWebUI(contents),
       proxy_settings_(NULL),
-      proxy_handler_(new ProxyHandler) {
+      proxy_handler_(new ProxyHandler(GetProfile())) {
   // |localized_strings| will be owned by ProxySettingsHTMLSource.
   DictionaryValue* localized_strings = new DictionaryValue();
 
@@ -103,9 +103,10 @@ void ProxySettingsUI::InitializeHandlers() {
   }
   if (proxy_settings()) {
     proxy_settings()->MakeActiveNetworkCurrent();
-    std::string network = proxy_settings()->GetCurrentNetworkName();
-    if (!network.empty())
-      proxy_handler_->SetNetworkName(network);
+    std::string network_name;
+    GetProfile()->GetProxyConfigTracker()->UIGetCurrentNetworkName(
+        &network_name);
+    proxy_handler_->SetNetworkName(network_name);
   }
 }
 

@@ -68,8 +68,8 @@ DictionaryValue* GetNetworkInfoDict(const chromeos::Network* network) {
   return item;
 }
 
-Value* GetProxySetting(const std::string& setting_name) {
-  chromeos::ProxyCrosSettingsProvider settings_provider;
+Value* GetProxySetting(Browser* browser, const std::string& setting_name) {
+  chromeos::ProxyCrosSettingsProvider settings_provider(browser->profile());
   std::string setting_path = "cros.session.proxy.";
   setting_path.append(setting_name);
 
@@ -518,7 +518,8 @@ void TestingAutomationProvider::ToggleNetworkDevice(
   }
 }
 
-void TestingAutomationProvider::GetProxySettings(DictionaryValue* args,
+void TestingAutomationProvider::GetProxySettings(Browser* browser,
+                                                 DictionaryValue* args,
                                                  IPC::Message* reply_message) {
   const char* settings[] = { "pacurl", "singlehttp", "singlehttpport",
                              "httpurl", "httpport", "httpsurl", "httpsport",
@@ -526,10 +527,10 @@ void TestingAutomationProvider::GetProxySettings(DictionaryValue* args,
                              "socks", "socksport", "ignorelist" };
 
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  chromeos::ProxyCrosSettingsProvider settings_provider;
+  chromeos::ProxyCrosSettingsProvider settings_provider(browser->profile());
 
   for (size_t i = 0; i < arraysize(settings); ++i) {
-    Value* setting = GetProxySetting(settings[i]);
+    Value* setting = GetProxySetting(browser, settings[i]);
     if (setting)
       return_value->Set(settings[i], setting);
   }
@@ -537,8 +538,9 @@ void TestingAutomationProvider::GetProxySettings(DictionaryValue* args,
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
-void TestingAutomationProvider::SetProxySettings(DictionaryValue* args,
-                                                IPC::Message* reply_message) {
+void TestingAutomationProvider::SetProxySettings(Browser* browser,
+                                                 DictionaryValue* args,
+                                                 IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   std::string key;
   Value* value;
@@ -551,7 +553,8 @@ void TestingAutomationProvider::SetProxySettings(DictionaryValue* args,
   setting_path.append(key);
 
   // ProxyCrosSettingsProvider will own the Value* passed to Set().
-  chromeos::ProxyCrosSettingsProvider().Set(setting_path, value->DeepCopy());
+  chromeos::ProxyCrosSettingsProvider(browser->profile()).Set(setting_path,
+      value->DeepCopy());
   reply.SendSuccess(NULL);
 }
 

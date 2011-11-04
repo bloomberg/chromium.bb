@@ -6,20 +6,23 @@
 
 #include <ostream>
 
+#include "base/bind.h"
 #include "base/json/json_value_serializer.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "base/task.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
-#include "content/public/browser/browser_thread.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using content::BrowserThread;
 
 namespace em = enterprise_management;
 
@@ -27,51 +30,75 @@ namespace chromeos {
 
 namespace {
 
-const char* SourceToString(ProxyConfigServiceImpl::ProxyConfig::Source source) {
-  switch (source) {
-    case ProxyConfigServiceImpl::ProxyConfig::SOURCE_NONE:
-      return "SOURCE_NONE";
-    case ProxyConfigServiceImpl::ProxyConfig::SOURCE_POLICY:
-      return "SOURCE_POLICY";
-    case ProxyConfigServiceImpl::ProxyConfig::SOURCE_OWNER:
-      return "SOURCE_OWNER";
+const char* ModeToString(ProxyConfigServiceImpl::ProxyConfig::Mode mode) {
+  switch (mode) {
+    case ProxyConfigServiceImpl::ProxyConfig::MODE_DIRECT:
+      return "direct";
+    case ProxyConfigServiceImpl::ProxyConfig::MODE_AUTO_DETECT:
+      return "auto-detect";
+    case ProxyConfigServiceImpl::ProxyConfig::MODE_PAC_SCRIPT:
+      return "pacurl";
+    case ProxyConfigServiceImpl::ProxyConfig::MODE_SINGLE_PROXY:
+      return "single-proxy";
+    case ProxyConfigServiceImpl::ProxyConfig::MODE_PROXY_PER_SCHEME:
+      return "proxy-per-scheme";
   }
-  NOTREACHED() << "Unrecognized source type";
+  NOTREACHED() << "Unrecognized mode type";
   return "";
 }
 
-std::ostream& operator<<(std::ostream& out,
+const char* ConfigStateToString(ProxyPrefs::ConfigState state) {
+  switch (state) {
+    case ProxyPrefs::CONFIG_POLICY:
+      return "config_policy";
+    case ProxyPrefs::CONFIG_EXTENSION:
+      return "config_extension";
+    case ProxyPrefs::CONFIG_OTHER_PRECEDE:
+      return "config_other_precede";
+    case ProxyPrefs::CONFIG_SYSTEM:
+      return "config_network";  // For ChromeOS, system is network.
+    case ProxyPrefs::CONFIG_FALLBACK:
+      return "config_recommended";  // Fallback is recommended.
+    case ProxyPrefs::CONFIG_UNSET:
+      return "config_unset";
+  }
+  NOTREACHED() << "Unrecognized config state type";
+  return "";
+}
+
+// Only unblock if needed for debugging.
+#if defined(NEED_DEBUG_LOG)
+std::ostream& operator<<(
+    std::ostream& out,
     const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) {
-  out << "  " << SourceToString(proxy.source) << "\n"
-      << "  server: " << (proxy.server.is_valid() ? proxy.server.ToURI() : "")
-      << "\n";
+  out << (proxy.server.is_valid() ? proxy.server.ToURI() : "") << "\n";
   return out;
 }
 
 std::ostream& operator<<(std::ostream& out,
-    const ProxyConfigServiceImpl::ProxyConfig& config) {
+                         const ProxyConfigServiceImpl::ProxyConfig& config) {
   switch (config.mode) {
     case ProxyConfigServiceImpl::ProxyConfig::MODE_DIRECT:
-      out << "Direct connection:\n  "
-          << SourceToString(config.automatic_proxy.source) << "\n";
-      break;
     case ProxyConfigServiceImpl::ProxyConfig::MODE_AUTO_DETECT:
-      out << "Auto detection:\n  "
-          << SourceToString(config.automatic_proxy.source) << "\n";
+      out << ModeToString(config.mode) << ", "
+          << ConfigStateToString(config.state) << "\n";
       break;
     case ProxyConfigServiceImpl::ProxyConfig::MODE_PAC_SCRIPT:
-      out << "Custom PAC script:\n  "
-          << SourceToString(config.automatic_proxy.source)
+      out << ModeToString(config.mode) << ", "
+          << ConfigStateToString(config.state)
           << "\n  PAC: " << config.automatic_proxy.pac_url << "\n";
       break;
     case ProxyConfigServiceImpl::ProxyConfig::MODE_SINGLE_PROXY:
-      out << "Single proxy:\n" << config.single_proxy;
+      out << ModeToString(config.mode) << ", "
+          << ConfigStateToString(config.state) << "\n  " << config.single_proxy;
       break;
     case ProxyConfigServiceImpl::ProxyConfig::MODE_PROXY_PER_SCHEME:
-      out << "HTTP proxy: " << config.http_proxy;
-      out << "HTTPS proxy: " << config.https_proxy;
-      out << "FTP proxy: " << config.ftp_proxy;
-      out << "SOCKS proxy: " << config.socks_proxy;
+      out << ModeToString(config.mode) << ", "
+          << ConfigStateToString(config.state) << "\n"
+          << "  HTTP:  " << config.http_proxy
+          << "  HTTPS: " << config.https_proxy
+          << "  FTP: " << config.ftp_proxy
+          << "  SOCKS: " << config.socks_proxy;
       break;
     default:
       NOTREACHED() << "Unrecognized proxy config mode";
@@ -101,85 +128,102 @@ std::string ProxyConfigToString(
   stream << proxy_config;
   return stream.str();
 }
+#endif  // defined(NEED_DEBUG_LOG)
 
 }  // namespace
 
-//---------- ProxyConfigServiceImpl::ProxyConfig::Setting methods --------------
-
-bool ProxyConfigServiceImpl::ProxyConfig::Setting::CanBeWrittenByUser(
-    bool user_is_owner) {
-  // Setting can only be written by user if user is owner and setting is not
-  // from policy.
-  return user_is_owner && source != ProxyConfig::SOURCE_POLICY;
-}
-
 //----------- ProxyConfigServiceImpl::ProxyConfig: public methods --------------
 
-ProxyConfigServiceImpl::ProxyConfig::ProxyConfig() : mode(MODE_DIRECT) {}
+ProxyConfigServiceImpl::ProxyConfig::ProxyConfig()
+    : mode(MODE_DIRECT),
+      state(ProxyPrefs::CONFIG_UNSET),
+      user_modifiable(true) {}
 
 ProxyConfigServiceImpl::ProxyConfig::~ProxyConfig() {}
 
-void ProxyConfigServiceImpl::ProxyConfig::ToNetProxyConfig(
-    net::ProxyConfig* net_config) {
-  switch (mode) {
-    case MODE_DIRECT:
-      *net_config = net::ProxyConfig::CreateDirect();
-      break;
-    case MODE_AUTO_DETECT:
-      *net_config = net::ProxyConfig::CreateAutoDetect();
-      break;
-    case MODE_PAC_SCRIPT:
-      *net_config = net::ProxyConfig::CreateFromCustomPacURL(
-          automatic_proxy.pac_url);
-      break;
-    case MODE_SINGLE_PROXY:
-      *net_config = net::ProxyConfig();
-      net_config->proxy_rules().type =
-             net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
-      net_config->proxy_rules().single_proxy = single_proxy.server;
-      net_config->proxy_rules().bypass_rules = bypass_rules;
-      break;
-    case MODE_PROXY_PER_SCHEME:
-      *net_config = net::ProxyConfig();
-      net_config->proxy_rules().type =
-          net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
-      net_config->proxy_rules().proxy_for_http = http_proxy.server;
-      net_config->proxy_rules().proxy_for_https = https_proxy.server;
-      net_config->proxy_rules().proxy_for_ftp = ftp_proxy.server;
-      net_config->proxy_rules().fallback_proxy = socks_proxy.server;
-      net_config->proxy_rules().bypass_rules = bypass_rules;
-      break;
+bool ProxyConfigServiceImpl::ProxyConfig::FromNetProxyConfig(
+    const net::ProxyConfig& net_config) {
+  *this = ProxyConfigServiceImpl::ProxyConfig();  // Reset to default.
+  const net::ProxyConfig::ProxyRules& rules = net_config.proxy_rules();
+  switch (rules.type) {
+    case net::ProxyConfig::ProxyRules::TYPE_NO_RULES:
+      if (!net_config.HasAutomaticSettings()) {
+        mode = ProxyConfig::MODE_DIRECT;
+      } else if (net_config.auto_detect()) {
+        mode = ProxyConfig::MODE_AUTO_DETECT;
+      } else if (net_config.has_pac_url()) {
+        mode = ProxyConfig::MODE_PAC_SCRIPT;
+        automatic_proxy.pac_url = net_config.pac_url();
+      } else {
+        return false;
+      }
+      return true;
+    case net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY:
+      if (!rules.single_proxy.is_valid())
+        return false;
+      mode = MODE_SINGLE_PROXY;
+      single_proxy.server = rules.single_proxy;
+      bypass_rules = rules.bypass_rules;
+      return true;
+    case net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME:
+      // Make sure we have valid server for at least one of the protocols.
+      if (!rules.proxy_for_http.is_valid() &&
+          !rules.proxy_for_https.is_valid() &&
+          !rules.proxy_for_ftp.is_valid() &&
+          !rules.fallback_proxy.is_valid()) {
+        return false;
+      }
+      mode = MODE_PROXY_PER_SCHEME;
+      if (rules.proxy_for_http.is_valid())
+        http_proxy.server = rules.proxy_for_http;
+      if (rules.proxy_for_https.is_valid())
+        https_proxy.server = rules.proxy_for_https;
+      if (rules.proxy_for_ftp.is_valid())
+        ftp_proxy.server = rules.proxy_for_ftp;
+      if (rules.fallback_proxy.is_valid())
+        socks_proxy.server = rules.fallback_proxy;
+      bypass_rules = rules.bypass_rules;
+      return true;
     default:
       NOTREACHED() << "Unrecognized proxy config mode";
       break;
   }
+  return false;
 }
 
-bool ProxyConfigServiceImpl::ProxyConfig::CanBeWrittenByUser(
-    bool user_is_owner, const std::string& scheme) {
-  // Setting can only be written by user if user is owner and setting is not
-  // from policy.
-  Setting* setting = NULL;
+DictionaryValue* ProxyConfigServiceImpl::ProxyConfig::ToPrefProxyConfig() {
   switch (mode) {
-    case MODE_DIRECT:
-    case MODE_AUTO_DETECT:
-    case MODE_PAC_SCRIPT:
-      setting = &automatic_proxy;
-      break;
-    case MODE_SINGLE_PROXY:
-      setting = &single_proxy;
-      break;
-    case MODE_PROXY_PER_SCHEME:
-      setting = MapSchemeToProxy(scheme);
-      break;
+    case MODE_DIRECT: {
+      return ProxyConfigDictionary::CreateDirect();
+    }
+    case MODE_AUTO_DETECT: {
+      return ProxyConfigDictionary::CreateAutoDetect();
+    }
+    case MODE_PAC_SCRIPT: {
+      return ProxyConfigDictionary::CreatePacScript(
+          automatic_proxy.pac_url.spec(), false);
+    }
+    case MODE_SINGLE_PROXY: {
+      std::string spec;
+      if (single_proxy.server.is_valid())
+        spec = single_proxy.server.ToURI();
+      return ProxyConfigDictionary::CreateFixedServers(
+          spec, bypass_rules.ToString());
+    }
+    case MODE_PROXY_PER_SCHEME: {
+      std::string spec;
+      EncodeAndAppendProxyServer("http", http_proxy.server, &spec);
+      EncodeAndAppendProxyServer("https", https_proxy.server, &spec);
+      EncodeAndAppendProxyServer("ftp", ftp_proxy.server, &spec);
+      EncodeAndAppendProxyServer("socks", socks_proxy.server, &spec);
+      return ProxyConfigDictionary::CreateFixedServers(
+          spec, bypass_rules.ToString());
+    }
     default:
       break;
   }
-  if (!setting) {
-    NOTREACHED() << "Unrecognized proxy config mode";
-    return false;
-  }
-  return setting->CanBeWrittenByUser(user_is_owner);
+  NOTREACHED() << "Unrecognized proxy config mode for preference";
+  return NULL;
 }
 
 ProxyConfigServiceImpl::ProxyConfig::ManualProxy*
@@ -263,47 +307,6 @@ bool ProxyConfigServiceImpl::ProxyConfig::SerializeForNetwork(
   return serializer.Serialize(*proxy_dict.get());
 }
 
-bool ProxyConfigServiceImpl::ProxyConfig::DeserializeForNetwork(
-    const std::string& input) {
-  JSONStringValueSerializer serializer(input);
-  scoped_ptr<Value> value(serializer.Deserialize(NULL, NULL));
-  if (!value.get() || value->GetType() != Value::TYPE_DICTIONARY)
-    return false;
-  DictionaryValue* proxy_dict = static_cast<DictionaryValue*>(value.get());
-  return FromPrefProxyConfig(proxy_dict);
-}
-
-bool ProxyConfigServiceImpl::ProxyConfig::Equals(
-    const ProxyConfig& other) const {
-  if (mode != other.mode)
-    return false;
-  switch (mode) {
-    case MODE_DIRECT:
-    case MODE_AUTO_DETECT:
-      return true;
-    case MODE_PAC_SCRIPT:
-      return automatic_proxy.pac_url == other.automatic_proxy.pac_url;
-    case MODE_SINGLE_PROXY:
-      return single_proxy.server == other.single_proxy.server &&
-          bypass_rules.Equals(other.bypass_rules);
-    case MODE_PROXY_PER_SCHEME:
-      return http_proxy.server == other.http_proxy.server &&
-          https_proxy.server == other.https_proxy.server &&
-          ftp_proxy.server == other.ftp_proxy.server &&
-          socks_proxy.server == other.socks_proxy.server &&
-          bypass_rules.Equals(other.bypass_rules);
-    default: {
-      NOTREACHED() << "Unrecognized proxy config mode";
-      break;
-    }
-  }
-  return false;
-}
-
-std::string ProxyConfigServiceImpl::ProxyConfig::ToString() const {
-  return ProxyConfigToString(*this);
-}
-
 //----------- ProxyConfigServiceImpl::ProxyConfig: private methods -------------
 
 // static
@@ -324,154 +327,37 @@ void ProxyConfigServiceImpl::ProxyConfig::EncodeAndAppendProxyServer(
   *spec += server.ToURI();
 }
 
-DictionaryValue* ProxyConfigServiceImpl::ProxyConfig::ToPrefProxyConfig() {
-  switch (mode) {
-    case MODE_DIRECT: {
-      return ProxyConfigDictionary::CreateDirect();
-    }
-    case MODE_AUTO_DETECT: {
-      return ProxyConfigDictionary::CreateAutoDetect();
-    }
-    case MODE_PAC_SCRIPT: {
-      return ProxyConfigDictionary::CreatePacScript(
-          automatic_proxy.pac_url.spec(), false);
-    }
-    case MODE_SINGLE_PROXY: {
-      std::string spec;
-      if (single_proxy.server.is_valid())
-        spec = single_proxy.server.ToURI();
-      return ProxyConfigDictionary::CreateFixedServers(
-           spec, bypass_rules.ToString());
-    }
-    case MODE_PROXY_PER_SCHEME: {
-      std::string spec;
-      EncodeAndAppendProxyServer("http", http_proxy.server, &spec);
-      EncodeAndAppendProxyServer("https", https_proxy.server, &spec);
-      EncodeAndAppendProxyServer("ftp", ftp_proxy.server, &spec);
-      EncodeAndAppendProxyServer("socks", socks_proxy.server, &spec);
-      return ProxyConfigDictionary::CreateFixedServers(
-        spec, bypass_rules.ToString());
-    }
-    default:
-      break;
-  }
-  NOTREACHED() << "Unrecognized proxy config mode for preference";
-  return NULL;
-}
-
-bool ProxyConfigServiceImpl::ProxyConfig::FromPrefProxyConfig(
-    const DictionaryValue* dict) {
-  ProxyConfigDictionary proxy_dict(dict);
-
-  *this = ProxyConfigServiceImpl::ProxyConfig();  // Reset to default.
-
-  ProxyPrefs::ProxyMode proxy_mode;
-  if (!proxy_dict.GetMode(&proxy_mode)) {
-    // Fall back to system settings if the mode preference is invalid.
-    return false;
-  }
-
-  switch (proxy_mode) {
-    case ProxyPrefs::MODE_SYSTEM:
-      // Use system settings, so we shouldn't use |this| proxy config.
-      return false;
-    case ProxyPrefs::MODE_DIRECT:
-      // Ignore all the other proxy config preferences if the use of a proxy
-      // has been explicitly disabled.
-      return true;
-    case ProxyPrefs::MODE_AUTO_DETECT:
-      mode = MODE_AUTO_DETECT;
-      return true;
-    case ProxyPrefs::MODE_PAC_SCRIPT: {
-      std::string proxy_pac;
-      if (!proxy_dict.GetPacUrl(&proxy_pac)) {
-        LOG(ERROR) << "Proxy settings request PAC script but do not specify "
-                   << "its URL. Falling back to direct connection.";
-        return true;
-      }
-      GURL proxy_pac_url(proxy_pac);
-      if (!proxy_pac_url.is_valid()) {
-        LOG(ERROR) << "Invalid proxy PAC url: " << proxy_pac;
-        return true;
-      }
-      mode = MODE_PAC_SCRIPT;
-      automatic_proxy.pac_url = proxy_pac_url;
-      return true;
-    }
-    case ProxyPrefs::MODE_FIXED_SERVERS: {
-      std::string proxy_server;
-      if (!proxy_dict.GetProxyServer(&proxy_server)) {
-        LOG(ERROR) << "Proxy settings request fixed proxy servers but do not "
-                   << "specify their URLs. Falling back to direct connection.";
-        return true;
-      }
-      net::ProxyConfig::ProxyRules proxy_rules;
-      proxy_rules.ParseFromString(proxy_server);
-      if (proxy_rules.type == net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY) {
-        mode = MODE_SINGLE_PROXY;
-        single_proxy.server = proxy_rules.single_proxy;
-      } else if (proxy_rules.type ==
-                 net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME) {
-        mode = MODE_PROXY_PER_SCHEME;
-        http_proxy.server = proxy_rules.proxy_for_http;
-        https_proxy.server = proxy_rules.proxy_for_https;
-        ftp_proxy.server = proxy_rules.proxy_for_ftp;
-        socks_proxy.server = proxy_rules.fallback_proxy;
-      } else {
-        LOG(ERROR) << "Proxy settings request fixed proxy servers but do not "
-                   << "have valid proxy rules type. "
-                   << "Falling back to direct connection.";
-        return true;
-      }
-
-      std::string proxy_bypass;
-      if (proxy_dict.GetBypassList(&proxy_bypass)) {
-        bypass_rules.ParseFromString(proxy_bypass);
-      }
-      return true;
-    }
-    case ProxyPrefs::kModeCount: {
-      // Fall through to NOTREACHED().
-    }
-  }
-  NOTREACHED() << "Unknown proxy mode, falling back to system settings.";
-  return false;
-}
-
 //------------------- ProxyConfigServiceImpl: public methods -------------------
 
-ProxyConfigServiceImpl::ProxyConfigServiceImpl()
-    : testing_(false),
-      can_post_task_(false),
-      config_availability_(net::ProxyConfigService::CONFIG_UNSET),
-      use_shared_proxies_(true) {
+ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* pref_service)
+    : PrefProxyConfigTrackerImpl(pref_service),
+      active_config_state_(ProxyPrefs::CONFIG_UNSET) {
+
+  // Register for notification when user logs in, so that we can activate the
+  // new proxy config.
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+                 content::NotificationService::AllSources());
+
+  // Register for notifications of UseSharedProxies user preference.
+  if (pref_service->FindPreference(prefs::kUseSharedProxies))
+    use_shared_proxies_.Init(prefs::kUseSharedProxies, pref_service, this);
+
   // Start async fetch of proxy config from settings persisted on device.
-  if (CrosLibrary::Get()->EnsureLoaded()) {
+  if (CrosLibrary::Get()->libcros_loaded()) {
     retrieve_property_op_ = SignedSettings::CreateRetrievePropertyOp(
         kSettingProxyEverywhere, this);
     if (retrieve_property_op_) {
       retrieve_property_op_->Execute();
-      VLOG(1) << "Start retrieving proxy setting from device";
+      VLOG(1) << this << ": Start retrieving proxy setting from device";
     } else {
-      VLOG(1) << "Fail to retrieve proxy setting from device";
+      VLOG(1) << this << ": Fail to retrieve proxy setting from device";
     }
   }
 
+  // Register for flimflam network notifications.
   NetworkLibrary* network_lib = CrosLibrary::Get()->GetNetworkLibrary();
   OnActiveNetworkChanged(network_lib, network_lib->active_network());
   network_lib->AddNetworkManagerObserver(this);
-
-  can_post_task_ = true;
-}
-
-ProxyConfigServiceImpl::ProxyConfigServiceImpl(const ProxyConfig& init_config)
-    : testing_(false),
-      can_post_task_(true),
-      config_availability_(net::ProxyConfigService::CONFIG_VALID),
-      use_shared_proxies_(true) {
-  active_config_ = init_config;
-  // Update the IO-accessible copy in |cached_config_| as well.
-  cached_config_ = active_config_;
 }
 
 ProxyConfigServiceImpl::~ProxyConfigServiceImpl() {
@@ -482,108 +368,69 @@ ProxyConfigServiceImpl::~ProxyConfigServiceImpl() {
   }
 }
 
-void ProxyConfigServiceImpl::UIGetProxyConfig(ProxyConfig* config) {
-  // Should be called from UI thread.
-  CheckCurrentlyOnUIThread();
-  // Simply returns the copy on the UI thread.
-  *config = current_ui_config_;
-}
-
-bool ProxyConfigServiceImpl::UISetCurrentNetwork(
+void ProxyConfigServiceImpl::UISetCurrentNetwork(
     const std::string& current_network) {
-  // Should be called from UI thread.
-  CheckCurrentlyOnUIThread();
-  if (current_ui_network_ == current_network)
-    return false;
   Network* network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
       current_network);
   if (!network) {
+    ResetUICache();
     LOG(ERROR) << "can't find requested network " << current_network;
-    return false;
+    return;
   }
   current_ui_network_ = current_network;
-  current_ui_config_ = ProxyConfig();
-  SetCurrentNetworkName(network);
-  if (!network->proxy_config().empty())
-    current_ui_config_.DeserializeForNetwork(network->proxy_config());
-  VLOG(1) << "current ui network: "
-          << (current_ui_network_name_.empty() ?
-              current_ui_network_ : current_ui_network_name_)
-          << ", proxy mode: " << current_ui_config_.mode;
-  return true;
+  OnUISetCurrentNetwork(network);
 }
 
-bool ProxyConfigServiceImpl::UIMakeActiveNetworkCurrent() {
-  // Should be called from UI thread.
-  CheckCurrentlyOnUIThread();
-  if (current_ui_network_ == active_network_)
-    return false;
-  Network* network = NULL;
-  if (!testing_) {
-    network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
-      active_network_);
-    if (!network) {
-      LOG(ERROR) << "can't find requested network " << active_network_;
-      return false;
-    }
-  }
-  current_ui_network_ = active_network_;
-  current_ui_config_ = active_config_;
-  SetCurrentNetworkName(network);
-  VLOG(1) << "current ui network: "
-          << (current_ui_network_name_.empty() ?
-              current_ui_network_ : current_ui_network_name_)
-          << ", proxy mode: " << current_ui_config_.mode;
-  return true;
-}
-
-void ProxyConfigServiceImpl::UISetUseSharedProxies(bool use_shared) {
-  // Should be called from UI thread.
-  CheckCurrentlyOnUIThread();
-
-  // Reset all UI-related variables so that the next opening of proxy
-  // configuration dialog of any network will trigger javascript reloading of
-  // (possibly) new proxy settings.
-  current_ui_network_.clear();
-  current_ui_network_name_.clear();
-  current_ui_config_ = ProxyConfig();
-
-  if (use_shared_proxies_ == use_shared) {
-    VLOG(1) << "same use_shared_proxies = " << use_shared_proxies_;
-    return;
-  }
-  use_shared_proxies_ = use_shared;
-  VLOG(1) << "new use_shared_proxies = " << use_shared_proxies_;
-  if (active_network_.empty())
-    return;
+void ProxyConfigServiceImpl::UIMakeActiveNetworkCurrent() {
   Network* network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
       active_network_);
   if (!network) {
+    ResetUICache();
     LOG(ERROR) << "can't find requested network " << active_network_;
     return;
   }
-  DetermineConfigFromNetwork(network);
+  current_ui_network_ = active_network_;
+  OnUISetCurrentNetwork(network);
+}
+
+void ProxyConfigServiceImpl::UIGetCurrentNetworkName(
+    std::string* network_name) {
+  if (!network_name)
+    return;
+  network_name->clear();
+  Network* network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
+      current_ui_network_);
+  if (!network) {
+    LOG(ERROR) << "can't find requested network " << current_ui_network_;
+    return;
+  }
+  if (network->name().empty() && network->type() == chromeos::TYPE_ETHERNET) {
+    *network_name =
+        l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+  } else {
+    *network_name = network->name();
+  }
+}
+
+void ProxyConfigServiceImpl::UIGetProxyConfig(ProxyConfig* config) {
+  // Simply returns the copy last set from UI via UISetCurrentNetwork or
+  // UIMakeActiveNetworkCurrent.
+  *config = current_ui_config_;
 }
 
 bool ProxyConfigServiceImpl::UISetProxyConfigToDirect() {
-  // Should be called from UI thread.
-  CheckCurrentlyOnUIThread();
   current_ui_config_.mode = ProxyConfig::MODE_DIRECT;
   OnUISetProxyConfig();
   return true;
 }
 
 bool ProxyConfigServiceImpl::UISetProxyConfigToAutoDetect() {
-  // Should be called from UI thread.
-  CheckCurrentlyOnUIThread();
   current_ui_config_.mode = ProxyConfig::MODE_AUTO_DETECT;
   OnUISetProxyConfig();
   return true;
 }
 
 bool ProxyConfigServiceImpl::UISetProxyConfigToPACScript(const GURL& pac_url) {
-  // Should be called from UI thread.
-  CheckCurrentlyOnUIThread();
   current_ui_config_.mode = ProxyConfig::MODE_PAC_SCRIPT;
   current_ui_config_.automatic_proxy.pac_url = pac_url;
   OnUISetProxyConfig();
@@ -592,8 +439,6 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToPACScript(const GURL& pac_url) {
 
 bool ProxyConfigServiceImpl::UISetProxyConfigToSingleProxy(
     const net::ProxyServer& server) {
-  // Should be called from UI thread.
-  CheckCurrentlyOnUIThread();
   current_ui_config_.mode = ProxyConfig::MODE_SINGLE_PROXY;
   current_ui_config_.single_proxy.server = server;
   OnUISetProxyConfig();
@@ -602,8 +447,6 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToSingleProxy(
 
 bool ProxyConfigServiceImpl::UISetProxyConfigToProxyPerScheme(
     const std::string& scheme, const net::ProxyServer& server) {
-  // Should be called from UI thread.
-  CheckCurrentlyOnUIThread();
   ProxyConfig::ManualProxy* proxy = current_ui_config_.MapSchemeToProxy(scheme);
   if (!proxy) {
     NOTREACHED() << "Cannot set proxy: invalid scheme [" << scheme << "]";
@@ -617,8 +460,6 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToProxyPerScheme(
 
 bool ProxyConfigServiceImpl::UISetProxyConfigBypassRules(
     const net::ProxyBypassRules& bypass_rules) {
-  // Should be called from UI thread.
-  CheckCurrentlyOnUIThread();
   if (current_ui_config_.mode != ProxyConfig::MODE_SINGLE_PROXY &&
       current_ui_config_.mode != ProxyConfig::MODE_PROXY_PER_SCHEME) {
     NOTREACHED();
@@ -631,29 +472,19 @@ bool ProxyConfigServiceImpl::UISetProxyConfigBypassRules(
   return true;
 }
 
-void ProxyConfigServiceImpl::AddObserver(
-    net::ProxyConfigService::Observer* observer) {
-  // Should be called from IO thread.
-  CheckCurrentlyOnIOThread();
-  observers_.AddObserver(observer);
-}
-
-void ProxyConfigServiceImpl::RemoveObserver(
-    net::ProxyConfigService::Observer* observer) {
-  // Should be called from IO thread.
-  CheckCurrentlyOnIOThread();
-  observers_.RemoveObserver(observer);
-}
-
-net::ProxyConfigService::ConfigAvailability
-    ProxyConfigServiceImpl::IOGetProxyConfig(net::ProxyConfig* net_config) {
-  // Should be called from IO thread.
-  CheckCurrentlyOnIOThread();
-  if (config_availability_ == net::ProxyConfigService::CONFIG_VALID) {
-    VLOG(1) << "returning proxy mode=" << cached_config_.mode;
-    cached_config_.ToNetProxyConfig(net_config);
+void ProxyConfigServiceImpl::OnProxyConfigChanged(
+    ProxyPrefs::ConfigState config_state,
+    const net::ProxyConfig& config) {
+  VLOG(1) << this << ": got prefs change: " << ConfigStateToString(config_state)
+          << ", mode=" << config.proxy_rules().type;
+  Network* network = NULL;
+  if (!active_network_.empty()) {
+    network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
+        active_network_);
+    if (!network)
+      LOG(ERROR) << "can't find requested network " << active_network_;
   }
-  return config_availability_;
+  DetermineEffectiveConfig(network, true);
 }
 
 void ProxyConfigServiceImpl::OnSettingsOpCompleted(
@@ -661,11 +492,12 @@ void ProxyConfigServiceImpl::OnSettingsOpCompleted(
     std::string value) {
   retrieve_property_op_ = NULL;
   if (code != SignedSettings::SUCCESS) {
-    LOG(WARNING) << "Error retrieving proxy setting from device";
+    LOG(WARNING) << this << ": Error retrieving proxy setting from device";
     device_config_.clear();
     return;
   }
-  VLOG(1) << "Retrieved proxy setting from device, value=[" << value << "]";
+  VLOG(1) << this << ": Retrieved proxy setting from device, value=["
+          << value << "]";
   ProxyConfig device_config;
   if (!device_config.DeserializeForDevice(value) ||
       !device_config.SerializeForNetwork(&device_config_)) {
@@ -674,15 +506,15 @@ void ProxyConfigServiceImpl::OnSettingsOpCompleted(
     return;
   }
   if (!active_network_.empty()) {
-    VLOG(1) << "try migrating device config to " << active_network_;
+    VLOG(1) << this << ": try migrating device config to " << active_network_;
     SetProxyConfigForNetwork(active_network_, device_config_, true);
   }
 }
 
 void ProxyConfigServiceImpl::OnNetworkManagerChanged(
     NetworkLibrary* network_lib) {
-  VLOG(1) << "OnNetworkManagerChanged: use-shared-proxies="
-          << use_shared_proxies_;
+  VLOG(1) << this << " OnNetworkManagerChanged: use-shared-proxies="
+          << GetUseSharedProxies();
   OnActiveNetworkChanged(network_lib, network_lib->active_network());
 }
 
@@ -690,68 +522,73 @@ void ProxyConfigServiceImpl::OnNetworkChanged(NetworkLibrary* network_lib,
     const Network* network) {
   if (!network)
     return;
-  VLOG(1) << "OnNetworkChanged: "
-          << (network->name().empty() ? network->service_path() :
-                                        network->name())
-          << ", use-shared-proxies=" << use_shared_proxies_;
+  VLOG(1) << this << " OnNetworkChanged: "
+                  << (network->name().empty() ? network->service_path() :
+                                                network->name())
+                  << ", use-shared-proxies=" << GetUseSharedProxies();
   // We only care about active network.
   if (network == network_lib->active_network())
     OnActiveNetworkChanged(network_lib, network);
 }
 
+// static
+void ProxyConfigServiceImpl::RegisterPrefs(PrefService* pref_service) {
+  // Use shared proxies default to off.  GetUseSharedProxies will return the
+  // correct value based on pre-login and login.
+  pref_service->RegisterBooleanPref(prefs::kUseSharedProxies,
+                                    false,
+                                    PrefService::UNSYNCABLE_PREF);
+}
+
 //------------------ ProxyConfigServiceImpl: private methods -------------------
 
-void ProxyConfigServiceImpl::OnUISetProxyConfig() {
-  if (testing_) {
-    active_config_ = current_ui_config_;
-    IOSetProxyConfig(active_config_, net::ProxyConfigService::CONFIG_VALID);
+void ProxyConfigServiceImpl::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED &&
+      *(content::Details<std::string>(details).ptr()) ==
+          prefs::kUseSharedProxies) {
+    if (content::Source<PrefService>(source).ptr() == prefs()) {
+      VLOG(1) << this << ": new use-shared-proxies = " << GetUseSharedProxies();
+      // Determine new proxy config which may have changed because of new
+      // use-shared-proxies. If necessary, activate it.
+      Network* network = NULL;
+      if (!active_network_.empty()) {
+        network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
+            active_network_);
+        if (!network)
+          LOG(WARNING) << "can't find requested network " << active_network_;
+      }
+      DetermineEffectiveConfig(network, true);
+    }
     return;
   }
+  if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
+    VLOG(1) << this << ": login user changed";
+    // If active network is the same, its proxy config and/or UseSharedProxies
+    // pref for this user could be different from that in login screen;
+    // determine effective config and activate it if different.
+    const Network* active_network =
+        CrosLibrary::Get()->GetNetworkLibrary()->active_network();
+    if (active_network && active_network_ == active_network->service_path())
+      DetermineEffectiveConfig(active_network, true);
+    return;
+  }
+  PrefProxyConfigTrackerImpl::Observe(type, source, details);
+}
+
+void ProxyConfigServiceImpl::OnUISetProxyConfig() {
   if (current_ui_network_.empty())
     return;
   // Update config to flimflam.
   std::string value;
   if (current_ui_config_.SerializeForNetwork(&value)) {
-    VLOG(1) << "set proxy (mode=" << current_ui_config_.mode
-            << ") for " << current_ui_network_;
+    VLOG(1) << this << ": set proxy (mode=" << current_ui_config_.mode
+                    << ") for " << current_ui_network_;
+    current_ui_config_.state = ProxyPrefs::CONFIG_SYSTEM;
     SetProxyConfigForNetwork(current_ui_network_, value, false);
   }
-}
-
-void ProxyConfigServiceImpl::IOSetProxyConfig(
-    const ProxyConfig& new_config,
-    net::ProxyConfigService::ConfigAvailability new_availability) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO) && can_post_task_) {
-    // Posts a task to IO thread with the new config, so it can update
-    // |cached_config_|.
-    Task* task = NewRunnableMethod(this,
-                                   &ProxyConfigServiceImpl::IOSetProxyConfig,
-                                   new_config,
-                                   new_availability);
-    if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task))
-      VLOG(1) << "Couldn't post task to IO thread to set new proxy config";
-    return;
-  }
-
-  // Now guaranteed to be on the correct thread.
-
-  if (config_availability_ == new_availability &&
-      cached_config_.Equals(new_config))
-    return;
-
-  VLOG(1) << "Proxy changed: mode=" << new_config.mode
-          << ", avail=" << new_availability;
-  cached_config_ = new_config;
-  config_availability_ = new_availability;
-  // Notify observers of new proxy config.
-  net::ProxyConfig net_config;
-  cached_config_.ToNetProxyConfig(&net_config);
-  if (net_config.proxy_rules().type !=
-      net::ProxyConfig::ProxyRules::TYPE_NO_RULES) {
-    net_config.proxy_rules().bypass_rules.AddRuleToBypassLocal();
-  }
-  FOR_EACH_OBSERVER(net::ProxyConfigService::Observer, observers_,
-                    OnProxyConfigChanged(net_config, config_availability_));
 }
 
 void ProxyConfigServiceImpl::OnActiveNetworkChanged(NetworkLibrary* network_lib,
@@ -761,10 +598,13 @@ void ProxyConfigServiceImpl::OnActiveNetworkChanged(NetworkLibrary* network_lib,
     new_network = active_network->service_path();
 
   if (active_network_ == new_network) {  // Same active network.
-    VLOG(1) << "same active network: "
-            << (new_network.empty() ? "empty" :
-                (active_network->name().empty() ?
-                 new_network : active_network->name()));
+    VLOG(1) << this << ": same active network: "
+                    << (new_network.empty() ? "empty" :
+                        (active_network->name().empty() ?
+                         new_network : active_network->name()));
+    // If last proxy update to network stack wasn't completed, do it now.
+    if (active_network && update_pending())
+      DetermineEffectiveConfig(active_network, true);
     return;
   }
 
@@ -775,26 +615,27 @@ void ProxyConfigServiceImpl::OnActiveNetworkChanged(NetworkLibrary* network_lib,
   active_network_ = new_network;
 
   if (active_network_.empty()) {
-    VLOG(1) << "new active network: empty";
-    active_config_ = ProxyConfig();
-    IOSetProxyConfig(active_config_, net::ProxyConfigService::CONFIG_UNSET);
+    VLOG(1) << this << ": new active network: empty";
+    DetermineEffectiveConfig(active_network, true);
     return;
   }
 
-  VLOG(1) << "new active network: path=" << active_network->service_path()
-          << ", name=" << active_network->name()
-          << ", profile=" << active_network->profile_path()
-          << ", proxy=" << active_network->proxy_config();
+  VLOG(1) << this << ": new active network: path="
+                  << active_network->service_path()
+                  << ", name=" << active_network->name()
+                  << ", profile=" << active_network->profile_path()
+                  << ", proxy=" << active_network->proxy_config();
 
   // Register observer for new network.
   network_lib->AddNetworkObserver(active_network_, this);
 
   // If necessary, migrate config to flimflam.
   if (active_network->proxy_config().empty() && !device_config_.empty()) {
-    VLOG(1) << "try migrating device config to " << active_network_;
+    VLOG(1) << this << ": try migrating device config to " << active_network_;
     SetProxyConfigForNetwork(active_network_, device_config_, true);
-  } else {
-    DetermineConfigFromNetwork(active_network);
+  } else  {
+    // Otherwise, determine and activate possibly new effective proxy config.
+    DetermineEffectiveConfig(active_network, true);
   }
 }
 
@@ -809,52 +650,124 @@ void ProxyConfigServiceImpl::SetProxyConfigForNetwork(
   }
   if (!only_set_if_empty || network->proxy_config().empty()) {
     network->SetProxyConfig(value);
-    VLOG(1) << "set proxy for "
-            << (network->name().empty() ? network_path : network->name())
-            << ", value=" << value;
+    VLOG(1) << this << ": set proxy for " << (network->name().empty() ?
+                                              network_path : network->name())
+                    << ", value=" << value;
     if (network_path == active_network_)
-      DetermineConfigFromNetwork(network);
+      DetermineEffectiveConfig(network, true);
   }
 }
 
-void ProxyConfigServiceImpl::DetermineConfigFromNetwork(
-    const Network* network) {
-  active_config_ = ProxyConfig();  // Default is DIRECT mode (i.e. no proxy).
-  net::ProxyConfigService::ConfigAvailability available =
+bool ProxyConfigServiceImpl::GetUseSharedProxies() {
+  const PrefService::Preference* use_shared_proxies_pref =
+      prefs()->FindPreference(prefs::kUseSharedProxies);
+  if (!use_shared_proxies_pref || use_shared_proxies_pref->IsDefaultValue())
+    return !UserManager::Get()->user_is_logged_in();
+  return use_shared_proxies_.GetValue();
+}
+
+void ProxyConfigServiceImpl::DetermineEffectiveConfig(const Network* network,
+                                                      bool activate) {
+  // Get prefs proxy config if available.
+  net::ProxyConfig pref_config;
+  ProxyPrefs::ConfigState pref_state = GetProxyConfig(&pref_config);
+
+  // Get network proxy config if available.
+  net::ProxyConfig network_config;
+  net::ProxyConfigService::ConfigAvailability network_availability =
       net::ProxyConfigService::CONFIG_UNSET;
-  // If network is shared but user doesn't use shared proxies, use direct mode.
-  if (network->profile_type() == PROFILE_SHARED && !use_shared_proxies_) {
-    VLOG(1) << "shared network and !use_shared_proxies, using direct";
-    available = net::ProxyConfigService::CONFIG_VALID;
-  } else if (!network->proxy_config().empty() &&
-             active_config_.DeserializeForNetwork(network->proxy_config())) {
-    // Network is private or shared with user using shared proxies.
-    VLOG(1) << "using network proxy: " << network->proxy_config();
-    available = net::ProxyConfigService::CONFIG_VALID;
+  bool ignore_proxy = activate;
+  if (network) {
+    // If we're activating proxy, ignore proxy if necessary;
+    // otherwise, for ui, get actual proxy to show user.
+    ignore_proxy = activate ? IgnoreProxy(network) : false;
+    // If network is shared but use-shared-proxies is off, use direct mode.
+    if (ignore_proxy) {
+      VLOG(1) << this << ": shared network && !use-shared-proxies, use direct";
+      network_availability = net::ProxyConfigService::CONFIG_VALID;
+    } else if (!network->proxy_config().empty()) {
+      // Network is private or shared with user using shared proxies.
+      JSONStringValueSerializer serializer(network->proxy_config());
+      scoped_ptr<Value> value(serializer.Deserialize(NULL, NULL));
+      if (value.get() && value->GetType() == Value::TYPE_DICTIONARY) {
+        DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
+        ProxyConfigDictionary proxy_dict(dict);
+        if (PrefConfigToNetConfig(proxy_dict, &network_config)) {
+          VLOG(1) << this << ": using network proxy: "
+                           << network->proxy_config();
+          network_availability = net::ProxyConfigService::CONFIG_VALID;
+        }
+      }
+    }
   }
-  IOSetProxyConfig(active_config_, available);
+
+  // Determine effective proxy config, either from prefs or network.
+  ProxyPrefs::ConfigState effective_config_state;
+  net::ProxyConfig effective_config;
+  GetEffectiveProxyConfig(pref_state, pref_config,
+                          network_availability, network_config, ignore_proxy,
+                          &effective_config_state, &effective_config);
+
+  // Determine if we should activate effective proxy and which proxy config to
+  // store it.
+  if (activate) {  // Activate effective proxy and store into |active_config_|.
+    // If last update didn't complete, we definitely update now.
+    bool update_now = update_pending();
+    if (!update_now) {  // Otherwise, only update now if there're changes.
+      update_now = active_config_state_ != effective_config_state ||
+          (active_config_state_ != ProxyPrefs::CONFIG_UNSET &&
+           !active_config_.Equals(effective_config));
+    }
+    if (update_now) {  // Activate and store new effective config.
+      active_config_state_ = effective_config_state;
+      if (active_config_state_ != ProxyPrefs::CONFIG_UNSET)
+        active_config_ = effective_config;
+      // If effective config is from system (i.e. network), it's considered a
+      // special kind of prefs that ranks below policy/extension but above
+      // others, so bump it up to CONFIG_OTHER_PRECEDE to force its precedence
+      // when PrefProxyConfigTrackerImpl pushes it to ChromeProxyConfigService.
+      if (effective_config_state == ProxyPrefs::CONFIG_SYSTEM)
+        effective_config_state = ProxyPrefs::CONFIG_OTHER_PRECEDE;
+      // If config is manual, add rule to bypass local host.
+      if (effective_config.proxy_rules().type !=
+          net::ProxyConfig::ProxyRules::TYPE_NO_RULES)
+        effective_config.proxy_rules().bypass_rules.AddRuleToBypassLocal();
+      PrefProxyConfigTrackerImpl::OnProxyConfigChanged(effective_config_state,
+                                                       effective_config);
+      if (VLOG_IS_ON(1) && !update_pending()) {  // Update was successful.
+        scoped_ptr<DictionaryValue> config_dict(static_cast<DictionaryValue*>(
+            effective_config.ToValue()));
+        std::string config_value;
+        JSONStringValueSerializer serializer(&config_value);
+        serializer.Serialize(*config_dict.get());
+        VLOG(1) << this << ": Proxy changed: "
+                << ConfigStateToString(active_config_state_)
+                << ", " << config_value;
+      }
+    }
+  } else {  // For UI, store effective proxy into |current_ui_config_|.
+    current_ui_config_.FromNetProxyConfig(effective_config);
+    current_ui_config_.state = effective_config_state;
+    if (PrefPrecedes(effective_config_state))
+      current_ui_config_.user_modifiable = false;
+    else
+      current_ui_config_.user_modifiable = !network || !IgnoreProxy(network);
+  }
 }
 
-void ProxyConfigServiceImpl::SetCurrentNetworkName(const Network* network) {
-  if (!network) {
-    if (testing_)
-      current_ui_network_name_ = "test";
-    return;
-  }
-  if (network->name().empty() && network->type() == chromeos::TYPE_ETHERNET) {
-    current_ui_network_name_ = l10n_util::GetStringUTF8(
-        IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-  } else {
-    current_ui_network_name_ = network->name();
-  }
+void ProxyConfigServiceImpl::OnUISetCurrentNetwork(const Network* network) {
+  DetermineEffectiveConfig(network, false);
+  VLOG(1) << this << ": current ui network: "
+                  << (network->name().empty() ?
+                      current_ui_network_ : network->name())
+                  << ", " << ModeToString(current_ui_config_.mode)
+                  << ", " << ConfigStateToString(current_ui_config_.state)
+                  << ", modifiable:" << current_ui_config_.user_modifiable;
 }
 
-void ProxyConfigServiceImpl::CheckCurrentlyOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-}
-
-void ProxyConfigServiceImpl::CheckCurrentlyOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void ProxyConfigServiceImpl::ResetUICache() {
+  current_ui_network_.clear();
+  current_ui_config_ = ProxyConfig();
 }
 
 }  // namespace chromeos

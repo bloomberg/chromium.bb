@@ -32,7 +32,6 @@
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -41,7 +40,6 @@
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
@@ -120,19 +118,6 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("changeProxyButton",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON));
-  localized_strings->SetString("enableSharedProxiesHint",
-      l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ENABLE_SHARED_PROXIES_HINT,
-          l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES)));
-  localized_strings->SetString("policyManagedProxyText",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_POLICY_MANAGED_PROXY_TEXT));
-  localized_strings->SetString("extensionManagedProxyText",
-      l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EXTENSION_MANAGED_PROXY_TEXT));
-  localized_strings->SetString("unmodifiableProxyText",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNMODIFIABLE_PROXY_TEXT));
 
   localized_strings->SetString("wifiNetworkTabLabel",
       l10n_util::GetStringUTF16(
@@ -705,11 +690,8 @@ void InternetOptionsHandler::SetIPConfigCallback(const ListValue* args) {
 void InternetOptionsHandler::PopulateDictionaryDetails(
     const chromeos::Network* network) {
   DCHECK(network);
-  bool use_shared_proxies = false;
-  if (proxy_settings()) {
+  if (proxy_settings())
     proxy_settings()->SetCurrentNetwork(network->service_path());
-    use_shared_proxies = proxy_settings()->IsUsingSharedProxies();
-  }
   DictionaryValue dictionary;
   std::string hardware_address;
   chromeos::NetworkIPConfigVector ipconfigs = cros_->GetIPConfigs(
@@ -738,40 +720,9 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   dictionary.SetBoolean("connected", network->connected());
   dictionary.SetString("connectionState", network->GetStateString());
 
-  // Determine if proxy is configurable.
-  // First check proxy prefs.
-  bool proxy_configurable = true;
-  std::string change_proxy_text;
-  if (web_ui_) {
-    const PrefService::Preference* proxy_pref =
-      Profile::FromWebUI(web_ui_)->GetPrefs()->FindPreference(prefs::kProxy);
-    if (proxy_pref && (!proxy_pref->IsUserModifiable() ||
-                       proxy_pref->HasUserSetting())) {
-      proxy_configurable = false;
-      // Provide reason that proxy is managed by admin or extension.
-      if (proxy_pref->IsManaged())
-        change_proxy_text = "policyManagedProxyText";
-      else if (proxy_pref->IsExtensionControlled())
-        change_proxy_text = "extensionManagedProxyText";
-      else
-        change_proxy_text = "unmodifiableProxyText";
-    }
-  }
-  // Next check network type and use-shared-proxies.
-  chromeos::NetworkProfileType profile = network->profile_type();
-  bool shared_network = type == chromeos::TYPE_ETHERNET ||
-                        profile == chromeos::PROFILE_SHARED;
-  if (proxy_configurable) {  // Only check more if proxy  is still configurable.
-    proxy_configurable = profile == chromeos::PROFILE_USER ||
-        (shared_network && use_shared_proxies);
-  }
-  // If no reason has been set yet, provide hint to configure shared proxy.
-  if (change_proxy_text.empty() && shared_network && !use_shared_proxies)
-    change_proxy_text = "enableSharedProxiesHint";
-  // Lastly, store proxy-configurable flag and, if available, text to display.
-  dictionary.SetBoolean("proxyConfigurable", proxy_configurable);
-  if (!change_proxy_text.empty())
-    dictionary.SetString("changeProxyText", change_proxy_text);
+  // Only show proxy for remembered networks.
+  chromeos::NetworkProfileType network_profile = network->profile_type();
+  dictionary.SetBoolean("showProxy", network_profile != chromeos::PROFILE_NONE);
 
   // Hide the dhcp/static radio if not ethernet or wifi (or if not enabled)
   bool staticIPConfig = CommandLine::ForCurrentProcess()->HasSwitch(
@@ -779,7 +730,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   dictionary.SetBoolean("showStaticIPConfig", staticIPConfig &&
       (type == chromeos::TYPE_WIFI || type == chromeos::TYPE_ETHERNET));
 
-  if (network->profile_type() == chromeos::PROFILE_USER) {
+  if (network_profile == chromeos::PROFILE_USER) {
     dictionary.SetBoolean("showPreferred", true);
     dictionary.SetBoolean("preferred", network->preferred());
   } else {

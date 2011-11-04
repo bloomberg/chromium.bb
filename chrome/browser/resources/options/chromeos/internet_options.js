@@ -455,20 +455,9 @@ cr.define('options', function() {
     $('ipTypeDHCPDiv').hidden = !data.showStaticIPConfig;
     $('ipTypeStaticDiv').hidden = !data.showStaticIPConfig;
 
-    // Hide change-proxy-button if proxy is not configurable.
-    $('change-proxy-button').hidden = !data.proxyConfigurable;
-    // If necessary, set text for change-proxy-text and show it.
-    var changeProxyText = $('change-proxy-text');
-    if (data.changeProxyText != '') {
-      changeProxyText.textContent =
-          localStrings.getString(data.changeProxyText);
-      changeProxyText.hidden = false;
-    } else {
-      changeProxyText.hidden = true;
-    }
-    // Hide change-proxy-section if button and text are hidden.
-    $('change-proxy-section').hidden = !data.proxyConfigurable &&
-                                       changeProxyText.hidden;
+    // Hide change-proxy-button and change-proxy-section if not showing proxy.
+    $('change-proxy-button').hidden = !data.showProxy;
+    $('change-proxy-section').hidden = !data.showProxy;
 
     var ipConfigList = $('ipConfigList');
     ipConfigList.disabled = $('ipTypeDHCP').checked || !data.showStaticIPConfig;

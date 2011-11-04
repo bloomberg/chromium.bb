@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -29,33 +28,6 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-DictionaryValue* CreateValueForPref(const PrefService* pref_service,
-                                    const PrefService::Preference* pref) {
-  DictionaryValue* dict = new DictionaryValue;
-  dict->Set("value", pref->GetValue()->DeepCopy());
-  const PrefService::Preference* controlling_pref = pref;
-#if defined(OS_CHROMEOS)
-  // For use-shared-proxies pref, the proxy pref determines if the former is
-  // modifiable or managed by policy/extension.
-  if (pref->name() == prefs::kUseSharedProxies) {
-    controlling_pref = pref_service->FindPreference(prefs::kProxy);
-    if (!controlling_pref)
-      return dict;
-  }
-#endif  // defined(OS_CHROMEOS)
-  if (controlling_pref->IsManaged()) {
-    dict->SetString("controlledBy", "policy");
-  } else if (controlling_pref->IsExtensionControlled()) {
-    dict->SetString("controlledBy", "extension");
-  }
-  dict->SetBoolean("disabled", !controlling_pref->IsUserModifiable());
-  return dict;
-}
-
-}  // namespace
 
 CoreOptionsHandler::CoreOptionsHandler()
     : handlers_host_(NULL) {
@@ -138,8 +110,15 @@ WebUIMessageHandler* CoreOptionsHandler::Attach(WebUI* web_ui) {
 void CoreOptionsHandler::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED)
-    NotifyPrefChanged(content::Details<std::string>(details).ptr());
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
+    std::string* pref_name = content::Details<std::string>(details).ptr();
+    if (*pref_name == prefs::kClearPluginLSODataEnabled) {
+      // This preference is stored in Local State, not in the user preferences.
+      UpdateClearPluginLSOData();
+      return;
+    }
+    NotifyPrefChanged(*pref_name, std::string());
+  }
 }
 
 void CoreOptionsHandler::RegisterMessages() {
@@ -191,7 +170,7 @@ Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
   if (!pref)
     return Value::CreateNullValue();
 
-  return CreateValueForPref(pref_service, pref);
+  return CreateValueForPref(pref, NULL);
 }
 
 void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
@@ -217,6 +196,7 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
   }
 
   pref_service->ScheduleSavePersistentPrefs();
+
   ProcessUserMetric(value, metric);
 }
 
@@ -243,6 +223,47 @@ void CoreOptionsHandler::ProcessUserMetric(const Value* value,
   }
 
   UserMetrics::RecordComputedAction(metric_string);
+}
+
+void CoreOptionsHandler::NotifyPrefChanged(
+    const std::string& pref_name,
+    const std::string& controlling_pref_name) {
+  const PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
+  const PrefService::Preference* pref =
+      pref_service->FindPreference(pref_name.c_str());
+  if (!pref)
+    return;
+  const PrefService::Preference* controlling_pref =
+      !controlling_pref_name.empty() ?
+          pref_service->FindPreference(controlling_pref_name.c_str()) : NULL;
+  std::pair<PreferenceCallbackMap::const_iterator,
+            PreferenceCallbackMap::const_iterator> range;
+  range = pref_callback_map_.equal_range(pref_name);
+  for (PreferenceCallbackMap::const_iterator iter = range.first;
+       iter != range.second; ++iter) {
+    const std::wstring& callback_function = iter->second;
+    ListValue result_value;
+    result_value.Append(Value::CreateStringValue(pref_name.c_str()));
+    result_value.Append(CreateValueForPref(pref, controlling_pref));
+    web_ui_->CallJavascriptFunction(WideToASCII(callback_function),
+                                    result_value);
+  }
+}
+
+DictionaryValue* CoreOptionsHandler::CreateValueForPref(
+    const PrefService::Preference* pref,
+    const PrefService::Preference* controlling_pref) {
+  DictionaryValue* dict = new DictionaryValue;
+  dict->Set("value", pref->GetValue()->DeepCopy());
+  if (!controlling_pref)  // No controlling pref is managing actual pref.
+    controlling_pref = pref;  // This means pref is controlling itself.
+  if (controlling_pref->IsManaged()) {
+    dict->SetString("controlledBy", "policy");
+  } else if (controlling_pref->IsExtensionControlled()) {
+    dict->SetString("controlledBy", "extension");
+  }
+  dict->SetBoolean("disabled", !controlling_pref->IsUserModifiable());
+  return dict;
 }
 
 void CoreOptionsHandler::StopObservingPref(const std::string& path) {
@@ -426,33 +447,4 @@ void CoreOptionsHandler::UpdateClearPluginLSOData() {
       Value::CreateBooleanValue(clear_plugin_lso_data_enabled_.GetValue()));
   web_ui_->CallJavascriptFunction(
       "OptionsPage.setClearPluginLSODataEnabled", *enabled);
-}
-
-void CoreOptionsHandler::NotifyPrefChanged(const std::string* pref_name) {
-  if (*pref_name == prefs::kClearPluginLSODataEnabled) {
-    // This preference is stored in Local State, not in the user preferences.
-    UpdateClearPluginLSOData();
-    return;
-  }
-
-  PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
-  const PrefService::Preference* pref =
-      pref_service->FindPreference(pref_name->c_str());
-  if (!pref)
-    return;
-
-  std::pair<PreferenceCallbackMap::const_iterator,
-            PreferenceCallbackMap::const_iterator> range;
-  range = pref_callback_map_.equal_range(*pref_name);
-  for (PreferenceCallbackMap::const_iterator iter = range.first;
-       iter != range.second; ++iter) {
-    const std::wstring& callback_function = iter->second;
-    ListValue result_value;
-    result_value.Append(Value::CreateStringValue(pref_name->c_str()));
-
-    result_value.Append(CreateValueForPref(pref_service, pref));
-
-    web_ui_->CallJavascriptFunction(WideToASCII(callback_function),
-                                    result_value);
-  }
 }

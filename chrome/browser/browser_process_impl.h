@@ -68,8 +68,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual ui::Clipboard* clipboard() OVERRIDE;
   virtual net::URLRequestContextGetter* system_request_context() OVERRIDE;
 #if defined(OS_CHROMEOS)
-  virtual chromeos::ProxyConfigServiceImpl*
-      chromeos_proxy_config_service_impl() OVERRIDE;
   virtual browser::OomPriorityManager* oom_priority_manager() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
   virtual ExtensionEventRouterForwarder*
@@ -309,8 +307,6 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS)
-  scoped_refptr<chromeos::ProxyConfigServiceImpl>
-      chromeos_proxy_config_service_impl_;
   scoped_ptr<browser::OomPriorityManager> oom_priority_manager_;
 #endif
 

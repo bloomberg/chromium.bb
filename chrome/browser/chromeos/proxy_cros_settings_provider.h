@@ -11,11 +11,13 @@
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 
+class Profile;
+
 namespace chromeos {
 
 class ProxyCrosSettingsProvider : public CrosSettingsProvider {
  public:
-  ProxyCrosSettingsProvider();
+  explicit ProxyCrosSettingsProvider(Profile* profile);
   // CrosSettingsProvider implementation.
   virtual bool Get(const std::string& path, Value** out_value) const OVERRIDE;
   virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
@@ -27,13 +29,6 @@ class ProxyCrosSettingsProvider : public CrosSettingsProvider {
   // Make the active network the current one whose proxy settings will be
   // displayed and possibly edited on.
   void MakeActiveNetworkCurrent();
-
-  // Returns name of current network that has been set via SetCurrentNetwork or
-  // MakeActiveNetworkCurrent.
-  const std::string& GetCurrentNetworkName() const;
-
-  // Returns true if user has selected to use shared proxies.
-  bool IsUsingSharedProxies() const;
 
  private:
   // CrosSettingsProvider implementation.
@@ -56,6 +51,8 @@ class ProxyCrosSettingsProvider : public CrosSettingsProvider {
 
   Value* CreateServerPortValue(
       const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) const;
+
+  Profile* profile_;  // Weak ptr.
 
   DISALLOW_COPY_AND_ASSIGN(ProxyCrosSettingsProvider);
 };

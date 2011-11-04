@@ -78,8 +78,6 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual net::URLRequestContextGetter* system_request_context() OVERRIDE;
 
 #if defined(OS_CHROMEOS)
-  virtual chromeos::ProxyConfigServiceImpl*
-      chromeos_proxy_config_service_impl() OVERRIDE;
   virtual browser::OomPriorityManager* oom_priority_manager() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
 

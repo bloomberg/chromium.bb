@@ -9,7 +9,10 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/prefs/pref_set_observer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -20,9 +23,29 @@ CoreChromeOSOptionsHandler::CoreChromeOSOptionsHandler()
     : handling_change_(false) {
 }
 
+CoreChromeOSOptionsHandler::~CoreChromeOSOptionsHandler() {}
+
+void CoreChromeOSOptionsHandler::Initialize() {
+  proxy_prefs_.reset(PrefSetObserver::CreateProxyPrefSetObserver(
+    Profile::FromWebUI(web_ui_)->GetPrefs(), this));
+}
+
 Value* CoreChromeOSOptionsHandler::FetchPref(const std::string& pref_name) {
-  if (!CrosSettings::IsCrosSettings(pref_name))
+  if (!CrosSettings::IsCrosSettings(pref_name)) {
+    // Specially handle kUseSharedProxies because kProxy controls it to
+    // determine if it's managed by policy/extension.
+    if (pref_name == prefs::kUseSharedProxies) {
+      PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
+      const PrefService::Preference* pref =
+          pref_service->FindPreference(prefs::kUseSharedProxies);
+      if (!pref)
+        return Value::CreateNullValue();
+      const PrefService::Preference* controlling_pref =
+          pref_service->FindPreference(prefs::kProxy);
+      return CreateValueForPref(pref, controlling_pref);
+    }
     return ::CoreOptionsHandler::FetchPref(pref_name);
+  }
 
   Value* pref_value = NULL;
   CrosSettings::Get()->Get(pref_name, &pref_value);
@@ -69,6 +92,18 @@ void CoreChromeOSOptionsHandler::Observe(
   if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED) {
     NotifySettingsChanged(content::Details<std::string>(details).ptr());
     return;
+  }
+  // Special handling for preferences kUseSharedProxies and kProxy, the latter
+  // controls the former and decides if it's managed by policy/extension.
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
+    const PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
+    std::string* pref_name = content::Details<std::string>(details).ptr();
+    if (content::Source<PrefService>(source).ptr() == pref_service &&
+        (proxy_prefs_->IsObserved(*pref_name) ||
+         *pref_name == prefs::kUseSharedProxies)) {
+      NotifyPrefChanged(prefs::kUseSharedProxies, prefs::kProxy);
+      return;
+    }
   }
   ::CoreOptionsHandler::Observe(type, source, details);
 }

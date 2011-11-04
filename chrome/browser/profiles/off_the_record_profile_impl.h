@@ -125,6 +125,7 @@ class OffTheRecordProfileImpl : public Profile,
 #endif  // defined(OS_CHROMEOS)
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() OVERRIDE;
+
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
   virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
@@ -183,7 +184,7 @@ class OffTheRecordProfileImpl : public Profile,
   // The file_system context for this profile.
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 
-  scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
+  scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
 

@@ -4812,14 +4812,14 @@ void NetworkLibraryImplStub::Init() {
   ethernet->set_name("Fake Ethernet");
   ethernet->set_is_active(true);
   ethernet->set_connected(true);
-  AddStubNetwork(ethernet, PROFILE_NONE);
+  AddStubNetwork(ethernet, PROFILE_SHARED);
 
   WifiNetwork* wifi1 = new WifiNetwork("wifi1");
   wifi1->set_name("Fake WiFi1");
   wifi1->set_strength(100);
   wifi1->set_connected(true);
   wifi1->set_encryption(SECURITY_NONE);
-  AddStubNetwork(wifi1, PROFILE_NONE);
+  AddStubNetwork(wifi1, PROFILE_SHARED);
 
   WifiNetwork* wifi2 = new WifiNetwork("wifi2");
   wifi2->set_name("Fake WiFi2");

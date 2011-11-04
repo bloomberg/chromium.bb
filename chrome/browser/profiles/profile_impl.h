@@ -282,7 +282,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<chromeos::LocaleChangeGuard> locale_change_guard_;
 #endif
 
-  scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
+  scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
 

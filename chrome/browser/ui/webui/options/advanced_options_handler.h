@@ -7,10 +7,13 @@
 #pragma once
 
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/prefs/pref_set_observer.h"
+#endif  // !defined(OS_CHROMEOS)
 
 class CloudPrintSetupHandler;
 
@@ -156,7 +159,10 @@ class AdvancedOptionsHandler
 
   StringPrefMember auto_open_files_;
   IntegerPrefMember default_font_size_;
+
+#if !defined(OS_CHROMEOS)
   scoped_ptr<PrefSetObserver> proxy_prefs_;
+#endif  // !defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(AdvancedOptionsHandler);
 };

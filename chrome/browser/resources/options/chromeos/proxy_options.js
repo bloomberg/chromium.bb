@@ -43,7 +43,7 @@ cr.define('options', function() {
      * Initializes ProxyOptions page.
      */
     initializePage: function() {
-      // Call base class implementation to starts preference initialization.
+      // Call base class implementation to start preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
       // Set up ignored page.
@@ -63,21 +63,22 @@ cr.define('options', function() {
       observePrefsUI($('proxyAllProtocols'));
     },
 
-    proxyListInitalized_: false,
+    proxyListInitialized_: false,
 
     /**
      * Update controls state.
      * @public
      */
     updateControls: function() {
+      this.updateBannerVisibility_();
       this.toggleSingle_();
       if ($('manualProxy').checked) {
         this.enableManual_();
       } else {
         this.disableManual_();
       }
-      if (!this.proxyListInitalized_ && this.visible) {
-        this.proxyListInitalized_ = true;
+      if (!this.proxyListInitialized_ && this.visible) {
+        this.proxyListInitialized_ = true;
         $('ignoredHostList').redraw();
       }
     },
@@ -89,6 +90,44 @@ cr.define('options', function() {
      */
     handleVisibleChange_: function(e) {
       this.updateControls();
+    },
+
+    /**
+     * Updates info banner visibility state. This function shows the banner
+     * if proxy is managed or shared-proxies is off for shared network.
+     * @private
+     */
+    updateBannerVisibility_: function() {
+      var bannerDiv = $('info-banner');
+      // Remove class and listener for click event in case they were added
+      // before and updateBannerVisibility_ is called repeatedly.
+      bannerDiv.classList.remove("clickable");
+      bannerDiv.removeEventListener('click', this.handleSharedProxiesHint_);
+
+      // Show banner and determine its message if necessary.
+      var controlledBy = $('directProxy').controlledBy;
+      if (controlledBy == '') {
+        bannerDiv.hidden = true;
+      } else {
+        bannerDiv.hidden = false;
+        // controlledBy must match strings loaded in proxy_handler.cc and
+        // set in proxy_cros_settings_provider.cc.
+        $('banner-text').textContent = localStrings.getString(controlledBy);
+        if (controlledBy == "enableSharedProxiesBannerText") {
+          bannerDiv.classList.add("clickable");
+          bannerDiv.addEventListener('click', this.handleSharedProxiesHint_);
+        }
+      }
+    },
+
+    /**
+     * Handler for "click" event on yellow banner with enable-shared-proxies
+     * hint.
+     * @private
+     * @param {Event} e Click event fired from info-banner.
+     */
+    handleSharedProxiesHint_: function(e) {
+      OptionsPage.navigateToPage("internet");
     },
 
     /**
@@ -114,6 +153,7 @@ cr.define('options', function() {
      * @param {Event} e Click event.
      */
     disableManual_: function(e) {
+      $('advancedConfig').hidden = true;
       $('proxyAllProtocols').disabled = true;
       $('proxyHostName').disabled = true;
       $('proxyHostPort').disabled = true;
@@ -125,11 +165,8 @@ cr.define('options', function() {
       $('ftpProxyPort').disabled = true;
       $('socksHost').disabled = true;
       $('socksPort').disabled = true;
-      $('newHost').disabled = true;
-      $('removeHost').disabled = true;
-      $('addHost').disabled = true;
-      $('advancedConfig').style.display = 'none';
-      $('proxyConfig').disabled = !$('autoProxy').checked;
+      $('proxyConfig').disabled = $('autoProxy').disabled ||
+                                  !$('autoProxy').checked;
     },
 
     /**
@@ -139,22 +176,23 @@ cr.define('options', function() {
      * @param {Event} e Click event.
      */
     enableManual_: function(e) {
-      $('proxyAllProtocols').disabled = false;
-      $('proxyHostName').disabled = false;
-      $('proxyHostPort').disabled = false;
-      $('proxyHostSingleName').disabled = false;
-      $('proxyHostSinglePort').disabled = false;
-      $('secureProxyHostName').disabled = false;
-      $('secureProxyPort').disabled = false;
-      $('ftpProxy').disabled = false;
-      $('ftpProxyPort').disabled = false;
-      $('socksHost').disabled = false;
-      $('socksPort').disabled = false;
-      $('newHost').disabled = false;
-      $('removeHost').disabled = false;
-      $('addHost').disabled = false;
-      $('advancedConfig').style.display = '-webkit-box';
+      $('advancedConfig').hidden = false;
       $('ignoredHostList').redraw();
+      var all_disabled = $('manualProxy').disabled;
+      $('newHost').disabled = all_disabled;
+      $('removeHost').disabled = all_disabled;
+      $('addHost').disabled = all_disabled;
+      $('proxyAllProtocols').disabled = all_disabled;
+      $('proxyHostName').disabled = all_disabled;
+      $('proxyHostPort').disabled = all_disabled;
+      $('proxyHostSingleName').disabled = all_disabled;
+      $('proxyHostSinglePort').disabled = all_disabled;
+      $('secureProxyHostName').disabled = all_disabled;
+      $('secureProxyPort').disabled = all_disabled;
+      $('ftpProxy').disabled = all_disabled;
+      $('ftpProxyPort').disabled = all_disabled;
+      $('socksHost').disabled = all_disabled;
+      $('socksPort').disabled = all_disabled;
       $('proxyConfig').disabled = true;
     },
 

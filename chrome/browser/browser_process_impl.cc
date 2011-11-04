@@ -103,7 +103,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #include "chrome/browser/oom_priority_manager.h"
 #endif  // defined(OS_CHROMEOS)
@@ -498,16 +497,6 @@ net::URLRequestContextGetter* BrowserProcessImpl::system_request_context() {
 }
 
 #if defined(OS_CHROMEOS)
-chromeos::ProxyConfigServiceImpl*
-BrowserProcessImpl::chromeos_proxy_config_service_impl() {
-  DCHECK(CalledOnValidThread());
-  if (!chromeos_proxy_config_service_impl_) {
-    chromeos_proxy_config_service_impl_ =
-        new chromeos::ProxyConfigServiceImpl();
-  }
-  return chromeos_proxy_config_service_impl_;
-}
-
 browser::OomPriorityManager* BrowserProcessImpl::oom_priority_manager() {
   DCHECK(CalledOnValidThread());
   if (!oom_priority_manager_.get())

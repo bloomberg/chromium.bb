@@ -8512,13 +8512,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_OPTIONS_POLICY_MANAGED_PREFS" desc="Banner displayed in case there are policy-managed options the user won't be able to change.">
-          Some settings have been disabled by your administrator.
+          Some settings are being managed by your administrator.
         </message>
         <message name="IDS_OPTIONS_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are extension-managed options the user won't be able to change.">
           Some settings are being managed by an extension.
         </message>
         <message name="IDS_OPTIONS_POLICY_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are policy- and extension-managed options the user won't be able to change.">
           Some settings have been disabled by your administrator and others are being managed by an extension.
+        </message>
+        <message name="IDS_OPTIONS_UNMODIFIABLE_PREFS" desc="Banner displayed in case there are options that the user won't be able to change.">
+          Some settings cannot be modified by the user.
         </message>
       </if>
       <if expr="not pp_ifdef('chromeos') and is_posix">
@@ -12173,16 +12176,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Change proxy settings...
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ENABLE_SHARED_PROXIES_HINT" desc="In settings Internet options, when proxy can't be changed, the hint for user to do so by enabling the setting for IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES.">
-        To change proxy settings, enable "<ph name="USE_SHARED_PROXIES">$1<ex>Allow proxies for shared networks</ex></ph>" setting.
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_POLICY_MANAGED_PROXY_TEXT" desc="In settings Internet options, the text to display when proxy is policy-managed and user won't be able to change.">
-        Proxy settings have been disabled by your administrator.
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EXTENSION_MANAGED_PROXY_TEXT" desc="In settings Internet options, the text to display when proxy is extension-managed and user won't be able to change.">
-        Proxy settings are being managed by an extension.
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNMODIFIABLE_PROXY_TEXT" desc="In settings Internet options, the text to display when proxy is not modifiable by user.">
-        Proxy settings cannot be modified by user.
+        To change proxy, enable "<ph name="USE_SHARED_PROXIES">$1<ex>Allow proxies for shared networks</ex></ph>" setting.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS" desc="In settings Internet options, the label hardware address.">
         Hardware address:

@@ -383,7 +383,7 @@ class TestingProfile : public Profile {
       extension_special_storage_policy_;
 
   // The proxy prefs tracker.
-  scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
+  scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   // We use a temporary directory to store testing profile data. In a multi-
   // profile environment, this is invalid and the directory is managed by the

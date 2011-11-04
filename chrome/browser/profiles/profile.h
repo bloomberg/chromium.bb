@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "chrome/browser/net/preconnect.h" // TODO: remove this.
+#include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/browser_context.h"
 
@@ -66,7 +67,6 @@ class HistoryService;
 class HostContentSettingsMap;
 class NavigationController;
 class PasswordStore;
-class PrefProxyConfigTracker;
 class PrefService;
 class ProfileSyncFactory;
 class ProfileSyncService;

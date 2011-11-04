@@ -228,19 +228,20 @@ html[dir='rtl'] .action-area {
   width: 650px;
 }
 
-#managed-prefs-banner {
+.managed-prefs-banner {
   background: -webkit-linear-gradient(#fff2b7, #fae691 97%, #878787);
   height: 31px;
   width: 100%;
-}
-
-#managed-prefs-banner {
   margin: 0;
   padding: 0;
   vertical-align: middle;
 }
 
-#managed-prefs-icon {
+.managed-prefs-banner.clickable:active {
+  background: -webkit-linear-gradient(#878787, #fae691 3%, #fff2b7);
+}
+
+.managed-prefs-icon {
   background-image: url("chrome://theme/IDR_WARNING");
   background-repeat: no-repeat;
   background-position:center;
@@ -251,7 +252,7 @@ html[dir='rtl'] .action-area {
   width: 24px;
 }
 
-#managed-prefs-text {
+.managed-prefs-text {
   vertical-align: middle;
 }
 

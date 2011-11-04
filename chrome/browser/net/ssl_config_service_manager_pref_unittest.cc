@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/pref_proxy_config_service.h"
+#include "chrome/browser/net/ssl_config_service_manager.h"
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
 #include "chrome/common/chrome_switches.h"

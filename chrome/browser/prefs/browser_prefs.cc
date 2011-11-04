@@ -28,7 +28,6 @@
 #include "chrome/browser/net/http_server_properties_manager.h"
 #include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/net/predictor.h"
-#include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -85,6 +84,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/preferences.h"
+#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/status/input_method_menu.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
@@ -123,7 +123,7 @@ void RegisterLocalState(PrefService* local_state) {
   geolocation::RegisterPrefs(local_state);
   BackgroundModeManager::RegisterPrefs(local_state);
   NotificationUIManager::RegisterPrefs(local_state);
-  PrefProxyConfigService::RegisterPrefs(local_state);
+  PrefProxyConfigTrackerImpl::RegisterPrefs(local_state);
   SSLConfigServiceManager::RegisterPrefs(local_state);
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::CloudPolicySubsystem::RegisterPrefs(local_state);
@@ -139,6 +139,7 @@ void RegisterLocalState(PrefService* local_state) {
   chromeos::ServicesCustomizationDocument::RegisterPrefs(local_state);
   chromeos::SignedSettingsTempStorage::RegisterPrefs(local_state);
   chromeos::NetworkMenuButton::RegisterPrefs(local_state);
+  chromeos::ProxyConfigServiceImpl::RegisterPrefs(local_state);
 #endif
 }
 
@@ -168,7 +169,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   PinnedTabCodec::RegisterUserPrefs(user_prefs);
   ExtensionPrefs::RegisterUserPrefs(user_prefs);
   TranslatePrefs::RegisterUserPrefs(user_prefs);
-  PrefProxyConfigService::RegisterPrefs(user_prefs);
+  PrefProxyConfigTrackerImpl::RegisterPrefs(user_prefs);
 #if defined(TOOLKIT_VIEWS)
   BrowserActionsContainer::RegisterUserPrefs(user_prefs);
 #elif defined(TOOLKIT_GTK)
@@ -176,6 +177,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
 #if defined(OS_CHROMEOS)
   chromeos::Preferences::RegisterUserPrefs(user_prefs);
+  chromeos::ProxyConfigServiceImpl::RegisterPrefs(user_prefs);
 #endif
   SigninManager::RegisterUserPrefs(user_prefs);
   InstantController::RegisterUserPrefs(user_prefs);

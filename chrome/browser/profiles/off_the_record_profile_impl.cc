@@ -26,7 +26,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
-#include "chrome/browser/net/pref_proxy_config_service.h"
+#include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -61,6 +61,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/preferences.h"
+#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #endif
 
 using content::BrowserThread;
@@ -145,7 +146,7 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   if (host_content_settings_map_)
     host_content_settings_map_->ShutdownOnUIThread();
 
-  if (pref_proxy_config_tracker_)
+  if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
 
   ExtensionService* extension_service = GetExtensionService();
@@ -549,9 +550,11 @@ void OffTheRecordProfileImpl::OnLogin() {
 #endif  // defined(OS_CHROMEOS)
 
 PrefProxyConfigTracker* OffTheRecordProfileImpl::GetProxyConfigTracker() {
-  if (!pref_proxy_config_tracker_)
-    pref_proxy_config_tracker_ = new PrefProxyConfigTracker(GetPrefs());
-  return pref_proxy_config_tracker_;
+  if (!pref_proxy_config_tracker_.get()) {
+    pref_proxy_config_tracker_.reset(
+        ProxyServiceFactory::CreatePrefProxyConfigTracker(GetPrefs()));
+  }
+  return pref_proxy_config_tracker_.get();
 }
 
 chrome_browser_net::Predictor* OffTheRecordProfileImpl::GetNetworkPredictor() {

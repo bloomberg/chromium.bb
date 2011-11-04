@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,22 @@ enum ProxyMode {
   kModeCount
 };
 
+// State of proxy configuration.
+enum ConfigState {
+  // Configuration is from policy.
+  CONFIG_POLICY,
+  // Configuration is from extension.
+  CONFIG_EXTENSION,
+  // Configuration is not from policy or extension but still precedes others.
+  CONFIG_OTHER_PRECEDE,
+  // Configuration is from system.
+  CONFIG_SYSTEM,
+  // Configuration is recommended i.e there's a fallback configuration.
+  CONFIG_FALLBACK,
+  // Configuration is known to be not set.
+  CONFIG_UNSET,
+};
+
 // Constants for string values used to specify the proxy mode through externally
 // visible APIs, e.g. through policy or the proxy extension API.
 extern const char kDirectProxyModeName[];
@@ -49,6 +65,8 @@ bool StringToProxyMode(const std::string& in_value,
                        ProxyMode* out_value);
 // Ownership of the return value is NOT passed to the caller.
 const char* ProxyModeToString(ProxyMode mode);
+
+bool DoesPrefPrecede(ConfigState config_state);
 
 }  // namespace ProxyPrefs
 

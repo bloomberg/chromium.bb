@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 
 namespace chromeos {
@@ -45,28 +46,20 @@ static const char* const kProxySettings[] = {
 
 //------------------ ProxyCrosSettingsProvider: public methods -----------------
 
-ProxyCrosSettingsProvider::ProxyCrosSettingsProvider() { }
+ProxyCrosSettingsProvider::ProxyCrosSettingsProvider(Profile* profile)
+    : profile_(profile) {
+}
 
 void ProxyCrosSettingsProvider::SetCurrentNetwork(const std::string& network) {
-  if (!GetConfigService()->UISetCurrentNetwork(network))
-    return;
+  GetConfigService()->UISetCurrentNetwork(network);
   for (size_t i = 0; i < arraysize(kProxySettings); ++i)
     CrosSettings::Get()->FireObservers(kProxySettings[i]);
 }
 
 void ProxyCrosSettingsProvider::MakeActiveNetworkCurrent() {
-  if (!GetConfigService()->UIMakeActiveNetworkCurrent())
-    return;
+  GetConfigService()->UIMakeActiveNetworkCurrent();
   for (size_t i = 0; i < arraysize(kProxySettings); ++i)
     CrosSettings::Get()->FireObservers(kProxySettings[i]);
-}
-
-bool ProxyCrosSettingsProvider::IsUsingSharedProxies() const {
-  return GetConfigService()->use_shared_proxies();
-}
-
-const std::string& ProxyCrosSettingsProvider::GetCurrentNetworkName() const {
-  return GetConfigService()->current_network_name();
 }
 
 void ProxyCrosSettingsProvider::DoSet(const std::string& path,
@@ -235,6 +228,7 @@ bool ProxyCrosSettingsProvider::Get(const std::string& path,
                                     Value** out_value) const {
   bool found = false;
   bool managed = false;
+  std::string controlled_by;
   Value* data = NULL;
   chromeos::ProxyConfigServiceImpl* config_service = GetConfigService();
   chromeos::ProxyConfigServiceImpl::ProxyConfig config;
@@ -274,6 +268,21 @@ bool ProxyCrosSettingsProvider::Get(const std::string& path,
     } else {
       data = Value::CreateIntegerValue(1);
     }
+    switch (config.state) {
+       case ProxyPrefs::CONFIG_POLICY:
+         controlled_by = "policyManagedPrefsBannerText";
+         break;
+       case ProxyPrefs::CONFIG_EXTENSION:
+         controlled_by = "extensionManagedPrefsBannerText";
+         break;
+       case ProxyPrefs::CONFIG_OTHER_PRECEDE:
+         controlled_by = "unmodifiablePrefsBannerText";
+         break;
+       default:
+         if (!config.user_modifiable)
+           controlled_by = "enableSharedProxiesBannerText";
+         break;
+    }
     found = true;
   } else if (path == kProxySingle) {
     data = Value::CreateBooleanValue(config.mode ==
@@ -312,6 +321,10 @@ bool ProxyCrosSettingsProvider::Get(const std::string& path,
       data = Value::CreateStringValue("");
     dict->Set("value", data);
     dict->SetBoolean("managed", managed);
+    if (path == kProxyType) {
+      dict->SetString("controlledBy", controlled_by);
+      dict->SetBoolean("disabled", !config.user_modifiable);
+    }
     *out_value = dict;
     return true;
   } else {
@@ -328,7 +341,7 @@ bool ProxyCrosSettingsProvider::HandlesSetting(const std::string& path) const {
 
 chromeos::ProxyConfigServiceImpl*
     ProxyCrosSettingsProvider::GetConfigService() const {
-  return g_browser_process->chromeos_proxy_config_service_impl();
+  return profile_->GetProxyConfigTracker();
 }
 
 net::ProxyServer ProxyCrosSettingsProvider::CreateProxyServerFromHost(

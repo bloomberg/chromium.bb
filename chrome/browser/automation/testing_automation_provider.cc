@@ -2348,10 +2348,6 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["NetworkScan"] = &TestingAutomationProvider::NetworkScan;
   handler_map["ToggleNetworkDevice"] =
       &TestingAutomationProvider::ToggleNetworkDevice;
-  handler_map["GetProxySettings"] =
-      &TestingAutomationProvider::GetProxySettings;
-  handler_map["SetProxySettings"] =
-      &TestingAutomationProvider::SetProxySettings;
   handler_map["ConnectToCellularNetwork"] =
       &TestingAutomationProvider::ConnectToCellularNetwork;
   handler_map["DisconnectFromCellularNetwork"] =
@@ -2547,6 +2543,10 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["CaptureProfilePhoto"] =
       &TestingAutomationProvider::CaptureProfilePhoto;
   browser_handler_map["GetTimeInfo"] = &TestingAutomationProvider::GetTimeInfo;
+  browser_handler_map["GetProxySettings"] =
+      &TestingAutomationProvider::GetProxySettings;
+  browser_handler_map["SetProxySettings"] =
+      &TestingAutomationProvider::SetProxySettings;
 #endif  // defined(OS_CHROMEOS)
 
   // Look for command in handlers that take a Browser handle.

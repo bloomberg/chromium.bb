@@ -17,13 +17,10 @@
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
@@ -919,35 +916,15 @@ void MoreMenuModel::InitMenuItems(
   bool oobe = !should_open_button_options;  // we don't show options for OOBE.
   bool connected = cros->Connected();  // always call for test expectations.
   if (!oobe) {
-    int flags = FLAG_OPTIONS;
     int message_id = -1;
-    if (is_browser_mode) {
+    if (is_browser_mode)
       message_id = IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG;
-    } else if (connected) {
-      const PrefService::Preference* proxy_pref =
-          ProfileManager::GetDefaultProfile()->GetPrefs()->FindPreference(
-              prefs::kProxy);
-      if (proxy_pref && (!proxy_pref->IsUserModifiable() ||
-                         proxy_pref->HasUserSetting())) {
-        flags |= FLAG_DISABLED;
-        if (proxy_pref->IsManaged()) {
-          message_id =
-              IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_POLICY_MANAGED_PROXY_TEXT;
-        } else if (proxy_pref->IsExtensionControlled()) {
-          message_id =
-             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EXTENSION_MANAGED_PROXY_TEXT;
-        } else {
-          message_id =
-             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNMODIFIABLE_PROXY_TEXT;
-        }
-      } else {
-        message_id = IDS_STATUSBAR_NETWORK_OPEN_PROXY_SETTINGS_DIALOG;
-      }
-    }
+    else if (connected)
+      message_id = IDS_STATUSBAR_NETWORK_OPEN_PROXY_SETTINGS_DIALOG;
     if (message_id != -1) {
       link_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
                                     l10n_util::GetStringUTF16(message_id),
-                                    SkBitmap(), std::string(), flags));
+                                    SkBitmap(), std::string(), FLAG_OPTIONS));
     }
   }
 

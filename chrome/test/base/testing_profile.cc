@@ -26,7 +26,7 @@
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/net/pref_proxy_config_service.h"
+#include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -61,6 +61,10 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/quota/mock_quota_manager.h"
 #include "webkit/quota/quota_manager.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#endif  // defined(OS_CHROMEOS)
 
 using base::Time;
 using content::BrowserThread;
@@ -719,10 +723,11 @@ void TestingProfile::set_last_selected_directory(const FilePath& path) {
 }
 
 PrefProxyConfigTracker* TestingProfile::GetProxyConfigTracker() {
-  if (!pref_proxy_config_tracker_)
-    pref_proxy_config_tracker_ = new PrefProxyConfigTracker(GetPrefs());
-
-  return pref_proxy_config_tracker_;
+  if (!pref_proxy_config_tracker_.get()) {
+    pref_proxy_config_tracker_.reset(
+        ProxyServiceFactory::CreatePrefProxyConfigTracker(GetPrefs()));
+  }
+  return pref_proxy_config_tracker_.get();
 }
 
 void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {

@@ -54,10 +54,6 @@ class Thread;
 namespace browser {
 class OomPriorityManager;
 }
-
-namespace chromeos {
-class ProxyConfigServiceImpl;
-}
 #endif  // defined(OS_CHROMEOS)
 
 namespace net {
@@ -111,10 +107,6 @@ class BrowserProcess {
   virtual net::URLRequestContextGetter* system_request_context() = 0;
 
 #if defined(OS_CHROMEOS)
-  // Returns ChromeOS's ProxyConfigServiceImpl, creating if not yet created.
-  virtual chromeos::ProxyConfigServiceImpl*
-      chromeos_proxy_config_service_impl() = 0;
-
   // Returns the out-of-memory priority manager.
   virtual browser::OomPriorityManager* oom_priority_manager() = 0;
 #endif  // defined(OS_CHROMEOS)

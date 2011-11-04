@@ -21,7 +21,7 @@ class ChromeNetLog;
 class ChromeURLRequestContextGetter;
 class ExtensionEventRouterForwarder;
 class MediaInternals;
-class PrefProxyConfigTracker;
+class PrefProxyConfigTrackerImpl;
 class PrefService;
 class SystemURLRequestContextGetter;
 
@@ -178,7 +178,7 @@ class IOThread : public content::BrowserProcessSubThread {
   // which gets posted by calling certain member functions of IOThread.
   scoped_ptr<net::ProxyConfigService> system_proxy_config_service_;
 
-  scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
+  scoped_ptr<PrefProxyConfigTrackerImpl> pref_proxy_config_tracker_;
 
   scoped_refptr<net::URLRequestContextGetter>
       system_url_request_context_getter_;

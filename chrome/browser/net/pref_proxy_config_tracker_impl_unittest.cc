@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/pref_proxy_config_service.h"
+#include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -71,44 +71,50 @@ class MockObserver : public net::ProxyConfigService::Observer {
 };
 
 template<typename TESTBASE>
-class PrefProxyConfigServiceTestBase : public TESTBASE {
+class PrefProxyConfigTrackerImplTestBase : public TESTBASE {
  protected:
-  PrefProxyConfigServiceTestBase()
+  PrefProxyConfigTrackerImplTestBase()
       : ui_thread_(BrowserThread::UI, &loop_),
         io_thread_(BrowserThread::IO, &loop_) {}
 
   virtual void Init(PrefService* pref_service) {
     ASSERT_TRUE(pref_service);
-    PrefProxyConfigService::RegisterPrefs(pref_service);
+    PrefProxyConfigTrackerImpl::RegisterPrefs(pref_service);
     fixed_config_.set_pac_url(GURL(kFixedPacUrl));
     delegate_service_ =
         new TestProxyConfigService(fixed_config_,
                                    net::ProxyConfigService::CONFIG_VALID);
-    proxy_config_tracker_ = new PrefProxyConfigTracker(pref_service);
     proxy_config_service_.reset(
-        new PrefProxyConfigService(proxy_config_tracker_.get(),
-                                   delegate_service_));
+        new ChromeProxyConfigService(delegate_service_));
+    proxy_config_tracker_.reset(new PrefProxyConfigTrackerImpl(pref_service));
+    proxy_config_tracker_->SetChromeProxyConfigService(
+        proxy_config_service_.get());
+    // SetChromeProxyConfigService triggers update of initial prefs proxy
+    // config by tracker to chrome proxy config service, so flush all pending
+    // tasks so that tests start fresh.
+    loop_.RunAllPending();
   }
 
   virtual void TearDown() {
     proxy_config_tracker_->DetachFromPrefService();
     loop_.RunAllPending();
+    proxy_config_tracker_.reset();
     proxy_config_service_.reset();
   }
 
   MessageLoop loop_;
   TestProxyConfigService* delegate_service_; // weak
-  scoped_ptr<PrefProxyConfigService> proxy_config_service_;
+  scoped_ptr<ChromeProxyConfigService> proxy_config_service_;
   net::ProxyConfig fixed_config_;
 
  private:
-  scoped_refptr<PrefProxyConfigTracker> proxy_config_tracker_;
+  scoped_ptr<PrefProxyConfigTrackerImpl> proxy_config_tracker_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
 };
 
-class PrefProxyConfigServiceTest
-    : public PrefProxyConfigServiceTestBase<testing::Test> {
+class PrefProxyConfigTrackerImplTest
+    : public PrefProxyConfigTrackerImplTestBase<testing::Test> {
  protected:
   virtual void SetUp() {
     pref_service_.reset(new TestingPrefService());
@@ -118,14 +124,14 @@ class PrefProxyConfigServiceTest
   scoped_ptr<TestingPrefService> pref_service_;
 };
 
-TEST_F(PrefProxyConfigServiceTest, BaseConfiguration) {
+TEST_F(PrefProxyConfigTrackerImplTest, BaseConfiguration) {
   net::ProxyConfig actual_config;
   EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
             proxy_config_service_->GetLatestProxyConfig(&actual_config));
   EXPECT_EQ(GURL(kFixedPacUrl), actual_config.pac_url());
 }
 
-TEST_F(PrefProxyConfigServiceTest, DynamicPrefOverrides) {
+TEST_F(PrefProxyConfigTrackerImplTest, DynamicPrefOverrides) {
   pref_service_->SetManagedPref(
       prefs::kProxy,
       ProxyConfigDictionary::CreateFixedServers("http://example.com:3128", ""));
@@ -157,7 +163,7 @@ MATCHER_P(ProxyConfigMatches, config, "") {
   return reference.Equals(arg);
 }
 
-TEST_F(PrefProxyConfigServiceTest, Observers) {
+TEST_F(PrefProxyConfigTrackerImplTest, Observers) {
   const net::ProxyConfigService::ConfigAvailability CONFIG_VALID =
       net::ProxyConfigService::CONFIG_VALID;
   MockObserver observer;
@@ -212,7 +218,7 @@ TEST_F(PrefProxyConfigServiceTest, Observers) {
   proxy_config_service_->RemoveObserver(&observer);
 }
 
-TEST_F(PrefProxyConfigServiceTest, Fallback) {
+TEST_F(PrefProxyConfigTrackerImplTest, Fallback) {
   const net::ProxyConfigService::ConfigAvailability CONFIG_VALID =
       net::ProxyConfigService::CONFIG_VALID;
   MockObserver observer;
@@ -266,7 +272,7 @@ TEST_F(PrefProxyConfigServiceTest, Fallback) {
   proxy_config_service_->RemoveObserver(&observer);
 }
 
-TEST_F(PrefProxyConfigServiceTest, ExplicitSystemSettings) {
+TEST_F(PrefProxyConfigTrackerImplTest, ExplicitSystemSettings) {
   pref_service_->SetRecommendedPref(
       prefs::kProxy,
       ProxyConfigDictionary::CreateAutoDetect());
@@ -316,11 +322,11 @@ void PrintTo(const CommandLineTestParams& params, std::ostream* os) {
   *os << params.description;
 }
 
-class PrefProxyConfigServiceCommandLineTest
-    : public PrefProxyConfigServiceTestBase<
+class PrefProxyConfigTrackerImplCommandLineTest
+    : public PrefProxyConfigTrackerImplTestBase<
           testing::TestWithParam<CommandLineTestParams> > {
  protected:
-  PrefProxyConfigServiceCommandLineTest()
+  PrefProxyConfigTrackerImplCommandLineTest()
       : command_line_(CommandLine::NO_PROGRAM) {}
 
   virtual void SetUp() {
@@ -342,7 +348,7 @@ class PrefProxyConfigServiceCommandLineTest
   scoped_ptr<PrefService> pref_service_;
 };
 
-TEST_P(PrefProxyConfigServiceCommandLineTest, CommandLine) {
+TEST_P(PrefProxyConfigTrackerImplCommandLineTest, CommandLine) {
   net::ProxyConfig config;
   EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
             proxy_config_service_->GetLatestProxyConfig(&config));
@@ -468,8 +474,8 @@ static const CommandLineTestParams kCommandLineTestParams[] = {
 };
 
 INSTANTIATE_TEST_CASE_P(
-    PrefProxyConfigServiceCommandLineTestInstance,
-    PrefProxyConfigServiceCommandLineTest,
+    PrefProxyConfigTrackerImplCommandLineTestInstance,
+    PrefProxyConfigTrackerImplCommandLineTest,
     testing::ValuesIn(kCommandLineTestParams));
 
 }  // namespace
