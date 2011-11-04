@@ -115,6 +115,7 @@ class KeyboardWidget
 
   // Overridden from TabContentsObserver.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void RenderViewGone() OVERRIDE;
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   // Overridden from TextInputTypeObserver.
@@ -155,6 +156,8 @@ class KeyboardWidget
   // Interpolated transform used during animation.
   scoped_ptr<ui::InterpolatedTransform> transform_;
 
+  GURL keyboard_url_;
+
   // The DOM view to host the keyboard.
   DOMView* dom_view_;
 
@@ -173,6 +176,7 @@ class KeyboardWidget
 
 KeyboardWidget::KeyboardWidget()
     : views::Widget::Widget(),
+      keyboard_url_(chrome::kChromeUIKeyboardURL),
       dom_view_(new DOMView),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_dispatcher_(ProfileManager::GetDefaultProfile(), this)),
@@ -193,10 +197,9 @@ KeyboardWidget::KeyboardWidget()
 
   // Setup the DOM view to host the keyboard.
   Profile* profile = ProfileManager::GetDefaultProfile();
-  GURL keyboard_url(chrome::kChromeUIKeyboardURL);
   dom_view_->Init(profile,
-      SiteInstance::CreateSiteInstanceForURL(profile, keyboard_url));
-  dom_view_->LoadURL(keyboard_url);
+      SiteInstance::CreateSiteInstanceForURL(profile, keyboard_url_));
+  dom_view_->LoadURL(keyboard_url_);
   dom_view_->SetVisible(true);
   SetContentsView(dom_view_);
 
@@ -342,6 +345,12 @@ bool KeyboardWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void KeyboardWidget::RenderViewGone() {
+  // Reload the keyboard if it crashes.
+  dom_view_->LoadURL(keyboard_url_);
+  dom_view_->SchedulePaint();
 }
 
 void KeyboardWidget::OnRequest(const ExtensionHostMsg_Request_Params& request) {
