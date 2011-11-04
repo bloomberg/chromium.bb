@@ -15,7 +15,7 @@
   </head>
 
   <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-    <table class="hfill">
+    <table id="top-box" class="hfill">
       <tr>
         <td i18n-content="descriptionLabel"></td>
         <td class="hfill"><input id="description-text" class="hfill"></td>
@@ -32,11 +32,12 @@
         <td><div class="invalid" id="url-icon"></div></td>
       </tr>
     </table>
-    <div i18n-content="urlDescriptionLabel" id="url-description"></div>
+    <div id="middle-box" i18n-content="urlDescriptionLabel"
+        id="url-description"></div>
     <div class="action-area">
       <div class="button-strip">
-        <button id="cancel" i18n-content="cancel"></button>
         <button id="save" i18n-content="save"></button>
+        <button id="cancel" i18n-content="cancel"></button>
       </div>
     </div>
   </body>

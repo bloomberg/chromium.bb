@@ -17,8 +17,20 @@ input {
   box-sizing: border-box;
 }
 
+table {
+  white-space: nowrap;
+}
+
 #url-description {
   margin: 12px 3px 0 3px;
+}
+
+#top-box {
+  padding: 9px 9px 0 9px;
+}
+
+#middle-box {
+  padding: 4px 9px 0 9px;
 }
 
 .action-area {
