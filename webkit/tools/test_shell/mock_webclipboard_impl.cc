@@ -61,6 +61,22 @@ bool MockWebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
   return true;
 }
 
+WebVector<WebString> MockWebClipboardImpl::readAvailableTypes(
+    Buffer buffer, bool* containsFilenames) {
+  *containsFilenames = false;
+  std::vector<WebString> results;
+  if (!m_plainText.isEmpty()) {
+    results.push_back(WebString("text/plain"));
+  }
+  if (!m_htmlText.isEmpty()) {
+    results.push_back(WebString("text/html"));
+  }
+  if (!m_image.isNull()) {
+    results.push_back(WebString("image/png"));
+  }
+  return results;
+}
+
 WebKit::WebString MockWebClipboardImpl::readPlainText(
     WebKit::WebClipboard::Buffer buffer) {
   return m_plainText;
@@ -141,20 +157,4 @@ void MockWebClipboardImpl::writeImage(const WebKit::WebImage& image,
     m_image = image;
     m_writeSmartPaste = false;
   }
-}
-
-WebVector<WebString> MockWebClipboardImpl::readAvailableTypes(
-    Buffer buffer, bool* containsFilenames) {
-  *containsFilenames = false;
-  std::vector<WebString> results;
-  if (!m_plainText.isEmpty()) {
-    results.push_back(WebString("text/plain")); 
-  }
-  if (!m_htmlText.isEmpty()) {
-    results.push_back(WebString("text/html"));
-  }
-  if (!m_image.isNull()) {
-    results.push_back(WebString("image/png"));
-  }
-  return results;
 }

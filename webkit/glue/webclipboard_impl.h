@@ -22,7 +22,10 @@ class WebClipboardImpl : public WebKit::WebClipboard {
   virtual ~WebClipboardImpl();
 
   // WebClipboard methods:
+  virtual uint64 getSequenceNumber();
   virtual bool isFormatAvailable(Format, Buffer);
+  virtual WebKit::WebVector<WebKit::WebString> readAvailableTypes(
+      Buffer, bool* contains_filenames);
   virtual WebKit::WebString readPlainText(Buffer);
   virtual WebKit::WebString readHTML(
       Buffer,
@@ -30,7 +33,6 @@ class WebClipboardImpl : public WebKit::WebClipboard {
       unsigned* fragment_start,
       unsigned* fragment_end);
   virtual WebKit::WebData readImage(Buffer);
-  virtual uint64 getSequenceNumber();
   virtual void writeHTML(
       const WebKit::WebString& html_text,
       const WebKit::WebURL& source_url,
@@ -44,16 +46,6 @@ class WebClipboardImpl : public WebKit::WebClipboard {
       const WebKit::WebImage&,
       const WebKit::WebURL& source_url,
       const WebKit::WebString& title);
-  virtual void writeData(
-      const WebKit::WebString& type,
-      const WebKit::WebString& data,
-      const WebKit::WebString& metadata);
-
-  virtual WebKit::WebVector<WebKit::WebString> readAvailableTypes(
-      Buffer, bool* contains_filenames);
-  virtual bool readData(Buffer, const WebKit::WebString& type,
-      WebKit::WebString* data, WebKit::WebString* metadata);
-  virtual WebKit::WebVector<WebKit::WebString> readFilenames(Buffer);
 
  private:
   bool ConvertBufferType(Buffer, ui::Clipboard::Buffer*);

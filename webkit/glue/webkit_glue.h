@@ -173,6 +173,9 @@ base::StringPiece GetDataResource(int resource_id);
 // Get a clipboard that can be used to construct a ScopedClipboardWriterGlue.
 ui::Clipboard* ClipboardGetClipboard();
 
+// Get a sequence number which uniquely identifies clipboard state.
+uint64 ClipboardGetSequenceNumber();
+
 // Tests whether the clipboard contains a certain format
 bool ClipboardIsFormatAvailable(const ui::Clipboard::FormatType& format,
                                 ui::Clipboard::Buffer buffer);
@@ -194,17 +197,6 @@ void ClipboardReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
                        uint32* fragment_end);
 
 void ClipboardReadImage(ui::Clipboard::Buffer buffer, std::string* data);
-
-// Reads one type of data from the clipboard, if available.
-bool ClipboardReadData(ui::Clipboard::Buffer buffer, const string16& type,
-                       string16* data, string16* metadata);
-
-// Get a sequence number which uniquely identifies clipboard state.
-uint64 ClipboardGetSequenceNumber();
-
-// Reads filenames from the clipboard, if available.
-bool ClipboardReadFilenames(ui::Clipboard::Buffer buffer,
-                            std::vector<string16>* filenames);
 
 // Embedders implement this function to return the list of plugins to Webkit.
 void GetPlugins(bool refresh,

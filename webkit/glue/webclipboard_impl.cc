@@ -63,6 +63,10 @@ std::string WebClipboardImpl::URLToImageMarkup(const WebURL& url,
 WebClipboardImpl::~WebClipboardImpl() {
 }
 
+uint64 WebClipboardImpl::getSequenceNumber() {
+  return ClipboardGetSequenceNumber();
+}
+
 bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
   ui::Clipboard::FormatType format_type;
   ui::Clipboard::Buffer buffer_type;
@@ -93,6 +97,16 @@ bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
   }
 
   return ClipboardIsFormatAvailable(format_type, buffer_type);
+}
+
+WebVector<WebString> WebClipboardImpl::readAvailableTypes(
+    Buffer buffer, bool* contains_filenames) {
+  ui::Clipboard::Buffer buffer_type;
+  std::vector<string16> types;
+  if (ConvertBufferType(buffer, &buffer_type)) {
+    ClipboardReadAvailableTypes(buffer_type, &types, contains_filenames);
+  }
+  return types;
 }
 
 WebString WebClipboardImpl::readPlainText(Buffer buffer) {
@@ -143,10 +157,6 @@ WebData WebClipboardImpl::readImage(Buffer buffer) {
   std::string png_data;
   ClipboardReadImage(buffer_type, &png_data);
   return WebData(png_data);
-}
-
-uint64 WebClipboardImpl::getSequenceNumber() {
-  return ClipboardGetSequenceNumber();
 }
 
 void WebClipboardImpl::writeHTML(
@@ -200,47 +210,6 @@ void WebClipboardImpl::writeImage(
     scw.WriteHTML(UTF8ToUTF16(URLToImageMarkup(url, title)), "");
 #endif
   }
-}
-
-void WebClipboardImpl::writeData(const WebString& type,
-                                 const WebString& data,
-                                 const WebString& metadata) {
-  // TODO(dcheng): Implement this stub.
-}
-
-WebVector<WebString> WebClipboardImpl::readAvailableTypes(
-    Buffer buffer, bool* contains_filenames) {
-  ui::Clipboard::Buffer buffer_type;
-  std::vector<string16> types;
-  if (ConvertBufferType(buffer, &buffer_type)) {
-    ClipboardReadAvailableTypes(buffer_type, &types, contains_filenames);
-  }
-  return types;
-}
-
-bool WebClipboardImpl::readData(Buffer buffer, const WebString& type,
-                                WebString* data, WebString* metadata) {
-  ui::Clipboard::Buffer buffer_type;
-  if (!ConvertBufferType(buffer, &buffer_type))
-    return false;
-
-  string16 data_out;
-  string16 metadata_out;
-  bool result = ClipboardReadData(buffer_type, type, &data_out, &metadata_out);
-  if (result) {
-    *data = data_out;
-    *metadata = metadata_out;
-  }
-  return result;
-}
-
-WebVector<WebString> WebClipboardImpl::readFilenames(Buffer buffer) {
-  ui::Clipboard::Buffer buffer_type;
-  std::vector<string16> filenames;
-  if (ConvertBufferType(buffer, &buffer_type)) {
-    ClipboardReadFilenames(buffer_type, &filenames);
-  }
-  return filenames;
 }
 
 bool WebClipboardImpl::ConvertBufferType(Buffer buffer,

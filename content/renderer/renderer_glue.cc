@@ -96,6 +96,13 @@ ui::Clipboard* ClipboardGetClipboard() {
   return NULL;
 }
 
+uint64 ClipboardGetSequenceNumber() {
+  uint64 seq_num = 0;
+  RenderThreadImpl::current()->Send(
+      new ClipboardHostMsg_GetSequenceNumber(&seq_num));
+  return seq_num;
+}
+
 bool ClipboardIsFormatAvailable(const ui::Clipboard::FormatType& format,
                                 ui::Clipboard::Buffer buffer) {
   bool result;
@@ -139,29 +146,6 @@ void ClipboardReadImage(ui::Clipboard::Buffer buffer, std::string* data) {
     buffer.Map(image_size);
     data->append(static_cast<char*>(buffer.memory()), image_size);
   }
-}
-
-bool ClipboardReadData(ui::Clipboard::Buffer buffer, const string16& type,
-                       string16* data, string16* metadata) {
-  bool result = false;
-  RenderThreadImpl::current()->Send(new ClipboardHostMsg_ReadData(
-      buffer, type, &result, data, metadata));
-  return result;
-}
-
-bool ClipboardReadFilenames(ui::Clipboard::Buffer buffer,
-                            std::vector<string16>* filenames) {
-  bool result;
-  RenderThreadImpl::current()->Send(new ClipboardHostMsg_ReadFilenames(
-      buffer, &result, filenames));
-  return result;
-}
-
-uint64 ClipboardGetSequenceNumber() {
-  uint64 seq_num = 0;
-  RenderThreadImpl::current()->Send(
-      new ClipboardHostMsg_GetSequenceNumber(&seq_num));
-  return seq_num;
 }
 
 void GetPlugins(bool refresh,

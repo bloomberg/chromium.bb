@@ -11,7 +11,6 @@
 #endif
 
 #include "base/stl_util.h"
-#include "content/browser/clipboard_dispatcher.h"
 #include "content/common/clipboard_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "googleurl/src/gurl.h"
@@ -65,6 +64,7 @@ bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message,
   IPC_BEGIN_MESSAGE_MAP_EX(ClipboardMessageFilter, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_WriteObjectsAsync, OnWriteObjectsAsync)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_WriteObjectsSync, OnWriteObjectsSync)
+    IPC_MESSAGE_HANDLER(ClipboardHostMsg_GetSequenceNumber, OnGetSequenceNumber)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_IsFormatAvailable, OnIsFormatAvailable)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadAvailableTypes,
                         OnReadAvailableTypes)
@@ -76,9 +76,6 @@ bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_FindPboardWriteStringAsync,
                         OnFindPboardWriteString)
 #endif
-    IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadData, OnReadData)
-    IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadFilenames, OnReadFilenames)
-    IPC_MESSAGE_HANDLER(ClipboardHostMsg_GetSequenceNumber, OnGetSequenceNumber)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -125,6 +122,16 @@ void ClipboardMessageFilter::OnWriteObjectsAsync(
       BrowserThread::UI,
       FROM_HERE,
       new WriteClipboardTask(long_living_objects));
+}
+
+void ClipboardMessageFilter::OnGetSequenceNumber(uint64* seq_num) {
+  *seq_num = GetClipboard()->GetSequenceNumber();
+}
+
+void ClipboardMessageFilter::OnReadAvailableTypes(
+    ui::Clipboard::Buffer buffer, std::vector<string16>* types,
+    bool* contains_filenames) {
+  GetClipboard()->ReadAvailableTypes(buffer, types, contains_filenames);
 }
 
 void ClipboardMessageFilter::OnIsFormatAvailable(
@@ -195,28 +202,6 @@ void ClipboardMessageFilter::OnReadImageReply(
   ClipboardHostMsg_ReadImage::WriteReplyParams(reply_msg, image_handle,
                                                image_size);
   Send(reply_msg);
-}
-
-void ClipboardMessageFilter::OnReadAvailableTypes(
-    ui::Clipboard::Buffer buffer, std::vector<string16>* types,
-    bool* contains_filenames) {
-  GetClipboard()->ReadAvailableTypes(buffer, types, contains_filenames);
-}
-
-void ClipboardMessageFilter::OnReadData(
-    ui::Clipboard::Buffer buffer, const string16& type, bool* succeeded,
-    string16* data, string16* metadata) {
-  *succeeded = ClipboardDispatcher::ReadData(buffer, type, data, metadata);
-}
-
-void ClipboardMessageFilter::OnReadFilenames(
-    ui::Clipboard::Buffer buffer, bool* succeeded,
-    std::vector<string16>* filenames) {
-  *succeeded = ClipboardDispatcher::ReadFilenames(buffer, filenames);
-}
-
-void ClipboardMessageFilter::OnGetSequenceNumber(uint64* seq_num) {
-  *seq_num = GetClipboard()->GetSequenceNumber();
 }
 
 // static

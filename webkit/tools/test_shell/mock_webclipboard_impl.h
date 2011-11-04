@@ -20,6 +20,8 @@ class MockWebClipboardImpl : public WebKit::WebClipboard {
 
   virtual bool isFormatAvailable(WebKit::WebClipboard::Format,
                                  WebKit::WebClipboard::Buffer);
+  virtual WebKit::WebVector<WebKit::WebString> readAvailableTypes(
+      WebKit::WebClipboard::Buffer, bool* containsFilenames);
 
   virtual WebKit::WebString readPlainText(WebKit::WebClipboard::Buffer);
   virtual WebKit::WebString readHTML(WebKit::WebClipboard::Buffer,
@@ -38,8 +40,6 @@ class MockWebClipboardImpl : public WebKit::WebClipboard {
       const WebKit::WebImage&, const WebKit::WebURL&,
       const WebKit::WebString& title);
 
-  virtual WebKit::WebVector<WebKit::WebString> readAvailableTypes(
-      WebKit::WebClipboard::Buffer, bool* containsFilenames);
 
  private:
   WebKit::WebString m_plainText;

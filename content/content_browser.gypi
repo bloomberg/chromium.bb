@@ -75,8 +75,6 @@
     'browser/child_process_security_policy.h',
     'browser/chrome_blob_storage_context.cc',
     'browser/chrome_blob_storage_context.h',
-    'browser/clipboard_dispatcher.h',
-    'browser/clipboard_dispatcher.cc',
     'browser/cross_site_request_manager.cc',
     'browser/cross_site_request_manager.h',
     'browser/debugger/devtools_agent_host.cc',
