@@ -32,7 +32,7 @@ vars = {
   "sfntly_revision": "98",
   "skia_revision": "2596",
   "v8_revision": "9637",
-  "webrtc_revision": "808",
+  "webrtc_revision": "883",
   "jsoncpp_revision": "246",
 
   # Note: On most bots, clang is not checked out via DEPS but by
