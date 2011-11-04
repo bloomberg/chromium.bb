@@ -28,6 +28,37 @@
             ],
           },
         },
+        {
+          'target_name': 'test_hello_world_nexe',
+          'type': 'none',
+          'dependencies': [
+            'hello_world_nexe',
+            'src/trusted/service_runtime/service_runtime.gyp:sel_ldr',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                'src/trusted/service_runtime/service_runtime.gyp:sel_ldr64',
+              ],
+            }],
+          ],
+          'actions': [
+            {
+              'action_name': 'test build',
+              'msvs_cygwin_shell': 0,
+              'description': 'Testing NACL build',
+              'inputs': [],
+              'outputs': ['hello_world.out'],
+              'action': [
+                '>(python_exe)',
+                '<(DEPTH)/native_client/build/test_build.py',
+                '<(PRODUCT_DIR)',
+                'hello_world',
+                '<(target_arch)',
+              ],
+            },
+          ],
+        },
       ],
     }],
   ],

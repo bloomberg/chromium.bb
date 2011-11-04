@@ -20,7 +20,7 @@
                 'crt_platform_32',
               ],
             }],
-            ['target_arch=="x64"', {
+            ['target_arch=="x64" or OS=="win"', {
               'dependencies': [
                 'crt_platform_64',
               ],
@@ -116,7 +116,7 @@
         },
       ],
     }],
-    ['target_arch=="x64"', {
+    ['target_arch=="x64" or OS=="win"', {
       'targets' : [
         {
           'target_name': 'crt_platform_64',
