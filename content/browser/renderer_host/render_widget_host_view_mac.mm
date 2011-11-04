@@ -1649,13 +1649,9 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 - (void)setFrameSize:(NSSize)newSize {
+  // NB: -[NSView setFrame:] calls through -setFrameSize:, so overriding
+  // -setFrame: isn't neccessary.
   [super setFrameSize:newSize];
-  if (renderWidgetHostView_->render_widget_host_)
-    renderWidgetHostView_->render_widget_host_->WasResized();
-}
-
-- (void)setFrame:(NSRect)frameRect {
-  [super setFrame:frameRect];
   if (renderWidgetHostView_->render_widget_host_)
     renderWidgetHostView_->render_widget_host_->WasResized();
 }
