@@ -4999,10 +4999,6 @@
    fun:_ZN7WebCore13WidthIterator*
    fun:_ZNK7WebCore4Font26selectionRectForSimpleTextERKNS_7TextRunERKNS_10FloatPointEiii
    fun:_ZNK7WebCore4Font20selectionRectForTextERKNS_7TextRunERKNS_10FloatPointEiii
-   fun:_ZNK7WebCore13InlineTextBox17positionForOffsetEi
-   fun:_ZN7WebCore10RenderText14localCaretRectEPNS_9InlineBoxEiPi
-   fun:_ZNK7WebCore15VisiblePosition14localCaretRectERPNS_12RenderObjectE
-   fun:_ZN7WebCore9CaretBase15updateCaretRectEPNS_8DocumentERKNS_15VisiblePositionE
 }
 {
    bug_101755_c
