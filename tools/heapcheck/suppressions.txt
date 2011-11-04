@@ -1667,3 +1667,10 @@
    ...
    fun:PluginLoaderPosix::GetPluginsToLoad
 }
+{
+   bug_102983
+   Heapcheck:Leak
+   fun:remoting::IqSender::SendIq
+   fun:remoting::IqSender::SendIq
+   fun:remoting::IqSenderTest_SendIq_Test::TestBody
+}
