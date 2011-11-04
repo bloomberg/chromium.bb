@@ -32,50 +32,47 @@ namespace plugin {
 
 class Plugin;
 
-void PnaclCoordinator::Initialize(Plugin* instance) {
+void PnaclResources::AddFDForUrl(const nacl::string& url, int32_t fd) {
+  resource_wrappers_[url] =
+      plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY);
+}
+
+void PnaclCoordinator::Initialize(Plugin* plugin) {
   PLUGIN_PRINTF(("PnaclCoordinator::Initialize (this=%p)\n",
                  static_cast<void*>(this)));
-  CHECK(instance != NULL);
-  CHECK(instance_ == NULL);   // Can only initialize once.
-  instance_ = instance;
+  CHECK(plugin != NULL);
+  CHECK(plugin_ == NULL);   // Can only initialize once.
+  plugin_ = plugin;
   callback_factory_.Initialize(this);
+  resources_.reset(new PnaclResources(plugin));
 }
 
 PnaclCoordinator::~PnaclCoordinator() {
   PLUGIN_PRINTF(("PnaclCoordinator::~PnaclCoordinator (this=%p)\n",
                  static_cast<void*>(this)));
 
-  // Delete helper thread args. Join helper thread first (since it may be
-  // using the args), which will block the page from Refreshing while a
+  // Join helper threads which will block the page from refreshing while a
   // translation is happening.
-  if (translate_args_ != NULL) {
-    translate_args_->should_die = true;
-    // Assume that when X_args_ != NULL, then X_thread_ != NULL too.
+  if (translate_thread_.get() != NULL || link_thread_.get() != NULL) {
+    SetSubprocessesShouldDie(true);
+  }
+  if (translate_thread_.get() != NULL) {
     NaClThreadJoin(translate_thread_.get());
   }
-  if (link_args_ != NULL) {
-    link_args_->should_die = true;
+  if (link_thread_.get() != NULL) {
     NaClThreadJoin(link_thread_.get());
   }
 
   // Delete all delayed_callbacks.
   delayed_callbacks.erase(delayed_callbacks.begin(), delayed_callbacks.end());
-
-  for (std::map<nacl::string, nacl::DescWrapper*>::iterator
-           i = linker_resource_fds_.begin(), e = linker_resource_fds_.end();
-       i != e;
-       ++i) {
-    delete i->second;
-  }
-  linker_resource_fds_.clear();
 }
 
 void PnaclCoordinator::ReportLoadAbort() {
-  instance_->ReportLoadAbort();
+  plugin_->ReportLoadAbort();
 }
 
 void PnaclCoordinator::ReportLoadError(const ErrorInfo& error) {
-  instance_->ReportLoadError(error);
+  plugin_->ReportLoadError(error);
 }
 
 void PnaclCoordinator::PnaclPpapiError(int32_t pp_error) {
@@ -88,7 +85,9 @@ void PnaclCoordinator::PnaclNonPpapiError() {
   PnaclPpapiError(PP_ERROR_FAILED);
 }
 
-void PnaclCoordinator::PnaclDidFinish(int32_t pp_error) {
+void PnaclCoordinator::PnaclDidFinish(int32_t pp_error,
+                                      PnaclTranslationUnit* translation_unit) {
+  UNREFERENCED_PARAMETER(translation_unit);
   PLUGIN_PRINTF(("PnaclCoordinator::PnaclDidFinish (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   translate_notify_callback_.Run(pp_error);
@@ -104,20 +103,11 @@ PnaclCoordinator::MakeDelayedCallback(pp::CompletionCallback cb,
   return delayed_callback;
 }
 
-void PnaclCoordinator::SetObjectFile(NaClSrpcImcDescType fd, int32_t len) {
-  obj_fd_.reset(instance_->wrapper_factory()->MakeGeneric(fd));
-  obj_len_ = len;
-}
-
-void PnaclCoordinator::SetTranslatedFile(NaClSrpcImcDescType fd) {
-  translated_fd_.reset(instance_->wrapper_factory()->MakeGeneric(fd));
-}
-
 int32_t PnaclCoordinator::GetLoadedFileDesc(int32_t pp_error,
                                             const nacl::string& url,
                                             const nacl::string& component) {
   ErrorInfo error_info;
-  int32_t file_desc = instance_->GetPOSIXFileDesc(url);
+  int32_t file_desc = plugin_->GetPOSIXFileDesc(url);
   if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
     if (pp_error == PP_ERROR_ABORTED) {
       ReportLoadAbort();
@@ -144,11 +134,11 @@ int32_t PnaclCoordinator::GetLoadedFileDesc(int32_t pp_error,
 NaClSubprocessId PnaclCoordinator::HelperNexeDidLoad(int32_t fd,
                                                      ErrorInfo* error_info) {
   // Inform JavaScript that we successfully loaded a helper nexe.
-  instance_->EnqueueProgressEvent(Plugin::kProgressEventProgress);
+  plugin_->EnqueueProgressEvent(Plugin::kProgressEventProgress);
   nacl::scoped_ptr<nacl::DescWrapper>
-      wrapper(instance_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY));
+      wrapper(plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY));
 
-  return instance_->LoadHelperNaClModule(wrapper.get(), error_info);
+  return plugin_->LoadHelperNaClModule(wrapper.get(), error_info);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -178,7 +168,7 @@ void PnaclCoordinator::LLCReady(int32_t pp_error,
     PnaclNonPpapiError();
     return;
   }
-  llc_subprocess_ = instance_ ->nacl_subprocess(llc_id);
+  llc_subprocess_ = plugin_ ->nacl_subprocess(llc_id);
   delayed_callback->RunIfTime();
 }
 
@@ -206,23 +196,8 @@ void PnaclCoordinator::LDReady(int32_t pp_error,
     PnaclNonPpapiError();
     return;
   }
-  ld_subprocess_ = instance_ ->nacl_subprocess(ld_id);
+  ld_subprocess_ = plugin_ ->nacl_subprocess(ld_id);
   delayed_callback->RunIfTime();
-}
-
-void PnaclCoordinator::PexeReady(int32_t pp_error,
-                                 const nacl::string& pexe_url,
-                                 DelayedCallback* delayed_callback) {
-  PLUGIN_PRINTF(("PnaclCoordinator::PexeReady (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
-  // pp_error is checked by GetLoadedFileDesc.
-  int32_t fd = GetLoadedFileDesc(pp_error, pexe_url, "pexe");
-  if (fd < 0) {
-    PnaclPpapiError(pp_error);
-  } else {
-    pexe_fd_.reset(instance_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY));
-    delayed_callback->RunIfTime();
-  }
 }
 
 void PnaclCoordinator::LinkResourceReady(int32_t pp_error,
@@ -235,8 +210,24 @@ void PnaclCoordinator::LinkResourceReady(int32_t pp_error,
   if (fd < 0) {
     PnaclPpapiError(pp_error);
   } else {
-    linker_resource_fds_[url] =
-        instance_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY);
+    resources_->AddFDForUrl(url, fd);
+    delayed_callback->RunIfTime();
+  }
+}
+
+void PnaclCoordinator::PexeReady(int32_t pp_error,
+                                 const nacl::string& pexe_url,
+                                 PnaclTranslationUnit* translation_unit,
+                                 DelayedCallback* delayed_callback) {
+  PLUGIN_PRINTF(("PnaclCoordinator::PexeReady (pp_error=%"
+                 NACL_PRId32")\n", pp_error));
+  // pp_error is checked by GetLoadedFileDesc.
+  int32_t fd = GetLoadedFileDesc(pp_error, pexe_url, "pexe");
+  if (fd < 0) {
+    PnaclPpapiError(pp_error);
+  } else {
+    translation_unit->pexe_wrapper.reset(
+        plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY));
     delayed_callback->RunIfTime();
   }
 }
@@ -244,18 +235,21 @@ void PnaclCoordinator::LinkResourceReady(int32_t pp_error,
 //////////////////////////////////////////////////////////////////////
 
 namespace {
-void AbortTranslateThread(DoTranslateArgs* args,
+void AbortTranslateThread(PnaclTranslationUnit* translation_unit,
                           const nacl::string& error_string) {
   pp::Core* core = pp::Module::Get()->core();
-  args->error_info.SetReport(ERROR_UNKNOWN, error_string);
-  core->CallOnMainThread(0, args->finish_cb, PP_ERROR_FAILED);
+  translation_unit->error_info.SetReport(ERROR_UNKNOWN, error_string);
+  core->CallOnMainThread(0, translation_unit->translate_done_cb,
+                         PP_ERROR_FAILED);
   NaClThreadExit(1);
 }
-}  // namespace
 
 void WINAPI DoTranslateThread(void* arg) {
-  DoTranslateArgs* p = reinterpret_cast<DoTranslateArgs*>(arg);
-  NaClSubprocess* llc_subprocess = p->subprocess;
+  PnaclTranslationUnit* p = reinterpret_cast<PnaclTranslationUnit*>(arg);
+  PnaclCoordinator* coordinator = p->coordinator;
+  NaClSubprocess* llc_subprocess = coordinator->llc_subprocess();
+  Plugin* plugin = coordinator->plugin();
+  BrowserInterface* browser = plugin->browser_interface();
 
   // Set up LLC flags first.
   // TODO(jvoung): Bake these into the llc nexe?
@@ -279,7 +273,11 @@ void WINAPI DoTranslateThread(void* arg) {
                                  "-arm-reserve-r9",
                                  "-sfi-disable-cp",
                                  "-arm_static_tls",
-                                 "-sfi-store -sfi-stack -sfi-branch -sfi-data",
+                                 "-sfi-store",
+                                 "-sfi-load",
+                                 "-sfi-stack",
+                                 "-sfi-branch",
+                                 "-sfi-data",
                                  "-no-inline-jumptables" };
 
   nacl::string sandbox_isa = GetSandboxISA();
@@ -303,11 +301,11 @@ void WINAPI DoTranslateThread(void* arg) {
   }
 
   for (uint32_t i = 0; i < num_args; i++) {
-    if (p->should_die) {
+    if (coordinator->SubprocessesShouldDie()) {
       NaClThreadExit(1);
     }
     SrpcParams dummy_params;
-    if (!PnaclSrpcLib::InvokeSrpcMethod(p->browser,
+    if (!PnaclSrpcLib::InvokeSrpcMethod(browser,
                                         llc_subprocess,
                                         "AddArg",
                                         "C",
@@ -319,67 +317,75 @@ void WINAPI DoTranslateThread(void* arg) {
     }
   }
 
-  if (p->should_die) {
+  if (coordinator->SubprocessesShouldDie()) {
     NaClThreadExit(1);
   }
   SrpcParams params;
-  if (!PnaclSrpcLib::InvokeSrpcMethod(p->browser,
+  if (!PnaclSrpcLib::InvokeSrpcMethod(browser,
                                       llc_subprocess,
                                       "Translate",
                                       "h",
                                       &params,
-                                      p->pexe_fd->desc())) {
+                                      p->pexe_wrapper->desc())) {
     AbortTranslateThread(p,
                          "PnaclCoordinator compile failed.");
   } else {
     // Grab the outparams.
-    p->obj_fd = params.outs()[0]->u.hval;
+    p->obj_wrapper.reset(
+        plugin->wrapper_factory()->MakeGeneric(params.outs()[0]->u.hval));
     p->obj_len = params.outs()[1]->u.ival;
-    PLUGIN_PRINTF(("PnaclCoordinator::InvokeTranslate succeeded (bytes=%"
-                   NACL_PRId32")\n", p->obj_len));
+    p->is_shared_library = params.outs()[2]->u.ival;
+    p->soname = params.outs()[3]->arrays.str;
+    p->lib_dependencies = params.outs()[4]->arrays.str;
+    PLUGIN_PRINTF(("PnaclCoordinator::Translate SRPC succeeded (bytes=%"
+                   NACL_PRId32", is_shared_library=%d, soname='%s', "
+                   "lib_dependencies='%s')\n", p->obj_len,
+                   p->is_shared_library, p->soname.c_str(),
+                   p->lib_dependencies.c_str()));
   }
-  if (p->should_die) {
+  if (coordinator->SubprocessesShouldDie()) {
     NaClThreadExit(1);
   }
   pp::Core* core = pp::Module::Get()->core();
-  core->CallOnMainThread(0, p->finish_cb, PP_OK);
+  core->CallOnMainThread(0, p->translate_done_cb, PP_OK);
   NaClThreadExit(0);
 }
 
+}  // namespace
+
 void
 PnaclCoordinator::RunTranslateDidFinish(int32_t pp_error,
-                                        DelayedCallback* delayed_callback) {
+                                        PnaclTranslationUnit* translation_unit,
+                                        DelayedCallback* link_callback) {
   PLUGIN_PRINTF(("PnaclCoordinator::RunTranslateDidFinish (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   if (pp_error != PP_OK) {
-    ReportLoadError(translate_args_->error_info);
+    ReportLoadError(translation_unit->error_info);
     PnaclPpapiError(pp_error);
     return;
   }
-  SetObjectFile(translate_args_->obj_fd, translate_args_->obj_len);
-  instance_->EnqueueProgressEvent(Plugin::kProgressEventProgress);
-  delayed_callback->RunIfTime();
+  plugin_->EnqueueProgressEvent(Plugin::kProgressEventProgress);
+  link_callback->RunIfTime();
 }
 
 void PnaclCoordinator::RunTranslate(int32_t pp_error,
-                                    DelayedCallback* delayed_callback) {
+                                    PnaclTranslationUnit* translation_unit,
+                                    DelayedCallback* delayed_link_callback) {
   PLUGIN_PRINTF(("PnaclCoordinator::RunTranslate (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   assert(PP_OK == pp_error);
 
   // Invoke llvm asynchronously.
-  pp::CompletionCallback finish_cb =
+  // RunTranslateDidFinish runs on the main thread when llvm is done.
+  translation_unit->translate_done_cb =
       callback_factory_.NewCallback(&PnaclCoordinator::RunTranslateDidFinish,
-                                    delayed_callback);
-  translate_args_.reset(new DoTranslateArgs(llc_subprocess_,
-                                            instance_->browser_interface(),
-                                            finish_cb,
-                                            pexe_fd_.get()));
+                                    translation_unit,
+                                    delayed_link_callback);
   translate_thread_.reset(new NaClThread);
-  if (translate_thread_ != NULL && translate_args_ != NULL) {
+  if (translate_thread_ != NULL) {
     if (!NaClThreadCreateJoinable(translate_thread_.get(),
                                   DoTranslateThread,
-                                  translate_args_.get(),
+                                  translation_unit,
                                   kArbitraryStackSize)) {
       ErrorInfo error_info;
       error_info.SetReport(ERROR_UNKNOWN,
@@ -428,19 +434,21 @@ string_vector LinkResources(const nacl::string& sandbox_isa,
 
 namespace {
 
-void AbortLinkThread(DoLinkArgs* args, const nacl::string& error_string) {
+void AbortLinkThread(PnaclTranslationUnit* translation_unit,
+                     const nacl::string& error_string) {
   ErrorInfo error_info;
   pp::Core* core = pp::Module::Get()->core();
-  args->error_info.SetReport(ERROR_UNKNOWN, error_string);
-  core->CallOnMainThread(0, args->finish_cb, PP_ERROR_FAILED);
+  translation_unit->error_info.SetReport(ERROR_UNKNOWN, error_string);
+  core->CallOnMainThread(0, translation_unit->link_done_cb, PP_ERROR_FAILED);
   NaClThreadExit(1);
 }
 
-}  // namespace
-
 void WINAPI DoLinkThread(void* arg) {
-  DoLinkArgs* p = reinterpret_cast<DoLinkArgs*>(arg);
-  NaClSubprocess* ld_subprocess = p->subprocess;
+  PnaclTranslationUnit* p = reinterpret_cast<PnaclTranslationUnit*>(arg);
+  PnaclCoordinator* coordinator = p->coordinator;
+  NaClSubprocess* ld_subprocess = coordinator->ld_subprocess();
+  Plugin* plugin = coordinator->plugin();
+  BrowserInterface* browser_interface = plugin->browser_interface();
 
   // Set up command line arguments (flags then files).
 
@@ -466,11 +474,11 @@ void WINAPI DoLinkThread(void* arg) {
   for (string_vector::iterator i = flags.begin(), e = flags.end();
        i != e; ++i) {
     const nacl::string& flag = *i;
-    if (p->should_die) {
+    if (coordinator->SubprocessesShouldDie()) {
       NaClThreadExit(1);
     }
     SrpcParams dummy_params;
-    if (!PnaclSrpcLib::InvokeSrpcMethod(p->browser,
+    if (!PnaclSrpcLib::InvokeSrpcMethod(browser_interface,
                                         ld_subprocess,
                                         "AddArg",
                                         "C",
@@ -483,17 +491,17 @@ void WINAPI DoLinkThread(void* arg) {
   }
 
   //// Files.
-  PnaclCoordinator* pnacl = p->coordinator;
   string_vector files = LinkResources(sandbox_isa, true);
+  PnaclResources* resources = coordinator->resources();
   for (string_vector::iterator i = files.begin(), e = files.end();
        i != e; ++i) {
     const nacl::string& link_file = *i;
-    if (p->should_die) {
+    if (coordinator->SubprocessesShouldDie()) {
       NaClThreadExit(1);
     }
     // Add as argument.
     SrpcParams dummy_params;
-    if (!PnaclSrpcLib::InvokeSrpcMethod(p->browser,
+    if (!PnaclSrpcLib::InvokeSrpcMethod(browser_interface,
                                         ld_subprocess,
                                         "AddArg",
                                         "C",
@@ -506,13 +514,13 @@ void WINAPI DoLinkThread(void* arg) {
     // Also map the file name to descriptor.
     if (i->compare(kGeneratedObjectFileName) == 0) {
       SrpcParams dummy_params2;
-      if (!PnaclSrpcLib::InvokeSrpcMethod(p->browser,
+      if (!PnaclSrpcLib::InvokeSrpcMethod(browser_interface,
                                           ld_subprocess,
                                           "AddFileWithSize",
                                           "Chi",
                                           &dummy_params2,
                                           link_file.c_str(),
-                                          p->obj_fd->desc(),
+                                          p->obj_wrapper->desc(),
                                           p->obj_len)) {
         AbortLinkThread(p,
                         "PnaclCoordinator linker AddFileWithSize"
@@ -520,14 +528,13 @@ void WINAPI DoLinkThread(void* arg) {
       }
     } else {
       SrpcParams dummy_params2;
-      if (!PnaclSrpcLib::InvokeSrpcMethod(p->browser,
+      if (!PnaclSrpcLib::InvokeSrpcMethod(browser_interface,
                                           ld_subprocess,
                                           "AddFile",
                                           "Ch",
                                           &dummy_params2,
                                           link_file.c_str(),
-                                          pnacl->GetLinkerResourceFD(
-                                            link_file))) {
+                                          resources->DescForUrl(link_file))) {
         AbortLinkThread(p,
                         "PnaclCoordinator linker AddFile(" + link_file +
                         ") failed.");
@@ -535,13 +542,13 @@ void WINAPI DoLinkThread(void* arg) {
     }
   }
 
-  if (p->should_die) {
+  if (coordinator->SubprocessesShouldDie()) {
     NaClThreadExit(1);
   }
 
   // Finally, do the Link!
   SrpcParams params;
-  if (!PnaclSrpcLib::InvokeSrpcMethod(p->browser,
+  if (!PnaclSrpcLib::InvokeSrpcMethod(browser_interface,
                                       ld_subprocess,
                                       "Link",
                                       "",
@@ -549,51 +556,54 @@ void WINAPI DoLinkThread(void* arg) {
     AbortLinkThread(p, "PnaclCoordinator link failed.");
   } else {
     // Grab the outparams.
-    p->nexe_fd = params.outs()[0]->u.hval;
+    p->nexe_wrapper.reset(
+        plugin->wrapper_factory()->MakeGeneric(params.outs()[0]->u.hval));
     int32_t nexe_size = params.outs()[1]->u.ival;  // only for debug.
     PLUGIN_PRINTF(("PnaclCoordinator::InvokeLink succeeded (bytes=%"
                    NACL_PRId32")\n", nexe_size));
   }
-  if (p->should_die) {
+  if (coordinator->SubprocessesShouldDie()) {
     NaClThreadExit(1);
   }
   pp::Core* core = pp::Module::Get()->core();
-  core->CallOnMainThread(0, p->finish_cb, PP_OK);
+  core->CallOnMainThread(0, p->link_done_cb, PP_OK);
   NaClThreadExit(0);
 }
 
-void PnaclCoordinator::RunLinkDidFinish(int32_t pp_error) {
+}  // namespace
+
+void PnaclCoordinator::RunLinkDidFinish(
+    int32_t pp_error,
+    PnaclTranslationUnit* translation_unit) {
   PLUGIN_PRINTF(("PnaclCoordinator::RunLinkDidFinish (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   if (pp_error != PP_OK) {
-    ReportLoadError(link_args_->error_info);
+    ReportLoadError(translation_unit->error_info);
     PnaclPpapiError(pp_error);
     return;
   }
-  SetTranslatedFile(link_args_->nexe_fd);
-  instance_->EnqueueProgressEvent(Plugin::kProgressEventProgress);
-  PnaclDidFinish(PP_OK);
+  // Transfer ownership of the nexe wrapper to the coordinator.
+  translated_fd_.reset(translation_unit->nexe_wrapper.release());
+  plugin_->EnqueueProgressEvent(Plugin::kProgressEventProgress);
+  PnaclDidFinish(PP_OK, translation_unit);
 }
 
-void PnaclCoordinator::RunLink(int32_t pp_error) {
+void PnaclCoordinator::RunLink(int32_t pp_error,
+                               PnaclTranslationUnit* translation_unit) {
   PLUGIN_PRINTF(("PnaclCoordinator::RunLink (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   assert(PP_OK == pp_error);
 
-  // Invoke llvm asynchronously.
-  pp::CompletionCallback finish_cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::RunLinkDidFinish);
-  link_args_.reset(new DoLinkArgs(ld_subprocess_,
-                                  instance_->browser_interface(),
-                                  finish_cb,
-                                  this,
-                                  obj_fd_.get(),
-                                  obj_len_));
+  // Invoke ld asynchronously.
+  // When ld has completed, RunLinkDidFinish is run on the main thread.
+  translation_unit->link_done_cb =
+      callback_factory_.NewCallback(&PnaclCoordinator::RunLinkDidFinish,
+                                    translation_unit);
   link_thread_.reset(new NaClThread);
-  if (link_args_ != NULL && link_thread_ != NULL) {
+  if (link_thread_ != NULL) {
     if (!NaClThreadCreateJoinable(link_thread_.get(),
                                   DoLinkThread,
-                                  link_args_.get(),
+                                  translation_unit,
                                   kArbitraryStackSize)) {
       ErrorInfo error_info;
       error_info.SetReport(ERROR_UNKNOWN,
@@ -614,8 +624,7 @@ void PnaclCoordinator::RunLink(int32_t pp_error) {
 
 bool PnaclCoordinator::ScheduleDownload(const nacl::string& url,
                                         const pp::CompletionCallback& cb) {
-  if (!instance_->StreamAsFile(url,
-                               cb.pp_completion_callback())) {
+  if (!plugin_->StreamAsFile(url, cb.pp_completion_callback())) {
     ErrorInfo error_info;
     error_info.SetReport(ERROR_UNKNOWN,
                          "PnaclCoordinator: Failed to download file: " +
@@ -637,8 +646,25 @@ void PnaclCoordinator::AddDownloadToDelayedCallback(
   // Queue up the URL download w/ a callback that invokes the delayed_callback.
   queue.push_back(std::make_pair(
       url,
+      callback_factory_.NewCallback(handler, url, delayed_callback)));
+  delayed_callback->IncrRequirements(1);
+}
+
+void PnaclCoordinator::AddDownloadToDelayedCallback(
+    void (PnaclCoordinator::*handler)(int32_t,
+                                      const nacl::string&,
+                                      PnaclTranslationUnit*,
+                                      DelayedCallback*),
+    DelayedCallback* delayed_callback,
+    const nacl::string& url,
+    PnaclTranslationUnit* translation_unit,
+    std::vector<url_callback_pair>& queue) {
+  // Queue up the URL download w/ a callback that invokes the delayed_callback.
+  queue.push_back(std::make_pair(
+      url,
       callback_factory_.NewCallback(handler,
                                     url,
+                                    translation_unit,
                                     delayed_callback)));
   delayed_callback->IncrRequirements(1);
 }
@@ -656,6 +682,9 @@ void PnaclCoordinator::BitcodeToNative(
 
   string_vector link_resources = LinkResources(GetSandboxISA(), false);
 
+  // TODO(sehr): revise to download llc, ld, and native libraries in one step.
+  // TODO(sehr): save these resources for possible multiple uses (e.g., psos).
+
   // Steps:
   // (1) Schedule downloads for llc, ld nexes, and native libraries.
   // (2) When llc download and pexe has completed, run the translation.
@@ -668,20 +697,24 @@ void PnaclCoordinator::BitcodeToNative(
 
   // (3) Run link.
 
+  translation_unit_.reset(new PnaclTranslationUnit(this));
+
   pp::CompletionCallback run_link_callback =
-      callback_factory_.NewCallback(&PnaclCoordinator::RunLink);
+      callback_factory_.NewCallback(&PnaclCoordinator::RunLink,
+                                    translation_unit_.get());
   DelayedCallback* delayed_link_callback =
       MakeDelayedCallback(run_link_callback, 0);
 
   // (2) Run translation.
   pp::CompletionCallback run_translate_callback =
       callback_factory_.NewCallback(&PnaclCoordinator::RunTranslate,
+                                    translation_unit_.get(),
                                     delayed_link_callback);
   // Linking depends on the compile finishing, so incr requirements by one.
   delayed_link_callback->IncrRequirements(1);
 
-  DelayedCallback* delayed_translate_callback = MakeDelayedCallback(
-      run_translate_callback, 0);
+  DelayedCallback* delayed_translate_callback =
+      MakeDelayedCallback(run_translate_callback, 0);
 
   // (1) Load nexes and assets using StreamAsFile(). This will kick off
   // the whole process.
@@ -692,6 +725,7 @@ void PnaclCoordinator::BitcodeToNative(
   AddDownloadToDelayedCallback(&PnaclCoordinator::PexeReady,
                                delayed_translate_callback,
                                pexe_url,
+                               translation_unit_.get(),
                                downloads);
   AddDownloadToDelayedCallback(&PnaclCoordinator::LLCReady,
                                delayed_translate_callback,
@@ -718,8 +752,6 @@ void PnaclCoordinator::BitcodeToNative(
     }
   }
   downloads.clear();
-
-  return;
 }
 
 }  // namespace plugin
