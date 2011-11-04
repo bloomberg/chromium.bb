@@ -27,6 +27,8 @@ const char* TokenService::kServices[] = {
   GaiaConstants::kSyncService,
   GaiaConstants::kTalkService,
   GaiaConstants::kDeviceManagementService,
+  GaiaConstants::kCWSService,
+  GaiaConstants::kLSOService,
 };
 
 const char* kUnusedServiceScope = "unused-service-scope";

@@ -222,7 +222,7 @@ class TokenService : public GaiaAuthConsumer,
   // TokenService can continue to do some degree of ClientLogin token
   // management, mostly related to persistence while Sync and possibly other
   // services are using OAuth-based authentication.
-  static const int kNumServices = 5;
+  static const int kNumServices = 7;
   // List of services that are capable of ClientLogin-based authentication.
   static const char* kServices[kNumServices];
   // A bunch of fetchers suitable for ClientLogin token issuing. We don't care

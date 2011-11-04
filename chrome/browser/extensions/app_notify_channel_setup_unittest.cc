@@ -114,15 +114,10 @@ class AppNotifyChannelSetupTest : public testing::Test {
  public:
   AppNotifyChannelSetupTest() : ui_thread_(BrowserThread::UI, &message_loop_),
                                 ui_(new TestUI()) {
+    profile_.CreateRequestContext();
   }
 
   virtual ~AppNotifyChannelSetupTest() {}
-
-  virtual void SetChannelServerUrl(GURL channel_server_url) {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    command_line->AppendSwitchASCII(switches::kAppNotifyChannelServerURL,
-                                    channel_server_url.spec());
-  }
 
   virtual void SetLoggedInUser(const std::string username) {
     TestingPrefService* prefs = profile_.GetTestingPrefService();
@@ -130,21 +125,9 @@ class AppNotifyChannelSetupTest : public testing::Test {
                        new StringValue(username));
   }
 
-  virtual void RunServerTest(bool url_fetch_should_succeed,
-                             const std::string& expected_code,
-                             const std::string& expected_error) {
+  virtual AppNotifyChannelSetup* CreateInstance() {
     GURL page_url("http://www.google.com");
-    GURL server_url("http://dummy.google.com/app_notify_setup");
-    FakeURLFetcherFactory factory;
-    factory.SetFakeResponse(server_url.spec(),
-                            "whatever",
-                            url_fetch_should_succeed);
-
-    SetChannelServerUrl(server_url);
-    SetLoggedInUser("user@gmail.com");
-
-    scoped_refptr<AppNotifyChannelSetup > setup =
-        new AppNotifyChannelSetup(&profile_,
+    return new AppNotifyChannelSetup(&profile_,
                                   kFakeExtensionId,
                                   "1234",
                                   page_url,
@@ -152,6 +135,33 @@ class AppNotifyChannelSetupTest : public testing::Test {
                                   kCallbackId,
                                   ui_.release(),
                                   delegate_.AsWeakPtr());
+  }
+
+  virtual void SetupLogin(bool should_succeed) {
+    if (should_succeed)
+      SetLoggedInUser("user@gmail.com");
+    else
+      ui_->SetSyncSetupResult(false);
+  }
+
+  virtual void SetupRecordGrant(bool should_succeed) {
+    factory_.SetFakeResponse(
+        AppNotifyChannelSetup::GetOAuth2IssueTokenURL().spec(),
+        "whatever",
+        should_succeed);
+  }
+
+  virtual void SetupGetChannelId(bool should_succeed) {
+    factory_.SetFakeResponse(
+        AppNotifyChannelSetup::GetCWSChannelServiceURL().spec(),
+        "{\"id\": \"dummy_do_not_use\"}",
+        should_succeed);
+  }
+
+
+  virtual void RunServerTest(AppNotifyChannelSetup* setup,
+                             const std::string& expected_code,
+                             const std::string& expected_error) {
     setup->Start();
     message_loop_.Run();
     delegate_.ExpectWasCalled(expected_code, expected_error);
@@ -163,31 +173,39 @@ class AppNotifyChannelSetupTest : public testing::Test {
   TestingProfile profile_;
   TestDelegate delegate_;
   scoped_ptr<TestUI> ui_;
+  FakeURLFetcherFactory factory_;
 };
 
-TEST_F(AppNotifyChannelSetupTest, DidNotLogInToSync) {
-  GURL url("http://www.google.com");
+TEST_F(AppNotifyChannelSetupTest, LoginFailure) {
+  // Set login to fail.
+  SetupLogin(false);
 
-  ui_->SetSyncSetupResult(false);
-  scoped_refptr<AppNotifyChannelSetup > setup =
-      new AppNotifyChannelSetup(&profile_,
-                                kFakeExtensionId,
-                                "1234",
-                                url,
-                                kRouteId,
-                                kCallbackId,
-                                ui_.release(),
-                                delegate_.AsWeakPtr());
-  setup->Start();
-  message_loop_.Run();
-  delegate_.ExpectWasCalled(
-      std::string(), std::string("not_available"));
+  scoped_refptr<AppNotifyChannelSetup> setup = CreateInstance();
+  RunServerTest(setup, "", "canceled_by_user");
+}
+
+TEST_F(AppNotifyChannelSetupTest, RecordGrantFailure) {
+  SetupLogin(true);
+  SetupRecordGrant(false);
+
+  scoped_refptr<AppNotifyChannelSetup> setup = CreateInstance();
+  RunServerTest(setup, "", "internal_error");
+}
+
+TEST_F(AppNotifyChannelSetupTest, GetChannelIdFailure) {
+  SetupLogin(true);
+  SetupRecordGrant(true);
+  SetupGetChannelId(false);
+
+  scoped_refptr<AppNotifyChannelSetup> setup = CreateInstance();
+  RunServerTest(setup, "", "internal_error");
 }
 
 TEST_F(AppNotifyChannelSetupTest, ServerSuccess) {
-  RunServerTest(true, "dummy_do_not_use", "");
-}
+  SetupLogin(true);
+  SetupRecordGrant(true);
+  SetupGetChannelId(true);
 
-TEST_F(AppNotifyChannelSetupTest, ServerFailure) {
-  RunServerTest(false, "", "channel_service_error");
+  scoped_refptr<AppNotifyChannelSetup> setup = CreateInstance();
+  RunServerTest(setup, "dummy_do_not_use", "");
 }

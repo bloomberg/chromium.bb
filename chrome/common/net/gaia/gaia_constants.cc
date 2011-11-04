@@ -33,6 +33,14 @@ const char kDeviceManagementService[] = "mobilesync";
 const char kDeviceManagementServiceOAuth[] =
     "https://www.googleapis.com/auth/chromeosdevicemanagement";
 
+// Service/scope names for chrome web store.
+const char kCWSService[] = "chromewebstore";
+const char kCWSNotificationScope[] =
+    "https://www.googleapis.com/auth/chromewebstore.notification";
+
+// Service for LSO endpoint of Google that exposes OAuth APIs.
+const char kLSOService[] = "lso";
+
 // Used to mint uber auth tokens when needed.
 const char kGaiaSid[] = "sid";
 const char kGaiaLsid[] = "lsid";

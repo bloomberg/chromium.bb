@@ -9,13 +9,22 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/app_notify_channel_ui.h"
+#include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
+class AppNotifyChannelSetupTest;
 class Profile;
 
-// This class uses the browser login credentials to fetch a channel ID for an
-// app to use when sending server push notifications.
+// This class uses the browser login credentials to setup app notifications
+// for a given app.
+//
+// Performs the following steps when Start() is called:
+// 1. If the user is not logged in, prompt the user to login.
+// 2. OAuth2: Record a notifications grant for the user and the given app.
+// 3. Get notifications channel id for the current user.
+// 4. Call the delegate passed in to the constructor with the results of
+//    the above steps.
 class AppNotifyChannelSetup
     : public content::URLFetcherDelegate,
       public AppNotifyChannelUI::Delegate,
@@ -54,12 +63,43 @@ class AppNotifyChannelSetup
   virtual void OnSyncSetupResult(bool enabled) OVERRIDE;
 
  private:
+  enum State {
+    INITIAL,
+    LOGIN_STARTED,
+    LOGIN_DONE,
+    RECORD_GRANT_STARTED,
+    RECORD_GRANT_DONE,
+    CHANNEL_ID_SETUP_STARTED,
+    CHANNEL_ID_SETUP_DONE,
+    ERROR_STATE
+  };
+
   friend class base::RefCountedThreadSafe<AppNotifyChannelSetup>;
+  friend class AppNotifyChannelSetupTest;
+
   virtual ~AppNotifyChannelSetup();
 
-  void BeginFetch();
+  // Creates an instance of URLFetcher that does not send or save cookies.
+  // The URLFether's method will be GET if body is empty, POST otherwise.
+  // Caller owns the returned instance.
+  content::URLFetcher* CreateURLFetcher(
+    const GURL& url, const std::string& body, const std::string& auth_token);
+  void BeginRecordGrant();
+  void EndRecordGrant(const content::URLFetcher* source);
+  void BeginGetChannelId();
+  void EndGetChannelId(const content::URLFetcher* source);
 
   void ReportResult(const std::string& channel_id, const std::string& error);
+
+  static GURL GetCWSChannelServiceURL();
+  static GURL GetOAuth2IssueTokenURL();
+  static std::string MakeOAuth2IssueTokenBody(
+      const std::string& oauth_client_id, const std::string& extension_id);
+  static std::string MakeAuthorizationHeader(const std::string& auth_token);
+  std::string GetLSOAuthToken();
+  std::string GetCWSAuthToken();
+  static bool ParseCWSChannelServiceResponse(
+      const std::string& data, std::string* result);
 
   Profile* profile_;
   std::string extension_id_;
@@ -70,6 +110,7 @@ class AppNotifyChannelSetup
   base::WeakPtr<Delegate> delegate_;
   scoped_ptr<content::URLFetcher> url_fetcher_;
   scoped_ptr<AppNotifyChannelUI> ui_;
+  State state_;
 
   DISALLOW_COPY_AND_ASSIGN(AppNotifyChannelSetup);
 };
