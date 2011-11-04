@@ -1737,8 +1737,8 @@
    ...
    fun:ff_thread_decode_frame
    fun:avcodec_decode_video2
-   fun:_ZN5media23FFmpegVideoDecodeEngine11DecodeFrameE13scoped_refptrINS_6BufferEE
-   fun:_ZN5media23FFmpegVideoDecodeEngine18ConsumeVideoSampleE13scoped_refptrINS_6BufferEE
+   fun:_ZN5media23FFmpegVideoDecodeEngine6DecodeERK13scoped_refptrINS_6BufferEEPS1_INS_10VideoFrameEE
+   fun:_ZN5media18FFmpegVideoDecoder14DoDecodeBufferERK13scoped_refptrINS_6BufferEE
 }
 {
    bug_93932_b
