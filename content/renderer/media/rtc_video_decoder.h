@@ -43,9 +43,8 @@ class CONTENT_EXPORT RTCVideoDecoder
       media::DemuxerStream* demuxer_stream,
       const base::Closure& filter_callback,
       const media::StatisticsCallback& stat_callback) OVERRIDE;
-  virtual void ProduceVideoFrame(
-      scoped_refptr<media::VideoFrame> video_frame) OVERRIDE;
-  virtual gfx::Size natural_size() OVERRIDE;
+  virtual void Read(const ReadCB& callback) OVERRIDE;
+  virtual const gfx::Size& natural_size() OVERRIDE;
 
   // cricket::VideoRenderer implementation
   virtual bool SetSize(int width, int height, int reserved) OVERRIDE;
@@ -61,7 +60,6 @@ class CONTENT_EXPORT RTCVideoDecoder
   enum DecoderState {
     kUnInitialized,
     kNormal,
-    kSeeking,
     kPaused,
     kStopped
   };
@@ -70,8 +68,9 @@ class CONTENT_EXPORT RTCVideoDecoder
   gfx::Size visible_size_;
   std::string url_;
   DecoderState state_;
-  std::deque<scoped_refptr<media::VideoFrame> > frame_queue_available_;
-  // Used for accessing frame queue from another thread.
+  ReadCB read_cb_;
+
+  // Used for accessing |read_cb_| from another thread.
   base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoder);

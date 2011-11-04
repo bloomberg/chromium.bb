@@ -53,13 +53,7 @@ void RTCVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   }
 
   DCHECK_EQ(MessageLoop::current(), message_loop_);
-
-  lock_.Acquire();
-  frame_queue_available_.clear();
-  lock_.Release();
-
   state_ = kNormal;
-
   filter_callback.Run();
 
   // TODO(acolwell): Implement stats.
@@ -117,34 +111,24 @@ void RTCVideoDecoder::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
   }
 
   DCHECK_EQ(MessageLoop::current(), message_loop_);
-
-  state_ = kSeeking;
-  // Create output buffer pool and pass the frames to renderer
-  // so that the renderer can complete the seeking.
-  for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
-    VideoFrameReady(VideoFrame::CreateBlackFrame(
-        visible_size_.width(), visible_size_.height()));
-  }
-
   state_ = kNormal;
-
   cb.Run(PIPELINE_OK);
 }
 
-void RTCVideoDecoder::ProduceVideoFrame(
-    scoped_refptr<VideoFrame> video_frame) {
+void RTCVideoDecoder::Read(const ReadCB& callback) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
-        base::Bind(&RTCVideoDecoder::ProduceVideoFrame, this, video_frame));
+        base::Bind(&RTCVideoDecoder::Read, this, callback));
     return;
   }
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   base::AutoLock auto_lock(lock_);
-  frame_queue_available_.push_back(video_frame);
+  CHECK(read_cb_.is_null());
+  read_cb_ = callback;
 }
 
-gfx::Size RTCVideoDecoder::natural_size() {
+const gfx::Size& RTCVideoDecoder::natural_size() {
   // TODO(vrk): Return natural size when aspect ratio support is implemented.
   return visible_size_;
 }
@@ -158,42 +142,34 @@ bool RTCVideoDecoder::SetSize(int width, int height, int reserved) {
 }
 
 bool RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
+  // Called from libjingle thread.
   DCHECK(frame);
 
   if (state_ != kNormal)
     return true;
 
-  // This is called from another thread.
-  scoped_refptr<VideoFrame> video_frame;
+  ReadCB read_cb;
   {
     base::AutoLock auto_lock(lock_);
-    if (frame_queue_available_.size() == 0) {
+    if (read_cb_.is_null()) {
       return true;
     }
-    video_frame = frame_queue_available_.front();
-    frame_queue_available_.pop_front();
+    std::swap(read_cb, read_cb_);
   }
 
-  // Check if there's a size change.
-  // TODO(vrk): Remove casts when media::VideoFrame is updated with gfx::Sizes
-  // for width/height.
-  if (video_frame->width() != static_cast<size_t>(visible_size_.width()) ||
-      video_frame->height() != static_cast<size_t>(visible_size_.height())) {
-    // Allocate new buffer based on the new size.
-    video_frame = VideoFrame::CreateFrame(VideoFrame::YV12,
-                                          visible_size_.width(),
-                                          visible_size_.height(),
-                                          kNoTimestamp,
-                                          kNoTimestamp);
-  }
+  // Always allocate a new frame.
+  //
+  // TODO(scherkus): migrate this to proper buffer recycling.
+  scoped_refptr<media::VideoFrame> video_frame =
+      VideoFrame::CreateFrame(VideoFrame::YV12,
+                              visible_size_.width(),
+                              visible_size_.height(),
+                              host()->GetTime(),
+                              base::TimeDelta::FromMilliseconds(30));
 
-  // Only YV12 frames are supported.
-  DCHECK(video_frame->format() == VideoFrame::YV12);
   // Aspect ratio unsupported; DCHECK when there are non-square pixels.
-  DCHECK(frame->GetPixelWidth() == 1);
-  DCHECK(frame->GetPixelHeight() == 1);
-  video_frame->SetTimestamp(host()->GetTime());
-  video_frame->SetDuration(base::TimeDelta::FromMilliseconds(30));
+  DCHECK_EQ(frame->GetPixelWidth(), 1u);
+  DCHECK_EQ(frame->GetPixelHeight(), 1u);
 
   int y_rows = frame->GetHeight();
   int uv_rows = frame->GetHeight() / 2;  // YV12 format.
@@ -201,13 +177,6 @@ bool RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
   CopyUPlane(frame->GetUPlane(), frame->GetUPitch(), uv_rows, video_frame);
   CopyVPlane(frame->GetVPlane(), frame->GetVPitch(), uv_rows, video_frame);
 
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&RTCVideoDecoder::VideoFrameReady, this, video_frame));
-  } else {
-    VideoFrameReady(video_frame);
-  }
-
+  read_cb.Run(video_frame);
   return true;
 }

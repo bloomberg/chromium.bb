@@ -21,10 +21,6 @@ using ::testing::StrictMock;
 
 static const media::VideoCaptureSessionId kVideoStreamId = 1;
 
-ACTION_P(ReturnFrameFromRenderer, decoder) {
-  decoder->ProduceVideoFrame(arg0);
-}
-
 ACTION_P3(CreateDataBufferFromCapture, decoder, vc_impl, data_buffer_number) {
   for (int i = 0; i < data_buffer_number; i++) {
     media::VideoCapture::VideoFrameBuffer* buffer;
@@ -98,14 +94,12 @@ class CaptureVideoDecoderTest : public ::testing::Test {
 
     decoder_ = new CaptureVideoDecoder(message_loop_proxy_,
                                        kVideoStreamId, vc_manager_, capability);
-    renderer_ = new media::MockVideoRenderer();
-
     decoder_->set_host(&host_);
-    decoder_->set_consume_video_frame_callback(
-        base::Bind(&media::MockVideoRenderer::ConsumeVideoFrame,
-                   base::Unretained(renderer_.get())));
     EXPECT_CALL(statistics_callback_object_, OnStatistics(_))
         .Times(AnyNumber());
+
+    read_cb_ = base::Bind(&CaptureVideoDecoderTest::FrameReady,
+                          base::Unretained(this));
   }
 
   virtual ~CaptureVideoDecoderTest() {
@@ -117,14 +111,16 @@ class CaptureVideoDecoderTest : public ::testing::Test {
                       base::Unretained(&statistics_callback_object_));
   }
 
+  MOCK_METHOD1(FrameReady, void(scoped_refptr<media::VideoFrame>));
+
   // Fixture members.
   scoped_refptr<CaptureVideoDecoder> decoder_;
   scoped_refptr<MockVideoCaptureImplManager> vc_manager_;
-  scoped_refptr<media::MockVideoRenderer> renderer_;
   media::MockStatisticsCallback statistics_callback_object_;
   StrictMock<media::MockFilterHost> host_;
   scoped_ptr<MessageLoop> message_loop_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+  media::VideoDecoder::ReadCB read_cb_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CaptureVideoDecoderTest);
@@ -146,8 +142,9 @@ TEST_F(CaptureVideoDecoderTest, Play) {
                        NewStatisticsCallback());
   message_loop_->RunAllPending();
 
-  EXPECT_CALL(*renderer_, ConsumeVideoFrame(_))
-      .WillRepeatedly(ReturnFrameFromRenderer(decoder_.get()));
+  EXPECT_CALL(*this, FrameReady(_));
+  decoder_->Read(read_cb_);
+
   EXPECT_CALL(*vc_impl, StartCapture(capture_client, _))
       .Times(1)
       .WillOnce(CreateDataBufferFromCapture(capture_client, vc_impl.get(),

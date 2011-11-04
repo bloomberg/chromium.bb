@@ -5,12 +5,11 @@
 #include "media/video/ffmpeg_video_decode_engine.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "base/task.h"
 #include "media/base/buffers.h"
-#include "media/base/limits.h"
 #include "media/base/media_switches.h"
-#include "media/base/pipeline.h"
+#include "media/base/video_decoder_config.h"
 #include "media/base/video_util.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 
@@ -18,26 +17,16 @@ namespace media {
 
 FFmpegVideoDecodeEngine::FFmpegVideoDecodeEngine()
     : codec_context_(NULL),
-      event_handler_(NULL),
+      av_frame_(NULL),
       frame_rate_numerator_(0),
-      frame_rate_denominator_(0),
-      pending_input_buffers_(0),
-      pending_output_buffers_(0),
-      output_eos_reached_(false),
-      flush_pending_(false) {
+      frame_rate_denominator_(0) {
 }
 
 FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine() {
-  if (codec_context_) {
-    av_free(codec_context_->extradata);
-    avcodec_close(codec_context_);
-    av_free(codec_context_);
-  }
+  Uninitialize();
 }
 
-void FFmpegVideoDecodeEngine::Initialize(
-    VideoDecodeEngine::EventHandler* event_handler,
-    const VideoDecoderConfig& config) {
+bool FFmpegVideoDecodeEngine::Initialize(const VideoDecoderConfig& config) {
   frame_rate_numerator_ = config.frame_rate_numerator();
   frame_rate_denominator_ = config.frame_rate_denominator();
 
@@ -80,72 +69,30 @@ void FFmpegVideoDecodeEngine::Initialize(
 
   codec_context_->thread_count = decode_threads;
 
-  // We don't allocate AVFrame on the stack since different versions of FFmpeg
-  // may change the size of AVFrame, causing stack corruption.  The solution is
-  // to let FFmpeg allocate the structure via avcodec_alloc_frame().
-  av_frame_.reset(avcodec_alloc_frame());
+  av_frame_ = avcodec_alloc_frame();
 
-  // If we do not have enough buffers, we will report error too.
-  frame_queue_available_.clear();
-
-  // Convert the pixel format to video format and ensure we support it.
-  VideoFrame::Format format =
-      PixelFormatToVideoFormat(codec_context_->pix_fmt);
-
-  bool success = false;
-  if (format != VideoFrame::INVALID) {
-      // Create output buffer pool when direct rendering is not used.
-      for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
-        scoped_refptr<VideoFrame> video_frame =
-            VideoFrame::CreateFrame(format,
-                                    config.visible_rect().width(),
-                                    config.visible_rect().height(),
-                                    kNoTimestamp,
-                                    kNoTimestamp);
-        frame_queue_available_.push_back(video_frame);
-      }
-
-      // Open the codec!
-      success = codec && avcodec_open(codec_context_, codec) >= 0;
-  }
-
-  event_handler_ = event_handler;
-  event_handler_->OnInitializeComplete(success);
+  // Open the codec!
+  return codec && avcodec_open(codec_context_, codec) >= 0;
 }
 
-void FFmpegVideoDecodeEngine::ConsumeVideoSample(
-    scoped_refptr<Buffer> buffer) {
-  pending_input_buffers_--;
-  if (flush_pending_) {
-    TryToFinishPendingFlush();
-  } else {
-    // Otherwise try to decode this buffer.
-    DecodeFrame(buffer);
+void FFmpegVideoDecodeEngine::Uninitialize() {
+  if (codec_context_) {
+    av_free(codec_context_->extradata);
+    avcodec_close(codec_context_);
+    av_free(codec_context_);
+    codec_context_ = NULL;
   }
+  if (av_frame_) {
+    av_free(av_frame_);
+    av_frame_ = NULL;
+  }
+  frame_rate_numerator_ = 0;
+  frame_rate_denominator_ = 0;
 }
 
-void FFmpegVideoDecodeEngine::ProduceVideoFrame(
-    scoped_refptr<VideoFrame> frame) {
-  // We should never receive NULL frame or EOS frame.
-  DCHECK(frame.get() && !frame->IsEndOfStream());
-
-  // Increment pending output buffer count.
-  pending_output_buffers_++;
-
-  // Return this frame to available pool after display.
-  frame_queue_available_.push_back(frame);
-
-  if (flush_pending_) {
-    TryToFinishPendingFlush();
-  } else if (!output_eos_reached_) {
-    // If we already deliver EOS to renderer, we stop reading new input.
-    ReadInput();
-  }
-}
-
-// Try to decode frame when both input and output are ready.
-void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
-  scoped_refptr<VideoFrame> video_frame;
+bool FFmpegVideoDecodeEngine::Decode(const scoped_refptr<Buffer>& buffer,
+                                     scoped_refptr<VideoFrame>* video_frame) {
+  DCHECK(video_frame);
 
   // Create a packet for input data.
   // Due to FFmpeg API changes we no longer have const read-only pointers.
@@ -153,9 +100,6 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   av_init_packet(&packet);
   packet.data = const_cast<uint8*>(buffer->GetData());
   packet.size = buffer->GetDataSize();
-
-  PipelineStatistics statistics;
-  statistics.video_bytes_decoded = buffer->GetDataSize();
 
   // Let FFmpeg handle presentation timestamp reordering.
   codec_context_->reordered_opaque = buffer->GetTimestamp().InMicroseconds();
@@ -166,7 +110,7 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
 
   int frame_decoded = 0;
   int result = avcodec_decode_video2(codec_context_,
-                                     av_frame_.get(),
+                                     av_frame_,
                                      &frame_decoded,
                                      &packet);
   // Log the problem if we can't decode a video frame and exit early.
@@ -175,23 +119,17 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
                << buffer->GetTimestamp().InMicroseconds() << " us, duration: "
                << buffer->GetDuration().InMicroseconds() << " us, packet size: "
                << buffer->GetDataSize() << " bytes";
-    event_handler_->OnError();
-    return;
+    *video_frame = NULL;
+    return false;
   }
 
-  // If frame_decoded == 0, then no frame was produced.
-  // In this case, if we already begin to flush codec with empty
-  // input packet at the end of input stream, the first time we
-  // encounter frame_decoded == 0 signal output frame had been
-  // drained, we mark the flag. Otherwise we read from demuxer again.
+  // If no frame was produced then signal that more data is required to
+  // produce more frames. This can happen under two circumstances:
+  //   1) Decoder was recently initialized/flushed
+  //   2) End of stream was reached and all internal frames have been output
   if (frame_decoded == 0) {
-    if (buffer->IsEndOfStream()) {  // We had started flushing.
-      event_handler_->ConsumeVideoFrame(video_frame, statistics);
-      output_eos_reached_ = true;
-    } else {
-      ReadInput();
-    }
-    return;
+    *video_frame = NULL;
+    return true;
   }
 
   // TODO(fbarchard): Work around for FFmpeg http://crbug.com/27675
@@ -200,8 +138,16 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   if (!av_frame_->data[VideoFrame::kYPlane] ||
       !av_frame_->data[VideoFrame::kUPlane] ||
       !av_frame_->data[VideoFrame::kVPlane]) {
-    event_handler_->OnError();
-    return;
+    LOG(ERROR) << "Video frame was produced yet has invalid frame data.";
+    *video_frame = NULL;
+    return false;
+  }
+
+  // We've got a frame! Make sure we have a place to store it.
+  *video_frame = AllocateVideoFrame();
+  if (!(*video_frame)) {
+    LOG(ERROR) << "Failed to allocate video frame";
+    return false;
   }
 
   // Determine timestamp and calculate the duration based on the repeat picture
@@ -217,83 +163,38 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   doubled_time_base.num = frame_rate_denominator_;
   doubled_time_base.den = frame_rate_numerator_ * 2;
 
-  base::TimeDelta timestamp =
-      base::TimeDelta::FromMicroseconds(av_frame_->reordered_opaque);
-  base::TimeDelta duration =
-      ConvertFromTimeBase(doubled_time_base, 2 + av_frame_->repeat_pict);
-
-  // Available frame is guaranteed, because we issue as much reads as
-  // available frame, except the case of |frame_decoded| == 0, which
-  // implies decoder order delay, and force us to read more inputs.
-  DCHECK(frame_queue_available_.size());
-  video_frame = frame_queue_available_.front();
-  frame_queue_available_.pop_front();
+  (*video_frame)->SetTimestamp(
+      base::TimeDelta::FromMicroseconds(av_frame_->reordered_opaque));
+  (*video_frame)->SetDuration(
+      ConvertFromTimeBase(doubled_time_base, 2 + av_frame_->repeat_pict));
 
   // Copy the frame data since FFmpeg reuses internal buffers for AVFrame
   // output, meaning the data is only valid until the next
   // avcodec_decode_video() call.
-  //
-  // TODO(scherkus): use VideoFrame dimensions instead and re-allocate
-  // VideoFrame if dimensions changes, but for now adjust size locally.
   int y_rows = codec_context_->height;
   int uv_rows = codec_context_->height;
   if (codec_context_->pix_fmt == PIX_FMT_YUV420P) {
     uv_rows /= 2;
   }
 
-  CopyYPlane(av_frame_->data[0], av_frame_->linesize[0], y_rows, video_frame);
-  CopyUPlane(av_frame_->data[1], av_frame_->linesize[1], uv_rows, video_frame);
-  CopyVPlane(av_frame_->data[2], av_frame_->linesize[2], uv_rows, video_frame);
+  CopyYPlane(av_frame_->data[0], av_frame_->linesize[0], y_rows, *video_frame);
+  CopyUPlane(av_frame_->data[1], av_frame_->linesize[1], uv_rows, *video_frame);
+  CopyVPlane(av_frame_->data[2], av_frame_->linesize[2], uv_rows, *video_frame);
 
-  video_frame->SetTimestamp(timestamp);
-  video_frame->SetDuration(duration);
-
-  pending_output_buffers_--;
-  event_handler_->ConsumeVideoFrame(video_frame, statistics);
-}
-
-void FFmpegVideoDecodeEngine::Uninitialize() {
-  event_handler_->OnUninitializeComplete();
+  return true;
 }
 
 void FFmpegVideoDecodeEngine::Flush() {
   avcodec_flush_buffers(codec_context_);
-  flush_pending_ = true;
-  TryToFinishPendingFlush();
 }
 
-void FFmpegVideoDecodeEngine::TryToFinishPendingFlush() {
-  DCHECK(flush_pending_);
+scoped_refptr<VideoFrame> FFmpegVideoDecodeEngine::AllocateVideoFrame() {
+  VideoFrame::Format format = PixelFormatToVideoFormat(codec_context_->pix_fmt);
+  size_t width = codec_context_->width;
+  size_t height = codec_context_->height;
 
-  // We consider ourself flushed when there is no pending input buffers
-  // and output buffers, which implies that all buffers had been returned
-  // to its owner.
-  if (!pending_input_buffers_ && !pending_output_buffers_) {
-    // Try to finish flushing and notify pipeline.
-    flush_pending_ = false;
-    event_handler_->OnFlushComplete();
-  }
-}
-
-void FFmpegVideoDecodeEngine::Seek() {
-  // After a seek, output stream no longer considered as EOS.
-  output_eos_reached_ = false;
-
-  // The buffer provider is assumed to perform pre-roll operation.
-  for (unsigned int i = 0; i < Limits::kMaxVideoFrames; ++i)
-    ReadInput();
-
-  event_handler_->OnSeekComplete();
-}
-
-void FFmpegVideoDecodeEngine::ReadInput() {
-  DCHECK_EQ(output_eos_reached_, false);
-  pending_input_buffers_++;
-  event_handler_->ProduceVideoSample(NULL);
+  return VideoFrame::CreateFrame(format, width, height,
+                                 kNoTimestamp, kNoTimestamp);
 }
 
 }  // namespace media
-
-// Disable refcounting for this object because this object only lives
-// on the video decoder thread and there's no need to refcount it.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(media::FFmpegVideoDecodeEngine);

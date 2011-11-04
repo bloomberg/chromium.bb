@@ -164,22 +164,20 @@ class MEDIA_EXPORT VideoDecoder : public Filter {
   // Initialize a VideoDecoder with the given DemuxerStream, executing the
   // callback upon completion.
   // stats_callback is used to update global pipeline statistics.
+  //
+  // TODO(scherkus): switch to PipelineStatus callback.
   virtual void Initialize(DemuxerStream* stream, const base::Closure& callback,
                           const StatisticsCallback& stats_callback) = 0;
 
-  // Renderer provides an output buffer for Decoder to write to. These buffers
-  // will be recycled to renderer via the permanent callback.
+  // Request a frame to be decoded and returned via the provided callback.
+  // Only one read may be in flight at any given time.
   //
-  // We could also pass empty pointer here to let decoder provide buffers pool.
-  virtual void ProduceVideoFrame(scoped_refptr<VideoFrame> frame) = 0;
-
-  // Installs a permanent callback for passing decoded video output.
+  // Implementations guarantee that the callback will not be called from within
+  // this method.
   //
-  // A NULL frame represents a decoding error.
-  typedef base::Callback<void(scoped_refptr<VideoFrame>)> ConsumeVideoFrameCB;
-  void set_consume_video_frame_callback(const ConsumeVideoFrameCB& callback) {
-    consume_video_frame_callback_ = callback;
-  }
+  // Frames will be non-NULL yet may be end of stream frames.
+  typedef base::Callback<void(scoped_refptr<VideoFrame>)> ReadCB;
+  virtual void Read(const ReadCB& callback) = 0;
 
   // Returns the natural width and height of decoded video in pixels.
   //
@@ -188,22 +186,11 @@ class MEDIA_EXPORT VideoDecoder : public Filter {
   //
   // TODO(scherkus): why not rely on prerolling and decoding a single frame to
   // get dimensions?
-  virtual gfx::Size natural_size() = 0;
+  virtual const gfx::Size& natural_size() = 0;
 
  protected:
-  // Executes the permanent callback to pass off decoded video.
-  //
-  // TODO(scherkus): name this ConsumeVideoFrame() once we fix the TODO in
-  // VideoDecodeEngine::EventHandler to remove ConsumeVideoFrame() from there.
-  void VideoFrameReady(scoped_refptr<VideoFrame> frame) {
-    consume_video_frame_callback_.Run(frame);
-  }
-
   VideoDecoder();
   virtual ~VideoDecoder();
-
- private:
-  ConsumeVideoFrameCB consume_video_frame_callback_;
 };
 
 
@@ -212,6 +199,8 @@ class MEDIA_EXPORT AudioDecoder : public Filter {
   // Initialize a AudioDecoder with the given DemuxerStream, executing the
   // callback upon completion.
   // stats_callback is used to update global pipeline statistics.
+  //
+  // TODO(scherkus): switch to PipelineStatus callback.
   virtual void Initialize(DemuxerStream* stream, const base::Closure& callback,
                           const StatisticsCallback& stats_callback) = 0;
 

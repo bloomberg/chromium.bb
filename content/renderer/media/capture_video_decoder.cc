@@ -22,6 +22,7 @@ CaptureVideoDecoder::CaptureVideoDecoder(
     : message_loop_proxy_(message_loop_proxy),
       vc_manager_(vc_manager),
       capability_(capability),
+      natural_size_(capability.width, capability.height),
       state_(kUnInitialized),
       video_stream_id_(video_stream_id),
       capture_engine_(NULL) {
@@ -41,16 +42,15 @@ void CaptureVideoDecoder::Initialize(
                  filter_callback, stat_callback));
 }
 
-void CaptureVideoDecoder::ProduceVideoFrame(
-    scoped_refptr<media::VideoFrame> video_frame) {
+void CaptureVideoDecoder::Read(const ReadCB& callback) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&CaptureVideoDecoder::ProduceVideoFrameOnDecoderThread,
-                 this, video_frame));
+      base::Bind(&CaptureVideoDecoder::ReadOnDecoderThread,
+                 this, callback));
 }
 
-gfx::Size CaptureVideoDecoder::natural_size() {
-  return gfx::Size(capability_.width, capability_.height);
+const gfx::Size& CaptureVideoDecoder::natural_size() {
+  return natural_size_;
 }
 
 void CaptureVideoDecoder::Play(const base::Closure& callback) {
@@ -131,17 +131,15 @@ void CaptureVideoDecoder::InitializeOnDecoderThread(
 
   capture_engine_ = vc_manager_->AddDevice(video_stream_id_, this);
 
-  available_frames_.clear();
-
   statistics_callback_ = stat_callback;
   filter_callback.Run();
   state_ = kNormal;
 }
 
-void CaptureVideoDecoder::ProduceVideoFrameOnDecoderThread(
-    scoped_refptr<media::VideoFrame> video_frame) {
+void CaptureVideoDecoder::ReadOnDecoderThread(const ReadCB& callback) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  available_frames_.push_back(video_frame);
+  CHECK(read_cb_.is_null());
+  read_cb_ = callback;
 }
 
 void CaptureVideoDecoder::PlayOnDecoderThread(const base::Closure& callback) {
@@ -170,14 +168,6 @@ void CaptureVideoDecoder::SeekOnDecoderThread(base::TimeDelta time,
   VLOG(1) << "SeekOnDecoderThread.";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
-  state_ = kSeeking;
-  // Create output buffer pool and pass the frames to renderer
-  // so that the renderer can complete the seeking
-  for (size_t i = 0; i < media::Limits::kMaxVideoFrames; ++i) {
-    VideoFrameReady(media::VideoFrame::CreateBlackFrame(capability_.width,
-                                                        capability_.height));
-  }
-
   cb.Run(media::PIPELINE_OK);
   state_ = kNormal;
   capture_engine_->StartCapture(this, capability_);
@@ -197,34 +187,27 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
     scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
-  if (available_frames_.size() == 0 || kNormal != state_) {
+  if (read_cb_.is_null() || kNormal != state_) {
     capture->FeedBuffer(buf);
     return;
   }
 
-  scoped_refptr<media::VideoFrame> video_frame = available_frames_.front();
-  available_frames_.pop_front();
-
   if (buf->width != capability_.width || buf->height != capability_.height) {
     capability_.width = buf->width;
     capability_.height = buf->height;
-    host()->SetNaturalVideoSize(
-        gfx::Size(capability_.width, capability_.height));
+    natural_size_.SetSize(buf->width, buf->height);
+    host()->SetNaturalVideoSize(natural_size_);
   }
 
-  // Check if there's a size change.
-  if (static_cast<int>(video_frame->width()) != capability_.width ||
-      static_cast<int>(video_frame->height()) != capability_.height) {
-    // Allocate new buffer based on the new size.
-    video_frame = media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
-                                                 capability_.width,
-                                                 capability_.height,
-                                                 media::kNoTimestamp,
-                                                 media::kNoTimestamp);
-  }
-
-  video_frame->SetTimestamp(buf->timestamp - start_time_);
-  video_frame->SetDuration(base::TimeDelta::FromMilliseconds(33));
+  // Always allocate a new frame.
+  //
+  // TODO(scherkus): migrate this to proper buffer recycling.
+  scoped_refptr<media::VideoFrame> video_frame =
+      media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
+                                     natural_size_.width(),
+                                     natural_size_.height(),
+                                     buf->timestamp - start_time_,
+                                     base::TimeDelta::FromMilliseconds(33));
 
   uint8* buffer = buf->memory_pointer;
 
@@ -241,6 +224,14 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
   buffer += uv_width * uv_height;
   CopyVPlane(buffer, uv_width, uv_height, video_frame);
 
-  VideoFrameReady(video_frame);
+  DeliverFrame(video_frame);
   capture->FeedBuffer(buf);
+}
+
+void CaptureVideoDecoder::DeliverFrame(
+    const scoped_refptr<media::VideoFrame>& video_frame) {
+  // Reset the callback before running to protect against reentrancy.
+  ReadCB read_cb = read_cb_;
+  read_cb_.Reset();
+  read_cb.Run(video_frame);
 }
