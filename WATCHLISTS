@@ -45,6 +45,10 @@
     'browser_resources': {
       'filepath': 'chrome/browser/resources/.*',
     },
+    'bubble': {
+      'filepath': 'views/bubble/.*|'\
+                  'chrome/browser/ui/views/bubble/.*',
+    },
     'chromeos_login': {
       'filepath': 'chrome/browser/chromeos/login/.*|'\
                   'chrome/browser/ui/webui/chromeos/login/.*|'\
@@ -312,6 +316,7 @@
     'base': ['brettw-cc@chromium.org'],
     'browser_main': ['brettw-cc@chromium.org'],
     'browser_resources': ['arv@chromium.org'],
+    'bubble': ['alicet@chromium.org', 'msw+watch@chromium.org'],
     'content': ['jam@chromium.org', 'joi+watch-content@chromium.org',
                 'darin-cc@chromium.org',
                 'dpranke-watch+content@chromium.org'],
