@@ -90,6 +90,9 @@ class GLES2Decoder : public CommonDecoder {
   // Make this decoder's GL context current.
   virtual bool MakeCurrent() = 0;
 
+  // Have the decoder release the context.
+  virtual void ReleaseCurrent() = 0;
+
   // Gets the GLES2 Util which holds info.
   virtual GLES2Util* GetGLES2Util() = 0;
 
@@ -107,10 +110,8 @@ class GLES2Decoder : public CommonDecoder {
   virtual void SetResizeCallback(
       Callback1<gfx::Size>::Type* callback) = 0;
 
-#if defined(OS_MACOSX)
   // Sets a callback which is called when a SwapBuffers command is processed.
   virtual void SetSwapBuffersCallback(Callback0::Type* callback) = 0;
-#endif
 
   virtual void SetStreamTextureManager(StreamTextureManager* manager) = 0;
 

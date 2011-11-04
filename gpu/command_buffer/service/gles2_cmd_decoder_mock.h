@@ -41,6 +41,7 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD2(SetParent, bool(GLES2Decoder* parent, uint32 parent_texture_id));
   MOCK_METHOD1(ResizeOffscreenFrameBuffer, bool(const gfx::Size& size));
   MOCK_METHOD0(MakeCurrent, bool());
+  MOCK_METHOD0(ReleaseCurrent, void());
   MOCK_METHOD1(GetServiceIdForTesting, uint32(uint32 client_id));
   MOCK_METHOD0(GetGLES2Util, GLES2Util*());
   MOCK_METHOD0(GetGLSurface, gfx::GLSurface*());

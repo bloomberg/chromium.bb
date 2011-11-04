@@ -504,6 +504,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual bool ResizeOffscreenFrameBuffer(const gfx::Size& size);
   void UpdateParentTextureInfo();
   virtual bool MakeCurrent();
+  virtual void ReleaseCurrent();
   virtual GLES2Util* GetGLES2Util() { return &util_; }
   virtual gfx::GLContext* GetGLContext() { return context_.get(); }
   virtual gfx::GLSurface* GetGLSurface() { return surface_.get(); }
@@ -512,9 +513,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual void SetGLError(GLenum error, const char* msg);
   virtual void SetResizeCallback(Callback1<gfx::Size>::Type* callback);
 
-#if defined(OS_MACOSX)
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
-#endif
 
   virtual void SetStreamTextureManager(StreamTextureManager* manager);
   virtual bool GetServiceTextureId(uint32 client_texture_id,
@@ -1362,9 +1361,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   scoped_ptr<Callback1<gfx::Size>::Type> resize_callback_;
 
-#if defined(OS_MACOSX)
   scoped_ptr<Callback0::Type> swap_buffers_callback_;
-#endif
 
   StreamTextureManager* stream_texture_manager_;
 
@@ -2267,6 +2264,11 @@ bool GLES2DecoderImpl::MakeCurrent() {
   return result;
 }
 
+void GLES2DecoderImpl::ReleaseCurrent() {
+  if (context_.get())
+    context_->ReleaseCurrent(surface_.get());
+}
+
 void GLES2DecoderImpl::RestoreCurrentRenderbufferBindings() {
   RenderbufferManager::RenderbufferInfo* renderbuffer =
       GetRenderbufferInfoForTarget(GL_RENDERBUFFER);
@@ -2461,11 +2463,9 @@ void GLES2DecoderImpl::SetResizeCallback(
   resize_callback_.reset(callback);
 }
 
-#if defined(OS_MACOSX)
 void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
   swap_buffers_callback_.reset(callback);
 }
-#endif
 
 void GLES2DecoderImpl::SetStreamTextureManager(StreamTextureManager* manager) {
   stream_texture_manager_ = manager;
@@ -7058,11 +7058,10 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       // For multisampled buffers, bind the resolved frame buffer so that
       // callbacks can call ReadPixels or CopyTexImage2D.
       ScopedResolvedFrameBufferBinder binder(this, true, false);
-#if defined(OS_MACOSX)
       if (swap_buffers_callback_.get()) {
         swap_buffers_callback_->Run();
       }
-#endif
+
       return error::kNoError;
     } else {
       ScopedFrameBufferBinder binder(this,
@@ -7083,11 +7082,10 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
 
       // Run the callback with |binder| in scope, so that the callback can call
       // ReadPixels or CopyTexImage2D.
-#if defined(OS_MACOSX)
       if (swap_buffers_callback_.get()) {
         swap_buffers_callback_->Run();
       }
-#endif
+
       return error::kNoError;
     }
   } else {
@@ -7098,11 +7096,9 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
     }
   }
 
-#if defined(OS_MACOSX)
   if (swap_buffers_callback_.get()) {
     swap_buffers_callback_->Run();
   }
-#endif
 
   return error::kNoError;
 }
