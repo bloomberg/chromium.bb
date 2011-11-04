@@ -153,9 +153,6 @@ void PrintSettings::SetPrinterPrintableArea(
     header_footer_text_height = ConvertUnit(kSettingHeaderFooterInterstice,
                                             kPointsPerInch, units_per_inch);
   }
-  page_setup_device_units_.Init(physical_size_device_units,
-                                printable_area_device_units,
-                                header_footer_text_height);
 
   PageMargins margins;
   switch (margin_type) {
@@ -211,6 +208,10 @@ void PrintSettings::SetPrinterPrintableArea(
     page_setup_device_units_.SetRequestedMargins(margins);
   else
     page_setup_device_units_.ForceRequestedMargins(margins);
+
+  page_setup_device_units_.Init(physical_size_device_units,
+                                printable_area_device_units,
+                                header_footer_text_height);
 }
 
 void PrintSettings::SetCustomMargins(

@@ -15,6 +15,9 @@ class PRINTING_EXPORT PageMargins {
  public:
   PageMargins();
 
+  // Rotates the margin values in anti-clockwise direction.
+  void Rotate();
+
   void Clear();
 
   // Equality operator.
@@ -64,6 +67,10 @@ class PRINTING_EXPORT PageSetup {
   }
 
  private:
+  // Store |requested_margins_| and update page setup values.
+  void SetRequestedMarginsAndCalculateSizes(
+      const PageMargins& requested_margins);
+
   // Calculate overlay_area_, effective_margins_, and content_area_, based on
   // a constraint of |bounds| and |text_height|.
   void CalculateSizesWithinRect(const gfx::Rect& bounds, int text_height);
@@ -86,6 +93,9 @@ class PRINTING_EXPORT PageSetup {
 
   // Requested margins.
   PageMargins requested_margins_;
+
+  // True when |effective_margins_| respects |printable_area_| else false.
+  bool forced_margins_;
 
   // Space that must be kept free for the overlays.
   int text_height_;
