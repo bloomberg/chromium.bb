@@ -27,6 +27,7 @@ GL_EXPORT extern const char kEnableGPUServiceLogging[];
 GL_EXPORT extern const char kEnableGPUClientLogging[];
 GL_EXPORT extern const char kGpuNoContextLost[];
 GL_EXPORT extern const char kUseGL[];
+GL_EXPORT extern const char kSwiftShaderPath[];
 
 }  // namespace switches
 

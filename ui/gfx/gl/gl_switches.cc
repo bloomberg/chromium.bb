@@ -6,10 +6,11 @@
 
 namespace gfx {
 
-const char kGLImplementationDesktopName[] = "desktop";
-const char kGLImplementationOSMesaName[]  = "osmesa";
-const char kGLImplementationEGLName[]     = "egl";
-const char kGLImplementationMockName[]    = "mock";
+const char kGLImplementationDesktopName[]     = "desktop";
+const char kGLImplementationOSMesaName[]      = "osmesa";
+const char kGLImplementationEGLName[]         = "egl";
+const char kGLImplementationSwiftShaderName[] = "swiftshader";
+const char kGLImplementationMockName[]        = "mock";
 
 }  // namespace gfx
 
@@ -29,6 +30,8 @@ const char kEnableGPUClientLogging[]        = "enable-gpu-client-logging";
 //       ANGLE).
 //  osmesa: The OSMesa software renderer.
 const char kUseGL[]                         = "use-gl";
+
+const char kSwiftShaderPath[]               = "swiftshader-path";
 
 // Inform Chrome that a GPU context will not be lost in power saving mode,
 // screen saving mode, etc.  Note that this flag does not ensure that a GPU

@@ -30,6 +30,7 @@ typedef std::vector<base::NativeLibrary> LibraryArray;
 GLImplementation g_gl_implementation = kGLImplementationNone;
 LibraryArray* g_libraries;
 GLGetProcAddressProc g_get_proc_address;
+bool g_using_swiftshader;
 
 void CleanupNativeLibraries(void* unused) {
   if (g_libraries) {
@@ -88,6 +89,9 @@ bool InitializeRequestedGLBindings(
     if (requested_implementation_name == "any") {
       requested_implementation = default_implementation;
       fallback_to_osmesa = true;
+    } else if (requested_implementation_name == "swiftshader") {
+      g_using_swiftshader = true;
+      requested_implementation = kGLImplementationEGLGLES2;
     } else {
       requested_implementation =
         GetNamedGLImplementation(requested_implementation_name);
@@ -134,6 +138,10 @@ GLImplementation GetGLImplementation() {
 bool HasDesktopGLFeatures() {
   return kGLImplementationDesktopGL == g_gl_implementation ||
          kGLImplementationOSMesaGL == g_gl_implementation;
+}
+
+bool UsingSwiftShader() {
+  return g_using_swiftshader;
 }
 
 void AddGLNativeLibrary(base::NativeLibrary library) {

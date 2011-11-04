@@ -58,6 +58,9 @@ GLImplementation GetNamedGLImplementation(const std::wstring& name);
 // Get the name of a GL implementation.
 const char* GetGLImplementationName(GLImplementation implementation);
 
+// Get whether the current GL implementation is swiftshader.
+bool UsingSwiftShader();
+
 // Initialize the preferred GL binding from the given list. The preferred GL
 // bindings depend on command line switches passed by the user and which GL
 // implementation is the default on a given platform.

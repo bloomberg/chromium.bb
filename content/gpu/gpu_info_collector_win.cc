@@ -8,6 +8,7 @@
 #include <d3d9.h>
 #include <setupapi.h>
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/scoped_native_library.h"
@@ -62,6 +63,13 @@ namespace gpu_info_collector {
 
 bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL)) {
+    std::string requested_implementation_name =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
+    if (requested_implementation_name == "swiftshader")
+      return false;
+  }
 
   if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
     gpu_info->finalized = true;

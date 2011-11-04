@@ -9,6 +9,7 @@
 #include "base/at_exit.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/native_library.h"
@@ -19,7 +20,7 @@
 #include "ui/gfx/gl/gl_implementation.h"
 
 #if defined(ENABLE_SWIFTSHADER)
-#include "software_renderer_d3d9.h"
+#include "software_renderer.h"
 #endif
 
 namespace gfx {
@@ -105,13 +106,6 @@ bool InitializeGLBindings(GLImplementation implementation) {
       if (!PathService::Get(base::DIR_MODULE, &module_path))
         return false;
 
-#if defined(ENABLE_SWIFTSHADER)
-      base::NativeLibrary swiftshader_library = base::LoadNativeLibrary(
-          module_path.Append(L"swiftshader_d3d9.dll"), NULL);
-
-      SetupSoftwareRenderer();
-#endif
-
       // Attempt to load D3DX and its dependencies using the default search path
       // and if that fails, using an absolute path. This is to ensure these DLLs
       // are loaded before ANGLE is loaded in case they are not in the default
@@ -121,11 +115,23 @@ bool InitializeGLBindings(GLImplementation implementation) {
       LoadD3DXLibrary(module_path, base::StringPrintf(L"d3dx9_%d.dll",
                                                       D3DX_SDK_VERSION));
 
+      FilePath gles_path;
+
+      if (UsingSwiftShader()) {
+        const CommandLine* command_line = CommandLine::ForCurrentProcess();
+        if (!command_line->HasSwitch(switches::kSwiftShaderPath))
+          return false;
+        gles_path =
+            command_line->GetSwitchValuePath(switches::kSwiftShaderPath);
+      } else {
+        gles_path = module_path;
+      }
+
       // Load libglesv2.dll before libegl.dll because the latter is dependent on
       // the former and if there is another version of libglesv2.dll in the dll
       // search path, it will get loaded instead.
       base::NativeLibrary gles_library = base::LoadNativeLibrary(
-          module_path.Append(L"libglesv2.dll"), NULL);
+          gles_path.Append(L"libglesv2.dll"), NULL);
       if (!gles_library) {
         VLOG(1) << "libglesv2.dll not found";
         return false;
@@ -134,12 +140,18 @@ bool InitializeGLBindings(GLImplementation implementation) {
       // When using EGL, first try eglGetProcAddress and then Windows
       // GetProcAddress on both the EGL and GLES2 DLLs.
       base::NativeLibrary egl_library = base::LoadNativeLibrary(
-          module_path.Append(L"libegl.dll"), NULL);
+          gles_path.Append(L"libegl.dll"), NULL);
       if (!egl_library) {
         VLOG(1) << "libegl.dll not found.";
         base::UnloadNativeLibrary(gles_library);
         return false;
       }
+
+#if defined(ENABLE_SWIFTSHADER)
+      if (UsingSwiftShader()) {
+        SetupSoftwareRenderer(gles_library);
+      }
+#endif
 
       GLGetProcAddressProc get_proc_address =
           reinterpret_cast<GLGetProcAddressProc>(
