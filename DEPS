@@ -8,23 +8,23 @@ vars = {
   "webkit_revision": "99271",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
-  "nacl_revision": "6965",
+  "nacl_revision": "7108",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   # TODO(brettw) We should use the "From" syntax to avoid hardcoding the
   # revisions here, but it makes checkdeps confused. We should fix checkdeps.
-  "nacl_tools_revision": "6504",  # native_client/DEPS: tools_rev
+  "nacl_tools_revision": "7088",  # native_client/DEPS: tools_rev
 
   # These hashes need to be updated when nacl_toolchain_revision is changed.
   # After changing nacl_toolchain_revision, run 'gclient runhooks' to get the
   # new values.
   "nacl_toolchain_mac_x86_newlib_hash":
-      "280ecee659ff804d5eeca8964c31545b0d68d9c8",
+      "74612a65dd6bae1d85af1f7277cc6af6e5d86b46",
   "nacl_toolchain_win_x86_newlib_hash":
-      "7730f4515c745c0c012df4a1080be9a46ffcda47",
+      "3672e7b20848beec886badc46909cf24fb1c574f",
   "nacl_toolchain_linux_x86_newlib_hash":
-      "596aa5b812ec4b24160ed7ce55b3fd141f929fbf",
-  "nacl_toolchain_revision": "6757",
+      "528b9b85d087ffb5a0f6348f5219a33cd0ff725f",
+  "nacl_toolchain_revision": "7098",
 
   "libjingle_revision": "92",
   "libvpx_revision": "107145",
@@ -335,7 +335,7 @@ deps_os = {
       "/trunk/deps/third_party/swig/win@" + Var("swig_revision"),
 
     "src/third_party/mingw-w64/mingw/bin":
-      (Var("nacl_trunk") + "/src/third_party/mingw-w64/mingw/bin@" +
+      (Var("nacl_trunk") + "/deps/third_party/mingw-w64/mingw/bin@" +
        Var("nacl_tools_revision")),
 
     "src/rlz":
