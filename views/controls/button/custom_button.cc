@@ -34,7 +34,8 @@ void CustomButton::SetState(ButtonState state) {
     if (state_ == BS_NORMAL && state == BS_HOT) {
       // Button is hovered from a normal state, start hover animation.
       hover_animation_->Show();
-    } else if (state_ == BS_HOT && state == BS_NORMAL) {
+    } else if ((state_ == BS_HOT || state_ == BS_PUSHED)
+          && state == BS_NORMAL) {
       // Button is returning to a normal state from hover, start hover
       // fade animation.
       hover_animation_->Hide();
