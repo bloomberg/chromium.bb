@@ -336,59 +336,47 @@ uint64 Clipboard::GetSequenceNumber() {
 
 // static
 Clipboard::FormatType Clipboard::GetUrlFormatType() {
-  static const std::string type = base::SysNSStringToUTF8(NSURLPboardType);
-  return type;
+  return base::SysNSStringToUTF8(NSURLPboardType);
 }
 
 // static
 Clipboard::FormatType Clipboard::GetUrlWFormatType() {
-  static const std::string type = base::SysNSStringToUTF8(NSURLPboardType);
-  return type;
+  return base::SysNSStringToUTF8(NSURLPboardType);
 }
 
 // static
 Clipboard::FormatType Clipboard::GetPlainTextFormatType() {
-  static const std::string type = base::SysNSStringToUTF8(NSStringPboardType);
-  return type;
+  return base::SysNSStringToUTF8(NSStringPboardType);
 }
 
 // static
 Clipboard::FormatType Clipboard::GetPlainTextWFormatType() {
-  static const std::string type = base::SysNSStringToUTF8(NSStringPboardType);
-  return type;
+  return base::SysNSStringToUTF8(NSStringPboardType);
 }
 
 // static
 Clipboard::FormatType Clipboard::GetFilenameFormatType() {
-  static const std::string type =
-      base::SysNSStringToUTF8(NSFilenamesPboardType);
-  return type;
+  return base::SysNSStringToUTF8(NSFilenamesPboardType);
 }
 
 // static
 Clipboard::FormatType Clipboard::GetFilenameWFormatType() {
-  static const std::string type =
-      base::SysNSStringToUTF8(NSFilenamesPboardType);
-  return type;
+  return base::SysNSStringToUTF8(NSFilenamesPboardType);
 }
 
 // static
 Clipboard::FormatType Clipboard::GetHtmlFormatType() {
-  static const std::string type = base::SysNSStringToUTF8(NSHTMLPboardType);
-  return type;
+  return base::SysNSStringToUTF8(NSHTMLPboardType);
 }
 
 // static
 Clipboard::FormatType Clipboard::GetBitmapFormatType() {
-  static const std::string type = base::SysNSStringToUTF8(NSTIFFPboardType);
-  return type;
+  return base::SysNSStringToUTF8(NSTIFFPboardType);
 }
 
 // static
 Clipboard::FormatType Clipboard::GetWebKitSmartPasteFormatType() {
-  static const std::string type =
-      base::SysNSStringToUTF8(kWebSmartPastePboardType);
-  return type;
+  return base::SysNSStringToUTF8(kWebSmartPastePboardType);
 }
 
 }  // namespace ui
