@@ -40,7 +40,12 @@ bool AllowMimeTypeMismatch(const std::string& orig_mime_type,
   // We collected stats to determine this approach isn't a major compat issue,
   // and we defend against content confusion attacks in various cases, such
   // as when the user doesn't have the Flash plug-in enabled.
-  return orig_mime_type.empty() || orig_mime_type == kApplicationOctetStream;
+  bool allow = orig_mime_type.empty() ||
+               orig_mime_type == kApplicationOctetStream;
+  LOG_IF(INFO, !allow) << "Ignoring plugin with unexpected MIME type "
+                       << actual_mime_type << " (expected " << orig_mime_type
+                       << ")";
+  return allow;
 }
 
 }
