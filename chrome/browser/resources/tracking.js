@@ -702,7 +702,8 @@ var MainView = (function() {
   /**
    * Renders the information for a particular group.
    */
-  function drawGroup(parent, groupKey, groupData, columns) {
+  function drawGroup(parent, groupKey, groupData, columns,
+                     columnOnClickHandler, currentSortKeys) {
     var div = addNode(parent, 'div');
     div.className = 'group-container';
 
@@ -710,7 +711,8 @@ var MainView = (function() {
 
     var table = addNode(div, 'table');
 
-    drawDataTable(table, groupData, columns);
+    drawDataTable(table, groupData, columns, columnOnClickHandler,
+                  currentSortKeys);
   }
 
   /**
@@ -741,21 +743,38 @@ var MainView = (function() {
   /**
    * Renders a table which summarizes all |column| fields for |data|.
    */
-  function drawDataTable(table, data, columns) {
+  function drawDataTable(table, data, columns, columnOnClickHandler,
+                         currentSortKeys) {
     table.className = 'results-table';
     var thead = addNode(table, 'thead');
     var tbody = addNode(table, 'tbody');
 
-    drawTableHeader(thead, columns);
+    drawTableHeader(thead, columns, columnOnClickHandler, currentSortKeys);
     drawAggregateRow(thead, data.aggregates, columns);
     drawTableBody(tbody, data.rows, columns);
   }
 
-  function drawTableHeader(thead, columns) {
+  function drawTableHeader(thead, columns, columnOnClickHandler,
+                           currentSortKeys) {
     var tr = addNode(thead, 'tr');
     for (var i = 0; i < columns.length; ++i) {
       var key = columns[i];
-      addNode(tr, 'th', getNameForKey(key));
+      var th = addNode(tr, 'th', getNameForKey(key));
+      th.onclick = columnOnClickHandler.bind(this, key);
+
+      // Draw an indicator if we are currently sorted on this column.
+      // TODO(eroman): Should use an icon instead of asterisk!
+      for (var j = 0; j < currentSortKeys.length; ++j) {
+        if (sortKeysMatch(currentSortKeys[j], key)) {
+          var sortIndicator = addNode(th, 'span', '*');
+          sortIndicator.style.color = 'red';
+          if (parseSortKeyAndFactor(currentSortKeys[j]).factor == -1) {
+            // Use double-asterisk for descending columns.
+            addText(sortIndicator, '*');
+          }
+          break;
+        }
+      }
     }
   }
 
@@ -880,6 +899,29 @@ var MainView = (function() {
     return simpleCompare(value1, value2);
   }
 
+  /**
+   * Sort keys can be prefixed with a '-' which means "reverse the sort order".
+   * This function strips off the leading hyphen if it exists, and makes note
+   * of it in the 'factor' field.
+   */
+  function parseSortKeyAndFactor(key) {
+    var m = /^(-?)(.*)$/.exec(key);
+    return {
+      factor: m[1] == '-' ? -1 : 1,
+      key: m[2],
+    };
+  }
+
+  function reverseSortKey(key) {
+    var parsedKey = parseSortKeyAndFactor(key);
+    return (parsedKey.factor == 1 ? '-' : '') + parsedKey.key;
+  }
+
+  function sortKeysMatch(key1, key2) {
+    // Ignore ascending/descending when comparing the sort keys.
+    return parseSortKeyAndFactor(key1).key == parseSortKeyAndFactor(key2).key;
+  }
+
   // --------------------------------------------------------------------------
 
   /**
@@ -941,13 +983,16 @@ var MainView = (function() {
         deleteStringsFromArrayMatching(columns, keysToExcludeSet);
       }
 
+      var columnOnClickHandler = this.onClickColumn_.bind(this);
+
       // Draw each group.
       for (var i = 0; i < groupKeys.length; ++i) {
         var groupKeyString = groupKeys[i];
         var groupData = groupedData[groupKeyString];
         var groupKey = JSON.parse(groupKeyString);
 
-        drawGroup(parent, groupKey, groupData, columns);
+        drawGroup(parent, groupKey, groupData, columns,
+                  columnOnClickHandler, this.currentSortKeys_);
       }
     },
 
@@ -1066,6 +1111,57 @@ var MainView = (function() {
       this.redrawData_();
     },
 
+    /**
+     * When left-clicking a column, change the primary sort order to that
+     * column. If we were already sorted on that column then reverse the order.
+     *
+     * When alt-clicking, add a secondary sort column. Similarly, if
+     * alt-clicking a column which was already being sorted on, reverse its
+     * order.
+     */
+    onClickColumn_: function(key, event) {
+      // For numeric properties default to a descending order, since that is
+      // generally more useful.
+      if (KEY_PROPERTIES[key].type == 'number')
+        key = reverseSortKey(key);
+
+      var parsedKey = parseSortKeyAndFactor(key);
+
+      // Scan through our sort order and see if we are already sorted on this
+      // key. If so, reverse that sort ordering.
+      var found_i = -1;
+      for (var i = 0; i < this.currentSortKeys_.length; ++i) {
+        var curKey = this.currentSortKeys_[i];
+        if (sortKeysMatch(curKey, key)) {
+          this.currentSortKeys_[i] = reverseSortKey(curKey);
+          found_i = i;
+          break;
+        }
+      }
+
+      if (event.altKey) {
+        if (found_i == -1) {
+          // If we weren't already sorted on the column that was alt-clicked,
+          // then add it to our sort.
+          this.currentSortKeys_.push(key);
+        }
+      } else {
+        if (found_i != 0 ||
+            !sortKeysMatch(this.currentSortKeys_[found_i], key)) {
+          // If the column we left-clicked wasn't already our primary column,
+          // make it so.
+          this.currentSortKeys_ = [key];
+        } else {
+          // If the column we left-clicked was already our primary column (and
+          // we just reversed it), remove any secondary sorts.
+          this.currentSortKeys_.length = 1;
+        }
+      }
+
+      this.fillSortingDropdowns_();
+      this.redrawData_();
+    },
+
     getSortingFunction_: function() {
       var sortKeys = this.currentSortKeys_.slice(0);
 
@@ -1080,11 +1176,7 @@ var MainView = (function() {
       // to inverse the sort order. Parse this out and make sortKeys into an
       // array of objects instead of strings.
       for (var i = 0; i < sortKeys.length; ++i) {
-        var m = /^(-?)(.*)$/.exec(sortKeys[i]);
-        sortKeys[i] = {
-          factor: m[1] == '-' ? -1 : 1,
-          key: m[2],
-        };
+        sortKeys[i] = parseSortKeyAndFactor(sortKeys[i]);
       }
 
       return function(a, b) {
