@@ -19,12 +19,16 @@ static const stime_t kMaxDelay = 0.09;  // 90ms
 
 LookaheadFilterInterpreter::LookaheadFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
-    : max_fingers_per_hwstate_(0), interpreter_due_(-1.0),
+    : last_id_(0), max_fingers_per_hwstate_(0), interpreter_due_(-1.0),
       last_interpreted_time_(0.0),
       min_nonsuppress_speed_(prop_reg, "Input Queue Min Nonsuppression Speed",
                              200.0),
       delay_(prop_reg, "Input Queue Delay", 0.017),
-      split_min_period_(prop_reg, "Min Interpolate Period", 0.021) {
+      split_min_period_(prop_reg, "Min Interpolate Period", 0.021),
+      drumroll_speed_thresh_(prop_reg, "Drumroll Speed Thresh", 400.0),
+      drumroll_max_speed_ratio_(prop_reg,
+                                "Drumroll Max Speed Change Factor",
+                                15.0) {
   next_.reset(next);
 }
 
@@ -46,6 +50,10 @@ Gesture* LookaheadFilterInterpreter::SyncInterpret(HardwareState* hwstate,
   double delay = max(0.0, min(kMaxDelay, delay_.val_));
   node->due_ = hwstate->timestamp + delay;
   node->completed_ = false;
+  if (queue_.Empty())
+    node->output_ids_.clear();
+  else
+    node->output_ids_ = queue_.Tail()->output_ids_;
   if (!queue_.Empty() && queue_.Tail()->due_ > node->due_) {
     Err("Clock changed backwards. Clearing queue.");
     do {
@@ -55,6 +63,7 @@ Gesture* LookaheadFilterInterpreter::SyncInterpret(HardwareState* hwstate,
     last_interpreted_time_ = 0.0;
   }
   queue_.PushBack(node);
+  AssignTrackingIds();
   AttemptInterpolation();
   UpdateInterpreterDue(interpreter_due_ < 0.0 ?
                        interpreter_due_ : interpreter_due_ + hwstate->timestamp,
@@ -85,6 +94,100 @@ void LookaheadFilterInterpreter::Interpolate(const HardwareState& first,
     mid->position_y = (older.position_y + newer.position_y) / 2.0;
     mid->tracking_id = older.tracking_id;
   }
+}
+
+void LookaheadFilterInterpreter::AssignTrackingIds() {
+  if (queue_.size() < 2)
+    return;
+  QState* tail = queue_.Tail();
+  HardwareState* hs = &tail->state_;
+  QState* prev_qs = queue_.size() < 2 ? NULL : tail->prev_;
+  HardwareState* prev_hs = prev_qs ? &prev_qs->state_ : NULL;
+  QState* prev2_qs = queue_.size() < 3 ? NULL : prev_qs->prev_;
+  HardwareState* prev2_hs = prev2_qs ? &prev2_qs->state_ : NULL;
+
+  RemoveMissingIdsFromMap(&tail->output_ids_, *hs);
+  float dt = prev_hs ? hs->timestamp - prev_hs->timestamp : 1.0;
+  float prev_dt =
+      prev_hs && prev2_hs ? prev_hs->timestamp - prev2_hs->timestamp : 1.0;
+
+  float dist_sq_thresh =
+      dt * dt * drumroll_speed_thresh_.val_ * drumroll_speed_thresh_.val_;
+
+  const float multiplier_per_time_ratio_sq = dt * dt *
+      drumroll_max_speed_ratio_.val_ *
+      drumroll_max_speed_ratio_.val_;
+  const float prev_dt_sq = prev_dt * prev_dt;
+
+  for (size_t i = 0; i < hs->finger_cnt; i++) {
+    FingerState* fs = &hs->fingers[i];
+    const short old_id = fs->tracking_id;
+    bool new_finger = false;
+    if (!MapContainsKey(tail->output_ids_, fs->tracking_id)) {
+      tail->output_ids_[fs->tracking_id] = NextTrackingId();
+      new_finger = true;
+    }
+    fs->tracking_id = tail->output_ids_[fs->tracking_id];
+    if (new_finger)
+      continue;
+    if (!prev_hs) {
+      Err("How is prev_hs NULL?");
+      continue;
+    }
+    // Consider breaking the connection between this frame and the previous
+    // by assigning this finger a new ID
+    if (!MapContainsKey(prev_qs->output_ids_, old_id)) {
+      Err("How is old id missing from old output_ids?");
+      continue;
+    }
+    FingerState* prev_fs =
+        prev_hs->GetFingerState(prev_qs->output_ids_[old_id]);
+    if (!prev_fs) {
+      Err("How is prev_fs NULL?");
+      continue;
+    }
+
+    float dx = fs->position_x - prev_fs->position_x;
+    float dy = fs->position_y - prev_fs->position_y;
+    float dist_sq = dx * dx + dy * dy;
+    if (dist_sq > dist_sq_thresh) {
+      FingerState* prev2_fs = NULL;
+      if (prev2_hs &&
+          MapContainsKey(prev2_qs->output_ids_, old_id) &&
+          (prev2_fs =
+           prev2_hs->GetFingerState(prev2_qs->output_ids_[old_id]))) {
+        float prev_dx = prev_fs->position_x - prev2_fs->position_x;
+        float prev_dy = prev_fs->position_y - prev2_fs->position_y;
+        // If the finger is switching direction rapidly, it's drumroll.
+        if (prev_dx * dx >= 0.0 || prev_dy * dy >= 0.0) {
+          // Finger not switching direction rapidly. Now, test if large
+          // speed change.
+          float prev_dist_sq = prev_dx * prev_dx + prev_dy * prev_dy;
+          if (dist_sq * prev_dt_sq <=
+              multiplier_per_time_ratio_sq * prev_dist_sq)
+            continue;
+        }
+      }
+      SeparateFinger(tail, fs, old_id);
+    }
+  }
+}
+
+void LookaheadFilterInterpreter::SeparateFinger(QState* node,
+                                                FingerState* fs,
+                                                short input_id) {
+  short output_id = NextTrackingId();
+  if (!MapContainsKey(node->output_ids_, input_id)) {
+    Err("How is this possible?");
+    return;
+  }
+  node->output_ids_[input_id] = output_id;
+  fs->tracking_id = output_id;
+}
+
+short LookaheadFilterInterpreter::NextTrackingId() {
+  short out = ++last_id_ & 0x7fff;  // keep it non-negative
+  return out;
 }
 
 void LookaheadFilterInterpreter::AttemptInterpolation() {
@@ -156,8 +259,8 @@ Gesture* LookaheadFilterInterpreter::HandleTimer(stime_t now,
       };
       result = next_->SyncInterpret(&hs_copy, &next_timeout);
 
-      // Clear previously completed nodes
-      while (!queue_.Empty() && queue_.Head()->completed_)
+      // Clear previously completed nodes, but keep at least two nodes.
+      while (queue_.size() > 2 && queue_.Head()->completed_)
         free_list_.PushBack(queue_.PopFront());
 
       // Mark current node completed. This should be the only completed

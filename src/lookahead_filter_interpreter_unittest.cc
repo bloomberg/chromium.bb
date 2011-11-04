@@ -493,4 +493,55 @@ TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest) {
   EXPECT_GE(timeout, 0.0);
 }
 
+TEST(LookaheadFilterInterpreterTest, DrumrollTest) {
+  LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
+  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+
+  HardwareProperties initial_hwprops = {
+    0, 0, 100, 100,  // left, top, right, bottom
+    1,  // x res (pixels/mm)
+    1,  // y res (pixels/mm)
+    25, 25, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    1, 0, 0  // t5r2, semi, button pad
+  };
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, pr, orient, x, y, id
+    { 0, 0, 0, 0, 1, 0, 40, 40, 1 },
+    { 0, 0, 0, 0, 1, 0, 40, 80, 1 },
+    { 0, 0, 0, 0, 1, 0, 40, 40, 2 },
+    { 0, 0, 0, 0, 1, 0, 41, 80, 2 },
+  };
+  // These timestamps cause an interpolated event to be 1.492 at time 1.495,
+  // and so this tests that an overdue interpolated event is handled correctly.
+  HardwareState hs[] = {
+    // Expect movement to take
+    { 1.000, 0, 1, 1, &fs[0] },
+    { 1.001, 0, 1, 1, &fs[0] },
+    { 1.002, 0, 1, 1, &fs[1] },
+    { 1.003, 0, 1, 1, &fs[1] },
+    { 1.004, 0, 1, 1, &fs[2] },
+    { 1.005, 0, 1, 1, &fs[3] },
+    { 1.006, 0, 1, 1, &fs[2] },
+  };
+
+  base_interpreter = new LookaheadFilterInterpreterTestInterpreter;
+  base_interpreter->return_values_.push_back(
+      Gesture(kGestureMove,
+              0,  // start time
+              1,  // end time
+              0,  // dx
+              1));  // dy
+  interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+  interpreter->SetHardwareProperties(initial_hwprops);
+
+  for (size_t i = 0; i < arraysize(hs); i++) {
+    stime_t timeout = -1.0;
+    Gesture* out = interpreter->SyncInterpret(&hs[i], &timeout);
+    EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
+    EXPECT_GT(timeout, 0);
+  }
+  EXPECT_EQ(interpreter->last_id_, 5);
+}
+
 }  // namespace gestures

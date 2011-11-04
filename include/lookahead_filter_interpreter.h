@@ -8,8 +8,10 @@
 #include <gtest/gtest.h>  // For FRIEND_TEST
 
 #include "gestures/include/gestures.h"
+#include "gestures/include/immediate_interpreter.h"
 #include "gestures/include/interpreter.h"
 #include "gestures/include/list.h"
+#include "gestures/include/map.h"
 #include "gestures/include/prop_registry.h"
 
 #ifndef GESTURES_LOOKAHEAD_FILTER_INTERPRETER_H_
@@ -19,6 +21,7 @@ namespace gestures {
 
 class LookaheadFilterInterpreter : public Interpreter {
   FRIEND_TEST(LookaheadFilterInterpreterTest, CombineGesturesTest);
+  FRIEND_TEST(LookaheadFilterInterpreterTest, DrumrollTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolateHwStateTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolateTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest);
@@ -45,6 +48,7 @@ class LookaheadFilterInterpreter : public Interpreter {
     HardwareState state_;
     unsigned short max_fingers_;
     scoped_array<FingerState> fs_;
+    map<short, short, kMaxFingers> output_ids_;  // input tracking ids -> output
 
     stime_t due_;
     bool completed_;
@@ -53,10 +57,22 @@ class LookaheadFilterInterpreter : public Interpreter {
     QState* prev_;
   };
 
+  void LogVectors();
+
   // Looks at the most recent 2 states in the queue (one of which may have
   // already completed), and if they are separated by split_min_period_ time,
   // tries to insert an interpolated event in the middle.
   void AttemptInterpolation();
+
+  // Reassigns tracking IDs, assigning them in such a way to avoid problems
+  // of drumroll.
+  void AssignTrackingIds();
+
+  // For drumroll. Edits a QState node's fingerstate to have a new tracking id.
+  void SeparateFinger(QState* node, FingerState* fs, short input_id);
+
+  // Returns a new tracking id for a contact.
+  short NextTrackingId();
 
   // Interpolates first and second, storing the result into out.
   // first and second must have the same the same number of fingers and
@@ -78,6 +94,9 @@ class LookaheadFilterInterpreter : public Interpreter {
   List<QState> queue_;
   List<QState> free_list_;
 
+  // The last id assigned to a contact (part of drumroll suppression)
+  short last_id_;
+
   unsigned short max_fingers_per_hwstate_;
 
   scoped_ptr<Interpreter> next_;
@@ -93,6 +112,12 @@ class LookaheadFilterInterpreter : public Interpreter {
   DoubleProperty delay_;
   // If this much time passes between consecutive events, interpolate.
   DoubleProperty split_min_period_;
+  // If a contact appears to move faster than this, the drumroll detector may
+  // consider it a new contact.
+  DoubleProperty drumroll_speed_thresh_;
+  // If one contact's speed is more than drumroll_max_speed_ratio_ times the
+  // previous speed, the drumroll detector may consider it a new contact.
+  DoubleProperty drumroll_max_speed_ratio_;
 };
 
 }  // namespace gestures
