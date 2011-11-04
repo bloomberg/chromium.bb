@@ -58,7 +58,6 @@ IndexedDBKey::operator WebIDBKey() const {
     case WebIDBKey::NumberType:
       return WebIDBKey::createNumber(number_);
     case WebIDBKey::InvalidType:
-    default: // TODO(jsbell): Remove this case label once NullType is gone
       return WebIDBKey::createInvalid();
   }
   NOTREACHED();

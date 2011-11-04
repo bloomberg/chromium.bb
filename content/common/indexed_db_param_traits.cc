@@ -80,7 +80,6 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
       r->SetNumber(number);
       return true;
     case WebKit::WebIDBKey::InvalidType:
-    default: // TODO(jsbell): Remove this case label once NullType is gone
       r->SetInvalid();
       return true;
   }
