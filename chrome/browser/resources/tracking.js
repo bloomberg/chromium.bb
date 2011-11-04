@@ -489,10 +489,18 @@ var MainView = (function() {
     var n = parent.ownerDocument.createElement(tagName);
     parent.appendChild(n);
     if (opt_text != undefined) {
-      var textNode = parent.ownerDocument.createTextNode(opt_text);
-      n.appendChild(textNode);
+      addText(n, opt_text);
     }
     return n;
+  }
+
+  /**
+   * Adds |text| to |parent|.
+   */
+  function addText(parent, text) {
+    var textNode = parent.ownerDocument.createTextNode(text);
+    parent.appendChild(textNode);
+    return textNode;
   }
 
   /**
@@ -711,6 +719,39 @@ var MainView = (function() {
     }
   }
 
+  /**
+   * Renders the property value |value| into cell |td|. The name of this
+   * property is |key|.
+   */
+  function drawValueToCell(td, key, value) {
+    // Lookup the expected type of this property.
+    var isNumeric = KEY_PROPERTIES[key].type == 'number';
+
+    if (isNumeric) {
+      // Numbers should be aligned to the right.
+      td.align = 'right';
+    }
+
+    // Truncate numbers to integers. Also add comma separators for readability.
+    if (isNumeric) {
+      td.innerText = formatNumberAsText(value);
+      return;
+    }
+
+    // String values can get pretty long. If the string contains no spaces, then
+    // CSS fails to wrap it, and it overflows the cell causing the table to get
+    // really big. We solve this using a hack: insert a <wbr> element after
+    // every single character. This will allow the rendering engine to wrap the
+    // value, and hence avoid it overflowing!
+    var kMinLengthBeforeWrap = 20;
+
+    addText(td, value.substr(0, kMinLengthBeforeWrap));
+    for (var i = kMinLengthBeforeWrap; i < value.length; ++i) {
+      addNode(td, 'wbr');
+      addText(td, value.substr(i, 1));
+    }
+  }
+
   function drawTableBody(tbody, rows, columns) {
     for (var i = 0; i < rows.length; ++i) {
       var e = rows[i];
@@ -721,18 +762,8 @@ var MainView = (function() {
         var key = columns[c];
         var value = getPropertyByPath(e, key);
 
-
-        var isNumeric = typeof value == 'number';
-
-        if (isNumeric) {
-          value = formatNumberAsText(value);
-        }
-
-        var td = addNode(tr, 'td', value);
-
-        if (isNumeric) {
-          td.align = 'right';
-        }
+        var td = addNode(tr, 'td');
+        drawValueToCell(td, key, value);
       }
     }
   }
