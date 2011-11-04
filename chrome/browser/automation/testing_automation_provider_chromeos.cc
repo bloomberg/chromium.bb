@@ -613,8 +613,10 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
 
   AutomationJSONReply reply(this, reply_message);
   std::string service_path, password;
+  bool shared;
   if (!args->GetString("service_path", &service_path) ||
-      !args->GetString("password", &password)) {
+      !args->GetString("password", &password) ||
+      !args->GetBoolean("shared", &shared)) {
     reply.SendError("Invalid or missing args.");
     return;
   }
@@ -629,10 +631,15 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
   if (!password.empty())
     wifi->SetPassphrase(password);
 
+  // Regardless of what was passed, if the network is open and visible,
+  // the network must be shared because of a UI restriction.
+  if (wifi->encryption() == chromeos::SECURITY_NONE)
+    shared = true;
+
   // Set up an observer (it will delete itself).
   new ServicePathConnectObserver(this, reply_message, service_path);
 
-  network_library->ConnectToWifiNetwork(wifi);
+  network_library->ConnectToWifiNetwork(wifi, shared);
   network_library->RequestNetworkScan();
 }
 
@@ -657,9 +664,11 @@ void TestingAutomationProvider::ConnectToHiddenWifiNetwork(
     return;
 
   std::string ssid, security, password;
+  bool shared;
   if (!args->GetString("ssid", &ssid) ||
       !args->GetString("security", &security) ||
-      !args->GetString("password", &password)) {
+      !args->GetString("password", &password) ||
+      !args->GetBoolean("shared", &shared)) {
     AutomationJSONReply(this, reply_message).SendError(
         "Invalid or missing args.");
     return;
@@ -685,15 +694,15 @@ void TestingAutomationProvider::ConnectToHiddenWifiNetwork(
   // Set up an observer (it will delete itself).
   new SSIDConnectObserver(this, reply_message, ssid);
 
-  const bool shared = true;
-  const bool save_credentials = false;
+  bool save_credentials = false;
 
   if (connection_security == chromeos::SECURITY_8021X) {
     chromeos::NetworkLibrary::EAPConfigData config_data;
     std::string eap_method, eap_auth, eap_identity;
     if (!args->GetString("eap_method", &eap_method) ||
         !args->GetString("eap_auth", &eap_auth) ||
-        !args->GetString("eap_identity", &eap_identity)) {
+        !args->GetString("eap_identity", &eap_identity) ||
+        !args->GetBoolean("save_credentials", &save_credentials)) {
       AutomationJSONReply(this, reply_message).SendError(
           "Invalid or missing EAP args.");
       return;

@@ -321,7 +321,7 @@ class PyNetworkUITest(pyauto.PyUITest):
         return service_path
     return None
 
-  def ConnectToWifiRouter(self, router_name):
+  def ConnectToWifiRouter(self, router_name, shared=True):
     """Connects to a router by name.
 
     Args:
@@ -346,5 +346,7 @@ class PyNetworkUITest(pyauto.PyUITest):
              router['ssid']
 
       logging.debug('Connecting to router %s.' % router_name)
-      error_string = self.ConnectToWifiNetwork(service_path, passphrase)
+      error_string = self.ConnectToWifiNetwork(service_path,
+                                               password=passphrase,
+                                               shared=shared)
     return error_string

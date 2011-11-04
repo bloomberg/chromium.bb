@@ -372,7 +372,17 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     profile_dir = '/home/chronos/user'
     for item in os.listdir(profile_dir):
-      # Deleting .pki causes stateful partition to get erased
+
+      # We should not delete the flimflam directory because it puts
+      # flimflam in a weird state if the device is already logged in.
+      # However, deleting its contents is okay.
+      if item == 'flimflam' and os.path.isdir(os.path.join(profile_dir,
+                                              'flimflam')):
+        for fname in os.listdir(os.path.join(profile_dir, item)):
+          pyauto_utils.RemovePath(os.path.join(profile_dir, item, fname))
+        continue
+
+      # Deleting .pki causes stateful partition to get erased.
       if item != 'log' and not item.startswith('.'):
         pyauto_utils.RemovePath(os.path.join(profile_dir, item))
 
@@ -3767,7 +3777,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
-  def ConnectToWifiNetwork(self, service_path, password=''):
+  def ConnectToWifiNetwork(self, service_path, password='', shared=True):
     """Connect to a wifi network by its service path.
 
     Blocks until connection succeeds or fails.
@@ -3775,6 +3785,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Args:
       service_path: Flimflam path that defines the wifi network.
       password: Passphrase for connecting to the wifi network.
+      shared: Boolean value specifying whether the network should be shared.
 
     Returns:
       An error string if an error occured.
@@ -3787,11 +3798,13 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'command': 'ConnectToWifiNetwork',
         'service_path': service_path,
         'password': password,
+        'shared': shared,
     }
     result = self._GetResultFromJSONRequest(cmd_dict, windex=-1, timeout=50000)
     return result.get('error_string')
 
-  def ConnectToHiddenWifiNetwork(self, ssid, security, password=''):
+  def ConnectToHiddenWifiNetwork(self, ssid, security, password='',
+                                 shared=True, save_credentials=False):
     """Connect to a wifi network by its service path.
 
     Blocks until connection succeeds or fails.
@@ -3801,6 +3814,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       security: The network's security type. One of: 'SECURITY_NONE',
                 'SECURITY_WEP', 'SECURITY_WPA', 'SECURITY_RSN', 'SECURITY_8021X'
       password: Passphrase for connecting to the wifi network.
+      shared: Boolean value specifying whether the network should be shared.
+      save_credentials: Boolean value specifying whether 802.1x credentials are
+                        saved.
 
     Returns:
       An error string if an error occured.
@@ -3816,6 +3832,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'ssid': ssid,
         'security': security,
         'password': password,
+        'shared': shared,
+        'save_credentials': save_credentials,
     }
     result = self._GetResultFromJSONRequest(cmd_dict, windex=-1, timeout=50000)
     return result.get('error_string')
