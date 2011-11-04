@@ -394,7 +394,7 @@ COMPILE_ASSERT(kNumMozcIntegerPrefs == arraysize(kMozcIntegerPrefs),
 // ---------------------------------------------------------------------------
 // For keyboard stuff
 // ---------------------------------------------------------------------------
-const int kXkbAutoRepeatDelayInMs = 500;
+const int kXkbAutoRepeatDelayInMs = 750;
 const int kXkbAutoRepeatIntervalInMs = 50;
 const char kPreferredKeyboardLayout[] = "PreferredKeyboardLayout";
 
