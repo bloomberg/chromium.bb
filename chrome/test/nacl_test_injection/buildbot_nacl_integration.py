@@ -63,6 +63,11 @@ def Main(args):
         'run_fault_pq_dep_pm_nameservice_chrome_browser_test',
         ])
 
+    # TODO(mcgrathr): Reenable when resolved.
+    # Was seen to fail repeatedly on Windows.
+    # http://code.google.com/p/nativeclient/issues/detail?id=2173
+    tests_to_disable.append('run_inbrowser_crash_in_syscall_test')
+
   if sys.platform == 'darwin':
     # The following test is failing on Mac OS X 10.5.  This may be
     # because of a kernel bug that we might need to work around.
