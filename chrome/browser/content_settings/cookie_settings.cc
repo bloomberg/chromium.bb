@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -201,9 +202,8 @@ ContentSetting CookieSettings::GetCookieSetting(
     const GURL& first_party_url,
     bool setting_cookie) const {
   if (HostContentSettingsMap::ShouldAllowAllContent(
-          url, CONTENT_SETTINGS_TYPE_COOKIES)) {
+        url, first_party_url, CONTENT_SETTINGS_TYPE_COOKIES))
     return CONTENT_SETTING_ALLOW;
-  }
 
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;
@@ -217,7 +217,8 @@ ContentSetting CookieSettings::GetCookieSetting(
   // by default, apply that rule.
   if (primary_pattern == ContentSettingsPattern::Wildcard() &&
       secondary_pattern == ContentSettingsPattern::Wildcard() &&
-      ShouldBlockThirdPartyCookies()) {
+      ShouldBlockThirdPartyCookies() &&
+      !first_party_url.SchemeIs(chrome::kExtensionScheme)) {
     bool strict = CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kBlockReadingThirdPartyCookies);
     net::StaticCookiePolicy policy(strict ?

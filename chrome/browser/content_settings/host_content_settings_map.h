@@ -167,7 +167,8 @@ class HostContentSettingsMap
   // Returns true if we should allow all content types for this URL.  This is
   // true for various internal objects like chrome:// URLs, so UI and other
   // things users think of as "not webpages" don't break.
-  static bool ShouldAllowAllContent(const GURL& url,
+  static bool ShouldAllowAllContent(const GURL& primary_url,
+                                    const GURL& secondary_url,
                                     ContentSettingsType content_type);
 
  private:

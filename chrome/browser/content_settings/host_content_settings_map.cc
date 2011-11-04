@@ -184,7 +184,7 @@ base::Value* HostContentSettingsMap::GetContentSettingValue(
          resource_identifier.empty());
 
   // Check if the scheme of the requesting url is whitelisted.
-  if (ShouldAllowAllContent(primary_url, content_type))
+  if (ShouldAllowAllContent(primary_url, secondary_url, content_type))
     return Value::CreateIntegerValue(CONTENT_SETTING_ALLOW);
 
   // The list of |content_settings_providers_| is ordered according to their
@@ -405,12 +405,16 @@ void HostContentSettingsMap::AddSettingsForOneType(
 }
 
 bool HostContentSettingsMap::ShouldAllowAllContent(
-    const GURL& url,
+    const GURL& primary_url,
+    const GURL& secondary_url,
     ContentSettingsType content_type) {
   if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
     return false;
-  return url.SchemeIs(chrome::kChromeDevToolsScheme) ||
-         url.SchemeIs(chrome::kChromeInternalScheme) ||
-         url.SchemeIs(chrome::kChromeUIScheme) ||
-         url.SchemeIs(chrome::kExtensionScheme);
+  if (primary_url.SchemeIs(chrome::kExtensionScheme)) {
+    return content_type != CONTENT_SETTINGS_TYPE_COOKIES ||
+        secondary_url.SchemeIs(chrome::kExtensionScheme);
+  }
+  return primary_url.SchemeIs(chrome::kChromeDevToolsScheme) ||
+         primary_url.SchemeIs(chrome::kChromeInternalScheme) ||
+         primary_url.SchemeIs(chrome::kChromeUIScheme);
 }

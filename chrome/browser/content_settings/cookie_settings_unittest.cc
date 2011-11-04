@@ -233,4 +233,38 @@ TEST_F(CookieSettingsTest, CookiesBlockSingleFirstParty) {
       kAllowedSite, kFirstPartySite));
 }
 
+TEST_F(CookieSettingsTest, ExtensionsRegularSettings) {
+  TestingProfile profile;
+  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  cookie_settings->SetCookieSetting(
+      ContentSettingsPattern::FromURL(kBlockedSite),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTING_BLOCK);
+
+  // Regular cookie settings also apply to extensions.
+  EXPECT_FALSE(cookie_settings->IsReadingCookieAllowed(
+      kBlockedSite, kExtensionURL));
+}
+
+TEST_F(CookieSettingsTest, ExtensionsOwnCookies) {
+  TestingProfile profile;
+  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  cookie_settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
+
+  // Extensions can always use cookies (and site data) in their own origin.
+  EXPECT_TRUE(cookie_settings->IsReadingCookieAllowed(
+      kExtensionURL, kExtensionURL));
+}
+
+TEST_F(CookieSettingsTest, ExtensionsThirdParty) {
+  TestingProfile profile;
+  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  profile.GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+
+  // XHRs stemming from extensions are exempt from third-party cookie blocking
+  // rules (as the first party is always the extension's security origin).
+  EXPECT_TRUE(cookie_settings->IsSettingCookieAllowed(
+      kBlockedSite, kExtensionURL));
+}
+
 }  // namespace
