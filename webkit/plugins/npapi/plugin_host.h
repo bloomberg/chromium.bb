@@ -54,7 +54,6 @@ class PluginHost : public base::RefCounted<PluginHost> {
 
   PluginHost();
   void InitializeHostFuncs();
-  static scoped_refptr<PluginHost> singleton_;
   NPNetscapeFuncs host_funcs_;
   DISALLOW_COPY_AND_ASSIGN(PluginHost);
 };

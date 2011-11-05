@@ -138,13 +138,13 @@ webkit::ppapi::HostGlobals* host_globals = NULL;
 typedef std::set<PluginModule*> PluginModuleSet;
 
 PluginModuleSet* GetLivePluginSet() {
-  static PluginModuleSet live_plugin_libs;
+  CR_DEFINE_STATIC_LOCAL(PluginModuleSet, live_plugin_libs, ());
   return &live_plugin_libs;
 }
 
 base::MessageLoopProxy* GetMainThreadMessageLoop() {
-  static scoped_refptr<base::MessageLoopProxy> proxy(
-      base::MessageLoopProxy::current());
+  CR_DEFINE_STATIC_LOCAL(scoped_refptr<base::MessageLoopProxy>, proxy,
+                         (base::MessageLoopProxy::current()));
   return proxy.get();
 }
 

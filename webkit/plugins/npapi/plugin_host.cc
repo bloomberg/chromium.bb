@@ -73,8 +73,6 @@ static bool SupportsSharingAcceleratedSurfaces() {
 }
 #endif
 
-scoped_refptr<PluginHost> PluginHost::singleton_;
-
 PluginHost::PluginHost() {
   InitializeHostFuncs();
 }
@@ -83,12 +81,13 @@ PluginHost::~PluginHost() {
 }
 
 PluginHost *PluginHost::Singleton() {
-  if (singleton_.get() == NULL) {
-    singleton_ = new PluginHost();
+  CR_DEFINE_STATIC_LOCAL(scoped_refptr<PluginHost>, singleton, ());
+  if (singleton.get() == NULL) {
+    singleton = new PluginHost();
   }
 
-  DCHECK(singleton_.get() != NULL);
-  return singleton_;
+  DCHECK(singleton.get() != NULL);
+  return singleton;
 }
 
 void PluginHost::InitializeHostFuncs() {
