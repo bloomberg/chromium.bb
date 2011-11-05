@@ -533,6 +533,10 @@ void FilterDisabledTests() {
     "URLRequestTestHTTP.NetworkDelegateOnAuthRequiredAsyncNoAction",
     "URLRequestTestHTTP.NetworkDelegateOnAuthRequiredAsyncSetAuth",
     "URLRequestTestHTTP.NetworkDelegateOnAuthRequiredAsyncCancel",
+
+    // Flaky on the tryservers, http://crbug.com/103097
+    "URLRequestTestHTTP.MultipleRedirectTest",
+    "URLRequestTestHTTP.NetworkDelegateRedirectRequest",
   };
 
   std::string filter("-");  // All following filters will be negative.
