@@ -109,6 +109,10 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   AddExtensionString("GL_CHROMIUM_set_visibility");
   AddExtensionString("GL_ANGLE_translated_shader_source");
 
+  if (ext.Have("GL_ANGLE_translated_shader_source")) {
+    feature_flags_.angle_translated_shader_source = true;
+  }
+
   // Only turn this feature on if it is requested. Not by default.
   if (desired_features && ext.Desire("GL_CHROMIUM_webglsl")) {
     AddExtensionString("GL_CHROMIUM_webglsl");

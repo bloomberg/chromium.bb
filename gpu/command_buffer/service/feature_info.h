@@ -24,7 +24,8 @@ class FeatureInfo {
           enable_texture_float_linear(false),
           enable_texture_half_float_linear(false),
           chromium_webglsl(false),
-          chromium_stream_texture(false) {
+          chromium_stream_texture(false),
+          angle_translated_shader_source(false) {
     }
 
     bool chromium_framebuffer_multisample;
@@ -35,6 +36,7 @@ class FeatureInfo {
     bool enable_texture_half_float_linear;
     bool chromium_webglsl;
     bool chromium_stream_texture;
+    bool angle_translated_shader_source;
   };
 
   FeatureInfo();

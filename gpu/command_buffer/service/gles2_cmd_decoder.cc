@@ -4980,13 +4980,13 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
       return;
     }
     shader_src = translator->translated_shader();
-    if (!IsAngle())
+    if (!feature_info_->feature_flags().angle_translated_shader_source)
       info->UpdateTranslatedSource(shader_src);
   }
 
   glShaderSource(info->service_id(), 1, &shader_src, NULL);
   glCompileShader(info->service_id());
-  if (IsAngle()) {
+  if (feature_info_->feature_flags().angle_translated_shader_source) {
     GLint max_len = 0;
     glGetShaderiv(info->service_id(),
                   GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
