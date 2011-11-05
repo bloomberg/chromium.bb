@@ -36,7 +36,6 @@ int main(int argc, char** argv) {
   OleInitialize(NULL);
 #elif defined(OS_LINUX)
   // Initializes gtk stuff.
-  g_thread_init(NULL);
   g_type_init();
 #if defined(TOOLKIT_USES_GTK) && !defined(USE_WAYLAND)
   gtk_init(&argc, &argv);

@@ -511,6 +511,8 @@ void PluginService::GetPlugins(const GetPluginsCallback& callback) {
     target_loop->PostTask(FROM_HERE,
         base::Bind(&RunGetPluginsCallback, callback, cached_plugins));
   } else {
+    // If we switch back to loading plugins in process, then we need to make
+    // sure g_thread_init() gets called since plugins may call glib at load.
     if (!plugin_loader_.get())
       plugin_loader_ = new PluginLoaderPosix;
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,

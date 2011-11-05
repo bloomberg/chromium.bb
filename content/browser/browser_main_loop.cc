@@ -306,27 +306,12 @@ void BrowserMainLoop::InitializeToolkit() {
   // TODO(stevenjb): Move platform specific code into platform specific Parts
   // (Need to add InitializeToolkit stage to BrowserParts).
 #if defined(OS_LINUX)
-  // We want to call g_thread_init(), but in some codepaths (tests) it
-  // is possible it has already been called.  In older versions of
-  // GTK, it is an error to call g_thread_init twice; unfortunately,
-  // the API to tell whether it has been called already was also only
-  // added in a newer version of GTK!  Thankfully, this non-intuitive
-  // check is actually equivalent and sufficient to work around the
-  // error.
-  if (!g_thread_supported())
-    g_thread_init(NULL);
   // Glib type system initialization. Needed at least for gconf,
   // used in net/proxy/proxy_config_service_linux.cc. Most likely
   // this is superfluous as gtk_init() ought to do this. It's
   // definitely harmless, so retained as a reminder of this
   // requirement for gconf.
   g_type_init();
-
-#if defined(OS_CHROMEOS)
-  // ChromeOS still uses dbus-glib, so initialize its threading here.
-  // TODO(satorux, stevenjb): remove this once it is no longer needed.
-  dbus_g_thread_init();
-#endif
 
 #if !defined(USE_AURA)
   gfx::GtkInitFromCommandLine(parameters_.command_line);
