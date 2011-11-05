@@ -9,16 +9,31 @@
 #define CHROME_BROWSER_SAFE_BROWSING_SIGNATURE_UTIL_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+
 class FilePath;
 
 namespace safe_browsing {
-namespace signature_util {
+class ClientDownloadRequest_SignatureInfo;
 
-// Returns true if the given file path contains a signature.  No checks are
-// performed as to the validity of the signature.
-bool IsSigned(const FilePath& file_path);
+class SignatureUtil : public base::RefCountedThreadSafe<SignatureUtil> {
+ public:
+  SignatureUtil();
 
-}  // namespace signature_util
+  // Fills in the DownloadRequest_SignatureInfo for the given file path.
+  // This method may be called on any thread.
+  virtual void CheckSignature(
+      const FilePath& file_path,
+      ClientDownloadRequest_SignatureInfo* signature_info);
+
+ protected:
+  friend class base::RefCountedThreadSafe<SignatureUtil>;
+  virtual ~SignatureUtil();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SignatureUtil);
+};
 }  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SIGNATURE_UTIL_H_

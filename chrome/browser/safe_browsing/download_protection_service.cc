@@ -116,13 +116,14 @@ class DownloadProtectionService::CheckClientDownloadRequest
   CheckClientDownloadRequest(const DownloadInfo& info,
                              const CheckDownloadCallback& callback,
                              DownloadProtectionService* service,
-                             SafeBrowsingService* sb_service)
+                             SafeBrowsingService* sb_service,
+                             SignatureUtil* signature_util)
       : info_(info),
         callback_(callback),
         service_(service),
+        signature_util_(signature_util),
         sb_service_(sb_service),
-        pingback_enabled_(service_->enabled()),
-        is_signed_(false) {
+        pingback_enabled_(service_->enabled()) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
@@ -219,14 +220,14 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
   void ExtractFileFeatures() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    if (safe_browsing::signature_util::IsSigned(info_.local_file)) {
+    signature_util_->CheckSignature(info_.local_file, &signature_info_);
+    bool is_signed = signature_info_.has_certificate_contents();
+    if (is_signed) {
       VLOG(2) << "Downloaded a signed binary: " << info_.local_file.value();
-      is_signed_ = true;
     } else {
       VLOG(2) << "Downloaded an unsigned binary: " << info_.local_file.value();
-      is_signed_ = false;
     }
-    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.SignedBinaryDownload", is_signed_);
+    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.SignedBinaryDownload", is_signed);
 
     // TODO(noelutz): DownloadInfo should also contain the IP address of every
     // URL in the redirect chain.  We also should check whether the download
@@ -254,7 +255,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
           sb_service_->MatchDownloadWhitelistUrl(info_.referrer_url)) {
         reason = REASON_WHITELISTED_REFERRER;
       }
-      if (reason != REASON_MAX || is_signed_) {
+      if (reason != REASON_MAX || signature_info_.has_certificate_contents()) {
         UMA_HISTOGRAM_COUNTS("SBClientDownload.SignedOrWhitelistedDownload", 1);
       }
     }
@@ -304,6 +305,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
       // TODO(noelutz): fill out the remote IP addresses.
     }
     request.set_user_initiated(info_.user_initiated);
+    request.mutable_signature()->CopyFrom(signature_info_);
     std::string request_data;
     if (!request.SerializeToString(&request_data)) {
       RecordStats(REASON_INVALID_REQUEST_PROTO);
@@ -347,12 +349,13 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
   DownloadInfo info_;
+  ClientDownloadRequest_SignatureInfo signature_info_;
   CheckDownloadCallback callback_;
   // Will be NULL if the request has been canceled.
   DownloadProtectionService* service_;
+  scoped_refptr<SignatureUtil> signature_util_;
   scoped_refptr<SafeBrowsingService> sb_service_;
   const bool pingback_enabled_;
-  bool is_signed_;
   scoped_ptr<content::URLFetcher> fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequest);
@@ -363,7 +366,8 @@ DownloadProtectionService::DownloadProtectionService(
     net::URLRequestContextGetter* request_context_getter)
     : sb_service_(sb_service),
       request_context_getter_(request_context_getter),
-      enabled_(false) {}
+      enabled_(false),
+      signature_util_(new SignatureUtil()) {}
 
 DownloadProtectionService::~DownloadProtectionService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -385,7 +389,8 @@ void DownloadProtectionService::CheckClientDownload(
     const DownloadProtectionService::DownloadInfo& info,
     const CheckDownloadCallback& callback) {
   scoped_refptr<CheckClientDownloadRequest> request(
-      new CheckClientDownloadRequest(info, callback, this, sb_service_));
+      new CheckClientDownloadRequest(info, callback, this,
+                                     sb_service_, signature_util_.get()));
   download_requests_.insert(request);
   request->Start();
 }

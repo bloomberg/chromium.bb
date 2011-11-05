@@ -125,19 +125,12 @@ message ClientDownloadRequest {
   repeated Resource resources = 4;
 
   message SignatureInfo {
-    // If the binary is signed this will contain the name of the certificate
-    // authority that signed the binary.  The format of that field is TBD.
-    optional bytes certificate_issuer = 1;
-
-    // Serial number of the certificate autority.  This value uniquely
-    // identifies the certificate authority.
-    optional bytes certificate_serial_number = 2;
-
-    // Name of the company / organization the ceritificate was issued to.
-    optional bytes certificate_subject = 3;
-
     // The full DER-encoded X.509 certificate extracted from the binary.
-    optional bytes certificate_contents = 4;
+    // If this field is not present, it means the binary was unsigned.
+    optional bytes certificate_contents = 1;
+
+    // True if the signature was trusted on the client.
+    optional bool trusted = 2;
   }
 
   // This field will only be set if the binary is signed.

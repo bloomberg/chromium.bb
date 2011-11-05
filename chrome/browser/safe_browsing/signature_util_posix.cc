@@ -8,11 +8,13 @@
 #include "chrome/browser/safe_browsing/signature_util.h"
 
 namespace safe_browsing {
-namespace signature_util {
 
-bool IsSigned(const FilePath& file_path) {
-  return false;
-}
+SignatureUtil::SignatureUtil() {}
 
-}  // namespace signature_util
+SignatureUtil::~SignatureUtil() {}
+
+void SignatureUtil::CheckSignature(
+    const FilePath& file_path,
+    ClientDownloadRequest_SignatureInfo* signature_info) {}
+
 }  // namespace safe_browsing
