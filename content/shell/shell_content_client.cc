@@ -22,10 +22,6 @@ void ShellContentClient::AddPepperPlugins(
     std::vector<content::PepperPluginInfo>* plugins) {
 }
 
-void ShellContentClient::AddNPAPIPlugins(
-    webkit::npapi::PluginList* plugin_list) {
-}
-
 bool ShellContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {
   return false;
 }

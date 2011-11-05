@@ -20,10 +20,10 @@
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/browser/plugin_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 
@@ -167,9 +167,9 @@ void RegisterPepperFlashWithChrome(const FilePath& path,
   if (!MakePepperFlashPluginInfo(path, version, true, &plugin_info))
     return;
   PluginPrefs::EnablePluginGlobally(kEnablePepperFlash, plugin_info.path);
-  PluginService::GetInstance()->RegisterInternalPlugin(
+  webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(
       plugin_info.ToWebPluginInfo());
-  PluginService::GetInstance()->RefreshPlugins();
+  webkit::npapi::PluginList::Singleton()->RefreshPlugins();
 }
 
 }  // namespace
@@ -321,8 +321,8 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
 }  // namespace
 
 void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
-// #if defined(GOOGLE_CHROME_BUILD)
+//#if defined(GOOGLE_CHROME_BUILD)
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableFunction(&StartPepperFlashUpdateRegistration, cus));
-// #endif
+//#endif
 }

@@ -12,20 +12,17 @@
 #include "base/stringprintf.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/default_plugin/plugin_main.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/user_agent.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/plugin_constants.h"
 
 #if defined(OS_WIN)
@@ -267,37 +264,6 @@ void ChromeContentClient::AddPepperPlugins(
     std::vector<content::PepperPluginInfo>* plugins) {
   ComputeBuiltInPlugins(plugins);
   AddOutOfProcessFlash(plugins);
-}
-
-void ChromeContentClient::AddNPAPIPlugins(
-    webkit::npapi::PluginList* plugin_list) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // TODO(bauerb): On Windows the default plug-in can download and install
-  // missing plug-ins, which we don't support in the browser yet, so keep
-  // using the default plug-in on Windows until we do.
-  // Aura isn't going to support NPAPI plugins.
-  const webkit::npapi::PluginEntryPoints entry_points = {
-    default_plugin::NP_GetEntryPoints,
-    default_plugin::NP_Initialize,
-    default_plugin::NP_Shutdown
-  };
-
-  webkit::WebPluginInfo info;
-  info.path = FilePath(webkit::npapi::kDefaultPluginLibraryName);
-  info.name = ASCIIToUTF16("Default Plug-in");
-  info.version = ASCIIToUTF16("1");
-  info.desc = ASCIIToUTF16("Provides functionality for installing third-party "
-                           "plug-ins");
-
-  webkit::WebPluginMimeType mimeType;
-  mimeType.mime_type = "*";
-  info.mime_types.push_back(mimeType);
-
-  webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(
-      info,
-      entry_points,
-      false);
-#endif
 }
 
 bool ChromeContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {

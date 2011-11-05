@@ -13,11 +13,11 @@
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
-#include "content/browser/plugin_service.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 namespace {
 
@@ -245,7 +245,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
     for (std::set<std::string>::iterator it = plugins.begin();
          it != plugins.end(); ++it) {
       NSString* name = SysUTF16ToNSString(
-          PluginService::GetInstance()->GetPluginGroupName(*it));
+          webkit::npapi::PluginList::Singleton()->GetPluginGroupName(*it));
       if ([name length] == 0)
         name = base::SysUTF8ToNSString(*it);
       [pluginArray addObject:name];

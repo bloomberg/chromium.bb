@@ -54,7 +54,6 @@ namespace webkit {
 namespace npapi {
 class PluginGroup;
 class PluginList;
-struct PluginEntryPoints;
 }
 }
 
@@ -152,6 +151,10 @@ class CONTENT_EXPORT PluginService
   bool GetPluginInfoByPath(const FilePath& plugin_path,
                            webkit::WebPluginInfo* info);
 
+  // Marks the plugin list as dirty and will cause the plugins to be reloaded
+  // on the next access through GetPlugins() or GetPluginGroups().
+  void RefreshPluginList();
+
   // Asynchronously loads plugins if necessary and then calls back to the
   // provided function on the calling MessageLoop on completion.
   void GetPlugins(const GetPluginsCallback& callback);
@@ -172,22 +175,6 @@ class CONTENT_EXPORT PluginService
     filter_ = filter;
   }
   content::PluginServiceFilter* filter() { return filter_; }
-
-
-  // The following functions are wrappers around webkit::npapi::PluginList.
-  // These must be used instead of those in order to ensure that we have a
-  // single global list in the component build and so that we don't
-  // accidentally load plugins in the wrong process or thread. Refer to
-  // PluginList for further documentation of these functions.
-  void RefreshPlugins();
-  void AddExtraPluginPath(const FilePath& path);
-  void RemoveExtraPluginPath(const FilePath& path);
-  void UnregisterInternalPlugin(const FilePath& path);
-  void RegisterInternalPlugin(const webkit::WebPluginInfo& info);
-  string16 GetPluginGroupName(const std::string& plugin_name);
-
-  // TODO(dpranke): This should be private.
-  webkit::npapi::PluginList* GetPluginList();
 
  private:
   friend struct DefaultSingletonTraits<PluginService>;

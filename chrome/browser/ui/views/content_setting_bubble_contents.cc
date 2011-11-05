@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -33,6 +32,7 @@
 #include "views/controls/separator.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"
@@ -217,7 +217,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
     for (std::set<std::string>::const_iterator it = plugins.begin();
         it != plugins.end(); ++it) {
       string16 name =
-          PluginService::GetInstance()->GetPluginGroupName(*it);
+          webkit::npapi::PluginList::Singleton()->GetPluginGroupName(*it);
       if (name.empty())
         name = UTF8ToUTF16(*it);
       layout->StartRow(0, single_column_set_id);

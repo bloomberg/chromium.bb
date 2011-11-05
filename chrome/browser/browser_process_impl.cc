@@ -61,6 +61,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/default_plugin.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/json_pref_store.h"
@@ -89,6 +90,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(OS_WIN)
 #include "views/focus/view_storage.h"
@@ -790,12 +792,15 @@ void BrowserProcessImpl::CreateIOThread() {
   plugin_service->set_filter(ChromePluginServiceFilter::GetInstance());
   plugin_service->StartWatchingPlugins();
 
+  // Add the Chrome specific plugins.
+  chrome::RegisterInternalDefaultPlugin();
+
   // Register the internal Flash if available.
   FilePath path;
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableInternalFlash) &&
       PathService::Get(chrome::FILE_FLASH_PLUGIN, &path)) {
-    plugin_service->AddExtraPluginPath(path);
+    webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(path);
   }
 
 #if defined(OS_POSIX)
@@ -803,7 +808,8 @@ void BrowserProcessImpl::CreateIOThread() {
   // e.g. ~/.config/chromium/Plugins.
   FilePath user_data_dir;
   if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    plugin_service->AddExtraPluginPath(user_data_dir.Append("Plugins"));
+    webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(
+        user_data_dir.Append("Plugins"));
   }
 #endif
 

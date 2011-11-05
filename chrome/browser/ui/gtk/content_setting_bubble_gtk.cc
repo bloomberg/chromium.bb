@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/content_settings.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -27,6 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/gtk_util.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 namespace {
 
@@ -109,7 +109,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
     for (std::set<std::string>::const_iterator it = plugins.begin();
         it != plugins.end(); ++it) {
       std::string name = UTF16ToUTF8(
-          PluginService::GetInstance()->GetPluginGroupName(*it));
+          webkit::npapi::PluginList::Singleton()->GetPluginGroupName(*it));
       if (name.empty())
         name = *it;
 

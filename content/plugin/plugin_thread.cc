@@ -27,7 +27,6 @@
 #include "ipc/ipc_channel_handle.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 #if defined(TOOLKIT_USES_GTK)
@@ -114,9 +113,6 @@ PluginThread::PluginThread()
 
   content::GetContentClient()->plugin()->PluginProcessStarted(
       plugin.get() ? plugin->plugin_info().name : string16());
-
-  content::GetContentClient()->AddNPAPIPlugins(
-      webkit::npapi::PluginList::Singleton());
 
   // Certain plugins, such as flash, steal the unhandled exception filter
   // thus we never get crash reports when they fault. This call fixes it.

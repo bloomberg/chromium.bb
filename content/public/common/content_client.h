@@ -29,12 +29,6 @@ namespace sandbox {
 class TargetPolicy;
 }
 
-namespace webkit {
-namespace npapi {
-class PluginList;
-}
-}
-
 namespace content {
 
 class ContentBrowserClient;
@@ -84,10 +78,6 @@ class CONTENT_EXPORT ContentClient {
   // Gives the embedder a chance to register its own pepper plugins.
   virtual void AddPepperPlugins(
       std::vector<content::PepperPluginInfo>* plugins) = 0;
-
-  // Gives the embedder a chance to register its own internal NPAPI plugins.
-  virtual void AddNPAPIPlugins(
-      webkit::npapi::PluginList* plugin_list) = 0;
 
   // Returns whether the given message should be allowed to be sent from a
   // swapped out renderer.

@@ -100,6 +100,8 @@
         'common/content_settings_types.h',
         'common/custom_handlers/protocol_handler.cc',
         'common/custom_handlers/protocol_handler.h',
+        'common/default_plugin.cc',
+        'common/default_plugin.h',
         'common/extensions/extension.cc',
         'common/extensions/extension.h',
         'common/extensions/extension_action.cc',

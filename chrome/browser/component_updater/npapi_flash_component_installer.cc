@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/plugin_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using content::BrowserThread;
@@ -106,7 +107,7 @@ bool NPAPIFlashComponentInstaller::Install(base::DictionaryValue* manifest,
     return false;
   // Installation is done. Now tell the rest of chrome.
   current_version_ = version;
-  PluginService::GetInstance()->RefreshPlugins();
+  webkit::npapi::PluginList::Singleton()->RefreshPlugins();
   return true;
 }
 
@@ -203,9 +204,10 @@ void StartFlashUpdateRegistration(ComponentUpdateService* cus,
 // the information for free.
 void RegisterNPAPIFlashComponent(ComponentUpdateService* cus) {
 #if !defined(OS_CHROMEOS)
+  webkit::npapi::PluginList* plugins = webkit::npapi::PluginList::Singleton();
   FilePath path = GetNPAPIFlashBaseDirectory().Append(kFlashPluginFileName);
-  PluginService::GetInstance()->AddExtraPluginPath(path);
-  PluginService::GetInstance()->RefreshPlugins();
+  plugins->AddExtraPluginPath(path);
+  plugins->RefreshPlugins();
 
   // Post the task to the FILE thread because IO may be done once the plugins
   // are loaded.

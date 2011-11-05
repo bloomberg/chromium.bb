@@ -23,10 +23,6 @@ void TestContentClient::AddPepperPlugins(
     std::vector<content::PepperPluginInfo>* plugins) {
 }
 
-void TestContentClient::AddNPAPIPlugins(
-    webkit::npapi::PluginList* plugin_list) {
-}
-
 bool TestContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {
   return true;
 }

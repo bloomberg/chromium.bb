@@ -25,6 +25,7 @@
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 using content::BrowserThread;
 
@@ -115,7 +116,7 @@ class GViewRequestInterceptorTest : public testing::Test {
 
     handler_ = new content::DummyResourceHandler();
 
-    PluginService::GetInstance()->RefreshPlugins();
+    PluginService::GetInstance()->RefreshPluginList();
     PluginService::GetInstance()->GetPlugins(base::Bind(&QuitMessageLoop));
     MessageLoop::current()->RunAllPending();
   }
@@ -139,17 +140,17 @@ class GViewRequestInterceptorTest : public testing::Test {
   void RegisterPDFPlugin() {
     webkit::WebPluginInfo info;
     info.path = pdf_path_;
-    PluginService::GetInstance()->RegisterInternalPlugin(info);
+    webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
 
-    PluginService::GetInstance()->RefreshPlugins();
+    PluginService::GetInstance()->RefreshPluginList();
     PluginService::GetInstance()->GetPlugins(base::Bind(&QuitMessageLoop));
     MessageLoop::current()->RunAllPending();
   }
 
   void UnregisterPDFPlugin() {
-    PluginService::GetInstance()->UnregisterInternalPlugin(pdf_path_);
+    webkit::npapi::PluginList::Singleton()->UnregisterInternalPlugin(pdf_path_);
 
-    PluginService::GetInstance()->RefreshPlugins();
+    PluginService::GetInstance()->RefreshPluginList();
     PluginService::GetInstance()->GetPlugins(base::Bind(&QuitMessageLoop));
     MessageLoop::current()->RunAllPending();
   }
