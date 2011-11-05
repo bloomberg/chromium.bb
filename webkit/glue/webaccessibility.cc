@@ -820,19 +820,22 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
       html_attributes.push_back(std::pair<string16, string16>(name, value));
     }
 
-    if (role == ROLE_EDITABLE_TEXT ||
-        role == ROLE_TEXTAREA ||
-        role == ROLE_TEXT_FIELD) {
-      // Jaws gets confused by children of text fields, so we ignore them.
-      include_children = false;
+    if (element.isFormControlElement()) {
+      WebKit::WebFormControlElement form_element =
+          element.to<WebKit::WebFormControlElement>();
+      if (form_element.formControlType() == ASCIIToUTF16("text") ||
+          form_element.formControlType() == ASCIIToUTF16("textarea")) {
+        // Jaws gets confused by children of text fields, so we ignore them.
+        include_children = false;
 
-      int_attributes[ATTR_TEXT_SEL_START] = src.selectionStart();
-      int_attributes[ATTR_TEXT_SEL_END] = src.selectionEnd();
-      WebKit::WebVector<int> src_line_breaks;
-      src.lineBreaks(src_line_breaks);
-      line_breaks.reserve(src_line_breaks.size());
-      for (size_t i = 0; i < src_line_breaks.size(); ++i)
-        line_breaks.push_back(src_line_breaks[i]);
+        int_attributes[ATTR_TEXT_SEL_START] = src.selectionStart();
+        int_attributes[ATTR_TEXT_SEL_END] = src.selectionEnd();
+        WebKit::WebVector<int> src_line_breaks;
+        src.lineBreaks(src_line_breaks);
+        line_breaks.reserve(src_line_breaks.size());
+        for (size_t i = 0; i < src_line_breaks.size(); ++i)
+          line_breaks.push_back(src_line_breaks[i]);
+      }
     }
 
     // ARIA role.
