@@ -8,8 +8,6 @@
 
 #include "base/task.h"
 #include "remoting/host/capturer.h"
-#include "remoting/host/user_authenticator.h"
-#include "remoting/proto/auth.pb.h"
 #include "remoting/proto/event.pb.h"
 
 // The number of remote mouse events to record for the purpose of eliminating
@@ -29,12 +27,10 @@ using protocol::MouseEvent;
 
 ClientSession::ClientSession(
     EventHandler* event_handler,
-    UserAuthenticator* user_authenticator,
     scoped_refptr<protocol::ConnectionToClient> connection,
     protocol::InputStub* input_stub,
     Capturer* capturer)
     : event_handler_(event_handler),
-      user_authenticator_(user_authenticator),
       connection_(connection),
       client_jid_(connection->session()->jid()),
       input_stub_(input_stub),
@@ -47,36 +43,9 @@ ClientSession::ClientSession(
 ClientSession::~ClientSession() {
 }
 
-void ClientSession::BeginSessionRequest(
-    const protocol::LocalLoginCredentials* credentials,
-    const base::Closure& done) {
-  DCHECK(event_handler_);
-
-  base::ScopedClosureRunner done_runner(done);
-
-  bool success = false;
-  switch (credentials->type()) {
-    case protocol::PASSWORD:
-      success = user_authenticator_->Authenticate(credentials->username(),
-                                                  credentials->credential());
-      break;
-
-    default:
-      LOG(ERROR) << "Invalid credentials type " << credentials->type();
-      break;
-  }
-
-  OnAuthorizationComplete(success);
-}
-
-void ClientSession::OnAuthorizationComplete(bool success) {
-  if (success) {
-    authenticated_ = true;
-    event_handler_->LocalLoginSucceeded(connection_.get());
-  } else {
-    LOG(WARNING) << "Login failed";
-    event_handler_->LocalLoginFailed(connection_.get());
-  }
+void ClientSession::OnAuthenticationComplete() {
+  authenticated_ = true;
+  event_handler_->OnAuthenticationComplete(connection_.get());
 }
 
 void ClientSession::InjectKeyEvent(const KeyEvent& event) {

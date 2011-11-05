@@ -237,11 +237,13 @@ void PepperView::SetConnectionState(protocol::ConnectionToHost::State state,
       break;
 
     case protocol::ConnectionToHost::CONNECTED:
-      scriptable_obj->SignalLoginChallenge();
       break;
 
     case protocol::ConnectionToHost::AUTHENTICATED:
       UnsetSolidFill();
+      scriptable_obj->SetConnectionStatus(
+          ChromotingScriptableObject::STATUS_CONNECTED,
+          ConvertConnectionError(error));
       break;
 
     case protocol::ConnectionToHost::CLOSED:
@@ -257,20 +259,6 @@ void PepperView::SetConnectionState(protocol::ConnectionToHost::State state,
           ChromotingScriptableObject::STATUS_FAILED,
           ConvertConnectionError(error));
       break;
-  }
-}
-
-void PepperView::UpdateLoginStatus(bool success, const std::string& info) {
-  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
-
-  // TODO(hclam): Re-consider the way we communicate with Javascript.
-  ChromotingScriptableObject* scriptable_obj = instance_->GetScriptableObject();
-  if (success) {
-    scriptable_obj->SetConnectionStatus(
-        ChromotingScriptableObject::STATUS_CONNECTED,
-        ChromotingScriptableObject::ERROR_NONE);
-  } else {
-    scriptable_obj->SignalLoginChallenge();
   }
 }
 

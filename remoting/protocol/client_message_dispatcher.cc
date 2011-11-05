@@ -40,18 +40,8 @@ void ClientMessageDispatcher::Initialize(
 
 void ClientMessageDispatcher::OnControlMessageReceived(
     ControlMessage* message, const base::Closure& done_task) {
-  if (message->has_begin_session_response()) {
-    const BeginSessionResponse& response = message->begin_session_response();
-    if (response.has_login_status() &&
-        response.login_status().has_success()) {
-      client_stub_->BeginSessionResponse(
-          &response.login_status(), done_task);
-      return;
-    }
-  }
 
   LOG(WARNING) << "Invalid control message received.";
-
   done_task.Run();
 }
 

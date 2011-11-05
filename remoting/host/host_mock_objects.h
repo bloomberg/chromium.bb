@@ -95,9 +95,7 @@ class MockClientSessionEventHandler : public ClientSession::EventHandler {
   MockClientSessionEventHandler();
   virtual ~MockClientSessionEventHandler();
 
-  MOCK_METHOD1(LocalLoginSucceeded,
-               void(scoped_refptr<protocol::ConnectionToClient>));
-  MOCK_METHOD1(LocalLoginFailed,
+  MOCK_METHOD1(OnAuthenticationComplete,
                void(scoped_refptr<protocol::ConnectionToClient>));
 
  private:

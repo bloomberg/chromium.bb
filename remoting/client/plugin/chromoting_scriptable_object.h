@@ -45,17 +45,6 @@
 //
 //   attribute Function desktopSizeUpdate;
 //
-//   // This function is called when login information for the host machine is
-//   // needed.
-//   //
-//   // User of this object should respond with calling submitLoginInfo() when
-//   // username and password is available.
-//   //
-//   // This function will be called multiple times until login was successful
-//   // or the maximum number of login attempts has been reached. In the
-//   // later case |connection_status| is changed to STATUS_FAILED.
-//   attribute Function loginChallenge;
-//
 //   // JS callback function to send an XMPP IQ stanza for performing the
 //   // signaling in a jingle connection.  The callback function should be
 //   // of type void(string request_xml).
@@ -96,9 +85,6 @@
 //
 //   // Terminating a Chromoting connection.
 //   void disconnect();
-//
-//   // Method for submitting login information.
-//   void submitLoginInfo(string username, string password);
 //
 //   // Method for setting scale-to-fit.
 //   void setScaleToFit(bool scale_to_fit);
@@ -177,9 +163,6 @@ class ChromotingScriptableObject
   void LogDebugInfo(const std::string& info);
   void SetDesktopSize(int width, int height);
 
-  // This should be called to signal JS code to provide login information.
-  void SignalLoginChallenge();
-
   // Attaches the XmppProxy used for issuing and receivng IQ stanzas for
   // initializing a jingle connection from within the sandbox.
   void AttachXmppProxy(PepperXmppProxy* xmpp_proxy);
@@ -224,14 +207,10 @@ class ChromotingScriptableObject
   // JavaScript event handlers may destroy the plugin.
   void DoSignalConnectionInfoChange();
   void DoSignalDesktopSizeChange();
-  void DoSignalLoginChallenge();
   void DoSendIq(const std::string& message_xml);
 
   pp::Var DoConnect(const std::vector<pp::Var>& args, pp::Var* exception);
   pp::Var DoDisconnect(const std::vector<pp::Var>& args, pp::Var* exception);
-
-  // This method is called by JS to provide login information.
-  pp::Var DoSubmitLogin(const std::vector<pp::Var>& args, pp::Var* exception);
 
   // This method is called by JS to set scale-to-fit.
   pp::Var DoSetScaleToFit(const std::vector<pp::Var>& args, pp::Var* exception);

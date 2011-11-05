@@ -17,7 +17,6 @@
 namespace remoting {
 
 class Capturer;
-class UserAuthenticator;
 
 // A ClientSession keeps a reference to a connection to a client, and maintains
 // per-client state.
@@ -30,28 +29,17 @@ class ClientSession : public protocol::HostStub,
    public:
     virtual ~EventHandler() {}
 
-    // Called to signal that local login has succeeded and ChromotingHost can
-    // proceed with the next step.
-    virtual void LocalLoginSucceeded(
-        scoped_refptr<protocol::ConnectionToClient> client) = 0;
-
-    // Called to signal that local login has failed.
-    virtual void LocalLoginFailed(
+    // Called to signal that authentication has succeeded.
+    virtual void OnAuthenticationComplete(
         scoped_refptr<protocol::ConnectionToClient> client) = 0;
   };
 
   // Takes ownership of |user_authenticator|. Does not take ownership of
   // |event_handler|, |input_stub| or |capturer|.
   ClientSession(EventHandler* event_handler,
-                UserAuthenticator* user_authenticator,
                 scoped_refptr<protocol::ConnectionToClient> connection,
                 protocol::InputStub* input_stub,
                 Capturer* capturer);
-
-  // protocol::HostStub interface.
-  virtual void BeginSessionRequest(
-      const protocol::LocalLoginCredentials* credentials,
-      const base::Closure& done);
 
   // protocol::InputStub interface.
   virtual void InjectKeyEvent(const protocol::KeyEvent& event);
@@ -61,8 +49,8 @@ class ClientSession : public protocol::HostStub,
   // This should only be called by ChromotingHost.
   void OnDisconnected();
 
-  // Set the authenticated flag or log a failure message as appropriate.
-  void OnAuthorizationComplete(bool success);
+  // Set the authenticated flag.
+  void OnAuthenticationComplete();
 
   protocol::ConnectionToClient* connection() const {
     return connection_.get();
@@ -101,9 +89,6 @@ class ClientSession : public protocol::HostStub,
   void RestoreEventState();
 
   EventHandler* event_handler_;
-
-  // A factory for user authenticators.
-  scoped_ptr<UserAuthenticator> user_authenticator_;
 
   // The connection to the client.
   scoped_refptr<protocol::ConnectionToClient> connection_;

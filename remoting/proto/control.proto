@@ -10,4 +10,15 @@ option optimize_for = LITE_RUNTIME;
 
 package remoting.protocol;
 
-// Add control messages here. Currently we don't have any.
+// BeginSessionDeprecated is sent from host to client when the session
+// starts. Legacy clients expect to receive this message at the
+// beginning of each session. Current clients ignore it.
+//
+// TODO(sergeyu): Remove it once all clients are upgraded to the new
+// version.
+message LocalLoginStatusDeprecated {
+  optional bool success = 1;
+}
+message BeginSessionDeprecated {
+  optional LocalLoginStatusDeprecated login_status = 1;
+}

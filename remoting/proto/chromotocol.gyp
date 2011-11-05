@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,7 +11,6 @@
       'target_name': 'chromotocol_proto_lib',
       'type': 'static_library',
       'sources': [
-        'auth.proto',
         'control.proto',
         'event.proto',
         'internal.proto',

@@ -100,6 +100,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   ////////////////////////////////////////////////////////////////////////////
   // protocol::ConnectionToClient::EventHandler implementation.
+  // TODO(sergeyu): Move this to ClientSession.
   virtual void OnConnectionOpened(protocol::ConnectionToClient* client);
   virtual void OnConnectionClosed(protocol::ConnectionToClient* client);
   virtual void OnConnectionFailed(protocol::ConnectionToClient* client);
@@ -114,9 +115,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   ////////////////////////////////////////////////////////////////////////////
   // ClientSession::EventHandler implementation.
-  virtual void LocalLoginSucceeded(
-      scoped_refptr<protocol::ConnectionToClient> client);
-  virtual void LocalLoginFailed(
+  virtual void OnAuthenticationComplete(
       scoped_refptr<protocol::ConnectionToClient> client);
 
   // SessionManager::Listener implementation.

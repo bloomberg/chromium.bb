@@ -16,15 +16,13 @@ class Task;
 namespace remoting {
 namespace protocol {
 
-class LocalLoginCredentials;
-
 class HostStub {
  public:
   HostStub() {};
   virtual ~HostStub() {};
 
-  virtual void BeginSessionRequest(
-      const LocalLoginCredentials* credentials, const base::Closure& done) = 0;
+  // Currently we don't use the control channel for anything. Add new
+  // message handlers here when necessary.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostStub);

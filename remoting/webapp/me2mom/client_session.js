@@ -164,9 +164,6 @@ remoting.ClientSession.prototype.createPluginAndConnect =
   };
   this.plugin.desktopSizeUpdate = function() { that.onDesktopSizeChanged_(); };
 
-  // For IT2Me, we are pre-authorized so there is no login challenge.
-  this.plugin.loginChallenge = function() {};
-
   // TODO(garykac): Clean exit if |connect| isn't a function.
   if (typeof this.plugin.connect === 'function') {
     this.connectPluginToWcs_(oauth2AccessToken);

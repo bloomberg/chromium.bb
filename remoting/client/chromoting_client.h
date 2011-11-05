@@ -64,10 +64,6 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
       protocol::ConnectionToHost::State state,
       protocol::ConnectionToHost::Error error) OVERRIDE;
 
-  // ClientStub implementation.
-  virtual void BeginSessionResponse(const protocol::LocalLoginStatus* msg,
-                                    const base::Closure& done) OVERRIDE;
-
   // VideoStub implementation.
   virtual void ProcessVideoPacket(const VideoPacket* packet,
                                   const base::Closure& done) OVERRIDE;

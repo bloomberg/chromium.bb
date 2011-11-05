@@ -78,10 +78,6 @@ class ChromotingInstance : public pp::InstancePrivate {
   void Connect(const ClientConfig& config);
   void Disconnect();
 
-  // Called by ChromotingScriptableObject to provide username and password.
-  void SubmitLoginInfo(const std::string& username,
-                       const std::string& password);
-
   // Called by ChromotingScriptableObject to set scale-to-fit.
   void SetScaleToFit(bool scale_to_fit);
 

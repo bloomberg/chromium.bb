@@ -45,8 +45,6 @@ class PepperViewProxy : public base::RefCountedThreadSafe<PepperViewProxy>,
   virtual void SetConnectionState(
       protocol::ConnectionToHost::State state,
       protocol::ConnectionToHost::Error error) OVERRIDE;
-  virtual void UpdateLoginStatus(bool success, const std::string& info)
-      OVERRIDE;
 
   // This method returns a value, so must run synchronously, so must be
   // called only on the pepper thread.

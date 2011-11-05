@@ -67,11 +67,7 @@ class MockInputStub : public InputStub {
 class MockHostStub : public HostStub {
  public:
   MockHostStub();
-  ~MockHostStub();
-
-  MOCK_METHOD2(BeginSessionRequest,
-               void(const LocalLoginCredentials* credentials,
-                    const base::Closure&  done));
+  virtual ~MockHostStub();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockHostStub);
@@ -81,11 +77,6 @@ class MockClientStub : public ClientStub {
  public:
   MockClientStub();
   virtual ~MockClientStub();
-
-  MOCK_METHOD2(NotifyResolution, void(const NotifyResolutionRequest* msg,
-                                      const base::Closure& done));
-  MOCK_METHOD2(BeginSessionResponse, void(const LocalLoginStatus* msg,
-                                          const base::Closure& done));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientStub);

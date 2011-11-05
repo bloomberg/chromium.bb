@@ -30,7 +30,6 @@
 #include "remoting/client/plugin/pepper_view_proxy.h"
 #include "remoting/client/plugin/pepper_xmpp_proxy.h"
 #include "remoting/client/rectangle_update_decoder.h"
-#include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
 
@@ -276,24 +275,6 @@ ChromotingScriptableObject* ChromotingInstance::GetScriptableObject() {
   }
   LOG(ERROR) << "Unable to get ScriptableObject for Chromoting plugin.";
   return NULL;
-}
-
-void ChromotingInstance::SubmitLoginInfo(const std::string& username,
-                                         const std::string& password) {
-  if (host_connection_->state() != protocol::ConnectionToHost::CONNECTED) {
-    LOG(INFO) << "Client not connected or already authenticated.";
-    return;
-  }
-
-  protocol::LocalLoginCredentials* credentials =
-      new protocol::LocalLoginCredentials();
-  credentials->set_type(protocol::PASSWORD);
-  credentials->set_username(username);
-  credentials->set_credential(password.data(), password.length());
-
-  host_connection_->host_stub()->BeginSessionRequest(
-      credentials,
-      base::Bind(&DeletePointer<protocol::LocalLoginCredentials>, credentials));
 }
 
 void ChromotingInstance::SetScaleToFit(bool scale_to_fit) {

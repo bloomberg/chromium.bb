@@ -7,7 +7,6 @@
 
 syntax = "proto2";
 
-import "auth.proto";
 import "control.proto";
 import "event.proto";
 
@@ -17,8 +16,7 @@ package remoting.protocol;
 
 // Represents a message being sent on the control channel.
 message ControlMessage {
-  optional BeginSessionRequest begin_session_request = 3;
-  optional BeginSessionResponse begin_session_response = 4;
+  optional BeginSessionDeprecated begin_session_deprecated = 4;
 }
 
 // Defines an event message on the event channel.

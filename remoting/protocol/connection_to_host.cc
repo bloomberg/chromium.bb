@@ -155,16 +155,6 @@ void ConnectionToHost::OnIncomingSession(
   *response = SessionManager::DECLINE;
 }
 
-void ConnectionToHost::OnClientAuthenticated() {
-  // TODO(hclam): Don't send anything except authentication request if it is
-  // not authenticated.
-  SetState(AUTHENTICATED, OK);
-
-  // Create and enable the input stub now that we're authenticated.
-  input_sender_.reset(
-      new InputSender(message_loop_, session_->event_channel()));
-}
-
 ConnectionToHost::State ConnectionToHost::state() const {
   return state_;
 }
@@ -212,6 +202,8 @@ void ConnectionToHost::OnSessionStateChange(
     case Session::CONNECTED_CHANNELS:
       host_control_sender_.reset(
           new HostControlSender(message_loop_, session_->control_channel()));
+      input_sender_.reset(
+          new InputSender(message_loop_, session_->event_channel()));
       dispatcher_.reset(new ClientMessageDispatcher());
       dispatcher_->Initialize(session_.get(), client_stub_);
 
@@ -241,6 +233,7 @@ void ConnectionToHost::NotifyIfChannelsReady() {
   if (control_connected_ && input_connected_ && video_connected_ &&
       state_ == CONNECTING) {
     SetState(CONNECTED, OK);
+    SetState(AUTHENTICATED, OK);
   }
 }
 

@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "remoting/host/host_config.h"
-#include "remoting/proto/auth.pb.h"
 
 namespace remoting {
 
@@ -51,22 +50,8 @@ bool SelfAccessVerifier::VerifyPermissions(
     return false;
   }
 
-  // Decode the auth token.
-  protocol::ClientAuthToken client_token;
-  if (!DecodeClientAuthToken(encoded_access_token, &client_token)) {
-    return false;
-  }
-
   // Kick off directory access permissions.
   // TODO(ajwong): Actually implement this.
-  return true;
-}
-
-bool SelfAccessVerifier::DecodeClientAuthToken(
-    const std::string& encoded_client_token,
-    protocol::ClientAuthToken* client_token) {
-  // TODO(ajwong): Implement this.
-  NOTIMPLEMENTED();
   return true;
 }
 

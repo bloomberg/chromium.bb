@@ -22,7 +22,6 @@
 #include "remoting/host/screen_recorder.h"
 #include "remoting/host/user_authenticator.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
-#include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/host_stub.h"
@@ -147,12 +146,9 @@ void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {
 void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
   VLOG(1) << "Connection to client established.";
-  // TODO(wez): ChromotingHost shouldn't need to know about Me2Mom.
-  if (is_it2me_) {
-    context_->main_message_loop()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingHost::ProcessPreAuthentication, this,
+  context_->main_message_loop()->PostTask(
+      FROM_HERE, base::Bind(&ChromotingHost::ProcessPreAuthentication, this,
                               make_scoped_refptr(connection)));
-  }
 }
 
 void ChromotingHost::OnConnectionClosed(ConnectionToClient* connection) {
@@ -304,7 +300,6 @@ void ChromotingHost::OnIncomingSession(
   // Create a client object.
   ClientSession* client = new ClientSession(
       this,
-      UserAuthenticator::Create(),
       connection,
       desktop_environment_->event_executor(),
       desktop_environment_->capturer());
@@ -382,11 +377,9 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
   // ClientSession::Disconnect().
   connection->Disconnect();
 
-  if (client->authenticated()) {
-    for (StatusObserverList::iterator it = status_observers_.begin();
-         it != status_observers_.end(); ++it) {
-      (*it)->OnClientDisconnected(client->client_jid());
-    }
+  for (StatusObserverList::iterator it = status_observers_.begin();
+       it != status_observers_.end(); ++it) {
+    (*it)->OnClientDisconnected(client->client_jid());
   }
 
   if (AuthenticatedClientsCount() == 0) {
@@ -446,7 +439,7 @@ void ChromotingHost::EnableCurtainMode(bool enable) {
   is_curtained_ = enable;
 }
 
-void ChromotingHost::LocalLoginSucceeded(
+void ChromotingHost::OnAuthenticationComplete(
     scoped_refptr<ConnectionToClient> connection) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
@@ -461,11 +454,6 @@ void ChromotingHost::AddAuthenticatedClient(
     const protocol::SessionConfig& config,
     const std::string& jid) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
-
-  protocol::LocalLoginStatus* status = new protocol::LocalLoginStatus();
-  status->set_success(true);
-  connection->client_stub()->BeginSessionResponse(
-      status, base::Bind(&DeletePointer<protocol::LocalLoginStatus>, status));
 
   // Disconnect all other clients.
   // Iterate over a copy of the list of clients, to avoid mutating the list
@@ -514,21 +502,6 @@ void ChromotingHost::AddAuthenticatedClient(
   }
 }
 
-void ChromotingHost::LocalLoginFailed(
-    scoped_refptr<ConnectionToClient> connection) {
-  if (MessageLoop::current() != context_->main_message_loop()) {
-    context_->main_message_loop()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingHost::LocalLoginFailed, this,
-                              connection));
-    return;
-  }
-
-  protocol::LocalLoginStatus* status = new protocol::LocalLoginStatus();
-  status->set_success(false);
-  connection->client_stub()->BeginSessionResponse(
-      status, base::Bind(&DeletePointer<protocol::LocalLoginStatus>, status));
-}
-
 void ChromotingHost::ProcessPreAuthentication(
     const scoped_refptr<ConnectionToClient>& connection) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
@@ -541,8 +514,8 @@ void ChromotingHost::ProcessPreAuthentication(
   CHECK(client != clients_.end());
 
   context_->network_message_loop()->PostTask(
-      FROM_HERE, base::Bind(&ClientSession::OnAuthorizationComplete,
-                            client->get(), true));
+      FROM_HERE, base::Bind(&ClientSession::OnAuthenticationComplete,
+                            client->get()));
 }
 
 void ChromotingHost::StopScreenRecorder() {

@@ -54,14 +54,6 @@ void HostMessageDispatcher::Initialize(
 
 void HostMessageDispatcher::OnControlMessageReceived(
     ControlMessage* message, const base::Closure& done_task) {
-  if (message->has_begin_session_request()) {
-    const BeginSessionRequest& request = message->begin_session_request();
-    if (request.has_credentials() && request.credentials().has_type()) {
-      host_stub_->BeginSessionRequest(&request.credentials(), done_task);
-      return;
-    }
-  }
-
   LOG(WARNING) << "Invalid control message received.";
   done_task.Run();
 }

@@ -41,9 +41,6 @@ class ClientControlSender : public ClientStub {
                                net::Socket* socket);
   virtual ~ClientControlSender();
 
-  virtual void BeginSessionResponse(const LocalLoginStatus* msg,
-                                    const base::Closure& done) OVERRIDE;
-
   // Stop writing. Must be called on the network thread when the
   // underlying socket is being destroyed.
   void Close();

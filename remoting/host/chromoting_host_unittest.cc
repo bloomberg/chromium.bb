@@ -18,7 +18,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::remoting::protocol::LocalLoginCredentials;
 using ::remoting::protocol::MockClientStub;
 using ::remoting::protocol::MockConnectionToClient;
 using ::remoting::protocol::MockConnectionToClientEventHandler;
@@ -102,9 +101,6 @@ class ChromotingHostTest : public testing::Test {
     host_ = ChromotingHost::Create(&context_, config_,
                                    desktop_environment_.get(),
                                    access_verifier, false);
-    credentials_.set_type(protocol::PASSWORD);
-    credentials_.set_username("user");
-    credentials_.set_credential("password");
     connection_ = new MockConnectionToClient(
         &handler_, &host_stub_, event_executor_);
     connection2_ = new MockConnectionToClient(
@@ -167,13 +163,8 @@ class ChromotingHostTest : public testing::Test {
     scoped_refptr<MockConnectionToClient> connection =
         (connection_index == 0) ? connection_ : connection2_;
 
-    MockUserAuthenticator *user_authenticator = new MockUserAuthenticator;
-    EXPECT_CALL(*user_authenticator, Authenticate(_, _))
-        .WillOnce(Return(authenticate));
-
     scoped_refptr<ClientSession> client = new ClientSession(
         host_.get(),
-        user_authenticator,
         connection,
         event_executor_,
         desktop_environment_->capturer());
@@ -183,12 +174,12 @@ class ChromotingHostTest : public testing::Test {
         FROM_HERE,
         NewRunnableFunction(&ChromotingHostTest::AddClientToHost,
                             host_, client));
-    context_.network_message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(client.get(),
-                          &ClientSession::BeginSessionRequest,
-                          &credentials_,
-                          base::Bind(&DummyDoneTask)));
+    if (authenticate) {
+      context_.network_message_loop()->PostTask(
+          FROM_HERE,
+          NewRunnableMethod(client.get(),
+                            &ClientSession::OnAuthenticationComplete));
+    }
   }
 
   // Helper method to remove a client connection from ChromotingHost.
@@ -218,7 +209,6 @@ class ChromotingHostTest : public testing::Test {
   scoped_refptr<ChromotingHost> host_;
   scoped_refptr<InMemoryHostConfig> config_;
   MockChromotingHostContext context_;
-  protocol::LocalLoginCredentials credentials_;
   scoped_refptr<MockConnectionToClient> connection_;
   std::string session_jid_;
   scoped_ptr<MockSession> session_;
@@ -256,9 +246,6 @@ TEST_F(ChromotingHostTest, DISABLED_StartAndShutdown) {
 TEST_F(ChromotingHostTest, DISABLED_Connect) {
   host_->Start();
 
-  EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
-      .WillOnce(RunDoneTask());
-
   // When the video packet is received we first shutdown ChromotingHost
   // then execute the done task.
   {
@@ -283,10 +270,6 @@ TEST_F(ChromotingHostTest, DISABLED_Connect) {
 
 TEST_F(ChromotingHostTest, DISABLED_Reconnect) {
   host_->Start();
-
-  EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
-      .Times(2)
-      .WillRepeatedly(RunDoneTask());
 
   // When the video packet is received we first disconnect the mock
   // connection.
@@ -345,14 +328,6 @@ TEST_F(ChromotingHostTest, DISABLED_Reconnect) {
 TEST_F(ChromotingHostTest, DISABLED_ConnectTwice) {
   host_->Start();
 
-  EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
-      .Times(1)
-      .WillRepeatedly(RunDoneTask());
-
-  EXPECT_CALL(client_stub2_, BeginSessionResponse(_, _))
-      .Times(1)
-      .WillRepeatedly(RunDoneTask());
-
   // When a video packet is received we connect the second mock
   // connection.
   {
@@ -398,9 +373,6 @@ TEST_F(ChromotingHostTest, DISABLED_ConnectTwice) {
 TEST_F(ChromotingHostTest, CurtainModeFail) {
   host_->Start();
 
-  EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
-      .WillOnce(RunDoneTask());
-
   // Ensure that curtain mode is not activated if a connection does not
   // authenticate.
   EXPECT_CALL(*curtain_, EnableCurtainMode(_))
@@ -416,13 +388,6 @@ TEST_F(ChromotingHostTest, CurtainModeFail) {
 
 TEST_F(ChromotingHostTest, CurtainModeFailSecond) {
   host_->Start();
-
-  EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
-      .WillOnce(RunDoneTask());
-
-  EXPECT_CALL(client_stub2_, BeginSessionResponse(_, _))
-      .WillOnce(RunDoneTask());
-
 
   // When a video packet is received we connect the second mock
   // connection.
@@ -461,9 +426,6 @@ TEST_F(ChromotingHostTest, CurtainModeIT2Me) {
   host_->Start();
   host_->set_it2me(true);
 
-  EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
-      .WillOnce(RunDoneTask());
-
   // When the video packet is received we first shutdown ChromotingHost
   // then execute the done task.
   bool curtain_activated = false;
@@ -492,6 +454,15 @@ TEST_F(ChromotingHostTest, CurtainModeIT2Me) {
     EXPECT_CALL(*connection_.get(), Disconnect())
         .InSequence(s1, s2)
         .RetiresOnSaturation();
+    EXPECT_CALL(*local_input_monitor_, Stop())
+        .Times(1)
+        .InSequence(s1, s2);
+    EXPECT_CALL(*continue_window_, Hide())
+        .Times(1)
+        .InSequence(s1);
+    EXPECT_CALL(*disconnect_window_, Hide())
+        .Times(1)
+        .InSequence(s2);
   }
   SimulateClientConnection(0, true);
   message_loop_.Run();

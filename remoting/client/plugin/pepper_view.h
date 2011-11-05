@@ -42,8 +42,6 @@ class PepperView : public ChromotingView,
   virtual void SetConnectionState(
       protocol::ConnectionToHost::State state,
       protocol::ConnectionToHost::Error error) OVERRIDE;
-  virtual void UpdateLoginStatus(bool success,
-                                 const std::string& info) OVERRIDE;
   virtual double GetHorizontalScaleRatio() const OVERRIDE;
   virtual double GetVerticalScaleRatio() const OVERRIDE;
 

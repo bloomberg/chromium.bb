@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
-#include "remoting/proto/auth.pb.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 using buzz::QName;

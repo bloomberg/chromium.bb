@@ -36,13 +36,12 @@ class ClientSessionTest : public testing::Test {
 
     // Set up a large default screen size that won't affect most tests.
     default_screen_size_.set(1000, 1000);
-    ON_CALL(capturer_, size_most_recent()).WillByDefault(ReturnRef(
-        default_screen_size_));
+    EXPECT_CALL(capturer_, size_most_recent())
+        .WillRepeatedly(ReturnRef(default_screen_size_));
 
     user_authenticator_ = new MockUserAuthenticator();
     client_session_ = new ClientSession(
         &session_event_handler_,
-        user_authenticator_,
         connection_,
         &input_stub_,
         &capturer_);
@@ -104,15 +103,8 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   mouse_event3.set_x(300);
   mouse_event3.set_y(301);
 
-  protocol::LocalLoginCredentials credentials;
-  credentials.set_type(protocol::PASSWORD);
-  credentials.set_username("user");
-  credentials.set_credential("password");
-
   InSequence s;
-  EXPECT_CALL(*user_authenticator_, Authenticate(_, _))
-      .WillOnce(Return(true));
-  EXPECT_CALL(session_event_handler_, LocalLoginSucceeded(_));
+  EXPECT_CALL(session_event_handler_, OnAuthenticationComplete(_));
   EXPECT_CALL(input_stub_, InjectKeyEvent(EqualsKeyEvent(2, true)));
   EXPECT_CALL(input_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
   EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
@@ -121,7 +113,7 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   // because the client isn't authenticated yet.
   client_session_->InjectKeyEvent(key_event1);
   client_session_->InjectMouseEvent(mouse_event1);
-  client_session_->BeginSessionRequest(&credentials, base::Closure());
+  client_session_->OnAuthenticationComplete();
   // These events should get through to the input stub.
   client_session_->InjectKeyEvent(key_event2_down);
   client_session_->InjectKeyEvent(key_event2_up);
@@ -144,19 +136,12 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   mouse_event3.set_x(300);
   mouse_event3.set_y(301);
 
-  protocol::LocalLoginCredentials credentials;
-  credentials.set_type(protocol::PASSWORD);
-  credentials.set_username("user");
-  credentials.set_credential("password");
-
   InSequence s;
-  EXPECT_CALL(*user_authenticator_, Authenticate(_, _))
-      .WillOnce(Return(true));
-  EXPECT_CALL(session_event_handler_, LocalLoginSucceeded(_));
+  EXPECT_CALL(session_event_handler_, OnAuthenticationComplete(_));
   EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(100, 101)));
   EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
 
-  client_session_->BeginSessionRequest(&credentials, base::Closure());
+  client_session_->OnAuthenticationComplete();
   // This event should get through to the input stub.
   client_session_->InjectMouseEvent(mouse_event1);
   // This one should too because the local event echoes the remote one.
@@ -202,14 +187,8 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
   EXPECT_CALL(capturer_, size_most_recent())
       .WillRepeatedly(ReturnRef(screen));
 
-  protocol::LocalLoginCredentials credentials;
-  credentials.set_type(protocol::PASSWORD);
-  credentials.set_username("user");
-  credentials.set_credential("password");
-  EXPECT_CALL(*user_authenticator_, Authenticate(_, _))
-      .WillOnce(Return(true));
-  EXPECT_CALL(session_event_handler_, LocalLoginSucceeded(_));
-  client_session_->BeginSessionRequest(&credentials, base::Closure());
+  EXPECT_CALL(session_event_handler_, OnAuthenticationComplete(_));
+  client_session_->OnAuthenticationComplete();
 
   int input_x[3] = { -999, 100, 999 };
   int expected_x[3] = { 0, 100, 199 };

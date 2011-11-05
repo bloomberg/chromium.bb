@@ -155,7 +155,8 @@ void ChromotingClient::OnConnectionState(
     protocol::ConnectionToHost::Error error) {
   DCHECK(message_loop()->BelongsToCurrentThread());
   VLOG(1) << "ChromotingClient::OnConnectionState(" << state << ")";
-  if (state == protocol::ConnectionToHost::CONNECTED)
+  if (state == protocol::ConnectionToHost::CONNECTED ||
+      state == protocol::ConnectionToHost::AUTHENTICATED)
     Initialize();
   view_->SetConnectionState(state, error);
 }
@@ -201,29 +202,6 @@ void ChromotingClient::Initialize() {
 
   // Schedule the input handler to process the event queue.
   input_handler_->Initialize();
-}
-
-////////////////////////////////////////////////////////////////////////////
-// ClientStub control channel interface.
-void ChromotingClient::BeginSessionResponse(
-    const protocol::LocalLoginStatus* msg, const base::Closure& done) {
-  if (!message_loop()->BelongsToCurrentThread()) {
-    thread_proxy_.PostTask(FROM_HERE, base::Bind(
-        &ChromotingClient::BeginSessionResponse, base::Unretained(this),
-        msg, done));
-    return;
-  }
-
-  VLOG(1) << "BeginSessionResponse received";
-
-  // Inform the connection that the client has been authenticated. This will
-  // enable the communication channels.
-  if (msg->success()) {
-    connection_->OnClientAuthenticated();
-  }
-
-  view_->UpdateLoginStatus(msg->success(), msg->error_info());
-  done.Run();
 }
 
 }  // namespace remoting

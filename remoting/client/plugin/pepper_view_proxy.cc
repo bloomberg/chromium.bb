@@ -84,17 +84,6 @@ void PepperViewProxy::SetConnectionState(
     view_->SetConnectionState(state, error);
 }
 
-void PepperViewProxy::UpdateLoginStatus(bool success, const std::string& info) {
-  if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
-    plugin_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &PepperViewProxy::UpdateLoginStatus, success, info));
-    return;
-  }
-
-  if (view_)
-    view_->UpdateLoginStatus(success, info);
-}
-
 double PepperViewProxy::GetHorizontalScaleRatio() const {
   // This method returns a value, so must run synchronously, so must be
   // called only on the pepper thread.

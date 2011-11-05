@@ -28,7 +28,6 @@ const char kDebugInfo[] = "debugInfo";
 const char kDesktopHeight[] = "desktopHeight";
 const char kDesktopWidth[] = "desktopWidth";
 const char kDesktopSizeUpdate[] = "desktopSizeUpdate";
-const char kLoginChallenge[] = "loginChallenge";
 const char kSendIq[] = "sendIq";
 const char kStatusAttribute[] = "status";
 const char kErrorAttribute[] = "error";
@@ -89,7 +88,6 @@ void ChromotingScriptableObject::Init() {
   AddAttribute(kConnectionInfoUpdate, Var());
   AddAttribute(kDebugInfo, Var());
   AddAttribute(kDesktopSizeUpdate, Var());
-  AddAttribute(kLoginChallenge, Var());
   AddAttribute(kSendIq, Var());
   AddAttribute(kDesktopWidth, Var(0));
   AddAttribute(kDesktopHeight, Var(0));
@@ -105,7 +103,6 @@ void ChromotingScriptableObject::Init() {
 
   AddMethod("connect", &ChromotingScriptableObject::DoConnect);
   AddMethod("disconnect", &ChromotingScriptableObject::DoDisconnect);
-  AddMethod("submitLoginInfo", &ChromotingScriptableObject::DoSubmitLogin);
   AddMethod("setScaleToFit", &ChromotingScriptableObject::DoSetScaleToFit);
   AddMethod("onIq", &ChromotingScriptableObject::DoOnIq);
   AddMethod("releaseAllKeys", &ChromotingScriptableObject::DoReleaseAllKeys);
@@ -200,13 +197,11 @@ void ChromotingScriptableObject::SetProperty(const Var& name,
     return;
   }
 
-  // Allow writing to connectionInfoUpdate or loginChallenge.  See top of
-  // chromoting_scriptable_object.h for the object interface definition.
+  // Not all properties are mutable.
   std::string property_name = name.AsString();
   if (property_name != kConnectionInfoUpdate &&
       property_name != kDebugInfo &&
       property_name != kDesktopSizeUpdate &&
-      property_name != kLoginChallenge &&
       property_name != kSendIq &&
       property_name != kDesktopWidth &&
       property_name != kDesktopHeight) {
@@ -282,12 +277,6 @@ void ChromotingScriptableObject::SetDesktopSize(int width, int height) {
   VLOG(1) << "Update desktop size to: " << width << " x " << height;
 }
 
-void ChromotingScriptableObject::SignalLoginChallenge() {
-  plugin_message_loop_->PostTask(
-      FROM_HERE, task_factory_.NewRunnableMethod(
-          &ChromotingScriptableObject::DoSignalLoginChallenge));
-}
-
 void ChromotingScriptableObject::AttachXmppProxy(PepperXmppProxy* xmpp_proxy) {
   xmpp_proxy_ = xmpp_proxy;
 }
@@ -344,17 +333,6 @@ void ChromotingScriptableObject::DoSignalDesktopSizeChange() {
     LOG(ERROR) << "Exception when invoking JS callback"
                << exception.DebugString();
   }
-}
-
-void ChromotingScriptableObject::DoSignalLoginChallenge() {
-  Var exception;
-  VarPrivate cb = GetProperty(Var(kLoginChallenge), &exception);
-
-  // |this| must not be touched after Call() returns.
-  cb.Call(Var(), &exception);
-
-  if (!exception.is_undefined())
-    LOG(ERROR) << "Exception when invoking loginChallenge JS callback.";
 }
 
 void ChromotingScriptableObject::DoSendIq(const std::string& message_xml) {
@@ -425,30 +403,6 @@ Var ChromotingScriptableObject::DoDisconnect(const std::vector<Var>& args,
                                              Var* exception) {
   VLOG(1) << "Disconnecting from host.";
   instance_->Disconnect();
-  return Var();
-}
-
-Var ChromotingScriptableObject::DoSubmitLogin(const std::vector<Var>& args,
-                                              Var* exception) {
-  if (args.size() != 2) {
-    *exception = Var("Usage: login(username, password)");
-    return Var();
-  }
-
-  if (!args[0].is_string()) {
-    *exception = Var("Username must be a string.");
-    return Var();
-  }
-  std::string username = args[0].AsString();
-
-  if (!args[1].is_string()) {
-    *exception = Var("Password must be a string.");
-    return Var();
-  }
-  std::string password = args[1].AsString();
-
-  VLOG(1) << "Submitting login info to host.";
-  instance_->SubmitLoginInfo(username, password);
   return Var();
 }
 

@@ -39,9 +39,6 @@ class HostControlSender : public HostStub {
                              net::Socket* socket);
   virtual ~HostControlSender();
 
-  virtual void BeginSessionRequest(
-      const LocalLoginCredentials* credentials, const base::Closure& done);
-
   // Stop writing. Must be called on the network thread when the
   // underlying socket is being destroyed.
   void Close();
