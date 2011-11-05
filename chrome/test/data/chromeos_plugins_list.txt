@@ -3,7 +3,8 @@
     u'enabled': 1,
     u'name': u'Shockwave Flash',
     u'path': '/opt/google/chrome/pepper/libpepflashplayer.so',
-    u'unique_key': 'path'
+    u'unique_key': 'path',
+    u'version': u'11.0.31.205'
   }, {
     u'boards': ['x86-mario', 'x86-alex', 'x86-zgb'],
     u'enabled': 1,
