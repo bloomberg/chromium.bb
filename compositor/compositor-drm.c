@@ -322,7 +322,7 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 	};
 
 	filename = udev_device_get_devnode(device);
-	fd = open(filename, O_RDWR, O_CLOEXEC);
+	fd = open(filename, O_RDWR | O_CLOEXEC);
 	if (fd < 0) {
 		/* Probably permissions error */
 		fprintf(stderr, "couldn't open %s, skipping\n",
