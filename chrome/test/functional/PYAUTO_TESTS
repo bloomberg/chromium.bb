@@ -467,6 +467,8 @@
       # crbug.com/98681
       '-nacl_sdk.NaClSDKTest.testNaClSDK',
       '-nacl_sdk.NaClSDKTest.testVerifyPrereleaseGallery',
+      # crbug.com/103082 # I will re-enable this by Nov 7th 2011 -Venkat.
+      '-indexeddb.IndexedDBTest.testIndexedDBNullKeyPathPersistence',
     ],
 
     'win': [
