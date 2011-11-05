@@ -17,6 +17,7 @@ class ChromeRenderProcessObserver;
 class ExtensionDispatcher;
 class RendererHistogramSnapshots;
 class RendererNetPredictor;
+class RendererTracking;
 class SpellCheck;
 class SpellCheckProvider;
 class VisitedLinkSlave;
@@ -143,6 +144,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<ChromeRenderProcessObserver> chrome_observer_;
   scoped_ptr<ExtensionDispatcher> extension_dispatcher_;
   scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
+  scoped_ptr<RendererTracking> renderer_tracking_;
   scoped_ptr<RendererNetPredictor> net_predictor_;
   scoped_ptr<SpellCheck> spellcheck_;
   // The SpellCheckProvider is a RenderViewObserver, and handles its own

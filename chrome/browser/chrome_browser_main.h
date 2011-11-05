@@ -30,6 +30,10 @@ extern const char kMissingLocaleDataTitle[];
 extern const char kMissingLocaleDataMessage[];
 }
 
+namespace chrome_browser_metrics {
+class TrackingSynchronizer;
+}
+
 namespace content {
 struct MainFunctionParams;
 }
@@ -135,6 +139,8 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   scoped_ptr<BrowserProcessImpl> browser_process_;
   scoped_refptr<HistogramSynchronizer> histogram_synchronizer_;
+  scoped_refptr<chrome_browser_metrics::TrackingSynchronizer>
+      tracking_synchronizer_;
   scoped_ptr<ProcessSingleton> process_singleton_;
   scoped_ptr<FirstRun::MasterPrefs> master_prefs_;
   bool record_search_engine_;

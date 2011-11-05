@@ -15,6 +15,7 @@
 
 #include "base/bind.h"
 #include "base/tracked_objects.h"
+#include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
@@ -31,6 +32,7 @@
 #endif  //  USE_SOURCE_FILES_DIRECTLY
 
 using content::BrowserThread;
+using chrome_browser_metrics::TrackingSynchronizer;
 
 namespace {
 
@@ -136,10 +138,8 @@ void TrackingMessageHandler::RegisterMessages() {
 }
 
 void TrackingMessageHandler::OnGetData(const ListValue* list) {
-  // Send the data to the renderer.
-  scoped_ptr<Value> data_values(tracked_objects::ThreadData::ToValue());
-  web_ui_->CallJavascriptFunction("g_browserBridge.receivedData",
-                                  *data_values.get());
+  TrackingUI* tracking_ui = reinterpret_cast<TrackingUI*>(web_ui_);
+  tracking_ui->GetData();
 }
 
 void TrackingMessageHandler::OnResetData(const ListValue* list) {
@@ -149,9 +149,26 @@ void TrackingMessageHandler::OnResetData(const ListValue* list) {
 }  // namespace
 
 TrackingUI::TrackingUI(TabContents* contents) : ChromeWebUI(contents) {
+  ui_weak_ptr_factory_.reset(new base::WeakPtrFactory<TrackingUI>(this));
+  ui_weak_ptr_ = ui_weak_ptr_factory_->GetWeakPtr();
+
   AddMessageHandler((new TrackingMessageHandler())->Attach(this));
 
   // Set up the chrome://tracking2/ source.
   Profile::FromBrowserContext(contents->browser_context())->
       GetChromeURLDataManager()->AddDataSource(CreateTrackingHTMLSource());
 }
+
+TrackingUI::~TrackingUI() {
+}
+
+void TrackingUI::GetData() {
+  TrackingSynchronizer::FetchTrackingDataAsynchronously(ui_weak_ptr_);
+}
+
+void TrackingUI::ReceivedData(base::Value* value) {
+  // Send the data to the renderer.
+  scoped_ptr<Value> data_values(value);
+  CallJavascriptFunction("g_browserBridge.receivedData", *data_values.get());
+}
+

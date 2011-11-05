@@ -49,6 +49,7 @@
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
+#include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -1397,6 +1398,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // scope. Even though NewRunnableMethod does AddRef and Release, the object
   // will not be deleted after the Task is executed.
   histogram_synchronizer_ = new HistogramSynchronizer();
+  tracking_synchronizer_ = new chrome_browser_metrics::TrackingSynchronizer();
 
   // Now the command line has been mutated based on about:flags, we can
   // set up metrics and initialize field trials.

@@ -1558,6 +1558,8 @@
         'browser/metrics/field_trial_synchronizer.h',
         'browser/metrics/histogram_synchronizer.cc',
         'browser/metrics/histogram_synchronizer.h',
+        'browser/metrics/tracking_synchronizer.cc',
+        'browser/metrics/tracking_synchronizer.h',
         'browser/metrics/metric_event_duration_details.h',
         'browser/metrics/metrics_log.cc',
         'browser/metrics/metrics_log.h',
