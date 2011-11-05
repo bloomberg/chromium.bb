@@ -150,9 +150,6 @@ class ShaderManager {
   // Check if a ShaderInfo is owned by this ShaderManager.
   bool IsOwned(ShaderInfo* info);
 
-  // Strips the comments from a shader.
-  static std::string StripComments(const std::string source);
-
  private:
   // Info for each shader by service side shader Id.
   typedef base::hash_map<GLuint, ShaderInfo::Ref> ShaderInfoMap;

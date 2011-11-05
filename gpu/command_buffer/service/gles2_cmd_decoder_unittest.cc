@@ -1107,9 +1107,7 @@ TEST_F(GLES2DecoderTest, ShaderSourceAndGetShaderSourceValidArgs) {
 
 TEST_F(GLES2DecoderTest, ShaderSourceInvalidArgs) {
   const char kSource[] = "hello";
-  const char kBadSource[] = "hello\a";
   const uint32 kSourceSize = sizeof(kSource) - 1;
-  const uint32 kBadSourceSize = sizeof(kBadSource) - 1;
   memcpy(shared_memory_address_, kSource, kSourceSize);
   ShaderSource cmd;
   cmd.Init(kInvalidClientId,
@@ -1131,11 +1129,6 @@ TEST_F(GLES2DecoderTest, ShaderSourceInvalidArgs) {
   cmd.Init(client_shader_id_,
            kSharedMemoryId, kSharedMemoryOffset, kSharedBufferSize);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
-  memcpy(shared_memory_address_, kBadSource, kBadSourceSize);
-  cmd.Init(client_program_id_,
-           kSharedMemoryId, kSharedMemoryOffset, kBadSourceSize);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest, ShaderSourceImmediateAndGetShaderSourceValidArgs) {

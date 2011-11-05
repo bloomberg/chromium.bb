@@ -245,27 +245,6 @@ TEST_F(ShaderManagerTest, ShaderInfoUseCount) {
   EXPECT_TRUE(info2 == NULL);
 }
 
-TEST_F(ShaderManagerTest, StripComments) {
-  const char* kSource = ""
-      "// this is a single line comment\n"
-      "this is not a comment\n"
-      "/* this is\n"
-      "a multi line\n"
-      "comment */\n"
-      "this is not a comment\n"
-      "this is an /* inline */ comment";
-  const char* kExpected = ""
-      " \n"
-      "this is not a comment\n"
-      "/*\n"
-      "\n"
-      "*/\n"
-      "this is not a comment\n"
-      "this is an /**/ comment";
-  std::string actual = ShaderManager::StripComments(kSource);
-  EXPECT_STREQ(kExpected, actual.c_str());
-}
-
 }  // namespace gles2
 }  // namespace gpu
 
