@@ -761,8 +761,6 @@
         'protocol/rtp_video_writer.h',
         'protocol/rtp_writer.cc',
         'protocol/rtp_writer.h',
-        'protocol/secure_p2p_socket.cc',
-        'protocol/secure_p2p_socket.h',
         'protocol/session.h',
         'protocol/session_config.cc',
         'protocol/session_config.h',
@@ -898,7 +896,6 @@
         'protocol/protocol_mock_objects.h',
         'protocol/rtp_video_reader_unittest.cc',
         'protocol/rtp_video_writer_unittest.cc',
-        'protocol/secure_p2p_socket_unittest.cc',
         'run_all_unittests.cc',
       ],
       'conditions': [
