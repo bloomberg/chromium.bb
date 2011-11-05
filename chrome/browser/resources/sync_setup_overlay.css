@@ -188,6 +188,7 @@
   opacity: 1;
   padding: 8px 25px;
   position: relative;
+  text-align: center;
 }
 
 #top-blurb-error[hidden] {
