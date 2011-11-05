@@ -55,7 +55,7 @@ def _LocateBinDirs():
   deps_dirs = [
       os.path.dirname(__file__),
       pyauto_paths.GetThirdPartyDir(),
-      os.path.join(pyauto_paths.GetThirdPartyDir(), 'webdriver', 'python'),
+      os.path.join(pyauto_paths.GetThirdPartyDir(), 'webdriver', 'pylib'),
   ]
   sys.path += map(os.path.normpath, pyauto_paths.GetBuildDirs() + deps_dirs)
 

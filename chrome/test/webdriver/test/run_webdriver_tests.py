@@ -266,6 +266,15 @@ class Main(object):
     # TODO(kkania): Remove this hack.
     self._FakePytestHack()
 
+    # In the webdriver tree, the python 'test' module is moved under the root
+    # 'selenium' one for testing. Here we mimic that by setting the 'selenium'
+    # module's 'test' attribute and adding 'selenium.test' to the system
+    # modules.
+    import selenium
+    import test
+    selenium.test = test
+    sys.modules['selenium.test'] = test
+
     test_names = self._GetTestNames(self._args)
 
     # The tests expect to run with preset 'driver' and 'webserver' class

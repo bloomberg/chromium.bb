@@ -20,7 +20,7 @@ def _SetupPaths():
   SRC_THIRD_PARTY = J(start_dir, os.pardir, os.pardir, os.pardir, os.pardir,
                       'third_party')
   webdriver = J(SRC_THIRD_PARTY, 'webdriver')
-  PYTHON_BINDINGS = J(webdriver, 'python')
+  PYTHON_BINDINGS = J(webdriver, 'pylib')
   WEBDRIVER_TEST_DATA = J(webdriver, 'test_data')
 
   global CHROMEDRIVER_EXE

@@ -224,14 +224,9 @@ deps = {
   "src/third_party/swig/Lib":
     "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),
 
-  # WebDriver keeps client and test code separate, and merges when the
-  # python egg is installed. We run tests directly from src, so import
-  # the code into the structure expected by the tests.
-  # Make sure you update chrome/test/functional.DEPS/DEPS too.
-  "src/third_party/webdriver/python/selenium":
-    "http://selenium.googlecode.com/svn/trunk/py/selenium@13487",
-  "src/third_party/webdriver/python/selenium/test":
-    "http://selenium.googlecode.com/svn/trunk/py/test@13487",
+  # Make sure you update the two functional.DEPS and webdriver.DEPS too.
+  "src/third_party/webdriver/pylib":
+    "http://selenium.googlecode.com/svn/trunk/py@13487",
 
   "src/third_party/libvpx":
     "/trunk/deps/third_party/libvpx@" +
