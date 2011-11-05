@@ -382,7 +382,7 @@
     'labs': ['thakis@chromium.org'],
     'fileapi': ['kinuko+watch@chromium.org'],
     'pepper_api': ['piman+watch@chromium.org', 'darin-cc@chromium.org',
-                   'ihf+watch@chromium.org'],
+                   'ihf+watch@chromium.org', 'yzshen+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
                   'dominich+watch@chromium.org', 'mmenke@chromium.org'],
     'chromedriver': ['kkania@chromium.org'],
