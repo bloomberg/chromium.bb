@@ -43,6 +43,11 @@ class PPP_Class_Proxy : public InterfaceProxy {
                                     int64 ppp_class,
                                     int64 class_data);
 
+  static PP_Bool IsInstanceOf(const PPB_Var_Deprecated* ppb_var_impl,
+                              const PP_Var& var,
+                              int64 ppp_class,
+                              int64* ppp_class_data);
+
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 

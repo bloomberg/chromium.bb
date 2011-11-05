@@ -499,7 +499,11 @@ void PPB_Var_Deprecated_Proxy::OnMsgIsInstanceOfDeprecated(
     int64 ppp_class,
     int64* ppp_class_data,
     PP_Bool* result) {
-  // TODO(brettw) write this.
+  SetAllowPluginReentrancy();
+  *result = PPP_Class_Proxy::IsInstanceOf(ppb_var_impl_,
+                                          var.Get(dispatcher()),
+                                          ppp_class,
+                                          ppp_class_data);
 }
 
 void PPB_Var_Deprecated_Proxy::OnMsgCreateObjectDeprecated(

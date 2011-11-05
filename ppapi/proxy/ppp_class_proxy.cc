@@ -197,6 +197,24 @@ PP_Var PPP_Class_Proxy::CreateProxiedObject(const PPB_Var_Deprecated* var,
   return var->CreateObject(module_id, &class_interface, object_proxy);
 }
 
+// static
+PP_Bool PPP_Class_Proxy::IsInstanceOf(const PPB_Var_Deprecated* ppb_var_impl,
+                                      const PP_Var& var,
+                                      int64 ppp_class,
+                                      int64* ppp_class_data) {
+  void* proxied_object = NULL;
+  if (ppb_var_impl->IsInstanceOf(var,
+                                 &class_interface,
+                                 &proxied_object)) {
+    if (static_cast<ObjectProxy*>(proxied_object)->ppp_class == ppp_class) {
+      DCHECK(ppp_class_data);
+      *ppp_class_data = static_cast<ObjectProxy*>(proxied_object)->user_data;
+      return PP_TRUE;
+    }
+  }
+  return PP_FALSE;
+}
+
 bool PPP_Class_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPP_Class_Proxy, msg)
