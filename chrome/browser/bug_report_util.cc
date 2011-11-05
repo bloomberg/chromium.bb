@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
@@ -170,7 +171,7 @@ void BugReportUtil::DispatchFeedback(Profile* profile,
                                      int64 delay) {
   DCHECK(post_body);
 
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableFunction(
+  MessageLoop::current()->PostDelayedTask(FROM_HERE, base::Bind(
       &BugReportUtil::SendFeedback, profile, post_body, delay), delay);
 }
 
