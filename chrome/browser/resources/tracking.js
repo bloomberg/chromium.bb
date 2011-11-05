@@ -390,6 +390,7 @@ var MainView = (function() {
   var INITIALLY_HIDDEN_KEYS = [
     KEY_FILE_NAME,
     KEY_LINE_NUMBER,
+    KEY_QUEUE_TIME,
   ];
 
   /**
