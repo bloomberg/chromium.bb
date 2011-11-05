@@ -39,7 +39,6 @@ class ClientSessionTest : public testing::Test {
     EXPECT_CALL(capturer_, size_most_recent())
         .WillRepeatedly(ReturnRef(default_screen_size_));
 
-    user_authenticator_ = new MockUserAuthenticator();
     client_session_ = new ClientSession(
         &session_event_handler_,
         connection_,
@@ -57,7 +56,6 @@ class ClientSessionTest : public testing::Test {
   MockInputStub input_stub_;
   MockCapturer capturer_;
   MockClientSessionEventHandler session_event_handler_;
-  MockUserAuthenticator* user_authenticator_;
   scoped_refptr<MockConnectionToClient> connection_;
   scoped_refptr<ClientSession> client_session_;
 };
