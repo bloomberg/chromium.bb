@@ -13,8 +13,8 @@ const char DevToolsRemoteMessageHeaders::kDestination[] = "Destination";
 const char DevToolsRemoteMessage::kEmptyValue[] = "";
 
 DevToolsRemoteMessageBuilder& DevToolsRemoteMessageBuilder::instance() {
-  static DevToolsRemoteMessageBuilder instance_;
-  return instance_;
+  CR_DEFINE_STATIC_LOCAL(DevToolsRemoteMessageBuilder, instance, ());
+  return instance;
 }
 
 DevToolsRemoteMessage::DevToolsRemoteMessage() {}

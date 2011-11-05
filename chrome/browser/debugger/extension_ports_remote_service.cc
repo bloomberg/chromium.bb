@@ -108,7 +108,7 @@ const char kPortIdKey[] = "portId";
 
 }  // namespace
 
-const std::string ExtensionPortsRemoteService::kToolName = "ExtensionPorts";
+const char ExtensionPortsRemoteService::kToolName[] = "ExtensionPorts";
 
 ExtensionPortsRemoteService::ExtensionPortsRemoteService(
     DevToolsProtocolHandler* delegate)

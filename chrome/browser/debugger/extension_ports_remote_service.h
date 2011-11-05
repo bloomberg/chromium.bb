@@ -33,7 +33,7 @@ class ExtensionPortsRemoteService : public DevToolsRemoteListener,
                                     public IPC::Message::Sender {
  public:
   // Specifies a tool name ("ExtensionPorts") handled by this class.
-  static const std::string kToolName;
+  static const char kToolName[];
 
   // |delegate| (never NULL) is the protocol handler instance which
   // dispatches messages to this service.

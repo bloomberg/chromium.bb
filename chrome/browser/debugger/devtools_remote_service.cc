@@ -61,8 +61,8 @@ void DevToolsRemoteService::HandleMessage(
 
 void DevToolsRemoteService::ProcessJson(DictionaryValue* json,
                                         const DevToolsRemoteMessage& message) {
-  static const std::string kOkResponse = "ok";  // "Ping" response
-  static const std::string kVersion = "0.1";  // Current protocol version
+  const char kOkResponse[] = "ok";  // "Ping" response
+  const char kVersion[] = "0.1";  // Current protocol version
   std::string command;
   DictionaryValue response;
 

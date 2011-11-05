@@ -32,18 +32,16 @@ const char kCommandKey[] = "command";
 
 }  // namespace
 
-const char* const DebuggerRemoteServiceCommand::kAttach = "attach";
-const char* const DebuggerRemoteServiceCommand::kDetach = "detach";
-const char* const DebuggerRemoteServiceCommand::kDebuggerCommand =
+const char DebuggerRemoteServiceCommand::kAttach[] = "attach";
+const char DebuggerRemoteServiceCommand::kDetach[] = "detach";
+const char DebuggerRemoteServiceCommand::kDebuggerCommand[] =
     "debugger_command";
-const char* const DebuggerRemoteServiceCommand::kEvaluateJavascript =
+const char DebuggerRemoteServiceCommand::kEvaluateJavascript[] =
     "evaluate_javascript";
-const char* const DebuggerRemoteServiceCommand::kFrameNavigate =
-    "navigated";
-const char* const DebuggerRemoteServiceCommand::kTabClosed =
-    "closed";
+const char DebuggerRemoteServiceCommand::kFrameNavigate[] = "navigated";
+const char DebuggerRemoteServiceCommand::kTabClosed[] = "closed";
 
-const std::string DebuggerRemoteService::kToolName = "V8Debugger";
+const char DebuggerRemoteService::kToolName[] = "V8Debugger";
 
 DebuggerRemoteService::DebuggerRemoteService(DevToolsProtocolHandler* delegate)
     : delegate_(delegate) {}

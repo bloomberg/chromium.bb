@@ -151,7 +151,7 @@ void DevToolsRemoteListenSocket::DidClose(net::ListenSocket *connection) {
 }
 
 void DevToolsRemoteListenSocket::DispatchField() {
-  static const std::string kHandshakeString = "ChromeDevToolsHandshake";
+  const std::string kHandshakeString = "ChromeDevToolsHandshake";
   switch (state_) {
     case HANDSHAKE:
       if (protocol_field_ != kHandshakeString) {

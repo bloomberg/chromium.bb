@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -15,6 +16,10 @@
 using content::BrowserThread;
 
 namespace {
+
+base::LazyInstance<FilePath,
+                   base::LeakyLazyInstanceTraits<FilePath> >
+    g_last_save_path(base::LINKER_INITIALIZED);
 
 class SaveAsDialog : public SelectFileDialog::Listener,
                      public base::RefCounted<SaveAsDialog> {
@@ -38,8 +43,9 @@ class SaveAsDialog : public SelectFileDialog::Listener,
     else
       file_name = suggested_file_name;
 
-    if (!last_save_path_.empty()) {
-      default_path = last_save_path_.DirName().AppendASCII(suggested_file_name);
+    if (!g_last_save_path.Pointer()->empty()) {
+      default_path = g_last_save_path.Pointer()->DirName().AppendASCII(
+          suggested_file_name);
     } else {
       DownloadPrefs prefs(profile->GetPrefs());
       default_path = prefs.download_path().AppendASCII(suggested_file_name);
@@ -59,7 +65,7 @@ class SaveAsDialog : public SelectFileDialog::Listener,
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const FilePath& path,
                             int index, void* params) {
-    last_save_path_ = path;
+    *g_last_save_path.Pointer() = path;
 
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
@@ -88,12 +94,8 @@ class SaveAsDialog : public SelectFileDialog::Listener,
     file_util::WriteFile(path, content.c_str(), content.length());
   }
   scoped_refptr<SelectFileDialog> select_file_dialog_;
-  static FilePath last_save_path_;
   std::string content_;
 };
-
-// static
-FilePath SaveAsDialog::last_save_path_;
 
 }  // namespace
 
