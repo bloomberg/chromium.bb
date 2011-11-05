@@ -5,7 +5,6 @@
 #include "chrome/browser/policy/configuration_policy_handler.h"
 
 #include <string>
-#include <vector>
 
 #include "base/file_path.h"
 #include "base/logging.h"
@@ -13,13 +12,11 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/values.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_path_parser.h"
-#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
@@ -28,250 +25,11 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
-#include "policy/configuration_policy_type.h"
 #include "policy/policy_constants.h"
 
 namespace policy {
 
 namespace {
-
-// Implementations of ConfigurationPolicyHandler -------------------------------
-
-// Abstract class derived from ConfigurationPolicyHandler that should be
-// subclassed to handle a single policy (not a combination of policies).
-class TypeCheckingPolicyHandler : public ConfigurationPolicyHandler {
- public:
-  TypeCheckingPolicyHandler(ConfigurationPolicyType policy_type,
-                            base::Value::Type value_type);
-
-  // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) OVERRIDE;
-
- protected:
-  virtual ~TypeCheckingPolicyHandler();
-
-  ConfigurationPolicyType policy_type() const;
-
- private:
-  // The ConfigurationPolicyType of the policy.
-  ConfigurationPolicyType policy_type_;
-
-  // The type the value of the policy should have.
-  base::Value::Type value_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(TypeCheckingPolicyHandler);
-};
-
-// ConfigurationPolicyHandler for policies that map directly to a preference.
-class SimplePolicyHandler : public TypeCheckingPolicyHandler {
- public:
-  SimplePolicyHandler(ConfigurationPolicyType policy_type,
-                      base::Value::Type value_type,
-                      const char* pref_path);
-  virtual ~SimplePolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  // The DictionaryValue path of the preference the policy maps to.
-  const char* pref_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(SimplePolicyHandler);
-};
-
-// ConfigurationPolicyHandler for the SyncDisabled policy.
-class SyncPolicyHandler : public TypeCheckingPolicyHandler {
- public:
-  SyncPolicyHandler();
-  virtual ~SyncPolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SyncPolicyHandler);
-};
-
-// ConfigurationPolicyHandler for the AutofillEnabled policy.
-class AutofillPolicyHandler : public TypeCheckingPolicyHandler {
- public:
-  AutofillPolicyHandler();
-  virtual ~AutofillPolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutofillPolicyHandler);
-};
-
-// ConfigurationPolicyHandler for the DownloadDirectory policy.
-class DownloadDirPolicyHandler : public TypeCheckingPolicyHandler {
- public:
-  DownloadDirPolicyHandler();
-  virtual ~DownloadDirPolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DownloadDirPolicyHandler);
-};
-
-// ConfigurationPolicyHandler for the DiskCacheDir policy.
-class DiskCacheDirPolicyHandler : public TypeCheckingPolicyHandler {
- public:
-  explicit DiskCacheDirPolicyHandler();
-  virtual ~DiskCacheDirPolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DiskCacheDirPolicyHandler);
-};
-
-// ConfigurationPolicyHandler for the FileSelectionDialogsHandler policy.
-class FileSelectionDialogsHandler : public TypeCheckingPolicyHandler {
- public:
-  FileSelectionDialogsHandler();
-  virtual ~FileSelectionDialogsHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FileSelectionDialogsHandler);
-};
-
-// ConfigurationPolicyHandler for the incognito mode policies.
-class IncognitoModePolicyHandler : public ConfigurationPolicyHandler {
- public:
-  IncognitoModePolicyHandler();
-  virtual ~IncognitoModePolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) OVERRIDE;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  IncognitoModePrefs::Availability GetAvailabilityValueAsEnum(
-      const Value* availability);
-
-  DISALLOW_COPY_AND_ASSIGN(IncognitoModePolicyHandler);
-};
-
-// ConfigurationPolicyHandler for the DefaultSearchEncodings policy.
-class DefaultSearchEncodingsPolicyHandler : public TypeCheckingPolicyHandler {
- public:
-  DefaultSearchEncodingsPolicyHandler();
-  virtual ~DefaultSearchEncodingsPolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DefaultSearchEncodingsPolicyHandler);
-};
-
-// ConfigurationPolicyHandler for the default search policies.
-class DefaultSearchPolicyHandler : public ConfigurationPolicyHandler {
- public:
-  DefaultSearchPolicyHandler();
-  virtual ~DefaultSearchPolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) OVERRIDE;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  // Calls |CheckPolicySettings()| on each of the handlers in |handlers_|
-  // and returns true if all of the calls return true and false otherwise.
-  bool CheckIndividualPolicies(const PolicyMap& policies,
-                               PolicyErrorMap* errors);
-
-  // Returns true if there is a value for |policy_type| in |policies| and false
-  // otherwise.
-  bool HasDefaultSearchPolicy(const PolicyMap& policies,
-                              ConfigurationPolicyType policy_type);
-
-  // Returns true if any default search policies are specified in |policies| and
-  // false otherwise.
-  bool AnyDefaultSearchPoliciesSpecified(const PolicyMap& policies);
-
-  // Returns true if the default search provider is disabled and false
-  // otherwise.
-  bool DefaultSearchProviderIsDisabled(const PolicyMap& policies);
-
-  // Returns true if the default search URL was set and is valid and false
-  // otherwise.
-  bool DefaultSearchURLIsValid(const PolicyMap& policies);
-
-  // Make sure that the |path| if present in |prefs_|.  If not, set it to
-  // a blank string.
-  void EnsureStringPrefExists(PrefValueMap* prefs, const std::string& path);
-
-  // The ConfigurationPolicyHandler handlers for each default search policy.
-  HandlerList handlers_;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultSearchPolicyHandler);
-};
-
-// ConfigurationPolicyHandler for the proxy policies.
-class ProxyPolicyHandler : public ConfigurationPolicyHandler {
- public:
-  ProxyPolicyHandler();
-  virtual ~ProxyPolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) OVERRIDE;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  const Value* GetProxyPolicyValue(const PolicyMap& policies,
-                                   ConfigurationPolicyType policy);
-
-  // Converts the deprecated ProxyServerMode policy value to a ProxyMode value
-  // and places the result in |mode_value|. Returns true if the conversion
-  // succeeded and false otherwise.
-  bool CheckProxyModeAndServerMode(const PolicyMap& policies,
-                                   PolicyErrorMap* errors,
-                                   std::string* mode_value);
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyPolicyHandler);
-};
-
-//
-class JavascriptPolicyHandler : public ConfigurationPolicyHandler {
- public:
-  JavascriptPolicyHandler();
-  virtual ~JavascriptPolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) OVERRIDE;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(JavascriptPolicyHandler);
-};
-
 
 // Helper classes --------------------------------------------------------------
 
@@ -310,8 +68,7 @@ struct ProxyModeValidationEntry {
 };
 
 // Maps a policy type to a preference path, and to the expected value type.
-// This is the entry type of |kSimplePolicyMap| below.
-struct PolicyToPreferenceMapEntry {
+struct DefaultSearchSimplePolicyHandlerEntry {
   base::Value::Type value_type;
   ConfigurationPolicyType policy_type;
   const char* preference_path;
@@ -320,172 +77,9 @@ struct PolicyToPreferenceMapEntry {
 
 // Static data -----------------------------------------------------------------
 
-// List of policy types to preference names. This is used for simple policies
-// that directly map to a single preference.
-const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
-  { Value::TYPE_STRING, kPolicyHomepageLocation,  prefs::kHomePage },
-  { Value::TYPE_BOOLEAN, kPolicyHomepageIsNewTabPage,
-    prefs::kHomePageIsNewTabPage },
-  { Value::TYPE_INTEGER, kPolicyRestoreOnStartup,
-    prefs::kRestoreOnStartup},
-  { Value::TYPE_LIST, kPolicyRestoreOnStartupURLs,
-    prefs::kURLsToRestoreOnStartup },
-  { Value::TYPE_BOOLEAN, kPolicyAlternateErrorPagesEnabled,
-    prefs::kAlternateErrorPagesEnabled },
-  { Value::TYPE_BOOLEAN, kPolicySearchSuggestEnabled,
-    prefs::kSearchSuggestEnabled },
-  { Value::TYPE_BOOLEAN, kPolicyDnsPrefetchingEnabled,
-    prefs::kNetworkPredictionEnabled },
-  { Value::TYPE_BOOLEAN, kPolicyDisableSpdy,
-    prefs::kDisableSpdy },
-  { Value::TYPE_LIST, kPolicyDisabledSchemes,
-    prefs::kDisabledSchemes },
-  { Value::TYPE_BOOLEAN, kPolicySafeBrowsingEnabled,
-    prefs::kSafeBrowsingEnabled },
-  { Value::TYPE_BOOLEAN, kPolicyPasswordManagerEnabled,
-    prefs::kPasswordManagerEnabled },
-  { Value::TYPE_BOOLEAN, kPolicyPasswordManagerAllowShowPasswords,
-    prefs::kPasswordManagerAllowShowPasswords },
-  { Value::TYPE_BOOLEAN, kPolicyPrintingEnabled,
-    prefs::kPrintingEnabled },
-  { Value::TYPE_BOOLEAN, kPolicyMetricsReportingEnabled,
-    prefs::kMetricsReportingEnabled },
-  { Value::TYPE_STRING, kPolicyApplicationLocaleValue,
-    prefs::kApplicationLocale},
-  { Value::TYPE_LIST, kPolicyExtensionInstallWhitelist,
-    prefs::kExtensionInstallAllowList},
-  { Value::TYPE_LIST, kPolicyExtensionInstallBlacklist,
-    prefs::kExtensionInstallDenyList},
-  { Value::TYPE_LIST, kPolicyExtensionInstallForcelist,
-    prefs::kExtensionInstallForceList},
-  { Value::TYPE_LIST, kPolicyDisabledPlugins,
-    prefs::kPluginsDisabledPlugins},
-  { Value::TYPE_LIST, kPolicyDisabledPluginsExceptions,
-    prefs::kPluginsDisabledPluginsExceptions},
-  { Value::TYPE_LIST, kPolicyEnabledPlugins,
-    prefs::kPluginsEnabledPlugins},
-  { Value::TYPE_BOOLEAN, kPolicyShowHomeButton,
-    prefs::kShowHomeButton },
-  { Value::TYPE_BOOLEAN, kPolicySavingBrowserHistoryDisabled,
-    prefs::kSavingBrowserHistoryDisabled },
-  { Value::TYPE_BOOLEAN, kPolicyClearSiteDataOnExit,
-    prefs::kClearSiteDataOnExit },
-  { Value::TYPE_BOOLEAN, kPolicyDeveloperToolsDisabled,
-    prefs::kDevToolsDisabled },
-  { Value::TYPE_BOOLEAN, kPolicyBlockThirdPartyCookies,
-    prefs::kBlockThirdPartyCookies },
-  { Value::TYPE_INTEGER, kPolicyDefaultCookiesSetting,
-    prefs::kManagedDefaultCookiesSetting },
-  { Value::TYPE_INTEGER, kPolicyDefaultImagesSetting,
-    prefs::kManagedDefaultImagesSetting },
-  { Value::TYPE_INTEGER, kPolicyDefaultPluginsSetting,
-    prefs::kManagedDefaultPluginsSetting },
-  { Value::TYPE_INTEGER, kPolicyDefaultPopupsSetting,
-    prefs::kManagedDefaultPopupsSetting },
-  { Value::TYPE_LIST, kPolicyAutoSelectCertificateForUrls,
-    prefs::kManagedAutoSelectCertificateForUrls},
-  { Value::TYPE_LIST, kPolicyCookiesAllowedForUrls,
-    prefs::kManagedCookiesAllowedForUrls },
-  { Value::TYPE_LIST, kPolicyCookiesBlockedForUrls,
-    prefs::kManagedCookiesBlockedForUrls },
-  { Value::TYPE_LIST, kPolicyCookiesSessionOnlyForUrls,
-    prefs::kManagedCookiesSessionOnlyForUrls },
-  { Value::TYPE_LIST, kPolicyImagesAllowedForUrls,
-    prefs::kManagedImagesAllowedForUrls },
-  { Value::TYPE_LIST, kPolicyImagesBlockedForUrls,
-    prefs::kManagedImagesBlockedForUrls },
-  { Value::TYPE_LIST, kPolicyJavaScriptAllowedForUrls,
-    prefs::kManagedJavaScriptAllowedForUrls },
-  { Value::TYPE_LIST, kPolicyJavaScriptBlockedForUrls,
-    prefs::kManagedJavaScriptBlockedForUrls },
-  { Value::TYPE_LIST, kPolicyPluginsAllowedForUrls,
-    prefs::kManagedPluginsAllowedForUrls },
-  { Value::TYPE_LIST, kPolicyPluginsBlockedForUrls,
-    prefs::kManagedPluginsBlockedForUrls },
-  { Value::TYPE_LIST, kPolicyPopupsAllowedForUrls,
-    prefs::kManagedPopupsAllowedForUrls },
-  { Value::TYPE_LIST, kPolicyPopupsBlockedForUrls,
-    prefs::kManagedPopupsBlockedForUrls },
-  { Value::TYPE_LIST, kPolicyNotificationsAllowedForUrls,
-    prefs::kManagedNotificationsAllowedForUrls },
-  { Value::TYPE_LIST, kPolicyNotificationsBlockedForUrls,
-    prefs::kManagedNotificationsBlockedForUrls },
-  { Value::TYPE_INTEGER, kPolicyDefaultNotificationsSetting,
-    prefs::kManagedDefaultNotificationsSetting },
-  { Value::TYPE_INTEGER, kPolicyDefaultGeolocationSetting,
-    prefs::kManagedDefaultGeolocationSetting },
-  { Value::TYPE_STRING, kPolicyAuthSchemes,
-    prefs::kAuthSchemes },
-  { Value::TYPE_BOOLEAN, kPolicyDisableAuthNegotiateCnameLookup,
-    prefs::kDisableAuthNegotiateCnameLookup },
-  { Value::TYPE_BOOLEAN, kPolicyEnableAuthNegotiatePort,
-    prefs::kEnableAuthNegotiatePort },
-  { Value::TYPE_STRING, kPolicyAuthServerWhitelist,
-    prefs::kAuthServerWhitelist },
-  { Value::TYPE_STRING, kPolicyAuthNegotiateDelegateWhitelist,
-    prefs::kAuthNegotiateDelegateWhitelist },
-  { Value::TYPE_STRING, kPolicyGSSAPILibraryName,
-    prefs::kGSSAPILibraryName },
-  { Value::TYPE_BOOLEAN, kPolicyAllowCrossOriginAuthPrompt,
-    prefs::kAllowCrossOriginAuthPrompt },
-  { Value::TYPE_BOOLEAN, kPolicyDisable3DAPIs,
-    prefs::kDisable3DAPIs },
-  { Value::TYPE_BOOLEAN, kPolicyDisablePluginFinder,
-    prefs::kDisablePluginFinder },
-  { Value::TYPE_INTEGER, kPolicyPolicyRefreshRate,
-    prefs::kUserPolicyRefreshRate },
-  { Value::TYPE_INTEGER, kPolicyDevicePolicyRefreshRate,
-    prefs::kDevicePolicyRefreshRate },
-  { Value::TYPE_BOOLEAN, kPolicyInstantEnabled, prefs::kInstantEnabled },
-  { Value::TYPE_BOOLEAN, kPolicyDefaultBrowserSettingEnabled,
-    prefs::kDefaultBrowserSettingEnabled },
-  { Value::TYPE_BOOLEAN, kPolicyRemoteAccessHostFirewallTraversal,
-    prefs::kRemoteAccessHostFirewallTraversal },
-  { Value::TYPE_BOOLEAN, kPolicyCloudPrintProxyEnabled,
-    prefs::kCloudPrintProxyEnabled },
-  { Value::TYPE_BOOLEAN, kPolicyCloudPrintSubmitEnabled,
-    prefs::kCloudPrintSubmitEnabled },
-  { Value::TYPE_BOOLEAN, kPolicyTranslateEnabled, prefs::kEnableTranslate },
-  { Value::TYPE_BOOLEAN, kPolicyAllowOutdatedPlugins,
-    prefs::kPluginsAllowOutdated },
-  { Value::TYPE_BOOLEAN, kPolicyAlwaysAuthorizePlugins,
-    prefs::kPluginsAlwaysAuthorize },
-  { Value::TYPE_BOOLEAN, kPolicyBookmarkBarEnabled,
-    prefs::kShowBookmarkBar },
-  { Value::TYPE_BOOLEAN, kPolicyEditBookmarksEnabled,
-    prefs::kEditBookmarksEnabled },
-  { Value::TYPE_BOOLEAN, kPolicyAllowFileSelectionDialogs,
-    prefs::kAllowFileSelectionDialogs },
-  { Value::TYPE_BOOLEAN, kPolicyImportBookmarks,
-    prefs::kImportBookmarks},
-  { Value::TYPE_BOOLEAN, kPolicyImportHistory,
-    prefs::kImportHistory},
-  { Value::TYPE_BOOLEAN, kPolicyImportHomepage,
-    prefs::kImportHomepage},
-  { Value::TYPE_BOOLEAN, kPolicyImportSearchEngine,
-    prefs::kImportSearchEngine },
-  { Value::TYPE_BOOLEAN, kPolicyImportSavedPasswords,
-    prefs::kImportSavedPasswords },
-  { Value::TYPE_INTEGER, kPolicyMaxConnectionsPerProxy,
-    prefs::kMaxConnectionsPerProxy },
-  { Value::TYPE_BOOLEAN, kPolicyHideWebStorePromo,
-    prefs::kNTPHideWebStorePromo },
-  { Value::TYPE_LIST, kPolicyURLBlacklist,
-    prefs::kUrlBlacklist },
-  { Value::TYPE_LIST, kPolicyURLWhitelist,
-    prefs::kUrlWhitelist },
-
-#if defined(OS_CHROMEOS)
-  { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
-    prefs::kEnableScreenLock },
-  { Value::TYPE_STRING, kPolicyChromeOsReleaseChannel,
-    prefs::kChromeOsReleaseChannel },
-#endif
-};
-
 // List of policy types to preference names, for policies affecting the default
 // search provider.
-const PolicyToPreferenceMapEntry kDefaultSearchPolicyMap[] = {
+const DefaultSearchSimplePolicyHandlerEntry kDefaultSearchPolicyMap[] = {
   { Value::TYPE_BOOLEAN, kPolicyDefaultSearchProviderEnabled,
     prefs::kDefaultSearchProviderEnabled },
   { Value::TYPE_STRING, kPolicyDefaultSearchProviderName,
@@ -535,6 +129,22 @@ std::string ValueTypeToString(Value::Type type) {
   };
   DCHECK(static_cast<size_t>(type) < arraysize(strings));
   return std::string(strings[type]);
+}
+
+
+}  // namespace
+
+
+// ConfigurationPolicyHandler implementation -----------------------------------
+
+ConfigurationPolicyHandler::ConfigurationPolicyHandler() {
+}
+
+ConfigurationPolicyHandler::~ConfigurationPolicyHandler() {
+}
+
+void ConfigurationPolicyHandler::PrepareForDisplaying(
+    PolicyMap* policies) const {
 }
 
 
@@ -895,8 +505,8 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   // The other entries are optional.  Just make sure that they are all
   // specified via policy, so that the regular prefs aren't used.
   if (DefaultSearchURLIsValid(policies)) {
-    HandlerList::const_iterator handler = handlers_.begin();
-    for ( ; handler != handlers_.end(); ++handler)
+    std::vector<ConfigurationPolicyHandler*>::const_iterator handler;
+    for (handler = handlers_.begin() ; handler != handlers_.end(); ++handler)
       (*handler)->ApplyPolicySettings(policies, prefs);
 
     EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderSuggestURL);
@@ -926,8 +536,8 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 bool DefaultSearchPolicyHandler::CheckIndividualPolicies(
     const PolicyMap& policies,
     PolicyErrorMap* errors) {
-  HandlerList::const_iterator handler = handlers_.begin();
-  for ( ; handler != handlers_.end(); ++handler) {
+  std::vector<ConfigurationPolicyHandler*>::const_iterator handler;
+  for (handler = handlers_.begin() ; handler != handlers_.end(); ++handler) {
     if (!(*handler)->CheckPolicySettings(policies, errors))
       return false;
   }
@@ -1282,40 +892,6 @@ void JavascriptPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     prefs->SetValue(prefs::kManagedDefaultJavaScriptSetting,
                     Value::CreateIntegerValue(setting));
   }
-}
-
-
-}  // namespace
-
-
-// ConfigurationPolicyHandler implementation -----------------------------------
-
-// static
-ConfigurationPolicyHandler::HandlerList*
-    ConfigurationPolicyHandler::CreateHandlerList() {
-  HandlerList* list = new HandlerList;
-
-  for (size_t i = 0; i < arraysize(kSimplePolicyMap); ++i) {
-    list->push_back(
-        new SimplePolicyHandler(kSimplePolicyMap[i].policy_type,
-                                kSimplePolicyMap[i].value_type,
-                                kSimplePolicyMap[i].preference_path));
-  }
-
-  list->push_back(new AutofillPolicyHandler());
-  list->push_back(new DefaultSearchPolicyHandler());
-  list->push_back(new DiskCacheDirPolicyHandler());
-  list->push_back(new FileSelectionDialogsHandler());
-  list->push_back(new IncognitoModePolicyHandler());
-  list->push_back(new JavascriptPolicyHandler());
-  list->push_back(new ProxyPolicyHandler());
-  list->push_back(new SyncPolicyHandler());
-
-#if !defined(OS_CHROMEOS)
-  list->push_back(new DownloadDirPolicyHandler());
-#endif  // !defined(OS_CHROME0S)
-
-  return list;
 }
 
 }  // namespace policy

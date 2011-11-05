@@ -76,8 +76,9 @@ void ConfigurationPolicyStatusKeeper::GetPoliciesFromProvider(
     DLOG(WARNING) << "Failed to get policy from provider.";
 
   PolicyErrorMap errors;
-  g_browser_process->browser_policy_connector()->GetPoliciesAsPreferences(
-      policies, NULL, &errors);
+  const ConfigurationPolicyHandlerList* handler_list =
+      g_browser_process->browser_policy_connector()->GetHandlerList();
+  handler_list->ApplyPolicySettings(policies, NULL, &errors);
 
   PolicyMap::const_iterator policy = policies.begin();
   for ( ; policy != policies.end(); ++policy) {

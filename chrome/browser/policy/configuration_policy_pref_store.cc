@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/configuration_policy_handler_list.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/prefs/pref_value_map.h"
@@ -161,8 +162,9 @@ PrefValueMap* ConfigurationPolicyPrefStore::CreatePreferencesFromPolicies() {
   scoped_ptr<PrefValueMap> prefs(new PrefValueMap);
   scoped_ptr<PolicyErrorMap> errors(new PolicyErrorMap);
 
-  g_browser_process->browser_policy_connector()->GetPoliciesAsPreferences(
-      policies, prefs.get(), errors.get());
+  const ConfigurationPolicyHandlerList* handler_list =
+      g_browser_process->browser_policy_connector()->GetHandlerList();
+  handler_list->ApplyPolicySettings(policies, prefs.get(), errors.get());
 
   // Retrieve and log the errors once the UI loop is ready. This is only an
   // issue during startup.

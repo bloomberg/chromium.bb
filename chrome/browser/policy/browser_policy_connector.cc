@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/policy/cloud_policy_provider.h"
 #include "chrome/browser/policy/cloud_policy_provider_impl.h"
@@ -16,11 +15,8 @@
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/network_configuration_updater.h"
-#include "chrome/browser/policy/policy_error_map.h"
-#include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/user_policy_cache.h"
 #include "chrome/browser/policy/user_policy_token_cache.h"
-#include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -105,8 +101,6 @@ BrowserPolicyConnector::~BrowserPolicyConnector() {
   user_cloud_policy_subsystem_.reset();
   user_policy_token_cache_.reset();
   user_data_store_.reset();
-
-  STLDeleteElements(policy_handlers_.get());
 }
 
 ConfigurationPolicyProvider*
@@ -318,28 +312,9 @@ const CloudPolicyDataStore*
   return user_data_store_.get();
 }
 
-void BrowserPolicyConnector::GetPoliciesAsPreferences(
-    const PolicyMap& policies,
-    PrefValueMap* prefs,
-    PolicyErrorMap* errors) {
-  PolicyErrorMap scoped_errors;
-  if (!errors)
-    errors = &scoped_errors;
-
-  ConfigurationPolicyHandler::HandlerList::const_iterator handler;
-  for (handler = policy_handlers_->begin();
-       handler != policy_handlers_->end();
-       ++handler) {
-    if ((*handler)->CheckPolicySettings(policies, errors) && prefs)
-      (*handler)->ApplyPolicySettings(policies, prefs);
-  }
-
-  for (PolicyMap::const_iterator it = policies.begin();
-       it != policies.end();
-       ++it) {
-    if (IsDeprecatedPolicy(it->first))
-      errors->AddError(it->first, IDS_POLICY_DEPRECATED);
-  }
+const ConfigurationPolicyHandlerList*
+    BrowserPolicyConnector::GetHandlerList() const {
+  return &handler_list_;
 }
 
 BrowserPolicyConnector::BrowserPolicyConnector()
@@ -362,7 +337,6 @@ BrowserPolicyConnector::BrowserPolicyConnector()
           managed_cloud_provider_.get(),
           chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
 #endif
-  policy_handlers_.reset(ConfigurationPolicyHandler::CreateHandlerList());
 }
 
 BrowserPolicyConnector::BrowserPolicyConnector(
@@ -375,7 +349,6 @@ BrowserPolicyConnector::BrowserPolicyConnector(
       managed_cloud_provider_(managed_cloud_provider),
       recommended_cloud_provider_(recommended_cloud_provider),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  policy_handlers_.reset(ConfigurationPolicyHandler::CreateHandlerList());
 }
 
 void BrowserPolicyConnector::Observe(
