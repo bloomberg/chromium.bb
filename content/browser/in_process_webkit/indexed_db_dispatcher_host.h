@@ -65,6 +65,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   int32 Add(WebKit::WebIDBTransaction* idb_transaction, const GURL& origin_url);
   int32 Add(WebKit::WebDOMStringList* domStringList);
 
+  WebKit::WebIDBCursor* GetCursorFromId(int32 cursor_id);
+
  private:
   virtual ~IndexedDBDispatcherHost();
 

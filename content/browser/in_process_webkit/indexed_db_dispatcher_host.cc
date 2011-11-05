@@ -191,6 +191,11 @@ int32 IndexedDBDispatcherHost::Add(WebIDBTransaction* idb_transaction,
   return id;
 }
 
+WebIDBCursor* IndexedDBDispatcherHost::GetCursorFromId(int32 cursor_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  return cursor_dispatcher_host_->map_.Lookup(cursor_id);
+}
+
 void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
     const IndexedDBHostMsg_FactoryGetDatabaseNames_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
@@ -553,7 +558,7 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenObjectCursor(
 
   *ec = 0;
   scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id));
+      new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id, -1));
   idb_index->openObjectCursor(
       WebIDBKeyRange(params.lower_key, params.upper_key, params.lower_open,
                      params.upper_open),
@@ -573,7 +578,7 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenKeyCursor(
 
   *ec = 0;
   scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id));
+      new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id, -1));
   idb_index->openKeyCursor(
       WebIDBKeyRange(params.lower_key, params.upper_key, params.lower_open,
                      params.upper_open),
@@ -844,7 +849,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnOpenCursor(
 
   *ec = 0;
   scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id));
+      new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id, -1));
   idb_object_store->openCursor(
       WebIDBKeyRange(params.lower_key, params.upper_key, params.lower_open,
                      params.upper_open),
@@ -954,7 +959,8 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
 
   *ec = 0;
   idb_cursor->continueFunction(
-      key, new IndexedDBCallbacks<WebIDBCursor>(parent_, response_id), *ec);
+      key, new IndexedDBCallbacks<WebIDBCursor>(parent_, response_id,
+                                                cursor_id), *ec);
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnDelete(

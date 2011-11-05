@@ -41,6 +41,24 @@ void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(
           response_id(), content::SerializedScriptValue(value)));
 }
 
+void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccessWithContinuation() {
+  DCHECK(cursor_id_ != -1);
+  WebKit::WebIDBCursor* idb_cursor = dispatcher_host()->GetCursorFromId(
+      cursor_id_);
+
+  DCHECK(idb_cursor);
+  if (!idb_cursor)
+    return;
+
+  dispatcher_host()->Send(
+      new IndexedDBMsg_CallbacksSuccessCursorContinue(
+          response_id(),
+          cursor_id_,
+          IndexedDBKey(idb_cursor->key()),
+          IndexedDBKey(idb_cursor->primaryKey()),
+          content::SerializedScriptValue(idb_cursor->value())));
+}
+
 void IndexedDBCallbacks<WebKit::WebIDBKey>::onSuccess(
     const WebKit::WebIDBKey& value) {
   dispatcher_host()->Send(

@@ -15,9 +15,7 @@
 
 class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
  public:
-  RendererWebIDBCursorImpl(int32 idb_cursor_id, const IndexedDBKey& key,
-                           const IndexedDBKey& primary_key,
-                           const content::SerializedScriptValue& value);
+  RendererWebIDBCursorImpl(int32 idb_cursor_id);
   virtual ~RendererWebIDBCursorImpl();
 
   virtual unsigned short direction() const;
@@ -33,11 +31,14 @@ class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
   virtual void deleteFunction(WebKit::WebIDBCallbacks* callback,
                               WebKit::WebExceptionCode& ec);
 
+  void SetKeyAndValue(const IndexedDBKey& key, const IndexedDBKey& primary_key,
+                      const content::SerializedScriptValue& value);
+
  private:
   int32 idb_cursor_id_;
-  const IndexedDBKey key_;
-  const IndexedDBKey primary_key_;
-  const content::SerializedScriptValue value_;
+  IndexedDBKey key_;
+  IndexedDBKey primary_key_;
+  content::SerializedScriptValue value_;
 };
 
 #endif  // CONTENT_RENDERER_RENDERER_WEBIDBCURSOR_IMPL_H_

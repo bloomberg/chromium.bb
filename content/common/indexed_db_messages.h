@@ -147,6 +147,12 @@ IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessIDBCursor,
                      IndexedDBKey /* key */,
                      IndexedDBKey /* primary key */,
                      content::SerializedScriptValue /* script_value */)
+IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessCursorContinue,
+                     int32 /* response_id */,
+                     int32 /* cursor_id */,
+                     IndexedDBKey /* key */,
+                     IndexedDBKey /* primary key */,
+                     content::SerializedScriptValue /* script_value */)
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIDBDatabase,
                      int32 /* response_id */,
                      int32 /* idb_database_id */)

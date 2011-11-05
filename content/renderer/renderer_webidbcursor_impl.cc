@@ -13,13 +13,8 @@ using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBKey;
 using WebKit::WebSerializedScriptValue;
 
-RendererWebIDBCursorImpl::RendererWebIDBCursorImpl(int32 idb_cursor_id,
-    const IndexedDBKey& key, const IndexedDBKey& primary_key,
-    const content::SerializedScriptValue& value)
-    : idb_cursor_id_(idb_cursor_id),
-      key_(key),
-      primary_key_(primary_key),
-      value_(value) {
+RendererWebIDBCursorImpl::RendererWebIDBCursorImpl(int32 idb_cursor_id)
+    : idb_cursor_id_(idb_cursor_id) {
 }
 
 RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
@@ -29,6 +24,9 @@ RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
   // any such pointers.
   RenderThreadImpl::current()->Send(new IndexedDBHostMsg_CursorDestroyed(
       idb_cursor_id_));
+  IndexedDBDispatcher* dispatcher =
+      RenderThreadImpl::current()->indexed_db_dispatcher();
+  dispatcher->CursorDestroyed(idb_cursor_id_);
 }
 
 unsigned short RendererWebIDBCursorImpl::direction() const {
@@ -73,4 +71,13 @@ void RendererWebIDBCursorImpl::deleteFunction(WebIDBCallbacks* callbacks,
   IndexedDBDispatcher* dispatcher =
       RenderThreadImpl::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBCursorDelete(callbacks, idb_cursor_id_, &ec);
+}
+
+void RendererWebIDBCursorImpl::SetKeyAndValue(
+    const IndexedDBKey& key,
+    const IndexedDBKey& primary_key,
+    const content::SerializedScriptValue& value) {
+  key_ = key;
+  primary_key_ = primary_key;
+  value_ = value;
 }

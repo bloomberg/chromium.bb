@@ -42,6 +42,8 @@ bool IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(IndexedDBDispatcher, msg)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessIDBCursor,
                         OnSuccessOpenCursor)
+    IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessCursorContinue,
+                        OnSuccessCursorContinue)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessIDBDatabase,
                         OnSuccessIDBDatabase)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessIndexedDBKey,
@@ -379,6 +381,10 @@ void IndexedDBDispatcher::RegisterWebIDBTransactionCallbacks(
   pending_transaction_callbacks_.AddWithID(callbacks, id);
 }
 
+void IndexedDBDispatcher::CursorDestroyed(int32 cursor_id) {
+  cursors_.erase(cursor_id);
+}
+
 int32 IndexedDBDispatcher::TransactionId(
     const WebIDBTransaction& transaction) {
   const RendererWebIDBTransactionImpl* impl =
@@ -426,13 +432,33 @@ void IndexedDBDispatcher::OnSuccessSerializedScriptValue(
 }
 
 void IndexedDBDispatcher::OnSuccessOpenCursor(int32 repsonse_id,
-    int32 object_id, const IndexedDBKey& key, const IndexedDBKey& primaryKey,
+    int32 object_id, const IndexedDBKey& key, const IndexedDBKey& primary_key,
     const content::SerializedScriptValue& value) {
   WebIDBCallbacks* callbacks =
       pending_callbacks_.Lookup(repsonse_id);
-  callbacks->onSuccess(new RendererWebIDBCursorImpl(object_id, key,
-                       primaryKey, value));
+
+  RendererWebIDBCursorImpl* cursor = new RendererWebIDBCursorImpl(object_id);
+  cursors_[object_id] = cursor;
+  cursor->SetKeyAndValue(key, primary_key, value);
+  callbacks->onSuccess(cursor);
+
   pending_callbacks_.Remove(repsonse_id);
+}
+
+void IndexedDBDispatcher::OnSuccessCursorContinue(
+    int32 response_id,
+    int32 cursor_id,
+    const IndexedDBKey& key,
+    const IndexedDBKey& primary_key,
+    const content::SerializedScriptValue& value) {
+  RendererWebIDBCursorImpl* cursor = cursors_[cursor_id];
+  DCHECK(cursor);
+  cursor->SetKeyAndValue(key, primary_key, value);
+
+  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  callbacks->onSuccessWithContinuation();
+
+  pending_callbacks_.Remove(response_id);
 }
 
 void IndexedDBDispatcher::OnBlocked(int32 response_id) {

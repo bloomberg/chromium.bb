@@ -6,6 +6,8 @@
 #define CONTENT_RENDERER_INDEXED_DB_DISPATCHER_H_
 #pragma once
 
+#include <map>
+
 #include "base/id_map.h"
 #include "base/nullable_string16.h"
 #include "ipc/ipc_channel.h"
@@ -16,6 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
 
 class IndexedDBKey;
+class RendererWebIDBCursorImpl;
 
 namespace WebKit {
 class WebDOMStringList;
@@ -151,6 +154,8 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
       WebKit::WebIDBTransactionCallbacks* callbacks,
       int32 id);
 
+  void CursorDestroyed(int32 cursor_id);
+
   static int32 TransactionId(const WebKit::WebIDBTransaction& transaction);
 
  private:
@@ -163,6 +168,11 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
                            const IndexedDBKey& key,
                            const IndexedDBKey& primary_key,
                            const content::SerializedScriptValue& value);
+  void OnSuccessCursorContinue(int32 response_id,
+                               int32 cursor_id,
+                               const IndexedDBKey& key,
+                               const IndexedDBKey& primary_key,
+                               const content::SerializedScriptValue& value);
   void OnSuccessStringList(int32 response_id,
                            const std::vector<string16>& value);
   void OnSuccessSerializedScriptValue(
@@ -181,6 +191,9 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
       pending_transaction_callbacks_;
   IDMap<WebKit::WebIDBDatabaseCallbacks, IDMapOwnPointer>
       pending_database_callbacks_;
+
+  // Map from cursor id to RendererWebIDBCursorImpl.
+  std::map<int32, RendererWebIDBCursorImpl*> cursors_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDispatcher);
 };
