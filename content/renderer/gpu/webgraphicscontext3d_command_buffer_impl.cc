@@ -417,6 +417,8 @@ void WebGraphicsContext3DCommandBufferImpl::unmapTexSubImage2DCHROMIUM(
 
 void WebGraphicsContext3DCommandBufferImpl::setVisibilityCHROMIUM(
     bool visible) {
+  if (!visible)
+    gl_->FreeUnusedSharedMemory();
   gl_->Flush();
   context_->SetSurfaceVisible(visible);
 }
