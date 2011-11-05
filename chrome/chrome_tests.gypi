@@ -3,6 +3,13 @@
 # found in the LICENSE file.
 {
   'variables' : {
+    # Variables for js2gtest rules
+    'gypv8sh': '../tools/gypv8sh.py',
+    'js2gtest': 'test/base/js2gtest.js',
+    'js2gtest_out_dir': '<(SHARED_INTERMEDIATE_DIR)/js2gtest',
+    'mock_js': 'third_party/mock4js/mock4js.js',
+    'test_api_js': 'test/data/webui/test_api.js',
+
     'pyautolib_sources': [
       'app/chrome_command_ids.h',
       'app/chrome_dll_resource.h',
@@ -1945,6 +1952,7 @@
         'test/base/v8_unit_test.cc',
         'test/base/v8_unit_test.h',
         'test/data/resource.rc',
+        'test/data/unit/framework_unittest.js',
         'tools/convert_dict/convert_dict_unittest.cc',
         '../content/browser/renderer_host/render_widget_host_unittest.cc',
         '../content/browser/renderer_host/text_input_client_mac_unittest.mm',
@@ -1966,7 +1974,40 @@
         '../webkit/quota/mock_storage_client.cc',
         '../webkit/quota/mock_storage_client.h',
       ],
+      'rules': [
+        {
+          'rule_name': 'js2unit',
+          'extension': 'js',
+          'msvs_external_rule': 1,
+          'inputs': [
+            '<(gypv8sh)',
+            '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
+            '<(mock_js)',
+            '<(test_api_js)',
+            '<(js2gtest)',
+          ],
+          'outputs': [
+            '<(js2gtest_out_dir)/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).cc',
+            '<(PRODUCT_DIR)/test_data/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
+          ],
+          'process_outputs_as_sources': 1,
+          'action': [
+            'python',
+            '<@(_inputs)',
+            'unit',
+            '<(RULE_INPUT_PATH)',
+            'chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
+            '<@(_outputs)',
+          ],
+        },
+      ],
       'conditions': [
+        ['target_arch!="arm"', {
+          'dependencies': [
+            # build time dependency.
+            '../v8/tools/gyp/v8.gyp:v8_shell#host',
+          ],
+        }],
         ['p2p_apis==1', {
           'sources': [
             '../content/browser/renderer_host/p2p/socket_host_test_utils.h',
@@ -2284,13 +2325,6 @@
       'type': 'executable',
       'msvs_cygwin_shell': 0,
       'msvs_cygwin_dirs': ['<(DEPTH)/third_party/cygwin'],
-      'variables': {
-        'gypv8sh': '../tools/gypv8sh.py',
-        'js2webui': 'browser/ui/webui/javascript2webui.js',
-        'js2webui_out_dir': '<(SHARED_INTERMEDIATE_DIR)/js2webui',
-        'mock_js': 'third_party/mock4js/mock4js.js',
-        'test_api_js': 'test/data/webui/test_api.js',
-      },
       'dependencies': [
         'browser',
         'browser/sync/protocol/sync_proto.gyp:sync_proto',
@@ -2646,16 +2680,17 @@
             '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
             '<(mock_js)',
             '<(test_api_js)',
-            '<(js2webui)',
+            '<(js2gtest)',
           ],
           'outputs': [
-            '<(js2webui_out_dir)/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).cc',
+            '<(js2gtest_out_dir)/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).cc',
             '<(PRODUCT_DIR)/test_data/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
           ],
           'process_outputs_as_sources': 1,
           'action': [
             'python',
             '<@(_inputs)',
+            'webui',
             '<(RULE_INPUT_PATH)',
             'chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
             '<@(_outputs)',
