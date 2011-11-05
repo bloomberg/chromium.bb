@@ -149,7 +149,7 @@ class GViewRequestInterceptorTest : public testing::Test {
   void UnregisterPDFPlugin() {
     PluginService::GetInstance()->UnregisterInternalPlugin(pdf_path_);
 
-    PluginService::GetInstance()->RefreshPluginList();
+    PluginService::GetInstance()->RefreshPlugins();
     PluginService::GetInstance()->GetPlugins(base::Bind(&QuitMessageLoop));
     MessageLoop::current()->RunAllPending();
   }
