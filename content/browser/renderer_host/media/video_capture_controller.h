@@ -121,7 +121,11 @@ class VideoCaptureController
   // The parameter that currently used for the capturing.
   media::VideoCaptureParams current_params_;
 
+  // It's modified on caller thread, assuming there is only one OnFrameInfo()
+  // call per StartCapture().
   media::VideoCaptureDevice::Capability frame_info_;
+
+  // It's accessed only on IO thread.
   bool frame_info_available_;
 
   media_stream::VideoCaptureManager* video_capture_manager_;

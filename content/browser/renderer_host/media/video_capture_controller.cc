@@ -330,6 +330,7 @@ void VideoCaptureController::OnError() {
 
 void VideoCaptureController::OnFrameInfo(
     const media::VideoCaptureDevice::Capability& info) {
+  frame_info_= info;
   BrowserThread::PostTask(BrowserThread::IO,
       FROM_HERE,
       base::Bind(&VideoCaptureController::DoFrameInfoOnIOThread,
@@ -402,7 +403,6 @@ void VideoCaptureController::DoFrameInfoOnIOThread(
     }
     return;
   }
-  frame_info_= info;
   frame_info_available_ = true;
 
   for (ControllerClients::iterator client_it = controller_clients_.begin();

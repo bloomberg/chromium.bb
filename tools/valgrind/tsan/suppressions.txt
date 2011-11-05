@@ -607,9 +607,3 @@
   fun:base::::WorkerThread::ThreadMain
   fun:base::::ThreadFunc
 }
-{
-  bug_103004
-  ThreadSanitizer:Race
-  fun:VideoCaptureController::OnIncomingCapturedFrame
-  fun:media::FakeVideoCaptureDevice::OnCaptureTask
-}
