@@ -108,6 +108,7 @@ class PepperSession : public Session {
   void OnDeleteChannel(PepperChannel* channel);
 
   void SendTransportInfo();
+  void OnTransportInfoResponse(const buzz::XmlElement* response);
 
   // Helper methods to create event and control channels.
   // TODO(sergeyu): Remove these methods.
@@ -139,6 +140,7 @@ class PepperSession : public Session {
   std::string receiver_token_;
 
   scoped_ptr<IqRequest> initiate_request_;
+  scoped_ptr<IqRequest> transport_info_request_;
 
   ChannelsMap channels_;
 

@@ -95,7 +95,7 @@ void PepperSession::OnSessionInitiateResponse(
   if (type != "result") {
     LOG(ERROR) << "Received error in response to session-initiate message: \""
                << response->Str()
-               << "\" Terminating the session.";
+               << "\". Terminating the session.";
 
     // TODO(sergeyu): There may be different reasons for error
     // here. Parse the response stanza to find failure reason.
@@ -321,6 +321,22 @@ void PepperSession::AddLocalCandidate(const cricket::Candidate& candidate) {
   }
 }
 
+void PepperSession::OnTransportInfoResponse(const buzz::XmlElement* response) {
+  const std::string& type = response->Attr(buzz::QName("", "type"));
+  if (type != "result") {
+    LOG(ERROR) << "Received error in response to session-initiate message: \""
+               << response->Str()
+               << "\". Terminating the session.";
+
+    if (state_ == CONNECTING) {
+      OnError(PEER_IS_OFFLINE);
+    } else {
+      // Host has disconnected without sending session-terminate message.
+      CloseInternal(false);
+    }
+  }
+}
+
 void PepperSession::OnDeleteChannel(PepperChannel* channel) {
   ChannelsMap::iterator it = channels_.find(channel->name());
   DCHECK_EQ(it->second, channel);
@@ -330,8 +346,10 @@ void PepperSession::OnDeleteChannel(PepperChannel* channel) {
 void PepperSession::SendTransportInfo() {
   JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
   message.candidates.swap(pending_candidates_);
-  scoped_ptr<IqRequest> request(session_manager_->iq_sender()->SendIq(
-      message.ToXml(), IqSender::ReplyCallback()));
+  transport_info_request_.reset(session_manager_->iq_sender()->SendIq(
+      message.ToXml(), base::Bind(
+          &PepperSession::OnTransportInfoResponse,
+          base::Unretained(this))));
 }
 
 void PepperSession::CreateChannels() {
