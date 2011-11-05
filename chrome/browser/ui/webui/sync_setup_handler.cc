@@ -8,9 +8,11 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/sync_promo_ui.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/chromium_strings.h"
@@ -166,6 +169,55 @@ bool GetConfiguration(const std::string& json, SyncConfiguration* config) {
     }
   }
   return true;
+}
+
+bool HasConfigurationChanged(const SyncConfiguration& config,
+                             Profile* profile) {
+  CHECK(profile);
+
+  // If service is null or if this is a first time configuration, return true.
+  ProfileSyncService* service = profile->GetProfileSyncService();
+  if (!service || !service->HasSyncSetupCompleted())
+    return true;
+
+  if ((config.set_secondary_passphrase || config.set_gaia_passphrase) &&
+      !service->IsUsingSecondaryPassphrase())
+    return true;
+
+  if (config.encrypt_all != service->EncryptEverythingEnabled())
+    return true;
+
+  PrefService* pref_service = profile->GetPrefs();
+  CHECK(pref_service);
+
+  if (config.sync_everything !=
+      pref_service->GetBoolean(prefs::kSyncKeepEverythingSynced))
+    return true;
+
+  const syncable::ModelTypeSet& types = config.data_types;
+  if ((types.find(syncable::BOOKMARKS) == types.end() &&
+       pref_service->GetBoolean(prefs::kSyncBookmarks)) ||
+      (types.find(syncable::PREFERENCES) == types.end() &&
+       pref_service->GetBoolean(prefs::kSyncPreferences)) ||
+      (types.find(syncable::THEMES) == types.end() &&
+       pref_service->GetBoolean(prefs::kSyncThemes)) ||
+      (types.find(syncable::PASSWORDS) == types.end() &&
+       pref_service->GetBoolean(prefs::kSyncPasswords)) ||
+      (types.find(syncable::AUTOFILL) == types.end() &&
+       pref_service->GetBoolean(prefs::kSyncAutofill)) ||
+      (types.find(syncable::EXTENSIONS) == types.end() &&
+       pref_service->GetBoolean(prefs::kSyncExtensions)) ||
+      (types.find(syncable::TYPED_URLS) == types.end() &&
+       pref_service->GetBoolean(prefs::kSyncTypedUrls)) ||
+      (types.find(syncable::SEARCH_ENGINES) == types.end() &&
+       pref_service->GetBoolean(prefs::kSyncSearchEngines)) ||
+      (types.find(syncable::SESSIONS) == types.end() &&
+       pref_service->GetBoolean(prefs::kSyncSessions)) ||
+      (types.find(syncable::APPS) == types.end() &&
+       pref_service->GetBoolean(prefs::kSyncApps)))
+    return true;
+
+  return false;
 }
 
 bool GetPassphrase(const std::string& json, std::string* passphrase) {
@@ -505,6 +557,45 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
   }
   if (!configuration.sync_everything) {
     ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_CHOOSE);
+  }
+
+  // Happens during unit tests.
+  if (!web_ui_)
+    return;
+
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  if (HasConfigurationChanged(configuration, profile)) {
+    UMA_HISTOGRAM_BOOLEAN("Sync.SyncEverything",
+                          configuration.sync_everything);
+    if (!configuration.sync_everything) {
+      const syncable::ModelTypeSet& types = configuration.data_types;
+      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncBookmarks",
+          types.find(syncable::BOOKMARKS) != types.end());
+      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncPreferences",
+          types.find(syncable::PREFERENCES) != types.end());
+      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncThemes",
+          types.find(syncable::THEMES) != types.end());
+      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncPasswords",
+          types.find(syncable::PASSWORDS) != types.end());
+      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncAutofill",
+          types.find(syncable::AUTOFILL) != types.end());
+      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncExtensions",
+          types.find(syncable::EXTENSIONS) != types.end());
+      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncTypedUrls",
+          types.find(syncable::TYPED_URLS) != types.end());
+      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncSearchEngines",
+          types.find(syncable::SEARCH_ENGINES) != types.end());
+      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncSessions",
+          types.find(syncable::SESSIONS) != types.end());
+      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncApps",
+          types.find(syncable::APPS) != types.end());
+      COMPILE_ASSERT(17 == syncable::MODEL_TYPE_COUNT,
+                     UpdateCustomConfigHistogram);
+    }
+    UMA_HISTOGRAM_BOOLEAN("Sync.EncryptAllData", configuration.encrypt_all);
+    UMA_HISTOGRAM_BOOLEAN("Sync.CustomPassphrase",
+                          configuration.set_gaia_passphrase ||
+                          configuration.set_secondary_passphrase);
   }
 }
 
