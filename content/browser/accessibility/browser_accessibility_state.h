@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/timer.h"
 #include "content/common/content_export.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -35,18 +36,28 @@ class CONTENT_EXPORT BrowserAccessibilityState {
 
   ~BrowserAccessibilityState();
 
+  // Called when accessibility is enabled manually (via command-line flag).
+  void OnAccessibilityEnabledManually();
+
   // Called when screen reader client is detected.
   void OnScreenReaderDetected();
 
   // Returns true if the browser should be customized for accessibility.
   bool IsAccessibleBrowser();
 
+  // Called a short while after startup to allow time for the accessibility
+  // state to be determined. Updates a histogram with the current state.
+  void UpdateHistogram();
+
  private:
   BrowserAccessibilityState();
   friend struct DefaultSingletonTraits<BrowserAccessibilityState>;
 
-  // Set to true when a screen reader client is detected.
-  bool screen_reader_active_;
+  // Set to true when full accessibility features should be enabled.
+  bool accessibility_enabled_;
+
+  // Timer to update the histogram a short while after startup.
+  base::OneShotTimer<BrowserAccessibilityState> update_histogram_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityState);
 };

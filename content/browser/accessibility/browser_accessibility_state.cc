@@ -5,9 +5,19 @@
 #include "content/browser/accessibility/browser_accessibility_state.h"
 
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram.h"
+#include "base/timer.h"
+
+// Update the accessibility histogram 45 seconds after initialization.
+static const int kAccessibilityHistogramDelaySecs = 45;
 
 BrowserAccessibilityState::BrowserAccessibilityState()
-    : screen_reader_active_(false) {
+    : accessibility_enabled_(false) {
+  update_histogram_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(kAccessibilityHistogramDelaySecs),
+      this,
+      &BrowserAccessibilityState::UpdateHistogram);
 }
 
 BrowserAccessibilityState::~BrowserAccessibilityState() {
@@ -19,9 +29,20 @@ BrowserAccessibilityState* BrowserAccessibilityState::GetInstance() {
 }
 
 void BrowserAccessibilityState::OnScreenReaderDetected() {
-  screen_reader_active_ = true;
+  accessibility_enabled_ = true;
+}
+
+void BrowserAccessibilityState::OnAccessibilityEnabledManually() {
+  // We may want to do something different with this later.
+  accessibility_enabled_ = true;
 }
 
 bool BrowserAccessibilityState::IsAccessibleBrowser() {
-  return screen_reader_active_;
+  return accessibility_enabled_;
+}
+
+void BrowserAccessibilityState::UpdateHistogram() {
+  UMA_HISTOGRAM_ENUMERATION("Accessibility.State",
+                            accessibility_enabled_ ? 1 : 0,
+                            2);
 }

@@ -10,7 +10,6 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/stats_counters.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -110,9 +109,13 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
   // tell the process host that we're alive.
   process_->WidgetRestored();
 
+  // Enable accessibility if it was manually specified or if it was
+  // auto-detected.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceRendererAccessibility) ||
-      BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
+          switches::kForceRendererAccessibility)) {
+    BrowserAccessibilityState::GetInstance()->OnAccessibilityEnabledManually();
+    EnableRendererAccessibility();
+  } else if (BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
     EnableRendererAccessibility();
   }
 }
@@ -1267,7 +1270,6 @@ void RenderWidgetHost::EnableRendererAccessibility() {
     return;
   }
 
-  SIMPLE_STATS_COUNTER("Accessibility.SessionCount");
   renderer_accessible_ = true;
 
   if (process_->HasConnection()) {
