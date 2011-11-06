@@ -1244,7 +1244,7 @@
    bug_82974c
    Heapcheck:Leak
    fun:sqlite3MemMalloc
-   fun:net::::ListCertsInSlot
+   fun:net::*::ListCertsInSlot
    ...
    fun:net::CertDatabaseNSSTest::TearDown
 }
@@ -1260,7 +1260,7 @@
    Heapcheck:Leak
    fun:sqlite3MemMalloc
    fun:net::CertDatabase::DeleteCertAndKey
-   fun:net::::CleanupSlotContents
+   fun:net::*::CleanupSlotContents
    fun:net::CertDatabaseNSSTest::TearDown
 }
 {
