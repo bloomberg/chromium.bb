@@ -5192,6 +5192,13 @@
    fun:_ZN14TestingProfile20CreateRequestContextEv
    fun:_ZN25AppNotifyChannelSetupTestC2Ev
 }
+{
+   bug_103192
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN13PluginService10GetPluginsERKN4base8CallbackIFvRKSt6vectorIN6webkit13WebPluginInfoESaIS4_EEEEE
+   fun:_ZN8chromeos12_GLOBAL__N_127GViewRequestInterceptorTest5SetUpEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

@@ -1672,3 +1672,22 @@
    fun:TestingProfile::CreateRequestContext
    fun:AppNotifyChannelSetupTest*
 }
+{
+   bug_103192_a
+   Heapcheck:Leak
+   fun:MessageLoop
+   fun:MessageLoopForIO
+   fun:GViewRequestInterceptorTest
+}
+{
+   bug_103192_b
+   Heapcheck:Leak
+   fun:PluginService::GetPlugins
+   fun:chromeos::::GViewRequestInterceptorTest::SetUp
+}
+{
+   bug_103192_c
+   Heapcheck:Leak
+   fun:base::Bind
+   fun:chromeos::::GViewRequestInterceptorTest::SetUp
+}
