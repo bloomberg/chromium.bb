@@ -422,7 +422,7 @@ var MainView = (function() {
   /**
    * The initial keys to sort by when loading the page (can be changed later).
    */
-  var INITIAL_SORT_KEYS = ['-' + KEY_AVG_RUN_TIME];
+  var INITIAL_SORT_KEYS = ['-' + KEY_COUNT];
 
   /**
    * The default sort keys to use when nothing has been specified.
@@ -432,7 +432,7 @@ var MainView = (function() {
   /**
    * The initial keys to group by when loading the page (can be changed later).
    */
-  var INITIAL_GROUP_KEYS = [KEY_DEATH_THREAD];
+  var INITIAL_GROUP_KEYS = [];
 
   // --------------------------------------------------------------------------
   // General utility functions
@@ -750,8 +750,8 @@ var MainView = (function() {
     var thead = addNode(table, 'thead');
     var tbody = addNode(table, 'tbody');
 
-    drawTableHeader(thead, columns, columnOnClickHandler, currentSortKeys);
     drawAggregateRow(thead, data.aggregates, columns);
+    drawTableHeader(thead, columns, columnOnClickHandler, currentSortKeys);
     drawTableBody(tbody, data.rows, columns);
   }
 
