@@ -1814,7 +1814,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       net::SdchManager::EnableSdchSupport(false);
   }
 
-  InstallJankometer(parsed_command_line());
+  if (parsed_command_line().HasSwitch(switches::kEnableWatchdog))
+    InstallJankometer(parsed_command_line());
 
 #if defined(OS_WIN) && !defined(GOOGLE_CHROME_BUILD)
   if (parsed_command_line().HasSwitch(switches::kDebugPrint)) {
