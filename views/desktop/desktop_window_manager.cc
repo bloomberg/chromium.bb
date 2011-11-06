@@ -211,18 +211,18 @@ ui::TouchStatus DesktopWindowManager::HandleTouchEvent(Widget* widget,
                                  mouse_capture_->GetRootView());
     return mouse_capture_->OnTouchEvent(translated);
   }
-  if (event.type() == ui::ET_TOUCH_PRESSED &&
-      ActivateWidgetAtLocation(widget, event.location()))
-    return ui::TOUCH_STATUS_END;
 
+  // If a touch event activates a Widget, let the event still go through to the
+  // activated Widget.
+  if (event.type() == ui::ET_TOUCH_PRESSED)
+      ActivateWidgetAtLocation(widget, event.location());
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 void DesktopWindowManager::Register(Widget* widget) {
   DCHECK(!widget->HasObserver(this));
-  if (widget->is_top_level()) {
+  if (widget->is_top_level())
     toplevels_.push_back(widget);
-  }
   widget->AddObserver(this);
 }
 
@@ -245,6 +245,12 @@ void DesktopWindowManager::OnWidgetClosing(Widget* widget) {
 
 void DesktopWindowManager::OnWidgetVisibilityChanged(Widget* widget,
                                                      bool visible) {
+  // If there's no active Widget, then activate the first visible toplevel
+  // Widget.
+  if (widget->is_top_level() && widget->CanActivate() && visible &&
+      active_widget_ == NULL) {
+    Activate(widget);
+  }
 }
 
 void DesktopWindowManager::OnWidgetActivationChanged(Widget* widget,
