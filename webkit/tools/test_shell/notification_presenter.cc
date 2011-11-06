@@ -40,9 +40,7 @@ void TestNotificationPresenter::Reset() {
 }
 
 void TestNotificationPresenter::grantPermission(const std::string& origin) {
-  // Make sure it's in the form of an origin.
-  GURL url(origin);
-  allowed_origins_.insert(url.GetOrigin().spec());
+  allowed_origins_.insert(origin);
 }
 
 // The output from all these methods matches what DumpRenderTree produces.
@@ -95,6 +93,15 @@ void TestNotificationPresenter::cancel(const WebNotification& notification) {
 void TestNotificationPresenter::objectDestroyed(
     const WebKit::WebNotification& notification) {
   // Nothing to do.  Not storing the objects.
+}
+
+WebNotificationPresenter::Permission TestNotificationPresenter::checkPermission(
+    const WebSecurityOrigin& origin) {
+  // Check with the layout test controller
+  bool allowed = allowed_origins_.find(origin.toString().utf8().data())
+      != allowed_origins_.end();
+  return allowed ? WebNotificationPresenter::PermissionAllowed
+                 : WebNotificationPresenter::PermissionDenied;
 }
 
 WebNotificationPresenter::Permission TestNotificationPresenter::checkPermission(
