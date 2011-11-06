@@ -130,16 +130,18 @@ int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
   request_data_ = request->GetData();
 
   WebURLLoaderOptions options;
+  options.allowCredentials = request_data_.allow_credentials;
   if (has_universal_access_) {
-    // Universal access allows cross-origin requests and sends credentials.
     options.crossOriginRequestPolicy =
         WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
-    options.allowCredentials = true;
-  } else if (request_data_.allow_cross_origin_requests) {
-    // Otherwise, allow cross-origin requests with access control.
-    options.crossOriginRequestPolicy =
-        WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
-    options.allowCredentials = request_data_.allow_credentials;
+  } else {
+    // All other HTTP requests are untrusted.
+    options.untrustedHTTP = true;
+    if (request_data_.allow_cross_origin_requests) {
+      // Allow cross-origin requests with access control.
+      options.crossOriginRequestPolicy =
+          WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
+    }
   }
 
   is_asynchronous_load_suspended_ = false;

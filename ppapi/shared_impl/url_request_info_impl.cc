@@ -18,53 +18,6 @@ namespace {
 const int32_t kDefaultPrefetchBufferUpperThreshold = 100 * 1000 * 1000;
 const int32_t kDefaultPrefetchBufferLowerThreshold = 50 * 1000 * 1000;
 
-// These methods are not allowed by the XMLHttpRequest standard.
-// http://www.w3.org/TR/XMLHttpRequest/#the-open-method
-const char* const kForbiddenHttpMethods[] = {
-  "connect",
-  "trace",
-  "track",
-};
-
-// These are the "known" methods in the Webkit XHR implementation. Also see
-// the XMLHttpRequest standard.
-// http://www.w3.org/TR/XMLHttpRequest/#the-open-method
-const char* const kKnownHttpMethods[] = {
-  "get",
-  "post",
-  "put",
-  "head",
-  "copy",
-  "delete",
-  "index",
-  "lock",
-  "m-post",
-  "mkcol",
-  "move",
-  "options",
-  "propfind",
-  "proppatch",
-  "unlock",
-};
-
-bool IsValidToken(const std::string& token) {
-  size_t length = token.size();
-  if (length == 0)
-    return false;
-
-  for (size_t i = 0; i < length; i++) {
-    char c = token[i];
-    if (c >= 127 || c <= 32)
-      return false;
-    if (c == '(' || c == ')' || c == '<' || c == '>' || c == '@' ||
-        c == ',' || c == ';' || c == ':' || c == '\\' || c == '\"' ||
-        c == '/' || c == '[' || c == ']' || c == '?' || c == '=' ||
-        c == '{' || c == '}')
-      return false;
-  }
-  return true;
-}
-
 }  // namespace
 
 PPB_URLRequestInfo_Data::BodyItem::BodyItem()
@@ -216,26 +169,6 @@ const PPB_URLRequestInfo_Data& URLRequestInfoImpl::GetData() const {
   return data_;
 }
 
-// static
-std::string URLRequestInfoImpl::ValidateMethod(const std::string& method) {
-  if (!IsValidToken(method))
-    return std::string();
-
-  for (size_t i = 0; i < arraysize(kForbiddenHttpMethods); ++i) {
-    if (LowerCaseEqualsASCII(method, kForbiddenHttpMethods[i]))
-      return std::string();
-  }
-  for (size_t i = 0; i < arraysize(kKnownHttpMethods); ++i) {
-    if (LowerCaseEqualsASCII(method, kKnownHttpMethods[i])) {
-      // Convert the method name to upper case to match Webkit and Firefox's
-      // XHR implementation.
-      return StringToUpperASCII(std::string(kKnownHttpMethods[i]));
-    }
-  }
-  // Pass through unknown methods that are not forbidden.
-  return method;
-}
-
 bool URLRequestInfoImpl::SetUndefinedProperty(PP_URLRequestProperty property) {
   // IMPORTANT: Do not do security validation of parameters at this level
   // without also adding them to PPB_URLRequestInfo_Impl::ValidateData. See
@@ -309,15 +242,9 @@ bool URLRequestInfoImpl::SetStringProperty(PP_URLRequestProperty property,
     case PP_URLREQUESTPROPERTY_URL:
       data_.url = value;  // NOTE: This may be a relative URL.
       return true;
-    case PP_URLREQUESTPROPERTY_METHOD: {
-      // Convenience check for synchronously returning errors to the plugin.
-      // This is re-checked in ValidateData.
-      std::string canonicalized = ValidateMethod(value);
-      if (canonicalized.empty())
-        return false;
-      data_.method = canonicalized;
+    case PP_URLREQUESTPROPERTY_METHOD:
+      data_.method = value;
       return true;
-    }
     case PP_URLREQUESTPROPERTY_HEADERS:
       data_.headers = value;
       return true;

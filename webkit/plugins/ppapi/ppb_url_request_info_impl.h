@@ -37,8 +37,9 @@ class PPB_URLRequestInfo_Impl : public ::ppapi::URLRequestInfoImpl {
  private:
   friend class URLRequestInfoTest;
 
-  // Checks that the request data is valid and does some canonicalization of
-  // it. Returns false on failure
+  // Checks that the request data is valid. Returns false on failure. Note that
+  // method and header validation is done by the URL loader when the request is
+  // opened, and any access errors are returned asynchronously.
   bool ValidateData();
 
   // Appends the file ref given the Resource pointer associated with it to the

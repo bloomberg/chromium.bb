@@ -120,10 +120,6 @@ class PPAPI_SHARED_EXPORT URLRequestInfoImpl
   URLRequestInfoImpl(PP_Instance instance,
                      const PPB_URLRequestInfo_Data& data);
 
-  // Checks that the HTTP method is valid, returning the canonicalized version
-  // if so. Returns empty string if it's invalid.
-  static std::string ValidateMethod(const std::string& method);
-
   bool SetUndefinedProperty(PP_URLRequestProperty property);
   bool SetBooleanProperty(PP_URLRequestProperty property, bool value);
   bool SetIntegerProperty(PP_URLRequestProperty property, int32_t value);

@@ -10,6 +10,7 @@
 #include "ppapi/tests/test_case.h"
 
 struct PPB_FileIOTrusted;
+struct PPB_URLLoaderTrusted;
 
 namespace pp {
 class FileIO;
@@ -37,6 +38,15 @@ class TestURLLoader : public TestCase {
   int32_t PrepareFileForPost(const pp::FileRef& file_ref,
                              const std::string& data,
                              std::string* message);
+  std::string GetReachableCrossOriginURL();
+  int32_t OpenUntrusted(const pp::URLRequestInfo& request);
+  int32_t OpenTrusted(const pp::URLRequestInfo& request);
+  int32_t OpenUntrusted(const std::string& method,
+                        const std::string& header);
+  int32_t OpenTrusted(const std::string& method,
+                      const std::string& header);
+  int32_t Open(const pp::URLRequestInfo& request,
+               bool with_universal_access);
 
   std::string TestBasicGET();
   std::string TestBasicPOST();
@@ -49,13 +59,18 @@ class TestURLLoader : public TestCase {
   std::string TestFailsBogusContentLength();
   std::string TestStreamToFile();
   std::string TestSameOriginRestriction();
-  std::string TestJavascriptURLRestriction();
   std::string TestCrossOriginRequest();
+  std::string TestJavascriptURLRestriction();
+  std::string TestMethodRestriction();
+  std::string TestHeaderRestriction();
+  std::string TestCustomReferrer();
+  std::string TestCustomContentTransferEncoding();
   std::string TestAuditURLRedirect();
   std::string TestAbortCalls();
   std::string TestUntendedLoad();
 
   const PPB_FileIOTrusted* file_io_trusted_interface_;
+  const PPB_URLLoaderTrusted* url_loader_trusted_interface_;
 };
 
 #endif  // PAPPI_TESTS_TEST_URL_LOADER_H_
