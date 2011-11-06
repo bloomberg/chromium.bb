@@ -5185,6 +5185,13 @@
    fun:_ZN17PluginLoaderPosix19LoadPluginsInternalEv
    fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IM17PluginLoaderPosixFvvE13scoped_refptrIS3_EEES5_E8DoInvokeEPNS0_18InvokerStorageBaseE
 }
+{
+   bug_103190
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14TestingProfile20CreateRequestContextEv
+   fun:_ZN25AppNotifyChannelSetupTestC2Ev
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

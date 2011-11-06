@@ -1666,3 +1666,9 @@
    ...
    fun:PluginLoaderPosix::GetPluginsToLoad
 }
+{
+   bug_103190
+   Heapcheck:Leak
+   fun:TestingProfile::CreateRequestContext
+   fun:AppNotifyChannelSetupTest*
+}
