@@ -244,7 +244,7 @@ void ExternalProtocolHandler::LaunchUrlWithDelegate(const GURL& url,
 
   // Escape the input scheme to be sure that the command does not
   // have parameters unexpected by the external program.
-  std::string escaped_url_string = EscapeExternalHandlerValue(url.spec());
+  std::string escaped_url_string = net::EscapeExternalHandlerValue(url.spec());
   GURL escaped_url(escaped_url_string);
   BlockState block_state = GetBlockStateWithDelegate(escaped_url.scheme(),
                                                      delegate);
