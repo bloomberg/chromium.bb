@@ -1667,6 +1667,25 @@
    fun:PluginLoaderPosix::GetPluginsToLoad
 }
 {
+   bug_102831_d
+   Heapcheck:Leak
+   ...
+   fun:PluginService::RegisterPepperPlugins
+   ...
+   fun:PluginService::GetInstance
+   fun:PluginPrefs::EnablePlugin
+}
+{
+   bug_102831_e
+   Heapcheck:Leak
+   ...
+   fun:FilePath::Append
+   fun:chrome::PathProvider
+   fun:PathService::Get
+   fun:PluginPrefs::SetPrefs
+   fun:PluginPrefsFactory::BuildServiceInstanceFor
+}
+{
    bug_103190
    Heapcheck:Leak
    fun:TestingProfile::CreateRequestContext
