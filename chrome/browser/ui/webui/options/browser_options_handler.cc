@@ -462,8 +462,10 @@ void BrowserOptionsHandler::DisableInstant(const ListValue* args) {
 }
 
 void BrowserOptionsHandler::GetInstantFieldTrialStatus(const ListValue* args) {
+  Profile* profile = Profile::FromWebUI(web_ui_);
   base::FundamentalValue enabled(
-      InstantFieldTrial::IsInstantExperiment(Profile::FromWebUI(web_ui_)));
+      InstantFieldTrial::IsInstantExperiment(profile) &&
+      !InstantFieldTrial::IsHiddenExperiment(profile));
   web_ui_->CallJavascriptFunction("BrowserOptions.setInstantFieldTrialStatus",
                                   enabled);
 }
