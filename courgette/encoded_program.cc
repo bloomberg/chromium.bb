@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "courgette/courgette.h"
 #include "courgette/streams.h"
+#include "courgette/types_elf.h"
 
 namespace courgette {
 
@@ -241,8 +242,12 @@ CheckBool EncodedProgram::AddRel32(int label_index) {
   return ops_.push_back(REL32) && rel32_ix_.push_back(label_index);
 }
 
-CheckBool EncodedProgram::AddMakeRelocs() {
-  return ops_.push_back(MAKE_BASE_RELOCATION_TABLE);
+CheckBool EncodedProgram::AddPeMakeRelocs() {
+  return ops_.push_back(MAKE_PE_RELOCATION_TABLE);
+}
+
+CheckBool EncodedProgram::AddElfMakeRelocs() {
+  return ops_.push_back(MAKE_ELF_RELOCATION_TABLE);
 }
 
 void EncodedProgram::DebuggingSummary() {
@@ -399,8 +404,9 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
 
   RVA current_rva = 0;
 
-  bool pending_base_relocation_table = false;
-  SinkStream bytes_following_base_relocation_table;
+  bool pending_pe_relocation_table = false;
+  bool pending_elf_relocation_table = false;
+  SinkStream bytes_following_relocation_table;
 
   SinkStream* output = final_buffer;
 
@@ -478,16 +484,16 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
         break;
       }
 
-      case MAKE_BASE_RELOCATION_TABLE: {
+      case MAKE_PE_RELOCATION_TABLE: {
         // We can see the base relocation anywhere, but we only have the
         // information to generate it at the very end.  So we divert the bytes
         // we are generating to a temporary stream.
-        if (pending_base_relocation_table)  // Can't have two base relocation
+        if (pending_pe_relocation_table)  // Can't have two base relocation
                                             // tables.
           return false;
 
-        pending_base_relocation_table = true;
-        output = &bytes_following_base_relocation_table;
+        pending_pe_relocation_table = true;
+        output = &bytes_following_relocation_table;
         break;
         // There is a potential problem *if* the instruction stream contains
         // some REL32 relocations following the base relocation and in the same
@@ -498,12 +504,31 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
         // executable except some padding zero bytes.  We could fix this by
         // emitting an ORIGIN after the MAKE_BASE_RELOCATION_TABLE.
       }
+
+      case MAKE_ELF_RELOCATION_TABLE: {
+        // We can see the base relocation anywhere, but we only have the
+        // information to generate it at the very end.  So we divert the bytes
+        // we are generating to a temporary stream.
+        if (pending_elf_relocation_table)  // Can't have two relocation
+                                           // tables.
+          return false;
+
+        pending_elf_relocation_table = true;
+        output = &bytes_following_relocation_table;
+        break;
+      }
     }
   }
 
-  if (pending_base_relocation_table) {
-    if (!GenerateBaseRelocations(final_buffer) ||
-        !final_buffer->Append(&bytes_following_base_relocation_table))
+  if (pending_pe_relocation_table) {
+    if (!GeneratePeRelocations(final_buffer) ||
+        !final_buffer->Append(&bytes_following_relocation_table))
+      return false;
+  }
+
+  if (pending_elf_relocation_table) {
+    if (!GenerateElfRelocations(final_buffer) ||
+        !final_buffer->Append(&bytes_following_relocation_table))
       return false;
   }
 
@@ -557,7 +582,7 @@ class RelocBlock {
   RelocBlockPOD pod;
 };
 
-CheckBool EncodedProgram::GenerateBaseRelocations(SinkStream* buffer) {
+CheckBool EncodedProgram::GeneratePeRelocations(SinkStream* buffer) {
   std::sort(abs32_relocs_.begin(), abs32_relocs_.end());
 
   RelocBlock block;
@@ -577,6 +602,24 @@ CheckBool EncodedProgram::GenerateBaseRelocations(SinkStream* buffer) {
   return ok;
 }
 
+CheckBool EncodedProgram::GenerateElfRelocations(SinkStream* buffer) {
+  std::sort(abs32_relocs_.begin(), abs32_relocs_.end());
+
+  Elf32_Rel relocation_block;
+
+  // We only handle this specific type of relocation, so far.
+  relocation_block.r_info = R_386_RELATIVE;
+
+  bool ok = true;
+  for (size_t i = 0;  ok && i < abs32_relocs_.size();  ++i) {
+    relocation_block.r_offset = abs32_relocs_[i];
+    ok = buffer->Write(&relocation_block, sizeof(Elf32_Rel));
+  }
+
+  printf("Emitting size %ld\n", sizeof(Elf32_Rel) * abs32_relocs_.size());
+
+  return ok;
+}
 ////////////////////////////////////////////////////////////////////////////////
 
 Status WriteEncodedProgram(EncodedProgram* encoded, SinkStreamSet* sink) {

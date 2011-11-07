@@ -22,7 +22,8 @@ namespace courgette {
 // Opcodes of simple assembly language
 enum OP {
   ORIGIN,         // ORIGIN <rva> - set current address for assembly.
-  MAKERELOCS,     // Generates a base relocation table.
+  MAKEPERELOCS,   // Generates a base relocation table.
+  MAKEELFRELOCS,  // Generates a base relocation table.
   DEFBYTE,        // DEFBYTE <value> - emit a byte literal.
   REL32,          // REL32 <label> - emit a rel32 encoded reference to 'label'.
   ABS32,          // REL32 <label> - emit am abs32 encoded reference to 'label'.
@@ -58,10 +59,16 @@ class OriginInstruction : public Instruction {
   RVA  rva_;
 };
 
-// Emits an entire base relocation table.
-class MakeRelocsInstruction : public Instruction {
+// Emits an entire PE base relocation table.
+class PeRelocsInstruction : public Instruction {
  public:
-  MakeRelocsInstruction() : Instruction(MAKERELOCS) {}
+  PeRelocsInstruction() : Instruction(MAKEPERELOCS) {}
+};
+
+// Emits an ELF relocation table.
+class ElfRelocsInstruction : public Instruction {
+ public:
+  ElfRelocsInstruction() : Instruction(MAKEELFRELOCS) {}
 };
 
 // Emits a single byte.
@@ -108,8 +115,12 @@ AssemblyProgram::~AssemblyProgram() {
   DeleteContainedLabels(abs32_labels_);
 }
 
-CheckBool AssemblyProgram::EmitMakeRelocsInstruction() {
-  return Emit(new(std::nothrow) MakeRelocsInstruction());
+CheckBool AssemblyProgram::EmitPeRelocsInstruction() {
+  return Emit(new(std::nothrow) PeRelocsInstruction());
+}
+
+CheckBool AssemblyProgram::EmitElfRelocationInstruction() {
+  return Emit(new(std::nothrow) ElfRelocsInstruction());
 }
 
 CheckBool AssemblyProgram::EmitOriginInstruction(RVA rva) {
@@ -357,8 +368,13 @@ EncodedProgram* AssemblyProgram::Encode() const {
           return NULL;
         break;
       }
-      case MAKERELOCS: {
-        if (!encoded->AddMakeRelocs())
+      case MAKEPERELOCS: {
+        if (!encoded->AddPeMakeRelocs())
+          return NULL;
+        break;
+      }
+      case MAKEELFRELOCS: {
+        if (!encoded->AddElfMakeRelocs())
           return NULL;
         break;
       }
