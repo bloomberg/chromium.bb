@@ -170,8 +170,10 @@ TEST_F(SyncedSessionTrackerTest, ManyGetTabs) {
   const int kMaxSessions = 10;
   const int kMaxTabs = 1000;
   const int kMaxAttempts = 10000;
+  char tag_buf[20];
   for (int j=0; j<kMaxSessions; ++j) {
-    std::string tag = "tag" + j;
+    snprintf(tag_buf, sizeof(tag_buf), "tag%d", j);
+    std::string tag(tag_buf);
     for (int i=0; i<kMaxAttempts; ++i) {
       // More attempts than tabs means we'll sometimes get the same tabs,
       // sometimes have to allocate new tabs.
