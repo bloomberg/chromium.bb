@@ -2019,6 +2019,8 @@
         'browser/renderer_host/chrome_url_request_user_data.h',
         'browser/renderer_host/offline_resource_handler.cc',
         'browser/renderer_host/offline_resource_handler.h',
+        'browser/renderer_host/plugin_info_message_filter.cc',
+        'browser/renderer_host/plugin_info_message_filter.h',
         'browser/renderer_host/render_widget_host_view_views.cc',
         'browser/renderer_host/render_widget_host_view_views.h',
         'browser/renderer_host/render_widget_host_view_views_touch.cc',

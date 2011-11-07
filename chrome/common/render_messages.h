@@ -54,12 +54,15 @@ enum ViewHostMsg_JavaScriptStressTestControl_Commands {
 // This enum is inside a struct so that we can forward-declare the struct in
 // others headers without having to include this one.
 struct ChromeViewHostMsg_GetPluginInfo_Status {
-  // TODO(bauerb): Add more status values (blocked, click-to-play, out of date,
-  // requires authorization).
   enum Value {
     kAllowed,
+    kBlocked,
+    kClickToPlay,
     kDisabled,
     kNotFound,
+    kOutdatedBlocked,
+    kOutdatedDisallowed,
+    kUnauthorized,
   };
 
   ChromeViewHostMsg_GetPluginInfo_Status() : value(kAllowed) {}
@@ -429,28 +432,6 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowIndexedDB,
                             string16 /* database name */,
                             bool /* allowed */)
 
-// Gets the content setting for a plugin.
-// If |setting| is set to CONTENT_SETTING_BLOCK, the plug-in is
-// blocked by the content settings for |policy_url|. It still
-// appears in navigator.plugins in Javascript though, and can be
-// loaded via click-to-play.
-//
-// If |setting| is set to CONTENT_SETTING_ALLOW, the domain is
-// explicitly white-listed for the plug-in, or the user has chosen
-// not to block nonsandboxed plugins.
-//
-// If |setting| is set to CONTENT_SETTING_DEFAULT, the plug-in is
-// neither blocked nor white-listed, which means that it's allowed
-// by default and can still be blocked if it's non-sandboxed.
-//
-IPC_SYNC_MESSAGE_CONTROL3_3(ChromeViewHostMsg_GetPluginContentSetting,
-                            GURL /* policy_url */,
-                            GURL /* plugin_url */,
-                            std::string  /* resource */,
-                            ContentSetting /* setting */,
-                            ContentSettingsPattern /* primary pattern */,
-                            ContentSettingsPattern /* secondary pattern */)
-
 // Return information about a plugin for the given URL and MIME type.
 // In contrast to ViewHostMsg_GetPluginInfo in content/, this IPC call knows
 // about specific reasons why a plug-in can't be used, for example because it's
@@ -549,22 +530,6 @@ IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_V8HeapStats,
 // NameList is typedef'ed std::vector<std::string>
 IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_DnsPrefetch,
                      std::vector<std::string> /* hostnames */)
-
-// Requests the plugin policies.
-//
-// |outdated_policy| determines what to do about outdated plugins.
-// |authorize_policy| determines what to do about plugins that require
-// authorization to run.
-//
-// Both values can be ALLOW or ASK. |outdated_policy| can also be BLOCK.
-// Anything else is an error.
-// ALLOW means that the plugin should just run, as a normal plugin.
-// BLOCK means that the plugin should not run nor be allowed to run at all.
-// ASK means that the plugin should be initially blocked and the user should
-// be asked whether he wants to run the plugin.
-IPC_SYNC_MESSAGE_CONTROL0_2(ChromeViewHostMsg_GetPluginPolicies,
-                            ContentSetting   /* outdated_policy */,
-                            ContentSetting   /* authorize_policy */)
 
 // Notifies when a plugin couldn't be loaded because it's outdated.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedOutdatedPlugin,

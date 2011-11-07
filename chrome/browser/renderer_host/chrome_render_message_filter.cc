@@ -10,9 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -24,18 +22,14 @@
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/plugin_service.h"
-#include "content/browser/plugin_service_filter.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/child_process_info.h"
@@ -48,44 +42,9 @@
 #include "chrome/browser/browser_about_handler.h"
 #endif
 
-#if defined(OS_WIN)
-// These includes are only necessary for the PluginInfobarExperiment.
-#include "chrome/common/attrition_experiments.h"
-#include "chrome/installer/util/google_update_settings.h"
-#endif
-
 using content::BrowserThread;
 using WebKit::WebCache;
 using WebKit::WebSecurityOrigin;
-
-namespace {
-// Override the behavior of the security infobars for plugins. Only
-// operational on windows and only for a small slice of the of the
-// UMA opted-in population.
-void PluginInfobarExperiment(ContentSetting* outdated_policy,
-                             ContentSetting* authorize_policy) {
-#if !defined(OS_WIN)
-  return;
-#else
- std::wstring client_value;
- if (!GoogleUpdateSettings::GetClient(&client_value))
-   return;
- if (client_value == attrition_experiments::kPluginNoBlockNoOOD) {
-   *authorize_policy = CONTENT_SETTING_ALLOW;
-   *outdated_policy = CONTENT_SETTING_ALLOW;
- } else if (client_value == attrition_experiments::kPluginNoBlockDoOOD) {
-   *authorize_policy = CONTENT_SETTING_ALLOW;
-   *outdated_policy = CONTENT_SETTING_BLOCK;
- } else if (client_value == attrition_experiments::kPluginDoBlockNoOOD) {
-   *authorize_policy = CONTENT_SETTING_ASK;
-   *outdated_policy = CONTENT_SETTING_ALLOW;
- } else if (client_value == attrition_experiments::kPluginDoBlockDoOOD) {
-   *authorize_policy = CONTENT_SETTING_ASK;
-   *outdated_policy = CONTENT_SETTING_BLOCK;
- }
-#endif
-}
-}  // namespace
 
 ChromeRenderMessageFilter::ChromeRenderMessageFilter(
     int render_process_id,
@@ -95,16 +54,9 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
       profile_(profile),
       request_context_(request_context),
       extension_info_map_(profile->GetExtensionInfoMap()),
+      cookie_settings_(CookieSettings::GetForProfile(profile)),
       resource_context_(profile->GetResourceContext()),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  allow_outdated_plugins_.Init(prefs::kPluginsAllowOutdated,
-                               profile_->GetPrefs(), NULL);
-  allow_outdated_plugins_.MoveToThread(BrowserThread::IO);
-  always_authorize_plugins_.Init(prefs::kPluginsAlwaysAuthorize,
-                                 profile_->GetPrefs(), NULL);
-  always_authorize_plugins_.MoveToThread(BrowserThread::IO);
-  host_content_settings_map_ = profile->GetHostContentSettingsMap();
-  cookie_settings_ = CookieSettings::GetForProfile(profile);
 }
 
 ChromeRenderMessageFilter::~ChromeRenderMessageFilter() {
@@ -146,16 +98,10 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_WriteTcmallocHeapProfile_ACK,
                         OnWriteTcmallocHeapProfile)
 #endif
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_GetPluginPolicies,
-                        OnGetPluginPolicies)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowFileSystem, OnAllowFileSystem)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowIndexedDB, OnAllowIndexedDB)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_GetPluginContentSetting,
-                        OnGetPluginContentSetting)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_GetPluginInfo,
-                                    OnGetPluginInfo)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CanTriggerClipboardRead,
                         OnCanTriggerClipboardRead)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CanTriggerClipboardWrite,
@@ -178,16 +124,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
   }
 
   return handled;
-}
-
-void ChromeRenderMessageFilter::OnDestruct() const {
-  const_cast<ChromeRenderMessageFilter*>(this)->
-      weak_ptr_factory_.DetachFromThread();
-  const_cast<ChromeRenderMessageFilter*>(this)->
-      weak_ptr_factory_.InvalidateWeakPtrs();
-
-  // Destroy on the UI thread because we contain a PrefMember.
-  BrowserThread::DeleteOnUIThread::Destruct(this);
 }
 
 void ChromeRenderMessageFilter::OverrideThreadForMessage(
@@ -441,23 +377,6 @@ void ChromeRenderMessageFilter::OnWriteTcmallocHeapProfile(
 }
 #endif
 
-void ChromeRenderMessageFilter::OnGetPluginPolicies(
-    ContentSetting* outdated_policy,
-    ContentSetting* authorize_policy) {
-  if (allow_outdated_plugins_.GetValue()) {
-    *outdated_policy = CONTENT_SETTING_ALLOW;
-  } else if (allow_outdated_plugins_.IsManaged()) {
-    *outdated_policy = CONTENT_SETTING_BLOCK;
-  } else {
-    *outdated_policy = CONTENT_SETTING_ASK;
-  }
-
-  *authorize_policy = always_authorize_plugins_.GetValue() ?
-      CONTENT_SETTING_ALLOW : CONTENT_SETTING_ASK;
-
-  PluginInfobarExperiment(outdated_policy, authorize_policy);
-}
-
 void ChromeRenderMessageFilter::OnAllowDatabase(int render_view_id,
                                                 const GURL& origin_url,
                                                 const GURL& top_origin_url,
@@ -515,116 +434,6 @@ void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_view_id,
       NewRunnableFunction(
           &TabSpecificContentSettings::IndexedDBAccessed,
           render_process_id_, render_view_id, origin_url, name, !*allowed));
-}
-
-void ChromeRenderMessageFilter::OnGetPluginContentSetting(
-    const GURL& policy_url,
-    const GURL& plugin_url,
-    const std::string& resource,
-    ContentSetting* setting,
-    ContentSettingsPattern* primary_pattern,
-    ContentSettingsPattern* secondary_pattern) {
-  scoped_ptr<base::Value> value(
-      host_content_settings_map_->GetContentSettingValue(
-          policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource,
-          primary_pattern, secondary_pattern));
-  if (!value.get()) {
-    value.reset(host_content_settings_map_->GetContentSettingValue(
-        policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
-        primary_pattern, secondary_pattern));
-  }
-  *setting = content_settings::ValueToContentSetting(value.get());
-}
-
-struct ChromeRenderMessageFilter::GetPluginInfo_Params {
-  int render_view_id;
-  GURL url;
-  GURL top_origin_url;
-  std::string mime_type;
-};
-
-void ChromeRenderMessageFilter::OnGetPluginInfo(
-    int render_view_id,
-    const GURL& url,
-    const GURL& top_origin_url,
-    const std::string& mime_type,
-    IPC::Message* reply_msg) {
-  GetPluginInfo_Params params = {
-    render_view_id,
-    url,
-    top_origin_url,
-    mime_type
-  };
-  PluginService::GetInstance()->GetPlugins(
-      base::Bind(&ChromeRenderMessageFilter::PluginsLoaded, this,
-                 params, reply_msg));
-}
-
-void ChromeRenderMessageFilter::PluginsLoaded(
-    const GetPluginInfo_Params& params,
-    IPC::Message* reply_msg,
-    const std::vector<webkit::WebPluginInfo>& plugins) {
-  ChromeViewHostMsg_GetPluginInfo_Status status;
-  webkit::WebPluginInfo plugin;
-  std::string actual_mime_type;
-  GetPluginInfo(params.render_view_id, params.url, params.top_origin_url,
-                params.mime_type, &status, &plugin, &actual_mime_type);
-  ChromeViewHostMsg_GetPluginInfo::WriteReplyParams(
-      reply_msg, status, plugin, actual_mime_type);
-  Send(reply_msg);
-}
-
-void ChromeRenderMessageFilter::GetPluginInfo(
-    int render_view_id,
-    const GURL& url,
-    const GURL& top_origin_url,
-    const std::string& mime_type,
-    ChromeViewHostMsg_GetPluginInfo_Status* status,
-    webkit::WebPluginInfo* plugin,
-    std::string* actual_mime_type) {
-  bool allow_wildcard = true;
-  std::vector<webkit::WebPluginInfo> matching_plugins;
-  std::vector<std::string> mime_types;
-  PluginService::GetInstance()->GetPluginInfoArray(
-      url, mime_type, allow_wildcard, &matching_plugins, &mime_types);
-  if (matching_plugins.empty()) {
-    status->value = ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
-    return;
-  }
-
-  if (matching_plugins.size() > 1 &&
-      matching_plugins.back().path ==
-          FilePath(webkit::npapi::kDefaultPluginLibraryName)) {
-    // If there is at least one plug-in handling the required MIME type (apart
-    // from the default plug-in), we don't need the default plug-in.
-    matching_plugins.pop_back();
-  }
-
-  content::PluginServiceFilter* filter = PluginService::GetInstance()->filter();
-  bool allowed = false;
-  for (size_t i = 0; i < matching_plugins.size(); ++i) {
-    if (!filter || filter->ShouldUsePlugin(render_process_id_,
-                                           render_view_id,
-                                           &resource_context_,
-                                           url,
-                                           top_origin_url,
-                                           &matching_plugins[i])) {
-      *plugin = matching_plugins[i];
-      *actual_mime_type = mime_types[i];
-      allowed = true;
-      break;
-    } else if (i == 0) {
-      *plugin = matching_plugins[i];
-      *actual_mime_type = mime_types[i];
-    }
-  }
-
-  if (!allowed) {
-    status->value = ChromeViewHostMsg_GetPluginInfo_Status::kDisabled;
-    return;
-  }
-
-  status->value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
 }
 
 void ChromeRenderMessageFilter::OnCanTriggerClipboardRead(

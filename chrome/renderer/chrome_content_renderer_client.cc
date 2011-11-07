@@ -310,16 +310,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         IDR_DISABLED_PLUGIN_HTML, IDS_PLUGIN_DISABLED, false, false);
   }
 
-  ContentSettingsType content_type = CONTENT_SETTINGS_TYPE_PLUGINS;
-  ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
-  std::string resource = group->identifier();
-  ContentSettingsPattern primary_pattern;
-  ContentSettingsPattern secondary_pattern;
-  render_view->Send(new ChromeViewHostMsg_GetPluginContentSetting(
-      frame->top()->document().url(), url, resource,
-      &plugin_setting, &primary_pattern, &secondary_pattern));
-  DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
-
   WebPluginParams params(original_params);
   for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
     if (plugin.mime_types[i].mime_type == actual_mime_type) {
@@ -331,41 +321,27 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     }
   }
 
-  ContentSetting outdated_policy = CONTENT_SETTING_ASK;
-  ContentSetting authorize_policy = CONTENT_SETTING_ASK;
-  if (group->IsVulnerable(plugin) ||
-      group->RequiresAuthorization(plugin)) {
-    // These policies are dynamic and can changed at runtime, so they aren't
-    // cached here.
-    render_view->Send(new ChromeViewHostMsg_GetPluginPolicies(
-        &outdated_policy, &authorize_policy));
+  if (status.value ==
+      ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked) {
+    render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
+        render_view->GetRoutingId(), group->GetGroupName(),
+        GURL(group->GetUpdateURL())));
   }
-
-  if (group->IsVulnerable(plugin)) {
-    if (outdated_policy == CONTENT_SETTING_ASK ||
-        outdated_policy == CONTENT_SETTING_BLOCK) {
-      if (outdated_policy == CONTENT_SETTING_ASK) {
-        render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
-            render_view->GetRoutingId(), group->GetGroupName(),
-            GURL(group->GetUpdateURL())));
-      }
-      return CreatePluginPlaceholder(
-          render_view, frame, plugin, params, group.get(),
-          IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_OUTDATED, false,
-          outdated_policy == CONTENT_SETTING_ASK);
-    } else {
-      DCHECK(outdated_policy == CONTENT_SETTING_ALLOW);
-    }
+  if (status.value ==
+      ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked ||
+      status.value ==
+          ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed) {
+    return CreatePluginPlaceholder(
+        render_view, frame, plugin, params, group.get(),
+        IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_OUTDATED, false,
+        status.value ==
+        ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked);
   }
 
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(render_view);
-  ContentSettingsPattern wildcard = ContentSettingsPattern::Wildcard();
 
-  if (group->RequiresAuthorization(plugin) &&
-      authorize_policy == CONTENT_SETTING_ASK &&
-      plugin_setting != CONTENT_SETTING_BLOCK &&
-      primary_pattern == wildcard &&
-      secondary_pattern == wildcard &&
+  if (status.value ==
+      ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized &&
       !observer->plugins_temporarily_allowed()) {
     render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
         render_view->GetRoutingId(), group->GetGroupName(), GURL()));
@@ -374,16 +350,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_NOT_AUTHORIZED, false, true);
   }
 
-  // Treat Native Client invocations like Javascript.
-  bool is_nacl_plugin =
-      plugin.name == ASCIIToUTF16(ChromeContentClient::kNaClPluginName);
-  if (is_nacl_plugin) {
-    content_type = CONTENT_SETTINGS_TYPE_JAVASCRIPT;
-    plugin_setting =
-        observer->GetContentSetting(content_type);
-  }
-
-  if (plugin_setting == CONTENT_SETTING_ALLOW ||
+  bool is_nacl_plugin = (plugin.name == ASCIIToUTF16(
+      chrome::ChromeContentClient::kNaClPluginName));
+  if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed ||
       observer->plugins_temporarily_allowed() ||
       plugin.path.value() == webkit::npapi::kDefaultPluginLibraryName) {
     // Delay loading plugins if prerendering.
@@ -423,13 +392,17 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     return render_view->CreatePlugin(frame, plugin, params);
   }
 
-  observer->DidBlockContentType(content_type, resource);
-  if (plugin_setting == CONTENT_SETTING_ASK) {
+  observer->DidBlockContentType(
+      is_nacl_plugin ? CONTENT_SETTINGS_TYPE_JAVASCRIPT :
+                       CONTENT_SETTINGS_TYPE_PLUGINS,
+      group->identifier());
+  if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay) {
     RenderThread::Get()->RecordUserMetrics("Plugin_ClickToPlay");
     return CreatePluginPlaceholder(
         render_view, frame, plugin, params, group.get(),
         IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD, false, true);
   } else {
+    DCHECK(status.value == ChromeViewHostMsg_GetPluginInfo_Status::kBlocked);
     RenderThread::Get()->RecordUserMetrics("Plugin_Blocked");
     return CreatePluginPlaceholder(
         render_view, frame, plugin, params, group.get(),
