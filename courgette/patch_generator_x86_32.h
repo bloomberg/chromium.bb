@@ -17,9 +17,9 @@ namespace courgette {
 class PatchGeneratorX86_32 : public TransformationPatchGenerator {
  public:
   PatchGeneratorX86_32(Element* old_element,
-                       Element* new_element,
-                       PatcherX86_32* patcher,
-                       ExecutableType kind)
+                                  Element* new_element,
+                                  PatcherX86_32* patcher,
+                                  ExecutableType kind)
       : TransformationPatchGenerator(old_element, new_element, patcher),
         kind_(kind) {
   }

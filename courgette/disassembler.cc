@@ -13,7 +13,6 @@
 
 #include "courgette/assembly_program.h"
 #include "courgette/courgette.h"
-#include "courgette/disassembler_elf_32_x86.h"
 #include "courgette/disassembler_win32_x86.h"
 #include "courgette/encoded_program.h"
 
@@ -31,14 +30,8 @@ Disassembler* DetectDisassembler(const void* buffer, size_t length) {
   disassembler = new DisassemblerWin32X86(buffer, length);
   if (disassembler->ParseHeader())
     return disassembler;
-  else
-    delete disassembler;
 
-  disassembler = new DisassemblerElf32X86(buffer, length);
-  if (disassembler->ParseHeader())
-    return disassembler;
-  else
-    delete disassembler;
+  delete disassembler;
 
   return NULL;
 }

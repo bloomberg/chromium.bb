@@ -36,7 +36,7 @@ void DecodeFuzzTest::FuzzExe(const char* file_name) const {
   std::string file1 = FileContents(file_name);
 
   const void* original_buffer = file1.c_str();
-  size_t original_length = file1.length();
+  size_t original_length = file1.size();
 
   courgette::AssemblyProgram* program = NULL;
   const courgette::Status parse_status =
@@ -199,7 +199,6 @@ bool DecodeFuzzTest::TryAssemble(const std::string& buffer,
 
 TEST_F(DecodeFuzzTest, All) {
   FuzzExe("setup1.exe");
-  FuzzExe("elf-32-1.exe");
 }
 
 int main(int argc, char** argv) {

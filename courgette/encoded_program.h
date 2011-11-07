@@ -43,8 +43,7 @@ class EncodedProgram {
   CheckBool AddCopy(uint32 count, const void* bytes) WARN_UNUSED_RESULT;
   CheckBool AddRel32(int label_index) WARN_UNUSED_RESULT;
   CheckBool AddAbs32(int label_index) WARN_UNUSED_RESULT;
-  CheckBool AddPeMakeRelocs() WARN_UNUSED_RESULT;
-  CheckBool AddElfMakeRelocs() WARN_UNUSED_RESULT;
+  CheckBool AddMakeRelocs() WARN_UNUSED_RESULT;
 
   // (3) Serialize binary assembly language tables to a set of streams.
   CheckBool WriteTo(SinkStreamSet* streams) WARN_UNUSED_RESULT;
@@ -59,18 +58,16 @@ class EncodedProgram {
 
  private:
   // Binary assembly language operations.
-  // These are part of the patch format. Reusing an existing value will
-  // break backwards compatibility.
   enum OP {
-    ORIGIN = 0,    // ORIGIN <rva> - set address for subsequent assembly.
-    COPY = 1,      // COPY <count> <bytes> - copy bytes to output.
-    COPY1 = 2,     // COPY1 <byte> - same as COPY 1 <byte>.
-    REL32 = 3,     // REL32 <index> - emit rel32 encoded reference to address at
-                   // address table offset <index>
-    ABS32 = 4,     // ABS32 <index> - emit abs32 encoded reference to address at
-                   // address table offset <index>
-    MAKE_PE_RELOCATION_TABLE = 5,  // Emit PE base relocation table blocks.
-    MAKE_ELF_RELOCATION_TABLE = 6, // Emit Elf relocation table.
+    ORIGIN,    // ORIGIN <rva> - set address for subsequent assembly.
+    COPY,      // COPY <count> <bytes> - copy bytes to output.
+    COPY1,     // COPY1 <byte> - same as COPY 1 <byte>.
+    REL32,     // REL32 <index> - emit rel32 encoded reference to address at
+               // address table offset <index>
+    ABS32,     // ABS32 <index> - emit abs32 encoded reference to address at
+               // address table offset <index>
+    MAKE_BASE_RELOCATION_TABLE,  // Emit base relocation table blocks.
+    OP_LAST
   };
 
   typedef NoThrowBuffer<RVA> RvaVector;
@@ -79,8 +76,7 @@ class EncodedProgram {
   typedef NoThrowBuffer<OP> OPVector;
 
   void DebuggingSummary();
-  CheckBool GeneratePeRelocations(SinkStream *buffer) WARN_UNUSED_RESULT;
-  CheckBool GenerateElfRelocations(SinkStream *buffer) WARN_UNUSED_RESULT;
+  CheckBool GenerateBaseRelocations(SinkStream *buffer) WARN_UNUSED_RESULT;
   CheckBool DefineLabelCommon(RvaVector*, int, RVA) WARN_UNUSED_RESULT;
   void FinishLabelsCommon(RvaVector* addresses);
 

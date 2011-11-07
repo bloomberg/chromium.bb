@@ -142,9 +142,6 @@ Status EnsemblePatchApplication::ReadInitialParameters(
       case EXE_WIN_32_X86:
         patcher = new PatcherX86_32(base_region_);
         break;
-      case EXE_ELF_32_X86:
-        patcher = new PatcherX86_32(base_region_);
-        break;
     }
 
     if (patcher)

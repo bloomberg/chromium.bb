@@ -117,9 +117,3 @@ TEST_F(BSDiffMemoryTest, TestDifferentExes) {
   std::string file2 = FileContents("setup2.exe");
   GenerateAndTestPatch(file1, file2);
 }
-
-TEST_F(BSDiffMemoryTest, TestDifferentElfs) {
-  std::string file1 = FileContents("elf-32-1");
-  std::string file2 = FileContents("elf-32-2");
-  GenerateAndTestPatch(file1, file2);
-}

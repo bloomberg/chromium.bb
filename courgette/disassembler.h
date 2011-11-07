@@ -68,7 +68,7 @@ class Disassembler {
   }
 
   // Reduce the length of the image in memory. Does not actually free
-  // (or realloc) any memory. Usually only called via ParseHeader()
+  // (or realloc) any memory. Unusally only called via ParseHeader()
   void ReduceLength(size_t reduced_length);
 
  private:
