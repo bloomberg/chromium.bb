@@ -89,7 +89,7 @@ typedef enum {
    * with universal access (only available on trusted implementations) will
    * accept <code>URLRequestInfo</code> objects that try to set a custom
    * referrer; if given to a loader without universal access,
-   * <code>PP_ERROR_BADARGUMENT</code> will result.
+   * <code>PP_ERROR_NOACCESS</code> will result.
    */
   PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL,
   /**
@@ -118,7 +118,7 @@ typedef enum {
    * (if any). Only loaders with universal access (only available on trusted
    * implementations) will accept <code>URLRequestInfo</code> objects that try
    * to set a custom content transfer encoding; if given to a loader without
-   * universal access, <code>PP_ERROR_BADARGUMENT</code> will result.
+   * universal access, <code>PP_ERROR_NOACCESS</code> will result.
    */
   PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING,
   /**
