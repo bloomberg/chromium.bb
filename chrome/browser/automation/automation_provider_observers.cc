@@ -1186,6 +1186,7 @@ void DomOperationObserver::Observe(
       TabContentsWrapper* wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
       if (wrapper &&
+          wrapper->content_settings() &&
           wrapper->content_settings()->IsContentBlocked(
               CONTENT_SETTINGS_TYPE_JAVASCRIPT)) {
         OnJavascriptBlocked();
