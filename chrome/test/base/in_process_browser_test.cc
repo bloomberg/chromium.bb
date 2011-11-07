@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/in_process_browser_test.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
 #include "base/file_path.h"
@@ -310,8 +311,7 @@ void InProcessBrowserTest::QuitBrowsers() {
   // Invoke CloseAllBrowsersAndMayExit on a running message loop.
   // CloseAllBrowsersAndMayExit exits the message loop after everything has been
   // shut down properly.
-  MessageLoopForUI::current()->PostTask(
-      FROM_HERE,
-      NewRunnableFunction(&BrowserList::AttemptExit));
+  MessageLoopForUI::current()->PostTask(FROM_HERE,
+                                        base::Bind(&BrowserList::AttemptExit));
   ui_test_utils::RunMessageLoop();
 }
