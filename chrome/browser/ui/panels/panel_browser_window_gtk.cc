@@ -262,13 +262,21 @@ void PanelBrowserWindowGtk::ClosePanel() {
 }
 
 void PanelBrowserWindowGtk::ActivatePanel() {
-  if (IsActive())
-    return;
+  gdk_window_set_accept_focus(GTK_WIDGET(window())->window, TRUE);
   Activate();
 }
 
 void PanelBrowserWindowGtk::DeactivatePanel() {
-  Deactivate();
+  BrowserWindow* browser_window =
+      panel_->manager()->GetNextBrowserWindowToActivate(panel_.get());
+  if (browser_window) {
+    browser_window->Activate();
+  } else {
+    Deactivate();
+  }
+
+  if (panel_->expansion_state() == Panel::MINIMIZED)
+    gdk_window_set_accept_focus(GTK_WIDGET(window())->window, FALSE);
 }
 
 bool PanelBrowserWindowGtk::IsPanelActive() const {
@@ -546,16 +554,15 @@ gboolean PanelBrowserWindowGtk::OnTitlebarButtonReleaseEvent(
 
   CleanupDragDrop();
 
-  Panel::ExpansionState new_expansion_state;
   if (panel_->expansion_state() == Panel::EXPANDED) {
     if (base::Time::Now() < disableMinimizeUntilTime_)
       return TRUE;
 
-    new_expansion_state = Panel::MINIMIZED;
+    panel_->SetExpansionState(Panel::MINIMIZED);
+
   } else {
-    new_expansion_state = Panel::EXPANDED;
+    panel_->Activate();
   }
-  panel_->SetExpansionState(new_expansion_state);
 
   return TRUE;
 }
@@ -569,7 +576,7 @@ void PanelBrowserWindowGtk::HandleFocusIn(GtkWidget* widget,
 
   is_drawing_attention_ = false;
   UpdateTitleBar();
-  panel_->SetExpansionState(Panel::EXPANDED);
+  DCHECK(panel_->expansion_state() == Panel::EXPANDED);
 
   disableMinimizeUntilTime_ =
       base::Time::Now() + kSuspendMinimizeOnClickIntervalMs;

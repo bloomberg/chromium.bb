@@ -958,17 +958,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestore) {
   PanelManager::GetInstance()->RemoveAll();
 }
 
-// TODO(dimich): Enable on chromeos.
-#if defined(TOOLKIT_GTK) || defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_ActivatePanelOrTabbedWindow ActivatePanelOrTabbedWindow
-#else
-#define MAYBE_ActivatePanelOrTabbedWindow DISABLED_ActivatePanelOrTabbedWindow
-#endif
-
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
-  CreatePanelParams params1("Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ActivatePanelOrTabbedWindow) {
+  CreatePanelParams params1("Panel1", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel1 = CreatePanelWithParams(params1);
-  CreatePanelParams params2("Active", gfx::Rect(), SHOW_AS_ACTIVE);
+  CreatePanelParams params2("Panel2", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel2 = CreatePanelWithParams(params2);
   // Need tab contents in order to trigger deactivation upon close.
   CreateTestTabContents(panel2->browser());
@@ -1032,13 +1025,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateBasic) {
   EXPECT_TRUE(panel->IsActive());
   EXPECT_TRUE(native_panel_testing->VerifyActiveState(true));
 }
-
 // TODO(jianli): To be enabled for other platforms.
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_ActivateDeactivateMultiple ActivateDeactivateMultiple
 #else
 #define MAYBE_ActivateDeactivateMultiple DISABLED_ActivateDeactivateMultiple
 #endif
+
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateMultiple) {
   BrowserWindow* tabbed_window = BrowserList::GetLastActive()->window();
 
@@ -1097,19 +1090,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateMultiple) {
   EXPECT_TRUE(tabbed_window->IsActive());
 }
 
-// Exclude linux_cromeos and linux_view bots. The panels created inactive
-// appear to be active there. Need more investigation.
-#if defined(TOOLKIT_GTK) || defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_DrawAttentionBasic DrawAttentionBasic
-#define MAYBE_DrawAttentionWhileMinimized DrawAttentionWhileMinimized
-#define MAYBE_DrawAttentionResetOnActivate DrawAttentionResetOnActivate
-#else
-#define MAYBE_DrawAttentionBasic DISABLED_DrawAttentionBasic
-#define MAYBE_DrawAttentionWhileMinimized DISABLED_DrawAttentionWhileMinimized
-#define MAYBE_DrawAttentionResetOnActivate DISABLED_DrawAttentionResetOnActivate
-#endif
-
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionBasic) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionBasic) {
   CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
@@ -1127,8 +1108,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionBasic) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionWhileMinimized) {
-  CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
+  CreatePanelParams params("Initially Active", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   NativePanel* native_panel = panel->native_panel();
   scoped_ptr<NativePanelTesting> native_panel_testing(
@@ -1137,6 +1118,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionWhileMinimized) {
   // Test that the attention is drawn and the title-bar is brought up when the
   // minimized panel is drawing attention.
   panel->SetExpansionState(Panel::MINIMIZED);
+  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
   EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
   panel->FlashFrame();
   EXPECT_TRUE(panel->IsDrawingAttention());
@@ -1183,11 +1165,15 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhenActive) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnActivate) {
-  CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnActivate) {
+  CreatePanelParams params("Initially active", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
       NativePanelTesting::Create(panel->native_panel()));
+
+  // Activate the panel.
+  panel->Deactivate();
+  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
 
   panel->FlashFrame();
   EXPECT_TRUE(panel->IsDrawingAttention());
@@ -1235,20 +1221,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnClick) {
   panel->Close();
 }
 
-// TODO(dimich): try/enable on other platforms.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_MinimizeImmediatelyAfterRestore \
-    MinimizeImmediatelyAfterRestore
-#else
-#define MAYBE_MinimizeImmediatelyAfterRestore \
-    DISABLED_MinimizeImmediatelyAfterRestore
-#endif
-
 // There was a bug when it was not possible to minimize the panel by clicking
 // on the titlebar right after it was restored and activated. This test verifies
 // it's possible.
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
-                       MAYBE_MinimizeImmediatelyAfterRestore) {
+                       MinimizeImmediatelyAfterRestore) {
   CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
@@ -1273,24 +1250,31 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel->Close();
 }
 
-// TODO(dimich): try/enable on other platforms.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_FocusLostOnMinimize FocusLostOnMinimize
-#else
-#define MAYBE_FocusLostOnMinimize DISABLED_FocusLostOnMinimize
-#endif
-
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_FocusLostOnMinimize) {
-  CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FocusLostOnMinimize) {
+  CreatePanelParams params("Initially Active", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
-
   EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
-  panel->Activate();
-  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
 
   panel->SetExpansionState(Panel::MINIMIZED);
   MessageLoop::current()->RunAllPending();
   WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
+  panel->Close();
+}
+
+// TODO(prasadt): try/enable on other platforms.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_CreateInactiveSwitchToActive CreateInactiveSwitchToActive
+#else
+#define MAYBE_CreateInactiveSwitchToActive DISABLE_CreateInactiveSwitchToActive
+#endif
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_CreateInactiveSwitchToActive) {
+  CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
+  Panel* panel = CreatePanelWithParams(params);
+
+  panel->Activate();
+  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
+
   panel->Close();
 }
 
