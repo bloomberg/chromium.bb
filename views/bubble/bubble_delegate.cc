@@ -75,6 +75,7 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble, Widget* parent) {
 
 BubbleDelegateView::BubbleDelegateView()
     : close_on_esc_(true),
+      close_on_deactivate_(true),
       allow_bubble_offscreen_(true),
       arrow_location_(BubbleBorder::TOP_LEFT),
       color_(SK_ColorWHITE),
@@ -88,6 +89,7 @@ BubbleDelegateView::BubbleDelegateView(
     BubbleBorder::ArrowLocation arrow_location,
     const SkColor& color)
     : close_on_esc_(true),
+      close_on_deactivate_(true),
       allow_bubble_offscreen_(true),
       anchor_point_(anchor_point),
       arrow_location_(arrow_location),
@@ -117,6 +119,9 @@ Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate,
   bubble_widget->SetBounds(bubble_delegate->GetBubbleBounds());
 #endif
 
+  bubble_widget->AddObserver(bubble_delegate);
+  if (parent_widget && parent_widget->GetTopLevelWidget())
+    parent_widget->GetTopLevelWidget()->DisableInactiveRendering();
   return bubble_widget;
 }
 
@@ -133,6 +138,14 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView() {
                              GetPreferredSize(),
                              GetColor(),
                              allow_bubble_offscreen_);
+}
+
+void BubbleDelegateView::OnWidgetActivationChanged(Widget* widget,
+                                                   bool active) {
+  if (close_on_deactivate() && widget == GetWidget() && !active) {
+    GetWidget()->RemoveObserver(this);
+    GetWidget()->Close();
+  }
 }
 
 gfx::Point BubbleDelegateView::GetAnchorPoint() {

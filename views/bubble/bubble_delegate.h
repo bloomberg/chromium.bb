@@ -9,6 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "views/bubble/bubble_border.h"
+#include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
 
 namespace ui {
@@ -24,7 +25,8 @@ class BubbleFrameView;
 //
 ///////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
-                                        public ui::AnimationDelegate {
+                                        public ui::AnimationDelegate,
+                                        public Widget::Observer {
  public:
   BubbleDelegateView();
   BubbleDelegateView(const gfx::Point& anchor_point,
@@ -41,8 +43,16 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   virtual View* GetContentsView() OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
 
+  // Widget::Observer overrides:
+  virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;
+
   bool close_on_esc() const { return close_on_esc_; }
   void set_close_on_esc(bool close_on_esc) { close_on_esc_ = close_on_esc; }
+
+  bool close_on_deactivate() const { return close_on_deactivate_; }
+  void set_close_on_deactivate(bool close_on_deactivate) {
+      close_on_deactivate_ = close_on_deactivate;
+  }
 
   bool allow_bubble_offscreen() const { return allow_bubble_offscreen_; }
   void set_allow_bubble_offscreen(bool allow_bubble_offscreen) {
@@ -100,8 +110,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Fade animation for bubble.
   scoped_ptr<ui::SlideAnimation> fade_animation_;
 
-  // Should this bubble close on the escape key?
+  // Flags controlling bubble closure on the escape key and deactivation.
   bool close_on_esc_;
+  bool close_on_deactivate_;
 
   // Whether the bubble is allowed to be displayed offscreen, or if auto
   // re-positioning should be performed.

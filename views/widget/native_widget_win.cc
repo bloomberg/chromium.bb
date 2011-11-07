@@ -833,6 +833,10 @@ void NativeWidgetWin::Close() {
   // Let's hide ourselves right away.
   Hide();
 
+  // Modal dialog windows disable their owner windows; re-enable them now so
+  // they can activate as foreground windows upon this window's destruction.
+  RestoreEnabledIfNecessary();
+
   if (!close_widget_factory_.HasWeakPtrs()) {
     // And we delay the close so that if we are called from an ATL callback,
     // we don't destroy the window before the callback returned (as the caller
@@ -842,22 +846,6 @@ void NativeWidgetWin::Close() {
         FROM_HERE,
         base::Bind(&NativeWidgetWin::CloseNow,
                    close_widget_factory_.GetWeakPtr()));
-  }
-
-  // If the user activates another app after opening us, then comes back and
-  // closes us, we want our owner to gain activation.  But only if the owner
-  // is visible. If we don't manually force that here, the other app will
-  // regain activation instead.
-  // It's tempting to think that this could be done from OnDestroy, but by then
-  // it's too late - GetForegroundWindow() will return the window that Windows
-  // has decided to re-activate for us instead of this dialog. It's also
-  // tempting to think about removing the foreground window check entirely, but
-  // it's necessary to this code path from being triggered when an inactive
-  // window is closed.
-  HWND owner = ::GetWindow(GetNativeView(), GW_OWNER);
-  if (owner && GetNativeView() == GetForegroundWindow() &&
-      IsWindowVisible(owner)) {
-    SetForegroundWindow(owner);
   }
 }
 
@@ -1315,7 +1303,6 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
 }
 
 void NativeWidgetWin::OnDestroy() {
-  RestoreEnabledIfNecessary();
   delegate_->OnNativeWidgetDestroying();
   if (drop_target_.get()) {
     RevokeDragDrop(hwnd());
@@ -1605,6 +1592,9 @@ void NativeWidgetWin::OnMoving(UINT param, const LPRECT new_bounds) {
 }
 
 LRESULT NativeWidgetWin::OnNCActivate(BOOL active) {
+  if (delegate_->CanActivate())
+    delegate_->OnNativeWidgetActivationChanged(!!active);
+
   if (!GetWidget()->non_client_view()) {
     SetMsgHandled(FALSE);
     return 0;
@@ -1612,8 +1602,6 @@ LRESULT NativeWidgetWin::OnNCActivate(BOOL active) {
 
   if (!delegate_->CanActivate())
     return TRUE;
-
-  delegate_->OnNativeWidgetActivationChanged(!!active);
 
   // The frame may need to redraw as a result of the activation change.
   // We can get WM_NCACTIVATE before we're actually visible. If we're not
@@ -2276,6 +2264,11 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
         // from the system menu, which is worse. We may need to provide our own
         // menu to get the close button to appear properly.
         // style &= ~WS_SYSMENU;
+
+        // Set the WS_POPUP style for modal dialogs. This ensures that the owner
+        // window is activated on destruction. This style should not be set for
+        // non-modal non-top-level dialogs like constrained windows.
+        style |= delegate_->IsModal() ? WS_POPUP : 0;
       }
       ex_style |= delegate_->IsDialogBox() ? WS_EX_DLGMODALFRAME : 0;
       break;

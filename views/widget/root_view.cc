@@ -200,8 +200,7 @@ bool RootView::OnMousePressed(const MouseEvent& event) {
     // Remove the double-click flag if the handler is different than the
     // one which got the first click part of the double-click.
     if (mouse_pressed_handler_ != last_click_handler_)
-      mouse_pressed_event.set_flags(e.flags() &
-                                    ~ui::EF_IS_DOUBLE_CLICK);
+      mouse_pressed_event.set_flags(e.flags() & ~ui::EF_IS_DOUBLE_CLICK);
 
     drag_info.Reset();
     bool handled = mouse_pressed_handler_->ProcessMousePressed(
