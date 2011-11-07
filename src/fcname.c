@@ -511,7 +511,7 @@ FcNameUnregisterConstants (const FcConstant *consts, int nconsts)
 }
 
 const FcConstant *
-FcNameGetConstant (FcChar8 *string)
+FcNameGetConstant (const FcChar8 *string)
 {
     const FcConstantList    *l;
     int			    i;
@@ -526,7 +526,7 @@ FcNameGetConstant (FcChar8 *string)
 }
 
 FcBool
-FcNameConstant (FcChar8 *string, int *result)
+FcNameConstant (const FcChar8 *string, int *result)
 {
     const FcConstant	*c;
 
