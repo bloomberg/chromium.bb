@@ -27,6 +27,7 @@ const char kRequestHeadersKey[] = "requestHeaders";
 const char kResponseHeadersKey[] = "responseHeaders";
 const char kHeaderNameKey[] = "name";
 const char kHeaderValueKey[] = "value";
+const char kHeaderBinaryValueKey[] = "binaryValue";
 const char kIsProxyKey[] = "isProxy";
 const char kSchemeKey[] = "scheme";
 const char kRealmKey[] = "realm";

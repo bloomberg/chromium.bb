@@ -11060,7 +11060,7 @@ chrome.windows.onRemoved.addListener(
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>An array of HTTP headers. Each header is represented as a dictionary containing the keys <code>name</code> and <code>value</code>.</dd>
+          <dd>An array of HTTP headers. Each header is represented as a dictionary containing the keys <code>name</code> and either <code>value</code> or <code>binaryValue</code>.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -11151,7 +11151,7 @@ chrome.windows.onRemoved.addListener(
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="optional">optional</span>
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
@@ -11173,7 +11173,86 @@ chrome.windows.onRemoved.addListener(
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Value of the HTTP header.</dd>
+          <dd>Value of the HTTP header if it can be represented by UTF-8.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>binaryValue</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span></span>
+                        </span>
+                        <span style="display: none; ">paramType</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Value of the HTTP header if it cannot be represented by UTF-8, stored as individual byte values (0..255).</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

@@ -1204,6 +1204,8 @@
         'browser/extensions/extension_webrequest_api.h',
         'browser/extensions/extension_webrequest_api_constants.cc',
         'browser/extensions/extension_webrequest_api_constants.h',
+        'browser/extensions/extension_webrequest_api_helpers.cc',
+        'browser/extensions/extension_webrequest_api_helpers.h',
         'browser/extensions/extension_webrequest_time_tracker.cc',
         'browser/extensions/extension_webrequest_time_tracker.h',
         'browser/extensions/extension_webstore_private_api.cc',

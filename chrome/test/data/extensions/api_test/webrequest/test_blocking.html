@@ -12,8 +12,20 @@ function getURLSetCookie() {
   return getServerURL('set-cookie?Foo=Bar');
 }
 
+function getURLNonUTF8SetCookie() {
+  return getServerURL('set-header?Set-Cookie%3A%20Foo%3D%FE%D1');
+}
+
 function getURLHttpSimpleLoad() {
   return getServerURL('files/extensions/api_test/webrequest/simpleLoad/a.html');
+}
+
+function toCharCodes(str) {
+  var result = [];
+  for (var i = 0; i < str.length; ++i) {
+    result[i] = str.charCodeAt(i);
+  }
+  return result;
 }
 
 runTests([
@@ -243,6 +255,81 @@ runTests([
     });
   },
 
+  // Loads a testserver page that echoes the User-Agent header that was
+  // sent to fetch it. We modify the outgoing User-Agent in
+  // onBeforeSendHeaders, so we should see that modified version.
+  // In this version we check whether we can set binary header values.
+  function modifyBinaryRequestHeaders() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            url: getURLEchoUserAgent(),
+            frameUrl: getURLEchoUserAgent()
+          }
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: getURLEchoUserAgent(),
+            // Note: no requestHeaders because we don't ask for them.
+          },
+          retval: {requestHeaders: [{name: "User-Agent",
+                                     binaryValue: toCharCodes("FoobarUA")}]}
+        },
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLEchoUserAgent()
+          }
+        },
+        { label: "onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLEchoUserAgent(),
+            statusLine: "HTTP/1.0 200 OK",
+          }
+        },
+        { label: "onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURLEchoUserAgent(),
+            fromCache: false,
+            statusCode: 200,
+            ip: "127.0.0.1",
+            statusLine: "HTTP/1.0 200 OK",
+          }
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURLEchoUserAgent(),
+            fromCache: false,
+            statusCode: 200,
+            ip: "127.0.0.1",
+            statusLine: "HTTP/1.0 200 OK",
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
+         "onHeadersReceived", "onResponseStarted", "onCompleted"]
+      ],
+      {}, ["blocking"]);
+    // Check the page content for our modified User-Agent string.
+    navigateAndWait(getURLEchoUserAgent(), function() {
+      chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
+        chrome.test.assertTrue(request.pass, "Request header was not set.");
+      });
+      chrome.tabs.executeScript(tabId,
+        {
+          code: "chrome.extension.sendRequest(" +
+              "{pass: document.body.innerText.indexOf('FoobarUA') >= 0});"
+        });
+    });
+  },
+
   // Loads a testserver page that sets a cookie "Foo=Bar" but removes
   // the cookies from the response headers so that they are not set.
   function modifyResponseHeaders() {
@@ -332,5 +419,102 @@ runTests([
     });
   },
 
+  // Loads a testserver page that sets a cookie "Foo=U+FDD1" which is not a
+  // valid UTF-8 code point. Therefore, it cannot be passed to JavaScript
+  // as a normal string.
+  function handleNonUTF8InModifyResponseHeaders() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            type: "main_frame",
+            url: getURLNonUTF8SetCookie(),
+            frameUrl: getURLNonUTF8SetCookie()
+          }
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: getURLNonUTF8SetCookie(),
+            // Note: no requestHeaders because we don't ask for them.
+          },
+        },
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLNonUTF8SetCookie(),
+          }
+        },
+        { label: "onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLNonUTF8SetCookie(),
+            statusLine: "HTTP/1.0 200 OK",
+            responseHeadersExist: true,
+          },
+          retval_function: function(name, details) {
+            console.log(JSON.stringify(details));
+            responseHeaders = details.responseHeaders;
+            var found = false;
+            var expectedValue = [
+              "F".charCodeAt(0),
+              "o".charCodeAt(0),
+              "o".charCodeAt(0),
+              0x3D, 0xFE, 0xD1
+              ];
+
+            for (var i = 0; i < responseHeaders.length; ++i) {
+              if (responseHeaders[i].name === "Set-Cookie" &&
+                  deepEq(responseHeaders[i].binaryValue, expectedValue)) {
+                found = true;
+                responseHeaders.splice(i);
+                break;
+              }
+            }
+            chrome.test.assertTrue(found);
+            return {responseHeaders: responseHeaders};
+          }
+        },
+        { label: "onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURLNonUTF8SetCookie(),
+            fromCache: false,
+            statusCode: 200,
+            statusLine: "HTTP/1.0 200 OK",
+            ip: "127.0.0.1",
+            responseHeadersExist: true,
+          }
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURLNonUTF8SetCookie(),
+            fromCache: false,
+            statusCode: 200,
+            statusLine: "HTTP/1.0 200 OK",
+            ip: "127.0.0.1",
+            responseHeadersExist: true,
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
+         "onHeadersReceived", "onResponseStarted", "onCompleted"]
+      ],
+      {}, ["blocking", "responseHeaders"]);
+    // Check that the cookie was really removed.
+    navigateAndWait(getURLNonUTF8SetCookie(), function() {
+      chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
+        chrome.test.assertTrue(request.pass, "Cookie was not removed.");
+      });
+      chrome.tabs.executeScript(tabId,
+      { code: "chrome.extension.sendRequest(" +
+            "{pass: document.cookie.indexOf('Foo') == -1});"
+        });
+    });
+  },
 ]);
 </script>

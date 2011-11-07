@@ -33,6 +33,7 @@ extern const char kResponseHeadersKey[];
 extern const char kHeadersKey[];
 extern const char kHeaderNameKey[];
 extern const char kHeaderValueKey[];
+extern const char kHeaderBinaryValueKey[];
 extern const char kIsProxyKey[];
 extern const char kSchemeKey[];
 extern const char kRealmKey[];

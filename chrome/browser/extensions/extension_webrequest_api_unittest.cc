@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/extensions/extension_webrequest_api_constants.h"
+#include "chrome/browser/extensions/extension_webrequest_api_helpers.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -24,6 +25,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace helpers = extension_webrequest_api_helpers;
 namespace keys = extension_webrequest_api_constants;
 
 namespace {
@@ -707,3 +709,23 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::ValuesIn(kTests));
 
 } // namespace
+
+
+TEST(ExtensionWebRequestHelpersTest, TestStringToCharList) {
+  ListValue list_value;
+  list_value.Append(Value::CreateIntegerValue('1'));
+  list_value.Append(Value::CreateIntegerValue('2'));
+  list_value.Append(Value::CreateIntegerValue('3'));
+  list_value.Append(Value::CreateIntegerValue(0xFE));
+  list_value.Append(Value::CreateIntegerValue(0xD1));
+
+  unsigned char char_value[] = {'1', '2', '3', 0xFE, 0xD1};
+  std::string string_value(reinterpret_cast<char *>(char_value), 5);
+
+  scoped_ptr<ListValue> converted_list(helpers::StringToCharList(string_value));
+  EXPECT_TRUE(list_value.Equals(converted_list.get()));
+
+  std::string converted_string;
+  EXPECT_TRUE(helpers::CharListToString(&list_value, &converted_string));
+  EXPECT_EQ(string_value, converted_string);
+}

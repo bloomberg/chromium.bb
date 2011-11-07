@@ -5799,12 +5799,18 @@
       {
         "id": "HttpHeaders",
         "type": "array",
-        "description": "An array of HTTP headers. Each header is represented as a dictionary containing the keys <code>name</code> and <code>value</code>.",
+        "description": "An array of HTTP headers. Each header is represented as a dictionary containing the keys <code>name</code> and either <code>value</code> or <code>binaryValue</code>.",
         "items": {
           "type": "object",
           "properties": {
             "name": {"type": "string", "description": "Name of the HTTP header."},
-            "value": {"type": "string", "description": "Value of the HTTP header."}
+            "value": {"type": "string", "optional": true, "description": "Value of the HTTP header if it can be represented by UTF-8."},
+            "binaryValue": {
+              "type": "array",
+              "optional": true,
+              "description": "Value of the HTTP header if it cannot be represented by UTF-8, stored as individual byte values (0..255).",
+              "items": {"type": "integer"}
+            }
           }
         }
       },

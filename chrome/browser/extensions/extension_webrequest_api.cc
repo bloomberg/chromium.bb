@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_id_map.h"
 #include "chrome/browser/extensions/extension_webrequest_api_constants.h"
+#include "chrome/browser/extensions/extension_webrequest_api_helpers.h"
 #include "chrome/browser/extensions/extension_webrequest_time_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -47,6 +48,7 @@
 
 using content::BrowserThread;
 
+namespace helpers = extension_webrequest_api_helpers;
 namespace keys = extension_webrequest_api_constants;
 
 namespace {
@@ -260,6 +262,48 @@ void ExtractRequestInfo(net::URLRequest* request, DictionaryValue* out) {
   out->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
 }
 
+// Converts a HttpHeaders dictionary to a |name|, |value| pair. Returns
+// true if successful.
+bool FromHeaderDictionary(const DictionaryValue* header_value,
+                          std::string* name,
+                          std::string* value) {
+  if (!header_value->GetString(keys::kHeaderNameKey, name))
+    return false;
+
+  // We require either a "value" or a "binaryValue" entry.
+  if (!(header_value->HasKey(keys::kHeaderValueKey) ^
+        header_value->HasKey(keys::kHeaderBinaryValueKey)))
+    return false;
+
+  if (header_value->HasKey(keys::kHeaderValueKey)) {
+    if (!header_value->GetString(keys::kHeaderValueKey, value)) {
+      return false;
+    }
+  } else if (header_value->HasKey(keys::kHeaderBinaryValueKey)) {
+    ListValue* list = NULL;
+    if (!header_value->GetList(keys::kHeaderBinaryValueKey, &list) ||
+        !helpers::CharListToString(list, value)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// Converts the |name|, |value| pair of a http header to a HttpHeaders
+// dictionary. Ownership is passed to the caller.
+DictionaryValue* ToHeaderDictionary(const std::string& name,
+                                    const std::string& value) {
+  DictionaryValue* header = new DictionaryValue();
+  header->SetString(keys::kHeaderNameKey, name);
+  if (IsStringUTF8(value)) {
+    header->SetString(keys::kHeaderValueKey, value);
+  } else {
+    header->Set(keys::kHeaderBinaryValueKey,
+                helpers::StringToCharList(value));
+  }
+  return header;
+}
+
 // Creates a list of HttpHeaders (see extension_api.json). If |headers| is
 // NULL, the list is empty. Ownership is passed to the caller.
 ListValue* GetResponseHeadersList(const net::HttpResponseHeaders* headers) {
@@ -268,24 +312,16 @@ ListValue* GetResponseHeadersList(const net::HttpResponseHeaders* headers) {
     void* iter = NULL;
     std::string name;
     std::string value;
-    while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-      DictionaryValue* header = new DictionaryValue();
-      header->SetString(keys::kHeaderNameKey, name);
-      header->SetString(keys::kHeaderValueKey, value);
-      headers_value->Append(header);
-    }
+    while (headers->EnumerateHeaderLines(&iter, &name, &value))
+      headers_value->Append(ToHeaderDictionary(name, value));
   }
   return headers_value;
 }
 
 ListValue* GetRequestHeadersList(const net::HttpRequestHeaders& headers) {
   ListValue* headers_value = new ListValue();
-  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext(); ) {
-    DictionaryValue* header = new DictionaryValue();
-    header->SetString(keys::kHeaderNameKey, it.name());
-    header->SetString(keys::kHeaderValueKey, it.value());
-    headers_value->Append(header);
-  }
+  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext(); )
+    headers_value->Append(ToHeaderDictionary(it.name(), it.value()));
   return headers_value;
 }
 
@@ -1783,10 +1819,7 @@ bool WebRequestEventHandled::RunImpl() {
         EXTENSION_FUNCTION_VALIDATE(
             request_headers_value->GetDictionary(i, &header_value));
         EXTENSION_FUNCTION_VALIDATE(
-            header_value->GetString(keys::kHeaderNameKey, &name));
-        EXTENSION_FUNCTION_VALIDATE(
-            header_value->GetString(keys::kHeaderValueKey, &value));
-
+            FromHeaderDictionary(header_value, &name, &value));
         response->request_headers->SetHeader(name, value);
       }
     }
@@ -1803,10 +1836,7 @@ bool WebRequestEventHandled::RunImpl() {
         EXTENSION_FUNCTION_VALIDATE(
             response_headers_value->GetDictionary(i, &header_value));
         EXTENSION_FUNCTION_VALIDATE(
-            header_value->GetString(keys::kHeaderNameKey, &name));
-        EXTENSION_FUNCTION_VALIDATE(
-            header_value->GetString(keys::kHeaderValueKey, &value));
-
+            FromHeaderDictionary(header_value, &name, &value));
         response_headers_string += name + ": " + value + '\n';
       }
       response_headers_string += '\n';
