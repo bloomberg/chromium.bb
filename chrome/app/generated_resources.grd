@@ -11857,8 +11857,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTED">
         Connected
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTING">
+        Connecting
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NOT_PAIRED">
         Not Paired
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_FAILED_PAIRING">
+        Unsuccessful Pairing
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_PAIRED">
+        Paired
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT">
         Connect
@@ -11866,10 +11875,28 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT">
         Disconnect
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_FORGET">
+        Forget
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CANCEL">
+        Cancel
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.  The label %1 is replaced by the passkey and %2 with the name of the device.">
+        Please confirm that the passkey %1 is shown on "%2".
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when the external device has no display or means of input.">
+        Please enter the passkey:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when pairing a wireless keyboard.  The label %1 is replaced by the passkey and %2 with the name of the device.">
+        Please enter the passkey %1 on "%2".
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_FAILED_PAIRING_INSTRUCTIONS" desc="">
+        Please make sure that "%1" is turn on, in range and ready for pairing.
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for accessbility.">
         Enable accessibility features
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT" desc="In the settings tab, the text of the keyboard layouti label.">
+      <message name="IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT" desc="In the settings tab, the text of the keyboard layout label.">
         Keyboard Layout:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_CONNECT" desc="In the settings tab, the text on the button to connect to a network.">

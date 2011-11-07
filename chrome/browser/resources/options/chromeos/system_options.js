@@ -102,8 +102,6 @@ cr.define('options', function() {
       if (!data || data.status !== 'connected')
         $('bluetooth-device-list').removeChild(device);
     }
-    // TODO(kevers): Set arguments to a list of the currently connected
-    //               devices.
     chrome.send('findBluetoothDevices');
   }
 
@@ -159,15 +157,39 @@ cr.define('options', function() {
 
   /**
    * Adds an element to the list of available bluetooth devices.
-   * @param{{'deviceName': string,
-   *         'deviceId': string,
-   *         'deviceType': Constants.DEVICE_TYPE,
-   *         'deviceStatus': Constants.DEVICE_STATUS} device
+   * @param {{name: string,
+   *          address: string,
+   *          icon: string,
+   *          paired: boolean,
+   *          connected: boolean}} device
    *     Decription of the bluetooth device.
    */
   SystemOptions.addBluetoothDevice = function(device) {
     $('bluetooth-device-list').appendDevice(device);
   };
+
+  /**
+   * Updates the state of a Bluetooth device.
+   * @param {{name: string,
+   *          address: string,
+   *          icon: string,
+   *          paired: boolean,
+   *          connected: boolean}} device
+   *     Decription of the bluetooth device.
+   * @param {'pairing': string,
+   *         'passkey': number,
+   *         'entered': number} op
+   *     Description of the pairing operation.
+   */
+  SystemOptions.connectBluetoothDevice = function(device, op) {
+    var data = {};
+    for (var key in device)
+      data[key] = device[key];
+    for (var key in op)
+      data[key] = op[key];
+    // Replace the existing element for the device.
+    SystemOptions.addBluetoothDevice(data);
+  }
 
   /**
    * Hides the scanning label and icon that are used to indicate that a device

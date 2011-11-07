@@ -48,16 +48,115 @@ html[dir=rtl] .touchpad-sensitivity-more {
   vertical-align: middle;
 }
 
-.bluetooth-button-group {
-  -webkit-box-flex: 1; 
-  -webkit-box-pack: end;
-  display: -webkit-box;
+#bluetooth-device-list {
+  display: table;
+  width: 100%;
 }
 
-.bluetooth-headset,
-.bluetooth-input-keyboard,
-.bluetooth-input-mouse {
-  background-repeat: no-repeat;
+#bluetooth-device-list > * {
+  display: table-row;
+}
+
+#bluetooth-device-list > * > * {
+  border-bottom: 4px solid rgba(255,255,255,1);
+  display: table-cell;
+}
+
+.bluetooth-item > * > button {
+  visibility: hidden;
+  width: 100%;
+}
+
+.bluetooth-item:hover > * > button,
+.bluetooth-item[connected] > * > button,
+.bluetooth-item[connecting] > * > button {
+  visibility: visible;
+}
+
+.bluetooth-item[connected] {
+  background-color: hsl(214, 91%, 89%);
+  background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0.8),
+                                            rgba(255, 255, 255, 0));
+  border-color: hsl(214, 91%, 65%);
+}
+
+.bluetooth-item[paired] {
+  background-color: hsl(214, 0%, 95%);
+}
+
+.bluetooth-item:hover,
+.bluetooth-item[connecting] {
+  background-color: hsl(214, 91%, 97%);
+  border-color: hsl(214, 91%, 65%);
+}
+
+.bluetooth-item-text {
+  -webkit-padding-after: 3px;
+  -webkit-padding-before: 3px;
+  -webkit-padding-end: 5px;
+  width: 100%;
+}
+
+.bluetooth-item-text > * > .throbber {
+  -webkit-margin-start: 5px;
+  -webkit-transform: translateY(3px);
+}
+
+.bluetooth-instructions {
+  -webkit-margin-after: 5px;
+  -webkit-margin-before: 5px;
+  display: block;
+  line-height: 120%;
+}
+
+.bluetooth-remote-passkey {
+  -webkit-box-align: baseline;
+  -webkit-box-orient: horizontal;
+  display: -webkit-inline-box;
+  margin-bottom: 5px;
+  margin-top: 5px;
+}
+
+.bluetooth-confirm-passkey {
+  display: inline;
+  font-weight: bold;
+}
+
+.bluetooth-passkey-char {
+  -webkit-margin-end: 3px;
+  -webkit-margin-start: 3px;
+  border: 1px solid black;
+  display: -webkit-box;
+  font-weight: bold;
+  padding: 2px;
+}
+
+.bluetooth-passkey-char:first-child {
+  -webkit-margin-start: 10px;
+}
+
+.bluetooth-passkey-char:last-child {
+  -webkit-margin-end: 10px;
+}
+
+.bluetooth-passkey-char.key-typed {
+  background-color: hsl(214, 91%, 50%);
+  color: white;
+}
+
+.bluetooth-passkey-field {
+  -webkit-margin-start: 10px;
+  width: 100px;
+}
+
+.bluetooth-button-group {
+  -webkit-padding-end: 5px;
+  vertical-align: middle;
+}
+
+.bluetooth-icon {
+  background: center center no-repeat;
+  min-width: 45px;
 }
 
 .bluetooth-headset {

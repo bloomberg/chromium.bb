@@ -47,10 +47,41 @@ class BluetoothOptionsHandler : public chromeos::CrosOptionsPageUIHandler,
   // device ID and the second is the requested action.
   void UpdateDeviceCallback(const base::ListValue* args);
 
-  // Sends a notification to the Web UI of the status of a bluetooth device.
+  // Sends a notification to the Web UI of the status of a Bluetooth device.
   // |device| is the decription of the device.  The supported dictionary keys
   // for device are "deviceName", "deviceId", "deviceType" and "deviceStatus".
   void DeviceNotification(const base::DictionaryValue& device);
+
+  // Displays a passkey for a device, requesting user confirmation that the
+  // key matches an expected value (value displayed on a smartphone for
+  // example).
+  // |device| is the Bluetooth device being paired.
+  // |passkey| is the passkey to display for confirmation.
+  void RequestConfirmation(chromeos::BluetoothDevice* device,
+                                   int passkey);
+
+  // Displays a passkey for a device, which is being typed remotely. During
+  // the pairing process, this method may be called repeatedly to track the
+  // number of characters entered.  This method is commonly used for pairing
+  // keyboards.
+  // |device| is the Bluetooth device being paired.
+  // |passkey| is the required passkey.
+  // |entered| is the number of characters that have already been entered on
+  // the remote device.
+  void DisplayPasskey(chromeos::BluetoothDevice* device,
+                              int passkey,
+                              int entered);
+
+  // Displays a blank field for entering a passkey.  The passkey may be
+  // a set value specified by the manufacturer of the Bluetooth device, or
+  // on a remote display.  The validation is asychronous, and a call is made
+  // to |ValidatePasskeyCallback| when the passkey entry is complete.
+  // |device| is the Bluetooth device being paired.
+  void RequestPasskey(chromeos::BluetoothDevice* device);
+
+  // Callback to validate a user entered passkey.
+  // |args| is a list containing the device address and entered passkey.
+  void ValidatePasskeyCallback(const base::ListValue* args);
 
   // chromeos::BluetoothManager::Observer override.
   virtual void DefaultAdapterChanged(chromeos::BluetoothAdapter* adapter);
@@ -79,10 +110,26 @@ class BluetoothOptionsHandler : public chromeos::CrosOptionsPageUIHandler,
   // |name| is the display name for the device.
   // |address| is the unique Mac address of the device.
   // |icon| is the base name of the icon to use for the device and corresponds
-  // to the general device category (e.g. mouse or keyboard)
+  // to the general device category (e.g. mouse or keyboard).
+  // |paired| indicates if the device is paired.
+  // |connected| indicates if the device is connected.
   void GenerateFakeDiscoveredDevice(const std::string& name,
                                     const std::string& address,
-                                    const std::string& icon);
+                                    const std::string& icon,
+                                    bool paired,
+                                    bool connected);
+
+  // Simulates the pairing process.  Used when emulating ChromeOS from a
+  // desktop environment.
+  // |name| is the display name for the device.
+  // |address| is the unique Mac address of the device.
+  // |icon| is the base naem of the icon to use for the device and corresponds
+  // to the general device category (e.g. mouse or keyboard).
+  // |pairing| indicates the type of pairing operation.
+  void GenerateFakePairing(const std::string& name,
+                           const std::string& address,
+                           const std::string& icon,
+                           const std::string& pairing);
 
   // The id of the current default bluetooth adapter.
   // The empty string represents "none".
