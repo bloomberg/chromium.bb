@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(sail): Refactor options_page and remove this include.
+<include src="options/options_page.js"/>
+<include src="sync_setup_overlay.js"/>
+
 cr.define('sync_promo', function() {
   /**
    * SyncPromo class

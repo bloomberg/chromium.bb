@@ -71,8 +71,6 @@ class ChromeURLContentSecurityPolicyExceptionSet
     insert(chrome::kChromeUIRegisterPageHost);
     insert(chrome::kChromeUISimUnlockHost);
     insert(chrome::kChromeUISystemInfoHost);
-#else
-    insert(chrome::kChromeUISyncPromoHost);
 #endif
 #if defined(TOUCH_UI)
     insert(chrome::kChromeUIKeyboardHost);
