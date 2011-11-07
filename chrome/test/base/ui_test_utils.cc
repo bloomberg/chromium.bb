@@ -279,14 +279,14 @@ void WaitForBrowserActionUpdated(ExtensionAction* browser_action) {
 }
 
 void WaitForLoadStop(TabContents* tab) {
+  WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<NavigationController>(&tab->controller()));
   // In many cases, the load may have finished before we get here.  Only wait if
   // the tab still has a pending navigation.
-  if (!tab->IsLoading() &&
-      !tab->render_manager_for_testing()->pending_render_view_host())
+  if (!tab->IsLoading())
     return;
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, content::NOTIFICATION_LOAD_STOP,
-                  content::Source<NavigationController>(&tab->controller()));
+  load_stop_observer.Wait();
 }
 
 Browser* WaitForNewBrowser() {
