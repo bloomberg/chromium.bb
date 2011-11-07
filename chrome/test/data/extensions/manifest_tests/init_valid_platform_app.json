@@ -1,0 +1,11 @@
+{
+  "name": "Platform Test",
+  "platform_app": "true",
+  "version": "1",
+  "app": {
+    "launch": {
+      "container": "panel",
+      "local_path": "launch.html"
+    }
+  }
+}

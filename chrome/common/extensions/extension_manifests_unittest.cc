@@ -8,16 +8,15 @@
 #include <gtk/gtk.h>
 #endif
 
-#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -27,6 +26,7 @@
 #include "chrome/common/extensions/extension_sidebar_defaults.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/url_pattern.h"
+#include "chrome/test/base/scoped_command_line_override.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -221,16 +221,16 @@ TEST_F(ExtensionManifestTest, InitFromValueValid) {
 
   // Test that an empty list of page actions does not stop a browser action
   // from being loaded.
-  extension = LoadAndExpectSuccess("init_valid_empty_page_actions.json");
+  LoadAndExpectSuccess("init_valid_empty_page_actions.json");
 
   // Test with a minimum_chrome_version.
-  extension = LoadAndExpectSuccess("init_valid_minimum_chrome.json");
+  LoadAndExpectSuccess("init_valid_minimum_chrome.json");
 
   // Test a hosted app with a minimum_chrome_version.
-  extension = LoadAndExpectSuccess("init_valid_app_minimum_chrome.json");
+  LoadAndExpectSuccess("init_valid_app_minimum_chrome.json");
 
   // Test a hosted app with a requirements section.
-  extension = LoadAndExpectSuccess("init_valid_app_requirements.json");
+  LoadAndExpectSuccess("init_valid_app_requirements.json");
 
   // Verify empty permission settings are considered valid.
   LoadAndExpectSuccess("init_valid_permissions_empty.json");
@@ -238,6 +238,11 @@ TEST_F(ExtensionManifestTest, InitFromValueValid) {
   // We allow unknown API permissions, so this will be valid until we better
   // distinguish between API and host permissions.
   LoadAndExpectSuccess("init_valid_permissions_unknown.json");
+}
+
+TEST_F(ExtensionManifestTest, PlatformApps) {
+  // A minimal platform app.
+  LoadAndExpectSuccess("init_valid_platform_app.json");
 }
 
 TEST_F(ExtensionManifestTest, InitFromValueValidNameInRTL) {
@@ -392,6 +397,11 @@ TEST_F(ExtensionManifestTest, AppLaunchContainer) {
                      errors::kInvalidLaunchContainer);
   LoadAndExpectError("launch_container_invalid_type.json",
                      errors::kInvalidLaunchContainer);
+  {
+    ScopedCommandLineOverride override(switches::kEnablePlatformApps);
+    LoadAndExpectError("launch_container_invalid_type_for_platform.json",
+                       errors::kInvalidLaunchContainerForPlatform);
+  }
   LoadAndExpectError("launch_container_invalid_value.json",
                      errors::kInvalidLaunchContainer);
   LoadAndExpectError("launch_container_without_launch_url.json",
@@ -526,11 +536,9 @@ TEST_F(ExtensionManifestTest, ExperimentalPermission) {
   LoadAndExpectSuccess("experimental.json", Extension::COMPONENT);
   LoadAndExpectSuccess("experimental.json", Extension::INTERNAL,
                        Extension::FROM_WEBSTORE);
-  CommandLine old_command_line = *CommandLine::ForCurrentProcess();
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  ScopedCommandLineOverride override(
       switches::kEnableExperimentalExtensionApis);
   LoadAndExpectSuccess("experimental.json");
-  *CommandLine::ForCurrentProcess() = old_command_line;
 }
 
 TEST_F(ExtensionManifestTest, DevToolsExtensions) {
@@ -539,25 +547,20 @@ TEST_F(ExtensionManifestTest, DevToolsExtensions) {
   LoadAndExpectError("devtools_extension_url_invalid_type.json",
       errors::kInvalidDevToolsPage);
 
-  CommandLine old_command_line = *CommandLine::ForCurrentProcess();
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  ScopedCommandLineOverride override(
       switches::kEnableExperimentalExtensionApis);
-
   scoped_refptr<Extension> extension;
   extension = LoadAndExpectSuccess("devtools_extension.json");
   EXPECT_EQ(extension->url().spec() + "devtools.html",
             extension->devtools_url().spec());
   EXPECT_TRUE(extension->HasEffectiveAccessToAllHosts());
-
-  *CommandLine::ForCurrentProcess() = old_command_line;
 }
 
 TEST_F(ExtensionManifestTest, Sidebar) {
   LoadAndExpectError("sidebar.json",
       errors::kExperimentalFlagRequired);
 
-  CommandLine old_command_line = *CommandLine::ForCurrentProcess();
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  ScopedCommandLineOverride override(
       switches::kEnableExperimentalExtensionApis);
 
   LoadAndExpectError("sidebar_no_permissions.json",
@@ -582,8 +585,6 @@ TEST_F(ExtensionManifestTest, Sidebar) {
             "icon.png");
   EXPECT_EQ(extension->url().spec() + "sidebar.html",
             extension->sidebar_defaults()->default_page().spec());
-
-  *CommandLine::ForCurrentProcess() = old_command_line;
 }
 
 TEST_F(ExtensionManifestTest, DisallowHybridApps) {
@@ -816,7 +817,7 @@ TEST_F(ExtensionManifestTest, TtsEngine) {
 }
 
 TEST_F(ExtensionManifestTest, WebIntents) {
-  CommandLine::ForCurrentProcess()->AppendSwitch("--enable-web-intents");
+  ScopedCommandLineOverride override("--enable-web-intents");
 
   LoadAndExpectError("intent_invalid_1.json",
                      extension_manifest_errors::kInvalidIntents);
@@ -879,13 +880,11 @@ TEST_F(ExtensionManifestTest, IsolatedApps) {
   LoadAndExpectError("isolated_app_valid.json",
                      errors::kExperimentalFlagRequired);
 
-  CommandLine old_command_line = *CommandLine::ForCurrentProcess();
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  ScopedCommandLineOverride override(
       switches::kEnableExperimentalExtensionApis);
   scoped_refptr<Extension> extension2(
       LoadAndExpectSuccess("isolated_app_valid.json"));
   EXPECT_TRUE(extension2->is_storage_isolated());
-  *CommandLine::ForCurrentProcess() = old_command_line;
 }
 
 
