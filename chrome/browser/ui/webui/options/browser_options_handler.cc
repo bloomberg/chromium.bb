@@ -407,6 +407,7 @@ void BrowserOptionsHandler::EditStartupPage(const ListValue* args) {
   std::vector<GURL> urls = startup_custom_pages_table_model_->GetURLs();
   urls[index] = URLFixerUpper::FixupURL(url_string, std::string());
   startup_custom_pages_table_model_->SetURLs(urls);
+  SaveStartupPagesPref();
 }
 
 void BrowserOptionsHandler::DragDropStartupPage(const ListValue* args) {
