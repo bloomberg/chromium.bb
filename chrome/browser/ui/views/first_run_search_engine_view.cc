@@ -33,7 +33,6 @@
 #include "views/controls/button/button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/controls/separator.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/layout/layout_constants.h"
 #include "views/view_text_utils.h"

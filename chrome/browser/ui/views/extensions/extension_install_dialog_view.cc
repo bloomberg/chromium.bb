@@ -136,8 +136,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   // | permission2        |      |
   // +--------------------+------+
 
-  using views::GridLayout;
-  GridLayout* layout = GridLayout::CreatePanel(this);
+  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   int column_set_id = 0;
@@ -145,17 +144,17 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   int left_column_width = prompt.GetPermissionCount() > 0 ?
       kPermissionsLeftColumnWidth : kNoPermissionsLeftColumnWidth;
 
-  column_set->AddColumn(GridLayout::LEADING,
-                        GridLayout::FILL,
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::FILL,
                         0,  // no resizing
-                        GridLayout::USE_PREF,
+                        views::GridLayout::USE_PREF,
                         0,  // no fixed with
                         left_column_width);
   column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
-  column_set->AddColumn(GridLayout::LEADING,
-                        GridLayout::LEADING,
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING,
                         0,  // no resizing
-                        GridLayout::USE_PREF,
+                        views::GridLayout::USE_PREF,
                         0,  // no fixed width
                         kIconSize);
 
@@ -225,8 +224,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
     if (is_inline_install()) {
       layout->StartRow(0, column_set_id);
-      views::Separator* separator = new views::Separator();
-      layout->AddView(separator, 3, 1, GridLayout::FILL, GridLayout::FILL);
+      layout->AddView(new views::Separator(), 3, 1, views::GridLayout::FILL,
+                      views::GridLayout::FILL);
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     }
 

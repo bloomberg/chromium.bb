@@ -8,15 +8,21 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
-#include "views/controls/button/custom_button.h"
-#include "views/controls/link.h"
+#include "views/controls/button/button.h"
 #include "views/controls/link_listener.h"
-#include "views/controls/separator.h"
 
 class AvatarMenuModel;
 class Browser;
+
+namespace views {
+class CustomButton;
+class Link;
+class Separator;
+}
 
 // This bubble view is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.
