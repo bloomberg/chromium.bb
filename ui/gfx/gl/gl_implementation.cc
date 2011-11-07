@@ -120,9 +120,9 @@ bool InitializeRequestedGLBindings(
     LOG(ERROR) << "Could not initialize GL.";
     return false;
   } else {
-    LOG(INFO) << "Using "
-              << GetGLImplementationName(GetGLImplementation())
-              << " GL implementation.";
+    DVLOG(1) << "Using "
+             << GetGLImplementationName(GetGLImplementation())
+             << " GL implementation.";
     return true;
   }
 }
