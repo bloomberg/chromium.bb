@@ -136,7 +136,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   delegate_->OnNativeWidgetCreated();
   window_->set_minimum_size(delegate_->GetMinimumSize());
   window_->SetBounds(params.bounds);
-  if (params.type == Widget::InitParams::TYPE_CONTROL) {
+  if (window_type == Widget::InitParams::TYPE_CONTROL) {
     window_->SetParent(params.GetParent());
   } else {
     // Set up the transient child before the window is added. This way the

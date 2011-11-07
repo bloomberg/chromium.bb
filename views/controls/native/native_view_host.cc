@@ -195,10 +195,11 @@ gfx::NativeViewAccessible NativeViewHost::GetNativeViewAccessible() {
 // NativeViewHost, private:
 
 void NativeViewHost::Detach(bool destroyed) {
-  DCHECK(native_view_ || views_view_);
-  native_wrapper_->NativeViewDetaching(destroyed);
-  native_view_ = NULL;
-  views_view_ = NULL;
+  if (native_view_ || views_view_) {
+    native_wrapper_->NativeViewDetaching(destroyed);
+    native_view_ = NULL;
+    views_view_ = NULL;
+  }
 }
 
 }  // namespace views

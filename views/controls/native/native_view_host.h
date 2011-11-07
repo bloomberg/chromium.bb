@@ -41,8 +41,9 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // Attach a views::View instead of a native view to this host.
   void AttachToView(View* view);
 
-  // Detach the attached window handle. Its bounds and visibility will no longer
-  // be manipulated by this View.
+  // Detach the attached native view. Its bounds and visibility will no
+  // longer be manipulated by this View. The native view may be destroyed and
+  // detached before calling this function, and this has no effect in that case.
   void Detach();
 
   // Sets a preferred size for the native view attached to this View.
@@ -100,6 +101,7 @@ class VIEWS_EXPORT NativeViewHost : public View {
 
   // The attached view. There is exactly one native_view_ or views_view_
   // attached.
+  // TODO(oshima): Delete views_view_ once TOUCH_UI migrates to aura.
   View* views_view_;
 
   // A platform-specific wrapper that does the OS-level manipulation of the
