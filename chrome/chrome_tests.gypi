@@ -2664,7 +2664,6 @@
         '../content/browser/renderer_host/render_view_host_manager_browsertest.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_browsertest.cc',
         '../content/browser/speech/speech_input_browsertest.cc',
-	'../content/browser/webkit_browsertest.cc',
         '../content/renderer/render_view_browsertest.cc',
         '../content/renderer/render_view_browsertest_mac.mm',
         '../content/test/render_widget_browsertest.cc',
