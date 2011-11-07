@@ -164,6 +164,12 @@ GdkCursor* WebCursor::GetCustomCursor() {
     return NULL;
   }
 
+  if (custom_size_.width() == 0 || custom_size_.height() == 0) {
+    // Some websites specify cursor images that are 0 sized, such as Bing Maps.
+    // Don't crash on this; just use the default cursor.
+    return NULL;
+  }
+
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                    custom_size_.width(), custom_size_.height());

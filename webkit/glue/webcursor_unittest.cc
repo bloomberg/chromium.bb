@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 
 using WebKit::WebCursorInfo;
 
-TEST(WebCursorTest, CursorSerialization) {
+TEST(WebCursorTest, OKCursorSerialization) {
   WebCursor custom_cursor;
   // This is a valid custom cursor.
   Pickle ok_custom_pickle;
@@ -29,6 +29,16 @@ TEST(WebCursorTest, CursorSerialization) {
   void* iter = NULL;
   EXPECT_TRUE(custom_cursor.Deserialize(&ok_custom_pickle, &iter));
 
+#if defined(TOOLKIT_USES_GTK)
+  // On GTK+ using platforms, we should get a real native GdkCursor object back
+  // (and the memory used should automatically be freed by the WebCursor object
+  // for valgrind tests).
+  EXPECT_TRUE(custom_cursor.GetCustomCursor());
+#endif
+}
+
+TEST(WebCursorTest, BrokenCursorSerialization) {
+  WebCursor custom_cursor;
   // This custom cursor has not been send with enough data.
   Pickle short_custom_pickle;
   // Type and hotspots.
@@ -41,9 +51,7 @@ TEST(WebCursorTest, CursorSerialization) {
   // Data len not including enough data for a 1x1 image.
   short_custom_pickle.WriteInt(3);
   short_custom_pickle.WriteUInt32(0);
-  // Custom Windows message.
-  ok_custom_pickle.WriteUInt32(0);
-  iter = NULL;
+  void* iter = NULL;
   EXPECT_FALSE(custom_cursor.Deserialize(&short_custom_pickle, &iter));
 
   // This custom cursor has enough data but is too big.
@@ -60,8 +68,6 @@ TEST(WebCursorTest, CursorSerialization) {
   large_custom_pickle.WriteInt(kTooBigSize * 4);
   for (int i = 0; i < kTooBigSize; ++i)
     large_custom_pickle.WriteUInt32(0);
-  // Custom Windows message.
-  ok_custom_pickle.WriteUInt32(0);
   iter = NULL;
   EXPECT_FALSE(custom_cursor.Deserialize(&large_custom_pickle, &iter));
 
@@ -81,18 +87,21 @@ TEST(WebCursorTest, CursorSerialization) {
   neg_custom_pickle.WriteUInt32(0);
   iter = NULL;
   EXPECT_FALSE(custom_cursor.Deserialize(&neg_custom_pickle, &iter));
+}
 
 #if defined(OS_WIN)
+TEST(WebCursorTest, WindowsCursorConversion) {
+  WebCursor custom_cursor;
   Pickle win32_custom_pickle;
   WebCursor win32_custom_cursor;
   win32_custom_cursor.InitFromExternalCursor(
       reinterpret_cast<HCURSOR>(1000));
   EXPECT_TRUE(win32_custom_cursor.Serialize(&win32_custom_pickle));
-  iter = NULL;
+  void* iter = NULL;
   EXPECT_TRUE(custom_cursor.Deserialize(&win32_custom_pickle, &iter));
   EXPECT_EQ(reinterpret_cast<HCURSOR>(1000), custom_cursor.GetCursor(NULL));
-#endif  // OS_WIN
 }
+#endif  // OS_WIN
 
 TEST(WebCursorTest, ClampHotspot) {
   WebCursor custom_cursor;
@@ -126,4 +135,32 @@ TEST(WebCursorTest, ClampHotspot) {
   custom_cursor.InitFromCursorInfo(info);
   custom_cursor.GetCursorInfo(&info);
   EXPECT_EQ(gfx::Point(0, 0), gfx::Point(info.hotSpot));
+}
+
+TEST(WebCursorTest, EmptyImage) {
+  WebCursor custom_cursor;
+  Pickle broken_cursor_pickle;
+  broken_cursor_pickle.WriteInt(WebCursorInfo::TypeCustom);
+  // Hotspot is at origin
+  broken_cursor_pickle.WriteInt(0);
+  broken_cursor_pickle.WriteInt(0);
+  // X & Y are empty
+  broken_cursor_pickle.WriteInt(0);
+  broken_cursor_pickle.WriteInt(0);
+  // No data for the image since the size is 0.
+  broken_cursor_pickle.WriteInt(0);
+  // Custom Windows message.
+  broken_cursor_pickle.WriteInt(0);
+
+  // Make sure we can read this on all platforms; it is technicaally a valid
+  // cursor.
+  void* iter = NULL;
+  ASSERT_TRUE(custom_cursor.Deserialize(&broken_cursor_pickle, &iter));
+
+#if defined(TOOLKIT_USES_GTK)
+  // On GTK+ using platforms, we make sure that we get NULL back from this
+  // method; the relevant GDK methods take NULL as a request to use the default
+  // cursor.
+  EXPECT_EQ(NULL, custom_cursor.GetCustomCursor());
+#endif
 }
