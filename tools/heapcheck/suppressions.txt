@@ -1686,12 +1686,6 @@
    fun:PluginPrefsFactory::BuildServiceInstanceFor
 }
 {
-   bug_103190
-   Heapcheck:Leak
-   fun:TestingProfile::CreateRequestContext
-   fun:AppNotifyChannelSetupTest*
-}
-{
    bug_103192_a
    Heapcheck:Leak
    fun:MessageLoop

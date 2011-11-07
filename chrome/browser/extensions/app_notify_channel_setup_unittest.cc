@@ -114,7 +114,6 @@ class AppNotifyChannelSetupTest : public testing::Test {
  public:
   AppNotifyChannelSetupTest() : ui_thread_(BrowserThread::UI, &message_loop_),
                                 ui_(new TestUI()) {
-    profile_.CreateRequestContext();
   }
 
   virtual ~AppNotifyChannelSetupTest() {}
