@@ -50,9 +50,10 @@ enum {
   DIR_MANAGED_PREFS,            // Directory that stores the managed prefs plist
                                 // files for the current user.
 #endif
-#if defined(OS_CHROMEOS)
-  DIR_USER_EXTERNAL_EXTENSIONS,  // Directory for per-user external extensions.
-                                 // Used for OEM customization on Chrome OS.
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+  DIR_USER_EXTERNAL_EXTENSIONS,  // Directory for per-user external extensions
+                                 // on Chrome Mac.  On Chrome OS, this path is
+                                 // used for OEM customization.
                                  // Getting this path does not create it.
 #endif
 

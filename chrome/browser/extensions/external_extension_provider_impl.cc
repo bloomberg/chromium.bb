@@ -286,11 +286,12 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
 
   // On Mac OS, items in /Library/... should be written by the superuser.
   // Check that all components of the path are writable by root only.
-  ExternalPrefExtensionLoader::Options options;
+  ExternalPrefExtensionLoader::Options check_admin_permissions_on_mac;
 #if defined(OS_MACOSX)
-  options = ExternalPrefExtensionLoader::ENSURE_PATH_CONTROLLED_BY_ADMIN;
+  check_admin_permissions_on_mac =
+    ExternalPrefExtensionLoader::ENSURE_PATH_CONTROLLED_BY_ADMIN;
 #else
-  options = ExternalPrefExtensionLoader::NONE;
+  check_admin_permissions_on_mac = ExternalPrefExtensionLoader::NONE;
 #endif
 
   provider_list->push_back(
@@ -298,7 +299,8 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
           new ExternalExtensionProviderImpl(
               service,
               new ExternalPrefExtensionLoader(
-                  chrome::DIR_EXTERNAL_EXTENSIONS, options),
+                  chrome::DIR_EXTERNAL_EXTENSIONS,
+                  check_admin_permissions_on_mac),
               Extension::EXTERNAL_PREF,
               Extension::EXTERNAL_PREF_DOWNLOAD,
               Extension::NO_FLAGS)));
@@ -318,8 +320,9 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
               Extension::NO_FLAGS)));
 #endif
 
-#if defined(OS_CHROMEOS)
-  // Chrome OS specific source for OEM customization.
+#if defined(OS_CHROMEOS) || defined (OS_MACOSX)
+  // Define a per-user source of external extensions.
+  // On Chrome OS, this serves as a source for OEM customization.
   provider_list->push_back(
       linked_ptr<ExternalExtensionProviderInterface>(
           new ExternalExtensionProviderImpl(
