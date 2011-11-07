@@ -6,7 +6,7 @@
 #define UI_AURA_SHELL_DEFAULT_CONTAINER_EVENT_FILTER_H_
 #pragma once
 
-#include "ui/aura/toplevel_window_event_filter.h"
+#include "ui/aura_shell/toplevel_window_event_filter.h"
 
 namespace aura {
 class MouseEvent;
@@ -16,7 +16,7 @@ class Window;
 namespace aura_shell {
 namespace internal {
 
-class DefaultContainerEventFilter : public aura::ToplevelWindowEventFilter {
+class DefaultContainerEventFilter : public ToplevelWindowEventFilter {
  public:
   explicit DefaultContainerEventFilter(aura::Window* owner);
   virtual ~DefaultContainerEventFilter();

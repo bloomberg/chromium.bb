@@ -7,13 +7,14 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "ui/aura/aura_export.h"
 #include "ui/aura/window_delegate.h"
 
 namespace aura {
 namespace test {
 
 // WindowDelegate implementation with all methods stubbed out.
-class TestWindowDelegate : public WindowDelegate {
+class AURA_EXPORT TestWindowDelegate : public WindowDelegate {
  public:
   TestWindowDelegate();
   virtual ~TestWindowDelegate();

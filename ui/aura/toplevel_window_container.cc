@@ -5,14 +5,12 @@
 #include "ui/aura/toplevel_window_container.h"
 
 #include "base/utf_string_conversions.h"
-#include "ui/aura/toplevel_window_event_filter.h"
 
 namespace aura {
 
 ToplevelWindowContainer::ToplevelWindowContainer()
     : Window(NULL) {
   set_name("ToplevelWindowContainer");
-  SetEventFilter(new ToplevelWindowEventFilter(this));
 }
 
 ToplevelWindowContainer::~ToplevelWindowContainer() {

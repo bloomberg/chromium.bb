@@ -20,6 +20,7 @@
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/toplevel_layout_manager.h"
+#include "ui/aura_shell/toplevel_window_event_filter.h"
 #include "ui/aura_shell/workspace/workspace_controller.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
@@ -42,10 +43,14 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
   containers->push_back(background_container);
 
   aura::Window* default_container = new aura::ToplevelWindowContainer;
+  default_container->SetEventFilter(
+      new ToplevelWindowEventFilter(default_container));
   default_container->set_id(internal::kShellWindowId_DefaultContainer);
   containers->push_back(default_container);
 
   aura::Window* always_on_top_container = new aura::ToplevelWindowContainer;
+  always_on_top_container->SetEventFilter(
+      new ToplevelWindowEventFilter(always_on_top_container));
   always_on_top_container->set_id(
       internal::kShellWindowId_AlwaysOnTopContainer);
   containers->push_back(always_on_top_container);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/toplevel_window_event_filter.h"
+#include "ui/aura_shell/toplevel_window_event_filter.h"
 
 #include "ui/aura/aura_constants.h"
 #include "ui/aura/cursor.h"
@@ -13,7 +13,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/base/ui_base_types.h"
 
-namespace aura {
+namespace aura_shell {
 
 namespace {
 
@@ -116,7 +116,7 @@ int GetYMultiplierForWindowComponent(int window_component) {
 
 }
 
-ToplevelWindowEventFilter::ToplevelWindowEventFilter(Window* owner)
+ToplevelWindowEventFilter::ToplevelWindowEventFilter(aura::Window* owner)
     : EventFilter(owner),
       window_component_(HTNOWHERE) {
 }
@@ -124,13 +124,13 @@ ToplevelWindowEventFilter::ToplevelWindowEventFilter(Window* owner)
 ToplevelWindowEventFilter::~ToplevelWindowEventFilter() {
 }
 
-bool ToplevelWindowEventFilter::PreHandleKeyEvent(Window* target,
-                                                  KeyEvent* event) {
+bool ToplevelWindowEventFilter::PreHandleKeyEvent(aura::Window* target,
+                                                  aura::KeyEvent* event) {
   return false;
 }
 
-bool ToplevelWindowEventFilter::PreHandleMouseEvent(Window* target,
-                                                    MouseEvent* event) {
+bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
+                                                    aura::MouseEvent* event) {
   // Process EventFilters implementation first so that it processes
   // activation/focus first.
   switch (event->type()) {
@@ -145,8 +145,8 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(Window* target,
       mouse_down_bounds_ = target->bounds();
       mouse_down_offset_in_target_ = event->location();
       mouse_down_offset_in_parent_ = mouse_down_offset_in_target_;
-      Window::ConvertPointToWindow(target, target->parent(),
-                                   &mouse_down_offset_in_parent_);
+      aura::Window::ConvertPointToWindow(target, target->parent(),
+                                         &mouse_down_offset_in_parent_);
       return GetBoundsChangeForWindowComponent(window_component_) !=
           kBoundsChange_None;
     case ui::ET_MOUSE_DRAGGED:
@@ -161,17 +161,17 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(Window* target,
 }
 
 ui::TouchStatus ToplevelWindowEventFilter::PreHandleTouchEvent(
-    Window* target,
-    TouchEvent* event) {
+    aura::Window* target,
+    aura::TouchEvent* event) {
   // Process EventFilters implementation first so that it processes
   // activation/focus first.
   // TODO(sad): Allow moving/resizing/maximizing etc. from touch?
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-void ToplevelWindowEventFilter::MoveWindowToFront(Window* target) {
-  Window* parent = target->parent();
-  Window* child = target;
+void ToplevelWindowEventFilter::MoveWindowToFront(aura::Window* target) {
+  aura::Window* parent = target->parent();
+  aura::Window* child = target;
   while (parent) {
     parent->MoveChildToFront(child);
     if (parent == owner())
@@ -181,7 +181,8 @@ void ToplevelWindowEventFilter::MoveWindowToFront(Window* target) {
   }
 }
 
-bool ToplevelWindowEventFilter::HandleDrag(Window* target, MouseEvent* event) {
+bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
+                                           aura::MouseEvent* event) {
   int bounds_change = GetBoundsChangeForWindowComponent(window_component_);
   if (bounds_change == kBoundsChange_None)
     return false;
@@ -197,15 +198,16 @@ bool ToplevelWindowEventFilter::HandleDrag(Window* target, MouseEvent* event) {
 }
 
 void ToplevelWindowEventFilter::UpdateWindowComponentForEvent(
-    Window* target, MouseEvent* event) {
+    aura::Window* target,
+    aura::MouseEvent* event) {
   window_component_ =
       target->delegate()->GetNonClientComponent(event->location());
 }
 
 gfx::Point ToplevelWindowEventFilter::GetOriginForDrag(
     int bounds_change,
-    Window* target,
-    MouseEvent* event) const {
+    aura::Window* target,
+    aura::MouseEvent* event) const {
   gfx::Point origin = mouse_down_bounds_.origin();
   if (bounds_change & kBoundsChange_Repositions) {
     int pos_change_direction =
@@ -225,17 +227,18 @@ gfx::Point ToplevelWindowEventFilter::GetOriginForDrag(
   return origin;
 }
 
-gfx::Size ToplevelWindowEventFilter::GetSizeForDrag(int bounds_change,
-                                                    Window* target,
-                                                    MouseEvent* event) const {
+gfx::Size ToplevelWindowEventFilter::GetSizeForDrag(
+    int bounds_change,
+    aura::Window* target,
+    aura::MouseEvent* event) const {
   gfx::Size size = mouse_down_bounds_.size();
   if (bounds_change & kBoundsChange_Resizes) {
     int size_change_direction =
         GetSizeChangeDirectionForWindowComponent(window_component_);
 
     gfx::Point event_location_in_parent(event->location());
-    Window::ConvertPointToWindow(target, target->parent(),
-                                 &event_location_in_parent);
+    aura::Window::ConvertPointToWindow(target, target->parent(),
+                                       &event_location_in_parent);
 
     // The math changes depending on whether the window is being resized, or
     // repositioned in addition to being resized.
