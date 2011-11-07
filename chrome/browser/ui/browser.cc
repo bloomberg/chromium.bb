@@ -1773,22 +1773,15 @@ void Browser::NotifyTabOfFullscreenExitIfNecessary() {
 void Browser::TogglePresentationMode(bool for_tab) {
   bool entering_fullscreen = !window_->InPresentationMode();
   GURL url;
-  bool ask_permission = false;
   if (for_tab) {
     url = GetSelectedTabContents()->GetURL();
-    ask_permission = GetFullscreenSetting(url) != CONTENT_SETTING_ALLOW;
+    tab_fullscreen_accepted_ = entering_fullscreen &&
+        GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
   }
-  if (entering_fullscreen) {
-    FullscreenExitBubbleType type =
-        FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION;
-    if (for_tab) {
-      type = ask_permission ? FEB_TYPE_FULLSCREEN_BUTTONS :
-                              FEB_TYPE_FULLSCREEN_EXIT_INSTRUCTION;
-    }
-    window_->EnterPresentationMode(url, type);
-  } else {
+  if (entering_fullscreen)
+    window_->EnterPresentationMode(url, GetFullscreenExitBubbleType());
+  else
     window_->ExitPresentationMode();
-  }
   WindowFullscreenStateChanged();
 }
 #endif
