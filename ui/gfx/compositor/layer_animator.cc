@@ -304,8 +304,9 @@ void LayerAnimator::FinishAnimation(LayerAnimationSequence* sequence) {
 }
 
 void LayerAnimator::FinishAnyAnimationWithZeroDuration() {
-  // We need to make a copy because Progress may indirectly cause new animations
-  // to start running.
+  // Special case: if we've started a 0 duration animation, just finish it now
+  // and get rid of it. We need to make a copy because Progress may indirectly
+  // cause new animations to start running.
   RunningAnimations running_animations_copy = running_animations_;
   for (size_t i = 0; i < running_animations_copy.size(); ++i) {
     if (running_animations_copy[i].sequence->duration() == base::TimeDelta()) {

@@ -269,5 +269,27 @@ NonClientFrameView* DesktopWindowView::CreateNonClientFrameView() {
   return NULL;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// ui::LayerAnimationObserver Implementation:
+
+void DesktopWindowView::OnLayerAnimationEnded(
+    const ui::LayerAnimationSequence* animation) {
+  // The layer, and all the observers should be notified of the
+  // transformed size of the desktop.
+  if (widget_) {
+    gfx::Rect current_bounds(widget_->GetClientAreaScreenBounds().size());
+    layer()->transform().TransformRect(&current_bounds);
+    SetBoundsRect(gfx::Rect(current_bounds.size()));
+  }
+}
+
+void DesktopWindowView::OnLayerAnimationScheduled(
+    const ui::LayerAnimationSequence* animation) {
+}
+
+void DesktopWindowView::OnLayerAnimationAborted(
+    const ui::LayerAnimationSequence* animation) {
+}
+
 }  // namespace desktop
 }  // namespace views

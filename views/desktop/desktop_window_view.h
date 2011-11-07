@@ -6,8 +6,13 @@
 #define VIEWS_DESKTOP_DESKTOP_WINDOW_VIEW_H_
 
 #include "base/observer_list.h"
+#include "ui/gfx/compositor/layer_animation_observer.h"
 #include "views/view.h"
 #include "views/widget/widget_delegate.h"
+
+namespace ui {
+class LayerAnimationSequence;
+}  // namespace ui
 
 namespace views {
 class NativeWidgetViews;
@@ -15,7 +20,8 @@ class Widget;
 
 namespace desktop {
 
-class DesktopWindowView : public WidgetDelegateView {
+class DesktopWindowView : public WidgetDelegateView,
+                          public ui::LayerAnimationObserver {
  public:
   // Observers can listen to various events on the desktop.
   class Observer {
@@ -72,6 +78,14 @@ class DesktopWindowView : public WidgetDelegateView {
   virtual void WindowClosing() OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
+
+  // Implementation of ui::LayerAnimationObserver:
+  virtual void OnLayerAnimationEnded(
+      const ui::LayerAnimationSequence* animation) OVERRIDE;
+  virtual void OnLayerAnimationScheduled(
+      const ui::LayerAnimationSequence* animation) OVERRIDE;
+  virtual void OnLayerAnimationAborted(
+      const ui::LayerAnimationSequence* animation) OVERRIDE;
 
   ObserverList<Observer> observers_;
   DesktopType type_;

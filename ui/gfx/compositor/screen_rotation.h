@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SCREEN_ROTATION_H_
-#define UI_AURA_SCREEN_ROTATION_H_
+#ifndef UI_GFX_COMPOSITOR_SCREEN_ROTATION_H_
+#define UI_GFX_COMPOSITOR_SCREEN_ROTATION_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/compositor/compositor_export.h"
 #include "ui/gfx/compositor/layer_animation_element.h"
 #include "ui/gfx/point.h"
 
 namespace ui {
 class InterpolatedTransform;
 class LayerAnimationDelegate;
-}
 
 // A screen rotation represents a single transition from one screen orientation
 // to another. The  intended usage is that a new instance of the class is
 // created for every transition. It is possible to update the target orientation
 // in the middle of a transition.
-class ScreenRotation : public ui::LayerAnimationElement {
+class COMPOSITOR_EXPORT ScreenRotation : public LayerAnimationElement {
  public:
   // The screen rotation does not own the view or the listener, and these
   // objects are required to outlive the Screen rotation object.
@@ -29,26 +29,28 @@ class ScreenRotation : public ui::LayerAnimationElement {
   virtual ~ScreenRotation();
 
  private:
-  // Implementation of ui::LayerAnimationDelegate
-  virtual void OnStart(ui::LayerAnimationDelegate* delegate) OVERRIDE;
+  // Implementation of LayerAnimationDelegate
+  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE;
   virtual void OnProgress(double t,
-                          ui::LayerAnimationDelegate* delegate) OVERRIDE;
+                          LayerAnimationDelegate* delegate) OVERRIDE;
   virtual void OnGetTarget(TargetValue* target) const OVERRIDE;
   virtual void OnAbort() OVERRIDE;
 
-  static const ui::LayerAnimationElement::AnimatableProperties& GetProperties();
+  static const LayerAnimationElement::AnimatableProperties& GetProperties();
 
   // Generates the intermediate transformation matrices used during the
   // animation.
-  scoped_ptr<ui::InterpolatedTransform> interpolated_transform_;
+  scoped_ptr<InterpolatedTransform> interpolated_transform_;
 
   // The number of degrees to rotate.
   int degrees_;
 
-  // The target origin for |view_|
+  // The target origin
   gfx::Point new_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenRotation);
 };
 
-#endif  // UI_AURA_SCREEN_ROTATION_H_
+}  // namespace ui
+
+#endif  // UI_GFX_COMPOSITOR_SCREEN_ROTATION_H_

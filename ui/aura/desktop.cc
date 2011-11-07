@@ -21,7 +21,6 @@
 #include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/screen_aura.h"
-#include "ui/aura/screen_rotation.h"
 #include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -29,6 +28,7 @@
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/compositor/screen_rotation.h"
 #include "ui/gfx/interpolated_transform.h"
 
 using std::string;
@@ -43,22 +43,6 @@ static const int kDefaultHostWindowX = 200;
 static const int kDefaultHostWindowY = 200;
 static const int kDefaultHostWindowWidth = 1280;
 static const int kDefaultHostWindowHeight = 1024;
-
-#if !defined(NDEBUG)
-// Converts degrees to an angle in the range [-180, 180).
-int NormalizeAngle(int degrees) {
-  while (degrees <= -180) degrees += 360;
-  while (degrees > 180) degrees -= 360;
-  return degrees;
-}
-
-static int SymmetricRound(float x) {
-  return static_cast<int>(
-    x > 0
-      ? std::floor(x + 0.5f)
-      : std::ceil(x - 0.5f));
-}
-#endif
 
 class DefaultDesktopDelegate : public DesktopDelegate {
  public:
@@ -168,37 +152,35 @@ bool MaybeFullScreen(DesktopHost* host, KeyEvent* event) {
 }
 
 bool MaybeRotate(Desktop* desktop, KeyEvent* event) {
-  if ((event->flags() & ui::EF_SHIFT_DOWN) &&
-      (event->flags() & ui::EF_ALT_DOWN)) {
-    bool should_rotate = true;
-    int new_degrees = 0;
-    switch (event->key_code()) {
-      case ui::VKEY_UP: new_degrees = 0; break;
-      case ui::VKEY_DOWN: new_degrees = 180; break;
-      case ui::VKEY_RIGHT: new_degrees = 90; break;
-      case ui::VKEY_LEFT: new_degrees = -90; break;
-      default: should_rotate = false; break;
+  if ((event->flags() & ui::EF_CONTROL_DOWN) &&
+      event->key_code() == ui::VKEY_HOME) {
+    static int i = 0;
+    int delta = 0;
+    switch (i) {
+      case 0: delta = 90; break;
+      case 1: delta = 90; break;
+      case 2: delta = 90; break;
+      case 3: delta = 90; break;
+      case 4: delta = -90; break;
+      case 5: delta = -90; break;
+      case 6: delta = -90; break;
+      case 7: delta = -90; break;
+      case 8: delta = -90; break;
+      case 9: delta = 180; break;
+      case 10: delta = 180; break;
+      case 11: delta = 90; break;
+      case 12: delta = 180; break;
+      case 13: delta = 180; break;
     }
-
-    if (should_rotate) {
-      float rotation = 0.0f;
-      int degrees = 0;
-      const ui::Transform& transform = desktop->layer()->GetTargetTransform();
-      if (ui::InterpolatedTransform::FactorTRS(transform,
-                                               NULL, &rotation, NULL))
-        degrees = NormalizeAngle(new_degrees - SymmetricRound(rotation));
-
-      if (degrees != 0) {
-        desktop->layer()->GetAnimator()->set_preemption_strategy(
-            ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-        scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
-            new ui::LayerAnimationSequence(new ScreenRotation(degrees)));
-        screen_rotation->AddObserver(desktop);
-        desktop->layer()->GetAnimator()->ScheduleAnimation(
-            screen_rotation.release());
-        return true;
-      }
-    }
+    i = (i + 1) % 14;
+    desktop->layer()->GetAnimator()->set_preemption_strategy(
+        ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+    scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
+        new ui::LayerAnimationSequence(new ui::ScreenRotation(delta)));
+    screen_rotation->AddObserver(desktop);
+    desktop->layer()->GetAnimator()->ScheduleAnimation(
+        screen_rotation.release());
+    return true;
   }
   return false;
 }

@@ -57,6 +57,8 @@
         'layer_animation_sequence.h',
         'layer_animator.cc',
         'layer_animator.h',
+        'screen_rotation.cc',
+        'screen_rotation.h',
       ],
       'conditions': [
         ['os_posix == 1 and OS != "mac"', {

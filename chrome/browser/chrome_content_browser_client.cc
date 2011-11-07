@@ -97,6 +97,10 @@
 #include "chrome/browser/chrome_browser_parts_gtk.h"
 #endif
 
+#if defined(TOUCH_UI)
+#include "chrome/browser/chrome_browser_parts_touch.h"
+#endif
+
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
 #include "chrome/browser/crash_handler_host_linux.h"
@@ -229,6 +233,9 @@ void ChromeContentBrowserClient::CreateBrowserMainParts(
 #endif
 #if defined(TOOLKIT_USES_GTK)
   parts_list->push_back(new ChromeBrowserPartsGtk());
+#endif
+#if defined(TOUCH_UI)
+  parts_list->push_back(new ChromeBrowserPartsTouch());
 #endif
 }
 
