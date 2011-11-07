@@ -471,6 +471,8 @@
         'host/capturer_linux.cc',
         'host/capturer_mac.cc',
         'host/capturer_win.cc',
+        'host/capture_scheduler.cc',
+        'host/capture_scheduler.h',
         'host/chromoting_host.cc',
         'host/chromoting_host.h',
         'host/chromoting_host_context.cc',

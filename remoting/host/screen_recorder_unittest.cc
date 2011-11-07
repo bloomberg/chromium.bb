@@ -102,52 +102,6 @@ class ScreenRecorderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ScreenRecorderTest);
 };
 
-// This test mocks capturer, encoder and network layer to operate one recording
-// cycle.
-TEST_F(ScreenRecorderTest, OneRecordCycle) {
-  SkRegion update_region(SkIRect::MakeXYWH(0, 0, 10, 10));
-  DataPlanes planes;
-  for (int i = 0; i < DataPlanes::kPlaneCount; ++i) {
-    planes.data[i] = reinterpret_cast<uint8*>(i);
-    planes.strides[i] = kWidth * 4;
-  }
-  SkISize size(SkISize::Make(kWidth, kHeight));
-  scoped_refptr<CaptureData> data(new CaptureData(planes, size, kFormat));
-  EXPECT_CALL(capturer_, InvalidateFullScreen());
-
-  // First the capturer is called.
-  EXPECT_CALL(capturer_, CaptureInvalidRegion(NotNull()))
-      .WillOnce(RunCallback(update_region, data));
-
-  // Expect the encoder be called.
-  EXPECT_CALL(*encoder_, Encode(data, false, NotNull()))
-      .WillOnce(FinishEncode());
-
-  MockVideoStub video_stub;
-  EXPECT_CALL(*connection_, video_stub())
-      .WillRepeatedly(Return(&video_stub));
-
-  // Expect the client be notified.
-  EXPECT_CALL(video_stub, ProcessVideoPacket(_, _))
-      .Times(1)
-      .WillOnce(DeleteArg<0>());
-  EXPECT_CALL(video_stub, GetPendingPackets())
-      .Times(AtLeast(0))
-      .WillRepeatedly(Return(0));
-
-  // Set the recording rate to very low to avoid capture twice.
-  record_->SetMaxRate(0.01);
-
-  // Add the mock client connection to the session.
-  record_->AddConnection(connection_);
-
-  // Start the recording.
-  record_->Start();
-
-  // Make sure all tasks are completed.
-  message_loop_.RunAllPending();
-}
-
 // This test mocks capturer, encoder and network layer to simulate one recording
 // cycle. When the first encoded packet is submitted to the network
 // ScreenRecorder is instructed to come to a complete stop. We expect the stop
