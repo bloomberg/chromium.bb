@@ -403,10 +403,6 @@ SiteInstance* TabContents::GetPendingSiteInstance() const {
   return dest_rvh->site_instance();
 }
 
-bool TabContents::IsLoading() const {
-  return is_loading_ || (web_ui() && web_ui()->IsLoading());
-}
-
 void TabContents::AddObserver(TabContentsObserver* observer) {
   observers_.AddObserver(observer);
 }

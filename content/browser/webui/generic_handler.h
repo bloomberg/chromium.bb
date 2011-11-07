@@ -20,20 +20,9 @@ class GenericHandler : public WebUIMessageHandler {
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
-  virtual bool IsLoading() const OVERRIDE;
 
  private:
   void HandleNavigateToUrl(const base::ListValue* args);
-
-  // Javascript hook to indicate whether or not a long running operation is in
-  // progress.
-  void HandleSetIsLoading(const base::ListValue* args);
-
-  // Indicates whether or not this WebUI is performing a long running operation
-  // and that the throbber should reflect this.
-  void SetIsLoading(bool is_loading);
-
-  bool is_loading_;
 
   DISALLOW_COPY_AND_ASSIGN(GenericHandler);
 };

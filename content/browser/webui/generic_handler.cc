@@ -10,11 +10,9 @@
 #include "base/values.h"
 #include "content/browser/disposition_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "googleurl/src/gurl.h"
 
-GenericHandler::GenericHandler()
-  : is_loading_(false) {
+GenericHandler::GenericHandler() {
 }
 
 GenericHandler::~GenericHandler() {
@@ -23,12 +21,6 @@ GenericHandler::~GenericHandler() {
 void GenericHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("navigateToUrl",
       base::Bind(&GenericHandler::HandleNavigateToUrl, base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("setIsLoading",
-      base::Bind(&GenericHandler::HandleSetIsLoading, base::Unretained(this)));
-}
-
-bool GenericHandler::IsLoading() const {
-  return is_loading_;
 }
 
 void GenericHandler::HandleNavigateToUrl(const ListValue* args) {
@@ -61,23 +53,4 @@ void GenericHandler::HandleNavigateToUrl(const ListValue* args) {
       GURL(url_string), GURL(), disposition, content::PAGE_TRANSITION_LINK);
 
   // This may delete us!
-}
-
-void GenericHandler::HandleSetIsLoading(const base::ListValue* args) {
-  CHECK(args->GetSize() == 1);
-  std::string is_loading;
-  CHECK(args->GetString(0, &is_loading));
-
-  SetIsLoading(is_loading == "true");
-}
-
-void GenericHandler::SetIsLoading(bool is_loading) {
-  DCHECK(web_ui_);
-
-  TabContents* contents = web_ui_->tab_contents();
-  bool was_loading = contents->IsLoading();
-
-  is_loading_ = is_loading;
-  if (was_loading != contents->IsLoading())
-    contents->delegate()->LoadingStateChanged(contents);
 }

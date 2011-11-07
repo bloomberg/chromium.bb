@@ -166,15 +166,6 @@ void WebUI::RegisterMessageCallback(const std::string &message,
     result.first->second = callback;
 }
 
-bool WebUI::IsLoading() const {
-  std::vector<WebUIMessageHandler*>::const_iterator iter;
-  for (iter = handlers_.begin(); iter != handlers_.end(); ++iter) {
-    if ((*iter)->IsLoading())
-      return true;
-  }
-  return false;
-}
-
 // WebUI, protected: ----------------------------------------------------------
 
 void WebUI::AddMessageHandler(WebUIMessageHandler* handler) {
@@ -198,10 +189,6 @@ WebUIMessageHandler* WebUIMessageHandler::Attach(WebUI* web_ui) {
   web_ui_ = web_ui;
   RegisterMessages();
   return this;
-}
-
-bool WebUIMessageHandler::IsLoading() const {
-  return false;
 }
 
 // WebUIMessageHandler, protected: ---------------------------------------------

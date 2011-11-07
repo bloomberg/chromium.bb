@@ -144,10 +144,6 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
 
   TabContents* tab_contents() const { return tab_contents_; }
 
-  // Returns true to indicate that the WebUI is performing a long running
-  // operation and wants the tab throbber to run.
-  virtual bool IsLoading() const;
-
   // An opaque identifier used to identify a WebUI. This can only be compared to
   // kNoWebUI or other WebUI types. See GetWebUIType.
   typedef void* TypeID;
@@ -209,10 +205,6 @@ class CONTENT_EXPORT WebUIMessageHandler {
   // virtual so that subclasses can do special init work as soon as the web_ui
   // is provided.  Returns |this| for convenience.
   virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-
-  // Returns true to indicate that a long running operation is in progress and
-  // the tab throbber should be active.
-  virtual bool IsLoading() const;
 
  protected:
   // Adds "url" and "title" keys on incoming dictionary, setting title

@@ -162,9 +162,8 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // returns the current SiteInstance.
   SiteInstance* GetPendingSiteInstance() const;
 
-  // Return whether this tab contents is loading a resource, or whether its
-  // web_ui is.
-  bool IsLoading() const;
+  // Return whether this tab contents is loading a resource.
+  bool IsLoading() const { return is_loading_; }
 
   // Returns whether this tab contents is waiting for a first-response for the
   // main resource of the page. This controls whether the throbber state is
