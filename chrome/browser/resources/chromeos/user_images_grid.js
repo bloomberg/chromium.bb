@@ -11,8 +11,9 @@ cr.define('options', function() {
 
   /**
    * Creates a new user images grid item.
-   * @param {{url: string, title: string=, clickHandler: function=}} imageInfo
-   *     User image URL, title and optional click handler.
+   * @param {{url: string, title: string=, decorateFn: function=,
+   *     clickHandler: function=}} imageInfo User image URL, optional title,
+   *     decorator callback and click handler.
    * @constructor
    * @extends {cr.ui.GridItem}
    */
@@ -38,6 +39,8 @@ cr.define('options', function() {
       // Remove any garbage added by GridItem and ListItem decorators.
       this.textContent = '';
       this.appendChild(imageEl);
+      if (typeof this.dataItem.decorateFn == 'function')
+        this.dataItem.decorateFn(this);
     }
   };
 
@@ -153,13 +156,18 @@ cr.define('options', function() {
      * @param {function=} opt_clickHandler Image click handler.
      * @param {number=} opt_position If given, inserts new image into
      *     that position (0-based) in image list.
+     * @param {function=} opt_decorateFn Function called with the list element
+     *     as argument to do any final decoration.
      * @return {!Object} Image data inserted into the data model.
      */
-    addItem: function(url, opt_title, opt_clickHandler, opt_position) {
+    // TODO(ivankr): this function needs some argument list refactoring.
+    addItem: function(url, opt_title, opt_clickHandler, opt_position,
+                      opt_decorateFn) {
       var imageInfo = {
         url: url,
         title: opt_title,
-        clickHandler: opt_clickHandler
+        clickHandler: opt_clickHandler,
+        decorateFn: opt_decorateFn
       };
       this.inProgramSelection_ = true;
       if (opt_position !== undefined)
@@ -195,7 +203,8 @@ cr.define('options', function() {
           imageUrl,
           opt_title === undefined ? imageInfo.title : opt_title,
           imageInfo.clickHandler,
-          imageIndex);
+          imageIndex,
+          imageInfo.decorateFn);
       if (wasSelected)
         this.selectedItem = newInfo;
       return newInfo;

@@ -67,6 +67,9 @@ class UserImageScreenActor {
 
   // Inserts profile image in the list for user to select.
   virtual void AddProfileImage(const SkBitmap& image) {}
+
+  // Indicates that there is no custom profile image for the user.
+  virtual void OnProfileImageAbsent() {}
 };
 
 }  // namespace chromeos

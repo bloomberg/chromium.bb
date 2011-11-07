@@ -64,8 +64,21 @@ cr.define('oobe', function() {
       this.photoImage_ = null;
 
       // Profile image data (if present).
-      this.profileImage_ = imageGrid.addItem(ButtonImages.PROFILE_PICTURE);
+      this.profileImage_ = imageGrid.addItem(
+          ButtonImages.PROFILE_PICTURE,
+          undefined, undefined, undefined,
+          function(el) {  // Custom decorator for Profile image element.
+            var spinner = el.ownerDocument.createElement('div');
+            spinner.className = 'spinner';
+            var spinnerBg = el.ownerDocument.createElement('div');
+            spinnerBg.className = 'spinner-bg';
+            spinnerBg.appendChild(spinner);
+            el.appendChild(spinnerBg);
+            el.id = 'profile-image';
+          });
       this.profileImageUrl_ = this.profileImage_.url;
+      // True if a non-default profile image has been successfully loaded.
+      this.profileImagePresent_ = false;
 
       // Initialize profile image state.
       this.profileImageSelected = false;
@@ -113,7 +126,7 @@ cr.define('oobe', function() {
     },
     set profileImageLoading(value) {
       this.profileImageLoading_ = value;
-      $('user-image-preview').classList[
+      $('user-image-screen-main').classList[
           value ? 'add' : 'remove']('profile-image-loading');
       this.profileImageCaption = localStrings.getString(
           value ? 'profilePhotoLoading' : 'profilePhoto');
@@ -137,8 +150,6 @@ cr.define('oobe', function() {
     },
     set profileImageSelected(value) {
       this.profileImageSelected_ = value;
-      $('user-image-preview').classList[
-          value ? 'add' : 'remove']('profile-image');
       this.updateCaption_();
     },
 
@@ -259,14 +270,18 @@ cr.define('oobe', function() {
 
     /**
      * Updates user profile image.
-     * @param {string} imageUrl Image encoded as data URL.
+     * @param {?string} imageUrl Image encoded as data URL. If null, user has
+     *     the default profile image, which we don't want to show.
      * @private
      */
     setProfileImage_: function(imageUrl) {
-      this.profileImageUrl_ = imageUrl;
       this.profileImageLoading = false;
-      this.profileImage_ =
-          $('user-image-grid').updateItem(this.profileImage_, imageUrl);
+      if (imageUrl !== null) {
+        this.profileImagePresent_ = true;
+        this.profileImageUrl_ = imageUrl;
+        this.profileImage_ =
+            $('user-image-grid').updateItem(this.profileImage_, imageUrl);
+      }
     },
 
     /**
@@ -296,7 +311,7 @@ cr.define('oobe', function() {
      * @private
      */
     updateCaption_: function() {
-      $('user-image-caption-text').textContent =
+      $('user-image-preview-caption').textContent =
           this.profileImageSelected ? this.profileImageCaption : '';
     },
 
@@ -306,12 +321,11 @@ cr.define('oobe', function() {
      */
     updateButtons_: function() {
       // Do not allow user to choose a button image or the profile image
-      // while it's loading.
+      // if it's still loading or if user has a default picture.
       var okButton = $('ok-button');
       if (okButton)
-        okButton.disabled =
-            this.buttonImageSelected_ ||
-            this.profileImageSelected && this.profileImageLoading;
+        okButton.disabled = this.buttonImageSelected_ ||
+            (this.profileImageSelected && !this.profileImagePresent_);
     }
   };
 

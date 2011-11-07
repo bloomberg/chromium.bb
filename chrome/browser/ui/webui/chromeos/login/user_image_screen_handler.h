@@ -47,6 +47,7 @@ class UserImageScreenHandler : public UserImageScreenActor,
   virtual void CheckCameraPresence() OVERRIDE;
   virtual bool IsCapturing() const OVERRIDE;
   virtual void AddProfileImage(const SkBitmap& image) OVERRIDE;
+  virtual void OnProfileImageAbsent() OVERRIDE;
 
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() OVERRIDE;
@@ -86,6 +87,9 @@ class UserImageScreenHandler : public UserImageScreenActor,
 
   // Its data URL.
   std::string profile_picture_data_url_;
+
+  // True if user has no custom profile picture.
+  bool profile_picture_absent_;
 
   base::WeakPtrFactory<UserImageScreenHandler> weak_factory_;
 

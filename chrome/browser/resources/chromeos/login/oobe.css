@@ -286,6 +286,31 @@ html[dir=rtl]  .step.left {
   padding: 2px;
 }
 
+#profile-image {
+  position: relative;
+}
+
+/* White background for spinner styled like user image */
+#profile-image .spinner-bg {
+  background-color: white;
+  height: 50px;
+  left: 3px;
+  position: absolute;
+  top: 3px;
+  visibility: hidden;
+  width: 50px;
+}
+
+.profile-image-loading #profile-image .spinner-bg {
+  visibility: visible;
+}
+
+#profile-image .spinner {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+}
+
 #user-image-preview {
   border-radius: 4px;
   float: right;
@@ -311,20 +336,9 @@ html[dir=rtl] #user-image-preview {
   color: dimGray;
   font-size: smaller;
   margin: 8px 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-#user-image-preview-caption .spinner {
-  display: inline-block;
-  visibility: hidden;
-  vertical-align: -6px;
-  width: 0;
-}
-
-.profile-image.profile-image-loading #user-image-preview-caption .spinner {
-  margin-right: 2px;
-  visibility: visible;
-  width: 22px;
 }
 
 #footer {

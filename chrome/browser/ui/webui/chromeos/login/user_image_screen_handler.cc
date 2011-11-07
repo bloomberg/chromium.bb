@@ -35,6 +35,7 @@ UserImageScreenHandler::UserImageScreenHandler()
       show_on_init_(false),
       selected_image_(UserManager::User::kInvalidImageIndex),
       profile_picture_data_url_(chrome::kAboutBlankURL),
+      profile_picture_absent_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
@@ -69,6 +70,11 @@ void UserImageScreenHandler::Initialize() {
 
   if (selected_image_ != UserManager::User::kInvalidImageIndex)
     SelectImage(selected_image_);
+
+  if (!profile_picture_.empty())
+    AddProfileImage(profile_picture_);
+  else if (profile_picture_absent_)
+    OnProfileImageAbsent();
 
   if (show_on_init_) {
     Show();
@@ -129,12 +135,21 @@ bool UserImageScreenHandler::IsCapturing() const {
 }
 
 void UserImageScreenHandler::AddProfileImage(const SkBitmap& image) {
+  profile_picture_ = image;
+  profile_picture_data_url_ = web_ui_util::GetImageDataUrl(image);
   if (page_is_ready()) {
-    profile_picture_ = image;
-    profile_picture_data_url_ = web_ui_util::GetImageDataUrl(image);
     base::StringValue data_url(profile_picture_data_url_);
     web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setProfileImage",
                                     data_url);
+  }
+}
+
+void UserImageScreenHandler::OnProfileImageAbsent() {
+  profile_picture_absent_ = true;
+  if (page_is_ready()) {
+    scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
+    web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setProfileImage",
+                                    *null_value);
   }
 }
 

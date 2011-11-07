@@ -200,6 +200,8 @@ void UserImageScreen::OnDownloadFailure() {
   UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.NewUser",
                             ProfileImageDownloader::kDownloadFailure,
                             ProfileImageDownloader::kDownloadResultsCount);
+  if (actor_)
+    actor_->OnProfileImageAbsent();
 }
 
 void UserImageScreen::OnDownloadDefaultImage() {
@@ -207,6 +209,8 @@ void UserImageScreen::OnDownloadDefaultImage() {
   UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.NewUser",
                             ProfileImageDownloader::kDownloadDefault,
                             ProfileImageDownloader::kDownloadResultsCount);
+  if (actor_)
+    actor_->OnProfileImageAbsent();
 }
 
 }  // namespace chromeos
