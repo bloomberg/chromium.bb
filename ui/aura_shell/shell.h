@@ -30,6 +30,7 @@ class Launcher;
 class ShellDelegate;
 
 namespace internal {
+class ShelfLayoutController;
 class WorkspaceController;
 }
 
@@ -80,6 +81,8 @@ class AURA_SHELL_EXPORT Shell : public aura::DesktopDelegate {
   scoped_ptr<Launcher> launcher_;
 
   scoped_ptr<internal::WorkspaceController> workspace_controller_;
+
+  scoped_ptr<internal::ShelfLayoutController> shelf_layout_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

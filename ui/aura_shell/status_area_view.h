@@ -19,6 +19,7 @@ class StatusAreaView : public views::WidgetDelegateView {
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+
  private:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 

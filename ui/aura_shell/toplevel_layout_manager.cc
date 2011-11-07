@@ -7,6 +7,7 @@
 #include "ui/aura/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/property_util.h"
+#include "ui/aura_shell/shelf_layout_controller.h"
 #include "ui/aura_shell/workspace/workspace.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"
 #include "ui/base/ui_base_types.h"
@@ -15,7 +16,7 @@
 namespace aura_shell {
 namespace internal {
 
-ToplevelLayoutManager::ToplevelLayoutManager() {
+ToplevelLayoutManager::ToplevelLayoutManager() : shelf_(NULL) {
 }
 
 ToplevelLayoutManager::~ToplevelLayoutManager() {
@@ -36,10 +37,12 @@ void ToplevelLayoutManager::OnWindowAdded(aura::Window* child) {
 void ToplevelLayoutManager::OnWillRemoveWindow(aura::Window* child) {
   windows_.erase(child);
   child->RemoveObserver(this);
+  UpdateShelfVisibility();
 }
 
 void ToplevelLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
                                                            bool visibile) {
+  UpdateShelfVisibility();
 }
 
 void ToplevelLayoutManager::SetChildBounds(aura::Window* child,
@@ -73,12 +76,28 @@ void ToplevelLayoutManager::WindowStateChanged(aura::Window* window) {
     case ui::SHOW_STATE_FULLSCREEN:
       SetRestoreBoundsIfNotSet(window);
       window->SetBounds(gfx::Screen::GetMonitorAreaNearestWindow(window));
-      // TODO: need to hide the launcher.
       break;
 
     default:
       break;
   }
+
+  UpdateShelfVisibility();
+}
+
+void ToplevelLayoutManager::UpdateShelfVisibility() {
+  if (!shelf_)
+    return;
+
+  bool has_fullscreen_window = false;
+  for (Windows::const_iterator i = windows_.begin(); i != windows_.end(); ++i) {
+    if ((*i)->GetIntProperty(aura::kShowStateKey) ==
+        ui::SHOW_STATE_FULLSCREEN) {
+      has_fullscreen_window = true;
+      break;
+    }
+  }
+  shelf_->SetVisible(!has_fullscreen_window);
 }
 
 }  // namespace internal

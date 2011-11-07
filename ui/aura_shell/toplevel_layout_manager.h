@@ -17,6 +17,8 @@
 namespace aura_shell {
 namespace internal {
 
+class ShelfLayoutController;
+
 // ToplevelLayoutManager is the LayoutManager installed on the
 // ToplevelWindowContainer. It is used if the WorkspaceManager is not
 // enabled. ToplevelLayoutManager listens for changes to kShowStateKey and
@@ -26,6 +28,8 @@ class AURA_SHELL_EXPORT ToplevelLayoutManager : public aura::LayoutManager,
  public:
   ToplevelLayoutManager();
   virtual ~ToplevelLayoutManager();
+
+  void set_shelf(ShelfLayoutController* shelf) { shelf_ = shelf; }
 
   // LayoutManager overrides:
   virtual void OnWindowResized() OVERRIDE;
@@ -47,8 +51,14 @@ class AURA_SHELL_EXPORT ToplevelLayoutManager : public aura::LayoutManager,
   // If necessary adjusts the bounds of window based on it's show state.
   void WindowStateChanged(aura::Window* window);
 
+  // Updates the visbility of the shelf based on if there are any full screen
+  // windows.
+  void UpdateShelfVisibility();
+
   // Set of windows we're listening to.
   Windows windows_;
+
+  ShelfLayoutController* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(ToplevelLayoutManager);
 };

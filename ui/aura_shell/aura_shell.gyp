@@ -59,6 +59,8 @@
         'launcher/view_model_utils.h',
         'property_util.cc',
         'property_util.h',
+        'shelf_layout_controller.cc',
+        'shelf_layout_controller.h',
         'shell.cc',
         'shell.h',
         'shell_delegate.h',

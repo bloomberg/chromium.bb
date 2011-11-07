@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/desktop.h"
-#include "ui/aura/screen_aura.h"
 #include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
@@ -16,6 +15,7 @@
 #include "ui/aura_shell/default_container_layout_manager.h"
 #include "ui/aura_shell/desktop_layout_manager.h"
 #include "ui/aura_shell/launcher/launcher.h"
+#include "ui/aura_shell/shelf_layout_controller.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/aura_shell/shell_window_ids.h"
@@ -115,16 +115,19 @@ void Shell::Init() {
       GetContainer(internal::kShellWindowId_DefaultContainer)->
           AsToplevelWindowContainer();
   launcher_.reset(new Launcher(toplevel_container));
-  desktop_layout->set_launcher_widget(launcher_->widget());
-  desktop_layout->set_status_area_widget(internal::CreateStatusArea());
 
-  desktop_window->screen()->set_work_area_insets(gfx::Insets(
-      0, 0, launcher_->widget()->GetWindowScreenBounds().height(), 0));
+  shelf_layout_controller_.reset(new internal::ShelfLayoutController(
+      launcher_->widget(), internal::CreateStatusArea()));
+  desktop_layout->set_shelf(shelf_layout_controller_.get());
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraWindows))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraWindows)) {
     EnableWorkspaceManager();
-  else
-    toplevel_container->SetLayoutManager(new internal::ToplevelLayoutManager());
+  } else {
+    internal::ToplevelLayoutManager* toplevel_layout_manager =
+        new internal::ToplevelLayoutManager();
+    toplevel_container->SetLayoutManager(toplevel_layout_manager);
+    toplevel_layout_manager->set_shelf(shelf_layout_controller_.get());
+  }
 
   // Force a layout.
   desktop_layout->OnWindowResized();
