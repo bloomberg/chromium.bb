@@ -160,6 +160,7 @@ class DefaultSysAllocator : public SysAllocator {
     for (int i = 0; i < kMaxAllocators; i++) {
       failed_[i] = true;
       allocs_[i] = NULL;
+      names_[i] = NULL;
     }
   }
   void SetChildAllocator(SysAllocator* alloc, unsigned int index,
@@ -167,6 +168,7 @@ class DefaultSysAllocator : public SysAllocator {
     if (index < kMaxAllocators && alloc != NULL) {
       allocs_[index] = alloc;
       failed_[index] = false;
+      names_[index] = name;
     }
   }
   void* Alloc(size_t size, size_t *actual_size, size_t alignment);
