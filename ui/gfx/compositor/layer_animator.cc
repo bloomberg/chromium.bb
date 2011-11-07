@@ -193,6 +193,11 @@ void LayerAnimator::AddObserver(LayerAnimationObserver* observer) {
 
 void LayerAnimator::RemoveObserver(LayerAnimationObserver* observer) {
   observers_.RemoveObserver(observer);
+  // Remove the observer from all sequences as well.
+  for (AnimationQueue::iterator queue_iter = animation_queue_.begin();
+       queue_iter != animation_queue_.end(); ++queue_iter) {
+    (*queue_iter)->RemoveObserver(observer);
+  }
 }
 
 LayerAnimator::ScopedSettings::ScopedSettings(LayerAnimator* animator)

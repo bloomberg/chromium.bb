@@ -722,6 +722,41 @@ TEST(LayerAnimatorTest, AddObserverImplicit) {
   EXPECT_TRUE(!scoped_observer.last_ended_sequence());
 }
 
+TEST(LayerAnimatorTest, RemoveObserverShouldRemoveFromSequences) {
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  AnimationContainerElement* element = animator.get();
+  animator->set_disable_timer_for_test(true);
+  TestLayerAnimationObserver observer;
+  TestLayerAnimationObserver removed_observer;
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+
+  LayerAnimationSequence* sequence = new LayerAnimationSequence(
+      LayerAnimationElement::CreateOpacityElement(1.0f, delta));
+
+  sequence->AddObserver(&observer);
+  sequence->AddObserver(&removed_observer);
+
+  animator->StartAnimation(sequence);
+
+  EXPECT_EQ(observer.last_scheduled_sequence(), sequence);
+  EXPECT_TRUE(!observer.last_ended_sequence());
+  EXPECT_EQ(removed_observer.last_scheduled_sequence(), sequence);
+  EXPECT_TRUE(!removed_observer.last_ended_sequence());
+
+  // This should stop the observer from observing sequence.
+  animator->RemoveObserver(&removed_observer);
+
+  base::TimeTicks start_time = animator->get_last_step_time_for_test();
+
+  element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
+
+  EXPECT_EQ(observer.last_ended_sequence(), sequence);
+  EXPECT_TRUE(!removed_observer.last_ended_sequence());
+}
+
 // Check that setting a property during an animation with a default animator
 // cancels the original animation.
 TEST(LayerAnimatorTest, SettingPropertyDuringAnAnimation) {
