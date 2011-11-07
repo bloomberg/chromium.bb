@@ -219,11 +219,11 @@ ContentSetting CookieSettings::GetCookieSetting(
       secondary_pattern == ContentSettingsPattern::Wildcard() &&
       ShouldBlockThirdPartyCookies() &&
       !first_party_url.SchemeIs(chrome::kExtensionScheme)) {
-    bool strict = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kBlockReadingThirdPartyCookies);
-    net::StaticCookiePolicy policy(strict ?
-        net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES :
-        net::StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES);
+    bool not_strict = CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kOnlyBlockSettingThirdPartyCookies);
+    net::StaticCookiePolicy policy(not_strict ?
+        net::StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES :
+        net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES);
     int rv;
     if (setting_cookie)
       rv = policy.CanSetCookie(url, first_party_url);

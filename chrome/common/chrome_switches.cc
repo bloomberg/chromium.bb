@@ -108,11 +108,6 @@ const char kAutomationClientChannelID[]     = "automation-channel";
 const char kAutomationReinitializeOnChannelError[] =
     "automation-reinitialize-on-channel-error";
 
-// When the option to block third-party cookies from being set is enabled, also
-// block third-party cookies from being read.
-const char kBlockReadingThirdPartyCookies[] =
-    "block-reading-third-party-cookies";
-
 // How often (in seconds) to check for updates. Should only be used for testing
 // purposes.
 const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";
@@ -838,6 +833,11 @@ const char kNotifyCloudPrintTokenExpired[]  = "notify-cp-token-expired";
 // Specifies the maximum number of threads to use for running the Proxy
 // Autoconfig (PAC) script.
 const char kNumPacThreads[]                 = "num-pac-threads";
+
+// When the option to block third-party cookies is enabled, only block
+// third-party cookies from being set.
+const char kOnlyBlockSettingThirdPartyCookies[] =
+    "only-block-setting-third-party-cookies";
 
 // Launches URL in new browser window.
 const char kOpenInNewWindow[]               = "new-window";

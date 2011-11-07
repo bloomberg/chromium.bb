@@ -4693,12 +4693,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enables experimental extensions to the geolocation feature to use operating system location APIs (where available).
         </message>
       </if>
-      <message name="IDS_FLAGS_BLOCK_ALL_THIRD_PARTY_COOKIES_NAME" desc="Name of the 'Block all third-party cookies' lab.">
-        Block all third-party cookies
-      </message>
-      <message name="IDS_FLAGS_BLOCK_ALL_THIRD_PARTY_COOKIES_DESCRIPTION" desc="Description of the 'Block all third-party cookies' lab.">
-        When the option to block third-party cookies from being set is enabled, also block third-party cookies from being read.
-      </message>
       <message name="IDS_FLAGS_DISABLE_INTERACTIVE_FORM_VALIDATION_NAME" desc="Name of the 'Disable HTML5 interactive form validation' lab.">
         Disable HTML5 interactive form validation
       </message>
@@ -5906,7 +5900,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Exceptions...
       </message>
       <message name="IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX" desc="A checkbox in the Content Settings dialog for blocking all 3rd party cookies.">
-        Block third-party cookies from being set
+        Block third-party cookies and site data
       </message>
       <message name="IDS_INTENTS_TAB_LABEL" desc="Label for Web Intents tab on Content Settings page">
         Web Intents

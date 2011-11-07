@@ -54,7 +54,7 @@ TEST_F(CookieSettingsTest, CookiesBlockThirdParty) {
   TestingProfile profile;
   CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
   profile.GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
-  EXPECT_TRUE(cookie_settings->IsReadingCookieAllowed(
+  EXPECT_FALSE(cookie_settings->IsReadingCookieAllowed(
       kBlockedSite, kFirstPartySite));
   EXPECT_FALSE(cookie_settings->IsCookieSessionOnly(kBlockedSite));
   EXPECT_FALSE(cookie_settings->IsSettingCookieAllowed(
@@ -62,9 +62,9 @@ TEST_F(CookieSettingsTest, CookiesBlockThirdParty) {
 
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   AutoReset<CommandLine> auto_reset(cmd, *cmd);
-  cmd->AppendSwitch(switches::kBlockReadingThirdPartyCookies);
+  cmd->AppendSwitch(switches::kOnlyBlockSettingThirdPartyCookies);
 
-  EXPECT_FALSE(cookie_settings->IsReadingCookieAllowed(
+  EXPECT_TRUE(cookie_settings->IsReadingCookieAllowed(
       kBlockedSite, kFirstPartySite));
   EXPECT_FALSE(cookie_settings->IsSettingCookieAllowed(
       kBlockedSite, kFirstPartySite));
@@ -135,14 +135,6 @@ TEST_F(CookieSettingsTest, CookiesThirdPartyBlockedExplicitAllow) {
       kAllowedSite, kExtensionURL));
   EXPECT_TRUE(cookie_settings->IsSettingCookieAllowed(
       kAllowedSite, kExtensionURL));
-
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  AutoReset<CommandLine> auto_reset(cmd, *cmd);
-  cmd->AppendSwitch(switches::kBlockReadingThirdPartyCookies);
-
-  EXPECT_TRUE(cookie_settings->IsReadingCookieAllowed(
-      kAllowedSite, kFirstPartySite));
-  EXPECT_FALSE(cookie_settings->IsCookieSessionOnly(kAllowedSite));
 
   // Extensions should always be allowed to use cookies.
   EXPECT_TRUE(cookie_settings->IsReadingCookieAllowed(
