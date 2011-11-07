@@ -93,7 +93,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                             public FocusTraversable {
  public:
   // Observers can listen to various events on the Widgets.
-  class Observer {
+  class VIEWS_EXPORT Observer {
    public:
     virtual void OnWidgetClosing(Widget* widget) {}
     virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) {}
