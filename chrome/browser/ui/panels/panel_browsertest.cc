@@ -1294,8 +1294,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_FocusLostOnMinimize) {
   panel->Close();
 }
 
-// TODO(dimich): try/enable on other platforms.
-#if defined(OS_MACOSX) || defined(OS_WIN)
+// TODO(dimich): try/enable on other platforms. See bug 103253 for details on
+// why this is disabled on windows.
+#if defined(OS_MACOSX)
 #define MAYBE_MinimizeTwoPanelsWithoutTabbedWindow \
     MinimizeTwoPanelsWithoutTabbedWindow
 #else
