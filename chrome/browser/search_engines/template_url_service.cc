@@ -526,14 +526,12 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   LoadDefaultSearchProviderFromPrefs(&default_from_prefs,
                                      &is_default_search_managed_);
 
-  // TODO(sail): Re-enable the protector once various
-  // crashes and UI issues are fixed. See http://crbug.com/102765
-#if 0
   // Check if the default search provider has been changed and notify
   // Protector instance about it. Don't check if the default search is
   // managed.
   const TemplateURL* backup_default_search_provider = NULL;
   if (!is_default_search_managed_ &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kProtector) &&
       DidDefaultSearchProviderChange(
           *result,
           template_urls,
@@ -549,7 +547,6 @@ void TemplateURLService::OnWebDataServiceRequestDone(
         default_search_provider,
         backup_default_search_provider));
   }
-#endif
 
   // Remove entries that were created because of policy as they may have
   // changed since the database was saved.

@@ -921,6 +921,9 @@ const char kProfilingFlush[]                = "profiling-flush";
 // Specifies a custom URL for fetching NTP promo data.
 const char kPromoServerURL[]                = "promo-server-url";
 
+// Enables the protector.
+const char kProtector[]                     = "protector";
+
 // Forces proxy auto-detection.
 const char kProxyAutoDetect[]               = "proxy-auto-detect";
 
