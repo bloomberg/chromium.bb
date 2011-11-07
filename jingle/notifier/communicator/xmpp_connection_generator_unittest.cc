@@ -5,7 +5,6 @@
 #include "jingle/notifier/communicator/xmpp_connection_generator.h"
 
 #include "base/basictypes.h"
-#include "base/message_loop.h"
 #include "jingle/notifier/communicator/connection_options.h"
 #include "jingle/notifier/communicator/connection_settings.h"
 #include "net/base/host_port_pair.h"
