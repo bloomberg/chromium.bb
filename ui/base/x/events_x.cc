@@ -14,7 +14,15 @@
 namespace {
 
 // Scroll amount for each wheelscroll event. 53 is also the value used for GTK+.
-static int kWheelScrollAmount = 53;
+static const int kWheelScrollAmount = 53;
+
+static const int kMinWheelButton = 4;
+#if defined(OS_CHROMEOS)
+// Chrome OS also uses buttons 8 and 9 for scrolling.
+static const int kMaxWheelButton = 9;
+#else
+static const int kMaxWheelButton = 7;
+#endif
 
 int GetEventFlagsFromXState(unsigned int state) {
   int flags = 0;
@@ -51,9 +59,9 @@ int GetEventFlagsForButton(int button) {
       return ui::EF_MIDDLE_BUTTON_DOWN;
     case 3:
       return ui::EF_RIGHT_BUTTON_DOWN;
+    default:
+      return 0;
   }
-  DLOG(WARNING) << "Unexpected button (" << button << ") received.";
-  return 0;
 }
 
 int GetButtonMaskForX2Event(XIDeviceEvent* xievent) {
@@ -145,24 +153,14 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
     case KeyRelease:
       return ET_KEY_RELEASED;
     case ButtonPress:
-      if (native_event->xbutton.button == 4 ||
-          native_event->xbutton.button == 5)
+      if (static_cast<int>(native_event->xbutton.button) >= kMinWheelButton &&
+          static_cast<int>(native_event->xbutton.button) <= kMaxWheelButton)
         return ET_MOUSEWHEEL;
-#if defined (OS_CHROMEOS)
-      if (native_event->xbutton.button == 8 ||
-          native_event->xbutton.button == 9)
-        return ET_MOUSEWHEEL;
-#endif
       return ET_MOUSE_PRESSED;
     case ButtonRelease:
-      if (native_event->xbutton.button == 4 ||
-          native_event->xbutton.button == 5)
+      if (static_cast<int>(native_event->xbutton.button) >= kMinWheelButton &&
+          static_cast<int>(native_event->xbutton.button) <= kMaxWheelButton)
         return ET_MOUSEWHEEL;
-#if defined (OS_CHROMEOS)
-      if (native_event->xbutton.button == 8 ||
-          native_event->xbutton.button == 9)
-        return ET_MOUSEWHEEL;
-#endif
       return ET_MOUSE_RELEASED;
     case MotionNotify:
       if (native_event->xmotion.state &
@@ -180,19 +178,15 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
         return GetTouchEventType(native_event);
       switch (xievent->evtype) {
         case XI_ButtonPress:
-#if defined (OS_CHROMEOS)
-          if (xievent->detail == 8 || xievent->detail == 9)
+          if (xievent->detail >= kMinWheelButton &&
+              xievent->detail <= kMaxWheelButton)
             return ET_MOUSEWHEEL;
-#endif
-          return (xievent->detail == 4 || xievent->detail == 5) ?
-              ET_MOUSEWHEEL : ET_MOUSE_PRESSED;
+          return ET_MOUSE_PRESSED;
         case XI_ButtonRelease:
-#if defined (OS_CHROMEOS)
-          if (xievent->detail == 8 || xievent->detail == 9)
+          if (xievent->detail >= kMinWheelButton &&
+              xievent->detail <= kMaxWheelButton)
             return ET_MOUSEWHEEL;
-#endif
-          return (xievent->detail == 4 || xievent->detail == 5) ?
-              ET_MOUSEWHEEL : ET_MOUSE_RELEASED;
+          return ET_MOUSE_RELEASED;
         case XI_Motion:
           return GetButtonMaskForX2Event(xievent) ?
               ET_MOUSE_DRAGGED : ET_MOUSE_MOVED;
@@ -210,22 +204,30 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
     case KeyRelease:
       return GetEventFlagsFromXState(native_event->xbutton.state);
     case ButtonPress:
-    case ButtonRelease:
-      return GetEventFlagsFromXState(native_event->xbutton.state) |
-             GetEventFlagsForButton(native_event->xbutton.button);
+    case ButtonRelease: {
+      int flags = GetEventFlagsFromXState(native_event->xbutton.state);
+      const EventType type = EventTypeFromNative(native_event);
+      if (type == ET_MOUSE_PRESSED || type == ET_MOUSE_RELEASED)
+        flags |= GetEventFlagsForButton(native_event->xbutton.button);
+      return flags;
+    }
     case MotionNotify:
       return GetEventFlagsFromXState(native_event->xmotion.state);
     case GenericEvent: {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-      bool touch =
+      const bool touch =
           TouchFactory::GetInstance()->IsTouchDevice(xievent->sourceid);
       switch (xievent->evtype) {
         case XI_ButtonPress:
-        case XI_ButtonRelease:
-          return GetButtonMaskForX2Event(xievent) |
-                 GetEventFlagsFromXState(xievent->mods.effective) |
-                 (touch ? 0 : GetEventFlagsForButton(xievent->detail));
+        case XI_ButtonRelease: {
+          int flags = GetButtonMaskForX2Event(xievent) |
+              GetEventFlagsFromXState(xievent->mods.effective);
+          const EventType type = EventTypeFromNative(native_event);
+          if ((type == ET_MOUSE_PRESSED || type == ET_MOUSE_RELEASED) && !touch)
+            flags |= GetEventFlagsForButton(xievent->detail);
+          return flags;
+        }
         case XI_Motion:
            return GetButtonMaskForX2Event(xievent) |
                   GetEventFlagsFromXState(xievent->mods.effective);
@@ -280,13 +282,23 @@ int GetMouseWheelOffset(const base::NativeEvent& native_event) {
   } else {
     button = native_event->xbutton.button;
   }
+  switch (button) {
+    case 4:
 #if defined(OS_CHROMEOS)
-  if (button == 8)
-    return kWheelScrollAmount;
-  else if (button == 9)
-    return -kWheelScrollAmount;
+    case 8:
 #endif
-  return button == 4 ? kWheelScrollAmount : -kWheelScrollAmount;
+      return kWheelScrollAmount;
+
+    case 5:
+#if defined(OS_CHROMEOS)
+    case 9:
+#endif
+      return -kWheelScrollAmount;
+
+    default:
+      // TODO(derat): Do something for horizontal scrolls (buttons 6 and 7)?
+      return 0;
+  }
 }
 
 int GetTouchId(const base::NativeEvent& xev) {

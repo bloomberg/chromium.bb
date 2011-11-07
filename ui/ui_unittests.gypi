@@ -120,6 +120,11 @@
             ],
           },
         }],
+        ['OS == "linux"', {
+          'sources': [
+            'base/x/events_x_unittest.cc',
+          ],
+        }],
         ['OS != "mac"', {
           'sources': [
             'gfx/transform_unittest.cc',
