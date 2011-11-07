@@ -216,6 +216,9 @@ class InputApi(object):
       # SCM (can happen in dual SCM configuration). (Slightly over aggressive)
       r"(|.*[\\\/])\.git[\\\/].*",
       r"(|.*[\\\/])\.svn[\\\/].*",
+      # There is no point in processing a patch file.
+      r".+\.diff$",
+      r".+\.patch$",
   )
 
   def __init__(self, change, presubmit_path, is_committing,

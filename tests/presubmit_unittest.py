@@ -1020,6 +1020,8 @@ class InputApiUnittest(PresubmitTestsBase):
           f('b.c/.git'),
           f('a/.git/bleh.py'),
           f('.git/bleh.py'),
+          f('bleh.diff'),
+          f('foo/bleh.patch'),
         ],
         [
           # Expected.
@@ -1031,7 +1033,7 @@ class InputApiUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
 
     self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 21)
-    self.assertEqual(len(input_api.DEFAULT_BLACK_LIST), 9)
+    self.assertEqual(len(input_api.DEFAULT_BLACK_LIST), 11)
     for item in files:
       results = filter(input_api.FilterSourceFile, item[0])
       for i in range(len(results)):
