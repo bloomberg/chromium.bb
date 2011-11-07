@@ -31,7 +31,7 @@ vars = {
   "ffmpeg_revision": "108357",
   "sfntly_revision": "98",
   "skia_revision": "2600",
-  "v8_revision": "9637",
+  "v8_revision": "9897",
   "webrtc_revision": "883",
   "jsoncpp_revision": "246",
 }
@@ -97,7 +97,7 @@ deps = {
     (Var("googlecode_url") % "gyp") + "/trunk@1085",
 
   "src/v8":
-    (Var("googlecode_url") % "v8") + "/branches/3.6@" + Var("v8_revision"),
+    (Var("googlecode_url") % "v8") + "/trunk@" + Var("v8_revision"),
 
   "src/native_client":
     Var("nacl_trunk") + "/src/native_client@" + Var("nacl_revision"),
