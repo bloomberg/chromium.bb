@@ -107,6 +107,9 @@ void TestSetProperty() {
     PropertyTestData(ID_STR(_prop_name), PP_MakeString(""), PP_FALSE), \
     PropertyTestData(ID_STR(_prop_name), PP_MakeDouble(0.0), PP_FALSE)
 
+  // SetProperty accepts plenty of invalid values (malformed urls, negative
+  // thresholds, etc). Error checking is delayed until request opening (aka url
+  // loading).
   #define ID_STR(arg) arg, #arg
   PropertyTestData test_data[] = {
       ADD_BOOL_PROPERTY(PP_URLREQUESTPROPERTY_STREAMTOFILE),
@@ -159,11 +162,11 @@ void TestSetProperty() {
           PP_MakeUndefined(), PP_FALSE),
       PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_HEADERS),
           PP_MakeString("Proxy-Authorization: Basic dXNlcjpwYXNzd29yZA=="),
-          PP_FALSE),
+          PP_TRUE),
       PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_HEADERS),
           PP_MakeString("Accept-Encoding: *\n"
                         "Accept-Charset: iso-8859-5, unicode-1-1;q=0.8"),
-          PP_FALSE),
+          PP_TRUE),
       PropertyTestData(
           ID_STR(PP_URLREQUESTPROPERTY_PREFETCHBUFFERUPPERTHRESHOLD),
           PP_MakeInt32(0), PP_TRUE),
@@ -176,23 +179,20 @@ void TestSetProperty() {
       PropertyTestData(
           ID_STR(PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERTHRESHOLD),
           PP_MakeInt32(100), PP_TRUE),
-      // Bug filed against Chrome to validate SetProperty values better.
-      // http://code.google.com/p/chromium/issues/detail?id=89842.
-      /*
       PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_URL),
-          PP_MakeString("::::::::::::"), PP_FALSE),
+          PP_MakeString("::::::::::::"), PP_TRUE),
       PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_METHOD),
-          PP_MakeString("INVALID"), PP_FALSE),
+          PP_MakeString("INVALID"), PP_TRUE),
       PropertyTestData(
           ID_STR(PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING),
-          PP_MakeString("invalid"), PP_FALSE),
+          PP_MakeString("invalid"), PP_TRUE),
       PropertyTestData(
           ID_STR(PP_URLREQUESTPROPERTY_PREFETCHBUFFERUPPERTHRESHOLD),
-          PP_MakeInt32(-100), PP_FALSE),
+          PP_MakeInt32(-100), PP_TRUE),
       PropertyTestData(
           ID_STR(PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERTHRESHOLD),
           PP_MakeInt32(-100), PP_TRUE),
-      */
+
   };
 
   const PPB_URLRequestInfo* ppb = PPBURLRequestInfo();
