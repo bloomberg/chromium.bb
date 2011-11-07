@@ -464,6 +464,7 @@ extern const char kNTPPromoGroupTimeSlice[];
 extern const char kNTPPromoGroupMax[];
 extern const char kNTPPromoViews[];
 extern const char kNTPPromoViewsMax[];
+extern const char kNTPPromoPlatform[];
 extern const char kNTPPromoBuild[];
 extern const char kNTPSignInPromoGroup[];
 extern const char kNTPSignInPromoGroupMax[];

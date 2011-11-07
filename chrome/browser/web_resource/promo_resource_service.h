@@ -113,7 +113,7 @@ class PromoResourceService
   //       {
   //         "answer_id": "1067976",
   //         "name": "promo_start",
-  //         "question": "1:24:10:10",
+  //         "question": "1:24:10:20:7",
   //         "tooltip":
   //       "Click \u003ca href=http://www.google.com\u003ehere\u003c/a\u003e!",
   //         "inproduct": "10/8/09 12:00",
@@ -140,12 +140,13 @@ class PromoResourceService
   // For "promo_start", the promotional line itself is given in the "tooltip"
   // field. The "question" field gives the type of builds that should be shown
   // this promo (see the BuildType enum in web_resource_service.cc), the
-  // number of hours that each promo group should see it, and the maximum promo
-  // group that should see it, separated by ":".
-  // For example, "7:24:5:10" would indicate that all groups with ids less than
-  // 5, and with dev, beta and stable builds, should see the promo a maximum of
-  // 10 times. The groups ramp up so 1 additional group sees the promo every
-  // 24 hours.
+  // number of hours that each promo group should see it, the maximum promo
+  // group that should see it, the maximum number of views of the promo, and
+  // the platforms that this promo is suitable for, separated by ":".
+  // For example, "7:24:5:10:7" would indicate that all groups with ids less
+  // than 5, and with dev, beta and stable builds on Windows, Mac and Linux,
+  // should see the promo a maximum of 10 times. The groups ramp up so one
+  // additional group sees the promo every 24 hours.
   //
   void UnpackNotificationSignal(const base::DictionaryValue& parsed_json);
 

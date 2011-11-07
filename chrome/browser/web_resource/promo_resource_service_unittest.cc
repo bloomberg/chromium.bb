@@ -201,18 +201,21 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
         build_targeted_(true),
         start_(0.0),
         end_(0.0),
-        build_(PromoResourceService::ALL_BUILDS),
+        build_(PromoResourceService::NO_BUILD),
         time_slice_(0),
         max_group_(0),
         max_views_(0),
+        platform_(NotificationPromo::PLATFORM_NONE),
         text_(),
-        closed_(false) {
+        closed_(false),
+        current_platform_(NotificationPromo::CurrentPlatform()) {
   }
 
   void Init(NotificationPromo* notification_promo,
             const std::string& json,
             double start, double end,
-            int build, int time_slice, int max_group, int max_views,
+            int build, int time_slice,
+            int max_group, int max_views, int platform,
             const std::string& text, bool closed) {
     notification_promo_ = notification_promo;
 
@@ -226,6 +229,7 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
     time_slice_ = time_slice;
     max_group_ = max_group;
     max_views_ = max_views;
+    platform_ = platform;
 
     text_ = text;
     closed_ = closed;
@@ -244,6 +248,10 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
   virtual bool IsBuildAllowed(int builds_targeted) const {
     EXPECT_EQ(builds_targeted, build_);
     return build_targeted_;
+  }
+
+  virtual int CurrentPlatform() const {
+    return current_platform_;
   }
 
   const base::DictionaryValue& TestJson() const {
@@ -272,6 +280,7 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
     EXPECT_EQ(notification_promo_->time_slice_, time_slice_);
     EXPECT_EQ(notification_promo_->max_group_, max_group_);
     EXPECT_EQ(notification_promo_->max_views_, max_views_);
+    EXPECT_EQ(notification_promo_->platform_, platform_);
     EXPECT_EQ(notification_promo_->text_, text_);
     EXPECT_EQ(notification_promo_->closed_, closed_);
 
@@ -294,6 +303,7 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
     EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoGroupTimeSlice), time_slice_);
     EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoGroupMax), max_group_);
     EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoViewsMax), max_views_);
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoPlatform), platform_);
 
     EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoGroup),
         notification_promo_ ? notification_promo_->group_: 0);
@@ -345,6 +355,123 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
 
     build_targeted_ = true;
     EXPECT_TRUE(notification_promo_->CanShow());
+  }
+
+  void TestOnePlatform(int current_platform, bool expected) {
+    current_platform_ = current_platform;
+    EXPECT_EQ(expected, notification_promo_->CanShow());
+  }
+
+  void TestPlatformSet(int target_platform, bool expected_win,
+      bool expected_mac, bool expected_linux, bool expected_chromeos) {
+    notification_promo_->platform_ = target_platform;
+    TestOnePlatform(NotificationPromo::PLATFORM_WIN, expected_win);
+    TestOnePlatform(NotificationPromo::PLATFORM_MAC, expected_mac);
+    TestOnePlatform(NotificationPromo::PLATFORM_LINUX, expected_linux);
+    TestOnePlatform(NotificationPromo::PLATFORM_CHROMEOS, expected_chromeos);
+  }
+
+  void TestPlatforms() {
+    int target_platform;
+
+    // Windows and Mac only - test real current platform.
+    target_platform = 3;
+    notification_promo_->platform_ = target_platform;
+    bool expected = false;
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    expected = true;
+#endif
+    EXPECT_EQ(expected, notification_promo_->CanShow());
+
+    // Windows only.
+    target_platform = 1;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_WIN);
+    TestPlatformSet(target_platform, true, false, false, false);
+
+    // Mac only.
+    target_platform = 2;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_MAC);
+    TestPlatformSet(target_platform, false, true, false, false);
+
+    // Linux only.
+    target_platform = 4;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_LINUX);
+    TestPlatformSet(target_platform, false, false, true, false);
+
+    // ChromeOS only.
+    target_platform = 8;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_CHROMEOS);
+    TestPlatformSet(target_platform, false, false, false, true);
+
+    // Non-Windows.
+    target_platform = 14;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_ALL
+                               & ~NotificationPromo::PLATFORM_WIN);
+    TestPlatformSet(target_platform, false, true, true, true);
+
+    // Non-Mac.
+    target_platform = 13;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_ALL
+                               & ~NotificationPromo::PLATFORM_MAC);
+    TestPlatformSet(target_platform, true, false, true, true);
+
+    // Non-Linux.
+    target_platform = 11;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_ALL
+                               & ~NotificationPromo::PLATFORM_LINUX);
+    TestPlatformSet(target_platform, true, true, false, true);
+
+    // Non-ChromeOS.
+    target_platform = 7;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_ALL
+                               & ~NotificationPromo::PLATFORM_CHROMEOS);
+    TestPlatformSet(target_platform, true, true, true, false);
+
+    // Windows and Mac.
+    target_platform = 3;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_WIN
+                               | NotificationPromo::PLATFORM_MAC);
+    TestPlatformSet(target_platform, true, true, false, false);
+
+    // Windows and Linux.
+    target_platform = 5;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_WIN
+                               | NotificationPromo::PLATFORM_LINUX);
+    TestPlatformSet(target_platform, true, false, true, false);
+
+    // Windows and ChromeOS.
+    target_platform = 9;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_WIN
+                               | NotificationPromo::PLATFORM_CHROMEOS);
+    TestPlatformSet(target_platform, true, false, false, true);
+
+    // Mac and Linux.
+    target_platform = 6;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_MAC
+                               | NotificationPromo::PLATFORM_LINUX);
+    TestPlatformSet(target_platform, false, true, true, false);
+
+    // Mac and ChromeOS.
+    target_platform = 10;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_MAC
+                               | NotificationPromo::PLATFORM_CHROMEOS);
+    TestPlatformSet(target_platform, false, true, false, true);
+
+    // Linux and ChromeOS.
+    target_platform = 12;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_LINUX
+                               | NotificationPromo::PLATFORM_CHROMEOS);
+    TestPlatformSet(target_platform, false, false, true, true);
+
+    // Disabled.
+    target_platform = 0;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_NONE);
+    TestPlatformSet(target_platform, false, false, false, false);
+
+    // All platforms.
+    target_platform = 15;
+    EXPECT_EQ(target_platform, NotificationPromo::PLATFORM_ALL);
+    TestPlatformSet(target_platform, true, true, true, true);
   }
 
   void TestClosed() {
@@ -402,9 +529,12 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
   int time_slice_;
   int max_group_;
   int max_views_;
+  int platform_;
 
   std::string text_;
   bool closed_;
+
+  int current_platform_;
 };
 
 TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
@@ -426,7 +556,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
                 "    \"answers\": ["
                 "       {"
                 "        \"name\": \"promo_start\","
-                "        \"question\": \"3:2:5:10\","
+                "        \"question\": \"3:2:5:10:15\","
                 "        \"tooltip\": \"Eat more pie!\","
                 "        \"inproduct\": \"31/01/10 01:00 GMT\""
                 "       },"
@@ -439,7 +569,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
                 "}",
                 1264899600,  // unix epoch for Jan 31 2010 0100 GMT.
                 1327971600,  // unix epoch for Jan 31 2012 0100 GMT.
-                3, 2, 5, 10,
+                3, 2, 5, 10, 15,
                 "Eat more pie!", false);
 
   delegate.InitPromoFromJson(true);
@@ -457,6 +587,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
   delegate.TestClosed();
   delegate.TestText();
   delegate.TestTime();
+  delegate.TestPlatforms();
 }
 
 TEST_F(PromoResourceServiceTest, NotificationPromoTestFail) {
@@ -475,7 +606,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTestFail) {
                 "    \"answers\": ["
                 "       {"
                 "        \"name\": \"promo_start\","
-                "        \"question\": \"12:8:10:20\","
+                "        \"question\": \"12:8:10:20:15\","
                 "        \"tooltip\": \"Happy 3rd Birthday!\","
                 "        \"inproduct\": \"09/15/10 05:00 PDT\""
                 "       },"
@@ -488,7 +619,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTestFail) {
                 "}",
                 1284552000,  // unix epoch for Sep 15 2010 0500 PDT.
                 1285848000,  // unix epoch for Sep 30 2010 0500 PDT.
-                12, 8, 10, 20,
+                12, 8, 10, 20, 15,
                 "Happy 3rd Birthday!", false);
 
   delegate.InitPromoFromJson(true);

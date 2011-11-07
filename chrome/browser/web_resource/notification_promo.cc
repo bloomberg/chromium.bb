@@ -57,10 +57,11 @@ NotificationPromo::NotificationPromo(PrefService* prefs, Delegate* delegate)
       delegate_(delegate),
       start_(0.0),
       end_(0.0),
-      build_(0),
+      build_(PromoResourceService::NO_BUILD),
       time_slice_(0),
       max_group_(0),
       max_views_(0),
+      platform_(PLATFORM_NONE),
       group_(0),
       views_(0),
       text_(),
@@ -110,34 +111,39 @@ void NotificationPromo::ParseParams(const DictionaryValue* dict) {
   time_slice_ = GetNextQuestionValue(question, &index, &err);
   max_group_ = GetNextQuestionValue(question, &index, &err);
   max_views_ = GetNextQuestionValue(question, &index, &err);
+  platform_ = GetNextQuestionValue(question, &index, &err);
 
   if (err ||
       OutOfBounds(build_, PromoResourceService::NO_BUILD,
           PromoResourceService::ALL_BUILDS) ||
       OutOfBounds(time_slice_, 0, kMaxTimeSliceHours) ||
       OutOfBounds(max_group_, 0, kMaxGroupSize) ||
-      OutOfBounds(max_views_, 0, kMaxViews)) {
+      OutOfBounds(max_views_, 0, kMaxViews) ||
+      OutOfBounds(platform_, PLATFORM_NONE, PLATFORM_ALL)) {
     // If values are not valid, do not show promo notification.
     DLOG(ERROR) << "Invalid server data, question=" << question <<
         ", build=" << build_ <<
         ", time_slice=" << time_slice_ <<
         ", max_group=" << max_group_ <<
-        ", max_views=" << max_views_;
+        ", max_views=" << max_views_ <<
+        ", platform_=" << platform_;
     build_ = PromoResourceService::NO_BUILD;
     time_slice_ = 0;
     max_group_ = 0;
     max_views_ = 0;
+    platform_ = PLATFORM_NONE;
   }
 }
 
 void NotificationPromo::CheckForNewNotification() {
   const double old_start = GetTimeFromPrefs(prefs_, prefs::kNTPPromoStart);
   const double old_end = GetTimeFromPrefs(prefs_, prefs::kNTPPromoEnd);
-  const bool has_views = prefs_->HasPrefPath(prefs::kNTPPromoViewsMax);
+  const bool has_platform = prefs_->HasPrefPath(prefs::kNTPPromoPlatform);
 
   // Trigger a new notification if the times have changed, or if
-  // we previously never wrote out a max_views preference.
-  if (old_start != start_ || old_end != end_ || !has_views)
+  // we previously never wrote out a platform preference. This handles
+  // the case where we update to a new client in the middle of a promo.
+  if (old_start != start_ || old_end != end_ || !has_platform)
     OnNewNotification();
 }
 
@@ -163,7 +169,7 @@ void NotificationPromo::RegisterUserPrefs(PrefService* prefs) {
                             PrefService::UNSYNCABLE_PREF);
 
   prefs->RegisterIntegerPref(prefs::kNTPPromoBuild,
-                             PromoResourceService::ALL_BUILDS,
+                             PromoResourceService::NO_BUILD,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kNTPPromoGroupTimeSlice,
                              0,
@@ -173,6 +179,9 @@ void NotificationPromo::RegisterUserPrefs(PrefService* prefs) {
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kNTPPromoViewsMax,
                              0,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kNTPPromoPlatform,
+                             PLATFORM_NONE,
                              PrefService::UNSYNCABLE_PREF);
 
   prefs->RegisterStringPref(prefs::kNTPPromoLine,
@@ -198,6 +207,7 @@ void NotificationPromo::WritePrefs() {
   prefs_->SetInteger(prefs::kNTPPromoGroupTimeSlice, time_slice_);
   prefs_->SetInteger(prefs::kNTPPromoGroupMax, max_group_);
   prefs_->SetInteger(prefs::kNTPPromoViewsMax, max_views_);
+  prefs_->SetInteger(prefs::kNTPPromoPlatform, platform_);
 
   prefs_->SetString(prefs::kNTPPromoLine, text_);
   prefs_->SetInteger(prefs::kNTPPromoGroup, group_);
@@ -206,35 +216,17 @@ void NotificationPromo::WritePrefs() {
 }
 
 void NotificationPromo::InitFromPrefs() {
-  if (prefs_->HasPrefPath(prefs::kNTPPromoStart))
-    start_ = prefs_->GetDouble(prefs::kNTPPromoStart);
-
-  if (prefs_->HasPrefPath(prefs::kNTPPromoEnd))
-    end_ = prefs_->GetDouble(prefs::kNTPPromoEnd);
-
-  if (prefs_->HasPrefPath(prefs::kNTPPromoBuild))
-    build_ = prefs_->GetInteger(prefs::kNTPPromoBuild);
-
-  if (prefs_->HasPrefPath(prefs::kNTPPromoGroupTimeSlice))
-    time_slice_ = prefs_->GetInteger(prefs::kNTPPromoGroupTimeSlice);
-
-  if (prefs_->HasPrefPath(prefs::kNTPPromoGroupMax))
-    max_group_ = prefs_->GetInteger(prefs::kNTPPromoGroupMax);
-
-  if (prefs_->HasPrefPath(prefs::kNTPPromoViewsMax))
-    max_views_ = prefs_->GetInteger(prefs::kNTPPromoViewsMax);
-
-  if (prefs_->HasPrefPath(prefs::kNTPPromoLine))
-    text_ = prefs_->GetString(prefs::kNTPPromoLine);
-
-  if (prefs_->HasPrefPath(prefs::kNTPPromoGroup))
-    group_ = prefs_->GetInteger(prefs::kNTPPromoGroup);
-
-  if (prefs_->HasPrefPath(prefs::kNTPPromoViews))
-    views_ = prefs_->GetInteger(prefs::kNTPPromoViews);
-
-  if (prefs_->HasPrefPath(prefs::kNTPPromoClosed))
-    closed_ = prefs_->GetBoolean(prefs::kNTPPromoClosed);
+  start_ = prefs_->GetDouble(prefs::kNTPPromoStart);
+  end_ = prefs_->GetDouble(prefs::kNTPPromoEnd);
+  build_ = prefs_->GetInteger(prefs::kNTPPromoBuild);
+  time_slice_ = prefs_->GetInteger(prefs::kNTPPromoGroupTimeSlice);
+  max_group_ = prefs_->GetInteger(prefs::kNTPPromoGroupMax);
+  max_views_ = prefs_->GetInteger(prefs::kNTPPromoViewsMax);
+  platform_ = prefs_->GetInteger(prefs::kNTPPromoPlatform);
+  text_ = prefs_->GetString(prefs::kNTPPromoLine);
+  group_ = prefs_->GetInteger(prefs::kNTPPromoGroup);
+  views_ = prefs_->GetInteger(prefs::kNTPPromoViews);
+  closed_ = prefs_->GetBoolean(prefs::kNTPPromoClosed);
 }
 
 bool NotificationPromo::CanShow() const {
@@ -242,6 +234,7 @@ bool NotificationPromo::CanShow() const {
       !text_.empty() &&
       group_ < max_group_ &&
       views_ < max_views_ &&
+      IsPlatformAllowed(platform_) &&
       IsBuildAllowed(build_) &&
       base::Time::FromDoubleT(StartTimeWithOffset()) < base::Time::Now() &&
       base::Time::FromDoubleT(end_) > base::Time::Now();
@@ -268,6 +261,29 @@ bool NotificationPromo::IsBuildAllowed(int builds_allowed) const {
   else
     return PromoResourceService::IsBuildTargeted(
         PromoResourceService::GetChannel(), builds_allowed);
+}
+
+bool NotificationPromo::IsPlatformAllowed(int target_platform) const {
+  const int current_platform = delegate_? delegate_->CurrentPlatform()
+                                        : CurrentPlatform();
+  return (target_platform & current_platform) != 0;
+}
+
+// static
+int NotificationPromo::CurrentPlatform() {
+  // Ignore OS_ANDROID, OS_FREEBSD, OS_OPENBSD, OS_SOLARIS, OS_NACL for now.
+  // Order is important - OS_LINUX and OS_CHROMEOS can both be defined.
+#if defined(OS_WIN)
+  return PLATFORM_WIN;
+#elif defined(OS_MACOSX)
+  return PLATFORM_MAC;
+#elif defined(OS_CHROMEOS)
+  return PLATFORM_CHROMEOS;
+#elif defined(OS_LINUX)
+  return PLATFORM_LINUX;
+#else
+   return PLATFORM_NONE;
+#endif
 }
 
 double NotificationPromo::StartTimeWithOffset() const {
@@ -302,6 +318,7 @@ bool NotificationPromo::operator==(const NotificationPromo& other) const {
          time_slice_ == other.time_slice_ &&
          max_group_ == other.max_group_ &&
          max_views_ == other.max_views_ &&
+         platform_ == other.platform_ &&
          group_ == other.group_ &&
          views_ == other.views_ &&
          text_ == other.text_ &&

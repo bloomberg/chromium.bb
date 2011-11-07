@@ -1291,6 +1291,9 @@ const char kNTPPromoViews[] = "ntp.promo_views";
 // Max number of views of this promo.
 const char kNTPPromoViewsMax[] = "ntp.promo_views_max";
 
+// Target platform for this promo.
+const char kNTPPromoPlatform[] = "ntp.promo_platform";
+
 // Promo line from server.
 const char kNTPPromoLine[] = "ntp.promo_line";
 

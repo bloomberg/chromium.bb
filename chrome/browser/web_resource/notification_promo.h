@@ -27,6 +27,7 @@ class NotificationPromo {
      virtual void OnNewNotification(double start, double end) = 0;
      // For testing.
      virtual bool IsBuildAllowed(int builds_targeted) const { return false; }
+     virtual int CurrentPlatform() const { return PLATFORM_NONE; }
   };
 
   explicit NotificationPromo(PrefService* prefs, Delegate* delegate);
@@ -54,6 +55,15 @@ class NotificationPromo {
   friend class NotificationPromoTestDelegate;
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, GetNextQuestionValueTest);
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, NewGroupTest);
+
+  enum PlatformType {
+    PLATFORM_NONE = 0,
+    PLATFORM_WIN = 1,
+    PLATFORM_MAC = 1 << 1,
+    PLATFORM_LINUX = 1 << 2,
+    PLATFORM_CHROMEOS = 1 << 3,
+    PLATFORM_ALL = (1 << 4) -1,
+  };
 
   // Users are randomly assigned to one of kMaxGroupSize + 1 buckets, in order
   // to be able to roll out promos slowly, or display different promos to
@@ -91,6 +101,12 @@ class NotificationPromo {
   // Match our channel with specified build type.
   bool IsBuildAllowed(int builds_allowed) const;
 
+  // Match our platform with the specified platform bitfield.
+  bool IsPlatformAllowed(int target_platform) const;
+
+  // Current platform.
+  static int CurrentPlatform();
+
   // For testing.
   bool operator==(const NotificationPromo& other) const;
 
@@ -104,6 +120,7 @@ class NotificationPromo {
   int time_slice_;
   int max_group_;
   int max_views_;
+  int platform_;
 
   int group_;
   int views_;
