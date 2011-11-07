@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -643,11 +644,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Removes all the keyboard accelerators for this view.
   virtual void ResetAccelerators();
 
-  // TODO(beng): Move to an AcceleratorTarget override section.
-  // Called when a keyboard accelerator is pressed.
-  // Derived classes should implement desired behavior and return true if they
-  // handled the accelerator.
-  virtual bool AcceleratorPressed(const Accelerator& accelerator);
+  // Overridden from AcceleratorTarget:
+  virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
 
   // Focus ---------------------------------------------------------------------
 
