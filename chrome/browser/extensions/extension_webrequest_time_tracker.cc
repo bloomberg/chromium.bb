@@ -176,6 +176,8 @@ void ExtensionWebRequestTimeTracker::Analyze(int64 request_id) {
   double percentage =
       log.block_duration.InMillisecondsF() /
       log.request_duration.InMillisecondsF();
+  UMA_HISTOGRAM_PERCENTAGE("Extensions.NetworkDelayPercentage",
+                           static_cast<int>(100*percentage));
   VLOG(1) << "WR percent " << request_id << ": " << log.url << ": " <<
       log.block_duration.InMilliseconds() << "/" <<
       log.request_duration.InMilliseconds() << " = " << percentage;
