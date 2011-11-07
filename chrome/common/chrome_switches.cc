@@ -280,9 +280,6 @@ const char kDisableIPv6[]                   = "disable-ipv6";
 // attempt to use the existing connection.
 const char kDisableIPPooling[]              = "disable-ip-pooling";
 
-// Disables panels (always on-top docked pop-up windows).
-const char kDisablePanels[]                 = "disable-panels";
-
 // Disable speculative TCP/IP preconnection.
 const char kDisablePreconnect[]             = "disable-preconnect";
 
@@ -509,13 +506,13 @@ const char kEnableNaClDebug[]               = "enable-nacl-debug";
 // Enabled integrated bookmark features in the New Tab pane.
 const char kEnableNTPBookmarkFeatures[]     = "enable-ntp-bookmark-features";
 
-// Enables advanced app capabilities.
-const char kEnablePlatformApps[]            = "enable-platform-apps";
-
 // Enables content settings based on host *and* plug-in in the user
 // preferences.
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";
+
+// Disables panels (always on-top docked pop-up windows).
+const char kDisablePanels[]                 = "disable-panels";
 
 // Enables speculative TCP/IP preconnection.
 const char kEnablePreconnect[]              = "enable-preconnect";
