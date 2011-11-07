@@ -35,9 +35,6 @@ class NotificationProvider : public content::RenderViewObserver,
   virtual void objectDestroyed(const WebKit::WebNotification& proxy);
   virtual WebKit::WebNotificationPresenter::Permission checkPermission(
       const WebKit::WebSecurityOrigin& origin);
-  // Deprecated, and will be removed after the WebKit roll.
-  virtual WebKit::WebNotificationPresenter::Permission checkPermission(
-      const WebKit::WebURL& origin);
   virtual void requestPermission(const WebKit::WebSecurityOrigin& origin,
       WebKit::WebNotificationPermissionCallback* callback);
 

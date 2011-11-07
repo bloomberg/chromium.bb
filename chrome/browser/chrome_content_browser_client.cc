@@ -789,10 +789,8 @@ WebKit::WebNotificationPresenter::Permission
 
   // Fall back to the regular notification preferences, which works on an
   // origin basis.
-  // TODO(dcheng): Change to just source_origin once WebKit side is cleaned up.
   return io_data->GetNotificationService() ?
-      io_data->GetNotificationService()->HasPermission(
-          source_origin.GetOrigin()) :
+      io_data->GetNotificationService()->HasPermission(source_origin) :
       WebKit::WebNotificationPresenter::PermissionNotAllowed;
 }
 

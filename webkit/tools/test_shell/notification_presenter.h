@@ -29,7 +29,6 @@ class TestNotificationPresenter : public WebKit::WebNotificationPresenter {
   virtual void cancel(const WebKit::WebNotification&);
   virtual void objectDestroyed(const WebKit::WebNotification&);
   virtual Permission checkPermission(const WebKit::WebSecurityOrigin& origin);
-  virtual Permission checkPermission(const WebKit::WebURL& url);
   virtual void requestPermission(const WebKit::WebSecurityOrigin& origin,
       WebKit::WebNotificationPermissionCallback* callback);
 

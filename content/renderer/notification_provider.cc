@@ -66,16 +66,6 @@ WebNotificationPresenter::Permission NotificationProvider::checkPermission(
   return static_cast<WebNotificationPresenter::Permission>(permission);
 }
 
-WebNotificationPresenter::Permission NotificationProvider::checkPermission(
-    const WebURL& origin) {
-  int permission;
-  Send(new DesktopNotificationHostMsg_CheckPermission(
-          routing_id(),
-          origin,
-          &permission));
-  return static_cast<WebNotificationPresenter::Permission>(permission);
-}
-
 void NotificationProvider::requestPermission(
     const WebSecurityOrigin& origin,
     WebNotificationPermissionCallback* callback) {

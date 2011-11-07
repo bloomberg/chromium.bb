@@ -104,15 +104,6 @@ WebNotificationPresenter::Permission TestNotificationPresenter::checkPermission(
                  : WebNotificationPresenter::PermissionDenied;
 }
 
-WebNotificationPresenter::Permission TestNotificationPresenter::checkPermission(
-    const WebURL& url) {
-  // Check with the layout test controller
-  std::string origin = static_cast<GURL>(url).GetOrigin().spec();
-  bool allowed = allowed_origins_.find(origin) != allowed_origins_.end();
-  return allowed ? WebNotificationPresenter::PermissionAllowed
-                 : WebNotificationPresenter::PermissionDenied;
-}
-
 void TestNotificationPresenter::requestPermission(
     const WebSecurityOrigin& origin,
     WebNotificationPermissionCallback* callback) {
