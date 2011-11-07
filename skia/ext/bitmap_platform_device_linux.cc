@@ -6,7 +6,11 @@
 
 #include "skia/ext/bitmap_platform_device_data.h"
 
+#if defined(OS_OPENBSD)
+#include <cairo.h>
+#else
 #include <cairo/cairo.h>
+#endif
 
 namespace skia {
 
