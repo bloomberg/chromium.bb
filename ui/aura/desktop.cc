@@ -143,6 +143,7 @@ void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
   }
 }
 
+#if !defined(NDEBUG)
 bool MaybeFullScreen(DesktopHost* host, KeyEvent* event) {
   if (event->key_code() == ui::VKEY_F11) {
     host->ToggleFullScreen();
@@ -184,6 +185,7 @@ bool MaybeRotate(Desktop* desktop, KeyEvent* event) {
   }
   return false;
 }
+#endif
 
 }  // namespace
 
