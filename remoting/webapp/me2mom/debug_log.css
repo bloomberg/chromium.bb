@@ -30,3 +30,11 @@
   margin: 0.35em;
   padding: 0;
 }
+
+#debug-messages .indent {
+  margin-left: 20px !important;
+}
+
+#debug-messages .indent2 {
+  margin-left: 40px !important;
+}

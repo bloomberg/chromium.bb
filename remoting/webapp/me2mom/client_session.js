@@ -222,7 +222,7 @@ remoting.ClientSession.prototype.disconnect = function() {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.sendIq_ = function(msg) {
-  remoting.debug.log('Sending Iq: ' + msg);
+  remoting.debug.logIq(true, msg);
   // Extract the session id, so we can close the session later.
   var parser = new DOMParser();
   var iqNode = parser.parseFromString(msg, 'text/xml').firstChild;
@@ -266,10 +266,12 @@ remoting.ClientSession.prototype.connectPluginToWcs_ =
   if (this.clientJid == '') {
     remoting.debug.log('Tried to connect without a full JID.');
   }
-  /** @type {remoting.ClientSession} */ var that = this;
+  remoting.debug.setJids(this.clientJid, this.hostJid);
+  /** @type {remoting.ClientSession} */
+  var that = this;
   /** @param {string} stanza The IQ stanza received. */
   var onIq = function(stanza) {
-    remoting.debug.log('Receiving Iq: ' + stanza);
+    remoting.debug.logIq(false, stanza);
     that.plugin.onIq(stanza);
   }
   remoting.wcs.setOnIq(onIq);
