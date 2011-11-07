@@ -103,7 +103,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     TYPE_THEME,
     TYPE_USER_SCRIPT,
     TYPE_HOSTED_APP,
-    TYPE_PACKAGED_APP
+    TYPE_PACKAGED_APP,
+    TYPE_PLATFORM_APP
   };
 
   enum SyncType {
@@ -550,6 +551,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // App-related.
   bool is_app() const { return is_app_; }
+  bool is_platform_app() const { return is_platform_app_; }
   bool is_hosted_app() const { return is_app() && !web_extent().is_empty(); }
   bool is_packaged_app() const { return is_app() && web_extent().is_empty(); }
   bool is_storage_isolated() const { return is_app() && is_storage_isolated_; }
@@ -822,6 +824,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Whether this extension uses app features.
   bool is_app_;
+
+  // Whether this app uses platform features.
+  bool is_platform_app_;
 
   // Whether this extension requests isolated storage.
   bool is_storage_isolated_;

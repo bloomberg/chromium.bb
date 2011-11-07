@@ -903,6 +903,12 @@ bool Extension::LoadIsApp(const DictionaryValue* manifest,
   if (manifest->HasKey(keys::kApp))
     is_app_ = true;
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePlatformApps)) {
+    if (manifest->HasKey(keys::kPlatformApp))
+      is_platform_app_ = true;
+  }
+
   return true;
 }
 
@@ -1275,6 +1281,7 @@ Extension::Extension(const FilePath& path, Location location)
       converted_from_user_script_(false),
       is_theme_(false),
       is_app_(false),
+      is_platform_app_(false),
       is_storage_isolated_(false),
       launch_container_(extension_misc::LAUNCH_TAB),
       launch_width_(0),
@@ -1513,6 +1520,13 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       !LoadLaunchURL(manifest_value_.get(), error) ||
       !LoadLaunchContainer(manifest_value_.get(), error)) {
     return false;
+  }
+
+  if (is_platform_app_) {
+    if (launch_container() != extension_misc::LAUNCH_PANEL) {
+      *error = errors::kInvalidLaunchContainerForPlatform;
+      return false;
+    }
   }
 
   // Initialize the permissions (optional).

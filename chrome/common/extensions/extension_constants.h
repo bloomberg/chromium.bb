@@ -77,6 +77,7 @@ namespace extension_manifest_keys {
   extern const char* kPageActionPopupPath;
   extern const char* kPageActions;
   extern const char* kPermissions;
+  extern const char* kPlatformApp;
   extern const char* kPlugins;
   extern const char* kPluginsPath;
   extern const char* kPluginsPublic;
@@ -194,6 +195,7 @@ namespace extension_manifest_errors {
   extern const char* kInvalidJsList;
   extern const char* kInvalidKey;
   extern const char* kInvalidLaunchContainer;
+  extern const char* kInvalidLaunchContainerForPlatform;
   extern const char* kInvalidLaunchHeight;
   extern const char* kInvalidLaunchHeightContainer;
   extern const char* kInvalidLaunchLocalPath;

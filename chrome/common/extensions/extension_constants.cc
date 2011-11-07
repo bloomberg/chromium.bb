@@ -75,6 +75,7 @@ const char* kPageActionPopupHeight = "height";
 const char* kPageActionPopupPath = "path";
 const char* kPageActions = "page_actions";
 const char* kPermissions = "permissions";
+const char* kPlatformApp = "platform_app";
 const char* kPlugins = "plugins";
 const char* kPluginsPath = "path";
 const char* kPluginsPublic = "public";
@@ -254,6 +255,8 @@ const char* kInvalidKey =
     "Value 'key' is missing or invalid.";
 const char* kInvalidLaunchContainer =
     "Invalid value for 'app.launch.container'.";
+const char* kInvalidLaunchContainerForPlatform =
+    "platform_app requires 'app.launch.container' == 'panel'.";
 const char* kInvalidLaunchHeight =
     "Invalid value for 'app.launch.height'.";
 const char* kInvalidLaunchHeightContainer =
