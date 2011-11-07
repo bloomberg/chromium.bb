@@ -267,12 +267,8 @@ void PluginInstallerImpl::URLNotify(const char* url, NPReason reason) {
 
     if (plugin_available) {
       DVLOG(1) << "Plugin available for mime type " << mime_type_;
-      // Show the infobar only once.
-      if (show_install_infobar_) {
-        show_install_infobar_ = false;
-        NotifyPluginStatus(
-            webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE);
-      }
+      NotifyPluginStatus(
+          webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE);
       DisplayAvailablePluginStatus();
     } else {
       DLOG(WARNING) << "No plugin available for mime type " << mime_type_;
@@ -336,6 +332,10 @@ bool PluginInstallerImpl::NPP_SetWindow(NPWindow* window_info) {
   UpdateWindow(hwnd());
   ShowWindow(hwnd(), SW_SHOW);
 
+  if (plugin_installer_state() == PluginListDownloaded) {
+    NotifyPluginStatus(
+        webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE);
+  }
   return true;
 }
 
@@ -671,6 +671,13 @@ bool PluginInstallerImpl::InitializeResources(HINSTANCE module_handle) {
 
 void PluginInstallerImpl::NotifyPluginStatus(int status) {
 #if !defined(USE_AURA)
+  if (status == webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE) {
+    // Show the infobar only once.
+    if (!IsWindow(hwnd()) || !show_install_infobar_)
+      return;
+    show_install_infobar_ = false;
+  }
+
   ChildThread::current()->Send(
       new ChromePluginProcessHostMsg_MissingPluginStatus(
           status,
