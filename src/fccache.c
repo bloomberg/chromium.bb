@@ -87,7 +87,7 @@ typedef __int64 INT64;
  */
 
 int
-FcStat (const char *file, struct stat *statb)
+FcStat (const FcChar8 *file, struct stat *statb)
 {
     WIN32_FILE_ATTRIBUTE_DATA wfad;
     char full_path_name[MAX_PATH];
@@ -136,7 +136,7 @@ FcStat (const char *file, struct stat *statb)
 #else
 
 int
-FcStat (const char *file, struct stat *statb)
+FcStat (const FcChar8 *file, struct stat *statb)
 {
   return stat ((char *) file, statb);
 }
