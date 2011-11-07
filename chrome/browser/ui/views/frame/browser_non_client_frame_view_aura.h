@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_AURA_H_
 #pragma once
 
+#include "ui/aura_shell/window_frame.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "views/controls/button/button.h"
@@ -25,10 +26,15 @@ class CustomButton;
 
 class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
                                       public views::ButtonListener,
-                                      public views::Widget::Observer {
+                                      public views::Widget::Observer,
+                                      public aura_shell::WindowFrame {
  public:
   BrowserNonClientFrameViewAura(BrowserFrame* frame, BrowserView* browser_view);
   virtual ~BrowserNonClientFrameViewAura();
+
+  // Control the slide-in animation of the frame background.
+  void ShowFrameBackground();
+  void HideFrameBackground();
 
  private:
   // Returns a HitTest code.
@@ -71,9 +77,6 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual gfx::NativeCursor GetCursor(const views::MouseEvent& event) OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child) OVERRIDE;
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
@@ -82,6 +85,9 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   // views::Widget::Observer overrides:
   virtual void OnWidgetActivationChanged(views::Widget* widget,
                                          bool active) OVERRIDE;
+
+  // aura_shell::WindowFrame overrides:
+  virtual void OnWindowHoverChanged(bool hovered) OVERRIDE;
 
   BrowserFrame* browser_frame_;
   BrowserView* browser_view_;

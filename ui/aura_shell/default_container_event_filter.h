@@ -8,6 +8,11 @@
 
 #include "ui/aura/toplevel_window_event_filter.h"
 
+namespace aura {
+class MouseEvent;
+class Window;
+}
+
 namespace aura_shell {
 namespace internal {
 
@@ -33,7 +38,13 @@ class DefaultContainerEventFilter : public aura::ToplevelWindowEventFilter {
   // trigger a more or resize, drag_state_ is not updated and false is returend.
   bool UpdateDragState();
 
+  // Updates the top-level window under the mouse so that we can change
+  // the look of the caption area based on mouse-hover.
+  void UpdateHoveredWindow(aura::Window* toplevel);
+
   DragState drag_state_;
+  // Top-level window under the mouse cursor.
+  aura::Window* hovered_window_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultContainerEventFilter);
 };

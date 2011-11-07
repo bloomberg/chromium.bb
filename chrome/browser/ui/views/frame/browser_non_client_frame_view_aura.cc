@@ -49,8 +49,6 @@ const double kFrameBorderEndOpacity = 0.3;
 // How long the hover animation takes if uninterrupted.
 const int kHoverFadeDurationMs = 250;
 
-// The color behind the toolbar (back, forward, omnibox, etc.)
-const SkColor kToolbarBackgroundColor = SkColorSetRGB(0xF6, 0xF6, 0xF6);
 // Color shown when window control is hovered.
 const SkColor kMaximizeButtonBackgroundColor = SkColorSetRGB(0, 255, 0);
 const SkColor kCloseButtonBackgroundColor = SkColorSetRGB(255, 0, 0);
@@ -62,20 +60,42 @@ bool HitVisibleView(views::View* view, gfx::Point point) {
 }  // namespace
 
 // Buttons for window controls - close, zoom, etc.
+// Note that views::CustomButton is already a ui::AnimationDelegate.
 class WindowControlButton : public views::CustomButton {
  public:
-  WindowControlButton(views::ButtonListener* listener,
+  WindowControlButton(BrowserNonClientFrameViewAura* owner,
                       SkColor color,
                       const SkBitmap& icon)
-      : views::CustomButton(listener),
+      : views::CustomButton(owner),
+        owner_(owner),
         color_(color),
-        icon_(icon) {
+        icon_(icon),
+        ALLOW_THIS_IN_INITIALIZER_LIST(
+            show_animation_(new ui::SlideAnimation(this))) {
+    show_animation_->SetSlideDuration(kHoverFadeDurationMs);
     SetPaintToLayer(true);
     layer()->SetFillsBoundsOpaquely(false);
+    layer()->SetOpacity(0.f);
   }
   virtual ~WindowControlButton() {}
 
+  void Show() {
+    show_animation_->Show();
+  }
+  void Hide() {
+    show_animation_->Hide();
+  }
+
   // Overridden from views::View:
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
+    // Ensure the caption/frame background shows when we hover this button.
+    owner_->ShowFrameBackground();
+    views::CustomButton::OnMouseEntered(event);
+  }
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
+    owner_->HideFrameBackground();
+    views::CustomButton::OnMouseExited(event);
+  }
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->FillRect(GetBackgroundColor(), GetLocalBounds());
     canvas->DrawBitmapInt(icon_, 0, 0);
@@ -84,17 +104,29 @@ class WindowControlButton : public views::CustomButton {
     return gfx::Size(icon_.width(), icon_.height());
   }
 
+  // Overridden from ui::AnimationDelegate:
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+    if (animation == show_animation_.get()) {
+      double opacity = show_animation_->GetCurrentValue();
+      layer()->SetOpacity(static_cast<float>(opacity));
+      return;
+    }
+    views::CustomButton::AnimationProgressed(animation);
+  }
+
  private:
   SkColor GetBackgroundColor() {
-    // Only the background animates, so handle opacity manually.
+    // Background animates in separately, so handle opacity manually.
     return SkColorSetARGB(hover_animation_->CurrentValueBetween(0, 150),
                           SkColorGetR(color_),
                           SkColorGetG(color_),
                           SkColorGetB(color_));
   }
 
+  BrowserNonClientFrameViewAura* owner_;
   SkColor color_;
   SkBitmap icon_;
+  scoped_ptr<ui::SlideAnimation> show_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowControlButton);
 };
@@ -202,7 +234,6 @@ BrowserNonClientFrameViewAura::BrowserNonClientFrameViewAura(
       new WindowControlButton(this,
                               kMaximizeButtonBackgroundColor,
                               *rb.GetBitmapNamed(IDR_AURA_WINDOW_ZOOM_ICON));
-  maximize_button_->SetVisible(false);
   maximize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_MAXIMIZE));
   AddChildView(maximize_button_);
@@ -211,14 +242,30 @@ BrowserNonClientFrameViewAura::BrowserNonClientFrameViewAura(
       new WindowControlButton(this,
                               kCloseButtonBackgroundColor,
                               *rb.GetBitmapNamed(IDR_AURA_WINDOW_CLOSE_ICON));
-  close_button_->SetVisible(false);
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);
+
+  // The BrowserFrame will become our owning window/widget.
+  frame->AsWidget()->AddObserver(this);
+  // Associate our WindowFrame interface with our owning window/widget so
+  // we get callbacks from aura_shell.
+  frame->AsWidget()->SetNativeWindowProperty(
+      aura_shell::kWindowFrameKey,
+      static_cast<aura_shell::WindowFrame*>(this));
 }
 
 BrowserNonClientFrameViewAura::~BrowserNonClientFrameViewAura() {
   // Don't need to remove the Widget observer, the window is deleted before us.
+}
+
+void BrowserNonClientFrameViewAura::ShowFrameBackground() {
+  UpdateFrameBackground(ShouldPaintAsActive());
+  frame_background_->Show();
+}
+
+void BrowserNonClientFrameViewAura::HideFrameBackground() {
+  frame_background_->Hide();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -280,8 +327,14 @@ gfx::Rect BrowserNonClientFrameViewAura::GetFrameBackgroundBounds(
     case HTCAPTION:
       show_top = true;
       break;
+    case HTCLOSE:
+      show_top = true;
+      break;
     case HTLEFT:
       show_left = true;
+      break;
+    case HTMAXBUTTON:
+      show_top = true;
       break;
     case HTRIGHT:
       show_right = true;
@@ -329,8 +382,6 @@ void BrowserNonClientFrameViewAura::ActiveStateChanged() {
     frame_background_->Show();
   else
     frame_background_->Hide();
-  maximize_button_->SetVisible(active);
-  close_button_->SetVisible(active);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -473,13 +524,13 @@ bool BrowserNonClientFrameViewAura::HitTest(const gfx::Point& p) const {
 void BrowserNonClientFrameViewAura::OnMouseMoved(
     const views::MouseEvent& event) {
   // We may be hovering over the resize edge.
-  UpdateFrameBackground(ShouldPaintAsActive());
-  frame_background_->Show();
+  ShowFrameBackground();
 }
 
 void BrowserNonClientFrameViewAura::OnMouseExited(
     const views::MouseEvent& event) {
-  frame_background_->Hide();
+  // We hovered away from the resize edge.
+  HideFrameBackground();
 }
 
 gfx::NativeCursor BrowserNonClientFrameViewAura::GetCursor(
@@ -507,15 +558,6 @@ gfx::NativeCursor BrowserNonClientFrameViewAura::GetCursor(
   }
 }
 
-void BrowserNonClientFrameViewAura::ViewHierarchyChanged(bool is_add,
-                                                         views::View* parent,
-                                                         views::View* child) {
-  if (is_add && child == this && GetWidget()) {
-    // Defer adding the observer until we have a valid window/widget.
-    GetWidget()->AddObserver(this);
-  }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // views::ButtonListener overrides:
 
@@ -538,4 +580,17 @@ void BrowserNonClientFrameViewAura::OnWidgetActivationChanged(
     views::Widget* widget,
     bool active) {
   ActiveStateChanged();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// aura_shell::WindowFrame overrides:
+
+void BrowserNonClientFrameViewAura::OnWindowHoverChanged(bool hovered) {
+  if (hovered) {
+    maximize_button_->Show();
+    close_button_->Show();
+  } else {
+    maximize_button_->Hide();
+    close_button_->Hide();
+  }
 }

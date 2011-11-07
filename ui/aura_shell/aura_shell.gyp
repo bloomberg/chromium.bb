@@ -74,6 +74,8 @@
         'toplevel_frame_view.h',
         'toplevel_layout_manager.cc',
         'toplevel_layout_manager.h',
+        'window_frame.cc',
+        'window_frame.h',
         'workspace/workspace.cc',
         'workspace/workspace.h',
         'workspace/workspace_controller.cc',
