@@ -557,10 +557,11 @@ bool AutomationProxy::BeginTracing(const std::string& categories) {
 
 bool AutomationProxy::EndTracing(std::string* json_trace_output) {
   bool success = false;
-  if (!Send(new AutomationMsg_EndTracing(&success)) || !success)
+  size_t num_trace_chunks = 0;
+  if (!Send(new AutomationMsg_EndTracing(&num_trace_chunks, &success)) ||
+      !success)
     return false;
 
-  int remaining_chunks = 0;
   std::string chunk;
   base::debug::TraceResultBuffer buffer;
   base::debug::TraceResultBuffer::SimpleOutput output;
@@ -570,19 +571,18 @@ bool AutomationProxy::EndTracing(std::string* json_trace_output) {
   // code can be simplified if that limitation is fixed.
   // Workaround IPC payload size limitation by getting chunks.
   buffer.Start();
-  do {
+  for (size_t i = 0; i < num_trace_chunks; ++i) {
     // The broswer side AutomationProvider resets state at BeginTracing,
     // so it can recover even after this fails mid-way.
-    if (!Send(new AutomationMsg_GetTracingOutput(&chunk, &remaining_chunks)))
+    if (!Send(new AutomationMsg_GetTracingOutput(&chunk, &success)) ||
+        !success)
       return false;
     buffer.AddFragment(chunk);
-  } while (remaining_chunks > 0);
-  success = (remaining_chunks == 0);
+  }
   buffer.Finish();
 
-  if (success)
-    *json_trace_output = output.json_output;
-  return success;
+  *json_trace_output = output.json_output;
+  return true;
 }
 
 bool AutomationProxy::ResetToDefaultTheme() {
