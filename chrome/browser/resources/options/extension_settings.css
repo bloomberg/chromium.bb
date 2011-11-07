@@ -120,7 +120,7 @@ found in the LICENSE file.
 
 .extension-details-visible {
   opacity: 1;
-  max-height: 100px;
+  max-height: 1000px;
   -webkit-transition: max-height 200ms, opacity 300ms;
 }
 
