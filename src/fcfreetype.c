@@ -2609,13 +2609,10 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags)
     FT_Stream  stream = face->stream;
     FT_Error   error;
     FT_UShort  n, p;
-    FT_Memory  memory;
     int        script_count;
 
     if (!stream)
         return 0;
-
-    memory = stream->memory;
 
     if (( error = ftglue_face_goto_table( face, tabletag, stream ) ))
 	return 0;
