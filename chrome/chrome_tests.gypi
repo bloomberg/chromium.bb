@@ -1660,6 +1660,7 @@
         'browser/ui/cocoa/applescript/bookmark_item_applescript_unittest.mm',
         'browser/ui/cocoa/background_gradient_view_unittest.mm',
         'browser/ui/cocoa/background_tile_view_unittest.mm',
+        'browser/ui/cocoa/base_bubble_controller_unittest.mm',
         'browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller_unittest.mm',
         'browser/ui/cocoa/bookmarks/bookmark_bar_bridge_unittest.mm',
         'browser/ui/cocoa/bookmarks/bookmark_bar_controller_unittest.mm',

@@ -21,6 +21,13 @@ enum BubbleArrowLocation {
   kNoArrow,
 };
 
+enum BubbleAlignment {
+  // The tip of the arrow points to the anchor point.
+  kAlignArrowToAnchor,
+  // The edge nearest to the arrow is lined up with the anchor point.
+  kAlignEdgeToAnchorEdge,
+};
+
 }  // namespace info_bubble
 
 // Content view for a bubble with an arrow showing arbitrary content.
@@ -28,9 +35,11 @@ enum BubbleArrowLocation {
 @interface InfoBubbleView : NSView {
  @private
   info_bubble::BubbleArrowLocation arrowLocation_;
+  info_bubble::BubbleAlignment alignment_;
 }
 
 @property(assign, nonatomic) info_bubble::BubbleArrowLocation arrowLocation;
+@property(assign, nonatomic) info_bubble::BubbleAlignment alignment;
 
 // Returns the point location in view coordinates of the tip of the arrow.
 - (NSPoint)arrowTip;

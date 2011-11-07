@@ -195,14 +195,34 @@ class Bridge : public content::NotificationObserver {
 - (void)updateOriginFromAnchor {
   NSWindow* window = [self window];
   NSPoint origin = anchor_;
-  NSSize offsets = NSMakeSize(info_bubble::kBubbleArrowXOffset +
-                              info_bubble::kBubbleArrowWidth / 2.0, 0);
-  offsets = [[parentWindow_ contentView] convertSize:offsets toView:nil];
-  if ([bubble_ arrowLocation] == info_bubble::kTopRight) {
-    origin.x -= NSWidth([window frame]) - offsets.width;
-  } else {
-    origin.x -= offsets.width;
+
+  switch ([bubble_ alignment]) {
+    case info_bubble::kAlignArrowToAnchor: {
+      NSSize offsets = NSMakeSize(info_bubble::kBubbleArrowXOffset +
+                                  info_bubble::kBubbleArrowWidth / 2.0, 0);
+      offsets = [[parentWindow_ contentView] convertSize:offsets toView:nil];
+      if ([bubble_ arrowLocation] == info_bubble::kTopRight) {
+        origin.x -= NSWidth([window frame]) - offsets.width;
+      } else {
+        origin.x -= offsets.width;
+      }
+      break;
+    }
+
+    case info_bubble::kAlignEdgeToAnchorEdge:
+      // If the arrow is to the right then move the origin so that the right
+      // edge aligns with the anchor. If the arrow is to the left then there's
+      // nothing to do becaues the left edge is already aligned with the left
+      // edge of the anchor.
+      if ([bubble_ arrowLocation] == info_bubble::kTopRight) {
+        origin.x -= NSWidth([window frame]);
+      }
+      break;
+
+    default:
+      NOTREACHED();
   }
+
   origin.y -= NSHeight([window frame]);
   [window setFrameOrigin:origin];
 }

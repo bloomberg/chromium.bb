@@ -10,10 +10,12 @@
 @implementation InfoBubbleView
 
 @synthesize arrowLocation = arrowLocation_;
+@synthesize alignment = alignment_;
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
     arrowLocation_ = info_bubble::kTopLeft;
+    alignment_ = info_bubble::kAlignArrowToAnchor;
   }
   return self;
 }
