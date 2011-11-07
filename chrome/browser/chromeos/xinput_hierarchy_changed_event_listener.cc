@@ -45,13 +45,18 @@ void SelectXInputEvents() {
 
 // Checks the |event| and asynchronously sets the XKB layout when necessary.
 void HandleHierarchyChangedEvent(XIHierarchyEvent* event) {
+  if (!(event->flags & XISlaveAdded)) {
+    return;
+  }
   for (int i = 0; i < event->num_info; ++i) {
     XIHierarchyInfo* info = &event->info[i];
-    if ((event->flags & XISlaveAdded) &&
-        (info->use == XIFloatingSlave) &&
-        (info->flags & XISlaveAdded)) {
-      chromeos::input_method::InputMethodManager::GetInstance()->
-          GetXKeyboard()->ReapplyCurrentKeyboardLayout();
+    if ((info->flags & XISlaveAdded) && (info->use == XIFloatingSlave)) {
+      chromeos::input_method::InputMethodManager* input_method_manager =
+          chromeos::input_method::InputMethodManager::GetInstance();
+      chromeos::input_method::XKeyboard* xkeyboard =
+          input_method_manager->GetXKeyboard();
+      xkeyboard->ReapplyCurrentModifierLockStatus();
+      xkeyboard->ReapplyCurrentKeyboardLayout();
       break;
     }
   }

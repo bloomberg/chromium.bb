@@ -22,6 +22,12 @@ struct AutoRepeatRate {
   unsigned int repeat_interval_in_ms;
 };
 
+enum ModifierLockStatus {
+  kDisableLock = 0,
+  kEnableLock,
+  kDontChange,
+};
+
 enum ModifierKey {
   kSearchKey = 0,  // Customizable.
   kLeftControlKey,  // Customizable.
@@ -68,6 +74,47 @@ class XKeyboard {
   // xinput_hierarchy_changed_event_listener.h for details.
   bool ReapplyCurrentKeyboardLayout();
 
+  // Updates keyboard LEDs on all keyboards.
+  // XKB asymmetrically propagates keyboard modifier indicator state changes to
+  // slave keyboards. If the state change is initiated from a client to the
+  // "core/master keyboard", XKB changes global state and pushes an indication
+  // change down to all keyboards. If the state change is initiated by one slave
+  // (physical) keyboard, it changes global state but only pushes an indicator
+  // state change down to that one keyboard.
+  // This function changes LEDs on all keyboards by explicitly updating the
+  // core/master keyboard.
+  void ReapplyCurrentModifierLockStatus();
+
+  // Sets the Caps Lock and Num Lock status. Do not call the function from
+  // non-UI threads.
+  void SetLockedModifiers(ModifierLockStatus new_caps_lock_status,
+                          ModifierLockStatus new_num_lock_status);
+
+  // Sets the num lock status to |enable_num_lock|. Do not call the function
+  // from non-UI threads.
+  void SetNumLockEnabled(bool enable_num_lock);
+
+  // Sets the caps lock status to |enable_caps_lock|. Do not call the function
+  // from non-UI threads.
+  void SetCapsLockEnabled(bool enable_caps_lock);
+
+  // Set true on |out_caps_lock_enabled| if Caps Lock is enabled. Set true on
+  // |out_num_lock_enabled| if Num Lock (or to be precise, the modifier
+  // specified by |num_lock_mask|) is enabled. Both 'out' parameters can be
+  // NULL. When |out_num_lock_enabled| is NULL, |num_lock_mask| is ignored (you
+  // can pass 0 in this case). Do not call the function from non-UI threads.
+  static void GetLockedModifiers(unsigned int num_lock_mask,
+                                 bool* out_caps_lock_enabled,
+                                 bool* out_num_lock_enabled);
+
+  // Returns true if num lock is enabled. Do not call the function from non-UI
+  // threads.
+  static bool NumLockIsEnabled(unsigned int num_lock_mask);
+
+  // Returns true if caps lock is enabled. Do not call the function from non-UI
+  // threads.
+  static bool CapsLockIsEnabled();
+
   // Turns on and off the auto-repeat of the keyboard. Returns true on success.
   // Do not call the function from non-UI threads.
   static bool SetAutoRepeatEnabled(bool enabled);
@@ -77,13 +124,8 @@ class XKeyboard {
   // non-UI threads.
   static bool SetAutoRepeatRate(const AutoRepeatRate& rate);
 
-  // Returns true if caps lock is enabled. Do not call the function from non-UI
-  // threads.
-  static bool CapsLockIsEnabled();
-
-  // Sets the caps lock status to |enable_caps_lock|. Do not call the function
-  // from non-UI threads.
-  static void SetCapsLockEnabled(bool enabled);
+  // Returns a mask (e.g. 1U<<4) for Num Lock. On error, returns 0.
+  static unsigned int GetNumLockMask();
 
  protected:
   // Creates a full XKB layout name like
@@ -127,17 +169,22 @@ class XKeyboard {
   // Called when execve'd setxkbmap process exits.
   static void OnSetLayoutFinish(pid_t pid, int status, XKeyboard* self);
 
+  const bool is_running_on_chrome_os_;
+  unsigned int num_lock_mask_;
+
+  // The current Num Lock and Caps Lock status. If true, enabled.
+  bool current_num_lock_status_;
+  bool current_caps_lock_status_;
   // The XKB layout name which we set last time like "us" and "us(dvorak)".
   std::string current_layout_name_;
   // The mapping of modifier keys we set last time.
   ModifierMap current_modifier_map_;
+
   // A queue for executing setxkbmap one by one.
   std::queue<std::string> execute_queue_;
 
   std::set<std::string> keep_right_alt_xkb_layout_names_;
   std::set<std::string> caps_lock_remapped_xkb_layout_names_;
-
-  const bool is_running_on_chrome_os_;
 
   DISALLOW_COPY_AND_ASSIGN(XKeyboard);
 };

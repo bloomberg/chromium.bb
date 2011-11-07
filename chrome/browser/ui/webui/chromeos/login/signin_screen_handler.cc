@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -305,7 +306,8 @@ void SigninScreenHandler::Show(bool oobe_ui) {
     SendUserList(false);
 
     // Reset Caps Lock state when login screen is shown.
-    input_method::XKeyboard::SetCapsLockEnabled(false);
+    input_method::InputMethodManager::GetInstance()->GetXKeyboard()->
+        SetCapsLockEnabled(false);
 
     ShowScreen(kAccountPickerScreen, NULL);
   }

@@ -73,8 +73,11 @@ SystemKeyEventListener* SystemKeyEventListener::GetInstance() {
 
 SystemKeyEventListener::SystemKeyEventListener()
     : stopped_(false),
-      caps_lock_is_on_(input_method::XKeyboard::CapsLockIsEnabled()),
+      num_lock_mask_(input_method::XKeyboard::GetNumLockMask()),
       xkb_event_base_(0) {
+  input_method::XKeyboard::GetLockedModifiers(
+      num_lock_mask_, &caps_lock_is_on_, &num_lock_is_on_);
+
   Display* display = ui::GetXDisplay();
   key_brightness_down_ = XKeysymToKeycode(display,
                                           XF86XK_MonBrightnessDown);
@@ -183,16 +186,15 @@ GdkFilterReturn SystemKeyEventListener::GdkEventFilter(GdkXEvent* gxevent,
 #endif  // defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
 
 void SystemKeyEventListener::GrabKey(int32 key, uint32 mask) {
-  uint32 num_lock_mask = Mod2Mask;
   uint32 caps_lock_mask = LockMask;
   Display* display = ui::GetXDisplay();
   Window root = DefaultRootWindow(display);
   XGrabKey(display, key, mask, root, True, GrabModeAsync, GrabModeAsync);
   XGrabKey(display, key, mask | caps_lock_mask, root, True,
            GrabModeAsync, GrabModeAsync);
-  XGrabKey(display, key, mask | num_lock_mask, root, True,
+  XGrabKey(display, key, mask | num_lock_mask_, root, True,
            GrabModeAsync, GrabModeAsync);
-  XGrabKey(display, key, mask | caps_lock_mask | num_lock_mask, root,
+  XGrabKey(display, key, mask | caps_lock_mask | num_lock_mask_, root,
            True, GrabModeAsync, GrabModeAsync);
 }
 
@@ -275,11 +277,14 @@ void SystemKeyEventListener::ShowVolumeBubble() {
 }
 
 bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
+  input_method::InputMethodManager* input_method_manager =
+      input_method::InputMethodManager::GetInstance();
+
   if (xevent->type == KeyPress || xevent->type == KeyRelease) {
     // Change the current keyboard layout (or input method) if xevent is one of
     // the input method hotkeys.
     input_method::HotkeyManager* hotkey_manager =
-        input_method::InputMethodManager::GetInstance()->GetHotkeyManager();
+        input_method_manager->GetHotkeyManager();
     if (hotkey_manager->FilterKeyEvent(*xevent)) {
       return true;
     }
@@ -288,11 +293,30 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
   if (xevent->type == xkb_event_base_) {
     XkbEvent* xkey_event = reinterpret_cast<XkbEvent*>(xevent);
     if (xkey_event->any.xkb_type == XkbStateNotify) {
-      const bool new_lock_state = (xkey_event->state.locked_mods) & LockMask;
-      if (caps_lock_is_on_ != new_lock_state) {
-        caps_lock_is_on_ = new_lock_state;
+      input_method::ModifierLockStatus new_caps_lock_state =
+          input_method::kDontChange;
+      input_method::ModifierLockStatus new_num_lock_state =
+          input_method::kDontChange;
+
+      bool enabled = (xkey_event->state.locked_mods) & LockMask;
+      if (caps_lock_is_on_ != enabled) {
+        caps_lock_is_on_ = enabled;
+        new_caps_lock_state =
+            enabled ? input_method::kEnableLock : input_method::kDisableLock;
         OnCapsLock(caps_lock_is_on_);
       }
+
+      enabled = (xkey_event->state.locked_mods) & num_lock_mask_;
+      if (num_lock_is_on_ != enabled) {
+        num_lock_is_on_ = enabled;
+        new_num_lock_state =
+            enabled ? input_method::kEnableLock : input_method::kDisableLock;
+      }
+
+      // Propagate the keyboard LED change to _ALL_ keyboards
+      input_method_manager->GetXKeyboard()->SetLockedModifiers(
+          new_caps_lock_state, new_num_lock_state);
+
       return true;
     }
   } else if (xevent->type == KeyPress) {
@@ -305,7 +329,8 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
         const bool other_shift_is_held = (state & ShiftMask);
         const bool other_mods_are_held = (state & ~(ShiftMask | LockMask));
         if (other_shift_is_held && !other_mods_are_held)
-          input_method::XKeyboard::SetCapsLockEnabled(!caps_lock_is_on_);
+          input_method_manager->GetXKeyboard()->SetCapsLockEnabled(
+              !caps_lock_is_on_);
       }
 
       // Only doing non-Alt/Shift/Ctrl modified keys
