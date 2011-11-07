@@ -334,7 +334,7 @@ void WINAPI DoTranslateThread(void* arg) {
     p->obj_wrapper.reset(
         plugin->wrapper_factory()->MakeGeneric(params.outs()[0]->u.hval));
     p->obj_len = params.outs()[1]->u.ival;
-    p->is_shared_library = params.outs()[2]->u.ival;
+    p->is_shared_library = params.outs()[2]->u.ival != 0;
     p->soname = params.outs()[3]->arrays.str;
     p->lib_dependencies = params.outs()[4]->arrays.str;
     PLUGIN_PRINTF(("PnaclCoordinator::Translate SRPC succeeded (bytes=%"
