@@ -33,7 +33,7 @@ class WifiDownloadsTest(chromeos_network.PyNetworkUITest):
     self.InitWifiPowerStrip()
     # The power strip is a shared resource and if we every crash in the middle
     # of a test we will be in an unknown state.  This returns us to 'all off'.
-    self.PowerDownAllRouters()
+    self.TurnOffAllRouters()
     # Downloading files of a large size, can take a while, bump the timeout
     self.changer = pyauto.PyUITest.ActionTimeoutChanger(self, 4 * 1000 * 60)
     self.log_file_path = '/tmp/wifi_download_time.csv'
