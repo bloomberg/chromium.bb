@@ -427,8 +427,8 @@ void ThreadWatcherList::ParseCommandLine(
 
 #if defined(OS_WIN)
   // For Windows XP (old systems), double the unresponsive_threshold to give
-  // the OS a chance to schedule UI/IO/CACHE threads a time slice to respond
-  // with a pong message (to get around limitations with the OS).
+  // the OS a chance to schedule UI/IO threads a time slice to respond with a
+  // pong message (to get around limitations with the OS).
   if (base::win::GetVersion() <= base::win::VERSION_XP)
     *unresponsive_threshold *= 2;
 #endif
@@ -445,12 +445,12 @@ void ThreadWatcherList::ParseCommandLine(
 
   std::string crash_on_hang_threads;
 
-  // Default to crashing the browser if UI, IO or CACHE threads are not
-  // responsive except in stable channel.
+  // Default to crashing the browser if UI or IO threads are not responsive
+  // except in stable channel.
   if (channel == chrome::VersionInfo::CHANNEL_STABLE)
     crash_on_hang_threads = "";
   else
-    crash_on_hang_threads = "UI,IO,CACHE";
+    crash_on_hang_threads = "UI,IO";
 
   if (command_line.HasSwitch(switches::kCrashOnHangThreads)) {
     crash_on_hang_threads =
@@ -496,11 +496,9 @@ void ThreadWatcherList::InitializeAndStartWatching(
   StartWatching(BrowserThread::FILE, "FILE", kSleepTime, kUnresponsiveTime,
                 unresponsive_threshold, crash_on_hang_thread_names,
                 live_threads_threshold);
-  // We crash in case of hung CACHE thread if UI,IO,DB and FILE threads are
-  // responding, but CACHE thread is the only one that is not responding.
   StartWatching(BrowserThread::CACHE, "CACHE", kSleepTime, kUnresponsiveTime,
                 unresponsive_threshold, crash_on_hang_thread_names,
-                4);
+                live_threads_threshold);
 
   BrowserThread::PostTask(
       BrowserThread::UI,
