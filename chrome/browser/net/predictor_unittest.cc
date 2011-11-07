@@ -116,12 +116,10 @@ TEST_F(PredictorTest, StartupShutdownTest) {
 
 
 TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
-  scoped_refptr<net::WaitingHostResolverProc> resolver_proc(
-      new net::WaitingHostResolverProc(NULL));
-  host_resolver_->Reset(resolver_proc);
+  scoped_ptr<net::HostResolver> host_resolver(new net::HangingHostResolver());
 
   Predictor testing_master(true);
-  testing_master.SetHostResolver(host_resolver_.get());
+  testing_master.SetHostResolver(host_resolver.get());
 
   GURL localhost("http://localhost:80");
   UrlList names;
@@ -138,7 +136,6 @@ TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
   testing_master.Shutdown();
 
   // Clean up after ourselves.
-  resolver_proc->Signal();
   MessageLoop::current()->RunAllPending();
 }
 
