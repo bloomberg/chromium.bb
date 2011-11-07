@@ -235,9 +235,6 @@ def _SetEnvForPnacl(env, root):
   if frontend == 'clang':
     pnacl_cc = binprefix + 'clang' + binext
     pnacl_cxx = binprefix + 'clang++' + binext
-  elif frontend == 'llvmgcc':
-    pnacl_cc = binprefix + 'gcc' + binext
-    pnacl_cxx = binprefix + 'g++' + binext
   elif frontend == 'dragonegg':
     pnacl_cc = binprefix + 'dgcc' + binext
     pnacl_cxx = binprefix + 'dg++' + binext
@@ -338,7 +335,7 @@ def PNaClForceNative(env):
 # PNaCl mode.
 def PNaClChangeFrontend(env, frontend):
   assert(env.Bit('bitcode'))
-  assert(frontend in ('clang','dragonegg','llvmgcc'))
+  assert(frontend in ('clang','dragonegg'))
 
   # This is kind of a hack.
   alt_env = env.Clone()

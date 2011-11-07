@@ -941,8 +941,8 @@ def MakeArchSpecificEnv():
     env.SetBits('bitcode')
 
   pnacl_frontend = ARGUMENTS.get('pnacl_frontend', '')
-  if pnacl_frontend not in ('','clang','dragonegg','llvmgcc'):
-    print "\n ERROR: pnacl_frontend must be clang, dragonegg, or llvmgcc"
+  if pnacl_frontend not in ('','clang','dragonegg'):
+    print "\n ERROR: pnacl_frontend must be clang or dragonegg"
     sys.exit(-1)
   if pnacl_frontend and not env.Bit('bitcode'):
     print "\n ERROR: pnacl_frontend does not make sense without bitcode=1\n"
