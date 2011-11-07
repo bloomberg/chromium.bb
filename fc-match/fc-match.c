@@ -98,16 +98,16 @@ usage (char *program, int error)
 int
 main (int argc, char **argv)
 {
-    int		verbose = 0;
-    int		sort = 0, all = 0;
-    FcChar8     *format = NULL;
-    int		i;
-    FcObjectSet *os = 0;
-    FcFontSet	*fs;
-    FcPattern   *pat;
-    FcResult	result;
+    int			verbose = 0;
+    int			sort = 0, all = 0;
+    const FcChar8	*format = NULL;
+    int			i;
+    FcObjectSet		*os = 0;
+    FcFontSet		*fs;
+    FcPattern		*pat;
+    FcResult		result;
 #if HAVE_GETOPT_LONG || HAVE_GETOPT
-    int		c;
+    int			c;
 
 #if HAVE_GETOPT_LONG
     while ((c = getopt_long (argc, argv, "asvf:Vh", longopts, NULL)) != -1)
@@ -203,9 +203,9 @@ main (int argc, char **argv)
     if (!format)
     {
 	if (os)
-	    format = "%{=unparse}\n";
+	    format = (const FcChar8 *) "%{=unparse}\n";
 	else
-	    format = "%{=fcmatch}\n";
+	    format = (const FcChar8 *) "%{=fcmatch}\n";
     }
 
     if (fs)
