@@ -28,8 +28,8 @@ namespace proxy {
 namespace {
 
 base::MessageLoopProxy* GetMainThreadMessageLoop() {
-  static scoped_refptr<base::MessageLoopProxy> proxy(
-      base::MessageLoopProxy::current());
+  CR_DEFINE_STATIC_LOCAL(scoped_refptr<base::MessageLoopProxy>, proxy,
+      (base::MessageLoopProxy::current()));
   return proxy.get();
 }
 

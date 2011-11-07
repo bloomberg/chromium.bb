@@ -59,7 +59,7 @@ PP_Var PPB_Font_Proxy::GetFontFamilies(PP_Instance instance) {
     return PP_MakeUndefined();
 
   // Assume the font families don't change, so we can cache the result globally.
-  static std::string families;
+  CR_DEFINE_STATIC_LOCAL(std::string, families, ());
   if (families.empty()) {
     dispatcher->SendToBrowser(
         new PpapiHostMsg_PPBFont_GetFontFamilies(&families));

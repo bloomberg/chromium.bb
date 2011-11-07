@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,7 +80,7 @@ buzz::XmlElement* PushNotificationsSubscribeTask::MakeSubscriptionMessage(
     const SubscriptionList& subscriptions,
     const buzz::Jid& jid, const std::string& task_id) {
   DCHECK(jid.IsFull());
-  static const buzz::QName kQnSubscribe(
+  const buzz::QName kQnSubscribe(
       kPushNotificationsNamespace, "subscribe");
 
   // Create the subscription stanza using the notifications protocol.

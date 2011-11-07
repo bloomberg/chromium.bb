@@ -5,6 +5,7 @@
 #include "printing/pdf_metafile_cg_mac.h"
 
 #include "base/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -34,7 +35,10 @@ namespace {
 // single-process mode. TODO(avi): This Apple bug appears fixed in 10.7; when
 // 10.7 is the minimum required version for Chromium, remove this hack.
 
-base::ThreadLocalPointer<struct __CFSet> thread_pdf_docs;
+base::LazyInstance<
+    base::ThreadLocalPointer<struct __CFSet>,
+    base::LeakyLazyInstanceTraits<base::ThreadLocalPointer<struct __CFSet> > >
+        thread_pdf_docs(base::LINKER_INITIALIZED);
 
 }  // namespace
 
@@ -43,24 +47,24 @@ namespace printing {
 PdfMetafileCg::PdfMetafileCg()
     : page_is_open_(false),
       thread_pdf_docs_owned_(false) {
-  if (!thread_pdf_docs.Get() && base::mac::IsOSSnowLeopardOrEarlier()) {
+  if (!thread_pdf_docs.Pointer()->Get() &&
+      base::mac::IsOSSnowLeopardOrEarlier()) {
     thread_pdf_docs_owned_ = true;
-    thread_pdf_docs.Set(CFSetCreateMutable(kCFAllocatorDefault,
-                                           0,
-                                           &kCFTypeSetCallBacks));
+    thread_pdf_docs.Pointer()->Set(
+        CFSetCreateMutable(kCFAllocatorDefault, 0, &kCFTypeSetCallBacks));
   }
 }
 
 PdfMetafileCg::~PdfMetafileCg() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (pdf_doc_ && thread_pdf_docs.Get()) {
+  if (pdf_doc_ && thread_pdf_docs.Pointer()->Get()) {
     // Transfer ownership to the pool.
-    CFSetAddValue(thread_pdf_docs.Get(), pdf_doc_);
+    CFSetAddValue(thread_pdf_docs.Pointer()->Get(), pdf_doc_);
   }
 
   if (thread_pdf_docs_owned_) {
-    CFRelease(thread_pdf_docs.Get());
-    thread_pdf_docs.Set(NULL);
+    CFRelease(thread_pdf_docs.Pointer()->Get());
+    thread_pdf_docs.Pointer()->Set(NULL);
   }
 }
 

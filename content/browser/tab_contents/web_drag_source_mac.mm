@@ -161,9 +161,8 @@ void PromiseWriterTask::Run() {
 - (void)lazyWriteToPasteboard:(NSPasteboard*)pboard forType:(NSString*)type {
   // NSHTMLPboardType requires the character set to be declared. Otherwise, it
   // assumes US-ASCII. Awesome.
-  static const string16 kHtmlHeader =
-      ASCIIToUTF16("<meta http-equiv=\"Content-Type\" "
-                   "content=\"text/html;charset=UTF-8\">");
+  const string16 kHtmlHeader = ASCIIToUTF16(
+      "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">");
 
   // Be extra paranoid; avoid crashing.
   if (!dropData_.get()) {

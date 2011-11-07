@@ -18,7 +18,7 @@ const spdy::SpdySettings& SpdySettingsStorage::Get(
     const HostPortPair& host_port_pair) const {
   SettingsMap::const_iterator it = settings_map_.find(host_port_pair);
   if (it == settings_map_.end()) {
-    static const spdy::SpdySettings kEmpty;
+    CR_DEFINE_STATIC_LOCAL(spdy::SpdySettings, kEmpty, ());
     return kEmpty;
   }
   return it->second;

@@ -132,7 +132,7 @@ bool HttpMacSignature::GenerateHeaderString(const std::string& age,
 std::string HttpMacSignature::GenerateNormalizedRequest(
     const std::string& age,
     const std::string& nonce) {
-  static const std::string kNewLine = "\n";
+  const std::string kNewLine = "\n";
 
   std::string normalized_request = age + ":" + nonce + kNewLine;
   normalized_request += method_ + kNewLine;
