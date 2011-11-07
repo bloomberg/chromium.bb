@@ -24,7 +24,8 @@ using sessions::SyncSession;
 using sessions::StatusController;
 
 GetCommitIdsCommand::GetCommitIdsCommand(int commit_batch_size)
-    : requested_commit_batch_size_(commit_batch_size) {}
+    : requested_commit_batch_size_(commit_batch_size),
+      passphrase_missing_(false) {}
 
 GetCommitIdsCommand::~GetCommitIdsCommand() {}
 
@@ -35,17 +36,21 @@ void GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
   SyncerUtil::GetUnsyncedEntries(session->write_transaction(),
                                  &all_unsynced_handles);
 
-  Cryptographer *cryptographer =
+  Cryptographer* cryptographer =
       session->context()->directory_manager()->GetCryptographer(
           session->write_transaction());
   if (cryptographer) {
-    FilterEntriesNeedingEncryption(cryptographer->GetEncryptedTypes(),
-                                   session->write_transaction(),
-                                   &all_unsynced_handles);
-  }
+    encrypted_types_ = cryptographer->GetEncryptedTypes();
+    passphrase_missing_ = cryptographer->has_pending_keys();
+  };
+  // We filter out all unready entries from the set of unsynced handles to
+  // ensure we don't trigger useless sync cycles attempting to retry due to
+  // there being work to do. (see ScheduleNextSync in sync_scheduler)
+  FilterUnreadyEntries(session->write_transaction(),
+                       &all_unsynced_handles);
+
   StatusController* status = session->status_controller();
   status->set_unsynced_handles(all_unsynced_handles);
-
   BuildCommitIds(status->unsynced_handles(), session->write_transaction(),
                  session->routing_info());
 
@@ -58,35 +63,62 @@ void GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
   status->set_commit_set(*ordered_commit_set_.get());
 }
 
-// We create a new list of unsynced handles which omits all handles to entries
-// that require encryption but are written in plaintext. If any were found we
-// overwrite |unsynced_handles| with this new list, else no change is made.
-// Static.
-void GetCommitIdsCommand::FilterEntriesNeedingEncryption(
-    const syncable::ModelTypeSet& encrypted_types,
+namespace {
+
+// An entry ready for commit is defined as one not in conflict (SERVER_VERSION
+// == BASE_VERSION || SERVER_VERSION == 0) and not requiring encryption
+// (any entry containing an encrypted datatype while the cryptographer requires
+// a passphrase is not ready for commit.)
+bool IsEntryReadyForCommit(const syncable::ModelTypeSet& encrypted_types,
+                           bool passphrase_missing,
+                           const syncable::Entry& entry) {
+  if (!entry.Get(syncable::IS_UNSYNCED))
+    return false;
+
+  if (entry.Get(syncable::SERVER_VERSION) > 0 &&
+      (entry.Get(syncable::SERVER_VERSION) >
+       entry.Get(syncable::BASE_VERSION))) {
+    // The local and server versions don't match. The item must be in
+    // conflict, so there's no point in attempting to commit.
+    DCHECK(entry.Get(syncable::IS_UNAPPLIED_UPDATE));  // In conflict.
+    // TODO(zea): switch this to DVLOG once it's clear bug 100660 is fixed.
+    VLOG(1) << "Excluding entry from commit due to version mismatch "
+            << entry;
+    return false;
+  }
+
+  if (encrypted_types.count(entry.GetModelType()) > 0 &&
+      (passphrase_missing ||
+       syncable::EntryNeedsEncryption(encrypted_types, entry))) {
+    // This entry requires encryption but is not properly encrypted (possibly
+    // due to the cryptographer not being initialized or the user hasn't
+    // provided the most recent passphrase).
+    // TODO(zea): switch this to DVLOG once it's clear bug 100660 is fixed.
+    VLOG(1) << "Excluding entry from commit due to lack of encryption "
+            << entry;
+    return false;
+  }
+
+  return true;
+}
+
+}  // namespace
+
+void GetCommitIdsCommand::FilterUnreadyEntries(
     syncable::BaseTransaction* trans,
     syncable::Directory::UnsyncedMetaHandles* unsynced_handles) {
-  bool removed_handles = false;
   syncable::Directory::UnsyncedMetaHandles::iterator iter;
   syncable::Directory::UnsyncedMetaHandles new_unsynced_handles;
   new_unsynced_handles.reserve(unsynced_handles->size());
-  // TODO(zea): If this becomes a bottleneck, we should merge this loop into the
-  // AddCreatesAndMoves and AddDeletes loops.
   for (iter = unsynced_handles->begin();
        iter != unsynced_handles->end();
        ++iter) {
     syncable::Entry entry(trans, syncable::GET_BY_HANDLE, *iter);
-    if (syncable::EntryNeedsEncryption(encrypted_types, entry)) {
-      // This entry requires encryption but is not encrypted (possibly due to
-      // the cryptographer not being initialized). Don't add it to our new list
-      // of unsynced handles.
-      removed_handles = true;
-    } else {
+    if (IsEntryReadyForCommit(encrypted_types_, passphrase_missing_, entry))
       new_unsynced_handles.push_back(*iter);
-    }
   }
-  if (removed_handles)
-    *unsynced_handles = new_unsynced_handles;
+  if (new_unsynced_handles.size() != unsynced_handles->size())
+    unsynced_handles->swap(new_unsynced_handles);
 }
 
 void GetCommitIdsCommand::AddUncommittedParentsAndTheirPredecessors(
@@ -117,6 +149,8 @@ void GetCommitIdsCommand::AddUncommittedParentsAndTheirPredecessors(
 
 bool GetCommitIdsCommand::AddItem(syncable::Entry* item,
                                   OrderedCommitSet* result) {
+  if (!IsEntryReadyForCommit(encrypted_types_, passphrase_missing_, *item))
+    return false;
   int64 item_handle = item->Get(syncable::META_HANDLE);
   if (result->HaveCommitItem(item_handle) ||
       ordered_commit_set_->HaveCommitItem(item_handle)) {

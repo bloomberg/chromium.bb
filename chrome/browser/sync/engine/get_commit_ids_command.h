@@ -29,13 +29,6 @@ class GetCommitIdsCommand : public SyncerCommand {
   // SyncerCommand implementation.
   virtual void ExecuteImpl(sessions::SyncSession* session);
 
-  // Filter |unsynced_handles| to exclude all handles to entries that require
-  // encryption but are in plaintext.
-  static void FilterEntriesNeedingEncryption(
-      const syncable::ModelTypeSet& encrypted_types,
-      syncable::BaseTransaction* trans,
-      syncable::Directory::UnsyncedMetaHandles* unsynced_handles);
-
   // Builds a vector of IDs that should be committed.
   void BuildCommitIds(const vector<int64>& unsynced_handles,
                       syncable::WriteTransaction* write_transaction,
@@ -114,6 +107,14 @@ class GetCommitIdsCommand : public SyncerCommand {
   };
 
  private:
+  // Removes all entries not ready for commit from |unsynced_handles|.
+  // An entry is considered unready for commit if it's in conflict or requires
+  // (re)encryption. Any datatype requiring encryption while the cryptographer
+  // is missing a passphrase is considered unready for commit.
+  void FilterUnreadyEntries(
+      syncable::BaseTransaction* trans,
+      syncable::Directory::UnsyncedMetaHandles* unsynced_handles);
+
   void AddUncommittedParentsAndTheirPredecessors(
       syncable::BaseTransaction* trans,
       syncable::Id parent_id,
@@ -144,6 +145,8 @@ class GetCommitIdsCommand : public SyncerCommand {
   scoped_ptr<sessions::OrderedCommitSet> ordered_commit_set_;
 
   int requested_commit_batch_size_;
+  bool passphrase_missing_;
+  syncable::ModelTypeSet encrypted_types_;
 
   DISALLOW_COPY_AND_ASSIGN(GetCommitIdsCommand);
 };

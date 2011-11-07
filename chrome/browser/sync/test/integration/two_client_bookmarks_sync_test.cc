@@ -5,6 +5,7 @@
 #include "base/rand_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
+#include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
@@ -37,6 +38,7 @@ const std::wstring kGenericURLTitle = L"URL Title";
 const std::wstring kGenericFolderName = L"Folder Name";
 const std::wstring kGenericSubfolderName = L"Subfolder Name";
 const std::wstring kGenericSubsubfolderName = L"Subsubfolder Name";
+const char* kValidPassphrase = "passphrase!";
 
 class TwoClientBookmarksSyncTest : public SyncTest {
  public:
@@ -1786,6 +1788,50 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(AllModelsMatchVerifier());
 }
 
-// TODO(zea): Add first time sync functionality testing. In particular, when
-// there are encrypted types in first time sync we need to ensure we don't
-// duplicate bookmarks.
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+                       FirstClientEnablesEncryptionWithPassSecondChanges) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  // Add initial bookmarks.
+  ASSERT_TRUE(AddURL(0, 0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
+  ASSERT_TRUE(AddURL(0, 1, IndexedURLTitle(1), GURL(IndexedURL(1))) != NULL);
+  ASSERT_TRUE(AddURL(0, 2, IndexedURLTitle(2), GURL(IndexedURL(2))) != NULL);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  // Set a passphrase and enable encryption on Client 0. Client 1 will not
+  // understand the bookmark updates.
+  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
+  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
+  ASSERT_TRUE(EnableEncryption(0, syncable::BOOKMARKS));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(IsEncrypted(0, syncable::BOOKMARKS));
+  ASSERT_TRUE(IsEncrypted(1, syncable::BOOKMARKS));
+  ASSERT_TRUE(GetClient(1)->service()->IsPassphraseRequired());
+  ASSERT_GT(GetClient(1)->GetLastSessionSnapshot()->
+      num_conflicting_updates, 3);  // The encrypted nodes.
+
+  // Client 1 adds bookmarks between the first two and between the second two.
+  ASSERT_TRUE(AddURL(0, 1, IndexedURLTitle(3), GURL(IndexedURL(3))) != NULL);
+  ASSERT_TRUE(AddURL(0, 3, IndexedURLTitle(4), GURL(IndexedURL(4))) != NULL);
+  EXPECT_FALSE(AllModelsMatchVerifier());
+  EXPECT_FALSE(AllModelsMatch());
+
+  // Set the passphrase. Everything should resolve.
+  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
+  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+  EXPECT_TRUE(AllModelsMatchVerifier());
+  EXPECT_TRUE(AllModelsMatch());
+  ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
+      num_conflicting_updates);
+
+  // Ensure everything is syncing normally by appending a final bookmark.
+  ASSERT_TRUE(AddURL(1, 5, IndexedURLTitle(5), GURL(IndexedURL(5))) != NULL);
+  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+  EXPECT_TRUE(AllModelsMatchVerifier());
+  EXPECT_TRUE(AllModelsMatch());
+  ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
+      num_conflicting_updates);
+}

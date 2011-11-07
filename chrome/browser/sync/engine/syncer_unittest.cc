@@ -551,54 +551,145 @@ TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
   DoTruncationTest(dir, unsynced_handle_view, expected_order);
 }
 
-TEST_F(SyncerTest, GetCommitIdsFilterEntriesNeedingEncryption) {
+TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
-  int64 handle_x = CreateUnsyncedDirectory("X", ids_.MakeLocal("x"));
-  int64 handle_b = CreateUnsyncedDirectory("B", ids_.MakeLocal("b"));
-  int64 handle_c = CreateUnsyncedDirectory("C", ids_.MakeLocal("c"));
-  int64 handle_e = CreateUnsyncedDirectory("E", ids_.MakeLocal("e"));
-  int64 handle_f = CreateUnsyncedDirectory("F", ids_.MakeLocal("f"));
+  KeyParams key_params = {"localhost", "dummy", "foobar"};
   sync_pb::EncryptedData encrypted;
   sync_pb::EntitySpecifics encrypted_bookmark;
   encrypted_bookmark.mutable_encrypted();
   AddDefaultExtensionValue(syncable::BOOKMARKS, &encrypted_bookmark);
+  mock_server_->AddUpdateDirectory(1, 0, "A", 10, 10);
+  mock_server_->AddUpdateDirectory(2, 0, "B", 10, 10);
+  mock_server_->AddUpdateDirectory(3, 0, "C", 10, 10);
+  mock_server_->AddUpdateDirectory(4, 0, "D", 10, 10);
+  SyncShareAsDelegate();
+  // Server side change will put A in conflict.
+  mock_server_->AddUpdateDirectory(1, 0, "A", 20, 20);
   {
+    // Mark bookmarks as encrypted and set the cryptographer to have pending
+    // keys.
     WriteTransaction wtrans(FROM_HERE, UNITTEST, dir);
-    MutableEntry entry_x(&wtrans, GET_BY_HANDLE, handle_x);
-    MutableEntry entry_b(&wtrans, GET_BY_HANDLE, handle_b);
-    MutableEntry entry_c(&wtrans, GET_BY_HANDLE, handle_c);
-    MutableEntry entry_e(&wtrans, GET_BY_HANDLE, handle_e);
-    MutableEntry entry_f(&wtrans, GET_BY_HANDLE, handle_f);
-    entry_x.Put(SPECIFICS, encrypted_bookmark);
-    entry_x.Put(NON_UNIQUE_NAME, kEncryptedString);
-    entry_b.Put(SPECIFICS, DefaultBookmarkSpecifics());
-    entry_c.Put(SPECIFICS, DefaultBookmarkSpecifics());
-    entry_e.Put(SPECIFICS, encrypted_bookmark);
-    entry_e.Put(NON_UNIQUE_NAME, kEncryptedString);
-    entry_f.Put(SPECIFICS, DefaultPreferencesSpecifics());
-  }
+    browser_sync::Cryptographer other_cryptographer;
+    other_cryptographer.AddKey(key_params);
+    sync_pb::EntitySpecifics specifics;
+    sync_pb::NigoriSpecifics* nigori =
+        specifics.MutableExtension(sync_pb::nigori);
+    other_cryptographer.GetKeys(nigori->mutable_encrypted());
+    nigori->set_encrypt_bookmarks(true);
+    syncdb_.manager()->GetCryptographer(&wtrans)->Update(*nigori);
 
-  syncable::ModelTypeSet encrypted_types;
-  encrypted_types.insert(syncable::BOOKMARKS);
-  syncable::Directory::UnsyncedMetaHandles unsynced_handles;
-  unsynced_handles.push_back(handle_x);
-  unsynced_handles.push_back(handle_b);
-  unsynced_handles.push_back(handle_c);
-  unsynced_handles.push_back(handle_e);
-  unsynced_handles.push_back(handle_f);
-  // The unencrypted bookmarks should be removed from the list.
-  syncable::Directory::UnsyncedMetaHandles expected_handles;
-  expected_handles.push_back(handle_x);  // Was encrypted.
-  expected_handles.push_back(handle_e);  // Was encrypted.
-  expected_handles.push_back(handle_f);  // Does not require encryption.
+    // In conflict but properly encrypted.
+    MutableEntry A(&wtrans, GET_BY_ID, ids_.FromNumber(1));
+    ASSERT_TRUE(A.good());
+    A.Put(IS_UNSYNCED, true);
+    A.Put(SPECIFICS, encrypted_bookmark);
+    A.Put(NON_UNIQUE_NAME, kEncryptedString);
+    // Not in conflict and properly encrypted.
+    MutableEntry B(&wtrans, GET_BY_ID, ids_.FromNumber(2));
+    ASSERT_TRUE(B.good());
+    B.Put(IS_UNSYNCED, true);
+    B.Put(SPECIFICS, encrypted_bookmark);
+    B.Put(NON_UNIQUE_NAME, kEncryptedString);
+    // Unencrypted specifics.
+    MutableEntry C(&wtrans, GET_BY_ID, ids_.FromNumber(3));
+    ASSERT_TRUE(C.good());
+    C.Put(IS_UNSYNCED, true);
+    C.Put(NON_UNIQUE_NAME, kEncryptedString);
+    // Unencrypted non_unique_name.
+    MutableEntry D(&wtrans, GET_BY_ID, ids_.FromNumber(4));
+    ASSERT_TRUE(D.good());
+    D.Put(IS_UNSYNCED, true);
+    D.Put(SPECIFICS, encrypted_bookmark);
+    D.Put(NON_UNIQUE_NAME, "not encrypted");
+  }
+  SyncShareAsDelegate();
   {
+    // We remove any unready entries from the status controller's unsynced
+    // handles, so this should remain 0 even though the entries didn't commit.
+    ASSERT_EQ(0U, session_->status_controller()->unsynced_handles().size());
+    // Nothing should have commited due to bookmarks being encrypted and
+    // the cryptographer having pending keys. A would have been resolved
+    // as a simple conflict, but still be unsynced until the next sync cycle.
+    ReadTransaction rtrans(FROM_HERE, dir);
+    Entry entryA(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(1));
+    ASSERT_TRUE(entryA.good());
+    EXPECT_TRUE(entryA.Get(IS_UNSYNCED));
+    Entry entryB(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(2));
+    ASSERT_TRUE(entryB.good());
+    EXPECT_TRUE(entryB.Get(IS_UNSYNCED));
+    Entry entryC(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(3));
+    ASSERT_TRUE(entryC.good());
+    EXPECT_TRUE(entryC.Get(IS_UNSYNCED));
+    Entry entryD(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(4));
+    ASSERT_TRUE(entryD.good());
+    EXPECT_TRUE(entryD.Get(IS_UNSYNCED));
+
+    // Resolve the pending keys.
+    syncdb_.manager()->GetCryptographer(&rtrans)->DecryptPendingKeys(
+        key_params);
+  }
+  SyncShareAsDelegate();
+  {
+    ASSERT_EQ(0U, session_->status_controller()->unsynced_handles().size());
+    // All properly encrypted and non-conflicting items should commit. "A" was
+    // conflicting, but last sync cycle resolved it as simple conflict, so on
+    // this sync cycle it committed succesfullly.
+    ReadTransaction rtrans(FROM_HERE, dir);
+    // Committed successfully.
+    Entry entryA(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(1));
+    ASSERT_TRUE(entryA.good());
+    EXPECT_FALSE(entryA.Get(IS_UNSYNCED));
+    EXPECT_FALSE(entryA.Get(IS_UNAPPLIED_UPDATE));
+    // Committed successfully.
+    Entry entryB(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(2));
+    ASSERT_TRUE(entryB.good());
+    EXPECT_FALSE(entryB.Get(IS_UNSYNCED));
+    EXPECT_FALSE(entryB.Get(IS_UNAPPLIED_UPDATE));
+    // Was not properly encrypted.
+    Entry entryC(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(3));
+    ASSERT_TRUE(entryC.good());
+    EXPECT_TRUE(entryC.Get(IS_UNSYNCED));
+    EXPECT_FALSE(entryC.Get(IS_UNAPPLIED_UPDATE));
+    // Was not properly encrypted.
+    Entry entryD(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(4));
+    ASSERT_TRUE(entryD.good());
+    EXPECT_TRUE(entryD.Get(IS_UNSYNCED));
+    EXPECT_FALSE(entryD.Get(IS_UNAPPLIED_UPDATE));
+  }
+  {
+    // Fix the remaining items.
     WriteTransaction wtrans(FROM_HERE, UNITTEST, dir);
-    GetCommitIdsCommand::FilterEntriesNeedingEncryption(
-        encrypted_types,
-        &wtrans,
-        &unsynced_handles);
-    EXPECT_EQ(expected_handles, unsynced_handles);
+    MutableEntry C(&wtrans, GET_BY_ID, ids_.FromNumber(3));
+    ASSERT_TRUE(C.good());
+    C.Put(SPECIFICS, encrypted_bookmark);
+    C.Put(NON_UNIQUE_NAME, kEncryptedString);
+    MutableEntry D(&wtrans, GET_BY_ID, ids_.FromNumber(4));
+    ASSERT_TRUE(D.good());
+    D.Put(SPECIFICS, encrypted_bookmark);
+    D.Put(NON_UNIQUE_NAME, kEncryptedString);
+  }
+  SyncShareAsDelegate();
+  {
+    ASSERT_EQ(0U, session_->status_controller()->unsynced_handles().size());
+    // None should be unsynced anymore.
+    ReadTransaction rtrans(FROM_HERE, dir);
+    Entry entryA(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(1));
+    ASSERT_TRUE(entryA.good());
+    EXPECT_FALSE(entryA.Get(IS_UNSYNCED));
+    EXPECT_FALSE(entryA.Get(IS_UNAPPLIED_UPDATE));
+    Entry entryB(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(2));
+    ASSERT_TRUE(entryB.good());
+    EXPECT_FALSE(entryB.Get(IS_UNSYNCED));
+    EXPECT_FALSE(entryB.Get(IS_UNAPPLIED_UPDATE));
+    Entry entryC(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(3));
+    ASSERT_TRUE(entryC.good());
+    EXPECT_FALSE(entryC.Get(IS_UNSYNCED));
+    EXPECT_FALSE(entryC.Get(IS_UNAPPLIED_UPDATE));
+    Entry entryD(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(4));
+    ASSERT_TRUE(entryD.good());
+    EXPECT_FALSE(entryD.Get(IS_UNSYNCED));
+    EXPECT_FALSE(entryD.Get(IS_UNAPPLIED_UPDATE));
   }
 }
 
@@ -2814,52 +2905,13 @@ TEST_F(SyncerTest, WeMovedSomethingIntoAFolderServerHasDeleted) {
   saw_syncer_event_ = false;
 }
 
-class FolderMoveDeleteRenameTest : public SyncerTest {
- public:
-  FolderMoveDeleteRenameTest() : done_(false) {}
-
-  static const int64 bob_id_number = 1;
-  static const int64 fred_id_number = 2;
-
-  void MoveBobIntoID2Runner() {
-    if (!done_) {
-      MoveBobIntoID2();
-      done_ = true;
-    }
-  }
-
- protected:
-  void MoveBobIntoID2() {
-    ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-    CHECK(dir.good());
-
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
-    Entry alice(&trans, GET_BY_ID,
-                TestIdFactory::FromNumber(fred_id_number));
-    CHECK(alice.good());
-    EXPECT_TRUE(!alice.Get(IS_DEL));
-    EXPECT_TRUE(alice.Get(SYNCING)) << "Expected to be called mid-commit.";
-    MutableEntry bob(&trans, GET_BY_ID,
-                     TestIdFactory::FromNumber(bob_id_number));
-    CHECK(bob.good());
-    bob.Put(IS_UNSYNCED, true);
-
-    bob.Put(SYNCING, false);
-    bob.Put(PARENT_ID, alice.Get(ID));
-  }
-
-  bool done_;
-};
-
-TEST_F(FolderMoveDeleteRenameTest,
+TEST_F(SyncerTest,
        WeMovedSomethingIntoAFolderServerHasDeletedAndWeRenamed) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
 
-  const syncable::Id bob_id = TestIdFactory::FromNumber(
-      FolderMoveDeleteRenameTest::bob_id_number);
-  const syncable::Id fred_id = TestIdFactory::FromNumber(
-      FolderMoveDeleteRenameTest::fred_id_number);
+  const syncable::Id bob_id = TestIdFactory::FromNumber(1);
+  const syncable::Id fred_id = TestIdFactory::FromNumber(2);
 
   mock_server_->AddUpdateDirectory(bob_id, TestIdFactory::root(),
       "bob", 1, 10);
@@ -2873,18 +2925,18 @@ TEST_F(FolderMoveDeleteRenameTest,
     fred.Put(IS_UNSYNCED, true);
     fred.Put(SYNCING, false);
     fred.Put(NON_UNIQUE_NAME, "Alice");
+
+    // Move Bob within Fred (now Alice).
+    MutableEntry bob(&trans, GET_BY_ID, bob_id);
+    CHECK(bob.good());
+    bob.Put(IS_UNSYNCED, true);
+    bob.Put(SYNCING, false);
+    bob.Put(PARENT_ID, fred_id);
   }
   mock_server_->AddUpdateDirectory(fred_id, TestIdFactory::root(),
       "fred", 2, 20);
   mock_server_->SetLastUpdateDeleted();
   mock_server_->set_conflict_all_commits(true);
-  // This test is a little brittle. We want to move the item into the folder
-  // such that we think we're dealing with a simple conflict, but in reality
-  // it's actually a conflict set.
-  mock_server_->SetMidCommitCallback(
-      NewCallback<FolderMoveDeleteRenameTest>(this,
-          &FolderMoveDeleteRenameTest::MoveBobIntoID2Runner));
-  SyncShareAsDelegate();
   SyncShareAsDelegate();
   SyncShareAsDelegate();
   {
