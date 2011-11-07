@@ -7,13 +7,17 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility_util.h"
+#include "chrome/browser/chromeos/status/status_area_bubble.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_details.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
+#include "views/controls/image_view.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_runner.h"
 #include "views/widget/widget.h"
@@ -79,8 +83,29 @@ void AccessibilityMenuButton::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED)
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     Update();
+    const std::string path =
+        *static_cast<content::Details<std::string> >(details).ptr();
+    // Show a bubble when accessibility is turned on at the login screen.
+    if (path == prefs::kAccessibilityEnabled) {
+      if (accessibility_enabled_.GetValue() &&
+          host_->GetScreenMode() == StatusAreaHost::kWebUILoginMode) {
+        views::ImageView* icon_view = new views::ImageView;
+        const gfx::Image& image = ResourceBundle::GetSharedInstance().
+            GetImageNamed(IDR_ACCESSIBILITY_ICON);
+        icon_view->SetImage(image.ToSkBitmap());
+        bubble_controller_.reset(
+            StatusAreaBubbleController::ShowBubbleUnderViewForAWhile(
+                this, new StatusAreaBubbleContentView(
+                    icon_view,
+                    l10n_util::GetStringUTF16(
+                        IDS_STATUSBAR_ACCESSIBILITY_TURNED_ON_BUBBLE))));
+      } else {
+        bubble_controller_.reset();
+      }
+    }
+  }
 }
 
 

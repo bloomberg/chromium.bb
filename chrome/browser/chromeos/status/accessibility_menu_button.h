@@ -19,6 +19,7 @@ class MenuRunner;
 namespace chromeos {
 
 class StatusAreaHost;
+class StatusAreaBubbleController;
 
 // A class for the button in the status area which alerts the user when
 // accessibility features are enabled.
@@ -53,6 +54,8 @@ class AccessibilityMenuButton : public StatusAreaButton,
   BooleanPrefMember accessibility_enabled_;
   // An object to show menu.
   scoped_ptr<views::MenuRunner> menu_runner_;
+  // The currently showing bubble controller.
+  scoped_ptr<StatusAreaBubbleController> bubble_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityMenuButton);
 };

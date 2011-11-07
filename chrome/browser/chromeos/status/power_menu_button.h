@@ -23,6 +23,8 @@ class SkBitmap;
 
 namespace chromeos {
 
+class StatusAreaBubbleContentView;
+
 // The power menu button in the status area.
 // This class will handle getting the power status and populating the menu.
 class PowerMenuButton : public StatusAreaButton,
@@ -35,20 +37,15 @@ class PowerMenuButton : public StatusAreaButton,
 
   // views::MenuDelegate implementation.
   virtual string16 GetLabel(int id) const;
-  virtual bool IsCommandEnabled(int id) const;
 
   // PowerLibrary::Observer implementation.
   virtual void PowerChanged(const PowerSupplyStatus& power_status);
   virtual void SystemResumed() {}
 
-  int battery_index() const { return battery_index_; }
-
  protected:
   virtual int icon_width();
 
  private:
-  class StatusView;
-
   // views::View
   virtual void OnLocaleChanged() OVERRIDE;
 
@@ -60,6 +57,9 @@ class PowerMenuButton : public StatusAreaButton,
 
   // Update the power icon and menu label info depending on the power status.
   void UpdateIconAndLabelInfo();
+
+  // Update status view
+  void UpdateStatusView();
 
   // Update Battery time. Try to make it monotonically decreasing unless
   // there's a large delta.
@@ -77,7 +77,7 @@ class PowerMenuButton : public StatusAreaButton,
   base::TimeDelta battery_time_to_empty_;
 
   // The currently showing status view. NULL if menu is not being displayed.
-  StatusView* status_;
+  StatusAreaBubbleContentView* status_;
 
   // If non-null the menu is showing.
   scoped_ptr<views::MenuRunner> menu_runner_;

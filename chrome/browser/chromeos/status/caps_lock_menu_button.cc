@@ -8,19 +8,18 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
+#include "chrome/browser/chromeos/status/status_area_bubble.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/image/image.h"
+#include "views/controls/image_view.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/submenu_view.h"
@@ -28,18 +27,7 @@
 
 namespace {
 
-// Spacing between lines of text.
-const int kSpacing = 3;
-// Width and height of the image.
-const int kImageWidth = 22, kImageHeight = 21;
-// Constants for status displayed when user clicks button.
-// Padding around status.
-const int kPadLeftX = 10, kPadRightX = 10, kPadY = 5;
-// Padding between image and text.
-const int kTextPadX = 10;
-
 const size_t kMaxBubbleCount = 3;
-const size_t kCloseBubbleTimerInSec = 5;
 
 // Returns PrefService object associated with |host|.
 PrefService* GetPrefService(chromeos::StatusAreaHost* host) {
@@ -48,99 +36,17 @@ PrefService* GetPrefService(chromeos::StatusAreaHost* host) {
   return NULL;
 }
 
+views::ImageView* CreateImageViewWithCapsLockIcon() {
+  const gfx::Image& image =
+      ResourceBundle::GetSharedInstance().GetImageNamed(IDR_CAPS_LOCK_ICON);
+  views::ImageView* image_view = new views::ImageView;
+  image_view->SetImage(image.ToSkBitmap());
+  return image_view;
+}
+
 }  // namespace
 
 namespace chromeos {
-
-class CapsLockMenuButton::StatusView : public View {
- public:
-  explicit StatusView(CapsLockMenuButton* menu_button)
-      : menu_button_(menu_button),
-        font_(ResourceBundle::GetSharedInstance().GetFont(
-            ResourceBundle::BaseFont)) {
-  }
-
-  virtual ~StatusView() {
-  }
-
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    // TODO(yusukes): For better string localization, we should use either
-    // IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SHIFT_KEYS or
-    // IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SEARCH here instead of just
-    // concatenating IDS_STATUSBAR_CAPS_LOCK_ENABLED and GetText(). Find a good
-    // way to break the long text into lines and stop concatenating strings.
-    const string16 first_line_text = l10n_util::GetStringUTF16(
-        IDS_STATUSBAR_CAPS_LOCK_ENABLED);
-    const string16 second_line_text = menu_button_->GetText();
-
-    int first_line_width = 0;
-    int second_line_width = 0;
-    int height = 0;
-    gfx::CanvasSkia::SizeStringInt(
-        first_line_text, font_, &first_line_width, &height, 0);
-    gfx::CanvasSkia::SizeStringInt(
-        second_line_text, font_, &second_line_width, &height, 0);
-
-    const gfx::Size size = gfx::Size(
-        kPadLeftX + kImageWidth + kTextPadX + kPadRightX +
-            std::max(first_line_width, second_line_width),
-        (2 * kPadY) +
-            std::max(kImageHeight, kSpacing + (2 * font_.GetHeight())));
-    return size;
-  }
-
-  void Update() {
-    PreferredSizeChanged();
-    // Force a paint even if the size didn't change.
-    SchedulePaint();
-  }
-
- protected:
-  void OnPaint(gfx::Canvas* canvas) {
-    SkBitmap* image =
-        ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_CAPS_LOCK_ICON);
-    const int image_x = kPadLeftX;
-    const int image_y = (height() - image->height()) / 2;
-    canvas->DrawBitmapInt(*image, image_x, image_y);
-
-    const string16 first_line_text = l10n_util::GetStringUTF16(
-        IDS_STATUSBAR_CAPS_LOCK_ENABLED);
-    const string16 second_line_text = menu_button_->GetText();
-
-    const int text_height = font_.GetHeight();
-    const int text_x = image_x + kImageWidth + kTextPadX;
-    const int first_line_text_y =
-        (height() - (kSpacing + (2 * text_height))) / 2;
-    const int second_line_text_y = first_line_text_y + text_height + kSpacing;
-    canvas->DrawStringInt(first_line_text, font_, SK_ColorBLACK,
-                          text_x, first_line_text_y,
-                          width() - text_x, text_height,
-                          gfx::Canvas::TEXT_ALIGN_LEFT);
-    canvas->DrawStringInt(second_line_text, font_, SK_ColorBLACK,
-                          text_x, second_line_text_y,
-                          width() - text_x, text_height,
-                          gfx::Canvas::TEXT_ALIGN_LEFT);
-  }
-
-  bool OnMousePressed(const views::MouseEvent& event) {
-    return true;
-  }
-
-  void OnMouseReleased(const views::MouseEvent& event) {
-    if (!event.IsLeftMouseButton())
-      return;
-    if (menu_button_->IsMenuShown())
-      menu_button_->HideMenu();
-    if (menu_button_->IsBubbleShown())
-      menu_button_->HideBubble();
-  }
-
- private:
-  CapsLockMenuButton* menu_button_;
-  gfx::Font font_;
-
-  DISALLOW_COPY_AND_ASSIGN(StatusView);
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // CapsLockMenuButton
@@ -149,7 +55,6 @@ CapsLockMenuButton::CapsLockMenuButton(StatusAreaHost* host)
     : StatusAreaButton(host, this),
       prefs_(GetPrefService(host)),
       status_(NULL),
-      bubble_(NULL),
       should_show_bubble_(true),
       bubble_count_(0) {
   if (prefs_)
@@ -177,15 +82,14 @@ void CapsLockMenuButton::OnLocaleChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// views::ViewMenuDelegate implementation:
+// views::MenuDelegate implementation:
 
 string16 CapsLockMenuButton::GetLabel(int id) const {
   return string16();
 }
 
-bool CapsLockMenuButton::IsCommandEnabled(int id) const {
-  return false;
-}
+////////////////////////////////////////////////////////////////////////////////
+// views::ViewMenuDelegate implementation:
 
 void CapsLockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   static const int kDummyCommandId = 1000;
@@ -200,7 +104,8 @@ void CapsLockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
       kDummyCommandId,
       string16(),
       views::MenuItemView::NORMAL);
-  status_ = new CapsLockMenuButton::StatusView(this);
+  status_ = new StatusAreaBubbleContentView(CreateImageViewWithCapsLockIcon(),
+                                            GetText());
   submenu->AddChildView(status_);
   menu->CreateSubmenu()->set_resize_open_menu(true);
   menu->SetMargins(0, 0);
@@ -234,10 +139,12 @@ void CapsLockMenuButton::OnCapsLockChange(bool enabled) {
 
   // Update the drop-down menu and bubble. Since the constructor also calls
   // UpdateUIFromCurrentCapsLock, we shouldn't do this in the function.
-  if (enabled && IsMenuShown())
-    status_->Update();  // Update the drop-down menu if it's already shown.
-  else if (!enabled && IsMenuShown())
+  if (enabled && IsMenuShown()) {
+    // Update the drop-down menu if it's already shown.
+    status_->SetMessage(GetText());
+  } else if (!enabled && IsMenuShown()) {
     HideMenu();
+  }
   if (enabled)
     MaybeShowBubble();
   else if (!enabled && IsBubbleShown())
@@ -262,9 +169,9 @@ void CapsLockMenuButton::UpdateAccessibleName() {
 }
 
 string16 CapsLockMenuButton::GetText() const {
-  int id = IDS_STATUSBAR_PRESS_SHIFT_KEYS;
+  int id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SHIFT_KEYS;
   if (HasCapsLock())
-    id = IDS_STATUSBAR_PRESS_SEARCH;
+    id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SEARCH;
   return l10n_util::GetStringUTF16(id);
 }
 
@@ -284,7 +191,7 @@ void CapsLockMenuButton::HideMenu() {
 }
 
 bool CapsLockMenuButton::IsBubbleShown() const {
-  return bubble_;
+  return bubble_controller_.get() && bubble_controller_->IsBubbleShown();
 }
 
 void CapsLockMenuButton::MaybeShowBubble() {
@@ -300,10 +207,6 @@ void CapsLockMenuButton::MaybeShowBubble() {
     should_show_bubble_ = false;
   } else {
     CreateAndShowBubble();
-    bubble_timer_.Start(FROM_HERE,
-                        base::TimeDelta::FromSeconds(kCloseBubbleTimerInSec),
-                        this,
-                        &CapsLockMenuButton::HideBubble);
   }
 }
 
@@ -312,24 +215,15 @@ void CapsLockMenuButton::CreateAndShowBubble() {
     NOTREACHED();
     return;
   }
-
-  gfx::Rect button_bounds = GetScreenBounds();
-  button_bounds.set_y(button_bounds.y() + 1);  // See login/message_bubble.cc.
-
-  bubble_ = Bubble::ShowFocusless(GetWidget(), button_bounds,
-      views::BubbleBorder::TOP_RIGHT,
-      views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-      new CapsLockMenuButton::StatusView(this),
-      NULL /* no delegate */,
-      true /* show_while_screen_is_locked */);
+  bubble_controller_.reset(
+      StatusAreaBubbleController::ShowBubbleUnderViewForAWhile(
+          this,
+          new StatusAreaBubbleContentView(CreateImageViewWithCapsLockIcon(),
+                                          GetText())));
 }
 
 void CapsLockMenuButton::HideBubble() {
-  if (!IsBubbleShown())
-    return;
-  bubble_timer_.Stop();  // no-op if it's not running.
-  bubble_->Close();
-  bubble_ = NULL;
+  bubble_controller_.reset();
 }
 
 bool CapsLockMenuButton::HasCapsLock() const {

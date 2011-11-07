@@ -793,6 +793,8 @@
         'browser/chromeos/status/status_area_host.h',
         'browser/chromeos/status/status_area_view.cc',
         'browser/chromeos/status/status_area_view.h',
+        'browser/chromeos/status/status_area_bubble.cc',
+        'browser/chromeos/status/status_area_bubble.h',
         'browser/chromeos/system/name_value_pairs_parser.cc',
         'browser/chromeos/system/name_value_pairs_parser.h',
         'browser/chromeos/system/runtime_environment.cc',
