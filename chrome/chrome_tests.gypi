@@ -2645,6 +2645,8 @@
         'test/data/webui/async_gen.js',
         'test/data/webui/certificate_viewer_dialog_test.js',
         'test/data/webui/certificate_viewer_ui_test-inl.h',
+        'test/data/webui/hung_renderer_dialog_test.js',
+        'test/data/webui/hung_renderer_dialog_ui_test-inl.h',
         'test/data/webui/ntp4.js',
         'test/data/webui/print_preview.js',
         # TODO(craig): Rename this and run from base_unittests when the test
