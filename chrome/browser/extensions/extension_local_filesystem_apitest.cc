@@ -38,7 +38,14 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, LocalFileSystem) {
 
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTest) {
+#if defined(OS_CHROMEOS)
+// http://crbug.com/103406
+#define MAYBE_FileBrowserTest DISABLED_FileBrowserTest
+#else
+#define MAYBE_FileBrowserTest FileBrowserTest
+#endif
+
+IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, MAYBE_FileBrowserTest) {
   AddTmpMountPoint();
   ASSERT_TRUE(RunExtensionTest("filesystem_handler")) << message_;
   ASSERT_TRUE(RunComponentExtensionTest("filebrowser_component")) << message_;
