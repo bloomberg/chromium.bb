@@ -480,8 +480,6 @@
       # ==================================================
       # crbug.com/101787
       '-enterprise.EnterpriseTestReverse.testDefaultSearchProviderDisabled',
-      # crbug.com/95141
-      '-enterprise.EnterpriseTest.testDisable3DAPI',
       # crbug.com/98500
       '-enterprise.EnterpriseTestReverse.testAlwaysAuthorizePluginsDisabled',
       # crbug.com/96896
