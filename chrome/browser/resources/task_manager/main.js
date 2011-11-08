@@ -53,8 +53,9 @@ TaskManager.prototype = {
     var sm = this.selectionModel_;
     var dm = this.dataModel_;
     var selectedIndexes = sm.selectedIndexes;
-
     var is_end_process_enabled = true;
+    if (selectedIndexes.length == 0)
+      is_end_process_enabled = false;
     for (var i = 0; i < selectedIndexes.length; i++) {
       var index = selectedIndexes[i];
       var task = dm.item(index);
