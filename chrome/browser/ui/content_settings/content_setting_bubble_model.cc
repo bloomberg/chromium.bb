@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -29,8 +30,11 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace {
+using content_settings::SettingInfo;
+using content_settings::SettingSource;
+using content_settings::SETTING_SOURCE_USER;
 
+namespace {
 struct ContentSettingsTypeIdEntry {
   ContentSettingsType type;
   int id;
@@ -256,25 +260,38 @@ class ContentSettingSingleRadioGroup
     HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
     CookieSettings* cookie_settings = CookieSettings::GetForProfile(profile());
     ContentSetting most_restrictive_setting;
+    SettingSource most_restrictive_setting_source;
+
     if (resources.empty()) {
-      most_restrictive_setting =
-          content_type() == CONTENT_SETTINGS_TYPE_COOKIES ?
-              cookie_settings->GetCookieSetting(url, url, true) :
-              map->GetContentSetting(url, url, content_type(), std::string());
+      if (content_type() == CONTENT_SETTINGS_TYPE_COOKIES) {
+        most_restrictive_setting = cookie_settings->GetCookieSetting(
+            url, url, true, &most_restrictive_setting_source);
+      } else {
+        SettingInfo info;
+        scoped_ptr<Value> value(map->GetWebsiteSetting(
+            url, url, content_type(), std::string(), &info));
+        most_restrictive_setting =
+            content_settings::ValueToContentSetting(value.get());
+        most_restrictive_setting_source = info.source;
+      }
     } else {
       most_restrictive_setting = CONTENT_SETTING_ALLOW;
       for (std::set<std::string>::const_iterator it = resources.begin();
            it != resources.end(); ++it) {
-        ContentSetting setting = map->GetContentSetting(url,
-                                                        url,
-                                                        content_type(),
-                                                        *it);
+        SettingInfo info;
+        scoped_ptr<Value> value(map->GetWebsiteSetting(
+            url, url, content_type(), *it, &info));
+        ContentSetting setting =
+            content_settings::ValueToContentSetting(value.get());
         if (setting == CONTENT_SETTING_BLOCK) {
           most_restrictive_setting = CONTENT_SETTING_BLOCK;
+          most_restrictive_setting_source = info.source;
           break;
         }
-        if (setting == CONTENT_SETTING_ASK)
+        if (setting == CONTENT_SETTING_ASK) {
           most_restrictive_setting = CONTENT_SETTING_ASK;
+          most_restrictive_setting_source = info.source;
+        }
       }
     }
     if (most_restrictive_setting == CONTENT_SETTING_ALLOW) {
@@ -283,6 +300,11 @@ class ContentSettingSingleRadioGroup
     } else {
       radio_group.default_item = 1;
       block_setting_ = most_restrictive_setting;
+    }
+    if (most_restrictive_setting_source != SETTING_SOURCE_USER) {
+      set_radio_group_enabled(false);
+    } else {
+      set_radio_group_enabled(true);
     }
     selected_item_ = radio_group.default_item;
     set_radio_group(radio_group);

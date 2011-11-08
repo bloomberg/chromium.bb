@@ -69,7 +69,7 @@ CookieSettings::Factory* CookieSettings::Factory::GetInstance() {
 CookieSettingsWrapper* CookieSettings::Factory::GetWrapperForProfile(
     Profile* profile) {
   return static_cast<CookieSettingsWrapper*>(
-      GetServiceForProfile(profile,true));
+      GetServiceForProfile(profile, true));
 }
 
 CookieSettings::Factory::Factory()
@@ -122,18 +122,18 @@ CookieSettings::GetDefaultCookieSetting(std::string* provider_id) const {
 
 bool CookieSettings::IsReadingCookieAllowed(const GURL& url,
                                             const GURL& first_party_url) const {
-  ContentSetting setting = GetCookieSetting(url, first_party_url, false);
+  ContentSetting setting = GetCookieSetting(url, first_party_url, false, NULL);
   return IsAllowed(setting);
 }
 
 bool CookieSettings::IsSettingCookieAllowed(const GURL& url,
                                             const GURL& first_party_url) const {
-  ContentSetting setting = GetCookieSetting(url, first_party_url, true);
+  ContentSetting setting = GetCookieSetting(url, first_party_url, true, NULL);
   return IsAllowed(setting);
 }
 
 bool CookieSettings::IsCookieSessionOnly(const GURL& origin) const {
-  ContentSetting setting = GetCookieSetting(origin, origin, true);
+  ContentSetting setting = GetCookieSetting(origin, origin, true, NULL);
   DCHECK(IsValidSetting(setting));
   return (setting == CONTENT_SETTING_SESSION_ONLY);
 }
@@ -200,23 +200,24 @@ void CookieSettings::ShutdownOnUIThread() {
 ContentSetting CookieSettings::GetCookieSetting(
     const GURL& url,
     const GURL& first_party_url,
-    bool setting_cookie) const {
+    bool setting_cookie,
+    content_settings::SettingSource* source) const {
   if (HostContentSettingsMap::ShouldAllowAllContent(
         url, first_party_url, CONTENT_SETTINGS_TYPE_COOKIES))
     return CONTENT_SETTING_ALLOW;
 
-  ContentSettingsPattern primary_pattern;
-  ContentSettingsPattern secondary_pattern;
   // First get any host-specific settings.
+  content_settings::SettingInfo info;
   scoped_ptr<base::Value> value(
-      host_content_settings_map_->GetContentSettingValue(
-          url, first_party_url, CONTENT_SETTINGS_TYPE_COOKIES, "",
-          &primary_pattern, &secondary_pattern));
+      host_content_settings_map_->GetWebsiteSetting(
+          url, first_party_url, CONTENT_SETTINGS_TYPE_COOKIES, "", &info));
+  if (source)
+    *source = info.source;
 
   // If no explicit exception has been made and third-party cookies are blocked
   // by default, apply that rule.
-  if (primary_pattern == ContentSettingsPattern::Wildcard() &&
-      secondary_pattern == ContentSettingsPattern::Wildcard() &&
+  if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
+      info.secondary_pattern == ContentSettingsPattern::Wildcard() &&
       ShouldBlockThirdPartyCookies() &&
       !first_party_url.SchemeIs(chrome::kExtensionScheme)) {
     bool not_strict = CommandLine::ForCurrentProcess()->HasSwitch(

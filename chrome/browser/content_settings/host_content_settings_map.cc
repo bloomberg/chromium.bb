@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
@@ -49,6 +50,16 @@ const char* kProviderNames[] = {
   "preference",
   "default"
 };
+
+content_settings::SettingSource kProviderSourceMap[] = {
+  content_settings::SETTING_SOURCE_POLICY,
+  content_settings::SETTING_SOURCE_EXTENSION,
+  content_settings::SETTING_SOURCE_USER,
+  content_settings::SETTING_SOURCE_USER,
+};
+COMPILE_ASSERT(arraysize(kProviderSourceMap) ==
+                   HostContentSettingsMap::NUM_PROVIDER_TYPES,
+               kProviderSourceMap_has_incorrect_size);
 
 bool ContentTypeHasCompoundValue(ContentSettingsType type) {
   // Values for content type CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE are
@@ -167,39 +178,9 @@ ContentSetting HostContentSettingsMap::GetContentSetting(
     const GURL& secondary_url,
     ContentSettingsType content_type,
     const std::string& resource_identifier) const {
-  scoped_ptr<base::Value> value(GetContentSettingValue(
-      primary_url, secondary_url, content_type, resource_identifier,
-      NULL, NULL));
+  scoped_ptr<base::Value> value(GetWebsiteSetting(
+      primary_url, secondary_url, content_type, resource_identifier, NULL));
   return content_settings::ValueToContentSetting(value.get());
-}
-
-base::Value* HostContentSettingsMap::GetContentSettingValue(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier,
-    ContentSettingsPattern* primary_pattern,
-    ContentSettingsPattern* secondary_pattern) const {
-  DCHECK(content_settings::SupportsResourceIdentifier(content_type) ||
-         resource_identifier.empty());
-
-  // Check if the scheme of the requesting url is whitelisted.
-  if (ShouldAllowAllContent(primary_url, secondary_url, content_type))
-    return Value::CreateIntegerValue(CONTENT_SETTING_ALLOW);
-
-  // The list of |content_settings_providers_| is ordered according to their
-  // precedence.
-  for (ConstProviderIterator provider = content_settings_providers_.begin();
-       provider != content_settings_providers_.end();
-       ++provider) {
-    base::Value* value = content_settings::GetContentSettingValueAndPatterns(
-        provider->second, primary_url, secondary_url, content_type,
-        resource_identifier, is_off_the_record_,
-        primary_pattern, secondary_pattern);
-    if (value)
-      return value;
-  }
-  return NULL;
 }
 
 ContentSettings HostContentSettingsMap::GetContentSettings(
@@ -417,4 +398,54 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
   return primary_url.SchemeIs(chrome::kChromeDevToolsScheme) ||
          primary_url.SchemeIs(chrome::kChromeInternalScheme) ||
          primary_url.SchemeIs(chrome::kChromeUIScheme);
+}
+
+base::Value* HostContentSettingsMap::GetWebsiteSetting(
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    content_settings::SettingInfo* info) const {
+  DCHECK(content_settings::SupportsResourceIdentifier(content_type) ||
+         resource_identifier.empty());
+
+  // Check if the scheme of the requesting url is whitelisted.
+  if (ShouldAllowAllContent(primary_url, secondary_url, content_type)) {
+    if (info) {
+      info->source = content_settings::SETTING_SOURCE_WHITELIST;
+      info->primary_pattern = ContentSettingsPattern::Wildcard();
+      info->secondary_pattern = ContentSettingsPattern::Wildcard();
+    }
+    return Value::CreateIntegerValue(CONTENT_SETTING_ALLOW);
+  }
+
+  ContentSettingsPattern* primary_pattern = NULL;
+  ContentSettingsPattern* secondary_pattern = NULL;
+  if (info) {
+    primary_pattern = &info->primary_pattern;
+    secondary_pattern = &info->secondary_pattern;
+  }
+
+  // The list of |content_settings_providers_| is ordered according to their
+  // precedence.
+  for (ConstProviderIterator provider = content_settings_providers_.begin();
+       provider != content_settings_providers_.end();
+       ++provider) {
+    base::Value* value = content_settings::GetContentSettingValueAndPatterns(
+        provider->second, primary_url, secondary_url, content_type,
+        resource_identifier, is_off_the_record_,
+        primary_pattern, secondary_pattern);
+    if (value) {
+      if (info)
+        info->source = kProviderSourceMap[provider->first];
+      return value;
+    }
+  }
+
+  if (info) {
+    info->source = content_settings::SETTING_SOURCE_NONE;
+    info->primary_pattern = ContentSettingsPattern();
+    info->secondary_pattern = ContentSettingsPattern();
+  }
+  return NULL;
 }

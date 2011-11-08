@@ -109,9 +109,11 @@ class CookieSettings
   void ShutdownOnUIThread();
 
   // A helper for applying third party cookie blocking rules.
-  ContentSetting GetCookieSetting(const GURL& url,
-                                  const GURL& first_party_url,
-                                  bool setting_cookie) const;
+  ContentSetting GetCookieSetting(
+      const GURL& url,
+      const GURL& first_party_url,
+      bool setting_cookie,
+      content_settings::SettingSource* source) const;
 
   static void RegisterUserPrefs(PrefService* prefs);
 

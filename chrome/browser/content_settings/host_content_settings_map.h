@@ -79,20 +79,24 @@ class HostContentSettingsMap
       const std::string& resource_identifier) const;
 
   // Returns a single content setting |Value| which applies to the given URLs.
-  // If |primary_pattern| and |secondary_pattern| are not NULL, they are set to
-  // the patterns of the applying rule.
-  // Note that certain internal schemes are whitelisted.
-  // If there is no content setting, returns NULL and leaves |primary_pattern|
-  // and |secondary_pattern| unchanged.
-  // Otherwise transfers ownership of the resulting |Value| to the caller.
+  // If |info| is not NULL, then the |source| field of |info| is set to the
+  // source of the returned |Value| (POLICY, EXTENSION, USER, ...) and the
+  // |primary_pattern| and the |secondary_pattern| fields of |info| are set to
+  // the patterns of the applying rule.  Note that certain internal schemes are
+  // whitelisted. For whitelisted schemes the |source| field of |info| is set
+  // the |SETTING_SOURCE_WHITELIST| and the |primary_pattern| and
+  // |secondary_pattern| are set to a wildcard pattern.  If there is no content
+  // setting, NULL is returned and the |source| field of |info| is set to
+  // |SETTING_SOURCE_NONE|. The pattern fiels of |info| are set to empty
+  // patterns.
+  // The ownership of the resulting |Value| is transfered to the caller.
   // May be called on any thread.
-  base::Value* GetContentSettingValue(
+  base::Value* GetWebsiteSetting(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
       const std::string& resource_identifier,
-      ContentSettingsPattern* primary_pattern,
-      ContentSettingsPattern* secondary_pattern) const;
+      content_settings::SettingInfo* info) const;
 
   // Returns all ContentSettings which apply to the given |primary_url|. For
   // content setting types that require an additional resource identifier, the

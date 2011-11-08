@@ -13,7 +13,7 @@
 #include "chrome/common/content_settings_types.h"
 
 // Different settings that can be assigned for a particular content type.  We
-// give the user the ability to set these on a global and per-host basis.
+// give the user the ability to set these on a global and per-origin basis.
 enum ContentSetting {
   CONTENT_SETTING_DEFAULT = 0,
   CONTENT_SETTING_ALLOW,
@@ -50,5 +50,30 @@ struct ContentSettingPatternSource {
 };
 
 typedef std::vector<ContentSettingPatternSource> ContentSettingsForOneType;
+
+namespace content_settings {
+
+// Enum containing the various source for content settings. Settings can be
+// set by policy, extension or the user. Certain (internal) schemes are
+// whilelisted. For whilelisted schemes the source is
+// |SETTING_SOURCE_WHITELIST|.
+enum SettingSource {
+  SETTING_SOURCE_NONE,
+  SETTING_SOURCE_POLICY,
+  SETTING_SOURCE_EXTENSION,
+  SETTING_SOURCE_USER,
+  SETTING_SOURCE_WHITELIST,
+};
+
+// |SettingInfo| provides meta data for content setting values. |source|
+// contains the source of a value. |primary_pattern| and |secondary_pattern|
+// contains the patterns of the appling rule.
+struct SettingInfo {
+  SettingSource source;
+  ContentSettingsPattern primary_pattern;
+  ContentSettingsPattern secondary_pattern;
+};
+
+}  // namespace content_settings
 
 #endif  // CHROME_COMMON_CONTENT_SETTINGS_H_

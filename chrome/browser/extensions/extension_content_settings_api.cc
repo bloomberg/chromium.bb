@@ -152,7 +152,7 @@ bool GetContentSettingFunction::RunImpl() {
     // TODO(jochen): Do we return the value for setting or for reading cookies?
     bool setting_cookie = false;
     setting = cookie_settings->GetCookieSetting(primary_url, secondary_url,
-                                                setting_cookie);
+                                                setting_cookie, NULL);
   } else {
     setting = map->GetContentSetting(primary_url, secondary_url, content_type,
                                      resource_identifier);

@@ -10,6 +10,7 @@
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -249,32 +250,30 @@ void PluginInfoMessageFilter::GetPluginContentSetting(
     const std::string& resource,
     ContentSetting* setting,
     bool* uses_default_content_setting) const {
-  ContentSettingsPattern primary_pattern;
-  ContentSettingsPattern secondary_pattern;
-
   // Treat Native Client invocations like Javascript.
   bool is_nacl_plugin = (plugin->name == ASCIIToUTF16(
       chrome::ChromeContentClient::kNaClPluginName));
 
   scoped_ptr<base::Value> value;
+  content_settings::SettingInfo info;
   if (is_nacl_plugin) {
     value.reset(
-        host_content_settings_map_->GetContentSettingValue(
+        host_content_settings_map_->GetWebsiteSetting(
             policy_url, policy_url, CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-            std::string(), &primary_pattern, &secondary_pattern));
+            std::string(), &info));
   } else {
     value.reset(
-        host_content_settings_map_->GetContentSettingValue(
+        host_content_settings_map_->GetWebsiteSetting(
             policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource,
-            &primary_pattern, &secondary_pattern));
+            &info));
     if (!value.get()) {
-      value.reset(host_content_settings_map_->GetContentSettingValue(
+      value.reset(host_content_settings_map_->GetWebsiteSetting(
           policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
-          &primary_pattern, &secondary_pattern));
+          &info));
     }
   }
   *setting = content_settings::ValueToContentSetting(value.get());
   *uses_default_content_setting =
-      (primary_pattern == ContentSettingsPattern::Wildcard() &&
-       secondary_pattern == ContentSettingsPattern::Wildcard());
+      (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
+       info.secondary_pattern == ContentSettingsPattern::Wildcard());
 }

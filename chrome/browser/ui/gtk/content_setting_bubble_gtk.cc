@@ -183,6 +183,8 @@ void ContentSettingBubbleGtk::BuildBubble() {
       // or pain occurs.
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), TRUE);
     }
+    if (!content.radio_group_enabled)
+      gtk_widget_set_sensitive(radio, FALSE);
     radio_group_gtk_.push_back(radio);
   }
   for (std::vector<GtkWidget*>::const_iterator i = radio_group_gtk_.begin();

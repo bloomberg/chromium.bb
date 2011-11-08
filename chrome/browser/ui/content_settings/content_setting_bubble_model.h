@@ -68,6 +68,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     std::string title;
     PopupItems popup_items;
     RadioGroup radio_group;
+    bool radio_group_enabled;
     std::vector<DomainList> domain_lists;
     std::set<std::string> resource_identifiers;
     std::string custom_link;
@@ -103,6 +104,9 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   }
   void set_radio_group(const RadioGroup& radio_group) {
     bubble_content_.radio_group = radio_group;
+  }
+  void set_radio_group_enabled(bool enabled) {
+    bubble_content_.radio_group_enabled = enabled;
   }
   void add_domain_list(const DomainList& domain_list) {
     bubble_content_.domain_lists.push_back(domain_list);

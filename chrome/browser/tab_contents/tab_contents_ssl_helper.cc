@@ -213,11 +213,10 @@ void TabContentsSSLHelper::SelectClientCertificate(
 
   HostContentSettingsMap* map =
       tab_contents_->profile()->GetHostContentSettingsMap();
-  scoped_ptr<Value> filter(map->GetContentSettingValue(
+  scoped_ptr<Value> filter(map->GetWebsiteSetting(
       requesting_url, requesting_url,
       CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-      std::string(),
-      NULL, NULL));
+      std::string(), NULL));
 
   scoped_refptr<net::X509Certificate> selected_cert;
   if (filter.get()) {
