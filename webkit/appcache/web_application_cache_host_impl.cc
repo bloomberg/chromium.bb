@@ -297,9 +297,9 @@ bool WebApplicationCacheHostImpl::swapCache() {
 
 void WebApplicationCacheHostImpl::getAssociatedCacheInfo(
     WebApplicationCacheHost::CacheInfo* info) {
+  info->manifestURL = cache_info_.manifest_url;
   if (!cache_info_.is_complete)
     return;
-  info->manifestURL = cache_info_.manifest_url;
   info->creationTime = cache_info_.creation_time.ToDoubleT();
   info->updateTime = cache_info_.last_update_time.ToDoubleT();
   info->totalSize = cache_info_.size;

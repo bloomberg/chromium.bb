@@ -442,7 +442,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
   void SubResource_Miss_WithCacheSelected() {
     // A sub-resource load where the resource is not in an appcache, or
     // in a network or fallback namespace, should result in a failed request.
-    host_->AssociateCache(MakeNewCache());
+    host_->AssociateCompleteCache(MakeNewCache());
 
     request_.reset(new MockURLRequest(GURL("http://blah/")));
     handler_.reset(host_->CreateRequestHandler(request_.get(),
@@ -496,7 +496,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // SubResource_Hit -----------------------------
 
   void SubResource_Hit() {
-    host_->AssociateCache(MakeNewCache());
+    host_->AssociateCompleteCache(MakeNewCache());
 
     mock_storage()->SimulateFindSubResource(
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1), AppCacheEntry(), false);
@@ -524,7 +524,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
   void SubResource_RedirectFallback() {
     // Redirects to resources in the a different origin are subject to
     // fallback namespaces.
-    host_->AssociateCache(MakeNewCache());
+    host_->AssociateCompleteCache(MakeNewCache());
 
     mock_storage()->SimulateFindSubResource(
         AppCacheEntry(), AppCacheEntry(AppCacheEntry::EXPLICIT, 1), false);
@@ -553,7 +553,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
   void SubResource_NoRedirectFallback() {
     // Redirects to resources in the same-origin are not subject to
     // fallback namespaces.
-    host_->AssociateCache(MakeNewCache());
+    host_->AssociateCompleteCache(MakeNewCache());
 
     mock_storage()->SimulateFindSubResource(
         AppCacheEntry(), AppCacheEntry(AppCacheEntry::EXPLICIT, 1), false);
@@ -583,7 +583,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     // A sub-resource load where the resource is in a network namespace,
     // should result in the system using a 'real' job to do the network
     // retrieval.
-    host_->AssociateCache(MakeNewCache());
+    host_->AssociateCompleteCache(MakeNewCache());
 
     mock_storage()->SimulateFindSubResource(
         AppCacheEntry(), AppCacheEntry(), true);
@@ -608,7 +608,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // DestroyedHost -----------------------------
 
   void DestroyedHost() {
-    host_->AssociateCache(MakeNewCache());
+    host_->AssociateCompleteCache(MakeNewCache());
 
     mock_storage()->SimulateFindSubResource(
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1), AppCacheEntry(), false);

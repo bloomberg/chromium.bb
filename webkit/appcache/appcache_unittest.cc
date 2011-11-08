@@ -25,11 +25,11 @@ TEST(AppCacheTest, CleanupUnusedCache) {
   AppCacheHost host1(1, &frontend, &service);
   AppCacheHost host2(2, &frontend, &service);
 
-  host1.AssociateCache(cache.get());
-  host2.AssociateCache(cache.get());
+  host1.AssociateCompleteCache(cache.get());
+  host2.AssociateCompleteCache(cache.get());
 
-  host1.AssociateCache(NULL);
-  host2.AssociateCache(NULL);
+  host1.AssociateNoCache(GURL());
+  host2.AssociateNoCache(GURL());
 }
 
 TEST(AppCacheTest, AddModifyRemoveEntry) {

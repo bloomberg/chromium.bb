@@ -530,7 +530,7 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
     PendingHosts& hosts = it->second;
     for (PendingHosts::iterator host_it = hosts.begin();
          host_it != hosts.end(); ++host_it) {
-      (*host_it)->AssociateCache(inprogress_cache_);
+      (*host_it)->AssociateIncompleteCache(inprogress_cache_, manifest_url_);
     }
   }
 
@@ -650,7 +650,7 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(
       DCHECK(cache == group_->newest_complete_cache());
       for (PendingHosts::iterator host_it = hosts.begin();
            host_it != hosts.end(); ++host_it) {
-        (*host_it)->AssociateCache(cache);
+        (*host_it)->AssociateCompleteCache(cache);
       }
     }
   } else {
@@ -662,7 +662,7 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(
 
       // In downloading case, disassociate host from inprogress cache.
       if (inprogress_cache_)
-        host->AssociateCache(NULL);
+        host->AssociateNoCache(GURL());
 
       host->RemoveObserver(this);
     }
@@ -1002,7 +1002,8 @@ void AppCacheUpdateJob::AddMasterEntryToFetchList(AppCacheHost* host,
   if (internal_state_ == DOWNLOADING || internal_state_ == NO_UPDATE) {
     AppCache* cache;
     if (inprogress_cache_) {
-      host->AssociateCache(inprogress_cache_);  // always associate
+      // always associate
+      host->AssociateIncompleteCache(inprogress_cache_, manifest_url_);
       cache = inprogress_cache_.get();
     } else {
       cache = group_->newest_complete_cache();
@@ -1012,8 +1013,10 @@ void AppCacheUpdateJob::AddMasterEntryToFetchList(AppCacheHost* host,
     AppCacheEntry* entry = cache->GetEntry(url);
     if (entry) {
       entry->add_types(AppCacheEntry::MASTER);
-      if (internal_state_ == NO_UPDATE)
-        host->AssociateCache(cache);  // only associate if have entry
+      if (internal_state_ == NO_UPDATE && !inprogress_cache_) {
+        // only associate if have entry
+        host->AssociateCompleteCache(cache);
+      }
       if (is_new)
         ++master_entries_completed_;  // pretend fetching completed
       return;
@@ -1051,7 +1054,7 @@ void AppCacheUpdateJob::FetchMasterEntries() {
         PendingHosts& hosts = found->second;
         for (PendingHosts::iterator host_it = hosts.begin();
              host_it != hosts.end(); ++host_it) {
-          (*host_it)->AssociateCache(cache);
+          (*host_it)->AssociateCompleteCache(cache);
         }
       }
     } else {
@@ -1094,7 +1097,7 @@ void AppCacheUpdateJob::CancelAllMasterEntryFetches(
     for (PendingHosts::iterator host_it = hosts.begin();
          host_it != hosts.end(); ++host_it) {
       AppCacheHost* host = *host_it;
-      host->AssociateCache(NULL);
+      host->AssociateNoCache(GURL());
       host_notifier.AddHost(host);
       host->RemoveObserver(this);
     }
@@ -1306,7 +1309,7 @@ void AppCacheUpdateJob::DiscardInprogressCache() {
 
   AppCache::AppCacheHosts& hosts = inprogress_cache_->associated_hosts();
   while (!hosts.empty())
-    (*hosts.begin())->AssociateCache(NULL);
+    (*hosts.begin())->AssociateNoCache(GURL());
 
   inprogress_cache_ = NULL;
 }

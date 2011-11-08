@@ -96,11 +96,25 @@ class APPCACHE_EXPORT AppCacheHost : public AppCacheStorage::Delegate,
   // Support for devtools inspecting appcache resources.
   void GetResourceList(std::vector<AppCacheResourceInfo>* resource_infos);
 
-  // Establishes an association between this host and a cache. 'cache' may be
-  // NULL to break any existing association. Associations are established
-  // either thru the cache selection algorithm implemented (in this class),
-  // or by the update algorithm (see AppCacheUpdateJob).
-  void AssociateCache(AppCache* cache);
+  // Breaks any existing association between this host and a cache.
+  // 'manifest_url' is sent to DevTools as the manifest url that could have
+  // been associated before or could be associated later with this host.
+  // Associations are broken either thru the cache selection algorithm
+  // implemented in this class, or by the update algorithm (see
+  // AppCacheUpdateJob).
+  void AssociateNoCache(const GURL& manifest_url);
+
+  // Establishes an association between this host and an incomplete cache.
+  // 'manifest_url' is manifest url of the cache group being updated.
+  // Associations with incomplete caches are established by the update algorithm
+  // (see AppCacheUpdateJob).
+  void AssociateIncompleteCache(AppCache* cache, const GURL& manifest_url);
+
+  // Establishes an association between this host and a complete cache.
+  // Associations with complete caches are established either thru the cache
+  // selection algorithm implemented (in this class), or by the update algorithm
+  // (see AppCacheUpdateJob).
+  void AssociateCompleteCache(AppCache* cache);
 
   // Adds a reference to the newest complete cache in a group, unless it's the
   // same as the cache that is currently associated with the host.
@@ -139,6 +153,9 @@ class APPCACHE_EXPORT AppCacheHost : public AppCacheStorage::Delegate,
   Status GetStatus();
   void LoadSelectedCache(int64 cache_id);
   void LoadOrCreateGroup(const GURL& manifest_url);
+
+  // See public Associate*Host() methods above.
+  void AssociateCacheHelper(AppCache* cache, const GURL& manifest_url);
 
   // AppCacheStorage::Delegate impl
   virtual void OnCacheLoaded(AppCache* cache, int64 cache_id);

@@ -352,7 +352,7 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
 
   mock_frontend_.last_host_id_ = -222;  // to verify we received OnCacheSelected
 
-  host.AssociateCache(cache1);
+  host.AssociateCompleteCache(cache1);
   EXPECT_FALSE(host.swappable_cache_.get());  // was same as associated cache
   EXPECT_EQ(appcache::IDLE, host.GetStatus());
   // verify OnCacheSelected was called
@@ -377,11 +377,11 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
   group2->AddCache(cache4);
   EXPECT_EQ(cache2, host.swappable_cache_.get());  // unchanged
 
-  host.AssociateCache(cache3);
+  host.AssociateCompleteCache(cache3);
   EXPECT_EQ(cache4, host.swappable_cache_.get());  // newest cache in group2
   EXPECT_FALSE(group1->HasCache());  // both caches in group1 have refcount 0
 
-  host.AssociateCache(NULL);
+  host.AssociateNoCache(GURL());
   EXPECT_FALSE(host.swappable_cache_.get());
   EXPECT_FALSE(group2->HasCache());  // both caches in group2 have refcount 0
 

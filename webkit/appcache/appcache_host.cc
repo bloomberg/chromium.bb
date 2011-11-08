@@ -17,20 +17,26 @@ namespace appcache {
 
 namespace {
 
-void FillCacheInfo(
-    const AppCache* cache, Status status, AppCacheInfo* info) {
-  DCHECK(cache);
-  info->cache_id = cache->cache_id();
+void FillCacheInfo(const AppCache* cache,
+                   const GURL& manifest_url,
+                   Status status, AppCacheInfo* info) {
+  info->manifest_url = manifest_url;
   info->status = status;
-  info->is_complete = cache->is_complete();
-  if (info->is_complete) {
-    DCHECK(cache->owning_group());
-    info->manifest_url = cache->owning_group()->manifest_url();
-    info->group_id = cache->owning_group()->group_id();
-    info->last_update_time = cache->update_time();
-    info->creation_time = cache->owning_group()->creation_time();
-    info->size = cache->cache_size();
-  }
+
+  if (!cache)
+    return;
+
+  info->cache_id = cache->cache_id();
+
+  if (!cache->is_complete())
+    return;
+
+  DCHECK(cache->owning_group());
+  info->is_complete = true;
+  info->group_id = cache->owning_group()->group_id();
+  info->last_update_time = cache->update_time();
+  info->creation_time = cache->owning_group()->creation_time();
+  info->size = cache->cache_size();
 }
 
 }  // Anonymous namespace
@@ -235,12 +241,12 @@ void AppCacheHost::DoPendingSwapCache() {
   if (associated_cache_ && associated_cache_->owning_group()) {
     if (associated_cache_->owning_group()->is_obsolete()) {
       success = true;
-      AssociateCache(NULL);
+      AssociateNoCache(GURL());
     } else if (swappable_cache_) {
       DCHECK(swappable_cache_.get() ==
              swappable_cache_->owning_group()->newest_complete_cache());
       success = true;
-      AssociateCache(swappable_cache_);
+      AssociateCompleteCache(swappable_cache_);
     }
   }
 
@@ -367,7 +373,7 @@ void AppCacheHost::FinishCacheSelection(
         host_id_, LOG_INFO,
         base::StringPrintf(
             kFormatString, owing_group->manifest_url().spec().c_str()));
-    AssociateCache(cache);
+    AssociateCompleteCache(cache);
     if (!owing_group->is_obsolete() && !owing_group->is_being_deleted()) {
       owing_group->StartUpdateWithHost(this);
       ObserveGroupBeingUpdated(owing_group);
@@ -388,13 +394,14 @@ void AppCacheHost::FinishCacheSelection(
         host_id_, LOG_INFO,
         base::StringPrintf(kFormatString,
                            group->manifest_url().spec().c_str()));
-    AssociateCache(NULL);  // The UpdateJob may produce one for us later.
+    // The UpdateJob may produce one for us later.
+    AssociateNoCache(preferred_manifest_url_);
     group->StartUpdateWithNewMasterEntry(this, new_master_entry_url_);
     ObserveGroupBeingUpdated(group);
   } else {
     // Otherwise, the Document is not associated with any application cache.
     new_master_entry_url_ = GURL();
-    AssociateCache(NULL);
+    AssociateNoCache(GURL());
   }
 
   // Respond to pending callbacks now that we have a selection.
@@ -428,7 +435,8 @@ void AppCacheHost::OnUpdateComplete(AppCacheGroup* group) {
   if (associated_cache_info_pending_ && associated_cache_.get() &&
       associated_cache_->is_complete()) {
     AppCacheInfo info;
-    FillCacheInfo(associated_cache_.get(), GetStatus(), &info);
+    FillCacheInfo(
+        associated_cache_.get(), preferred_manifest_url_, GetStatus(), &info);
     associated_cache_info_pending_ = false;
     frontend_->OnCacheSelected(host_id_, info);
   }
@@ -466,7 +474,25 @@ void AppCacheHost::NotifyMainResourceBlocked(const GURL& manifest_url) {
   blocked_manifest_url_ = manifest_url;
 }
 
-void AppCacheHost::AssociateCache(AppCache* cache) {
+void AppCacheHost::AssociateNoCache(const GURL& manifest_url) {
+  // manifest url can be empty.
+  AssociateCacheHelper(NULL, manifest_url);
+}
+
+void AppCacheHost::AssociateIncompleteCache(AppCache* cache,
+                                            const GURL& manifest_url) {
+  DCHECK(cache && !cache->is_complete());
+  DCHECK(!manifest_url.is_empty());
+  AssociateCacheHelper(cache, manifest_url);
+}
+
+void AppCacheHost::AssociateCompleteCache(AppCache* cache) {
+  DCHECK(cache && cache->is_complete());
+  AssociateCacheHelper(cache, cache->owning_group()->manifest_url());
+}
+
+void AppCacheHost::AssociateCacheHelper(AppCache* cache,
+                                        const GURL& manifest_url) {
   if (associated_cache_.get()) {
     associated_cache_->UnassociateHost(this);
   }
@@ -475,10 +501,10 @@ void AppCacheHost::AssociateCache(AppCache* cache) {
   SetSwappableCache(cache ? cache->owning_group() : NULL);
   associated_cache_info_pending_ = cache && !cache->is_complete();
   AppCacheInfo info;
-  if (cache) {
+  if (cache)
     cache->AssociateHost(this);
-    FillCacheInfo(cache, GetStatus(), &info);
-  }
+
+  FillCacheInfo(cache, manifest_url, GetStatus(), &info);
   frontend_->OnCacheSelected(host_id_, info);
 }
 

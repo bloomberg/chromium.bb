@@ -183,12 +183,12 @@ TEST(AppCacheGroupTest, CleanupUnusedGroup) {
   group->AddCache(cache1);
   EXPECT_EQ(cache1, group->newest_complete_cache());
 
-  host1.AssociateCache(cache1);
+  host1.AssociateCompleteCache(cache1);
   EXPECT_EQ(frontend.last_host_id_, host1.host_id());
   EXPECT_EQ(frontend.last_cache_id_, cache1->cache_id());
   EXPECT_EQ(frontend.last_status_, appcache::IDLE);
 
-  host2.AssociateCache(cache1);
+  host2.AssociateCompleteCache(cache1);
   EXPECT_EQ(frontend.last_host_id_, host2.host_id());
   EXPECT_EQ(frontend.last_cache_id_, cache1->cache_id());
   EXPECT_EQ(frontend.last_status_, appcache::IDLE);
@@ -200,8 +200,8 @@ TEST(AppCacheGroupTest, CleanupUnusedGroup) {
   EXPECT_EQ(cache2, group->newest_complete_cache());
 
   // Unassociate all hosts from older cache.
-  host1.AssociateCache(NULL);
-  host2.AssociateCache(NULL);
+  host1.AssociateNoCache(GURL());
+  host2.AssociateNoCache(GURL());
   EXPECT_EQ(frontend.last_host_id_, host2.host_id());
   EXPECT_EQ(frontend.last_cache_id_, appcache::kNoCacheId);
   EXPECT_EQ(frontend.last_status_, appcache::UNCACHED);

@@ -130,7 +130,7 @@ class APPCACHE_EXPORT AppCache : public base::RefCounted<AppCache> {
   // FindResponseForRequest helpers
   FallbackNamespace* FindFallbackNamespace(const GURL& url);
 
-  // Use AppCacheHost::AssociateCache() to manipulate host association.
+  // Use AppCacheHost::Associate*Cache() to manipulate host association.
   void AssociateHost(AppCacheHost* host) {
     associated_hosts_.insert(host);
   }
