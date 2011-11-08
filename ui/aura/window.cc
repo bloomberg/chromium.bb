@@ -207,7 +207,7 @@ void Window::AddChild(Window* child) {
   layer_->Add(child->layer_.get());
   children_.push_back(child);
   if (layout_manager_.get())
-    layout_manager_->OnWindowAdded(child);
+    layout_manager_->OnWindowAddedToLayout(child);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowAdded(child));
 }
 
@@ -233,7 +233,7 @@ void Window::RemoveChild(Window* child) {
   Windows::iterator i = std::find(children_.begin(), children_.end(), child);
   DCHECK(i != children_.end());
   if (layout_manager_.get())
-    layout_manager_->OnWillRemoveWindow(child);
+    layout_manager_->OnWillRemoveWindowFromLayout(child);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWillRemoveWindow(child));
   child->parent_ = NULL;
   layer_->Remove(child->layer_.get());

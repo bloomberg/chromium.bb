@@ -33,8 +33,8 @@ class AURA_SHELL_EXPORT ToplevelLayoutManager : public aura::LayoutManager,
 
   // LayoutManager overrides:
   virtual void OnWindowResized() OVERRIDE;
-  virtual void OnWindowAdded(aura::Window* child) OVERRIDE;
-  virtual void OnWillRemoveWindow(aura::Window* child) OVERRIDE;
+  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
+  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE;
   virtual void OnChildWindowVisibilityChanged(aura::Window* child,
                                               bool visibile) OVERRIDE;
   virtual void SetChildBounds(aura::Window* child,

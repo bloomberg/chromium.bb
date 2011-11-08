@@ -27,14 +27,15 @@ ToplevelLayoutManager::~ToplevelLayoutManager() {
 void ToplevelLayoutManager::OnWindowResized() {
 }
 
-void ToplevelLayoutManager::OnWindowAdded(aura::Window* child) {
+void ToplevelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   windows_.insert(child);
   child->AddObserver(this);
   if (child->GetProperty(aura::kShowStateKey))
     WindowStateChanged(child);
 }
 
-void ToplevelLayoutManager::OnWillRemoveWindow(aura::Window* child) {
+void ToplevelLayoutManager::OnWillRemoveWindowFromLayout(
+    aura::Window* child) {
   windows_.erase(child);
   child->RemoveObserver(this);
   UpdateShelfVisibility();

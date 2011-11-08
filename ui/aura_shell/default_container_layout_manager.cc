@@ -96,7 +96,7 @@ void DefaultContainerLayoutManager::OnWindowResized() {
   // Workspace is updated via DesktopObserver::OnDesktopResized.
 }
 
-void DefaultContainerLayoutManager::OnWindowAdded(aura::Window* child) {
+void DefaultContainerLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   if (child->type() != aura::WINDOW_TYPE_NORMAL || child->transient_parent())
     return;
 
@@ -120,7 +120,8 @@ void DefaultContainerLayoutManager::OnWindowAdded(aura::Window* child) {
   new_workspace->Activate();
 }
 
-void DefaultContainerLayoutManager::OnWillRemoveWindow(aura::Window* child) {
+void DefaultContainerLayoutManager::OnWillRemoveWindowFromLayout(
+    aura::Window* child) {
   child->RemoveObserver(show_state_controller_.get());
   ClearRestoreBounds(child);
 

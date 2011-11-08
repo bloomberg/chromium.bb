@@ -26,10 +26,10 @@ class AURA_EXPORT LayoutManager {
   virtual void OnWindowResized() = 0;
 
   // Invoked when the window |child| has been added.
-  virtual void OnWindowAdded(Window* child) = 0;
+  virtual void OnWindowAddedToLayout(Window* child) = 0;
 
   // Invoked prior to removing |window|.
-  virtual void OnWillRemoveWindow(Window* child) = 0;
+  virtual void OnWillRemoveWindowFromLayout(Window* child) = 0;
 
   // Invoked when the |SetVisible()| is invoked on the window |child|.
   // |visible| is the value supplied to |SetVisible()|. If |visible| is true,

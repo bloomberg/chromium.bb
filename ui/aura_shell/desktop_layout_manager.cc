@@ -40,10 +40,10 @@ void DesktopLayoutManager::OnWindowResized() {
     shelf_->LayoutShelf();
 }
 
-void DesktopLayoutManager::OnWindowAdded(aura::Window* child) {
+void DesktopLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 }
 
-void DesktopLayoutManager::OnWillRemoveWindow(aura::Window* child) {
+void DesktopLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
 }
 
 void DesktopLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
