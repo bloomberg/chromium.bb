@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
-#include "ui/base/gtk/gtk_integers.h"
+#include "ui/base/glib/glib_integers.h"
 
 namespace views {
 

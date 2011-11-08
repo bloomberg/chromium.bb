@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
-#include "ui/base/gtk/gtk_integers.h"
+#include "ui/base/glib/glib_integers.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/gtk/owned_widget_gtk.h"

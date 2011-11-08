@@ -8,7 +8,7 @@
 #include <iterator>
 
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
-#include "ui/base/gtk/gtk_integers.h"
+#include "ui/base/glib/glib_integers.h"
 
 namespace {
 

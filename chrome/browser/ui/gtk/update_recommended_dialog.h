@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "ui/base/gtk/gtk_integers.h"
+#include "ui/base/glib/glib_integers.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GtkWidget GtkWidget;

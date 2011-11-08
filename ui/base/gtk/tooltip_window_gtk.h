@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/string16.h"
-#include "ui/base/gtk/gtk_integers.h"
+#include "ui/base/glib/glib_integers.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/ui_export.h"
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_GTK_GTK_INTEGERS_H_
-#define UI_BASE_GTK_GTK_INTEGERS_H_
+#ifndef UI_BASE_GLIB_GLIB_INTEGERS_H_
+#define UI_BASE_GLIB_GLIB_INTEGERS_H_
 #pragma once
 
-// GLib/Gobject/Gtk all use their own integer typedefs. They are copied here
-// for forward declaration reasons so we don't pull in all of gtk.h when we
-// just need a gpointer.
+// GLib/GObject/Gtk all use their own integer typedefs. They are copied here
+// for forward declaration reasons so we don't pull in all of glib/gtypes.h
+// when we just need a gpointer.
 typedef char gchar;
 typedef short gshort;
 typedef long glong;
@@ -25,4 +25,4 @@ typedef unsigned int guint32;
 typedef void* gpointer;
 typedef const void *gconstpointer;
 
-#endif  // UI_BASE_GTK_GTK_INTEGERS_H_
+#endif  // UI_BASE_GLIB_GLIB_INTEGERS_H_

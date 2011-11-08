@@ -11,7 +11,7 @@
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
-#include "ui/base/gtk/gtk_integers.h"
+#include "ui/base/glib/glib_integers.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 class GURL;
