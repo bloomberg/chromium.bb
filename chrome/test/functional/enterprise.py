@@ -370,7 +370,7 @@ class EnterpriseTest(pyauto.PyUITest):
     if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
       return
 
-    self._CheckIfPrefCanBeModified(pyauto.kDisable3DAPIs, False, True)
+    self.SetPrefs(pyauto.kDisable3DAPIs, True)
     self.assertEqual(self.GetDOMValue('document.createElement("canvas").' +
                                       'getContext("experimental-webgl")' +
                                       '== null ? "ok" : ""'), 'ok')
