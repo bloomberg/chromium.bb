@@ -42,7 +42,7 @@ class ToolbarView : public AccessiblePaneView,
                     public views::ButtonListener {
  public:
   // The view class name.
-  static char kViewClassName[];
+  static const char kViewClassName[];
 
   explicit ToolbarView(Browser* browser);
   virtual ~ToolbarView();

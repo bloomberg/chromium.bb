@@ -363,7 +363,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Attributes ----------------------------------------------------------------
 
   // The view class name.
-  static char kViewClassName[];
+  static const char kViewClassName[];
 
   // Return the receiving view's class name. A view class is a string which
   // uniquely identifies the view class. It is intended to be used as a way to

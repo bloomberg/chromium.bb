@@ -84,7 +84,7 @@ namespace views {
 ViewsDelegate* ViewsDelegate::views_delegate = NULL;
 
 // static
-char View::kViewClassName[] = "views/View";
+const char View::kViewClassName[] = "views/View";
 
 ////////////////////////////////////////////////////////////////////////////////
 // View, public:
