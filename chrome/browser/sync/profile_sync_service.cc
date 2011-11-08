@@ -807,21 +807,11 @@ void ProfileSyncService::OnPassphraseRequired(
 
 void ProfileSyncService::OnPassphraseAccepted() {
   VLOG(1) << "Received OnPassphraseAccepted.";
-  // Reset passphrase_required_reason_ before configuring calling
-  // ResolvePassphraseRequired() (which configures the DataTypeManager) since we
-  // know we no longer require the passphrase. We do this here rather
-  // than down in ResolvePassphraseRequired() because that can be called by
-  // OnPassphraseRequired() if no encrypted data types are enabled, and we
-  // don't want to clobber the true passphrase error.
+  // Reset passphrase_required_reason_ since we know we no longer require the
+  // passphrase. We do this here rather than down in ResolvePassphraseRequired()
+  // because that can be called by OnPassphraseRequired() if no encrypted data
+  // types are enabled, and we don't want to clobber the true passphrase error.
   passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
-
-  ResolvePassphraseRequired();
-}
-
-void ProfileSyncService::ResolvePassphraseRequired() {
-  DCHECK(!IsPassphraseRequiredForDecryption());
-  // Don't hold on to a passphrase in raw form longer than needed.
-  cached_passphrases_ = CachedPassphrases();
 
   // Make sure the data types that depend on the passphrase are started at
   // this time.
@@ -830,13 +820,17 @@ void ProfileSyncService::ResolvePassphraseRequired() {
 
   if (data_type_manager_.get()) {
     // Unblock the data type manager if necessary.
-    // This will always trigger a SYNC_CONFIGURE_DONE on completion, which will
-    // step the UI wizard into DONE state (even if no datatypes have changed).
-    // This will be ignored, because we will already have transitioned to DONE
-    // below.
     data_type_manager_->Configure(types,
                                   sync_api::CONFIGURE_REASON_RECONFIGURATION);
   }
+
+  ResolvePassphraseRequired();
+}
+
+void ProfileSyncService::ResolvePassphraseRequired() {
+  DCHECK(!IsPassphraseRequiredForDecryption());
+  // Don't hold on to a passphrase in raw form longer than needed.
+  cached_passphrases_ = CachedPassphrases();
 
   // If No encryption is pending and our passphrase has been accepted, tell the
   // wizard we're done (no need to hang around waiting for the sync to
@@ -1029,10 +1023,13 @@ bool ProfileSyncService::IsPassphraseRequired() const {
       sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
 }
 
+// TODO(zea): Rename this IsPassphraseNeededFromUI and ensure it's used
+// appropriately (see http://crbug.com/91379).
 bool ProfileSyncService::IsPassphraseRequiredForDecryption() const {
-  return IsEncryptedDatatypeEnabled() &&
-      (passphrase_required_reason_ == sync_api::REASON_DECRYPTION ||
-       passphrase_required_reason_ == sync_api::REASON_SET_PASSPHRASE_FAILED);
+  // If there is an encrypted datatype enabled and we don't have the proper
+  // passphrase, we must prompt the user for a passphrase. The only way for the
+  // user to avoid entering their passphrase is to disable the encrypted types.
+  return IsEncryptedDatatypeEnabled() && IsPassphraseRequired();
 }
 
 string16 ProfileSyncService::GetLastSyncedTimeString() const {
@@ -1233,21 +1230,12 @@ void ProfileSyncService::ConfigureDataTypeManager() {
   syncable::ModelTypeSet types;
   GetPreferredDataTypes(&types);
   if (IsPassphraseRequiredForDecryption()) {
-    if (IsEncryptedDatatypeEnabled()) {
-      // We need a passphrase still. We don't bother to attempt to configure
-      // until we receive an OnPassphraseAccepted (which triggers a configure).
-      VLOG(1) << "ProfileSyncService::ConfigureDataTypeManager bailing out "
-              << "because a passphrase required";
-      return;
-    } else {
-      // We've been informed that a passphrase is required for decryption, but
-      // now there are no encrypted data types enabled, so change the value of
-      // passphrase_required_reason_ to its default value. (NotifyObservers()
-      // will be called when configuration completes).
-      passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
-    }
+    // We need a passphrase still. We don't bother to attempt to configure
+    // until we receive an OnPassphraseAccepted (which triggers a configure).
+    VLOG(1) << "ProfileSyncService::ConfigureDataTypeManager bailing out "
+            << "because a passphrase required";
+    return;
   }
-
   sync_api::ConfigureReason reason = sync_api::CONFIGURE_REASON_UNKNOWN;
   if (!HasSyncSetupCompleted()) {
     reason = sync_api::CONFIGURE_REASON_NEW_CLIENT;

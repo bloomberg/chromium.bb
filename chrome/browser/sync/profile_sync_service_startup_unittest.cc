@@ -134,10 +134,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
-  EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(2);
+  EXPECT_CALL(*data_type_manager, Configure(_, _));
   EXPECT_CALL(*data_type_manager, state()).
-      WillOnce(Return(DataTypeManager::CONFIGURED)).
-      WillOnce(Return(DataTypeManager::CONFIGURED));
+      WillRepeatedly(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
@@ -149,9 +148,9 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
 
 TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(2);
+  EXPECT_CALL(*data_type_manager, Configure(_, _));
   EXPECT_CALL(*data_type_manager, state()).
-      WillOnce(Return(DataTypeManager::CONFIGURED));
+      WillRepeatedly(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
 
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
@@ -179,7 +178,7 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
 
 TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(2);
+  EXPECT_CALL(*data_type_manager, Configure(_, _));
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   profile_->GetTokenService()->IssueAuthTokenForTest(
@@ -205,7 +204,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
 
 TEST_F(ProfileSyncServiceStartupTest, ClearServerData) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(2);
+  EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   profile_->GetTokenService()->IssueAuthTokenForTest(
