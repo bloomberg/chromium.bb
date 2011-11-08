@@ -345,6 +345,10 @@ void TestingProfile::CreateTemplateURLService() {
       this, BuildTemplateURLService);
 }
 
+void TestingProfile::CreateExtensionProcessManager() {
+  extension_process_manager_.reset(ExtensionProcessManager::Create(this));
+}
+
 ExtensionService* TestingProfile::CreateExtensionService(
     const CommandLine* command_line,
     const FilePath& install_directory,
@@ -448,7 +452,7 @@ ExtensionDevToolsManager* TestingProfile::GetExtensionDevToolsManager() {
 }
 
 ExtensionProcessManager* TestingProfile::GetExtensionProcessManager() {
-  return NULL;
+  return extension_process_manager_.get();
 }
 
 ExtensionMessageService* TestingProfile::GetExtensionMessageService() {

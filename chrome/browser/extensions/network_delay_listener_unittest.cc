@@ -7,10 +7,12 @@
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/network_delay_listener.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_view_types.h"
 #include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/dummy_resource_handler.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -22,8 +24,6 @@
 #include "net/url_request/url_request_test_util.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-
-class Profile;
 
 using content::DummyResourceHandler;
 

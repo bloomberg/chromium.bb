@@ -1233,6 +1233,7 @@ TEST_F(TranslateManagerTest, BeforeTranslateExtraButtons) {
   TranslateInfoBarDelegate* infobar;
   TestingProfile* test_profile =
       static_cast<TestingProfile*>(contents()->browser_context());
+  test_profile->CreateExtensionProcessManager();
   test_profile->set_incognito(true);
   for (int i = 0; i < 8; ++i) {
     SCOPED_TRACE(::testing::Message() << "Iteration " << i <<

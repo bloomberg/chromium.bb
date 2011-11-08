@@ -1163,7 +1163,7 @@ void ExtensionService::CheckForUpdatesSoon() {
 
 namespace {
   bool IsSyncableNone(const Extension& extension) { return false; }
-} // namespace
+}  // namespace
 
 ExtensionService::SyncBundle::SyncBundle()
   : filter(IsSyncableNone),
@@ -1405,11 +1405,18 @@ void ExtensionService::ProcessExtensionSyncData(
   } else {
     DisableExtension(id);
   }
-  SetIsIncognitoEnabled(id, extension_sync_data.incognito_enabled());
 
-  if (extension) {
+  // We need to cache some version information here because setting the
+  // incognito flag invalidates the |extension| pointer (it reloads the
+  // extension).
+  bool extension_installed = extension != NULL;
+  int result = extension ?
+      extension->version()->CompareTo(extension_sync_data.version()) : 0;
+  SetIsIncognitoEnabled(id, extension_sync_data.incognito_enabled());
+  extension = NULL;  // No longer safe to use.
+
+  if (extension_installed) {
     // If the extension is already installed, check if it's outdated.
-    int result = extension->version()->CompareTo(extension_sync_data.version());
     if (result < 0) {
       // Extension is outdated.
       bundle.pending_sync_data[extension_sync_data.id()] = extension_sync_data;
@@ -1466,15 +1473,13 @@ void ExtensionService::SetIsIncognitoEnabled(
 
   extension_prefs_->SetIsIncognitoEnabled(extension_id, enabled);
 
-  // If the extension is enabled (and not terminated), unload and
-  // reload it to update UI.
-  const Extension* enabled_extension = GetExtensionById(extension_id, false);
-  if (enabled_extension) {
-    NotifyExtensionUnloaded(
-        enabled_extension, extension_misc::UNLOAD_REASON_DISABLE);
-    NotifyExtensionLoaded(enabled_extension);
-  }
+  bool extension_is_enabled = std::find(extensions_.begin(), extensions_.end(),
+                                        extension) != extensions_.end();
+  if (extension_is_enabled)
+    ReloadExtension(extension->id());
 
+  // Reloading the extension invalidates the |extension| pointer.
+  extension = GetInstalledExtension(extension_id);
   if (extension)
     SyncExtensionChangeIfNeeded(*extension);
 }

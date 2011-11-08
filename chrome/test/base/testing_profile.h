@@ -131,6 +131,10 @@ class TestingProfile : public Profile {
   // NULL.
   void CreateTemplateURLService();
 
+  // Creates an ExtensionProcessManager. If not invoked, the
+  // ExtensionProcessManager is NULL.
+  void CreateExtensionProcessManager();
+
   // Creates an ExtensionService initialized with the testing profile and
   // returns it. The profile keeps its own copy of a scoped_refptr to the
   // ExtensionService to make sure that is still alive to be notified when the
@@ -376,6 +380,8 @@ class TestingProfile : public Profile {
   scoped_ptr<ExtensionPrefs> extension_prefs_;
 
   scoped_ptr<ExtensionService> extension_service_;
+
+  scoped_ptr<ExtensionProcessManager> extension_process_manager_;
 
   scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
 

@@ -15,6 +15,8 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+class TestingProfile;
+
 class ExtensionServiceTestBase : public testing::Test {
  public:
   ExtensionServiceTestBase();
@@ -28,6 +30,8 @@ class ExtensionServiceTestBase : public testing::Test {
       const FilePath& prefs_file, const FilePath& source_install_dir);
 
   void InitializeEmptyExtensionService();
+
+  void InitializeExtensionProcessManager();
 
   void InitializeExtensionServiceWithUpdater();
 
@@ -45,7 +49,7 @@ class ExtensionServiceTestBase : public testing::Test {
   void InitializeExtensionServiceHelper(bool autoupdate_enabled);
 
   ScopedTempDir temp_dir_;
-  scoped_ptr<Profile> profile_;
+  scoped_ptr<TestingProfile> profile_;
   FilePath extensions_install_dir_;
   FilePath data_dir_;
   // Owned by |profile_|.
