@@ -6,10 +6,6 @@
   -->
 <html>
   <head>
-    <!-- metrics.js initiates load performance tracking
-         so we want to parse it as early as possible -->
-    <script src="js/metrics.js"></script>
-
     <script>
       // Resources from shared locations are loaded dynamically, so we can
       // get them from file:// when running as a normal web page, and from
@@ -87,12 +83,6 @@
     <script src="js/main.js"></script>
     <script src="js/metadata_provider.js"></script>
 
-    <!-- For accurate load performance tracking
-         place all scripts above this line -->
-    <script>
-      metrics.recordTime('ScriptParse');
-    </script>
-    
     <!-- We have to set some default title, or chrome will use the page
       -- name.  As soon as we init and change to a directory, we'll use
       -- the directory as the page title.  Until then, have a unicode glyph

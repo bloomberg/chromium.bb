@@ -16,12 +16,8 @@ function init() {
   var rootPaths = ['Downloads', 'removable', 'archive', 'tmp'];
 
   function onEntriesFound(filesystem, entries) {
-    metrics.recordTime('EnumerateRoots');
     FileManager.initStrings(function () {
-      metrics.startInterval('Construct');
       fileManager = new FileManager(document.body, filesystem, entries);
-      metrics.recordTime('Construct');
-      metrics.recordTime('TotalLoad');
       // We're ready to run.  Tests can monitor for this state with
       // ExtensionTestMessageListener listener("ready");
       // ASSERT_TRUE(listener.WaitUntilSatisfied());
@@ -30,7 +26,6 @@ function init() {
   }
 
   function onFileSystemFound(filesystem) {
-    metrics.recordTime('RequestLocalFileSystem');
     console.log('Found filesystem: ' + filesystem.name, filesystem);
 
     var entries = [];
@@ -47,7 +42,6 @@ function init() {
       }
     }
 
-    metrics.startInterval('EnumerateRoots');
     if (filesystem.name.match(/^chrome-extension_\S+:external/i)) {
       // We've been handed the local filesystem, whose root directory
       // cannot be enumerated.
@@ -60,7 +54,6 @@ function init() {
 
   util.installFileErrorToString();
 
-    console.log('Requesting filesystem.');
-    metrics.startInterval('RequestLocalFileSystem');
-    chrome.fileBrowserPrivate.requestLocalFileSystem(onFileSystemFound);
+  console.log('Requesting filesystem.');
+  chrome.fileBrowserPrivate.requestLocalFileSystem(onFileSystemFound);
 }
