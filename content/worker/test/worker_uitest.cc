@@ -259,7 +259,14 @@ TEST_F(WorkerTest, StressJSExecution) {
   RunWorkerFastLayoutTest("stress-js-execution.html");
 }
 
-TEST_F(WorkerTest, UseMachineStack) {
+#if defined(OS_WIN)
+// http://crbug.com/101996
+#define MAYBE_UseMachineStack FLAKY_UseMachineStack
+#else
+#define MAYBE_UseMachineStack UseMachineStack
+#endif
+
+TEST_F(WorkerTest, MAYBE_UseMachineStack) {
   RunWorkerFastLayoutTest("use-machine-stack.html");
 }
 
@@ -273,7 +280,14 @@ TEST_F(WorkerTest, DISABLED_WorkerClonePort) {
   RunWorkerFastLayoutTest("worker-cloneport.html");
 }
 
-TEST_F(WorkerTest, WorkerCloseFast) {
+#if defined(OS_WIN)
+// http://crbug.com/101996
+#define MAYBE_WorkerCloseFast FLAKY_WorkerCloseFast
+#else
+#define MAYBE_WorkerCloseFast WorkerCloseFast
+#endif
+
+TEST_F(WorkerTest, MAYBE_WorkerCloseFast) {
   RunWorkerFastLayoutTest("worker-close.html");
 }
 
@@ -282,7 +296,14 @@ TEST_F(WorkerTest, FLAKY_WorkerConstructor) {
   RunWorkerFastLayoutTest("worker-constructor.html");
 }
 
-TEST_F(WorkerTest, WorkerContextGc) {
+#if defined(OS_WIN)
+// http://crbug.com/101996
+#define MAYBE_WorkerContextGc FLAKY_WorkerContextGc
+#else
+#define MAYBE_WorkerContextGc WorkerContextGc
+#endif
+
+TEST_F(WorkerTest, MAYBE_WorkerContextGc) {
   RunWorkerFastLayoutTest("worker-context-gc.html");
 }
 
@@ -297,11 +318,25 @@ TEST_F(WorkerTest, MAYBE_WorkerContextMultiPort) {
   RunWorkerFastLayoutTest("worker-context-multi-port.html");
 }
 
-TEST_F(WorkerTest, WorkerEventListener) {
+#if defined(OS_WIN)
+// http://crbug.com/101996
+#define MAYBE_WorkerEventListener FLAKY_WorkerEventListener
+#else
+#define MAYBE_WorkerEventListener WorkerEventListener
+#endif
+
+TEST_F(WorkerTest, MAYBE_WorkerEventListener) {
   RunWorkerFastLayoutTest("worker-event-listener.html");
 }
 
-TEST_F(WorkerTest, WorkerGC) {
+#if defined(OS_WIN)
+// http://crbug.com/101996
+#define MAYBE_WorkerGC FLAKY_WorkerGC
+#else
+#define MAYBE_WorkerGC WorkerGC
+#endif
+
+TEST_F(WorkerTest, MAYBE_WorkerGC) {
   RunWorkerFastLayoutTest("worker-gc.html");
 }
 
@@ -324,11 +359,25 @@ TEST_F(WorkerTest, FLAKY_WorkerMapGc) {
   RunWorkerFastLayoutTest("wrapper-map-gc.html");
 }
 
-TEST_F(WorkerTest, WorkerMessagePort) {
+#if defined(OS_WIN)
+// http://crbug.com/101996
+#define MAYBE_WorkerMessagePort FLAKY_WorkerMessagePort
+#else
+#define MAYBE_WorkerMessagePort WorkerMessagePort
+#endif
+
+TEST_F(WorkerTest, MAYBE_WorkerMessagePort) {
   RunWorkerFastLayoutTest("worker-messageport.html");
 }
 
-TEST_F(WorkerTest, WorkerMessagePortGC) {
+#if defined(OS_WIN)
+// http://crbug.com/101996
+#define MAYBE_WorkerMessagePortGC FLAKY_WorkerMessagePortGC
+#else
+#define MAYBE_WorkerMessagePortGC WorkerMessagePortGC
+#endif
+
+TEST_F(WorkerTest, MAYBE_WorkerMessagePortGC) {
   RunWorkerFastLayoutTest("worker-messageport-gc.html");
 }
 
@@ -345,24 +394,48 @@ TEST_F(WorkerTest, WorkerReplaceGlobalConstructor) {
   RunWorkerFastLayoutTest("worker-replace-global-constructor.html");
 }
 
-TEST_F(WorkerTest, WorkerReplaceSelf) {
+#if defined(OS_WIN)
+// http://crbug.com/101996
+#define MAYBE_WorkerReplaceSelf FLAKY_WorkerReplaceSelf
+#else
+#define MAYBE_WorkerReplaceSelf WorkerReplaceSelf
+#endif
+
+TEST_F(WorkerTest, MAYBE_WorkerReplaceSelf) {
   RunWorkerFastLayoutTest("worker-replace-self.html");
 }
 
-// See bug 44457.
-#if defined(OS_MACOSX)
-#define WorkerScriptError FLAKY_WorkerScriptError
+#if defined(OS_MACOSX) || defined(OS_WIN)
+// Mac: http://crbug.com/44457
+// Windows: http://crbug.com/101996
+#define MAYBE_WorkerScriptError FLAKY_WorkerScriptError
+#else
+#define MAYBE_WorkerScriptError WorkerScriptError
 #endif
 
-TEST_F(WorkerTest, WorkerScriptError) {
+TEST_F(WorkerTest, MAYBE_WorkerScriptError) {
   RunWorkerFastLayoutTest("worker-script-error.html");
 }
 
-TEST_F(WorkerTest, WorkerTerminate) {
+#if defined(OS_WIN)
+// http://crbug.com/101996
+#define MAYBE_WorkerTerminate FLAKY_WorkerTerminate
+#else
+#define MAYBE_WorkerTerminate WorkerTerminate
+#endif
+
+TEST_F(WorkerTest, MAYBE_WorkerTerminate) {
   RunWorkerFastLayoutTest("worker-terminate.html");
 }
 
-TEST_F(WorkerTest, WorkerTimeout) {
+#if defined(OS_WIN)
+// http://crbug.com/101996
+#define MAYBE_WorkerTimeout FLAKY_WorkerTimeout
+#else
+#define MAYBE_WorkerTimeout WorkerTimeout
+#endif
+
+TEST_F(WorkerTest, MAYBE_WorkerTimeout) {
   RunWorkerFastLayoutTest("worker-timeout.html");
 }
 
