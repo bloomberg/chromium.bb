@@ -78,10 +78,22 @@ cr.define('login', function() {
         // Schedules a immediate retry.
         currentScreen.doReload();
       };
+
+      // TODO(altimofeev): Support offline sign-in as well.
+      $('error-guest-signin').innerHTML = localStrings.getStringF(
+          'guestSignin',
+          '<a id="error-guest-signin-link" class="signin-link" href="#">',
+          '</a>');
+      $('error-guest-signin-link').onclick = function() {
+        chrome.send('launchIncognito');
+      };
     },
 
     onBeforeShow: function() {
       cr.ui.DropDown.setActive('offline-networks-list', true);
+
+      $('error-guest-signin').hidden = $('guestSignin').hidden ||
+          !$('add-user-header-bar-item').hidden;
     },
 
     onBeforeHide: function() {

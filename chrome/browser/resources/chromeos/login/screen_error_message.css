@@ -33,3 +33,6 @@
   display: block;
 }
 
+#error-guest-signin {
+  -webkit-margin-start: 60px;
+}
