@@ -1305,6 +1305,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
     NaClXCondVarWait(&nap->cv, &nap->mu);
   }
   nap->vm_hole_may_exist = 1;
+  NaClUntrustedThreadsSuspend(nap);
 
   holding_app_lock = 1;
 
@@ -1556,6 +1557,8 @@ cleanup:
     nap->vm_hole_may_exist = 0;
     NaClXCondVarBroadcast(&nap->cv);
     NaClXMutexUnlock(&nap->mu);
+
+    NaClUntrustedThreadsResume(nap);
   }
   if (NULL != ndp) {
     NaClDescUnref(ndp);

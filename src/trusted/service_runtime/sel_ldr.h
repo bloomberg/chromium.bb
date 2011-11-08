@@ -663,6 +663,28 @@ void NaClVmHoleThreadStackIsSafe(struct NaClApp *nap);
 
 void NaClGdbHook(struct NaClApp const *nap);
 
+#if NACL_WINDOWS
+
+void NaClUntrustedThreadsSuspend(struct NaClApp *nap);
+void NaClUntrustedThreadsResume(struct NaClApp *nap);
+
+#else
+
+/*
+ * Suspending untrusted threads is only needed for preventing mmap
+ * races on Windows, so these are no-ops on other platforms.
+ */
+
+static INLINE void NaClUntrustedThreadsSuspend(struct NaClApp *nap) {
+  UNREFERENCED_PARAMETER(nap);
+}
+
+static INLINE void NaClUntrustedThreadsResume(struct NaClApp *nap) {
+  UNREFERENCED_PARAMETER(nap);
+}
+
+#endif
+
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_H_ */

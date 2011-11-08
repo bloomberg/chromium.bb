@@ -158,6 +158,7 @@
             ['OS=="win"', {
               'sources': [
                 'win/nacl_signal.c',
+                'win/thread_suspension.c',
               ],
             }],
           ],

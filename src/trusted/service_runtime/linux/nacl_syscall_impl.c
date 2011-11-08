@@ -216,6 +216,8 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
     NaClXCondVarWait(&natp->nap->cv, &natp->nap->mu);
   }
   natp->nap->vm_hole_may_exist = 1;
+  /* This call is not needed on Unix, but is included for consistency. */
+  NaClUntrustedThreadsSuspend(natp->nap);
 
   holding_app_lock = 1;
   /*
@@ -273,6 +275,9 @@ cleanup:
     natp->nap->vm_hole_may_exist = 0;
     NaClXCondVarBroadcast(&natp->nap->cv);
     NaClXMutexUnlock(&natp->nap->mu);
+
+    /* This call is not needed on Unix, but is included for consistency. */
+    NaClUntrustedThreadsResume(natp->nap);
   }
   NaClSysCommonThreadSyscallLeave(natp);
   return retval;

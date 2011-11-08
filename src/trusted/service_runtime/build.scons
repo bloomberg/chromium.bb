@@ -183,7 +183,10 @@ elif env.Bit('linux'):
 # Add OS and architecture specific signal handling files.
 #
 if env.Bit('windows'):
-  ldr_inputs += ['win/nacl_signal.c']
+  ldr_inputs += [
+    'win/nacl_signal.c',
+    'win/thread_suspension.c',
+  ]
   if env.Bit('target_x86_32'):
     ldr_inputs += ['win/nacl_signal_32.c']
   elif env.Bit('target_x86_64'):

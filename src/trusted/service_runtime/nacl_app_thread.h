@@ -21,6 +21,25 @@ EXTERN_C_BEGIN
 
 struct NaClApp;
 
+/*
+ * The thread hosting the NaClAppThread may change suspend_state
+ * between NACL_APP_THREAD_TRUSTED and NACL_APP_THREAD_UNTRUSTED using
+ * NaClAppThreadSetSuspendState().
+ *
+ * Another thread may change this from:
+ *   NACL_APP_THREAD_UNTRUSTED
+ *   -> NACL_APP_THREAD_UNTRUSTED | NACL_APP_THREAD_SUSPENDING
+ * or
+ *   NACL_APP_THREAD_TRUSTED
+ *   -> NACL_APP_THREAD_TRUSTED | NACL_APP_THREAD_SUSPENDING
+ * and back again.
+ */
+enum NaClSuspendState {
+  NACL_APP_THREAD_UNTRUSTED = 1,
+  NACL_APP_THREAD_TRUSTED = 2,
+  NACL_APP_THREAD_SUSPENDING = 4
+};
+
 enum NaClThreadState {
   NACL_APP_THREAD_ALIVE,
   /* NACL_APP_THREAD_INTERRUPTIBLE_MUTEX, etc */
@@ -59,6 +78,15 @@ struct NaClAppThread {
   uint32_t                  tls2;     /* second saved TLS value */
 
   struct NaClThread         thread;  /* low level thread representation */
+
+  /*
+   * Thread suspension is currently only needed and implemented for
+   * Windows, for preventing race conditions when opening up holes in
+   * untrusted address space during mmap/munmap.
+   */
+#if NACL_WINDOWS
+  enum NaClSuspendState     suspend_state;
+#endif
 
   /*
    * a thread cannot free up its own mutex lock and commit suicide,
@@ -125,6 +153,15 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                               uintptr_t             usr_stack_ptr,
                               uintptr_t             sys_tls_base,
                               uint32_t              usr_tls2) NACL_WUR;
+
+/*
+ * This function can be called from the thread hosting the
+ * NaClAppThread.  It can be used to switch between the states
+ * NACL_APP_THREAD_TRUSTED and NACL_APP_THREAD_UNTRUSTED.
+ */
+void NaClAppThreadSetSuspendState(struct NaClAppThread *natp,
+                                  enum NaClSuspendState old_state,
+                                  enum NaClSuspendState new_state);
 
 EXTERN_C_END
 

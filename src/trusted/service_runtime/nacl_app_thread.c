@@ -20,6 +20,28 @@
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 
 
+void NaClAppThreadSetSuspendState(struct NaClAppThread *natp,
+                                  enum NaClSuspendState old_state,
+                                  enum NaClSuspendState new_state) {
+#if NACL_WINDOWS
+  NaClXMutexLock(&natp->mu);
+  while ((natp->suspend_state & NACL_APP_THREAD_SUSPENDING) != 0) {
+    /*
+     * We are being suspended, but SuspendThread() has not taken effect yet.
+     */
+    NaClXCondVarWait(&natp->cv, &natp->mu);
+  }
+  DCHECK(natp->suspend_state == old_state);
+  natp->suspend_state = new_state;
+  NaClXMutexUnlock(&natp->mu);
+#else
+  UNREFERENCED_PARAMETER(natp);
+  UNREFERENCED_PARAMETER(old_state);
+  UNREFERENCED_PARAMETER(new_state);
+#endif
+}
+
+
 void WINAPI NaClThreadLauncher(void *state) {
   struct NaClAppThread *natp = (struct NaClAppThread *) state;
   uint32_t thread_idx;
@@ -62,6 +84,13 @@ void WINAPI NaClThreadLauncher(void *state) {
   }
 
   NaClOopDebuggerThreadCreateHook(natp);
+
+  /*
+   * After this NaClAppThreadSetSuspendState() call, we should not
+   * claim any mutexes, otherwise we risk deadlock.
+   */
+  NaClAppThreadSetSuspendState(natp, NACL_APP_THREAD_TRUSTED,
+                               NACL_APP_THREAD_UNTRUSTED);
 
   NaClStartThreadInApp(natp, natp->user.prog_ctr);
 }
@@ -165,6 +194,10 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   if (!NaClSignalStackAllocate(&natp->signal_stack)) {
     goto cleanup_cv;
   }
+
+#if NACL_WINDOWS
+  natp->suspend_state = NACL_APP_THREAD_TRUSTED;
+#endif
 
   natp->state = NACL_APP_THREAD_ALIVE;
 

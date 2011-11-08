@@ -82,6 +82,15 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   NaClStackSafetyNowOnTrustedStack();
 
   natp = nacl_thread[tls_idx];
+
+  /*
+   * Before this call, the thread could be suspended, so we should not
+   * lock any mutexes before this, otherwise it could cause a
+   * deadlock.
+   */
+  NaClAppThreadSetSuspendState(natp, NACL_APP_THREAD_UNTRUSTED,
+                               NACL_APP_THREAD_TRUSTED);
+
   nap = natp->nap;
   user = &natp->user;
   sp_user = NaClGetThreadCtxSp(user);
@@ -184,6 +193,14 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
    * user_ret is properly sandboxed.
    */
   user_ret = (nacl_reg_t) NaClSandboxCodeAddr(nap, (uintptr_t)user_ret);
+  /*
+   * After this NaClAppThreadSetSuspendState() call, we should not
+   * claim any mutexes, otherwise we risk deadlock.  Note that if
+   * NACLVERBOSITY is set high enough to enable the NaClLog() calls in
+   * NaClSwitchToApp(), these calls could deadlock on Windows.
+   */
+  NaClAppThreadSetSuspendState(natp, NACL_APP_THREAD_TRUSTED,
+                               NACL_APP_THREAD_UNTRUSTED);
   NaClStackSafetyNowOnUntrustedStack();
 
   NaClSwitchToApp(natp, user_ret);
