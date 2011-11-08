@@ -48,7 +48,10 @@ class InstallUtil {
   // Find the last critical update (version) of Chrome. Returns the version or
   // NULL if no such version is found. A critical update is a specially flagged
   // version (by Google Update) that contains an important security fix.
-  static Version* GetCriticalUpdateVersion(BrowserDistribution* dist);
+  // system_install: if true, looks for version number under the HKLM root,
+  //                 otherwise looks under the HKCU.
+  static Version* GetCriticalUpdateVersion(BrowserDistribution* dist,
+                                           bool system_install);
 
   // This function checks if the current OS is supported for Chromium.
   static bool IsOSSupported();

@@ -193,11 +193,13 @@ Version* InstallUtil::GetChromeVersion(BrowserDistribution* dist,
   return ret;
 }
 
-Version* InstallUtil::GetCriticalUpdateVersion(BrowserDistribution* dist) {
+Version* InstallUtil::GetCriticalUpdateVersion(BrowserDistribution* dist,
+                                               bool system_install) {
   DCHECK(dist);
   RegKey key;
+  HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   LONG result =
-      key.Open(HKEY_CURRENT_USER, dist->GetVersionKey().c_str(), KEY_READ);
+      key.Open(reg_root, dist->GetVersionKey().c_str(), KEY_QUERY_VALUE);
 
   string16 version_str;
   if (result == ERROR_SUCCESS)

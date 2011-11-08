@@ -7,8 +7,10 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/task.h"
@@ -91,21 +93,24 @@ class DetectUpgradeTask : public Task {
     // Get the version of the currently *installed* instance of Chrome,
     // which might be newer than the *running* instance if we have been
     // upgraded in the background.
+    FilePath exe_path;
+    if (!PathService::Get(base::DIR_EXE, &exe_path)) {
+      NOTREACHED() << "Failed to find executable path";
+      return;
+    }
+
+    bool system_install =
+        !InstallUtil::IsPerUserInstall(exe_path.value().c_str());
+
     // TODO(tommi): Check if using the default distribution is always the right
     // thing to do.
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    installed_version.reset(InstallUtil::GetChromeVersion(dist, false));
+    installed_version.reset(InstallUtil::GetChromeVersion(dist,
+                                                          system_install));
 
     if (installed_version.get()) {
-#if defined(OS_WIN)
-      // Critical version detection is only supported for user-level Chrome
-      // since elevation is needed for system-level Chrome (and this runs in
-      // the background -- don't want to prompt).
-      critical_update.reset(InstallUtil::GetCriticalUpdateVersion(dist));
-#endif
-    } else {
-      // User-level Chrome is not installed, check system-level.
-      installed_version.reset(InstallUtil::GetChromeVersion(dist, true));
+      critical_update.reset(
+          InstallUtil::GetCriticalUpdateVersion(dist, system_install));
     }
 #elif defined(OS_MACOSX)
     installed_version.reset(
