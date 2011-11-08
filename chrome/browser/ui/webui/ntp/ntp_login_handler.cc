@@ -128,7 +128,7 @@ void NTPLoginHandler::HandleLoginMessageSeen(const ListValue* args) {
 }
 
 void NTPLoginHandler::HandleShowAdvancedLoginUI(const ListValue* args) {
-  Profile::FromWebUI(web_ui_)->GetProfileSyncService()->ShowLoginDialog();
+  Profile::FromWebUI(web_ui_)->GetProfileSyncService()->ShowConfigure(false);
 }
 
 void NTPLoginHandler::UpdateLogin() {
