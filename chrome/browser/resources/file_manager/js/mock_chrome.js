@@ -388,3 +388,10 @@ chrome.tabs = {
     window.open(createOptions.url);
   }
 };
+
+chrome.experimental = {
+  metrics: {
+    recordTime: function() {},
+    recordUserAction: function() {}
+  }
+};
