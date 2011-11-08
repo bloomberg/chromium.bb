@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/string_split.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -169,7 +171,7 @@ int32_t PPB_FileChooser_Impl::ShowWithoutUserGesture(
   } else {
     params.multiSelect = (mode_ == PP_FILECHOOSERMODE_OPENMULTIPLE);
   }
-  params.acceptTypes = WebString::fromUTF8(accept_mime_types_);
+  params.acceptMIMETypes = ParseAcceptValue(accept_mime_types_);
   params.directory = false;
 
   PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
@@ -189,6 +191,28 @@ PP_Resource PPB_FileChooser_Impl::GetNextChosenFile() {
     return 0;
 
   return chosen_files_[next_chosen_file_index_++]->GetReference();
+}
+
+std::vector<WebString> PPB_FileChooser_Impl::ParseAcceptValue(
+    const std::string& accept_mime_types) {
+  if (accept_mime_types.empty())
+    return std::vector<WebString>();
+  std::vector<std::string> mime_type_list;
+  base::SplitString(accept_mime_types, ',', &mime_type_list);
+  std::vector<WebString> normalized_mime_type_list;
+  normalized_mime_type_list.reserve(mime_type_list.size());
+  for (size_t i = 0; i < mime_type_list.size(); ++i) {
+    std::string mime_type = mime_type_list[i];
+    TrimWhitespaceASCII(mime_type, TRIM_ALL, &mime_type);
+    if (mime_type.empty())
+      continue;
+    if (mime_type.find_first_of('/') == std::string::npos)
+      continue;
+    StringToLowerASCII(&mime_type);
+    normalized_mime_type_list.push_back(WebString::fromUTF8(mime_type.data(),
+                                                            mime_type.size()));
+  }
+  return normalized_mime_type_list;
 }
 
 }  // namespace ppapi

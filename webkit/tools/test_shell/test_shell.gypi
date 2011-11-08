@@ -443,6 +443,7 @@
         '../../plugins/ppapi/mock_resource.h',
         '../../plugins/ppapi/ppapi_unittest.cc',
         '../../plugins/ppapi/ppapi_unittest.h',
+        '../../plugins/ppapi/ppb_file_chooser_impl_unittest.cc',
         '../../plugins/ppapi/quota_file_io_unittest.cc',
         '../../plugins/ppapi/time_conversion_unittest.cc',
         '../../plugins/ppapi/url_request_info_unittest.cc',
