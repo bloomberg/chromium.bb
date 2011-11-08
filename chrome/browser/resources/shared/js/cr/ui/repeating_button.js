@@ -103,13 +103,12 @@ cr.define('cr.ui', function() {
         // button is still being held (i.e. clearTimeout has not been called).
         if (self.armRepeaterCallback_) {
           self.armRepeaterCallback_ = undefined;
+          self.buttonHeld_();
           self.intervalCallback_ = setInterval(self.buttonHeld_.bind(self),
                                                self.holdRepeatIntervalTime_);
         }
       };
-      setTimeout(this.armRepeaterCallback_,
-                 Math.max(0, this.holdDelayTime_ -
-                     this.holdRepeatIntervalTime_));
+      setTimeout(this.armRepeaterCallback_, this.holdDelayTime_);
     },
 
     /**
@@ -153,12 +152,28 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Setter for the initial delay before repeating.
+     * @type {number} The delay in milliseconds.
+     */
+    set repeatDelay(delay) {
+      this.holdDelayTime_ = delay;
+    },
+
+    /**
      * Getter for the repeat interval.
      * @type {number} The repeat interval in milliseconds.
      */
     get repeatInterval() {
       return this.holdRepeatIntervalTime_;
-    }
+    },
+
+    /**
+     * Setter for the repeat interval.
+     * @type {number} The interval in milliseconds.
+     */
+   set repeatInterval(delay) {
+     this.holdRepeatIntervalTime_ = delay;
+   }
   };
 
   return {

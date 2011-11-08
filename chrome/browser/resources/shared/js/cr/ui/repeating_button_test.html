@@ -151,6 +151,35 @@
     function testMouseOut() {
       runButtonTests(mockMouseOut, repeatDelay);
     }
+
+    /**
+     * Repeat tests with new delay and interval times.
+     */
+    function testUpdateDelayTimes() {
+      var oldDelay = repeatDelay;
+      var oldInterval = repeatInterval;
+      repeatDelay = button.repeatDelay = 2 * repeatDelay;
+      repeatInterval = button.repeatInterval = 2 * repeatInterval;
+      testTouchHold();
+      testMousePressHold();
+      testMouseOut();
+      testClick();
+      testTap();
+      repeatDelay = button.repeatDelay = oldDelay;
+      repeatInterval = button.repeatInterval = oldInterval;
+    }
+
+    /**
+     * Runs mouse and touch hold tests with a repeat interval that is longer
+     * than the initial repeat delay.
+     */
+    function testLongRepeat() {
+      var oldInterval = repeatInterval;
+      repeatInterval = button.repeatInterval = 3 * button.repeatDelay;
+      testTouchHold();
+      testMousePressHold();
+      repeatInterval = button.repeatInterval = oldInterval;
+    }
   </script>
 </body>
 </html>

@@ -81,6 +81,7 @@ cr.define('options', function() {
   function initializeBrightnessButton_(id, callback) {
     var button = $(id);
     cr.ui.decorate(button, RepeatingButton);
+    button.repeatInterval = 300;
     button.addEventListener(RepeatingButton.Event.BUTTON_HELD, function(e) {
       chrome.send(callback);
     });
