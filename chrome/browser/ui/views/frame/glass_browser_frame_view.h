@@ -41,7 +41,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   virtual void EnableClose(bool enable) OVERRIDE { }
   virtual void ResetWindowControls() OVERRIDE { }
   virtual void UpdateWindowIcon() OVERRIDE { }
-  virtual AvatarMenuButton* GetAvatarMenuButton() OVERRIDE;
 
  protected:
   // Overridden from views::View:
@@ -89,24 +88,11 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Updates the title and icon of the avatar button.
-  void UpdateAvatarInfo();
-
   // The layout rect of the avatar icon, if visible.
   gfx::Rect avatar_bounds_;
 
-  // The frame that hosts this view.
-  BrowserFrame* frame_;
-
-  // The BrowserView hosted within this View.
-  BrowserView* browser_view_;
-
   // The bounds of the ClientView.
   gfx::Rect client_view_bounds_;
-
-  // Menu button that displays that either the incognito icon or the profile
-  // icon.
-  scoped_ptr<AvatarMenuButton> avatar_button_;
 
   // Whether or not the window throbber is currently animating.
   bool throbber_running_;

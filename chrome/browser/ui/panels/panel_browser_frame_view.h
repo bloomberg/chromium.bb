@@ -58,7 +58,6 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
   virtual int GetHorizontalTabStripVerticalOffset(bool restored) const OVERRIDE;
   virtual void UpdateThrobber(bool running) OVERRIDE;
-  virtual AvatarMenuButton* GetAvatarMenuButton() OVERRIDE;
 
   // Overridden from views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
@@ -172,14 +171,10 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   }
 #endif
 
-  // The frame that hosts this view. This is a weak reference such that frame_
-  // will always be valid in the lifetime of this view.
-  BrowserFrame* frame_;
-
   // The client view hosted within this non-client frame view that is
   // guaranteed to be freed before the client view.
   // (see comments about view hierarchies in non_client_view.h)
-  PanelBrowserView* browser_view_;
+  PanelBrowserView* panel_browser_view_;
 
   PaintState paint_state_;
   views::MenuButton* settings_button_;

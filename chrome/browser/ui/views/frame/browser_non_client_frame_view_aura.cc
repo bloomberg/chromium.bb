@@ -222,9 +222,7 @@ class FrameBackground : public views::View,
 
 BrowserNonClientFrameViewAura::BrowserNonClientFrameViewAura(
     BrowserFrame* frame, BrowserView* browser_view)
-    : BrowserNonClientFrameView(),
-      browser_frame_(frame),
-      browser_view_(browser_view),
+    : BrowserNonClientFrameView(frame, browser_view),
       last_hittest_code_(HTNOWHERE) {
   frame_background_ = new FrameBackground();
   AddChildView(frame_background_);
@@ -411,11 +409,6 @@ void BrowserNonClientFrameViewAura::UpdateThrobber(bool running) {
   // TODO(jamescook): Do we need this?
 }
 
-AvatarMenuButton* BrowserNonClientFrameViewAura::GetAvatarMenuButton() {
-  // TODO(jamescook)
-  return NULL;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // views::NonClientFrameView overrides:
 
@@ -503,12 +496,12 @@ bool BrowserNonClientFrameViewAura::HitTest(const gfx::Point& p) const {
       maximize_button_->bounds().Contains(p))
     return true;
   // Otherwise claim it only if it's in a non-tab portion of the tabstrip.
-  if (!browser_view_->tabstrip())
+  if (!browser_view()->tabstrip())
     return false;
-  gfx::Rect tabstrip_bounds(browser_view_->tabstrip()->bounds());
+  gfx::Rect tabstrip_bounds(browser_view()->tabstrip()->bounds());
   gfx::Point tabstrip_origin(tabstrip_bounds.origin());
   View::ConvertPointToView(
-      browser_frame_->client_view(), this, &tabstrip_origin);
+      frame()->client_view(), this, &tabstrip_origin);
   tabstrip_bounds.set_origin(tabstrip_origin);
   if (p.y() > tabstrip_bounds.bottom())
     return false;
@@ -517,8 +510,8 @@ bool BrowserNonClientFrameViewAura::HitTest(const gfx::Point& p) const {
   // completely. We need to do this since we're not a parent of the tabstrip,
   // meaning ConvertPointToView would otherwise return something bogus.
   gfx::Point browser_view_point(p);
-  View::ConvertPointToView(parent(), browser_view_, &browser_view_point);
-  return browser_view_->IsPositionInWindowCaption(browser_view_point);
+  View::ConvertPointToView(parent(), browser_view(), &browser_view_point);
+  return browser_view()->IsPositionInWindowCaption(browser_view_point);
 }
 
 void BrowserNonClientFrameViewAura::OnMouseMoved(
@@ -564,12 +557,12 @@ gfx::NativeCursor BrowserNonClientFrameViewAura::GetCursor(
 void BrowserNonClientFrameViewAura::ButtonPressed(views::Button* sender,
                                                   const views::Event& event) {
   if (sender == close_button_) {
-    browser_frame_->Close();
+    frame()->Close();
   } else if (sender == maximize_button_) {
-    if (browser_frame_->IsMaximized())
-      browser_frame_->Restore();
+    if (frame()->IsMaximized())
+      frame()->Restore();
     else
-      browser_frame_->Maximize();
+      frame()->Maximize();
   }
 }
 

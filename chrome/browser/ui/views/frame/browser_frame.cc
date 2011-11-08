@@ -151,5 +151,5 @@ void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {
 }
 
 AvatarMenuButton* BrowserFrame::GetAvatarMenuButton() {
-  return browser_frame_view_->GetAvatarMenuButton();
+  return browser_frame_view_->avatar_button();
 }

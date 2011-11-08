@@ -55,7 +55,6 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
   virtual int GetHorizontalTabStripVerticalOffset(bool restored) const OVERRIDE;
   virtual void UpdateThrobber(bool running) OVERRIDE;
-  virtual AvatarMenuButton* GetAvatarMenuButton() OVERRIDE;
 
   // views::NonClientFrameView overrides:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
@@ -89,8 +88,6 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   // aura_shell::WindowFrame overrides:
   virtual void OnWindowHoverChanged(bool hovered) OVERRIDE;
 
-  BrowserFrame* browser_frame_;
-  BrowserView* browser_view_;
   int last_hittest_code_;
   WindowControlButton* maximize_button_;
   WindowControlButton* close_button_;

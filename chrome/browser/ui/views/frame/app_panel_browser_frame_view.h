@@ -36,7 +36,6 @@ class AppPanelBrowserFrameView : public BrowserNonClientFrameView,
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
   virtual int GetHorizontalTabStripVerticalOffset(bool restored) const OVERRIDE;
   virtual void UpdateThrobber(bool running) OVERRIDE;
-  virtual AvatarMenuButton* GetAvatarMenuButton() OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
 
  protected:
@@ -109,12 +108,6 @@ class AppPanelBrowserFrameView : public BrowserNonClientFrameView,
 
   // The Window icon.
   TabIconView* window_icon_;
-
-  // The frame that hosts this view.
-  BrowserFrame* frame_;
-
-  // The BrowserView hosted within this View.
-  BrowserView* browser_view_;
 
   // The bounds of the ClientView.
   gfx::Rect client_view_bounds_;

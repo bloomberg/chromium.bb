@@ -166,8 +166,8 @@ PanelBrowserFrameView::MouseWatcher::~MouseWatcher() {
 
 bool PanelBrowserFrameView::MouseWatcher::IsCursorInViewBounds() const {
   gfx::Point cursor_point = gfx::Screen::GetCursorScreenPoint();
-  return view_->browser_view_->GetBounds().Contains(cursor_point.x(),
-                                                    cursor_point.y());
+  return view_->browser_view()->GetBounds().Contains(cursor_point.x(),
+                                                     cursor_point.y());
 }
 
 #if defined(OS_WIN)
@@ -234,9 +234,8 @@ void PanelBrowserFrameView::MouseWatcher::HandleGlobalMouseMoveEvent() {
 
 PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
                                              PanelBrowserView* browser_view)
-    : BrowserNonClientFrameView(),
-      frame_(frame),
-      browser_view_(browser_view),
+    : BrowserNonClientFrameView(frame, browser_view),
+      panel_browser_view_(browser_view),
       paint_state_(NOT_PAINTED),
       settings_button_(NULL),
       close_button_(NULL),
@@ -244,7 +243,7 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
       title_label_(NULL),
       is_settings_button_visible_(false) {
   EnsureResourcesInitialized();
-  frame_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
+  frame->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
   settings_button_ =  new views::MenuButton(NULL, string16(), this, false);
   settings_button_->SetIcon(*(settings_button_resources.normal_image));
@@ -307,10 +306,6 @@ void PanelBrowserFrameView::UpdateThrobber(bool running) {
   title_icon_->Update();
 }
 
-AvatarMenuButton* PanelBrowserFrameView::GetAvatarMenuButton() {
-  return NULL;
-}
-
 gfx::Rect PanelBrowserFrameView::GetBoundsForClientView() const {
   return client_view_bounds_;
 }
@@ -330,7 +325,7 @@ int PanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTNOWHERE;
 
   int frame_component =
-      frame_->client_view()->NonClientHitTest(point);
+      frame()->client_view()->NonClientHitTest(point);
   if (frame_component != HTNOWHERE)
     return frame_component;
 
@@ -341,7 +336,7 @@ int PanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   int window_component = GetHTComponentForFrame(point,
       NonClientBorderThickness(), NonClientBorderThickness(),
       0, 0,
-      frame_->widget_delegate()->CanResize());
+      frame()->widget_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
@@ -393,9 +388,9 @@ void PanelBrowserFrameView::UpdateWindowIcon() {
 void PanelBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   // The font and color need to be updated depending on the panel's state.
   PaintState paint_state;
-  if (browser_view_->panel()->IsDrawingAttention())
+  if (panel_browser_view_->panel()->IsDrawingAttention())
     paint_state = PAINT_FOR_ATTENTION;
-  else if (browser_view_->focused())
+  else if (panel_browser_view_->focused())
     paint_state = PAINT_AS_ACTIVE;
   else
     paint_state = PAINT_AS_INACTIVE;
@@ -482,26 +477,26 @@ void PanelBrowserFrameView::GetAccessibleState(ui::AccessibleViewState* state) {
 
 bool PanelBrowserFrameView::OnMousePressed(const views::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton() &&
-      browser_view_->OnTitlebarMousePressed(event.location())) {
+      panel_browser_view_->OnTitlebarMousePressed(event.location())) {
     return true;
   }
   return BrowserNonClientFrameView::OnMousePressed(event);
 }
 
 bool PanelBrowserFrameView::OnMouseDragged(const views::MouseEvent& event) {
-  if (browser_view_->OnTitlebarMouseDragged(event.location()))
+  if (panel_browser_view_->OnTitlebarMouseDragged(event.location()))
     return true;
   return BrowserNonClientFrameView::OnMouseDragged(event);
 }
 
 void PanelBrowserFrameView::OnMouseReleased(const views::MouseEvent& event) {
-  if (browser_view_->OnTitlebarMouseReleased())
+  if (panel_browser_view_->OnTitlebarMouseReleased())
     return;
   BrowserNonClientFrameView::OnMouseReleased(event);
 }
 
 void PanelBrowserFrameView::OnMouseCaptureLost() {
-  if (browser_view_->OnTitlebarMouseCaptureLost())
+  if (panel_browser_view_->OnTitlebarMouseCaptureLost())
     return;
   BrowserNonClientFrameView::OnMouseCaptureLost();
 }
@@ -509,7 +504,7 @@ void PanelBrowserFrameView::OnMouseCaptureLost() {
 void PanelBrowserFrameView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
   if (sender == close_button_)
-    frame_->Close();
+    frame()->Close();
 }
 
 void PanelBrowserFrameView::RunMenu(View* source, const gfx::Point& pt) {
@@ -530,12 +525,12 @@ bool PanelBrowserFrameView::ShouldTabIconViewAnimate() const {
   // This function is queried during the creation of the window as the
   // TabIconView we host is initialized, so we need to NULL check the selected
   // TabContents because in this condition there is not yet a selected tab.
-  TabContents* current_tab = browser_view_->GetSelectedTabContents();
+  TabContents* current_tab = browser_view()->GetSelectedTabContents();
   return current_tab ? current_tab->IsLoading() : false;
 }
 
 SkBitmap PanelBrowserFrameView::GetFaviconForTabIconView() {
-  return frame_->widget_delegate()->GetWindowIcon();
+  return frame()->widget_delegate()->GetWindowIcon();
 }
 
 void PanelBrowserFrameView::AnimationEnded(const ui::Animation* animation) {
@@ -722,7 +717,7 @@ void PanelBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
 }
 
 void PanelBrowserFrameView::UpdateTitleBar() {
-  title_label_->SetText(frame_->widget_delegate()->GetWindowTitle());
+  title_label_->SetText(frame()->widget_delegate()->GetWindowTitle());
 }
 
 void PanelBrowserFrameView::OnFocusChanged(bool focused) {
@@ -733,9 +728,9 @@ void PanelBrowserFrameView::OnFocusChanged(bool focused) {
 
 void PanelBrowserFrameView::OnMouseEnterOrLeaveWindow(bool mouse_entered) {
   // Panel might be closed when we still watch the mouse event.
-  if (!browser_view_->panel())
+  if (!panel_browser_view_->panel())
     return;
-  UpdateSettingsButtonVisibility(browser_view_->focused(),
+  UpdateSettingsButtonVisibility(panel_browser_view_->focused(),
                                  mouse_entered);
 }
 
@@ -767,12 +762,12 @@ bool PanelBrowserFrameView::EnsureSettingsMenuCreated() {
   if (settings_menu_runner_.get())
     return true;
 
-  const Extension* extension = browser_view_->panel()->GetExtension();
+  const Extension* extension = panel_browser_view_->panel()->GetExtension();
   if (!extension)
     return false;
 
   settings_menu_model_.reset(
-      new PanelSettingsMenuModel(browser_view_->panel()));
+      new PanelSettingsMenuModel(panel_browser_view_->panel()));
   settings_menu_adapter_.reset(
       new views::MenuModelAdapter(settings_menu_model_.get()));
   settings_menu_ = new views::MenuItemView(settings_menu_adapter_.get());

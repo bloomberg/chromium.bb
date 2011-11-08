@@ -41,7 +41,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual gfx::Size GetMinimumSize() OVERRIDE;
 
  protected:
-  BrowserView* browser_view() const { return browser_view_; }
   views::ImageButton* minimize_button() const { return minimize_button_; }
   views::ImageButton* maximize_button() const { return maximize_button_; }
   views::ImageButton* restore_button() const { return restore_button_; }
@@ -67,10 +66,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
       SkBitmap** left_corner,
       SkBitmap** right_corner);
 
-  // Expose these to subclasses.
-  BrowserFrame* frame() { return frame_; }
-  BrowserView* browser_view() { return browser_view_; }
-
   // Overridden from views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
@@ -81,7 +76,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual void EnableClose(bool enable) OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
-  virtual AvatarMenuButton* GetAvatarMenuButton() OVERRIDE;
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -156,9 +150,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // Returns the bounds of the client area for the specified view size.
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;
 
-  // Updates the title and icon of the avatar button.
-  void UpdateAvatarInfo();
-
   // The layout rect of the title, if visible.
   gfx::Rect title_bounds_;
 
@@ -174,18 +165,8 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // The Window icon.
   TabIconView* window_icon_;
 
-  // The frame that hosts this view.
-  BrowserFrame* frame_;
-
-  // The BrowserView hosted within this View.
-  BrowserView* browser_view_;
-
   // The bounds of the ClientView.
   gfx::Rect client_view_bounds_;
-
-  // Menu button that displays that either the incognito icon or the profile
-  // icon.
-  scoped_ptr<AvatarMenuButton> avatar_button_;
 
   content::NotificationRegistrar registrar_;
 

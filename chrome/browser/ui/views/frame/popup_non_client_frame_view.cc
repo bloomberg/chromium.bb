@@ -13,7 +13,8 @@
 #include "views/window/hit_test.h"
 #endif
 
-PopupNonClientFrameView::PopupNonClientFrameView(BrowserFrame* frame) {
+PopupNonClientFrameView::PopupNonClientFrameView(BrowserFrame* frame)
+    : BrowserNonClientFrameView(frame, NULL) {
   frame->set_frame_type(views::Widget::FRAME_TYPE_FORCE_NATIVE);
 }
 
@@ -54,8 +55,4 @@ int PopupNonClientFrameView::GetHorizontalTabStripVerticalOffset(
 }
 
 void PopupNonClientFrameView::UpdateThrobber(bool running) {
-}
-
-AvatarMenuButton* PopupNonClientFrameView::GetAvatarMenuButton() {
-  return NULL;
 }
