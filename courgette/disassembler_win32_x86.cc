@@ -562,7 +562,7 @@ CheckBool DisassemblerWin32X86::ParseFileRegion(
     // actually be anywhere.  Make sure we skip it because we will regenerate it
     // during assembly.
     if (current_rva == relocs_start_rva) {
-      ok = program->EmitMakeRelocsInstruction();
+      ok = program->EmitPeRelocsInstruction();
       if (!ok)
         break;
       uint32 relocs_size = base_relocation_table().size_;

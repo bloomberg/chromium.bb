@@ -55,6 +55,7 @@ enum Status {
 enum ExecutableType {
   EXE_UNKNOWN = 0,
   EXE_WIN_32_X86 = 1,
+  EXE_ELF_32_X86 = 2,
 };
 
 class SinkStream;
