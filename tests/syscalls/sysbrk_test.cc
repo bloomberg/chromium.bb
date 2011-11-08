@@ -131,8 +131,9 @@ int TestIllegalSysbrk() {
 
   void* current_break = sysbrk(NULL);
   void* break_addr = sysbrk(kIllegalBreakAddress);
+  /* sysbrk does not touch errno, only the sbrk wrapper would */
+  EXPECT(0 == errno);
   EXPECT(NULL != break_addr);
-  EXPECT(errno == EINVAL);
   EXPECT(current_break == break_addr);
   END_TEST();
 }
@@ -145,10 +146,15 @@ int TestIllegalSbrk() {
   errno = 0;
 
   void* current_break = sbrk(0);
-  void* break_addr = sbrk(reinterpret_cast<ptrdiff_t>(kIllegalBreakAddress));
-  EXPECT(NULL != break_addr);
+  /*
+   * sbrk(reinterpret_cast<ptrdiff_t>(kIllegalBreakAddress))
+   * would just decrement by 1 the break!
+   */
+  void* break_addr = sbrk((char *) kIllegalBreakAddress
+                          - (char *) current_break);
+  EXPECT((void *) (-1) == break_addr);
   EXPECT(errno == ENOMEM);
-  EXPECT(current_break == break_addr);
+  EXPECT(current_break != break_addr);
   END_TEST();
 }
 }  // namespace
@@ -160,9 +166,7 @@ int main() {
   fail_count += TestCurrentBreakAddr();
   fail_count += TestSysbrk();
   fail_count += TestSbrk();
-  // TODO(bsy): uncomment the following two lines when bug 839 is fixed.  See
-  // http://code.google.com/p/nativeclient/issues/detail?id=839
-  // fail_count += TestIllegalSysbrk();
-  // fail_count += TestIllegalSbrk();
+  fail_count += TestIllegalSysbrk();
+  fail_count += TestIllegalSbrk();
   return fail_count;
 }
