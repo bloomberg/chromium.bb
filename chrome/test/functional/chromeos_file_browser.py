@@ -71,7 +71,7 @@ class ChromeosFileBrowserTest(pyauto.PyUITest):
 
   def testOpenMediaFiles(self):
     """Test we can open media files from the file browser dialog."""
-    media_files = ['bear.mp4', 'bear.ogv', 'bear.wav', 'bear.webm']
+    media_files = ['bear.mp4', 'bear.ogv', 'bear_pcm.wav', 'bear.webm']
     private_media_files = ['emerge.m4a', 'sample.mp3', 'sample.m4v',
                            'sample.ogg']
     # TODO: .avi, .wmv are not yet (fully) supported on ChromeOS.
