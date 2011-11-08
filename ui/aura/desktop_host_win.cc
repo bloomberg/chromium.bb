@@ -182,13 +182,27 @@ gfx::Size DesktopHostWin::GetSize() const {
 }
 
 void DesktopHostWin::SetSize(const gfx::Size& size) {
+  if (fullscreen_) {
+    saved_window_rect_.right = saved_window_rect_.left + size.width();
+    saved_window_rect_.bottom = saved_window_rect_.top + size.height();
+    return;
+  }
+  RECT window_rect;
+  window_rect.left = 0;
+  window_rect.top = 0;
+  window_rect.right = size.width();
+  window_rect.bottom = size.height();
+  AdjustWindowRectEx(&window_rect,
+                     GetWindowLong(hwnd(), GWL_STYLE),
+                     FALSE,
+                     GetWindowLong(hwnd(), GWL_EXSTYLE));
   SetWindowPos(
       hwnd(),
       NULL,
       0,
       0,
-      size.width(),
-      size.height(),
+      window_rect.right - window_rect.left,
+      window_rect.bottom - window_rect.top,
       SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_NOREPOSITION);
 }
 

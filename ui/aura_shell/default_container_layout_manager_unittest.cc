@@ -105,7 +105,6 @@ ui::WindowShowState GetShowState(aura::Window* window) {
 
 }  // namespace
 
-#if !defined(OS_WIN)
 TEST_F(DefaultContainerLayoutManagerTest, SetBounds) {
   // Layout Manager moves the window to (0,0) to fit to draggable area.
   scoped_ptr<aura::Window> child(
@@ -127,9 +126,7 @@ TEST_F(DefaultContainerLayoutManagerTest, SetBounds) {
   child->SetBounds(gfx::Rect(0, -500, 900, 500));
   EXPECT_EQ("0,0 500x400", child->bounds().ToString());
 }
-#endif
 
-#if !defined(OS_WIN)
 TEST_F(DefaultContainerLayoutManagerTest, DragWindow) {
   scoped_ptr<aura::Window> child(
       CreateTestWindow(gfx::Rect(0, -1000, 50, 50), container()));
@@ -145,7 +142,6 @@ TEST_F(DefaultContainerLayoutManagerTest, DragWindow) {
   default_container_layout_manager()->EndMove(child.get(), NULL);
   EXPECT_EQ(original_bounds.ToString(), child->GetTargetBounds().ToString());
 }
-#endif
 
 TEST_F(DefaultContainerLayoutManagerTest, Popup) {
   scoped_ptr<aura::Window> popup(
