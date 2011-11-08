@@ -554,6 +554,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
                                  &default_search_provider,
                                  default_from_prefs.get());
 
+  PatchMissingSyncGUIDs(&template_urls);
+
   if (is_default_search_managed_) {
     SetTemplateURLs(template_urls);
 
@@ -1740,5 +1742,20 @@ void TemplateURLService::MergeSyncAndLocalURLDuplicates(
     ResetTemplateURLGUID(local_turl, sync_turl->sync_guid());
     SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
     change_list->push_back(SyncChange(SyncChange::ACTION_UPDATE, sync_data));
+  }
+}
+
+void TemplateURLService::PatchMissingSyncGUIDs(
+    std::vector<TemplateURL*>* template_urls) {
+  DCHECK(template_urls);
+  for (std::vector<TemplateURL*>::iterator i = template_urls->begin();
+       i != template_urls->end(); ++i) {
+    TemplateURL* template_url = *i;
+    DCHECK(template_url);
+    if (template_url->sync_guid().empty()) {
+      template_url->set_sync_guid(guid::GenerateGUID());
+      if (service_.get())
+        service_->UpdateKeyword(*template_url);
+    }
   }
 }

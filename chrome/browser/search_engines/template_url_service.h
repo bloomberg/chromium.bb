@@ -496,6 +496,11 @@ class TemplateURLService : public WebDataServiceConsumer,
                                       TemplateURL* local_url,
                                       SyncChangeList* change_list);
 
+  // Goes through a vector of TemplateURLs and ensure that both the in-memory
+  // and database copies have valid sync_guids. This is to fix crbug.com/102038,
+  // where old entries were being pushed to Sync without a sync_guid.
+  void PatchMissingSyncGUIDs(std::vector<TemplateURL*>* template_urls);
+
   content::NotificationRegistrar registrar_;
 
   // Mapping from keyword to the TemplateURL.

@@ -1248,3 +1248,31 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_TRUE(model()->GetDefaultSearchProvider() == NULL);
 }
+
+// Test that if we load a TemplateURL with an empty GUID, the load process
+// assigns it a newly generated GUID.
+TEST_F(TemplateURLServiceTest, PatchEmptySyncGUID) {
+  // Add a new TemplateURL.
+  VerifyLoad();
+  const size_t initial_count = model()->GetTemplateURLs().size();
+
+  TemplateURL* t_url = new TemplateURL();
+  t_url->SetURL("http://www.google.com/foo/bar", 0, 0);
+  t_url->set_keyword(ASCIIToUTF16("keyword"));
+  t_url->set_short_name(ASCIIToUTF16("google"));
+  t_url->set_sync_guid("");  // force an empty GUID
+  model()->Add(t_url);
+
+  VerifyObserverCount(1);
+  BlockTillServiceProcessesRequests();
+  ASSERT_EQ(1 + initial_count, model()->GetTemplateURLs().size());
+
+  // Reload the model to verify it was actually saved to the database and
+  // assigned a new GUID when brought back.
+  ResetModel(true);
+  ASSERT_EQ(1 + initial_count, model()->GetTemplateURLs().size());
+  const TemplateURL* loaded_url =
+      model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword"));
+  ASSERT_TRUE(loaded_url != NULL);
+  ASSERT_FALSE(loaded_url->sync_guid().empty());
+}
