@@ -148,11 +148,6 @@ IPC_STRUCT_TRAITS_BEGIN(ContentSettingPatternSource)
   IPC_STRUCT_TRAITS_MEMBER(incognito)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(RendererContentSettingRules)
-  IPC_STRUCT_TRAITS_MEMBER(image_rules)
-  IPC_STRUCT_TRAITS_MEMBER(script_rules)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(ThumbnailScore)
   IPC_STRUCT_TRAITS_MEMBER(boring_score)
   IPC_STRUCT_TRAITS_MEMBER(good_clipping)
@@ -250,9 +245,9 @@ IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetContentSettingsForCurrentURL,
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetDefaultContentSettings,
                      ContentSettings /* content_settings */)
 
-// Set the content setting rules stored by the renderer.
-IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetContentSettingRules,
-                     RendererContentSettingRules /* rules */)
+// Set the content settings for images.
+IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetImageSettingRules,
+                     ContentSettingsForOneType /* rules */)
 
 // Tells the render view to load all blocked plugins.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_LoadBlockedPlugins)

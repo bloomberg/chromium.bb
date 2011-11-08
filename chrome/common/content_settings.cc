@@ -33,7 +33,3 @@ ContentSettingPatternSource::ContentSettingPatternSource(
       incognito(incognito) {}
 
 ContentSettingPatternSource::ContentSettingPatternSource() {}
-
-RendererContentSettingRules::RendererContentSettingRules() {}
-
-RendererContentSettingRules::~RendererContentSettingRules() {}

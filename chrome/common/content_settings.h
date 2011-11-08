@@ -51,11 +51,4 @@ struct ContentSettingPatternSource {
 
 typedef std::vector<ContentSettingPatternSource> ContentSettingsForOneType;
 
-struct RendererContentSettingRules {
-  RendererContentSettingRules();
-  ~RendererContentSettingRules();
-  ContentSettingsForOneType image_rules;
-  ContentSettingsForOneType script_rules;
-};
-
 #endif  // CHROME_COMMON_CONTENT_SETTINGS_H_

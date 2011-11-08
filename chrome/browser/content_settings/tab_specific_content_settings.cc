@@ -16,7 +16,6 @@
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
-#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -491,9 +490,9 @@ void TabSpecificContentSettings::Observe(
         map->GetDefaultContentSettings()));
     Send(new ChromeViewMsg_SetContentSettingsForCurrentURL(
         entry_url, map->GetContentSettings(entry_url)));
-    RendererContentSettingRules rules;
-    GetRendererContentSettingRules(map, &rules);
-    Send(new ChromeViewMsg_SetContentSettingRules(rules));
+    ContentSettingsForOneType settings;
+    map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES, "", &settings);
+    Send(new ChromeViewMsg_SetImageSettingRules(settings));
   }
 }
 
