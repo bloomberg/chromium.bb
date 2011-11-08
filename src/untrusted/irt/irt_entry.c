@@ -13,8 +13,7 @@
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_startup.h"
 
-void __libc_init_array(void) __attribute__((weak));
-void _init(void) __attribute__((weak));
+void __libc_init_array(void);
 
 void __pthread_initialize(void);
 
@@ -40,10 +39,7 @@ void _start(uint32_t *info) {
 
   __pthread_initialize();
 
-  if (&__libc_init_array)
-    __libc_init_array();
-  else
-    _init();
+  __libc_init_array();
 
   Elf32_auxv_t *entry = NULL;
   for (Elf32_auxv_t *av = auxv; av->a_type != AT_NULL; ++av) {
