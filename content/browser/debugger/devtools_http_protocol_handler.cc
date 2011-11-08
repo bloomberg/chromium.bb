@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
@@ -92,16 +93,16 @@ class TabContentsIDHelper : public TabContentsObserver {
  public:
 
   static int GetID(TabContents* tab) {
-    TabContentsToIdMap::iterator it = tabcontents_to_id_.find(tab);
-    if (it != tabcontents_to_id_.end())
+    TabContentsToIdMap::iterator it = tabcontents_to_id_.Get().find(tab);
+    if (it != tabcontents_to_id_.Get().end())
       return it->second;
     TabContentsIDHelper* wrapper = new TabContentsIDHelper(tab);
     return wrapper->id_;
   }
 
   static TabContents* GetTabContents(int id) {
-    IdToTabContentsMap::iterator it = id_to_tabcontents_.find(id);
-    if (it != id_to_tabcontents_.end())
+    IdToTabContentsMap::iterator it = id_to_tabcontents_.Get().find(id);
+    if (it != id_to_tabcontents_.Get().end())
       return it->second;
     return NULL;
   }
@@ -110,27 +111,37 @@ class TabContentsIDHelper : public TabContentsObserver {
   explicit TabContentsIDHelper(TabContents* tab)
       : TabContentsObserver(tab),
         id_(next_id++) {
-    id_to_tabcontents_[id_] = tab;
-    tabcontents_to_id_[tab] = id_;
+    id_to_tabcontents_.Get()[id_] = tab;
+    tabcontents_to_id_.Get()[tab] = id_;
   }
 
   virtual ~TabContentsIDHelper() {}
 
   virtual void TabContentsDestroyed(TabContents* tab) {
-    id_to_tabcontents_.erase(id_);
-    tabcontents_to_id_.erase(tab);
+    id_to_tabcontents_.Get().erase(id_);
+    tabcontents_to_id_.Get().erase(tab);
     delete this;
   }
 
   int id_;
   typedef std::map<int, TabContents*> IdToTabContentsMap;
-  static IdToTabContentsMap id_to_tabcontents_;
+  static base::LazyInstance<IdToTabContentsMap,
+                            base::LeakyLazyInstanceTraits<IdToTabContentsMap> >
+      id_to_tabcontents_;
   typedef std::map<TabContents*, int> TabContentsToIdMap;
-  static TabContentsToIdMap tabcontents_to_id_;
+  static base::LazyInstance<TabContentsToIdMap,
+                            base::LeakyLazyInstanceTraits<TabContentsToIdMap> >
+      tabcontents_to_id_;
 };
 
-TabContentsIDHelper::IdToTabContentsMap TabContentsIDHelper::id_to_tabcontents_;
-TabContentsIDHelper::TabContentsToIdMap TabContentsIDHelper::tabcontents_to_id_;
+base::LazyInstance<
+    TabContentsIDHelper::IdToTabContentsMap,
+    base::LeakyLazyInstanceTraits<TabContentsIDHelper::IdToTabContentsMap> >
+        TabContentsIDHelper::id_to_tabcontents_(base::LINKER_INITIALIZED);
+base::LazyInstance<
+    TabContentsIDHelper::TabContentsToIdMap,
+    base::LeakyLazyInstanceTraits<TabContentsIDHelper::TabContentsToIdMap> >
+        TabContentsIDHelper::tabcontents_to_id_(base::LINKER_INITIALIZED);
 
 }  // namespace
 

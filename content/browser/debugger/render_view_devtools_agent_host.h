@@ -42,9 +42,6 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
   RenderViewHost* render_view_host_;
 
-  typedef std::map<RenderViewHost*, RenderViewDevToolsAgentHost*> Instances;
-  static Instances instances_;
-
   DISALLOW_COPY_AND_ASSIGN(RenderViewDevToolsAgentHost);
 };
 

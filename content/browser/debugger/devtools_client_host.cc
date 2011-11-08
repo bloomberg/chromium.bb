@@ -4,17 +4,23 @@
 
 #include <algorithm>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
 
-DevToolsClientHost::DevToolsClientHostList DevToolsClientHost::instances_;
+typedef std::vector<DevToolsClientHost*> DevToolsClientHostList;
+namespace {
+base::LazyInstance<DevToolsClientHostList,
+                   base::LeakyLazyInstanceTraits<DevToolsClientHostList> >
+     g_instances(base::LINKER_INITIALIZED);
+}  // namespace
 
 // static
 DevToolsClientHost* DevToolsClientHost::FindOwnerClientHost(
     RenderViewHost* client_rvh) {
-  for (DevToolsClientHostList::iterator it = instances_.begin();
-       it != instances_.end(); ++it) {
+  for (DevToolsClientHostList::iterator it = g_instances.Get().begin();
+       it != g_instances.Get().end(); ++it) {
     if ((*it)->GetClientRenderViewHost() == client_rvh)
       return *it;
   }
@@ -22,11 +28,11 @@ DevToolsClientHost* DevToolsClientHost::FindOwnerClientHost(
 }
 
 DevToolsClientHost::~DevToolsClientHost() {
-  DevToolsClientHostList::iterator it = std::find(instances_.begin(),
-                                                  instances_.end(),
+  DevToolsClientHostList::iterator it = std::find(g_instances.Get().begin(),
+                                                  g_instances.Get().end(),
                                                   this);
-  DCHECK(it != instances_.end());
-  instances_.erase(it);
+  DCHECK(it != g_instances.Get().end());
+  g_instances.Get().erase(it);
 }
 
 RenderViewHost* DevToolsClientHost::GetClientRenderViewHost() {
@@ -34,7 +40,7 @@ RenderViewHost* DevToolsClientHost::GetClientRenderViewHost() {
 }
 
 DevToolsClientHost::DevToolsClientHost() : close_listener_(NULL) {
-  instances_.push_back(this);
+  g_instances.Get().push_back(this);
 }
 
 void DevToolsClientHost::ForwardToDevToolsAgent(const IPC::Message& message) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,22 +14,31 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_filter.h"
 
-static const char kMockHostname[] = "mock.http";
-static const FilePath::CharType kMockHeaderFileSuffix[] =
+const char kMockHostname[] = "mock.http";
+const FilePath::CharType kMockHeaderFileSuffix[] =
     FILE_PATH_LITERAL(".mock-http-headers");
 
-FilePath URLRequestMockHTTPJob::base_path_;
+namespace {
+
+// This is the file path leading to the root of the directory to use as the
+// root of the http server. This returns a reference that can be assigned to.
+FilePath& BasePath() {
+  CR_DEFINE_STATIC_LOCAL(FilePath, base_path, ());
+  return base_path;
+}
+
+}  // namespace
 
 // static
 net::URLRequestJob* URLRequestMockHTTPJob::Factory(net::URLRequest* request,
                                                    const std::string& scheme) {
   return new URLRequestMockHTTPJob(request,
-                                   GetOnDiskPath(base_path_, request, scheme));
+                                   GetOnDiskPath(BasePath(), request, scheme));
 }
 
 // static
 void URLRequestMockHTTPJob::AddUrlHandler(const FilePath& base_path) {
-  base_path_ = base_path;
+  BasePath() = base_path;
 
   // Add kMockHostname to net::URLRequestFilter.
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
@@ -37,7 +46,7 @@ void URLRequestMockHTTPJob::AddUrlHandler(const FilePath& base_path) {
                              URLRequestMockHTTPJob::Factory);
 }
 
-/* static */
+// static
 GURL URLRequestMockHTTPJob::GetMockUrl(const FilePath& path) {
   std::string url = "http://";
   url.append(kMockHostname);
@@ -48,7 +57,7 @@ GURL URLRequestMockHTTPJob::GetMockUrl(const FilePath& path) {
   return GURL(url);
 }
 
-/* static */
+// static
 GURL URLRequestMockHTTPJob::GetMockViewSourceUrl(const FilePath& path) {
   std::string url = chrome::kViewSourceScheme;
   url.append(":");
@@ -56,7 +65,7 @@ GURL URLRequestMockHTTPJob::GetMockViewSourceUrl(const FilePath& path) {
   return GURL(url);
 }
 
-/* static */
+// static
 FilePath URLRequestMockHTTPJob::GetOnDiskPath(const FilePath& base_path,
                                               net::URLRequest* request,
                                               const std::string& scheme) {

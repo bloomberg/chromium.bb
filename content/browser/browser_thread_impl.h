@@ -37,16 +37,6 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread {
       const base::Closure& task,
       int64 delay_ms,
       bool nestable);
-
-  // This lock protects |browser_threads_|.  Do not read or modify that array
-  // without holding this lock.  Do not block while holding this lock.
-  static base::Lock lock_;
-
-  // An array of the BrowserThread objects.  This array is protected by |lock_|.
-  // The threads are not owned by this array.  Typically, the threads are owned
-  // on the UI thread by the g_browser_process object.  BrowserThreads remove
-  // themselves from this array upon destruction.
-  static BrowserThread* browser_threads_[ID_COUNT];
 };
 
 }  // namespace content

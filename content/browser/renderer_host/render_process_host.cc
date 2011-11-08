@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "content/browser/browser_main.h"
@@ -82,7 +83,9 @@ static bool IsSuitableHost(RenderProcessHost* host,
 }
 
 // the global list of all renderer processes
-IDMap<RenderProcessHost> all_hosts;
+base::LazyInstance<IDMap<RenderProcessHost>,
+                   base::LeakyLazyInstanceTraits<IDMap<RenderProcessHost> > >
+    g_all_hosts(base::LINKER_INITIALIZED);
 
 }  // namespace
 
@@ -104,16 +107,16 @@ RenderProcessHost::RenderProcessHost(content::BrowserContext* browser_context)
       sudden_termination_allowed_(true),
       ignore_input_events_(false) {
   CHECK(!content::ExitedMainMessageLoop());
-  all_hosts.AddWithID(this, id());
-  all_hosts.set_check_on_null_data(true);
+  g_all_hosts.Get().AddWithID(this, id());
+  g_all_hosts.Get().set_check_on_null_data(true);
   // Initialize |child_process_activity_time_| to a reasonable value.
   mark_child_process_activity_time();
 }
 
 RenderProcessHost::~RenderProcessHost() {
   // In unit tests, Release() might not have been called.
-  if (all_hosts.Lookup(id()))
-    all_hosts.Remove(id());
+  if (g_all_hosts.Get().Lookup(id()))
+    g_all_hosts.Get().Remove(id());
 }
 
 bool RenderProcessHost::HasConnection() const {
@@ -166,7 +169,7 @@ void RenderProcessHost::Cleanup() {
 
     // Remove ourself from the list of renderer processes so that we can't be
     // reused in between now and when the Delete task runs.
-    all_hosts.Remove(id());
+    g_all_hosts.Get().Remove(id());
   }
 }
 
@@ -197,18 +200,18 @@ bool RenderProcessHost::FastShutdownForPageCount(size_t count) {
 // static
 RenderProcessHost::iterator RenderProcessHost::AllHostsIterator() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return iterator(&all_hosts);
+  return iterator(g_all_hosts.Pointer());
 }
 
 // static
 RenderProcessHost* RenderProcessHost::FromID(int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return all_hosts.Lookup(render_process_id);
+  return g_all_hosts.Get().Lookup(render_process_id);
 }
 
 // static
 bool RenderProcessHost::ShouldTryToUseExistingProcessHost() {
-  size_t renderer_process_count = all_hosts.size();
+  size_t renderer_process_count = g_all_hosts.Get().size();
 
   // NOTE: Sometimes it's necessary to create more render processes than
   //       GetMaxRendererProcessCount(), for instance when we want to create
@@ -226,7 +229,7 @@ RenderProcessHost* RenderProcessHost::GetExistingProcessHost(
     const GURL& site_url) {
   // First figure out which existing renderers we can use.
   std::vector<RenderProcessHost*> suitable_renderers;
-  suitable_renderers.reserve(all_hosts.size());
+  suitable_renderers.reserve(g_all_hosts.Get().size());
 
   iterator iter(AllHostsIterator());
   while (!iter.IsAtEnd()) {

@@ -17,11 +17,14 @@
 #endif
 
 typedef base::hash_map<std::string, scoped_refptr<NPChannelBase> > ChannelMap;
+static base::LazyInstance<ChannelMap,
+                          base::LeakyLazyInstanceTraits<ChannelMap> >
+     g_channels(base::LINKER_INITIALIZED);
 
-static ChannelMap g_channels_;
-
-static base::LazyInstance<std::stack<scoped_refptr<NPChannelBase> > >
-    lazy_channel_stack_(base::LINKER_INITIALIZED);
+typedef std::stack<scoped_refptr<NPChannelBase> > NPChannelRefStack;
+static base::LazyInstance<NPChannelRefStack,
+                          base::LeakyLazyInstanceTraits<NPChannelRefStack> >
+    g_lazy_channel_stack(base::LINKER_INITIALIZED);
 
 static int next_pipe_id = 0;
 
@@ -31,8 +34,8 @@ NPChannelBase* NPChannelBase::GetChannel(
     bool create_pipe_now, base::WaitableEvent* shutdown_event) {
   scoped_refptr<NPChannelBase> channel;
   std::string channel_key = channel_handle.name;
-  ChannelMap::const_iterator iter = g_channels_.find(channel_key);
-  if (iter == g_channels_.end()) {
+  ChannelMap::const_iterator iter = g_channels.Get().find(channel_key);
+  if (iter == g_channels.Get().end()) {
     channel = factory();
   } else {
     channel = iter->second;
@@ -48,7 +51,7 @@ NPChannelBase* NPChannelBase::GetChannel(
     }
     channel->mode_ = mode;
     if (channel->Init(ipc_message_loop, create_pipe_now, shutdown_event)) {
-      g_channels_[channel_key] = channel;
+      g_channels.Get()[channel_key] = channel;
     } else {
       channel = NULL;
     }
@@ -58,8 +61,8 @@ NPChannelBase* NPChannelBase::GetChannel(
 }
 
 void NPChannelBase::Broadcast(IPC::Message* message) {
-  for (ChannelMap::iterator iter = g_channels_.begin();
-       iter != g_channels_.end();
+  for (ChannelMap::iterator iter = g_channels.Get().begin();
+       iter != g_channels.Get().end();
        ++iter) {
     iter->second->Send(new IPC::Message(*message));
   }
@@ -80,15 +83,15 @@ NPChannelBase::~NPChannelBase() {
 }
 
 NPChannelBase* NPChannelBase::GetCurrentChannel() {
-  return lazy_channel_stack_.Pointer()->top();
+  return g_lazy_channel_stack.Pointer()->top();
 }
 
 void NPChannelBase::CleanupChannels() {
   // Make a copy of the references as we can't iterate the map since items will
   // be removed from it as we clean them up.
   std::vector<scoped_refptr<NPChannelBase> > channels;
-  for (ChannelMap::const_iterator iter = g_channels_.begin();
-       iter != g_channels_.end();
+  for (ChannelMap::const_iterator iter = g_channels.Get().begin();
+       iter != g_channels.Get().end();
        ++iter) {
     channels.push_back(iter->second);
   }
@@ -98,7 +101,7 @@ void NPChannelBase::CleanupChannels() {
 
   // This will clean up channels added to the map for which subsequent
   // AddRoute wasn't called
-  g_channels_.clear();
+  g_channels.Get().clear();
 }
 
 NPObjectBase* NPChannelBase::GetNPObjectListenerForRoute(int route_id) {
@@ -141,13 +144,13 @@ bool NPChannelBase::Send(IPC::Message* message) {
 }
 
 int NPChannelBase::Count() {
-  return static_cast<int>(g_channels_.size());
+  return static_cast<int>(g_channels.Get().size());
 }
 
 bool NPChannelBase::OnMessageReceived(const IPC::Message& message) {
   // This call might cause us to be deleted, so keep an extra reference to
   // ourself so that we can send the reply and decrement back in_dispatch_.
-  lazy_channel_stack_.Pointer()->push(
+  g_lazy_channel_stack.Pointer()->push(
       scoped_refptr<NPChannelBase>(this));
 
   bool handled;
@@ -168,7 +171,7 @@ bool NPChannelBase::OnMessageReceived(const IPC::Message& message) {
   if (message.should_unblock())
     in_unblock_dispatch_--;
 
-  lazy_channel_stack_.Pointer()->pop();
+  g_lazy_channel_stack.Pointer()->pop();
   return handled;
 }
 
@@ -222,10 +225,10 @@ void NPChannelBase::RemoveRoute(int route_id) {
       }
     }
 
-    for (ChannelMap::iterator iter = g_channels_.begin();
-         iter != g_channels_.end(); ++iter) {
+    for (ChannelMap::iterator iter = g_channels.Get().begin();
+         iter != g_channels.Get().end(); ++iter) {
       if (iter->second == this) {
-        g_channels_.erase(iter);
+        g_channels.Get().erase(iter);
         return;
       }
     }

@@ -71,8 +71,6 @@ class CONTENT_EXPORT DevToolsClientHost {
 
  private:
   CloseListener* close_listener_;
-  typedef std::vector<DevToolsClientHost*> DevToolsClientHostList;
-  static DevToolsClientHostList instances_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsClientHost);
 };
 

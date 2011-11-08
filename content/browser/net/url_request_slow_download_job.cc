@@ -28,8 +28,11 @@ const char URLRequestSlowDownloadJob::kFinishDownloadUrl[] =
 const int URLRequestSlowDownloadJob::kFirstDownloadSize = 1024 * 35;
 const int URLRequestSlowDownloadJob::kSecondDownloadSize = 1024 * 10;
 
-std::set<URLRequestSlowDownloadJob*>
-    URLRequestSlowDownloadJob::pending_requests_;
+// static
+base::LazyInstance<
+    URLRequestSlowDownloadJob::SlowJobsSet,
+    base::LeakyLazyInstanceTraits<URLRequestSlowDownloadJob::SlowJobsSet> >
+        URLRequestSlowDownloadJob::pending_requests_(base::LINKER_INITIALIZED);
 
 void URLRequestSlowDownloadJob::Start() {
   MessageLoop::current()->PostTask(
@@ -56,22 +59,22 @@ net::URLRequestJob* URLRequestSlowDownloadJob::Factory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   URLRequestSlowDownloadJob* job = new URLRequestSlowDownloadJob(request);
   if (request->url().spec() != kFinishDownloadUrl)
-    pending_requests_.insert(job);
+    pending_requests_.Get().insert(job);
   return job;
 }
 
 // static
 size_t URLRequestSlowDownloadJob::NumberOutstandingRequests() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return pending_requests_.size();
+  return pending_requests_.Get().size();
 }
 
 // static
 void URLRequestSlowDownloadJob::FinishPendingRequests() {
   typedef std::set<URLRequestSlowDownloadJob*> JobList;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  for (JobList::iterator it = pending_requests_.begin(); it !=
-       pending_requests_.end(); ++it) {
+  for (JobList::iterator it = pending_requests_.Get().begin(); it !=
+       pending_requests_.Get().end(); ++it) {
     (*it)->set_should_finish_download();
   }
 }
@@ -158,7 +161,7 @@ void URLRequestSlowDownloadJob::GetResponseInfo(net::HttpResponseInfo* info) {
 
 URLRequestSlowDownloadJob::~URLRequestSlowDownloadJob() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  pending_requests_.erase(this);
+  pending_requests_.Get().erase(this);
 }
 
 // Private const version.

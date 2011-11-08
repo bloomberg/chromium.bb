@@ -23,7 +23,8 @@ class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
   // Adds the testing URLs to the net::URLRequestFilter.
   CONTENT_EXPORT static void AddUrlHandler(const FilePath& base_path);
 
-  // Given the path to a file relative to base_path_, construct a mock URL.
+  // Given the path to a file relative to the path passed to AddUrlHandler(),
+  // construct a mock URL.
   static GURL GetMockUrl(const FilePath& path);
 
   virtual void Start();
@@ -34,10 +35,6 @@ class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
   void RealStart();
 
   base::OneShotTimer<URLRequestSlowHTTPJob> delay_timer_;
-
-  // This is the file path leading to the root of the directory to use as the
-  // root of the http server.
-  static FilePath base_path_;
 };
 
 #endif  // CONTENT_BROWSER_NET_URL_REQUEST_SLOW_HTTP_JOB_H_

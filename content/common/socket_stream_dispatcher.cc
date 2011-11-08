@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/id_map.h"
+#include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/task.h"
@@ -56,16 +57,22 @@ class IPCWebSocketStreamHandleBridge
   WebKit::WebSocketStreamHandle* handle_;
   webkit_glue::WebSocketStreamHandleDelegate* delegate_;
 
-  static IDMap<IPCWebSocketStreamHandleBridge> all_bridges;
+  static base::LazyInstance<
+      IDMap<IPCWebSocketStreamHandleBridge>,
+      base::LeakyLazyInstanceTraits<IDMap<IPCWebSocketStreamHandleBridge> > >
+          all_bridges;
 };
 
-IDMap<IPCWebSocketStreamHandleBridge>
-IPCWebSocketStreamHandleBridge::all_bridges;
+// static
+base::LazyInstance<
+    IDMap<IPCWebSocketStreamHandleBridge>,
+    base::LeakyLazyInstanceTraits<IDMap<IPCWebSocketStreamHandleBridge> > >
+        IPCWebSocketStreamHandleBridge::all_bridges(base::LINKER_INITIALIZED);
 
 /* static */
 IPCWebSocketStreamHandleBridge* IPCWebSocketStreamHandleBridge::FromSocketId(
     int id) {
-  return all_bridges.Lookup(id);
+  return all_bridges.Get().Lookup(id);
 }
 
 IPCWebSocketStreamHandleBridge::~IPCWebSocketStreamHandleBridge() {
@@ -127,7 +134,7 @@ void IPCWebSocketStreamHandleBridge::OnReceivedData(
 void IPCWebSocketStreamHandleBridge::OnClosed() {
   DVLOG(1) << "IPCWebSocketStreamHandleBridge::OnClosed";
   if (socket_id_ != content_common::kNoSocketId) {
-    all_bridges.Remove(socket_id_);
+    all_bridges.Get().Remove(socket_id_);
     socket_id_ = content_common::kNoSocketId;
   }
   if (delegate_)
@@ -142,7 +149,7 @@ void IPCWebSocketStreamHandleBridge::DoConnect(const GURL& url) {
   if (delegate_)
     delegate_->WillOpenStream(handle_, url);
 
-  socket_id_ = all_bridges.Add(this);
+  socket_id_ = all_bridges.Get().Add(this);
   DCHECK_NE(socket_id_, content_common::kNoSocketId);
   AddRef();  // Released in OnClosed().
   if (child_thread_->Send(new SocketStreamHostMsg_Connect(url, socket_id_))) {

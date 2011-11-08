@@ -5,6 +5,7 @@
 #include "content/browser/browser_thread_impl.h"
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/thread_restrictions.h"
@@ -29,9 +30,22 @@ static const char* browser_thread_names[content::BrowserThread::ID_COUNT] = {
 
 namespace content {
 
-base::Lock BrowserThreadImpl::lock_;
+namespace {
 
-BrowserThread* BrowserThreadImpl::browser_threads_[ID_COUNT];
+// This lock protects |g_browser_threads|.  Do not read or modify that array
+// without holding this lock.  Do not block while holding this lock.
+base::LazyInstance<base::Lock,
+                   base::LeakyLazyInstanceTraits<base::Lock> >
+    g_lock(base::LINKER_INITIALIZED);
+
+
+// An array of the BrowserThread objects.  This array is protected by |g_lock|.
+// The threads are not owned by this array.  Typically, the threads are owned
+// on the UI thread by the g_browser_process object.  BrowserThreads remove
+// themselves from this array upon destruction.
+BrowserThread* g_browser_threads[BrowserThread::ID_COUNT];
+
+}  // namespace
 
 BrowserThreadImpl::BrowserThreadImpl(BrowserThread::ID identifier)
     : BrowserThread(identifier) {
@@ -66,10 +80,10 @@ bool BrowserThreadImpl::PostTaskHelper(
       current_thread >= identifier;
 
   if (!guaranteed_to_outlive_target_thread)
-    BrowserThreadImpl::lock_.Acquire();
+    g_lock.Get().Acquire();
 
-  MessageLoop* message_loop = BrowserThreadImpl::browser_threads_[identifier] ?
-      BrowserThreadImpl::browser_threads_[identifier]->message_loop() : NULL;
+  MessageLoop* message_loop = g_browser_threads[identifier] ?
+      g_browser_threads[identifier]->message_loop() : NULL;
   if (message_loop) {
     if (nestable) {
       message_loop->PostDelayedTask(from_here, task, delay_ms);
@@ -79,7 +93,7 @@ bool BrowserThreadImpl::PostTaskHelper(
   }
 
   if (!guaranteed_to_outlive_target_thread)
-    BrowserThreadImpl::lock_.Release();
+    g_lock.Get().Release();
 
   if (!message_loop)
     delete task;
@@ -107,10 +121,10 @@ bool BrowserThreadImpl::PostTaskHelper(
       current_thread >= identifier;
 
   if (!guaranteed_to_outlive_target_thread)
-    lock_.Acquire();
+    g_lock.Get().Acquire();
 
-  MessageLoop* message_loop = browser_threads_[identifier] ?
-      browser_threads_[identifier]->message_loop() : NULL;
+  MessageLoop* message_loop = g_browser_threads[identifier] ?
+      g_browser_threads[identifier]->message_loop() : NULL;
   if (message_loop) {
     if (nestable) {
       message_loop->PostDelayedTask(from_here, task, delay_ms);
@@ -120,7 +134,7 @@ bool BrowserThreadImpl::PostTaskHelper(
   }
 
   if (!guaranteed_to_outlive_target_thread)
-    lock_.Release();
+    g_lock.Get().Release();
 
   return !!message_loop;
 }
@@ -216,10 +230,10 @@ BrowserThread::BrowserThread(ID identifier,
 }
 
 void BrowserThread::Initialize() {
-  base::AutoLock lock(BrowserThreadImpl::lock_);
+  base::AutoLock lock(g_lock.Get());
   DCHECK(identifier_ >= 0 && identifier_ < ID_COUNT);
-  DCHECK(BrowserThreadImpl::browser_threads_[identifier_] == NULL);
-  BrowserThreadImpl::browser_threads_[identifier_] = this;
+  DCHECK(g_browser_threads[identifier_] == NULL);
+  g_browser_threads[identifier_] = this;
 }
 
 BrowserThread::~BrowserThread() {
@@ -228,12 +242,12 @@ BrowserThread::~BrowserThread() {
   // correct BrowserThread succeeds.
   Stop();
 
-  base::AutoLock lock(BrowserThreadImpl::lock_);
-  BrowserThreadImpl::browser_threads_[identifier_] = NULL;
+  base::AutoLock lock(g_lock.Get());
+  g_browser_threads[identifier_] = NULL;
 #ifndef NDEBUG
   // Double check that the threads are ordered correctly in the enumeration.
   for (int i = identifier_ + 1; i < ID_COUNT; ++i) {
-    DCHECK(!BrowserThreadImpl::browser_threads_[i]) <<
+    DCHECK(!g_browser_threads[i]) <<
         "Threads must be listed in the reverse order that they die";
   }
 #endif
@@ -241,9 +255,9 @@ BrowserThread::~BrowserThread() {
 
 // static
 bool BrowserThread::IsWellKnownThread(ID identifier) {
-  base::AutoLock lock(BrowserThreadImpl::lock_);
+  base::AutoLock lock(g_lock.Get());
   return (identifier >= 0 && identifier < ID_COUNT &&
-          BrowserThreadImpl::browser_threads_[identifier]);
+          g_browser_threads[identifier]);
 }
 
 // static
@@ -253,19 +267,19 @@ bool BrowserThread::CurrentlyOn(ID identifier) {
   // function.
   // http://crbug.com/63678
   base::ThreadRestrictions::ScopedAllowSingleton allow_singleton;
-  base::AutoLock lock(BrowserThreadImpl::lock_);
+  base::AutoLock lock(g_lock.Get());
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
-  return BrowserThreadImpl::browser_threads_[identifier] &&
-         BrowserThreadImpl::browser_threads_[identifier]->message_loop() ==
+  return g_browser_threads[identifier] &&
+         g_browser_threads[identifier]->message_loop() ==
              MessageLoop::current();
 }
 
 // static
 bool BrowserThread::IsMessageLoopValid(ID identifier) {
-  base::AutoLock lock(BrowserThreadImpl::lock_);
+  base::AutoLock lock(g_lock.Get());
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
-  return BrowserThreadImpl::browser_threads_[identifier] &&
-         BrowserThreadImpl::browser_threads_[identifier]->message_loop();
+  return g_browser_threads[identifier] &&
+         g_browser_threads[identifier]->message_loop();
 }
 
 // static
@@ -360,10 +374,9 @@ bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
   base::ThreadRestrictions::ScopedAllowSingleton allow_singleton;
   MessageLoop* cur_message_loop = MessageLoop::current();
   for (int i = 0; i < ID_COUNT; ++i) {
-    if (BrowserThreadImpl::browser_threads_[i] &&
-        BrowserThreadImpl::browser_threads_[i]->message_loop() ==
-            cur_message_loop) {
-      *identifier = BrowserThreadImpl::browser_threads_[i]->identifier_;
+    if (g_browser_threads[i] &&
+        g_browser_threads[i]->message_loop() == cur_message_loop) {
+      *identifier = g_browser_threads[i]->identifier_;
       return true;
     }
   }

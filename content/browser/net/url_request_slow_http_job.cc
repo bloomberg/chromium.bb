@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,23 +10,32 @@
 
 static const char kMockHostname[] = "mock.slow.http";
 
-FilePath URLRequestSlowHTTPJob::base_path_;
+namespace {
+
+// This is the file path leading to the root of the directory to use as the
+// root of the http server. This returns a reference that can be assigned to.
+FilePath& BasePath() {
+  CR_DEFINE_STATIC_LOCAL(FilePath, base_path, ());
+  return base_path;
+}
+
+}  // namespace
 
 // static
 const int URLRequestSlowHTTPJob::kDelayMs = 1000;
 
 using base::TimeDelta;
 
-/* static */
+// static
 net::URLRequestJob* URLRequestSlowHTTPJob::Factory(net::URLRequest* request,
                                                    const std::string& scheme) {
   return new URLRequestSlowHTTPJob(request,
-                                   GetOnDiskPath(base_path_, request, scheme));
+                                   GetOnDiskPath(BasePath(), request, scheme));
 }
 
-/* static */
+// static
 void URLRequestSlowHTTPJob::AddUrlHandler(const FilePath& base_path) {
-  base_path_ = base_path;
+  BasePath() = base_path;
 
   // Add kMockHostname to net::URLRequestFilter.
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();

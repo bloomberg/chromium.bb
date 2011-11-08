@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/process.h"
 #include "base/string_number_conversions.h"
@@ -51,15 +52,16 @@ class WebKitClientMessageLoopImpl
   MessageLoop* message_loop_;
 };
 
-} //  namespace
+typedef std::map<int, DevToolsAgent*> IdToAgentMap;
+base::LazyInstance<IdToAgentMap, base::LeakyLazyInstanceTraits<IdToAgentMap> >
+    g_agent_for_routing_id(base::LINKER_INITIALIZED);
 
-// static
-std::map<int, DevToolsAgent*> DevToolsAgent::agent_for_routing_id_;
+} //  namespace
 
 DevToolsAgent::DevToolsAgent(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view),
       is_attached_(false) {
-  agent_for_routing_id_[routing_id()] = this;
+  g_agent_for_routing_id.Get()[routing_id()] = this;
 
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   expose_v8_debugger_protocol_ = cmd->HasSwitch(switches::kRemoteShellPort);
@@ -70,7 +72,7 @@ DevToolsAgent::DevToolsAgent(RenderViewImpl* render_view)
 }
 
 DevToolsAgent::~DevToolsAgent() {
-  agent_for_routing_id_.erase(routing_id());
+  g_agent_for_routing_id.Get().erase(routing_id());
 }
 
 // Called on the Renderer thread.
@@ -136,9 +138,8 @@ void DevToolsAgent::clearBrowserCookies() {
 
 // static
 DevToolsAgent* DevToolsAgent::FromHostId(int host_id) {
-  std::map<int, DevToolsAgent*>::iterator it =
-      agent_for_routing_id_.find(host_id);
-  if (it != agent_for_routing_id_.end()) {
+  IdToAgentMap::iterator it = g_agent_for_routing_id.Get().find(host_id);
+  if (it != g_agent_for_routing_id.Get().end()) {
     return it->second;
   }
   return NULL;

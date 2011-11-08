@@ -5,6 +5,7 @@
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
 
 #include "base/basictypes.h"
+#include "base/lazy_instance.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -16,12 +17,18 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
-RenderViewDevToolsAgentHost::Instances RenderViewDevToolsAgentHost::instances_;
+typedef std::map<RenderViewHost*, RenderViewDevToolsAgentHost*> Instances;
+
+namespace {
+base::LazyInstance<Instances,
+                   base::LeakyLazyInstanceTraits<Instances> >
+    g_instances(base::LINKER_INITIALIZED);
+}  // namespace
 
 DevToolsAgentHost* RenderViewDevToolsAgentHost::FindFor(
     RenderViewHost* rvh) {
-  Instances::iterator it = instances_.find(rvh);
-  if (it != instances_.end())
+  Instances::iterator it = g_instances.Get().find(rvh);
+  if (it != g_instances.Get().end())
     return it->second;
   return new RenderViewDevToolsAgentHost(rvh);
 }
@@ -32,8 +39,8 @@ bool RenderViewDevToolsAgentHost::IsDebuggerAttached(
   if (!devtools_manager)
     return false;
   RenderViewHostDelegate* delegate = tab_contents;
-  for (Instances::iterator it = instances_.begin();
-       it != instances_.end(); ++it) {
+  for (Instances::iterator it = g_instances.Get().begin();
+       it != g_instances.Get().end(); ++it) {
     if (it->first->delegate() != delegate)
       continue;
     if (devtools_manager->GetDevToolsClientHostFor(it->second))
@@ -45,7 +52,7 @@ bool RenderViewDevToolsAgentHost::IsDebuggerAttached(
 RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
     : RenderViewHostObserver(rvh),
       render_view_host_(rvh) {
-  instances_[rvh] = this;
+  g_instances.Get()[rvh] = this;
 }
 
 void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
@@ -66,7 +73,7 @@ int RenderViewDevToolsAgentHost::GetRenderProcessId() {
 }
 
 RenderViewDevToolsAgentHost::~RenderViewDevToolsAgentHost() {
-  instances_.erase(render_view_host_);
+  g_instances.Get().erase(render_view_host_);
 }
 
 void RenderViewDevToolsAgentHost::RenderViewHostDestroyed(RenderViewHost* rvh) {

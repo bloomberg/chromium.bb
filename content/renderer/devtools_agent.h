@@ -6,7 +6,6 @@
 #define CONTENT_RENDERER_DEVTOOLS_AGENT_H_
 #pragma once
 
-#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -19,8 +18,6 @@ struct DevToolsMessageData;
 namespace WebKit {
 class WebDevToolsAgent;
 }
-
-typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
 
 // DevToolsAgent belongs to the inspectable RenderView and provides Glue's
 // agents with the communication capabilities. All messages from/to Glue's
@@ -66,8 +63,6 @@ class DevToolsAgent : public content::RenderViewObserver,
   void OnSetApuAgentEnabled(bool enabled);
   void OnNavigate();
   void OnSetupDevToolsClient();
-
-  static std::map<int, DevToolsAgent*> agent_for_routing_id_;
 
   bool is_attached_;
   bool expose_v8_debugger_protocol_;

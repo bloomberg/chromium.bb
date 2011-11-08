@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_AGENT_HOST_H_
 #pragma once
 
-#include <map>
 #include <string>
 
 #include "content/common/content_export.h"
@@ -14,8 +13,6 @@
 namespace IPC {
 class Message;
 }
-
-typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
 
 // Describes interface for managing devtools agents from the browser process.
 class CONTENT_EXPORT DevToolsAgentHost {

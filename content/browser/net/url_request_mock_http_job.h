@@ -29,10 +29,11 @@ class CONTENT_EXPORT URLRequestMockHTTPJob : public net::URLRequestFileJob {
   // Adds the testing URLs to the net::URLRequestFilter.
   static void AddUrlHandler(const FilePath& base_path);
 
-  // Given the path to a file relative to base_path_, construct a mock URL.
+  // Given the path to a file relative to the path passed to AddUrlHandler(),
+  // construct a mock URL.
   static GURL GetMockUrl(const FilePath& path);
 
-  // Given the path to a file relative to base_path_,
+  // Given the path to a file relative to the path passed to AddUrlHandler(),
   // construct a mock URL for view source.
   static GURL GetMockViewSourceUrl(const FilePath& path);
 
@@ -45,10 +46,6 @@ class CONTENT_EXPORT URLRequestMockHTTPJob : public net::URLRequestFileJob {
 
  private:
   void GetResponseInfoConst(net::HttpResponseInfo* info) const;
-
-  // This is the file path leading to the root of the directory to use as the
-  // root of the http server.
-  static FilePath base_path_;
 };
 
 #endif  // CONTENT_BROWSER_NET_URL_REQUEST_MOCK_HTTP_JOB_H_

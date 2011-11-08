@@ -13,6 +13,7 @@
 #include <set>
 #include <string>
 
+#include "base/lazy_instance.h"
 #include "base/task.h"
 #include "content/common/content_export.h"
 #include "net/url_request/url_request_job.h"
@@ -57,7 +58,10 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   // Mark all pending requests to be finished.  We keep track of pending
   // requests in |pending_requests_|.
   static void FinishPendingRequests();
-  static std::set<URLRequestSlowDownloadJob*> pending_requests_;
+  typedef std::set<URLRequestSlowDownloadJob*> SlowJobsSet;
+  static base::LazyInstance<SlowJobsSet,
+                            base::LeakyLazyInstanceTraits<SlowJobsSet> >
+      pending_requests_;
 
   void StartAsync();
 
