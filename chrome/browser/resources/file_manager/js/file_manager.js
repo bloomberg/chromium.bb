@@ -56,6 +56,8 @@ function FileManager(dialogDom, filesystem, rootEntries) {
   this.document_ = dialogDom.ownerDocument;
   this.dialogType_ = this.params_.type || FileManager.DialogType.FULL_PAGE;
 
+  metrics.recordAction('Create.' + this.dialogType_);
+
   this.initDialogs_();
 
   // TODO(dgozman): This will be changed to LocaleInfo.
@@ -2935,8 +2937,11 @@ FileManager.prototype = {
     var self = this;
     var reader;
 
+    metrics.startInterval('ScanDirectory');
+
     function onReadSome(entries) {
       if (entries.length == 0) {
+        metrics.recordTime('ScanDirectory');
         if (opt_callback)
           opt_callback();
         return;
@@ -2987,6 +2992,7 @@ FileManager.prototype = {
     spliceArgs.unshift(0, 0);  // index, deleteCount
     self.dataModel_.splice.apply(self.dataModel_, spliceArgs);
 
+    metrics.recordTime('ScanDirectory');
     if (opt_callback)
       opt_callback();
   };
@@ -3234,6 +3240,8 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.createNewFolder = function(name, opt_callback) {
+    metrics.recordAction('CreateNewFolder');
+
     var self = this;
 
     function onSuccess(dirEntry) {

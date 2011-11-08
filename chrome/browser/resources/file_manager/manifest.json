@@ -16,6 +16,7 @@
     "unlimitedStorage",
     "chrome://extension-icon/",
     "chrome://resources/",
+    "experimental",
     "tabs"
   ],
   "app": {
