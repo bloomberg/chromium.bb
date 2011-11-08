@@ -406,7 +406,7 @@ remoting.ClientSession.prototype.updateDimensions = function() {
 remoting.ClientSession.prototype.stats = function() {
   return {
     'video_bandwidth': this.plugin.videoBandwidth,
-    'video_frame_rate': this.plugin.videoFramerate,
+    'video_frame_rate': this.plugin.videoFrameRate,
     'capture_latency': this.plugin.videoCaptureLatency,
     'encode_latency': this.plugin.videoEncodeLatency,
     'decode_latency': this.plugin.videoDecodeLatency,

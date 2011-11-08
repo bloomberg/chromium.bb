@@ -55,22 +55,20 @@
 //   readonly attribute int desktopHeight;
 //
 //   // Statistics.
-//   // Video Bandwidth in bytes per second.
+//   // Video bandwidth, in bytes per second.
 //   readonly attribute float videoBandwidth;
 //   // Video frames received per second.
 //   readonly attribute float videoFrameRate;
-//   // Latency for capturing in milliseconds.
+//   // Latency for capturing, in milliseconds.
 //   readonly attribute int videoCaptureLatency;
-//   // Latency for video encoding in milliseconds.
+//   // Latency for video decoding, in milliseconds.
 //   readonly attribute int videoDecodeLatency;
-//   // Latency for rendering in milliseconds.
+//   // Latency for video encoding, in milliseconds.
 //   readonly attribute int videoEncodeLatency;
-//   // Latency for video encoding in milliseconds.
-//   readonly attribute int videoFramerate;
-//   // The number of frames received per second.
+//   // Latency for video rendering, in milliseconds.
 //   readonly attribute int videoRenderLatency;
-//   // Latency between an event is sent and a corresponding video packet is
-//   // received.
+//   // Latency of input events, based on delay between sending an input event
+//   // and receiving the first video packet after the event was processed.
 //   readonly attribute int roundTripLatency;
 //
 //   // Methods for establishing a Chromoting connection.
