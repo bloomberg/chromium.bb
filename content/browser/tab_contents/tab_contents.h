@@ -735,6 +735,12 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // The corresponding view.
   scoped_ptr<TabContentsView> view_;
 
+  // A list of observers notified when page state changes. Weak references.
+  // This MUST be listed above render_manager_ since at destruction time the
+  // latter might cause RenderViewHost's destructor to call us and we might use
+  // the observer list then.
+  ObserverList<TabContentsObserver> observers_;
+
   // Helper classes ------------------------------------------------------------
 
   // Manages creation and swapping of render views.
@@ -848,9 +854,6 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // case we don't want saved settings to apply to it and we don't want to
   // remember it.
   bool temporary_zoom_settings_;
-
-  // A list of observers notified when page state changes. Weak references.
-  ObserverList<TabContentsObserver> observers_;
 
   // Content restrictions, used to disable print/copy etc based on content's
   // (full-page plugins for now only) permissions.
