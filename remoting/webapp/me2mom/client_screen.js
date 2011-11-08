@@ -402,6 +402,7 @@ remoting.refreshHostList = function() {
         }
         remoting.refreshHostList();
       });
+    return;
   }
 
   var headers = {
