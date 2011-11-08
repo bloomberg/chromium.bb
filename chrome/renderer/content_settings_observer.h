@@ -34,11 +34,11 @@ class ContentSettingsObserver
   // allowPlugins().
   void SetDefaultContentSettings(const ContentSettings* settings);
 
-  // Sets the content setting rules which back |AllowImage()|, |AllowScript()|,
-  // and |AllowScriptFromSource()|. |content_setting_rules| must outlive this
+  // Sets the image setting rules which back |allowImage()|. The
+  // |ContentSettingsForOneType| object must outlive this
   // |ContentSettingsObserver|.
-  void SetContentSettingRules(
-      const RendererContentSettingRules* content_setting_rules);
+  void SetImageSettingRules(
+      const ContentSettingsForOneType* image_setting_rules);
 
   // Returns the setting for the given type.
   ContentSetting GetContentSetting(ContentSettingsType type);
@@ -68,8 +68,6 @@ class ContentSettingsObserver
                       const WebKit::WebSecurityOrigin& origin);
   bool AllowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
   bool AllowScript(WebKit::WebFrame* frame, bool enabled_per_settings);
-  bool AllowScriptFromSource(WebKit::WebFrame* frame, bool enabled_per_settings,
-                             const WebKit::WebURL& script_url);
   bool AllowStorage(WebKit::WebFrame* frame, bool local);
   void DidNotAllowPlugins(WebKit::WebFrame* frame);
   void DidNotAllowScript(WebKit::WebFrame* frame);
@@ -104,11 +102,10 @@ class ContentSettingsObserver
   // Stores if loading of scripts and plugins is allowed.
   ContentSettings current_content_settings_;
 
-  // A pointer to content setting rules stored by the renderer. Normally, the
-  // |RendererContentSettingRules| object is owned by
-  // |ChromeRenderProcessObserver|. In the tests it is owned by the caller of
-  // |SetContentSettingRules|.
-  const RendererContentSettingRules* content_setting_rules_;
+  // Stores the rules for image content settings. Normally, they are owned by
+  // |ChromeRenderProcessObserver|. In the tests they are owned by the caller of
+  // |SetImageSettingRules|.
+  const ContentSettingsForOneType* image_setting_rules_;
 
   // Stores if images, scripts, and plugins have actually been blocked.
   bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];

@@ -219,8 +219,8 @@ void ChromeContentRendererClient::RenderViewCreated(
   if (chrome_observer_.get()) {
     content_settings->SetDefaultContentSettings(
         chrome_observer_->default_content_settings());
-    content_settings->SetContentSettingRules(
-        chrome_observer_->content_setting_rules());
+    content_settings->SetImageSettingRules(
+        chrome_observer_->image_setting_rules());
   }
   new ExtensionHelper(render_view, extension_dispatcher_.get());
   new PageLoadHistograms(render_view, histogram_snapshots_.get());

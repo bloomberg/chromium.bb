@@ -17,7 +17,6 @@ class Value;
 }
 
 class GURL;
-class HostContentSettingsMap;
 
 namespace content_settings {
 
@@ -85,11 +84,6 @@ ContentSetting GetContentSetting(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     bool include_incognito);
-
-// Populates |rules| with content setting rules for content types that are
-// handled by the renderer.
-void GetRendererContentSettingRules(const HostContentSettingsMap* map,
-                                    RendererContentSettingRules* rules);
 
 }  // namespace content_settings
 

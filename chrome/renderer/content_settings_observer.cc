@@ -59,21 +59,6 @@ GURL GetOriginOrURL(const WebFrame* frame) {
   return GURL(top_origin);
 }
 
-ContentSetting GetContentSettingFromRules(
-    const ContentSettingsForOneType& rules,
-    const GURL& primary_url,
-    const GURL& secondary_url) {
-  ContentSettingsForOneType::const_iterator it;
-  for (it = rules.begin(); it != rules.end(); ++it) {
-    if (it->primary_pattern.Matches(primary_url) &&
-        it->secondary_pattern.Matches(secondary_url)) {
-      return it->setting;
-    }
-  }
-  NOTREACHED();
-  return CONTENT_SETTING_DEFAULT;
-}
-
 }  // namespace
 
 ContentSettingsObserver::ContentSettingsObserver(
@@ -81,7 +66,7 @@ ContentSettingsObserver::ContentSettingsObserver(
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<ContentSettingsObserver>(render_view),
       default_content_settings_(NULL),
-      content_setting_rules_(NULL),
+      image_setting_rules_(NULL),
       plugins_temporarily_allowed_(false) {
   ClearBlockedContentSettings();
 }
@@ -99,9 +84,9 @@ void ContentSettingsObserver::SetDefaultContentSettings(
   default_content_settings_ = settings;
 }
 
-void ContentSettingsObserver::SetContentSettingRules(
-    const RendererContentSettingRules* content_setting_rules) {
-  content_setting_rules_ = content_setting_rules;
+void ContentSettingsObserver::SetImageSettingRules(
+    const ContentSettingsForOneType* image_setting_rules) {
+  image_setting_rules_ = image_setting_rules;
 }
 
 ContentSetting ContentSettingsObserver::GetContentSetting(
@@ -147,10 +132,9 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(
   NavigationState* state = NavigationState::FromDataSource(frame->dataSource());
   if (!state->was_within_same_page()) {
     // Clear "block" flags for the new page. This needs to happen before any of
-    // |AllowScript()|, |AllowScriptFromSource()|, |AllowImage()|, or
-    // |AllowPlugins()| is called for the new page so that these functions can
-    // correctly detect that a piece of content flipped from "not blocked" to
-    // "blocked".
+    // allowScripts(), allowImage(), allowPlugins() is called for the new page
+    // so that these functions can correctly detect that a piece of content
+    // flipped from "not blocked" to "blocked".
     ClearBlockedContentSettings();
     plugins_temporarily_allowed_ = false;
   }
@@ -233,12 +217,19 @@ bool ContentSettingsObserver::AllowImage(WebFrame* frame,
     return true;
 
   bool allow = enabled_per_settings;
-  if (content_setting_rules_ && enabled_per_settings) {
-    const GURL& primary_url = GetOriginOrURL(frame);
-    GURL secondary_url(image_url);
-    allow = GetContentSettingFromRules(
-        content_setting_rules_->image_rules,
-        primary_url, secondary_url) != CONTENT_SETTING_BLOCK;
+  const GURL& primary_url = GetOriginOrURL(frame);
+  GURL secondary_url(image_url);
+  if (image_setting_rules_ &&
+      enabled_per_settings) {
+    ContentSettingsForOneType::const_iterator it;
+    for (it = image_setting_rules_->begin();
+         it != image_setting_rules_->end(); ++it) {
+      if (it->primary_pattern.Matches(primary_url) &&
+          it->secondary_pattern.Matches(secondary_url)) {
+        allow = (it->setting != CONTENT_SETTING_BLOCK);
+        break;
+      }
+    }
   }
 
   if (!allow)
@@ -268,38 +259,15 @@ bool ContentSettingsObserver::AllowPlugins(WebFrame* frame,
 
 bool ContentSettingsObserver::AllowScript(WebFrame* frame,
                                           bool enabled_per_settings) {
-  if (!enabled_per_settings)
-    return false;
+  if (enabled_per_settings &&
+      AllowContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT)) {
+    return true;
+  }
+
   if (IsWhitelistedForContentSettings(frame))
     return true;
 
-  if (content_setting_rules_) {
-    const GURL& primary_url = GetOriginOrURL(frame);
-    GURL secondary_url(frame->document().securityOrigin().toString());
-    return (GetContentSettingFromRules(
-        content_setting_rules_->script_rules,
-        primary_url, secondary_url) != CONTENT_SETTING_BLOCK);
-  }
-  return true;
-}
-
-bool ContentSettingsObserver::AllowScriptFromSource(
-    WebFrame* frame,
-    bool enabled_per_settings,
-    const WebKit::WebURL& script_url) {
-  if (!enabled_per_settings)
-    return false;
-  if (IsWhitelistedForContentSettings(frame))
-    return true;
-
-  if (content_setting_rules_) {
-    const GURL& primary_url = GetOriginOrURL(frame);
-    GURL secondary_url(script_url);
-    return (GetContentSettingFromRules(
-        content_setting_rules_->script_rules,
-        primary_url, secondary_url) != CONTENT_SETTING_BLOCK);
-  }
-  return true;
+  return false;  // Other protocols fall through here.
 }
 
 bool ContentSettingsObserver::AllowStorage(WebFrame* frame, bool local) {
