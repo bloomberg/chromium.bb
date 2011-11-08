@@ -6,8 +6,7 @@
 #define WEBKIT_APPCACHE_APPCACHE_EXPORT_H_
 #pragma once
 
-// TODO(dpranke): Uncomment to enable appcache component build.
-#if 0 // defined(COMPONENT_BUILD)
+#if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
 #if defined(APPCACHE_IMPLEMENTATION)
