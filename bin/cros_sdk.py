@@ -20,7 +20,7 @@ import buildbot.constants as constants
 
 
 DEFAULT_CHROOT_DIR = 'chroot'
-DEFAULT_URL = 'http://commondatastorage.googleapis.com/chromiumos-sdk/'
+DEFAULT_URL = 'https://commondatastorage.googleapis.com/chromiumos-sdk/'
 SRC_ROOT = os.path.realpath(constants.SOURCE_ROOT)
 SDK_DIR = os.path.join(SRC_ROOT, 'sdks')
 OVERLAY_DIR = os.path.join(SRC_ROOT, 'src/third_party/chromiumos-overlay')
