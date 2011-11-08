@@ -378,8 +378,8 @@ WGL_FUNCTIONS = [
 ['BOOL', ['wglShareLists'], 'HGLRC hglrc1, HGLRC hglrc2'],
 ['BOOL', ['wglSwapIntervalEXT'], 'int interval'],
 ['BOOL', ['wglSwapLayerBuffers'], 'HDC hdc, UINT fuPlanes'],
-['const char*', ['wglGetExtensionsStringARB', 'wglGetExtensionsStringEXT'],
-    'HDC hDC'],
+['const char*', ['wglGetExtensionsStringARB'], 'HDC hDC'],
+['const char*', ['wglGetExtensionsStringEXT'], ''],
 ['BOOL', ['wglChoosePixelFormatARB'],
     'HDC dc, const int* int_attrib_list, const float* float_attrib_list, '
     'UINT max_formats, int* formats, UINT* num_formats'],
