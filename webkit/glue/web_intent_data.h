@@ -10,8 +10,6 @@
 namespace webkit_glue {
 
 // Representation of the Web Intent data being initiated or delivered.
-// TODO(gbillock): There's a duplicate name here in the registration pathway we
-// need to resolve.
 struct WebIntentData {
   // The action of the intent.
   string16 action;
