@@ -846,7 +846,7 @@ void RenderViewContextMenu::AppendEditableItems() {
   }
 
   // If word is misspelled, give option for "Add to dictionary"
-  if (!spelling_menu_observer_.get() && !params_.misspelled_word.empty()) {
+  if (!params_.misspelled_word.empty()) {
     if (params_.dictionary_suggestions.empty()) {
       menu_model_.AddItem(IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS,
           l10n_util::GetStringUTF16(
