@@ -43,13 +43,31 @@ class InputMethodEngine {
     MENU_ITEM_MODIFIED_SHORTCUT_KEY = 0x0040,
   };
 
+  enum MenuItemStyle {
+    MENU_ITEM_STYLE_NONE,
+    MENU_ITEM_STYLE_CHECK,
+    MENU_ITEM_STYLE_RADIO,
+    MENU_ITEM_STYLE_SEPARATOR,
+  };
+
+  enum MouseButtonEvent {
+    MOUSE_BUTTON_LEFT,
+    MOUSE_BUTTON_RIGHT,
+    MOUSE_BUTTON_MIDDLE,
+  };
+
+  enum SegmentStyle {
+    SEGMENT_STYLE_UNDERLINE,
+    SEGMENT_STYLE_DOUBLE_UNDERLINE,
+  };
+
   struct MenuItem {
     MenuItem();
     virtual ~MenuItem();
 
     std::string id;
     std::string label;
-    int style;
+    MenuItemStyle style;
     bool visible;
     bool enabled;
     bool checked;
@@ -79,7 +97,7 @@ class InputMethodEngine {
   struct SegmentInfo {
     int start;
     int end;
-    int style;
+    SegmentStyle style;
   };
 
   class Observer {
@@ -109,29 +127,11 @@ class InputMethodEngine {
     // Called when the user clicks on an item in the candidate list.
     virtual void OnCandidateClicked(const std::string& engine_id,
                                     int candidate_id,
-                                    int button) = 0;
+                                    MouseButtonEvent button) = 0;
 
     // Called when a menu item for this IME is interacted with.
     virtual void OnMenuItemActivated(const std::string& engine_id,
                                      const std::string& menu_id) = 0;
-  };
-
-  enum {
-    MENU_ITEM_STYLE_NONE,
-    MENU_ITEM_STYLE_CHECK,
-    MENU_ITEM_STYLE_RADIO,
-    MENU_ITEM_STYLE_SEPARATOR,
-  };
-
-  enum {
-    MOUSE_BUTTON_LEFT,
-    MOUSE_BUTTON_RIGHT,
-    MOUSE_BUTTON_MIDDLE,
-  };
-
-  enum {
-    SEGMENT_STYLE_UNDERLINE,
-    SEGMENT_STYLE_DOUBLE_UNDERLINE,
   };
 
   virtual ~InputMethodEngine() {}

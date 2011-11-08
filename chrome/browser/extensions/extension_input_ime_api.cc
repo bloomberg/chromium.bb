@@ -37,7 +37,8 @@ bool ReadMenuItems(
 
     std::string id;
     std::string label;
-    int style = chromeos::InputMethodEngine::MENU_ITEM_STYLE_NONE;
+    chromeos::InputMethodEngine::MenuItemStyle style =
+        chromeos::InputMethodEngine::MENU_ITEM_STYLE_NONE;
     bool visible = true;
     bool enabled = true;
     bool checked = false;
@@ -295,9 +296,10 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
         extension_id_, events::kOnKeyEvent, json_args, profile_, GURL());
   }
 
-  virtual void OnCandidateClicked(const std::string& engine_id,
-                                  int candidate_id,
-                                  int button) {
+  virtual void OnCandidateClicked(
+      const std::string& engine_id,
+      int candidate_id,
+      chromeos::InputMethodEngine::MouseButtonEvent button) {
     if (profile_ == NULL || extension_id_.empty())
       return;
 

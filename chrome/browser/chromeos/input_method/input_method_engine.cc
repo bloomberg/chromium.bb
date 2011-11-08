@@ -505,16 +505,20 @@ void InputMethodEngineImpl::OnCandidateClicked(unsigned int index,
     return;
   }
 
-  int pressed_button = 0;
+  MouseButtonEvent pressed_button;
   if (button & input_method::IBusEngineController::MOUSE_BUTTON_1_MASK) {
     pressed_button = MOUSE_BUTTON_LEFT;
   } else if (button & input_method::IBusEngineController::MOUSE_BUTTON_2_MASK) {
     pressed_button = MOUSE_BUTTON_MIDDLE;
   } else if (button & input_method::IBusEngineController::MOUSE_BUTTON_3_MASK) {
     pressed_button = MOUSE_BUTTON_RIGHT;
+  } else {
+    LOG(ERROR) << "Unknown button: " << button;
+    pressed_button = MOUSE_BUTTON_LEFT;
   }
 
-  observer_->OnCandidateClicked(engine_id_, candidate_ids_.at(index), button);
+  observer_->OnCandidateClicked(
+      engine_id_, candidate_ids_.at(index), pressed_button);
 }
 
 class InputMethodEngineStub : public InputMethodEngine {
