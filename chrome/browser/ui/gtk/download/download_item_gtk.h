@@ -12,6 +12,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "base/timer.h"
 #include "chrome/browser/icon_manager.h"
 #include "content/browser/download/download_item.h"
 #include "content/public/browser/notification_observer.h"

@@ -25,7 +25,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time.h"
-#include "base/timer.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_state_info.h"
@@ -359,10 +358,6 @@ class CONTENT_EXPORT DownloadItem {
   // is completed.
   void Completed();
 
-  // Start/stop sending periodic updates to our observers
-  void StartProgressTimer();
-  void StopProgressTimer();
-
   // Call to transition state; all state transitions should go through this.
   void TransitionTo(DownloadState new_state);
 
@@ -444,9 +439,6 @@ class CONTENT_EXPORT DownloadItem {
 
   // Our persistent store handle
   int64 db_handle_;
-
-  // Timer for regularly updating our observers
-  base::RepeatingTimer<DownloadItem> update_timer_;
 
   // Our owning object
   DownloadManager* download_manager_;

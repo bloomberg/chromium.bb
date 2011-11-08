@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
-#include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
@@ -51,9 +50,6 @@ using content::BrowserThread;
 // pathways.
 
 namespace {
-
-// Update frequency (milliseconds).
-const int kUpdateTimeMs = 1000;
 
 static void DeleteDownloadedFile(const FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -334,22 +330,6 @@ void DownloadItem::UpdateSize(int64 bytes_so_far) {
     total_bytes_ = 0;
 }
 
-void DownloadItem::StartProgressTimer() {
-  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  update_timer_.Start(FROM_HERE,
-                      base::TimeDelta::FromMilliseconds(kUpdateTimeMs), this,
-                      &DownloadItem::UpdateObservers);
-}
-
-void DownloadItem::StopProgressTimer() {
-  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  update_timer_.Stop();
-}
-
 // Updates from the download thread may have been posted while this download
 // was being cancelled in the UI thread, so we'll accept them unless we're
 // complete.
@@ -384,7 +364,6 @@ void DownloadItem::Cancel(bool user_cancel) {
   download_stats::RecordDownloadCount(download_stats::CANCELLED_COUNT);
 
   TransitionTo(CANCELLED);
-  StopProgressTimer();
   if (user_cancel)
     download_manager_->DownloadCancelledInternal(this);
 }
@@ -410,7 +389,6 @@ void DownloadItem::OnAllDataSaved(int64 size) {
   DCHECK(!all_data_saved_);
   all_data_saved_ = true;
   UpdateSize(size);
-  StopProgressTimer();
 }
 
 void DownloadItem::OnDownloadedFileRemoved() {
@@ -481,7 +459,6 @@ void DownloadItem::Interrupted(int64 size, InterruptReason reason) {
 
   last_reason_ = reason;
   UpdateSize(size);
-  StopProgressTimer();
   download_stats::RecordDownloadInterrupted(reason,
                                             received_bytes_,
                                             total_bytes_);
@@ -743,7 +720,6 @@ void DownloadItem::Init(bool active) {
 
   UpdateTarget();
   if (active) {
-    StartProgressTimer();
     download_stats::RecordDownloadCount(download_stats::START_COUNT);
   }
   VLOG(20) << __FUNCTION__ << "() " << DebugString(true);
