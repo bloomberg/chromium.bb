@@ -181,6 +181,8 @@ class ProfileImpl : public Profile,
 
   SpellCheckProfile* GetSpellCheckProfile();
 
+  void UpdateProfileUserNameCache();
+
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 

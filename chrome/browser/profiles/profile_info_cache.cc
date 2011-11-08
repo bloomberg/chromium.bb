@@ -235,7 +235,13 @@ void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
 
 void ProfileInfoCache::SetUserNameOfProfileAtIndex(size_t index,
                                                    const string16& user_name) {
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  string16 old_user_name;
+  const base::DictionaryValue* old_info = GetInfoForProfileAtIndex(index);
+  old_info->GetString(kUserNameKey, &old_user_name);
+  if (old_user_name == user_name)
+    return;
+
+  scoped_ptr<DictionaryValue> info(old_info->DeepCopy());
   info->SetString(kUserNameKey, user_name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
