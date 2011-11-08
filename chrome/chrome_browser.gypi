@@ -2002,6 +2002,7 @@
         'browser/protector/default_search_provider_change.cc',
         'browser/protector/histograms.cc',
         'browser/protector/histograms.h',
+        'browser/protector/internal/keys_internal.cc',
         'browser/protector/keys.cc',
         'browser/protector/keys.h',
         'browser/protector/protector.cc',
@@ -4027,6 +4028,16 @@
         '<(SHARED_INTERMEDIATE_DIR)/autofill_regex_constants.cc',
       ],
       'conditions': [
+        ['buildtype=="Official"', {
+          'sources!': [
+            'browser/protector/keys.cc',
+          ],
+        }],
+        ['buildtype!="Official"', {
+          'sources!': [
+            'browser/protector/internal/keys_internal.cc',
+          ],
+        }],
         ['debug_devtools==1', {
           'defines': [
             'DEBUG_DEVTOOLS=1',

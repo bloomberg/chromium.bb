@@ -385,7 +385,18 @@ bool KeywordTable::MigrateToVersion39AddSyncGUIDColumn() {
       "ALTER TABLE keywords ADD COLUMN sync_guid VARCHAR");
 }
 
-bool KeywordTable::MigrateToVersion40AddDefaultSearchEngineBackup() {
+bool KeywordTable::MigrateToVersion40AddDefaultSearchProviderBackup() {
+  int64 value = 0;
+  if (!meta_table_->GetValue(kDefaultSearchProviderKey, &value)) {
+    // Set default search provider ID and its backup.
+    return SetDefaultSearchProviderID(0);
+  }
+  return SetDefaultSearchProviderBackupID(value);
+}
+
+bool KeywordTable::MigrateToVersion41RewriteDefaultSearchProviderBackup() {
+  // Due to crbug.com/101815 version 40 may contain corrupt or empty
+  // signature. So ignore the signature and simply rewrite it.
   int64 value = 0;
   if (!meta_table_->GetValue(kDefaultSearchProviderKey, &value)) {
     // Set default search provider ID and its backup.

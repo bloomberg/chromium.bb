@@ -103,7 +103,8 @@ class KeywordTable : public WebDatabaseTable {
   bool MigrateToVersion29InstantUrlToSupportsInstant();
   bool MigrateToVersion38AddLastModifiedColumn();
   bool MigrateToVersion39AddSyncGUIDColumn();
-  bool MigrateToVersion40AddDefaultSearchEngineBackup();
+  bool MigrateToVersion40AddDefaultSearchProviderBackup();
+  bool MigrateToVersion41RewriteDefaultSearchProviderBackup();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, DefaultSearchProviderBackup);

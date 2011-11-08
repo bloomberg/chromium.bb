@@ -196,7 +196,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 40;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 41;
 
 void WebDatabaseMigrationTest::LoadDatabase(const FilePath::StringType& file) {
   std::string contents;
@@ -1506,7 +1506,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion38ToCurrent) {
 // Tests that the backup field for the default search provider gets added to
 // the meta table of a version 39 database.
 TEST_F(WebDatabaseMigrationTest, MigrateVersion39ToCurrent) {
-  // This schema is taken from a build prior to the addition of the defaul
+  // This schema is taken from a build prior to the addition of the default
   // search provider backup field to the meta table.
   ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_39.sql")));
 
@@ -1574,6 +1574,84 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion39ToCurrent) {
     EXPECT_TRUE(meta_table.GetValue(
         "Default Search Provider ID Backup Signature",
         &default_search_provider_id_backup_signature));
+  }
+}
+
+// Tests that the backup field for the default search provider is rewritten
+// despite any value in the old version.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion40ToCurrent) {
+  // This schema is taken from a build after the addition of the default
+  // search provider backup field to the meta table. Due to crbug.com/101815
+  // the signature was empty in all build between revisions 106214 and 108111.
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_40.sql")));
+
+  // Verify pre-conditions.  These are expectations for version 40 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 40, 40));
+
+    int64 default_search_provider_id = 0;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID",
+        &default_search_provider_id));
+
+    int64 default_search_provider_id_backup = 0;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID Backup",
+        &default_search_provider_id_backup));
+
+    std::string default_search_provider_id_backup_signature;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID Backup Signature",
+        &default_search_provider_id_backup_signature));
+    EXPECT_TRUE(default_search_provider_id_backup_signature.empty());
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(
+        &connection,
+        kCurrentTestedVersionNumber,
+        kCurrentTestedVersionNumber));
+
+    int64 default_search_provider_id = 0;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID",
+        &default_search_provider_id));
+    EXPECT_NE(0, default_search_provider_id);
+
+    int64 default_search_provider_id_backup = 0;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID Backup",
+        &default_search_provider_id_backup));
+    EXPECT_EQ(default_search_provider_id, default_search_provider_id_backup);
+
+    std::string default_search_provider_id_backup_signature;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID Backup Signature",
+        &default_search_provider_id_backup_signature));
+    EXPECT_FALSE(default_search_provider_id_backup_signature.empty());
   }
 }
 
