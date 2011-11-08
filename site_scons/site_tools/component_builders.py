@@ -266,6 +266,10 @@ def ComponentLibrary(self, lib_name, *args, **kwargs):
     lib_outputs = env.StaticLibrary(lib_name, *args, **kwargs)
   else:
     lib_outputs = env.SharedLibrary(lib_name, *args, **kwargs)
+    # TODO(robertm): arm hack, figure out a better way to do this
+    #                we should not be modifying the env as a side-effect
+    # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2424
+    env.FilterOut(LINKFLAGS=['-static'])
 
   # Add dependencies on includes
   env.Depends(lib_outputs, env['INCLUDES'])

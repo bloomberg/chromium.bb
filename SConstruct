@@ -1043,7 +1043,8 @@ def DualLibrary(env, lib_name, *args, **kwargs):
     # as executables.
     env_shared.FilterOut(CCFLAGS=['-fPIE'])
     env_shared.ComponentLibrary(lib_name + '_shared', shared_objs, **kwargs)
-
+    # for arm trusted we usually build -static
+    env_shared.FilterOut(LINKFLAGS=['-static'])
 
 def DualObject(env, *args, **kwargs):
   """Builder to build both .o and .os in one step.
