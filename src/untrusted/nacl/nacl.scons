@@ -62,7 +62,8 @@ if env.Bit('nacl_glibc'):
 else:
   sources = sources_for_nacl_extensions + sources_for_standard_interfaces
 
-libnacl = env.NaClSdkLibrary('libnacl', sources)
+# Do not make a shared version of libnacl.
+libnacl = env.ComponentLibrary('libnacl', sources)
 
 env.AddLibraryToSdk(libnacl)
 header_install = env.AddHeaderToSdk(['nacl_startup.h', 'nacl_thread.h'])
