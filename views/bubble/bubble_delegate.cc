@@ -79,7 +79,8 @@ BubbleDelegateView::BubbleDelegateView()
       allow_bubble_offscreen_(true),
       arrow_location_(BubbleBorder::TOP_LEFT),
       color_(SK_ColorWHITE),
-      border_widget_(NULL) {
+      border_widget_(NULL),
+      use_focusless_(false) {
   set_background(views::Background::CreateSolidBackground(color_));
   AddAccelerator(Accelerator(ui::VKEY_ESCAPE, 0));
 }
@@ -95,7 +96,8 @@ BubbleDelegateView::BubbleDelegateView(
       arrow_location_(arrow_location),
       color_(color),
       original_opacity_(255),
-      border_widget_(NULL) {
+      border_widget_(NULL),
+      use_focusless_(false) {
   set_background(views::Background::CreateSolidBackground(color_));
   AddAccelerator(Accelerator(ui::VKEY_ESCAPE, 0));
 }
@@ -126,6 +128,10 @@ Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate,
 }
 
 View* BubbleDelegateView::GetInitiallyFocusedView() {
+  return this;
+}
+
+BubbleDelegateView* BubbleDelegateView::AsBubbleDelegate() {
   return this;
 }
 

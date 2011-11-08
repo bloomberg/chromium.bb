@@ -35,6 +35,7 @@
 #include "views/focus/view_storage.h"
 #include "views/ime/input_method_gtk.h"
 #include "views/views_delegate.h"
+#include "views/bubble/bubble_delegate.h"
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"
 #include "views/widget/gtk_views_window.h"
@@ -2006,8 +2007,18 @@ void NativeWidgetGtk::CreateGtkWidget(const Widget::InitParams& params) {
       gtk_widget_size_allocate(widget_, &alloc);
     }
   } else {
+    Widget::InitParams::Type type = params.type;
+    if (type == Widget::InitParams::TYPE_BUBBLE &&
+        params.delegate->AsBubbleDelegate() &&
+        params.delegate->AsBubbleDelegate()->use_focusless()) {
+      // Handles focusless bubble type, which are bubbles that should
+      // act like popups rather than gtk windows. They do not get focus
+      // and are not controlled by window manager placement.
+      type = Widget::InitParams::TYPE_POPUP;
+    }
+
     // Use our own window class to override GtkWindow's move_focus method.
-    widget_ = gtk_views_window_new(WindowTypeToGtkWindowType(params.type));
+    widget_ = gtk_views_window_new(WindowTypeToGtkWindowType(type));
     gtk_widget_set_name(widget_, "views-gtkwidget-window");
     if (transient_to_parent_) {
       gtk_window_set_transient_for(GTK_WINDOW(widget_),

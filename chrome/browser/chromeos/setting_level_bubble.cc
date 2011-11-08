@@ -21,6 +21,11 @@
 #include "views/layout/fill_layout.h"
 #include "views/widget/root_view.h"
 
+#if !defined(USE_AURA)
+#include "chrome/browser/chromeos/wm_ipc.h"
+#include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
+#endif
+
 using base::TimeDelta;
 using base::TimeTicks;
 using std::max;
@@ -139,6 +144,7 @@ SettingLevelBubbleDelegateView::SettingLevelBubbleDelegateView(
       parent_(parent),
       view_(NULL) {
   set_close_on_esc(false);
+  set_use_focusless(true);
 }
 
 SettingLevelBubbleDelegateView::~SettingLevelBubbleDelegateView() {
@@ -235,6 +241,20 @@ SettingLevelBubbleView* SettingLevelBubble::CreateView() {
   views::Widget* widget =
       views::BubbleDelegateView::CreateBubble(delegate, parent);
   widget->AddObserver(this);
+
+#if !defined(USE_AURA)
+  {
+    // TODO(alicet): Move this code to bubble_delegate_view.cc
+    // and add description on what this code does.
+    std::vector<int> params;
+    params.push_back(1);  // show_while_screen_is_locked_
+    chromeos::WmIpc::instance()->SetWindowType(
+        widget->GetNativeView(),
+        chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
+        &params);
+  }
+#endif
+
   // Hold on to the content view.
   return delegate->view();
 }

@@ -40,6 +40,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
   // WidgetDelegate overrides:
   virtual View* GetInitiallyFocusedView() OVERRIDE;
+  virtual BubbleDelegateView* AsBubbleDelegate() OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
 
@@ -57,6 +58,11 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   bool allow_bubble_offscreen() const { return allow_bubble_offscreen_; }
   void set_allow_bubble_offscreen(bool allow_bubble_offscreen) {
     allow_bubble_offscreen_ = allow_bubble_offscreen;
+  }
+
+  bool use_focusless() const { return use_focusless_; }
+  void set_use_focusless(bool use_focusless) {
+    use_focusless_ = use_focusless;
   }
 
   // Get the arrow's anchor point in screen space.
@@ -132,6 +138,10 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
   // The widget hosting the border for this bubble (non-Aura Windows only).
   Widget* border_widget_;
+
+  // Create a popup window for focusless bubbles on Linux/ChromeOS.
+  // These bubbles are not interactive and should not gain focus.
+  bool use_focusless_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleDelegateView);
 };

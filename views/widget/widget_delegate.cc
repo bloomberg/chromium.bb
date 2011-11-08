@@ -5,6 +5,7 @@
 #include "views/widget/widget_delegate.h"
 
 #include "base/utf_string_conversions.h"
+#include "views/bubble/bubble_delegate.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
 #include "views/widget/widget.h"
@@ -29,6 +30,10 @@ void WidgetDelegate::OnWorkAreaChanged() {
 }
 
 View* WidgetDelegate::GetInitiallyFocusedView() {
+  return NULL;
+}
+
+BubbleDelegateView* WidgetDelegate::AsBubbleDelegate() {
   return NULL;
 }
 
