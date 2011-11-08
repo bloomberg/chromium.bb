@@ -44,17 +44,6 @@ class DropTargetWin;
 class RootView;
 class TooltipManagerWin;
 
-namespace internal {
-class NativeWidgetDelegate;
-
-// This is exposed only for testing
-// Adjusts the value of |child_rect| if necessary to ensure that it is
-// completely visible within |parent_rect|.
-VIEWS_EXPORT void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
-                                            gfx::Rect* child_rect,
-                                            int padding);
-}  // namespace internal
-
 // These two messages aren't defined in winuser.h, but they are sent to windows
 // with captions. They appear to paint the window caption and frame.
 // Unfortunately if you override the standard non-client rendering as we do
@@ -231,8 +220,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
-  virtual void SetBoundsConstrained(const gfx::Rect& bounds,
-                                    Widget* other_widget) OVERRIDE;
   virtual void MoveAbove(gfx::NativeView native_view) OVERRIDE;
   virtual void MoveToTop() OVERRIDE;
   virtual void SetShape(gfx::NativeRegion shape) OVERRIDE;

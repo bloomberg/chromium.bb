@@ -115,14 +115,29 @@ void Layer::Remove(Layer* child) {
 }
 
 void Layer::MoveToFront(Layer* child) {
-  std::vector<Layer*>::iterator i =
-      std::find(children_.begin(), children_.end(), child);
-  DCHECK(i != children_.end());
-  children_.erase(i);
-  children_.push_back(child);
+  if (children_.size() <= 1 || child == children_.back())
+    return;  // Already in front.
+  MoveAbove(child, children_.back());
+}
+
+void Layer::MoveAbove(Layer* child, Layer* other) {
+  DCHECK_NE(child, other);
+  DCHECK_EQ(this, child->parent());
+  DCHECK_EQ(this, other->parent());
+  size_t child_i =
+      std::find(children_.begin(), children_.end(), child) - children_.begin();
+  size_t other_i =
+      std::find(children_.begin(), children_.end(), other) - children_.begin();
+  if (child_i > other_i)
+    return;  // Already in front of |other|.
+
+  // Reorder children.
+  children_.erase(children_.begin() + child_i);
+  children_.insert(children_.begin() + other_i, child);
+
 #if defined(USE_WEBKIT_COMPOSITOR)
   child->web_layer_.removeFromParent();
-  web_layer_.addChild(child->web_layer_);
+  web_layer_.insertChild(child->web_layer_, other_i);
 #endif
 }
 

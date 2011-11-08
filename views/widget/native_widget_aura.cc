@@ -335,20 +335,13 @@ void NativeWidgetAura::SetSize(const gfx::Size& size) {
   window_->SetBounds(gfx::Rect(window_->bounds().origin(), size));
 }
 
-void NativeWidgetAura::SetBoundsConstrained(const gfx::Rect& bounds,
-                                            Widget* other_widget) {
-  // http://crbug.com/102580
-  NOTIMPLEMENTED();
-}
-
 void NativeWidgetAura::MoveAbove(gfx::NativeView native_view) {
-  // http://crbug.com/102578
-  NOTIMPLEMENTED();
+  if (window_->parent() && window_->parent() == native_view->parent())
+    window_->parent()->MoveChildAbove(window_, native_view);
 }
 
 void NativeWidgetAura::MoveToTop() {
-  // http://crbug.com/102578
-  NOTIMPLEMENTED();
+  window_->parent()->MoveChildToFront(window_);
 }
 
 void NativeWidgetAura::SetShape(gfx::NativeRegion region) {

@@ -362,12 +362,6 @@ void NativeWidgetViews::SetSize(const gfx::Size& size) {
   view_->SetSize(size);
 }
 
-void NativeWidgetViews::SetBoundsConstrained(const gfx::Rect& bounds,
-                                             Widget* other_widget) {
-  // TODO(beng): honor other_widget.
-  SetBounds(bounds);
-}
-
 void NativeWidgetViews::MoveAbove(gfx::NativeView native_view) {
   NOTIMPLEMENTED();
 }

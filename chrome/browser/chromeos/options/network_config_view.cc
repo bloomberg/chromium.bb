@@ -139,7 +139,7 @@ void NetworkConfigView::ShowAdvancedView() {
   int vert_padding = bounds.height() - size.height();
   bounds.Inset(horiz_padding / 2, vert_padding / 2,
                horiz_padding / 2, vert_padding / 2);
-  GetWidget()->SetBoundsConstrained(bounds, NULL);
+  GetWidget()->SetBoundsConstrained(bounds);
   Layout();
   child_config_view_->InitFocus();
 }

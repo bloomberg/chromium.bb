@@ -1028,7 +1028,7 @@ void NativeWidgetGtk::CenterWindow(const gfx::Size& size) {
   gfx::Rect bounds(center_rect.x() + (center_rect.width() - size.width()) / 2,
                    center_rect.y() + (center_rect.height() - size.height()) / 2,
                    size.width(), size.height());
-  SetBoundsConstrained(bounds, NULL);
+  GetWidget()->SetBoundsConstrained(bounds);
 }
 
 void NativeWidgetGtk::GetWindowPlacement(
@@ -1142,12 +1142,6 @@ void NativeWidgetGtk::SetSize(const gfx::Size& size) {
     if (!size.IsEmpty())
       gtk_window_resize(gtk_window, size.width(), size.height());
   }
-}
-
-void NativeWidgetGtk::SetBoundsConstrained(const gfx::Rect& bounds,
-                                           Widget* other_widget) {
-  // We apparently don't care about |other_widget|.
-  SetBounds(bounds);
 }
 
 void NativeWidgetGtk::MoveAbove(gfx::NativeView native_view) {

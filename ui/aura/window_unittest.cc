@@ -391,6 +391,54 @@ TEST_F(WindowTest, MoveChildToFront) {
   EXPECT_EQ(child2.layer(), parent.layer()->children()[0]);
 }
 
+// Various assertions for MoveToFront.
+TEST_F(WindowTest, MoveToFront) {
+  Window parent(NULL);
+  parent.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  Window child1(NULL);
+  child1.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  Window child2(NULL);
+  child2.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  Window child3(NULL);
+  child3.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+
+  child1.SetParent(&parent);
+  child2.SetParent(&parent);
+
+  // Move 1 in front of 2.
+  parent.MoveChildAbove(&child1, &child2);
+  ASSERT_EQ(2u, parent.children().size());
+  EXPECT_EQ(&child2, parent.children()[0]);
+  EXPECT_EQ(&child1, parent.children()[1]);
+  ASSERT_EQ(2u, parent.layer()->children().size());
+  EXPECT_EQ(child2.layer(), parent.layer()->children()[0]);
+  EXPECT_EQ(child1.layer(), parent.layer()->children()[1]);
+
+  // Add 3, resulting in order [2, 1, 3], then move 2 in front of 1, resulting
+  // in [1, 2, 3].
+  child3.SetParent(&parent);
+  parent.MoveChildAbove(&child2, &child1);
+  ASSERT_EQ(3u, parent.children().size());
+  EXPECT_EQ(&child1, parent.children()[0]);
+  EXPECT_EQ(&child2, parent.children()[1]);
+  EXPECT_EQ(&child3, parent.children()[2]);
+  ASSERT_EQ(3u, parent.layer()->children().size());
+  EXPECT_EQ(child1.layer(), parent.layer()->children()[0]);
+  EXPECT_EQ(child2.layer(), parent.layer()->children()[1]);
+  EXPECT_EQ(child3.layer(), parent.layer()->children()[2]);
+
+  // Move 1 in front of 3, resulting in [2 3 1].
+  parent.MoveChildAbove(&child1, &child3);
+  ASSERT_EQ(3u, parent.children().size());
+  EXPECT_EQ(&child2, parent.children()[0]);
+  EXPECT_EQ(&child3, parent.children()[1]);
+  EXPECT_EQ(&child1, parent.children()[2]);
+  ASSERT_EQ(3u, parent.layer()->children().size());
+  EXPECT_EQ(child2.layer(), parent.layer()->children()[0]);
+  EXPECT_EQ(child3.layer(), parent.layer()->children()[1]);
+  EXPECT_EQ(child1.layer(), parent.layer()->children()[2]);
+}
+
 // Various destruction assertions.
 TEST_F(WindowTest, CaptureTests) {
   aura::Desktop* desktop = aura::Desktop::GetInstance();

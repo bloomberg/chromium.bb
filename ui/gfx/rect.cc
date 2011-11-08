@@ -22,13 +22,11 @@
 namespace {
 
 void AdjustAlongAxis(int dst_origin, int dst_size, int* origin, int* size) {
-  if (*origin < dst_origin) {
+  *size = std::min(dst_size, *size);
+  if (*origin < dst_origin)
     *origin = dst_origin;
-    *size = std::min(dst_size, *size);
-  } else {
-    *size = std::min(dst_size, *size);
+  else
     *origin = std::min(dst_origin + dst_size, *origin + *size) - *size;
-  }
 }
 
 } // namespace

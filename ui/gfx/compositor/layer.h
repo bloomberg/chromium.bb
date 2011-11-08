@@ -74,6 +74,10 @@ class COMPOSITOR_EXPORT Layer :
   // Moves a child to the end of the child list.
   void MoveToFront(Layer* child);
 
+  // Moves |child| to be above |other|. Does nothing if |other| is already above
+  // |child|.
+  void MoveAbove(Layer* child, Layer* other);
+
   // Returns the child Layers.
   const std::vector<Layer*>& children() const { return children_; }
 

@@ -297,12 +297,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void SetBounds(const gfx::Rect& bounds);
   void SetSize(const gfx::Size& size);
 
-  // Like SetBounds(), but ensures the Widget is fully visible within the bounds
-  // of its parent. If the Widget has no parent, it is centered within the
-  // bounds of its screen if it is visible, or |other_widget|'s screen if it is
-  // not.
-  void SetBoundsConstrained(const gfx::Rect& bounds,
-                            Widget* other_widget);
+  // Like SetBounds(), but ensures the Widget is fully visible on screen,
+  // resizing and/or repositioning as necessary. This is only useful for
+  // non-child widgets.
+  void SetBoundsConstrained(const gfx::Rect& bounds);
 
   // Places the widget in front of the specified widget in z-order.
   void MoveAboveWidget(Widget* widget);

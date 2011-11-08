@@ -150,6 +150,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Move the specified child of this Window to the front of the z-order.
   void MoveChildToFront(Window* child);
 
+  // Moves |other| to be above |child|. Does nothing if |child| is already above
+  // |other|.
+  void MoveChildAbove(Window* child, Window* other);
+
   // Returns true if this window can be activated.
   bool CanActivate() const;
 

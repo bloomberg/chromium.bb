@@ -319,12 +319,6 @@ void NativeWidgetWayland::SetSize(const gfx::Size& size) {
   SetBounds(new_alloc);
 }
 
-void NativeWidgetWayland::SetBoundsConstrained(const gfx::Rect& bounds,
-                                               Widget* other_widget) {
-  // TODO(dnicoara) Need to take into account |other_widget|.
-  SetBounds(bounds);
-}
-
 void NativeWidgetWayland::MoveAbove(gfx::NativeView native_view) {
   NOTIMPLEMENTED();
 }

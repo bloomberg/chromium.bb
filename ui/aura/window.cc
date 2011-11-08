@@ -173,24 +173,42 @@ void Window::SetParent(Window* parent) {
 }
 
 void Window::MoveChildToFront(Window* child) {
-  DCHECK_EQ(child->parent(), this);
-  const Windows::iterator i(std::find(children_.begin(), children_.end(),
-                                      child));
-  DCHECK(i != children_.end());
-  children_.erase(i);
+  if (children_.size() <= 1 || child == children_.back())
+    return;  // In the front already.
+  MoveChildAbove(child, children_.back());
+}
 
-  children_.insert(children_.begin() + children_.size(), child);
-  child->layer()->parent()->MoveToFront(child->layer());
-  // Repaint the window as active status may have changed.
-  SchedulePaintInRect(gfx::Rect());
+void Window::MoveChildAbove(Window* child, Window* other) {
+  DCHECK_NE(child, other);
+  DCHECK(child);
+  DCHECK(other);
+  DCHECK_EQ(this, child->parent());
+  DCHECK_EQ(this, other->parent());
+
+  size_t child_i =
+      std::find(children_.begin(), children_.end(), child) - children_.begin();
+  size_t other_i =
+      std::find(children_.begin(), children_.end(), other) - children_.begin();
+  if (child_i > other_i)
+    return;  // Already in front of |other|.
+
+  // Reorder children.
+  children_.erase(children_.begin() + child_i);
+  children_.insert(children_.begin() + other_i, child);
+
+  // Reorder the layer.
+  layer()->MoveAbove(child->layer(), other->layer());
 
   // Move any transient children that share the same parent to be in front of
-  // us.
+  // 'child'.
+  Window* last_transient = child;
   for (Windows::iterator i = child->transient_children_.begin();
        i != child->transient_children_.end(); ++i) {
     Window* transient_child = *i;
-    if (transient_child->parent_ == this)
-      MoveChildToFront(transient_child);
+    if (transient_child->parent_ == this) {
+      MoveChildAbove(transient_child, last_transient);
+      last_transient = transient_child;
+    }
   }
 }
 

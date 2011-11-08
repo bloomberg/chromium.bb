@@ -336,7 +336,7 @@ void HungRendererDialogView::ShowForTabContents(TabContents* contents) {
     gfx::Rect bounds = GetDisplayBounds(contents);
     views::Widget* insert_after =
         views::Widget::GetWidgetForNativeView(frame_hwnd);
-    GetWidget()->SetBoundsConstrained(bounds, insert_after);
+    GetWidget()->SetBoundsConstrained(bounds);
     if (insert_after)
       GetWidget()->MoveAboveWidget(insert_after);
 

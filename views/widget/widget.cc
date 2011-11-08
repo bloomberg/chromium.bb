@@ -11,6 +11,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/screen.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/focus/focus_manager.h"
 #include "views/focus/focus_manager_factory.h"
@@ -429,9 +430,16 @@ void Widget::SetSize(const gfx::Size& size) {
   native_widget_->SetSize(size);
 }
 
-void Widget::SetBoundsConstrained(const gfx::Rect& bounds,
-                                  Widget* other_widget) {
-  native_widget_->SetBoundsConstrained(bounds, other_widget);
+void Widget::SetBoundsConstrained(const gfx::Rect& bounds) {
+  gfx::Rect work_area =
+      gfx::Screen::GetMonitorWorkAreaNearestPoint(bounds.origin());
+  if (work_area.IsEmpty()) {
+    SetBounds(bounds);
+  } else {
+    // Inset the work area slightly.
+    work_area.Inset(10, 10, 10, 10);
+    SetBounds(work_area.AdjustToFit(bounds));
+  }
 }
 
 void Widget::MoveAboveWidget(Widget* widget) {
@@ -1153,7 +1161,7 @@ void Widget::SetInitialBounds(const gfx::Rect& bounds) {
       native_widget_->CenterWindow(non_client_view_->GetPreferredSize());
     } else {
       // Use the supplied initial bounds.
-      SetBoundsConstrained(bounds, NULL);
+      SetBoundsConstrained(bounds);
     }
   }
 }
