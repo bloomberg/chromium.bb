@@ -15,24 +15,7 @@
 
 namespace gfx {
 
-bool GLSurface::InitializeOneOff() {
-  static bool initialized = false;
-  if (initialized)
-    return true;
-
-  static const GLImplementation kAllowedGLImplementations[] = {
-    kGLImplementationDesktopGL,
-    kGLImplementationOSMesaGL
-  };
-
-  if (!InitializeRequestedGLBindings(
-           kAllowedGLImplementations,
-           kAllowedGLImplementations + arraysize(kAllowedGLImplementations),
-           kGLImplementationDesktopGL)) {
-    LOG(ERROR) << "InitializeRequestedGLBindings failed.";
-    return false;
-  }
-
+bool GLSurface::InitializeOneOffInternal() {
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
       if (!GLSurfaceCGL::InitializeOneOff()) {
@@ -43,8 +26,6 @@ bool GLSurface::InitializeOneOff() {
     default:
       break;
   }
-
-  initialized = true;
   return true;
 }
 

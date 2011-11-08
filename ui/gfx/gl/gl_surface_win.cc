@@ -42,25 +42,7 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
 
 // Helper routine that does one-off initialization like determining the
 // pixel format and initializing the GL bindings.
-bool GLSurface::InitializeOneOff() {
-  static bool initialized = false;
-  if (initialized)
-    return true;
-
-  static const GLImplementation kAllowedGLImplementations[] = {
-    kGLImplementationEGLGLES2,
-    kGLImplementationDesktopGL,
-    kGLImplementationOSMesaGL
-  };
-
-  if (!InitializeRequestedGLBindings(
-           kAllowedGLImplementations,
-           kAllowedGLImplementations + arraysize(kAllowedGLImplementations),
-           kGLImplementationEGLGLES2)) {
-    LOG(ERROR) << "InitializeRequestedGLBindings failed.";
-    return false;
-  }
-
+bool GLSurface::InitializeOneOffInternal() {
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
       if (!GLSurfaceWGL::InitializeOneOff()) {
@@ -75,8 +57,6 @@ bool GLSurface::InitializeOneOff() {
       }
       break;
   }
-
-  initialized = true;
   return true;
 }
 

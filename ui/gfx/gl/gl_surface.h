@@ -88,6 +88,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
  protected:
   virtual ~GLSurface();
+  static bool InitializeOneOffInternal();
   static void SetCurrent(GLSurface* surface);
 
  private:

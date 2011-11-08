@@ -30,7 +30,6 @@ typedef std::vector<base::NativeLibrary> LibraryArray;
 GLImplementation g_gl_implementation = kGLImplementationNone;
 LibraryArray* g_libraries;
 GLGetProcAddressProc g_get_proc_address;
-bool g_using_swiftshader;
 
 void CleanupNativeLibraries(void* unused) {
   if (g_libraries) {
@@ -77,56 +76,6 @@ const char* GetGLImplementationName(GLImplementation implementation) {
   return "unknown";
 }
 
-bool InitializeRequestedGLBindings(
-    const GLImplementation* allowed_implementations_begin,
-    const GLImplementation* allowed_implementations_end,
-    GLImplementation default_implementation) {
-  bool fallback_to_osmesa = false;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL)) {
-    std::string requested_implementation_name =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
-    GLImplementation requested_implementation;
-    if (requested_implementation_name == "any") {
-      requested_implementation = default_implementation;
-      fallback_to_osmesa = true;
-    } else if (requested_implementation_name == "swiftshader") {
-      g_using_swiftshader = true;
-      requested_implementation = kGLImplementationEGLGLES2;
-    } else {
-      requested_implementation =
-        GetNamedGLImplementation(requested_implementation_name);
-    }
-    if (std::find(allowed_implementations_begin,
-                  allowed_implementations_end,
-                  requested_implementation) == allowed_implementations_end) {
-      LOG(ERROR) << "Requested GL implementation is not available.";
-      return false;
-    }
-
-    InitializeGLBindings(requested_implementation);
-  } else {
-    InitializeGLBindings(default_implementation);
-  }
-
-  if (GetGLImplementation() == kGLImplementationNone && fallback_to_osmesa)
-    InitializeGLBindings(kGLImplementationOSMesaGL);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableGPUServiceLogging)) {
-    InitializeDebugGLBindings();
-  }
-
-  if (GetGLImplementation() == kGLImplementationNone) {
-    LOG(ERROR) << "Could not initialize GL.";
-    return false;
-  } else {
-    DVLOG(1) << "Using "
-             << GetGLImplementationName(GetGLImplementation())
-             << " GL implementation.";
-    return true;
-  }
-}
-
 void SetGLImplementation(GLImplementation implementation) {
   g_gl_implementation = implementation;
 }
@@ -140,10 +89,6 @@ bool HasDesktopGLFeatures() {
          kGLImplementationOSMesaGL == g_gl_implementation;
 }
 
-bool UsingSwiftShader() {
-  return g_using_swiftshader;
-}
-
 void AddGLNativeLibrary(base::NativeLibrary library) {
   DCHECK(library);
 
@@ -153,6 +98,10 @@ void AddGLNativeLibrary(base::NativeLibrary library) {
   }
 
   g_libraries->push_back(library);
+}
+
+void UnloadGLNativeLibraries() {
+  CleanupNativeLibraries(NULL);
 }
 
 void SetGLGetProcAddressProc(GLGetProcAddressProc proc) {

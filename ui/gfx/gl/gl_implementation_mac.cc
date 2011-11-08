@@ -18,6 +18,11 @@ const char kOpenGLFrameworkPath[] =
     "/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL";
 }  // namespace anonymous
 
+void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
+  impls->push_back(kGLImplementationDesktopGL);
+  impls->push_back(kGLImplementationOSMesaGL);
+}
+
 bool InitializeGLBindings(GLImplementation implementation) {
   // Prevent reinitialization with a different implementation. Once the gpu
   // unit tests have initialized with kGLImplementationMock, we don't want to
@@ -119,6 +124,14 @@ bool InitializeGLExtensionBindings(GLImplementation implementation,
 void InitializeDebugGLBindings() {
   InitializeDebugGLBindingsGL();
   InitializeDebugGLBindingsOSMESA();
+}
+
+void ClearGLBindings() {
+  ClearGLBindingsGL();
+  ClearGLBindingsOSMESA();
+  SetGLImplementation(kGLImplementationNone);
+
+  UnloadGLNativeLibraries();
 }
 
 }  // namespace gfx

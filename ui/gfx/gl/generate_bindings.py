@@ -499,6 +499,7 @@ def GenerateHeader(file, functions, set_name, used_extension_functions):
   file.write('void InitializeGLExtensionBindings%s(GLContext* context);\n' %
       set_name.upper())
   file.write('void InitializeDebugGLBindings%s();\n' % set_name.upper())
+  file.write('void ClearGLBindings%s();\n' % set_name.upper())
 
   # Write typedefs for function pointer types. Always use the GL name for the
   # typedef.
@@ -671,6 +672,24 @@ def GenerateSource(file, functions, set_name, used_extension_functions):
       file.write('  }\n')
   file.write('}\n')
 
+  # Write function to clear all function pointers.
+  file.write('\n')
+  file.write('void ClearGLBindings%s() {\n' % set_name.upper())
+  # Clear the availability of GL extensions.
+  for extension, ext_functions in used_extension_functions:
+    file.write('  g_%s = false;\n' % extension)
+  # Clear GL bindings.
+  file.write('\n')
+  for [return_type, names, arguments] in functions:
+    file.write('  g_%s = NULL;\n' % names[0])
+  # Clear debug GL bindings.
+  file.write('\n')
+  for [return_type, names, arguments] in functions:
+    file.write('  g_debug_%s = NULL;\n' % names[0])
+  file.write('  g_debugBindingsInitialized = false;\n')
+  file.write('}\n')
+
+  file.write('\n')
   file.write('}  // namespace gfx\n')
 
 

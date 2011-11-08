@@ -27,6 +27,9 @@ namespace gfx {
 
 namespace {
 
+typedef std::vector<base::NativeLibrary> LibraryArray;
+LibraryArray* g_d3dx_libraries;
+
 void GL_BINDING_CALL MarshalClearDepthToClearDepthf(GLclampd depth) {
   glClearDepthf(static_cast<GLclampf>(depth));
 }
@@ -34,6 +37,17 @@ void GL_BINDING_CALL MarshalClearDepthToClearDepthf(GLclampd depth) {
 void GL_BINDING_CALL MarshalDepthRangeToDepthRangef(GLclampd z_near,
                                                     GLclampd z_far) {
   glDepthRangef(static_cast<GLclampf>(z_near), static_cast<GLclampf>(z_far));
+}
+
+void UnloadD3DXLibraries(void* unused) {
+  if (g_d3dx_libraries) {
+    for (LibraryArray::iterator it = g_d3dx_libraries->begin();
+         it != g_d3dx_libraries->end(); ++it) {
+      base::UnloadNativeLibrary(*it);
+    }
+    delete g_d3dx_libraries;
+    g_d3dx_libraries = NULL;
+  }
 }
 
 bool LoadD3DXLibrary(const FilePath& module_path,
@@ -47,13 +61,21 @@ bool LoadD3DXLibrary(const FilePath& module_path,
     }
   }
 
-  base::AtExitManager::RegisterTask(
-      base::Bind(base::UnloadNativeLibrary, library));
-
+  if (!g_d3dx_libraries) {
+    g_d3dx_libraries = new LibraryArray;
+    base::AtExitManager::RegisterCallback(UnloadD3DXLibraries, NULL);
+  }
+  g_d3dx_libraries->push_back(library);
   return true;
 }
 
 }  // namespace anonymous
+
+void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
+  impls->push_back(kGLImplementationEGLGLES2);
+  impls->push_back(kGLImplementationDesktopGL);
+  impls->push_back(kGLImplementationOSMesaGL);
+}
 
 bool InitializeGLBindings(GLImplementation implementation) {
   // Prevent reinitialization with a different implementation. Once the gpu
@@ -116,9 +138,10 @@ bool InitializeGLBindings(GLImplementation implementation) {
                                                       D3DX_SDK_VERSION));
 
       FilePath gles_path;
-
-      if (UsingSwiftShader()) {
-        const CommandLine* command_line = CommandLine::ForCurrentProcess();
+      const CommandLine* command_line = CommandLine::ForCurrentProcess();
+      bool using_swift_shader =
+          command_line->GetSwitchValueASCII(switches::kUseGL) == "swiftshader";
+      if (using_swift_shader) {
         if (!command_line->HasSwitch(switches::kSwiftShaderPath))
           return false;
         gles_path =
@@ -148,7 +171,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       }
 
 #if defined(ENABLE_SWIFTSHADER)
-      if (UsingSwiftShader()) {
+      if (using_swift_shader) {
         SetupSoftwareRenderer(gles_library);
       }
 #endif
@@ -249,6 +272,17 @@ void InitializeDebugGLBindings() {
   InitializeDebugGLBindingsGL();
   InitializeDebugGLBindingsOSMESA();
   InitializeDebugGLBindingsWGL();
+}
+
+void ClearGLBindings() {
+  ClearGLBindingsEGL();
+  ClearGLBindingsGL();
+  ClearGLBindingsOSMESA();
+  ClearGLBindingsWGL();
+  SetGLImplementation(kGLImplementationNone);
+
+  UnloadGLNativeLibraries();
+  UnloadD3DXLibraries(NULL);
 }
 
 }  // namespace gfx

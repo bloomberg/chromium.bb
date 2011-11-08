@@ -48,25 +48,7 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceOSMesa);
 };
 
-bool GLSurface::InitializeOneOff() {
-  static bool initialized = false;
-  if (initialized)
-    return true;
-
-  static const GLImplementation kAllowedGLImplementations[] = {
-    kGLImplementationDesktopGL,
-    kGLImplementationEGLGLES2,
-    kGLImplementationOSMesaGL
-  };
-
-  if (!InitializeRequestedGLBindings(
-      kAllowedGLImplementations,
-      kAllowedGLImplementations + arraysize(kAllowedGLImplementations),
-      kGLImplementationDesktopGL)) {
-    LOG(ERROR) << "InitializeRequestedGLBindings failed.";
-    return false;
-  }
-
+bool GLSurface::InitializeOneOffInternal() {
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
       if (!GLSurfaceGLX::InitializeOneOff()) {
@@ -90,7 +72,6 @@ bool GLSurface::InitializeOneOff() {
       break;
   }
 
-  initialized = true;
   return true;
 }
 

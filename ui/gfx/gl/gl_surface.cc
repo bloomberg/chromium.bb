@@ -4,10 +4,15 @@
 
 #include "ui/gfx/gl/gl_surface.h"
 
+#include <algorithm>
+#include <vector>
+
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/threading/thread_local.h"
 #include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 namespace gfx {
 
@@ -17,6 +22,55 @@ base::LazyInstance<
     base::LeakyLazyInstanceTraits<base::ThreadLocalPointer<GLSurface> > >
         current_surface_(base::LINKER_INITIALIZED);
 }  // namespace
+
+// static
+bool GLSurface::InitializeOneOff() {
+  static bool initialized = false;
+  if (initialized)
+    return true;
+
+  std::vector<GLImplementation> allowed_impls;
+  GetAllowedGLImplementations(&allowed_impls);
+  DCHECK(!allowed_impls.empty());
+
+  // The default implementation is always the first one in list.
+  GLImplementation impl = allowed_impls[0];
+  bool fallback_to_osmesa = false;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL)) {
+    std::string requested_implementation_name =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
+    if (requested_implementation_name == "any") {
+      fallback_to_osmesa = true;
+    } else if (requested_implementation_name == "swiftshader") {
+      impl = kGLImplementationEGLGLES2;
+    } else {
+      impl = GetNamedGLImplementation(requested_implementation_name);
+      if (std::find(allowed_impls.begin(),
+                    allowed_impls.end(),
+                    impl) == allowed_impls.end()) {
+        LOG(ERROR) << "Requested GL implementation is not available.";
+        return false;
+      }
+    }
+  }
+
+  initialized = InitializeGLBindings(impl) && InitializeOneOffInternal();
+  if (!initialized && fallback_to_osmesa) {
+    ClearGLBindings();
+    initialized = InitializeGLBindings(kGLImplementationOSMesaGL) &&
+                  InitializeOneOffInternal();
+  }
+
+  if (initialized) {
+    DVLOG(1) << "Using "
+             << GetGLImplementationName(GetGLImplementation())
+             << " GL implementation.";
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableGPUServiceLogging))
+      InitializeDebugGLBindings();
+  }
+  return initialized;
+}
 
 GLSurface::GLSurface() {
 }

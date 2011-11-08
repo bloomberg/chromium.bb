@@ -56,6 +56,12 @@ base::LazyInstance<base::Lock,
 
 }  // namespace anonymous
 
+void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
+  impls->push_back(kGLImplementationDesktopGL);
+  impls->push_back(kGLImplementationEGLGLES2);
+  impls->push_back(kGLImplementationOSMesaGL);
+}
+
 bool InitializeGLBindings(GLImplementation implementation) {
 #if (defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)) || defined(TOUCH_UI)
   base::AutoLock locked(g_lock.Get());
@@ -213,6 +219,18 @@ void InitializeDebugGLBindings() {
   InitializeDebugGLBindingsGLX();
   InitializeDebugGLBindingsOSMESA();
 #endif
+}
+
+void ClearGLBindings() {
+  ClearGLBindingsEGL();
+  ClearGLBindingsGL();
+#if !defined(USE_WAYLAND)
+  ClearGLBindingsGLX();
+  ClearGLBindingsOSMESA();
+#endif
+  SetGLImplementation(kGLImplementationNone);
+
+  UnloadGLNativeLibraries();
 }
 
 }  // namespace gfx
