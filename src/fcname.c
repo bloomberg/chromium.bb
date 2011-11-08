@@ -296,8 +296,6 @@ FcObjectValidType (FcObject object, FcType type)
 
     if (t) {
 	switch (t->type) {
-	case -1:
-	    return FcTrue;
 	case FcTypeDouble:
 	case FcTypeInteger:
 	    if (type == FcTypeDouble || type == FcTypeInteger)
@@ -308,7 +306,7 @@ FcObjectValidType (FcObject object, FcType type)
 		return FcTrue;
 	    break;
 	default:
-	    if (type == t->type)
+	    if (t->type == -1 || type == t->type)
 		return FcTrue;
 	    break;
 	}
