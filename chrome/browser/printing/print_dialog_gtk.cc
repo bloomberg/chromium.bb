@@ -191,6 +191,7 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& job_settings,
     gtk_print_settings_set_n_copies(gtk_settings_, copies);
     gtk_print_settings_set_collate(gtk_settings_, collate);
 
+#if defined(USE_CUPS)
     std::string color_value;
     std::string color_setting_name;
     printing::GetColorModelForMode(color, &color_setting_name, &color_value);
@@ -214,6 +215,7 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& job_settings,
           break;
       }
       gtk_print_settings_set(gtk_settings_, kCUPSDuplex, cups_duplex_mode);
+#endif
     }
   }
   if (!page_setup_)

@@ -11,7 +11,7 @@
 
 namespace printing {
 
-#if defined (USE_CUPS)
+#if defined(USE_CUPS)
 void GetColorModelForMode(
     int color_mode, std::string* color_setting_name, std::string* color_value) {
 #if defined(OS_MACOSX)
@@ -24,7 +24,7 @@ void GetColorModelForMode(
   const char kCUPSColorModel[] = "cups-ColorModel";
   const char kCUPSPrintoutMode[] = "cups-PrintoutMode";
   const char kCUPSProcessColorModel[] = "cups-ProcessColorModel";
-#endif
+#endif  // defined(OS_MACOSX)
 
   color_setting_name->assign(kCUPSColorModel);
   switch (color_mode) {
@@ -96,7 +96,7 @@ void GetColorModelForMode(
       break;
   }
 }
-#endif
+#endif  // defined(USE_CUPS)
 
 bool isColorModelSelected(int model) {
   return (model != GRAY &&

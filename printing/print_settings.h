@@ -20,11 +20,11 @@ namespace printing {
 // Returns true if color model is selected.
 PRINTING_EXPORT bool isColorModelSelected(int model);
 
-#if defined (USE_CUPS)
-  // Get the color model setting name and value for the |color_mode|.
-  PRINTING_EXPORT  void GetColorModelForMode(int color_mode,
-                                             std::string* color_setting_name,
-                                             std::string* color_value);
+#if defined(USE_CUPS)
+// Get the color model setting name and value for the |color_mode|.
+PRINTING_EXPORT void GetColorModelForMode(int color_mode,
+                                          std::string* color_setting_name,
+                                          std::string* color_value);
 #endif
 
 // OS-independent print settings.
