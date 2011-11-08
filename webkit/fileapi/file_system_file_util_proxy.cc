@@ -71,6 +71,27 @@ class MessageLoopRelay
   fileapi::FileSystemFileUtil* file_util_;
 };
 
+class RelayWithStatusCallback : public MessageLoopRelay {
+ public:
+  RelayWithStatusCallback(
+      const fileapi::FileSystemOperationContext& context,
+      const fileapi::FileSystemFileUtilProxy::StatusCallback& callback)
+      : MessageLoopRelay(context),
+        callback_(callback) {
+    // It is OK for callback to be NULL.
+  }
+
+ protected:
+  virtual void RunCallback() {
+    // The caller may not have been interested in the result.
+    if (!callback_.is_null())
+      callback_.Run(error_code());
+  }
+
+ private:
+  fileapi::FileSystemFileUtilProxy::StatusCallback callback_;
+};
+
 class RelayEnsureFileExists : public MessageLoopRelay {
  public:
   RelayEnsureFileExists(
@@ -104,6 +125,35 @@ class RelayEnsureFileExists : public MessageLoopRelay {
   bool created_;
 };
 
+
+class RelayGetLocalPath : public MessageLoopRelay {
+ public:
+  RelayGetLocalPath(
+      const fileapi::FileSystemOperationContext& context,
+      const FilePath& virtual_path,
+      fileapi::FileSystemFileUtilProxy::GetLocalPathCallback* callback)
+      : MessageLoopRelay(context),
+        callback_(callback),
+        virtual_path_(virtual_path) {
+    DCHECK(callback);
+  }
+
+ protected:
+  virtual void RunWork() {
+    set_error_code(file_util()->GetLocalFilePath(
+        context(), virtual_path_, &local_path_));
+  }
+
+  virtual void RunCallback() {
+    callback_->Run(error_code(), local_path_);
+    delete callback_;
+  }
+
+ private:
+  fileapi::FileSystemFileUtilProxy::GetLocalPathCallback* callback_;
+  FilePath virtual_path_;
+  FilePath local_path_;
+};
 
 class RelayGetFileInfo : public MessageLoopRelay {
  public:
@@ -162,6 +212,145 @@ class RelayReadDirectory : public MessageLoopRelay {
   std::vector<base::FileUtilProxy::Entry> entries_;
 };
 
+class RelayCreateDirectory : public RelayWithStatusCallback {
+ public:
+  RelayCreateDirectory(
+      const fileapi::FileSystemOperationContext& context,
+      const FilePath& file_path,
+      bool exclusive,
+      bool recursive,
+      const fileapi::FileSystemFileUtilProxy::StatusCallback& callback)
+      : RelayWithStatusCallback(context, callback),
+        file_path_(file_path),
+        exclusive_(exclusive),
+        recursive_(recursive) {
+  }
+
+ protected:
+  virtual void RunWork() {
+    set_error_code(file_util()->CreateDirectory(
+        context(), file_path_, exclusive_, recursive_));
+  }
+
+ private:
+  FilePath file_path_;
+  bool exclusive_;
+  bool recursive_;
+};
+
+class RelayCopy : public RelayWithStatusCallback {
+ public:
+  RelayCopy(const fileapi::FileSystemOperationContext& context,
+            const FilePath& src_file_path,
+            const FilePath& dest_file_path,
+            const fileapi::FileSystemFileUtilProxy::StatusCallback& callback)
+      : RelayWithStatusCallback(context, callback),
+        src_file_path_(src_file_path),
+        dest_file_path_(dest_file_path) {
+  }
+
+ protected:
+  virtual void RunWork() {
+    set_error_code(file_util()->Copy(
+        context(), src_file_path_, dest_file_path_));
+  }
+
+ private:
+  FilePath src_file_path_;
+  FilePath dest_file_path_;
+};
+
+class RelayMove : public RelayWithStatusCallback {
+ public:
+  RelayMove(const fileapi::FileSystemOperationContext& context,
+            const FilePath& src_file_path,
+            const FilePath& dest_file_path,
+            const fileapi::FileSystemFileUtilProxy::StatusCallback& callback)
+      : RelayWithStatusCallback(context, callback),
+        src_file_path_(src_file_path),
+        dest_file_path_(dest_file_path) {
+  }
+
+ protected:
+  virtual void RunWork() {
+    set_error_code(file_util()->Move(
+        context(), src_file_path_, dest_file_path_));
+  }
+
+ private:
+  FilePath src_file_path_;
+  FilePath dest_file_path_;
+};
+
+class RelayDelete : public RelayWithStatusCallback {
+ public:
+  RelayDelete(const fileapi::FileSystemOperationContext& context,
+              const FilePath& file_path,
+              bool recursive,
+              const fileapi::FileSystemFileUtilProxy::StatusCallback& callback)
+      : RelayWithStatusCallback(context, callback),
+        file_path_(file_path),
+        recursive_(recursive) {
+  }
+
+ protected:
+  virtual void RunWork() {
+    set_error_code(file_util()->Delete(context(), file_path_, recursive_));
+  }
+
+ private:
+  FilePath file_path_;
+  bool recursive_;
+};
+
+class RelayTouchFilePath : public RelayWithStatusCallback {
+ public:
+  RelayTouchFilePath(
+      const fileapi::FileSystemOperationContext& context,
+      const FilePath& file_path,
+      const base::Time& last_access_time,
+      const base::Time& last_modified_time,
+      const fileapi::FileSystemFileUtilProxy::StatusCallback& callback)
+      : RelayWithStatusCallback(context, callback),
+        file_path_(file_path),
+        last_access_time_(last_access_time),
+        last_modified_time_(last_modified_time) {
+  }
+
+ protected:
+  virtual void RunWork() {
+    set_error_code(file_util()->Touch(
+        context(), file_path_, last_access_time_, last_modified_time_));
+  }
+
+ private:
+  FilePath file_path_;
+  base::Time last_access_time_;
+  base::Time last_modified_time_;
+};
+
+class RelayTruncate : public RelayWithStatusCallback {
+ public:
+  RelayTruncate(
+      const fileapi::FileSystemOperationContext& context,
+      const FilePath& file_path,
+      int64 length,
+      const fileapi::FileSystemFileUtilProxy::StatusCallback& callback)
+      : RelayWithStatusCallback(context, callback),
+        file_path_(file_path),
+        length_(length) {
+  }
+
+ protected:
+  virtual void RunWork() {
+    set_error_code(file_util()->Truncate(context(), file_path_, length_));
+  }
+
+ private:
+  FilePath file_path_;
+  int64 length_;
+};
+
 bool Start(const tracked_objects::Location& from_here,
            scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
            scoped_refptr<MessageLoopRelay> relay) {
@@ -183,6 +372,16 @@ bool FileSystemFileUtilProxy::EnsureFileExists(
 }
 
 // static
+bool FileSystemFileUtilProxy::GetLocalPath(
+    const FileSystemOperationContext& context,
+    scoped_refptr<MessageLoopProxy> message_loop_proxy,
+    const FilePath& virtual_path,
+    GetLocalPathCallback* callback) {
+  return Start(FROM_HERE, message_loop_proxy,
+               new RelayGetLocalPath(context, virtual_path, callback));
+}
+
+// static
 bool FileSystemFileUtilProxy::GetFileInfo(
     const FileSystemOperationContext& context,
     scoped_refptr<MessageLoopProxy> message_loop_proxy,
@@ -200,6 +399,77 @@ bool FileSystemFileUtilProxy::ReadDirectory(
     const ReadDirectoryCallback& callback) {
   return Start(FROM_HERE, message_loop_proxy, new RelayReadDirectory(context,
                file_path, callback));
+}
+
+// static
+bool FileSystemFileUtilProxy::CreateDirectory(
+    const FileSystemOperationContext& context,
+    scoped_refptr<MessageLoopProxy> message_loop_proxy,
+    const FilePath& file_path,
+    bool exclusive,
+    bool recursive,
+    const StatusCallback& callback) {
+  return Start(FROM_HERE, message_loop_proxy, new RelayCreateDirectory(
+      context, file_path, exclusive, recursive, callback));
+}
+
+// static
+bool FileSystemFileUtilProxy::Copy(
+    const FileSystemOperationContext& context,
+    scoped_refptr<MessageLoopProxy> message_loop_proxy,
+    const FilePath& src_file_path,
+    const FilePath& dest_file_path,
+    const StatusCallback& callback) {
+  return Start(FROM_HERE, message_loop_proxy,
+               new RelayCopy(context, src_file_path, dest_file_path,
+                   callback));
+}
+
+// static
+bool FileSystemFileUtilProxy::Move(
+    const FileSystemOperationContext& context,
+    scoped_refptr<MessageLoopProxy> message_loop_proxy,
+    const FilePath& src_file_path,
+    const FilePath& dest_file_path,
+    const StatusCallback& callback) {
+  return Start(FROM_HERE, message_loop_proxy,
+               new RelayMove(context, src_file_path, dest_file_path,
+                   callback));
+}
+
+// static
+bool FileSystemFileUtilProxy::Delete(
+    const FileSystemOperationContext& context,
+    scoped_refptr<MessageLoopProxy> message_loop_proxy,
+    const FilePath& file_path,
+    bool recursive,
+    const StatusCallback& callback) {
+  return Start(FROM_HERE, message_loop_proxy,
+               new RelayDelete(context, file_path, recursive, callback));
+}
+
+// static
+bool FileSystemFileUtilProxy::Touch(
+    const FileSystemOperationContext& context,
+    scoped_refptr<MessageLoopProxy> message_loop_proxy,
+    const FilePath& file_path,
+    const base::Time& last_access_time,
+    const base::Time& last_modified_time,
+    const StatusCallback& callback) {
+  return Start(FROM_HERE, message_loop_proxy,
+               new RelayTouchFilePath(context, file_path, last_access_time,
+                                      last_modified_time, callback));
+}
+
+// static
+bool FileSystemFileUtilProxy::Truncate(
+    const FileSystemOperationContext& context,
+    scoped_refptr<MessageLoopProxy> message_loop_proxy,
+    const FilePath& path,
+    int64 length,
+    const StatusCallback& callback) {
+  return Start(FROM_HERE, message_loop_proxy,
+               new RelayTruncate(context, path, length, callback));
 }
 
 }  // namespace fileapi

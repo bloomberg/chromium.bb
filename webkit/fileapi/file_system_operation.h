@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/process.h"
@@ -44,8 +45,8 @@ class FileSystemQuotaUtil;
 // Only one method(CreateFile, CreateDirectory, Copy, Move, DirectoryExists,
 // GetMetadata, ReadDirectory and Remove) may be called during the lifetime of
 // this object and it should be called no more than once.
-// This class is self-destructed, or get deleted via base::Owned() fater the
-// operation finishes and completion callback is called.
+// This class is self-destructed and an instance automatically gets deleted
+// when its operation is finished.
 class FileSystemOperation {
  public:
   // |dispatcher| will be owned by this class.
@@ -119,11 +120,9 @@ class FileSystemOperation {
       const GURL& origin_url,
       const quota::QuotaManager::GetUsageAndQuotaCallback& callback);
 
-  void DelayedCreateFileForQuota(bool exclusive,
-                                 quota::QuotaStatusCode status,
+  void DelayedCreateFileForQuota(quota::QuotaStatusCode status,
                                  int64 usage, int64 quota);
-  void DelayedCreateDirectoryForQuota(bool exclusive, bool recursive,
-                                      quota::QuotaStatusCode status,
+  void DelayedCreateDirectoryForQuota(quota::QuotaStatusCode status,
                                       int64 usage, int64 quota);
   void DelayedCopyForQuota(quota::QuotaStatusCode status,
                            int64 usage, int64 quota);
@@ -131,11 +130,9 @@ class FileSystemOperation {
                            int64 usage, int64 quota);
   void DelayedWriteForQuota(quota::QuotaStatusCode status,
                             int64 usage, int64 quota);
-  void DelayedTruncateForQuota(int64 length,
-                               quota::QuotaStatusCode status,
+  void DelayedTruncateForQuota(quota::QuotaStatusCode status,
                                int64 usage, int64 quota);
-  void DelayedOpenFileForQuota(int file_flags,
-                               quota::QuotaStatusCode status,
+  void DelayedOpenFileForQuota(quota::QuotaStatusCode status,
                                int64 usage, int64 quota);
 
   // A callback used for OpenFileSystem.
@@ -259,6 +256,8 @@ class FileSystemOperation {
 
   FileSystemOperationContext operation_context_;
 
+  base::WeakPtrFactory<FileSystemOperation> weak_factory_;
+
   scoped_ptr<ScopedQuotaUtilHelper> quota_util_helper_;
 
   // These are all used only by Write().
@@ -276,6 +275,16 @@ class FileSystemOperation {
   // write.
   FilePath src_virtual_path_;
   FilePath dest_virtual_path_;
+
+  // Options for CreateFile and CreateDirectory.
+  bool exclusive_;
+  bool recursive_;
+
+  // Options for OpenFile.
+  int file_flags_;
+
+  // Length to be truncated.
+  int64 length_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperation);
 };
