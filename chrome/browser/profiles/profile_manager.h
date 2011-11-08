@@ -201,6 +201,7 @@ class ProfileManager : public base::NonThreadSafe,
 
  private:
   friend class TestingProfileManager;
+  FRIEND_TEST(ProfileManagerBrowserTest, DeleteAllProfiles);
 
   // This struct contains information about profiles which are being loaded or
   // were loaded.
@@ -245,6 +246,13 @@ class ProfileManager : public base::NonThreadSafe,
 
   // For ChromeOS, determines if profile should be otr.
   bool ShouldGoOffTheRecord();
+
+  // Get the path of the next profile directory and increment the internal
+  // count.
+  // Lack of side effects:
+  // This function doesn't actually create the directory or touch the file
+  // system.
+  FilePath GenerateNextProfileDirectoryPath();
 
   content::NotificationRegistrar registrar_;
 

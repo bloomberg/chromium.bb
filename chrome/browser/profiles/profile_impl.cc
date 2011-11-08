@@ -290,7 +290,7 @@ ProfileImpl::ProfileImpl(const FilePath& path,
         GetPrefFilePath(),
         new ExtensionPrefStore(GetExtensionPrefValueMap(), false),
         true));
-    // Wait for the notifcation that prefs has been loaded (successfully or
+    // Wait for the notification that prefs has been loaded (successfully or
     // not).
     registrar_.Add(this, chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
                    content::Source<PrefService>(prefs_.get()));

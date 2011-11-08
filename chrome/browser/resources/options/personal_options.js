@@ -228,7 +228,7 @@ cr.define('options', function() {
       var hasSingleProfile = profilesList.dataModel.length == 1;
       $('profiles-manage').disabled = !hasSelection ||
           !selectedProfile.isCurrentProfile;
-      $('profiles-delete').disabled = !hasSelection || hasSingleProfile;
+      $('profiles-delete').disabled = !hasSelection && !hasSingleProfile;
     },
 
     /**

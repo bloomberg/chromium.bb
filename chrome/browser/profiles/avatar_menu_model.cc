@@ -110,6 +110,11 @@ size_t AvatarMenuModel::GetNumberOfItems() {
 }
 
 size_t AvatarMenuModel::GetActiveProfileIndex() {
+  // During singleton profile deletion, this function can be called with no
+  // profiles in the model - crbug.com/102278 .
+  if (items_.size() == 0)
+    return 0;
+
   Profile* active_profile = NULL;
   if (!browser_)
     active_profile = ProfileManager::GetLastUsedProfile();

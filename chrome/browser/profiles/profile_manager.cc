@@ -524,26 +524,31 @@ void ProfileManager::OnProfileCreated(Profile* profile, bool success) {
   STLDeleteElements(&observers_to_delete);
 }
 
-// static
-void ProfileManager::CreateMultiProfileAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Create the next profile in the next available directory slot.
+FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-
+  // Create the next profile in the next available directory slot.
   int next_directory = local_state->GetInteger(prefs::kProfilesNumCreated);
   std::string profile_name = chrome::kMultiProfileDirPrefix;
   profile_name.append(base::IntToString(next_directory));
-  FilePath new_path = profile_manager->user_data_dir_;
+  FilePath new_path = user_data_dir_;
 #if defined(OS_WIN)
   new_path = new_path.Append(ASCIIToUTF16(profile_name));
 #else
   new_path = new_path.Append(profile_name);
 #endif
   local_state->SetInteger(prefs::kProfilesNumCreated, ++next_directory);
+  return new_path;
+}
+
+// static
+void ProfileManager::CreateMultiProfileAsync() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
 
   // The launcher is deleted by the manager when profile creation is finished.
   NewProfileLauncher* launcher = new NewProfileLauncher();
@@ -619,13 +624,23 @@ bool ProfileManager::ShouldGoOffTheRecord() {
 }
 
 void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
+  // If we're deleting the last profile, then create a new profile in its
+  // place.
+  ProfileInfoCache& cache = GetProfileInfoCache();
+  if (cache.GetNumberOfProfiles() == 1) {
+    FilePath new_path = GenerateNextProfileDirectoryPath();
+
+    // The launcher is deleted by the manager when profile creation is finished.
+    NewProfileLauncher* launcher = new NewProfileLauncher();
+    CreateProfileAsync(new_path, launcher);
+  }
+
   // TODO(sail): Due to bug 88586 we don't delete the profile instance. Once we
   // start deleting the profile instance we need to close background apps too.
   Profile* profile = GetProfileByPath(profile_dir);
   if (profile)
     BrowserList::CloseAllBrowsersWithProfile(profile);
   QueueProfileDirectoryForDeletion(profile_dir);
-  ProfileInfoCache& cache = GetProfileInfoCache();
   cache.DeleteProfileFromCache(profile_dir);
 }
 

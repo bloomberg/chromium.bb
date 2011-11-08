@@ -2558,6 +2558,7 @@
         'browser/prerender/prerender_browsertest.cc',
         'browser/printing/print_dialog_cloud_uitest.cc',
         'browser/printing/print_preview_tab_controller_browsertest.cc',
+        'browser/profiles/profile_manager_browsertest.cc',
         'browser/rlz/rlz_extension_apitest.cc',
         'browser/renderer_host/render_process_host_chrome_browsertest.cc',
         'browser/renderer_host/web_cache_manager_browsertest.cc',
