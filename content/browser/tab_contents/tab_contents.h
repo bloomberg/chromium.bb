@@ -464,6 +464,10 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // locked.
   bool GotResponseToLockMouseRequest(bool allowed);
 
+  JavaBridgeDispatcherHostManager* java_bridge_dispatcher_host_manager() const {
+    return java_bridge_dispatcher_host_manager_.get();
+  }
+
  protected:
   friend class TabContentsObserver;
 

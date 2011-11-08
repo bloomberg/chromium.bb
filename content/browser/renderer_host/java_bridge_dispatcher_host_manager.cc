@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/java_bridge_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
 JavaBridgeDispatcherHostManager::JavaBridgeDispatcherHostManager(
     TabContents* tab_contents)
@@ -20,11 +21,10 @@ JavaBridgeDispatcherHostManager::~JavaBridgeDispatcherHostManager() {
 void JavaBridgeDispatcherHostManager::AddNamedObject(const string16& name,
     NPObject* object) {
   // Record this object in a map so that we can add it into RenderViewHosts
-  // created later. We don't need to take a reference because each
-  // JavaBridgeDispatcherHost will do so. The object can't be deleted until
-  // after RemoveNamedObject() is called, at which time we remove the entry
-  // from the map.
-  DCHECK(!instances_.empty()) << "There must be at least one instance present";
+  // created later. The JavaBridgeDispatcherHost instances will take a
+  // reference to the object, but we take one too, because this method can be
+  // called before there are any such instances.
+  WebKit::WebBindings::retainObject(object);
   objects_[name] = object;
 
   for (InstanceMap::iterator iter = instances_.begin();
@@ -39,6 +39,7 @@ void JavaBridgeDispatcherHostManager::RemoveNamedObject(const string16& name) {
     return;
   }
 
+  WebKit::WebBindings::releaseObject(iter->second);
   objects_.erase(iter);
 
   for (InstanceMap::iterator iter = instances_.begin();
