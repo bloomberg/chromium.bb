@@ -267,8 +267,8 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
                         OnSetDefaultContentSettings)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetContentSettingsForCurrentURL,
                         OnSetContentSettingsForCurrentURL)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetImageSettingRules,
-                        OnSetImageSettingRules)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetContentSettingRules,
+                        OnSetContentSettingRules)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetCacheCapacities, OnSetCacheCapacities)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_ClearCache, OnClearCache)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetFieldTrialGroup, OnSetFieldTrialGroup)
@@ -310,9 +310,9 @@ void ChromeRenderProcessObserver::OnSetDefaultContentSettings(
   default_content_settings_ = content_settings;
 }
 
-void ChromeRenderProcessObserver::OnSetImageSettingRules(
-    const ContentSettingsForOneType& settings) {
-  image_setting_rules_ = settings;
+void ChromeRenderProcessObserver::OnSetContentSettingRules(
+    const RendererContentSettingRules& rules) {
+  content_setting_rules_ = rules;
 }
 
 void ChromeRenderProcessObserver::OnSetCacheCapacities(size_t min_dead_capacity,
@@ -430,9 +430,9 @@ void ChromeRenderProcessObserver::ExecutePendingClearCache() {
   }
 }
 
-const ContentSettingsForOneType*
-ChromeRenderProcessObserver::image_setting_rules() const {
-  return &image_setting_rules_;
+const RendererContentSettingRules*
+ChromeRenderProcessObserver::content_setting_rules() const {
+  return &content_setting_rules_;
 }
 
 const ContentSettings*
