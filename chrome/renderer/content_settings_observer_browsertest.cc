@@ -105,13 +105,18 @@ TEST_F(ChromeRenderViewTest, JSBlockSentAfterPageLoad) {
   LoadHTML(html.c_str());
 
   // 2. Block JavaScript.
-  ContentSettings settings;
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
-    settings.settings[i] = CONTENT_SETTING_ALLOW;
-  settings.settings[CONTENT_SETTINGS_TYPE_JAVASCRIPT] = CONTENT_SETTING_BLOCK;
+  RendererContentSettingRules content_setting_rules;
+  ContentSettingsForOneType& script_setting_rules =
+      content_setting_rules.script_rules;
+  script_setting_rules.push_back(
+      ContentSettingPatternSource(
+          ContentSettingsPattern::Wildcard(),
+          ContentSettingsPattern::Wildcard(),
+          CONTENT_SETTING_BLOCK,
+          "",
+          false));
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
-  observer->SetContentSettings(settings);
-  observer->SetDefaultContentSettings(&settings);
+  observer->SetContentSettingRules(&content_setting_rules);
 
   // Make sure no pending messages are in the queue.
   ProcessPendingMessages();
@@ -174,7 +179,9 @@ TEST_F(ChromeRenderViewTest, ImagesBlockedByDefault) {
   LoadHTML("<html>Foo</html>");
 
   // Set the default image blocking setting.
-  ContentSettingsForOneType image_setting_rules;
+  RendererContentSettingRules content_setting_rules;
+  ContentSettingsForOneType& image_setting_rules =
+      content_setting_rules.image_rules;
   image_setting_rules.push_back(
       ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
                                   ContentSettingsPattern::Wildcard(),
@@ -183,7 +190,7 @@ TEST_F(ChromeRenderViewTest, ImagesBlockedByDefault) {
                                   false));
 
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
-  observer->SetImageSettingRules(&image_setting_rules);
+  observer->SetContentSettingRules(&content_setting_rules);
   EXPECT_CALL(mock_observer,
               OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
   EXPECT_FALSE(observer->AllowImage(GetMainFrame(),
@@ -215,7 +222,9 @@ TEST_F(ChromeRenderViewTest, ImagesAllowedByDefault) {
   LoadHTML("<html>Foo</html>");
 
   // Set the default image blocking setting.
-  ContentSettingsForOneType image_setting_rules;
+  RendererContentSettingRules content_setting_rules;
+  ContentSettingsForOneType& image_setting_rules =
+      content_setting_rules.image_rules;
   image_setting_rules.push_back(
       ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
                                   ContentSettingsPattern::Wildcard(),
@@ -224,7 +233,7 @@ TEST_F(ChromeRenderViewTest, ImagesAllowedByDefault) {
                                   false));
 
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
-  observer->SetImageSettingRules(&image_setting_rules);
+  observer->SetContentSettingRules(&content_setting_rules);
   EXPECT_CALL(
       mock_observer,
       OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES, std::string())).Times(0);
@@ -246,4 +255,76 @@ TEST_F(ChromeRenderViewTest, ImagesAllowedByDefault) {
   EXPECT_FALSE(observer->AllowImage(GetMainFrame(),
                                     true, mock_observer.image_url_));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
+}
+
+TEST_F(ChromeRenderViewTest, ContentSettingsBlockScripts) {
+  // Set the content settings for scripts.
+  RendererContentSettingRules content_setting_rules;
+  ContentSettingsForOneType& script_setting_rules =
+      content_setting_rules.script_rules;
+  script_setting_rules.push_back(
+      ContentSettingPatternSource(
+          ContentSettingsPattern::Wildcard(),
+          ContentSettingsPattern::Wildcard(),
+          CONTENT_SETTING_BLOCK,
+          "",
+          false));
+
+  ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
+  observer->SetContentSettingRules(&content_setting_rules);
+
+  // Load a page which contains a script.
+  std::string html = "<html>"
+                     "<head>"
+                     "<script src='data:foo'></script>"
+                     "</head>"
+                     "<body>"
+                     "</body>"
+                     "</html>";
+  LoadHTML(html.c_str());
+
+  // Verify that the script was blocked.
+  bool was_blocked = false;
+  for (size_t i = 0; i < render_thread_->sink().message_count(); ++i) {
+    const IPC::Message* msg = render_thread_->sink().GetMessageAt(i);
+    if (msg->type() == ChromeViewHostMsg_ContentBlocked::ID)
+      was_blocked = true;
+  }
+  EXPECT_TRUE(was_blocked);
+}
+
+TEST_F(ChromeRenderViewTest, ContentSettingsAllowScripts) {
+  // Set the content settings for scripts.
+  RendererContentSettingRules content_setting_rules;
+  ContentSettingsForOneType& script_setting_rules =
+      content_setting_rules.script_rules;
+  script_setting_rules.push_back(
+      ContentSettingPatternSource(
+          ContentSettingsPattern::Wildcard(),
+          ContentSettingsPattern::Wildcard(),
+          CONTENT_SETTING_ALLOW,
+          "",
+          false));
+
+  ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
+  observer->SetContentSettingRules(&content_setting_rules);
+
+  // Load a page which contains a script.
+  std::string html = "<html>"
+                     "<head>"
+                     "<script src='data:foo'></script>"
+                     "</head>"
+                     "<body>"
+                     "</body>"
+                     "</html>";
+  LoadHTML(html.c_str());
+
+  // Verify that the script was not blocked.
+  bool was_blocked = false;
+  for (size_t i = 0; i < render_thread_->sink().message_count(); ++i) {
+    const IPC::Message* msg = render_thread_->sink().GetMessageAt(i);
+    if (msg->type() == ChromeViewHostMsg_ContentBlocked::ID)
+      was_blocked = true;
+  }
+  EXPECT_FALSE(was_blocked);
 }

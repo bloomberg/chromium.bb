@@ -14,8 +14,10 @@
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_pattern.h"
+#include "chrome/common/render_messages.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -192,6 +194,14 @@ ContentSetting GetContentSetting(const ProviderInterface* provider,
                              content_type, resource_identifier,
                              include_incognito));
   return ValueToContentSetting(value.get());
+}
+
+void GetRendererContentSettingRules(const HostContentSettingsMap* map,
+                                    RendererContentSettingRules* rules) {
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES, "",
+                             &(rules->image_rules));
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_JAVASCRIPT, "",
+                             &(rules->script_rules));
 }
 
 }  // namespace content_settings

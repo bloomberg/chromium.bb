@@ -423,6 +423,15 @@ bool ChromeRenderViewObserver::allowScript(WebFrame* frame,
   return content_settings_->AllowScript(frame, enabled_per_settings);
 }
 
+bool ChromeRenderViewObserver::allowScriptFromSource(
+    WebFrame* frame,
+    bool enabled_per_settings,
+    const WebURL& script_url) {
+  return content_settings_->AllowScriptFromSource(frame,
+                                                  enabled_per_settings,
+                                                  script_url);
+}
+
 bool ChromeRenderViewObserver::allowScriptExtension(
     WebFrame* frame, const WebString& extension_name, int extension_group) {
   return extension_dispatcher_->AllowScriptExtension(
