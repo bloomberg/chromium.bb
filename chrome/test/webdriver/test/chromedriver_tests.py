@@ -447,7 +447,8 @@ class SessionTest(ChromeDriverTest):
   def testSessionCreationDeletion(self):
     self.GetNewDriver().quit()
 
-  def testMultipleSessionCreationDeletion(self):
+  # crbug.com/103396
+  def DISABLED_testMultipleSessionCreationDeletion(self):
     for i in range(10):
       self.GetNewDriver().quit()
 
