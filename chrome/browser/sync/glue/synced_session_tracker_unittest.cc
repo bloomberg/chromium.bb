@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
@@ -171,7 +172,7 @@ TEST_F(SyncedSessionTrackerTest, ManyGetTabs) {
   const int kMaxTabs = 1000;
   const int kMaxAttempts = 10000;
   for (int j=0; j<kMaxSessions; ++j) {
-    std::string tag = "tag" + j;
+    std::string tag = base::StringPrintf("tag%d", j);
     for (int i=0; i<kMaxAttempts; ++i) {
       // More attempts than tabs means we'll sometimes get the same tabs,
       // sometimes have to allocate new tabs.
