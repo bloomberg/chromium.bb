@@ -7,8 +7,6 @@
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
 
-BUGCASEQ SLOW MAC : platform/chromium/compositing/zoom-animator-scale-test2.html = PASS MISSING
-
 // V8 roll, lots of ES5 related changes, upstream if V8 sticks.
 BUGRICOW : fast/js/array-functions-non-arrays.html = TEXT
 BUGRICOW : fast/js/eval-cross-window.html = TEXT
