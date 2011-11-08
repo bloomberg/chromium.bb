@@ -73,6 +73,20 @@ NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
 }
 
 NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
+}
+
+void NetworkChangeNotifierChromeos::Init() {
+  chromeos::NetworkLibrary* network_library =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  network_library->AddNetworkManagerObserver(this);
+
+  chromeos::CrosLibrary::Get()->GetPowerLibrary()
+      ->AddObserver(this);
+
+  UpdateNetworkState(network_library);
+}
+
+void NetworkChangeNotifierChromeos::Shutdown() {
   if (online_notification_task_) {
     online_notification_task_->Cancel();
     online_notification_task_ = NULL;
@@ -87,17 +101,6 @@ NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
   chromeos::PowerLibrary* power =
       chromeos::CrosLibrary::Get()->GetPowerLibrary();
   power->RemoveObserver(this);
-}
-
-void NetworkChangeNotifierChromeos::Init() {
-  chromeos::NetworkLibrary* network_library =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  network_library->AddNetworkManagerObserver(this);
-
-  chromeos::CrosLibrary::Get()->GetPowerLibrary()
-      ->AddObserver(this);
-
-  UpdateNetworkState(network_library);
 }
 
 void NetworkChangeNotifierChromeos::PowerChanged(
