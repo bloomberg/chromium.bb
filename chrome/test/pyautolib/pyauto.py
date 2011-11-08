@@ -281,6 +281,42 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     self.WaitUntil(lambda: _AreOrigPidsDead(orig_pids))
 
+  @staticmethod
+  def _IsRootSuid(path):
+    """Determine if |path| is a suid-root file."""
+    return os.path.isfile(path) and (os.stat(path).st_mode & stat.S_ISUID)
+
+  @staticmethod
+  def SuidPythonPath():
+    """Path to suid_python binary on ChromeOS.
+
+    This is typically in the same directory as pyautolib.py
+    """
+    return os.path.join(PyUITest.BrowserPath(), 'suid-python')
+
+  @staticmethod
+  def RunSuperuserActionOnChromeOS(action):
+    """Run the given action with superuser privs (on ChromeOS).
+
+    Uses the suid_actions.py script.
+
+    Args:
+      action: An action to perform.
+              See suid_actions.py for available options.
+
+    Returns:
+      (stdout, stderr)
+    """
+    assert PyUITest._IsRootSuid(PyUITest.SuidPythonPath()), \
+        'Did not find suid-root python at %s' % PyUITest.SuidPythonPath()
+    file_path = os.path.join(os.path.dirname(__file__), 'chromeos',
+                             'suid_actions.py')
+    args = [PyUITest.SuidPythonPath(), file_path, '--action=CleanFlimflamDir']
+    proc = subprocess.Popen(
+        args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = proc.communicate()
+    return (stdout, stderr)
+
   def EnableChromeTestingOnChromeOS(self):
     """Enables the named automation interface on chromeos.
 
@@ -289,15 +325,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     Expects suid python to be present in the same dir as pyautolib.py
     """
-    def _IsRootSuid(path):
-      return os.path.isfile(path) and (os.stat(path).st_mode & stat.S_ISUID)
-    suid_python = os.path.normpath(os.path.join(
-        os.path.dirname(pyautolib.__file__), 'suid-python'))
-    assert _IsRootSuid(suid_python), \
-        'Did not find suid-root python at %s' % suid_python
+    assert PyUITest._IsRootSuid(self.SuidPythonPath()), \
+        'Did not find suid-root python at %s' % self.SuidPythonPath()
     file_path = os.path.join(os.path.dirname(__file__), 'chromeos',
                              'enable_testing.py')
-    args = [suid_python, file_path]
+    args = [self.SuidPythonPath(), file_path]
     # Pass extra chrome flags for testing
     for flag in self.ExtraChromeFlags():
       args.append('--extra-chrome-flags=%s' % flag)
@@ -378,8 +410,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       # However, deleting its contents is okay.
       if item == 'flimflam' and os.path.isdir(os.path.join(profile_dir,
                                               'flimflam')):
-        for fname in os.listdir(os.path.join(profile_dir, item)):
-          pyauto_utils.RemovePath(os.path.join(profile_dir, item, fname))
+        PyUITest.RunSuperuserActionOnChromeOS('CleanFlimflamDir')
         continue
 
       # Deleting .pki causes stateful partition to get erased.
@@ -390,6 +421,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     for item in os.listdir(chronos_dir):
       if item != 'user' and not item.startswith('.'):
         pyauto_utils.RemovePath(os.path.join(chronos_dir, item))
+
 
   @staticmethod
   def _IsInodeNew(path, old_inode):
