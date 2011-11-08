@@ -251,6 +251,7 @@ class FileSystemOperation {
   // Proxy for calling file_util_proxy methods.
   scoped_refptr<base::MessageLoopProxy> proxy_;
 
+  // This can be NULL if the operation is cancelled on the way.
   scoped_ptr<FileSystemCallbackDispatcher> dispatcher_;
 
   FileSystemOperationContext operation_context_;

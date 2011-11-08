@@ -71,51 +71,6 @@ class MessageLoopRelay
   fileapi::FileSystemFileUtil* file_util_;
 };
 
-class RelayCreateOrOpen : public MessageLoopRelay {
- public:
-  RelayCreateOrOpen(
-      const fileapi::FileSystemOperationContext& context,
-      scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
-      const FilePath& file_path,
-      int file_flags,
-      const fileapi::FileSystemFileUtilProxy::CreateOrOpenCallback& callback)
-      : MessageLoopRelay(context),
-        message_loop_proxy_(message_loop_proxy),
-        file_path_(file_path),
-        file_flags_(file_flags),
-        callback_(callback),
-        file_handle_(base::kInvalidPlatformFileValue),
-        created_(false) {
-    DCHECK_EQ(false, callback.is_null());
-  }
-
- protected:
-  virtual ~RelayCreateOrOpen() {
-    if (file_handle_ != base::kInvalidPlatformFileValue)
-      fileapi::FileSystemFileUtilProxy::Close(
-          *context(), message_loop_proxy_, file_handle_,
-          fileapi::FileSystemFileUtilProxy::StatusCallback());
-  }
-
-  virtual void RunWork() {
-    set_error_code(file_util()->CreateOrOpen(
-        context(), file_path_, file_flags_, &file_handle_, &created_));
-  }
-
-  virtual void RunCallback() {
-    callback_.Run(error_code(), base::PassPlatformFile(&file_handle_),
-                  created_);
-  }
-
- private:
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
-  FilePath file_path_;
-  int file_flags_;
-  fileapi::FileSystemFileUtilProxy::CreateOrOpenCallback callback_;
-  base::PlatformFile file_handle_;
-  bool created_;
-};
-
 class RelayWithStatusCallback : public MessageLoopRelay {
  public:
   RelayWithStatusCallback(
@@ -135,24 +90,6 @@ class RelayWithStatusCallback : public MessageLoopRelay {
 
  private:
   fileapi::FileSystemFileUtilProxy::StatusCallback callback_;
-};
-
-class RelayClose : public RelayWithStatusCallback {
- public:
-  RelayClose(const fileapi::FileSystemOperationContext& context,
-             base::PlatformFile file_handle,
-             const fileapi::FileSystemFileUtilProxy::StatusCallback& callback)
-      : RelayWithStatusCallback(context, callback),
-        file_handle_(file_handle) {
-  }
-
- protected:
-  virtual void RunWork() {
-    set_error_code(file_util()->Close(context(), file_handle_));
-  }
-
- private:
-  base::PlatformFile file_handle_;
 };
 
 class RelayEnsureFileExists : public MessageLoopRelay {
@@ -423,26 +360,6 @@ bool Start(const tracked_objects::Location& from_here,
 }  // namespace
 
 namespace fileapi {
-
-// static
-bool FileSystemFileUtilProxy::CreateOrOpen(
-    const FileSystemOperationContext& context,
-    scoped_refptr<MessageLoopProxy> message_loop_proxy,
-    const FilePath& file_path, int file_flags,
-    const CreateOrOpenCallback& callback) {
-  return Start(FROM_HERE, message_loop_proxy, new RelayCreateOrOpen(context,
-      message_loop_proxy, file_path, file_flags, callback));
-}
-
-// static
-bool FileSystemFileUtilProxy::Close(
-    const FileSystemOperationContext& context,
-    scoped_refptr<MessageLoopProxy> message_loop_proxy,
-    base::PlatformFile file_handle,
-    const StatusCallback& callback) {
-  return Start(FROM_HERE, message_loop_proxy,
-               new RelayClose(context, file_handle, callback));
-}
 
 // static
 bool FileSystemFileUtilProxy::EnsureFileExists(

@@ -71,16 +71,22 @@ FileSystemOperation::FileSystemOperation(
 }
 
 FileSystemOperation::~FileSystemOperation() {
-  if (file_writer_delegate_.get())
-    FileSystemFileUtilProxy::Close(
-        operation_context_, proxy_, file_writer_delegate_->file(),
+  if (file_writer_delegate_.get()) {
+    FileSystemOperationContext* c =
+        new FileSystemOperationContext(operation_context_);
+    base::FileUtilProxy::RelayClose(
+        proxy_,
+        base::Bind(&FileSystemFileUtil::Close,
+                   base::Unretained(c->src_file_util()),
+                   base::Owned(c)),
+        file_writer_delegate_->file(),
         FileSystemFileUtilProxy::StatusCallback());
+  }
 }
 
 void FileSystemOperation::OpenFileSystem(
     const GURL& origin_url, fileapi::FileSystemType type, bool create) {
 #ifndef NDEBUG
-  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = static_cast<FileSystemOperation::OperationType>(
       kOperationOpenFileSystem);
@@ -104,7 +110,6 @@ void FileSystemOperation::OpenFileSystem(
 void FileSystemOperation::CreateFile(const GURL& path,
                                      bool exclusive) {
 #ifndef NDEBUG
-  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationCreateFile;
 #endif
@@ -143,7 +148,6 @@ void FileSystemOperation::CreateDirectory(const GURL& path,
                                           bool exclusive,
                                           bool recursive) {
 #ifndef NDEBUG
-  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationCreateDirectory;
 #endif
@@ -179,7 +183,6 @@ void FileSystemOperation::DelayedCreateDirectoryForQuota(
 void FileSystemOperation::Copy(const GURL& src_path,
                                const GURL& dest_path) {
 #ifndef NDEBUG
-  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationCopy;
 #endif
@@ -214,7 +217,6 @@ void FileSystemOperation::DelayedCopyForQuota(quota::QuotaStatusCode status,
 void FileSystemOperation::Move(const GURL& src_path,
                                const GURL& dest_path) {
 #ifndef NDEBUG
-  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationMove;
 #endif
@@ -248,7 +250,6 @@ void FileSystemOperation::DelayedMoveForQuota(quota::QuotaStatusCode status,
 
 void FileSystemOperation::DirectoryExists(const GURL& path) {
 #ifndef NDEBUG
-  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationDirectoryExists;
 #endif
@@ -265,7 +266,6 @@ void FileSystemOperation::DirectoryExists(const GURL& path) {
 
 void FileSystemOperation::FileExists(const GURL& path) {
 #ifndef NDEBUG
-  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationFileExists;
 #endif
@@ -282,7 +282,6 @@ void FileSystemOperation::FileExists(const GURL& path) {
 
 void FileSystemOperation::GetMetadata(const GURL& path) {
 #ifndef NDEBUG
-  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationGetMetadata;
 #endif
@@ -299,7 +298,6 @@ void FileSystemOperation::GetMetadata(const GURL& path) {
 
 void FileSystemOperation::ReadDirectory(const GURL& path) {
 #ifndef NDEBUG
-  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationReadDirectory;
 #endif
@@ -316,7 +314,6 @@ void FileSystemOperation::ReadDirectory(const GURL& path) {
 
 void FileSystemOperation::Remove(const GURL& path, bool recursive) {
 #ifndef NDEBUG
-  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationRemove;
 #endif
@@ -337,7 +334,6 @@ void FileSystemOperation::Write(
     const GURL& blob_url,
     int64 offset) {
 #ifndef NDEBUG
-  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationWrite;
 #endif
@@ -366,19 +362,25 @@ void FileSystemOperation::DelayedWriteForQuota(quota::QuotaStatusCode status,
       operation_context_.src_origin_url(),
       operation_context_.src_type()));
 
-  FileSystemFileUtilProxy::CreateOrOpen(
-      operation_context_,
+  int file_flags = base::PLATFORM_FILE_OPEN |
+                   base::PLATFORM_FILE_WRITE |
+                   base::PLATFORM_FILE_ASYNC;
+
+  base::FileUtilProxy::RelayCreateOrOpen(
       proxy_,
-      src_virtual_path_,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE |
-          base::PLATFORM_FILE_ASYNC,
+      base::Bind(&FileSystemFileUtil::CreateOrOpen,
+                 base::Unretained(operation_context_.src_file_util()),
+                 base::Unretained(&operation_context_),
+                 src_virtual_path_, file_flags),
+      base::Bind(&FileSystemFileUtil::Close,
+                 base::Unretained(operation_context_.src_file_util()),
+                 base::Unretained(&operation_context_)),
       base::Bind(&FileSystemOperation::OnFileOpenedForWrite,
                  weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::Truncate(const GURL& path, int64 length) {
 #ifndef NDEBUG
-  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationTruncate;
 #endif
@@ -413,7 +415,6 @@ void FileSystemOperation::TouchFile(const GURL& path,
                                     const base::Time& last_access_time,
                                     const base::Time& last_modified_time) {
 #ifndef NDEBUG
-  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationTouchFile;
 #endif
@@ -433,7 +434,6 @@ void FileSystemOperation::OpenFile(const GURL& path,
                                    int file_flags,
                                    base::ProcessHandle peer_handle) {
 #ifndef NDEBUG
-  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationOpenFile;
 #endif
@@ -478,8 +478,15 @@ void FileSystemOperation::DelayedOpenFileForQuota(quota::QuotaStatusCode status,
       operation_context_.src_origin_url(),
       operation_context_.src_type()));
 
-  FileSystemFileUtilProxy::CreateOrOpen(
-      operation_context_, proxy_, src_virtual_path_, file_flags_,
+  base::FileUtilProxy::RelayCreateOrOpen(
+      proxy_,
+      base::Bind(&FileSystemFileUtil::CreateOrOpen,
+                 base::Unretained(operation_context_.src_file_util()),
+                 base::Unretained(&operation_context_),
+                 src_virtual_path_, file_flags_),
+      base::Bind(&FileSystemFileUtil::Close,
+                 base::Unretained(operation_context_.src_file_util()),
+                 base::Unretained(&operation_context_)),
       base::Bind(&FileSystemOperation::DidOpenFile,
                  weak_factory_.GetWeakPtr()));
 }
@@ -518,9 +525,10 @@ void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation_ptr) {
       // This halts any calls to file_writer_delegate_ from blob_request_.
       blob_request_->Cancel();
 
-    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_ABORT);
+    if (dispatcher_.get())
+      dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_ABORT);
     cancel_operation->dispatcher_->DidSucceed();
-    delete this;
+    dispatcher_.reset();
   } else {
 #ifndef NDEBUG
     DCHECK(kOperationTruncate == pending_operation_);
@@ -568,14 +576,16 @@ void FileSystemOperation::DidGetRootPath(
         operation_context_.src_origin_url(),
         operation_context_.src_type());
   }
-  dispatcher_->DidOpenFileSystem(name, result);
+  if (dispatcher_.get())
+    dispatcher_->DidOpenFileSystem(name, result);
   delete this;
 }
 
 void FileSystemOperation::DidEnsureFileExistsExclusive(
     base::PlatformFileError rv, bool created) {
   if (rv == base::PLATFORM_FILE_OK && !created) {
-    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_EXISTS);
+    if (dispatcher_.get())
+      dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_EXISTS);
     delete this;
   } else {
     DidFinishFileOperation(rv);
@@ -594,12 +604,14 @@ void FileSystemOperation::DidFinishFileOperation(
     DCHECK(kOperationTruncate == pending_operation_);
 #endif
 
-    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_ABORT);
+    if (dispatcher_.get())
+      dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_ABORT);
     cancel_operation_->dispatcher_->DidSucceed();
-  } else if (rv == base::PLATFORM_FILE_OK) {
-    dispatcher_->DidSucceed();
-  } else {
-    dispatcher_->DidFail(rv);
+  } else if (dispatcher_.get()) {
+    if (rv == base::PLATFORM_FILE_OK)
+      dispatcher_->DidSucceed();
+    else
+      dispatcher_->DidFail(rv);
   }
   delete this;
 }
@@ -608,6 +620,10 @@ void FileSystemOperation::DidDirectoryExists(
     base::PlatformFileError rv,
     const base::PlatformFileInfo& file_info,
     const FilePath& unused) {
+  if (!dispatcher_.get()) {
+    delete this;
+    return;
+  }
   if (rv == base::PLATFORM_FILE_OK) {
     if (file_info.is_directory)
       dispatcher_->DidSucceed();
@@ -623,6 +639,10 @@ void FileSystemOperation::DidFileExists(
     base::PlatformFileError rv,
     const base::PlatformFileInfo& file_info,
     const FilePath& unused) {
+  if (!dispatcher_.get()) {
+    delete this;
+    return;
+  }
   if (rv == base::PLATFORM_FILE_OK) {
     if (file_info.is_directory)
       dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_NOT_A_FILE);
@@ -638,6 +658,10 @@ void FileSystemOperation::DidGetMetadata(
     base::PlatformFileError rv,
     const base::PlatformFileInfo& file_info,
     const FilePath& platform_path) {
+  if (!dispatcher_.get()) {
+    delete this;
+    return;
+  }
   if (rv == base::PLATFORM_FILE_OK)
     dispatcher_->DidReadMetadata(file_info, platform_path);
   else
@@ -648,6 +672,10 @@ void FileSystemOperation::DidGetMetadata(
 void FileSystemOperation::DidReadDirectory(
     base::PlatformFileError rv,
     const std::vector<base::FileUtilProxy::Entry>& entries) {
+  if (!dispatcher_.get()) {
+    delete this;
+    return;
+  }
 
   if (rv == base::PLATFORM_FILE_OK)
     dispatcher_->DidReadDirectory(entries, false /* has_more */);
@@ -660,6 +688,10 @@ void FileSystemOperation::DidWrite(
     base::PlatformFileError rv,
     int64 bytes,
     bool complete) {
+  if (!dispatcher_.get()) {
+    delete this;
+    return;
+  }
   if (rv == base::PLATFORM_FILE_OK)
     dispatcher_->DidWrite(bytes, complete);
   else
@@ -669,6 +701,10 @@ void FileSystemOperation::DidWrite(
 }
 
 void FileSystemOperation::DidTouchFile(base::PlatformFileError rv) {
+  if (!dispatcher_.get()) {
+    delete this;
+    return;
+  }
   if (rv == base::PLATFORM_FILE_OK)
     dispatcher_->DidSucceed();
   else
@@ -680,6 +716,10 @@ void FileSystemOperation::DidOpenFile(
     base::PlatformFileError rv,
     base::PassPlatformFile file,
     bool unused) {
+  if (!dispatcher_.get()) {
+    delete this;
+    return;
+  }
   if (rv == base::PLATFORM_FILE_OK)
     dispatcher_->DidOpenFile(file.ReleaseValue(), peer_handle_);
   else
@@ -691,6 +731,10 @@ void FileSystemOperation::OnFileOpenedForWrite(
     base::PlatformFileError rv,
     base::PassPlatformFile file,
     bool created) {
+  if (!dispatcher_.get()) {
+    delete this;
+    return;
+  }
   if (base::PLATFORM_FILE_OK != rv) {
     dispatcher_->DidFail(rv);
     delete this;
