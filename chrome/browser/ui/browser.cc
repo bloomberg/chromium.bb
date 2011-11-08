@@ -5456,7 +5456,7 @@ void Browser::OnWindowDidShow() {
   PrefService* local_state = g_browser_process->local_state();
   if (!is_showing_promo && local_state &&
       local_state->GetBoolean(prefs::kShouldShowFirstRunBubble)) {
-    FirstRun::BubbleType bubble_type = FirstRun::LARGE_BUBBLE;
+    FirstRun::BubbleType bubble_type = FirstRun::MINIMAL_BUBBLE;
     if (local_state->
         FindPreference(prefs::kShouldUseOEMFirstRunBubble) &&
         local_state->GetBoolean(prefs::kShouldUseOEMFirstRunBubble)) {
