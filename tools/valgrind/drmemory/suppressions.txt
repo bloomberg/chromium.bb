@@ -609,7 +609,7 @@ name=http://crbug.com/103365
 ppapi_tests.dll!*
 ...
 ppapi_tests.dll!*
-base::internal::Invoker2<*>::DoInvoke
+*!base::internal::Invoker2<*>::DoInvoke
 
 ############################
 # Intentional errors in Chromium tests (ToolsSanityTests)
