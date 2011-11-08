@@ -6,7 +6,6 @@
 
 #include <ostream>
 
-#include "base/bind.h"
 #include "base/json/json_value_serializer.h"
 #include "base/logging.h"
 #include "base/string_util.h"
