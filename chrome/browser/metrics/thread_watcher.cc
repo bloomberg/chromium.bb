@@ -7,6 +7,7 @@
 #include <math.h>  // ceil
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/string_tokenizer.h"
 #include "base/threading/thread_restrictions.h"
@@ -21,6 +22,93 @@
 #endif
 
 using content::BrowserThread;
+
+namespace {
+
+// The following are unique function names for forcing the crash when a thread
+// is unresponsive. This makes it possible to tell from the callstack alone what
+// thread was unresponsive.
+//
+// We disable optimizations for this block of functions so the compiler doesn't
+// merge them all together.
+
+// TODO(eroman): What is the equivalent for other compilers?
+#if defined(COMPILER_MSVC)
+#pragma optimize("", off)
+MSVC_PUSH_DISABLE_WARNING(4748)
+#endif
+
+void ThreadUnresponsive_UI() {
+  CHECK(false);
+}
+
+void ThreadUnresponsive_DB() {
+  CHECK(false);
+}
+
+void ThreadUnresponsive_WEBKIT() {
+  CHECK(false);
+}
+
+void ThreadUnresponsive_FILE() {
+  CHECK(false);
+}
+
+void ThreadUnresponsive_PROCESS_LAUNCHER() {
+  CHECK(false);
+}
+
+void ThreadUnresponsive_CACHE() {
+  CHECK(false);
+}
+
+void ThreadUnresponsive_IO() {
+  CHECK(false);
+}
+
+void ThreadUnresponsive_WEB_SOCKET_PROXY() {
+  CHECK(false);
+}
+
+#if defined(COMPILER_MSVC)
+MSVC_POP_WARNING()
+#pragma optimize("", on)
+#endif
+
+void CrashBecauseThreadWasUnresponsive(BrowserThread::ID thread_id) {
+  base::debug::Alias(&thread_id);
+
+  switch (thread_id) {
+    case BrowserThread::UI:
+      return ThreadUnresponsive_UI();
+    case BrowserThread::DB:
+      return ThreadUnresponsive_DB();
+    case BrowserThread::WEBKIT:
+      return ThreadUnresponsive_WEBKIT();
+    case BrowserThread::FILE:
+      return ThreadUnresponsive_FILE();
+    case BrowserThread::PROCESS_LAUNCHER:
+      return ThreadUnresponsive_PROCESS_LAUNCHER();
+    case BrowserThread::CACHE:
+      return ThreadUnresponsive_CACHE();
+    case BrowserThread::IO:
+      return ThreadUnresponsive_IO();
+#if defined(OS_CHROMEOS)
+    case BrowserThread::WEB_SOCKET_PROXY:
+      return ThreadUnresponsive_WEB_SOCKET_PROXY();
+#endif
+    case BrowserThread::ID_COUNT:
+      CHECK(false);  // This shouldn't actually be reached!
+      break;
+
+    // Omission of the default hander is intentional -- that way the compiler
+    // should warn if our switch becomes outdated.
+  }
+
+  CHECK(false);  // Shouldn't be reached.
+}
+
+}  // namespace
 
 // ThreadWatcher methods and members.
 ThreadWatcher::ThreadWatcher(const WatchingParams& params)
@@ -288,13 +376,11 @@ void ThreadWatcher::GotNoResponse() {
 
   // Crash the browser if the watched thread is to be crashed on hang and if the
   // number of other threads responding is equal to live_threads_threshold_.
-  int thread_id = thread_id_;
-  base::debug::Alias(&thread_id);
   if (crash_on_hang_ && responding_thread_count == live_threads_threshold_) {
     static bool crashed_once = false;
     if (!crashed_once) {
       crashed_once = true;
-      CHECK(false);
+      CrashBecauseThreadWasUnresponsive(thread_id_);
     }
   }
 
