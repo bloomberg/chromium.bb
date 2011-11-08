@@ -397,7 +397,7 @@ remoting.refreshHostList = function() {
         if (remoting.oauth2.needsNewAccessToken()) {
           // Failed to get access token
           remoting.debug.log('tryConnect: OAuth2 token fetch failed');
-          showConnectError_(remoting.ClientError.OAUTH_FETCH_FAILED);
+          showConnectError_(remoting.Error.AUTHENTICATION_FAILED);
           return;
         }
         remoting.refreshHostList();
@@ -461,7 +461,7 @@ function parseHostListResponse_(xhr) {
       // If the error is unlikely to be recoverable then notify the user.
       if (xhr.status >= 400 && xhr.status <= 499) {
         // TODO(wez): We need to replace this with a more general showError_().
-        showConnectError_(remoting.ClientError.OTHER_ERROR);
+        showConnectError_(remoting.Error.GENERIC);
       }
     }
   } catch(er) {
