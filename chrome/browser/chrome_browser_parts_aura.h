@@ -14,15 +14,13 @@ class ChromeBrowserPartsAura : public content::BrowserMainParts {
   ChromeBrowserPartsAura();
 
   virtual void PreEarlyInitialization() OVERRIDE;
-  virtual void PostEarlyInitialization() OVERRIDE {}
-  virtual void PreMainMessageLoopStart() OVERRIDE {}
-  virtual void ToolkitInitialized() OVERRIDE {}
+  virtual void PostEarlyInitialization() OVERRIDE;
+  virtual void ToolkitInitialized() OVERRIDE;
+  virtual void PreMainMessageLoopStart() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;
-  virtual void PreMainMessageLoopRun() OVERRIDE {}
+  virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
-  virtual void PostMainMessageLoopRun() {}
-
-  static void ShowMessageBox(const char* message);
+  virtual void PostMainMessageLoopRun() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserPartsAura);

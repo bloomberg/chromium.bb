@@ -89,21 +89,25 @@
 #include "chrome/browser/chrome_browser_main_posix.h"
 #endif
 
-#if defined(USE_AURA)
-#include "chrome/browser/chrome_browser_parts_aura.h"
-#endif
-
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chrome_browser_parts_gtk.h"
 #endif
 
-#if defined(TOUCH_UI)
-#include "chrome/browser/chrome_browser_parts_touch.h"
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/chrome_browser_parts_views.h"
+#endif
+
+#if defined(USE_AURA)
+#include "chrome/browser/chrome_browser_parts_aura.h"
 #endif
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
 #include "chrome/browser/crash_handler_host_linux.h"
+#endif
+
+#if defined(TOUCH_UI)
+#include "chrome/browser/chrome_browser_parts_touch.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -227,16 +231,24 @@ void ChromeContentBrowserClient::CreateBrowserMainParts(
   parts_list->push_back(new ChromeBrowserMainParts(parameters));
 #endif
 
-  // Construct additional browser parts.
-#if defined(USE_AURA)
-  parts_list->push_back(new ChromeBrowserPartsAura());
-#endif
+  // Construct additional browser parts. Stages are called in the order in
+  // which they are added.
 #if defined(TOOLKIT_USES_GTK)
   parts_list->push_back(new ChromeBrowserPartsGtk());
 #endif
+
+#if defined(TOOLKIT_VIEWS)
+  parts_list->push_back(new ChromeBrowserPartsViews());
+#endif
+
+#if defined(USE_AURA)
+  parts_list->push_back(new ChromeBrowserPartsAura());
+#endif
+
 #if defined(TOUCH_UI)
   parts_list->push_back(new ChromeBrowserPartsTouch());
 #endif
+
 }
 
 RenderWidgetHostView* ChromeContentBrowserClient::CreateViewForWidget(

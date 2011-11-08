@@ -15,6 +15,7 @@
 #include "chrome/browser/process_singleton.h"
 #include "content/public/browser/browser_main_parts.h"
 
+class BrowserInit;
 class BrowserProcessImpl;
 class FieldTrialSynchronizer;
 class HistogramSynchronizer;
@@ -59,14 +60,14 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
       const content::MainFunctionParams& parameters);
 
   // content::BrowserParts overrides
-  virtual void PreEarlyInitialization() OVERRIDE {}
-  virtual void PostEarlyInitialization() OVERRIDE {}
-  virtual void PreMainMessageLoopStart() OVERRIDE {}
+  virtual void PreEarlyInitialization() OVERRIDE;
+  virtual void PostEarlyInitialization() OVERRIDE;
   virtual void ToolkitInitialized() OVERRIDE;
-  virtual void PostMainMessageLoopStart() OVERRIDE {}
+  virtual void PreMainMessageLoopStart() OVERRIDE;
+  virtual void PostMainMessageLoopStart() OVERRIDE;
   virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
-  virtual void PostMainMessageLoopRun();
+  virtual void PostMainMessageLoopRun() OVERRIDE;
 
   // Displays a warning message that we can't find any locale data files.
   virtual void ShowMissingLocaleMessageBox() = 0;
@@ -114,6 +115,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Methods for Main Message Loop -------------------------------------------
 
   int PreMainMessageLoopRunImpl();
+  void StartBrowserOrUITask();
 
   // Members initialized on construction ---------------------------------------
 
@@ -137,6 +139,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Members initialized after / released before main_message_loop_ ------------
 
+  scoped_ptr<BrowserInit> browser_init_;
   scoped_ptr<BrowserProcessImpl> browser_process_;
   scoped_refptr<HistogramSynchronizer> histogram_synchronizer_;
   scoped_refptr<chrome_browser_metrics::TrackingSynchronizer>

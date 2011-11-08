@@ -54,6 +54,8 @@
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/predictor.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -169,7 +171,6 @@
 #include "net/base/net_util.h"
 #include "printing/printed_document.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/gfx/platform_font_win.h"
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
@@ -181,13 +182,7 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/chrome_views_delegate.h"
-#include "views/desktop/desktop_window_view.h"
 #include "views/focus/accelerator_handler.h"
-#include "views/widget/widget.h"
-#if defined(TOOLKIT_USES_GTK)
-#include "views/widget/native_widget_gtk.h"
-#endif
 #endif
 
 #if defined(TOOLKIT_USES_GTK)
@@ -204,9 +199,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #include "ui/aura/desktop.h"
-#include "ui/aura_shell/shell.h"
 #endif
 
 using content::BrowserThread;
@@ -475,22 +468,6 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
 
   return NULL;
 }
-
-#if defined(OS_WIN)
-
-// gfx::Font callbacks
-void AdjustUIFont(LOGFONT* logfont) {
-  l10n_util::AdjustUIFont(logfont);
-}
-
-int GetMinimumFontSize() {
-  int min_font_size;
-  base::StringToInt(l10n_util::GetStringUTF16(IDS_MINIMUM_UI_FONT_SIZE),
-                    &min_font_size);
-  return min_font_size;
-}
-
-#endif
 
 #if defined(OS_CHROMEOS)
 
@@ -1186,6 +1163,21 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 }
 #endif
 
+void ChromeBrowserMainParts::PreEarlyInitialization() {
+}
+
+void ChromeBrowserMainParts::PostEarlyInitialization() {
+}
+
+void ChromeBrowserMainParts::ToolkitInitialized() {
+}
+
+void ChromeBrowserMainParts::PreMainMessageLoopStart() {
+}
+
+void ChromeBrowserMainParts::PostMainMessageLoopStart() {
+}
+
 void ChromeBrowserMainParts::PreMainMessageLoopRun() {
   result_code_ = PreMainMessageLoopRunImpl();
 }
@@ -1318,7 +1310,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   RegisterTranslateableItems();
 #endif
 
-  BrowserInit browser_init;
+  browser_init_.reset(new BrowserInit);
 
   // On first run, we need to process the predictor preferences before the
   // browser's profile_manager object is created, but after ResourceBundle
@@ -1328,7 +1320,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (is_first_run) {
     first_run_ui_bypass =
         !FirstRun::ProcessMasterPreferences(user_data_dir, master_prefs_.get());
-    AddFirstRunNewTabs(&browser_init, master_prefs_->new_tabs);
+    AddFirstRunNewTabs(browser_init_.get(), master_prefs_->new_tabs);
 
     // If we are running in App mode, we do not want to show the importer
     // (first run) UI.
@@ -1361,15 +1353,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (!parsed_command_line().HasSwitch(switches::kViewsDesktop))
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kViewsDesktop,
                                                         "other");
-#elif defined(USE_AURA) && defined(OS_LINUX)
-  // Always add the --views-desktop flag, if not already set.
-  if (!parsed_command_line().HasSwitch(switches::kViewsDesktop))
-    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kViewsDesktop);
-#endif
-
-#if defined(USE_AURA) && defined(OS_CHROMEOS)
-  if (chromeos::system::runtime_environment::IsRunningOnChromeOS())
-    aura::Desktop::set_use_fullscreen_host_window(true);
 #endif
 
   // Convert active labs into switches. Modifies the current command line.
@@ -1398,33 +1381,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // We need to ensure WebKit has been initialized before we start the WebKit
   // compositor. This is done by the ResourceDispatcherHost on creation.
   g_browser_process->resource_dispatcher_host();
-#endif
-#if defined(USE_AURA)
-  // Shell takes ownership of ChromeShellDelegate.
-  aura_shell::Shell::GetInstance()->SetDelegate(new ChromeShellDelegate);
-#elif defined(TOOLKIT_VIEWS)
-  views::Widget::SetPureViews(
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePureViews));
-  // Launch the views desktop shell window and register it as the default parent
-  // for all unparented views widgets.
-  if (parsed_command_line().HasSwitch(switches::kViewsDesktop)) {
-    std::string desktop_type_cmd =
-        parsed_command_line().GetSwitchValueASCII(switches::kViewsDesktop);
-    if (desktop_type_cmd != "disabled") {
-      views::desktop::DesktopWindowView::DesktopType desktop_type;
-      if (desktop_type_cmd == "netbook")
-        desktop_type = views::desktop::DesktopWindowView::DESKTOP_NETBOOK;
-      else if (desktop_type_cmd == "other")
-        desktop_type = views::desktop::DesktopWindowView::DESKTOP_OTHER;
-      else
-        desktop_type = views::desktop::DesktopWindowView::DESKTOP_DEFAULT;
-      views::desktop::DesktopWindowView::CreateDesktopWindow(desktop_type);
-      ChromeViewsDelegate* chrome_views_delegate = static_cast
-          <ChromeViewsDelegate*>(views::ViewsDelegate::views_delegate);
-      chrome_views_delegate->default_parent_view =
-        views::desktop::DesktopWindowView::desktop_window_view;
-    }
-  }
 #endif
 
   // Now that all preferences have been registered, set the install date
@@ -1618,9 +1574,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 #endif
 
-  PrefService* user_prefs = profile_->GetPrefs();
-  DCHECK(user_prefs);
-
   // Tests should be able to tune login manager before showing it.
   // Thus only show login manager in normal (non-testing) mode.
   if (!parameters().ui_task)
@@ -1670,7 +1623,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       return content::RESULT_CODE_NORMAL_EXIT;
     }
   }
-  base::mac::ScopedNSAutoreleasePool* pool = parameters().autorelease_pool;
 #endif
 
   // Show the First Run UI if this is the first time Chrome has been run on
@@ -1699,7 +1651,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif  // OS_POSIX
     }  // if (!first_run_ui_bypass)
 
-    Browser::SetNewHomePagePrefs(user_prefs);
+    Browser::SetNewHomePagePrefs(profile_->GetPrefs());
     g_browser_process->profile_manager()->OnImportFinished(profile_);
   }  // if (is_first_run)
 
@@ -1894,15 +1846,29 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Start watching all browser threads for responsiveness.
   ThreadWatcherList::StartWatchingAll(parsed_command_line());
 
-  int result_code = content::RESULT_CODE_NORMAL_EXIT;
+  run_message_loop_ = true;
+  return content::RESULT_CODE_NORMAL_EXIT;
+}
+
+// Called from MainMessageLoopRun().
+void ChromeBrowserMainParts::StartBrowserOrUITask() {
+  // Still initializing, so need to allow IO.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
+  // Set the notification UI manager after any desktop initialization in
+  // PreMainMessageLoopRun() is complete, and before starting the browser.
+  DesktopNotificationServiceFactory::GetForProfile(profile_)->SetUIManager(
+      g_browser_process->notification_ui_manager());
+
   if (parameters().ui_task) {
     // We are in test mode. Run one task and enter the main message loop.
 #if defined(OS_MACOSX)
-    if (pool)
-      pool->Recycle();
+    if (parameters().autorelease_pool)
+      parameters().autorelease_pool->Recycle();
 #endif
     parameters().ui_task->Run();
     delete parameters().ui_task;
+    run_message_loop_ = false;
   } else {
     // Most general initialization is behind us, but opening a
     // tab and/or session restore and such is still to be done.
@@ -1910,9 +1876,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
     // We are in regular browser boot sequence. Open initial tabs and enter the
     // main message loop.
-    if (browser_init.Start(parsed_command_line(), FilePath(), profile_,
-                           &result_code)) {
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+    if (browser_init_->Start(parsed_command_line(), FilePath(), profile_,
+                             &result_code_)) {
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
       // Initialize autoupdate timer. Timer callback costs basically nothing
       // when browser is not in persistent mode, so it's OK to let it ride on
       // the main thread. This needs to be done here because we don't want
@@ -1934,8 +1900,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #if defined(OS_MACOSX)
       // Call Recycle() here as late as possible, before going into the loop
       // because Start() will add things to it while creating the main window.
-      if (pool)
-        pool->Recycle();
+      if (parameters().autorelease_pool)
+        parameters().autorelease_pool->Recycle();
 #endif
 
       RecordPreReadExperimentTime("Startup.BrowserOpenTabs",
@@ -1952,20 +1918,28 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
         // This is necessary to force |default_request_context_| to be
         // initialized.
         profile_->GetRequestContext();
-        translate_manager_->FetchLanguageListFromTranslateServer(user_prefs);
+        translate_manager_->FetchLanguageListFromTranslateServer(
+            profile_->GetPrefs());
       }
 #endif
 
       run_message_loop_ = true;
+    } else {
+      run_message_loop_ = false;
     }
   }
-
-  return result_code;
+  browser_init_.reset();
 }
 
 bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
-  // Set the result code set in PreMainMessageLoopRun.
+  // Set the result code set in PreMainMessageLoopRun or set above.
   *result_code = result_code_;
+
+  // TODO(stevenjb): Move this to another phase, and/or clean up
+  // PreMainMessageLoopRun() so that this can happen after desktop
+  // initilaization and before running the main loop.
+  if (run_message_loop_)
+    StartBrowserOrUITask();
 
   if (!run_message_loop_)
     return true;  // Don't run the default message loop.
@@ -2088,24 +2062,6 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // to bypass this code.  Perhaps we need a *final* hook that is called on all
   // paths from content/browser/browser_main.
   CHECK(MetricsService::UmaMetricsProperlyShutdown());
-}
-
-void ChromeBrowserMainParts::ToolkitInitialized() {
-#if defined(TOOLKIT_VIEWS)
-  // The delegate needs to be set before any UI is created so that windows
-  // display the correct icon.
-  if (!views::ViewsDelegate::views_delegate)
-    views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
-
-  // TODO(beng): Move to WidgetImpl and implement on Windows too!
-  if (parameters().command_line.HasSwitch(switches::kDebugViewsPaint))
-    views::Widget::SetDebugPaintEnabled(true);
-#endif
-
-#if defined(OS_WIN)
-  gfx::PlatformFontWin::adjust_font_callback = &AdjustUIFont;
-  gfx::PlatformFontWin::get_minimum_font_size_callback = &GetMinimumFontSize;
-#endif
 }
 
 // This code is specific to the Windows-only PreReadExperiment field-trial.

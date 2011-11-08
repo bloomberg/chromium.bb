@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
@@ -32,10 +33,13 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "content/public/common/main_function_params.h"
+#include "grit/app_locale_settings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/message_box_win.h"
+#include "ui/gfx/platform_font_win.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/widget/widget.h"
 
@@ -55,6 +59,19 @@ void InitializeWindowProcExceptions() {
   exception_filter = base::win::SetWinProcExceptionFilter(exception_filter);
   DCHECK(!exception_filter);
 }
+
+// gfx::Font callbacks
+void AdjustUIFont(LOGFONT* logfont) {
+  l10n_util::AdjustUIFont(logfont);
+}
+
+int GetMinimumFontSize() {
+  int min_font_size;
+  base::StringToInt(l10n_util::GetStringUTF16(IDS_MINIMUM_UI_FONT_SIZE),
+                    &min_font_size);
+  return min_font_size;
+}
+
 }  // namespace
 
 void RecordBreakpadStatusUMA(MetricsService* metrics) {
@@ -140,7 +157,14 @@ ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
     : ChromeBrowserMainParts(parameters) {
 }
 
+void ChromeBrowserMainPartsWin::ToolkitInitialized() {
+  ChromeBrowserMainParts::ToolkitInitialized();
+  gfx::PlatformFontWin::adjust_font_callback = &AdjustUIFont;
+  gfx::PlatformFontWin::get_minimum_font_size_callback = &GetMinimumFontSize;
+}
+
 void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
+  ChromeBrowserMainParts::PreMainMessageLoopStart();
   if (!parameters().ui_task) {
     // Make sure that we know how to handle exceptions from the message loop.
     InitializeWindowProcExceptions();

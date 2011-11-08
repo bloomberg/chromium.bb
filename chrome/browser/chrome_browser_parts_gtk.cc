@@ -22,8 +22,26 @@ void ChromeBrowserPartsGtk::PreEarlyInitialization() {
   DetectRunningAsRoot();
 }
 
+void ChromeBrowserPartsGtk::PostEarlyInitialization() {
+}
+
+void ChromeBrowserPartsGtk::ToolkitInitialized() {
+}
+
+void ChromeBrowserPartsGtk::PreMainMessageLoopStart() {
+}
+
+void ChromeBrowserPartsGtk::PostMainMessageLoopStart() {
+}
+
+void ChromeBrowserPartsGtk::PreMainMessageLoopRun() {
+}
+
 bool ChromeBrowserPartsGtk::MainMessageLoopRun(int* result_code) {
   return false;
+}
+
+void ChromeBrowserPartsGtk::PostMainMessageLoopRun() {
 }
 
 void ChromeBrowserPartsGtk::DetectRunningAsRoot() {

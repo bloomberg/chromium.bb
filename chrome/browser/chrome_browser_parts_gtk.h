@@ -16,13 +16,13 @@ class ChromeBrowserPartsGtk : public content::BrowserMainParts {
   ChromeBrowserPartsGtk();
 
   virtual void PreEarlyInitialization() OVERRIDE;
-  virtual void PostEarlyInitialization() OVERRIDE {}
-  virtual void PreMainMessageLoopStart() OVERRIDE {}
-  virtual void ToolkitInitialized() OVERRIDE {}
-  virtual void PostMainMessageLoopStart() OVERRIDE {}
-  virtual void PreMainMessageLoopRun() OVERRIDE {}
+  virtual void PostEarlyInitialization() OVERRIDE;
+  virtual void ToolkitInitialized() OVERRIDE;
+  virtual void PreMainMessageLoopStart() OVERRIDE;
+  virtual void PostMainMessageLoopStart() OVERRIDE;
+  virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
-  virtual void PostMainMessageLoopRun() {}
+  virtual void PostMainMessageLoopRun() OVERRIDE;
 
   static void ShowMessageBox(const char* message);
 

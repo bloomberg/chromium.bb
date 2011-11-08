@@ -194,6 +194,8 @@ ChromeBrowserMainPartsPosix::ChromeBrowserMainPartsPosix(
 }
 
 void ChromeBrowserMainPartsPosix::PreEarlyInitialization() {
+  ChromeBrowserMainParts::PreEarlyInitialization();
+
   // We need to accept SIGCHLD, even though our handler is a no-op because
   // otherwise we cannot wait on children. (According to POSIX 2001.)
   struct sigaction action;
@@ -220,6 +222,8 @@ void ChromeBrowserMainPartsPosix::PreEarlyInitialization() {
 }
 
 void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
+  ChromeBrowserMainParts::PostMainMessageLoopStart();
+
   int pipefd[2];
   int ret = pipe(pipefd);
   if (ret < 0) {

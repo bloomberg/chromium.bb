@@ -23,6 +23,7 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
       const content::MainFunctionParams& parameters);
 
   // BrowserParts overrides.
+  virtual void ToolkitInitialized() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;
 
   // ChromeBrowserMainParts overrides.

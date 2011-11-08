@@ -46,6 +46,9 @@ class DesktopNotificationService : public content::NotificationObserver,
                              NotificationUIManager* ui_manager);
   virtual ~DesktopNotificationService();
 
+  // Sets a UI manager to display notifications.
+  void SetUIManager(NotificationUIManager* ui_manager);
+
   // Requests permission (using an info-bar) for a given origin.
   // |callback_context| contains an opaque value to pass back to the
   // requesting process when the info-bar finishes.  A NULL tab can be given if

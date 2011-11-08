@@ -357,6 +357,8 @@
         'browser/chrome_browser_parts_gtk.h',
         'browser/chrome_browser_parts_touch.cc',
         'browser/chrome_browser_parts_touch.h',
+        'browser/chrome_browser_parts_views.cc',
+        'browser/chrome_browser_parts_views.h',
         'browser/chrome_content_browser_client.cc',
         'browser/chrome_content_browser_client.h',
         'browser/chrome_plugin_message_filter.cc',

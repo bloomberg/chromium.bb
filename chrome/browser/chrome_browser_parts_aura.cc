@@ -3,26 +3,46 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chrome_browser_parts_aura.h"
+#include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
+#include "ui/aura/desktop.h"
+#include "ui/aura_shell/shell.h"
 
-#include "base/logging.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/system/runtime_environment.h"
+#endif
 
 ChromeBrowserPartsAura::ChromeBrowserPartsAura()
     : content::BrowserMainParts() {
 }
 
 void ChromeBrowserPartsAura::PreEarlyInitialization() {
-  NOTIMPLEMENTED();
+}
+
+void ChromeBrowserPartsAura::PostEarlyInitialization() {
+}
+
+void ChromeBrowserPartsAura::ToolkitInitialized() {
+}
+
+void ChromeBrowserPartsAura::PreMainMessageLoopStart() {
+}
+
+void ChromeBrowserPartsAura::PostMainMessageLoopStart() {
+}
+
+void ChromeBrowserPartsAura::PreMainMessageLoopRun() {
+#if defined(OS_CHROMEOS)
+  if (chromeos::system::runtime_environment::IsRunningOnChromeOS())
+    aura::Desktop::set_use_fullscreen_host_window(true);
+#endif
+
+  // Shell takes ownership of ChromeShellDelegate.
+  aura_shell::Shell::GetInstance()->SetDelegate(new ChromeShellDelegate);
 }
 
 bool ChromeBrowserPartsAura::MainMessageLoopRun(int* result_code) {
   return false;
 }
 
-void ChromeBrowserPartsAura::PostMainMessageLoopStart() {
-  NOTIMPLEMENTED();
-}
-
-void ChromeBrowserPartsAura::ShowMessageBox(const char* message) {
-  LOG(ERROR) << "ShowMessageBox (not implemented): " << message;
-  NOTIMPLEMENTED();
+void ChromeBrowserPartsAura::PostMainMessageLoopRun() {
 }

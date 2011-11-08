@@ -224,6 +224,12 @@ DesktopNotificationService::~DesktopNotificationService() {
   StopObserving();
 }
 
+void DesktopNotificationService::SetUIManager(
+    NotificationUIManager* ui_manager) {
+  DCHECK(!ui_manager_);
+  ui_manager_ = ui_manager;
+}
+
 void DesktopNotificationService::StartObserving() {
   if (!profile_->IsOffTheRecord()) {
     notification_registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -268,7 +274,7 @@ void DesktopNotificationService::Observe(
     // which was unloaded.
     const Extension* extension =
         content::Details<UnloadedExtensionInfo>(details)->extension;
-    if (extension)
+    if (extension && ui_manager_)
       ui_manager_->CancelAllBySourceOrigin(extension->url());
   } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
     StopObserving();
@@ -365,6 +371,7 @@ void DesktopNotificationService::RequestPermission(
 
 void DesktopNotificationService::ShowNotification(
     const Notification& notification) {
+  // ui_manager_ should never be NULL here.
   ui_manager_->Add(notification, profile_);
 }
 
@@ -373,7 +380,9 @@ bool DesktopNotificationService::CancelDesktopNotification(
   scoped_refptr<NotificationObjectProxy> proxy(
       new NotificationObjectProxy(process_id, route_id, notification_id,
                                   false));
-  return ui_manager_->CancelById(proxy->id());
+  if (ui_manager_)
+    return ui_manager_->CancelById(proxy->id());
+  return false;
 }
 
 bool DesktopNotificationService::ShowDesktopNotification(
