@@ -80,6 +80,7 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
       r->SetNumber(number);
       return true;
     case WebKit::WebIDBKey::InvalidType:
+    default: // TODO(jsbell): Remove after WebIDBKey::ArrayType added.
       r->SetInvalid();
       return true;
   }
