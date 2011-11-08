@@ -7,3 +7,6 @@ nacl64_exe.pdb
 ppGoogleNaClPluginChrome.pdb
 remoting_host_plugin.pdb
 setup.pdb
+gcp_portmon.pdb
+gcp_portmon64.pdb
+virtual_driver_setup.pdb
