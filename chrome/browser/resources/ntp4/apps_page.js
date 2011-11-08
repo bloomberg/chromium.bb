@@ -337,6 +337,11 @@ cr.define('ntp4', function() {
           // Create a new bubble.
           infoBubble = new cr.ui.ExpandableBubble;
           infoBubble.anchorNode = this;
+          infoBubble.appId = this.appData_.id;
+          infoBubble.handleCloseEvent = function() {
+            chrome.send('closeNotification', [this.appId]);
+            infoBubble.hide();
+          };
         } else {
           // Reuse the old bubble instead of popping up a new bubble over
           // the old one.
@@ -777,7 +782,9 @@ cr.define('ntp4', function() {
   };
 
   function appNotificationChanged(id, notification) {
-    $(id).setupNotification_(notification);
+    var app = $(id);
+    if (app)  // The app might have been uninstalled.
+      app.setupNotification_(notification);
   };
 
   return {

@@ -35,6 +35,7 @@ cr.define('cr.ui', function() {
           '<div class="expandable-bubble-arrow"></div>';
 
       this.hidden = true;
+      this.handleCloseEvent = this.hide;
     },
 
     /**
@@ -72,11 +73,29 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Handles the close event which is triggered when the close button
+     * is clicked. By default is set to this.hide.
+     * @param {function} A function with no parameters
+     */
+    set handleCloseEvent(func) {
+      this.handleCloseEvent_ = func;
+    },
+
+    /**
      * Updates the position of the bubble.
      * @private
      */
     reposition_: function() {
       var clientRect = this.anchorNode_.getBoundingClientRect();
+      if (clientRect.width <= 0) {
+        // When the page loads initially, the icons for the apps haven't loaded
+        // yet so the width of the anchor is 0. We then make sure we don't draw
+        // at 0,0 by drawing off-screen instead. We'll get another chance to
+        // reposition when the icons have loaded.
+        this.style.top = "-999px";
+        return;
+      }
+
       this.style.left = this.style.right = clientRect.left + 'px';
 
       var top = clientRect.top - 1;
@@ -92,8 +111,17 @@ cr.define('cr.ui', function() {
     resizeAndReposition_: function() {
       var clientRect = this.anchorNode_.getBoundingClientRect();
       var width = clientRect.width;
+
+      var bubbleTitle = this.querySelector('.expandable-bubble-title');
+      var closeElement = this.querySelector('.expandable-bubble-close');
+      var closeWidth = this.expanded ? closeElement.clientWidth : 0;
+      var margin = 12;
+
       if (this.expanded) {
-        var expandedWidth = 250;
+        // We always show the full title but never show less width than 250
+        // pixels.
+        var expandedWidth =
+            Math.max(250, bubbleTitle.scrollWidth + closeWidth + margin);
         this.style.marginLeft = (width - expandedWidth) + 'px';
         width = expandedWidth;
       } else {
@@ -103,14 +131,11 @@ cr.define('cr.ui', function() {
       // Width is dynamic (when not expanded) based on the width of the anchor
       // node, and the title and shadow need to follow suit.
       this.style.width = width + 'px';
-      if (width > 0) {
-        var bubbleTitle = this.querySelector('.expandable-bubble-title');
-        bubbleTitle.style.width = width ? width - 2 + 'px' : 0 + 'px';
-        var bubbleContent = this.querySelector('.expandable-bubble-main');
-        bubbleContent.style.width = width ? width - 12 + 'px' : 0 + 'px';
-        var bubbleShadow = this.querySelector('.expandable-bubble-shadow');
-        bubbleShadow.style.width = width ? width + 2 + 'px' : 0 + 'px';
-      }
+      bubbleTitle.style.width = Math.max(0, width - margin - closeWidth) + 'px';
+      var bubbleContent = this.querySelector('.expandable-bubble-main');
+      bubbleContent.style.width = Math.max(0, width - margin) + 'px';
+      var bubbleShadow = this.querySelector('.expandable-bubble-shadow');
+      bubbleShadow.style.width = width ? width + 2 + 'px' : 0 + 'px';
 
       // Also reposition the bubble -- dimensions have potentially changed.
       this.reposition_();
@@ -211,7 +236,7 @@ cr.define('cr.ui', function() {
 
         case 'mousedown':
           if (e.target == this.querySelector('.expandable-bubble-close')) {
-            this.hide();
+            this.handleCloseEvent_();
             handled = true;
           } else if (!this.contains(e.target)) {
             if (this.expanded) {

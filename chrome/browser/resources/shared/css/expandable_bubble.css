@@ -39,6 +39,7 @@
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
+  overflow: hidden;
 }
 
 .expandable-bubble[expanded] > .expandable-bubble-contents > .expandable-bubble-title {
