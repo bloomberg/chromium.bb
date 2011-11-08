@@ -48,9 +48,7 @@ class URLRequestContextGetter;
 // retrieve the instance via Profile::GetSpellCheckHost().
 // Users should not hold the reference over the function scope because
 // the instance can be invalidated during the browser's lifecycle.
-class SpellCheckHost
-    : public base::RefCountedThreadSafe<
-          SpellCheckHost, content::BrowserThread::DeleteOnFileThread> {
+class SpellCheckHost {
  public:
   // Event types used for reporting the status of this class and its derived
   // classes to browser tests.
@@ -62,7 +60,7 @@ class SpellCheckHost
   virtual ~SpellCheckHost() {}
 
   // Creates the instance of SpellCheckHost implementation object.
-  static scoped_refptr<SpellCheckHost> Create(
+  static SpellCheckHost* Create(
       SpellCheckProfileProvider* profile,
       const std::string& language,
       net::URLRequestContextGetter* request_context_getter,

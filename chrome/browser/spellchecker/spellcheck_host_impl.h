@@ -9,8 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_profile_provider.h"
 #include "content/public/common/url_fetcher_delegate.h"
@@ -46,15 +48,17 @@ class SpellCheckHostImpl : public SpellCheckHost,
                      net::URLRequestContextGetter* request_context_getter,
                      SpellCheckHostMetrics* metrics);
 
+  virtual ~SpellCheckHostImpl();
+
   void Initialize();
 
   // SpellCheckHost implementation
-  virtual void UnsetProfile();
-  virtual void InitForRenderer(RenderProcessHost* process);
-  virtual void AddWord(const std::string& word);
-  virtual const base::PlatformFile& GetDictionaryFile() const;
-  virtual const std::string& GetLanguage() const;
-  virtual bool IsUsingPlatformChecker() const;
+  virtual void UnsetProfile() OVERRIDE;
+  virtual void InitForRenderer(RenderProcessHost* process) OVERRIDE;
+  virtual void AddWord(const std::string& word) OVERRIDE;
+  virtual const base::PlatformFile& GetDictionaryFile() const OVERRIDE;
+  virtual const std::string& GetLanguage() const OVERRIDE;
+  virtual bool IsUsingPlatformChecker() const OVERRIDE;
 
  private:
   typedef SpellCheckProfileProvider::CustomWordList CustomWordList;
@@ -63,8 +67,6 @@ class SpellCheckHostImpl : public SpellCheckHost,
   friend class content::BrowserThread;
   friend class DeleteTask<SpellCheckHostImpl>;
 
-  virtual ~SpellCheckHostImpl();
-
   // Figure out the location for the dictionary. This is only non-trivial for
   // Windows:
   // The default place whether the spellcheck dictionary can reside is
@@ -72,12 +74,11 @@ class SpellCheckHostImpl : public SpellCheckHost,
   // this directory may not have permissions for download. In that case, the
   // alternate directory for download is chrome::DIR_USER_DATA.
   void InitializeDictionaryLocation();
+  void InitializeDictionaryLocationComplete();
 
-  // Load and parse the custom words dictionary and open the bdic file.
-  // Executed on the file thread.
-  void InitializeInternal();
-
-  void InitializeOnFileThread();
+  // The reply point for PostTaskAndReply. Called when AddWord is finished
+  // adding a word in the background.
+  void AddWordComplete(const std::string& word);
 
   // Inform |profile_| that initialization has finished.
   // |custom_words| holds the custom word list which was
@@ -116,6 +117,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
 
   // Saves |data_| to disk. Run on the file thread.
   void SaveDictionaryData();
+  void SaveDictionaryDataComplete();
 
   // Verifies the specified BDict file exists and it is sane. This function
   // should be called before opening the file so we can delete it and download a
@@ -130,6 +132,10 @@ class SpellCheckHostImpl : public SpellCheckHost,
 
   // The location of the custom words file.
   FilePath custom_dictionary_file_;
+
+  // State whether a dictionary has been partially, or fully saved. If the
+  // former, shortcut Initialize.
+  bool dictionary_saved_;
 
   // The language of the dictionary file.
   std::string language_;
@@ -158,6 +164,10 @@ class SpellCheckHostImpl : public SpellCheckHost,
 
   // An optional metrics counter given by the constructor.
   SpellCheckHostMetrics* metrics_;
+
+  base::WeakPtrFactory<SpellCheckHostImpl> weak_ptr_factory_;
+
+  scoped_ptr<CustomWordList> custom_words_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckHostImpl);
 };

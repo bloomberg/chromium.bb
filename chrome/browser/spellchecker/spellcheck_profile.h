@@ -103,7 +103,7 @@ class SpellCheckProfile : public SpellCheckProfileProvider {
  private:
   const FilePath& GetCustomDictionaryPath();
 
-  scoped_refptr<SpellCheckHost> host_;
+  scoped_ptr<SpellCheckHost> host_;
   scoped_ptr<SpellCheckHostMetrics> metrics_;
 
   // Indicates whether |host_| has told us initialization is

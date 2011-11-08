@@ -36,14 +36,13 @@ class TestingSpellCheckProfile : public SpellCheckProfile {
       : SpellCheckProfile(profile_dir),
         create_host_calls_(0) {
   }
-
   virtual SpellCheckHost* CreateHost(
       SpellCheckProfileProvider* profile,
       const std::string& language,
       net::URLRequestContextGetter* request_context,
       SpellCheckHostMetrics* metrics) {
     create_host_calls_++;
-    return returning_from_create_.get();
+    return returning_from_create_.release();
   }
 
   virtual bool IsTesting() const {
@@ -51,17 +50,17 @@ class TestingSpellCheckProfile : public SpellCheckProfile {
   }
 
   bool IsCreatedHostReady() {
-    return GetHost() == returning_from_create_.get();
+    return !!GetHost();
   }
 
   void SetHostToBeCreated(MockSpellCheckHost* host) {
     EXPECT_CALL(*host, UnsetProfile()).Times(1);
     EXPECT_CALL(*host, IsReady()).WillRepeatedly(testing::Return(true));
-    returning_from_create_ = host;
+    returning_from_create_.reset(host);
   }
 
   size_t create_host_calls_;
-  scoped_refptr<SpellCheckHost> returning_from_create_;
+  scoped_ptr<SpellCheckHost> returning_from_create_;
 };
 
 typedef SpellCheckProfile::ReinitializeResult ResultType;
@@ -78,11 +77,11 @@ class SpellCheckProfileTest : public testing::Test {
 };
 
 TEST_F(SpellCheckProfileTest, ReinitializeEnabled) {
-  scoped_refptr<MockSpellCheckHost> host(new MockSpellCheckHost());
+  scoped_ptr<MockSpellCheckHost> host(new MockSpellCheckHost());
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   TestingSpellCheckProfile target(dir.path());
-  target.SetHostToBeCreated(host.get());
+  target.SetHostToBeCreated(host.release());
 
   // The first call should create host.
   ResultType result1 = target.ReinitializeHost(false, true, "", NULL);
@@ -101,12 +100,12 @@ TEST_F(SpellCheckProfileTest, ReinitializeEnabled) {
 }
 
 TEST_F(SpellCheckProfileTest, ReinitializeDisabled) {
-  scoped_refptr<MockSpellCheckHost> host(new MockSpellCheckHost());
+  scoped_ptr<MockSpellCheckHost> host(new MockSpellCheckHost());
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   TestingSpellCheckProfile target(dir.path());
 
-  target.returning_from_create_ = host.get();
+  target.returning_from_create_.reset(host.release());
 
   // If enabled is false, nothing should happen
   ResultType result1 = target.ReinitializeHost(false, false, "", NULL);
@@ -120,12 +119,12 @@ TEST_F(SpellCheckProfileTest, ReinitializeDisabled) {
 }
 
 TEST_F(SpellCheckProfileTest, ReinitializeRemove) {
-  scoped_refptr<MockSpellCheckHost> host(new MockSpellCheckHost());
+  scoped_ptr<MockSpellCheckHost> host(new MockSpellCheckHost());
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   TestingSpellCheckProfile target(dir.path());
 
-  target.SetHostToBeCreated(host.get());
+  target.SetHostToBeCreated(host.release());
 
   // At first, create the host.
   ResultType result1 = target.ReinitializeHost(false, true, "", NULL);
@@ -141,12 +140,12 @@ TEST_F(SpellCheckProfileTest, ReinitializeRemove) {
 }
 
 TEST_F(SpellCheckProfileTest, ReinitializeRecreate) {
-  scoped_refptr<MockSpellCheckHost> host1(new MockSpellCheckHost());
+  scoped_ptr<MockSpellCheckHost> host1(new MockSpellCheckHost());
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   TestingSpellCheckProfile target(dir.path());
 
-  target.SetHostToBeCreated(host1.get());
+  target.SetHostToBeCreated(host1.release());
 
   // At first, create the host.
   ResultType result1 = target.ReinitializeHost(false, true, "", NULL);
@@ -156,8 +155,8 @@ TEST_F(SpellCheckProfileTest, ReinitializeRecreate) {
   EXPECT_TRUE(target.IsCreatedHostReady());
 
   // Then the host should be re-created if it's forced to recreate.
-  scoped_refptr<MockSpellCheckHost> host2(new MockSpellCheckHost());
-  target.SetHostToBeCreated(host2.get());
+  scoped_ptr<MockSpellCheckHost> host2(new MockSpellCheckHost());
+  target.SetHostToBeCreated(host2.release());
 
   ResultType result2 = target.ReinitializeHost(true, true, "", NULL);
   target.SpellCheckHostInitialized(0);
@@ -167,12 +166,12 @@ TEST_F(SpellCheckProfileTest, ReinitializeRecreate) {
 }
 
 TEST_F(SpellCheckProfileTest, SpellCheckHostInitializedWithCustomWords) {
-  scoped_refptr<MockSpellCheckHost> host(new MockSpellCheckHost());
+  scoped_ptr<MockSpellCheckHost> host(new MockSpellCheckHost());
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   TestingSpellCheckProfile target(dir.path());
 
-  target.SetHostToBeCreated(host.get());
+  target.SetHostToBeCreated(host.release());
   target.ReinitializeHost(false, true, "", NULL);
 
   scoped_ptr<SpellCheckProfile::CustomWordList> loaded_custom_words
@@ -185,12 +184,12 @@ TEST_F(SpellCheckProfileTest, SpellCheckHostInitializedWithCustomWords) {
 }
 
 TEST_F(SpellCheckProfileTest, CustomWordAddedLocally) {
-  scoped_refptr<MockSpellCheckHost> host(new MockSpellCheckHost());
+  scoped_ptr<MockSpellCheckHost> host(new MockSpellCheckHost());
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   TestingSpellCheckProfile target(dir.path());
 
-  target.SetHostToBeCreated(host.get());
+  target.SetHostToBeCreated(host.release());
   target.ReinitializeHost(false, true, "", NULL);
 
   scoped_ptr<SpellCheckProfile::CustomWordList> loaded_custom_words
@@ -207,12 +206,12 @@ TEST_F(SpellCheckProfileTest, CustomWordAddedLocally) {
 }
 
 TEST_F(SpellCheckProfileTest, SaveAndLoad) {
-  scoped_refptr<MockSpellCheckHost> host(new MockSpellCheckHost());
+  scoped_ptr<MockSpellCheckHost> host(new MockSpellCheckHost());
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   TestingSpellCheckProfile target(dir.path());
 
-  target.SetHostToBeCreated(host.get());
+  target.SetHostToBeCreated(host.release());
   target.ReinitializeHost(false, true, "", NULL);
 
   scoped_ptr<SpellCheckProfile::CustomWordList> loaded_custom_words(
@@ -235,9 +234,9 @@ TEST_F(SpellCheckProfileTest, SaveAndLoad) {
 
   // Load in another instance of SpellCheckProfile.
   // The result should be the same.
-  scoped_refptr<MockSpellCheckHost> host2(new MockSpellCheckHost());
+  scoped_ptr<MockSpellCheckHost> host2(new MockSpellCheckHost());
   TestingSpellCheckProfile target2(dir.path());
-  target2.SetHostToBeCreated(host2.get());
+  target2.SetHostToBeCreated(host2.release());
   target2.ReinitializeHost(false, true, "", NULL);
   scoped_ptr<SpellCheckProfile::CustomWordList> loaded_custom_words2(
       new SpellCheckProfile::CustomWordList());
@@ -246,8 +245,8 @@ TEST_F(SpellCheckProfileTest, SaveAndLoad) {
 }
 
 TEST_F(SpellCheckProfileTest, MultiProfile) {
-  scoped_refptr<MockSpellCheckHost> host1(new MockSpellCheckHost());
-  scoped_refptr<MockSpellCheckHost> host2(new MockSpellCheckHost());
+  scoped_ptr<MockSpellCheckHost> host1(new MockSpellCheckHost());
+  scoped_ptr<MockSpellCheckHost> host2(new MockSpellCheckHost());
 
   ScopedTempDir dir1;
   ScopedTempDir dir2;
@@ -256,9 +255,9 @@ TEST_F(SpellCheckProfileTest, MultiProfile) {
   TestingSpellCheckProfile target1(dir1.path());
   TestingSpellCheckProfile target2(dir2.path());
 
-  target1.SetHostToBeCreated(host1.get());
+  target1.SetHostToBeCreated(host1.release());
   target1.ReinitializeHost(false, true, "", NULL);
-  target2.SetHostToBeCreated(host2.get());
+  target2.SetHostToBeCreated(host2.release());
   target2.ReinitializeHost(false, true, "", NULL);
 
   SpellCheckProfile::CustomWordList expected1;

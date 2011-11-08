@@ -25,15 +25,13 @@ SpellCheckHost::EventType g_status_type = SpellCheckHost::BDICT_NOTINITIALIZED;
 }  // namespace
 
 // static
-scoped_refptr<SpellCheckHost> SpellCheckHost::Create(
+SpellCheckHost* SpellCheckHost::Create(
     SpellCheckProfileProvider* profile,
     const std::string& language,
     net::URLRequestContextGetter* request_context_getter,
     SpellCheckHostMetrics* metrics) {
-  scoped_refptr<SpellCheckHostImpl> host =
-      new SpellCheckHostImpl(profile,
-                             language,
-                             request_context_getter,
+  SpellCheckHostImpl* host =
+      new SpellCheckHostImpl(profile, language, request_context_getter,
                              metrics);
   if (!host)
     return NULL;

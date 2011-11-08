@@ -52,13 +52,13 @@ SpellCheckProfile::ReinitializeResult SpellCheckProfile::ReinitializeHost(
   bool host_deleted = false;
   if (host_.get()) {
     host_->UnsetProfile();
-    host_ = NULL;
+    host_.reset(NULL);
     host_deleted = true;
   }
 
   if (enable) {
     // Retrieve the (perhaps updated recently) dictionary name from preferences.
-    host_ = CreateHost(this, language, request_context, metrics_.get());
+    host_.reset(CreateHost(this, language, request_context, metrics_.get()));
     return REINITIALIZE_CREATED_HOST;
   }
 
