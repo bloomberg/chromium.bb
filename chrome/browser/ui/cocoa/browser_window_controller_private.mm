@@ -848,12 +848,14 @@ willPositionSheet:(NSWindow*)sheet
   savedRegularWindowFrame_ = [window frame];
   BOOL mode = [self shouldUsePresentationModeWhenEnteringFullscreen];
   mode = mode || browser_->is_fullscreen_for_tab();
+  enteringFullscreen_ = YES;
   [self setPresentationModeInternal:mode forceDropdown:NO];
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification*)notification {
   if (base::mac::IsOSLionOrLater())
     [self deregisterForContentViewResizeNotifications];
+  enteringFullscreen_ = NO;
   [self showFullscreenExitBubbleIfNecessary];
 }
 
@@ -870,6 +872,7 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)windowDidFailToEnterFullScreen:(NSWindow*)window {
   [self deregisterForContentViewResizeNotifications];
+  enteringFullscreen_ = NO;
   [self setPresentationModeInternal:NO forceDropdown:NO];
 }
 

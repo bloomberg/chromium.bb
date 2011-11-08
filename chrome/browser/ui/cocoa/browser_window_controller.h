@@ -131,6 +131,10 @@ class TabContents;
   // exiting presentation mode.
   BOOL enteredPresentationModeFromFullscreen_;
 
+  // True between -windowWillEnterFullScreen and -windowDidEnterFullScreen.
+  // Only used on Lion.
+  BOOL enteringFullscreen_;
+
   // The size of the original (non-fullscreen) window.  This is saved just
   // before entering fullscreen mode and is only valid when |-isFullscreen|
   // returns YES.

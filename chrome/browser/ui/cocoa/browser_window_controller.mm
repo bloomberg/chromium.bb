@@ -1956,7 +1956,8 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 - (BOOL)isFullscreen {
   return (fullscreenWindow_.get() != nil) ||
-         ([[self window] styleMask] & NSFullScreenWindowMask);
+         ([[self window] styleMask] & NSFullScreenWindowMask) ||
+         enteringFullscreen_;
 }
 
 - (void)togglePresentationModeForLionOrLater:(id)sender {
