@@ -3593,8 +3593,8 @@ void RenderViewImpl::ZoomFactorHelper(content::PageZoom zoom,
         (zoom > 0 ? scaling_increment : -scaling_increment);
   }
   if (page_scale_factor > 0) {
-    webview()->scalePage(page_scale_factor,
-                         WebPoint(zoom_center_x, zoom_center_y));
+    webview()->setPageScaleFactor(page_scale_factor,
+                                  WebPoint(zoom_center_x, zoom_center_y));
   }
 }
 
