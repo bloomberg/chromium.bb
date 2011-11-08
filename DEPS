@@ -350,9 +350,6 @@ deps_os = {
     "src/third_party/lighttpd":
       "/trunk/deps/third_party/lighttpd@33737",
 
-    "src/third_party/WebKit/WebKitLibraries":
-      Var("webkit_trunk") + "/WebKitLibraries@" + Var("webkit_revision"),
-
     "src/third_party/swig/mac":
       "/trunk/deps/third_party/swig/mac@" + Var("swig_revision"),
 
