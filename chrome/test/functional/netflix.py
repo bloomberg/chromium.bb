@@ -33,12 +33,15 @@ class NetflixTest(pyauto.PyUITest):
   def _LoginToNetflix(self):
     """Login to Netflix"""
     credentials = self.GetPrivateInfo()['test_netflix_acct']
+    board_name = self.ChromeOSBoard()
+    assert credentials.get(board_name), \
+           'No netflix credentials for %s' % board_name
     self.NavigateToURL(credentials['login_url'])
     login_js = """
         document.getElementById('email').value='%s';
         document.getElementById('password').value='%s';
         window.domAutomationController.send('ok');
-    """ % (credentials['username'], credentials['password'])
+    """ % (credentials[board_name], credentials['password'])
     self.assertEqual(self.ExecuteJavascript(login_js), 'ok',
         msg='Failed to set login credentials')
     self.assertTrue(self.SubmitForm('login-form'),
