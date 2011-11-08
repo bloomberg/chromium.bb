@@ -39,6 +39,7 @@ cr.define('login', function() {
      * @param data {string} Screen init payload.
      */
     onBeforeShow: function(data) {
+      $('add-user-header-bar-item').hidden = false;
       $('pod-row').handleShow();
       if (this.firstShown_) {
         this.firstShown_ = false;

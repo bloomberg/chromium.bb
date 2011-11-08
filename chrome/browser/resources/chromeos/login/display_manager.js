@@ -273,7 +273,6 @@ cr.define('cr.ui.login', function() {
   DisplayManager.showSigninUI = function(opt_email) {
     $('add-user-button').hidden = true;
     $('cancel-add-user-button').hidden = false;
-    $('add-user-header-bar-item').hidden = $('pod-row').pods.length == 0;
     chrome.send('showAddUser', [opt_email]);
   };
 
