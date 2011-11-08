@@ -6,6 +6,9 @@
   'targets': [
     {
       'target_name': 'appcache',
+      # TODO(dpranke): Uncomment '<(component)',
+      # 'type': '<(component)',
+      'type': 'static_library',
       'defines': [
         'APPCACHE_IMPLEMENTATION',
       ],
@@ -16,6 +19,7 @@
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/sql/sql.gyp:sql',
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        # TODO(dpranke): Uncomment '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
         # This list contains all .h and .cc in appcache except for test code.
@@ -69,17 +73,6 @@
         'webkit_appcache.gypi',
       ],
       'conditions': [
-        [# TODO(dpranke): Remove once the circular dependencies in
-         # WebKit.gyp are fixed on the mac.
-         # See https://bugs.webkit.org/show_bug.cgi?id=68463
-         'OS=="mac"', {
-          'type': 'static_library',
-         }, {
-          'type': '<(component)',
-          'dependencies': [
-              '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
-          ],
-         }],
         ['inside_chromium_build==0', {
           'dependencies': [
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',

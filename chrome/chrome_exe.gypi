@@ -495,9 +495,6 @@
             'app/client_util.cc',
           ],
         }],
-        ['OS=="win" and component=="shared_library"', {
-          'defines': ['COMPILE_CONTENT_STATICALLY'],
-        }]
       ],
     },
   ],
@@ -537,7 +534,6 @@
           ],
           'defines': [
             '<@(nacl_win64_defines)',
-            'COMPILE_CONTENT_STATICALLY',
           ],
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome',
