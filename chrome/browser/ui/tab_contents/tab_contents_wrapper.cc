@@ -488,6 +488,9 @@ string16 TabContentsWrapper::GetStatusText() const {
           l10n_util::GetStringUTF16(IDS_LOAD_STATE_ESTABLISHING_PROXY_TUNNEL);
     case net::LOAD_STATE_RESOLVING_PROXY_FOR_URL:
       return l10n_util::GetStringUTF16(IDS_LOAD_STATE_RESOLVING_PROXY_FOR_URL);
+    case net::LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT:
+      return l10n_util::GetStringUTF16(
+          IDS_LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT);
     case net::LOAD_STATE_RESOLVING_HOST:
       return l10n_util::GetStringUTF16(IDS_LOAD_STATE_RESOLVING_HOST);
     case net::LOAD_STATE_CONNECTING:

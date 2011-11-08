@@ -135,6 +135,17 @@ class RuleBasedProxyResolver : public ProxyResolver {
     NOTREACHED();
   }
 
+  virtual LoadState GetLoadState(RequestHandle request_handle) const {
+    NOTREACHED();
+    return LOAD_STATE_IDLE;
+  }
+
+  virtual LoadState GetLoadStateThreadSafe(
+      RequestHandle request) const OVERRIDE {
+    NOTREACHED();
+    return LOAD_STATE_IDLE;
+  }
+
   virtual void CancelSetPacScript() {
     NOTREACHED();
   }
