@@ -58,7 +58,7 @@ void Workspace::SetBounds(const gfx::Rect& bounds) {
   bool bounds_changed = bounds_ != bounds;
   bounds_ = bounds;
   if (bounds_changed)
-    Layout(NULL, NULL);
+    Layout(NULL);
 }
 
 gfx::Rect Workspace::GetWorkAreaBounds() const {
@@ -78,7 +78,7 @@ bool Workspace::AddWindowAfter(aura::Window* window, aura::Window* after) {
         std::find(windows_.begin(), windows_.end(), after);
     windows_.insert(++i, window);
   }
-  Layout(NULL, window);
+  Layout(window);
 
   return true;
 }
@@ -86,7 +86,7 @@ bool Workspace::AddWindowAfter(aura::Window* window, aura::Window* after) {
 void Workspace::RemoveWindow(aura::Window* window) {
   DCHECK(Contains(window));
   windows_.erase(std::find(windows_.begin(), windows_.end(), window));
-  Layout(NULL, NULL);
+  Layout(NULL);
 }
 
 bool Workspace::Contains(aura::Window* window) const {
@@ -134,7 +134,7 @@ void Workspace::RotateWindows(aura::Window* source, aura::Window* target) {
     std::rotate(source_iter, source_iter + 1, target_iter + 1);
   else
     std::rotate(target_iter, source_iter, source_iter + 1);
-  Layout(source, NULL);
+  Layout(NULL);
 }
 
 aura::Window* Workspace::ShiftWindows(aura::Window* insert,
@@ -145,8 +145,11 @@ aura::Window* Workspace::ShiftWindows(aura::Window* insert,
   DCHECK(!Contains(insert));
 
   bool shift_reached_until = GetIndexOf(until) >= 0;
-  if (shift_reached_until)
-    RemoveWindow(until);
+  if (shift_reached_until) {
+    // Calling RemoveWindow here causes the animation set in Layout below
+    // to be ignored.  See crbug.com/102413.
+    windows_.erase(std::find(windows_.begin(), windows_.end(), until));
+  }
   aura::Window* pushed = NULL;
   if (direction == SHIFT_TO_RIGHT) {
     aura::Window::Windows::iterator iter =
@@ -171,7 +174,7 @@ aura::Window* Workspace::ShiftWindows(aura::Window* insert,
       windows_.erase(windows_.begin());
     }
   }
-  Layout(shift_reached_until ? until : NULL, NULL);
+  Layout(NULL);
   return pushed;
 }
 
@@ -179,7 +182,8 @@ void Workspace::Activate() {
   workspace_manager_->SetActiveWorkspace(this);
 }
 
-void Workspace::Layout(aura::Window* ignore, aura::Window* no_animation) {
+void Workspace::Layout(aura::Window* no_animation) {
+  aura::Window* ignore = workspace_manager_->ignored_window();
   workspace_manager_->set_layout_in_progress(true);
   gfx::Rect work_area = workspace_manager_->GetWorkAreaBounds(bounds_);
   int total_width = GetTotalWindowsWidth();

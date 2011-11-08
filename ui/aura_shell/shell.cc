@@ -21,7 +21,7 @@
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/toplevel_layout_manager.h"
 #include "ui/aura_shell/toplevel_window_event_filter.h"
-#include "ui/aura_shell/workspace/workspace_controller.h"
+#include "ui/aura_shell/workspace_controller.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "views/widget/native_widget_aura.h"
@@ -87,6 +87,9 @@ Shell::Shell()
 }
 
 Shell::~Shell() {
+  // Make sure we delete WorkspaceController before launcher is
+  // deleted as it has a reference to launcher model.
+  workspace_controller_.reset();
 }
 
 // static
@@ -165,6 +168,7 @@ void Shell::EnableWorkspaceManager() {
 
   workspace_controller_.reset(
       new internal::WorkspaceController(default_container));
+  workspace_controller_->SetLauncherModel(launcher_->model());
   default_container->SetEventFilter(
       new internal::DefaultContainerEventFilter(default_container));
   default_container->SetLayoutManager(

@@ -66,10 +66,6 @@ class AURA_SHELL_EXPORT DefaultContainerLayoutManager
   // Owned by WorkspaceController.
   WorkspaceManager* workspace_manager_;
 
-  // A window that are currently moved or resized. Used to put
-  // different constraints on drag window.
-  aura::Window* drag_window_;
-
   scoped_ptr<ShowStateController> show_state_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultContainerLayoutManager);

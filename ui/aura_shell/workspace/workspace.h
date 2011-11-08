@@ -85,11 +85,12 @@ class AURA_SHELL_EXPORT Workspace {
   // Activates this workspace.
   void Activate();
 
-  // Layout windows. The workspace doesn't set bounds on |ignore| if it's
-  // given. It still uses |ignore| window's bounds to calculate
-  // bounds for other windows. Moving animation is applied to all
-  // windows except for the window specified by |no_animation| and |ignore|.
-  void Layout(aura::Window* ignore, aura::Window* no_animation);
+  // Layout windows. The workspace doesn't set bounds on
+  // |WorkspaceManager::ignored_window| if it's set. It still uses the window's
+  // bounds to calculate bounds for other windows. Moving animation is
+  // applied to all windows except for the window specified by |no_animation|
+  // and |ignore|.
+  void Layout(aura::Window* no_animation);
 
   // Returns true if the workspace contains a fullscreen window.
   bool ContainsFullscreenWindow() const;

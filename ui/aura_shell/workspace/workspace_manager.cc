@@ -36,12 +36,15 @@ namespace internal {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowManager, public:
 
-WorkspaceManager::WorkspaceManager(aura::Window* viewport)
-    : viewport_(viewport),
+WorkspaceManager::WorkspaceManager(aura::Window* contents_view)
+    : contents_view_(contents_view),
       active_workspace_(NULL),
       workspace_size_(
-          gfx::Screen::GetMonitorAreaNearestWindow(viewport_).size()),
-      is_overview_(false) {
+          gfx::Screen::GetMonitorAreaNearestWindow(contents_view_).size()),
+      is_overview_(false),
+      layout_in_progress_(false),
+      ignored_window_(NULL) {
+  DCHECK(contents_view);
 }
 
 WorkspaceManager::~WorkspaceManager() {
@@ -77,7 +80,7 @@ aura::Window* WorkspaceManager::FindRotateWindowForLocation(
 }
 
 void WorkspaceManager::LayoutWorkspaces() {
-  UpdateViewport();
+  UpdateContentsView();
 
   gfx::Rect bounds(workspace_size_);
   int x = 0;
@@ -92,7 +95,7 @@ void WorkspaceManager::LayoutWorkspaces() {
 }
 
 gfx::Rect WorkspaceManager::GetDragAreaBounds() {
-  return GetWorkAreaBounds(gfx::Rect(viewport_->bounds().size()));
+  return GetWorkAreaBounds(gfx::Rect(contents_view_->bounds().size()));
 }
 
 void WorkspaceManager::SetOverview(bool overview) {
@@ -103,17 +106,17 @@ void WorkspaceManager::SetOverview(bool overview) {
   ui::Transform transform;
   if (is_overview_) {
     // TODO(oshima|sky): We limit the how small windows can be shrinked
-    // in overview mode, thus part of the viewport may not be visible.
-    // We need to add capability to scroll/move viewport in overview mode.
+    // in overview mode, thus part of the contents_view may not be visible.
+    // We need to add capability to scroll/move contents_view in overview mode.
     float scale = std::min(
         kMaxOverviewScale,
         workspace_size_.width() /
-        static_cast<float>(viewport_->bounds().width()));
+        static_cast<float>(contents_view_->bounds().width()));
     scale = std::max(kMinOverviewScale, scale);
 
     transform.SetScale(scale, scale);
 
-    int overview_width = viewport_->bounds().width() * scale;
+    int overview_width = contents_view_->bounds().width() * scale;
     int dx = 0;
     if (overview_width < workspace_size_.width()) {
       dx = (workspace_size_.width() - overview_width) / 2;
@@ -131,8 +134,9 @@ void WorkspaceManager::SetOverview(bool overview) {
     transform.SetTranslateX(-active_workspace_->bounds().x());
   }
 
-  ui::LayerAnimator::ScopedSettings settings(viewport_->layer()->GetAnimator());
-  viewport_->layer()->SetTransform(transform);
+  ui::LayerAnimator::ScopedSettings settings(
+      contents_view_->layer()->GetAnimator());
+  contents_view_->layer()->SetTransform(transform);
 }
 
 void WorkspaceManager::RotateWindows(aura::Window* source,
@@ -166,6 +170,7 @@ void WorkspaceManager::RotateWindows(aura::Window* source,
   }
   FOR_EACH_OBSERVER(WorkspaceObserver, observers_,
                     WindowMoved(this, source, target));
+  workspaces_[target_ws_index]->Activate();
 }
 
 void WorkspaceManager::SetWorkspaceSize(const gfx::Size& workspace_size) {
@@ -215,13 +220,15 @@ void WorkspaceManager::RemoveWorkspace(Workspace* workspace) {
 }
 
 void WorkspaceManager::SetActiveWorkspace(Workspace* workspace) {
+  if (active_workspace_ == workspace)
+    return;
   DCHECK(std::find(workspaces_.begin(), workspaces_.end(),
                    workspace) != workspaces_.end());
   Workspace* old = active_workspace_;
   active_workspace_ = workspace;
 
   is_overview_ = false;
-  UpdateViewport();
+  UpdateContentsView();
 
   FOR_EACH_OBSERVER(WorkspaceObserver, observers_,
                     ActiveWorkspaceChanged(this, old));
@@ -246,22 +253,22 @@ int WorkspaceManager::GetWorkspaceIndexContaining(aura::Window* window) const {
   return -1;
 }
 
-void WorkspaceManager::UpdateViewport() {
+void WorkspaceManager::UpdateContentsView() {
   int num_workspaces = std::max(1, static_cast<int>(workspaces_.size()));
   int total_width = workspace_size_.width() * num_workspaces +
       kWorkspaceHorizontalMargin * (num_workspaces - 1);
   gfx::Rect bounds(0, 0, total_width, workspace_size_.height());
 
-  if (viewport_->GetTargetBounds() != bounds)
-    viewport_->SetBounds(bounds);
+  if (contents_view_->GetTargetBounds() != bounds)
+    contents_view_->SetBounds(bounds);
 
   // Move to active workspace.
   if (active_workspace_) {
     ui::Transform transform;
     transform.SetTranslateX(-active_workspace_->bounds().x());
     ui::LayerAnimator::ScopedSettings settings(
-        viewport_->layer()->GetAnimator());
-    viewport_->SetTransform(transform);
+        contents_view_->layer()->GetAnimator());
+    contents_view_->SetTransform(transform);
   }
 }
 

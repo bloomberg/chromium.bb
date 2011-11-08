@@ -355,7 +355,7 @@ internal::ImageRep* Image::GetRepresentation(
     internal::ImageRepSkia* skia_rep = default_rep->AsImageRepSkia();
     internal::ImageRep* native_rep = NULL;
 #if defined(USE_AURA)
-    skia_rep = NULL;
+    static_cast<void>(skia_rep);
     NOTIMPLEMENTED();
 #elif defined(TOOLKIT_USES_GTK)
     if (rep_type == Image::kImageRepGdk) {

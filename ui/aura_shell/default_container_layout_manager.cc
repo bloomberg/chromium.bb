@@ -28,7 +28,6 @@ namespace internal {
 DefaultContainerLayoutManager::DefaultContainerLayoutManager(
     WorkspaceManager* workspace_manager)
     : workspace_manager_(workspace_manager),
-      drag_window_(NULL),
       show_state_controller_(new ShowStateController(workspace_manager)) {
 }
 
@@ -37,13 +36,13 @@ DefaultContainerLayoutManager::~DefaultContainerLayoutManager() {}
 void DefaultContainerLayoutManager::PrepareForMoveOrResize(
     aura::Window* drag,
     aura::MouseEvent* event) {
-  drag_window_ = drag;
+  workspace_manager_->set_ignored_window(drag);
 }
 
 void DefaultContainerLayoutManager::CancelMoveOrResize(
     aura::Window* drag,
     aura::MouseEvent* event) {
-  drag_window_ = NULL;
+  workspace_manager_->set_ignored_window(NULL);
 }
 
 void DefaultContainerLayoutManager::ProcessMove(
@@ -57,7 +56,7 @@ void DefaultContainerLayoutManager::ProcessMove(
   gfx::Point point_in_owner = event->location();
   aura::Window::ConvertPointToWindow(
       drag,
-      workspace_manager_->viewport(),
+      workspace_manager_->contents_view(),
       &point_in_owner);
   // TODO(oshima): We should support simply moving to another
   // workspace when the destination workspace has enough room to accomodate.
@@ -71,10 +70,9 @@ void DefaultContainerLayoutManager::EndMove(
     aura::Window* drag,
     aura::MouseEvent* evnet) {
   // TODO(oshima): finish moving window between workspaces.
-  drag_window_ = NULL;
-
+  workspace_manager_->set_ignored_window(NULL);
   Workspace* workspace = workspace_manager_->FindBy(drag);
-  workspace->Layout(NULL, NULL);
+  workspace->Layout(NULL);
   workspace->Activate();
   workspace_manager_->SetOverview(false);
 }
@@ -82,10 +80,10 @@ void DefaultContainerLayoutManager::EndMove(
 void DefaultContainerLayoutManager::EndResize(
     aura::Window* drag,
     aura::MouseEvent* evnet) {
-  drag_window_ = NULL;
+  workspace_manager_->set_ignored_window(NULL);
   Workspace* workspace = workspace_manager_->GetActiveWorkspace();
   if (workspace)
-    workspace->Layout(NULL, NULL);
+    workspace->Layout(NULL);
   workspace_manager_->SetOverview(false);
 }
 
@@ -149,7 +147,7 @@ void DefaultContainerLayoutManager::SetChildBounds(
       workspace_manager_->layout_in_progress() ||
       child->transient_parent()) {
     // Use the requested bounds as is.
-  } else if (drag_window_) {
+  } else if (child == workspace_manager_->ignored_window()) {
     // If a drag window is requesting bounds, make sure its attached to
     // the workarea's top and fits within the total drag area.
     gfx::Rect drag_area =  workspace_manager_->GetDragAreaBounds();

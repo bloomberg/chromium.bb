@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/aura_shell/workspace/workspace_manager.h"
+
 #include "ui/aura/aura_constants.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/screen_aura.h"
@@ -9,7 +11,6 @@
 #include "ui/aura/test/test_desktop_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/workspace/workspace.h"
-#include "ui/aura_shell/workspace/workspace_manager.h"
 #include "ui/aura_shell/workspace/workspace_observer.h"
 #include "ui/base/ui_base_types.h"
 
@@ -178,57 +179,6 @@ TEST_F(WorkspaceManagerTest, WorkspaceManagerDragArea) {
   EXPECT_EQ("10,10 180x180", manager_->GetDragAreaBounds().ToString());
 }
 
-// TODO(sky): move this into a test for WorkspaceController.
-TEST_F(WorkspaceManagerTest, DISABLED_Overview) {
-  manager_->SetWorkspaceSize(gfx::Size(500, 300));
-
-  // Creating two workspaces, ws1 which contains window w1,
-  // and ws2 which contains window w2.
-  Workspace* ws1 = manager_->CreateWorkspace();
-  scoped_ptr<Window> w1(CreateTestWindow());
-  viewport()->AddChild(w1.get());
-  EXPECT_TRUE(ws1->AddWindowAfter(w1.get(), NULL));
-
-  Workspace* ws2 = manager_->CreateWorkspace();
-  scoped_ptr<Window> w2(CreateTestWindow());
-  viewport()->AddChild(w2.get());
-  EXPECT_TRUE(ws2->AddWindowAfter(w2.get(), NULL));
-
-  // Activating a window switches the active workspace.
-  w2->Activate();
-  EXPECT_EQ(ws2, manager_->GetActiveWorkspace());
-
-  // The size of viewport() is now ws1(500) + ws2(500) + margin(50).
-  EXPECT_EQ("0,0 1050x300", viewport()->bounds().ToString());
-  EXPECT_FALSE(manager_->is_overview());
-  manager_->SetOverview(true);
-  EXPECT_TRUE(manager_->is_overview());
-
-  // Switching overview mode doesn't change the active workspace.
-  EXPECT_EQ(ws2, manager_->GetActiveWorkspace());
-
-  // Activaing window w1 switches the active window and
-  // the mode back to normal mode.
-  w1->Activate();
-  EXPECT_EQ(ws1, manager_->GetActiveWorkspace());
-  EXPECT_FALSE(manager_->is_overview());
-
-  // Deleting w1 without DesktopDelegate resets the active workspace
-  ws1->RemoveWindow(w1.get());
-  delete ws1;
-  w1.reset();
-  EXPECT_EQ(NULL, manager_->GetActiveWorkspace());
-  EXPECT_EQ("0,0 500x300", viewport()->bounds().ToString());
-  ws2->RemoveWindow(w2.get());
-  delete ws2;
-  // The size of viewport() for no workspace case must be
-  // same as one viewport() case.
-  EXPECT_EQ("0,0 500x300", viewport()->bounds().ToString());
-
-  // Reset now before windows are destroyed.
-  manager_.reset();
-}
-
 TEST_F(WorkspaceManagerTest, WorkspaceManagerActivate) {
   TestWorkspaceObserver observer(manager_.get());
   Workspace* ws1 = manager_->CreateWorkspace();
@@ -279,13 +229,9 @@ TEST_F(WorkspaceManagerTest, FindRotateWindow) {
             manager_->FindRotateWindowForLocation(gfx::Point(300, 0)));
   EXPECT_EQ(NULL, manager_->FindRotateWindowForLocation(gfx::Point(400, 0)));
 
-
-  // The following test does not pass due to crbug.com/102413.
-  // TODO(oshima): Re-enable this once the bug is fixed.
-  /*
   w11->SetBounds(gfx::Rect(0, 0, 400, 100));
   w12->SetBounds(gfx::Rect(0, 0, 200, 100));
-  manager_->FindBy(w11.get())->Layout(NULL, NULL);
+  manager_->FindBy(w11.get())->Layout(NULL);
   EXPECT_EQ(w11.get(),
             manager_->FindRotateWindowForLocation(gfx::Point(10, 0)));
   EXPECT_EQ(w11.get(),
@@ -294,7 +240,6 @@ TEST_F(WorkspaceManagerTest, FindRotateWindow) {
             manager_->FindRotateWindowForLocation(gfx::Point(260, 0)));
   EXPECT_EQ(w12.get(),
             manager_->FindRotateWindowForLocation(gfx::Point(490, 0)));
-  */
 
   Workspace* ws2 = manager_->CreateWorkspace();
   scoped_ptr<Window> w21(CreateTestWindow());

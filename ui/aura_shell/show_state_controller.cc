@@ -40,7 +40,7 @@ void ShowStateController::OnPropertyChanged(aura::Window* window,
     SetRestoreBounds(window, window->GetTargetBounds());
   }
 
-  workspace_manager_->FindBy(window)->Layout(NULL, window);
+  workspace_manager_->FindBy(window)->Layout(window);
 }
 
 }  // namespace internal

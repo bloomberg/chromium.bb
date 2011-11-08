@@ -34,9 +34,8 @@ class AURA_SHELL_EXPORT WorkspaceManager {
   explicit WorkspaceManager(aura::Window* viewport);
   virtual ~WorkspaceManager();
 
-  // Returns the viewport window this WorkspaceManager layouts
-  // workspaces on.
-  aura::Window* viewport() { return viewport_; }
+  // Returns the Window this WorkspaceManager controls.
+  aura::Window* contents_view() { return contents_view_; }
 
   // Create new workspace. Workspace objects are managed by
   // this WorkspaceManager. Deleting workspace will automatically
@@ -81,6 +80,13 @@ class AURA_SHELL_EXPORT WorkspaceManager {
     layout_in_progress_ = layout_in_progress;
   }
 
+  // Sets/Returns the ignored window that the workspace manager does not
+  // set bounds on.
+  void set_ignored_window(aura::Window* ignored_window) {
+    ignored_window_ = ignored_window;
+  }
+  aura::Window* ignored_window() { return ignored_window_; }
+
  private:
   friend class Workspace;
 
@@ -96,10 +102,10 @@ class AURA_SHELL_EXPORT WorkspaceManager {
   // Returns the index of the workspace that contains the |window|.
   int GetWorkspaceIndexContaining(aura::Window* window) const;
 
-  // Update viewport size and move to the active workspace.
-  void UpdateViewport();
+  // Update contents_view size and move the viewport to the active workspace.
+  void UpdateContentsView();
 
-  aura::Window* viewport_;
+  aura::Window* contents_view_;
 
   Workspace* active_workspace_;
 
@@ -114,6 +120,9 @@ class AURA_SHELL_EXPORT WorkspaceManager {
 
   // True if this layout manager is laying out windows.
   bool layout_in_progress_;
+
+  // The window that WorkspaceManager does not set the bounds on.
+  aura::Window* ignored_window_;
 
   ObserverList<WorkspaceObserver> observers_;
 
