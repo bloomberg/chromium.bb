@@ -69,11 +69,6 @@ def Main(args):
     tests_to_disable.append('run_inbrowser_crash_in_syscall_test')
 
   if sys.platform == 'darwin':
-    # The following test is failing on Mac OS X 10.5.  This may be
-    # because of a kernel bug that we might need to work around.
-    # See http://code.google.com/p/nativeclient/issues/detail?id=1835
-    # TODO(mseaborn): Remove this when the issue is resolved.
-    tests_to_disable.append('run_async_messaging_test')
     # The following test fails on debug builds of Chromium.
     # See http://code.google.com/p/nativeclient/issues/detail?id=2077
     # TODO(mseaborn): Remove this when the issue is resolved.
