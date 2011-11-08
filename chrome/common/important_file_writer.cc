@@ -50,7 +50,8 @@ class WriteToDiskTask : public Task {
       return;
     }
 
-    DCHECK_LE(data_.length(), static_cast<size_t>(kint32max));
+    // If this happens in the wild something really bad is going on.
+    CHECK_LE(data_.length(), static_cast<size_t>(kint32max));
     int bytes_written = base::WritePlatformFile(
         tmp_file, 0, data_.data(), static_cast<int>(data_.length()));
     base::FlushPlatformFile(tmp_file);  // Ignore return value.

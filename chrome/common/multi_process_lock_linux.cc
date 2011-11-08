@@ -30,9 +30,8 @@ class MultiProcessLockLinux : public MultiProcessLock {
     }
 
     if (name_.length() > MULTI_PROCESS_LOCK_NAME_MAX_LEN) {
-      DLOG(ERROR) << "Socket name too long (" << name_.length()
-                  << " > " << MULTI_PROCESS_LOCK_NAME_MAX_LEN << ") - "
-                  << name_;
+      LOG(ERROR) << "Socket name too long (" << name_.length()
+                 << " > " << MULTI_PROCESS_LOCK_NAME_MAX_LEN << ") - " << name_;
       return false;
     }
 
@@ -52,7 +51,7 @@ class MultiProcessLockLinux : public MultiProcessLock {
 
     if (print_length < 0 ||
         print_length > static_cast<int>(MULTI_PROCESS_LOCK_NAME_MAX_LEN)) {
-      DPLOG(ERROR) << "Couldn't create sun_path - " << name_;
+      PLOG(ERROR) << "Couldn't create sun_path - " << name_;
       return false;
     }
 
@@ -68,7 +67,7 @@ class MultiProcessLockLinux : public MultiProcessLock {
 
     int socket_fd = socket(AF_LOCAL, SOCK_STREAM, 0);
     if (socket_fd < 0) {
-      DPLOG(ERROR) << "Couldn't create socket - " << name_;
+      PLOG(ERROR) << "Couldn't create socket - " << name_;
       return false;
     }
 
@@ -82,7 +81,7 @@ class MultiProcessLockLinux : public MultiProcessLock {
                << &(address.sun_path[1])
                << " Length: " << length;
       if (HANDLE_EINTR(close(socket_fd)) < 0) {
-        DPLOG(ERROR) << "close";
+        PLOG(ERROR) << "close";
       }
       return false;
     }
