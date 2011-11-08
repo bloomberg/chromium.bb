@@ -18,7 +18,7 @@ class TestCore : public TestCase {
  private:
   // TestCase implementation.
   virtual bool Init();
-  virtual void RunTest();
+  virtual void RunTests(const std::string& filter);
 
   std::string TestTime();
   std::string TestTimeTicks();

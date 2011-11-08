@@ -17,7 +17,7 @@ class TestVideoDecoder : public TestCase {
 
   // TestCase implementation.
   virtual bool Init();
-  virtual void RunTest();
+  virtual void RunTests(const std::string& filter);
 
   void QuitMessageLoop();
 

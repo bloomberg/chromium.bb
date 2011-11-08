@@ -41,16 +41,16 @@ bool TestGraphics2D::Init() {
          InitTestingInterface();
 }
 
-void TestGraphics2D::RunTest() {
-  RUN_TEST(InvalidResource);
-  RUN_TEST(InvalidSize);
-  RUN_TEST(Humongous);
-  RUN_TEST(InitToZero);
-  RUN_TEST(Describe);
-  RUN_TEST_FORCEASYNC_AND_NOT(Paint);
-  // RUN_TEST_FORCEASYNC_AND_NOT(Scroll);  // TODO(brettw) implement.
-  RUN_TEST_FORCEASYNC_AND_NOT(Replace);
-  RUN_TEST_FORCEASYNC_AND_NOT(Flush);
+void TestGraphics2D::RunTests(const std::string& filter) {
+  RUN_TEST(InvalidResource, filter);
+  RUN_TEST(InvalidSize, filter);
+  RUN_TEST(Humongous, filter);
+  RUN_TEST(InitToZero, filter);
+  RUN_TEST(Describe, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(Paint, filter);
+  // RUN_TEST_FORCEASYNC_AND_NOT(Scroll);  // TODO(brettw, filter) implement.
+  RUN_TEST_FORCEASYNC_AND_NOT(Replace, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(Flush, filter);
 }
 
 void TestGraphics2D::QuitMessageLoop() {

@@ -19,7 +19,7 @@ bool TestBuffer::Init() {
   return !!buffer_interface_;
 }
 
-void TestBuffer::RunTest() {
+void TestBuffer::RunTests(const std::string& filter) {
   instance_->LogTest("InvalidSize", TestInvalidSize());
   instance_->LogTest("InitToZero", TestInitToZero());
   instance_->LogTest("IsBuffer", TestIsBuffer());

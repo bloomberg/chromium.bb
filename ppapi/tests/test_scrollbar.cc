@@ -26,7 +26,7 @@ bool TestScrollbar::Init() {
   return InitTestingInterface();
 }
 
-void TestScrollbar::RunTest() {
+void TestScrollbar::RunTests(const std::string& filter) {
   instance_->LogTest("HandleEvent", TestHandleEvent());
 }
 

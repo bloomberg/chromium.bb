@@ -18,7 +18,7 @@ bool TestImageData::Init() {
   return !!image_data_interface_;
 }
 
-void TestImageData::RunTest() {
+void TestImageData::RunTests(const std::string& filter) {
   instance_->LogTest("InvalidFormat", TestInvalidFormat());
   instance_->LogTest("InvalidSize", TestInvalidSize());
   instance_->LogTest("HugeSize", TestHugeSize());

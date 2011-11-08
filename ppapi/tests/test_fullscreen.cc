@@ -50,9 +50,9 @@ bool TestFullscreen::Init() {
   return InitTestingInterface();
 }
 
-void TestFullscreen::RunTest() {
-  RUN_TEST(GetScreenSize);
-  RUN_TEST(NormalToFullscreenToNormal);
+void TestFullscreen::RunTests(const std::string& filter) {
+  RUN_TEST(GetScreenSize, filter);
+  RUN_TEST(NormalToFullscreenToNormal, filter);
 }
 
 bool TestFullscreen::GotError() {

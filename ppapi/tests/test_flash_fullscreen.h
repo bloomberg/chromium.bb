@@ -22,7 +22,7 @@ class TestFlashFullscreen : public TestCase {
 
   // TestCase implementation.
   virtual bool Init();
-  virtual void RunTest();
+  virtual void RunTests(const std::string& filter);
   virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
 
  private:

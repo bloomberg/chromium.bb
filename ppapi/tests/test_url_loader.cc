@@ -77,27 +77,27 @@ bool TestURLLoader::Init() {
   return InitTestingInterface() && EnsureRunningOverHTTP();
 }
 
-void TestURLLoader::RunTest() {
-  RUN_TEST_FORCEASYNC_AND_NOT(BasicGET);
-  RUN_TEST_FORCEASYNC_AND_NOT(BasicPOST);
-  RUN_TEST_FORCEASYNC_AND_NOT(BasicFilePOST);
-  RUN_TEST_FORCEASYNC_AND_NOT(BasicFileRangePOST);
-  RUN_TEST_FORCEASYNC_AND_NOT(CompoundBodyPOST);
-  RUN_TEST_FORCEASYNC_AND_NOT(EmptyDataPOST);
-  RUN_TEST_FORCEASYNC_AND_NOT(BinaryDataPOST);
-  RUN_TEST_FORCEASYNC_AND_NOT(CustomRequestHeader);
-  RUN_TEST_FORCEASYNC_AND_NOT(FailsBogusContentLength);
-  RUN_TEST_FORCEASYNC_AND_NOT(SameOriginRestriction);
-  RUN_TEST_FORCEASYNC_AND_NOT(CrossOriginRequest);
-  RUN_TEST_FORCEASYNC_AND_NOT(JavascriptURLRestriction);
-  RUN_TEST_FORCEASYNC_AND_NOT(MethodRestriction);
-  RUN_TEST_FORCEASYNC_AND_NOT(HeaderRestriction);
-  RUN_TEST_FORCEASYNC_AND_NOT(CustomReferrer);
-  RUN_TEST_FORCEASYNC_AND_NOT(CustomContentTransferEncoding);
-  RUN_TEST_FORCEASYNC_AND_NOT(StreamToFile);
-  RUN_TEST_FORCEASYNC_AND_NOT(AuditURLRedirect);
-  RUN_TEST_FORCEASYNC_AND_NOT(AbortCalls);
-  RUN_TEST_FORCEASYNC_AND_NOT(UntendedLoad);
+void TestURLLoader::RunTests(const std::string& filter) {
+  RUN_TEST_FORCEASYNC_AND_NOT(BasicGET, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(BasicPOST, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(BasicFilePOST, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(BasicFileRangePOST, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(CompoundBodyPOST, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(EmptyDataPOST, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(BinaryDataPOST, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(CustomRequestHeader, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(FailsBogusContentLength, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(SameOriginRestriction, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(CrossOriginRequest, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(JavascriptURLRestriction, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(MethodRestriction, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(HeaderRestriction, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(CustomReferrer, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(CustomContentTransferEncoding, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(StreamToFile, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(AuditURLRedirect, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(AbortCalls, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(UntendedLoad, filter);
 }
 
 std::string TestURLLoader::ReadEntireFile(pp::FileIO* file_io,
