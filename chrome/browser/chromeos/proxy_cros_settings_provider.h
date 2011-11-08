@@ -46,6 +46,11 @@ class ProxyCrosSettingsProvider : public CrosSettingsProvider {
       const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
       net::ProxyServer::Scheme scheme) const;
 
+  net::ProxyServer CreateProxyServer(
+      std::string host,
+      uint16 port,
+      net::ProxyServer::Scheme scheme) const;
+
   Value* CreateServerHostValue(
       const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) const;
 
