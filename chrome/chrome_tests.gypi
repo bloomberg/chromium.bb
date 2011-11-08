@@ -227,6 +227,8 @@
         'test/base/testing_profile_manager.cc',
         'test/base/testing_profile_manager.h',
         'test/base/thread_observer_helper.h',
+        'test/base/tracing.cc',
+        'test/base/tracing.h',
         'test/base/ui_test_utils.cc',
         'test/base/ui_test_utils.h',
         'test/base/ui_test_utils_aura.cc',
