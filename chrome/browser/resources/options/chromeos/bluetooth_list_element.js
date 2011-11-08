@@ -88,7 +88,7 @@ cr.define('options.system.bluetooth', function() {
       if (!this.isSupported_(device))
         return;
       var item = new BluetoothItem(device);
-      var existing = this.findDevice(device);
+      var existing = this.findDevice(device.address);
       if (existing) {
         this.replaceChild(item, existing);
         return;

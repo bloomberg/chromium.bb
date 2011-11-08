@@ -156,7 +156,8 @@ cr.define('options', function() {
   }
 
   /**
-   * Adds an element to the list of available bluetooth devices.
+   * Adds an element to the list of available bluetooth devices. If an element
+   * with a matching address is found, the existing element is updated.
    * @param {{name: string,
    *          address: string,
    *          icon: string,
@@ -167,29 +168,6 @@ cr.define('options', function() {
   SystemOptions.addBluetoothDevice = function(device) {
     $('bluetooth-device-list').appendDevice(device);
   };
-
-  /**
-   * Updates the state of a Bluetooth device.
-   * @param {{name: string,
-   *          address: string,
-   *          icon: string,
-   *          paired: boolean,
-   *          connected: boolean}} device
-   *     Decription of the bluetooth device.
-   * @param {'pairing': string,
-   *         'passkey': number,
-   *         'entered': number} op
-   *     Description of the pairing operation.
-   */
-  SystemOptions.connectBluetoothDevice = function(device, op) {
-    var data = {};
-    for (var key in device)
-      data[key] = device[key];
-    for (var key in op)
-      data[key] = op[key];
-    // Replace the existing element for the device.
-    SystemOptions.addBluetoothDevice(data);
-  }
 
   /**
    * Hides the scanning label and icon that are used to indicate that a device

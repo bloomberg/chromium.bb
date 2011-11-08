@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -169,28 +170,57 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
   // TODO(kevers): Trigger connect/disconnect.
 }
 
-void BluetoothOptionsHandler::DeviceNotification(
-    const DictionaryValue& device) {
+void BluetoothOptionsHandler::SendDeviceNotification(
+    chromeos::BluetoothDevice* device,
+    base::DictionaryValue* params) {
+  // Retrieve properties of the bluetooth device.  The properties names are
+  // in title case.  Convert to camel case in accordance with our Javascript
+  // naming convention.
+  const DictionaryValue& properties = device->AsDictionary();
+  base::DictionaryValue js_properties;
+  for (DictionaryValue::key_iterator it = properties.begin_keys();
+      it != properties.end_keys(); ++it) {
+    base::Value* child = NULL;
+    properties.GetWithoutPathExpansion(*it, &child);
+    if (child) {
+      std::string js_key = *it;
+      js_key[0] = tolower(js_key[0]);
+      js_properties.SetWithoutPathExpansion(js_key, child->DeepCopy());
+    }
+  }
+  if (params) {
+    js_properties.MergeDictionary(params);
+  }
   web_ui_->CallJavascriptFunction(
-      "options.SystemOptions.addBluetoothDevice", device);
+      "options.SystemOptions.addBluetoothDevice",
+      js_properties);
 }
 
 void BluetoothOptionsHandler::RequestConfirmation(
     chromeos::BluetoothDevice* device,
     int passkey) {
-  // TODO(kevers): Implement me.
+  DictionaryValue params;
+  params.SetString("pairing", "bluetoothConfirmPasskey");
+  params.SetInteger("passkey", passkey);
+  SendDeviceNotification(device, &params);
 }
 
 void BluetoothOptionsHandler::DisplayPasskey(
     chromeos::BluetoothDevice* device,
     int passkey,
     int entered) {
-  // TODO(kevers): Implement me.
+  DictionaryValue params;
+  params.SetString("pairing", "bluetoothRemotePasskey");
+  params.SetInteger("passkey", passkey);
+  params.SetInteger("entered", entered);
+  SendDeviceNotification(device, &params);
 }
 
 void BluetoothOptionsHandler::RequestPasskey(
     chromeos::BluetoothDevice* device) {
-  // TODO(kevers): Implement me.
+  DictionaryValue params;
+  params.SetString("pairing", "bluetoothEnterPasskey");
+  SendDeviceNotification(device, &params);
 }
 
 void BluetoothOptionsHandler::ValidatePasskeyCallback(
@@ -256,8 +286,7 @@ void BluetoothOptionsHandler::DeviceFound(const std::string& adapter_id,
                                           chromeos::BluetoothDevice* device) {
   VLOG(2) << "Device found on " << adapter_id;
   DCHECK(device);
-  web_ui_->CallJavascriptFunction(
-      "options.SystemOptions.addBluetoothDevice", device->AsDictionary());
+  SendDeviceNotification(device, NULL);
 }
 
 void BluetoothOptionsHandler::ValidateDefaultAdapter(
@@ -271,79 +300,79 @@ void BluetoothOptionsHandler::ValidateDefaultAdapter(
 }
 
 void BluetoothOptionsHandler::GenerateFakeDeviceList() {
-  GenerateFakeDiscoveredDevice(
+  GenerateFakeDevice(
+
     "Fake Wireless Keyboard",
     "01-02-03-04-05-06",
     "input-keyboard",
     true,
-    true);
-  GenerateFakeDiscoveredDevice(
+    true,
+    "");
+  GenerateFakeDevice(
     "Fake Wireless Mouse",
     "02-03-04-05-06-01",
     "input-mouse",
     true,
-    false);
-  GenerateFakeDiscoveredDevice(
+    false,
+    "");
+  GenerateFakeDevice(
     "Fake Wireless Headset",
     "03-04-05-06-01-02",
     "headset",
     false,
-    false);
-  GenerateFakePairing(
+    false,
+    "");
+  GenerateFakeDevice(
     "Fake Connecting Keyboard",
     "04-05-06-01-02-03",
     "input-keyboard",
+    false,
+    false,
     "bluetoothRemotePasskey");
-  GenerateFakePairing(
+  GenerateFakeDevice(
     "Fake Connecting Phone",
     "05-06-01-02-03-04",
     "phone",
+    false,
+    false,
     "bluetoothConfirmPasskey");
-  GenerateFakePairing(
+  GenerateFakeDevice(
     "Fake Connecting Headset",
     "06-01-02-03-04-05",
     "headset",
+    false,
+    false,
     "bluetoothEnterPasskey");
 
   web_ui_->CallJavascriptFunction(
       "options.SystemOptions.notifyBluetoothSearchComplete");
 }
 
-void BluetoothOptionsHandler::GenerateFakeDiscoveredDevice(
+void BluetoothOptionsHandler::GenerateFakeDevice(
     const std::string& name,
     const std::string& address,
     const std::string& icon,
     bool paired,
-    bool connected) {
-  DictionaryValue device;
-  device.SetString("name", name);
-  device.SetString("address", address);
-  device.SetString("icon", icon);
-  device.SetBoolean("paired", paired);
-  device.SetBoolean("connected", connected);
-  web_ui_->CallJavascriptFunction(
-      "options.SystemOptions.addBluetoothDevice", device);
-}
-
-void BluetoothOptionsHandler::GenerateFakePairing(
-    const std::string& name,
-    const std::string& address,
-    const std::string& icon,
+    bool connected,
     const std::string& pairing) {
-  DictionaryValue device;
-  device.SetString("name", name);
-  device.SetString("address", address);
-  device.SetString("icon", icon);
-  device.SetBoolean("paired", false);
-  device.SetBoolean("connected", false);
-  DictionaryValue op;
-  op.SetString("pairing", pairing);
-  if (pairing.compare("bluetoothEnterPasskey") != 0)
-    op.SetInteger("passkey", 12345);
-  if (pairing.compare("bluetoothRemotePasskey") == 0)
-    op.SetInteger("entered", 2);
-  web_ui_->CallJavascriptFunction(
-      "options.SystemOptions.connectBluetoothDevice", device, op);
+  DictionaryValue properties;
+  properties.SetString(bluetooth_device::kNameProperty, name);
+  properties.SetString(bluetooth_device::kAddressProperty, address);
+  properties.SetString(bluetooth_device::kIconProperty, icon);
+  properties.SetBoolean(bluetooth_device::kPairedProperty, paired);
+  properties.SetBoolean(bluetooth_device::kConnectedProperty, connected);
+  properties.SetInteger(bluetooth_device::kClassProperty, 0);
+  chromeos::BluetoothDevice* device =
+      chromeos::BluetoothDevice::Create(properties);
+  DeviceFound("FakeAdapter", device);
+  if (pairing.compare("bluetoothRemotePasskey") == 0) {
+    DisplayPasskey(device, 12345, 2);
+  } else if (pairing.compare("bluetoothConfirmPasskey") == 0) {
+    RequestConfirmation(device, 12345);
+  } else if (pairing.compare("bluetoothEnterPasskey") == 0) {
+    RequestPasskey(device);
+  }
+  delete device;
 }
 
 }  // namespace chromeos
