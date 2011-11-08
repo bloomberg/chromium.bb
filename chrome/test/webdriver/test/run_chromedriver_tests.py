@@ -91,6 +91,9 @@ if __name__ == '__main__':
     for test in filtered_tests:
       print _GetTestName(test)
     sys.exit(0)
+  if sys.platform.startswith('darwin'):
+    print 'All tests temporarily disabled on mac, crbug.com/103434'
+    sys.exit(0)
 
   test_environment.SetUp(options.driver_exe)
   result = GTestTextTestRunner(verbosity=1).run(
