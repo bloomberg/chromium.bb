@@ -138,7 +138,6 @@ def _SetEnvForX86Sdk(env, sdk_path):
   # does not run under Cygwin and does not follow Cygwin symlinks.
   if env['TARGET_SUBARCH'] == default_subarch:
     libsuffix = 'lib'
-    cc_mode_flag = ''
     as_mode_flag = ''
     ld_mode_flag = ''
   else:
@@ -476,8 +475,6 @@ def generate(env):
   env.Tool('ar')
   env.Tool('as')
 
-  print env["SHCXXCOM"]
-  #exit(0)
   env.Replace(
       COMPONENT_LINKFLAGS=[''],
       COMPONENT_LIBRARY_LINK_SUFFIXES=['.pso', '.so', '.a'],
