@@ -1078,8 +1078,17 @@ class Browser : public TabHandlerDelegate,
 
   // Command and state updating ///////////////////////////////////////////////
 
+  // Returns true if the regular Chrome UI (not the fullscreen one and
+  // not the single-tab one) is shown. Used for updating window command states
+  // only. Consider using SupportsWindowFeature if you need the mentioned
+  // functionality anywhere else.
+  bool IsShowingMainUI(bool is_fullscreen);
+
   // Initialize state for all browser commands.
   void InitCommandState();
+
+  // Update commands whose state depends on incognito mode availability.
+  void UpdateCommandsForIncognitoAvailability();
 
   // Update commands whose state depends on the tab's state.
   void UpdateCommandsForTabState();

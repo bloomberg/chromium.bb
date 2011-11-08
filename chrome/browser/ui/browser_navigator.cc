@@ -15,11 +15,12 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/rlz/rlz.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -75,7 +76,9 @@ bool CompareURLsWithReplacements(
 // (not incognito) window. Guest session is an exception.
 // chrome://extensions is on the list because it redirects to
 // chrome://settings.
-void AdjustNavigateParamsForURL(browser::NavigateParams* params) {
+// Returns true on success. Otherwise, if changing params leads the browser into
+// an erroneous state, returns false.
+bool AdjustNavigateParamsForURL(browser::NavigateParams* params) {
   if (!params->target_contents &&
       browser::IsURLAllowedInIncognito(params->url)) {
     Profile* profile =
@@ -85,12 +88,20 @@ void AdjustNavigateParamsForURL(browser::NavigateParams* params) {
         params->disposition == OFF_THE_RECORD) {
       profile = profile->GetOriginalProfile();
 
+      // If incognito is forced, we punt.
+      PrefService* prefs = profile->GetPrefs();
+      if (prefs && IncognitoModePrefs::GetAvailability(prefs) ==
+              IncognitoModePrefs::FORCED) {
+        return false;
+      }
+
       params->disposition = SINGLETON_TAB;
       params->profile = profile;
       params->browser = Browser::GetOrCreateTabbedBrowser(profile);
       params->window_action = browser::NavigateParams::SHOW_WINDOW;
     }
   }
+  return true;
 }
 
 // Returns a Browser that can host the navigation or tab addition specified in
@@ -368,7 +379,9 @@ NavigateParams::~NavigateParams() {
 
 void Navigate(NavigateParams* params) {
   Browser* source_browser = params->browser;
-  AdjustNavigateParamsForURL(params);
+
+  if (!AdjustNavigateParamsForURL(params))
+    return;
 
   // Adjust disposition based on size of popup window.
   if (params->disposition == NEW_POPUP &&

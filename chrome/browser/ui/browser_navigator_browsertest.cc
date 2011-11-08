@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -934,6 +937,36 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
             browser()->GetSelectedTabContents()->GetURL().GetOrigin());
 }
 
+// Settings page is expected to always open in normal mode regardless
+// of whether the user is trying to open it in incognito mode or not.
+// This test verifies that if incognito mode is forced (by policy), settings
+// page doesn't open at all.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       Disposition_Settings_DoNothingIfIncognitoIsForced) {
+  Browser* browser = CreateIncognitoBrowser();
+
+  // Set kIncognitoModeAvailability to FORCED.
+  PrefService* prefs1 = browser->profile()->GetPrefs();
+  prefs1->SetInteger(prefs::kIncognitoModeAvailability,
+                     IncognitoModePrefs::FORCED);
+  PrefService* prefs2 = browser->profile()->GetOriginalProfile()->GetPrefs();
+  prefs2->SetInteger(prefs::kIncognitoModeAvailability,
+                     IncognitoModePrefs::FORCED);
+
+  // Navigate to the settings page.
+  browser::NavigateParams p(MakeNavigateParams(browser));
+  p.disposition = OFF_THE_RECORD;
+  p.url = GURL(chrome::kChromeUISettingsURL);
+  p.window_action = browser::NavigateParams::SHOW_WINDOW;
+  browser::Navigate(&p);
+
+  // The bookmarks page should be opened in browser() window.
+  EXPECT_EQ(browser, p.browser);
+  EXPECT_EQ(1, browser->tab_count());
+  EXPECT_EQ(GURL(chrome::kAboutBlankURL),
+            browser->GetSelectedTabContents()->GetURL());
+}
+
 // This test verifies that the bookmarks page isn't opened in the incognito
 // window.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -957,6 +990,36 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(GURL(chrome::kChromeUIBookmarksURL),
             browser()->GetSelectedTabContents()->GetURL());
+}
+
+// Bookmark manager is expected to always open in normal mode regardless
+// of whether the user is trying to open it in incognito mode or not.
+// This test verifies that if incognito mode is forced (by policy), bookmark
+// manager doesn't open at all.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       Disposition_Bookmarks_DoNothingIfIncognitoIsForced) {
+  Browser* browser = CreateIncognitoBrowser();
+
+  // Set kIncognitoModeAvailability to FORCED.
+  PrefService* prefs1 = browser->profile()->GetPrefs();
+  prefs1->SetInteger(prefs::kIncognitoModeAvailability,
+                     IncognitoModePrefs::FORCED);
+  PrefService* prefs2 = browser->profile()->GetOriginalProfile()->GetPrefs();
+  prefs2->SetInteger(prefs::kIncognitoModeAvailability,
+                     IncognitoModePrefs::FORCED);
+
+  // Navigate to the settings page.
+  browser::NavigateParams p(MakeNavigateParams(browser));
+  p.disposition = SINGLETON_TAB;
+  p.url = GURL(chrome::kChromeUISettingsURL);
+  p.window_action = browser::NavigateParams::SHOW_WINDOW;
+  browser::Navigate(&p);
+
+  // The bookmarks page should be opened in browser() window.
+  EXPECT_EQ(browser, p.browser);
+  EXPECT_EQ(1, browser->tab_count());
+  EXPECT_EQ(GURL(chrome::kAboutBlankURL),
+            browser->GetSelectedTabContents()->GetURL());
 }
 
 // This test makes sure a crashed singleton tab reloads from a new navigation.

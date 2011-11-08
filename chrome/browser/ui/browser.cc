@@ -4303,14 +4303,7 @@ void Browser::Observe(int type,
           CreateInstantIfNecessary();
         }
       } else if (pref_name == prefs::kIncognitoModeAvailability) {
-        IncognitoModePrefs::Availability available =
-            IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
-        command_updater_.UpdateCommandEnabled(
-            IDC_NEW_WINDOW,
-            available != IncognitoModePrefs::FORCED);
-        command_updater_.UpdateCommandEnabled(
-            IDC_NEW_INCOGNITO_WINDOW,
-            available != IncognitoModePrefs::DISABLED);
+        UpdateCommandsForIncognitoAvailability();
       } else if (pref_name == prefs::kDevToolsDisabled) {
         UpdateCommandsForDevTools();
         if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
@@ -4357,12 +4350,7 @@ void Browser::Observe(int type,
 void Browser::OnStateChanged() {
   DCHECK(profile_->GetProfileSyncService());
 
-#if !defined(OS_MACOSX)
-  const bool show_main_ui = is_type_tabbed() && !window_->IsFullscreen();
-#else
-  const bool show_main_ui = is_type_tabbed();
-#endif
-
+  const bool show_main_ui = IsShowingMainUI(window_->IsFullscreen());
   command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
       show_main_ui && profile_->GetOriginalProfile()->IsSyncAccessible());
 }
@@ -4464,15 +4452,6 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_RELOAD_IGNORING_CACHE, true);
 
   // Window management commands
-  IncognitoModePrefs::Availability incognito_avail =
-      IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
-  command_updater_.UpdateCommandEnabled(
-      IDC_NEW_WINDOW,
-      incognito_avail != IncognitoModePrefs::FORCED);
-  command_updater_.UpdateCommandEnabled(
-      IDC_NEW_INCOGNITO_WINDOW,
-      incognito_avail != IncognitoModePrefs::DISABLED);
-
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_WINDOW, true);
   command_updater_.UpdateCommandEnabled(IDC_NEW_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, true);
@@ -4534,11 +4513,8 @@ void Browser::InitCommandState() {
   UpdateCommandsForDevTools();
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER,
-                                        browser_defaults::bookmarks_enabled);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE, true);
-  command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, true);
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARKS_MENU, true);
 
 #if defined(OS_CHROMEOS)
@@ -4550,12 +4526,6 @@ void Browser::InitCommandState() {
 #endif
   command_updater_.UpdateCommandEnabled(
       IDC_SHOW_SYNC_SETUP, profile_->GetOriginalProfile()->IsSyncAccessible());
-
-  ExtensionService* extension_service = profile()->GetExtensionService();
-  bool enable_extensions =
-      extension_service && extension_service->extensions_enabled();
-  command_updater_.UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS,
-                                        enable_extensions);
 
   // Initialize other commands based on the window type.
   bool normal_window = is_type_tabbed();
@@ -4617,15 +4587,50 @@ void Browser::InitCommandState() {
   UpdateCommandsForContentRestrictionState();
 
   UpdateCommandsForBookmarkEditing();
+
+  UpdateCommandsForIncognitoAvailability();
+}
+
+bool Browser::IsShowingMainUI(bool is_fullscreen) {
+#if !defined(OS_MACOSX)
+  return is_type_tabbed() && !is_fullscreen;
+#else
+  return is_type_tabbed();
+#endif
+}
+
+void Browser::UpdateCommandsForIncognitoAvailability() {
+  IncognitoModePrefs::Availability incognito_availability =
+      IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
+  command_updater_.UpdateCommandEnabled(
+      IDC_NEW_WINDOW,
+      incognito_availability != IncognitoModePrefs::FORCED);
+  command_updater_.UpdateCommandEnabled(
+      IDC_NEW_INCOGNITO_WINDOW,
+      incognito_availability != IncognitoModePrefs::DISABLED);
+
+  // Bookmark manager and settings page/subpages are forced to open in normal
+  // mode. For this reason we disable these commands when incognito is forced.
+  const bool command_enabled =
+      incognito_availability != IncognitoModePrefs::FORCED;
+  command_updater_.UpdateCommandEnabled(
+      IDC_SHOW_BOOKMARK_MANAGER,
+      browser_defaults::bookmarks_enabled && command_enabled);
+  ExtensionService* extension_service = profile()->GetExtensionService();
+  bool enable_extensions =
+      extension_service && extension_service->extensions_enabled();
+  command_updater_.UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS,
+                                        enable_extensions && command_enabled);
+
+  const bool show_main_ui = IsShowingMainUI(window_ && window_->IsFullscreen());
+  command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS,
+                                        show_main_ui && command_enabled);
+  command_updater_.UpdateCommandEnabled(IDC_OPTIONS,
+                                        show_main_ui && command_enabled);
 }
 
 void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
-#if !defined(OS_MACOSX)
-  const bool show_main_ui = is_type_tabbed() && !is_fullscreen;
-#else
-  const bool show_main_ui = is_type_tabbed();
-#endif
-
+  const bool show_main_ui = IsShowingMainUI(is_fullscreen);
   bool main_not_fullscreen = show_main_ui && !is_fullscreen;
 
   // Navigation commands
@@ -4653,11 +4658,17 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_FEEDBACK, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
       show_main_ui && profile_->GetOriginalProfile()->IsSyncAccessible());
 
-  command_updater_.UpdateCommandEnabled(IDC_OPTIONS, show_main_ui);
+  // Settings page/subpages are forced to open in normal mode. We disable these
+  // commands when incognito is forced.
+  const bool options_enabled = show_main_ui &&
+      IncognitoModePrefs::GetAvailability(
+          profile_->GetPrefs()) != IncognitoModePrefs::FORCED;
+  command_updater_.UpdateCommandEnabled(IDC_OPTIONS, options_enabled);
+  command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, options_enabled);
+
   command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
@@ -4797,12 +4808,7 @@ void Browser::UpdateCommandsForBookmarkEditing() {
 }
 
 void Browser::UpdateCommandsForBookmarkBar() {
-#if !defined(OS_MACOSX)
-  const bool show_main_ui = is_type_tabbed() &&
-                            (!window_ || !window_->IsFullscreen());
-#else
-  const bool show_main_ui = is_type_tabbed();
-#endif
+  const bool show_main_ui = IsShowingMainUI(window_ && window_->IsFullscreen());
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR,
       browser_defaults::bookmarks_enabled &&
       !profile_->GetPrefs()->IsManagedPreference(prefs::kShowBookmarkBar) &&

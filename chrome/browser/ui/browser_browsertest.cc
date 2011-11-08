@@ -12,11 +12,13 @@
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -1148,6 +1150,125 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
   // won't process the renderer's response until the Wait() call below.
   EXPECT_FALSE(browser()->command_updater()->IsCommandEnabled(IDC_FORWARD));
   forward_nav_load_observer.Wait();
+}
+
+// Makes sure certain commands are disabled when Incognito mode is forced.
+IN_PROC_BROWSER_TEST_F(BrowserTest, DisableMenuItemsWhenIncognitoIsForced) {
+  CommandUpdater* command_updater = browser()->command_updater();
+  // At the beginning, all commands are enabled.
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_NEW_WINDOW));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_NEW_INCOGNITO_WINDOW));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_MANAGE_EXTENSIONS));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_OPTIONS));
+
+  // Set Incognito to FORCED.
+  IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
+                                      IncognitoModePrefs::FORCED);
+  // Bookmarks & Settings commands should get disabled.
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_NEW_WINDOW));
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER));
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_MANAGE_EXTENSIONS));
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_OPTIONS));
+  // New Incognito Window command, however, should be enabled.
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_NEW_INCOGNITO_WINDOW));
+
+  // Create a new browser.
+  Browser* new_browser = Browser::Create(browser()->profile());
+  CommandUpdater* new_command_updater = new_browser->command_updater();
+  // It should have Bookmarks & Settings commands disabled by default.
+  EXPECT_FALSE(new_command_updater->IsCommandEnabled(IDC_NEW_WINDOW));
+  EXPECT_FALSE(new_command_updater->IsCommandEnabled(
+      IDC_SHOW_BOOKMARK_MANAGER));
+  EXPECT_FALSE(new_command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
+  EXPECT_FALSE(new_command_updater->IsCommandEnabled(IDC_MANAGE_EXTENSIONS));
+  EXPECT_FALSE(new_command_updater->IsCommandEnabled(IDC_OPTIONS));
+  EXPECT_TRUE(new_command_updater->IsCommandEnabled(IDC_NEW_INCOGNITO_WINDOW));
+}
+
+// Makes sure New Incognito Window command is disabled when Incognito mode is
+// not available.
+IN_PROC_BROWSER_TEST_F(BrowserTest,
+                       NoNewIncognitoWindowWhenIncognitoIsDisabled) {
+  CommandUpdater* command_updater = browser()->command_updater();
+  // Set Incognito to DISABLED.
+  IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
+                                      IncognitoModePrefs::DISABLED);
+  // Make sure New Incognito Window command is disabled. All remaining commands
+  // should be enabled.
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_NEW_INCOGNITO_WINDOW));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_NEW_WINDOW));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_MANAGE_EXTENSIONS));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_OPTIONS));
+
+  // Create a new browser.
+  Browser* new_browser = Browser::Create(browser()->profile());
+  CommandUpdater* new_command_updater = new_browser->command_updater();
+  EXPECT_FALSE(new_command_updater->IsCommandEnabled(IDC_NEW_INCOGNITO_WINDOW));
+  EXPECT_TRUE(new_command_updater->IsCommandEnabled(IDC_NEW_WINDOW));
+  EXPECT_TRUE(new_command_updater->IsCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER));
+  EXPECT_TRUE(new_command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
+  EXPECT_TRUE(new_command_updater->IsCommandEnabled(IDC_MANAGE_EXTENSIONS));
+  EXPECT_TRUE(new_command_updater->IsCommandEnabled(IDC_OPTIONS));
+}
+
+// Makes sure Extensions and Settings commands are disabled in certain
+// circumstances even though normally they should stay enabled.
+IN_PROC_BROWSER_TEST_F(BrowserTest,
+                       DisableExtensionsAndSettingsWhenIncognitoIsDisabled) {
+  CommandUpdater* command_updater = browser()->command_updater();
+  // Disable extensions. This should disable Extensions menu.
+  browser()->profile()->GetExtensionService()->set_extensions_enabled(false);
+  // Set Incognito to DISABLED.
+  IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
+                                      IncognitoModePrefs::DISABLED);
+  // Make sure Manage Extensions command is disabled.
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_MANAGE_EXTENSIONS));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_NEW_WINDOW));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_OPTIONS));
+
+  // Create a popup (non-main-UI-type) browser. Settings command as well
+  // as Extensions should be disabled.
+  Browser* popup_browser = browser()->CreateForType(Browser::TYPE_POPUP,
+                                                    browser()->profile());
+  CommandUpdater* popup_command_updater = popup_browser->command_updater();
+  EXPECT_FALSE(popup_command_updater->IsCommandEnabled(IDC_MANAGE_EXTENSIONS));
+  EXPECT_FALSE(popup_command_updater->IsCommandEnabled(IDC_OPTIONS));
+  EXPECT_TRUE(popup_command_updater->IsCommandEnabled(
+      IDC_SHOW_BOOKMARK_MANAGER));
+  EXPECT_FALSE(popup_command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
+}
+
+// Makes sure Extensions and Settings commands are disabled in certain
+// circumstances even though normally they should stay enabled.
+IN_PROC_BROWSER_TEST_F(BrowserTest,
+                       DisableOptionsAndImportMenuItemsConsistently) {
+  // Create a popup browser.
+  Browser* popup_browser = browser()->CreateForType(Browser::TYPE_POPUP,
+                                                    browser()->profile());
+  CommandUpdater* command_updater = popup_browser->command_updater();
+  // OPTIONS and IMPORT_SETTINGS are disabled for a non-normal UI.
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_OPTIONS));
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
+
+  // Set Incognito to FORCED.
+  IncognitoModePrefs::SetAvailability(popup_browser->profile()->GetPrefs(),
+                                      IncognitoModePrefs::FORCED);
+  // OPTIONS and IMPORT_SETTINGS are disabled when Incognito is forced.
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_OPTIONS));
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
+  // Set Incognito to AVAILABLE.
+  IncognitoModePrefs::SetAvailability(popup_browser->profile()->GetPrefs(),
+                                      IncognitoModePrefs::ENABLED);
+  // OPTIONS and IMPORT_SETTINGS are still disabled since it is a non-normal UI.
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_OPTIONS));
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
 }
 
 // TODO(ben): this test was never enabled. It has bit-rotted since being added.
