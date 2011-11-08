@@ -604,6 +604,13 @@ UNINITIALIZED READ
 ...
 CRYPT32.dll!I_CertSyncStore
 
+INVALID HEAP ARGUMENT
+name=http://crbug.com/103365
+ppapi_tests.dll!*
+...
+ppapi_tests.dll!*
+base::internal::Invoker2<*>::DoInvoke
+
 ############################
 # Intentional errors in Chromium tests (ToolsSanityTests)
 LEAK
@@ -780,6 +787,16 @@ name=http://crbug.com/101717 (1)
 INVALID HEAP ARGUMENT
 name=http://crbug.com/101717 (2)
 *!sandbox::PolicyBase::~PolicyBase
+
+INVALID HEAP ARGUMENT
+name=http://crbug.com/101717 (3)
+*!scoped_ptr<_UNICODE_STRING>::~scoped_ptr<_UNICODE_STRING>
+*!sandbox::GetHandleName
+
+INVALID HEAP ARGUMENT
+name=http://crbug.com/101717 (4)
+*!scoped_ptr<_OBJECT_NAME_INFORMATION>::~scoped_ptr<_OBJECT_NAME_INFORMATION>
+*!sandbox::GetPathFromHandle
 
 ############################
 # Real issues in Chromium
