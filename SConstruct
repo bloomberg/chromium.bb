@@ -2929,12 +2929,6 @@ def FixWindowsAssembler(env):
 
 FixWindowsAssembler(nacl_env)
 
-if nacl_env.Bit('bitcode'):
-  # TODO(pdox): Remove this as soon as build_config.h can be
-  #             changed to accept __pnacl__.
-  # pending http://codereview.chromium.org/6667035/
-  nacl_env.AddBiasForPNaCl()
-
 # Look in the local include and lib directories before the toolchain's.
 nacl_env['INCLUDE_DIR'] = '${TARGET_ROOT}/include'
 # Remove the default $LIB_DIR element so that we prepend it without duplication.

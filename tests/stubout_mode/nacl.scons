@@ -7,6 +7,7 @@ Import('env')
 
 # The file partly_invalid.c contains inline assembler
 if env.Bit('bitcode'):
+  env.AddBiasForPNaCl()
   env.PNaClForceNative()
 
 # Newlib + PIC doesn't provide native ___tls_get_addr, so gold complains.
