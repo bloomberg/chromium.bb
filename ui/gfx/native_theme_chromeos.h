@@ -11,7 +11,9 @@
 
 class SkBitmap;
 
-class NativeThemeChromeos : public gfx::NativeThemeBase {
+namespace gfx {
+
+class NativeThemeChromeos : public NativeThemeBase {
  public:
   static const NativeThemeChromeos* instance();
 
@@ -100,5 +102,7 @@ class NativeThemeChromeos : public gfx::NativeThemeBase {
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeChromeos);
 };
+
+}  // namespace gfx
 
 #endif  // UI_GFX_NATIVE_THEME_CHROMEOS_H_

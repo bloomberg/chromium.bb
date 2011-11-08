@@ -230,8 +230,10 @@ void GetRadioIndicatorGradientPaint(const gfx::Rect bounds,
 
 }  // namespace
 
+namespace gfx {
+
 // static
-const gfx::NativeTheme* gfx::NativeTheme::instance() {
+const NativeTheme* NativeTheme::instance() {
   return NativeThemeChromeos::instance();
 }
 
@@ -759,3 +761,6 @@ void NativeThemeChromeos::PaintButtonLike(SkCanvas* canvas,
     canvas->drawPath(border, stroke_paint);
   }
 }
+
+}  // namespace gfx
+
