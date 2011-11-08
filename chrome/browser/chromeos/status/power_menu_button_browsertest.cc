@@ -32,10 +32,10 @@ class PowerMenuButtonTest : public InProcessBrowserTest {
     PowerMenuButton* power = GetPowerMenuButton();
     power->PowerChanged(status);
     string16 tooltip;
-    // 'StatusAreaButton::' is inserted because GetTootipText is also declared
-    // in MenuDelegate
-    EXPECT_TRUE(power->StatusAreaButton::GetTooltipText(gfx::Point(0, 0),
-                                                        &tooltip));
+    // There is static_cast<StatusAreaButton*> because GetTootipText is also
+    // declared in MenuDelegate
+    EXPECT_TRUE(static_cast<StatusAreaButton*>(power)->GetTooltipText(
+        gfx::Point(0, 0), &tooltip));
     return tooltip;
   }
 
