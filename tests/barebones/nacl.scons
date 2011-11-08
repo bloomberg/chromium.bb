@@ -13,19 +13,9 @@ Import('env')
 # dynamically link against libc, or make use of ld.so optional.
 is_glibc = env.Bit('nacl_glibc')
 
-LINK_FLAGS_MULTILIB = ['-nostdlib']
-
-if env.Bit('build_x86') and not env.Bit('bitcode'):
-  if env.Bit('build_x86_32'):
-    LINK_FLAGS_MULTILIB.append('-m32')
-  elif env.Bit('build_x86_64'):
-    LINK_FLAGS_MULTILIB.append('-m64')
-  else:
-    raise Exception("ERROR: unknown BUILD_SUBARCH: " + env['BUILD_SUBARCH'])
-
 env.Replace(LIBS=[],
             EXTRA_LIBS=[],
-            LINKFLAGS=LINK_FLAGS_MULTILIB)
+            LINKFLAGS=['-nostdlib'])
 
 # This setting will affect the barebones_regs.c test
 if env.Bit('build_arm'):

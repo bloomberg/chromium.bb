@@ -127,8 +127,6 @@ ACCEPTABLE_ARGUMENTS = set([
     'force_sel_ldr',
     # force irt image used by tests
     'force_irt',
-    # colon-separated list of compiler flags, e.g. "-g:-Wall".
-    'nacl_ccflags',
     # colon-separated list of linker flags, e.g. "-lfoo:-Wl,-u,bar".
     'nacl_linkflags',
     # colon-separated list of pnacl bcld flags, e.g. "-lfoo:-Wl,-u,bar".
@@ -2282,11 +2280,9 @@ def MakeBaseTrustedEnv():
     ],
 
     EXTRA_CFLAGS = [],
-    EXTRA_CCFLAGS = [],
     EXTRA_CXXFLAGS = [],
     EXTRA_LIBS = [],
     CFLAGS = ['${EXTRA_CFLAGS}'],
-    CCFLAGS = ['${EXTRA_CCFLAGS}'],
     CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
   )
   if base_env.Bit('ncval_testing'):
@@ -2802,29 +2798,24 @@ nacl_env = MakeArchSpecificEnv().Clone(
     ],
 
     EXTRA_CFLAGS = [],
-    EXTRA_CCFLAGS = ARGUMENTS.get('nacl_ccflags', '').split(':'),
     EXTRA_CXXFLAGS = [],
     EXTRA_LIBS = [],
     EXTRA_LINKFLAGS = ARGUMENTS.get('nacl_linkflags', '').split(':'),
 
     # always optimize binaries
-    # Command line option nacl_ccflags=... add additional option to nacl build
     CCFLAGS = ['-O2',
                '-fomit-frame-pointer',
                '-Wall',
                '-fdiagnostics-show-option',
                '-pedantic',
                ] +
-              werror_flags +
-              ['${EXTRA_CCFLAGS}'] ,
+              werror_flags,
 
     CFLAGS = ['-std=gnu99',
-              ] +
-             ['${EXTRA_CFLAGS}'],
+              ],
     CXXFLAGS = ['-std=gnu++98',
                 '-Wno-long-long',
-                ] +
-               ['${EXTRA_CXXFLAGS}'],
+                ],
 
     # This magic is copied from scons-2.0.1/engine/SCons/Defaults.py
     # where this pattern is used for _LIBDIRFLAGS, which produces -L
@@ -2836,7 +2827,7 @@ nacl_env = MakeArchSpecificEnv().Clone(
     RPATHLINKSUFFIX = '',
 
     LIBS = [],
-    LINKFLAGS = ['${EXTRA_LINKFLAGS}', '${RPATH_LINK_FLAGS}'],
+    LINKFLAGS = ['${RPATH_LINK_FLAGS}'],
 
     # These are settings for in-tree, non-browser tests to use.
     # They use libraries that circumvent the IRT-based implementations
@@ -2930,12 +2921,6 @@ nacl_env.PrependUnique(
     CPPPATH = ['${INCLUDE_DIR}'],
     LIBPATH = ['${LIB_DIR}'],
     )
-
-if not nacl_env.Bit('bitcode'):
-  if nacl_env.Bit('build_x86_32'):
-    nacl_env.Append(CCFLAGS = ['-m32'], LINKFLAGS = '-m32')
-  elif nacl_env.Bit('build_x86_64'):
-    nacl_env.Append(CCFLAGS = ['-m64'], LINKFLAGS = '-m64')
 
 if nacl_env.Bit('bitcode'):
   # TODO(robertm): remove this ASAP, we currently have llvm issue with c++

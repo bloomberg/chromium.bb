@@ -143,12 +143,13 @@ def _SetEnvForX86Sdk(env, sdk_path):
     ld_mode_flag = ''
   else:
     libsuffix = 'lib%s' % env['TARGET_SUBARCH']
-    cc_mode_flag = ' -m%s' % env['TARGET_SUBARCH']
-    as_mode_flag = ' --%s' % env['TARGET_SUBARCH']
+    as_mode_flag = '--%s' % env['TARGET_SUBARCH']
     if env['TARGET_SUBARCH'] == '64':
       ld_mode_flag = ' -melf64_nacl'
     else:
       ld_mode_flag = ' -melf_nacl'
+
+  cc_mode_flag = '-m%s' % env['TARGET_SUBARCH']
 
   env.Replace(# Replace header and lib paths.
               # where to put nacl extra sdk headers
@@ -158,26 +159,24 @@ def _SetEnvForX86Sdk(env, sdk_path):
               # where to find/put nacl generic extra sdk libraries
               NACL_SDK_LIB='%s/%s/%s' % (sdk_path, arch, libsuffix),
               # Replace the normal unix tools with the NaCl ones.
-              CC=os.path.join(bin_path, '%s-gcc%s' % (arch, cc_mode_flag)),
-              CXX=os.path.join(bin_path, '%s-g++%s' % (arch, cc_mode_flag)),
+              CC=os.path.join(bin_path, '%s-gcc' % arch),
+              CXX=os.path.join(bin_path, '%s-g++' % arch),
               AR=os.path.join(bin_path, '%s-ar' % arch),
-              AS=os.path.join(bin_path, '%s-as%s' % (arch, as_mode_flag)),
+              AS=os.path.join(bin_path, '%s-as' % arch),
               GDB=os.path.join(bin_path, 'nacl-gdb'),
               # NOTE: use g++ for linking so we can handle C AND C++.
-              LINK=os.path.join(bin_path, '%s-g++%s' % (arch, cc_mode_flag)),
+              LINK=os.path.join(bin_path, '%s-g++' % arch),
               # Grrr... and sometimes we really need ld.
               LD=os.path.join(bin_path, '%s-ld%s' % (arch, ld_mode_flag)),
               RANLIB=os.path.join(bin_path, '%s-ranlib' % arch),
               OBJDUMP=os.path.join(bin_path, '%s-objdump' % arch),
               STRIP=os.path.join(bin_path, '%s-strip' % arch),
-              # Strip doesn't seem to be a first-class citizen in SCons country,
-              # so we have to add these *COM, *COMSTR manually.
-              # Note: it appears we cannot add this in component_setup.py
-              # to avoid duplication =(. Thus, this is duplicated here,
-              # and in the pnacl sdk setup.
-              STRIPFLAGS=['--strip-all'],
-              STRIPCOM='${STRIP} ${STRIPFLAGS}',
-              CFLAGS = ['-std=gnu99'],
+              BASE_LINKFLAGS=[cc_mode_flag],
+              BASE_CFLAGS=[cc_mode_flag],
+              BASE_CXXFLAGS=[cc_mode_flag],
+              BASE_ASFLAGS=[as_mode_flag],
+              BASE_ASPPFLAGS=[cc_mode_flag],
+              CFLAGS=['-std=gnu99'],
               CCFLAGS=['-O3',
                        '-Werror',
                        '-Wall',
@@ -296,13 +295,6 @@ def _SetEnvForPnacl(env, root):
               DISASS=pnacl_disass,
               OBJDUMP=pnacl_disass,
               STRIP=pnacl_strip,
-              # Strip doesn't seem to be a first-class citizen in SCons country,
-              # so we have to add these *COM, *COMSTR manually.
-              # Note: it appears we cannot add this in component_setup.py
-              # to avoid duplication =( Thus, this is duplicated here,
-              # and in the nacl-gcc setup.
-              STRIPFLAGS=['--strip-all'],
-              STRIPCOM='${STRIP} ${STRIPFLAGS}',
               )
 
 
@@ -484,12 +476,48 @@ def generate(env):
   env.Tool('ar')
   env.Tool('as')
 
+  print env["SHCXXCOM"]
+  #exit(0)
   env.Replace(
       COMPONENT_LINKFLAGS=[''],
       COMPONENT_LIBRARY_LINK_SUFFIXES=['.pso', '.so', '.a'],
       _RPATH='',
       COMPONENT_LIBRARY_DEBUG_SUFFIXES=[],
-      PROGSUFFIX='.nexe'
+      PROGSUFFIX='.nexe',
+      # adding BASE_ AND EXTRA_ flags to common command lines
+      # The suggested usage pattern is:
+      # BASE_XXXFLAGS can only be set in this file
+      # EXTRA_XXXFLAGS can only be set in a ComponentXXX call
+      # NOTE: we also have EXTRA_LIBS which is handles separately in
+      # site_scons/site_tools/component_builders.py
+      # NOTE: the command lines were gleaned from:
+      # * ../third_party/scons-2.0.1/engine/SCons/Tool/cc.py
+      # * ../third_party/scons-2.0.1/engine/SCons/Tool/c++.py
+      # * etc.
+      CCCOM='$CC $BASE_CFLAGS $CFLAGS $EXTRA_CFLAGS ' +
+            '$CCFLAGS $_CCCOMCOM -c -o $TARGET $SOURCES',
+      SHCCCOM='$SHCC $BASE_CFLAGS $SHCFLAGS $EXTRA_CFLAGS ' +
+              '$SHCCFLAGS $_CCCOMCOM -c -o $TARGET $SOURCES',
+
+      CXXCOM='$CXX $BASE_CXXFLAGS $CXXFLAGS $EXTRA_CXXFLAGS ' +
+             '$CCFLAGS $_CCCOMCOM -c -o $TARGET $SOURCES',
+      SHCXXCOM='$SHCXX $BASE_CXXFLAGS $SHCXXFLAGS $EXTRA_CXXFLAGS ' +
+               '$SHCCFLAGS $_CCCOMCOM -c -o $TARGET $SOURCES',
+
+      LINKCOM='$LINK $BASE_LINKFLAGS $LINKFLAGS $EXTRA_LINKFLAGS ' +
+              '$SOURCES $_LIBDIRFLAGS $_LIBFLAGS -o $TARGET',
+      SHLINKCOM='$SHLINK $BASE_LINKFLAGS $SHLINKFLAGS $EXTRA_LINKFLAGS ' +
+                '$SOURCES $_LIBDIRFLAGS $_LIBFLAGS -o $TARGET',
+
+      ASCOM='$AS $BASE_ASFLAGS $ASFLAGS $EXTRA_ASFLAGS -o $TARGET $SOURCES',
+      ASPPCOM='$CC $BASE_ASPPFLAGS $ASPPFLAGS $EXTRA_ASPPFLAGS ' +
+              '$CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES',
+
+        # Strip doesn't seem to be a first-class citizen in SCons country,
+      # so we have to add these *COM, *COMSTR manually.
+      # Note: it appears we cannot add this in component_setup.py
+      STRIPFLAGS=['--strip-all'],
+      STRIPCOM='${STRIP} ${STRIPFLAGS}',
   )
 
   # Get root of the SDK.
