@@ -513,6 +513,8 @@ class NotificationsTest(pyauto.PyUITest):
     """Tests that closing a notification leaves the rest
     of the notifications in the correct order.
     """
+    if self.IsWin7():
+      return  # crbug.com/66072
     self._AllowAllOrigins()
     self.NavigateToURL(self.TEST_PAGE_URL)
     self._CreateSimpleNotification('', 'Title1', '')
