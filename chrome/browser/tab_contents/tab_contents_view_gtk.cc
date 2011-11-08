@@ -376,11 +376,12 @@ void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
   }
   RenderWidgetHostViewGtk* view_gtk =
       static_cast<RenderWidgetHostViewGtk*>(view);
-  if (!view_gtk || !view_gtk->last_mouse_down())
+  if (!view_gtk)
     return;
 
   context_menu_.reset(new RenderViewContextMenuGtk(
-      tab_contents_, params, view_gtk->last_mouse_down()->time));
+      tab_contents_, params, view_gtk->last_mouse_down() ?
+      view_gtk->last_mouse_down()->time : GDK_CURRENT_TIME));
   context_menu_->Init();
 
   gfx::Rect bounds;
