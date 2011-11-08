@@ -17,6 +17,11 @@ namespace {
 // Invalid panel index.
 const size_t kInvalidPanelIndex = static_cast<size_t>(-1);
 
+// Width of spacing between first panel and the right edge of the screen.
+// Leaving a larger gap at the edge of the screen allows access to UI
+// elements located on the bottom right of windows.
+const int kRightScreenEdgeSpacingWidth = 24;
+
 // Default width and height of a panel.
 const int kPanelDefaultWidth = 240;
 const int kPanelDefaultHeight = 290;
@@ -89,7 +94,7 @@ void PanelManager::SetWorkArea(const gfx::Rect& work_area) {
   auto_hiding_desktop_bar_->UpdateWorkArea(work_area_);
   AdjustWorkAreaForAutoHidingDesktopBars();
 
-  Rearrange(panels_.begin(), adjusted_work_area_.right());
+  Rearrange(panels_.begin(), StartingRightPosition());
 }
 
 Panel* PanelManager::CreatePanel(Browser* browser) {
@@ -133,8 +138,12 @@ int PanelManager::GetMaxPanelHeight() const {
   return static_cast<int>(adjusted_work_area_.height() * kPanelMaxHeightFactor);
 }
 
+int PanelManager::StartingRightPosition() const {
+  return adjusted_work_area_.right() - kRightScreenEdgeSpacingWidth;
+}
+
 int PanelManager::GetRightMostAvailablePosition() const {
-  return panels_.empty() ? adjusted_work_area_.right() :
+  return panels_.empty() ? StartingRightPosition() :
       (panels_.back()->GetBounds().x() - kPanelsHorizontalSpacing);
 }
 
@@ -553,7 +562,7 @@ void PanelManager::OnMouseMove(const gfx::Point& mouse_position) {
 
 void PanelManager::OnAutoHidingDesktopBarThicknessChanged() {
   AdjustWorkAreaForAutoHidingDesktopBars();
-  Rearrange(panels_.begin(), adjusted_work_area_.right());
+  Rearrange(panels_.begin(), StartingRightPosition());
 }
 
 void PanelManager::OnAutoHidingDesktopBarVisibilityChanged(

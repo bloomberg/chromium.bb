@@ -357,41 +357,59 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
   }
 
   void TestChangeAutoHideTaskBarThickness() {
+    PanelManager* manager = PanelManager::GetInstance();
+    int initial_starting_right_position = manager->StartingRightPosition();
+
     int bottom_bar_thickness = 20;
     int right_bar_thickness = 30;
     mock_auto_hiding_desktop_bar()->EnableAutoHiding(
         AutoHidingDesktopBar::ALIGN_BOTTOM, true, bottom_bar_thickness);
     mock_auto_hiding_desktop_bar()->EnableAutoHiding(
         AutoHidingDesktopBar::ALIGN_RIGHT, true, right_bar_thickness);
+    EXPECT_EQ(
+        initial_starting_right_position - manager->StartingRightPosition(),
+        right_bar_thickness);
 
     Panel* panel = CreatePanel("PanelTest");
     EXPECT_EQ(testing_work_area().height() - bottom_bar_thickness,
               panel->GetBounds().bottom());
-    EXPECT_EQ(testing_work_area().right() - right_bar_thickness,
+    EXPECT_GT(testing_work_area().right() - right_bar_thickness,
               panel->GetBounds().right());
 
-    bottom_bar_thickness += 10;
-    right_bar_thickness += 15;
+    initial_starting_right_position = manager->StartingRightPosition();
+    int bottom_bar_thickness_delta = 10;
+    bottom_bar_thickness += bottom_bar_thickness_delta;
+    int right_bar_thickness_delta = 15;
+    right_bar_thickness += right_bar_thickness_delta;
     mock_auto_hiding_desktop_bar()->SetThickness(
         AutoHidingDesktopBar::ALIGN_BOTTOM, bottom_bar_thickness);
     mock_auto_hiding_desktop_bar()->SetThickness(
         AutoHidingDesktopBar::ALIGN_RIGHT, right_bar_thickness);
     MessageLoopForUI::current()->RunAllPending();
+    EXPECT_EQ(
+        initial_starting_right_position - manager->StartingRightPosition(),
+        right_bar_thickness_delta);
     EXPECT_EQ(testing_work_area().height() - bottom_bar_thickness,
               panel->GetBounds().bottom());
-    EXPECT_EQ(testing_work_area().right() - right_bar_thickness,
+    EXPECT_GT(testing_work_area().right() - right_bar_thickness,
               panel->GetBounds().right());
 
-    bottom_bar_thickness -= 20;
-    right_bar_thickness -= 10;
+    initial_starting_right_position = manager->StartingRightPosition();
+    bottom_bar_thickness_delta = 20;
+    bottom_bar_thickness -= bottom_bar_thickness_delta;
+    right_bar_thickness_delta = 10;
+    right_bar_thickness -= right_bar_thickness_delta;
     mock_auto_hiding_desktop_bar()->SetThickness(
         AutoHidingDesktopBar::ALIGN_BOTTOM, bottom_bar_thickness);
     mock_auto_hiding_desktop_bar()->SetThickness(
         AutoHidingDesktopBar::ALIGN_RIGHT, right_bar_thickness);
     MessageLoopForUI::current()->RunAllPending();
+    EXPECT_EQ(
+        manager->StartingRightPosition() - initial_starting_right_position,
+        right_bar_thickness_delta);
     EXPECT_EQ(testing_work_area().height() - bottom_bar_thickness,
               panel->GetBounds().bottom());
-    EXPECT_EQ(testing_work_area().right() - right_bar_thickness,
+    EXPECT_GT(testing_work_area().right() - right_bar_thickness,
               panel->GetBounds().right());
 
     panel->Close();

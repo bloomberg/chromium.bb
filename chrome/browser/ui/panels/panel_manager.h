@@ -78,6 +78,7 @@ class PanelManager : public PanelMouseWatcher::Observer,
 
   int GetMaxPanelWidth() const;
   int GetMaxPanelHeight() const;
+  int StartingRightPosition() const;
 
   // Overridden from PanelMouseWatcher::Observer:
   virtual void OnMouseMove(const gfx::Point& mouse_position) OVERRIDE;

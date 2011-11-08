@@ -492,6 +492,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
   EXPECT_GT(bounds.width(), 0);
   EXPECT_GT(bounds.height(), 0);
 
+  EXPECT_EQ(bounds.right(), panel_manager->StartingRightPosition());
+
   CloseWindowAndWait(panel->browser());
 
   EXPECT_EQ(0, panel_manager->num_panels());
