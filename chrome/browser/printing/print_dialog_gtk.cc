@@ -215,8 +215,8 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& job_settings,
           break;
       }
       gtk_print_settings_set(gtk_settings_, kCUPSDuplex, cups_duplex_mode);
-#endif
     }
+#endif
   }
   if (!page_setup_)
     page_setup_ = gtk_page_setup_new();
