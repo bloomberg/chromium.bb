@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/screen_lock_view.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/shutdown_button.h"
+#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -388,10 +389,7 @@ class ScreenLockerBackgroundView
                              views::View* screen_lock_view)
       : lock_widget_(lock_widget),
         screen_lock_view_(screen_lock_view) {
-  }
-
-  virtual ScreenMode GetScreenMode() const OVERRIDE {
-    return kScreenLockerMode;
+    set_screen_mode(chromeos::StatusAreaViewChromeos::SCREEN_LOCKER_MODE);
   }
 
   virtual void Layout() OVERRIDE {

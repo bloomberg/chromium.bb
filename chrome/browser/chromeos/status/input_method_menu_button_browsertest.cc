@@ -7,7 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/frame/browser_view.h"
-#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -28,8 +27,8 @@ class InputMethodMenuButtonTest : public CrosInProcessBrowserTest {
 
   InputMethodMenuButton* GetInputMethodMenuButton() {
     BrowserView* view = static_cast<BrowserView*>(browser()->window());
-    return static_cast<StatusAreaView*>(view->
-        GetViewByID(VIEW_ID_STATUS_AREA))->input_method_view();
+    return static_cast<InputMethodMenuButton*>(view->GetViewByID(
+        VIEW_ID_STATUS_BUTTON_INPUT_METHOD));
   }
 };
 

@@ -10,8 +10,9 @@
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/status/status_area_bubble.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
+#include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
@@ -29,10 +30,10 @@ namespace {
 
 const size_t kMaxBubbleCount = 3;
 
-// Returns PrefService object associated with |host|.
-PrefService* GetPrefService(chromeos::StatusAreaHost* host) {
-  if (host->GetProfile())
-    return host->GetProfile()->GetPrefs();
+PrefService* GetPrefService() {
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  if (profile)
+    return profile->GetPrefs();
   return NULL;
 }
 
@@ -51,12 +52,13 @@ namespace chromeos {
 ////////////////////////////////////////////////////////////////////////////////
 // CapsLockMenuButton
 
-CapsLockMenuButton::CapsLockMenuButton(StatusAreaHost* host)
-    : StatusAreaButton(host, this),
-      prefs_(GetPrefService(host)),
+CapsLockMenuButton::CapsLockMenuButton(StatusAreaButton::Delegate* delegate)
+    : StatusAreaButton(delegate, this),
+      prefs_(GetPrefService()),
       status_(NULL),
       should_show_bubble_(true),
       bubble_count_(0) {
+  set_id(VIEW_ID_STATUS_BUTTON_CAPS_LOCK);
   if (prefs_)
     remap_search_key_to_.Init(
         prefs::kLanguageXkbRemapSearchKeyTo, prefs_, this);

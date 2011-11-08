@@ -7,7 +7,6 @@
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/frame/browser_view.h"
-#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -28,8 +27,8 @@ class CapsLockMenuButtonTest : public CrosInProcessBrowserTest {
 
   CapsLockMenuButton* GetCapsLockMenuButton() {
     BrowserView* view = static_cast<BrowserView*>(browser()->window());
-    return static_cast<StatusAreaView*>(view->
-        GetViewByID(VIEW_ID_STATUS_AREA))->caps_lock_view();
+    return static_cast<CapsLockMenuButton*>(view->GetViewByID(
+        VIEW_ID_STATUS_BUTTON_CAPS_LOCK));
   }
 };
 

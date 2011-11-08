@@ -15,15 +15,12 @@
 #include "chrome/browser/chromeos/status/memory_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/power_menu_button.h"
-#include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "views/border.h"
 #include "views/controls/image_view.h"
-
-namespace chromeos {
 
 // Number of pixels to separate each icon.
 #if defined(TOUCH_UI)
@@ -32,48 +29,32 @@ const int kSeparation = 25;
 const int kSeparation = 0;
 #endif
 
-StatusAreaView::StatusAreaView(StatusAreaHost* host)
-    : host_(host),
-      accessibility_view_(NULL),
-      caps_lock_view_(NULL),
-      clock_view_(NULL),
-      input_method_view_(NULL),
-      memory_view_(NULL),
-      network_view_(NULL),
-      power_view_(NULL),
-      need_return_focus_(false) {
+StatusAreaView::StatusAreaView()
+    : need_return_focus_(false) {
 }
 
 StatusAreaView::~StatusAreaView() {
 }
 
-void StatusAreaView::Init() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMemoryWidget)) {
-    memory_view_ = new MemoryMenuButton(host_);
-    AddChildView(memory_view_);
-  }
-
-  accessibility_view_ = new AccessibilityMenuButton(host_);
-  accessibility_view_->set_border(views::Border::CreateEmptyBorder(0, 1, 0, 0));
-  AddChildView(accessibility_view_);
-
-  caps_lock_view_ = new CapsLockMenuButton(host_);
-  caps_lock_view_->set_border(views::Border::CreateEmptyBorder(0, 1, 0, 0));
-  AddChildView(caps_lock_view_);
-
-  clock_view_ = new ClockMenuButton(host_);
-  clock_view_->set_border(views::Border::CreateEmptyBorder(0, 1, 0, 0));
-  AddChildView(clock_view_);
-
-  input_method_view_ = new InputMethodMenuButton(host_);
-  AddChildView(input_method_view_);
-
-  network_view_ = new NetworkMenuButton(host_);
-  AddChildView(network_view_);
-
-  power_view_ = new PowerMenuButton(host_);
-  AddChildView(power_view_);
+void StatusAreaView::AddButton(StatusAreaButton* button, bool bordered) {
+  buttons_.push_back(button);
+  if (bordered)
+    button->set_border(views::Border::CreateEmptyBorder(0, 1, 0, 0));
+  AddChildView(button);
+  UpdateButtonVisibility();
 }
+
+void StatusAreaView::RemoveButton(StatusAreaButton* button) {
+  std::list<StatusAreaButton*>::iterator iter =
+      std::find(buttons_.begin(), buttons_.end(), button);
+  if (iter != buttons_.end()) {
+    RemoveChildView(*iter);
+    buttons_.erase(iter);
+  }
+  UpdateButtonVisibility();
+}
+
+// views::View* overrides.
 
 gfx::Size StatusAreaView::GetPreferredSize() {
   int result_w = 0;
@@ -122,17 +103,13 @@ void StatusAreaView::ChildPreferredSizeChanged(View* child) {
 }
 
 void StatusAreaView::MakeButtonsActive(bool active) {
-  if (memory_view_)
-    memory_view_->set_active(active);
-  accessibility_view()->set_active(active);
-  caps_lock_view()->set_active(active);
-  clock_view()->set_active(active);
-  input_method_view()->set_active(active);
-  network_view()->set_active(active);
-  power_view()->set_active(active);
+  for (std::list<StatusAreaButton*>::iterator iter = buttons_.begin();
+       iter != buttons_.end(); ++iter) {
+    (*iter)->set_menu_active(active);
+  }
 }
 
-void StatusAreaView::ButtonVisibilityChanged(views::View* button_view) {
+void StatusAreaView::UpdateButtonVisibility() {
   Layout();
   PreferredSizeChanged();
 }
@@ -179,5 +156,3 @@ void StatusAreaView::FocusWillChange(views::View* focused_before,
           base::Bind(&StatusAreaView::ReturnFocus, AsWeakPtr(), first_to_last));
   }
 }
-
-}  // namespace chromeos

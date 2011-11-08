@@ -25,15 +25,13 @@ class MenuRunner;
 
 namespace chromeos {
 
-class StatusAreaHost;
-
 // Memory debugging display that lives in the status area.
 class MemoryMenuButton : public StatusAreaButton,
                          public views::MenuDelegate,
                          public views::ViewMenuDelegate,
                          public content::NotificationObserver {
  public:
-  explicit MemoryMenuButton(StatusAreaHost* host);
+  explicit MemoryMenuButton(StatusAreaButton::Delegate* delegate);
   virtual ~MemoryMenuButton();
 
   // views::MenuDelegate implementation

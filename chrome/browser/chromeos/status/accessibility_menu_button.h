@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/chromeos/status/status_area_button.h"
+#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
 #include "views/controls/menu/view_menu_delegate.h"
@@ -18,7 +19,6 @@ class MenuRunner;
 
 namespace chromeos {
 
-class StatusAreaHost;
 class StatusAreaBubbleController;
 
 // A class for the button in the status area which alerts the user when
@@ -28,7 +28,9 @@ class AccessibilityMenuButton : public StatusAreaButton,
                                 public views::MenuDelegate,
                                 public content::NotificationObserver {
  public:
-  explicit AccessibilityMenuButton(StatusAreaHost* host);
+  explicit AccessibilityMenuButton(
+      StatusAreaButton::Delegate* delegate,
+      StatusAreaViewChromeos::ScreenMode screen_mode);
   virtual ~AccessibilityMenuButton();
 
   // views::ViewMenuDelegate implementation
@@ -48,6 +50,8 @@ class AccessibilityMenuButton : public StatusAreaButton,
 
   // Prepares menu before showing it.
   void PrepareMenu();
+
+  StatusAreaViewChromeos::ScreenMode screen_mode_;
 
   // An object synced to the preference, representing if accessibility feature
   // is enabled or not.

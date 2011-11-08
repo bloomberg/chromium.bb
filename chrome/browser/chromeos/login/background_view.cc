@@ -18,10 +18,6 @@
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/shutdown_button.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/status/clock_menu_button.h"
-#include "chrome/browser/chromeos/status/input_method_menu_button.h"
-#include "chrome/browser/chromeos/status/network_menu_button.h"
-#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
@@ -81,6 +77,7 @@ namespace chromeos {
 
 BackgroundView::BackgroundView()
     : status_area_(NULL),
+      screen_mode_(StatusAreaViewChromeos::LOGIN_MODE_VIEWS),
       os_version_label_(NULL),
       boot_times_label_(NULL),
       progress_bar_(NULL),
@@ -216,7 +213,7 @@ bool BackgroundView::ScreenSaverEnabled() {
 
 void BackgroundView::SetDefaultUse24HourClock(bool use_24hour_clock) {
   DCHECK(status_area_);
-  status_area_->clock_view()->SetDefaultUse24HourClock(use_24hour_clock);
+  status_area_->SetDefaultUse24HourClock(use_24hour_clock);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -271,24 +268,18 @@ void BackgroundView::ChildPreferredSizeChanged(View* child) {
   SchedulePaint();
 }
 
-Profile* BackgroundView::GetProfile() const {
-  return NULL;
-}
+// Overridden from StatusAreaButton::Delegate:
 
-bool BackgroundView::ShouldOpenButtonOptions(
-    const views::View* button_view) const {
-  if (button_view == status_area_->network_view()) {
+bool BackgroundView::ShouldExecuteStatusAreaCommand(
+    const views::View* button_view, int command_id) const {
+  if (command_id == StatusAreaViewChromeos::SHOW_NETWORK_OPTIONS)
     return true;
-  }
-  if (button_view == status_area_->clock_view() ||
-      button_view == status_area_->input_method_view()) {
-    return false;
-  }
-  return true;
+  return false;
 }
 
-void BackgroundView::OpenButtonOptions(const views::View* button_view) {
-  if (button_view == status_area_->network_view()) {
+void BackgroundView::ExecuteStatusAreaCommand(
+    const views::View* button_view, int command_id) {
+  if (command_id == StatusAreaViewChromeos::SHOW_NETWORK_OPTIONS) {
     if (proxy_settings_dialog_.get() == NULL) {
       proxy_settings_dialog_.reset(new ProxySettingsDialog(
           this, GetNativeWindow()));
@@ -297,19 +288,20 @@ void BackgroundView::OpenButtonOptions(const views::View* button_view) {
   }
 }
 
-StatusAreaHost::ScreenMode BackgroundView::GetScreenMode() const {
-  return kViewsLoginMode;
+gfx::Font BackgroundView::GetStatusAreaFont(const gfx::Font& font) const {
+  return font.DeriveFont(0, gfx::Font::BOLD);
 }
 
-StatusAreaHost::TextStyle BackgroundView::GetTextStyle() const {
-  return kGrayPlain;
+StatusAreaButton::TextStyle BackgroundView::GetStatusAreaTextStyle() const {
+  return StatusAreaButton::GRAY_PLAIN;
 }
 
 void BackgroundView::ButtonVisibilityChanged(views::View* button_view) {
-  status_area_->ButtonVisibilityChanged(button_view);
+  status_area_->UpdateButtonVisibility();
 }
 
 // Overridden from LoginHtmlDialog::Delegate:
+
 void BackgroundView::OnLocaleChanged() {
   // Proxy settings dialog contains localized strings.
   proxy_settings_dialog_.reset();
@@ -332,8 +324,8 @@ void BackgroundView::OnBootTimesLabelTextUpdated(
 
 void BackgroundView::InitStatusArea() {
   DCHECK(status_area_ == NULL);
-  status_area_ = new StatusAreaView(this);
-  status_area_->Init();
+  status_area_ = new StatusAreaViewChromeos();
+  status_area_->Init(this, screen_mode_);
   AddChildView(status_area_);
 }
 

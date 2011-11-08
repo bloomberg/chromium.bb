@@ -132,7 +132,7 @@ using input_method::InputMethodManager;
 // InputMethodMenu
 
 InputMethodMenu::InputMethodMenu(PrefService* pref_service,
-                                 StatusAreaHost::ScreenMode screen_mode,
+                                 StatusAreaViewChromeos::ScreenMode screen_mode,
                                  bool for_out_of_box_experience_dialog)
     : input_method_descriptors_(InputMethodManager::GetInstance()->
                                 GetActiveInputMethods()),
@@ -151,7 +151,7 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
          !input_method_descriptors_->empty());
 
   // Sync current and previous input methods on Chrome prefs with ibus-daemon.
-  if (pref_service_ && (screen_mode_ == StatusAreaHost::kBrowserMode)) {
+  if (pref_service_ && (screen_mode_ == StatusAreaViewChromeos::BROWSER_MODE)) {
     previous_input_method_pref_.Init(
         prefs::kLanguagePreviousInputMethod, pref_service, this);
     current_input_method_pref_.Init(
@@ -159,14 +159,14 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
   }
 
   InputMethodManager* manager = InputMethodManager::GetInstance();
-  if (screen_mode_ == StatusAreaHost::kViewsLoginMode ||
-      screen_mode_ == StatusAreaHost::kWebUILoginMode) {
+  if (screen_mode_ == StatusAreaViewChromeos::LOGIN_MODE_VIEWS ||
+      screen_mode_ == StatusAreaViewChromeos::LOGIN_MODE_WEBUI) {
     // This button is for the login screen.
     manager->AddPreLoginPreferenceObserver(this);
     registrar_.Add(this,
                    chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                    content::NotificationService::AllSources());
-  } else if (screen_mode_ == StatusAreaHost::kBrowserMode) {
+  } else if (screen_mode_ == StatusAreaViewChromeos::BROWSER_MODE) {
     manager->AddPostLoginPreferenceObserver(this);
   }
 
@@ -421,15 +421,15 @@ void InputMethodMenu::PreferenceUpdateNeeded(
     InputMethodManager* manager,
     const input_method::InputMethodDescriptor& previous_input_method,
     const input_method::InputMethodDescriptor& current_input_method) {
-  if (screen_mode_ == StatusAreaHost::kBrowserMode) {
+  if (screen_mode_ == StatusAreaViewChromeos::BROWSER_MODE) {
     if (pref_service_) {  // make sure we're not in unit tests.
       // Sometimes (e.g. initial boot) |previous_input_method.id()| is empty.
       previous_input_method_pref_.SetValue(previous_input_method.id());
       current_input_method_pref_.SetValue(current_input_method.id());
       pref_service_->ScheduleSavePersistentPrefs();
     }
-  } else if (screen_mode_ == StatusAreaHost::kViewsLoginMode ||
-      screen_mode_ == StatusAreaHost::kWebUILoginMode) {
+  } else if (screen_mode_ == StatusAreaViewChromeos::LOGIN_MODE_VIEWS ||
+      screen_mode_ == StatusAreaViewChromeos::LOGIN_MODE_WEBUI) {
     if (g_browser_process && g_browser_process->local_state()) {
       g_browser_process->local_state()->SetString(
           language_prefs::kPreferredKeyboardLayout, current_input_method.id());
@@ -465,7 +465,7 @@ void InputMethodMenu::FirstObserverIsAdded(InputMethodManager* manager) {
   // NOTICE: Since this function might be called from the constructor of this
   // class, it's better to avoid calling virtual functions.
 
-  if (pref_service_ && (screen_mode_ == StatusAreaHost::kBrowserMode)) {
+  if (pref_service_ && (screen_mode_ == StatusAreaViewChromeos::BROWSER_MODE)) {
     // Get the input method name in the Preferences file which was in use last
     // time, and switch to the method. We remember two input method names in the
     // preference so that the Control+space hot-key could work fine from the
@@ -721,10 +721,10 @@ void InputMethodMenu::SetMinimumWidth(int width) {
 
 void InputMethodMenu::RemoveObservers() {
   InputMethodManager* manager = InputMethodManager::GetInstance();
-  if (screen_mode_ == StatusAreaHost::kViewsLoginMode ||
-      screen_mode_ == StatusAreaHost::kWebUILoginMode) {
+  if (screen_mode_ == StatusAreaViewChromeos::LOGIN_MODE_VIEWS ||
+      screen_mode_ == StatusAreaViewChromeos::LOGIN_MODE_WEBUI) {
     manager->RemovePreLoginPreferenceObserver(this);
-  } else if (screen_mode_ == StatusAreaHost::kBrowserMode) {
+  } else if (screen_mode_ == StatusAreaViewChromeos::BROWSER_MODE) {
     manager->RemovePostLoginPreferenceObserver(this);
   }
   manager->RemoveObserver(this);

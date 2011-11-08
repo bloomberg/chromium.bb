@@ -11,18 +11,19 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/status/input_method_menu.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
+#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
 namespace chromeos {
-
-class StatusAreaHost;
 
 // A class for the button in the status area which expands the dropdown menu for
 // switching input method and keyboard layout.
 class InputMethodMenuButton : public StatusAreaButton,
                               public views::ViewMenuDelegate {
  public:
-  explicit InputMethodMenuButton(StatusAreaHost* host);
+  explicit InputMethodMenuButton(
+      StatusAreaButton::Delegate* delegate,
+      StatusAreaViewChromeos::ScreenMode screen_mode);
   virtual ~InputMethodMenuButton();
 
   // views::View implementation.
@@ -47,6 +48,7 @@ class InputMethodMenuButton : public StatusAreaButton,
   bool WindowIsActive();
 
   scoped_ptr<InputMethodMenu> menu_;
+  StatusAreaViewChromeos::ScreenMode screen_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMenuButton);
 };

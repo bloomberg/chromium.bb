@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/status/status_area_bubble.h"
+#include "chrome/browser/chromeos/view_ids.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -205,14 +206,15 @@ using base::TimeDelta;
 ////////////////////////////////////////////////////////////////////////////////
 // PowerMenuButton
 
-PowerMenuButton::PowerMenuButton(StatusAreaHost* host)
-    : StatusAreaButton(host, this),
+PowerMenuButton::PowerMenuButton(StatusAreaButton::Delegate* delegate)
+    : StatusAreaButton(delegate, this),
       battery_is_present_(false),
       line_power_on_(false),
       battery_percentage_(0.0),
       battery_time_to_full_(TimeDelta::FromMicroseconds(kInitialMS)),
       battery_time_to_empty_(TimeDelta::FromMicroseconds(kInitialMS)),
       status_(NULL) {
+  set_id(VIEW_ID_STATUS_BUTTON_POWER);
   UpdateIconAndLabelInfo();
   CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
 }

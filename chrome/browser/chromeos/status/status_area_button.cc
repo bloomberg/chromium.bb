@@ -29,26 +29,20 @@ const int kIconHorizontalPad = 2;
 
 }
 
-namespace chromeos {
-
 ////////////////////////////////////////////////////////////////////////////////
 // StatusAreaButton
 
-StatusAreaButton::StatusAreaButton(StatusAreaHost* host,
+StatusAreaButton::StatusAreaButton(Delegate* button_delegate,
                                    views::ViewMenuDelegate* menu_delegate)
     : MenuButton(NULL, string16(), menu_delegate, false),
-      use_menu_button_paint_(false),
-      active_(true),
-      host_(host) {
+      menu_active_(true),
+      delegate_(button_delegate) {
   set_border(NULL);
-  set_use_menu_button_paint(true);
-
-  bool webui_login = host_->GetScreenMode() == StatusAreaHost::kWebUILoginMode;
 
   gfx::Font font =
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
-  font = font.DeriveFont(kFontSizeDelta, webui_login ? font.GetStyle()
-                                                     : gfx::Font::BOLD);
+  font = font.DeriveFont(kFontSizeDelta);
+  font = delegate_->GetStatusAreaFont(font);
   SetFont(font);
 
   SetShowMultipleIconStates(false);
@@ -68,12 +62,7 @@ void StatusAreaButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     canvas->FillRect(SkColorSetARGB(0x19, 0xFF, 0xFF, 0xFF), GetLocalBounds());
   }
 
-  if (use_menu_button_paint_) {
-    views::MenuButton::PaintButton(canvas, mode);
-  } else {
-    canvas->DrawBitmapInt(icon(), horizontal_padding(), 0);
-    OnPaintFocusBorder(canvas);
-  }
+  views::MenuButton::PaintButton(canvas, mode);
 }
 
 void StatusAreaButton::SetText(const string16& text) {
@@ -88,7 +77,7 @@ void StatusAreaButton::SetText(const string16& text) {
 }
 
 bool StatusAreaButton::Activate() {
-  if (active_)
+  if (menu_active_)
     return views::MenuButton::Activate();
   else
     return true;
@@ -100,18 +89,14 @@ gfx::Size StatusAreaButton::GetPreferredSize() {
                      icon_height() + insets.height());
 
   // Adjusts size when use menu button paint.
-  if (use_menu_button_paint_) {
-    gfx::Size menu_button_size = views::MenuButton::GetPreferredSize();
-    prefsize.SetSize(
-      std::max(prefsize.width(), menu_button_size.width()),
-      std::max(prefsize.height(), menu_button_size.height())
-    );
+  gfx::Size menu_button_size = views::MenuButton::GetPreferredSize();
+  prefsize.SetSize(std::max(prefsize.width(), menu_button_size.width()),
+                   std::max(prefsize.height(), menu_button_size.height()));
 
-    // Shift 1-pixel down for odd number of pixels in vertical space.
-    if ((prefsize.height() - menu_button_size.height()) % 2) {
-      insets_.Set(insets.top() + 1, insets.left(),
-          insets.bottom(), insets.right());
-    }
+  // Shift 1-pixel down for odd number of pixels in vertical space.
+  if ((prefsize.height() - menu_button_size.height()) % 2) {
+    insets_.Set(insets.top() + 1, insets.left(),
+                insets.bottom(), insets.right());
   }
 
   // Add padding.
@@ -131,7 +116,7 @@ void StatusAreaButton::OnThemeChanged() {
 void StatusAreaButton::SetVisible(bool visible) {
   if (visible != IsVisible()) {
     views::MenuButton::SetVisible(visible);
-    host_->ButtonVisibilityChanged(this);
+    delegate_->ButtonVisibilityChanged(this);
   }
 }
 
@@ -158,23 +143,21 @@ int StatusAreaButton::horizontal_padding() {
 
 void StatusAreaButton::UpdateTextStyle() {
   ClearEmbellishing();
-  switch (host_->GetTextStyle()) {
-    case StatusAreaHost::kWhitePlain:
+  switch (delegate_->GetStatusAreaTextStyle()) {
+    case WHITE_PLAIN:
       SetEnabledColor(kWhitePlainTextColor);
       break;
-    case StatusAreaHost::kGrayPlain:
+    case GRAY_PLAIN:
       SetEnabledColor(kGrayPlainTextColor);
       break;
-    case StatusAreaHost::kWhiteHaloed:
+    case WHITE_HALOED:
       SetEnabledColor(kWhiteHaloedTextColor);
       SetTextHaloColor(kWhiteHaloedHaloColor);
       break;
-    case StatusAreaHost::kGrayEmbossed:
+    case GRAY_EMBOSSED:
       SetEnabledColor(kGrayEmbossedTextColor);
       SetTextShadowColors(kGrayEmbossedShadowColor, kGrayEmbossedShadowColor);
       SetTextShadowOffset(0, 1);
       break;
   }
 }
-
-}  // namespace chromeos

@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
+#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 
 class PrefService;
 
@@ -24,8 +25,6 @@ class Canvas;
 }
 
 namespace chromeos {
-
-class StatusAreaHost;
 
 // The network menu button in the status area.
 // This class will handle getting the wifi networks and populating the menu.
@@ -61,7 +60,8 @@ class NetworkMenuButton : public StatusAreaButton,
                           public NetworkLibrary::CellularDataPlanObserver,
                           public MessageBubbleDelegate {
  public:
-  explicit NetworkMenuButton(StatusAreaHost* host);
+  explicit NetworkMenuButton(StatusAreaButton::Delegate* delegate,
+                             StatusAreaViewChromeos::ScreenMode screen_mode);
   virtual ~NetworkMenuButton();
 
   static void RegisterPrefs(PrefService* local_state);

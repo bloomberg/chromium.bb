@@ -9,7 +9,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
-#include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

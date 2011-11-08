@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/login/views_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"

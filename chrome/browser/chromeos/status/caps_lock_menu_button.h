@@ -24,7 +24,6 @@ class MenuRunner;
 
 namespace chromeos {
 
-class StatusAreaHost;
 class StatusAreaBubbleContentView;
 class StatusAreaBubbleController;
 
@@ -36,7 +35,7 @@ class CapsLockMenuButton : public content::NotificationObserver,
                            public views::ViewMenuDelegate,
                            public SystemKeyEventListener::CapsLockObserver {
  public:
-  explicit CapsLockMenuButton(StatusAreaHost* host);
+  explicit CapsLockMenuButton(StatusAreaButton::Delegate* delegate);
   virtual ~CapsLockMenuButton();
 
   // views::View implementation.

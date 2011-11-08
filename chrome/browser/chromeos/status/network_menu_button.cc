@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
-#include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -96,14 +96,17 @@ namespace chromeos {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton
 
-NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
-    : StatusAreaButton(host, this),
+NetworkMenuButton::NetworkMenuButton(
+    StatusAreaButton::Delegate* delegate,
+    StatusAreaViewChromeos::ScreenMode screen_mode)
+    : StatusAreaButton(delegate, this),
       mobile_data_bubble_(NULL),
       is_browser_mode_(false),
       check_for_promo_(true),
       was_sim_locked_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  is_browser_mode_ = (host->GetScreenMode() == StatusAreaHost::kBrowserMode);
+  set_id(VIEW_ID_STATUS_BUTTON_NETWORK_MENU);
+  is_browser_mode_ = (screen_mode == StatusAreaViewChromeos::BROWSER_MODE);
   network_menu_.reset(new NetworkMenu(this, is_browser_mode_));
   network_icon_.reset(
       new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE));
@@ -194,15 +197,18 @@ views::MenuButton* NetworkMenuButton::GetMenuButton() {
 }
 
 gfx::NativeWindow NetworkMenuButton::GetNativeWindow() const {
-  return host_->GetNativeWindow();
+  // This must always have a parent, which must have a widget ancestor.
+  return parent()->GetWidget()->GetNativeWindow();
 }
 
 void NetworkMenuButton::OpenButtonOptions() {
-  host_->OpenButtonOptions(this);
+  delegate()->ExecuteStatusAreaCommand(
+      this, StatusAreaViewChromeos::SHOW_NETWORK_OPTIONS);
 }
 
 bool NetworkMenuButton::ShouldOpenButtonOptions() const {
-  return host_->ShouldOpenButtonOptions(this);
+  return delegate()->ShouldExecuteStatusAreaCommand(
+      this, StatusAreaViewChromeos::SHOW_NETWORK_OPTIONS);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -8,9 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
-#include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
@@ -26,18 +24,14 @@ class MenuRunner;
 
 namespace chromeos {
 
-class StatusAreaHost;
-
 // The clock menu button in the status area.
 // This button shows the current time.
 class ClockMenuButton : public StatusAreaButton,
                         public views::MenuDelegate,
                         public views::ViewMenuDelegate,
-                        public content::NotificationObserver,
-                        public PowerLibrary::Observer,
-                        public system::TimezoneSettings::Observer {
+                        public content::NotificationObserver {
  public:
-  explicit ClockMenuButton(StatusAreaHost* host);
+  explicit ClockMenuButton(StatusAreaButton::Delegate* delegate);
   virtual ~ClockMenuButton();
 
   // views::MenuDelegate implementation
@@ -45,18 +39,10 @@ class ClockMenuButton : public StatusAreaButton,
   virtual bool IsCommandEnabled(int id) const OVERRIDE;
   virtual void ExecuteCommand(int id) OVERRIDE;
 
-  // Overridden from ResumeLibrary::Observer:
-  virtual void PowerChanged(const PowerSupplyStatus& status) {}
-  virtual void SystemResumed();
-
-  // Overridden from TimezoneSettings::Observer:
-  virtual void TimezoneChanged(const icu::TimeZone& timezone);
-
   // views::View
   virtual void OnLocaleChanged() OVERRIDE;
 
-  // Updates the time on the menu button. Can be called by host if timezone
-  // changes.
+  // Updates the time on the menu button.
   void UpdateText();
 
   // Sets default use 24hour clock mode.
@@ -87,8 +73,7 @@ class ClockMenuButton : public StatusAreaButton,
 
   PrefChangeRegistrar registrar_;
 
-  // Default value for use_24hour_clock. Used when StatusAreaHost does not
-  // have a profile, i.e. on login screen and lock screen.
+  // Default value for use_24hour_clock.
   bool default_use_24hour_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(ClockMenuButton);

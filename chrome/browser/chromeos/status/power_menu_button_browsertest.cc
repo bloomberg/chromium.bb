@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/status/power_menu_button.h"
 
 #include "chrome/browser/chromeos/frame/browser_view.h"
-#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -23,9 +22,8 @@ class PowerMenuButtonTest : public InProcessBrowserTest {
 
   PowerMenuButton* GetPowerMenuButton() {
     BrowserView* view = static_cast<BrowserView*>(browser()->window());
-    PowerMenuButton* power = static_cast<StatusAreaView*>(view->
-        GetViewByID(VIEW_ID_STATUS_AREA))->power_view();
-    return power;
+    return static_cast<PowerMenuButton*>(view->GetViewByID(
+        VIEW_ID_STATUS_BUTTON_POWER));
   }
 
   string16 CallPowerChangedAndGetTooltipText(const PowerSupplyStatus& status) {

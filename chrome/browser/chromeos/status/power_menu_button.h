@@ -32,7 +32,7 @@ class PowerMenuButton : public StatusAreaButton,
                         public views::ViewMenuDelegate,
                         public PowerLibrary::Observer {
  public:
-  explicit PowerMenuButton(StatusAreaHost* host);
+  explicit PowerMenuButton(StatusAreaButton::Delegate* delegate);
   virtual ~PowerMenuButton();
 
   // views::MenuDelegate implementation.

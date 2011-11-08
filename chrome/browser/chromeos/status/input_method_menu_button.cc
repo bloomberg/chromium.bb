@@ -9,9 +9,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -19,12 +18,10 @@
 
 namespace {
 
-// Returns PrefService object associated with |host|. Returns NULL if we are NOT
-// within a browser.
-PrefService* GetPrefService(chromeos::StatusAreaHost* host) {
-  if (host->GetProfile()) {
-    return host->GetProfile()->GetPrefs();
-  }
+PrefService* GetPrefService() {
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  if (profile)
+    return profile->GetPrefs();
   return NULL;
 }
 
@@ -34,7 +31,7 @@ class MenuImpl : public chromeos::InputMethodMenu {
  public:
   MenuImpl(chromeos::InputMethodMenuButton* button,
            PrefService* pref_service,
-           chromeos::StatusAreaHost::ScreenMode screen_mode)
+           chromeos::StatusAreaViewChromeos::ScreenMode screen_mode)
       : InputMethodMenu(pref_service, screen_mode, false), button_(button) {}
 
  private:
@@ -64,9 +61,13 @@ namespace chromeos {
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodMenuButton
 
-InputMethodMenuButton::InputMethodMenuButton(StatusAreaHost* host)
-    : StatusAreaButton(host, this),
-      menu_(new MenuImpl(this, GetPrefService(host), host->GetScreenMode())) {
+InputMethodMenuButton::InputMethodMenuButton(
+    StatusAreaButton::Delegate* delegate,
+    StatusAreaViewChromeos::ScreenMode screen_mode)
+    : StatusAreaButton(delegate, this),
+      menu_(new MenuImpl(this, GetPrefService(), screen_mode)),
+      screen_mode_(screen_mode) {
+  set_id(VIEW_ID_STATUS_BUTTON_INPUT_METHOD);
   UpdateUIFromCurrentInputMethod();
 }
 
@@ -118,7 +119,7 @@ void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
   const bool hide_button =
       num_active_input_methods == 1 &&
       input_method::InputMethodUtil::IsKeyboardLayout(input_method_id) &&
-      host_->GetScreenMode() == StatusAreaHost::kBrowserMode;
+      screen_mode_ == StatusAreaViewChromeos::BROWSER_MODE;
   SetVisible(!hide_button);
   SetText(name);
   SetTooltipText(tooltip);
@@ -139,11 +140,14 @@ void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
 }
 
 void InputMethodMenuButton::OpenConfigUI() {
-  host_->OpenButtonOptions(this);  // ask browser to open the WebUI page.
+  // Ask browser to open the WebUI page.
+  delegate()->ExecuteStatusAreaCommand(
+      this, StatusAreaViewChromeos::SHOW_LANGUAGE_OPTIONS);
 }
 
 bool InputMethodMenuButton::ShouldSupportConfigUI() {
-  return host_->ShouldOpenButtonOptions(this);
+  return delegate()->ShouldExecuteStatusAreaCommand(
+      this, StatusAreaViewChromeos::SHOW_LANGUAGE_OPTIONS);
 }
 
 void InputMethodMenuButton::UpdateUIFromCurrentInputMethod() {

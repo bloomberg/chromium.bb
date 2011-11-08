@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/status/input_method_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
-#include "chrome/browser/chromeos/status/status_area_view.h"
+#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -142,7 +142,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
     ::BrowserViewLayout::ViewAdded(host, view);
     switch (view->id()) {
       case VIEW_ID_STATUS_AREA:
-        status_area_ = static_cast<chromeos::StatusAreaView*>(view);
+        status_area_ = static_cast<chromeos::StatusAreaViewChromeos*>(view);
         break;
       case VIEW_ID_LAYOUT_MODE_BUTTON:
         layout_mode_button_ = static_cast<chromeos::LayoutModeButton*>(view);
@@ -280,7 +280,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
     }
   }
 
-  chromeos::StatusAreaView* status_area_;
+  chromeos::StatusAreaViewChromeos* status_area_;
   chromeos::LayoutModeButton* layout_mode_button_;
 
   // Most-recently-set bounds for the _CHROME_STATUS_BOUNDS property.
@@ -324,10 +324,10 @@ BrowserView::~BrowserView() {
 
 void BrowserView::Init() {
   ::BrowserView::Init();
-  status_area_ = new StatusAreaView(this);
+  status_area_ = new StatusAreaViewChromeos();
+  status_area_->Init(this, StatusAreaViewChromeos::BROWSER_MODE);
   status_area_->set_id(VIEW_ID_STATUS_AREA);
   AddChildView(status_area_);
-  status_area_->Init();
 
   layout_mode_button_ = new LayoutModeButton();
   layout_mode_button_->set_id(VIEW_ID_LAYOUT_MODE_BUTTON);
@@ -496,55 +496,51 @@ void BrowserView::OnBrowserRemoved(const Browser* browser) {
     Layout();
 }
 
-// BrowserView, StatusAreaHost implementation.
+// StatusAreaButton::Delegate overrides.
 
-Profile* BrowserView::GetProfile() const {
-  return browser()->profile();
-}
-
-gfx::NativeWindow BrowserView::GetNativeWindow() const {
-  return GetWidget()->GetNativeWindow();
-}
-
-bool BrowserView::ShouldOpenButtonOptions(
-    const views::View* button_view) const {
+bool BrowserView::ShouldExecuteStatusAreaCommand(
+    const views::View* button_view, int command_id) const {
   return true;
 }
 
-void BrowserView::ExecuteBrowserCommand(int id) const {
-  browser()->ExecuteCommand(id);
-}
-
-void BrowserView::OpenButtonOptions(const views::View* button_view) {
-  if (button_view == status_area_->network_view()) {
-    browser()->OpenInternetOptionsDialog();
-  } else if (button_view == status_area_->input_method_view()) {
-    browser()->OpenLanguageOptionsDialog();
-  } else {
-    browser()->OpenSystemOptionsDialog();
+void BrowserView::ExecuteStatusAreaCommand(
+    const views::View* button_view, int command_id) {
+  switch (command_id) {
+    case StatusAreaViewChromeos::SHOW_NETWORK_OPTIONS:
+      browser()->OpenInternetOptionsDialog();
+      break;
+    case StatusAreaViewChromeos::SHOW_LANGUAGE_OPTIONS:
+      browser()->OpenLanguageOptionsDialog();
+      break;
+    case StatusAreaViewChromeos::SHOW_SYSTEM_OPTIONS:
+      browser()->OpenLanguageOptionsDialog();
+      break;
+    default:
+      NOTREACHED();
   }
 }
 
-StatusAreaHost::ScreenMode BrowserView::GetScreenMode() const {
-  return kBrowserMode;
+gfx::Font BrowserView::GetStatusAreaFont(const gfx::Font& font) const {
+  return font.DeriveFont(0, gfx::Font::BOLD);
 }
 
-StatusAreaHost::TextStyle BrowserView::GetTextStyle() const {
+StatusAreaButton::TextStyle BrowserView::GetStatusAreaTextStyle() const {
   ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(GetProfile());
+      ThemeServiceFactory::GetForProfile(browser()->profile());
 
   if (!theme_service->UsingDefaultTheme())
-    return StatusAreaHost::kWhiteHaloed;
+    return StatusAreaButton::WHITE_HALOED;
 
   return IsOffTheRecord() ?
-      StatusAreaHost::kWhitePlain : StatusAreaHost::kGrayEmbossed;
+      StatusAreaButton::WHITE_PLAIN : StatusAreaButton::GRAY_EMBOSSED;
 }
 
 void BrowserView::ButtonVisibilityChanged(views::View* button_view) {
-  status_area_->ButtonVisibilityChanged(button_view);
+  status_area_->UpdateButtonVisibility();
 }
 
 // BrowserView, MessageLoopForUI::Observer implementation.
+
 #if defined(TOUCH_UI) || defined(USE_AURA)
 base::EventStatus BrowserView::WillProcessEvent(
     const base::NativeEvent& event) OVERRIDE {

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -35,7 +35,7 @@ namespace chromeos {
 
 // A class for the dropdown menu for switching input method and keyboard layout.
 // Since the class provides the views::ViewMenuDelegate interface, it's easy to
-// create a button widget (e.g. views::MenuButton, chromeos::StatusAreaButton)
+// create a button widget (e.g. views::MenuButton, StatusAreaButton)
 // which shows the dropdown menu on click.
 class InputMethodMenu
     : public views::ViewMenuDelegate,
@@ -45,7 +45,7 @@ class InputMethodMenu
       public content::NotificationObserver {
  public:
   InputMethodMenu(PrefService* pref_service,
-                  StatusAreaHost::ScreenMode screen_mode,
+                  StatusAreaViewChromeos::ScreenMode screen_mode,
                   bool for_out_of_box_experience_dialog);
   virtual ~InputMethodMenu();
 
@@ -193,7 +193,7 @@ class InputMethodMenu
   content::NotificationRegistrar registrar_;
 
   // The mode of the host screen  (e.g. browser, screen locker, login screen.)
-  const StatusAreaHost::ScreenMode screen_mode_;
+  const StatusAreaViewChromeos::ScreenMode screen_mode_;
   // true if the menu is for a dialog in OOBE screen. In the dialog, we don't
   // use radio buttons.
   const bool for_out_of_box_experience_dialog_;

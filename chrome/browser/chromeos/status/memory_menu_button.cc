@@ -9,7 +9,7 @@
 #include "base/process_util.h"  // GetSystemMemoryInfo
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/memory_purger.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -51,10 +51,11 @@ namespace chromeos {
 // Delay between updates, in seconds.
 const int kUpdateIntervalSeconds = 5;
 
-MemoryMenuButton::MemoryMenuButton(StatusAreaHost* host)
-    : StatusAreaButton(host, this),
+MemoryMenuButton::MemoryMenuButton(StatusAreaButton::Delegate* delegate)
+    : StatusAreaButton(delegate, this),
       meminfo_(new base::SystemMemoryInfoKB()),
       renderer_kills_(0) {
+  set_id(VIEW_ID_STATUS_BUTTON_MEMORY);
   // Track renderer kills, as the kernel OOM killer will start to kill our
   // renderers as we run out of memory.
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,

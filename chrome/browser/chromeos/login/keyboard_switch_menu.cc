@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/button/menu_button.h"
@@ -18,7 +18,7 @@ namespace chromeos {
 
 KeyboardSwitchMenu::KeyboardSwitchMenu()
     : InputMethodMenu(NULL /* pref_service */,
-                      StatusAreaHost::kViewsLoginMode,
+                      StatusAreaViewChromeos::LOGIN_MODE_VIEWS,
                       true /* for_out_of_box_experience_dialog */) {
 }
 

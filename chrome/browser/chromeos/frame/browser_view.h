@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "views/context_menu_controller.h"
@@ -18,6 +18,7 @@
 
 class AccessibleToolbarView;
 class Profile;
+class StatusAreaButton;
 class TabStripModel;
 
 namespace ui {
@@ -35,8 +36,7 @@ class MenuRunner;
 namespace chromeos {
 
 class LayoutModeButton;
-class StatusAreaView;
-class StatusAreaButton;
+class StatusAreaViewChromeos;
 
 // chromeos::BrowserView adds ChromeOS specific controls and menus to a
 // BrowserView created with Browser::TYPE_TABBED. This extender adds controls
@@ -49,7 +49,7 @@ class BrowserView : public ::BrowserView,
                     public views::ContextMenuController,
                     public views::MenuListener,
                     public BrowserList::Observer,
-                    public StatusAreaHost,
+                    public StatusAreaButton::Delegate,
                     public MessageLoopForUI::Observer {
  public:
   explicit BrowserView(Browser* browser);
@@ -83,15 +83,13 @@ class BrowserView : public ::BrowserView,
   virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
   virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
 
-  // StatusAreaHost overrides.
-  virtual Profile* GetProfile() const OVERRIDE;
-  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
-  virtual bool ShouldOpenButtonOptions(
-      const views::View* button_view) const OVERRIDE;
-  virtual void ExecuteBrowserCommand(int id) const OVERRIDE;
-  virtual void OpenButtonOptions(const views::View* button_view) OVERRIDE;
-  virtual ScreenMode GetScreenMode() const OVERRIDE;
-  virtual TextStyle GetTextStyle() const OVERRIDE;
+  // StatusAreaButton::Delegate overrides.
+  virtual bool ShouldExecuteStatusAreaCommand(
+      const views::View* button_view, int command_id) const OVERRIDE;
+  virtual void ExecuteStatusAreaCommand(
+      const views::View* button_view, int command_id) OVERRIDE;
+  virtual gfx::Font GetStatusAreaFont(const gfx::Font& font) const OVERRIDE;
+  virtual StatusAreaButton::TextStyle GetStatusAreaTextStyle() const OVERRIDE;
   virtual void ButtonVisibilityChanged(views::View* button_view) OVERRIDE;
 
   // MessageLoopForUI::Observer overrides.
@@ -136,7 +134,7 @@ class BrowserView : public ::BrowserView,
   // onscreen until Layout() is called.
   void UpdateLayoutModeButtonVisibility();
 
-  StatusAreaView* status_area_;
+  StatusAreaViewChromeos* status_area_;
   LayoutModeButton* layout_mode_button_;
 
   // System menu.

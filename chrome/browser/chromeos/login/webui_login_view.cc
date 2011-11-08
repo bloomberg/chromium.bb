@@ -15,10 +15,7 @@
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
-#include "chrome/browser/chromeos/status/clock_menu_button.h"
-#include "chrome/browser/chromeos/status/input_method_menu_button.h"
-#include "chrome/browser/chromeos/status/network_menu_button.h"
-#include "chrome/browser/chromeos/status/status_area_view.h"
+#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -233,27 +230,18 @@ void WebUILoginView::ChildPreferredSizeChanged(View* child) {
   SchedulePaint();
 }
 
-Profile* WebUILoginView::GetProfile() const {
-  return NULL;
-}
+// Overridden from StatusAreaButton::Delegate:
 
-void WebUILoginView::ExecuteBrowserCommand(int id) const {
-}
-
-bool WebUILoginView::ShouldOpenButtonOptions(
-    const views::View* button_view) const {
-  if (button_view == status_area_->network_view())
+bool WebUILoginView::ShouldExecuteStatusAreaCommand(
+    const views::View* button_view, int command_id) const {
+  if (command_id == StatusAreaViewChromeos::SHOW_NETWORK_OPTIONS)
     return true;
-
-  if (button_view == status_area_->clock_view() ||
-      button_view == status_area_->input_method_view())
-    return false;
-
-  return true;
+  return false;
 }
 
-void WebUILoginView::OpenButtonOptions(const views::View* button_view) {
-  if (button_view == status_area_->network_view()) {
+void WebUILoginView::ExecuteStatusAreaCommand(
+    const views::View* button_view, int command_id) {
+  if (command_id == StatusAreaViewChromeos::SHOW_NETWORK_OPTIONS) {
     if (proxy_settings_dialog_.get() == NULL) {
       proxy_settings_dialog_.reset(new ProxySettingsDialog(
           this, GetNativeWindow()));
@@ -262,17 +250,19 @@ void WebUILoginView::OpenButtonOptions(const views::View* button_view) {
   }
 }
 
-StatusAreaHost::ScreenMode WebUILoginView::GetScreenMode() const {
-  return kWebUILoginMode;
+gfx::Font WebUILoginView::GetStatusAreaFont(const gfx::Font& font) const {
+  return font;
 }
 
-StatusAreaHost::TextStyle WebUILoginView::GetTextStyle() const {
-  return kGrayPlain;
+StatusAreaButton::TextStyle WebUILoginView::GetStatusAreaTextStyle() const {
+  return StatusAreaButton::GRAY_PLAIN;
 }
 
 void WebUILoginView::ButtonVisibilityChanged(views::View* button_view) {
-  status_area_->ButtonVisibilityChanged(button_view);
+  status_area_->UpdateButtonVisibility();
 }
+
+// Overridden from LoginHtmlDialog::Delegate:
 
 void WebUILoginView::OnDialogClosed() {
 }
@@ -334,8 +324,8 @@ void WebUILoginView::OnTabMainFrameFirstRender() {
 void WebUILoginView::InitStatusArea() {
   DCHECK(status_area_ == NULL);
   DCHECK(status_window_ == NULL);
-  status_area_ = new StatusAreaView(this);
-  status_area_->Init();
+  status_area_ = new StatusAreaViewChromeos();
+  status_area_->Init(this, StatusAreaViewChromeos::LOGIN_MODE_WEBUI);
   status_area_->SetVisible(status_area_visibility_on_init_);
 
   // Width of |status_window| is meant to be large enough.
