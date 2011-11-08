@@ -5,6 +5,9 @@
 var g_browserBridge;
 var g_mainView;
 
+// TODO(eroman): Don't comma-separate PID numbers (since they aren't
+//               really quantities).
+
 /**
  * Main entry point called once the page has loaded.
  */
@@ -118,6 +121,8 @@ var MainView = (function() {
   var KEY_MAX_QUEUE_TIME = 'death_data.queue_ms_max';
   var KEY_RUN_TIME = 'death_data.run_ms';
   var KEY_MAX_RUN_TIME = 'death_data.run_ms_max';
+  var KEY_PROCESS_ID = 'process_id';
+  var KEY_PROCESS_TYPE = 'process_type';
 
   // The following are computed properties which we add to each row. They
   // are not present in the original JSON stream.
@@ -269,6 +274,18 @@ var MainView = (function() {
    */
   var KEY_PROPERTIES = {};
 
+  KEY_PROPERTIES[KEY_PROCESS_ID] = {
+    name: 'PID',
+    type: 'number',
+    aggregator: UniquifyAggregator,
+  };
+
+  KEY_PROPERTIES[KEY_PROCESS_TYPE] = {
+    name: 'Process type',
+    type: 'string',
+    aggregator: UniquifyAggregator,
+  };
+
   KEY_PROPERTIES[KEY_BIRTH_THREAD] = {
     name: 'Birth thread',
     type: 'string',
@@ -373,6 +390,8 @@ var MainView = (function() {
     KEY_MAX_QUEUE_TIME,
     KEY_BIRTH_THREAD,
     KEY_DEATH_THREAD,
+    KEY_PROCESS_TYPE,
+    KEY_PROCESS_ID,
     KEY_FUNCTION_NAME,
     KEY_SOURCE_LOCATION,
     KEY_FILE_NAME,
@@ -399,6 +418,8 @@ var MainView = (function() {
    * leads to awkward bucketing.
    */
   var GROUPING_DROPDOWN_CHOICES = [
+    KEY_PROCESS_TYPE,
+    KEY_PROCESS_ID,
     KEY_BIRTH_THREAD,
     KEY_DEATH_THREAD,
     KEY_FUNCTION_NAME,
@@ -934,14 +955,18 @@ var MainView = (function() {
 
   MainView.prototype = {
     addData: function(data) {
-      if (this.allData_) {
-        // TODO(eroman): once the browser is calling receivedData() multiple
-        // times, will need to concatenate it. For now disregard any call after
-        // the first. This way when the C++ side change lands to call multiple
-        // times, the javascript will keep working until I upgrade it.
-        return;
+      var pid = data[KEY_PROCESS_ID];
+      var ptype = data[KEY_PROCESS_TYPE];
+
+      // Augment each data row with the process information.
+      var rows = data.list;
+      for (var i = 0; i < rows.length; ++i) {
+        var e = rows[i];
+        e[KEY_PROCESS_ID] = pid;
+        e[KEY_PROCESS_TYPE] = ptype;
       }
-      this.allData_ = data;
+
+      this.allData_ = this.allData_.concat(rows);
       this.redrawData_();
     },
 
@@ -959,7 +984,7 @@ var MainView = (function() {
 
       // Group, aggregate, filter, and sort the data.
       var groupedData = prepareData(
-          data.list, this.getGroupingFunction_(), this.getFilterFunction_(),
+          data, this.getGroupingFunction_(), this.getFilterFunction_(),
           this.getSortingFunction_());
 
       // Figure out a display order for the groups.
@@ -998,6 +1023,7 @@ var MainView = (function() {
     },
 
     init_: function() {
+      this.allData_ = [];
       this.fillSelectionCheckboxes_($(COLUMN_TOGGLES_CONTAINER_ID));
 
       $(FILTER_SEARCH_ID).onsearch = this.onChangedFilter_.bind(this);
