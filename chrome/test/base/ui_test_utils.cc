@@ -336,6 +336,8 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     int number_of_navigations,
     WindowOpenDisposition disposition,
     int browser_test_flags) {
+  if (disposition == CURRENT_TAB && browser->GetSelectedTabContents())
+    WaitForLoadStop(browser->GetSelectedTabContents());
   TestNavigationObserver same_tab_observer(
       content::Source<NavigationController>(
           &browser->GetSelectedTabContents()->controller()),
