@@ -5192,6 +5192,13 @@
    fun:_ZN13PluginService10GetPluginsERKN4base8CallbackIFvRKSt6vectorIN6webkit13WebPluginInfoESaIS4_EEEEE
    fun:_ZN8chromeos12_GLOBAL__N_127GViewRequestInterceptorTest5SetUpEv
 }
+{
+   bug_103433
+   Memcheck:Leak
+   fun:malloc
+   fun:XGetAtomName
+   fun:_ZN8chromeos12input_method9XKeyboard14GetNumLockMaskEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
