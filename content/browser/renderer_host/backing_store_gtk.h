@@ -60,7 +60,9 @@ class CONTENT_EXPORT BackingStoreGtk : public BackingStore {
       RenderProcessHost* process,
       TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
-      const std::vector<gfx::Rect>& copy_rects);
+      const std::vector<gfx::Rect>& copy_rects,
+      const base::Closure& completion_callback,
+      bool* scheduled_completion_callback);
   virtual bool CopyFromBackingStore(const gfx::Rect& rect,
                                     skia::PlatformCanvas* output);
   virtual void ScrollBackingStore(int dx, int dy,

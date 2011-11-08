@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
@@ -100,7 +101,8 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
       text_direction_(WebKit::WebTextDirectionLeftToRight),
       text_direction_canceled_(false),
       suppress_next_char_events_(false),
-      pending_mouse_lock_request_(false) {
+      pending_mouse_lock_request_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   if (routing_id_ == MSG_ROUTING_NONE)
     routing_id_ = process_->GetNextRoutingID();
 
@@ -987,6 +989,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
   DCHECK(!params.bitmap_rect.IsEmpty());
   DCHECK(!params.view_size.IsEmpty());
 
+  bool was_async = false;
   if (!is_accelerated_compositing_active_) {
     const size_t size = params.bitmap_rect.height() *
         params.bitmap_rect.width() * 4;
@@ -1011,11 +1014,33 @@ void RenderWidgetHost::OnMsgUpdateRect(
         // Paint the backing store. This will update it with the
         // renderer-supplied bits. The view will read out of the backing store
         // later to actually draw to the screen.
-        PaintBackingStoreRect(params.bitmap, params.bitmap_rect,
-                              params.copy_rects, params.view_size);
+        was_async = PaintBackingStoreRect(
+            params.bitmap,
+            params.bitmap_rect,
+            params.copy_rects,
+            params.view_size,
+            base::Bind(&RenderWidgetHost::DidUpdateBackingStore,
+                       weak_factory_.GetWeakPtr(), params, paint_start));
       }
     }
   }
+
+  if (!was_async) {
+    DidUpdateBackingStore(params, paint_start);
+  }
+
+  // Log the time delta for processing a paint message. On platforms that don't
+  // support asynchronous painting, this is equivalent to
+  // MPArch.RWH_TotalPaintTime.
+  TimeDelta delta = TimeTicks::Now() - paint_start;
+  UMA_HISTOGRAM_TIMES("MPArch.RWH_OnMsgUpdateRect", delta);
+}
+
+void RenderWidgetHost::DidUpdateBackingStore(
+    const ViewHostMsg_UpdateRect_Params& params,
+    const TimeTicks& paint_start) {
+  TRACE_EVENT0("renderer_host", "RenderWidgetHost::DidUpdateBackingStore");
+  TimeTicks update_start = TimeTicks::Now();
 
   // ACK early so we can prefetch the next PaintRect if there is a next one.
   // This must be done AFTER we're done painting with the bitmap supplied by the
@@ -1051,6 +1076,8 @@ void RenderWidgetHost::OnMsgUpdateRect(
       content::NotificationService::NoDetails());
 
   // If we got a resize ack, then perhaps we have another resize to send?
+  bool is_resize_ack =
+      ViewHostMsg_UpdateRect_Flags::is_resize_ack(params.flags);
   if (is_resize_ack && view_) {
     // WasResized checks the current size and sends the resize update only
     // when something was actually changed.
@@ -1058,8 +1085,19 @@ void RenderWidgetHost::OnMsgUpdateRect(
   }
 
   // Log the time delta for processing a paint message.
-  TimeDelta delta = TimeTicks::Now() - paint_start;
-  UMA_HISTOGRAM_TIMES("MPArch.RWH_OnMsgUpdateRect", delta);
+  TimeTicks now = TimeTicks::Now();
+  TimeDelta delta = now - update_start;
+  UMA_HISTOGRAM_TIMES("MPArch.RWH_DidUpdateBackingStore", delta);
+
+  // Measures the time from receiving the MsgUpdateRect IPC to completing the
+  // DidUpdateBackingStore() method.  On platforms which have asynchronous
+  // painting, such as Linux, this is the sum of MPArch.RWH_OnMsgUpdateRect,
+  // MPArch.RWH_DidUpdateBackingStore, and the time spent asynchronously
+  // waiting for the paint to complete.
+  //
+  // On other platforms, this will be equivalent to MPArch.RWH_OnMsgUpdateRect.
+  delta = now - paint_start;
+  UMA_HISTOGRAM_TIMES("MPArch.RWH_TotalPaintTime", delta);
 }
 
 void RenderWidgetHost::OnMsgInputEventAck(WebInputEvent::Type event_type,
@@ -1210,31 +1248,37 @@ void RenderWidgetHost::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
 }
 #endif
 
-void RenderWidgetHost::PaintBackingStoreRect(
+bool RenderWidgetHost::PaintBackingStoreRect(
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
-    const gfx::Size& view_size) {
+    const gfx::Size& view_size,
+    const base::Closure& completion_callback) {
   // The view may be destroyed already.
   if (!view_)
-    return;
+    return false;
 
   if (is_hidden_) {
     // Don't bother updating the backing store when we're hidden. Just mark it
     // as being totally invalid. This will cause a complete repaint when the
     // view is restored.
     needs_repainting_on_restore_ = true;
-    return;
+    return false;
   }
 
   bool needs_full_paint = false;
+  bool scheduled_completion_callback = false;
   BackingStoreManager::PrepareBackingStore(this, view_size, bitmap, bitmap_rect,
-                                           copy_rects, &needs_full_paint);
+                                           copy_rects, completion_callback,
+                                           &needs_full_paint,
+                                           &scheduled_completion_callback);
   if (needs_full_paint) {
     repaint_start_time_ = TimeTicks::Now();
     repaint_ack_pending_ = true;
     Send(new ViewMsg_Repaint(routing_id_, view_size));
   }
+
+  return scheduled_completion_callback;
 }
 
 void RenderWidgetHost::ScrollBackingStoreRect(int dx, int dy,

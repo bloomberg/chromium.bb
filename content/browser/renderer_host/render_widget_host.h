@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
@@ -27,6 +28,10 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"
+
+namespace base {
+class TimeTicks;
+}
 
 namespace gfx {
 class Rect;
@@ -572,11 +577,21 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   void OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id);
 #endif
 
-  // Paints the given bitmap to the current backing store at the given location.
-  void PaintBackingStoreRect(TransportDIB::Id bitmap,
+  // Called (either immediately or asynchronously) after we're done with our
+  // BackingStore and can send an ACK to the renderer so it can paint onto it
+  // again.
+  void DidUpdateBackingStore(const ViewHostMsg_UpdateRect_Params& params,
+                             const base::TimeTicks& paint_start);
+
+  // Paints the given bitmap to the current backing store at the given
+  // location.  Returns true if the passed callback was asynchronously
+  // scheduled in the future (and thus the caller must manually synchronously
+  // call the callback function).
+  bool PaintBackingStoreRect(TransportDIB::Id bitmap,
                              const gfx::Rect& bitmap_rect,
                              const std::vector<gfx::Rect>& copy_rects,
-                             const gfx::Size& view_size);
+                             const gfx::Size& view_size,
+                             const base::Closure& completion_callback);
 
   // Scrolls the given |clip_rect| in the backing by the given dx/dy amount. The
   // |dib| and its corresponding location |bitmap_rect| in the backing store
@@ -755,6 +770,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   gfx::Point last_scroll_offset_;
 
   bool pending_mouse_lock_request_;
+
+  base::WeakPtrFactory<RenderWidgetHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHost);
 };

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <X11/extensions/sync.h>
 
 #if defined(OS_OPENBSD) || defined(OS_FREEBSD)
 #include <sys/endian.h>
@@ -17,9 +18,11 @@
 #include <algorithm>
 #include <utility>
 #include <limits>
+#include <queue>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -27,8 +30,11 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/surface/transport_dib.h"
+
+namespace {
 
 // Assume that somewhere along the line, someone will do width * height * 4
 // with signed numbers. If the maximum value is 2**31, then 2**31 / 4 =
@@ -51,13 +57,177 @@ static const int kMaxVideoLayerSize = 23170;
 
 // Destroys the image and the associated shared memory structures. This is a
 // helper function for code using shared memory.
-static void DestroySharedImage(Display* display,
-                               XImage* image,
-                               XShmSegmentInfo* shminfo) {
+void DestroySharedImage(Display* display,
+                        XImage* image,
+                        XShmSegmentInfo* shminfo) {
   XShmDetach(display, shminfo);
   XDestroyImage(image);
   shmdt(shminfo->shmaddr);
 }
+
+// So we don't don't want to call XSync(), which can block the UI loop for
+// ~100ms on first paint and is generally slow. We optionally use the
+// XSyncExtension to push a callback into the X11 event queue and get a
+// callback instead of blocking until the event queue is cleared.
+//
+// TODO(erg): If ui::GetXDisplay() ever gets fixed to handle multiple Displays,
+// this must be modified to be per Display instead of a Singleton.
+class XSyncHandler {
+ public:
+  static XSyncHandler* GetInstance() {
+    return Singleton<XSyncHandler>::get();
+  }
+
+  bool Enabled() {
+    return loaded_extension_;
+  }
+
+  void PushPaintCounter(Display* display, Picture picture, Pixmap pixmap,
+                        const base::Closure& completion_callback);
+
+ private:
+  friend struct DefaultSingletonTraits<XSyncHandler>;
+
+  // A struct that has cleanup and callback tasks that were queued into the
+  // future and are run on |g_backing_store_sync_alarm| firing.
+  struct BackingStoreEvents {
+    BackingStoreEvents(Display* d, Picture pic, Pixmap pix,
+                       const base::Closure& c)
+        : display(d),
+          picture(pic),
+          pixmap(pix),
+          closure(c) {
+    }
+
+    // The display we're running on.
+    Display* display;
+
+    // Data to delete.
+    Picture picture;
+    Pixmap pixmap;
+
+    // Callback once everything else is done.
+    base::Closure closure;
+  };
+
+  XSyncHandler();
+  virtual ~XSyncHandler();
+
+  // An event filter notified about all XEvents. We then filter out XSync
+  // events that are on counters that we made.
+  CHROMEG_CALLBACK_1(XSyncHandler, GdkFilterReturn, OnEvent, GdkXEvent*,
+                     GdkEvent*);
+
+  // Whether we successfully loaded XSyncExtension.
+  bool loaded_extension_;
+
+  // The event ids returned to us by XSyncQueryExtension().
+  int xsync_event_base_;
+  int xsync_error_base_;
+
+  XSyncCounter backing_store_sync_counter_;
+  XSyncAlarm backing_store_sync_alarm_;
+
+  // A queue of pending paints that we clean up after as alarms fire.
+  std::queue<BackingStoreEvents*> backing_store_events_;
+};
+
+void XSyncHandler::PushPaintCounter(Display* display,
+                                    Picture picture,
+                                    Pixmap pixmap,
+                                    const base::Closure& completion_callback) {
+  backing_store_events_.push(
+      new BackingStoreEvents(display, picture, pixmap, completion_callback));
+
+  // Push a change counter event into the X11 event queue that will trigger our
+  // alarm when it is processed.
+  XSyncValue value;
+  XSyncIntToValue(&value, 1);
+  XSyncChangeCounter(ui::GetXDisplay(),
+                     backing_store_sync_counter_,
+                     value);
+}
+
+XSyncHandler::XSyncHandler()
+    : loaded_extension_(false),
+      xsync_event_base_(0),
+      xsync_error_base_(0),
+      backing_store_sync_counter_(0),
+      backing_store_sync_alarm_(0) {
+  Display* display = ui::GetXDisplay();
+  if (XSyncQueryExtension(display,
+                          &xsync_event_base_,
+                          &xsync_error_base_)) {
+    // Create our monotonically increasing counter.
+    XSyncValue value;
+    XSyncIntToValue(&value, 0);
+    backing_store_sync_counter_ = XSyncCreateCounter(display, value);
+
+    // Cerate our alarm that watches for changes to our counter.
+    XSyncAlarmAttributes attributes;
+    attributes.trigger.counter = backing_store_sync_counter_;
+    backing_store_sync_alarm_ = XSyncCreateAlarm(display,
+                                                 XSyncCACounter,
+                                                 &attributes);
+
+    // Add our filter to the message loop to handle alarm triggers.
+    gdk_window_add_filter(NULL, &OnEventThunk, this);
+
+    loaded_extension_ = true;
+  }
+}
+
+XSyncHandler::~XSyncHandler() {
+  if (loaded_extension_)
+    gdk_window_remove_filter(NULL, &OnEventThunk, this);
+
+  while (!backing_store_events_.empty()) {
+    // We delete the X11 resources we're holding onto. We don't run the
+    // callbacks because we are shutting down.
+    BackingStoreEvents* data = backing_store_events_.front();
+    backing_store_events_.pop();
+    XRenderFreePicture(data->display, data->picture);
+    XFreePixmap(data->display, data->pixmap);
+    delete data;
+  }
+}
+
+GdkFilterReturn XSyncHandler::OnEvent(GdkXEvent* gdkxevent,
+                                      GdkEvent* event) {
+  XEvent* xevent = reinterpret_cast<XEvent*>(gdkxevent);
+  if (xevent->type == xsync_event_base_ + XSyncAlarmNotify) {
+    XSyncAlarmNotifyEvent* alarm_event =
+        reinterpret_cast<XSyncAlarmNotifyEvent*>(xevent);
+    if (alarm_event->alarm == backing_store_sync_alarm_) {
+      if (alarm_event->counter_value.hi == 0 &&
+          alarm_event->counter_value.lo == 0) {
+        // We receive an event about the initial state of the counter during
+        // alarm creation. We must ignore this event instead of responding to
+        // it.
+        return GDK_FILTER_REMOVE;
+      }
+
+      DCHECK(!backing_store_events_.empty());
+      BackingStoreEvents* data = backing_store_events_.front();
+      backing_store_events_.pop();
+
+      // We are responsible for deleting all the data in the struct now that
+      // we are finished with it.
+      XRenderFreePicture(data->display, data->picture);
+      XFreePixmap(data->display, data->pixmap);
+
+      // Dispatch the closure we were given.
+      data->closure.Run();
+      delete data;
+
+      return GDK_FILTER_REMOVE;
+    }
+  }
+
+  return GDK_FILTER_CONTINUE;
+}
+
+}  // namespace
 
 BackingStoreGtk::BackingStoreGtk(RenderWidgetHost* widget,
                                  const gfx::Size& size,
@@ -161,7 +331,11 @@ void BackingStoreGtk::PaintToBackingStore(
     RenderProcessHost* process,
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
-    const std::vector<gfx::Rect>& copy_rects) {
+    const std::vector<gfx::Rect>& copy_rects,
+    const base::Closure& completion_callback,
+    bool* scheduled_completion_callback) {
+  *scheduled_completion_callback = false;
+
   if (!display_)
     return;
 
@@ -292,11 +466,21 @@ void BackingStoreGtk::PaintToBackingStore(
   // In the case of shared memory, we wait for the composite to complete so that
   // we are sure that the X server has finished reading from the shared memory
   // segment.
-  if (shared_memory_support_ != ui::SHARED_MEMORY_NONE)
-    XSync(display_, False);
+  if (shared_memory_support_ != ui::SHARED_MEMORY_NONE) {
+    XSyncHandler* handler = XSyncHandler::GetInstance();
+    if (handler->Enabled()) {
+      *scheduled_completion_callback = true;
+      handler->PushPaintCounter(display_, picture, pixmap, completion_callback);
+    } else {
+      XSync(display_, False);
+    }
+  }
 
-  XRenderFreePicture(display_, picture);
-  XFreePixmap(display_, pixmap);
+  if (*scheduled_completion_callback == false) {
+    // If we didn't schedule a callback, we need to delete our resources now.
+    XRenderFreePicture(display_, picture);
+    XFreePixmap(display_, pixmap);
+  }
 }
 
 bool BackingStoreGtk::CopyFromBackingStore(const gfx::Rect& rect,

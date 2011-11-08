@@ -42,7 +42,10 @@ void BackingStoreMac::PaintToBackingStore(
     RenderProcessHost* process,
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
-    const std::vector<gfx::Rect>& copy_rects) {
+    const std::vector<gfx::Rect>& copy_rects,
+    const base::Closure& completion_callback,
+    bool* scheduled_completion_callback) {
+  *scheduled_completion_callback = false;
   DCHECK_NE(static_cast<bool>(cg_layer()), static_cast<bool>(cg_bitmap()));
 
   TransportDIB* dib = process->GetTransportDIB(bitmap);

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/process.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/rect.h"
@@ -50,7 +51,9 @@ class BackingStoreManager {
       TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,
-      bool* needs_full_paint);
+      const base::Closure& completion_callback,
+      bool* needs_full_paint,
+      bool* scheduled_completion_callback);
 
   // Returns a matching backing store for the host.
   // Returns NULL if we fail to find one.

@@ -117,7 +117,10 @@ void BackingStoreWin::PaintToBackingStore(
     RenderProcessHost* process,
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
-    const std::vector<gfx::Rect>& copy_rects) {
+    const std::vector<gfx::Rect>& copy_rects,
+    const base::Closure& completion_callback,
+    bool* scheduled_completion_callback) {
+  *scheduled_completion_callback = false;
   if (!backing_store_dib_) {
     backing_store_dib_ = CreateDIB(hdc_, size().width(),
                                    size().height(), color_depth_);
