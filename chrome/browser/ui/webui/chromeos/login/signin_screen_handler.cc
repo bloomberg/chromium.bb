@@ -44,8 +44,6 @@ const char kDefaultDomain[] = "@gmail.com";
 
 // Account picker screen id.
 const char kAccountPickerScreen[] = "account-picker";
-// Sign in screen id.
-const char kSigninScreen[] = "signin";
 // Sign in screen id for GAIA extension hosted content.
 const char kGaiaSigninScreen[] = "gaia-signin";
 // Start page of GAIA authentication extension.
@@ -221,12 +219,11 @@ SigninScreenHandler::SigninScreenHandler()
     : delegate_(NULL),
       show_on_init_(false),
       oobe_ui_(false),
+      is_first_webui_ready_(false),
+      is_first_attempt_(true),
       dns_cleared_(false),
       dns_clear_task_running_(false),
       cookies_cleared_(false),
-      extension_driven_(
-          CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kWebUILogin)),
       cookie_remover_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       key_event_listener_(NULL) {
@@ -284,10 +281,7 @@ void SigninScreenHandler::GetLocalizedStrings(
   localized_strings->SetString("removeUser",
       l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE));
 
-  if (extension_driven_)
-    localized_strings->SetString("authType", "ext");
-  else
-    localized_strings->SetString("authType", "webui");
+  localized_strings->SetString("authType", "ext");
 }
 
 void SigninScreenHandler::Show(bool oobe_ui) {
@@ -369,6 +363,9 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("createAccount",
       base::Bind(&SigninScreenHandler::HandleCreateAccount,
                  base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("accountPickerReady",
+      base::Bind(&SigninScreenHandler::HandleAccountPickerReady,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("loginWebuiReady",
       base::Bind(&SigninScreenHandler::HandleLoginWebuiReady,
                  base::Unretained(this)));
@@ -437,24 +434,37 @@ void SigninScreenHandler::OnDnsCleared() {
   ShowSigninScreenIfReady();
 }
 
-// Show sign in screen as soon as we clear dns cache the cookie jar.
 void SigninScreenHandler::ShowSigninScreenIfReady() {
   if (!dns_cleared_ || !cookies_cleared_)
     return;
 
+  LoadAuthExtension(!is_first_attempt_);
+  ShowScreen(kGaiaSigninScreen, NULL);
+
+  if (is_first_attempt_) {
+    is_first_attempt_ = false;
+    if (is_first_webui_ready_)
+      HandleLoginWebuiReady(NULL);
+  }
+}
+
+void SigninScreenHandler::LoadAuthExtension(bool force) {
   DictionaryValue params;
+
+  params.SetBoolean("forceReload", force);
   params.SetString("startUrl", kGaiaExtStartPage);
   params.SetString("email", email_);
   email_.clear();
-
-  const std::string app_locale = g_browser_process->GetApplicationLocale();
-  if (!app_locale.empty())
-    params.SetString("hl", app_locale);
 
   params.SetBoolean("createAccount",
       UserCrosSettingsProvider::cached_allow_new_user());
   params.SetBoolean("guestSignin",
       UserCrosSettingsProvider::cached_allow_guest());
+
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
+  if (!app_locale.empty())
+    params.SetString("hl", app_locale);
+
   params.SetString("gaiaOrigin", GaiaUrls::GetInstance()->gaia_origin_url());
 
   // Test automation data:
@@ -469,8 +479,10 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
       test_pass_.clear();
     }
   }
-  ShowScreen(kGaiaSigninScreen, &params);
+  web_ui_->CallJavascriptFunction("login.GaiaSigninScreen.setExtensionUrl",
+                                  params);
 }
+
 
 void SigninScreenHandler::ShowSigninScreenForCreds(
     const std::string& username,
@@ -532,15 +544,17 @@ void SigninScreenHandler::HandleRemoveUser(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
-  if (extension_driven_) {
-    email_.clear();
-    // |args| can be null if it's OOBE.
-    if (args)
-      args->GetString(0, &email_);
+  email_.clear();
+  // |args| can be null if it's OOBE.
+  if (args)
+    args->GetString(0, &email_);
+  if (is_first_attempt_ && email_.empty()) {
+    dns_cleared_ = true;
+    cookies_cleared_ = true;
+    ShowSigninScreenIfReady();
+  } else {
     StartClearingDnsCache();
     StartClearingCookies();
-  } else {
-    ShowScreen(kSigninScreen, NULL);
   }
 }
 
@@ -632,11 +646,23 @@ void SigninScreenHandler::SendUserList(bool animated) {
                                   users_list, animated_value);
 }
 
+void SigninScreenHandler::HandleAccountPickerReady(
+    const base::ListValue* args) {
+  // Fetching of the extension is not started before account picker page is
+  // loaded because it can affect the loading speed.
+  if (is_first_attempt_ && !cookie_remover_ && !dns_clear_task_running_)
+    LoadAuthExtension(true);
+}
+
 void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_WEBUI_READY,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
+  if (!is_first_attempt_) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_LOGIN_WEBUI_READY,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
+  } else {
+    is_first_webui_ready_ = true;
+  }
 }
 
 void SigninScreenHandler::HandleLoginRequestNetworkState(

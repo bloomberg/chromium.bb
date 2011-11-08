@@ -139,6 +139,10 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Shows signin screen after dns cache and cookie cleanup operations finish.
   void ShowSigninScreenIfReady();
 
+  // Tells webui to load authentication extension. |force| is used to force the
+  // extension reloading, if it has already been loaded.
+  void LoadAuthExtension(bool force);
+
   // Handles confirmation message of user authentication that was performed by
   // the authentication extension.
   void HandleCompleteLogin(const base::ListValue* args);
@@ -174,6 +178,9 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Handle 'createAccount' request.
   void HandleCreateAccount(const base::ListValue* args);
 
+  // Handle 'accountPickerReady' request.
+  void HandleAccountPickerReady(const base::ListValue* args);
+
   // Handle 'loginWebuiReady' request.
   void HandleLoginWebuiReady(const base::ListValue* args);
 
@@ -205,6 +212,12 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Keeps whether screen should be shown for OOBE.
   bool oobe_ui_;
 
+  // Whether webui has been loaded for the first time.
+  bool is_first_webui_ready_;
+
+  // Whether it is the first attempt to load the gaia extension.
+  bool is_first_attempt_;
+
   // True if dns cache cleanup is done.
   bool dns_cleared_;
 
@@ -213,9 +226,6 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   // True if cookie jar cleanup is done.
   bool cookies_cleared_;
-
-  // True if new user sign in flow is driven by the extension.
-  bool extension_driven_;
 
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;

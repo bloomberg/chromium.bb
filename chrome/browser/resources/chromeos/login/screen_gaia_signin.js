@@ -98,8 +98,18 @@ cr.define('login', function() {
      *        page.
      */
     onBeforeShow: function(data) {
-      console.log('Opening extension: ' + data.startUrl +
-                  ', opt_email=' + data.email);
+      // Announce the name of the screen, if accessibility is on.
+      $('gaia-signin-aria-label').setAttribute(
+          'aria-label', localStrings.getString('signinScreenTitle'));
+
+      // Button header is always visible when sign in is presented.
+      // Header is hidden once GAIA reports on successful sign in.
+      Oobe.getInstance().headerHidden = false;
+    },
+
+    setExtensionUrl_: function(data) {
+      $('createAccount').hidden = !data.createAccount;
+      $('guestSignin').hidden = !data.guestSignin;
 
       var params = [];
       if (data.gaiaOrigin)
@@ -117,22 +127,19 @@ cr.define('login', function() {
       if (params.length)
         url += '?' + params.join('&');
 
-      $('signin-frame').src = url;
-      this.extension_url_ = url;
+      if (data.forceReload || this.extension_url_ != url) {
+        console.log('Opening extension: ' + data.startUrl +
+                    ', opt_email=' + data.email);
 
-      $('createAccount').hidden = !data.createAccount;
-      $('guestSignin').hidden = !data.guestSignin;
+        $('signin-frame').src = url;
+        this.extension_url_ = url;
 
-      // Announce the name of the screen, if accessibility is on.
-      $('gaia-signin-aria-label').setAttribute(
-          'aria-label', localStrings.getString('signinScreenTitle'));
-
-      // Button header is always visible when sign in is presented.
-      // Header is hidden once GAIA reports on successful sign in.
-      Oobe.getInstance().headerHidden = false;
-
-      this.loading = true;
-      this.clearRetry_();
+        this.loading = true;
+        this.clearRetry_();
+      } else if (this.loading) {
+        // Probably an error has occurred, so trying to reload.
+        this.doReload();
+      }
     },
 
     /**
@@ -213,6 +220,10 @@ cr.define('login', function() {
       this.retryTimer_ = window.setTimeout(this.doReload.bind(this), delay);
       console.log('GaiaSigninScreen scheduleRetry in ' + delay + 'ms.');
     }
+  };
+
+  GaiaSigninScreen.setExtensionUrl = function(data) {
+    $('gaia-signin').setExtensionUrl_(data);
   };
 
   return {

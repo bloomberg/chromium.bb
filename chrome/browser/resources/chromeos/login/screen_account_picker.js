@@ -42,7 +42,13 @@ cr.define('login', function() {
       $('pod-row').handleShow();
       if (this.firstShown_) {
         this.firstShown_ = false;
-        $('pod-row').startInitAnimation();
+        // TODO(nkostylev): Enable animation back when session start jank
+        // is reduced. See http://crosbug.com/11116 http://crosbug.com/18307
+        // $('pod-row').startInitAnimation();
+
+        // TODO(altimofeev): Call it after animation has stoped when animation
+        // is enabled.
+        chrome.send('accountPickerReady', []);
       }
     },
 
