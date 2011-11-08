@@ -147,19 +147,9 @@ class OmniboxViewGtk : public OmniboxView,
   virtual bool IsImeComposing() const OVERRIDE;
 
 #if defined(TOOLKIT_VIEWS)
+  virtual int GetMaxEditWidth(int entry_width) const OVERRIDE;
   virtual views::View* AddToView(views::View* parent) OVERRIDE;
   virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
-
-  // A factory method to create an OmniboxView instance initialized for
-  // linux_views.  This currently returns an instance of OmniboxViewGtk only,
-  // but OmniboxViewViews will be added as an option when TextfieldViews is
-  // enabled.
-  static OmniboxView* Create(AutocompleteEditController* controller,
-                             ToolbarModel* toolbar_model,
-                             Profile* profile,
-                             CommandUpdater* command_updater,
-                             bool popup_window_mode,
-                             views::View* location_bar);
 #endif
 
   // Overridden from content::NotificationObserver:

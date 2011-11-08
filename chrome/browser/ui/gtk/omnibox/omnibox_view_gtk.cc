@@ -856,6 +856,10 @@ bool OmniboxViewGtk::IsImeComposing() const {
 }
 
 #if defined(TOOLKIT_VIEWS)
+int OmniboxViewGtk::GetMaxEditWidth(int entry_width) const OVERRIDE {
+  return entry_width;
+}
+
 views::View* OmniboxViewGtk::AddToView(views::View* parent) {
   views::NativeViewHost* host = new views::NativeViewHost;
   parent->AddChildView(host);
@@ -884,42 +888,7 @@ int OmniboxViewGtk::OnPerformDrop(
 
   return ui::DragDropTypes::DRAG_NONE;
 }
-
-// static
-OmniboxView* OmniboxViewGtk::Create(AutocompleteEditController* controller,
-                                    ToolbarModel* toolbar_model,
-                                    Profile* profile,
-                                    CommandUpdater* command_updater,
-                                    bool popup_window_mode,
-                                    views::View* location_bar) {
-  if (views::Widget::IsPureViews()) {
-    OmniboxViewViews* omnibox_view = new OmniboxViewViews(controller,
-                                                          toolbar_model,
-                                                          profile,
-                                                          command_updater,
-                                                          popup_window_mode,
-                                                          location_bar);
-    omnibox_view->Init();
-    return omnibox_view;
-  }
-
-  OmniboxViewGtk* omnibox_view = new OmniboxViewGtk(controller,
-                                                    toolbar_model,
-                                                    profile,
-                                                    command_updater,
-                                                    popup_window_mode,
-                                                    location_bar);
-  omnibox_view->Init();
-
-  // Make all the children of the widget visible. NOTE: this won't display
-  // anything, it just toggles the visible flag.
-  gtk_widget_show_all(omnibox_view->GetNativeView());
-  // Hide the widget. NativeViewHostGtk will make it visible again as necessary.
-  gtk_widget_hide(omnibox_view->GetNativeView());
-
-  return omnibox_view;
-}
-#endif
+#endif  // defined(TOOLKIT_VIEWS)
 
 void OmniboxViewGtk::Observe(int type,
                              const content::NotificationSource& source,
@@ -2394,3 +2363,41 @@ void OmniboxViewGtk::AdjustVerticalAlignmentOfInstantView() {
   pango_layout_iter_free(iter);
   g_object_set(instant_anchor_tag_, "rise", baseline - height, NULL);
 }
+
+#if defined(TOOLKIT_VIEWS)
+// static
+OmniboxView* OmniboxView::CreateOmniboxView(
+    AutocompleteEditController* controller,
+    ToolbarModel* toolbar_model,
+    Profile* profile,
+    CommandUpdater* command_updater,
+    bool popup_window_mode,
+    LocationBarView* location_bar) {
+  if (views::Widget::IsPureViews()) {
+    OmniboxViewViews* omnibox_view = new OmniboxViewViews(controller,
+                                                          toolbar_model,
+                                                          profile,
+                                                          command_updater,
+                                                          popup_window_mode,
+                                                          location_bar);
+    omnibox_view->Init();
+    return omnibox_view;
+  }
+
+  OmniboxViewGtk* omnibox_view = new OmniboxViewGtk(controller,
+                                                    toolbar_model,
+                                                    profile,
+                                                    command_updater,
+                                                    popup_window_mode,
+                                                    location_bar);
+  omnibox_view->Init();
+
+  // Make all the children of the widget visible. NOTE: this won't display
+  // anything, it just toggles the visible flag.
+  gtk_widget_show_all(omnibox_view->GetNativeView());
+  // Hide the widget. NativeViewHostGtk will make it visible again as necessary.
+  gtk_widget_hide(omnibox_view->GetNativeView());
+
+  return omnibox_view;
+}
+#endif
