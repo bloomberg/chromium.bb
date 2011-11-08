@@ -16,32 +16,68 @@
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
+#if 0
+/* to crash on error, rather than let a confused process keep running */
+# define NACL_FI_CHECK(bool_expr) CHECK(bool_expr)
+#else
+# define NACL_FI_CHECK(bool_expr)                                     \
+  do {                                                                \
+    if (!(bool_expr)) {                                               \
+      NaClLog(LOG_ERROR,                                              \
+              "FaultInjection: file %s, line %d: CHECK failed: %s\n", \
+              __FILE__, __LINE__, #bool_expr);                        \
+    }                                                                 \
+  } while (0)
+#endif
+
 #if NACL_LINUX
-# define NACL_HAS_TLS     1  /* 1 normally, 0 to test OSX case on linux */
-# define NACL_HAS_TSD     1
-# define NACL_HAS_STRNDUP 1
+# define NACL_HAS_STRNDUP   1
+
+/* could use TLS, or TSD */
+# define NACL_USE_TLS       1
+
 #elif NACL_OSX
-# define NACL_HAS_TLS     0
-# define NACL_HAS_TSD     1
-# define NACL_HAS_STRNDUP 0
+# define NACL_HAS_STRNDUP   0
+/* can only use TSD */
+# define NACL_USE_TSD       1
+
 #elif NACL_WINDOWS
-# define NACL_HAS_TLS     1
-# define NACL_HAS_TSD     0
-# define NACL_HAS_STRNDUP 0
+/*
+ * for Windows 2003 server, Windows XP, and earlier, code in DLLs that
+ * use __declspec(thread) has problems.  See
+ *
+http://msdn.microsoft.com/en-us/library/windows/desktop/ms684175(v=vs.85).aspx
+ *
+ * Windows Server 2003 and Windows XP: The Visual C++ compiler
+ * supports a syntax that enables you to declare thread-local
+ * variables: _declspec(thread). If you use this syntax in a DLL, you
+ * will not be able to load the DLL explicitly using LoadLibrary on
+ * versions of Windows prior to Windows Vista. If your DLL will be
+ * loaded explicitly, you must use the thread local storage functions
+ * instead of _declspec(thread). For an example, see Using Thread
+ * Local Storage in a Dynamic Link Library.
+ *
+http://msdn.microsoft.com/en-us/library/windows/desktop/ms686997(v=vs.85).aspx
+ */
+# define NACL_HAS_STRNDUP   0
+/* could use TLS if not built into a DLL, otherwise must use TLSALLOC */
+# define NACL_USE_TLSALLOC  1
+# include <windows.h>
 #endif
 
 #define NACL_FAULT_INJECT_ASSUME_HINT_CORRECT 1
 
-#if NACL_HAS_TSD
+#if NACL_USE_TSD
 # include <pthread.h>
 #endif
 
 #if !NACL_HAS_STRNDUP
 static char *strndup(char const *s, size_t n) {
   char *d = (char *) malloc(n + 1);
-  CHECK(NULL != d);
-  strncpy(d, s, n);
-  d[n] = '\0';
+  if (NULL != d) {
+    strncpy(d, s, n);
+    d[n] = '\0';
+  }
   return d;
 }
 #endif
@@ -97,17 +133,115 @@ struct NaClMutex                    *gNaClFaultInjectMu = 0;
 /* global counters mu */
 
 
-#if NACL_HAS_TLS
+#if NACL_USE_TLS
 static THREAD
 struct NaClFaultInjectCallSiteCount *gTls_FaultInjectionCount = NULL;
 static THREAD
 uintptr_t                           gTls_FaultInjectValue = 0;
-#elif NACL_HAS_TSD
-pthread_key_t                       gTsd_FaultInjectCountKey;
-pthread_key_t                       gTsd_FaultInjectValueKey;
+#elif NACL_USE_TSD
+typedef pthread_key_t nacl_thread_specific_key_t;
+#elif NACL_USE_TLSALLOC
+typedef DWORD         nacl_thread_specific_key_t;
 #else
 # error "Cannot implement thread-specific counters for fault injection"
 #endif
+#if NACL_USE_TSD || NACL_USE_TLSALLOC
+nacl_thread_specific_key_t  gFaultInjectCountKey;
+nacl_thread_specific_key_t  gFaultInjectValueKey;
+int                         gFaultInjectionHasValidKeys = 0;
+#endif
+
+#if NACL_USE_TSD
+/*
+ * Abstraction around TSD.
+ */
+static void NaClFaultInjectCallSiteCounterDtor(void *value) {
+  free((void *) value);
+}
+static void NaClFaultInjectionThreadKeysCreate(void) {
+  int status;
+
+  status = pthread_key_create(&gFaultInjectCountKey,
+                              NaClFaultInjectCallSiteCounterDtor);
+  NACL_FI_CHECK(0 == status);
+  if (0 != status) {
+    return;
+  }
+  status = pthread_key_create(&gFaultInjectValueKey, NULL);
+  NACL_FI_CHECK(0 == status);
+  if (0 != status) {
+    pthread_key_delete(gFaultInjectValueKey);
+    return;
+  }
+  gFaultInjectionHasValidKeys = 1;
+}
+static void *NaClFaultInjectionThreadGetSpecific(
+    nacl_thread_specific_key_t  key) {
+  if (!gFaultInjectionHasValidKeys) {
+    return NULL;
+  }
+  return pthread_getspecific(key);
+}
+static void NaClFaultInjectionThreadSetSpecific(
+    nacl_thread_specific_key_t  key,
+    void                        *value) {
+  int status;
+
+  if (!gFaultInjectionHasValidKeys) {
+    return;
+  }
+  status = pthread_setspecific(key, value);
+  /*
+   * Internal consistency error, probably memory corruption.  Leave as
+   * CHECK since otherwise using process would die soon anyway.
+   */
+  CHECK(0 == status);
+  (void) status;  /* in case CHECK ever get changed to DCHECK or is removed */
+}
+#endif
+#if NACL_USE_TLSALLOC
+/*
+ * Abstraction around TlsAlloc.
+ */
+static void NaClFaultInjectionThreadKeysCreate(void) {
+  gFaultInjectCountKey = TlsAlloc();
+  NACL_FI_CHECK(TLS_OUT_OF_INDEXES != gFaultInjectCountKey);
+  if (TLS_OUT_OF_INDEXES == gFaultInjectCountKey) {
+    return;
+  }
+  gFaultInjectValueKey = TlsAlloc();
+  NACL_FI_CHECK(TLS_OUT_OF_INDEXES != gFaultInjectValueKey);
+  if (TLS_OUT_OF_INDEXES == gFaultInjectValueKey) {
+    TlsFree(gFaultInjectCountKey);
+    return;
+  }
+  gFaultInjectionHasValidKeys = 1;
+}
+static void *NaClFaultInjectionThreadGetSpecific(
+    nacl_thread_specific_key_t  key) {
+  if (!gFaultInjectionHasValidKeys) {
+    return NULL;
+  }
+  return TlsGetValue(key);
+}
+static void NaClFaultInjectionThreadSetSpecific(
+    nacl_thread_specific_key_t  key,
+    void                        *value) {
+  BOOL status;
+
+  if (!gFaultInjectionHasValidKeys) {
+    return;
+  }
+  status = TlsSetValue(key, value);
+  /*
+   * Internal consistency error, probably memory corruption.  Leave as
+   * CHECK since otherwise using process would die soon anyway.
+   */
+  CHECK(status);
+  (void) status;
+}
+#endif
+
 
 static void NaClFaultInjectGrowIfNeeded(void) {
   size_t                      new_size;
@@ -124,6 +258,7 @@ static void NaClFaultInjectGrowIfNeeded(void) {
   }
   info = (struct NaClFaultInjectInfo *) realloc(gNaClFaultInjectInfo,
                                                 new_size * sizeof *info);
+  /* Leave as CHECK since otherwise using process would die soon anyway */
   CHECK(NULL != info);
   gNaClFaultInjectInfo = info;
 }
@@ -141,9 +276,11 @@ static void NaClFaultInjectAllocGlobalCounters(void) {
 
   gNaClFaultInjectCallSites = (struct NaClFaultInjectCallSiteCount *)
       malloc(gNaClNumFaultInjectInfo * sizeof *gNaClFaultInjectCallSites);
+  /* Leave as CHECK since otherwise using process would die soon anyway */
   CHECK(NULL != gNaClFaultInjectCallSites);
   gNaClFaultInjectMu = (struct NaClMutex *) malloc(
       gNaClNumFaultInjectInfo * sizeof *gNaClFaultInjectMu);
+  /* Leave as CHECK since otherwise using process would die soon anyway */
   CHECK(NULL != gNaClFaultInjectMu);
   for (ix = 0; ix < gNaClNumFaultInjectInfo; ++ix) {
     gNaClFaultInjectCallSites[ix].expr_ix = 0;
@@ -164,9 +301,13 @@ static void NaClFaultInjectFreeGlobalCounters(void) {
   free(gNaClFaultInjectMu);
 }
 
-#if NACL_HAS_TLS
+#if NACL_USE_TLS
 static struct NaClFaultInjectCallSiteCount *NaClFaultInjectFindThreadCounter(
     size_t counter_ix) {
+  /*
+   * Internal consistency error, probably memory corruption.  Leave as
+   * CHECK since otherwise using process would die soon anyway.
+   */
   CHECK(counter_ix < gNaClNumFaultInjectInfo);
 
   if (NULL == gTls_FaultInjectionCount) {
@@ -175,6 +316,7 @@ static struct NaClFaultInjectCallSiteCount *NaClFaultInjectFindThreadCounter(
 
     counters = (struct NaClFaultInjectCallSiteCount *)
         malloc(gNaClNumFaultInjectInfo * sizeof *counters);
+    /* Leave as CHECK since otherwise using process would die soon anyway */
     CHECK(NULL != counters);
 
     for (ix = 0; ix < gNaClNumFaultInjectInfo; ++ix) {
@@ -195,50 +337,58 @@ static size_t NaClFaultInjectionGetValue(void) {
   return gTls_FaultInjectValue;
 }
 
-void NaClFaultInjectPreThreadExitCleanup(void) {
+void NaClFaultInjectionPreThreadExitCleanup(void) {
   free(gTls_FaultInjectionCount);
   gTls_FaultInjectionCount = NULL;
 }
 
-#elif NACL_HAS_TSD
+#elif NACL_USE_TSD || NACL_USE_TLSALLOC
 static struct NaClFaultInjectCallSiteCount *NaClFaultInjectFindThreadCounter(
     size_t counter_ix) {
   struct NaClFaultInjectCallSiteCount *counters;
 
+  /*
+   * Internal consistency error, probably memory corruption.  Leave as
+   * CHECK since otherwise using process would die soon anyway.
+   */
   CHECK(counter_ix < gNaClNumFaultInjectInfo);
 
-  counters = (struct NaClFaultInjectCallSiteCount *) pthread_getspecific(
-      gTsd_FaultInjectCountKey);
+  if (!gFaultInjectionHasValidKeys) {
+    return NULL;
+  }
+
+  counters = (struct NaClFaultInjectCallSiteCount *)
+      NaClFaultInjectionThreadGetSpecific(
+          gFaultInjectCountKey);
   if (NULL == counters) {
     size_t                              ix;
 
     counters = (struct NaClFaultInjectCallSiteCount *)
         malloc(gNaClNumFaultInjectInfo * sizeof *counters);
+    /* Leave as CHECK since otherwise using process would die soon anyway */
     CHECK(NULL != counters);
 
     for (ix = 0; ix < gNaClNumFaultInjectInfo; ++ix) {
       counters[ix].expr_ix = 0;
       counters[ix].count_in_expr = 0;
     }
-    CHECK(0 == pthread_setspecific(gTsd_FaultInjectCountKey,
-                                   (void *) counters));
+    NaClFaultInjectionThreadSetSpecific(gFaultInjectCountKey,
+                                        (void *) counters);
   }
   return &counters[counter_ix];
 }
 
-static void NaClFaultInjectCallSiteCounterDtor(void *value) {
-  free((void *) value);
-}
-
 static void NaClFaultInjectionSetValue(uintptr_t value) {
-  CHECK(0 == pthread_setspecific(gTsd_FaultInjectValueKey, (void *) value));
+  NaClFaultInjectionThreadSetSpecific(gFaultInjectValueKey,
+                                      (void *) value);
 }
 
 static uintptr_t NaClFaultInjectionGetValue(void) {
-  return (uintptr_t) pthread_getspecific(gTsd_FaultInjectValueKey);
+  return (uintptr_t)
+      NaClFaultInjectionThreadGetSpecific(gFaultInjectValueKey);
 }
 
-void NaClFaultInjectPreThreadExitCleanup(void) {
+void NaClFaultInjectionPreThreadExitCleanup(void) {
   /*
    * pthread_key_create registered NaClFaultInjectCallSiteCounterDtor.
    */
@@ -272,6 +422,7 @@ static void NaClFaultInjectionParseHelperAddFaultExpr(
     }
     new_exprs = (struct NaClFaultExpr *) realloc(out_info->expr,
                                                  new_count * sizeof *new_exprs);
+    /* Leave as CHECK since otherwise using process would die soon anyway */
     CHECK(NULL != new_exprs);
     out_info->expr = new_exprs;
     out_info->size_expr = new_count;
@@ -401,11 +552,12 @@ static int NaClFaultInjectionParseConfigEntry(
     return 0;
   }
   out_info->call_site_name = strndup(entry_start, equal - entry_start);
+  /* Leave as CHECK since otherwise using process would die soon anyway */
+  CHECK(NULL != out_info->call_site_name);
   out_info->thread_specific_p = 0;
   out_info->expr = NULL;
   out_info->num_expr = 0;
   out_info->size_expr = 0;
-  CHECK(NULL != out_info->call_site_name);
 
   return NaClFaultInjectionParseFaultControlExpr(out_info, equal+1);
 }
@@ -417,10 +569,8 @@ void NaClFaultInjectionModuleInternalInit(void) {
   char                        *next_entry;
   struct NaClFaultInjectInfo  fi_entry;
 
-#if !NACL_HAS_TLS && NACL_HAS_TSD
-  pthread_key_create(&gTsd_FaultInjectCountKey,
-                     NaClFaultInjectCallSiteCounterDtor);
-  pthread_key_create(&gTsd_FaultInjectValueKey, NULL);
+#if (NACL_USE_TSD || NACL_USE_TLSALLOC)
+  NaClFaultInjectionThreadKeysCreate();
 #endif
 
   config = getenv("NACL_FAULT_INJECTION");
@@ -429,6 +579,7 @@ void NaClFaultInjectionModuleInternalInit(void) {
   }
   /* get a definitely-mutable version that we will free later */
   config = STRDUP(config);
+  /* Leave as CHECK since otherwise using process would die soon anyway */
   CHECK(NULL != config);
   for (cur_entry = config; '\0' != *cur_entry; cur_entry = next_entry) {
     sep = strpbrk(cur_entry, ",:");
@@ -501,6 +652,9 @@ int NaClFaultInjectionFaultP(char const *site_name) {
     NaClLog(6, "NaClFaultInject: global counter\n");
     NaClXMutexLock(&gNaClFaultInjectMu[ix]);
     counter = &gNaClFaultInjectCallSites[ix];
+  }
+  if (NULL == counter) {
+    return 0;
   }
   /*
    * check counter against entry, and if a fault should be injected,

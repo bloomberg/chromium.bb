@@ -97,6 +97,16 @@ int NaClFaultInjectionFaultP(char const *site_name);
 uintptr_t NaClFaultInjectionValue(void);
 
 /*
+ * Function to free per-thread counters.
+ *
+ * We use pthread_cleanup_push on systems with pthread, but the API
+ * cannot rely on this, since Windows has no equivalent cleanup
+ * function, so sans deeper integration with threading libraries
+ * (e.g. platform), we cannot do the cleanup automatically.
+ */
+void NaClFaultInjectionPreThreadExitCleanup(void);
+
+/*
  * Private test functions.
  */
 void NaClFaultInjectionModuleInternalInit(void);
