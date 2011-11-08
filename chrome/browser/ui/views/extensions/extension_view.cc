@@ -8,10 +8,16 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/content_browser_client.h"
 #include "views/widget/widget.h"
+
+#if defined(OS_WIN)
+#include "content/browser/renderer_host/render_widget_host_view_win.h"
+#elif defined(TOUCH_UI) || defined(USE_AURA)
+#include "chrome/browser/renderer_host/render_widget_host_view_views.h"
+#elif defined(TOOLKIT_USES_GTK)
+#include "content/browser/renderer_host/render_widget_host_view_gtk.h"
+#endif
 
 ExtensionView::ExtensionView(ExtensionHost* host, Browser* browser)
     : host_(host),
@@ -76,10 +82,41 @@ void ExtensionView::SetVisible(bool is_visible) {
 void ExtensionView::CreateWidgetHostView() {
   DCHECK(!initialized_);
   initialized_ = true;
-  host_->CreateRenderViewSoon();
-  SetVisible(false);
+  RenderWidgetHostView* view =
+      content::GetContentClient()->browser()->CreateViewForWidget(
+      render_view_host());
 
-  Attach(host_->host_contents()->view()->GetNativeView());
+  // TODO(mpcomplete): RWHV needs a cross-platform Init function.
+#if defined(USE_AURA)
+  // TODO(beng): should be same as TOUCH_UI
+  NOTIMPLEMENTED();
+#elif defined(OS_WIN)
+  // Create the HWND. Note:
+  // RenderWidgetHostHWND supports windowed plugins, but if we ever also
+  // wanted to support constrained windows with this, we would need an
+  // additional HWND to parent off of because windowed plugin HWNDs cannot
+  // exist in the same z-order as constrained windows.
+  RenderWidgetHostViewWin* view_win =
+      static_cast<RenderWidgetHostViewWin*>(view);
+  HWND hwnd = view_win->Create(GetWidget()->GetNativeView());
+  view_win->ShowWindow(SW_SHOW);
+  Attach(hwnd);
+#elif defined(TOUCH_UI)
+  RenderWidgetHostViewViews* view_views =
+      static_cast<RenderWidgetHostViewViews*>(view);
+  view_views->InitAsChild();
+  AttachToView(view_views);
+#elif defined(TOOLKIT_USES_GTK)
+  RenderWidgetHostViewGtk* view_gtk =
+      static_cast<RenderWidgetHostViewGtk*>(view);
+  view_gtk->InitAsChild();
+  Attach(view_gtk->GetNativeView());
+#else
+  NOTIMPLEMENTED();
+#endif
+
+  host_->CreateRenderViewSoon(view);
+  SetVisible(false);
 }
 
 void ExtensionView::ShowIfCompletelyLoaded() {
@@ -120,10 +157,8 @@ void ExtensionView::UpdatePreferredSize(const gfx::Size& new_size) {
   }
 
   gfx::Size preferred_size = GetPreferredSize();
-  if (new_size != preferred_size) {
+  if (new_size != preferred_size)
     SetPreferredSize(new_size);
-    host_->host_contents()->view()->SizeContents(new_size);
-  }
 }
 
 void ExtensionView::ViewHierarchyChanged(bool is_add,
@@ -154,6 +189,16 @@ void ExtensionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // We can't send size zero because RenderWidget DCHECKs that.
   if (render_view_host()->view() && !bounds().IsEmpty())
     render_view_host()->view()->SetSize(size());
+}
+
+void ExtensionView::HandleMouseMove() {
+  if (container_)
+    container_->OnExtensionMouseMove(this);
+}
+
+void ExtensionView::HandleMouseLeave() {
+  if (container_)
+    container_->OnExtensionMouseLeave(this);
 }
 
 void ExtensionView::RenderViewCreated() {

@@ -14,7 +14,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
@@ -74,7 +73,7 @@ ExtensionDialog* ExtensionDialog::Show(
   ExtensionDialog* dialog = new ExtensionDialog(host, observer);
   dialog->InitWindow(browser, width, height);
   // Ensure the DOM JavaScript can respond immediately to keyboard shortcuts.
-  host->host_contents()->Focus();
+  host->render_view_host()->view()->Focus();
   return dialog;
 }
 

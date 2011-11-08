@@ -404,8 +404,7 @@ void ExtensionWebNavigationEventRouter::Retargeting(
   ExtensionWebNavigationTabObserver* tab_observer =
       ExtensionWebNavigationTabObserver::Get(details->source_tab_contents);
   if (!tab_observer) {
-    CHECK(details->source_tab_contents->GetRenderViewType() !=
-          content::VIEW_TYPE_TAB_CONTENTS);
+    NOTREACHED();
     return;
   }
   const FrameNavigationState& frame_navigation_state =

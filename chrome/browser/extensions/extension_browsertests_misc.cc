@@ -29,7 +29,6 @@
 #include "content/public/browser/notification_service.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
-#include "webkit/glue/webpreferences.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -122,9 +121,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebKitPrefsBackgroundPage) {
   ExtensionProcessManager* manager =
         browser()->profile()->GetExtensionProcessManager();
   ExtensionHost* host = FindHostWithPath(manager, "/backgroundpage.html", 1);
-  WebPreferences prefs =
-      static_cast<RenderViewHostDelegate*>(host->host_contents())->
-          GetWebkitPrefs();
+  WebPreferences prefs = host->GetWebkitPrefs();
   ASSERT_FALSE(prefs.experimental_webgl_enabled);
   ASSERT_FALSE(prefs.accelerated_compositing_enabled);
   ASSERT_FALSE(prefs.accelerated_2d_canvas_enabled);
