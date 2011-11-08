@@ -522,7 +522,7 @@ void RenderMessageFilter::OnGetPlugins(
     const base::TimeTicks now = base::TimeTicks::Now();
     if (now - last_plugin_refresh_time_ >= threshold) {
       // Only refresh if the threshold hasn't been exceeded yet.
-      PluginService::GetInstance()->RefreshPluginList();
+      PluginService::GetInstance()->RefreshPlugins();
       last_plugin_refresh_time_ = now;
     }
   }

@@ -4,8 +4,6 @@
 
 #include "chrome/plugin/chrome_content_plugin_client.h"
 
-#include "chrome/common/default_plugin.h"
-
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -29,8 +27,6 @@ void ChromeContentPluginClient::PluginProcessStarted(
                                cf_plugin_name.get(), app_name.get()));
   base::mac::SetProcessName(process_name);
 #endif
-
-  chrome::RegisterInternalDefaultPlugin();
 }
 
 }  // namespace chrome

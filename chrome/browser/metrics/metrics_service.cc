@@ -181,7 +181,6 @@
 #include "content/common/child_process_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_fetcher.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
 // TODO(port): port browser_distribution.h.

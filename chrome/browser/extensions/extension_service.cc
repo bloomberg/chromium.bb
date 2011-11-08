@@ -96,7 +96,6 @@
 #include "net/base/registry_controlled_domain.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -969,8 +968,8 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   bool plugins_changed = false;
   for (size_t i = 0; i < extension->plugins().size(); ++i) {
     const Extension::PluginInfo& plugin = extension->plugins()[i];
-    webkit::npapi::PluginList::Singleton()->RefreshPlugins();
-    webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(plugin.path);
+    PluginService::GetInstance()->RefreshPlugins();
+    PluginService::GetInstance()->AddExtraPluginPath(plugin.path);
     plugins_changed = true;
     ChromePluginServiceFilter* filter =
         ChromePluginServiceFilter::GetInstance();
@@ -1068,9 +1067,8 @@ void ExtensionService::NotifyExtensionUnloaded(
     if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                                  base::Bind(&ForceShutdownPlugin, plugin.path)))
       NOTREACHED();
-    webkit::npapi::PluginList::Singleton()->RefreshPlugins();
-    webkit::npapi::PluginList::Singleton()->RemoveExtraPluginPath(
-        plugin.path);
+    PluginService::GetInstance()->RefreshPlugins();
+    PluginService::GetInstance()->RemoveExtraPluginPath(plugin.path);
     plugins_changed = true;
     ChromePluginServiceFilter::GetInstance()->UnrestrictPlugin(plugin.path);
   }
@@ -2449,7 +2447,7 @@ void ExtensionService::UpdatePluginListWithNaClModules() {
       if (mime_iter->mime_type == kNaClPluginMimeType) {
         // This plugin handles "application/x-nacl".
 
-        webkit::npapi::PluginList::Singleton()->
+        PluginService::GetInstance()->
             UnregisterInternalPlugin(pepper_info->path);
 
         webkit::WebPluginInfo info = pepper_info->ToWebPluginInfo();
@@ -2468,8 +2466,8 @@ void ExtensionService::UpdatePluginListWithNaClModules() {
           info.mime_types.push_back(mime_type_info);
         }
 
-        webkit::npapi::PluginList::Singleton()->RefreshPlugins();
-        webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
+        PluginService::GetInstance()->RefreshPlugins();
+        PluginService::GetInstance()->RegisterInternalPlugin(info);
         // This plugin has been modified, no need to check the rest of its
         // types, but continue checking other plugins.
         break;
