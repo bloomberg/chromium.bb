@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "media/base/composite_data_source_factory.h"
 #include "media/base/filter_collection.h"
 #include "media/base/limits.h"
@@ -27,6 +28,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/simple_data_source.h"
@@ -149,6 +151,9 @@ bool WebMediaPlayerImpl::Initialize(
         base::Bind(&WebMediaPlayerImpl::IncrementExternallyAllocatedMemory,
                    AsWeakPtr()));
   }
+
+  UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive",
+                        frame->view()->isAcceleratedCompositingActive());
 
   pipeline_ = new media::PipelineImpl(pipeline_message_loop, media_log_);
 
