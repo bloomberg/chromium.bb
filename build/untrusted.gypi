@@ -46,10 +46,12 @@
             '-D_BSD_SOURCE=1',
             '-D_POSIX_C_SOURCE=199506',
             '-D_XOPEN_SOURCE=600',
+            '-DDYNAMIC_ANNOTATIONS_ENABLED=1',
+            '-DDYNAMIC_ANNOTATIONS_PREFIX=NACL_',
            ],
           'compile_flags': [
             #'-std=gnu99',  Added by build_nexe
-            '-O2',
+            '-O3',
             '-fomit-frame-pointer',
             '-mtls-use-call'
            ],

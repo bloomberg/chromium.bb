@@ -15,6 +15,7 @@
       'nc_token.c',
       'nc_hash.c',
       'nc_init_irt.c',
+      '../valgrind/dynamic_annotations.c',
     ],
   },
   'conditions': [
