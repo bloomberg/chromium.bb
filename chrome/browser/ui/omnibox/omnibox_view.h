@@ -28,32 +28,14 @@ class GURL;
 class TabContents;
 
 #if defined(TOOLKIT_VIEWS)
-
-// TODO(beng): Move all views-related code to a views-specific sub-interface.
-
-class AutocompleteEditController;
-class LocationBarView;
-class Profile;
-class ToolbarModel;
-
 namespace views {
 class DropTargetEvent;
 class View;
 }  // namespace views
-
 #endif
 
 class OmniboxView {
  public:
-#if defined(TOOLKIT_VIEWS)
-  static OmniboxView* CreateOmniboxView(AutocompleteEditController* controller,
-                                        ToolbarModel* toolbar_model,
-                                        Profile* profile,
-                                        CommandUpdater* command_updater,
-                                        bool popup_window_mode,
-                                        LocationBarView* location_bar);
-#endif
-
   // Used by the automation system for getting at the model from the view.
   virtual AutocompleteEditModel* model() = 0;
   virtual const AutocompleteEditModel* model() const = 0;
@@ -201,8 +183,6 @@ class OmniboxView {
   virtual bool IsImeComposing() const = 0;
 
 #if defined(TOOLKIT_VIEWS)
-  virtual int GetMaxEditWidth(int entry_width) const = 0;
-
   // Adds the autocomplete edit view to view hierarchy and
   // returns the views::View of the edit view.
   virtual views::View* AddToView(views::View* parent) = 0;

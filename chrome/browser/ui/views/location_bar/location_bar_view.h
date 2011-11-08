@@ -192,8 +192,6 @@ class LocationBarView : public LocationBar,
   // in the toolbar in full keyboard accessibility mode.
   virtual void SelectAll();
 
-  const gfx::Font& font() const { return font_; }
-
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Event Handlers
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;

@@ -29,7 +29,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
@@ -424,16 +423,17 @@ const int kTwipsPerInch = 1440;
 
 }  // namespace
 
-OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
+OmniboxViewWin::OmniboxViewWin(const gfx::Font& font,
+                               AutocompleteEditController* controller,
                                ToolbarModel* toolbar_model,
                                LocationBarView* parent_view,
+                               HWND hwnd,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
                                views::View* location_bar)
     : model_(new AutocompleteEditModel(this, controller,
                                        parent_view->browser()->profile())),
-      popup_view_(new AutocompletePopupContentsView(parent_view->font(), this,
-                                                    model_.get(),
+      popup_view_(new AutocompletePopupContentsView(font, this, model_.get(),
                                                     location_bar)),
       controller_(controller),
       parent_view_(parent_view),
@@ -447,7 +447,7 @@ OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
       can_discard_mousemove_(false),
       ignore_ime_messages_(false),
       delete_at_end_pressed_(false),
-      font_(parent_view->font()),
+      font_(font),
       possible_drag_(false),
       in_drag_(false),
       initiated_drag_(false),
@@ -465,8 +465,7 @@ OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
 
   g_paint_patcher.Pointer()->RefPatch();
 
-  Create(location_bar->GetWidget()->GetNativeView(), 0, 0, 0,
-         l10n_util::GetExtendedStyles());
+  Create(hwnd, 0, 0, 0, l10n_util::GetExtendedStyles());
   SetReadOnly(popup_window_mode_);
   SetFont(font_.GetNativeFont());
 
@@ -968,15 +967,6 @@ bool OmniboxViewWin::IsImeComposing() const {
     ImmReleaseContext(m_hWnd, context);
   }
   return ime_composing;
-}
-
-int OmniboxViewWin::GetMaxEditWidth(int entry_width) const {
-  RECT formatting_rect;
-  GetRect(&formatting_rect);
-  RECT edit_bounds;
-  GetClientRect(&edit_bounds);
-  return entry_width - formatting_rect.left -
-      (edit_bounds.right - formatting_rect.right);
 }
 
 views::View* OmniboxViewWin::AddToView(views::View* parent) {
@@ -2669,31 +2659,3 @@ bool OmniboxViewWin::IsCaretAtEnd() const {
   GetSelection(sel);
   return sel.cpMin == sel.cpMax && sel.cpMin == length;
 }
-
-#if !defined(USE_AURA)
-// static
-OmniboxView* OmniboxView::CreateOmniboxView(
-    AutocompleteEditController* controller,
-    ToolbarModel* toolbar_model,
-    Profile* profile,
-    CommandUpdater* command_updater,
-    bool popup_window_mode,
-    LocationBarView* location_bar) {
-  if (views::Widget::IsPureViews()) {
-    OmniboxViewViews* omnibox_view = new OmniboxViewViews(controller,
-                                                          toolbar_model,
-                                                          profile,
-                                                          command_updater,
-                                                          popup_window_mode,
-                                                          location_bar);
-    omnibox_view->Init();
-    return omnibox_view;
-  }
-  return new OmniboxViewWin(controller,
-                            toolbar_model,
-                            location_bar,
-                            command_updater,
-                            popup_window_mode,
-                            location_bar);
-}
-#endif

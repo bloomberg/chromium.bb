@@ -579,10 +579,6 @@ bool OmniboxViewViews::IsImeComposing() const {
   return false;
 }
 
-int OmniboxViewViews::GetMaxEditWidth(int entry_width) const {
-  return entry_width;
-}
-
 views::View* OmniboxViewViews::AddToView(views::View* parent) {
   parent->AddChildView(this);
   AddChildView(textfield_);
@@ -718,23 +714,3 @@ AutocompletePopupView* OmniboxViewViews::CreatePopupView(
   return new AutocompleteContentsView(gfx::Font(), this, model_.get(),
                                       location_bar);
 }
-
-#if defined(USE_AURA)
-// static
-OmniboxView* OmniboxView::CreateOmniboxView(
-    AutocompleteEditController* controller,
-    ToolbarModel* toolbar_model,
-    Profile* profile,
-    CommandUpdater* command_updater,
-    bool popup_window_mode,
-    LocationBarView* location_bar) {
-  OmniboxViewViews* omnibox_view = new OmniboxViewViews(controller,
-                                                        toolbar_model,
-                                                        profile,
-                                                        command_updater,
-                                                        popup_window_mode,
-                                                        location_bar);
-  omnibox_view->Init();
-  return omnibox_view;
-}
-#endif

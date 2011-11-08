@@ -16,62 +16,54 @@ class TestingOmniboxView : public OmniboxView {
  public:
   TestingOmniboxView() {}
 
-  virtual AutocompleteEditModel* model() OVERRIDE { return NULL; }
-  virtual const AutocompleteEditModel* model() const OVERRIDE { return NULL; }
-  virtual void SaveStateToTab(TabContents* tab) OVERRIDE {}
-  virtual void Update(const TabContents* tab_for_state_restoring) OVERRIDE {}
+  virtual AutocompleteEditModel* model() { return NULL; }
+  virtual const AutocompleteEditModel* model() const { return NULL; }
+  virtual void SaveStateToTab(TabContents* tab) {}
+  virtual void Update(const TabContents* tab_for_state_restoring) {}
   virtual void OpenMatch(const AutocompleteMatch& match,
                          WindowOpenDisposition disposition,
                          const GURL& alternate_nav_url,
                          size_t selected_line,
-                         const string16& keyword) OVERRIDE {}
-  virtual string16 GetText() const OVERRIDE { return string16(); }
-  virtual bool IsEditingOrEmpty() const OVERRIDE { return true; }
-  virtual int GetIcon() const OVERRIDE { return 0; }
-  virtual void SetUserText(const string16& text) OVERRIDE {}
+                         const string16& keyword) {}
+  virtual string16 GetText() const { return string16(); }
+  virtual bool IsEditingOrEmpty() const { return true; }
+  virtual int GetIcon() const { return 0; }
+  virtual void SetUserText(const string16& text) {}
   virtual void SetUserText(const string16& text,
                            const string16& display_text,
-                           bool update_popup) OVERRIDE {}
+                           bool update_popup) {}
   virtual void SetWindowTextAndCaretPos(const string16& text,
-                                        size_t caret_pos) OVERRIDE {}
-  virtual void SetForcedQuery() OVERRIDE {}
-  virtual bool IsSelectAll() OVERRIDE { return false; }
-  virtual bool DeleteAtEndPressed() OVERRIDE { return false; }
-  virtual void GetSelectionBounds(size_t* start, size_t* end) const OVERRIDE {}
-  virtual void SelectAll(bool reversed) OVERRIDE {}
-  virtual void RevertAll() OVERRIDE {}
-  virtual void UpdatePopup() OVERRIDE {}
-  virtual void ClosePopup() OVERRIDE {}
-  virtual void SetFocus() OVERRIDE {}
-  virtual void OnTemporaryTextMaybeChanged(
-      const string16& display_text,
-      bool save_original_selection) OVERRIDE {}
+                                        size_t caret_pos) {}
+  virtual void SetForcedQuery() {}
+  virtual bool IsSelectAll() { return false; }
+  virtual bool DeleteAtEndPressed() { return false; }
+  virtual void GetSelectionBounds(size_t* start, size_t* end) const {}
+  virtual void SelectAll(bool reversed) {}
+  virtual void RevertAll() {}
+  virtual void UpdatePopup() {}
+  virtual void ClosePopup() {}
+  virtual void SetFocus() {}
+  virtual void OnTemporaryTextMaybeChanged(const string16& display_text,
+                                           bool save_original_selection) {}
   virtual bool OnInlineAutocompleteTextMaybeChanged(
-      const string16& display_text, size_t user_text_length) OVERRIDE {
+      const string16& display_text, size_t user_text_length) {
     return false;
   }
-  virtual void OnRevertTemporaryText() OVERRIDE {}
-  virtual void OnBeforePossibleChange() OVERRIDE {}
-  virtual bool OnAfterPossibleChange() OVERRIDE { return false; }
-  virtual gfx::NativeView GetNativeView() const OVERRIDE { return NULL; }
-  virtual gfx::NativeView GetRelativeWindowForPopup() const OVERRIDE {
-    return NULL;
-  }
-  virtual CommandUpdater* GetCommandUpdater() OVERRIDE { return NULL; }
+  virtual void OnRevertTemporaryText() {}
+  virtual void OnBeforePossibleChange() {}
+  virtual bool OnAfterPossibleChange() { return false; }
+  virtual gfx::NativeView GetNativeView() const { return NULL; }
+  virtual gfx::NativeView GetRelativeWindowForPopup() const { return NULL; }
+  virtual CommandUpdater* GetCommandUpdater() { return NULL; }
   virtual void SetInstantSuggestion(const string16& input,
-                                    bool animate_to_complete) OVERRIDE {}
-  virtual string16 GetInstantSuggestion() const OVERRIDE { return string16(); }
-  virtual int TextWidth() const OVERRIDE { return 0; }
-  virtual bool IsImeComposing() const OVERRIDE { return false; }
+                                    bool animate_to_complete) {}
+  virtual string16 GetInstantSuggestion() const { return string16(); }
+  virtual int TextWidth() const { return 0; }
+  virtual bool IsImeComposing() const { return false; }
 
 #if defined(TOOLKIT_VIEWS)
-  virtual int GetMaxEditWidth(int entry_width) const OVERRIDE {
-    return entry_width;
-  }
-  virtual views::View* AddToView(views::View* parent) OVERRIDE { return NULL; }
-  virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE {
-    return 0;
-  }
+  virtual views::View* AddToView(views::View* parent) { return NULL; }
+  virtual int OnPerformDrop(const views::DropTargetEvent& event) { return 0; }
 #endif
 
  private:
