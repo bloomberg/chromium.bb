@@ -387,9 +387,38 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSString*)description {
-  return NSStringForStringAttribute(
-      browserAccessibility_->string_attributes(),
-      WebAccessibility::ATTR_DESCRIPTION);
+  const std::map<StringAttribute, string16>& attributes =
+      browserAccessibility_->string_attributes();
+  std::map<StringAttribute, string16>::const_iterator iter =
+      attributes.find(WebAccessibility::ATTR_DESCRIPTION);
+  if (iter != attributes.end())
+    return base::SysUTF16ToNSString(iter->second);
+
+  // If the role is anything other than an image, or if there's
+  // a title or title UI element, just return an empty string.
+  if (![[self role] isEqualToString:NSAccessibilityImageRole])
+    return @"";
+  if (!browserAccessibility_->name().empty())
+    return @"";
+  if ([self titleUIElement])
+    return @"";
+
+  // The remaining case is an image where there's no other title.
+  // Return the base part of the filename as the description.
+  iter = attributes.find(WebAccessibility::ATTR_URL);
+  if (iter != attributes.end()) {
+    string16 filename = iter->second;
+    // Given a url like http://foo.com/bar/baz.png, just return the
+    // base name, e.g., "baz.png".
+    size_t leftIndex = filename.size();
+    while (leftIndex > 0 && filename[leftIndex - 1] != '/')
+      leftIndex--;
+    string16 basename = filename.substr(leftIndex);
+
+    return base::SysUTF16ToNSString(basename);
+  }
+
+  return @"";
 }
 
 - (NSNumber*)enabled {
