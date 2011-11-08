@@ -924,9 +924,8 @@ void BrowserProcessImpl::CreateLocalState() {
   // Initialize the notification for the default browser setting policy.
   local_state_->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,
                                     false);
-  if (local_state_->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled)) {
+  if (local_state_->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled))
     ApplyDefaultBrowserPolicy();
-  }
   pref_change_registrar_.Add(prefs::kDefaultBrowserSettingEnabled, this);
 
   // Initialize the preference for the plugin finder policy.
@@ -954,6 +953,8 @@ void BrowserProcessImpl::CreateLocalState() {
   local_state_->RegisterListPref(prefs::kDisabledSchemes);
   pref_change_registrar_.Add(prefs::kDisabledSchemes, this);
   ApplyDisabledSchemesPolicy();
+
+  local_state_->RegisterBooleanPref(prefs::kAllowCrossOriginAuthPrompt, false);
 }
 
 void BrowserProcessImpl::CreateIconManager() {
