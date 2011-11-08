@@ -2726,40 +2726,65 @@ def MakeLinuxEnv():
                      '-Wl,-z,now'],
         )
   elif linux_env.Bit('build_arm'):
-    if not linux_env.Bit('built_elsewhere'):
-      # TODO(mseaborn): It would be clearer just to inline
-      # setup_arm_trusted_toolchain.py here.
-      sys.path.append('tools/llvm')
-      ###############################################################
-      # EXPERIMENTAL
-      # This is needed to switch to a different trusted cross
-      # toolchain when compiling within the cros_chroot
-      # BUG=http://code.google.com/p/chromium/issues/detail?id=61695
-      # BUG=http://code.google.com/p/chromium/issues/detail?id=38909
-      # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
-      #
-      if linux_env.Bit('cros_chroot'):
+    if linux_env.Bit('built_elsewhere'):
+      # force an unusable environment here
+      linux_env.Replace(CC='NO-ARM-CC-INVOCATION-ALLOWED',
+                        CXX='NO-ARM-CXX-INVOCATION-ALLOWED',
+                        LD='NO-ARM-LD-INVOCATION-ALLOWD',
+                        )
+    ###############################################################
+    # EXPERIMENTAL
+    # This is needed to switch to a different trusted cross
+    # toolchain when compiling within the cros_chroot
+    # BUG=http://code.google.com/p/chromium/issues/detail?id=61695
+    # BUG=http://code.google.com/p/chromium/issues/detail?id=38909
+    # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
+    #
+    elif linux_env.Bit('cros_chroot'):
+        # TODO(mseaborn): It would be clearer just to inline
+        # setup_arm_cros_toolchain.py here.
+        sys.path.append('tools/llvm')
         from setup_arm_cros_toolchain import arm_env
-      else:
-      ##############################################################
-        from setup_arm_trusted_toolchain import arm_env
-      sys.path.pop()
-    else:
-      arm_env = {}
-    # Allow env vars to override these settings, for what it's worth.
-    arm_env = arm_env.copy()
-    arm_env.update(os.environ)
-    linux_env.Replace(CC=arm_env.get('ARM_CC', 'NO-ARM-CC-SPECIFIED'),
-                      CXX=arm_env.get('ARM_CXX', 'NO-ARM-CXX-SPECIFIED'),
-                      LD=arm_env.get('ARM_LD', 'NO-ARM-LD-SPECIFIED'),
-                      EMULATOR=arm_env.get('ARM_EMU', ''),
-                      ASFLAGS=[],
-                      LIBPATH=['${LIB_DIR}',
-                               arm_env.get('ARM_LIB_DIR', '').split()],
-                      LINKFLAGS=arm_env.get('ARM_LINKFLAGS', ''),
-                      )
+        sys.path.pop()
+        arm_env = arm_env.copy()
+        arm_env.update(os.environ)
+        linux_env.Replace(CC=arm_env.get('ARM_CC', 'NO-ARM-CC-SPECIFIED'),
+                          CXX=arm_env.get('ARM_CXX', 'NO-ARM-CXX-SPECIFIED'),
+                          LD=arm_env.get('ARM_LD', 'NO-ARM-LD-SPECIFIED'),
+                          EMULATOR=arm_env.get('ARM_EMU', ''),
+                          ASFLAGS=[],
+                          LIBPATH=['${LIB_DIR}',
+                                   arm_env.get('ARM_LIB_DIR', '').split()],
+                          LINKFLAGS=arm_env.get('ARM_LINKFLAGS', ''),
+                          )
 
-    linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'crypto'])
+        linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'crypto'])
+    else:
+      base_dir = '${SCONSTRUCT_DIR}/toolchain/linux_arm-trusted'
+      tool_prefix = base_dir + '/arm-2009q3/bin/arm-none-linux-gnueabi-'
+      jail = base_dir + '/arm-2009q3/arm-none-linux-gnueabi/libc'
+      linker_script = base_dir + '/ld_script_arm_trusted'
+      linux_env.Replace(CC=tool_prefix + 'gcc',
+                        CXX=tool_prefix + 'g++',
+                        LD=tool_prefix + 'ld',
+                        EMULATOR=base_dir + '/run_under_qemu_arm',
+                        ASFLAGS=[],
+                        LIBPATH=['${LIB_DIR}',
+                                 jail + '/usr/lib'
+                                 ],
+                        # NOTE: we do build .sos so this needs to be revisited
+                        LINKFLAGS=['-static',
+                                   '-Wl,-T',
+                                   '-Wl,%s' % linker_script,
+                                   ]
+                        )
+      linux_env.Prepend(CCFLAGS=[# we have some assembler files which are
+                                 # armv7-a -- revisit this
+                                 '-march=armv6',
+                                 '-I%s' % (jail + '/usr/include'),
+                                ])
+     # This appears to be needed for sel_universal
+    linux_env.Append(LIBS=['dl'])
   else:
     Banner('Strange platform: %s' % BUILD_NAME)
 
