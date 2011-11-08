@@ -11,8 +11,6 @@ vars = {
   "nacl_revision": "7108",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
-  # TODO(brettw) We should use the "From" syntax to avoid hardcoding the
-  # revisions here, but it makes checkdeps confused. We should fix checkdeps.
   "nacl_tools_revision": "7088",  # native_client/DEPS: tools_rev
 
   # These hashes need to be updated when nacl_toolchain_revision is changed.
@@ -257,8 +255,6 @@ deps = {
 
   # Needed to support nacl browser test jig.
   "src/third_party/pylib":
-    # TODO(brettw) enable the From() line instead when checkdeps is fixed.
-    #From("src/native_client", "native_client/src/third_party/pylib"),
     Var("nacl_trunk") + "/src/third_party/pylib@" + Var("nacl_tools_revision"),
   "src/third_party/scons-2.0.1":
     Var("nacl_trunk") + "/src/third_party/scons-2.0.1@" +
