@@ -93,12 +93,12 @@ class GtkPrinterList {
 
 // static
 printing::PrintDialogGtkInterface* PrintDialogGtk::CreatePrintDialog(
-    PrintingContextCairo* context) {
+    PrintingContextGtk* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return new PrintDialogGtk(context);
 }
 
-PrintDialogGtk::PrintDialogGtk(PrintingContextCairo* context)
+PrintDialogGtk::PrintDialogGtk(PrintingContextGtk* context)
     : callback_(NULL),
       context_(context),
       dialog_(NULL),
@@ -229,7 +229,7 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& job_settings,
 }
 
 void PrintDialogGtk::ShowDialog(
-    PrintingContextCairo::PrintSettingsCallback* callback) {
+    PrintingContextGtk::PrintSettingsCallback* callback) {
   callback_ = callback;
 
   GtkWindow* parent = BrowserList::GetLastActive()->window()->GetNativeHandle();
@@ -341,13 +341,13 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
       printing::PrintSettingsInitializerGtk::InitPrintSettings(
           gtk_settings_, page_setup_, ranges_vector, false, &settings);
       context_->InitWithSettings(settings);
-      callback_->Run(PrintingContextCairo::OK);
+      callback_->Run(PrintingContextGtk::OK);
       callback_ = NULL;
       return;
     }
     case GTK_RESPONSE_DELETE_EVENT:  // Fall through.
     case GTK_RESPONSE_CANCEL: {
-      callback_->Run(PrintingContextCairo::CANCEL);
+      callback_->Run(PrintingContextGtk::CANCEL);
       callback_ = NULL;
       return;
     }

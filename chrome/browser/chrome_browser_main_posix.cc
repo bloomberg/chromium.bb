@@ -259,7 +259,7 @@ void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
   CHECK(sigaction(SIGHUP, &action, NULL) == 0);
 
 #if defined(TOOLKIT_USES_GTK) && !defined(OS_CHROMEOS)
-  printing::PrintingContextCairo::SetCreatePrintDialogFunction(
+  printing::PrintingContextGtk::SetCreatePrintDialogFunction(
       &PrintDialogGtk::CreatePrintDialog);
 #endif
 }

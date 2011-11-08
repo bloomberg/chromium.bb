@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "printing/page_number.h"
 #include "printing/printed_page.h"
-#include "printing/printing_context_cairo.h"
+#include "printing/printing_context_gtk.h"
 
 namespace printing {
 
@@ -27,7 +27,7 @@ void PrintedDocument::RenderPrintedPage(
   {
     base::AutoLock lock(lock_);
     if (page.page_number() - 1 == mutable_.first_page) {
-      reinterpret_cast<PrintingContextCairo*>(context)->PrintDocument(
+      reinterpret_cast<PrintingContextGtk*>(context)->PrintDocument(
           page.metafile());
     }
   }

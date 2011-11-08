@@ -6,7 +6,7 @@
 #define PRINTING_PRINT_DIALOG_GTK_INTERFACE_H_
 
 #include "base/string16.h"
-#include "printing/printing_context_cairo.h"
+#include "printing/printing_context_gtk.h"
 
 namespace printing {
 
@@ -32,7 +32,7 @@ class PrintDialogGtkInterface {
   // Shows the dialog and handles the response with |callback|. Only used when
   // printing with the native print dialog.
   virtual void ShowDialog(
-      PrintingContextCairo::PrintSettingsCallback* callback) = 0;
+      PrintingContextGtk::PrintSettingsCallback* callback) = 0;
 
   // Prints the document named |document_name| contained in |metafile|.
   // Called from the print worker thread. Once called, the

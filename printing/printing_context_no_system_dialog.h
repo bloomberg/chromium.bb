@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PRINTING_PRINTING_CONTEXT_CAIRO_H_
-#define PRINTING_PRINTING_CONTEXT_CAIRO_H_
+#ifndef PRINTING_PRINTING_CONTEXT_NO_SYSTEM_DIALOG_H_
+#define PRINTING_PRINTING_CONTEXT_NO_SYSTEM_DIALOG_H_
 
 #include <string>
 
@@ -16,22 +16,11 @@ class DictionaryValue;
 namespace printing {
 
 class Metafile;
-class PrintDialogGtkInterface;
 
-class PRINTING_EXPORT PrintingContextCairo : public PrintingContext {
+class PRINTING_EXPORT PrintingContextNoSystemDialog : public PrintingContext {
  public:
-  explicit PrintingContextCairo(const std::string& app_locale);
-  virtual ~PrintingContextCairo();
-
-#if !defined(OS_CHROMEOS)
-  // Sets the function that creates the print dialog.
-  static void SetCreatePrintDialogFunction(
-      PrintDialogGtkInterface* (*create_dialog_func)(
-          PrintingContextCairo* context));
-
-  // Prints the document contained in |metafile|.
-  void PrintDocument(const Metafile* metafile);
-#endif
+  explicit PrintingContextNoSystemDialog(const std::string& app_locale);
+  virtual ~PrintingContextNoSystemDialog();
 
   // PrintingContext implementation.
   virtual void AskUserForSettings(gfx::NativeView parent_view,
@@ -52,14 +41,10 @@ class PRINTING_EXPORT PrintingContextCairo : public PrintingContext {
   virtual gfx::NativeDrawingContext context() const;
 
  private:
-#if !defined(OS_CHROMEOS)
-  string16 document_name_;
-  PrintDialogGtkInterface* print_dialog_;
-#endif
-
-  DISALLOW_COPY_AND_ASSIGN(PrintingContextCairo);
+  DISALLOW_COPY_AND_ASSIGN(PrintingContextNoSystemDialog);
 };
 
 }  // namespace printing
 
-#endif  // PRINTING_PRINTING_CONTEXT_CAIRO_H_
+#endif  // PRINTING_PRINTING_CONTEXT_NO_SYSTEM_DIALOG_H_
+

@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/print_dialog_gtk_interface.h"
-#include "printing/printing_context_cairo.h"
+#include "printing/printing_context_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 namespace printing {
@@ -23,7 +23,7 @@ class Metafile;
 class PrintSettings;
 }
 
-using printing::PrintingContextCairo;
+using printing::PrintingContextGtk;
 
 // Needs to be freed on the UI thread to clean up its GTK members variables.
 class PrintDialogGtk
@@ -33,7 +33,7 @@ class PrintDialogGtk
  public:
   // Creates and returns a print dialog.
   static printing::PrintDialogGtkInterface* CreatePrintDialog(
-      PrintingContextCairo* context);
+      PrintingContextGtk* context);
 
   // printing::PrintDialogGtkInterface implementation.
   virtual void UseDefaultSettings() OVERRIDE;
@@ -41,7 +41,7 @@ class PrintDialogGtk
                               const printing::PageRanges& ranges,
                               printing::PrintSettings* settings) OVERRIDE;
   virtual void ShowDialog(
-      PrintingContextCairo::PrintSettingsCallback* callback) OVERRIDE;
+      PrintingContextGtk::PrintSettingsCallback* callback) OVERRIDE;
   virtual void PrintDocument(const printing::Metafile* metafile,
                              const string16& document_name) OVERRIDE;
   virtual void AddRefToDialog() OVERRIDE;
@@ -52,7 +52,7 @@ class PrintDialogGtk
       content::BrowserThread::UI>;
   friend class DeleteTask<PrintDialogGtk>;
 
-  explicit PrintDialogGtk(PrintingContextCairo* context);
+  explicit PrintDialogGtk(PrintingContextGtk* context);
   virtual ~PrintDialogGtk();
 
   // Handles dialog response.
@@ -73,8 +73,8 @@ class PrintDialogGtk
                          printing::PrintSettings* settings);
 
   // Printing dialog callback.
-  PrintingContextCairo::PrintSettingsCallback* callback_;
-  PrintingContextCairo* context_;
+  PrintingContextGtk::PrintSettingsCallback* callback_;
+  PrintingContextGtk* context_;
 
   // Print dialog settings. PrintDialogGtk owns |dialog_| and holds references
   // to the other objects.
