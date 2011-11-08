@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/util/oauth.h"
@@ -227,6 +228,16 @@ bool GetPassphrase(const std::string& json, std::string* passphrase) {
 
   DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
   return result->GetString("passphrase", passphrase);
+}
+
+string16 NormalizeUserName(const string16& user) {
+  if (user.find_first_of(ASCIIToUTF16("@")) != string16::npos)
+    return user;
+  return user + ASCIIToUTF16("@") + ASCIIToUTF16(DEFAULT_SIGNIN_DOMAIN);
+}
+
+bool AreUserNamesEqual(const string16& user1, const string16& user2) {
+  return NormalizeUserName(user1) == NormalizeUserName(user2);
 }
 
 }  // namespace
@@ -728,10 +739,10 @@ bool SyncSetupHandler::IsLoginAuthDataValid(const std::string& username,
   string16 username_utf16 = UTF8ToUTF16(username);
 
   for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
-    if (i != current_profile_index &&
-        cache.GetUserNameOfProfileAtIndex(i) == username_utf16) {
-        *error_message = l10n_util::GetStringUTF16(
-            IDS_SYNC_USER_NAME_IN_USE_ERROR);
+    if (i != current_profile_index && AreUserNamesEqual(
+        cache.GetUserNameOfProfileAtIndex(i), username_utf16)) {
+      *error_message = l10n_util::GetStringUTF16(
+          IDS_SYNC_USER_NAME_IN_USE_ERROR);
       return false;
     }
   }
