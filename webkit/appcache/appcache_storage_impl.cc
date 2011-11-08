@@ -791,7 +791,7 @@ class NetworkNamespaceHelper {
   }
 
   bool IsInNetworkNamespace(const GURL& url, int64 cache_id) {
-    static const std::vector<GURL> kEmptyVector;
+    const std::vector<GURL> kEmptyVector;
     typedef std::pair<WhiteListMap::iterator, bool> InsertResult;
     InsertResult result = namespaces_map_.insert(
         WhiteListMap::value_type(cache_id, kEmptyVector));

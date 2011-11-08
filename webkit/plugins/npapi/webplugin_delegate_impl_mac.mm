@@ -706,7 +706,7 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
     return;
   DCHECK(!use_buffer_context_ || buffer_context_ == context);
 
-  static base::StatsRate plugin_paint("Plugin.Paint");
+  base::StatsRate plugin_paint("Plugin.Paint");
   base::StatsScope<base::StatsRate> scope(plugin_paint);
 
   gfx::Rect paint_rect;
