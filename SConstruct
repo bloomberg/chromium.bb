@@ -2778,9 +2778,7 @@ def MakeLinuxEnv():
                                    '-Wl,%s' % linker_script,
                                    ]
                         )
-      linux_env.Prepend(CCFLAGS=[# we have some assembler files which are
-                                 # armv7-a -- revisit this
-                                 '-march=armv6',
+      linux_env.Prepend(CCFLAGS=['-march=armv7-a',
                                  '-I%s' % (jail + '/usr/include'),
                                 ])
      # This appears to be needed for sel_universal
