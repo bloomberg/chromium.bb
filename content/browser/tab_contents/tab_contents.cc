@@ -202,8 +202,8 @@ TabContents::TabContents(content::BrowserContext* browser_context,
       maximum_zoom_percent_(
           static_cast<int>(WebKit::WebView::maxTextSizeMultiplier * 100)),
       temporary_zoom_settings_(false),
-      content_restrictions_(0) {
-
+      content_restrictions_(0),
+      view_type_(content::VIEW_TYPE_TAB_CONTENTS) {
   render_manager_.Init(browser_context, site_instance, routing_id);
 
   // We have the initial size of the view be based on the size of the passed in
@@ -1408,7 +1408,7 @@ TabContents* TabContents::GetAsTabContents() {
 }
 
 content::ViewType TabContents::GetRenderViewType() const {
-  return content::VIEW_TYPE_TAB_CONTENTS;
+  return view_type_;
 }
 
 void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
@@ -1677,6 +1677,12 @@ void TabContents::DidCancelLoading() {
 void TabContents::DidChangeLoadProgress(double progress) {
   if (delegate())
     delegate()->LoadProgressChanged(progress);
+}
+
+void TabContents::DocumentAvailableInMainFrame(
+    RenderViewHost* render_view_host) {
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+                    DocumentAvailableInMainFrame());
 }
 
 void TabContents::DocumentOnLoadCompletedInMainFrame(

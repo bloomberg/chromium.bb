@@ -545,7 +545,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     const Extension* extension =
         extension_process_manager->GetExtensionForSiteInstance(
             rvh->site_instance()->id());
-    extension_webkit_preferences::SetPreferences(&web_prefs, extension);
+    extension_webkit_preferences::SetPreferences(
+        extension, rvh->delegate()->GetRenderViewType(), &web_prefs);
   }
 
   return web_prefs;

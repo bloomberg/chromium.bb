@@ -6,7 +6,10 @@
 
 #include "chrome/browser/extensions/extension_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 
 // The minimum/maximum dimensions of the popup.
 const CGFloat ExtensionViewMac::kMinWidth = 25.0;
@@ -17,14 +20,11 @@ const CGFloat ExtensionViewMac::kMaxHeight = 600.0;
 ExtensionViewMac::ExtensionViewMac(ExtensionHost* extension_host,
                                    Browser* browser)
     : browser_(browser),
-      extension_host_(extension_host),
-      render_widget_host_view_(NULL) {
+      extension_host_(extension_host) {
   DCHECK(extension_host_);
 }
 
 ExtensionViewMac::~ExtensionViewMac() {
-  if (render_widget_host_view_)
-    [render_widget_host_view_->native_view() release];
 }
 
 void ExtensionViewMac::Init() {
@@ -32,8 +32,7 @@ void ExtensionViewMac::Init() {
 }
 
 gfx::NativeView ExtensionViewMac::native_view() {
-  DCHECK(render_widget_host_view_);
-  return render_widget_host_view_->native_view();
+  return extension_host_->host_contents()->view()->GetNativeView();
 }
 
 RenderViewHost* ExtensionViewMac::render_view_host() const {
@@ -41,9 +40,8 @@ RenderViewHost* ExtensionViewMac::render_view_host() const {
 }
 
 void ExtensionViewMac::SetBackground(const SkBitmap& background) {
-  DCHECK(render_widget_host_view_);
-  if (render_view_host()->IsRenderViewLive()) {
-    render_widget_host_view_->SetBackground(background);
+  if (!pending_background_.empty() && render_view_host()->view()) {
+    render_view_host()->view()->SetBackground(background);
   } else {
     pending_background_ = background;
   }
@@ -91,24 +89,16 @@ void ExtensionViewMac::RenderViewCreated() {
   extension_host_->DisableScrollbarsForSmallWindows(largest_popup_size);
 
   if (!pending_background_.empty() && render_view_host()->view()) {
-    render_widget_host_view_->SetBackground(pending_background_);
+    render_view_host()->view()->SetBackground(pending_background_);
     pending_background_.reset();
   }
 }
 
 void ExtensionViewMac::WindowFrameChanged() {
-  if (render_widget_host_view_)
-    render_widget_host_view_->WindowFrameChanged();
+  if (render_view_host()->view())
+    render_view_host()->view()->WindowFrameChanged();
 }
 
 void ExtensionViewMac::CreateWidgetHostView() {
-  DCHECK(!render_widget_host_view_);
-  render_widget_host_view_ = new RenderWidgetHostViewMac(render_view_host());
-
-  // The RenderWidgetHostViewMac is owned by its native view, which is created
-  // in an autoreleased state. retain it, so that it doesn't immediately
-  // disappear.
-  [render_widget_host_view_->native_view() retain];
-
-  extension_host_->CreateRenderViewSoon(render_widget_host_view_);
+  extension_host_->CreateRenderViewSoon();
 }

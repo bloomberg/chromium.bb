@@ -14,7 +14,6 @@
 class Browser;
 class ExtensionHost;
 class RenderViewHost;
-class RenderWidgetHostViewMac;
 class SkBitmap;
 
 // This class represents extension views. An extension view internally contains
@@ -66,10 +65,6 @@ class ExtensionViewMac {
   Browser* browser_;  // weak
 
   ExtensionHost* extension_host_;  // weak
-
-  // Created by us, but owned by its |native_view()|. We |release| the
-  // rwhv's native view in our destructor, effectively freeing this.
-  RenderWidgetHostViewMac* render_widget_host_view_;
 
   // The background the view should have once it is initialized. This is set
   // when the view has a custom background, but hasn't been initialized yet.

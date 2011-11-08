@@ -206,7 +206,7 @@ void ExtensionProcessManager::CreateBackgroundHost(
                         chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
 #endif
 
-  host->CreateRenderViewSoon(NULL);  // create a RenderViewHost with no view
+  host->CreateRenderViewSoon();
   OnExtensionHostCreated(host, true);
 }
 
