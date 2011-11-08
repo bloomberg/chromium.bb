@@ -143,17 +143,20 @@ def _GetLatestRelease(base_url, branch=None):
   """
   buildspec_url = os.path.join(base_url, 'releases')
   svn_ls = RunCommand(['svn', 'ls', buildspec_url], redirect_stdout=True)
-  sorted_ls = RunCommand(['sort', '--version-sort'], input=svn_ls,
+  sorted_ls = RunCommand(['sort', '--version-sort', '-r'], input=svn_ls,
                          redirect_stdout=True)
   if branch:
     chrome_version_re = re.compile('^%s\.\d+.*' % branch)
   else:
     chrome_version_re = re.compile('^[0-9]+\..*')
-  for chrome_version in sorted_ls.splitlines():
-    if chrome_version_re.match(chrome_version):
-      current_version = chrome_version
 
-  return current_version.rstrip('/')
+  for chrome_version in sorted_ls.splitlines():
+    if chrome_version_re.match(chrome_version) and RunCommand(['svn', 'ls',
+        os.path.join(buildspec_url, chrome_version, 'DEPS')],
+        error_code_ok=True).returncode == 0:
+      return chrome_version.rstrip('/')
+
+  return None
 
 
 def _GetStickyEBuild(stable_ebuilds):

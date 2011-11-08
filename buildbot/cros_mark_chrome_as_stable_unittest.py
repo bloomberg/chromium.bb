@@ -27,6 +27,16 @@ stable_data = 'KEYWORDS=x86 arm'
 fake_svn_rev = '12345'
 new_fake_svn_rev = '23456'
 
+class MockCommandResult(object):
+  """An object to store various attributes of a child process."""
+
+  def __init__(self, returncode=None, error=None, output=None, cmd=None):
+    self.cmd = cmd
+    self.error = error
+    self.output = output
+    self.returncode = returncode
+
+
 def _TouchAndWrite(path, data=None):
   """Writes data (if it exists) to the file specified by the path."""
   fh = open(path, 'w')
@@ -184,21 +194,29 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
   def testGetLatestRelease(self):
     """Tests if we can find the latest release from our mock url data."""
     ARBITRARY_URL = 'phthp://sores.chromium.org/tqs'
-    test_data = '\n'.join(['7.0.224.1/',
-                           '7.0.224.2/',
-                           '8.0.365.5/',
-                           'LATEST.txt'])
+    input_data = ['7.0.224.1/', '7.0.224.2/', '8.0.365.5/', 'LATEST.txt']
+    test_data = '\n'.join(input_data)
+    sorted_data = '\n'.join(reversed(input_data))
+    success = MockCommandResult(returncode=0)
+    failure = MockCommandResult(returncode=1)
     self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
     cros_mark_chrome_as_stable.RunCommand(
         ['svn', 'ls', ARBITRARY_URL + '/releases'],
-        redirect_stdout=True).AndReturn('some_data')
-    cros_mark_chrome_as_stable.RunCommand(
-        ['sort', '--version-sort'], input='some_data',
         redirect_stdout=True).AndReturn(test_data)
+    cros_mark_chrome_as_stable.RunCommand(
+        ['sort', '--version-sort', '-r'], input=test_data,
+        redirect_stdout=True).AndReturn(sorted_data)
+    # pretend this one is missing to test the skipping logic.
+    cros_mark_chrome_as_stable.RunCommand(
+        ['svn', 'ls', ARBITRARY_URL + '/releases/8.0.365.5/DEPS'],
+        error_code_ok=True).AndReturn(failure)
+    cros_mark_chrome_as_stable.RunCommand(
+        ['svn', 'ls', ARBITRARY_URL + '/releases/7.0.224.2/DEPS'],
+        error_code_ok=True).AndReturn(success)
     self.mox.ReplayAll()
     release = cros_mark_chrome_as_stable._GetLatestRelease(ARBITRARY_URL)
     self.mox.VerifyAll()
-    self.assertEqual('8.0.365.5', release)
+    self.assertEqual('7.0.224.2', release)
 
   def testGetLatestStickyRelease(self):
     """Tests if we can find the latest sticky release from our mock url data."""
@@ -207,16 +225,20 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
                            '8.0.224.2/',
                            '8.0.365.5/',
                            'LATEST.txt'])
+    success = MockCommandResult(returncode=0)
     self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
     cros_mark_chrome_as_stable.RunCommand(
         ['svn', 'ls', ARBITRARY_URL + '/releases'],
         redirect_stdout=True).AndReturn('some_data')
     cros_mark_chrome_as_stable.RunCommand(
-        ['sort', '--version-sort'], input='some_data',
+        ['sort', '--version-sort', '-r'], input='some_data',
         redirect_stdout=True).AndReturn(test_data)
+    cros_mark_chrome_as_stable.RunCommand(
+        ['svn', 'ls', ARBITRARY_URL + '/releases/8.0.224.2/DEPS'],
+        error_code_ok=True).AndReturn(success)
     self.mox.ReplayAll()
     release = cros_mark_chrome_as_stable._GetLatestRelease(ARBITRARY_URL,
-                                                           self.sticky_branch)
+                                                           '8.0.224')
     self.mox.VerifyAll()
     self.assertEqual('8.0.224.2', release)
 
