@@ -34,6 +34,7 @@
 #include "views/window/non_client_view.h"
 
 #if defined(OS_WIN)
+#include "ui/base/win/hwnd_util.h"
 #include "views/widget/monitor_win.h"
 #endif
 
@@ -113,6 +114,19 @@ class NewTabButton : public views::ImageButton {
 #endif
     path->close();
   }
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+  void OnMouseReleased(const views::MouseEvent& event) OVERRIDE {
+    if (event.IsOnlyRightMouseButton()) {
+      gfx::Point point(event.x(), event.y());
+      views::View::ConvertPointToScreen(this, &point);
+      ui::ShowSystemMenu(GetWidget()->GetNativeView(), point.x(), point.y());
+      SetState(BS_NORMAL);
+      return;
+    }
+    views::ImageButton::OnMouseReleased(event);
+  }
+#endif
 
  private:
   // Tab strip that contains this button.
