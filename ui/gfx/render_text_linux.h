@@ -19,11 +19,6 @@ class RenderTextLinux : public RenderText {
   virtual ~RenderTextLinux();
 
   // Overridden from RenderText:
-  virtual void SetText(const string16& text) OVERRIDE;
-  virtual void SetDisplayRect(const Rect&r) OVERRIDE;
-  virtual void SetCompositionRange(const ui::Range& composition_range) OVERRIDE;
-  virtual void ApplyStyleRange(StyleRange style_range) OVERRIDE;
-  virtual void ApplyDefaultStyle() OVERRIDE;
   virtual base::i18n::TextDirection GetTextDirection() OVERRIDE;
   virtual int GetStringWidth() OVERRIDE;
   virtual void Draw(Canvas* canvas) OVERRIDE;
@@ -40,6 +35,7 @@ class RenderTextLinux : public RenderText {
   virtual SelectionModel LeftEndSelectionModel() OVERRIDE;
   virtual SelectionModel RightEndSelectionModel() OVERRIDE;
   virtual bool IsCursorablePosition(size_t position) OVERRIDE;
+  virtual void UpdateLayout() OVERRIDE;
 
  private:
   virtual size_t IndexOfAdjacentGrapheme(size_t index, bool next) OVERRIDE;

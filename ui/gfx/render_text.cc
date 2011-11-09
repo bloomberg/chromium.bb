@@ -133,6 +133,7 @@ void RenderText::ToggleInsertMode() {
 void RenderText::SetDisplayRect(const Rect& r) {
   display_rect_ = r;
   cached_bounds_and_offset_valid_ = false;
+  UpdateLayout();
 }
 
 size_t RenderText::GetCursorPosition() const {
@@ -305,6 +306,7 @@ void RenderText::SetCompositionRange(const ui::Range& composition_range) {
         ui::Range(0, text_.length()).Contains(composition_range));
   composition_range_.set_end(composition_range.end());
   composition_range_.set_start(composition_range.start());
+  UpdateLayout();
 }
 
 void RenderText::ApplyStyleRange(StyleRange style_range) {
@@ -319,6 +321,7 @@ void RenderText::ApplyStyleRange(StyleRange style_range) {
 #endif
   // TODO(xji): only invalidate if font or underline changes.
   cached_bounds_and_offset_valid_ = false;
+  UpdateLayout();
 }
 
 void RenderText::ApplyDefaultStyle() {
@@ -327,6 +330,7 @@ void RenderText::ApplyDefaultStyle() {
   style.range.set_end(text_.length());
   style_ranges_.push_back(style);
   cached_bounds_and_offset_valid_ = false;
+  UpdateLayout();
 }
 
 base::i18n::TextDirection RenderText::GetTextDirection() {
@@ -612,6 +616,7 @@ void RenderText::SetSelectionModel(const SelectionModel& selection_model) {
   selection_model_.set_caret_placement(selection_model.caret_placement());
 
   cached_bounds_and_offset_valid_ = false;
+  UpdateLayout();
 }
 
 void RenderText::MoveCursorTo(size_t position, bool select) {

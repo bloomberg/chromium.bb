@@ -105,27 +105,6 @@ RenderTextWin::~RenderTextWin() {
   STLDeleteContainerPointers(runs_.begin(), runs_.end());
 }
 
-void RenderTextWin::SetText(const string16& text) {
-  // TODO(msw): Skip complex processing if ScriptIsComplex returns false.
-  RenderText::SetText(text);
-  ItemizeAndLayoutText();
-}
-
-void RenderTextWin::SetDisplayRect(const Rect& r) {
-  RenderText::SetDisplayRect(r);
-  ItemizeAndLayoutText();
-}
-
-void RenderTextWin::ApplyStyleRange(StyleRange style_range) {
-  RenderText::ApplyStyleRange(style_range);
-  ItemizeAndLayoutText();
-}
-
-void RenderTextWin::ApplyDefaultStyle() {
-  RenderText::ApplyDefaultStyle();
-  ItemizeAndLayoutText();
-}
-
 int RenderTextWin::GetStringWidth() {
   return string_width_;
 }
@@ -334,6 +313,14 @@ bool RenderTextWin::IsCursorablePosition(size_t position) {
          run->logical_clusters[position - start - 1];
 }
 
+void RenderTextWin::UpdateLayout() {
+  // TODO(msw): Skip complex processing if ScriptIsComplex returns false.
+  ItemizeLogicalText();
+  HDC hdc = CreateCompatibleDC(NULL);
+  LayoutVisualText(hdc);
+  DeleteDC(hdc);
+}
+
 size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) {
   size_t run_index = GetRunContainingPosition(index);
   internal::TextRun* run = run_index < runs_.size() ? runs_[run_index] : NULL;
@@ -351,13 +338,6 @@ size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) {
       ch++;
   }
   return std::max(std::min(ch, length) + start, 0);
-}
-
-void RenderTextWin::ItemizeAndLayoutText() {
-  ItemizeLogicalText();
-  HDC hdc = CreateCompatibleDC(NULL);
-  LayoutVisualText(hdc);
-  DeleteDC(hdc);
 }
 
 void RenderTextWin::ItemizeLogicalText() {

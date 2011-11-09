@@ -48,31 +48,6 @@ RenderText* RenderText::CreateRenderText() {
   return new RenderTextLinux;
 }
 
-void RenderTextLinux::SetText(const string16& text) {
-  RenderText::SetText(text);
-  ResetLayout();
-}
-
-void RenderTextLinux::SetDisplayRect(const Rect&r) {
-  RenderText::SetDisplayRect(r);
-  ResetLayout();
-}
-
-void RenderTextLinux::SetCompositionRange(const ui::Range& composition_range) {
-  RenderText::SetCompositionRange(composition_range);
-  ResetLayout();
-}
-
-void RenderTextLinux::ApplyStyleRange(StyleRange style_range) {
-  RenderText::ApplyStyleRange(style_range);
-  ResetLayout();
-}
-
-void RenderTextLinux::ApplyDefaultStyle() {
-  RenderText::ApplyDefaultStyle();
-  ResetLayout();
-}
-
 base::i18n::TextDirection RenderTextLinux::GetTextDirection() {
   EnsureLayout();
 
@@ -252,6 +227,10 @@ bool RenderTextLinux::IsCursorablePosition(size_t position) {
   EnsureLayout();
   return (position < static_cast<size_t>(num_log_attrs_) &&
           log_attrs_[position].is_cursor_position);
+}
+
+void RenderTextLinux::UpdateLayout() {
+  ResetLayout();
 }
 
 size_t RenderTextLinux::IndexOfAdjacentGrapheme(size_t index, bool next) {

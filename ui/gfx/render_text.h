@@ -74,7 +74,7 @@ class UI_EXPORT RenderText {
   static RenderText* CreateRenderText();
 
   const string16& text() const { return text_; }
-  virtual void SetText(const string16& text);
+  void SetText(const string16& text);
 
   const SelectionModel& selection_model() const { return selection_model_; }
 
@@ -91,7 +91,7 @@ class UI_EXPORT RenderText {
   void set_default_style(StyleRange style) { default_style_ = style; }
 
   const Rect& display_rect() const { return display_rect_; }
-  virtual void SetDisplayRect(const Rect& r);
+  void SetDisplayRect(const Rect& r);
 
   // This cursor position corresponds to SelectionModel::selection_end. In
   // addition to representing the selection end, it's also where logical text
@@ -148,13 +148,13 @@ class UI_EXPORT RenderText {
   void SelectWord();
 
   const ui::Range& GetCompositionRange() const;
-  virtual void SetCompositionRange(const ui::Range& composition_range);
+  void SetCompositionRange(const ui::Range& composition_range);
 
   // Apply |style_range| to the internal style model.
-  virtual void ApplyStyleRange(StyleRange style_range);
+  void ApplyStyleRange(StyleRange style_range);
 
   // Apply |default_style_| over the entire text range.
-  virtual void ApplyDefaultStyle();
+  void ApplyDefaultStyle();
 
   virtual base::i18n::TextDirection GetTextDirection();
 
@@ -180,7 +180,7 @@ class UI_EXPORT RenderText {
   const Rect& GetUpdatedCursorBounds();
 
   // Get the logical index of the grapheme following the argument |position|.
-  virtual size_t GetIndexOfNextGrapheme(size_t position);
+  size_t GetIndexOfNextGrapheme(size_t position);
 
   // Return a SelectionModel with the cursor at the current selection's start.
   // The returned value represents a cursor/caret position without a selection.
@@ -223,6 +223,10 @@ class UI_EXPORT RenderText {
   // Return true if cursor can appear in front of the character at |position|,
   // which means it is a grapheme boundary or the first character in the text.
   virtual bool IsCursorablePosition(size_t position) = 0;
+
+  // Updates the layout so that the next draw request can correctly
+  // render the text and its attributes.
+  virtual void UpdateLayout() = 0;
 
   // Apply composition style (underline) to composition range and selection
   // style (foreground) to selection range.

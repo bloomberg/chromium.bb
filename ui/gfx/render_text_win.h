@@ -57,10 +57,6 @@ class RenderTextWin : public RenderText {
   virtual ~RenderTextWin();
 
   // Overridden from RenderText:
-  virtual void SetText(const string16& text) OVERRIDE;
-  virtual void SetDisplayRect(const Rect& r) OVERRIDE;
-  virtual void ApplyStyleRange(StyleRange style_range) OVERRIDE;
-  virtual void ApplyDefaultStyle() OVERRIDE;
   virtual int GetStringWidth() OVERRIDE;
   virtual void Draw(Canvas* canvas) OVERRIDE;
   virtual SelectionModel FindCursorPosition(const Point& point) OVERRIDE;
@@ -77,11 +73,11 @@ class RenderTextWin : public RenderText {
   virtual SelectionModel RightEndSelectionModel() OVERRIDE;
   virtual std::vector<Rect> GetSubstringBounds(size_t from, size_t to) OVERRIDE;
   virtual bool IsCursorablePosition(size_t position) OVERRIDE;
+  virtual void UpdateLayout() OVERRIDE;
 
  private:
   virtual size_t IndexOfAdjacentGrapheme(size_t index, bool next) OVERRIDE;
 
-  void ItemizeAndLayoutText();
   void ItemizeLogicalText();
   void LayoutVisualText(HDC hdc);
 
