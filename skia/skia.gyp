@@ -684,7 +684,6 @@
         'ext/SkThread_chrome.cc',
         'ext/platform_canvas.cc',
         'ext/platform_canvas.h',
-        'ext/platform_canvas_android.cc',
         'ext/platform_canvas_linux.cc',
         'ext/platform_canvas_mac.cc',
         'ext/platform_canvas_win.cc',
