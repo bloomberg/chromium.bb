@@ -70,6 +70,3 @@ d3dx9_43.dll
 D3DCompiler_43.dll
 libEGL.dll
 libGLESv2.dll
-gcp_portmon.dll
-gcp_portmon64.dll
-virtual_driver_setup.exe
