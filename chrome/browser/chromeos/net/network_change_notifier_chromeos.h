@@ -30,10 +30,6 @@ class NetworkChangeNotifierChromeos
   // from the power manager and the network manager.
   void Init();
 
-  // Shutdowns the network change notifier. Stops observing changes from
-  // the power manager and the network manager.
-  void Shutdown();
-
  private:
   friend class OnlineStatusReportThreadTask;
 
