@@ -16,7 +16,8 @@ class AcceleratedSurfaceContainerLinuxCC
     : public AcceleratedSurfaceContainerLinux, public ui::TextureCC {
  public:
   explicit AcceleratedSurfaceContainerLinuxCC(const gfx::Size& size)
-      : size_(size) {
+      : size_(size),
+        acquired_(false) {
   }
 
   virtual ~AcceleratedSurfaceContainerLinuxCC() {
@@ -41,7 +42,6 @@ class AcceleratedSurfaceContainerLinuxCC
       return false;
     }
     flipped_ = image_transport_client_->Flipped();
-    image_transport_client_->Acquire();
     return true;
   }
 
@@ -50,7 +50,10 @@ class AcceleratedSurfaceContainerLinuxCC
     ui::SharedResourcesCC* instance = ui::SharedResourcesCC::GetInstance();
     DCHECK(instance);
     instance->MakeSharedContextCurrent();
-    image_transport_client_->Release();
+    if (acquired_)
+      image_transport_client_->Release();
+    else
+      acquired_ = true;
     image_transport_client_->Acquire();
   }
 
@@ -63,6 +66,7 @@ class AcceleratedSurfaceContainerLinuxCC
  private:
   scoped_ptr<ImageTransportClient> image_transport_client_;
   gfx::Size size_;
+  bool acquired_;
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerLinuxCC);
 };
 

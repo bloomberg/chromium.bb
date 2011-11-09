@@ -7,6 +7,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xcomposite.h>
 
+#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/angle/include/EGL/egl.h"
@@ -96,6 +97,7 @@ class ImageTransportClientGLX : public ImageTransportClient {
   }
 
   virtual unsigned int Initialize(uint64* surface_id) {
+    TRACE_EVENT0("renderer_host", "ImageTransportClientGLX::Initialize");
     Display* dpy = static_cast<Display*>(resources_->GetDisplay());
 
     resources_->MakeSharedContextCurrent();
@@ -121,12 +123,14 @@ class ImageTransportClientGLX : public ImageTransportClient {
   }
 
   virtual void Acquire() {
+    TRACE_EVENT0("renderer_host", "ImageTransportClientGLX::Acquire");
     Display* dpy = static_cast<Display*>(resources_->GetDisplay());
     glBindTexture(GL_TEXTURE_2D, texture_);
     glXBindTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT, NULL);
   }
 
   virtual void Release() {
+    TRACE_EVENT0("renderer_host", "ImageTransportClientGLX::Release");
     Display* dpy = static_cast<Display*>(resources_->GetDisplay());
     glXReleaseTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT);
   }

@@ -14,6 +14,7 @@
 #include <X11/extensions/Xcomposite.h>
 
 #include "base/callback.h"
+#include "base/debug/trace_event.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
@@ -130,6 +131,9 @@ class GLXImageTransportSurface : public ImageTransportSurface,
 
   // Whether or not the image has been bound on the browser side.
   bool bound_;
+
+  // Whether or not we need to send a resize on the next swap.
+  bool needs_resize_;
 
   // Whether or not we've successfully made the surface current once.
   bool made_current_;
@@ -378,6 +382,7 @@ GLXImageTransportSurface::GLXImageTransportSurface(
         dummy_parent_(0),
         size_(1, 1),
         bound_(false),
+        needs_resize_(false),
         made_current_(false) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
@@ -453,31 +458,32 @@ void GLXImageTransportSurface::ReleaseSurface() {
   GpuHostMsg_AcceleratedSurfaceRelease_Params params;
   params.identifier = window_;
   helper_->SendAcceleratedSurfaceRelease(params);
+  bound_ = false;
 }
 
 void GLXImageTransportSurface::OnResize(gfx::Size size) {
+  TRACE_EVENT0("gpu", "GLXImageTransportSurface::OnResize");
   size_ = size;
-  if (bound_) {
-    ReleaseSurface();
-    bound_ = false;
-  }
 
   Display* dpy = static_cast<Display*>(GetDisplay());
   XResizeWindow(dpy, window_, size_.width(), size_.height());
-  XFlush(dpy);
-
-  GpuHostMsg_AcceleratedSurfaceNew_Params params;
-  params.width = size_.width();
-  params.height = size_.height();
-  params.surface_id = window_;
-  helper_->SendAcceleratedSurfaceNew(params);
-
-  helper_->SetScheduled(false);
+  glXWaitX();
+  needs_resize_ = true;
 }
 
 bool GLXImageTransportSurface::SwapBuffers() {
   gfx::NativeViewGLSurfaceGLX::SwapBuffers();
   glFlush();
+
+  if (needs_resize_) {
+    GpuHostMsg_AcceleratedSurfaceNew_Params params;
+    params.width = size_.width();
+    params.height = size_.height();
+    params.surface_id = window_;
+    helper_->SendAcceleratedSurfaceNew(params);
+    bound_ = true;
+    needs_resize_ = false;
+  }
 
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.surface_id = window_;
@@ -515,9 +521,6 @@ bool GLXImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
 
 void GLXImageTransportSurface::OnNewSurfaceACK(
     uint64 surface_id, TransportDIB::Handle /*surface_handle*/) {
-  DCHECK(!bound_);
-  bound_ = true;
-  helper_->SetScheduled(true);
 }
 
 void GLXImageTransportSurface::OnBuffersSwappedACK() {
