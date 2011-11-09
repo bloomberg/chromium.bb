@@ -63,8 +63,7 @@ FileSystemOperation::FileSystemOperation(
     FileSystemContext* file_system_context)
     : proxy_(proxy),
       dispatcher_(dispatcher),
-      operation_context_(file_system_context, NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      operation_context_(file_system_context, NULL) {
 #ifndef NDEBUG
   pending_operation_ = kOperationNone;
 #endif
@@ -80,7 +79,7 @@ FileSystemOperation::~FileSystemOperation() {
                    base::Unretained(c->src_file_util()),
                    base::Owned(c)),
         file_writer_delegate_->file(),
-        FileSystemFileUtilProxy::StatusCallback());
+        base::FileUtilProxy::StatusCallback());
   }
 }
 
@@ -104,7 +103,7 @@ void FileSystemOperation::OpenFileSystem(
   file_system_context()->path_manager()->ValidateFileSystemRootAndGetURL(
       origin_url, type, create,
       base::Bind(&FileSystemOperation::DidGetRootPath,
-                 weak_factory_.GetWeakPtr()));
+                 base::Owned(this)));
 }
 
 void FileSystemOperation::CreateFile(const GURL& path,
@@ -117,15 +116,14 @@ void FileSystemOperation::CreateFile(const GURL& path,
     delete this;
     return;
   }
-  exclusive_ = exclusive;
-
   GetUsageAndQuotaThenCallback(
       operation_context_.src_origin_url(),
       base::Bind(&FileSystemOperation::DelayedCreateFileForQuota,
-                 weak_factory_.GetWeakPtr()));
+                 base::Unretained(this), exclusive));
 }
 
 void FileSystemOperation::DelayedCreateFileForQuota(
+    bool exclusive,
     quota::QuotaStatusCode status, int64 usage, int64 quota) {
   operation_context_.set_allowed_bytes_growth(quota - usage);
 
@@ -139,9 +137,9 @@ void FileSystemOperation::DelayedCreateFileForQuota(
       proxy_,
       src_virtual_path_,
       base::Bind(
-          exclusive_ ? &FileSystemOperation::DidEnsureFileExistsExclusive
-                     : &FileSystemOperation::DidEnsureFileExistsNonExclusive,
-          weak_factory_.GetWeakPtr()));
+          exclusive ? &FileSystemOperation::DidEnsureFileExistsExclusive
+                    : &FileSystemOperation::DidEnsureFileExistsNonExclusive,
+          base::Owned(this)));
 }
 
 void FileSystemOperation::CreateDirectory(const GURL& path,
@@ -155,16 +153,14 @@ void FileSystemOperation::CreateDirectory(const GURL& path,
     delete this;
     return;
   }
-  exclusive_ = exclusive;
-  recursive_ = recursive;
-
   GetUsageAndQuotaThenCallback(
       operation_context_.src_origin_url(),
       base::Bind(&FileSystemOperation::DelayedCreateDirectoryForQuota,
-                 weak_factory_.GetWeakPtr()));
+                 base::Unretained(this), exclusive, recursive));
 }
 
 void FileSystemOperation::DelayedCreateDirectoryForQuota(
+    bool exclusive, bool recursive,
     quota::QuotaStatusCode status, int64 usage, int64 quota) {
   operation_context_.set_allowed_bytes_growth(quota - usage);
 
@@ -173,11 +169,14 @@ void FileSystemOperation::DelayedCreateDirectoryForQuota(
       operation_context_.src_origin_url(),
       operation_context_.src_type()));
 
-  FileSystemFileUtilProxy::CreateDirectory(
-      operation_context_, proxy_, src_virtual_path_, exclusive_,
-      recursive_,
+  base::FileUtilProxy::RelayFileTask(
+      proxy_, FROM_HERE,
+      base::Bind(&FileSystemFileUtil::CreateDirectory,
+                 base::Unretained(operation_context_.src_file_util()),
+                 &operation_context_,
+                 src_virtual_path_, exclusive, recursive),
       base::Bind(&FileSystemOperation::DidFinishFileOperation,
-                 weak_factory_.GetWeakPtr()));
+                 base::Owned(this)));
 }
 
 void FileSystemOperation::Copy(const GURL& src_path,
@@ -195,7 +194,7 @@ void FileSystemOperation::Copy(const GURL& src_path,
   GetUsageAndQuotaThenCallback(
       operation_context_.dest_origin_url(),
       base::Bind(&FileSystemOperation::DelayedCopyForQuota,
-                 weak_factory_.GetWeakPtr()));
+                 base::Unretained(this)));
 }
 
 void FileSystemOperation::DelayedCopyForQuota(quota::QuotaStatusCode status,
@@ -207,11 +206,14 @@ void FileSystemOperation::DelayedCopyForQuota(quota::QuotaStatusCode status,
       operation_context_.dest_origin_url(),
       operation_context_.dest_type()));
 
-  FileSystemFileUtilProxy::Copy(
-      operation_context_, proxy_, src_virtual_path_,
-      dest_virtual_path_,
+  base::FileUtilProxy::RelayFileTask(
+      proxy_, FROM_HERE,
+      base::Bind(&FileSystemFileUtil::Copy,
+                 base::Unretained(operation_context_.src_file_util()),
+                 &operation_context_,
+                 src_virtual_path_, dest_virtual_path_),
       base::Bind(&FileSystemOperation::DidFinishFileOperation,
-                 weak_factory_.GetWeakPtr()));
+                 base::Owned(this)));
 }
 
 void FileSystemOperation::Move(const GURL& src_path,
@@ -229,7 +231,7 @@ void FileSystemOperation::Move(const GURL& src_path,
   GetUsageAndQuotaThenCallback(
       operation_context_.dest_origin_url(),
       base::Bind(&FileSystemOperation::DelayedMoveForQuota,
-                 weak_factory_.GetWeakPtr()));
+                 base::Unretained(this)));
 }
 
 void FileSystemOperation::DelayedMoveForQuota(quota::QuotaStatusCode status,
@@ -241,11 +243,14 @@ void FileSystemOperation::DelayedMoveForQuota(quota::QuotaStatusCode status,
       operation_context_.dest_origin_url(),
       operation_context_.dest_type()));
 
-  FileSystemFileUtilProxy::Move(
-      operation_context_, proxy_, src_virtual_path_,
-      dest_virtual_path_,
+  base::FileUtilProxy::RelayFileTask(
+      proxy_, FROM_HERE,
+      base::Bind(&FileSystemFileUtil::Move,
+                 base::Unretained(operation_context_.src_file_util()),
+                 &operation_context_,
+                 src_virtual_path_, dest_virtual_path_),
       base::Bind(&FileSystemOperation::DidFinishFileOperation,
-                 weak_factory_.GetWeakPtr()));
+                 base::Owned(this)));
 }
 
 void FileSystemOperation::DirectoryExists(const GURL& path) {
@@ -260,8 +265,7 @@ void FileSystemOperation::DirectoryExists(const GURL& path) {
 
   FileSystemFileUtilProxy::GetFileInfo(
       operation_context_, proxy_, src_virtual_path_,
-      base::Bind(&FileSystemOperation::DidDirectoryExists,
-                 weak_factory_.GetWeakPtr()));
+      base::Bind(&FileSystemOperation::DidDirectoryExists, base::Owned(this)));
 }
 
 void FileSystemOperation::FileExists(const GURL& path) {
@@ -276,8 +280,7 @@ void FileSystemOperation::FileExists(const GURL& path) {
 
   FileSystemFileUtilProxy::GetFileInfo(
       operation_context_, proxy_, src_virtual_path_,
-      base::Bind(&FileSystemOperation::DidFileExists,
-                 weak_factory_.GetWeakPtr()));
+      base::Bind(&FileSystemOperation::DidFileExists, base::Owned(this)));
 }
 
 void FileSystemOperation::GetMetadata(const GURL& path) {
@@ -292,8 +295,7 @@ void FileSystemOperation::GetMetadata(const GURL& path) {
 
   FileSystemFileUtilProxy::GetFileInfo(
       operation_context_, proxy_, src_virtual_path_,
-      base::Bind(&FileSystemOperation::DidGetMetadata,
-                 weak_factory_.GetWeakPtr()));
+      base::Bind(&FileSystemOperation::DidGetMetadata, base::Owned(this)));
 }
 
 void FileSystemOperation::ReadDirectory(const GURL& path) {
@@ -308,8 +310,7 @@ void FileSystemOperation::ReadDirectory(const GURL& path) {
 
   FileSystemFileUtilProxy::ReadDirectory(
       operation_context_, proxy_, src_virtual_path_,
-      base::Bind(&FileSystemOperation::DidReadDirectory,
-                 weak_factory_.GetWeakPtr()));
+      base::Bind(&FileSystemOperation::DidReadDirectory, base::Owned(this)));
 }
 
 void FileSystemOperation::Remove(const GURL& path, bool recursive) {
@@ -322,10 +323,14 @@ void FileSystemOperation::Remove(const GURL& path, bool recursive) {
     return;
   }
 
-  FileSystemFileUtilProxy::Delete(
-      operation_context_, proxy_, src_virtual_path_, recursive,
+  base::FileUtilProxy::RelayFileTask(
+      proxy_, FROM_HERE,
+      base::Bind(&FileSystemFileUtil::Delete,
+                 base::Unretained(operation_context_.src_file_util()),
+                 &operation_context_,
+                 src_virtual_path_, recursive),
       base::Bind(&FileSystemOperation::DidFinishFileOperation,
-                 weak_factory_.GetWeakPtr()));
+                 base::Owned(this)));
 }
 
 void FileSystemOperation::Write(
@@ -350,7 +355,7 @@ void FileSystemOperation::Write(
   GetUsageAndQuotaThenCallback(
       operation_context_.src_origin_url(),
       base::Bind(&FileSystemOperation::DelayedWriteForQuota,
-                 weak_factory_.GetWeakPtr()));
+                 base::Unretained(this)));
 }
 
 void FileSystemOperation::DelayedWriteForQuota(quota::QuotaStatusCode status,
@@ -370,13 +375,13 @@ void FileSystemOperation::DelayedWriteForQuota(quota::QuotaStatusCode status,
       proxy_,
       base::Bind(&FileSystemFileUtil::CreateOrOpen,
                  base::Unretained(operation_context_.src_file_util()),
-                 base::Unretained(&operation_context_),
+                 &operation_context_,
                  src_virtual_path_, file_flags),
       base::Bind(&FileSystemFileUtil::Close,
                  base::Unretained(operation_context_.src_file_util()),
-                 base::Unretained(&operation_context_)),
+                 &operation_context_),
       base::Bind(&FileSystemOperation::OnFileOpenedForWrite,
-                 weak_factory_.GetWeakPtr()));
+                 base::Unretained(this)));
 }
 
 void FileSystemOperation::Truncate(const GURL& path, int64 length) {
@@ -388,15 +393,14 @@ void FileSystemOperation::Truncate(const GURL& path, int64 length) {
     delete this;
     return;
   }
-  length_ = length;
-
   GetUsageAndQuotaThenCallback(
       operation_context_.src_origin_url(),
       base::Bind(&FileSystemOperation::DelayedTruncateForQuota,
-                 weak_factory_.GetWeakPtr()));
+                 base::Unretained(this), length));
 }
 
-void FileSystemOperation::DelayedTruncateForQuota(quota::QuotaStatusCode status,
+void FileSystemOperation::DelayedTruncateForQuota(int64 length,
+                                                  quota::QuotaStatusCode status,
                                                   int64 usage, int64 quota) {
   operation_context_.set_allowed_bytes_growth(quota - usage);
 
@@ -405,10 +409,14 @@ void FileSystemOperation::DelayedTruncateForQuota(quota::QuotaStatusCode status,
       operation_context_.src_origin_url(),
       operation_context_.src_type()));
 
-  FileSystemFileUtilProxy::Truncate(
-      operation_context_, proxy_, src_virtual_path_, length_,
+  base::FileUtilProxy::RelayFileTask(
+      proxy_, FROM_HERE,
+      base::Bind(&FileSystemFileUtil::Truncate,
+                 base::Unretained(operation_context_.src_file_util()),
+                 &operation_context_,
+                 src_virtual_path_, length),
       base::Bind(&FileSystemOperation::DidFinishFileOperation,
-                 weak_factory_.GetWeakPtr()));
+                 base::Owned(this)));
 }
 
 void FileSystemOperation::TouchFile(const GURL& path,
@@ -423,11 +431,13 @@ void FileSystemOperation::TouchFile(const GURL& path,
     return;
   }
 
-  FileSystemFileUtilProxy::Touch(
-      operation_context_, proxy_, src_virtual_path_,
-      last_access_time, last_modified_time,
-      base::Bind(&FileSystemOperation::DidTouchFile,
-                 weak_factory_.GetWeakPtr()));
+  base::FileUtilProxy::RelayFileTask(
+      proxy_, FROM_HERE,
+      base::Bind(&FileSystemFileUtil::Touch,
+                 base::Unretained(operation_context_.src_file_util()),
+                 &operation_context_,
+                 src_virtual_path_, last_access_time, last_modified_time),
+      base::Bind(&FileSystemOperation::DidTouchFile, base::Owned(this)));
 }
 
 void FileSystemOperation::OpenFile(const GURL& path,
@@ -461,15 +471,14 @@ void FileSystemOperation::OpenFile(const GURL& path,
       return;
     }
   }
-  file_flags_ = file_flags;
-
   GetUsageAndQuotaThenCallback(
       operation_context_.src_origin_url(),
       base::Bind(&FileSystemOperation::DelayedOpenFileForQuota,
-                 weak_factory_.GetWeakPtr()));
+                 base::Unretained(this), file_flags));
 }
 
-void FileSystemOperation::DelayedOpenFileForQuota(quota::QuotaStatusCode status,
+void FileSystemOperation::DelayedOpenFileForQuota(int file_flags,
+                                                  quota::QuotaStatusCode status,
                                                   int64 usage, int64 quota) {
   operation_context_.set_allowed_bytes_growth(quota - usage);
 
@@ -482,13 +491,12 @@ void FileSystemOperation::DelayedOpenFileForQuota(quota::QuotaStatusCode status,
       proxy_,
       base::Bind(&FileSystemFileUtil::CreateOrOpen,
                  base::Unretained(operation_context_.src_file_util()),
-                 base::Unretained(&operation_context_),
-                 src_virtual_path_, file_flags_),
+                 &operation_context_,
+                 src_virtual_path_, file_flags),
       base::Bind(&FileSystemFileUtil::Close,
                  base::Unretained(operation_context_.src_file_util()),
-                 base::Unretained(&operation_context_)),
-      base::Bind(&FileSystemOperation::DidOpenFile,
-                 weak_factory_.GetWeakPtr()));
+                 &operation_context_),
+      base::Bind(&FileSystemOperation::DidOpenFile, base::Owned(this)));
 }
 
 void FileSystemOperation::SyncGetPlatformPath(const GURL& path,
@@ -569,6 +577,8 @@ void FileSystemOperation::DidGetRootPath(
     const FilePath& path, const std::string& name) {
   DCHECK(success || path.empty());
   GURL result;
+  if (!dispatcher_.get())
+    return;
   // We ignore the path, and return a URL instead.  The point was just to verify
   // that we could create/find the path.
   if (success) {
@@ -576,9 +586,7 @@ void FileSystemOperation::DidGetRootPath(
         operation_context_.src_origin_url(),
         operation_context_.src_type());
   }
-  if (dispatcher_.get())
-    dispatcher_->DidOpenFileSystem(name, result);
-  delete this;
+  dispatcher_->DidOpenFileSystem(name, result);
 }
 
 void FileSystemOperation::DidEnsureFileExistsExclusive(
@@ -586,7 +594,6 @@ void FileSystemOperation::DidEnsureFileExistsExclusive(
   if (rv == base::PLATFORM_FILE_OK && !created) {
     if (dispatcher_.get())
       dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_EXISTS);
-    delete this;
   } else {
     DidFinishFileOperation(rv);
   }
@@ -613,17 +620,14 @@ void FileSystemOperation::DidFinishFileOperation(
     else
       dispatcher_->DidFail(rv);
   }
-  delete this;
 }
 
 void FileSystemOperation::DidDirectoryExists(
     base::PlatformFileError rv,
     const base::PlatformFileInfo& file_info,
     const FilePath& unused) {
-  if (!dispatcher_.get()) {
-    delete this;
+  if (!dispatcher_.get())
     return;
-  }
   if (rv == base::PLATFORM_FILE_OK) {
     if (file_info.is_directory)
       dispatcher_->DidSucceed();
@@ -632,17 +636,14 @@ void FileSystemOperation::DidDirectoryExists(
   } else {
     dispatcher_->DidFail(rv);
   }
-  delete this;
 }
 
 void FileSystemOperation::DidFileExists(
     base::PlatformFileError rv,
     const base::PlatformFileInfo& file_info,
     const FilePath& unused) {
-  if (!dispatcher_.get()) {
-    delete this;
+  if (!dispatcher_.get())
     return;
-  }
   if (rv == base::PLATFORM_FILE_OK) {
     if (file_info.is_directory)
       dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_NOT_A_FILE);
@@ -651,37 +652,30 @@ void FileSystemOperation::DidFileExists(
   } else {
     dispatcher_->DidFail(rv);
   }
-  delete this;
 }
 
 void FileSystemOperation::DidGetMetadata(
     base::PlatformFileError rv,
     const base::PlatformFileInfo& file_info,
     const FilePath& platform_path) {
-  if (!dispatcher_.get()) {
-    delete this;
+  if (!dispatcher_.get())
     return;
-  }
   if (rv == base::PLATFORM_FILE_OK)
     dispatcher_->DidReadMetadata(file_info, platform_path);
   else
     dispatcher_->DidFail(rv);
-  delete this;
 }
 
 void FileSystemOperation::DidReadDirectory(
     base::PlatformFileError rv,
     const std::vector<base::FileUtilProxy::Entry>& entries) {
-  if (!dispatcher_.get()) {
-    delete this;
+  if (!dispatcher_.get())
     return;
-  }
 
   if (rv == base::PLATFORM_FILE_OK)
     dispatcher_->DidReadDirectory(entries, false /* has_more */);
   else
     dispatcher_->DidFail(rv);
-  delete this;
 }
 
 void FileSystemOperation::DidWrite(
@@ -701,42 +695,33 @@ void FileSystemOperation::DidWrite(
 }
 
 void FileSystemOperation::DidTouchFile(base::PlatformFileError rv) {
-  if (!dispatcher_.get()) {
-    delete this;
+  if (!dispatcher_.get())
     return;
-  }
   if (rv == base::PLATFORM_FILE_OK)
     dispatcher_->DidSucceed();
   else
     dispatcher_->DidFail(rv);
-  delete this;
 }
 
 void FileSystemOperation::DidOpenFile(
     base::PlatformFileError rv,
     base::PassPlatformFile file,
     bool unused) {
-  if (!dispatcher_.get()) {
-    delete this;
+  if (!dispatcher_.get())
     return;
-  }
   if (rv == base::PLATFORM_FILE_OK)
     dispatcher_->DidOpenFile(file.ReleaseValue(), peer_handle_);
   else
     dispatcher_->DidFail(rv);
-  delete this;
 }
 
 void FileSystemOperation::OnFileOpenedForWrite(
     base::PlatformFileError rv,
     base::PassPlatformFile file,
     bool created) {
-  if (!dispatcher_.get()) {
-    delete this;
-    return;
-  }
-  if (base::PLATFORM_FILE_OK != rv) {
-    dispatcher_->DidFail(rv);
+  if (base::PLATFORM_FILE_OK != rv || !dispatcher_.get()) {
+    if (dispatcher_.get())
+      dispatcher_->DidFail(rv);
     delete this;
     return;
   }
