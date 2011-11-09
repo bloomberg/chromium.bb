@@ -536,8 +536,7 @@
   fun:ff_thread_decode_frame
   fun:avcodec_decode_video2
   ...
-  fun:media::FFmpegVideoDecodeEngine::DecodeFrame
-  fun:media::FFmpegVideoDecodeEngine::ConsumeVideoSample
+  fun:media::FFmpegVideoDecodeEngine::Decode*
 }
 {
   bug_93932_c
@@ -570,7 +569,7 @@
   fun:ff_thread_decode_frame
   fun:avcodec_decode_video2
   fun:avcodec_decode_video2
-  fun:media::FFmpegVideoDecodeEngine::DecodeFrame
+  fun:media::FFmpegVideoDecodeEngine::Decode*
 }
 {
   bug_93932_g
