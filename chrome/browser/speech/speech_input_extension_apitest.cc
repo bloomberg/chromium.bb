@@ -6,8 +6,8 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/speech_input/extension_speech_input_api.h"
-#include "chrome/browser/extensions/speech_input/extension_speech_input_manager.h"
+#include "chrome/browser/speech/speech_input_extension_api.h"
+#include "chrome/browser/speech/speech_input_extension_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -22,11 +22,11 @@ class URLRequestContextGetter;
 }
 
 // Mock class used to test the extension speech input API.
-class ExtensionSpeechInputApiTest : public ExtensionApiTest,
-                                    public ExtensionSpeechInterface {
+class SpeechInputExtensionApiTest : public ExtensionApiTest,
+                                    public SpeechInputExtensionInterface {
  public:
-  ExtensionSpeechInputApiTest();
-  virtual ~ExtensionSpeechInputApiTest();
+  SpeechInputExtensionApiTest();
+  virtual ~SpeechInputExtensionApiTest();
 
   void SetRecordingDevicesAvailable(bool available) {
     recording_devices_available_ = available;
@@ -53,7 +53,7 @@ class ExtensionSpeechInputApiTest : public ExtensionApiTest,
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
 
-  // ExtensionSpeechInterface methods.
+  // SpeechInputExtensionInterface methods.
   virtual bool HasAudioInputDevices() OVERRIDE {
     return recording_devices_available_;
   }
@@ -77,8 +77,8 @@ class ExtensionSpeechInputApiTest : public ExtensionApiTest,
 
   virtual void StopRecording(bool recognition_failed) OVERRIDE;
 
-  ExtensionSpeechInputManager* GetManager() {
-    return ExtensionSpeechInputManager::GetForProfile(browser()->profile());
+  SpeechInputExtensionManager* GetManager() {
+    return SpeechInputExtensionManager::GetForProfile(browser()->profile());
   }
 
   // Auxiliary class used to hook the API manager into the test during its
@@ -86,17 +86,17 @@ class ExtensionSpeechInputApiTest : public ExtensionApiTest,
   // or tear down callbacks, or during the test class construction.
   class AutoManagerHook {
    public:
-    explicit AutoManagerHook(ExtensionSpeechInputApiTest* test)
+    explicit AutoManagerHook(SpeechInputExtensionApiTest* test)
         : test_(test) {
-      test_->GetManager()->SetExtensionSpeechInterface(test_);
+      test_->GetManager()->SetSpeechInputExtensionInterface(test_);
     }
 
     ~AutoManagerHook() {
-      test_->GetManager()->SetExtensionSpeechInterface(NULL);
+      test_->GetManager()->SetSpeechInputExtensionInterface(NULL);
     }
 
    private:
-    ExtensionSpeechInputApiTest* test_;
+    SpeechInputExtensionApiTest* test_;
   };
 
  private:
@@ -109,17 +109,17 @@ class ExtensionSpeechInputApiTest : public ExtensionApiTest,
   int result_delay_ms_;
 };
 
-ExtensionSpeechInputApiTest::ExtensionSpeechInputApiTest()
+SpeechInputExtensionApiTest::SpeechInputExtensionApiTest()
     : recording_devices_available_(true),
       recognizer_is_valid_(false),
       next_error_(speech_input::kErrorNone),
       result_delay_ms_(0) {
 }
 
-ExtensionSpeechInputApiTest::~ExtensionSpeechInputApiTest() {
+SpeechInputExtensionApiTest::~SpeechInputExtensionApiTest() {
 }
 
-void ExtensionSpeechInputApiTest::StartRecording(
+void SpeechInputExtensionApiTest::StartRecording(
       speech_input::SpeechRecognizerDelegate* delegate,
       net::URLRequestContextGetter* context_getter,
       int caller_id,
@@ -131,28 +131,28 @@ void ExtensionSpeechInputApiTest::StartRecording(
 
   // Notify that recording started.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::Bind(&ExtensionSpeechInputManager::DidStartReceivingAudio,
+      base::Bind(&SpeechInputExtensionManager::DidStartReceivingAudio,
       GetManager(), caller_id), 0);
 
   // Notify sound start in the input device.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::Bind(&ExtensionSpeechInputManager::DidStartReceivingSpeech,
+      base::Bind(&SpeechInputExtensionManager::DidStartReceivingSpeech,
       GetManager(), caller_id), 0);
 
   if (result_delay_ms_ != kDontDispatchCall) {
     // Dispatch the recognition results.
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        base::Bind(&ExtensionSpeechInputApiTest::ProvideResults, this,
+        base::Bind(&SpeechInputExtensionApiTest::ProvideResults, this,
         caller_id), result_delay_ms_);
   }
 }
 
-void ExtensionSpeechInputApiTest::StopRecording(bool recognition_failed) {
+void SpeechInputExtensionApiTest::StopRecording(bool recognition_failed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   recognizer_is_valid_ = false;
 }
 
-void ExtensionSpeechInputApiTest::ProvideResults(int caller_id) {
+void SpeechInputExtensionApiTest::ProvideResults(int caller_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (next_error_ != speech_input::kErrorNone) {
@@ -165,21 +165,21 @@ void ExtensionSpeechInputApiTest::ProvideResults(int caller_id) {
 }
 
 // Every test should leave the manager in the idle state when finished.
-IN_PROC_BROWSER_TEST_F(ExtensionSpeechInputApiTest, StartStopTest) {
+IN_PROC_BROWSER_TEST_F(SpeechInputExtensionApiTest, StartStopTest) {
   AutoManagerHook hook(this);
 
   SetRecognitionDelay(kDontDispatchCall);
   ASSERT_TRUE(RunExtensionTest("speech_input/start_stop")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionSpeechInputApiTest, NoDevicesAvailable) {
+IN_PROC_BROWSER_TEST_F(SpeechInputExtensionApiTest, NoDevicesAvailable) {
   AutoManagerHook hook(this);
 
   SetRecordingDevicesAvailable(false);
   ASSERT_TRUE(RunExtensionTest("speech_input/start_error")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionSpeechInputApiTest, RecognitionSuccessful) {
+IN_PROC_BROWSER_TEST_F(SpeechInputExtensionApiTest, RecognitionSuccessful) {
   AutoManagerHook hook(this);
 
   speech_input::SpeechInputResult result;
@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSpeechInputApiTest, RecognitionSuccessful) {
   ASSERT_TRUE(RunExtensionTest("speech_input/recognition")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionSpeechInputApiTest, RecognitionError) {
+IN_PROC_BROWSER_TEST_F(SpeechInputExtensionApiTest, RecognitionError) {
   AutoManagerHook hook(this);
 
   SetRecognitionError(speech_input::kErrorNetwork);

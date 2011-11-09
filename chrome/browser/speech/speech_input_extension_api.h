@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_SPEECH_INPUT_EXTENSION_SPEECH_INPUT_API_H_
-#define CHROME_BROWSER_EXTENSIONS_SPEECH_INPUT_EXTENSION_SPEECH_INPUT_API_H_
+#ifndef CHROME_BROWSER_SPEECH_SPEECH_INPUT_EXTENSION_API_H_
+#define CHROME_BROWSER_SPEECH_SPEECH_INPUT_EXTENSION_API_H_
 #pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/notification_observer.h"
 
-class ExtensionSpeechInputManager;
+class SpeechInputExtensionManager;
 
 // Handles asynchronous operations such as starting or stopping speech
 // recognition in the framework of the extension API state machine.
@@ -69,4 +69,4 @@ class IsRecordingSpeechInputFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.speechInput.isRecording");
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_SPEECH_INPUT_EXTENSION_SPEECH_INPUT_API_H_
+#endif  // CHROME_BROWSER_SPEECH_SPEECH_INPUT_EXTENSION_API_H_
