@@ -2,31 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "chrome/browser/ui/browser.h"
+#include "base/test/test_timeouts.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/ui/javascript_test_util.h"
+#include "chrome/test/ui/ui_test.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_util.h"
 
 namespace {
 
-class WebGLConformanceTests : public InProcessBrowserTest {
+class WebGLConformanceTests : public UITest {
  public:
-  WebGLConformanceTests() {}
-
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    // This enables DOM automation for tab contents.
-    EnableDOMAutomation();
-
-    // Allow privileged WebGL extensions.
-    command_line->AppendSwitch(switches::kEnablePrivilegedWebGLExtensions);
+  WebGLConformanceTests() {
+    show_window_ = true;
+    dom_automation_enabled_ = true;
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() {
+  void SetUp() {
+    // Ensure that a GPU bot is never blacklisted.
+    launch_arguments_.AppendSwitch(switches::kIgnoreGpuBlacklist);
+    UITest::SetUp();
+  }
+
+  void RunTest(const std::string& url) {
     FilePath webgl_conformance_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &webgl_conformance_path);
     webgl_conformance_path = webgl_conformance_path.Append(
@@ -36,29 +38,42 @@ class WebGLConformanceTests : public InProcessBrowserTest {
     ASSERT_TRUE(file_util::DirectoryExists(webgl_conformance_path))
         << "Missing conformance tests: " << webgl_conformance_path.value();
 
-    PathService::Get(chrome::DIR_TEST_DATA, &test_path_);
-    test_path_ = test_path_.Append(FILE_PATH_LITERAL("gpu"));
-    test_path_ = test_path_.Append(FILE_PATH_LITERAL("webgl_conformance.html"));
+    FilePath test_path;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_path);
+    test_path = test_path.Append(FILE_PATH_LITERAL("gpu"));
+    test_path = test_path.Append(FILE_PATH_LITERAL("webgl_conformance.html"));
+
+    scoped_refptr<TabProxy> tab(GetActiveTab());
+    ASSERT_TRUE(tab.get());
+
+    ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
+              tab->NavigateToURL(net::FilePathToFileURL(test_path)));
+
+    ASSERT_TRUE(tab->NavigateToURLAsync(
+        GURL("javascript:start('" + url + "');")));
+
+    // Block until the test completes.
+    ASSERT_TRUE(WaitUntilJavaScriptCondition(
+        tab, L"", L"window.domAutomationController.send(!running);",
+        TestTimeouts::large_test_timeout_ms()));
+
+    // Read out the test result.
+    std::wstring result, message;
+    ASSERT_TRUE(tab->ExecuteAndExtractString(
+        L"",
+        L"window.domAutomationController.send(JSON.stringify(result));",
+        &result));
+    ASSERT_TRUE(tab->ExecuteAndExtractString(
+        L"",
+        L"window.domAutomationController.send(message);",
+        &message));
+
+    EXPECT_EQ(WideToUTF8(result),"true") << WideToUTF8(message);
   }
-
-  void RunTest(const std::string& url) {
-    ui_test_utils::DOMMessageQueue message_queue;
-    ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_path_));
-    ui_test_utils::NavigateToURL(
-        browser(), GURL("javascript:start('" + url + "');"));
-
-    std::string message;
-    // Wait for message indicating the test has finished running.
-    ASSERT_TRUE(message_queue.WaitForMessage(&message));
-    EXPECT_STREQ("\"SUCCESS\"", message.c_str()) << message;
-  }
-
- private:
-  FilePath test_path_;
 };
 
 #define CONFORMANCE_TEST(name, url) \
-IN_PROC_BROWSER_TEST_F(WebGLConformanceTests, name) { \
+TEST_F(WebGLConformanceTests, name) { \
   RunTest(url); \
 }
 
