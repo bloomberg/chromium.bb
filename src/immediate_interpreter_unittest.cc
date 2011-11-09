@@ -166,13 +166,13 @@ TEST(ImmediateInterpreterTest, ScrollUpTest) {
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
     {0, 0, 0, 0, 24, 0, 400, 900, 1},
-    {0, 0, 0, 0, 52, 0, 405, 900, 2},
+    {0, 0, 0, 0, 92, 0, 405, 900, 2},
 
     {0, 0, 0, 0, 24, 0, 400, 800, 1},
-    {0, 0, 0, 0, 52, 0, 405, 800, 2},
+    {0, 0, 0, 0, 92, 0, 405, 800, 2},
 
     {0, 0, 0, 0, 24, 0, 400, 700, 1},
-    {0, 0, 0, 0, 52, 0, 405, 700, 2},
+    {0, 0, 0, 0, 92, 0, 405, 700, 2},
   };
   HardwareState hardware_states[] = {
     // time, buttons, finger count, touch count, finger states pointer

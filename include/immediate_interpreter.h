@@ -55,6 +55,15 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainTest);
  public:
+  struct Point {
+    Point() : x_(0.0), y_(0.0) {}
+    Point(float x, float y) : x_(x), y_(y) {}
+    bool operator==(const Point& that) const {
+      return x_ == that.x_ && y_ == that.y_;
+    }
+    bool operator!=(const Point& that) const { return !((*this) == that); }
+    float x_, y_;
+  };
   enum TapToClickState {
     kTtcIdle,
     kTtcFirstTapBegan,
@@ -123,6 +132,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Reads the wiggle_recs_ data to see if a given finger is being suppressed
   // from moving.
   bool WiggleSuppressed(short tracking_id) const;
+
+  // Returns the square of the distance that this contact has travelled since
+  // fingers changed.
+  float DistanceTravelledSq(const FingerState& fs) const;
 
   // Updates thumb_ below.
   void UpdateThumbState(const HardwareState& hwstate);
@@ -215,7 +228,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   // When fingers change, we keep track of where they started.
   // Map: Finger ID -> (x, y) coordinate
-  map<short, std::pair<int, int>, kMaxFingers> start_positions_;
+  map<short, Point, kMaxFingers> start_positions_;
 
   // Same fingers state. This state is accumulated as fingers remain the same
   // and it's reset when fingers change.
@@ -278,6 +291,12 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // If two fingers have a pressure difference greater than this, we assume
   // one is a thumb.
   DoubleProperty two_finger_pressure_diff_thresh_;
+  // If a large contact moves more than this much times the lowest-pressure
+  // contact, consider it not to be a thumb.
+  DoubleProperty thumb_movement_factor_;
+  // This much time after fingers change, stop allowing contacts classified
+  // as thumb to be classified as non-thumb.
+  DoubleProperty thumb_eval_timeout_;
   // Maximum distance [mm] two fingers may be separated and still be eligible
   // for a two-finger gesture (e.g., scroll / tap / click)
   DoubleProperty two_finger_close_distance_thresh_;

@@ -143,6 +143,8 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       two_finger_pressure_diff_thresh_(prop_reg,
                                        "Two Finger Pressure Diff Thresh",
                                        32.0),
+      thumb_movement_factor_(prop_reg, "Thumb Movement Factor", 0.5),
+      thumb_eval_timeout_(prop_reg, "Thumb Evaluation Timeout", 0.06),
       two_finger_close_distance_thresh_(prop_reg,
                                         "Two Finger Close Distance Thresh",
                                         40.0),
@@ -367,29 +369,49 @@ bool ImmediateInterpreter::WiggleSuppressed(short tracking_id) const {
   return (*it).second.suppress_inc_press_  || (*it).second.suppress_dec_press_;
 }
 
+float ImmediateInterpreter::DistanceTravelledSq(const FingerState& fs) const {
+  map<short, Point, kMaxFingers>::const_iterator it =
+      start_positions_.find(fs.tracking_id);
+  if (it == start_positions_.end())
+    return 0.0;
+  float dx = fs.position_x - (*it).second.x_;
+  float dy = fs.position_y - (*it).second.y_;
+  return dx * dx + dy * dy;
+}
+
 // Updates thumb_ below.
 void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
   // Remove old ids from thumb_
   RemoveMissingIdsFromMap(&thumb_, hwstate);
   float min_pressure = INFINITY;
+  const FingerState* min_fs = NULL;
   for (size_t i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
     if (SetContainsValue(palm_, fs.tracking_id))
       continue;
-    if (fs.pressure < min_pressure)
+    if (fs.pressure < min_pressure) {
       min_pressure = fs.pressure;
+      min_fs = &fs;
+    }
   }
+  if (!min_fs)
+    // Only palms on the touchpad
+    return;
+  float thumb_dist_sq_thresh = DistanceTravelledSq(*min_fs) *
+      thumb_movement_factor_.val_ * thumb_movement_factor_.val_;
   // Make all large-pressure contacts thumbs
   for (size_t i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
     if (SetContainsValue(palm_, fs.tracking_id))
       continue;
     if (fs.pressure > (min_pressure + two_finger_pressure_diff_thresh_.val_)) {
-      if (!MapContainsKey(thumb_, fs.tracking_id))
+      float dist_sq = DistanceTravelledSq(fs);
+      if (dist_sq < thumb_dist_sq_thresh &&
+          !MapContainsKey(thumb_, fs.tracking_id))
         thumb_[fs.tracking_id] = hwstate.timestamp;
     } else if (MapContainsKey(thumb_, fs.tracking_id) &&
                hwstate.timestamp <
-               thumb_[fs.tracking_id] + change_timeout_.val_) {
+               thumb_[fs.tracking_id] + thumb_eval_timeout_.val_) {
       thumb_.erase(fs.tracking_id);
     }
   }
@@ -479,12 +501,13 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
 bool ImmediateInterpreter::TwoFingersGesturing(
     const FingerState& finger1,
     const FingerState& finger2) const {
-  // First, make sure the pressure difference isn't too great
+  // Make sure the pressure difference isn't too great for vertically
+  // aligned contacts
   float pdiff = fabsf(finger1.pressure - finger2.pressure);
-  if (pdiff > two_finger_pressure_diff_thresh_.val_)
-    return false;
   float xdist = fabsf(finger1.position_x - finger2.position_x);
   float ydist = fabsf(finger1.position_y - finger2.position_y);
+  if (pdiff > two_finger_pressure_diff_thresh_.val_ && ydist > xdist)
+    return false;
 
   // Next, make sure distance between fingers isn't too great
   if ((xdist * xdist + ydist * ydist) >
@@ -505,13 +528,13 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
     const FingerState& finger2) {
   // Compute distance traveled since fingers changed for each finger
   float dx1 = finger1.position_x -
-      start_positions_[finger1.tracking_id].first;
+      start_positions_[finger1.tracking_id].x_;
   float dy1 = finger1.position_y -
-      start_positions_[finger1.tracking_id].second;
+      start_positions_[finger1.tracking_id].y_;
   float dx2 = finger2.position_x -
-      start_positions_[finger2.tracking_id].first;
+      start_positions_[finger2.tracking_id].x_;
   float dy2 = finger2.position_y -
-      start_positions_[finger2.tracking_id].second;
+      start_positions_[finger2.tracking_id].y_;
 
   float large_dx = MaxMag(dx1, dx2);
   float large_dy = MaxMag(dy1, dy2);
@@ -854,7 +877,7 @@ bool ImmediateInterpreter::FingerInDampenedZone(
 void ImmediateInterpreter::FillStartPositions(const HardwareState& hwstate) {
   for (short i = 0; i < hwstate.finger_cnt; i++)
     start_positions_[hwstate.fingers[i].tracking_id] =
-        make_pair(hwstate.fingers[i].position_x, hwstate.fingers[i].position_y);
+        Point(hwstate.fingers[i].position_x, hwstate.fingers[i].position_y);
 }
 
 int ImmediateInterpreter::EvaluateButtonType(
