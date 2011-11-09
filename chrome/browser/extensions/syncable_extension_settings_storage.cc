@@ -29,83 +29,84 @@ SyncableExtensionSettingsStorage::~SyncableExtensionSettingsStorage() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-ExtensionSettingsStorage::Result SyncableExtensionSettingsStorage::Get(
+ExtensionSettingsStorage::ReadResult SyncableExtensionSettingsStorage::Get(
     const std::string& key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   return delegate_->Get(key);
 }
 
-ExtensionSettingsStorage::Result SyncableExtensionSettingsStorage::Get(
+ExtensionSettingsStorage::ReadResult SyncableExtensionSettingsStorage::Get(
     const std::vector<std::string>& keys) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   return delegate_->Get(keys);
 }
 
-ExtensionSettingsStorage::Result SyncableExtensionSettingsStorage::Get() {
+ExtensionSettingsStorage::ReadResult SyncableExtensionSettingsStorage::Get() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   return delegate_->Get();
 }
 
-ExtensionSettingsStorage::Result SyncableExtensionSettingsStorage::Set(
+ExtensionSettingsStorage::WriteResult SyncableExtensionSettingsStorage::Set(
     const std::string& key, const Value& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  Result result = delegate_->Set(key, value);
+  WriteResult result = delegate_->Set(key, value);
   if (result.HasError()) {
     return result;
   }
-  if (sync_processor_ && !result.GetChangedKeys()->empty()) {
-    SendAddsOrUpdatesToSync(*result.GetChangedKeys(), *result.GetSettings());
+  if (sync_processor_ && !result.changes().empty()) {
+    SendChangesToSync(result.changes());
   }
   return result;
 }
 
-ExtensionSettingsStorage::Result SyncableExtensionSettingsStorage::Set(
+ExtensionSettingsStorage::WriteResult SyncableExtensionSettingsStorage::Set(
     const DictionaryValue& values) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  Result result = delegate_->Set(values);
+  WriteResult result = delegate_->Set(values);
   if (result.HasError()) {
     return result;
   }
-  if (sync_processor_ && !result.GetChangedKeys()->empty()) {
-    SendAddsOrUpdatesToSync(*result.GetChangedKeys(), *result.GetSettings());
+  if (sync_processor_ && !result.changes().empty()) {
+    SendChangesToSync(result.changes());
   }
   return result;
 }
 
-ExtensionSettingsStorage::Result SyncableExtensionSettingsStorage::Remove(
+ExtensionSettingsStorage::WriteResult SyncableExtensionSettingsStorage::Remove(
     const std::string& key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  Result result = delegate_->Remove(key);
+  WriteResult result = delegate_->Remove(key);
   if (result.HasError()) {
     return result;
   }
-  if (sync_processor_ && !result.GetChangedKeys()->empty()) {
-    SendDeletesToSync(*result.GetChangedKeys());
+  if (sync_processor_ && !result.changes().empty()) {
+    SendChangesToSync(result.changes());
   }
   return result;
 }
 
-ExtensionSettingsStorage::Result SyncableExtensionSettingsStorage::Remove(
+ExtensionSettingsStorage::WriteResult SyncableExtensionSettingsStorage::Remove(
     const std::vector<std::string>& keys) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  Result result = delegate_->Remove(keys);
+  WriteResult result = delegate_->Remove(keys);
   if (result.HasError()) {
     return result;
   }
-  if (sync_processor_ && !result.GetChangedKeys()->empty()) {
-    SendDeletesToSync(*result.GetChangedKeys());
+  if (sync_processor_ && !result.changes().empty()) {
+    SendChangesToSync(result.changes());
   }
   return result;
 }
 
-ExtensionSettingsStorage::Result SyncableExtensionSettingsStorage::Clear() {
+ExtensionSettingsStorage::WriteResult
+SyncableExtensionSettingsStorage::Clear() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  Result result = delegate_->Clear();
+  WriteResult result = delegate_->Clear();
   if (result.HasError()) {
     return result;
   }
-  if (sync_processor_ && !result.GetChangedKeys()->empty()) {
-    SendDeletesToSync(*result.GetChangedKeys());
+  if (sync_processor_ && !result.changes().empty()) {
+    SendChangesToSync(result.changes());
   }
   return result;
 }
@@ -126,19 +127,18 @@ SyncError SyncableExtensionSettingsStorage::StartSyncing(
   sync_type_ = type;
   sync_processor_ = sync_processor;
 
-  Result maybe_settings = delegate_->Get();
+  ReadResult maybe_settings = delegate_->Get();
   if (maybe_settings.HasError()) {
     return SyncError(
         FROM_HERE,
-        std::string("Failed to get settings: ") + maybe_settings.GetError(),
+        std::string("Failed to get settings: ") + maybe_settings.error(),
         type);
   }
 
-  const DictionaryValue* settings = maybe_settings.GetSettings();
   if (sync_state.empty()) {
-    return SendLocalSettingsToSync(*settings);
+    return SendLocalSettingsToSync(maybe_settings.settings());
   }
-  return OverwriteLocalSettingsWithSync(sync_state, *settings);
+  return OverwriteLocalSettingsWithSync(sync_state, maybe_settings.settings());
 }
 
 SyncError SyncableExtensionSettingsStorage::SendLocalSettingsToSync(
@@ -247,7 +247,7 @@ std::vector<SyncError> SyncableExtensionSettingsStorage::ProcessSyncChanges(
   DCHECK(!sync_changes.empty()) << "No sync changes for " << extension_id_;
 
   std::vector<SyncError> errors;
-  ExtensionSettingChanges::Builder changes;
+  ExtensionSettingChangeList changes;
 
   for (ExtensionSettingSyncDataList::const_iterator it = sync_changes.begin();
       it != sync_changes.end(); ++it) {
@@ -258,21 +258,18 @@ std::vector<SyncError> SyncableExtensionSettingsStorage::ProcessSyncChanges(
 
     scoped_ptr<Value> current_value;
     {
-      Result maybe_settings = Get(it->key());
+      ReadResult maybe_settings = Get(it->key());
       if (maybe_settings.HasError()) {
         errors.push_back(SyncError(
             FROM_HERE,
             std::string("Error getting current sync state for ") +
-                extension_id_ + "/" + key + ": " + maybe_settings.GetError(),
+                extension_id_ + "/" + key + ": " + maybe_settings.error(),
             sync_type_));
         continue;
       }
-      const DictionaryValue* settings = maybe_settings.GetSettings();
-      if (settings) {
-        Value* value = NULL;
-        if (settings->GetWithoutPathExpansion(key, &value)) {
-          current_value.reset(value->DeepCopy());
-        }
+      Value* value = NULL;
+      if (maybe_settings.settings().GetWithoutPathExpansion(key, &value)) {
+        current_value.reset(value->DeepCopy());
       }
     }
 
@@ -325,76 +322,65 @@ std::vector<SyncError> SyncableExtensionSettingsStorage::ProcessSyncChanges(
 
   observers_->Notify(
       &ExtensionSettingsObserver::OnSettingsChanged,
-      static_cast<Profile*>(NULL),
       extension_id_,
-      changes.Build());
+      ExtensionSettingChange::GetEventJson(changes));
 
   return errors;
 }
 
-void SyncableExtensionSettingsStorage::SendAddsOrUpdatesToSync(
-    const std::set<std::string>& changed_keys,
-    const DictionaryValue& settings) {
+void SyncableExtensionSettingsStorage::SendChangesToSync(
+    const ExtensionSettingChangeList& changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(sync_processor_);
-  DCHECK(!changed_keys.empty());
+  DCHECK(!changes.empty());
 
-  SyncChangeList changes;
-  for (std::set<std::string>::const_iterator it = changed_keys.begin();
-      it != changed_keys.end(); ++it) {
-    Value* value = NULL;
-    settings.GetWithoutPathExpansion(*it, &value);
-    DCHECK(value);
-    if (synced_keys_.count(*it)) {
-      // Key is synced, send ACTION_UPDATE to sync.
-      changes.push_back(
-          extension_settings_sync_util::CreateUpdate(
-              extension_id_, *it, *value));
+  SyncChangeList sync_changes;
+  std::set<std::string> added_keys;
+  std::set<std::string> deleted_keys;
+
+  for (ExtensionSettingChangeList::const_iterator it = changes.begin();
+      it != changes.end(); ++it) {
+    const std::string& key = it->key();
+    const Value* value = it->new_value();
+    if (value) {
+      if (synced_keys_.count(key)) {
+        // New value, key is synced; send ACTION_UPDATE.
+        sync_changes.push_back(
+            extension_settings_sync_util::CreateUpdate(
+                extension_id_, key, *value));
+      } else {
+        // New value, key is not synced; send ACTION_ADD.
+        sync_changes.push_back(
+            extension_settings_sync_util::CreateAdd(
+                extension_id_, key, *value));
+        added_keys.insert(key);
+      }
     } else {
-      // Key is not synced, send ACTION_ADD to sync.
-      changes.push_back(
-          extension_settings_sync_util::CreateAdd(extension_id_, *it, *value));
+      if (synced_keys_.count(key)) {
+        // Clearing value, key is synced; send ACTION_DELETE.
+        sync_changes.push_back(
+            extension_settings_sync_util::CreateDelete(extension_id_, key));
+        deleted_keys.insert(key);
+      } else {
+        LOG(WARNING) << "Deleted " << key << " but not in synced_keys_";
+      }
     }
   }
 
-  SyncError error = sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
+  if (sync_changes.empty()) {
+    return;
+  }
+
+  SyncError error =
+      sync_processor_->ProcessSyncChanges(FROM_HERE, sync_changes);
   if (error.IsSet()) {
     LOG(WARNING) << "Failed to send changes to sync: " << error.message();
     return;
   }
 
-  synced_keys_.insert(changed_keys.begin(), changed_keys.end());
-}
-
-void SyncableExtensionSettingsStorage::SendDeletesToSync(
-    const std::set<std::string>& keys) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(sync_processor_);
-  DCHECK(!keys.empty());
-
-  SyncChangeList changes;
-  for (std::set<std::string>::const_iterator it = keys.begin();
-      it != keys.end(); ++it) {
-    if (!synced_keys_.count(*it)) {
-      LOG(WARNING) << "Deleted " << *it << " but no entry in synced_keys";
-      continue;
-    }
-    changes.push_back(
-        extension_settings_sync_util::CreateDelete(extension_id_, *it));
-  }
-
-  if (changes.empty()) {
-    return;
-  }
-
-  SyncError error = sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
-  if (error.IsSet()) {
-    LOG(WARNING) << "Failed to send changes to sync: " << error.message();
-    return;
-  }
-
-  for (std::set<std::string>::const_iterator it = keys.begin();
-      it != keys.end(); ++it) {
+  synced_keys_.insert(added_keys.begin(), added_keys.end());
+  for (std::set<std::string>::iterator it = deleted_keys.begin();
+      it != deleted_keys.end(); ++it) {
     synced_keys_.erase(*it);
   }
 }
@@ -402,18 +388,18 @@ void SyncableExtensionSettingsStorage::SendDeletesToSync(
 SyncError SyncableExtensionSettingsStorage::OnSyncAdd(
     const std::string& key,
     Value* new_value,
-    ExtensionSettingChanges::Builder* changes) {
+    ExtensionSettingChangeList* changes) {
   DCHECK(new_value);
   synced_keys_.insert(key);
-  Result result = delegate_->Set(key, *new_value);
+  WriteResult result = delegate_->Set(key, *new_value);
   if (result.HasError()) {
     return SyncError(
         FROM_HERE,
         std::string("Error pushing sync add to local settings: ") +
-            result.GetError(),
+            result.error(),
         sync_type_);
   }
-  changes->AppendChange(key, NULL, new_value);
+  changes->push_back(ExtensionSettingChange(key, NULL, new_value));
   return SyncError();
 }
 
@@ -421,35 +407,35 @@ SyncError SyncableExtensionSettingsStorage::OnSyncUpdate(
     const std::string& key,
     Value* old_value,
     Value* new_value,
-    ExtensionSettingChanges::Builder* changes) {
+    ExtensionSettingChangeList* changes) {
   DCHECK(old_value);
   DCHECK(new_value);
-  Result result = delegate_->Set(key, *new_value);
+  WriteResult result = delegate_->Set(key, *new_value);
   if (result.HasError()) {
     return SyncError(
         FROM_HERE,
         std::string("Error pushing sync update to local settings: ") +
-            result.GetError(),
+            result.error(),
         sync_type_);
   }
-  changes->AppendChange(key, old_value, new_value);
+  changes->push_back(ExtensionSettingChange(key, old_value, new_value));
   return SyncError();
 }
 
 SyncError SyncableExtensionSettingsStorage::OnSyncDelete(
     const std::string& key,
     Value* old_value,
-    ExtensionSettingChanges::Builder* changes) {
+    ExtensionSettingChangeList* changes) {
   DCHECK(old_value);
   synced_keys_.erase(key);
-  Result result = delegate_->Remove(key);
+  WriteResult result = delegate_->Remove(key);
   if (result.HasError()) {
     return SyncError(
         FROM_HERE,
         std::string("Error pushing sync remove to local settings: ") +
-            result.GetError(),
+            result.error(),
         sync_type_);
   }
-  changes->AppendChange(key, old_value, NULL);
+  changes->push_back(ExtensionSettingChange(key, old_value, NULL));
   return SyncError();
 }

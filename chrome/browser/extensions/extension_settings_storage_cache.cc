@@ -9,25 +9,25 @@ ExtensionSettingsStorageCache::ExtensionSettingsStorageCache(
 
 ExtensionSettingsStorageCache::~ExtensionSettingsStorageCache() {}
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Get(
+ExtensionSettingsStorage::ReadResult ExtensionSettingsStorageCache::Get(
     const std::string& key) {
   Value *value;
   if (GetFromCache(key, &value)) {
     DictionaryValue* settings = new DictionaryValue();
     settings->SetWithoutPathExpansion(key, value);
-    return Result(settings, NULL, NULL);
+    return ReadResult(settings);
   }
 
-  Result result = delegate_->Get(key);
+  ReadResult result = delegate_->Get(key);
   if (result.HasError()) {
     return result;
   }
 
-  cache_.MergeDictionary(result.GetSettings());
+  cache_.MergeDictionary(&result.settings());
   return result;
 }
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Get(
+ExtensionSettingsStorage::ReadResult ExtensionSettingsStorageCache::Get(
     const std::vector<std::string>& keys) {
   scoped_ptr<DictionaryValue> from_cache(new DictionaryValue());
   std::vector<std::string> missing_keys;
@@ -43,84 +43,78 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Get(
   }
 
   if (missing_keys.empty()) {
-    return Result(from_cache.release(), NULL, NULL);
+    return ReadResult(from_cache.release());
   }
 
-  Result result = delegate_->Get(keys);
+  ReadResult result = delegate_->Get(missing_keys);
   if (result.HasError()) {
     return result;
   }
 
-  cache_.MergeDictionary(result.GetSettings());
-
-  DictionaryValue* settings_with_cache = result.GetSettings()->DeepCopy();
-  settings_with_cache->MergeDictionary(from_cache.get());
-  return Result(settings_with_cache, NULL, NULL);
+  cache_.MergeDictionary(&result.settings());
+  from_cache->MergeDictionary(&result.settings());
+  return ReadResult(from_cache.release());
 }
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Get() {
-  Result result = delegate_->Get();
+ExtensionSettingsStorage::ReadResult ExtensionSettingsStorageCache::Get() {
+  ReadResult result = delegate_->Get();
   if (!result.HasError()) {
-    cache_.MergeDictionary(result.GetSettings());
+    cache_.MergeDictionary(&result.settings());
   }
   return result;
 }
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Set(
+ExtensionSettingsStorage::WriteResult ExtensionSettingsStorageCache::Set(
     const std::string& key, const Value& value) {
-  Result result = delegate_->Set(key, value);
+  WriteResult result = delegate_->Set(key, value);
   if (!result.HasError()) {
-    cache_.MergeDictionary(result.GetSettings());
+    cache_.SetWithoutPathExpansion(key, value.DeepCopy());
   }
   return result;
 }
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Set(
+ExtensionSettingsStorage::WriteResult ExtensionSettingsStorageCache::Set(
     const DictionaryValue& settings) {
-  Result result = delegate_->Set(settings);
+  WriteResult result = delegate_->Set(settings);
   if (result.HasError()) {
     return result;
   }
 
-  const std::set<std::string>* changed_keys = result.GetChangedKeys();
-  DCHECK(changed_keys);
-  for (std::set<std::string>::const_iterator it = changed_keys->begin();
-      it != changed_keys->end(); ++it) {
-    Value* new_value = NULL;
-    result.GetSettings()->GetWithoutPathExpansion(*it, &new_value);
-    DCHECK(new_value);
-    cache_.SetWithoutPathExpansion(*it, new_value->DeepCopy());
+  for (ExtensionSettingChangeList::const_iterator it = result.changes().begin();
+      it != result.changes().end(); ++it) {
+    DCHECK(it->new_value());
+    cache_.SetWithoutPathExpansion(it->key(), it->new_value()->DeepCopy());
   }
+
   return result;
 }
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Remove(
+ExtensionSettingsStorage::WriteResult ExtensionSettingsStorageCache::Remove(
     const std::string& key) {
-  Result result = delegate_->Remove(key);
+  WriteResult result = delegate_->Remove(key);
   if (!result.HasError()) {
     cache_.RemoveWithoutPathExpansion(key, NULL);
   }
   return result;
 }
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Remove(
+ExtensionSettingsStorage::WriteResult ExtensionSettingsStorageCache::Remove(
     const std::vector<std::string>& keys) {
-  Result result = delegate_->Remove(keys);
+  WriteResult result = delegate_->Remove(keys);
   if (result.HasError()) {
     return result;
   }
 
-  const std::set<std::string>* changed_keys = result.GetChangedKeys();
-  DCHECK(changed_keys);
-  for (std::set<std::string>::const_iterator it = changed_keys->begin();
-      it != changed_keys->end(); ++it) {
-    cache_.RemoveWithoutPathExpansion(*it, NULL);
+  for (ExtensionSettingChangeList::const_iterator it = result.changes().begin();
+      it != result.changes().end(); ++it) {
+    cache_.RemoveWithoutPathExpansion(it->key(), NULL);
   }
+
   return result;
 }
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Clear() {
-  Result result = delegate_->Clear();
+ExtensionSettingsStorage::WriteResult ExtensionSettingsStorageCache::Clear() {
+  WriteResult result = delegate_->Clear();
   if (!result.HasError()) {
     cache_.Clear();
   }

@@ -80,31 +80,24 @@ void DeleteStorageOnFileThread(
 
 }  // namespace
 
-class ExtensionSettingsFrontend::DefaultObserver
-    : public ExtensionSettingsObserver {
- public:
-  explicit DefaultObserver(Profile* profile) : target_profile_(profile) {}
-  virtual ~DefaultObserver() {}
+// DefaultObserver.
 
-  virtual void OnSettingsChanged(
-      const Profile* origin_profile,
-      const std::string& extension_id,
-      const ExtensionSettingChanges& changes) OVERRIDE {
-    if (origin_profile != target_profile_) {
-      target_profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id,
-        extension_event_names::kOnSettingsChanged,
-        // This is the list of function arguments to pass to the onChanged
-        // handler of extensions, a single argument with the list of changes.
-        std::string("[") + changes.ToJson() + "]",
-        target_profile_,
-        GURL());
-    }
-  }
+ExtensionSettingsFrontend::DefaultObserver::DefaultObserver(Profile* profile)
+    : profile_(profile) {}
 
- private:
-  Profile* target_profile_;
-};
+ExtensionSettingsFrontend::DefaultObserver::~DefaultObserver() {}
+
+void ExtensionSettingsFrontend::DefaultObserver::OnSettingsChanged(
+    const std::string& extension_id, const std::string& changes_json) {
+  profile_->GetExtensionEventRouter()->DispatchEventToExtension(
+      extension_id,
+      extension_event_names::kOnSettingsChanged,
+      // This is the list of function arguments to pass to the onChanged
+      // handler of extensions, a single argument with the list of changes.
+      std::string("[") + changes_json + "]",
+      NULL,
+      GURL());
+}
 
 class ExtensionSettingsFrontend::Core
     : public base::RefCountedThreadSafe<Core> {
@@ -170,18 +163,12 @@ class ExtensionSettingsFrontend::Core
 ExtensionSettingsFrontend::ExtensionSettingsFrontend(Profile* profile)
     : profile_(profile),
       observers_(new ExtensionSettingsObserverList()),
+      default_observer_(profile),
       core_(new ExtensionSettingsFrontend::Core(observers_)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!profile->IsOffTheRecord());
 
-  // This class listens to all PROFILE_{CREATED,DESTROYED} events but we're
-  // only interested in those for the original Profile given on construction
-  // and its incognito version.
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-      content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-      content::NotificationService::AllBrowserContextsAndSources());
-  OnProfileCreated(profile);
+  observers_->AddObserver(&default_observer_);
 
   BrowserThread::PostTask(
       BrowserThread::FILE,
@@ -194,6 +181,7 @@ ExtensionSettingsFrontend::ExtensionSettingsFrontend(Profile* profile)
 
 ExtensionSettingsFrontend::~ExtensionSettingsFrontend() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  observers_->RemoveObserver(&default_observer_);
 }
 
 void ExtensionSettingsFrontend::RunWithSyncableService(
@@ -247,58 +235,4 @@ scoped_refptr<ExtensionSettingsObserverList>
 ExtensionSettingsFrontend::GetObservers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return observers_;
-}
-
-void ExtensionSettingsFrontend::Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  switch (type) {
-    case chrome::NOTIFICATION_PROFILE_CREATED:
-      OnProfileCreated(content::Source<Profile>(source).ptr());
-      break;
-    case chrome::NOTIFICATION_PROFILE_DESTROYED:
-      OnProfileDestroyed(content::Source<Profile>(source).ptr());
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
-void ExtensionSettingsFrontend::OnProfileCreated(Profile* new_profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (new_profile == profile_) {
-    ClearDefaultObserver(&original_profile_observer);
-    SetDefaultObserver(new_profile, &original_profile_observer);
-  } else if (new_profile->GetOriginalProfile() == profile_) {
-    DCHECK(new_profile->IsOffTheRecord());
-    ClearDefaultObserver(&incognito_profile_observer_);
-    SetDefaultObserver(new_profile, &incognito_profile_observer_);
-  }
-}
-
-void ExtensionSettingsFrontend::OnProfileDestroyed(Profile* old_profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (old_profile == profile_) {
-    ClearDefaultObserver(&original_profile_observer);
-  } else if (old_profile->GetOriginalProfile() == profile_) {
-    DCHECK(old_profile->IsOffTheRecord());
-    ClearDefaultObserver(&incognito_profile_observer_);
-  }
-}
-
-void ExtensionSettingsFrontend::SetDefaultObserver(
-    Profile* profile, scoped_ptr<DefaultObserver>* observer) {
-  DCHECK(!observer->get());
-  observer->reset(new DefaultObserver(profile));
-  observers_->AddObserver(observer->get());
-}
-
-void ExtensionSettingsFrontend::ClearDefaultObserver(
-    scoped_ptr<DefaultObserver>* observer) {
-  if (observer->get()) {
-    observers_->RemoveObserver(observer->get());
-    observer->reset();
-  }
 }

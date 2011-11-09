@@ -29,14 +29,14 @@ class SyncableExtensionSettingsStorage : public ExtensionSettingsStorage {
   virtual ~SyncableExtensionSettingsStorage();
 
   // ExtensionSettingsStorage implementation.
-  virtual Result Get(const std::string& key) OVERRIDE;
-  virtual Result Get(const std::vector<std::string>& keys) OVERRIDE;
-  virtual Result Get() OVERRIDE;
-  virtual Result Set(const std::string& key, const Value& value) OVERRIDE;
-  virtual Result Set(const DictionaryValue& settings) OVERRIDE;
-  virtual Result Remove(const std::string& key) OVERRIDE;
-  virtual Result Remove(const std::vector<std::string>& keys) OVERRIDE;
-  virtual Result Clear() OVERRIDE;
+  virtual ReadResult Get(const std::string& key) OVERRIDE;
+  virtual ReadResult Get(const std::vector<std::string>& keys) OVERRIDE;
+  virtual ReadResult Get() OVERRIDE;
+  virtual WriteResult Set(const std::string& key, const Value& value) OVERRIDE;
+  virtual WriteResult Set(const DictionaryValue& settings) OVERRIDE;
+  virtual WriteResult Remove(const std::string& key) OVERRIDE;
+  virtual WriteResult Remove(const std::vector<std::string>& keys) OVERRIDE;
+  virtual WriteResult Clear() OVERRIDE;
 
   // Sync-related methods, analogous to those on SyncableService (handled by
   // ExtensionSettings).
@@ -51,14 +51,9 @@ class SyncableExtensionSettingsStorage : public ExtensionSettingsStorage {
       const ExtensionSettingSyncDataList& sync_changes);
 
  private:
-  // Either adds to sync or send updates to sync for some settings.
-  // Whether they're adds or updates depends on the state of |synced_keys_|.
-  void SendAddsOrUpdatesToSync(
-      const std::set<std::string>& changed_keys,
-      const DictionaryValue& settings);
-
-  // Sends deletes to sync for some settings.
-  void SendDeletesToSync(const std::set<std::string>& keys);
+  // Propagates some changes to sync by sending an ADD/UPDATE/DELETE depending
+  // on the change and the current state of sync.
+  void SendChangesToSync(const ExtensionSettingChangeList& changes);
 
   // Sends all local settings to sync (synced settings assumed to be empty).
   SyncError SendLocalSettingsToSync(
@@ -73,16 +68,16 @@ class SyncableExtensionSettingsStorage : public ExtensionSettingsStorage {
   SyncError OnSyncAdd(
       const std::string& key,
       Value* new_value,
-      ExtensionSettingChanges::Builder* changes);
+      ExtensionSettingChangeList* changes);
   SyncError OnSyncUpdate(
       const std::string& key,
       Value* old_value,
       Value* new_value,
-      ExtensionSettingChanges::Builder* changes);
+      ExtensionSettingChangeList* changes);
   SyncError OnSyncDelete(
       const std::string& key,
       Value* old_value,
-      ExtensionSettingChanges::Builder* changes);
+      ExtensionSettingChangeList* changes);
 
   // List of observers to settings changes.
   const scoped_refptr<ObserverListThreadSafe<ExtensionSettingsObserver> >

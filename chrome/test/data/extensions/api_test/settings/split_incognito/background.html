@@ -3,14 +3,6 @@ var settings = chrome.experimental.settings;
 var assertEq = chrome.test.assertEq;
 var inIncognitoContext = chrome.extension.inIncognitoContext;
 
-// Returns a function that asserts a result is expected then runs a callback.
-function assertResultEq(expected, callback) {
-  return function(actual) {
-    chrome.test.assertEq(expected, actual);
-    callback();
-  };
-}
-
 // All notifications received.
 var notifications = [];
 settings.onChanged.addListener(function(changes) {
@@ -29,19 +21,25 @@ var testActions = {
     settings.get("", callback);
   },
   assertEmpty: function(callback) {
-    settings.get(null, assertResultEq({}, callback));
+    settings.get(null, function(settings) {
+      chrome.test.assertEq({}, settings);
+      callback();
+    });
   },
   assertFoo: function(callback) {
-    settings.get(null, assertResultEq({foo: "bar"}, callback));
+    settings.get(null, function(settings) {
+      chrome.test.assertEq({foo: "bar"}, settings);
+      callback();
+    });
   },
   setFoo: function(callback) {
-    settings.set({foo: "bar"}, assertResultEq({foo: "bar"}, callback));
+    settings.set({foo: "bar"}, callback);
   },
   removeFoo: function(callback) {
-    settings.remove("foo", assertResultEq(undefined, callback));
+    settings.remove("foo", callback);
   },
   clear: function(callback) {
-    settings.clear(assertResultEq(undefined, callback));
+    settings.clear(callback);
   },
   assertNoNotifications: function(callback) {
     assertEq([], notifications);

@@ -60,20 +60,26 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
 
   // The correctness of Get/Set/Remove/Clear is tested elsewhere so no need to
   // be too rigorous.
-  StringValue bar("bar");
-  ExtensionSettingsStorage::Result result = storage->Set("foo", bar);
-  ASSERT_FALSE(result.HasError());
+  {
+    StringValue bar("bar");
+    ExtensionSettingsStorage::WriteResult result = storage->Set("foo", bar);
+    ASSERT_FALSE(result.HasError());
+  }
 
-  result = storage->Get();
-  ASSERT_FALSE(result.HasError());
-  EXPECT_FALSE(result.GetSettings()->empty());
+  {
+    ExtensionSettingsStorage::ReadResult result = storage->Get();
+    ASSERT_FALSE(result.HasError());
+    EXPECT_FALSE(result.settings().empty());
+  }
 
   frontend_.reset(new ExtensionSettingsFrontend(profile_.get()));
   storage = GetStorage(id, frontend_.get());
 
-  result = storage->Get();
-  ASSERT_FALSE(result.HasError());
-  EXPECT_FALSE(result.GetSettings()->empty());
+  {
+    ExtensionSettingsStorage::ReadResult result = storage->Get();
+    ASSERT_FALSE(result.HasError());
+    EXPECT_FALSE(result.settings().empty());
+  }
 }
 
 TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
@@ -83,9 +89,11 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
 
   ExtensionSettingsStorage* storage = GetStorage(id, frontend_.get());
 
-  StringValue bar("bar");
-  ExtensionSettingsStorage::Result result = storage->Set("foo", bar);
-  ASSERT_FALSE(result.HasError());
+  {
+    StringValue bar("bar");
+    ExtensionSettingsStorage::WriteResult result = storage->Set("foo", bar);
+    ASSERT_FALSE(result.HasError());
+  }
 
   // This would be triggered by extension uninstall via an ExtensionDataDeleter.
   frontend_->DeleteStorageSoon(id);
@@ -93,9 +101,11 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
 
   // The storage area may no longer be valid post-uninstall, so re-request.
   storage = GetStorage(id, frontend_.get());
-  result = storage->Get();
-  ASSERT_FALSE(result.HasError());
-  EXPECT_TRUE(result.GetSettings()->empty());
+  {
+    ExtensionSettingsStorage::ReadResult result = storage->Get();
+    ASSERT_FALSE(result.HasError());
+    EXPECT_TRUE(result.settings().empty());
+  }
 }
 
 TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
@@ -105,16 +115,20 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
 
   ExtensionSettingsStorage* storage = GetStorage(id, frontend_.get());
 
-  StringValue bar("bar");
-  ExtensionSettingsStorage::Result result = storage->Set("foo", bar);
-  ASSERT_FALSE(result.HasError());
-  EXPECT_TRUE(file_util::PathExists(temp_dir_.path()));
+  {
+    StringValue bar("bar");
+    ExtensionSettingsStorage::WriteResult result = storage->Set("foo", bar);
+    ASSERT_FALSE(result.HasError());
+    EXPECT_TRUE(file_util::PathExists(temp_dir_.path()));
+  }
 
   // Should need to both clear the database and delete the frontend for the
   // leveldb database to be deleted from disk.
-  result = storage->Clear();
-  ASSERT_FALSE(result.HasError());
-  EXPECT_TRUE(file_util::PathExists(temp_dir_.path()));
+  {
+    ExtensionSettingsStorage::WriteResult result = storage->Clear();
+    ASSERT_FALSE(result.HasError());
+    EXPECT_TRUE(file_util::PathExists(temp_dir_.path()));
+  }
 
   frontend_.reset();
   MessageLoop::current()->RunAllPending();

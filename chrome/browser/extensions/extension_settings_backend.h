@@ -42,13 +42,6 @@ class ExtensionSettingsBackend : public SyncableService {
   // Deletes all setting data for an extension.  Call on the FILE thread.
   void DeleteStorage(const std::string& extension_id);
 
-  // Sends a change event to the observer list.  |profile| is the profile which
-  // generated the change.  Must be called on the FILE thread.
-  void TriggerOnSettingsChanged(
-      Profile* profile,
-      const std::string& extension_id,
-      const ExtensionSettingChanges& changes) const;
-
   // SyncableService implementation.
   virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
   virtual SyncError MergeDataAndStartSyncing(

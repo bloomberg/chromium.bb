@@ -43,37 +43,32 @@ void SettingsFunction::RunWithStorageOnFileThread(
       base::Bind(&SettingsFunction::SendResponse, this, success));
 }
 
-bool SettingsFunction::UseResult(
-    scoped_refptr<ExtensionSettingsObserverList> observers,
-    const ExtensionSettingsStorage::Result& storage_result) {
+bool SettingsFunction::UseReadResult(
+    const ExtensionSettingsStorage::ReadResult& result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (storage_result.HasError()) {
-    error_ = storage_result.GetError();
+  if (result.HasError()) {
+    error_ = result.error();
     return false;
   }
 
-  const DictionaryValue* settings = storage_result.GetSettings();
-  if (settings) {
-    result_.reset(settings->DeepCopy());
+  result_.reset(result.settings().DeepCopy());
+  return true;
+}
+
+bool SettingsFunction::UseWriteResult(
+    scoped_refptr<ExtensionSettingsObserverList> observers,
+    const ExtensionSettingsStorage::WriteResult& result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (result.HasError()) {
+    error_ = result.error();
+    return false;
   }
 
-  const std::set<std::string>* changed_keys = storage_result.GetChangedKeys();
-  if (changed_keys && !changed_keys->empty()) {
-    ExtensionSettingChanges::Builder changes;
-    for (std::set<std::string>::const_iterator it = changed_keys->begin();
-        it != changed_keys->end(); ++it) {
-      const Value* old_value = storage_result.GetOldValue(*it);
-      const Value* new_value = storage_result.GetNewValue(*it);
-      changes.AppendChange(
-          *it,
-          old_value ? old_value->DeepCopy() : NULL,
-          new_value ? new_value->DeepCopy() : NULL);
-    }
+  if (!result.changes().empty()) {
     observers->Notify(
         &ExtensionSettingsObserver::OnSettingsChanged,
-        profile(),
         extension_id(),
-        changes.Build());
+        ExtensionSettingChange::GetEventJson(result.changes()));
   }
 
   return true;
@@ -93,25 +88,57 @@ static void AddAllStringValues(
   }
 }
 
+// Gets the keys of a DictionaryValue.
+static std::vector<std::string> GetKeys(const DictionaryValue& dict) {
+  std::vector<std::string> keys;
+  for (DictionaryValue::key_iterator it = dict.begin_keys();
+      it != dict.end_keys(); ++it) {
+    keys.push_back(*it);
+  }
+  return keys;
+}
+
 bool GetSettingsFunction::RunWithStorage(
     scoped_refptr<ExtensionSettingsObserverList> observers,
     ExtensionSettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Value *input;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
-  std::string as_string;
-  ListValue* as_list;
-  if (input->IsType(Value::TYPE_NULL)) {
-    return UseResult(observers, storage->Get());
-  } else if (input->GetAsString(&as_string)) {
-    return UseResult(observers, storage->Get(as_string));
-  } else if (input->GetAsList(&as_list)) {
-    std::vector<std::string> string_list;
-    AddAllStringValues(*as_list, &string_list);
-    return UseResult(observers, storage->Get(string_list));
+
+  switch (input->GetType()) {
+    case Value::TYPE_NULL:
+      return UseReadResult(storage->Get());
+
+    case Value::TYPE_STRING: {
+      std::string as_string;
+      input->GetAsString(&as_string);
+      return UseReadResult(storage->Get(as_string));
+    }
+
+    case Value::TYPE_LIST: {
+      std::vector<std::string> as_string_list;
+      AddAllStringValues(*static_cast<ListValue*>(input), &as_string_list);
+      return UseReadResult(storage->Get(as_string_list));
+    }
+
+    case Value::TYPE_DICTIONARY: {
+      DictionaryValue* as_dict = static_cast<DictionaryValue*>(input);
+      ExtensionSettingsStorage::ReadResult result =
+          storage->Get(GetKeys(*as_dict));
+      if (result.HasError()) {
+        return UseReadResult(result);
+      }
+
+      DictionaryValue* with_default_values = as_dict->DeepCopy();
+      with_default_values->MergeDictionary(&result.settings());
+      return UseReadResult(
+          ExtensionSettingsStorage::ReadResult(with_default_values));
+    }
+
+    default:
+      return UseReadResult(
+          ExtensionSettingsStorage::ReadResult(kUnsupportedArgumentType));
   }
-  return UseResult(
-      observers, ExtensionSettingsStorage::Result(kUnsupportedArgumentType));
 }
 
 bool SetSettingsFunction::RunWithStorage(
@@ -120,7 +147,7 @@ bool SetSettingsFunction::RunWithStorage(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DictionaryValue *input;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &input));
-  return UseResult(observers, storage->Set(*input));
+  return UseWriteResult(observers, storage->Set(*input));
 }
 
 bool RemoveSettingsFunction::RunWithStorage(
@@ -129,22 +156,30 @@ bool RemoveSettingsFunction::RunWithStorage(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Value *input;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
-  std::string as_string;
-  ListValue* as_list;
-  if (input->GetAsString(&as_string)) {
-    return UseResult(observers, storage->Remove(as_string));
-  } else if (input->GetAsList(&as_list)) {
-    std::vector<std::string> string_list;
-    AddAllStringValues(*as_list, &string_list);
-    return UseResult(observers, storage->Remove(string_list));
-  }
-  return UseResult(
-      observers, ExtensionSettingsStorage::Result(kUnsupportedArgumentType));
+
+  switch (input->GetType()) {
+    case Value::TYPE_STRING: {
+      std::string as_string;
+      input->GetAsString(&as_string);
+      return UseWriteResult(observers, storage->Remove(as_string));
+    }
+
+    case Value::TYPE_LIST: {
+      std::vector<std::string> as_string_list;
+      AddAllStringValues(*static_cast<ListValue*>(input), &as_string_list);
+      return UseWriteResult(observers, storage->Remove(as_string_list));
+    }
+
+    default:
+      return UseWriteResult(
+          observers,
+          ExtensionSettingsStorage::WriteResult(kUnsupportedArgumentType));
+  };
 }
 
 bool ClearSettingsFunction::RunWithStorage(
     scoped_refptr<ExtensionSettingsObserverList> observers,
     ExtensionSettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  return UseResult(observers, storage->Clear());
+  return UseWriteResult(observers, storage->Clear());
 }

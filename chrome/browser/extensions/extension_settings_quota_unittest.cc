@@ -55,8 +55,8 @@ class ExtensionSettingsQuotaTest : public testing::Test {
   // Returns whether the settings in |storage_| and |delegate_| are the same as
   // |settings|.
   bool SettingsEqual(const DictionaryValue& settings) {
-    return settings.Equals(storage_->Get().GetSettings()) &&
-           settings.Equals(delegate_->Get().GetSettings());
+    return settings.Equals(&storage_->Get().settings()) &&
+           settings.Equals(&delegate_->Get().settings());
   }
 
   // Values with different serialized sizes.
@@ -215,7 +215,7 @@ TEST_F(ExtensionSettingsQuotaTest, RemovingNonexistentSettings) {
   DictionaryValue to_set;
   to_set.Set("b1", byte_value_16_->DeepCopy());
   to_set.Set("b2", byte_value_16_->DeepCopy());
-  EXPECT_TRUE(to_set.Equals(storage_->Set(to_set).GetSettings()));
+  storage_->Set(to_set);
   settings.Set("b1", byte_value_16_->DeepCopy());
   settings.Set("b2", byte_value_16_->DeepCopy());
   EXPECT_TRUE(storage_->Set("a", *byte_value_1_).HasError());
@@ -237,7 +237,7 @@ TEST_F(ExtensionSettingsQuotaTest, RemovingNonexistentSettings) {
   to_set.Clear();
   to_set.Set("b1", byte_value_1_->DeepCopy());
   to_set.Set("b2", byte_value_1_->DeepCopy());
-  EXPECT_TRUE(to_set.Equals(storage_->Set(to_set).GetSettings()));
+  storage_->Set(to_set);
   settings.Set("b1", byte_value_1_->DeepCopy());
   settings.Set("b2", byte_value_1_->DeepCopy());
   storage_->Set("b3", *byte_value_1_);
@@ -262,34 +262,38 @@ TEST_F(ExtensionSettingsQuotaTest, Clear) {
   CreateStorage(40, UINT_MAX, 5);
 
   // Test running out of byte quota.
-  DictionaryValue to_set;
-  to_set.Set("a", byte_value_16_->DeepCopy());
-  to_set.Set("b", byte_value_16_->DeepCopy());
-  EXPECT_FALSE(storage_->Set(to_set).HasError());
-  EXPECT_TRUE(storage_->Set("c", *byte_value_16_).HasError());
+  {
+    DictionaryValue to_set;
+    to_set.Set("a", byte_value_16_->DeepCopy());
+    to_set.Set("b", byte_value_16_->DeepCopy());
+    EXPECT_FALSE(storage_->Set(to_set).HasError());
+    EXPECT_TRUE(storage_->Set("c", *byte_value_16_).HasError());
 
-  EXPECT_FALSE(storage_->Clear().HasError());
+    EXPECT_FALSE(storage_->Clear().HasError());
 
-  // (repeat)
-  EXPECT_FALSE(storage_->Set(to_set).HasError());
-  EXPECT_TRUE(storage_->Set("c", *byte_value_16_).HasError());
+    // (repeat)
+    EXPECT_FALSE(storage_->Set(to_set).HasError());
+    EXPECT_TRUE(storage_->Set("c", *byte_value_16_).HasError());
+  }
 
   // Test reaching max keys.
   storage_->Clear();
-  to_set.Clear();
-  to_set.Set("a", byte_value_1_->DeepCopy());
-  to_set.Set("b", byte_value_1_->DeepCopy());
-  to_set.Set("c", byte_value_1_->DeepCopy());
-  to_set.Set("d", byte_value_1_->DeepCopy());
-  to_set.Set("e", byte_value_1_->DeepCopy());
-  EXPECT_FALSE(storage_->Set(to_set).HasError());
-  EXPECT_TRUE(storage_->Set("f", *byte_value_1_).HasError());
+  {
+    DictionaryValue to_set;
+    to_set.Set("a", byte_value_1_->DeepCopy());
+    to_set.Set("b", byte_value_1_->DeepCopy());
+    to_set.Set("c", byte_value_1_->DeepCopy());
+    to_set.Set("d", byte_value_1_->DeepCopy());
+    to_set.Set("e", byte_value_1_->DeepCopy());
+    EXPECT_FALSE(storage_->Set(to_set).HasError());
+    EXPECT_TRUE(storage_->Set("f", *byte_value_1_).HasError());
 
-  storage_->Clear();
+    storage_->Clear();
 
-  // (repeat)
-  EXPECT_FALSE(storage_->Set(to_set).HasError());
-  EXPECT_TRUE(storage_->Set("f", *byte_value_1_).HasError());
+    // (repeat)
+    EXPECT_FALSE(storage_->Set(to_set).HasError());
+    EXPECT_TRUE(storage_->Set("f", *byte_value_1_).HasError());
+  }
 }
 
 TEST_F(ExtensionSettingsQuotaTest, ChangingUsedBytesWithSet) {

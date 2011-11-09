@@ -179,11 +179,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   LoadAndReplyWhenSatisfied(
       "assertNoNotifications", "assertNoNotifications", "split_incognito");
   ReplyWhenSatisfied("noop", "setFoo");
-  ReplyWhenSatisfied("assertAddFooNotification", "assertNoNotifications");
-  ReplyWhenSatisfied("clearNotifications", "noop");
+  ReplyWhenSatisfied("assertAddFooNotification", "assertAddFooNotification");
+  ReplyWhenSatisfied("clearNotifications", "clearNotifications");
   ReplyWhenSatisfied("removeFoo", "noop");
   FinalReplyWhenSatisfied(
-      "assertNoNotifications", "assertDeleteFooNotification");
+      "assertDeleteFooNotification", "assertDeleteFooNotification");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();

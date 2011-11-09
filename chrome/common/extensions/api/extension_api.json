@@ -1033,10 +1033,16 @@
           {
             "name": "keys",
             "choices": [
-              {"type": "string"},
-              {"type": "array", "items": {"type": "string"}, "minItems": 1}
+              { "type": "string" },
+              { "type": "array", "items": { "type": "string" } },
+              {
+                "type": "object",
+                "description": "Settings object to return in the callback, where the values are replaced with those from settings if they exist.",
+                "properties": {},
+                "additionalProperties": { "type": "any" }
+              }
             ],
-            "description": "A single key or a list of keys to get from settings. Leave empty to get the entire contents of settings; this should only be used for debugging.",
+            "description": "A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object).  An empty list or object will return an empty settings object.  Pass in null or undefined to get the entire contents of settings; this should only be used for debugging.",
             "optional": true
           },
           {
@@ -1070,16 +1076,8 @@
           {
             "name": "callback",
             "type": "function",
-            "description": "Callback with settings values, or on failure (in which case lastError will be set).",
-            "parameters": [
-              {
-                "name": "settings",
-                "type": "object",
-                "properties": {},
-                "additionalProperties": { "type": "any" },
-                "description": "Object with given keys set to settings values."
-              }
-            ],
+            "description": "Callback on success, or on failure (in which case lastError will be set).",
+            "parameters": [],
             "optional": true
           }
         ]

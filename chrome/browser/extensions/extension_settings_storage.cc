@@ -2,80 +2,75 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "chrome/browser/extensions/extension_settings_storage.h"
 
-// Implementation of ExtensionSettingsStorage::Result
+#include "base/logging.h"
 
-ExtensionSettingsStorage::Result::Result(
-    DictionaryValue* settings,
-    DictionaryValue* old_settings,
-    std::set<std::string>* changed_keys)
-    : inner_(new Inner(settings, old_settings, changed_keys, std::string())) {}
+// Implementation of ReadResult.
 
-ExtensionSettingsStorage::Result::Result(const std::string& error)
-    : inner_(new Inner(NULL, NULL, new std::set<std::string>(), error)) {
+ExtensionSettingsStorage::ReadResult::ReadResult(DictionaryValue* settings)
+    : inner_(new Inner(settings, "")) {
+  DCHECK(settings);
+}
+
+ExtensionSettingsStorage::ReadResult::ReadResult(const std::string& error)
+    : inner_(new Inner(NULL, error)) {
   DCHECK(!error.empty());
 }
 
-ExtensionSettingsStorage::Result::~Result() {}
+ExtensionSettingsStorage::ReadResult::~ReadResult() {}
 
-const DictionaryValue* ExtensionSettingsStorage::Result::GetSettings() const {
-  DCHECK(!HasError());
-  return inner_->settings_.get();
-}
-
-const std::set<std::string>*
-ExtensionSettingsStorage::Result::GetChangedKeys() const {
-  DCHECK(!HasError());
-  return inner_->changed_keys_.get();
-}
-
-const Value* ExtensionSettingsStorage::Result::GetOldValue(
-    const std::string& key) const {
-  DCHECK(!HasError());
-  if (!inner_->changed_keys_.get()) {
-    return NULL;
-  }
-  Value* old_value = NULL;
-  if (inner_->changed_keys_->count(key)) {
-    inner_->old_settings_->GetWithoutPathExpansion(key, &old_value);
-  } else if (inner_->settings_.get()) {
-    inner_->settings_->GetWithoutPathExpansion(key, &old_value);
-  }
-  return old_value;
-}
-
-const Value* ExtensionSettingsStorage::Result::GetNewValue(
-    const std::string& key) const {
-  DCHECK(!HasError());
-  if (!inner_->changed_keys_.get()) {
-    return NULL;
-  }
-  Value* new_value = NULL;
-  if (inner_->settings_.get()) {
-    inner_->settings_->GetWithoutPathExpansion(key, &new_value);
-  }
-  return new_value;
-}
-
-bool ExtensionSettingsStorage::Result::HasError() const {
+bool ExtensionSettingsStorage::ReadResult::HasError() const {
   return !inner_->error_.empty();
 }
 
-const std::string& ExtensionSettingsStorage::Result::GetError() const {
+const DictionaryValue& ExtensionSettingsStorage::ReadResult::settings() const {
+  DCHECK(!HasError());
+  return *inner_->settings_;
+}
+
+const std::string& ExtensionSettingsStorage::ReadResult::error() const {
   DCHECK(HasError());
   return inner_->error_;
 }
 
-ExtensionSettingsStorage::Result::Inner::Inner(
-    DictionaryValue* settings,
-    DictionaryValue* old_settings,
-    std::set<std::string>* changed_keys,
-    const std::string& error)
-    : settings_(settings),
-      old_settings_(old_settings),
-      changed_keys_(changed_keys),
-      error_(error) {}
+ExtensionSettingsStorage::ReadResult::Inner::Inner(
+    DictionaryValue* settings, const std::string& error)
+    : settings_(settings), error_(error) {}
 
-ExtensionSettingsStorage::Result::Inner::~Inner() {}
+ExtensionSettingsStorage::ReadResult::Inner::~Inner() {}
+
+// Implementation of WriteResult.
+
+ExtensionSettingsStorage::WriteResult::WriteResult(
+    ExtensionSettingChangeList* changes) : inner_(new Inner(changes, "")) {
+  DCHECK(changes);
+}
+
+ExtensionSettingsStorage::WriteResult::WriteResult(const std::string& error)
+    : inner_(new Inner(NULL, error)) {
+  DCHECK(!error.empty());
+}
+
+ExtensionSettingsStorage::WriteResult::~WriteResult() {}
+
+bool ExtensionSettingsStorage::WriteResult::HasError() const {
+  return !inner_->error_.empty();
+}
+
+const ExtensionSettingChangeList&
+ExtensionSettingsStorage::WriteResult::changes() const {
+  DCHECK(!HasError());
+  return *inner_->changes_;
+}
+
+const std::string& ExtensionSettingsStorage::WriteResult::error() const {
+  DCHECK(HasError());
+  return inner_->error_;
+}
+
+ExtensionSettingsStorage::WriteResult::Inner::Inner(
+    ExtensionSettingChangeList* changes, const std::string& error)
+    : changes_(changes), error_(error) {}
+
+ExtensionSettingsStorage::WriteResult::Inner::~Inner() {}

@@ -117,17 +117,6 @@ void ExtensionSettingsBackend::DeleteStorage(const std::string& extension_id) {
   storage_objs_.erase(maybe_storage);
 }
 
-void ExtensionSettingsBackend::TriggerOnSettingsChanged(
-    Profile* profile,
-    const std::string& extension_id,
-    const ExtensionSettingChanges& changes) const {
-  observers_->Notify(
-      &ExtensionSettingsObserver::OnSettingsChanged,
-      profile,
-      extension_id,
-      changes);
-}
-
 std::set<std::string> ExtensionSettingsBackend::GetKnownExtensionIDs() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::set<std::string> result;
@@ -157,6 +146,17 @@ std::set<std::string> ExtensionSettingsBackend::GetKnownExtensionIDs() const {
   return result;
 }
 
+static void AddAllSyncData(
+    const std::string& extension_id,
+    const DictionaryValue& src,
+    SyncDataList* dst) {
+  for (DictionaryValue::Iterator it(src); it.HasNext(); it.Advance()) {
+    dst->push_back(
+        extension_settings_sync_util::CreateData(
+            extension_id, it.key(), it.value()));
+  }
+}
+
 SyncDataList ExtensionSettingsBackend::GetAllSyncData(
     syncable::ModelType type) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -172,21 +172,14 @@ SyncDataList ExtensionSettingsBackend::GetAllSyncData(
 
   for (std::set<std::string>::const_iterator it = known_extension_ids.begin();
       it != known_extension_ids.end(); ++it) {
-    ExtensionSettingsStorage::Result maybe_settings = GetStorage(*it)->Get();
+    ExtensionSettingsStorage::ReadResult maybe_settings =
+        GetStorage(*it)->Get();
     if (maybe_settings.HasError()) {
       LOG(WARNING) << "Failed to get settings for " << *it << ": " <<
-          maybe_settings.GetError();
+          maybe_settings.error();
       continue;
     }
-
-    const DictionaryValue* settings = maybe_settings.GetSettings();
-    for (DictionaryValue::key_iterator key_it = settings->begin_keys();
-        key_it != settings->end_keys(); ++key_it) {
-      Value *value = NULL;
-      settings->GetWithoutPathExpansion(*key_it, &value);
-      all_sync_data.push_back(
-          extension_settings_sync_util::CreateData(*it, *key_it, *value));
-    }
+    AddAllSyncData(*it, maybe_settings.settings(), &all_sync_data);
   }
 
   return all_sync_data;

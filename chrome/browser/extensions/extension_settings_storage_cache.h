@@ -25,14 +25,14 @@ class ExtensionSettingsStorageCache : public ExtensionSettingsStorage {
   virtual ~ExtensionSettingsStorageCache();
 
   // ExtensionSettingsStorage implementation.
-  virtual Result Get(const std::string& key) OVERRIDE;
-  virtual Result Get(const std::vector<std::string>& keys) OVERRIDE;
-  virtual Result Get() OVERRIDE;
-  virtual Result Set(const std::string& key, const Value& value) OVERRIDE;
-  virtual Result Set(const DictionaryValue& settings) OVERRIDE;
-  virtual Result Remove(const std::string& key) OVERRIDE;
-  virtual Result Remove(const std::vector<std::string>& keys) OVERRIDE;
-  virtual Result Clear() OVERRIDE;
+  virtual ReadResult Get(const std::string& key) OVERRIDE;
+  virtual ReadResult Get(const std::vector<std::string>& keys) OVERRIDE;
+  virtual ReadResult Get() OVERRIDE;
+  virtual WriteResult Set(const std::string& key, const Value& value) OVERRIDE;
+  virtual WriteResult Set(const DictionaryValue& settings) OVERRIDE;
+  virtual WriteResult Remove(const std::string& key) OVERRIDE;
+  virtual WriteResult Remove(const std::vector<std::string>& keys) OVERRIDE;
+  virtual WriteResult Clear() OVERRIDE;
 
  private:
   // Returns whether the value was found in the cache.

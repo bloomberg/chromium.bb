@@ -36,8 +36,7 @@ static std::string GetJson(const Value& value) {
 
 // Returns whether two Values are equal.
 testing::AssertionResult ValuesEq(
-    const char* expected_expr,
-    const char* actual_expr,
+    const char* _1, const char* _2,
     const Value* expected,
     const Value* actual) {
   if (expected == actual) {
@@ -61,17 +60,15 @@ testing::AssertionResult ValuesEq(
 // Returns whether the result of a storage operation is an expected value.
 // Logs when different.
 testing::AssertionResult SettingsEq(
-    const char* expected_expr,
-    const char* actual_expr,
-    const DictionaryValue* expected,
-    const ExtensionSettingsStorage::Result actual) {
+    const char* _1, const char* _2,
+    const DictionaryValue& expected,
+    const ExtensionSettingsStorage::ReadResult& actual) {
   if (actual.HasError()) {
     return testing::AssertionFailure() <<
-        "Expected: " << GetJson(*expected) <<
-        ", actual has error: " << actual.GetError();
+        "Expected: " << GetJson(expected) <<
+        ", actual has error: " << actual.error();
   }
-  return ValuesEq(
-      expected_expr, actual_expr, expected, actual.GetSettings());
+  return ValuesEq(_1, _2, &expected, &actual.settings());
 }
 
 // SyncChangeProcessor which just records the changes made, accessed after
@@ -323,8 +320,8 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
   ASSERT_EQ(0u, sync_.changes().size());
 
   // Sync settings should have been pushed to local settings.
-  ASSERT_PRED_FORMAT2(SettingsEq, &expected1, storage1->Get());
-  ASSERT_PRED_FORMAT2(SettingsEq, &expected2, storage2->Get());
+  ASSERT_PRED_FORMAT2(SettingsEq, expected1, storage1->Get());
+  ASSERT_PRED_FORMAT2(SettingsEq, expected2, storage2->Get());
 
   GetSyncableService(model_type)->StopSyncing(model_type);
 }
@@ -366,8 +363,8 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   expected1.Set("bar", value2.DeepCopy());
   expected2.Set("foo", value1.DeepCopy());
 
-  ASSERT_PRED_FORMAT2(SettingsEq, &expected1, storage1->Get());
-  ASSERT_PRED_FORMAT2(SettingsEq, &expected2, storage2->Get());
+  ASSERT_PRED_FORMAT2(SettingsEq, expected1, storage1->Get());
+  ASSERT_PRED_FORMAT2(SettingsEq, expected2, storage2->Get());
 
   // Make sync update some settings, storage1 the new setting, storage2 the
   // initial setting.
@@ -380,8 +377,8 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   expected1.Set("bar", value2.DeepCopy());
   expected2.Set("bar", value1.DeepCopy());
 
-  ASSERT_PRED_FORMAT2(SettingsEq, &expected1, storage1->Get());
-  ASSERT_PRED_FORMAT2(SettingsEq, &expected2, storage2->Get());
+  ASSERT_PRED_FORMAT2(SettingsEq, expected1, storage1->Get());
+  ASSERT_PRED_FORMAT2(SettingsEq, expected2, storage2->Get());
 
   // Make sync remove some settings, storage1 the initial setting, storage2 the
   // new setting.
@@ -394,8 +391,8 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   expected1.Remove("foo", NULL);
   expected2.Remove("foo", NULL);
 
-  ASSERT_PRED_FORMAT2(SettingsEq, &expected1, storage1->Get());
-  ASSERT_PRED_FORMAT2(SettingsEq, &expected2, storage2->Get());
+  ASSERT_PRED_FORMAT2(SettingsEq, expected1, storage1->Get());
+  ASSERT_PRED_FORMAT2(SettingsEq, expected2, storage2->Get());
 
   GetSyncableService(model_type)->StopSyncing(model_type);
 }

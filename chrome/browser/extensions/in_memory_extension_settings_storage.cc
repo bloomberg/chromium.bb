@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/in_memory_extension_settings_storage.h"
 
+#include "base/logging.h"
+
 namespace {
 
 std::vector<std::string> CreateVector(const std::string& string) {
@@ -14,12 +16,12 @@ std::vector<std::string> CreateVector(const std::string& string) {
 
 }  // namespace
 
-ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Get(
+ExtensionSettingsStorage::ReadResult InMemoryExtensionSettingsStorage::Get(
     const std::string& key) {
   return Get(CreateVector(key));
 }
 
-ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Get(
+ExtensionSettingsStorage::ReadResult InMemoryExtensionSettingsStorage::Get(
     const std::vector<std::string>& keys) {
   DictionaryValue* settings = new DictionaryValue();
   for (std::vector<std::string>::const_iterator it = keys.begin();
@@ -29,67 +31,63 @@ ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Get(
       settings->SetWithoutPathExpansion(*it, value->DeepCopy());
     }
   }
-  return Result(settings, NULL, NULL);
+  return ReadResult(settings);
 }
 
-ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Get() {
-  return Result(storage_.DeepCopy(), NULL, NULL);
+ExtensionSettingsStorage::ReadResult InMemoryExtensionSettingsStorage::Get() {
+  return ReadResult(storage_.DeepCopy());
 }
 
-ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Set(
+ExtensionSettingsStorage::WriteResult InMemoryExtensionSettingsStorage::Set(
     const std::string& key, const Value& value) {
   DictionaryValue settings;
   settings.SetWithoutPathExpansion(key, value.DeepCopy());
   return Set(settings);
 }
 
-ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Set(
+ExtensionSettingsStorage::WriteResult InMemoryExtensionSettingsStorage::Set(
     const DictionaryValue& settings) {
-  DictionaryValue* old_settings = new DictionaryValue();
-  std::set<std::string>* changed_keys = new std::set<std::string>();
-  for (DictionaryValue::key_iterator it = settings.begin_keys();
-      it != settings.end_keys(); ++it) {
+  scoped_ptr<ExtensionSettingChangeList> changes(
+      new ExtensionSettingChangeList());
+  for (DictionaryValue::Iterator it(settings); it.HasNext(); it.Advance()) {
     Value* old_value = NULL;
-    if (storage_.GetWithoutPathExpansion(*it, &old_value)) {
-      old_settings->SetWithoutPathExpansion(*it, old_value->DeepCopy());
-    }
-    Value* new_value = NULL;
-    settings.GetWithoutPathExpansion(*it, &new_value);
-    if (old_value == NULL || !old_value->Equals(new_value)) {
-      changed_keys->insert(*it);
-      storage_.SetWithoutPathExpansion(*it, new_value->DeepCopy());
+    storage_.GetWithoutPathExpansion(it.key(), &old_value);
+    if (!old_value || !old_value->Equals(&it.value())) {
+      changes->push_back(
+          ExtensionSettingChange(
+              it.key(),
+              old_value ? old_value->DeepCopy() : old_value,
+              it.value().DeepCopy()));
+      storage_.SetWithoutPathExpansion(it.key(), it.value().DeepCopy());
     }
   }
-  return Result(settings.DeepCopy(), old_settings, changed_keys);
+  return WriteResult(changes.release());
 }
 
-ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Remove(
+ExtensionSettingsStorage::WriteResult InMemoryExtensionSettingsStorage::Remove(
     const std::string& key) {
   return Remove(CreateVector(key));
 }
 
-ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Remove(
+ExtensionSettingsStorage::WriteResult InMemoryExtensionSettingsStorage::Remove(
     const std::vector<std::string>& keys) {
-  DictionaryValue* old_settings = new DictionaryValue();
-  std::set<std::string>* changed_keys = new std::set<std::string>();
+  scoped_ptr<ExtensionSettingChangeList> changes(
+      new ExtensionSettingChangeList());
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
     Value* old_value = NULL;
     if (storage_.RemoveWithoutPathExpansion(*it, &old_value)) {
-      old_settings->SetWithoutPathExpansion(*it, old_value);
-      changed_keys->insert(*it);
+      changes->push_back(ExtensionSettingChange(*it, old_value, NULL));
     }
   }
-  return Result(NULL, old_settings, changed_keys);
+  return WriteResult(changes.release());
 }
 
-ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Clear() {
-  std::set<std::string>* changed_keys = new std::set<std::string>();
-  for (DictionaryValue::key_iterator it = storage_.begin_keys();
-      it != storage_.end_keys(); ++it) {
-    changed_keys->insert(*it);
+ExtensionSettingsStorage::WriteResult
+InMemoryExtensionSettingsStorage::Clear() {
+  std::vector<std::string> keys;
+  for (DictionaryValue::Iterator it(storage_); it.HasNext(); it.Advance()) {
+    keys.push_back(it.key());
   }
-  DictionaryValue* old_settings = new DictionaryValue();
-  storage_.Swap(old_settings);
-  return Result(NULL, old_settings, changed_keys);
+  return Remove(keys);
 }

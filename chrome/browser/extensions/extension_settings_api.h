@@ -26,11 +26,17 @@ class SettingsFunction : public AsyncExtensionFunction {
       scoped_refptr<ExtensionSettingsObserverList> observers,
       ExtensionSettingsStorage* storage) = 0;
 
-  // Sets error_ or result_ depending on the value of a storage Result, and
-  // returns whether the Result implies success (i.e. !error).
-  bool UseResult(
+  // Sets error_ or result_ depending on the value of a storage ReadResult, and
+  // returns whether the result implies success (i.e. !error).
+  bool UseReadResult(
+      const ExtensionSettingsStorage::ReadResult& result);
+
+  // Sets error_ depending on the value of a storage WriteResult, sends a
+  // change notification if needed, and returns whether the result implies
+  // success (i.e. !error).
+  bool UseWriteResult(
       scoped_refptr<ExtensionSettingsObserverList> observers,
-      const ExtensionSettingsStorage::Result& storage_result);
+      const ExtensionSettingsStorage::WriteResult& result);
 
  private:
   // Called via PostTask from RunImpl.  Calls RunWithStorage and then

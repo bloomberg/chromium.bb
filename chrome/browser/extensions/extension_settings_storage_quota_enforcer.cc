@@ -51,7 +51,7 @@ void Free(
 }
 
 // Returns an error result and logs the quota exceeded to UMA.
-ExtensionSettingsStorage::Result QuotaExceededFor(Resource resource) {
+ExtensionSettingsStorage::WriteResult QuotaExceededFor(Resource resource) {
   switch (resource) {
     case TOTAL_BYTES:
       UMA_HISTOGRAM_COUNTS_100(
@@ -68,7 +68,7 @@ ExtensionSettingsStorage::Result QuotaExceededFor(Resource resource) {
     default:
       NOTREACHED();
   }
-  return ExtensionSettingsStorage::Result(kExceededQuotaErrorMessage);
+  return ExtensionSettingsStorage::WriteResult(kExceededQuotaErrorMessage);
 }
 
 }  // namespace
@@ -83,41 +83,39 @@ ExtensionSettingsStorageQuotaEnforcer::ExtensionSettingsStorageQuotaEnforcer(
       max_keys_(max_keys),
       delegate_(delegate),
       used_total_(0) {
-  Result maybe_initial_settings = delegate->Get();
-  if (maybe_initial_settings.HasError()) {
+  ReadResult maybe_settings = delegate->Get();
+  if (maybe_settings.HasError()) {
     LOG(WARNING) << "Failed to get initial settings for quota: " <<
-        maybe_initial_settings.GetError();
+        maybe_settings.error();
     return;
   }
 
-  const DictionaryValue* initial_settings =
-      maybe_initial_settings.GetSettings();
-  for (DictionaryValue::key_iterator it = initial_settings->begin_keys();
-      it != initial_settings->end_keys(); ++it) {
-    Value *value;
-    initial_settings->GetWithoutPathExpansion(*it, &value);
-    Allocate(*it, *value, &used_total_, &used_per_setting_);
+  for (DictionaryValue::Iterator it(maybe_settings.settings()); it.HasNext();
+      it.Advance()) {
+    Allocate(it.key(), it.value(), &used_total_, &used_per_setting_);
   }
 }
 
 ExtensionSettingsStorageQuotaEnforcer::~ExtensionSettingsStorageQuotaEnforcer(
     ) {}
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Get(
+ExtensionSettingsStorage::ReadResult ExtensionSettingsStorageQuotaEnforcer::Get(
     const std::string& key) {
   return delegate_->Get(key);
 }
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Get(
+ExtensionSettingsStorage::ReadResult ExtensionSettingsStorageQuotaEnforcer::Get(
     const std::vector<std::string>& keys) {
   return delegate_->Get(keys);
 }
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Get() {
+ExtensionSettingsStorage::ReadResult
+ExtensionSettingsStorageQuotaEnforcer::Get() {
   return delegate_->Get();
 }
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Set(
+ExtensionSettingsStorage::WriteResult
+ExtensionSettingsStorageQuotaEnforcer::Set(
     const std::string& key, const Value& value) {
   size_t new_used_total = used_total_;
   std::map<std::string, size_t> new_used_per_setting = used_per_setting_;
@@ -133,7 +131,7 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Set(
     return QuotaExceededFor(KEY_COUNT);
   }
 
-  Result result = delegate_->Set(key, value);
+  WriteResult result = delegate_->Set(key, value);
   if (result.HasError()) {
     return result;
   }
@@ -143,17 +141,14 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Set(
   return result;
 }
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Set(
+ExtensionSettingsStorage::WriteResult
+ExtensionSettingsStorageQuotaEnforcer::Set(
     const DictionaryValue& values) {
   size_t new_used_total = used_total_;
   std::map<std::string, size_t> new_used_per_setting = used_per_setting_;
-  for (DictionaryValue::key_iterator it = values.begin_keys();
-      it != values.end_keys(); ++it) {
-    Value* value;
-    values.GetWithoutPathExpansion(*it, &value);
-    Allocate(*it, *value, &new_used_total, &new_used_per_setting);
-
-    if (new_used_per_setting[*it] > quota_bytes_per_setting_) {
+  for (DictionaryValue::Iterator it(values); it.HasNext(); it.Advance()) {
+    Allocate(it.key(), it.value(), &new_used_total, &new_used_per_setting);
+    if (new_used_per_setting[it.key()] > quota_bytes_per_setting_) {
       return QuotaExceededFor(BYTES_PER_SETTING);
     }
   }
@@ -165,7 +160,7 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Set(
     return QuotaExceededFor(KEY_COUNT);
   }
 
-  Result result = delegate_->Set(values);
+  WriteResult result = delegate_->Set(values);
   if (result.HasError()) {
     return result;
   }
@@ -175,9 +170,10 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Set(
   return result;
 }
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Remove(
+ExtensionSettingsStorage::WriteResult
+ExtensionSettingsStorageQuotaEnforcer::Remove(
     const std::string& key) {
-  Result result = delegate_->Remove(key);
+  WriteResult result = delegate_->Remove(key);
   if (result.HasError()) {
     return result;
   }
@@ -185,9 +181,10 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Remove(
   return result;
 }
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Remove(
+ExtensionSettingsStorage::WriteResult
+ExtensionSettingsStorageQuotaEnforcer::Remove(
     const std::vector<std::string>& keys) {
-  Result result = delegate_->Remove(keys);
+  WriteResult result = delegate_->Remove(keys);
   if (result.HasError()) {
     return result;
   }
@@ -199,9 +196,10 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Remove(
   return result;
 }
 
-ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Clear(
+ExtensionSettingsStorage::WriteResult
+ExtensionSettingsStorageQuotaEnforcer::Clear(
     ) {
-  Result result = delegate_->Clear();
+  WriteResult result = delegate_->Clear();
   if (result.HasError()) {
     return result;
   }

@@ -23,7 +23,7 @@ class ExtensionSettingsStorage;
 // The component of extension settings which runs on the UI thread, as opposed
 // to ExtensionSettingsBackend which lives on the FILE thread.
 // All public methods must be called on the UI thread.
-class ExtensionSettingsFrontend : public content::NotificationObserver {
+class ExtensionSettingsFrontend {
  public:
   explicit ExtensionSettingsFrontend(Profile* profile);
   virtual ~ExtensionSettingsFrontend();
@@ -48,49 +48,35 @@ class ExtensionSettingsFrontend : public content::NotificationObserver {
   // Gets the thread-safe observer list.
   scoped_refptr<ExtensionSettingsObserverList> GetObservers();
 
-  // NotificationObserver implementation.
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE;
-
  private:
-  // Observer which sends events to a target profile iff the profile isn't the
-  // originating profile for the event.
-  class DefaultObserver;
+  // Settings change Observer which forwards changes on to the extension
+  // processes for |profile| and its incognito partner if it exists.
+  class DefaultObserver : public ExtensionSettingsObserver {
+   public:
+    explicit DefaultObserver(Profile* profile);
+    virtual ~DefaultObserver();
 
-  // Called when a profile is created.
-  void OnProfileCreated(Profile* profile);
+    // ExtensionSettingsObserver implementation.
+    virtual void OnSettingsChanged(
+        const std::string& extension_id,
+        const std::string& change_json) OVERRIDE;
 
-  // Called when a profile is destroyed.
-  void OnProfileDestroyed(Profile* profile);
+   private:
+    Profile* const profile_;
+  };
 
-  // Creates a scoped DefaultObserver and adds it as an Observer.
-  void SetDefaultObserver(
-      Profile* profile, scoped_ptr<DefaultObserver>* observer);
-
-  // If a scoped DefaultObserver exists, clears it and removes it as an
-  // Observer.
-  void ClearDefaultObserver(scoped_ptr<DefaultObserver>* observer);
-
-  // The (original) Profile this Frontend belongs to.  Note that we don't store
-  // the incognito version of the profile because it will change as it's
-  // created and destroyed during the lifetime of Chrome.
+  // The (non-incognito) Profile this Frontend belongs to.
   Profile* const profile_;
 
   // List of observers to settings changes.
   scoped_refptr<ExtensionSettingsObserverList> observers_;
 
-  // The default original and incognito mode profile observers.
-  scoped_ptr<DefaultObserver> original_profile_observer;
-  scoped_ptr<DefaultObserver> incognito_profile_observer_;
+  // Observer for |profile_|.
+  DefaultObserver default_observer_;
 
   // Ref-counted container for the ExtensionSettingsBackend object.
   class Core;
   scoped_refptr<Core> core_;
-
-  // For profile created/destroyed notifications.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsFrontend);
 };
