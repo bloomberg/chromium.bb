@@ -12,6 +12,15 @@ label Chrome {
 };
 
 /**
+ * This is an opaque type holding a network address.
+ */
+[assert_size(132)]
+struct PP_Flash_NetAddress {
+  uint32_t size;
+  char[128] data;
+};
+
+/**
  * The <code>PPB_Flash_TCPSocket</code> interface provides TCP socket
  * operations.
  */
@@ -112,3 +121,4 @@ interface PPB_Flash_TCPSocket {
    */
   void Disconnect([in] PP_Resource tcp_socket);
 };
+
