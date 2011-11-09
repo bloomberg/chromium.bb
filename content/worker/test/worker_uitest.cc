@@ -183,11 +183,9 @@ TEST_F(WorkerTest, SingleSharedWorker) {
 
 // Flaky on Win XP only.  http://crbug.com/96435
 #if defined(OS_WIN)
-#define MAYBE_MultipleSharedWorkers FLAKY_MultipleSharedWorkers
-#else
-#define MAYBE_MultipleSharedWorkers MultipleSharedWorkers
+#define MultipleSharedWorkers FLAKY_MultipleSharedWorkers
 #endif
-TEST_F(WorkerTest, MAYBE_MultipleSharedWorkers) {
+TEST_F(WorkerTest, MultipleSharedWorkers) {
   RunTest(FilePath(FILE_PATH_LITERAL("multi_worker.html")), "shared=true");
 }
 
@@ -195,7 +193,6 @@ TEST_F(WorkerTest, MAYBE_MultipleSharedWorkers) {
 // http://crbug.com/80446
 #define DISABLED_TerminateQueuedWorkers FLAKY_TerminateQueuedWorkers
 #endif
-
 TEST_F(WorkerTest, DISABLED_TerminateQueuedWorkers) {
   ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
   RunTest(FilePath(FILE_PATH_LITERAL("terminate_queued_workers.html")), "");
@@ -207,7 +204,6 @@ TEST_F(WorkerTest, DISABLED_TerminateQueuedWorkers) {
 // http://crbug.com/30021
 #define IncognitoSharedWorkers FLAKY_IncognitoSharedWorkers
 #endif
-
 // Incognito windows should not share workers with non-incognito windows
 TEST_F(WorkerTest, IncognitoSharedWorkers) {
   // Load a non-incognito tab and have it create a shared worker
@@ -255,21 +251,26 @@ TEST_F(WorkerTest, SharedWorkerHttpAuth) {
   // dialogs displayed by non-navigating tabs.
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/101996
+#define StressJSExecution FLAKY_StressJSExecution
+#endif
 TEST_F(WorkerTest, StressJSExecution) {
   RunWorkerFastLayoutTest("stress-js-execution.html");
 }
 
 #if defined(OS_WIN)
 // http://crbug.com/101996
-#define MAYBE_UseMachineStack FLAKY_UseMachineStack
-#else
-#define MAYBE_UseMachineStack UseMachineStack
+#define UseMachineStack FLAKY_UseMachineStack
 #endif
-
-TEST_F(WorkerTest, MAYBE_UseMachineStack) {
+TEST_F(WorkerTest, UseMachineStack) {
   RunWorkerFastLayoutTest("use-machine-stack.html");
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/101996
+#define WorkerCall FLAKY_WorkerCall
+#endif
 TEST_F(WorkerTest, WorkerCall) {
   RunWorkerFastLayoutTest("worker-call.html");
 }
@@ -280,14 +281,11 @@ TEST_F(WorkerTest, DISABLED_WorkerClonePort) {
   RunWorkerFastLayoutTest("worker-cloneport.html");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN)
 // http://crbug.com/101996
-#define MAYBE_WorkerCloseFast FLAKY_WorkerCloseFast
-#else
-#define MAYBE_WorkerCloseFast WorkerCloseFast
+#define WorkerCloseFast FLAKY_WorkerCloseFast
 #endif
-
-TEST_F(WorkerTest, MAYBE_WorkerCloseFast) {
+TEST_F(WorkerTest, WorkerCloseFast) {
   RunWorkerFastLayoutTest("worker-close.html");
 }
 
@@ -298,48 +296,40 @@ TEST_F(WorkerTest, FLAKY_WorkerConstructor) {
 
 #if defined(OS_WIN)
 // http://crbug.com/101996
-#define MAYBE_WorkerContextGc FLAKY_WorkerContextGc
-#else
-#define MAYBE_WorkerContextGc WorkerContextGc
+#define WorkerContextGc FLAKY_WorkerContextGc
 #endif
-
-TEST_F(WorkerTest, MAYBE_WorkerContextGc) {
+TEST_F(WorkerTest, WorkerContextGc) {
   RunWorkerFastLayoutTest("worker-context-gc.html");
 }
 
-// Started flaking on Linux with WebKit roll 98537:98582.
-// crbug.com/101996
 #if defined(OS_LINUX)
-#define MAYBE_WorkerContextMultiPort FLAKY_WorkerContextMultiPort
-#else
-#define MAYBE_WorkerContextMultiPort WorkerContextMultiPort
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define WorkerContextMultiPort FLAKY_WorkerContextMultiPort
 #endif
-TEST_F(WorkerTest, MAYBE_WorkerContextMultiPort) {
+TEST_F(WorkerTest, WorkerContextMultiPort) {
   RunWorkerFastLayoutTest("worker-context-multi-port.html");
 }
 
 #if defined(OS_WIN)
 // http://crbug.com/101996
-#define MAYBE_WorkerEventListener FLAKY_WorkerEventListener
-#else
-#define MAYBE_WorkerEventListener WorkerEventListener
+#define WorkerEventListener FLAKY_WorkerEventListener
 #endif
-
-TEST_F(WorkerTest, MAYBE_WorkerEventListener) {
+TEST_F(WorkerTest, WorkerEventListener) {
   RunWorkerFastLayoutTest("worker-event-listener.html");
 }
 
 #if defined(OS_WIN)
-// http://crbug.com/101996
-#define MAYBE_WorkerGC FLAKY_WorkerGC
-#else
-#define MAYBE_WorkerGC WorkerGC
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define WorkerGC FLAKY_WorkerGC
 #endif
-
-TEST_F(WorkerTest, MAYBE_WorkerGC) {
+TEST_F(WorkerTest, WorkerGC) {
   RunWorkerFastLayoutTest("worker-gc.html");
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define WorkerInit FLAKY_WorkerInit
+#endif
 TEST_F(WorkerTest, WorkerInit) {
   RunWorkerFastLayoutTest("worker-init.html");
 }
@@ -350,6 +340,10 @@ TEST_F(WorkerTest, DISABLED_WorkerLifecycle) {
   RunWorkerFastLayoutTest("worker-lifecycle.html");
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define WorkerLocation FLAKY_WorkerLocation
+#endif
 TEST_F(WorkerTest, WorkerLocation) {
   RunWorkerFastLayoutTest("worker-location.html");
 }
@@ -360,24 +354,18 @@ TEST_F(WorkerTest, FLAKY_WorkerMapGc) {
 }
 
 #if defined(OS_WIN)
-// http://crbug.com/101996
-#define MAYBE_WorkerMessagePort FLAKY_WorkerMessagePort
-#else
-#define MAYBE_WorkerMessagePort WorkerMessagePort
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define WorkerMessagePort FLAKY_WorkerMessagePort
 #endif
-
-TEST_F(WorkerTest, MAYBE_WorkerMessagePort) {
+TEST_F(WorkerTest, WorkerMessagePort) {
   RunWorkerFastLayoutTest("worker-messageport.html");
 }
 
 #if defined(OS_WIN)
-// http://crbug.com/101996
-#define MAYBE_WorkerMessagePortGC FLAKY_WorkerMessagePortGC
-#else
-#define MAYBE_WorkerMessagePortGC WorkerMessagePortGC
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define WorkerMessagePortGC FLAKY_WorkerMessagePortGC
 #endif
-
-TEST_F(WorkerTest, MAYBE_WorkerMessagePortGC) {
+TEST_F(WorkerTest, WorkerMessagePortGC) {
   RunWorkerFastLayoutTest("worker-messageport-gc.html");
 }
 
@@ -390,52 +378,44 @@ TEST_F(WorkerTest, FLAKY_WorkerNavigator) {
   RunWorkerFastLayoutTest("worker-navigator.html");
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define WorkerReplaceGlobalConstructor FLAKY_WorkerReplaceGlobalConstructor
+#endif
 TEST_F(WorkerTest, WorkerReplaceGlobalConstructor) {
   RunWorkerFastLayoutTest("worker-replace-global-constructor.html");
 }
 
 #if defined(OS_WIN)
-// http://crbug.com/101996
-#define MAYBE_WorkerReplaceSelf FLAKY_WorkerReplaceSelf
-#else
-#define MAYBE_WorkerReplaceSelf WorkerReplaceSelf
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define WorkerReplaceSelf FLAKY_WorkerReplaceSelf
 #endif
-
-TEST_F(WorkerTest, MAYBE_WorkerReplaceSelf) {
+TEST_F(WorkerTest, WorkerReplaceSelf) {
   RunWorkerFastLayoutTest("worker-replace-self.html");
 }
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 // Mac: http://crbug.com/44457
 // Windows: http://crbug.com/101996
-#define MAYBE_WorkerScriptError FLAKY_WorkerScriptError
-#else
-#define MAYBE_WorkerScriptError WorkerScriptError
+#define WorkerScriptError FLAKY_WorkerScriptError
 #endif
-
-TEST_F(WorkerTest, MAYBE_WorkerScriptError) {
+TEST_F(WorkerTest, WorkerScriptError) {
   RunWorkerFastLayoutTest("worker-script-error.html");
 }
 
 #if defined(OS_WIN)
-// http://crbug.com/101996
-#define MAYBE_WorkerTerminate FLAKY_WorkerTerminate
-#else
-#define MAYBE_WorkerTerminate WorkerTerminate
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define WorkerTerminate FLAKY_WorkerTerminate
 #endif
-
-TEST_F(WorkerTest, MAYBE_WorkerTerminate) {
+TEST_F(WorkerTest, WorkerTerminate) {
   RunWorkerFastLayoutTest("worker-terminate.html");
 }
 
 #if defined(OS_WIN)
-// http://crbug.com/101996
-#define MAYBE_WorkerTimeout FLAKY_WorkerTimeout
-#else
-#define MAYBE_WorkerTimeout WorkerTimeout
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define WorkerTimeout FLAKY_WorkerTimeout
 #endif
-
-TEST_F(WorkerTest, MAYBE_WorkerTimeout) {
+TEST_F(WorkerTest, WorkerTimeout) {
   RunWorkerFastLayoutTest("worker-timeout.html");
 }
 
@@ -859,32 +839,27 @@ class WorkerFileSystemTest : public WorkerTest {
   }
 };
 
-// Started flaking on Linux with WebKit roll 98537:98582.
-// crbug.com/101996
 #if defined(OS_LINUX)
-#define MAYBE_Temporary FLAKY_Temporary
-#define MAYBE_Persistent FLAKY_Persistent
-#define MAYBE_SyncTemporary FLAKY_SyncTemporary
-#define MAYBE_AsyncOperations FLAKY_AsyncOperations
-#define MAYBE_SyncOperations FLAKY_SyncOperations
-#define MAYBE_FileEntryToURISync FLAKY_FileEntryToURISync
-#else
-#define MAYBE_Temporary Temporary
-#define MAYBE_Persistent Persistent
-#define MAYBE_SyncTemporary SyncTemporary
-#define MAYBE_AsyncOperations AsyncOperations
-#define MAYBE_SyncOperations SyncOperations
-#define MAYBE_FileEntryToURISync FileEntryToURISync
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define Temporary FLAKY_Temporary
 #endif
-TEST_F(WorkerFileSystemTest, MAYBE_Temporary) {
+TEST_F(WorkerFileSystemTest, Temporary) {
   RunWorkerFileSystemLayoutTest("simple-temporary.html");
 }
 
-TEST_F(WorkerFileSystemTest, MAYBE_Persistent) {
+#if defined(OS_LINUX)
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define Persistent FLAKY_Persistent
+#endif
+TEST_F(WorkerFileSystemTest, Persistent) {
   RunWorkerFileSystemLayoutTest("simple-persistent.html");
 }
 
-TEST_F(WorkerFileSystemTest, MAYBE_SyncTemporary) {
+#if defined(OS_LINUX)
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define SyncTemporary FLAKY_SyncTemporary
+#endif
+TEST_F(WorkerFileSystemTest, SyncTemporary) {
   RunWorkerFileSystemLayoutTest("simple-temporary-sync.html");
 }
 
@@ -894,15 +869,27 @@ TEST_F(WorkerFileSystemTest, FAILS_SyncPersistent) {
   RunWorkerFileSystemLayoutTest("simple-persistent-sync.html");
 }
 
-TEST_F(WorkerFileSystemTest, MAYBE_AsyncOperations) {
+#if defined(OS_LINUX)
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define AsyncOperations FLAKY_AsyncOperations
+#endif
+TEST_F(WorkerFileSystemTest, AsyncOperations) {
   RunWorkerFileSystemLayoutTest("async-operations.html");
 }
 
-TEST_F(WorkerFileSystemTest, MAYBE_SyncOperations) {
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define SyncOperations FLAKY_SyncOperations
+#endif
+TEST_F(WorkerFileSystemTest, SyncOperations) {
   RunWorkerFileSystemLayoutTest("sync-operations.html");
 }
 
-TEST_F(WorkerFileSystemTest, MAYBE_FileEntryToURISync) {
+#if defined(OS_LINUX)
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define FileEntryToURISync FLAKY_FileEntryToURISync
+#endif
+TEST_F(WorkerFileSystemTest, FileEntryToURISync) {
   RunWorkerFileSystemLayoutTest("file-entry-to-uri-sync.html");
 }
 
@@ -916,30 +903,49 @@ TEST_F(WorkerFileSystemTest, FLAKY_ResolveURLHttpTests) {
 }
 
 #if defined(OS_LINUX)
-// These tests fail on Linux due to an assert in WebKit's RNG.
+// Fails on Linux due to an assert in WebKit's RNG.
 // See http://webkit.org/b/55728.
 #define FileFromFileEntry DISABLED_FileFromFileEntry
-#define FileFromFileEntrySync DISABLED_FileFromFileEntrySync
-#define FileWriterTruncateExtend DISABLED_FileWriterTruncateExtend
-#define FileWriterSyncTruncateExtend DISABLED_FileWriterSyncTruncateExtend
-#define FileWriterSyncWriteOverlapped DISABLED_FileWriterSyncWriteOverlapped
 #endif
 TEST_F(WorkerFileSystemTest, FileFromFileEntry) {
   RunWorkerFileSystemLayoutTest("file-from-file-entry.html");
 }
 
+#if defined(OS_LINUX)
+// Fails on Linux due to an assert in WebKit's RNG.
+// See http://webkit.org/b/55728.
+#define FileFromFileEntrySync DISABLED_FileFromFileEntrySync
+#elif defined(OS_MACOSX)
+// http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
+#define FileFromFileEntrySync FLAKY_FileFromFileEntrySync
+#endif
 TEST_F(WorkerFileSystemTest, FileFromFileEntrySync) {
   RunWorkerFileSystemLayoutTest("file-from-file-entry-sync.html");
 }
 
+#if defined(OS_LINUX)
+// Fails on Linux due to an assert in WebKit's RNG.
+// See http://webkit.org/b/55728.
+#define FileWriterTruncateExtend DISABLED_FileWriterTruncateExtend
+#endif
 TEST_F(WorkerFileSystemTest, FileWriterTruncateExtend) {
   RunWorkerFileSystemLayoutTest("file-writer-truncate-extend.html");
 }
 
+#if defined(OS_LINUX)
+// Fails on Linux due to an assert in WebKit's RNG.
+// See http://webkit.org/b/55728.
+#define FileWriterSyncTruncateExtend DISABLED_FileWriterSyncTruncateExtend
+#endif
 TEST_F(WorkerFileSystemTest, FileWriterSyncTruncateExtend) {
   RunWorkerFileSystemLayoutTest("file-writer-sync-truncate-extend.html");
 }
 
+#if defined(OS_LINUX)
+// Fails on Linux due to an assert in WebKit's RNG.
+// See http://webkit.org/b/55728.
+#define FileWriterSyncWriteOverlapped DISABLED_FileWriterSyncWriteOverlapped
+#endif
 TEST_F(WorkerFileSystemTest, FileWriterSyncWriteOverlapped) {
   RunWorkerFileSystemLayoutTest("file-writer-sync-write-overlapped.html");
 }
