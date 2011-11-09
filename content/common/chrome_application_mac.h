@@ -12,15 +12,14 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_nsobject.h"
-#include "base/message_pump_mac.h"
+#import "content/common/mac/scoped_sending_event.h"
 
 // Event hooks must implement this protocol.
 @protocol CrApplicationEventHookProtocol
 - (void)hookForEvent:(NSEvent*)theEvent;
 @end
 
-
-@interface CrApplication : NSApplication<CrAppProtocol> {
+@interface CrApplication : NSApplication<CrAppControlProtocol> {
  @private
   BOOL handlingSendEvent_;
   // Array of objects implementing the CrApplicationEventHookProtocol
@@ -45,23 +44,6 @@
 
 + (NSApplication*)sharedApplication;
 @end
-
-namespace chrome_application_mac {
-
-// Controls the state of |handlingSendEvent_| in the event loop so that it is
-// reset properly.
-class ScopedSendingEvent {
- public:
-  ScopedSendingEvent();
-  ~ScopedSendingEvent();
-
- private:
-  CrApplication* app_;
-  BOOL handling_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedSendingEvent);
-};
-
-}  // namespace chrome_application_mac
 
 #endif  // defined(__OBJC__)
 

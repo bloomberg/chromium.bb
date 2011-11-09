@@ -25,6 +25,7 @@
 #import "content/browser/tab_contents/web_drag_dest_mac.h"
 #import "content/browser/tab_contents/web_drag_source_mac.h"
 #import "content/common/chrome_application_mac.h"
+#import "content/common/mac/scoped_sending_event.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -161,7 +162,7 @@ void TabContentsViewMac::StartDragging(
   // processing -sendEvent:, so Close() is deferred in that case.
   // Drags from web content do not come via -sendEvent:, this sets the
   // same flag -sendEvent: would.
-  chrome_application_mac::ScopedSendingEvent sendingEventScoper;
+  content::mac::ScopedSendingEvent sending_event_scoper;
 
   // The drag invokes a nested event loop, arrange to continue
   // processing events.

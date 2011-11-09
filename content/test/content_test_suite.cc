@@ -15,6 +15,11 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/test/gfx_test_utils.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
+#include "content/test/mock_chrome_application_mac.h"
+#endif
+
 namespace {
 
 class TestContentClientInitializer : public testing::EmptyTestEventListener {
@@ -61,6 +66,11 @@ ContentTestSuite::~ContentTestSuite() {
 }
 
 void ContentTestSuite::Initialize() {
+#if defined(OS_MACOSX)
+  base::mac::ScopedNSAutoreleasePool autorelease_pool;
+  mock_cr_app::RegisterMockCrControlApp();
+#endif
+
   base::TestSuite::Initialize();
 
   content::RegisterPathProvider();

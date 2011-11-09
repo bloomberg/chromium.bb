@@ -44,7 +44,7 @@
 }
 
 - (void)sendEvent:(NSEvent*)event {
-  chrome_application_mac::ScopedSendingEvent sendingEventScoper;
+  content::mac::ScopedSendingEvent sendingEventScoper;
   for (id<CrApplicationEventHookProtocol> handler in eventHooks_.get()) {
     [handler hookForEvent:event];
   }
@@ -62,16 +62,6 @@
 @end
 
 namespace chrome_application_mac {
-
-ScopedSendingEvent::ScopedSendingEvent()
-    : app_(static_cast<CrApplication*>([CrApplication sharedApplication])),
-      handling_([app_ isHandlingSendEvent]) {
-  [app_ setHandlingSendEvent:YES];
-}
-
-ScopedSendingEvent::~ScopedSendingEvent() {
-  [app_ setHandlingSendEvent:handling_];
-}
 
 void RegisterCrApp() {
   [CrApplication sharedApplication];

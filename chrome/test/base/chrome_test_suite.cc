@@ -158,8 +158,8 @@ ChromeTestSuite::~ChromeTestSuite() {
 
 void ChromeTestSuite::Initialize() {
 #if defined(OS_MACOSX)
-  chrome_application_mac::RegisterCrApp();
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
+  chrome_application_mac::RegisterCrApp();
 #endif
 
   base::TestSuite::Initialize();
