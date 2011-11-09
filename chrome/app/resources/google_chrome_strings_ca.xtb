@@ -69,7 +69,6 @@
 <translation id="6757767188268205357">No em molestis</translation>
 <translation id="2290095356545025170">Esteu segur que voleu desinstal·lar Google Chrome?</translation>
 <translation id="1243097286641060337">Google Chrome o Google Chrome Frame no es pot actualitzar a causa de la configuració incoherent de la norma de grup de Google Update. Utilitzeu l'Editor de la norma de grup per establir la substitució de la norma d'actualització per a l'aplicació de fitxers binaris de Google Chrome i torneu-ho a provar.</translation>
-<translation id="6087062680442281307">Google Chrome és un navegador web que executa pàgines web i aplicacions a gran velocitat. És ràpid, estable i fàcil d'utilitzar. Navegueu d'una manera més segura pel web amb la protecció contra programari maliciós i llocs de pesca integrada a Google Chrome.</translation>
 <translation id="5941830788786076944">Estableix Google Chrome com el navegador per defecte</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome us permet fer clic en un número de telèfon al web i trucar-hi amb Skype!</translation>
@@ -106,6 +105,7 @@
 <translation id="1001534784610492198">El fitxer d'instal·lació està malmès o no és vàlid. Torna a baixar Google Chrome.</translation>
 <translation id="6626317981028933585">Lamentablement, la vostra configuració de Mozilla Firefox no estarà disponible mentre aquest navegador s'estigui executant. Per importar aquesta configuració a Google Chrome, deseu la feina que hagueu fet i tanqueu totes les finestres de Firefox. Seguidament, feu clic a &quot;Continua&quot;.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="1698376642261615901">Google Chrome és un navegador web que executa pàgines web i aplicacions a gran velocitat. És ràpid, estable i fàcil d'utilitzar. Navegueu d'una manera més segura pel web amb la protecció contra programari maliciós i llocs de pesca integrada a Google Chrome.</translation>
 <translation id="3419750618886995598">Actualització de Chrome Frame.</translation>
 <translation id="6049075767726609708">Un administrador ha instal·lat Google Chrome en aquest sistema i ja està disponible per a tots els usuaris. Ara substituirem la instal·lació de Google Chrome en l'àmbit del sistema per la instal·lació en l'àmbit dels usuaris.</translation>
 <translation id="7123348595797445166">Prova-la (ja instal·lada)</translation>

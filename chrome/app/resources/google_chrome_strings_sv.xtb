@@ -69,7 +69,6 @@
 <translation id="6757767188268205357">Stör mig inte</translation>
 <translation id="2290095356545025170">Är du säker på att du vill avinstallera Google Chrome?</translation>
 <translation id="1243097286641060337">Google Chrome eller Google Chrome Frame kan inte uppdateras på grund av inkonsekventa gruppolicyinställningar för Google Update. Använd gruppolicyredigeraren om du vill att uppdateringspolicyn ska åsidosättas för Binaries-programmet i Google Chrome och försök igen.</translation>
-<translation id="6087062680442281307">Google Chrome är en webbläsare som kör webbsidor och program med ljusets hastighet. Det är snabbt, stabilt och lätt att använda. Sök på webben säkrare med Google Chromes inbyggda skydd mot skadlig programvara och lösenordsfiske.</translation>
 <translation id="5941830788786076944">Använd Google Chrome som standardwebbläsare</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">I Google Chrome kan du klicka på ett telefonnummer på nätet och ringa det med Skype!</translation>
@@ -106,6 +105,7 @@
 <translation id="1001534784610492198">Arkivet för installationsfilen är skadat eller ogiltigt. Hämta Google Chrome igen.</translation>
 <translation id="6626317981028933585">Inställningarna för Mozilla Firefox är tyvärr inte tillgängliga medan webbläsaren körs. Om du vill importera dessa inställningar till Google Chrome måste du spara ditt arbete och stänga alla Firefox-fönster. Klicka sedan på Fortsätt.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="1698376642261615901">Google Chrome är en webbläsare som kör webbsidor och program med ljusets hastighet. Den är snabb, stabil och lätt att använda. Surfa säkrare med Google Chrome, som har inbyggt skydd mot skadlig programvara och nätfiske.</translation>
 <translation id="3419750618886995598">Uppdatering av Chrome Frame.</translation>
 <translation id="6049075767726609708">En administratör har installerat Google Chrome på systemet så att det är tillgängligt för alla användare. Systemnivåversionen av Google Chrome ersätter nu installationen på användarnivå.</translation>
 <translation id="7123348595797445166">Testa den (redan installerad)</translation>

@@ -34,7 +34,6 @@
 <translation id="7998998292074133333">当 Chrome 操作系统设备处于空闲或暂停状态启用锁定。如果您启用了此设置，则用户需要输入密码才能将处于睡眠状态的 Chrome 操作系统设备解锁。如果您停用了此设置，则用户无需输入密码即可唤醒处于睡眠状态的 Chrome 操作系统设备。如果您启用或停用了此设置，则用户无法在“<ph name="PRODUCT_OS_NAME"/>”中更改或替换此设置。</translation>
 <translation id="8781881969636812184">在远程客户端尝试与此计算机建立连接时启用 STUN 服务器和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端机器建立连接。</translation>
 <translation id="5912364507361265851">允许用户在“密码管理器”中显示密码</translation>
-<translation id="6999540307315670568">在“<ph name="PRODUCT_NAME"/>”的新标签页上启用书签栏。如果您启用了此设置，则“<ph name="PRODUCT_NAME"/>”会在“新标签页”上显示书签栏。如果您停用了此设置，则用户从不会看到书签栏。如果您启用或停用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改或替换此设置。</translation>
 <translation id="8828766846428537606">在“<ph name="PRODUCT_NAME"/>”中配置默认主页，并禁止用户更改主页。只有将主页设置为新标签页或某个特定的主页网址，才能完全锁定用户的主页设置。如果您没有指定主页网址，那么用户仍然可以通过指定“chrome://newtab”，将主页设置为新标签页。</translation>
 <translation id="2231817271680715693">首次运行时，从默认浏览器导入浏览记录</translation>
 <translation id="1353966721814789986">启动页</translation>
@@ -126,6 +125,7 @@
 <translation id="2741921267428646309">这是“<ph name="PRODUCT_NAME"/>”所遵循的政策的列表。您无需手动更改这些设置！您可以访问 <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>，下载易于使用的模板。Chromium 和“Google Chrome 浏览器”的支持政策的列表相同，但它们的 Windows 注册表位置不同。Chromium 政策和“Google Chrome 浏览器”政策的注册表路径开头分别为 <ph name="CHROMIUM_KEY"/> 和 <ph name="GOOGLE_CHROME_KEY"/>。</translation>
 <translation id="7003746348783715221">“<ph name="PRODUCT_NAME"/>”偏好设置</translation>
 <translation id="4723829699367336876">支持通过远程访问客户端穿越防火墙</translation>
+<translation id="7082208731926398296">允许将推送网络配置按用户应用到安装了 <ph name="PRODUCT_OS_NAME"/>的设备上。根据“开放网络配置”格式（网址为：https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration）的定义，该网络配置是采用 JSON 格式的字符串。</translation>
 <translation id="9096086085182305205">身份验证服务器白名单</translation>
 <translation id="7063895219334505671">在这些网站上允许弹出式窗口</translation>
 <translation id="2824715612115726353">启用隐身模式</translation>
@@ -145,6 +145,7 @@
 <translation id="8451988835943702790">使用“新标签页”作为主页</translation>
 <translation id="823695959636476037">控制用户是否可在密码管理器中以明文形式显示密码。如果您停用了此设置，则密码管理器不允许在其窗口中以明文形式显示存储的密码。如果您已启用或未配置此设置，则用户可以在密码管理器中以明文形式查看其密码。</translation>
 <translation id="8731693562790917685">“内容设置”可让您指定特定类型的内容（例如 Cookie、图片或 JavaScript）的处理方式。</translation>
+<translation id="2411919772666155530">阻止在这些网站上显示通知</translation>
 <translation id="467236746355332046">支持的功能：</translation>
 <translation id="7632724434767231364">GSSAPI 库名称</translation>
 <translation id="4985088509112317247">可让您设置是否允许网站设置本地数据。可以针对所有网站允许或拒绝设置本地数据。</translation>
@@ -156,6 +157,7 @@
 <translation id="2745445908503591390">在浏览器关闭时清除网站数据</translation>
 <translation id="8665913667133665583">指定在进行集成身份验证时应列入白名单的服务器。只有当“<ph name="PRODUCT_NAME"/>”收到来自代理或来自此允许列表中服务器的身份验证质询时，才会启用集成身份验证。各个服务器名称之间用逗号隔开。允许使用通配符 (*)。</translation>
 <translation id="538108065117008131">允许“<ph name="PRODUCT_FRAME_NAME"/>”处理以下内容类型。</translation>
+<translation id="2886164457168401177">可让您设置网址格式的列表，此类网址格式用于指定允许显示通知的网站。</translation>
 <translation id="2312134445771258233">允许您配置在启动时载入的页面。除非您在“启动时的操作”中选择“打开网址列表”，否则系统会忽略“启动时打开的网址”列表中的内容。</translation>
 <translation id="8344454543174932833">首次运行时，从默认浏览器导入书签</translation>
 <translation id="7931766636395791713">可让您设置网址格式的列表，此类网址格式用于指定允许运行 JavaScript 的网站。</translation>
@@ -201,6 +203,7 @@
 <translation id="4983201894483989687">允许运行过期的插件</translation>
 <translation id="7492608050778218564">停用对 3D 图形 API 的支持。启用此设置可禁止网页访问图形处理单元 (GPU)。具体地讲，就是网页无法访问 WebGL API，并且插件无法使用 Pepper 3D API。停用此设置可能会允许网页使用 WebGL API，并且允许插件使用 Pepper 3D API。浏览器的默认设置可能仍然需要传递命令行参数才能使用这些 API。</translation>
 <translation id="7202926611616207807">允许所有网站设置本地数据。</translation>
+<translation id="5868414965372171132">用户级网络配置</translation>
 <translation id="678228246386317063">可让您设置网址格式的列表，此类网址格式用于指定允许设置仅限会话的 Cookie 的网站。</translation>
 <translation id="5774856474228476867">默认搜索服务提供商的搜索网址</translation>
 <translation id="4650759511838826572">停用网址协议方案</translation>
@@ -224,6 +227,8 @@
 <translation id="924557436754151212">首次运行时，从默认浏览器导入保存的密码</translation>
 <translation id="8754704265300028644">在“<ph name="PRODUCT_NAME"/>”中停用浏览器历史记录保存功能，并禁止用户更改此设置。如果此设置已启用，则系统不会保存浏览记录。如果此设置已停用或未配置，则系统会保存浏览记录。</translation>
 <translation id="1897365952389968758">允许所有网站运行 JavaScript</translation>
+<translation id="3963316686348464884">允许将推送网络配置应用到所有用户的安装了 <ph name="PRODUCT_OS_NAME"/>的设备上。根据“开放网络配置”格式（网址为：https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration）的定义，该网络配置是采用 JSON 格式的字符串。</translation>
+<translation id="560746250309032104">在 <ph name="PRODUCT_NAME"/>上启用书签栏。如果您启用了此设置，则 <ph name="PRODUCT_NAME"/>会显示书签栏。如果您停用了此设置，则用户将无法看到书签栏。如果您启用或停用了此设置，则用户将无法在 <ph name="PRODUCT_NAME"/>中进行更改或替换。</translation>
 <translation id="6931242315485576290">停用与 Google 同步数据的功能</translation>
 <translation id="7006788746334555276">内容设置</translation>
 <translation id="3676473196461789250">可让您设置网址格式的列表，此类网址格式用于指定允许运行插件的网站。</translation>
@@ -261,6 +266,7 @@
 <translation id="3653673712530669976">可让您配置安装“<ph name="PRODUCT_FRAME_NAME"/>”时默认使用的 HTML 呈现器。默认设置是允许托管浏览器进行呈现，但您可以选择替换此设置，并默认让“<ph name="PRODUCT_FRAME_NAME"/>”呈现 HTML 页面。</translation>
 <translation id="7848840259379156480">可让您配置安装“<ph name="PRODUCT_FRAME_NAME"/>”时默认使用的 HTML 呈现器。默认设置是允许托管浏览器进行呈现，但您可以选择替换此设置，并默认让“<ph name="PRODUCT_FRAME_NAME"/>”呈现 HTML 页面。</translation>
 <translation id="4121350739760194865">阻止在新标签页上显示应用程序宣传信息</translation>
+<translation id="2127599828444728326">允许在这些网站上显示通知</translation>
 <translation id="4486602758942612946">自定义应总是通过托管浏览器呈现的网址格式的列表。关于示例格式，请访问 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="2257451316169619209">指定向设备的管理服务查询设备策略信息的周期（以毫秒为单位）。设置此策略会替换默认值（3 小时）。此策略的有效值范围为 1800000（30 分钟）至 86400000（1 天）。任何超出此范围的值都会被强制调整到相应范围内。</translation>
 <translation id="1734716591049455502">配置远程访问选项</translation>
@@ -276,6 +282,7 @@
 <translation id="6510914645829248303">如果您选择“打开网址列表”作为启动时的操作，则可指定要打开的网址列表。</translation>
 <translation id="3780152581321609624">在 Kerberos SPN 中加入非标准端口</translation>
 <translation id="2660846099862559570">从不使用代理</translation>
+<translation id="1435659902881071157">设备级网络配置</translation>
 <translation id="5512418063782665071">主页网址</translation>
 <translation id="6049075103826767200">允许向 Google 匿名报告关于“<ph name="PRODUCT_NAME"/>”的使用情况和崩溃相关数据，并禁止用户更改此设置。如果您启用了此设置，则会向 Google 发送关于使用情况和崩溃相关数据的匿名报告。如果您停用了此设置，则从不会向 Google 发送关于使用情况和崩溃相关数据的匿名报告。如果您启用或停用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改或替换此设置。</translation>
 <translation id="2263362640517427542">当 Chrome 操作系统设备处于空闲或暂停状态时启用锁定功能。</translation>
@@ -286,6 +293,7 @@
 <translation id="6938581770853731947">配置“<ph name="PRODUCT_NAME"/>”中默认主页的类型，并阻止用户更改主页偏好设置。主页可以设置为您指定的网址，也可以设置为“新标签页”。如果您启用了此设置，则总是使用“新标签页”作为主页，并忽略主页网址位置。如果您停用了此设置，则用户的主页从不会是“新标签页”，除非将主页网址设置为“chrome://newtab”。如果您启用或停用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改其主页类型。</translation>
 <translation id="2844287278346661435">允许访问列出的网址（它们属于网址黑名单例外情况）。有关该列表中条目的格式，请参阅网址黑名单政策的说明。此政策可用于对受限黑名单设置例外情况。例如，可将“*”列入黑名单以阻止所有请求，而使用此政策即可允许访问一些指定的网址。此政策可用于对某些协议、其他域的子域、端口或特定路径设置例外情况。是否阻止网址取决于限定性最强的过滤条件。白名单的优先级高于黑名单。此政策的上限是 100 个条目，超出的条目会被忽略。</translation>
 <translation id="5645779841392247734">在这些网站上允许 Cookie</translation>
+<translation id="791491514268619407">可让您设置网址格式的列表，此类网址格式用于指定不允许显示通知的网站。</translation>
 <translation id="3906388518501362918">在“<ph name="PRODUCT_NAME"/>”中启用 JavaScript，并禁止用户更改此设置。如果此设置已启用或未配置，则网页可以使用 JavaScript。如果此设置已停用，则网页无法使用 JavaScript。</translation>
 <translation id="4821854788360803313">指定在“<ph name="PRODUCT_NAME"/>”中停用的插件的列表，并禁止用户更改此设置。可使用通配符“*”和“?”匹配任意字符序列。“*”可匹配任意数量的字符，而“?”可指定单个可选的字符，即匹配零个或一个字符。转义字符为“\”，因此要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。如果您启用了此设置，则“<ph name="PRODUCT_NAME"/>”从不会使用列表中指定的插件。这些插件在“about:plugins”中标记为已停用，而且用户无法启用它们。请注意，EnabledPlugins 和 DisabledPluginsExceptions 可替换此政策。</translation>
 </translationbundle>

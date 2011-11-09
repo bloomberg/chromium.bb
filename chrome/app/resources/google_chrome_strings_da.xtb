@@ -69,7 +69,6 @@
 <translation id="6757767188268205357">Spørg mig ikke igen</translation>
 <translation id="2290095356545025170">Er du sikker på, at du vil afinstallere Google Chrome?</translation>
 <translation id="1243097286641060337">Google Chrome eller Google Chrome Frame kan ikke opdateres på grund af uoverensstemmende indstillinger i gruppepolitikken for Google Update. Brug redigeringsværktøjet til gruppepolitikken for at konfigurere tilsidesættelse af opdateringspolitikken for Google Chrome Binaries-applikationen, og prøv igen.</translation>
-<translation id="6087062680442281307">Google Chrome er en webbrowser, som kører websider og programmer med lynets hast. Den er hurtig, stabil og nem at bruge. Surf mere sikkert med indbygget beskyttelse mod malware og phishing i Google Chrome.</translation>
 <translation id="5941830788786076944">Gør Google Chrome til din standardbrowser</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Med Google Chrome kan du klikke på et telefonnummer på nettet og ringe op til det via Skype!</translation>
@@ -106,6 +105,7 @@
 <translation id="1001534784610492198">Installationsarkivet er beskadiget eller ugyldigt. Download Google Chrome igen.</translation>
 <translation id="6626317981028933585">Desværre er dine Mozilla Firefox-indstillinger ikke tilgængelige, mens browseren kører. Gem dit arbejde og luk alle Firefox-vinduer for at importere disse indstillinger til Google Chrome. Klik derefter på Fortsæt.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="1698376642261615901">Google Chrome er en webbrowser, som kører websider og applikationer med lynets hast. Den er hurtig, stabil og nem at bruge. Surf mere sikkert med indbygget beskyttelse mod malware og phishing i Google Chrome.</translation>
 <translation id="3419750618886995598">Opdatering af Chrome Frame.</translation>
 <translation id="6049075767726609708">En administrator har allerede installeret Google Chrome på dette system, og det er tilgængeligt for alle brugere. Google Chrome-programmet på systemniveau vil nu erstatte din installation på brugerniveau.</translation>
 <translation id="7123348595797445166">Prøv den (allerede installeret)</translation>

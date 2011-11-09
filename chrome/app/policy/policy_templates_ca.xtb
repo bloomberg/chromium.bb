@@ -40,7 +40,6 @@
 <translation id="7998998292074133333">Activa el bloqueig quan els dispositius ChromeOS estiguin inactius o se suspenguin. Si activeu aquest paràmetre, es demanarà una contrasenya als usuaris per desbloquejar els dispositius ChromeOS quan s'interrompi la suspensió. Si el desactiveu, no se sol·licitarà cap contrasenya als usuaris per despertar els dispositius ChromeOS. Tant si activeu com si desactiveu aquest paràmetre, els usuaris no podran modificar-lo ni substituir-lo a <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8781881969636812184">Activa la utilització de servidors STUN i de retransmissió quan els clients remots provin d'establir una connexió amb aquesta màquina. Si aquest paràmetre està activat, els clients remots podran descobrir aquestes màquines i connectar-hi encara que estiguin separades per un tallafoc. Si aquest paràmetre està desactivat i el tallafoc filtra les connexions UDP sortints, aquesta màquina només permetrà les connexions des de màquines client de dins de la xarxa local.</translation>
 <translation id="5912364507361265851">Permet que els usuaris mostrin les contrasenyes al Gestor de contrasenyes</translation>
-<translation id="6999540307315670568">Activa la barra d'adreces d'interès a la pàgina de pestanya nova de <ph name="PRODUCT_NAME"/>. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME"/> mostrarà una barra d'adreces d'interès a la pàgina de pestanya nova. Si el desactiveu, els usuaris no veuran la barra d'adreces d'interès. Tant si activeu com si desactiveu aquest paràmetre, els usuaris no podran modificar-lo ni substituir-lo a <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8828766846428537606">Configura la pàgina d'inici predeterminada a <ph name="PRODUCT_NAME"/> i evita que els usuaris la canviïn. La configuració de la pàgina d'inici dels usuaris només es bloqueja completament si seleccioneu que sigui la pàgina de pestanya nova o si l'establiu perquè sigui un URL que trieu. Si no especifiqueu l'URL de la pàgina d'inici, l'usuari podrà establir la pàgina de pestanya nova com a pàgina d'inici si especifica &quot;chrome://newtab&quot;.</translation>
 <translation id="2231817271680715693">Importació de l'historial de navegació des del navegador predeterminat en la primera execució</translation>
 <translation id="1353966721814789986">Pàgines d'inici</translation>
@@ -132,6 +131,7 @@
 <translation id="2741921267428646309">Aquesta és la llista de polítiques que <ph name="PRODUCT_NAME"/> respecta. No cal que en canvieu la configuració a mà. Podeu baixar plantilles fàcils de fer servir a <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>. La llista de polítiques compatibles és la mateixa per a Chromium i per a Google Chrome, però la ubicació del seu registre de Windows és diferent. Comença amb <ph name="CHROMIUM_KEY"/> per a les polítiques de Chromium i amb <ph name="GOOGLE_CHROME_KEY"/> per a les polítiques de Google Chrome.</translation>
 <translation id="7003746348783715221">Preferències de <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Activa que es pugui travessar el tallafoc des d'un client d'accés remot</translation>
+<translation id="7082208731926398296">Permet aplicar la configuració de la xarxa per usuari a un dispositiu <ph name="PRODUCT_OS_NAME"/>. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
 <translation id="9096086085182305205">Llista blanca del servidor d'autenticació</translation>
 <translation id="7063895219334505671">Permet les finestres emergents en aquests llocs</translation>
 <translation id="2824715612115726353">Activa el mode d'incògnit</translation>
@@ -151,6 +151,7 @@
 <translation id="8451988835943702790">Fes servir la pàgina de pestanya nova com a pàgina d'inici</translation>
 <translation id="823695959636476037">Controla si l'usuari pot mostrar les contrasenyes com a text no xifrat al gestor de contrasenyes o no. Si desactiveu aquest paràmetre, el gestor de contrasenyes no permetrà que es mostrin les contrasenyes com a text no xifrat a la seva finestra. Si l'activeu o bé si no el configureu, els usuaris podran visualitzar les seves contrasenyes com a text no xifrat al gestor de contrasenyes.</translation>
 <translation id="8731693562790917685">Configuració del contingut us permet especificar la manera com es tracta el contingut d'un tipus determinat (per exemple, Galetes, Imatges o JavaScript).</translation>
+<translation id="2411919772666155530">Bloqueja les notificacions d'aquests llocs</translation>
 <translation id="467236746355332046">Funcions compatibles:</translation>
 <translation id="7632724434767231364">Nom de la biblioteca GSSAPI</translation>
 <translation id="4985088509112317247">Us permet definir si els llocs web poden establir dades locals o no. L'establiment de dades locals pot permetre's o denegar-se per a tots els llocs web.</translation>
@@ -162,6 +163,7 @@
 <translation id="2745445908503591390">Esborra les dades dels llocs en tancar el navegador</translation>
 <translation id="8665913667133665583">Especifica els servidors que han d'aparèixer a la llista blanca per a l'autenticació integrada. Aquest tipus d'autenticació només s'activa quan <ph name="PRODUCT_NAME"/> rep un desafiament d'autenticació d'un servidor intermediari o d'un servidor que estigui en aquesta llista permesa. Separeu els diferents noms de servidors amb comes. Es permeten els comodins (*).</translation>
 <translation id="538108065117008131">Permet que <ph name="PRODUCT_FRAME_NAME"/> gestioni els tipus de contingut següents.</translation>
+<translation id="2886164457168401177">Permet establir una llista de patrons d'URL que especifiquin els llocs que poden mostrar notificacions.</translation>
 <translation id="2312134445771258233">Us permet configurar les pàgines que es carreguen en iniciar. El contingut de la llista &quot;URL que s'han d'obrir en iniciar&quot; s'ignora tret que seleccioneu &quot;Obre una llista d'URL&quot; a &quot;Acció a l'inici&quot;.</translation>
 <translation id="8344454543174932833">Importació de les adreces d'interès des del navegador predeterminat en la primera execució</translation>
 <translation id="7931766636395791713">Us permet configurar una llista de patrons que especifiquin els llocs als quals es permet executar JavaScript.</translation>
@@ -228,6 +230,7 @@
 <translation id="4983201894483989687">Permet que s'executin els connectors que estiguin obsolets</translation>
 <translation id="7492608050778218564">Desactiva la compatibilitat amb les API de gràfics en 3D. Si activeu aquest paràmetre, s'evitarà que les pàgines web accedeixin a la unitat de processament de gràfics (GPU). De manera específica, les pàgines web no podran accedir a l'API WebGL i els connectors no podran fer servir l'API Pepper 3D. Si desactiveu aquest paràmetre, es permetrà potencialment que les pàgines web facin servir l'API WebGL i que els connectors facin servir l'API Pepper 3D. És possible que la configuració predeterminada del navegador requereixi que es permetin els arguments de la línia d'ordres per poder fer servir les API.</translation>
 <translation id="7202926611616207807">Permet que tots els llocs defineixin dades locals.</translation>
+<translation id="5868414965372171132">Configuració de la xarxa per part de l'usuari</translation>
 <translation id="678228246386317063">Us permet definir una llista de patrons URL que especifiqui els llocs als quals es poden establir galetes només de sessió.</translation>
 <translation id="5774856474228476867">URL de cerca del proveïdor de cerques predeterminat</translation>
 <translation id="4650759511838826572">Desactiva els esquemes del protocol URL</translation>
@@ -251,6 +254,8 @@
 <translation id="924557436754151212">Importació de les contrasenyes desades des del navegador predeterminat en la primera execució</translation>
 <translation id="8754704265300028644">Desactiva l'emmagatzematge de l'historial del navegador a <ph name="PRODUCT_NAME"/> i evita que els usuaris en canviïn la configuració. Si aquest paràmetre està activat, l'historial de navegació no es desa. Si està desactivat o bé si no està configurat, l'historial de navegació es desa.</translation>
 <translation id="1897365952389968758">Permet que tots els llocs executin JavaScript</translation>
+<translation id="3963316686348464884">Permet aplicar la configuració de la xarxa per a tots els usuaris d'un dispositiu <ph name="PRODUCT_OS_NAME"/>. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
+<translation id="560746250309032104">Activa la barra de marcadors a <ph name="PRODUCT_NAME"/>. Si activeu aquesta configuració, <ph name="PRODUCT_NAME"/> mostrarà una barra de marcadors. Si desactiveu la configuració, els usuaris no veuran mai la barra de marcadors. Tant si activeu com si desactiveu aquesta configuració, els usuaris no podran canviar-la ni anul·lar-la a <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6931242315485576290">Desactiva la sincronització de dades amb Google</translation>
 <translation id="7006788746334555276">Configuració del contingut</translation>
 <translation id="3676473196461789250">Us permet configurar una llista de patrons URL que especifiqui els llocs que poden executar connectors.</translation>
@@ -288,6 +293,7 @@
 <translation id="3653673712530669976">Us permet configurar el renderitzador HTML predeterminat quan <ph name="PRODUCT_FRAME_NAME"/> estigui instal·lat. De manera predeterminada, la configuració permet que el navegador amfitrió dugui a terme la renderització, però podeu substituir aquesta configuració de manera opcional i fer que <ph name="PRODUCT_FRAME_NAME"/> renderitzi les pàgines HTML de manera predeterminada.</translation>
 <translation id="7848840259379156480">Us permet configurar el renderitzador HTML predeterminat quan <ph name="PRODUCT_FRAME_NAME"/> estigui instal·lat. De manera predeterminada, la configuració permet que el navegador amfitrió dugui a terme la renderització, però podeu substituir aquesta configuració de manera opcional i fer que <ph name="PRODUCT_FRAME_NAME"/> renderitzi les pàgines HTML de manera predeterminada.</translation>
 <translation id="4121350739760194865">Impedeix que les promocions d'aplicacions apareguin a la pestanya nova</translation>
+<translation id="2127599828444728326">Permet les notificacions en aquests llocs</translation>
 <translation id="4486602758942612946">Personalitzeu la llista de patrons URL que ha de renderitzar sempre el navegador amfitrió. Si voleu veure patrons d'exemple, consulteu http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Especifica el període en mil·lisegons durant el qual se sol·licita al servei de gestió de dispositius d'informació sobre les polítiques de dispositiu. Si configureu aquesta política, se substituirà el valor predeterminat de 3 hores. Els valors vàlids per a aquesta política van des de 1800000 (30 minuts) fins a 86400000 (un dia). Els valors que estiguin fora d'aquest àmbit temporal es modificaran fins a encabir-los al límit respectiu.</translation>
 <translation id="1734716591049455502">Configura les opcions d'accés remot</translation>
@@ -303,6 +309,7 @@
 <translation id="6510914645829248303">Si &quot;Obre una llista d'URL&quot; està seleccionat com a acció d'inici, aquest paràmetre us permet especificar la llista dels URL que s'obren.</translation>
 <translation id="3780152581321609624">Inclou un port no estàndard a l'SPN de Kerberos</translation>
 <translation id="2660846099862559570">No facis servir mai un servidor intermediari</translation>
+<translation id="1435659902881071157">Configuració de la xarxa a nivell del dispositiu</translation>
 <translation id="5512418063782665071">URL de la pàgina d'inici</translation>
 <translation id="6049075103826767200">Permet la creació anònima d'informes d'ús i de dades relacionades amb bloqueigs sobre <ph name="PRODUCT_NAME"/> per a Google i evita que els usuaris en modifiquin la configuració. Si activeu aquest paràmetre, els informes anònims d'ús i de dades relacionades amb bloqueigs s'enviaran a Google. Si el desactiveu, no s'enviaran mai a Google. Tant si activeu com si desactiveu aquest paràmetre, els usuaris no podran modificar-lo ni substituir-lo a <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2263362640517427542">Activa el bloqueig quan els dispositius ChromeOS estiguin inactius o se suspenguin.</translation>
@@ -321,6 +328,7 @@
 
       Aquesta política està limitada a 100 entrades; les entrades posteriors s'ignoraran.</translation>
 <translation id="5645779841392247734">Permet les galetes en aquests llocs</translation>
+<translation id="791491514268619407">Permet establir una llista de patrons d'URL que especifiquin els llocs que no poden mostrar notificacions.</translation>
 <translation id="3906388518501362918">Activa JavaScript a <ph name="PRODUCT_NAME"/> i evita que els usuaris en modifiquin la configuració. Si aquest paràmetre està activat o si no està configurat, les pàgines web podran fer servir JavaScript. Si està desactivat, no podran fer-lo servir.</translation>
 <translation id="4821854788360803313">Especifica una llista de connectors desactivats a <ph name="PRODUCT_NAME"/> i evita que els usuaris en modifiquin la configuració. Els caràcters comodí &quot;*&quot; i &quot;?&quot; poden utilitzar-se per fer coincidir seqüències de caràcters arbitraris. &quot;*&quot; coincideix amb un nombre arbitrari de caràcters i &quot;?&quot; especifica un únic caràcter opcional, és a dir, coincideix amb un caràcter o amb cap. El caràcter d'escapament és &quot;\&quot;, de manera que si voleu coincidir amb els caràcters &quot;*&quot;, &quot;?&quot; o &quot;\&quot; reals, podeu posar-hi el caràcter &quot;\&quot; al davant. Si activeu aquest paràmetre, la llista de connectors que s'especifica no es fa servir mai a <ph name="PRODUCT_NAME"/>. Els connectors es marquen com a desactivats a &quot;about:plugins&quot; i els usuaris no poden activar-los. Tingueu en compte que DisabledPlugins i DisabledPluginsExceptions poden substituir aquesta política.</translation>
 </translationbundle>

@@ -34,7 +34,6 @@
 <translation id="7998998292074133333">Lubage lukustamine, kui ChromeOS-i seadmed on peatatud või jõudeolekus. Kui lubate selle seade, palutakse kasutajatel sisestada parool, et vabastada ChromeOS-i seadmed unerežiimist. Kui keelate seade, ei paluta kasutajatel ChromeOS-i unerežiimi tühistamiseks parooli sisestada. Kui lubate või keelate selle seade, ei saa kasutajad seadet tootes <ph name="PRODUCT_OS_NAME"/> muuta ega alistada.</translation>
 <translation id="8781881969636812184">Lubab STUN-i ja vaheserverite kasutamise, kui kaugkliendid püüavad selle seadmega ühenduse luua. Kui see säte on lubatud, suudavad kaugkliendid selle seadme tuvastada ja sellega ühenduse luua isegi siis, kui neid eraldab tulemüür. Kui see säte on keelatud ja tulemüür filtreerib väljaminevaid UDP-ühendusi, siis lubab seade ühendusi ainult nendelt klientseadmetelt, mis asuvad kohalikus võrgus.</translation>
 <translation id="5912364507361265851">Luba kasutajatel paroolihalduris paroolide näitamine</translation>
-<translation id="6999540307315670568">Lubab rakenduse <ph name="PRODUCT_NAME"/> uuel vahelehel järjehoidjariba. Kui lubate seade, näitab <ph name="PRODUCT_NAME"/> uuel vahelehel järjehoidjariba. Kui keelate seade, ei näe kasutajad järjehoidjariba ühelgi juhul. Kui lubate või keelate seade, ei saa kasutajad seda rakenduses <ph name="PRODUCT_NAME"/> muuta ega alistada.</translation>
 <translation id="8828766846428537606">Seadistage rakenduse <ph name="PRODUCT_NAME"/> vaikeavaleht ja takistage kasutajaid seda muutmast. Kasutaja avalehe seaded on täielikult lukustatud vaid juhul, kui valite avaleheks uue vahelehe või seate selle URL-iks ja määrate avalehel URL-i. Kui te ei määra avalehe URL-i, saab kasutaja määrata avaleheks uue vahelehe käsuga chrome://newtab.</translation>
 <translation id="2231817271680715693">Sirvimisajaloo importimine vaikebrauserist esimesel käitamisel</translation>
 <translation id="1353966721814789986">Käivitamisel avatavad lehed</translation>
@@ -126,6 +125,7 @@
 <translation id="2741921267428646309">See on reeglite loend, mida <ph name="PRODUCT_NAME"/> järgib. Te ei pea neid seadeid käsitsi muutma. Võite aadressilt <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/> alla laadida hõlpsasti kasutatavad mallid. Toetatud reeglite loend on Chromiumi ja Google Chrome'i puhul sama, kuid nende asukohad Windowsi registris on erinevad. Chromiumi reeglite alguses on <ph name="CHROMIUM_KEY"/>, Google Chrome'i reeglitel <ph name="GOOGLE_CHROME_KEY"/>.</translation>
 <translation id="7003746348783715221">Rakenduse <ph name="PRODUCT_NAME"/> eelistused</translation>
 <translation id="4723829699367336876">Luba tulemüüri läbimine kaugjuurdepääsu kliendist</translation>
+<translation id="7082208731926398296">Võimaldab võrgukonfiguratsiooni tõugata, et see kasutaja kohta rakendada operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME"/> seadmesse. Võrgukonfiguratsioon on JSON-vormingus string, mis on määratletud Open Network Configuration vormingu poolt (kirjeldatud saidil https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration).</translation>
 <translation id="9096086085182305205">Autentimisserveri lubatud nimekiri</translation>
 <translation id="7063895219334505671">Luba hüpikaknad nendel saitidel</translation>
 <translation id="2824715612115726353">Luba inkognitorežiim</translation>
@@ -145,6 +145,7 @@
 <translation id="8451988835943702790">Kasuta avalehena Uut vahelehte</translation>
 <translation id="823695959636476037">Juhib seda, kas kasutaja paroole võib paroolihalduris tavatekstina näidata. Kui keelate seade, ei lubata paroolihalduri aknas talletatud paroolide tavatekstina näitamist. Seade lubamisel või seadistamata jätmisel saavad kasutajad paroole paroolihalduris tavatekstina vaadata.</translation>
 <translation id="8731693562790917685">Sisu seaded võimaldavad teil määrata, kuidas kindlat tüüpi sisu (näiteks küpsiseid, kujutisi või JavaScripti) käsitletakse.</translation>
+<translation id="2411919772666155530">Blokeerige märguanded nendel saitidel</translation>
 <translation id="467236746355332046">Toetatud funktsioonid:</translation>
 <translation id="7632724434767231364">GSSAPI-teegi nimi</translation>
 <translation id="4985088509112317247">Võimaldab määrata, kas veebisaitidel on lubatud seada kohalikke andmeid. Kohalike andmete seadmist on võimalik kõikidele saitidele lubada või keelata.</translation>
@@ -156,6 +157,7 @@
 <translation id="2745445908503591390">Tühjenda saidiandmed brauseri sulgemisel</translation>
 <translation id="8665913667133665583">Määrab, millised serverid tuleks integreeritud autentimiseks lubatud nimekirja kanda. Integreeritud autentimine lubatakse vaid juhul, kui <ph name="PRODUCT_NAME"/> saab autentimistaotluse puhverserverist või selles lubatud nimekirjas olevast serverist. Eraldage serverite nimed komadega. Metamärgid (*) on lubatud.</translation>
 <translation id="538108065117008131">Teenusel <ph name="PRODUCT_FRAME_NAME"/> järgmist tüüpi sisu käsitsemise lubamine.</translation>
+<translation id="2886164457168401177">Võimaldab luua URL-i mustrite loendi, mis määrab saidid, millel on lubatud märguandeid kuvada.</translation>
 <translation id="2312134445771258233">Võimaldab seadistada käivitamisel avatavad lehed. Loendi „Käivitamisel avatavad URL-id” sisu eiratakse, kui te ei vali jaotises „Toiming käivitamisel” käsku „Ava URL-ide loend”.</translation>
 <translation id="8344454543174932833">Impordi järjehoidjad vaikebrauserist esmakordsel käitamisel</translation>
 <translation id="7931766636395791713">Võimaldab luua URL-i mustrite loendi, mis määrab saidid, millel on lubatud JavaScripti käitada.</translation>
@@ -201,6 +203,7 @@
 <translation id="4983201894483989687">Luba vananenud pistikprogrammide käitamine</translation>
 <translation id="7492608050778218564">Keelake 3D-graafika API-liideste tugi. Seade lubamisel takistatakse veebilehti graafikaprotsessori (GPU) juurde pääsemast. Täpsemalt ei pääse veebilehed WebGL-i API-liidese juurde ja pistikprogrammid ei saa kasutada Pepper 3D API-liidest. Seade keelamine võimaldab veebilehtedel WebGL-i API-liidest ja pistikprogrammidel Pepper 3D API-liidest kasutada. Brauseri vaikeseaded võivad siiski API-liideste kasutamiseks nõuda käsureaargumentide rakendamist.</translation>
 <translation id="7202926611616207807">Luba kõikidel saitidel kohalike andmete seadmine.</translation>
+<translation id="5868414965372171132">Kasutaja tasemel võrgukonfiguratsioon</translation>
 <translation id="678228246386317063">Võimaldab luua URL-i mustrite loendi, mis määrab saidid, millel on lubatud seada vaid seansi küpsiseid.</translation>
 <translation id="5774856474228476867">Vaikeotsingupakkuja otsingu URL</translation>
 <translation id="4650759511838826572">Keela URL-i protokolli skeemid</translation>
@@ -224,6 +227,8 @@
 <translation id="924557436754151212">Impordi salvestatud paroolid vaikebrauserist esimesel käitamisel</translation>
 <translation id="8754704265300028644">Keelab brauseri ajaloo salvestamise rakenduses <ph name="PRODUCT_NAME"/> ja takistab kasutajaid seadet muutmast. Kui seade on lubatud, siis sirvimisajalugu ei salvestata. Kui seade on keelatud või seadistamata, siis salvestatakse sirvimisajalugu.</translation>
 <translation id="1897365952389968758">Luba kõikidel saitidel JavaScripti käitamine</translation>
+<translation id="3963316686348464884">Võimaldab võrgukonfiguratsiooni tõugata, et see rakendada kõigile süsteemi <ph name="PRODUCT_OS_NAME"/> kasutajatele. Võrgukonfiguratsioon on JSON-vormingus string, mis on määratletud Open Network Configuration vormingu poolt (kirjeldatud saidil https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration).</translation>
+<translation id="560746250309032104">Lubab rakenduses <ph name="PRODUCT_NAME"/> järjehoidjariba. Kui lubate seade, kuvatakse rakenduses <ph name="PRODUCT_NAME"/> järjehoidjariba. Kui keelate seade, ei näe kasutajad järjehoidjariba ühelgi juhul. Kui lubate või keelate seade, ei saa kasutajad seda rakenduses <ph name="PRODUCT_NAME"/> muuta ega alistada.</translation>
 <translation id="6931242315485576290">Keela andmete sünkroonimine Google'iga</translation>
 <translation id="7006788746334555276">Sisu seaded</translation>
 <translation id="3676473196461789250">Võimaldab luua URL-i mustrite loendi, mis määrab saidid, millel on lubatud pistikprogramme käitada.</translation>
@@ -261,6 +266,7 @@
 <translation id="3653673712530669976">Võimaldab seadistada HTML-i vaikerenderdusmootori, kui <ph name="PRODUCT_FRAME_NAME"/> on installitud. Vaikeseadena lubatakse hostbrauseril renderdada, kuid võite selle soovi korral alistada ja lasta rakendusel <ph name="PRODUCT_FRAME_NAME"/> HTML-lehti vaikimisi renderdada.</translation>
 <translation id="7848840259379156480">Võimaldab seadistada HTML-i vaikerenderdusmootori, kui <ph name="PRODUCT_FRAME_NAME"/> on installitud. Vaikeseadena on hostbrauseril lubatud renderdada, kuid võite selle soovi korral alistada ja lasta rakendusel <ph name="PRODUCT_FRAME_NAME"/> HTML-lehti vaikimisi renderdada.</translation>
 <translation id="4121350739760194865">Rakenduste reklaamide ilmumise takistamine uuel vahelehel</translation>
+<translation id="2127599828444728326">Luba märguanded nendel saitidel</translation>
 <translation id="4486602758942612946">Kohandage URL-i mustrite loendit, mida tuleb alati renderdada hostbrauseris. Näidismustreid vaadake aadressilt http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Määrab aja millisekundites, mille möödudes esitatakse seadmehaldusteenusele päring seadme reeglite teabe kohta. Selle reegli seadmine alistab vaikeväärtuse 3 tundi. Reegliga sobivad väärtused on vahemikus 1 800 000 (30 minutit) kuni 86 400 000 (üks ööpäev). Vahemikust väljaspool olevad väärtused viiakse sobivatesse piiridesse.</translation>
 <translation id="1734716591049455502">Kaugjuurdepääsu valikute seadistamine</translation>
@@ -276,6 +282,7 @@
 <translation id="6510914645829248303">Kui käivitamisel tehtav toiming on „Ava URL-ide loend”, võimaldab see teil määrata avatavate URL-ide loendi.</translation>
 <translation id="3780152581321609624">Kaasa Kerberose SPN-i mittestandardne port</translation>
 <translation id="2660846099862559570">Ära kunagi kasuta puhverserverit</translation>
+<translation id="1435659902881071157">Seadme tasemel võrgukonfigureerimine</translation>
 <translation id="5512418063782665071">Avalehe URL</translation>
 <translation id="6049075103826767200">Lubab rakenduse <ph name="PRODUCT_NAME"/> kasutus- ja krahhiandmete anonüümse saatmise Google'ile ja takistab kasutajaid seadet muutmast. Kui lubate seade, saadetakse kasutus- ja krahhiandmed anonüümselt Google'ile. Kui keelate seade, ei saadeta Google'ile anonüümseid kasutus- ja krahhiandmeid. Seade lubamisel või keelamisel ei saa kasutajad seda rakenduses <ph name="PRODUCT_NAME"/> muuta ega alistada.</translation>
 <translation id="2263362640517427542">Luba lukustus, kui ChromeOS-i seadmed on peatatud või jõudeolekus.</translation>
@@ -286,6 +293,7 @@
 <translation id="6938581770853731947">Seadistab avalehe vaiketüübi tootes <ph name="PRODUCT_NAME"/> ja takistab kasutajatel avalehe eelistuste muutmist. Avaleheks võib seada määratud URL-i või uue vahelehe. Kui lubate selle seade, kasutatakse avalehena alati uut vahelehte ja avalehe URL-i eiratakse. Kui keelate selle seade, ei kasutata avalehena kunagi uut vahelehte, kui avalehe URL-iks ei ole märgitud „chrome://newtab”. Seade lubamisel või keelamisel ei saa kasutajad tootes <ph name="PRODUCT_NAME"/> avalehe tüüpi muuta.</translation>
 <translation id="2844287278346661435">Võimaldab juurdepääsu loendis olevatele URL-idele ja erandina URL-ide mustale nimekirjale. Loendi sisestuste vormingut vaadake URL-ide musta nimekirja reegli kirjeldusest. Seda reeglit saab kasutada erandite avamiseks keelavates mustades nimekirjades. Näiteks saab „*” kanda musta nimekirja, et see blokeeriks kõik päringud, ja reeglit saab kasutada juurdepääsu võimaldamiseks URL-ide piiratud loendile. Seda saab kasutada erandite avamiseks kindlatele skeemidele, teiste domeenide alamdomeenidele, portidele või konkreetsetele teedele. Kõige täpsem filter määrab, kas URL on blokeeritud või lubatud. Lubatud URL-ide loend on musta nimekirja suhtes ülimuslik. Selle reegli piiranguks on 100 sisestust, millele järgnevaid sisestusi ignoreeritakse.</translation>
 <translation id="5645779841392247734">Luba küpsised nendel saitidel</translation>
+<translation id="791491514268619407">Võimaldab luua URL-i mustrite loendi, mis määrab saidid, millel ei ole lubatud märguandeid kuvada.</translation>
 <translation id="3906388518501362918">Lubab JavaScripti rakenduses <ph name="PRODUCT_NAME"/> ja takistab kasutajaid seadet muutmast. Kui seade on lubatud või seadistamata, saavad veebilehed JavaScripti kasutada. Kui seade on keelatud, ei saa veebilehed JavaScripti kasutada.</translation>
 <translation id="4821854788360803313">Määrab rakenduses <ph name="PRODUCT_NAME"/> keelatud pistikprogrammide loendi ja takistab kasutajaid seadet muutmast. Juhuslike tähemärkide jada vastendamiseks võib kasutada metamärke * ja ?. Märk * vastab mis tahes tähemärkide arvule, ? tähistab valikulist üksikut tähemärki, mis võib, aga ei pruugi esineda. Paomärk on \, mistõttu võite tähemärkide *, ? või \ vastendamiseks lisada nende ette märgi \. Kui lubate seade, ei kasutata pistikprogrammide loendit rakenduses <ph name="PRODUCT_NAME"/> kunagi. Pistikprogrammid märgitakse aknas „about:plugins” keelatuks ja kasutajad ei saa neid lubada. Pange tähele, et seda reeglit saab alistada reegliga EnabledPlugins ja reegliga DisabledPluginsExceptions.</translation>
 </translationbundle>

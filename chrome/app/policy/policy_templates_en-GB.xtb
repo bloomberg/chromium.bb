@@ -60,13 +60,6 @@
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8781881969636812184">Enables usage of STUN and relay servers when remote clients are trying to establish a connection to this machine. If this setting is enabled, then remote clients can discover and connect to this machine even if they are separated by a firewall. If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine will only allow connections from client machines within the local network.</translation>
 <translation id="5912364507361265851">Allow users to show passwords in Password Manager</translation>
-<translation id="6999540307315670568">Enables the bookmark bar on the new tab page on <ph name="PRODUCT_NAME"/>.
-
-      If you enable this setting, <ph name="PRODUCT_NAME"/> will show a bookmark bar on the &quot;New tab&quot; page.
-
-      If you disable this setting, users will never see the bookmark bar.
-
-      If you enable or disable this setting, users cannot change or override it in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8828766846428537606">Configure the default home page in <ph name="PRODUCT_NAME"/> and prevent users from changing it.
 
       The user's home page settings are only completely locked down, if you either select the home page to be the new tab page, or set it to be a URL and specify a home page URL. If you don't specify the home page URL, then the user is still able to set the home page to the new tab page by specifying 'chrome://newtab'.</translation>
@@ -242,6 +235,7 @@
       It starts with <ph name="CHROMIUM_KEY"/> for Chromium policies and with <ph name="GOOGLE_CHROME_KEY"/> for Google Chrome policies.</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME"/> preferences</translation>
 <translation id="4723829699367336876">Enable firewall traversal from remote access client</translation>
+<translation id="7082208731926398296">Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME"/> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
 <translation id="9096086085182305205">Authentication server whitelist</translation>
 <translation id="7063895219334505671">Allow pop-ups on these sites</translation>
 <translation id="2824715612115726353">Enable Incognito mode</translation>
@@ -276,6 +270,7 @@
 
           If you enable or do not configure this setting, users can view their passwords in clear text in the password manager.</translation>
 <translation id="8731693562790917685">Content Settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) is handled.</translation>
+<translation id="2411919772666155530">Block notifications from these sites</translation>
 <translation id="467236746355332046">Supported features:</translation>
 <translation id="7632724434767231364">GSSAPI library name</translation>
 <translation id="4985088509112317247">Allows you to set whether websites are allowed to set local data. Setting local data can be either allowed for all websites or denied for all websites.</translation>
@@ -294,6 +289,7 @@
 
           Separate multiple server names with commas. Wildcards (*) are allowed.</translation>
 <translation id="538108065117008131">Allow <ph name="PRODUCT_FRAME_NAME"/> to handle the following content types.</translation>
+<translation id="2886164457168401177">Allows you to set a list of URL patterns that specify sites which are allowed to display notifications.</translation>
 <translation id="2312134445771258233">Allows you to configure the pages that are loaded on startup.
 
       The contents of the list 'URLs to open at startup' are ignored unless you select 'Open a list of URLs' in 'Action on startup'.</translation>
@@ -372,6 +368,7 @@
 <translation id="4983201894483989687">Allow running plug-ins that are outdated</translation>
 <translation id="7492608050778218564">.</translation>
 <translation id="7202926611616207807">Allow all sites to set local data.</translation>
+<translation id="5868414965372171132">User-level network configuration</translation>
 <translation id="678228246386317063">Allows you to set a list of url patterns that specify sites which are allowed to set session-only cookies.</translation>
 <translation id="5774856474228476867">Default search provider search URL</translation>
 <translation id="4650759511838826572">Disable URL protocol schemes</translation>
@@ -413,6 +410,14 @@
 
       If this setting is disabled or not configured, browsing history is saved.</translation>
 <translation id="1897365952389968758">Allow all sites to run JavaScript (recommended)</translation>
+<translation id="3963316686348464884">Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME"/> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
+<translation id="560746250309032104">Enables the bookmark bar on <ph name="PRODUCT_NAME"/>.
+
+      If you enable this setting, <ph name="PRODUCT_NAME"/> will show a bookmark bar.
+
+      If you disable this setting, users will never see the bookmark bar.
+
+      If you enable or disable this setting, users cannot change or override it in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6931242315485576290">Disable synchronisation of data with Google</translation>
 <translation id="7006788746334555276">Content Settings</translation>
 <translation id="3676473196461789250">.</translation>
@@ -470,6 +475,7 @@
       The default setting is to allow the host browser do the rendering, but you
       can optionally override this and have <ph name="PRODUCT_FRAME_NAME"/> render HTML pages by default.</translation>
 <translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
+<translation id="2127599828444728326">Allow notifications on these sites</translation>
 <translation id="4486602758942612946">Customise the list of URL patterns that should always be rendered by the host browser.
           For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
 <translation id="2257451316169619209">Specifies the period in milliseconds at which the device management service is queried for policy information. Setting this policy overrides the default value of 3 hours. Valid values for this policy range between 1800000 (30 minutes) and 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.</translation>
@@ -494,6 +500,7 @@
 <translation id="6510914645829248303">If 'Open a list of URLs' is selected as the startup action, this allows you to specify the list of URLs that are opened.</translation>
 <translation id="3780152581321609624">Include non-standard port in Kerberos SPN</translation>
 <translation id="2660846099862559570">Never use a proxy</translation>
+<translation id="1435659902881071157">Device-level network configuration</translation>
 <translation id="5512418063782665071">Home page URL</translation>
 <translation id="6049075103826767200">Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME"/> to Google and prevents users from changing this setting.
 
@@ -520,6 +527,7 @@
 <translation id="6938581770853731947">Configures the type of the default homepage in <ph name="PRODUCT_NAME"/> and prevents users from changing homepage preferences. The homepage can either be set to a URL that you specify or set to the New Tab Page. If you enable this setting, the New Tab Page will always be used as the homepage and the homepage URL location will be ignored. If you disable this setting, the user's homepage will never be the New Tab Page, unless its URL is set to 'chrome://newtab'. If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2844287278346661435">Allows access to the URLs listed, as exceptions to the URL blacklist. See the description of the URL blacklist policy for the format of entries of this list. This policy can be used to open exceptions to restrictive blacklists. For example, '*' can be blacklisted to block all requests and this policy can be used to allow access to a limited list of URLs. It can be used to open exceptions to certain schemes, sub-domains of other domains, ports or specific paths. The most specific filter will determine if a URL is blocked or allowed. The whitelist takes precedence over the blacklist. This policy is limited to 100 entries; subsequent entries will be ignored.</translation>
 <translation id="5645779841392247734">Allow cookies on these sites</translation>
+<translation id="791491514268619407">Allows you to set a list of URL patterns that specify sites which are not allowed to display notifications.</translation>
 <translation id="3906388518501362918">Enables JavaScript in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
 
       If this setting is enabled or not configured, web pages can use JavaScript.

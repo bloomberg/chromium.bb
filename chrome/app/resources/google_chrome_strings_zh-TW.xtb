@@ -69,7 +69,6 @@
 <translation id="6757767188268205357">不要再問我</translation>
 <translation id="2290095356545025170">您是否確定要解除安裝 Google Chrome？</translation>
 <translation id="1243097286641060337">「Google 更新群組政策」設定不一致，因此無法更新 Google Chrome 或「Google Chrome 內嵌框架」。請使用「群組政策編輯器」為 Google Chrome Binaries 應用程式設定更新政策覆寫，然後再試一次。</translation>
-<translation id="6087062680442281307">Google Chrome 開啟網頁和執行應用程式的速度奇快無比！除了執行速度快、穩定且容易使用之外，它還內建防護機制，讓您安心瀏覽網頁，無需擔心受到網路釣魚與惡意軟體的威脅。</translation>
 <translation id="5941830788786076944">使用 Google Chrome 作為我的預設瀏覽器</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome 可讓您按一下網頁上的電話號碼，隨即透過 Skype 撥打電話！</translation>
@@ -106,6 +105,7 @@
 <translation id="1001534784610492198">安裝程式封存檔案已經損壞或無效，請再次下載 Google Chrome。</translation>
 <translation id="6626317981028933585">抱歉，我們無法在 Mozilla Firefox 執行時取得其設定。如果要將這些設定匯入到 Google Chrome，請儲存您的工作，並關閉所有 Firefox 視窗。然後按一下 [繼續]。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="1698376642261615901">Google Chrome 瀏覽器開啟網頁和執行應用程式的速度奇快無比！除了執行速度迅速、穩定且容易使用之外，內建防護機制還可讓您安心瀏覽網頁，無需擔心受到網路釣魚與惡意軟體的威脅。</translation>
 <translation id="3419750618886995598">Chrome 內嵌框架更新。</translation>
 <translation id="6049075767726609708">管理員已經在此系統安裝 Google Chrome，且供所有使用者使用。系統層級的 Google Chrome 將取代使用者層級的版本。</translation>
 <translation id="7123348595797445166">立即使用 (已安裝)</translation>

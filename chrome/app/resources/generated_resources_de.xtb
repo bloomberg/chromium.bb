@@ -3,6 +3,7 @@
 <translationbundle lang="de">
 <translation id="6779164083355903755">&amp;Löschen</translation>
 <translation id="6879617193011158416">Zur Lesezeichenleiste umschalten</translation>
+<translation id="8206745257863499010">Blues</translation>
 <translation id="664677590214437297">Die Proxy-Einstellungen wurden von Ihrem Administrator deaktiviert.</translation>
 <translation id="2345460471437425338">Falsches Zertifikat für Host</translation>
 <translation id="3595596368722241419">Akku vollständig geladen</translation>
@@ -16,9 +17,11 @@
 <translation id="742521979413647278">Rechtschreibvorschläge werden geladen.</translation>
 <translation id="3828924085048779000">Eine leere Passphrase ist nicht zulässig.</translation>
 <translation id="8265562484034134517">Daten aus einem anderen Browser importieren...</translation>
+<translation id="1993980234811669445">$1-Videodatei</translation>
 <translation id="2709516037105925701">Autofill</translation>
 <translation id="3916445069167113093">Dateien dieses Typs können Schäden an Ihrem Computer verursachen. Möchten Sie <ph name="FILE_NAME"/> trotzdem behalten?</translation>
 <translation id="250599269244456932">Automatisch ausführen (empfohlen)</translation>
+<translation id="1644477032172608606">Ein Programm auf Ihrem Computer hat versucht, Ihre Suchmaschine in <ph name="NEW_ENGINE"/> zu ändern. Ihre vorherige Einstellung wurde gelöscht. Überprüfen Sie, ob alle Einstellungen wie gewünscht konfiguriert sind.</translation>
 <translation id="3581034179710640788">Das Sicherheitszertifikat der Website ist abgelaufen!</translation>
 <translation id="2825758591930162672">Öffentlicher Schlüssel des Antragstellers</translation>
 <translation id="8306243285620593545">Fokus auf Status-Symbol</translation>
@@ -27,6 +30,7 @@
 <translation id="6985276906761169321">ID:</translation>
 <translation id="859285277496340001">In dem Zertifikat ist kein Mechanismus angegeben, mit dem geprüft werden kann, ob es zurückgerufen wurde.</translation>
 <translation id="2010799328026760191">Modifikatortasten...</translation>
+<translation id="7602545955631875936">Änderung der Startseite bestätigen</translation>
 <translation id="3300394989536077382">Unterzeichnet von</translation>
 <translation id="654233263479157500">Navigationsfehler mithilfe eines Webdienstes beheben</translation>
 <translation id="4940047036413029306">Anführungszeichen</translation>
@@ -37,10 +41,15 @@
 <translation id="509988127256758334">Suche&amp;n nach:</translation>
 <translation id="1420684932347524586">Der per Zufallsauswahl generierte private RSA-Schlüssel konnte nicht erstellt werden.</translation>
 <translation id="2501173422421700905">Zertifikat vorübergehend ausgesetzt</translation>
+<translation id="234961712089352797">In <ph name="SHORT_PRODUCT_NAME"/> anmelden...</translation>
+<translation id="7428534988046001922">Die folgenden Apps sind nun installiert:</translation>
+<translation id="787386463582943251">E-Mail-Adresse hinzufügen</translation>
 <translation id="2313634973119803790">Netzwerktechnologie:</translation>
+<translation id="380018804185729075">Instant für schnelleres Suchen aktivieren</translation>
 <translation id="2382901536325590843">Das Serverzertifikat ist nicht im DNS enthalten.</translation>
 <translation id="2833791489321462313">Für die Aktivierung aus Standby Passwort abfragen</translation>
 <translation id="3850258314292525915">Synchronisierung deaktivieren</translation>
+<translation id="5628550777381536139">Erweiterte Synchronisierungseinstellungen</translation>
 <translation id="2721561274224027017">Indexierte Datenbank</translation>
 <translation id="8208216423136871611">Nicht speichern</translation>
 <translation id="684587995079587263"><ph name="PRODUCT_NAME"/> synchronisiert Ihre Daten sicher mit Ihrem Google-Konto. Synchronisieren Sie alle Daten oder passen Sie die zu synchronisierenden Datentypen und Verschlüsselungsoptionen an.</translation>
@@ -52,6 +61,7 @@
 <translation id="524759338601046922">Geben Sie die neue PIN erneut ein:</translation>
 <translation id="777702478322588152">Präfektur</translation>
 <translation id="6562437808764959486">Wiederherstellungsabbild wird extrahiert...</translation>
+<translation id="4562626993074597457">Erweiterte Einstellungen...</translation>
 <translation id="561349411957324076">Abgeschlossen</translation>
 <translation id="4764776831041365478">Die Webseite unter <ph name="URL"/> ist möglicherweise vorübergehend nicht verfügbar oder wurde dauerhaft an eine neue Webadresse verschoben.</translation>
 <translation id="6156863943908443225">Skript-Cache</translation>
@@ -71,6 +81,7 @@
 <translation id="4714531393479055912"><ph name="PRODUCT_NAME"/> kann nun Ihre Passwörter synchronisieren.</translation>
 <translation id="5704565838965461712">Wählen Sie ein Zertifikat zur Identifizierung aus:</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME"/> ist abgestürzt. Klicken Sie auf dieses Fenster, um die Erweiterung erneut zu laden.</translation>
+<translation id="7338558582847742962">Nutzer bearbeiten</translation>
 <translation id="6322279351188361895">Privater Schlüssel konnte nicht gelesen werden.</translation>
 <translation id="3781072658385678636">Die folgenden Plug-ins wurden auf dieser Seite blockiert:</translation>
 <translation id="4428782877951507641">Synchronisierung wird eingerichtet.</translation>
@@ -86,6 +97,7 @@
 <translation id="528468243742722775">Ende</translation>
 <translation id="1723824996674794290">Neues &amp;Fenster</translation>
 <translation id="1313405956111467313">Automatische Proxy-Konfiguration</translation>
+<translation id="4367782753568896354">Folgende Erweiterungen konnten nicht installiert werden:</translation>
 <translation id="1589055389569595240">Rechtschreibung und Grammatik einblenden</translation>
 <translation id="4364779374839574930">Kein Drucker gefunden. Installieren Sie einen Drucker.</translation>
 <translation id="7017587484910029005">Geben Sie die Zeichen aus dem angezeigten Bild ein.</translation>
@@ -101,14 +113,12 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> nie übersetzen</translation>
 <translation id="3208703785962634733">Nicht bestätigt</translation>
 <translation id="6523841952727744497">Starten Sie vor der Anmeldung den Gastmodus, um das Netzwerk <ph name="NETWORK_ID"/> zu aktivieren.</translation>
-<translation id="5704318649385838512">Die FESTSTELLTASTE ist aktiviert.\nDrücken Sie beide Umschalttasten, um die Aktivierung aufzuheben.</translation>
 <translation id="620329680124578183">Nicht laden (empfohlen)</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2653266418988778031">Wenn Sie das Zertifikat einer Zertifizierungsstelle (CA) löschen, vertraut Ihr Server keinen von dieser Zertifizierungsstelle ausgestellten Zertifikaten mehr.</translation>
-<translation id="298068999958468740">Synchronisieren Sie alle Daten oder wählen Sie aus, welche Daten von diesem Computer synchronisiert werden sollen.</translation>
 <translation id="5341849548509163798"><ph name="NUMBER_MANY"/> hours ago</translation>
 <translation id="4422428420715047158">Domain:</translation>
 <translation id="3602290021589620013">Vorschau</translation>
-<translation id="7516602544578411747">Ordnet jedem Browserfenster ein Profil zu und fügt oben rechts einen Profilwechsler ein. Jedes Profil verfügt über eigene Lesezeichen, Erweiterungen, Apps usw.</translation>
 <translation id="7082055294850503883">Feststelltaste ignorieren und standardmäßig Kleinbuchstaben eingeben</translation>
 <translation id="4744603770635761495">Ausführbarer Pfad</translation>
 <translation id="1800124151523561876">Keine Sprachdaten erkannt</translation>
@@ -121,16 +131,20 @@
 <translation id="5727728807527375859">Erweiterungen, Anwendungen und Designs können Ihren Computer beschädigen. Möchten Sie den Vorgang wirklich fortsetzen?</translation>
 <translation id="3857272004253733895">Pinyin-Schema mit doppelter Buchstabierung</translation>
 <translation id="1636842079139032947">Verbindung zu diesem Konto unterbrechen...</translation>
+<translation id="1830550083491357902">Nicht angemeldet</translation>
 <translation id="6721972322305477112">&amp;Ablage</translation>
+<translation id="3626281679859535460">Helligkeit</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="9056810968620647706">Keine Übereinstimmungen gefunden.</translation>
 <translation id="1901494098092085382">Status der Feedback-Einsendung</translation>
 <translation id="2861301611394761800">Systemupdate abgeschlossen. Starten Sie das System jetzt neu.</translation>
+<translation id="4858913220355269194">Fußball</translation>
 <translation id="2231238007119540260">Wenn Sie ein Serverzertifikat löschen, werden die üblichen Sicherheitsprüfungen für den jeweiligen Server wieder aktiviert und es muss ein gültiges Zertifikat verwendet werden.</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> konnte die Webseite nicht laden, weil <ph name="HOST_NAME"/> zu lange zum Antworten benötigt. Möglicherweise ist die Website inaktiv oder es gibt Probleme mit Ihrer Internetverbindung.</translation>
 <translation id="2562265053877774071">Einige Einstellungen werden von einer Erweiterung verwaltet.</translation>
 <translation id="7624154074265342755">Drahtlosnetzwerke</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME"/> ausblenden</translation>
+<translation id="5370036361975596346">Die Erweiterung &quot;<ph name="EXTENSION_NAME"/>&quot; wurde installiert.\n</translation>
 <translation id="3496213124478423963">Verkleinern</translation>
 <translation id="2296019197782308739">EAP-Methode:</translation>
 <translation id="42981349822642051">Maximieren</translation>
@@ -170,9 +184,11 @@
 <translation id="1776883657531386793"><ph name="OID"/>: <ph name="INFO"/></translation>
 <translation id="1510030919967934016">Diese Seite darf Ihren Standort nicht verfolgen.</translation>
 <translation id="8848519885565996859">Benutzerdefinierter URL-Link-Frame</translation>
+<translation id="4640525840053037973">Mit Ihrem Google-Konto anmelden</translation>
+<translation id="6315526595991863271">Sie sind nun in <ph name="SHORT_PRODUCT_NAME"/> angemeldet. Ihre Lesezeichen, der Verlauf sowie andere Einstellungen werden mithilfe der Standardeinstellungen mit Ihrem Google-Konto synchronisiert.</translation>
 <translation id="5255315797444241226">Sie haben eine ungültige Passphrase eingegeben.</translation>
-<translation id="6242054993434749861">Fax:#<ph name="FAX"/></translation>
 <translation id="762917759028004464">Der Standardbrowser ist zurzeit <ph name="BROWSER_NAME"/>.</translation>
+<translation id="8289982954746764694">&lt;Track&gt;-Element (noch nicht voll funktionsfähig) für Bildunterschriften, Untertitel, Kapitel und Audiobeschreibungen in Videoelementen aktivieren</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> Sekunden übrig</translation>
 <translation id="560442828508350263">&quot;$1&quot; kann nicht verschoben werden: $2</translation>
 <translation id="300544934591011246">Vorheriges Passwort</translation>
@@ -212,6 +228,7 @@
 <translation id="938582441709398163">Tastatur-Overlay</translation>
 <translation id="148557595510244003">Einige Optionen wurden von Ihrem Administrator deaktiviert.</translation>
 <translation id="427208986916971462">Die Verbindung wurde mit <ph name="COMPRESSION"/> komprimiert.</translation>
+<translation id="7548856833046333824">Cocktail</translation>
 <translation id="8876215549894133151">Format:</translation>
 <translation id="5234764350956374838">Schließen</translation>
 <translation id="40027638859996362">Wort verschieben</translation>
@@ -235,6 +252,7 @@
 <translation id="8707481173455612936">Offizielle Webseite für Audioquelle</translation>
 <translation id="3435845180011337502">Seitenformatierung oder -layout</translation>
 <translation id="6831043979455480757">Übersetzen</translation>
+<translation id="2856203831666278378">Die Serverantwort enthält doppelte Überschriften. Dieses Problem tritt im Allgemeinen bei falschen Website- oder Proxy-Einstellungen auf. Nur der Website- oder Proxy-Administrator kann das Problem beheben.</translation>
 <translation id="3587482841069643663">Alle</translation>
 <translation id="6698381487523150993">Erstellt:</translation>
 <translation id="4684748086689879921">Import überspringen</translation>
@@ -244,18 +262,19 @@
 <translation id="4653235815000740718">Beim Erstellen des Datenträgers für die OS-Wiederherstellung ist ein Problem aufgetreten. Das verwendete Speichergerät konnte nicht gefunden werden.</translation>
 <translation id="6732153478633637389">L2TP/IPSec + vorinstallierter Schlüssel</translation>
 <translation id="6943836128787782965">HTTP-Abruf fehlgeschlagen</translation>
+<translation id="5516565854418269276">Lesezeichenleiste immer &amp;anzeigen</translation>
 <translation id="6426222199977479699">SSL-Fehler</translation>
 <translation id="5477859212818707683">Verzögerte Hintergrundseiten</translation>
 <translation id="7104784605502674932">Synchronisierungseinstellungen bestätigen</translation>
 <translation id="1788636309517085411">Standardeinstellung verwenden</translation>
 <translation id="1661867754829461514">PIN fehlt</translation>
-<translation id="422022089431684343">Einstellungen für virtuelle Tastatur</translation>
 <translation id="8589311641140863898">Experimentelle Erweiterungs-APIs</translation>
 <translation id="2804922931795102237">Systeminformationen einschließen</translation>
 <translation id="869891660844655955">Ablaufdatum</translation>
 <translation id="2178614541317717477">Kompromittierung der Zertifizierungsstelle</translation>
 <translation id="4449935293120761385">Über Autofill</translation>
 <translation id="4194570336751258953">Tippen-statt-Klicken aktivieren</translation>
+<translation id="2721687379934343312">Auf einem Mac werden die Passwörter in Ihrem Schlüsselbund gespeichert. Sie können von anderen Chrome-Nutzern über dieses OS X-Konto abgerufen oder synchronisiert werden.</translation>
 <translation id="6066742401428748382">Der Zugriff auf die Webseite wurde verweigert.</translation>
 <translation id="5111692334209731439">&amp;Lesezeichen-Manager</translation>
 <translation id="8295070100601117548">Serverfehler</translation>
@@ -280,7 +299,6 @@
 <translation id="1476822615785139447">Drucker verwalten...</translation>
 <translation id="3855676282923585394">Lesezeichen und Einstellungen importieren...</translation>
 <translation id="1116694919640316211">Über</translation>
-<translation id="6878031674662373246">Synchronisierung des Kontos stoppen...</translation>
 <translation id="8195796306739579529">Passwörter verschlüsseln</translation>
 <translation id="4422347585044846479">Lesezeichen für diese Seite bearbeiten</translation>
 <translation id="2452539774207938933">Wechseln zu Nutzer: <ph name="PROFILE_NAME"/></translation>
@@ -309,7 +327,6 @@
 <translation id="5453029940327926427">Tabs schließen</translation>
 <translation id="406070391919917862">Anwendungen im Hintergrund</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>
-<translation id="3214837514330816581">Synchronisierte Daten über Google Dashboard entfernen</translation>
 <translation id="2580170710466019930">Bitte warten Sie, bis die aktuellen Systemupdates von <ph name="PRODUCT_NAME"/> installiert wurden.</translation>
 <translation id="7428061718435085649">Zweite und dritte Kandidaten mit linker und rechter Umschalttaste auswählen</translation>
 <translation id="1070066693520972135">WEP</translation>
@@ -317,17 +334,19 @@
 <translation id="1243196447546764522">Setzen von Drittanbieter-Cookies blockieren</translation>
 <translation id="206683469794463668">Standard-Zhuyin-Modus. Die automatische Kandidatenauswahl und ähnliche Optionen werden deaktiviert und ignoriert.</translation>
 <translation id="5191625995327478163">&amp;Spracheinstellungen...</translation>
+<translation id="702272229140838392">Lesezeichen aus einem anderen Browser importieren</translation>
 <translation id="8833054222610756741">CRX-less Web Apps</translation>
 <translation id="4031729365043810780">Netzwerkverbindung</translation>
+<translation id="3809280248639369696">Alien</translation>
 <translation id="1985136186573666099"><ph name="PRODUCT_NAME"/> verwendet die System-Proxy-Einstellungen Ihres Computers, um eine Verbindung mit dem Netzwerk herzustellen.</translation>
 <translation id="4808139931410481934">Fenster 2 aktivieren</translation>
+<translation id="1064835277883315402">Privatem Netzwerk beitreten</translation>
 <translation id="6508261954199872201">Anwendung: <ph name="APP_NAME"/></translation>
 <translation id="5585645215698205895">Nach &amp;unten</translation>
 <translation id="6596816719288285829">IP-Adresse</translation>
 <translation id="4508265954913339219">Aktivierung fehlgeschlagen</translation>
 <translation id="8656768832129462377">Nicht überprüfen</translation>
 <translation id="715487527529576698">Anfänglicher chinesischer Modus ist vereinfachtes Chinesisch.</translation>
-<translation id="7475292478930529311">Plug-in-Einstellungen wurden deaktiviert.</translation>
 <translation id="1674989413181946727">SSL-Einstellungen für den ganzen Computer:</translation>
 <translation id="8703575177326907206">Die Verbindung zu <ph name="DOMAIN"/> ist nicht verschlüsselt.</translation>
 <translation id="3042282020249392540">Fügen Sie <ph name="PRODUCT_NAME"/> als zulässiges Programm in den Einstellungen Ihrer Firewall oder Ihrer Antivirensoftware hinzu. Wenn es bereits zugelassen ist, versuchen Sie, es von der Liste der zulässigen Programme zu löschen und es erneut hinzuzufügen.</translation>
@@ -344,24 +363,28 @@
 <translation id="6204930791202015665">Anzeigen...</translation>
 <translation id="5941343993301164315">Melden Sie sich in <ph name="TOKEN_NAME"/> an.</translation>
 <translation id="1046059554679513793">Dieser Name wird bereits verwendet.</translation>
-<translation id="4417229845571722044">Neue E-Mail-Adresse hinzufügen</translation>
 <translation id="8049151370369915255">Schrift anpassen...</translation>
 <translation id="2886862922374605295">Hardware:</translation>
 <translation id="4497097279402334319">Verbindung mit Netzwerk konnte nicht hergestellt werden.</translation>
+<translation id="7342729285348293164">Melden Sie sich mit Ihrem Google-Konto in <ph name="PRODUCT_NAME"/> an, um Ihre personalisierten Browserfunktionen online zu speichern und über <ph name="PRODUCT_NAME"/> auf jedem Computer darauf zuzugreifen. Sie werden dann auch automatisch in Ihren Lieblingsdiensten von Google angemeldet.</translation>
 <translation id="5303618139271450299">Diese Webseite wurde nicht gefunden.</translation>
 <translation id="4256316378292851214">Video &amp;speichern unter...</translation>
 <translation id="3528171143076753409">Serverzertifikat ist nicht vertrauenswürdig.</translation>
 <translation id="6518014396551869914">Bild ko&amp;pieren</translation>
 <translation id="3236997602556743698">3 Set (390)</translation>
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
+<translation id="2887525882758501333">PDF-Dokument</translation>
 <translation id="289426338439836048">Anderes Mobilfunknetz...</translation>
 <translation id="3986287159189541211">HTTP-Fehler <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
 <translation id="3225319735946384299">Codesignatur</translation>
+<translation id="9114520909223076146">Der Mauszeiger wird von <ph name="FULLSCREEN_ORIGIN"/> ausgeblendet.</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME"/>-Hilfe</translation>
 <translation id="2422426094670600218">&lt;unbenannt&gt;</translation>
 <translation id="2012766523151663935">Firmware-Version:</translation>
 <translation id="4120898696391891645">Seite kann nicht geladen werden</translation>
 <translation id="6060685159320643512">Vorsichtig, diese Experimente können gefährlich sein!</translation>
+<translation id="4607068441094952239">Diesen Nutzer löschen</translation>
+<translation id="2437917371952004532">Die Anmeldeseite konnte mit den aktuellen Proxy-Einstellungen nicht geladen werden. <ph name="LINK_START"/>Versuchen Sie, sich erneut anzumelden<ph name="LINK_END"/> oder verwenden Sie andere Proxy-Einstellungen.</translation>
 <translation id="5829990587040054282">Display sperren oder Gerät ausschalten</translation>
 <translation id="7800304661137206267">Die Verbindung ist mit <ph name="CIPHER"/> verschlüsselt; für die Nachrichtenauthentifizierung wird <ph name="MAC"/> verwendet und als Mechanismus für den Schlüsselaustausch <ph name="KX"/>.</translation>
 <translation id="7706319470528945664">Portugiesische Tastatur</translation>
@@ -384,9 +407,10 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1378451347523657898">Keinen Screenshot senden</translation>
 <translation id="5098629044894065541">Hebräisch</translation>
 <translation id="5098647635849512368">Der absolute Pfad zum Verzeichnis wurde nicht gefunden.</translation>
+<translation id="8399458884810220920">Feststelltaste aktivieren/deaktivieren</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="6380224340023442078">Inhaltseinstellungen...</translation>
-<translation id="950108145290971791">Google Instant für schnelleres Suchen und Surfen aktivieren?</translation>
+<translation id="7214227951029819508">Helligkeit:</translation>
 <translation id="5486326529110362464">Es muss ein Eingabewert für den privaten Schlüssel vorhanden sein.</translation>
 <translation id="8190907767443402387">Feedback zur Verbesserung von Chrome senden</translation>
 <translation id="9039663905644212491">PEAP</translation>
@@ -407,10 +431,10 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2934952234745269935">Volume-Label</translation>
 <translation id="6272247697534482847">GPU VSync deaktivieren</translation>
 <translation id="3589447798447761053"><ph name="PRODUCT_NAME"/> hat festgestellt, dass ein Kaspersky-Produkt sichere Verbindungen abfängt. Normalerweise stellt dies kein Sicherheitsproblem dar, weil die Kaspersky-Software für gewöhnlich auf demselben Computer ausgeführt wird. Aufgrund einer Intoleranz gegenüber speziellen Aspekten der sicheren Verbindungen von <ph name="PRODUCT_NAME"/> müssen Kaspersky-Produkte jedoch so konfiguriert werden, dass keine sicheren Verbindungen abgefangen werden. Klicken Sie auf &quot;Weitere Informationen&quot;, um Anweisungen zu den Konfigurationsoptionen zu erhalten, die deaktiviert sein sollten.</translation>
+<translation id="5286194356314741248">Durchsuchen</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> richtet automatische Updates für alle Nutzer dieses Computers ein.</translation>
 <translation id="4973698491777102067">Folgendes für diesen Zeitraum löschen:</translation>
 <translation id="6074963268421707432">Anzeige von Desktop-Benachrichtigungen für keine Website zulassen</translation>
-<translation id="6273404661268779365">Neue Faxnummer hinzufügen</translation>
 <translation id="1995173078718234136">Inhalt wird gescannt...</translation>
 <translation id="5979681173469464041">Fokus auf nächsten Bereich</translation>
 <translation id="4735819417216076266">Eingabestil für Leerzeichen</translation>
@@ -431,7 +455,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1992397118740194946">Nicht eingerichtet</translation>
 <translation id="7966826846893205925">Autofill-Einstellungen verwalten...</translation>
 <translation id="8556732995053816225">&amp;Groß-/Kleinschreibung beachten</translation>
-<translation id="3718720264653688555">Virtuelle Tastatur</translation>
 <translation id="3504135463003295723">Gruppenname:</translation>
 <translation id="2651472069264772588">Einfügen fehlgeschlagen, Dateisystemfehler: $1'</translation>
 <translation id="3314070176311241517">Ausführung von JavaScript für alle Websites zulassen (empfohlen)</translation>
@@ -445,13 +468,13 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8368859634510605990">&amp;Alle Lesezeichen öffnen</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE"/> immer übersetzen</translation>
 <translation id="2263497240924215535">(Deaktiviert)</translation>
+<translation id="773426152488311044">Sie sind derzeit der einzige <ph name="PRODUCT_NAME"/>-Nutzer.</translation>
 <translation id="2042078858148122628">Der Server unter <ph name="HOST_NAME"/> kann nicht gefunden werden, weil die DNS-Suche fehlgeschlagen ist. DNS ist der Netzwerkdienst, der den Namen einer Website in die zugehörige Internetadresse übersetzt. Der häufigste Grund für diesen Fehler ist eine fehlende Internetverbindung oder ein falsch konfiguriertes Netzwerk. Eine weitere mögliche Ursache ist ein nicht reagierender DNS-Server oder eine Firewall, die den Netzwerkzugriff durch <ph name="PRODUCT_NAME"/> verhindert.</translation>
 <translation id="2159087636560291862">In diesem Fall wurde das Zertifikat von keiner vertrauenswürdigen Drittpartei bestätigt. Jeder kann ein Zertifikat erstellen und sich für eine bestimmte Website ausgeben. Daher muss ein Zertifikat von einer vertrauenswürdigen Drittpartei bestätigt werden. Ohne diese Bestätigung sind die Angaben auf dem Zertifikat wertlos. Es kann also nicht überprüft werden, ob Sie mit <ph name="DOMAIN"/> oder einem Angreifer kommunizieren, der ein eigenes Zertifikat erstellt hat und sich als <ph name="DOMAIN2"/> ausgibt. Sie sollten den Vorgang abbrechen.</translation>
 <translation id="58625595078799656"><ph name="PRODUCT_NAME"/> setzt voraus, dass Sie Ihre Daten entweder mit Ihrem Google-Passwort oder Ihrer eigenen Passphrase verschlüsseln.</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="6840184929775541289">Ist keine Zertifizierungsstelle</translation>
 <translation id="6099520380851856040">Aufgetreten am <ph name="CRASH_TIME"/></translation>
-<translation id="1369377266651547198">Wenn diese Option aktiviert ist und ein Profil mit einem Google-Konto verbunden wird, werden die Anmeldedaten des Kontos zum Cookiebehälter des Profils hinzugefügt. Daher ist es nicht notwendig, Nutzernamen und Passwort erneut im Browser einzugeben. Wenn Sie die Anmeldeseite eines Google-Kontos aufrufen, wird gleichzeitig eine Infoleiste angezeigt, über die sich der Nutzer problemlos mit einem verbundenen Konto anmelden kann. Voranmeldung und automatische Anmeldung sind immer deaktiviert, wenn das Profil nicht mit einem Google-Konto verbunden ist, unabhängig von dieser Kennzeichnung.</translation>
 <translation id="144518587530125858">&quot;<ph name="IMAGE_PATH"/>&quot; konnte nicht für das Design geladen werden.</translation>
 <translation id="7925285046818567682">Warten auf <ph name="HOST_NAME"/>...</translation>
 <translation id="2553440850688409052">Dieses Plug-in ausblenden</translation>
@@ -462,15 +485,16 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4538417792467843292">Wort löschen</translation>
 <translation id="8412392972487953978">Sie müssen zweimal dieselbe Passphrase eingeben.</translation>
 <translation id="9121814364785106365">In angeheftetem Tab öffnen</translation>
-<translation id="6996264303975215450">Webseite, komplett</translation>
 <translation id="3435896845095436175">Aktivieren</translation>
 <translation id="5849294688757445020">GPU-Compositing auf allen Seiten</translation>
 <translation id="1891668193654680795">Diesem Zertifikat zur Identifizierung von Softwareherstellern vertrauen</translation>
 <translation id="5078638979202084724">Alle Tabs als Lesezeichen speichern</translation>
 <translation id="5585118885427931890">Lesezeichenordner konnte nicht erstellt werden.</translation>
 <translation id="2154710561487035718">URL kopieren</translation>
+<translation id="6019169947004469866">Zuschneiden</translation>
 <translation id="5510687173983454382">Steuern Sie, welche Nutzer sich an einem Gerät anmelden können und konfigurieren Sie, ob Surfen im Gastmodus gestattet ist.</translation>
 <translation id="3241680850019875542">Wählen Sie das Stammverzeichnis der Erweiterung, die gepackt werden soll. Zur Aktualisierung einer Erweiterung wählen Sie eine private Schlüsseldatei zur Wiederverwendung.</translation>
+<translation id="1445572445564823378">Diese Erweiterung verlangsamt die Ausführung von <ph name="PRODUCT_NAME"/>. Deaktivieren Sie sie, um die Leistung von <ph name="PRODUCT_NAME"/> nicht zu beeinträchtigen.</translation>
 <translation id="7500424997253660722">Eingeschränkter Pool:</translation>
 <translation id="657402800789773160">&amp;Diese Seite neu laden</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
@@ -497,20 +521,23 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5618333180342767515">(dies kann einige Minuten dauern)</translation>
 <translation id="1697820107502723922">Archive</translation>
 <translation id="938470336146445890">Installieren Sie ein Nutzerzertifikat.</translation>
+<translation id="8008186661504114071">Aktivieren Sie experimentelle HTML-Implementierungen einiger zusätzlicher Benutzeroberflächenkomponenten, beispielsweise verschiedene Dialogfelder.</translation>
 <translation id="5399884481423204214">Feedback-Einsendung des Nutzers ist fehlgeschlagen: 1 $</translation>
+<translation id="3396331542604645348">Der ausgewählte Drucker ist entweder nicht verfügbar oder nicht ordnungsgemäß installiert. Überprüfen Sie den Drucker oder wählen Sie einen anderen Drucker aus.</translation>
 <translation id="4307992518367153382">Grundeinstellungen</translation>
 <translation id="8480417584335382321">Seitenzoom:</translation>
+<translation id="5771020150432405965">Die Überprüfung auf Updates ist für die Erweiterung &quot;<ph name="EXTENSION_NAME"/>&quot; wiederholt fehlgeschlagen.\n</translation>
 <translation id="3872166400289564527">Externer Speicher</translation>
 <translation id="5912378097832178659">Such&amp;maschinen bearbeiten...</translation>
 <translation id="8272426682713568063">Kreditkarten</translation>
 <translation id="3749289110408117711">Dateiname</translation>
-<translation id="3173397526570909331">Synchronisierung anhalten</translation>
 <translation id="5538092967727216836">Frame neu laden</translation>
 <translation id="4813345808229079766">Verbindung</translation>
 <translation id="411666854932687641">Privater Speicher</translation>
 <translation id="119944043368869598">Alle löschen</translation>
 <translation id="3467848195100883852">Automatische Rechtschreibprüfung aktivieren</translation>
 <translation id="1336254985736398701">Seiten&amp;info anzeigen</translation>
+<translation id="5039440886426314758">Möchten Sie diese Apps und Erweiterungen installieren?</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
 <translation id="2120194937135899861">Fenster 4 aktivieren</translation>
 <translation id="6828153365543658583">Anmeldung auf die folgenden Nutzer beschränken:</translation>
@@ -540,6 +567,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1388866984373351434">Internetdaten</translation>
 <translation id="3754634516926225076">Falsche PIN. Bitte versuchen Sie es erneut.</translation>
 <translation id="7378627244592794276">Nein</translation>
+<translation id="3240101823976358171">Die Erweiterung &quot;<ph name="EXTENSION_NAME"/>&quot; wurde automatisch entfernt.\ n</translation>
 <translation id="2800537048826676660">Diese Sprache für die Rechtschreibprüfung verwenden</translation>
 <translation id="68541483639528434">Andere Tabs schließen</translation>
 <translation id="941543339607623937">Ungültiger privater Schlüssel</translation>
@@ -549,6 +577,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2897878306272793870">Möchten Sie wirklich <ph name="TAB_COUNT"/> Tabs öffnen?</translation>
 <translation id="312759608736432009">Gerätehersteller:</translation>
 <translation id="362276910939193118">Gesamtverlauf anzeigen</translation>
+<translation id="6884857397393975446">Möchten Sie Instant für schnelleres Suchen aktivieren?</translation>
 <translation id="6079696972035130497">Unbegrenzt</translation>
 <translation id="4365411729367255048">Deutsche Neo2-Tastatur</translation>
 <translation id="6348657800373377022">Kombinationsfeld</translation>
@@ -561,12 +590,13 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4307281933914537745">Weitere Informationen über die Systemwiederherstellung</translation>
 <translation id="2849936225196189499">Kritisch</translation>
 <translation id="9001035236599590379">MIME-Typ</translation>
-<translation id="1408167824939409937">Kompakte Navigationsleiste</translation>
 <translation id="5612754943696799373">Download zulassen?</translation>
 <translation id="347699201225182431">Diese Erweiterung steht auf der schwarzen Liste.</translation>
+<translation id="617644053874068759">Geräte suchen</translation>
 <translation id="2565875069387440417">Mit Ihrem Google-Konto anmelden</translation>
 <translation id="3464868340187708956">Neuen Nutzer hinzufügen</translation>
 <translation id="6353618411602605519">Kroatische Tastatur</translation>
+<translation id="7986039047000333986">Soeben wurde ein spezielles Sicherheitsupdate für <ph name="PRODUCT_NAME"/> installiert. Führen Sie einen Neustart durch, damit es wirksam wird. Ihre Tabs werden automatisch wiederhergestellt.</translation>
 <translation id="5515810278159179124">Abrufen meines physischen Standorts für keine Website zulassen</translation>
 <translation id="5999606216064768721">Titelleiste und Ränder des Systems verwenden</translation>
 <translation id="904752364881701675">Links unten</translation>
@@ -583,6 +613,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2018352199541442911">Ihr externes Speichergerät wird derzeit nicht unterstützt.</translation>
 <translation id="5298420986276701358">Wenn Sie sich mit Ihrem Google Apps-Konto anmelden, können Sie die Konfiguration von diesem <ph name="PRODUCT_NAME"/>-Gerät remote über die Cloud verwalten.</translation>
 <translation id="2678063897982469759">Wieder aktivieren</translation>
+<translation id="4692690030323697737">Zweite(r) Vorname(n)</translation>
 <translation id="2939276286614236651"><ph name="PRODUCT_NAME"/> konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos nicht mehr aktuell sind.</translation>
 <translation id="1779766957982586368">Fenster schließen</translation>
 <translation id="4850886885716139402">Darstellung</translation>
@@ -590,7 +621,8 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5920618722884262402">Anstößige Wörter sperren</translation>
 <translation id="5120247199412907247">Erweiterte Konfiguration</translation>
 <translation id="5922220455727404691">SSL 3.0 verwenden</translation>
-<translation id="1368352873613152012">Datenschutzrichtlinien von Safe Browsing</translation>
+<translation id="4807405039827563763">Sie können auf Folgendes zugreifen:</translation>
+<translation id="1368352873613152012">Datenschutzbestimmungen von Safe Browsing</translation>
 <translation id="5105859138906591953">Für den Import von Google Toolbar-Lesezeichen in Google Chrome müssen Sie in Ihrem Google-Konto angemeldet sein. Melden Sie sich an und versuchen Sie es erneut.</translation>
 <translation id="8899851313684471736">Link in neuem &amp;Fenster öffnen</translation>
 <translation id="4110342520124362335">Cookies von <ph name="DOMAIN"/> gesperrt</translation>
@@ -601,6 +633,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4138267921960073861">Nutzernamen und Fotos auf der Anmeldeseite anzeigen</translation>
 <translation id="7465778193084373987">URL zum Zurückrufen von Netscape-Zertifikaten</translation>
 <translation id="5976690834266782200">Fügt Optionen zur Gruppierung von Tabs zum Tab-Kontextmenü hinzu</translation>
+<translation id="3441653493275994384">Bildschirm</translation>
 <translation id="4755240240651974342">Finnische Tastatur</translation>
 <translation id="7421925624202799674">Seitenquelltext &amp;anzeigen</translation>
 <translation id="3940082421246752453">Der Server unterstützt die in der Anforderung verwendete HTTP-Version nicht.</translation>
@@ -644,16 +677,19 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4684427112815847243">Alles synchronisieren</translation>
 <translation id="1125520545229165057">Dvorak (Hsu)</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/>-Befehl ausführen: <ph name="SEARCH_TERMS"/></translation>
+<translation id="7799329977874311193">HTML-Dokument</translation>
 <translation id="2232876851878324699">Die Datei enthielt ein Zertifikat, das nicht importiert wurde:</translation>
 <translation id="7787129790495067395">Sie verwenden zurzeit eine Passphrase. Wenn Sie sie vergessen haben, können Sie die Synchronisierung mithilfe des Google Dashboards zurücksetzen, um Ihre Daten von den Google-Servern zu löschen.</translation>
 <translation id="2686759344028411998">Es konnten keine geladenen Module erkannt werden.</translation>
+<translation id="1795067157225646652">Tipps für den Zugriff auf dieses Netzwerk</translation>
 <translation id="572525680133754531">Zeigt einen Rahmen um zusammengesetzte Render-Ebenen an, um das Debugging zu unterstützen und die Zusammensetzung der Ebenen zu analysieren</translation>
+<translation id="2778346081696727092">Fehler beim Authentifizieren mit dem angegebenen Nutzernamen oder Passwort</translation>
 <translation id="37613671848467444">In &amp;Inkognito-Fenster öffnen</translation>
 <translation id="2519040785135695148">Diese Website darf keinen benutzerdefinierten URL-Handler registrieren.</translation>
 <translation id="3317459757438853210">Beidseitig</translation>
-<translation id="8788054318005539616">Synchronisierung dieses Kontos stoppen</translation>
 <translation id="2011110593081822050">Web Worker: <ph name="WORKER_NAME"/></translation>
 <translation id="3294437725009624529">Gast</translation>
+<translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN"/> wird nun im Vollbildmodus angezeigt.</translation>
 <translation id="350069200438440499">Dateiname:</translation>
 <translation id="6232017090690406397">Akku</translation>
 <translation id="9058204152876341570">Etwas fehlt.</translation>
@@ -664,6 +700,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3452404311384756672">Abrufintervall:</translation>
 <translation id="646727171725540434">HTTP-Proxy</translation>
 <translation id="7576690715254076113">Zuordnen</translation>
+<translation id="4594569381978438382">Möchten Sie diese Apps installieren?</translation>
 <translation id="6355108086588020252">Einige Einstellungen wurden von Ihrem Administrator deaktiviert.</translation>
 <translation id="1006316751839332762">Verschlüsselungs-Passphrase</translation>
 <translation id="8795916974678578410">Neues Fenster</translation>
@@ -682,10 +719,8 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8214489666383623925">Datei öffnen...</translation>
 <translation id="4583537898417244378">Ungültige oder beschädigte Datei</translation>
 <translation id="5230160809118287008">Goats Teleported</translation>
-<translation id="1701567960725324452">Wenn Sie die Datensynchronisierung unterbrechen, verbleiben die Daten auf diesem Computer und die Daten in Ihrem Google-Konto an beiden Speicherorten. Neue Daten und Änderungen werden jedoch nicht synchronisiert.</translation>
 <translation id="7761701407923456692">Das Serverzertifikat stimmt nicht mit der URL überein.</translation>
 <translation id="3885155851504623709">Gemeinde</translation>
-<translation id="4910171858422458941">Plug-ins, die durch eine Unternehmensrichtlinie deaktiviert sind, können nicht aktiviert werden.</translation>
 <translation id="4495419450179050807">Nicht auf dieser Seite anzeigen</translation>
 <translation id="3096212521773120572">Fenster 6 aktivieren</translation>
 <translation id="1225544122210684390">Festplattengerät</translation>
@@ -720,6 +755,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7643817847124207232">Die Internetverbindung wurde unterbrochen.</translation>
 <translation id="932327136139879170">Startseite</translation>
 <translation id="2560794850818211873">Video-URL k&amp;opieren</translation>
+<translation id="412730574613779332">Superheld</translation>
 <translation id="6042708169578999844">Ihre Daten auf <ph name="WEBSITE_1"/> und <ph name="WEBSITE_2"/></translation>
 <translation id="5302048478445481009">Sprache</translation>
 <translation id="4191334393248735295">Länge</translation>
@@ -736,7 +772,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7484645889979462775">Für diese Website niemals</translation>
 <translation id="8666066831007952346"><ph name="NUMBER_TWO"/> Tage übrig</translation>
 <translation id="9086455579313502267">Kein Zugriff auf das Netzwerk</translation>
-<translation id="4161592545897541416">Instant auf das Laden von Suchseiten beschränken</translation>
+<translation id="2772936498786524345">Ninja</translation>
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
 <translation id="2374144379568843525">Rechtschreibung &amp;ausblenden</translation>
 <translation id="2694026874607847549">1 Cookie</translation>
@@ -757,6 +793,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7191454237977785534">Datei speichern unter</translation>
 <translation id="7241389281993241388">Melden Sie sich in <ph name="TOKEN_NAME"/> an, um das Client-Zertifikat zu importieren.</translation>
 <translation id="40334469106837974">Seitenlayout ändern</translation>
+<translation id="2872754556057097683">Es wurden mehrere unterschiedliche &quot;Content-Length&quot;-Header empfangen. Dies ist zum Schutz vor HTTP Response Splitting-Angriffen unzulässig.</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
 <translation id="2617919205928008385">Zu wenig Speicher</translation>
 <translation id="210445503571712769">Synchronisierte Einstellungen</translation>
@@ -769,7 +806,9 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1609870356151088464">Lesezeichen verwalten</translation>
 <translation id="4988792151665380515">Öffentlicher Schlüssel konnte nicht exportiert werden.</translation>
 <translation id="6333049849394141510">Auswahl synchronisieren</translation>
+<translation id="4486884046206670755">Verbindung zum Google-Konto trennen...</translation>
 <translation id="7751260505918304024">Alle anzeigen</translation>
+<translation id="3828440302402348524">Angemeldet als <ph name="USER_NAME"/>...</translation>
 <translation id="446322110108864323">Pinyin-Eingabeeinstellungen</translation>
 <translation id="4948468046837535074">Folgende Seiten öffnen:</translation>
 <translation id="5222676887888702881">Abmelden</translation>
@@ -785,13 +824,13 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7903984238293908205">Katakana</translation>
 <translation id="3781488789734864345">Mobilfunknetz auswählen</translation>
 <translation id="268053382412112343">Ve&amp;rlauf</translation>
-<translation id="2723893843198727027">Entwicklermodus:</translation>
 <translation id="7939062555109487992">Erweiterte Optionen</translation>
 <translation id="1722567105086139392">Link</translation>
 <translation id="2620436844016719705">System</translation>
 <translation id="5362741141255528695">Private Schlüsseldatei auswählen</translation>
 <translation id="8638842473654406096">Seite wieder öffnen</translation>
 <translation id="4580526846085481512">Möchten Sie wirklich $1 Elemente löschen?</translation>
+<translation id="6978543115366812516">Vorherige Einstellungen beibehalten</translation>
 <translation id="5292890015345653304">SD-Karte oder USB-Speicherstick einlegen</translation>
 <translation id="5583370583559395927">Verbleibende Zeit: <ph name="TIME_REMAINING"/></translation>
 <translation id="8065982201906486420">Zum Ausführen dieses <ph name="PLUGIN_NAME"/>-Plug-ins klicken</translation>
@@ -823,6 +862,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
         Möglicherweise wird der Server gewartet oder er ist falsch konfiguriert.</translation>
 <translation id="297870353673992530">DNS-Server:</translation>
 <translation id="3222066309010235055">Vorab rendern: <ph name="PRERENDER_CONTENTS_NAME"/></translation>
+<translation id="5683537399884346956">Klicken Sie auf das Schraubenschlüssel-Menü und dann auf <ph name="BEGIN_BOLD"/><ph name="SETTINGS_TITLE"/> &gt; <ph name="INTERNET_TITLE"/> &gt; <ph name="OPTIONS_BUTTON"/><ph name="END_BOLD"/> (für das aktuelle Netzwerk). Klicken Sie auf die Schaltfläche <ph name="BEGIN_BOLD"/><ph name="PROXY_BUTTON"/><ph name="END_BOLD"/> auf dem Tab <ph name="BEGIN_BOLD"/><ph name="NETWORK_TAB"/><ph name="END_BOLD"/>, sofern diese angezeigt wird, und vergewissern Sie sich, dass die Einstellung für Ihre Konfiguration auf &quot;Direkt&quot; festgelegt ist.</translation>
 <translation id="6410063390789552572">Kein Zugriff auf Netzwerkbibliothek möglich</translation>
 <translation id="6880587130513028875">Bilder wurden auf dieser Seite blockiert.</translation>
 <translation id="851263357009351303">Anzeige von Bildern für <ph name="HOST"/> immer zulassen</translation>
@@ -850,14 +890,15 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2570648609346224037">Beim Download des Wiederherstellungsabbilds ist ein Problem aufgetreten.</translation>
 <translation id="4306718255138772973">Google Cloud Print Proxy</translation>
 <translation id="9053965862400494292">Bei der Einrichtung der Synchronisierung ist ein Fehler aufgetreten.</translation>
+<translation id="3585885541520121833">Wenn Sie Instant aktiviert haben und sofern Ihre Standardsuchmaschine diese Funktion unterstützt, werden Suchergebnisse sofort angezeigt, sobald Sie Anfragen in die Omnibox eingeben. Inline-Vervollständigungen helfen Ihnen beim Verfeinern Ihrer Suche.\n\nDa Suchergebnisse bereits angefordert werden, während Sie Ihre Anfrage eingeben, protokolliert Ihre Standardsuchmaschine diese möglicherweise als Suchanfragen.\n</translation>
 <translation id="8596540852772265699">Benutzerdefinierte Dateien</translation>
 <translation id="7017354871202642555">Nach Erstellung des Fensters kann der Modus nicht mehr festgelegt werden.</translation>
 <translation id="3101709781009526431">Datum und Uhrzeit</translation>
 <translation id="3960611155749707703">Letztes Fenster aktivieren</translation>
-<translation id="69375245706918574">Synchronisierungseinstellungen anpassen</translation>
 <translation id="833853299050699606">Tarifinformationen nicht verfügbar</translation>
 <translation id="1737968601308870607">Dateifehler</translation>
 <translation id="7326487563595667270">Infofeld zur Installation neuer Apps</translation>
+<translation id="2509468283778169019">Die Feststelltaste ist aktiviert.</translation>
 <translation id="4571852245489094179">Lesezeichen und Einstellungen importieren</translation>
 <translation id="434849659521617751">Ein Verzeichnis ausgewählt</translation>
 <translation id="4421917670248123270">Schließen und Downloads abbrechen</translation>
@@ -895,33 +936,34 @@ nicht auf unsichere Verbindungen zurück.</translation>
         besuchen Sie die Seite <ph name="NET_INTERNALS_PAGE"/>, 
         auf der weitere Informationen bereitgestellt werden, oder deaktivieren Sie die Funktion.</translation>
 <translation id="1725068750138367834">&amp;Dateimanager</translation>
-<translation id="4254921211241441775">Synchronisierung des Kontos stoppen</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="8569764466147087991">Zu öffnende Datei auswählen</translation>
+<translation id="5086589117546410981">Nachnamen hinzufügen</translation>
 <translation id="5449451542704866098">Kein Datentarif</translation>
-<translation id="307505906468538196">Google-Konto erstellen</translation>
 <translation id="2053553514270667976">Postleitzahl</translation>
 <translation id="48838266408104654">&amp;Task-Manager</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="3694027410380121301">Vorherigen Tab auswählen</translation>
 <translation id="6178664161104547336">Zertifikat auswählen</translation>
 <translation id="1375321115329958930">Gespeicherte Passwörter</translation>
-<translation id="1086573544069171115">Cloud-Drucker hinzufügen...</translation>
 <translation id="3341703758641437857">Zugriff auf Datei-URLs gestatten</translation>
 <translation id="5702898740348134351">Suchmaschin&amp;en bearbeiten...</translation>
 <translation id="734303607351427494">Suchmaschinen verwalten...</translation>
 <translation id="8326478304147373412">PKCS #7, Zertifikatkette</translation>
 <translation id="3242765319725186192">Vorinstallierter Schlüssel:</translation>
 <translation id="8089798106823170468">Geben Sie Ihre Drucker mit einem beliebigen Google-Konto frei und greifen Sie auf diese zu.</translation>
+<translation id="5426597273899159431">Erweiterte Einrichtung...</translation>
 <translation id="1105608846356399385">Website besuchen</translation>
 <translation id="5984992849064510607">Fügt dem Tabstrip-Kontextmenü den Eintrag &quot;Seitliche Tabs verwenden&quot; hinzu. Verwenden Sie diese Funktion zum Ein-/Ausblenden der oberen (Standard) und seitlichen Tabs. Nützlich bei Breitbildmonitoren.</translation>
 <translation id="7218608093942361839"><ph name="PRODUCT_NAME"/> <ph name="PRODUCT_VERSION"/> (Plattform <ph name="PLATFORM_VERSION"/>)</translation>
+<translation id="3726176728972407192">Ohne Pairing</translation>
 <translation id="839736845446313156">Registrieren</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="2409527877874991071">Neuen Namen eingeben</translation>
 <translation id="4240069395079660403"><ph name="PRODUCT_NAME"/> kann in dieser Sprache nicht angezeigt werden.</translation>
 <translation id="747114903913869239">Fehler: Erweiterung kann nicht entschlüsselt werden.</translation>
 <translation id="5412637665001827670">Bulgarische Tastatur</translation>
+<translation id="3574210789297084292">Anmelden</translation>
 <translation id="1146204723345436916">Lesezeichen aus HTML-Datei importieren...</translation>
 <translation id="2113921862428609753">Zugriff auf Zertifizierungsstelleninformationen</translation>
 <translation id="5227536357203429560">Privates Netzwerk hinzufügen...</translation>
@@ -939,6 +981,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4064488613268730704">Autofill-Einstellungen verwalten...</translation>
 <translation id="6830600606572693159">Die Webseite unter <ph name="URL"/> ist zurzeit nicht verfügbar. Möglicherweise ist sie überlastet oder wird gerade gewartet.</translation>
 <translation id="4145797339181155891">Auswerfen</translation>
+<translation id="4421932782753506458">Miez</translation>
 <translation id="8417944620073548444"><ph name="MEGABYTES"/> MB verbleibend</translation>
 <translation id="7339898014177206373">Neues Fenster</translation>
 <translation id="3026202950002788510">Gehen Sie zu
@@ -961,9 +1004,10 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5435964418642993308">Drücken Sie die Eingabetaste, um zurückzugehen, oder die Taste für das Kontextmenü, um den Verlauf einzublenden.</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="7564146504836211400">Cookies und andere Daten</translation>
+<translation id="4713309396072794887">Möchten Sie diese Erweiterungen installieren?</translation>
+<translation id="2208268392796212385">Die Feststelltaste ist aktiviert. Drücken Sie die Suchtaste, um die Aktivierung aufzuheben.</translation>
 <translation id="2266011376676382776">Seiten reagieren nicht</translation>
 <translation id="2714313179822741882">Hangul-Eingabeeinstellungen</translation>
-<translation id="8658163650946386262">Synchronisierung einrichten...</translation>
 <translation id="3100609564180505575">Module (<ph name="TOTAL_COUNT"/>) - Bekannte Konflikte: <ph name="BAD_COUNT"/>, verdächtig: <ph name="SUSPICIOUS_COUNT"/></translation>
 <translation id="3627671146180677314">Verlängerungszeit für Netscape-Zertifikate</translation>
 <translation id="8652487083013326477">Optionsfeld im Seitenbereich</translation>
@@ -1006,13 +1050,17 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4235618124995926194">Diese E-Mail-Adresse einfügen:</translation>
 <translation id="4874539263382920044">Titel muss mindestens ein Zeichen enthalten</translation>
 <translation id="798525203920325731">Netzwerk-Namespaces</translation>
+<translation id="4830475881783902092">Kundennummer:</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/> konnte die Installation nicht abschließen, wird jedoch weiterhin über das Datenträgerabbild ausgeführt.</translation>
 <translation id="6186893483313227582">Symbol <ph name="VALUE"/></translation>
 <translation id="7025190659207909717">Verwaltung mobiler Datendienste</translation>
 <translation id="8265096285667890932">Seitliche Tabs verwenden</translation>
+<translation id="4465171033222053147"><ph name="URL"/> möchte dauerhaft umfangreiche Daten auf Ihrem Mobilgerät speichern.</translation>
 <translation id="4250680216510889253">Nein</translation>
 <translation id="3949593566929137881">PIN der SIM-Karte eingeben</translation>
+<translation id="5109044022078737958">Mia</translation>
 <translation id="6291953229176937411">Im Finder &amp;zeigen</translation>
+<translation id="8598687241883907630">Verbindung zum Google-Konto trennen...</translation>
 <translation id="4781649528196590732">Fokus auf vorherigen Bereich</translation>
 <translation id="9187827965378254003">Leider sind zurzeit keine Experimente verfügbar.</translation>
 <translation id="8933960630081805351">Im Finder &amp;anzeigen</translation>
@@ -1023,6 +1071,9 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3665650519256633768">Suchergebnisse</translation>
 <translation id="3733127536501031542">SSL-Server mit Step-up</translation>
 <translation id="3614837889828516995">PDF drucken</translation>
+<translation id="954586097957006897">Nachname</translation>
+<translation id="7473891865547856676">Nein, danke</translation>
+<translation id="5166184058188456766"><ph name="PREV_HOMEPAGE"/> weiterhin verwenden</translation>
 <translation id="4366553784388256545">Gerät wird angemeldet. Bitte warten...</translation>
 <translation id="5745056705311424885">USB-Speicherstick gefunden</translation>
 <translation id="7651319298187296870">Anmeldung für Nutzerzertifikat erforderlich</translation>
@@ -1037,12 +1088,13 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8899388739470541164">Vietnamesisch</translation>
 <translation id="1282227640663454719">Die Formularsignatur <ph name="FORM_SIGNATURE"/> gilt für <ph name="FORM_URL"/>.</translation>
 <translation id="4091434297613116013">Blatt Papier</translation>
+<translation id="8378767088940999216">Diese Seite blendet den Mauszeiger aus.</translation>
 <translation id="7475671414023905704">Netscape-URL für vergessene Passwörter</translation>
 <translation id="3335947283844343239">Geschlossenen Tab wieder öffnen</translation>
 <translation id="4089663545127310568">Gespeicherte Passwörter löschen</translation>
 <translation id="2480626392695177423">Zwischen Satzzeichen mit ganzer/halber Breite wechseln</translation>
 <translation id="5830410401012830739">Standorteinstellungen verwalten...</translation>
-<translation id="8977410484919641907">Synchronisiert...</translation>
+<translation id="1901377140875308934">In <ph name="SHORT_PRODUCT_NAME"/> anmelden...</translation>
 <translation id="2794293857160098038">Standardsuchoptionen</translation>
 <translation id="3947376313153737208">Keine Auswahl</translation>
 <translation id="1346104802985271895">Vietnamesische Eingabemethode (TELEX)</translation>
@@ -1064,6 +1116,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="6252594924928912846">Synchronisierungseinstellungen anpassen...</translation>
 <translation id="8425755597197517046">Einfügen und &amp;suchen</translation>
 <translation id="1093148655619282731">Details des ausgewählten Zertifikats:</translation>
+<translation id="3724097922301830708">Zum Beenden &quot;Esc&quot; drücken</translation>
 <translation id="5568069709869097550">Anmeldung nicht möglich</translation>
 <translation id="2743322561779022895">Aktivierung:</translation>
 <translation id="4722977855794593514">Apps, Erweiterungen und Designs</translation>
@@ -1072,6 +1125,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1665770420914915777">&quot;Neuer Tab&quot;-Seite verwenden</translation>
 <translation id="2629089419211541119">Vor <ph name="NUMBER_ONE"/> Stunde</translation>
 <translation id="1691063574428301566">Der Computer wird neu gestartet, sobald die Aktualisierung abgeschlossen ist.</translation>
+<translation id="5900302528761731119">Google Profile-Foto</translation>
 <translation id="131364520783682672">Feststelltaste</translation>
 <translation id="3415261598051655619">Für Skript zugänglich:</translation>
 <translation id="2335122562899522968">Diese Seite hat Cookies gesetzt.</translation>
@@ -1090,12 +1144,14 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7443484992065838938">Vorschau des Berichts anzeigen</translation>
 <translation id="5714678912774000384">Letzten Tab aktivieren</translation>
 <translation id="9017608379655359501">Einfügen abgebrochen</translation>
+<translation id="5902572236435740554">Geben Sie zuerst das Passwort für Ihr Google-Konto ein <ph name="LINE_BREAK"/>  und kein anwendungsspezifisches Passwort.</translation>
 <translation id="3799598397265899467">Beim Verlassen des Browsers</translation>
 <translation id="8813811964357448561">Blatt Papier</translation>
 <translation id="2125314715136825419">Weiter ohne Aktualisierung von Adobe Reader (nicht empfohlen)</translation>
 <translation id="1120026268649657149">Suchkürzel muss leer oder eindeutig sein</translation>
 <translation id="542318722822983047">Cursor geht automatisch zum nächsten Zeichen</translation>
 <translation id="5317780077021120954">Speichern</translation>
+<translation id="8509591851479631667">Einstellungen konfigurieren...</translation>
 <translation id="9027459031423301635">Link in neuem Tab öffnen</translation>
 <translation id="2251809247798634662">Neues Inkognito-Fenster</translation>
 <translation id="358344266898797651">Keltisch</translation>
@@ -1106,12 +1162,15 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="246059062092993255">Plug-ins wurden auf dieser Seite blockiert.</translation>
 <translation id="2870560284913253234">Website</translation>
 <translation id="6945221475159498467">Auswählen</translation>
+<translation id="4776917500594043016">Passwort für <ph name="USER_EMAIL_ADDRESS"/></translation>
 <translation id="7724603315864178912">Ausschneiden</translation>
 <translation id="8456681095658380701">Ungültiger Name</translation>
+<translation id="5869015858594559197">Einstellungen, mit denen festgelegt wird, ob Websites Funktionen wie Cookies, JavaScript und Plug-ins verwenden können</translation>
 <translation id="4164507027399414915">Alle entfernten Miniaturansichten wiederherstellen</translation>
 <translation id="917051065831856788">Seitliche Tabs verwenden</translation>
 <translation id="1976150099241323601">In Sicherheitsgerät anmelden</translation>
 <translation id="6620110761915583480">Datei speichern</translation>
+<translation id="7198378638856220027">Verwendet die View Desktop-Umgebung für Chrome</translation>
 <translation id="4988526792673242964">Seiten</translation>
 <translation id="7543025879977230179"><ph name="PRODUCT_NAME"/> Optionen</translation>
 <translation id="2175607476662778685">Schnellstartleiste</translation>
@@ -1122,6 +1181,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="684265517037058883">(noch nicht gültig)</translation>
 <translation id="2027538664690697700">Plug-in aktualisieren...</translation>
 <translation id="8205333955675906842">Schriftart Sans-Serif</translation>
+<translation id="1815083418640426271">Als unformatierten Text einfügen</translation>
 <translation id="39964277676607559">JavaScript-Datei &quot;<ph name="RELATIVE_PATH"/>&quot; konnte nicht für das Content-Skript geladen werden.</translation>
 <translation id="7447215573579476012">Die App auf <ph name="HOST_NAME"/> kann nicht erreicht werden, da Sie zurzeit nicht mit dem Internet verbunden sind. Die Seite wird geladen, sobald die Netzwerkverbindung wiederhergestellt wurde.<ph name="LINE_BREAK"/></translation>
 <translation id="4284105660453474798">Möchten Sie &quot;$1&quot; wirklich löschen?</translation>
@@ -1145,6 +1205,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="662870454757950142">Das Passwortformat ist falsch.</translation>
 <translation id="370665806235115550">Wird geladen...</translation>
 <translation id="2580924999637585241">Gesamt: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/></translation>
+<translation id="4899063388368595117">Stellen Sie eine Internetverbindung her, um die Einrichtung Ihres Chromebooks abzuschließen.</translation>
 <translation id="2076269580855484719">Dieses Plug-in ausblenden</translation>
 <translation id="254416073296957292">&amp;Spracheinstellungen...</translation>
 <translation id="6652975592920847366">Datenträger für die OS-Wiederherstellung erstellen</translation>
@@ -1160,7 +1221,10 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2135787500304447609">&amp;Fortsetzen</translation>
 <translation id="8309505303672555187">Netzwerk auswählen:</translation>
 <translation id="6143635259298204954">Erweiterung kann nicht entpackt werden. Damit eine Erweiterung sicher entpackt werden kann, muss ein Pfad zu Ihrem Profilverzeichnis zur Verfügung stehen, der keine symbolische Verbindung enthält. Für Ihr Profil besteht kein solcher Pfad.</translation>
+<translation id="3081104028562135154">Erhöhen</translation>
+<translation id="3734816294831429815"><ph name="PRODUCT_NAME"/> wird in <ph name="SECONDS"/> Sekunden neu gestartet.</translation>
 <translation id="1813414402673211292">Internetdaten löschen</translation>
+<translation id="2728624657977418581">Vornamen hinzufügen</translation>
 <translation id="4062903950301992112">Wenn Sie zur Kenntnis nehmen, dass diese Website Ihrem Computer schaden kann, <ph name="PROCEED_LINK"/>.</translation>
 <translation id="32330993344203779">Ihr Gerät wurde erfolgreich für die Verwaltung für Unternehmen angemeldet.</translation>
 <translation id="2356762928523809690">Aktualisierungsserver ist nicht verfügbar (Fehler: <ph name="ERROR_NUMBER"/>)</translation>
@@ -1205,10 +1269,11 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8673026256276578048">Suche im Web...</translation>
 <translation id="149347756975725155">Erweiterungssymbol &quot;<ph name="ICON"/>&quot; kann nicht geladen werden.</translation>
 <translation id="3011362742078013760">Alle Lesezeichen in &amp;Inkognito-Fenster öffnen</translation>
+<translation id="3009300415590184725">Möchten Sie die Einrichtung des mobilen Datendiensts wirklich abbrechen?</translation>
 <translation id="3675321783533846350">Richten Sie einen Proxy ein, um eine Verbindung zum Netzwerk herzustellen.</translation>
 <translation id="2148756636027685713">Formatierung beendet</translation>
 <translation id="5451285724299252438">Textfeld im Seitenbereich</translation>
-<translation id="5669267381087807207">Wird aktiviert</translation>
+<translation id="5669267381087807207">Wird aktiviert...</translation>
 <translation id="7434823369735508263">Englische Dvorak-Tastatur</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> Tage</translation>
 <translation id="1707463636381878959">Dieses Netzwerk für andere freigeben</translation>
@@ -1218,6 +1283,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3481915276125965083">Die folgenden Pop-ups wurden auf dieser Seite blockiert:</translation>
 <translation id="7163503212501929773"><ph name="NUMBER_MANY"/> Stunden übrig</translation>
 <translation id="7705276765467986571">Lesezeichen-Modell konnte nicht geladen werden.</translation>
+<translation id="750413812607578381">Starten Sie <ph name="PRODUCT_NAME"/> jetzt neu.</translation>
 <translation id="2638286699381354126">Aktualisieren...</translation>
 <translation id="1196338895211115272">Privater Schlüssel konnte nicht exportiert werden.</translation>
 <translation id="1459967076783105826">Von Erweiterungen hinzugefügte Suchmaschinen</translation>
@@ -1231,9 +1297,11 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8882395288517865445">Adressen aus meiner Adressbuch-Visitenkarte einfügen</translation>
 <translation id="374530189620960299">Das Sicherheitszertifikat der Website ist nicht vertrauenswürdig!</translation>
 <translation id="8852407435047342287">Eine Liste Ihrer installierten Anwendungen, Erweiterungen und Designs</translation>
+<translation id="4924638091161556692">Fixiert</translation>
 <translation id="8893928184421379330">Das Gerät <ph name="DEVICE_LABEL"/> wurde nicht erkannt.</translation>
 <translation id="5647283451836752568">Dieses Mal alle Plug-ins ausführen</translation>
 <translation id="8642947597466641025">Schriftgrad vergrößern</translation>
+<translation id="7740488191408590759">Desktop deaktivieren</translation>
 <translation id="1293556467332435079">Dateien</translation>
 <translation id="2490270303663597841">Nur für diese Sitzung im anonymen Modus gültig</translation>
 <translation id="3796616385525177872">Aktiviert experimentelle Erweiterungen der Geostandort-Funktion zur Verwendung von Standort-APIs des Betriebssystems (falls verfügbar)</translation>
@@ -1243,6 +1311,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2916073183900451334">Durch Drücken der Tab-Taste auf einer Webseite werden Links sowie Formularfelder markiert.</translation>
 <translation id="7772127298218883077">Über <ph name="PRODUCT_NAME"/></translation>
 <translation id="2090876986345970080">Sicherheitseinstellung des Systems</translation>
+<translation id="3728067901555601989">OTP:</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="7415834062450491574">Feedback an Google senden</translation>
 <translation id="5453632173748266363">Kyrillisch</translation>
@@ -1279,7 +1348,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8824701697284169214">&amp;Seite hinzufügen...</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, gültig bis: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="6584811624537923135">Deinstallation bestätigen</translation>
-<translation id="7429235532957570505">Plug-ins, die aufgrund von Unternehmensrichtlinien aktiviert sind, können nicht deaktiviert werden.</translation>
+<translation id="8729885797104884557">Der Aussteller eines Zertifikats, das nicht abgelaufen ist, ist für das Führen einer sogenannten &quot;Sperrliste&quot; verantwortlich. Falls ein Zertifikat in den Besitz eines anderen Nutzers gelangt, kann der Aussteller es widerrufen, indem er es zur Sperrliste hinzufügt. In diesem Fall vertraut Ihr Browser dem Zertifikat nicht mehr. Für abgelaufene Zertifikate ist kein Widerrufstatus erforderlich. Während der Gültigkeit dieses Zertifikats für die besuchte Website kann daher nicht ermittelt werden, ob das Zertifikat in den Besitz eines anderen Nutzers gelangt ist und später widerrufen wurde oder ob es weiterhin sicher ist. Daher kann nicht ermittelt werden, ob Sie mit der legitimierten Website kommunizieren oder ob sich das Zertifikat nun im Besitz eines Hackers befindet und Sie jetzt mit diesem kommunizieren. In diesem Fall sollten Sie nicht fortfahren.</translation>
 <translation id="7866522434127619318">Aktiviert eine &quot;Click to play&quot;-Option in den Inhaltseinstellungen für Plug-ins.</translation>
 <translation id="6466988389784393586">&amp;Alle Lesezeichen öffnen</translation>
 <translation id="8860923508273563464">Warten, bis der Download abgeschlossen ist</translation>
@@ -1291,12 +1360,14 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5512074755152723588">Bei Eingabe einer URL eines vorhandenen Tabs in die Omnibox wird der Fokus wieder auf den Tab gesetzt und die URL nicht im aktuellen Tab geladen.</translation>
 <translation id="9157595877708044936">Einrichtung läuft...</translation>
 <translation id="4475552974751346499">Downloads durchsuchen</translation>
+<translation id="6624687053722465643">Törtchen</translation>
+<translation id="1058311485895759330">Ein Programm auf Ihrem Computer hat versucht, Ihre Suchmaschine von <ph name="PREV_ENGINE"/> in <ph name="NEW_ENGINE"/> zu ändern. Möchten Sie weiterhin <ph name="PREV_ENGINE"/> verwenden?</translation>
 <translation id="3021256392995617989">Bestätigung einblenden, wenn eine Website meinen physischen Standort abrufen möchte (empfohlen)</translation>
 <translation id="5185386675596372454">Die aktuelle Version von &quot;<ph name="EXTENSION_NAME"/>&quot; wurde deaktiviert, da sie weitere Berechtigungen erfordert.</translation>
 <translation id="4285669636069255873">Russische phonetische Tastatur </translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="2320435940785160168">Dieser Server benötigt ein Zertifikat zur Authentifizierung und hat das vom Browser gesendete Zertifikat nicht akzeptiert. Möglicherweise ist Ihr Zertifikat abgelaufen oder der Server vertraut dem Aussteller nicht. Versuchen Sie es noch einmal mit einem anderen Zertifikat, falls Sie eines haben. Fordern Sie ansonsten ein gültiges Zertifikat von einer anderen Quelle an.</translation>
-<translation id="6295228342562451544">Wenn Sie eine Verbindung zu einer sicheren Website herstellen, weist sich der Server, auf dem diese Website gehostet wird, mit einem so genannten &quot;Zertifikat&quot; aus, um seine Identität zu bestätigen. Dieses Zertifikat enthält Identitätsinformationen, wie z. B. die Adresse der Website, die durch einen Drittanbieter verifiziert wird, dem der Computer vertraut. Durch Überprüfen, dass die Adresse im Zertifikat mit der Adresse der Website übereinstimmt, ist es möglich, sicher mit der gewünschten Website und nicht mit Dritten (wie z. B. einem Hacker in Ihrem Netzwerk) zu kommunizieren.</translation>
+<translation id="6295228342562451544">Wenn Sie eine Verbindung zu einer sicheren Website herstellen, weist sich der Server, auf dem diese Website gehostet wird, mit einem sogenannten &quot;Zertifikat&quot; aus, um seine Identität zu bestätigen. Dieses Zertifikat enthält Identitätsinformationen, wie z. B. die Adresse der Website, die durch einen Drittanbieter verifiziert wird, dem der Computer vertraut. Durch Überprüfen, dass die Adresse im Zertifikat mit der Adresse der Website übereinstimmt, ist es möglich, sicher mit der gewünschten Website und nicht mit Dritten (wie z. B. einem Hacker in Ihrem Netzwerk) zu kommunizieren.</translation>
 <translation id="6342069812937806050">Abgeschlossen</translation>
 <translation id="5605716740717446121">Ihre SIM-Karte wird dauerhaft deaktiviert, wenn Sie den korrekten PIN-Entsperrschlüssel nicht eingeben. Verbleibende Versuche: <ph name="TRIES_COUNT"/></translation>
 <translation id="8836712291807476944"><ph name="SAVED_BYTES"/> / <ph name="TOTAL_BYTES"/> Bytes, Speichern unterbrochen</translation>
@@ -1319,6 +1390,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1337036551624197047">Tschechische Tastatur</translation>
 <translation id="4212108296677106246">Möchten Sie &quot;<ph name="CERTIFICATE_NAME"/>&quot; als Zertifizierungsstelle vertrauen?</translation>
 <translation id="2861941300086904918">Sicherheitsmanager für native Clients</translation>
+<translation id="5581700288664681403"><ph name="CLOUD_PRINT_NAME"/> wird geladen.</translation>
 <translation id="6991443949605114807">&lt;p&gt;Bei der Ausführung von <ph name="PRODUCT_NAME"/> in einer unterstützten Desktop-Umgebung werden die Proxy-Einstellungen des Systems verwendet. Allerdings wird entweder Ihr System nicht unterstützt oder Ihre Systemkonfiguration konnte nicht gestartet werden.&lt;/p&gt;
 
         &lt;p&gt;Sie können die Konfiguration dennoch über die Befehlszeile vornehmen. Weitere Informationen zu Markierungen und Umgebungsvariablen finden Sie unter &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME"/>&lt;/code&gt;.&lt;/p&gt;</translation>
@@ -1332,6 +1404,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3712897371525859903">Seite speichern &amp;unter...</translation>
 <translation id="7926251226597967072"><ph name="PRODUCT_NAME"/> importiert nun die folgenden Elemente aus <ph name="IMPORT_BROWSER_NAME"/>:</translation>
 <translation id="4442424173763614572">DNS-Suche fehlgeschlagen</translation>
+<translation id="7608088498285093806">Einstellungen für die Bildschirmtastatur</translation>
 <translation id="4315903906955301944">Offizielle Webseite für Audiodatei</translation>
 <translation id="2767649238005085901">Drücken Sie die Eingabetaste, um vorwärts zu gehen, oder die Taste für das Kontextmenü, um den Verlauf einzublenden.</translation>
 <translation id="6921968934403058457">Aktivieren Sie experimentelle Erweiterungen, um Fenster mit Steuerfeldern außerhalb des Browser-Frames zu öffnen.</translation>
@@ -1343,6 +1416,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1783075131180517613">Aktualisieren Sie Ihre Synchronisierungs-Passphrase.</translation>
 <translation id="2390045462562521613">Dieses Netzwerk löschen</translation>
 <translation id="3348038390189153836">Externes Gerät erkannt</translation>
+<translation id="6847194908866028076">Die Feststelltaste ist aktiviert. Drücken Sie beide Umschalttasten, um die Aktivierung aufzuheben.</translation>
 <translation id="1666788816626221136">Einige Ihrer gespeicherten Zertifikate passen zu keiner der anderen Kategorien:</translation>
 <translation id="5698727907125761952">Offizieller Interpret</translation>
 <translation id="4821935166599369261">&amp;Profilerstellung aktiviert</translation>
@@ -1366,11 +1440,11 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5880867612172997051">Netzwerkzugriff unterbrochen</translation>
 <translation id="7842346819602959665">Die neueste Version der Erweiterung &quot;<ph name="EXTENSION_NAME"/>&quot; benötigt mehr Berechtigungen und wurde daher deaktiviert.</translation>
 <translation id="3776667127601582921">In diesem Fall ist das Ihrem Browser angezeigte Serverzertifikat oder Zwischenzertifikat ungültig. Dies kann bedeuten, dass das Zertifikat falsch formatiert ist, ungültige Felder enthält oder nicht unterstützt wird.</translation>
-<translation id="3750372538542737662">Nutzer verwalten</translation>
 <translation id="440265548246666650">Auf der Seite wurde der Mauszeiger ausgeblendet. Drücken Sie &quot;Esc&quot;, um ihn wieder einzublenden.</translation>
 <translation id="2412835451908901523">Geben Sie den achtstelligen PIN-Entsperrschlüssel ein, der von <ph name="CARRIER_ID"/> bereitgestellt wurde.</translation>
 <translation id="6979448128170032817">Ausnahmen...</translation>
 <translation id="7019805045859631636">Schnell</translation>
+<translation id="4880520557730313061">Automatische Bildkorrektur</translation>
 <translation id="7584802760054545466">Verbindung zu <ph name="NETWORK_ID"/> wird hergestellt.</translation>
 <translation id="208047771235602537">Sind Sie sicher, dass Sie <ph name="PRODUCT_NAME"/> beenden wollen, während ein Download läuft?</translation>
 <translation id="3595946410121365924">Größe nach links ändern</translation>
@@ -1417,10 +1491,10 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3596315483920932980">Speicherung lokaler Daten nur für aktuelle Sitzung zulassen</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> kann den Standardbrowser nicht bestimmen oder einstellen.</translation>
 <translation id="8898786835233784856">Nächsten Tab auswählen</translation>
-<translation id="3139091190268064187">Der Server hat ein Zertifikat übermittelt, das nicht mit den integrierten Erwartungen übereinstimmt. Diese Erwartungen sind zu Ihrem Schutz in bestimmten Websites mit hohen Sicherheitsstandards enthalten.</translation>
 <translation id="2674170444375937751">Möchten Sie diese Seiten wirklich aus dem Verlauf löschen?</translation>
 <translation id="9111102763498581341">Entsperren</translation>
 <translation id="289695669188700754">Schlüssel-ID: <ph name="KEY_ID"/></translation>
+<translation id="2918484639460781603">Zu den Einstellungen wechseln</translation>
 <translation id="3067198360141518313">Dieses Plug-in ausführen</translation>
 <translation id="2181821976797666341">Richtlinien</translation>
 <translation id="8767072502252310690">Nutzer</translation>
@@ -1435,11 +1509,12 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8449008133205184768">Einfügen und Formatvorlage anpassen</translation>
 <translation id="9114223350847410618">Fügen Sie vor dem Entfernen dieser Sprache eine andere hinzu.</translation>
 <translation id="4408427661507229495">Netzwerkname</translation>
-<translation id="8886960478266132308"><ph name="PRODUCT_NAME"/> synchronisiert Ihre Daten sicher mit Ihrem Google-Konto.</translation>
 <translation id="8028993641010258682">Größe</translation>
+<translation id="8329978297633540474">Unformatierter Text</translation>
 <translation id="5031603669928715570">Aktivieren...</translation>
 <translation id="532340483382036194">Ermöglicht die Unterstützung der Installation der bereitgestellten Google Chrome-Apps mithilfe einer Manifest-Datei auf einer Webseite statt über die Bündelung des Manifests und der Symbole in einer CRX-Datei</translation>
 <translation id="1383876407941801731">Suche</translation>
+<translation id="4233752162269226207">Geben Sie die oben angezeigten Buchstaben ein.</translation>
 <translation id="8398877366907290961">Trotzdem fortfahren</translation>
 <translation id="5063180925553000800">Neue PIN:</translation>
 <translation id="4883178195103750615">Lesezeichen in HTML-Datei exportieren...</translation>
@@ -1460,6 +1535,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3174168572213147020">Insel</translation>
 <translation id="748138892655239008">Basiseinschränkungen eines Zertifikats</translation>
 <translation id="457386861538956877">Mehr...</translation>
+<translation id="1950295184970569138">* Google Profile-Foto (wird geladen)</translation>
 <translation id="8063491445163840780">Tab 4 aktivieren</translation>
 <translation id="2322193970951063277">Kopf- und Fußzeilen</translation>
 <translation id="5966654788342289517">Privates</translation>
@@ -1473,7 +1549,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1901769927849168791">SD-Karte gefunden</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - Eigentümer</translation>
 <translation id="1358032944105037487">Japanische Tastatur </translation>
-<translation id="1483904542716422841">OAuth zur Authentifizierung von Synchronisierungsvorgängen verwenden</translation>
+<translation id="5693528523496970643">Änderung der Startseite bestätigen</translation>
 <translation id="8302838426652833913">Gehen Sie zu
           <ph name="BEGIN_BOLD"/>
           Anwendungen &gt; Systemeinstellungen &gt; Netzwerk &gt; Assistent
@@ -1481,23 +1557,22 @@ nicht auf unsichere Verbindungen zurück.</translation>
           um Ihre Verbindung zu testen.</translation>
 <translation id="8664389313780386848">Seitenquelltext &amp;anzeigen</translation>
 <translation id="8970407809569722516">Firmware:</translation>
-<translation id="2789428618572362768">Auf diesem Computer wird Chrome von mehreren Nutzern verwendet. Leider kann nur der erste Nutzer, der Chrome startet, diese Einstellungen ändern.</translation>
+<translation id="2828701613241603541">Sie sind mit der E-Mail-Adresse <ph name="USER_EMAIL_ADDRESS"/> angemeldet. Verwalten Sie Ihre synchronisierten Daten in <ph name="BEGIN_LINK"/>Google Dashboard<ph name="END_LINK"/>.</translation>
 <translation id="57646104491463491">Änderungsdatum</translation>
 <translation id="5992752872167177798">Seccomp-Sandbox</translation>
-<translation id="6321229435207037146">Der ausgewählte Drucker ist entweder nicht verfügbar oder nicht korrekt installiert. Überprüfen Sie Ihren Drucker oder wählen Sie einen anderen Drucker aus.</translation>
 <translation id="6362853299801475928">P&amp;roblem melden...</translation>
 <translation id="5527463195266282916">Sie haben versucht, ein Downgrade der Erweiterung auszuführen.</translation>
 <translation id="3289566588497100676">Einfache Symboleingabe</translation>
 <translation id="6507969014813375884">Chinesisch (vereinfacht)</translation>
 <translation id="7314244761674113881">SOCKS-Host</translation>
 <translation id="4630590996962964935">Ungültiges Zeichen: $1</translation>
-<translation id="5285794783728826432">Diesem Zertifikat zur Identifizierung von Websites vertrauen</translation>
 <translation id="7460131386973988868">Aktiviert statische IP-Konfiguration. Möglicherweise funktioniert dies nicht.</translation>
 <translation id="4224803122026931301">Ausnahmen für Standort</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="8226742006292257240">Hier ist das zufällig generierte TPM-Passwort, das Ihrem Computer zugewiesen wurde:</translation>
 <translation id="2050524657923939561">Web-Prioritäten</translation>
 <translation id="8487693399751278191">Lesezeichen jetzt importieren...</translation>
+<translation id="7615602087246926389">Sie verfügen bereits über Daten, die mit einem vorherigen Passwort für Ihr Google-Konto verschlüsselt wurden. Bitte geben Sie dieses Passwort unten ein.</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
 <translation id="7484580869648358686">Warnung: Irgendetwas stimmt hier nicht!</translation>
 <translation id="2074739700630368799">Mit Chrome OS für Unternehmen können Sie eine Verbindung zwischen Ihrem Gerät und Google Apps herstellen. Sie können dadurch Ihr Gerät über das Google Apps-Steuerfeld erkennen und steuern.</translation>
@@ -1516,30 +1591,31 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2956070106555335453">Zusammenfassung</translation>
 <translation id="917450738466192189">Das Serverzertifikat ist ungültig.</translation>
 <translation id="2649045351178520408">Base64-codierter ASCII-Code, Zertifikatkette</translation>
+<translation id="7771352824937545047">$1-Bilddatei</translation>
 <translation id="7424526482660971538">Eigene Passphrase festlegen</translation>
 <translation id="380271916710942399">Nicht gelistetes Serverzertifikat</translation>
-<translation id="6853643819051005790">Instant auf Suche beschränken</translation>
 <translation id="6459488832681039634">Auswahl suchen</translation>
 <translation id="2392369802118427583">Aktivieren</translation>
+<translation id="7633555748791606856">Ein Programm auf Ihrem Computer hat versucht, Ihre Startseite in <ph name="NEW_HOMEPAGE"/> zu ändern. Die vorherige Einstellung wurde gelöscht. Überprüfen Sie, ob alle Einstellungen wie gewünscht konfiguriert sind.</translation>
 <translation id="9040421302519041149">Der Zugriff auf dieses Netzwerk ist geschützt.</translation>
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
 <translation id="8235325155053717782">Fehler <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
 <translation id="6584878029876017575">Microsoft-Lebensdauersignatur</translation>
-<translation id="7845671527123719282">Synchronisiert als <ph name="USER_NAME"/></translation>
 <translation id="562901740552630300">Gehen Sie zu 
           <ph name="BEGIN_BOLD"/>
           Start &gt; Systemsteuerung &gt; Netzwerk und Internet &gt; Netzwerk- und Freigabecenter &gt; Probleme beheben (unten) &gt; Internetverbindungen
           <ph name="END_BOLD"/>.</translation>
 <translation id="8816996941061600321">&amp;Dateimanager</translation>
 <translation id="2773223079752808209">Support</translation>
-<translation id="4585473702689066695">Verbindung mit Netzwerk &quot;<ph name="NAME"/>&quot; kann nicht hergestellt werden.</translation>
 <translation id="4647175434312795566">Bedingungen akzeptieren</translation>
 <translation id="1084824384139382525">Adr&amp;esse des Links kopieren</translation>
 <translation id="1221462285898798023">Starten Sie <ph name="PRODUCT_NAME"/> als gewöhnlicher Nutzer. Um Chrome als &quot;Root&quot; auszuführen, müssen Sie ein alternatives --user-data-dir zum Speichern von Profilinformationen angeben.</translation>
 <translation id="3220586366024592812">Der <ph name="CLOUD_PRINT_NAME"/>-Connector-Prozess ist abgestürzt. Neu starten?</translation>
 <translation id="2379281330731083556">Über das Systemdialogfeld drucken... <ph name="SHORTCUT_KEY"/></translation>
+<translation id="918765022965757994">Mit folgender E-Mail-Adresse auf dieser Website anmelden: <ph name="EMAIL_ADDRESS"/></translation>
 <translation id="5042992464904238023">Webinhalte</translation>
 <translation id="6254503684448816922">Kompromittierung des Schlüssels</translation>
+<translation id="1346748346194534595">Nach rechts</translation>
 <translation id="1181037720776840403">Entfernen</translation>
 <translation id="4006726980536015530">Wenn Sie <ph name="PRODUCT_NAME"/> jetzt beenden, werden diese Downloads abgebrochen.</translation>
 <translation id="5261073535210137151">Dieser Ordner enthält <ph name="COUNT"/> Lesezeichen. Möchten Sie ihn wirklich löschen?</translation>
@@ -1551,6 +1627,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7650701856438921772"><ph name="PRODUCT_NAME"/> wird in dieser Sprache angezeigt.</translation>
 <translation id="740624631517654988">Pop-up blockiert</translation>
 <translation id="3738924763801731196"><ph name="OID"/>:</translation>
+<translation id="7777698395338723844">Hiermit werden eingegebene URLs in den Synchronisierungsoptionen aktiviert. Dadurch wird der von Ihnen eingegebene URL-Verlauf mit anderen Clients synchronisiert und für die automatische Vervollständigung in der Omnibox genutzt.</translation>
 <translation id="1847961471583915783">Cookies und andere Website- und Plug-in-Daten beim Schließen des Browsers löschen</translation>
 <translation id="8870318296973696995">Startseite</translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -1559,7 +1636,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4624768044135598934">Vorgang abgeschlossen!</translation>
 <translation id="6014776969142880350"><ph name="PRODUCT_NAME"/> zum Abschluss der Aktualisierung neu starten</translation>
 <translation id="5582768900447355629">Alle meine Daten verschlüsseln</translation>
-<translation id="4220188427073615244">Mit folgender E-Mail-Adresse auf dieser Website anmelden: <ph name="EMAIL_ADDRESS"/></translation>
 <translation id="5866801229574126103">Nutzer löschen</translation>
 <translation id="1974043046396539880">CRL-Verteilungspunkte</translation>
 <translation id="7049357003967926684">Verbindung</translation>
@@ -1580,8 +1656,10 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7222232353993864120">E-Mail-Adresse</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Geladen von:</translation>
+<translation id="4590074117005971373">Ermöglicht eine höhere Leistung von Canvas-Tags in einem 2D-Kontext durch den Einsatz eines Grafikprozessors (GPU) für die Darstellung.</translation>
 <translation id="7186367841673660872">Diese Seite wurde von<ph name="ORIGINAL_LANGUAGE"/>in<ph name="LANGUAGE_LANGUAGE"/>übersetzt.</translation>
 <translation id="8448695406146523553">Ihre verschlüsselten Daten können nur von jemandem gelesen werden, der über Ihre Passphrase verfügt – die Passphrase wird nicht an Google gesendet oder von Google gespeichert. Wenn Sie Ihre Passphrase vergessen, müssen Sie:</translation>
+<translation id="6394791380443108141"><ph name="FULLSCREEN_ORIGIN"/> wird nun im Vollbildmodus angezeigt und blendet den Mauszeiger aus.</translation>
 <translation id="6052976518993719690">SSL-Zertifizierungsstelle</translation>
 <translation id="1636959874332483835"><ph name="HOST_NAME"/> enthält Malware. Ihr Computer wird möglicherweise mit einem Virus infiziert, wenn Sie diese Website aufrufen.</translation>
 <translation id="8050783156231782848">Keine Daten verfügbar</translation>
@@ -1612,12 +1690,14 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="9118804773997839291">Die folgende Liste führt alle gefährlichen Elemente der Seite auf. Klicken Sie auf den Diagnoselink, um weitere Informationen zum Thread eines bestimmten Elements zu erhalten.</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="1761265592227862828">Alle Einstellungen und Daten synchronisieren\n(kann einige Zeit dauern)</translation>
+<translation id="2190469909648452501">Verringern</translation>
 <translation id="7754704193130578113">Vor dem Download von Dateien nach dem Speicherort fragen</translation>
+<translation id="7654941827281939388">Dieses Konto wird bereits auf dem Computer verwendet.</translation>
 <translation id="204914487372604757">Verknüpfung erstellen</translation>
 <translation id="2497284189126895209">Alle Dateien</translation>
-<translation id="1417363496376480406">Nutzer verwalten</translation>
 <translation id="696036063053180184">3 Set (Keine Umschalttaste)</translation>
 <translation id="452785312504541111">Englisch in voller Breite</translation>
+<translation id="945332329539165145">GPU Accelerated Canvas 2D</translation>
 <translation id="6702639462873609204">&amp;Bearbeiten...</translation>
 <translation id="9148126808321036104">Erneut anmelden</translation>
 <translation id="2282146716419988068">GPU-Verarbeitung</translation>
@@ -1651,6 +1731,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4135450933899346655">Ihre Zertifikate</translation>
 <translation id="4731578803613910821">Ihre Daten auf <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> und <ph name="WEBSITE_3"/></translation>
 <translation id="7716781361494605745">URL für Richtlinien der Netscape-Zertifizierungsstellen</translation>
+<translation id="9148058034647219655">Beenden</translation>
 <translation id="2881966438216424900">Letzter Zugriff am:</translation>
 <translation id="630065524203833229">&amp;Beenden</translation>
 <translation id="4647090755847581616">&amp;Tab schließen</translation>
@@ -1660,6 +1741,8 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2385700042425247848">Dienstname</translation>
 <translation id="3128628928070793746">Gehen Sie zum <ph name="BEGIN_BOLD"/> Schraubenschlüssel-Menü &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> &gt; <ph name="PROXIES_TITLE"/> <ph name="END_BOLD"/> und vergewissern Sie sich, dass für die Konfiguration &quot;Kein Proxy&quot; oder &quot;Direkt&quot; festgelegt ist.</translation>
 <translation id="7751005832163144684">Testseite drucken</translation>
+<translation id="3895762689235141867">$1-Audiodatei</translation>
+<translation id="2208158072373999562">ZIP-Archiv</translation>
 <translation id="1471300011765310414"><ph name="PRODUCT_NAME"/>
         kann die Webseite nicht anzeigen, da Ihr Computer nicht mit dem Internet verbunden ist.</translation>
 <translation id="5464632865477611176">Dieses Mal ausführen</translation>
@@ -1669,6 +1752,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7814458197256864873">&amp;Kopieren</translation>
 <translation id="8186706823560132848">Software</translation>
 <translation id="4692623383562244444">Suchmaschinen</translation>
+<translation id="4006648069430364249">Diese Seite wird nun im Vollbildmodus angezeigt und blendet den Mauszeiger aus.</translation>
 <translation id="567760371929988174">Eingabe&amp;methoden</translation>
 <translation id="10614374240317010">Nie speichern für...</translation>
 <translation id="5116300307302421503">Datei kann nicht geparst werden.</translation>
@@ -1688,6 +1772,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="751377616343077236">Name des Zertifikats</translation>
 <translation id="7154108546743862496">Weitere Informationen</translation>
 <translation id="8637688295594795546">Systemupdate verfügbar. Download wird vorbereitet...</translation>
+<translation id="6560243383948812749"><ph name="PREV_ENGINE"/> weiterhin verwenden</translation>
 <translation id="8382913212082956454">E-Mail-Adr&amp;esse kopieren</translation>
 <translation id="7447930227192971403">Tab 3 aktivieren</translation>
 <translation id="2903493209154104877">Adressen</translation>
@@ -1719,19 +1804,22 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4626106357471783850"><ph name="PRODUCT_NAME"/> muss neu gestartet werden, damit das Update angewendet werden kann.</translation>
 <translation id="1697068104427956555">Quadratischen Abschnitt im Bild auswählen</translation>
 <translation id="2840798130349147766">Web-Datenbanken</translation>
-<translation id="5334959834702166795">Sie sind mit einem Netzwerk verbunden, können sich aber trotzdem nicht anmelden? Möglicherweise erfordert Ihr Netzwerk eine webbasierte Authentifizierung. Starten Sie, falls möglich, eine Gastsitzung und überprüfen Sie, ob eine Netzwerkanmeldeseite angezeigt wird. Sobald Sie im Netzwerk angemeldet sind und verschiedene Webseiten aufrufen können, beenden Sie die Gastsitzung und versuchen Sie, sich erneut anzumelden.</translation>
 <translation id="1628736721748648976">Codierung</translation>
 <translation id="1198271701881992799">Erste Schritte</translation>
 <translation id="4830142027259858920">Geöffnete Tabs unter den Synchronisierungsoptionen aktivieren. Hierdurch können Ihre geöffneten Tabs mit anderen Clients synchronisiert werden.</translation>
 <translation id="782590969421016895">Aktuelle Seiten verwenden</translation>
 <translation id="6521850982405273806">Einen Fehler melden</translation>
 <translation id="736515969993332243">Suche nach Netzwerken läuft...</translation>
+<translation id="7846634333498149051">Tastatur</translation>
 <translation id="2951310213712249777">Vorab aus Omnibox rendern</translation>
 <translation id="8026334261755873520">Internetdaten löschen</translation>
+<translation id="992040204581954866"><ph name="SHORT_PRODUCT_NAME"/> mit Ihrem Google-Konto einrichten</translation>
+<translation id="1467432559032391204">Nach links</translation>
 <translation id="2717361709448355148">&quot;$1&quot; kann nicht umbenannt werden: $2</translation>
 <translation id="1769104665586091481">Link in neuem &amp;Fenster öffnen</translation>
 <translation id="8503813439785031346">Nutzername</translation>
 <translation id="5319782540886810524">Lettische Tastatur</translation>
+<translation id="1987139229093034863">Zu anderem Nutzer wechseln</translation>
 <translation id="8651585100578802546">Erneutes Laden dieser Seite erzwingen</translation>
 <translation id="685714579710025096">Tastaturlayout:</translation>
 <translation id="1361655923249334273">Nicht verwendet</translation>
@@ -1749,12 +1837,15 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5575473780076478375">Anonyme Erweiterung: <ph name="EXTENSION_NAME"/></translation>
 <translation id="9118862410733032325">Fehler bei der Wiedergabe</translation>
 <translation id="4188026131102273494">Suchkürzel:</translation>
+<translation id="8203697971279600106"><ph name="FULLSCREEN_ORIGIN"/> wird nun im Vollbildmodus angezeigt und möchte den Mauszeiger ausblenden.</translation>
 <translation id="8004512796067398576">Erhöhen</translation>
 <translation id="2930644991850369934">Beim Download des Wiederherstellungsabbilds ist ein Problem aufgetreten. Die Netzwerkverbindung wurde unterbrochen.</translation>
 <translation id="5750053751252005701">Keine <ph name="NETWORK"/>-Daten mehr</translation>
 <translation id="8858939932848080433">Bitte beschreiben Sie das Problem, bevor Sie das Feedback abschicken.</translation>
 <translation id="1720318856472900922">TLS-WWW-Serverauthentifizierung</translation>
+<translation id="5615976442513600672">Diesen Nutzer löschen</translation>
 <translation id="8550022383519221471">Der Synchronisierungsdienst ist nicht für diese Domain verfügbar.</translation>
+<translation id="1436238710092600782">Google-Konto erstellen</translation>
 <translation id="3355823806454867987">Proxy-Einstellungen ändern...</translation>
 <translation id="4780374166989101364">Aktiviert experimentelle Erweiterungs-APIs. Beachten Sie, dass Sie in die Erweiterungsgalerie keine Erweiterungen hochladen können, die experimentelle APIs verwenden.</translation>
 <translation id="7117247127439884114">Erneut anmelden...</translation>
@@ -1764,6 +1855,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
 <translation id="3007574127824276972">Als <ph name="USER_NAME"/> in <ph name="PRODUCT_NAME"/> angemeldet</translation>
 <translation id="2541913031883863396">Trotzdem fortfahren</translation>
+<translation id="2367499218636570208">Vorname</translation>
 <translation id="4278390842282768270">Zugelassen</translation>
 <translation id="2074527029802029717">Tab loslösen</translation>
 <translation id="1533897085022183721">Weniger als <ph name="MINUTES"/></translation>
@@ -1777,8 +1869,10 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4519351128520996510">Passphrase zur Synchronisierung eingeben</translation>
 <translation id="2391419135980381625">Standardschrift</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Standard)</translation>
+<translation id="5392544185395226057">Support für Native Client aktivieren</translation>
 <translation id="5400640815024374115">Der TPM-Chip (Trusted Platform Module) ist deaktiviert oder fehlt.</translation>
 <translation id="2151576029659734873">Eingegebener Tabindex ist ungültig.</translation>
+<translation id="1229834829921822263">Ungültige Seriennummer</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD"/>Vorsicht:<ph name="END_BOLD"/>Hierbei handelt es sich um Temporärdateien, die möglicherweise automatisch gelöscht werden, um Speicherplatz freizugeben. <ph name="BEGIN_LINK"/>Weitere Informationen<ph name="END_LINK"/></translation>
 <translation id="5150254825601720210">SSL-Servername für Netscape-Zertifikat</translation>
 <translation id="6771503742377376720">Ist eine Zertifizierungsstelle</translation>
@@ -1797,7 +1891,8 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3202578601642193415">Neueste</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> Stunden</translation>
 <translation id="1398853756734560583">Vergrößern</translation>
-<translation id="8988255471271407508">Die Webseite wurde nicht im Cache gefunden. Bestimmte Ressourcen können nur aus dem Cache sicher geladen werden, beispielsweise Seiten, die aus gesendeten Daten generiert wurden.<ph name="LINE_BREAK"/>Dieser Fehler kann auch durch eine Beschädigung des Caches nach inkorrektem Herunterfahren hervorgerufen werden.<ph name="LINE_BREAK"/>Sollte das Problem weiterhin bestehen, versuchen Sie, den Cache zu leeren.</translation>
+<translation id="8988255471271407508">Die Webseite wurde nicht im Cache gefunden. Bestimmte Ressourcen können nur aus dem Cache sicher geladen werden, beispielsweise Seiten, die aus gesendeten Daten generiert wurden.<ph name="LINE_BREAK"/>Dieser Fehler kann auch durch eine Beschädigung des Cache nach inkorrektem Herunterfahren hervorgerufen werden.<ph name="LINE_BREAK"/>Sollte das Problem weiterhin bestehen, versuchen Sie, den Cache zu leeren.</translation>
+<translation id="1653828314016431939">OK - jetzt neu starten</translation>
 <translation id="1195977189444203128">Das Plug-in <ph name="PLUGIN_NAME"/> ist veraltet.</translation>
 <translation id="2790759706655765283">Offizielle Webseite des Publishers</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -1807,13 +1902,13 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5507756662695126555">Zugelassen</translation>
 <translation id="3678156199662914018">Erweiterung: <ph name="EXTENSION_NAME"/></translation>
 <translation id="7951780829309373534">&quot;$1&quot; kann nicht eingefügt werden: $2</translation>
+<translation id="8562670418825350398">Angemeldet als <ph name="USER_NAME"/>...</translation>
 <translation id="3531250013160506608">Passwort-Textfeld</translation>
 <translation id="8314066201485587418">Cookies und andere Websitedaten beim Verlassen des Browsers löschen</translation>
 <translation id="4094105377635924481">Option &quot;Gruppierung&quot; zum Tab-Kontextmenü hinzufügen</translation>
 <translation id="8655295600908251630">Version</translation>
 <translation id="8250690786522693009">Latein</translation>
 <translation id="2119721408814495896">Für den <ph name="CLOUD_PRINT_NAME"/>-Connector muss das Microsoft XML Paper Specification Essentials Pack installiert sein.</translation>
-<translation id="5829401023154985950">Verwalten...</translation>
 <translation id="8923749287865336189">Einfügen fehlgeschlagen, unerwarteter Fehler: $1</translation>
 <translation id="7624267205732106503">Cookies und andere Websitedaten beim Schließen des Browsers löschen</translation>
 <translation id="8401363965527883709">Deaktiviertes Kontrollkästchen</translation>
@@ -1833,6 +1928,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3981760180856053153">Eingegebener Speichertyp ist ungültig.</translation>
 <translation id="4508345242223896011">Optimiertes Scrollen</translation>
 <translation id="8464591670878858520"><ph name="NETWORK"/>-Daten abgelaufen</translation>
+<translation id="8639033665604704195">Fehler beim Authentifizieren mit dem angegebenen vorinstallierten Schlüssel</translation>
 <translation id="3654092442379740616">Synchronisierungsfehler: <ph name="PRODUCT_NAME"/> ist veraltet und muss aktualisiert werden.</translation>
 <translation id="4286499585635351687">Proxy-Einstellungen werden von einer Erweiterung verwaltet.</translation>
 <translation id="3116361045094675131">UK-Englische Tastatur </translation>
@@ -1846,11 +1942,14 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1767519210550978135">Hsu</translation>
 <translation id="5508282018086013138">Diese Erweiterung wurde durch die Administrator-Richtlinie auf die schwarze Liste gesetzt.</translation>
 <translation id="2498539833203011245">Minimieren</translation>
+<translation id="3031417829280473749">Agentin X</translation>
 <translation id="2893168226686371498">Standardbrowser</translation>
 <translation id="2435457462613246316">Passwort anzeigen</translation>
-<translation id="7988355189918024273">Eingabehilfen aktivieren</translation>
+<translation id="7988355189918024273">Bedienungshilfen aktivieren</translation>
 <translation id="5438653034651341183">Aktuellen Screenshot einfügen:</translation>
 <translation id="1899708097738826574"><ph name="OPTIONS_TITLE"/> - <ph name="SUBPAGE_TITLE"/></translation>
+<translation id="5854912040170951372">Pizza</translation>
+<translation id="4027804175521224372">(Keine Synchronisierung Ihrer Daten – <ph name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK"/>)</translation>
 <translation id="1600303675170688467">Prioritäten</translation>
 <translation id="1765313842989969521">(diese Erweiterung wird verwaltet und kann nicht deinstalliert oder deaktiviert werden)</translation>
 <translation id="6983783921975806247">Registrierte OID</translation>
@@ -1858,8 +1957,10 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="394984172568887996">Aus IE importiert</translation>
 <translation id="5311260548612583999">Private Schlüsseldatei (optional):</translation>
 <translation id="2430043402233747791">Nur für Sitzung zulassen</translation>
+<translation id="8256319818471787266">Bello</translation>
 <translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="7568790562536448087">Aktualisierung läuft</translation>
+<translation id="438503109373656455">Brauner</translation>
 <translation id="4856408283021169561">Kein Mikrofon gefunden</translation>
 <translation id="7984180109798553540"><ph name="PRODUCT_NAME"/> verschlüsselt Ihre Daten zur Erhöhung der Sicherheit.</translation>
 <translation id="8190193592390505034">Verbindung zu <ph name="PROVIDER_NAME"/> wird hergestellt.</translation>
@@ -1867,17 +1968,14 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> ist zurzeit nicht Ihr Standardbrowser.</translation>
 <translation id="823241703361685511">Tarif</translation>
 <translation id="4068506536726151626">Diese Seite enthält Elemente von folgenden Websites, die Ihren Standort verfolgen:</translation>
-<translation id="4721475475128190282">Mehrere Profile</translation>
 <translation id="4220128509585149162">Abstürze</translation>
 <translation id="8798099450830957504">Standardeinstellung</translation>
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> Tage</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 mit RSA-Verschlüsselung</translation>
-<translation id="6008523395853402596">Wählen Sie im <ph name="BEGIN_BOLD"/>Schraubenschlüssel-Menü &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="INTERNET_TITLE"/> &gt; <ph name="OPTIONS_BUTTON"/> des verbundenen Netzwerks &gt; Tab &quot;<ph name="NETWORK_TAB"/>&quot; &gt; <ph name="PROXY_BUTTON"/><ph name="END_BOLD"/> und vergewissern Sie sich, dass für die Konfiguration &quot;Direkt&quot; festgelegt ist.</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="872451400847464257">Suchmaschine bearbeiten</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> Minuten</translation>
 <translation id="5512653252560939721">Hardwaregestütztes Nutzerzertifikat erforderlich</translation>
-<translation id="2466804342846034717">Geben Sie oben das richtige Passwort und anschließend die im unten stehenden Bild angezeigten Zeichen ein.</translation>
 <translation id="3881435075661337013">Ablauf von <ph name="NETWORK"/> in Kürze</translation>
 <translation id="5681833099441553262">Vorherigen Tab aktivieren</translation>
 <translation id="1681614449735360921">Inkompatibilitäten anzeigen</translation>
@@ -1890,6 +1988,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3651020361689274926">Die angeforderte Ressource existiert nicht mehr und es liegt keine Adresse zur Weiterleitung vor. Dies ist voraussichtlich ein dauerhafter Zustand.</translation>
 <translation id="2989786307324390836">DER-verschlüsselte Binärdatei, Einzelzertifikat</translation>
 <translation id="3827774300009121996">&amp;Vollbildmodus</translation>
+<translation id="3166375409108585695">Möglicherweise müssen Sie zunächst die <ph name="NETWORK_ID"/>-Anmeldeseite aufrufen, um auf das Netzwerk zugreifen zu können. <ph name="LINK_START"/>Starten Sie dazu eine Gastsitzung<ph name="LINK_END"/> und rufen Sie eine beliebige Webseite auf. Sobald Sie Zugriff auf das Netzwerk haben, können Sie die Gastsitzung beenden und versuchen, sich erneut anzumelden.</translation>
 <translation id="3771294271822695279">Videodateien</translation>
 <translation id="6704875430222476107"><ph name="PRODUCT_NAME"/> hat erkannt, dass
         NetNanny sichere Verbindungen abfängt. Normalerweise stellt dies
@@ -1908,6 +2007,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="6705264787989366486">IP-Adresse für <ph name="NAME"/> wird konfiguriert</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="8970721300630048025">Bitte lächeln! Nehmen Sie ein Bild von sich auf und legen Sie es als Ihr Kontobild fest.</translation>
+<translation id="8701919054760465536"><ph name="FULLSCREEN_ORIGIN"/> möchte den Mauszeiger ausblenden.</translation>
 <translation id="4087089424473531098">Die folgende Erweiterung wurde erstellt:
 
 <ph name="EXTENSION_FILE"/></translation>
@@ -1918,16 +2018,17 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2498765460639677199">Riesig</translation>
 <translation id="2378982052244864789">Erweiterungsverzeichnis auswählen</translation>
 <translation id="7861215335140947162">&amp;Downloads</translation>
+<translation id="7300386204565997649">Die folgenden Apps und Erweiterungen sind nun installiert:</translation>
 <translation id="4778630024246633221">Zertifikat-Manager</translation>
-<translation id="5279641203372218761">Lokale Drucker verwalten...</translation>
 <translation id="3144135466825225871">CRX-Datei konnte nicht ersetzt werden. Überprüfen Sie, ob die Datei verwendet wird.</translation>
 <translation id="2744221223678373668">Freigegeben</translation>
+<translation id="9064142312330104323">Google Profile-Foto (wird geladen)</translation>
 <translation id="4708849949179781599"><ph name="PRODUCT_NAME"/> beenden</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT"/> von <ph name="TOTAL_SIZE"/></translation>
 <translation id="6644512095122093795">Speichern von Passwörtern anbieten</translation>
 <translation id="4724450788351008910">Zugehörigkeit geändert</translation>
 <translation id="2249605167705922988">z. B. 1-5, 8, 11-13</translation>
-<translation id="3886815172404033724">Eingabehilfen ein-/ausblenden</translation>
+<translation id="3886815172404033724">Bedienungshilfen ein-/ausblenden</translation>
 <translation id="8691686986795184760">(durch Unternehmensrichtlinien aktiviert)</translation>
 <translation id="1911483096198679472">Was ist das?</translation>
 <translation id="1976323404609382849">Es wurden Cookies von mehreren Websites blockiert.</translation>
@@ -1947,6 +2048,8 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="402759845255257575">Ausführung von JavaScript für keine Website zulassen</translation>
 <translation id="4610637590575890427">Wollten Sie <ph name="SITE"/> aufrufen?</translation>
 <translation id="7723779034587221017">Verbindung mit dem Policy-Dienst wurde unterbrochen. Bitte setzen Sie Ihr Gerät auf die Standardeinstellungen zurück oder wenden Sie sich an einen Support-Mitarbeiter.</translation>
+<translation id="1959041986014745156">[Ausblenden]</translation>
+<translation id="5097002363526479830">Fehler beim Herstellen einer Verbindung mit dem Netzwerk &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
 <translation id="3046388203776734202">Pop-up-Einstellungen:</translation>
 <translation id="3437994698969764647">Alle exportieren...</translation>
 <translation id="8119631488458759651">Diese Website entfernen</translation>
@@ -1987,18 +2090,20 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8986267729801483565">Downloadpfad:</translation>
 <translation id="1776712937009046120">Nutzer hinzufügen</translation>
 <translation id="4322394346347055525">Andere Tabs schließen</translation>
+<translation id="2562743677925229011">Nicht in <ph name="SHORT_PRODUCT_NAME"/> angemeldet</translation>
 <translation id="593451978644335626">Drücken Sie Strg+Leertaste, um die vorherige Eingabemethode auszuwählen.</translation>
 <translation id="4411770745820968260">Dateiablage</translation>
 <translation id="881799181680267069">Andere ausblenden</translation>
 <translation id="1812631533912615985">Tabs loslösen</translation>
 <translation id="8318945219881683434">Überprüfen der Sperrung fehlgeschlagen.</translation>
+<translation id="1408789165795197664">Erweitert...</translation>
 <translation id="1650709179466243265">www. und .com hinzufügen und Adresse öffnen</translation>
 <translation id="7258264058936813500">Trotzdem laden</translation>
-<translation id="3524079319150349823">Klicken Sie zur Prüfung eines Pop-ups mit der rechten Maustaste auf das Aktionssymbol auf der Seite oder im Browser und wählen Sie &quot;Pop-up prüfen&quot; aus.</translation>
 <translation id="994289308992179865">Sch&amp;leife</translation>
 <translation id="7793343764764530903">Sie haben <ph name="CLOUD_PRINT_NAME"/> erfolgreich aktiviert! <ph name="PRODUCT_NAME"/> hat die Drucker auf diesem Computer mit &lt;b&gt;<ph name="EMAIL_ADDRESSES"/>&lt;/b&gt; registriert. Sie können jetzt über jede für <ph name="CLOUD_PRINT_NAME"/> aktivierte Web-App oder mobile App auf Ihren Druckern drucken.</translation>
 <translation id="8887090188469175989">ZGPY</translation>
 <translation id="3302709122321372472">CSS-Datei &quot;<ph name="RELATIVE_PATH"/>&quot; konnte nicht für das Content-Skript geladen werden.</translation>
+<translation id="5836766014927808479">Lesezeichenfunktionen auf &quot;Neuer Tab&quot;-Seite aktivieren</translation>
 <translation id="305803244554250778">Anwendungsverknüpfungen erstellen in:</translation>
 <translation id="574392208103952083">Mittel</translation>
 <translation id="3745810751851099214">Senden für:</translation>
@@ -2009,12 +2114,14 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1963227389609234879">Alle entfernen</translation>
 <translation id="7779140087128114262">Ihre verschlüsselten Daten können nur von jemandem gelesen werden, der über Ihre Passphrase verfügt – die Passphrase wird nicht an Google gesendet oder von Google gespeichert. Sollten Sie Ihre Passphrase vergessen, müssen Sie die Synchronisierung zurücksetzen.</translation>
 <translation id="13356285923490863">Richtlinienname</translation>
+<translation id="8241040075392580210">Heiter bis wolkig</translation>
 <translation id="6030946405726632495">Ordner &quot;$1&quot; kann nicht erstellt werden: $2</translation>
 <translation id="8019305344918958688">Schade... Keine Erweiterungen installiert :-(</translation>
 <translation id="7466861475611330213">Satzzeichenstil</translation>
 <translation id="2496180316473517155">Browserverlauf</translation>
 <translation id="602251597322198729">Die Website versucht, mehrere Dateien herunterzuladen. Möchten Sie dies zulassen?</translation>
 <translation id="5843685321177053287">Warten auf Handshake mit dem Verwaltungsdienst des Geräts...</translation>
+<translation id="4365673000813822030">Hoppla, die Synchronisierung funktioniert nicht mehr.</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> Stunden</translation>
 <translation id="7026338066939101231">Verringern</translation>
 <translation id="5411472733320185105">Proxy-Einstellungen nicht für diese Hosts und Domains verwenden:</translation>
@@ -2051,6 +2158,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4320697033624943677">Nutzer hinzufügen</translation>
 <translation id="9153934054460603056">Identität und Passwort speichern</translation>
 <translation id="1455548678241328678">Norwegische Tastatur</translation>
+<translation id="4063084925710371119">Zweite(n) Vornamen hinzufügen</translation>
 <translation id="7908378463497120834">Mindestens eine Partition auf Ihrem externen Speichergerät konnte nicht bereitgestellt werden.</translation>
 <translation id="2520481907516975884">Zwischen Chinesisch/Englisch wechseln</translation>
 <translation id="8571890674111243710">Seite wird in folgende Sprache übersetzt: <ph name="LANGUAGE"/>...</translation>
@@ -2061,6 +2169,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="6264365405983206840">&amp;Alles auswählen</translation>
 <translation id="6615455863669487791">Zeigen</translation>
 <translation id="1017280919048282932">&amp;Zum Wörterbuch hinzufügen</translation>
+<translation id="8036518327127111261">Fehler beim Authentifizieren mit dem angegebenen Zertifikat</translation>
 <translation id="8319414634934645341">Erweiterte Schlüsselverwendung</translation>
 <translation id="4563210852471260509">Anfängliche Eingabesprache ist Chinesisch.</translation>
 <translation id="6897140037006041989">User-Agent</translation>
@@ -2071,19 +2180,24 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="701080569351381435">Quelltext anzeigen</translation>
 <translation id="3286538390144397061">Jetzt neu starten</translation>
 <translation id="163309982320328737">Anfängliche Zeichenbreite ist &quot;Voll&quot;.</translation>
+<translation id="5072212169848991075">In <ph name="NEW_HOMEPAGE"/> ändern</translation>
 <translation id="5107325588313356747">Um den Zugriff auf dieses Programm auszublenden, muss es mithilfe von\n<ph name="CONTROL_PANEL_APPLET_NAME"/> auf dem Bedienfeld deinstalliert werden.\n\nMöchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="4841055638263130507">Mikrofon-Einstellungen</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="7631887513477658702">Dateien dieses Typs &amp;immer öffnen</translation>
 <translation id="8627795981664801467">Nur sichere Verbindungen</translation>
+<translation id="795025003224538582">Nicht neu starten</translation>
 <translation id="8680787084697685621">Die Anmeldeinformationen für dieses Konto sind veraltet.</translation>
 <translation id="3228969707346345236">Die Übersetzung ist fehlgeschlagen, weil die Seite bereits auf <ph name="LANGUAGE"/> ist.</translation>
 <translation id="1873879463550486830">SUID-Sandbox</translation>
+<translation id="2565803372393255249">Erweiterte Synchronisierungseinstellungen</translation>
 <translation id="2190355936436201913">(leer)</translation>
 <translation id="8515737884867295000">Zertifikatbasierte Authentifizierung fehlgeschlagen</translation>
 <translation id="5868426874618963178">Quelltext der aktuellen Seite senden</translation>
 <translation id="5818003990515275822">Koreanisch</translation>
 <translation id="4182252350869425879">Warnung: Verdächtigte Phishing-Website!</translation>
+<translation id="3760594300798166667">Experimentelle WebUI aktivieren</translation>
+<translation id="2192782719025820983">Nach weiteren Druckern suchen</translation>
 <translation id="5458214261780477893">Dvorak</translation>
 <translation id="1164369517022005061"><ph name="NUMBER_DEFAULT"/> Stunden übrig</translation>
 <translation id="5943260032016910017">Ausnahmen für Cookies und Websitedaten</translation>
@@ -2114,9 +2228,11 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2189470649391435617">Größe nach rechts ändern</translation>
 <translation id="2805646850212350655">Verschlüsselndes Microsoft-Dateisystem</translation>
 <translation id="1974060860693918893">Erweitert</translation>
+<translation id="1701364987952948449">Als Gast surfen</translation>
 <translation id="8053959338015477773">Ein zusätzliches Plug-in ist zum Anzeigen einiger Elemente auf dieser Seite erforderlich.</translation>
 <translation id="3541661933757219855">Drücken Sie zum Ausblenden &quot;Strg+Alt+/&quot; oder &quot;Esc&quot;</translation>
 <translation id="8813873272012220470">Aktiviert eine Prüfung im Hintergrund, die Sie warnt, wenn eine Softwareinkompatibilität festgestellt wird, wenn also beispielsweise ein Modul eines Drittanbieters den Browser zum Absturz bringt.</translation>
+<translation id="3660234220361471169">Nicht vertrauenswürdig</translation>
 <translation id="5020734739305654865">Melden Sie sich an mit Ihrem</translation>
 <translation id="7871467315479343122">Helfen Sie uns, AutoFill zu verbessern.</translation>
 <translation id="899457468947881820">Protokoll-Handler</translation>
@@ -2126,10 +2242,10 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="810066391692572978">Datei verwendet nicht unterstützte Funktionen.</translation>
 <translation id="3829932584934971895">Providertyp:</translation>
 <translation id="462288279674432182">IP eingeschränkt:</translation>
-<translation id="9097192044535179206">Cloud-Drucker verwalten...</translation>
 <translation id="3927932062596804919">Ablehnen</translation>
 <translation id="6484929352454160200">Eine neue Version von <ph name="PRODUCT_NAME"/> ist verfügbar.</translation>
 <translation id="3187212781151025377">Hebräische Tastatur</translation>
+<translation id="5071755030296241826">Bildschirmtastatur</translation>
 <translation id="351152300840026870">Schriftart mit fester Breite</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="778881183694837592">Erforderliches Feld - muss ausgefüllt werden.</translation>
@@ -2137,6 +2253,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3920504717067627103">Zertifikatrichtlinien</translation>
 <translation id="155865706765934889">Touchpad</translation>
 <translation id="7701040980221191251">Keine</translation>
+<translation id="2299271837233608948">Synchronisieren Sie Ihre Lesezeichen, den Verlauf und die Einstellungen auf allen Ihren Geräten.</translation>
 <translation id="5917011688104426363">Adressleiste im Suchmodus fokussieren</translation>
 <translation id="6910239454641394402">Ausnahmen für JavaScript</translation>
 <translation id="3269101346657272573">Geben Sie die PIN ein.</translation>
@@ -2155,6 +2272,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8404409224170843728">Hersteller:</translation>
 <translation id="8267453826113867474">Anstößige Wörter sperren</translation>
 <translation id="7959074893852789871">Die Datei enthielt mehrere Zertifikate, von denen einige nicht importiert wurden:</translation>
+<translation id="6837672309715589209">Einstellungen für die Bildschirmtastatur ändern...</translation>
 <translation id="1213999834285861200">Ausnahmen für Bilder</translation>
 <translation id="2805707493867224476">Anzeige von Pop-ups für alle Websites zulassen</translation>
 <translation id="3561217442734750519">Der Eingabewert für den privaten Schlüssel muss ein gültiger Pfad sein.</translation>
@@ -2162,10 +2280,9 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="77221669950527621">Erweiterungen oder Apps</translation>
 <translation id="5227808808023563348">Vorherigen Text suchen</translation>
 <translation id="6650142020817594541">Diese Website empfiehlt Google Chrome Frame (bereits installiert).</translation>
-<translation id="6780786534712515143">Wenn Sie Instant aktiviert haben, werden die meisten Webseiten geladen, sobald Sie eine URL in die Omnibox eingeben und noch bevor Sie die Eingabetaste gedrückt haben. Wenn diese Funktion von Ihrer Standardsuchmaschine unterstützt wird, werden darüber hinaus Suchergebnisse sofort angezeigt, sobald Sie Ihre Anfrage in die Omnibox eingeben. Inline-Vervollständigungen helfen Ihnen beim Verfeinern Ihrer Suche.\n\nDa Suchergebnisse bereits angefordert werden, während Sie Ihre Anfrage eingeben, protokolliert Ihre Standardsuchmaschine diese möglicherweise als Suchanfragen.\n</translation>
 <translation id="6503077044568424649">Meistbesucht</translation>
 <translation id="4625904365165566833">Sie sind nicht zur Anmeldung berechtigt. Bitte wenden Sie sich an den Eigentümer des Chromebooks.</translation>
-<translation id="7450633916678972976">Hinweis: Wenn Sie auf &quot;Feedback geben&quot; klicken, schließt Google Chrome ein Protokoll Ihrer Google Chrome-Version und Ihrer Betriebssystemversion sowie der URL ein, die mit Ihrem Feedback verknüpft ist. Sie können auch einen für Ihr Feedback relevanten Screenshot beifügen. Diese Informationen werden von uns genutzt, um Probleme zu diagnostizieren und Google Chrome stetig zu verbessern. Alle persönlichen Informationen, die in Ihrem Feedbackbericht enthalten sind (ob ausdrücklich in Ihren Kommentaren oder unbeabsichtigt im Protokoll, der URL oder dem Screenshot), werden gemäß unseren Datenschutzrichtlinien vertraulich behandelt. Deaktivieren Sie das Kästchen &quot;Diese URL einfügen&quot;, um die URL nicht zu übermitteln. Damit kein Screenshot übermittelt wird, deaktivieren Sie das Kästchen &quot;Diesen Screenshot einfügen&quot;. Sie stimmen zu, dass Google jegliches Feedback, das Sie an uns senden, verwenden kann, um die Produkte und Dienste von Google weiter zu verbessern.</translation>
+<translation id="7450633916678972976">Hinweis: Wenn Sie auf &quot;Feedback geben&quot; klicken, schließt Google Chrome ein Protokoll Ihrer Google Chrome-Version und Ihrer Betriebssystemversion sowie der URL ein, die mit Ihrem Feedback verknüpft ist. Sie können auch einen für Ihr Feedback relevanten Screenshot beifügen. Diese Informationen werden von uns genutzt, um Probleme zu diagnostizieren und Google Chrome stetig zu verbessern. Alle persönlichen Informationen, die in Ihrem Feedbackbericht enthalten sind (ob ausdrücklich in Ihren Kommentaren oder unbeabsichtigt im Protokoll, der URL oder dem Screenshot), werden gemäß unseren Datenschutzbestimmungen vertraulich behandelt. Deaktivieren Sie das Kästchen &quot;Diese URL einfügen&quot;, um die URL nicht zu übermitteln. Damit kein Screenshot übermittelt wird, deaktivieren Sie das Kästchen &quot;Diesen Screenshot einfügen&quot;. Sie stimmen zu, dass Google jegliches Feedback, das Sie an uns senden, verwenden kann, um die Produkte und Dienste von Google weiter zu verbessern.</translation>
 <translation id="465365366590259328">Ihre Änderungen werden beim nächsten Neustart von <ph name="PRODUCT_NAME"/> übernommen.</translation>
 <translation id="7168109975831002660">Mindestgröße</translation>
 <translation id="7070804685954057874">Direkte Eingabe</translation>
@@ -2173,8 +2290,10 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3265459715026181080">Fenster schließen</translation>
 <translation id="6074871234879228294">Japanische Eingabemethode (für japanische Tastatur)</translation>
 <translation id="7855296476260297092">Anmeldung erfolgreich</translation>
+<translation id="6442187272350399447">Smiley</translation>
 <translation id="7317938878466090505"><ph name="PROFILE_NAME"/> (aktuell)</translation>
 <translation id="907841381057066561">Während des Packvorgangs wurde keine temporäre ZIP-Datei erstellt.</translation>
+<translation id="1064912851688322329">Verbindung zum Google-Konto trennen</translation>
 <translation id="1294298200424241932">Vertrauenseinstellungen bearbeiten:</translation>
 <translation id="1384617406392001144">Ihren Browserverlauf</translation>
 <translation id="1119447706177454957">Interner Fehler</translation>
@@ -2218,6 +2337,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3494444535872870968">&amp;Frame speichern unter...</translation>
 <translation id="987264212798334818">Allgemein</translation>
 <translation id="7005812687360380971">Fehler</translation>
+<translation id="1000219486641369544">In <ph name="NEW_ENGINE"/> ändern</translation>
 <translation id="2356070529366658676">Fragen</translation>
 <translation id="5731247495086897348">Einfügen und &amp;fortfahren</translation>
 <translation id="7635741716790924709">Adresszeile 1</translation>
@@ -2234,14 +2354,16 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1166212789817575481">Tabs rechts schließen</translation>
 <translation id="6472893788822429178">Schaltfläche &quot;Startseite&quot; anzeigen</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER"/></translation>
+<translation id="479536056609751218">Webseite, nur HTML</translation>
 <translation id="534916491091036097">Linke Klammer</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
-<translation id="6660445291081843757">Oberfläche für neue Downloads</translation>
+<translation id="6660445291081843757">Neue Oberfläche für Downloads</translation>
 <translation id="5685236799358487266">Als Suc&amp;hmaschine hinzufügen...</translation>
 <translation id="8903921497873541725">Vergrößern</translation>
 <translation id="2195729137168608510">E-Mail-Schutz</translation>
 <translation id="1425734930786274278">Die folgenden Cookies wurden blockiert (Cookies von Drittanbietern werden ausnahmslos blockiert):</translation>
 <translation id="6805647936811177813">Melden Sie sich in <ph name="TOKEN_NAME"/> an, um das Client-Zertifikat von <ph name="HOST_NAME"/> herunterzuladen.</translation>
+<translation id="1598179072432982827">&lt;track&gt;-Element aktivieren</translation>
 <translation id="1199232041627643649">Zum Beenden <ph name="KEY_EQUIVALENT"/> gedrückt halten</translation>
 <translation id="5428562714029661924">Dieses Plug-in ausblenden</translation>
 <translation id="7907591526440419938">Datei öffnen</translation>
@@ -2254,6 +2376,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1325040735987616223">Systemupdate</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="9090669887503413452">Systeminformationen senden</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="3084771660770137092">Entweder verfügt Google Chrome nicht mehr über genügend Arbeitsspeicher oder der Prozess für die Webseite wurde aus einem anderen Grund beendet. Aktualisieren Sie die Seite oder rufen Sie eine andere Seite auf.</translation>
 <translation id="1114901192629963971">Ihr Passwort kann im aktuellen Netzwerk nicht bestätigt werden. Wählen Sie ein anderes Netzwerk aus.</translation>
 <translation id="5179510805599951267">Nicht auf <ph name="ORIGINAL_LANGUAGE"/>? Diesen Fehler melden</translation>
@@ -2265,16 +2388,18 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="385120052649200804">Internationale US-amerikanische Tastatur</translation>
 <translation id="9012607008263791152">Mir ist bewusst, dass mein Computer durch Aufrufen dieser Website beschädigt werden kann.</translation>
 <translation id="6640442327198413730">Cachefehler</translation>
-<translation id="1441458099223378239">Ich kann nicht auf mein Konto zugreifen.</translation>
 <translation id="5793220536715630615">Video-URL k&amp;opieren</translation>
+<translation id="468249400587767128">Anmelden und synchronisieren</translation>
 <translation id="523397668577733901">Möchten Sie lieber die <ph name="BEGIN_LINK"/>Galerie durchsuchen<ph name="END_LINK"/>?</translation>
 <translation id="2922350208395188000">Das Serverzertifikat kann nicht überprüft werden.</translation>
 <translation id="3778740492972734840">E&amp;ntwicklertools</translation>
 <translation id="8335971947739877923">Exportieren...</translation>
 <translation id="5680966941935662618">Autofill-Einstellungen</translation>
+<translation id="38275787300541712">Drücken Sie die Eingabetaste, wenn Sie fertig sind.</translation>
 <translation id="6004539838376062211">&amp;Optionen der Rechtschreibprüfung</translation>
 <translation id="5350198318881239970">Ihr Profil konnte nicht ordnungsgemäß geöffnet werden.\n\nMöglicherweise stehen nicht alle Funktionen zur Verfügung. Überprüfen Sie, ob das Profil vorhanden ist und Sie Lese- und Schreibzugriff für die Profilinhalte besitzen.</translation>
 <translation id="4058793769387728514">Dokument jetzt prüfen</translation>
+<translation id="4906211812239352804">Diese Seite möchte den Mauszeiger ausblenden.</translation>
 <translation id="1810107444790159527">Listenfeld</translation>
 <translation id="3338239663705455570">Slowenische Tastatur</translation>
 <translation id="1859234291848436338">Schreibrichtung</translation>
@@ -2292,7 +2417,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="9026731007018893674">Download</translation>
 <translation id="7646591409235458998">E-Mail:</translation>
 <translation id="6199775032047436064">Aktuelle Seite neu laden</translation>
-<translation id="6981982820502123353">Eingabehilfen</translation>
+<translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="112343676265501403">Ausnahmen für Plug-ins</translation>
 <translation id="770273299705142744">Autofill für Formulare</translation>
 <translation id="7210998213739223319">Nutzername</translation>
@@ -2314,7 +2439,10 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5293659407874396561"><ph name="SUBJECT"/> (<ph name="ISSUER"/>)</translation>
 <translation id="2115926821277323019">Muss eine gültige URL sein</translation>
 <translation id="8986494364107987395">Nutzungsstatistiken und Absturzberichte automatisch an Google senden</translation>
+<translation id="699906600090177031">Zum Abbrechen Suchtaste drücken</translation>
+<translation id="7070714457904110559">Ermöglicht experimentelle Erweiterungen für die Geostandort-Funktion. Beinhaltet die Verwendung von Standort-APIs des Betriebssystems (falls verfügbar) und das Senden von zusätzlichen Konfigurationsdaten des lokalen Netzwerks an den Google-Standortservice. So ist eine bessere und genauere Positionierung möglich.</translation>
 <translation id="6701535245008341853">Profil konnte nicht geladen werden.</translation>
+<translation id="992779717417561630">Über das <ph name="CLOUD_PRINT_NAME"/>-Dialogfeld drucken... <ph name="SHORTCUT_KEY"/></translation>
 <translation id="527605982717517565">JavaScript auf <ph name="HOST"/> immer zulassen</translation>
 <translation id="702373420751953740">PRL-Version:</translation>
 <translation id="1307041843857566458">Erneute Aktivierung bestätigen</translation>
@@ -2322,8 +2450,8 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 mit RSA-Verschlüsselung</translation>
 <translation id="3323447499041942178">Textfeld</translation>
 <translation id="580571955903695899">Neu sortieren nach Titel</translation>
-<translation id="3572785946229493081">Einstellungen für virtuelle Tastatur ändern...</translation>
 <translation id="5230516054153933099">Fenster</translation>
+<translation id="1799497982892676838">Synchronisierte Daten über Google Dashboard verwalten</translation>
 <translation id="7554791636758816595">Neuer Tab</translation>
 <translation id="5503844897713343920">Sie haben versucht, <ph name="DOMAIN"/> zu erreichen, aber das vom Server übermittelte Zertifikat wurde vom entsprechenden Aussteller zurückgerufen. Das bedeutet, dass die vom Server übermittelten Anmeldeinformationen nicht vertrauenswürdig sind. Möglicherweise kommunizieren Sie mit einem Angreifer. Sie sollten den Vorgang abbrechen.</translation>
 <translation id="6928853950228839340">Aufbau einer Textur</translation>
@@ -2331,7 +2459,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7671576867600624">Technologie:</translation>
 <translation id="1103966635949043187">Gehen Sie zur Startseite der Website:</translation>
 <translation id="7477347901712410606">Wenn Sie die Passphrase vergessen habe, halten Sie die Synchronisierung über das <ph name="BEGIN_LINK"/>Google Dashboard<ph name="END_LINK"/> an und setzen Sie sie zurück.</translation>
-<translation id="1086613338090581534">Der Aussteller eines Zertifikats, das nicht abgelaufen ist, ist für das Führen einer so genannten &quot;Sperrliste&quot; verantwortlich. Falls ein Zertifikat in den Besitz eines anderen gelangt, kann der Aussteller es widerrufen, indem er es der Sperrliste hinzufügt. In diesem Fall vertraut Ihr Browser dem Zertifikat nicht mehr. Für abgelaufene Zertifikate ist kein Widerrufstatus erforderlich. Während der Gültigkeit dieses Zertifikats für die besuchte Website kann daher nicht ermittelt werden, ob das Zertifikat in den Besitz eines anderen gelangt ist und später widerrufen wurde oder ob es weiterhin sicher ist. Daher kann nicht ermittelt werden, ob Sie mit der rechtmäßigen Website kommunizieren oder ob sich das Zertifikat nun im Besitz eines Hackers befindet und Sie jetzt mit diesem kommunizieren. In diesem Fall sollten Sie nicht fortfahren.</translation>
 <translation id="2645575947416143543">Falls Sie jedoch in einem Unternehmen arbeiten, das eigene Zertifikate erzeugt, und Sie versuchen, mithilfe eines solchen Zertifikats eine Verbindung zu einer internen Website dieses Unternehmens herzustellen, können Sie das Problem auf sichere Weise lösen, indem Sie das Stammzertifikat des Unternehmens als &quot;Stammzertifikat&quot; importieren. In diesem Fall werden Zertifikate, die von Ihrem Unternehmen ausgestellt oder bestätigt wurden, als vertrauenswürdig eingestuft und Sie erhalten diese Fehlermeldung nicht, wenn Sie das nächste Mal versuchen, eine Verbindung zu einer internen Website herzustellen. Wenden Sie sich an die Supportmitarbeiter in Ihrem Unternehmen, wenn Sie beim Hinzufügen eines neuen Stammzertifikats in Ihrem Computer Hilfe benötigen.</translation>
 <translation id="376466258076168640"><ph name="PRODUCT_NAME"/> zum Standardbrowser machen</translation>
 <translation id="1056898198331236512">Warnung</translation>
@@ -2341,6 +2468,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2608770217409477136">Standardeinstellungen verwenden</translation>
 <translation id="3157931365184549694">Wiederherstellen</translation>
 <translation id="4211160335138694537">Zu <ph name="SHORT_PRODUCT_NAME"/> hinzufügen</translation>
+<translation id="2318625572303095424">Bluetooth aktivieren</translation>
 <translation id="7426243339717063209">&quot;<ph name="EXTENSION_NAME"/>&quot; deinstallieren?</translation>
 <translation id="996250603853062861">Sichere Verbindung wird hergestellt...</translation>
 <translation id="6059232451013891645">Ordner:</translation>
@@ -2369,17 +2497,19 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5771816112378578655">Einrichtung läuft...</translation>
 <translation id="1197979282329025000">Beim Abrufen der Druckerfunktionen für Drucker &quot;<ph name="PRINTER_NAME"/>&quot; ist ein Fehler aufgetreten. Dieser Drucker konnte nicht mit <ph name="CLOUD_PRINT_NAME"/> registriert werden.</translation>
 <translation id="8820901253980281117">Ausnahmen für Pop-ups</translation>
+<translation id="5288481194217812690"><ph name="FILENAME"/></translation>
 <translation id="1143142264369994168">Signaturgeber des Zertifikats</translation>
 <translation id="904949795138183864">Die Webseite unter <ph name="URL"/> existiert nicht mehr.</translation>
 <translation id="214353449635805613">Screenshot-Bereich</translation>
+<translation id="3637683040568979198">Es wurden mehrere unterschiedliche &quot;Location&quot;-Header empfangen. Dies ist zum Schutz vor HTTP Response Splitting-Angriffen unzulässig.</translation>
 <translation id="3228279582454007836">Sie haben diese Seite nie zuvor aufgerufen.</translation>
-<translation id="2159017110205600596">Anpassen...</translation>
 <translation id="5449716055534515760">Fen&amp;ster schließen</translation>
 <translation id="2814489978934728345">Laden dieser Seite anhalten</translation>
 <translation id="2354001756790975382">Weitere Lesezeichen</translation>
 <translation id="8561574028787046517"><ph name="PRODUCT_NAME"/> wurde aktualisiert</translation>
 <translation id="5234325087306733083">Offline-Modus</translation>
 <translation id="1779392088388639487">PKCS #12 - Fehler beim Import</translation>
+<translation id="5120421890733714118">Diesem Zertifikat zur Identifizierung von Websites vertrauen</translation>
 <translation id="166278006618318542">Algorithmus für öffentlichen Schlüssel des Antragstellers</translation>
 <translation id="5759272020525228995">Beim Abrufen von <ph name="URL"/> ist auf der Website ein Fehler aufgetreten.
         Möglicherweise wird sie gerade gewartet oder ist falsch konfiguriert.</translation>
@@ -2390,19 +2520,22 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2784949926578158345">Verbindung wurde zurückgesetzt.</translation>
 <translation id="6663792236418322902">Das gewählte Passwort wird später zur Wiederherstellung dieser Datei benötigt. Bewahren Sie es an einem sicheren Ort auf.</translation>
 <translation id="4532822216683966758">Sie haben die Überprüfung der Herkunft von DNS-Zertifikaten aktiviert. Dies kann dazu führen, dass private Informationen an Google gesendet werden.</translation>
+<translation id="3834911756107486551">Angemeldet als <ph name="USER_NAME"/></translation>
 <translation id="6321196148033717308">Über Spracherkennung</translation>
+<translation id="4742412957996571326">Bluetooth-Unterstützung von Chrome OS aktivieren</translation>
 <translation id="3412265149091626468">Auswahl anzeigen</translation>
 <translation id="8167737133281862792">Zertifikat hinzufügen</translation>
+<translation id="2645009827850892485">Ungültiges DMToken</translation>
 <translation id="7509179828847922845">Die Verbindung zu <ph name="HOST_NAME"/> wurde unterbrochen.</translation>
 <translation id="2911372483530471524">PID-Namespaces</translation>
 <translation id="6093374025603915876">Autofill-Einstellungen</translation>
+<translation id="7254373286028228618">Aktiviert XSS Auditor von WebKit (websiteübergreifender Skriptschutz). Diese Funktion soll Sie vor bestimmten Angriffen bösartiger Websites schützen. Sie verbessert Ihre Sicherheit, ist jedoch eventuell nicht mit allen Websites kompatibel.</translation>
 <translation id="8584134039559266300">Tab 8 aktivieren</translation>
 <translation id="5189060859917252173">Das Zertifikat &quot;<ph name="CERTIFICATE_NAME"/>&quot; repräsentiert eine Zertifizierungsstelle.</translation>
 <translation id="3785852283863272759">Seitenadresse als E-Mail senden</translation>
 <translation id="2255317897038918278">Microsoft-Zeitstempeldienst</translation>
-<translation id="2529377200258391825">Die FESTSTELLTASTE ist aktiviert.\nDrücken Sie die Suchtaste, um die Aktivierung aufzuheben.</translation>
-<translation id="4181795849311796490">Verwenden Sie zur Authentifizierung von Synchronisierungsvorgängen OAuth anstatt ClientLogin. Dadurch werden authentifizierungsspezifische Elemente der Nutzeroberfläche vom Browser entkoppelt und eine Vielzahl an Zwei-Faktor-Mechanismen aktiviert.</translation>
 <translation id="3493881266323043047">Gültigkeit</translation>
+<translation id="8205932077017940719"><ph name="URL"/> möchte Daten dauerhaft auf Ihrem Mobilgerät speichern.</translation>
 <translation id="8124784517328765068">Muster für Hostname:</translation>
 <translation id="5979421442488174909">Überse&amp;tzen in <ph name="LANGUAGE"/></translation>
 <translation id="7326526699920221209">Akku: <ph name="PRECENTAGE"/> %</translation>
@@ -2418,6 +2551,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="5951823343679007761">Kein Akku</translation>
 <translation id="1618661679583408047">Das Sicherheitszertifikat des Servers ist noch nicht gültig!</translation>
+<translation id="4880261670356410858">Lokaler Fehler</translation>
 <translation id="7039912931802252762">Microsoft-Smartcard-Anmeldung</translation>
 <translation id="793703748056186466">Einige Einstellungen werden von einer Erweiterung verwaltet.</translation>
 <translation id="3752582316358263300">OK...</translation>
@@ -2446,6 +2580,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1375198122581997741">Informationen zur Version</translation>
 <translation id="642282551015776456">Dieser Name darf nicht als Datei- oder Ordnername verwendet werden.</translation>
 <translation id="3577001450437977987">Synchronisierungsfehler: Melden Sie sich erneut an...</translation>
+<translation id="6915804003454593391">Nutzer:</translation>
 <translation id="2345435964258511234">Deaktiviert die Synchronisierung mit vertikaler Aktualisierungsrate der Anzeige beim GPU-Rendering. Auf diese Weise können Frame-Raten 60 Hertz überschreiten. Dies ist nützlich für Benchmarking-Zwecke, bewirkt jedoch während schneller Bildschirm-Updates visuelles Tearing.</translation>
 <translation id="7915471803647590281">Bitte beschreiben Sie das Problem, bevor Sie das Feedback abschicken.</translation>
 <translation id="5725124651280963564">Melden Sie sich in <ph name="TOKEN_NAME"/> an, um einen Schlüssel für <ph name="HOST_NAME"/> zu generieren.</translation>
@@ -2453,12 +2588,14 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3206175707080061730">Eine Datei mit dem Namen &quot;$1&quot; existiert bereits. Möchten Sie sie ersetzen?</translation>
 <translation id="5976160379964388480">Sonstige</translation>
 <translation id="1648797160541174252">Netzwerk-Proxy für <ph name="NETWORK_NAME"/></translation>
+<translation id="3527085408025491307">Ordner</translation>
 <translation id="3665842570601375360">Sicherheit:</translation>
 <translation id="8812832766208874265"><ph name="CURRENT_GOOGLE_HOST"/> weiterhin verwenden</translation>
 <translation id="1430915738399379752">Drucken</translation>
 <translation id="7999087758969799248">Standard-Eingabemethode</translation>
 <translation id="2635276683026132559">Signatur</translation>
 <translation id="4835836146030131423">Fehler bei Anmeldung</translation>
+<translation id="8109000982585843816">Das <ph name="PLUGIN_NAME"/>-Plug-in wurde deaktiviert. Rufen Sie <ph name="CHROME_PLUGINS_LINK"/> auf, um es wieder zu aktivieren.</translation>
 <translation id="7715454002193035316">Nur Sitzung</translation>
 <translation id="2475982808118771221">Ein Fehler ist aufgetreten.</translation>
 <translation id="3324684065575061611">(Durch Unternehmensrichtlinie deaktiviert)</translation>
@@ -2469,6 +2606,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3454157711543303649">Aktivierung abgeschlossen</translation>
 <translation id="884923133447025588">Kein Sperrmechanismus gefunden.</translation>
 <translation id="556042886152191864">Schaltfläche</translation>
+<translation id="3609002127297296006">Erweiterte Einstellungen...</translation>
 <translation id="1352060938076340443">Unterbrochen</translation>
 <translation id="7229570126336867161">EVDO erforderlich</translation>
 <translation id="7582844466922312471">Mobile Daten</translation>
@@ -2480,7 +2618,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="9170848237812810038">&amp;Rückgängig</translation>
 <translation id="284970761985428403"><ph name="ASCII_NAME"/> (<ph name="UNICODE_NAME"/>)</translation>
 <translation id="3903912596042358459">Der Server hat die Verarbeitung der Anforderung verweigert.</translation>
-<translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/>KB</translation>
+<translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/> KB</translation>
 <translation id="4444364671565852729"><ph name="PRODUCT_NAME"/> wurde auf <ph name="VERSION"/> aktualisiert</translation>
 <translation id="5819890516935349394">Browser für Inhalte</translation>
 <translation id="2731392572903530958">Geschlossenes Fenster wieder öffn&amp;en</translation>
@@ -2506,6 +2644,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4162393307849942816"><ph name="BEGIN_BOLD"/>Sie befinden sich im Gastmodus<ph name="END_BOLD"/>. Seiten, die Sie in diesem Fenster besuchen, erscheinen nicht im Browserverlauf oder im Suchverlauf und hinterlassen auch keine anderen Spuren (z. B. Cookies) auf dem Computer, nachdem Sie sich abgemeldet haben. Dateien, die Sie herunterladen, oder Lesezeichen, die Sie erstellen, werden nicht beibehalten.
         <ph name="LINE_BREAK"/>
         <ph name="BEGIN_LINK"/>Weitere Informationen<ph name="END_LINK"/> zum Gastmodus</translation>
+<translation id="4806065163318322702">Spracheingabe starten/beenden</translation>
 <translation id="827924395145979961">Seiten werden nicht geladen</translation>
 <translation id="3177048931975664371">Hier klicken, um Passwort zu verbergen</translation>
 <translation id="3092544800441494315">Diesen Screenshot einfügen:</translation>
@@ -2519,6 +2658,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2440604414813129000">Quelltext an&amp;zeigen</translation>
 <translation id="816095449251911490"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/>, <ph name="TIME_REMAINING"/></translation>
 <translation id="8200772114523450471">Fortsetzen</translation>
+<translation id="7865978820218947446">Nutzer bearbeiten</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> secs ago</translation>
 <translation id="5423849171846380976">Aktiviert</translation>
 <translation id="6748105842970712833">SIM-Karte deaktiviert</translation>
@@ -2527,6 +2667,8 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4251486191409116828">Anwendungsverknüpfung konnte nicht erstellt werden.</translation>
 <translation id="7077872827894353012">Ignorierte Protokoll-Handler</translation>
 <translation id="3009731429620355204">Sitzungen</translation>
+<translation id="8018281414848451770">Mit <ph name="CLOUD_PRINT_NAME"/> drucken</translation>
+<translation id="5789765875079734939">Änderung der Suchmaschine bestätigen</translation>
 <translation id="5190835502935405962">Lesezeichenleiste</translation>
 <translation id="7828272290962178636">Der Server weist nicht die zur Verarbeitung der Anforderung erforderlichen Funktionen auf.</translation>
 <translation id="7823073559911777904">Proxy-Einstellungen ändern...</translation>
@@ -2544,12 +2686,14 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1163931534039071049">Frame-Quelltext &amp;anzeigen</translation>
 <translation id="8770196827482281187">Persische Eingabemethode (ISIRI 2901-Layout)</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
+<translation id="5642953011762033339">Verbindung zum Konto trennen</translation>
 <translation id="7564847347806291057">Prozess beenden</translation>
 <translation id="1607220950420093847">Ihr Konto wurde möglicherweise gelöscht oder deaktiviert. Bitte melden Sie sich ab.</translation>
 <translation id="5660872996699900541">Es sind keine Sitzungen vorhanden.</translation>
 <translation id="5613695965848159202">Anonyme Identität:</translation>
 <translation id="2233320200890047564">Indexierte Datenbanken</translation>
 <translation id="7063412606254013905">Weitere Informationen zum Phishing-Betrug.</translation>
+<translation id="1711129802457340606">Konvertieren Sie diese Datei in ein Format, das online angezeigt werden kann. Laden Sie sie beispielsweise in Google Text &amp; Tabellen hoch.</translation>
 <translation id="307767688111441685">Seite sieht seltsam aus</translation>
 <translation id="9076523132036239772">Ihre E-Mail-Adresse bzw. Ihr Passwort konnte nicht bestätigt werden. Stellen Sie zunächst eine Netzwerkverbindung her.</translation>
 <translation id="6965978654500191972">Gerät</translation>
@@ -2559,25 +2703,25 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1492817554256909552">Name des Zugriffspunkts:</translation>
 <translation id="901834265349196618">E-Mail</translation>
 <translation id="5835133142369577970">Geben Sie einen Ordnernamen an.</translation>
+<translation id="5527474464531963247">Sie können auch ein anderes Netzwerk auswählen.</translation>
 <translation id="5546865291508181392">Suchen</translation>
 <translation id="1999115740519098545">Beim Start</translation>
 <translation id="2983818520079887040">Einstellungen...</translation>
 <translation id="1465619815762735808">Click-to-Play</translation>
 <translation id="6941937518557314510">Melden Sie sich in <ph name="TOKEN_NAME"/> an, damit Sie mit Ihrem Zertifikat bei <ph name="HOST_NAME"/> authentifiziert werden können.</translation>
 <translation id="2099686503067610784">Serverzertifikat &quot;<ph name="CERTIFICATE_NAME"/>&quot; löschen?</translation>
-<translation id="9027603907212475920">Synchronisierung einrichten...</translation>
 <translation id="6873213799448839504">Zeichenfolge per Autocommit übergeben</translation>
 <translation id="7238585580608191973">SHA-256-Fingerabdruck</translation>
 <translation id="2501278716633472235">Zurück</translation>
+<translation id="3588662957555259973">* Google Profile-Foto</translation>
 <translation id="131461803491198646">Heimnetzwerk, kein Roaming</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
 <translation id="5679279978772703611">Gespeicherte Passwörter verwalten...</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
 <translation id="3613422051106148727">In &amp;neuem Tab öffnen</translation>
-<translation id="8954894007019320973">(Forts.)</translation>
+<translation id="8954894007019320973">(Fortsetzung)</translation>
 <translation id="3748412725338508953">Zu viele Umleitungen.</translation>
 <translation id="5833726373896279253">Diese Einstellungen können nur vom Eigentümer geändert werden:</translation>
-<translation id="6858960932090176617">Aktiviert XSS Auditor von WebKit (websiteübergreifender Skriptschutz). Diese Funktion soll Sie vor bestimmten Angriffen bösartiger Websites schützen. Sie verbessert Ihre Sicherheit, ist jedoch eventuell nicht mit allen Websites kompatibel.</translation>
 <translation id="6005282720244019462">Lateinamerikanische Tastatur</translation>
 <translation id="5627523580512561598"><ph name="EXTENSION_NAME"/>-Erweiterung</translation>
 <translation id="8831104962952173133">Phishing bemerkt!</translation>
@@ -2589,9 +2733,11 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="6845383723252244143">Ordner auswählen</translation>
 <translation id="8263231521757761563">Aktive Protokoll-Handler</translation>
 <translation id="7359657277149375382">Dateityp</translation>
+<translation id="2749756011735116528">Bei <ph name="PRODUCT_NAME"/> anmelden</translation>
 <translation id="8925458182817574960">&amp;Einstellungen</translation>
 <translation id="6361850914223837199">Fehlerdetails:</translation>
 <translation id="8948393169621400698">Plug-ins auf <ph name="HOST"/> immer zulassen</translation>
+<translation id="6527303717912515753">Teilen</translation>
 <translation id="3865082058368813534">Gespeicherte Autofill-Formulardaten löschen</translation>
 <translation id="8288345061925649502">Suchmaschine ändern</translation>
 <translation id="5436492226391861498">Warten auf Proxy-Tunnel...</translation>
@@ -2608,7 +2754,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4643612240819915418">&amp;Video in neuem Tab öffnen</translation>
 <translation id="7997479212858899587">Identität:</translation>
 <translation id="8300849813060516376">OTASP fehlgeschlagen</translation>
-<translation id="7739769321424564846">Voranmeldung und automatische Anmeldung aktivieren</translation>
 <translation id="2213819743710253654">Seitenaktion</translation>
 <translation id="1317130519471511503">Einträge bearbeiten...</translation>
 <translation id="6391538222494443604">Eingabeverzeichnis muss vorhanden sein.</translation>
@@ -2617,6 +2762,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7088615885725309056">Älter</translation>
 <translation id="461656879692943278"><ph name="HOST_NAME"/> enthält Inhalte von <ph name="ELEMENTS_HOST_NAME"/>, einer Website, die bekanntermaßen Malware enthält. Ihr Computer fängt sich möglicherweise einen Virus ein, wenn Sie diese Website besuchen.</translation>
 <translation id="2143778271340628265">Manuelle Proxy-Konfiguration</translation>
+<translation id="2441192698565541088">Wenn Sie die Verbindung zwischen Ihrem Google-Konto und <ph name="PRODUCT_NAME"/> trennen, werden die auf diesem Computer vorgenommenen Änderungen nicht mit Ihrem Google-Konto synchronisiert. Daten, die bereits in Ihrem Google-Konto gespeichert sind, verbleiben dort, bis Sie sie über das <ph name="BEGIN_LINK"/>Google Dashboard<ph name="END_LINK"/> entfernen.</translation>
 <translation id="5294529402252479912">Adobe Reader jetzt aktualisieren</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> days ago</translation>
 <translation id="7461850476009326849">Einzelne Plug-ins deaktivieren...</translation>
@@ -2629,7 +2775,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3320859581025497771">Ihr Mobilfunkanbieter</translation>
 <translation id="8828781037212165374">Diese Funktionen aktivieren...</translation>
 <translation id="8562413501751825163">Firefox vor dem Import schließen</translation>
-<translation id="3435541101098866721">Neue Telefonnummer hinzufügen</translation>
 <translation id="2448046586580826824">Sicherer HTTP-Proxy</translation>
 <translation id="4032534284272647190">Zugriff auf <ph name="URL"/> verweigert</translation>
 <translation id="4928569512886388887">Systemupdate wird abgeschlossen...</translation>
@@ -2687,9 +2832,18 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="6723661294526996303">Lesezeichen und Einstellungen importieren...</translation>
 <translation id="1782924894173027610">Der Synchronisierungsserver ist ausgelastet. Wiederholen Sie den Vorgang zu einem späteren Zeitpunkt.</translation>
 <translation id="6512448926095770873">Diese Seite verlassen</translation>
+<translation id="8631032106121706562">Blume</translation>
 <translation id="5457599981699367932">Als Gast nutzen</translation>
 <translation id="3169472444629675720">Discover</translation>
-<translation id="4088820693488683766">Optionen durchsuchen</translation>
+<translation id="4088820693488683766">Durchsuchen</translation>
+<translation id="1980978280732634743">&lt;h3&gt;Sichern&lt;/h3&gt;
+        &lt;p&gt;
+        Wenn Sie sich in Chrome anmelden, werden Ihre Lesezeichen, Ihr Verlauf und Ihre Einstellungen online in Ihrem Google-Konto gespeichert. Sollte Ihr Computer verloren gehen oder beschädigt werden, können Sie sich einfach mit einem neuen Computer in Google Chrome anmelden, um Ihre Daten wiederzuerlangen.
+        &lt;/p&gt;
+        &lt;h3&gt;Synchronisieren&lt;/h3&gt;
+        &lt;p&gt;
+        Falls Sie sich mit mehreren Computern in Chrome anmelden, wird jede Änderung umgehend und kabellos per Synchronisierung auf alle Computer übertragen. Wenn Sie beispielsweise ein Lesezeichen setzen, während Sie Ihren Laptop verwenden, wird dieses auch auf Ihrem Desktop-Computer angezeigt. So können Sie immer dort fortfahren, wo Sie aufgehört haben.
+        &lt;/p&gt;</translation>
 <translation id="3414952576877147120">Größe:</translation>
 <translation id="9098468523912235228">Vor <ph name="NUMBER_DEFAULT"/> Sekunden</translation>
 <translation id="7009102566764819240">Die folgende Liste führt alle gefährlichen Elemente der Seite auf. Klicken Sie auf den Diagnoselink, um weitere Informationen zum Malware-Thread eines bestimmten Elements zu erhalten. Falls Sie sicher sind, dass eine Ressource fälschlicherweise als Phishing-Ressource gemeldet wurde, klicken Sie auf den Link &quot;Einen Fehler melden&quot;.</translation>
@@ -2705,8 +2859,9 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3046084099139788433">Tab 7 aktivieren</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK"/>Weitere Informationen<ph name="END_LINK"/> zu diesem Problem.</translation>
 <translation id="1699395855685456105">Hardware-Version:</translation>
+<translation id="6680028776254050810">Nutzer wechseln</translation>
 <translation id="212464871579942993">Die Website unter <ph name="HOST_NAME"/> enthält Elemente von Websites, die anscheinend Malware hosten, also Software, die den Computer beschädigen oder anderweitig ohne Ihre Zustimmung agieren kann. Schon der Besuch einer Website, die Malware hostet, kann den Computer infizieren. Die Website hostet außerdem Content von Websites, die als &quot;Phishing&quot;-Websites gemeldet wurden. Solche Websites täuschen Nutzer, damit diese ihre privaten oder finanziellen Daten freigeben. Dies geschieht oft dadurch, dass sich Phishing-Websites als vertrauenswürdige Einrichtungen wie zum Beispiel Banken ausgeben.</translation>
-<translation id="6157714576637082050">Cloud-Drucker</translation>
+<translation id="9027307872616253016">Dienste im Chrome Web Store suchen</translation>
 <translation id="8156020606310233796">Listenansicht</translation>
 <translation id="957120528631539888">Keine Validierungsnachrichten anzeigen und Formularübermittlung nicht verhindern</translation>
 <translation id="8002980609684534974">Track-Nummer</translation>
@@ -2725,7 +2880,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="6154697846084421647">Angemeldet</translation>
 <translation id="8241707690549784388">Die gesuchte Seite hat die von Ihnen eingegebenen Informationen verwendet bzw. verarbeitet. Wenn Sie zu dieser Seite zurückgehen, wird möglicherweise eine bereits ausgeführte Aktion wiederholt. Möchten Sie fortfahren?</translation>
 <translation id="5359419173856026110">Zeigt die tatsächliche Bildrate einer Seite in Bildern pro Sekunde bei aktiver Hardwarebeschleunigung an</translation>
-<translation id="8632196666436827923">Symbolleiste ausblenden</translation>
 <translation id="4104163789986725820">E&amp;xportieren...</translation>
 <translation id="2113479184312716848">&amp;Datei öffnen...</translation>
 <translation id="8412709057120877195">Zugriffssteuerung für Ihre Geräte einrichten</translation>
@@ -2733,6 +2887,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3140353188828248647">Adressleiste fokussieren</translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
 <translation id="1185611560928829188">Magische Liste (<ph name="MAGIC_COUNT"/>)</translation>
+<translation id="1391582464782791898">Weitere Dienste finden Sie im Chrome Web Store.</translation>
 <translation id="5565871407246142825">Kreditkarten</translation>
 <translation id="4111534450840609205">diese Vorschläge</translation>
 <translation id="2587203970400270934">Betreibercode:</translation>
@@ -2742,11 +2897,12 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4350711002179453268">Es kann keine sichere Verbindung zum Server hergestellt werden. Möglicherweise liegt ein Problem mit dem Server vor oder es ist ein Client-Authentifizierungszertifikat erforderlich, das Sie nicht haben.</translation>
 <translation id="2653548440458473662">Keine Vervollständigungen gefunden</translation>
 <translation id="750509436279396091">Download-Ordner öffnen</translation>
-<translation id="91731790394942114">Neuen Namen hinzufügen </translation>
 <translation id="5963026469094486319">Designs abrufen</translation>
 <translation id="2441719842399509963">Auf Standardeinstellungen zurücksetzen</translation>
 <translation id="1893137424981664888">Keine Plug-ins installiert</translation>
 <translation id="3718288130002896473">Verhalten</translation>
+<translation id="4813512666221746211">Netzwerkfehler</translation>
+<translation id="8711402221661888347">Burger</translation>
 <translation id="2168725742002792683">Dateiendungen</translation>
 <translation id="3974195870082915331">Hier klicken, um Passwort anzuzeigen</translation>
 <translation id="7861805612256278846">Nicht angemeldet</translation>
@@ -2763,12 +2919,13 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8435334418765210033">Gespeicherte Netzwerke</translation>
 <translation id="6516193643535292276">Verbindung zum Internet konnte nicht hergestellt werden.</translation>
 <translation id="5125751979347152379">Ungültige URL</translation>
+<translation id="1521644229708738352">Änderungen übernehmen</translation>
 <translation id="2791364193466153585">Sicherheitsinformationen</translation>
 <translation id="4673916386520338632">Die Anwendung konnte nicht installiert werden, da sie mit der bereits installierten Anwendung &quot;<ph name="APP_NAME"/>&quot; in Konflikt steht.</translation>
 <translation id="6989426679472387780">GPU Accelerated Drawing für Seiteninhalte aktivieren, wenn die Compositing-Funktion aktiviert ist</translation>
 <translation id="2024918351532495204">Gerät ist offline</translation>
 <translation id="6040143037577758943">Schließen</translation>
-<translation id="5607923769356613853">Gehen Sie zum <ph name="BEGIN_BOLD"/> Schraubenschlüssel-Menü &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> &gt; <ph name="PROXIES_TITLE"/> &gt; LAN-Einstellungen <ph name="END_BOLD"/> und deaktivieren Sie das Kontrollkästchen &quot;Proxyserver für LAN verwenden&quot;.</translation>
+<translation id="5607923769356613853">Gehen Sie zum <ph name="BEGIN_BOLD"/> Schraubenschlüssel-Menü &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> &gt; <ph name="PROXIES_TITLE"/> &gt; LAN-Einstellungen <ph name="END_BOLD"/> und deaktivieren Sie das Kontrollkästchen &quot;Proxyserver für LAN verwenden&quot;</translation>
 <translation id="7522312030875244365">Dynamische Suche im Voraus laden</translation>
 <translation id="5787146423283493983">Schlüsselvereinbarung</translation>
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> mins ago</translation>
@@ -2795,6 +2952,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1903219944620007795">Wählen Sie für die Texteingabe eine Sprache, um die verfügbaren Eingabemethoden anzuzeigen.</translation>
 <translation id="4362187533051781987">Stadt</translation>
 <translation id="9149866541089851383">Bearbeiten...</translation>
+<translation id="6321345693652671780">Verbindung zum Google-Konto trennen</translation>
 <translation id="1065245965611933814">Gespeicherten Screenshot einfügen:</translation>
 <translation id="7876243839304621966">Alle entfernen</translation>
 <translation id="5663459693447872156">Automatisch in halbbreites Format wechseln</translation>
@@ -2805,16 +2963,17 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8412145213513410671">Abstürze (<ph name="CRASH_COUNT"/>)</translation>
 <translation id="560602183358579978">Computing-Auswahl...</translation>
 <translation id="7649070708921625228">Hilfe</translation>
+<translation id="4098717375343837611">Änderung der Suchmaschine bestätigen</translation>
+<translation id="858637041960032120">Telefonnummer hinzufügen</translation>
 <translation id="3210492393564338011">Nutzer löschen</translation>
-<translation id="1734072960870006811">Fax</translation>
 <translation id="3095995014811312755">Version</translation>
 <translation id="7052500709156631672">Das Gateway oder der Proxy-Server hat eine ungültige Antwort von einem Upstream-Server erhalten.</translation>
 <translation id="281133045296806353">Neues Fenster in aktueller Browsersitzung erstellt.</translation>
+<translation id="3605780360466892872">Hemdträger</translation>
 <translation id="8204484782770036444">• <ph name="PERMISSION"/></translation>
 <translation id="3951872452847539732">Die Proxy-Einstellungen Ihres Netzwerks werden von einer Erweiterung verwaltet.</translation>
 <translation id="6442697326824312960">Tab loslösen</translation>
 <translation id="6382612843547381371">Gültig von <ph name="START_DATE_TIME"/> bis <ph name="END_DATE_TIME"/></translation>
-<translation id="5653352175373198541">Verwenden Sie das Netzwerkmenü oben rechts, um eine Internetverbindung herzustellen und die Einrichtung Ihres Chromebook abzuschließen.</translation>
 <translation id="6869402422344886127">Aktiviertes Kontrollkästchen</translation>
 <translation id="5637380810526272785">Eingabemethode</translation>
 <translation id="404928562651467259">Warnung</translation>
@@ -2822,37 +2981,36 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7172053773111046550">Estnische Tastatur</translation>
 <translation id="497490572025913070">Rahmen für zusammengesetzte Render-Ebenen</translation>
 <translation id="9002707937526687073">D&amp;rucken...</translation>
+<translation id="4133237568661345071">Automatische Anmeldung aktivieren</translation>
+<translation id="3851140433852960970">Kein Plug-in zum Anzeigen dieser Inhalte verfügbar</translation>
 <translation id="5953934840931207585">Autofill-Einstellungen für <ph name="PRODUCT_NAME_SHORT"/></translation>
 <translation id="5556459405103347317">Aktuelle Seite neu laden</translation>
 <translation id="8000020256436988724">Symbolleiste</translation>
 <translation id="8326395326942127023">Datenbankname:</translation>
 <translation id="7507930499305566459">Zertifikat für Statusantwortdienst</translation>
 <translation id="2689915906323125315">Mein Google-Konto-Passwort verwenden</translation>
+<translation id="4557136421275541763">Warnung:</translation>
 <translation id="407097265175181480"><ph name="BEGIN_BOLD"/>Sie haben den Modus für anonymes Surfen aktiviert.<ph name="END_BOLD"/> In diesem Fenster aufgerufene Seiten erscheinen nicht in Ihrem Browser- oder Suchverlauf. Zudem werden nach dem Schließen &lt;strong&gt;aller&lt;/strong&gt; offenen Inkognito-Fenster keine anderen Spuren wie etwa Cookies auf Ihrem Computer gespeichert. Heruntergeladene Dateien oder hinzugefügte Lesezeichen werden jedoch beibehalten. <ph name="LINE_BREAK"/><ph name="BEGIN_BOLD"/>Das anonyme Surfen wirkt sich nicht auf das Verhalten anderer Personen, Server oder Software aus. Vorsicht ist geboten bei:<ph name="END_BOLD"/><ph name="BEGIN_LIST"/><ph name="BEGIN_LIST_ITEM"/>Websites, auf denen Informationen über Sie gesammelt oder weitergegeben werden<ph name="END_LIST_ITEM"/><ph name="BEGIN_LIST_ITEM"/>Internetanbietern oder Arbeitgebern, die die von Ihnen aufgerufenen Seiten protokollieren<ph name="END_LIST_ITEM"/><ph name="BEGIN_LIST_ITEM"/>Schädlicher Software, die Ihnen kostenlose Smileys bietet, dafür aber Ihre Tastatureingaben speichert<ph name="END_LIST_ITEM"/> <ph name="BEGIN_LIST_ITEM"/>Spionen<ph name="END_LIST_ITEM"/><ph name="BEGIN_LIST_ITEM"/>Personen, die hinter Ihnen stehen<ph name="END_LIST_ITEM"/><ph name="END_LIST"/> Weitere Informationen zum anonymen Surfen <ph name="BEGIN_LINK"/>finden Sie hier<ph name="END_LINK"/>.</translation>
 <translation id="2604243255129603442"><ph name="NAME_OF_EXTENSION"/> wurde deaktiviert. Wenn Sie die Lesezeichen-Synchronisierung anhalten, können Sie diese Erweiterung über das Menü &quot;Tools&quot; auf der Seite &quot;Erweiterungen&quot; wieder aktivieren.</translation>
 <translation id="2024621544377454980">Seiten werden nicht geladen.</translation>
-<translation id="3305957435911134994"><ph name="SHORT_PRODUCT_NAME"/>-Synchronisierung einrichten...</translation>
 <translation id="7136694880210472378">Als Standard festlegen</translation>
+<translation id="3274763671541996799">Sie befinden sich im Vollbildmodus.</translation>
 <translation id="7681202901521675750">SIM-Karte gesperrt, bitte geben Sie die PIN ein. Verbleibende Versuche: <ph name="TRIES_COUNT"/></translation>
 <translation id="2489918096470125693">&amp;Ordner hinzufügen...</translation>
-<translation id="9215535963167691630">Weitere Drucker...</translation>
 <translation id="7484964289312150019">Alle Lesezeichen in &amp;neuem Fenster öffnen</translation>
 <translation id="1731346223650886555">Semikolon</translation>
 <translation id="158849752021629804">Heimnetzwerk erforderlich</translation>
 <translation id="7339763383339757376">PKCS #7, Einzelzertifikat</translation>
 <translation id="7587108133605326224">Baltisch</translation>
 <translation id="3991936620356087075">Sie haben zu oft einen falschen PIN-Entsperrschlüssel eingegeben. Ihre SIM-Karte wurde dauerhaft deaktiviert.</translation>
-<translation id="9071761050483587943">Automatische Anmeldung für Google-Websites aktivieren</translation>
 <translation id="936801553271523408">Diagnosedaten des Systems</translation>
-<translation id="6389701355360299052">Webseite, nur HTML</translation>
 <translation id="9009144784540995197">Ihren Drucker verwalten</translation>
 <translation id="1055006259534905434">(Wählen Sie einen der folgenden Fehler)</translation>
 <translation id="3021678814754966447">Frame-Quelltext &amp;anzeigen</translation>
 <translation id="8601206103050338563">TLS-WWW-Client-Authentifizierung</translation>
 <translation id="1692799361700686467">Es sind Cookies von mehreren Websites zulässig.</translation>
 <translation id="7074488040076962230">Seitenleistenseite &quot;<ph name="SIDEBAR_PAGE"/>&quot; konnte nicht geladen werden.</translation>
-<translation id="5509519625080982753">Lokale Drucker...</translation>
-<translation id="225447525355390489"><ph name="SHORT_PRODUCT_NAME"/>-Synchronisierung einrichten...</translation>
+<translation id="5187295959347858724">Sie sind jetzt in <ph name="SHORT_PRODUCT_NAME"/> angemeldet. Ihre Lesezeichen, der Verlauf sowie andere Einstellungen werden mit Ihrem Google-Konto synchronisiert.</translation>
 <translation id="529232389703829405">Sie haben am <ph name="DATE"/> ein Datenvolumen von <ph name="DATA_AMOUNT"/> gekauft.</translation>
 <translation id="7419106976560586862">Profilpfad</translation>
 <translation id="5271549068863921519">Passwort speichern</translation>
@@ -2881,6 +3039,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="862542460444371744">&amp;Erweiterungen</translation>
 <translation id="8045462269890919536">Rumänisch</translation>
 <translation id="6320286250305104236">Netzwerkeinstellungen...</translation>
+<translation id="7186738750334874703">[Mehr anzeigen]</translation>
 <translation id="2927657246008729253">Ändern...</translation>
 <translation id="7586781939132793422">Gesprochenes Feedback deaktivieren</translation>
 <translation id="7978412674231730200">Privater Schlüssel</translation>
@@ -2891,6 +3050,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4414232939543644979">Neues &amp;Inkognito-Fenster</translation>
 <translation id="1693754753824026215">Die Seite auf <ph name="SITE"/> meldet:</translation>
 <translation id="7148804936871729015">Der Server für <ph name="URL"/> hat zu lange zum Antworten benötigt.  Möglicherweise ist er überlastet.</translation>
+<translation id="5066173162665203318">Erweiterte Einrichtung...</translation>
 <translation id="8108473539339615591">XSS Auditor</translation>
 <translation id="1902576642799138955">Gültigkeitsdauer</translation>
 <translation id="4910021444507283344">WebGL</translation>
@@ -2899,6 +3059,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3308006649705061278">Organisationseinheit (OE)</translation>
 <translation id="8912362522468806198">Google-Konto</translation>
 <translation id="4443536555189480885">&amp;Hilfe</translation>
+<translation id="8314772463905284467">Die Feststelltaste ist aktiviert.</translation>
 <translation id="340485819826776184">Vervollständigung von Suchanfragen und URLs bei der Eingabe in die Adressleiste verwenden</translation>
 <translation id="4074900173531346617">Zertifikat für E-Mail-Signaturen</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
@@ -2912,12 +3073,14 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> Minuten</translation>
 <translation id="2649911884196340328">Das Sicherheitszertifikat des Servers weist Fehler auf!</translation>
 <translation id="6666647326143344290">mit Ihrem Google-Konto</translation>
+<translation id="4980112683975062744">Doppelte Header vom Server erhalten</translation>
 <translation id="3828029223314399057">Lesezeichen durchsuchen</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="5614190747811328134">Nutzerhinweis</translation>
 <translation id="3918953202886869483">Die Webseite auf <ph name="HOST_NAME"/> kann nicht erreicht werden, da Sie zurzeit nicht mit dem Internet verbunden sind. Die Seite wird geladen, sobald die Netzwerkverbindung wiederhergestellt wurde.<ph name="LINE_BREAK"/></translation>
 <translation id="8906421963862390172">&amp;Optionen der Rechtschreibprüfung</translation>
 <translation id="9046895021617826162">Verbindungsaufbau fehlgeschlagen</translation>
+<translation id="4061733942661196912">Wenn diese Option aktiviert ist, wird durch den Besuch einer Anmeldeseite für ein Google-Konto die Anzeige einer Infoleiste ausgelöst, über die Sie sich einfach mit dem Google-Konto anmelden können, das mit dem Profil verbunden ist. Die automatische Anmeldung ist, unabhängig von dieser Markierung, immer deaktiviert, wenn keine Verbindung zu einem Konto besteht.</translation>
 <translation id="1492188167929010410">Absturz-ID <ph name="CRASH_ID"/></translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> Tage übrig</translation>
 <translation id="4470270245053809099">Ausgestellt von: <ph name="NAME"/></translation>
@@ -2929,7 +3092,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2192664328428693215">Bestätigung einblenden, wenn eine Website Desktop-Benachrichtigungen anzeigen möchte (empfohlen)</translation>
 <translation id="6708242697268981054">Ursprung:</translation>
 <translation id="4786993863723020412">Cache-Lesefehler</translation>
-<translation id="1530919147443368739">Zuletzt synchronisiert als <ph name="USER_EMAIL_ADDRESS"/>. Synchronisierungsdaten im <ph name="BEGIN_LINK"/>Google Dashboard<ph name="END_LINK"/> verwalten</translation>
 <translation id="6630452975878488444">Auswahltastaturkürzel</translation>
 <translation id="8709969075297564489">Serverzertifikate auf Sperrung prüfen</translation>
 <translation id="8698171900303917290">Probleme bei der Installation?</translation>
@@ -2938,11 +3100,11 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2679392804024228530">Alle synchronisierten Daten verschlüsseln</translation>
 <translation id="5925147183566400388">Verweis auf Certification Practice Statement</translation>
 <translation id="1497270430858433901">Sie haben am <ph name="DATE"/> ein kostenloses Volumen von <ph name="DATA_AMOUNT"/> erhalten.</translation>
-<translation id="8150167929304790980">Vollständiger Name</translation>
+<translation id="840245097294512396">WebGL deaktivieren</translation>
+<translation id="8300757411082084687">Ein Programm auf Ihrem Computer hat versucht, Ihre Startseite von <ph name="PREV_HOMEPAGE"/> in <ph name="NEW_HOMEPAGE"/> zu ändern. Möchten Sie weiterhin <ph name="PREV_HOMEPAGE"/> verwenden?</translation>
 <translation id="636850387210749493">Unternehmensanmeldung</translation>
 <translation id="1947424002851288782">Deutsche Tastatur</translation>
 <translation id="932508678520956232">Druckvorgang konnte nicht gestartet werden.</translation>
-<translation id="948487459457438956">Synchronisierung dieses Kontos stoppen...</translation>
 <translation id="4861833787540810454">&amp;Start</translation>
 <translation id="2552545117464357659">Neuer</translation>
 <translation id="7269802741830436641">Diese Webseite weist eine Weiterleitung auf.</translation>
@@ -2972,6 +3134,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3695919544155087829">Geben Sie das Passwort ein, das für die Verschlüsselung dieser Zertifikatdatei verwendet wurde.</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="6308937455967653460">&amp;Link speichern unter...</translation>
+<translation id="311214945287371140">Es wurden mehrere &quot;Content-Disposition&quot;-Header empfangen. Dies ist zum Schutz vor HTTP Response Splitting-Angriffen unzulässig.</translation>
 <translation id="5828633471261496623">Wird gedruckt...</translation>
 <translation id="5421136146218899937">Internetdaten löschen...</translation>
 <translation id="5783059781478674569">Optionen zur Spracherkennung</translation>
@@ -2982,7 +3145,9 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="480990236307250886">Startseite öffnen</translation>
 <translation id="6380143666419481200">Akzeptieren und fortfahren</translation>
 <translation id="713122686776214250">&amp;Seite hinzufügen...</translation>
+<translation id="8286036467436129157">Anmeldung</translation>
 <translation id="5999940714422617743"><ph name="EXTENSION_NAME"/> ist nun installiert.</translation>
+<translation id="594713537555167317">Einstellungen konfigurieren...</translation>
 <translation id="1255964530203229794">Als <ph name="USER_EMAIL_ADDRESS"/> synchronisiert. Letzte Synchronisierung: <ph name="LAST_SYNC_TIME"/></translation>
 <translation id="1122198203221319518">&amp;Tools</translation>
 <translation id="5757539081890243754">Startseite</translation>
@@ -3032,6 +3197,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2841013758207633010">Zeit</translation>
 <translation id="4880827082731008257">Verlauf durchsuchen</translation>
 <translation id="8661290697478713397">Link in Inko&amp;gnito-Fenster öffnen</translation>
+<translation id="2903835394043908560">Plug-in-Broker: <ph name="PLUGIN_NAME"/> (<ph name="PLUGIN_VERSION"/>)</translation>
 <translation id="8997135628821231"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>] (<ph name="DEVICE"/>)</translation>
 <translation id="4197700912384709145"><ph name="NUMBER_ZERO"/> Sekunden</translation>
 <translation id="3414856743105198592">Durch die Formatierung der Wechselmedien werden alle Daten gelöscht. Möchten Sie fortfahren?</translation>
@@ -3050,6 +3216,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8235333616059839358">Überprüfen Sie Ihre Internetverbindung. Starten Sie alle verwendeten Router, Modems oder anderen Netzwerkgeräte neu.</translation>
 <translation id="4042471398575101546">Seite hinzufügen</translation>
 <translation id="8848709220963126773">Moduswechsel mit Umschalttaste</translation>
+<translation id="3703445029708071516">Synchronisierung eingegebener URLs aktivieren</translation>
 <translation id="4871865824885782245">Datum- und Uhrzeitoptionen öffnen...</translation>
 <translation id="8828933418460119530">DNS-Name</translation>
 <translation id="988159990683914416">Entwickler-Build</translation>
@@ -3098,6 +3265,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3030138564564344289">Download wiederholen</translation>
 <translation id="2603463522847370204">In &amp;Inkognito-Fenster öffnen</translation>
 <translation id="4381091992796011497">Nutzername:</translation>
+<translation id="4636388769812446016">Das Mikrofon wird bereits verwendet.</translation>
 <translation id="5830720307094128296">Seite speichern &amp;unter...</translation>
 <translation id="2448312741937722512">Typ</translation>
 <translation id="8114439576766120195">Ihre Daten auf allen Websites</translation>
@@ -3110,10 +3278,11 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7953739707111622108">Dieses Gerät kann nicht geöffnet werden, da das Dateisystem nicht erkannt wurde.</translation>
 <translation id="2433507940547922241">Erscheinungsbild</translation>
 <translation id="839072384475670817">Erstellen von Anwendungs&amp;verknüpfungen...</translation>
+<translation id="2176045495080708525">Die folgenden Erweiterungen sind nun installiert:</translation>
 <translation id="2501190902826909027">Gesprochenes Feedback wird deaktiviert.</translation>
-<translation id="1704967159337061587">Symbolleiste ausblenden</translation>
 <translation id="1478632774608054702">PPAPI-Flash im Renderer-Prozess ausführen</translation>
 <translation id="6756161853376828318"><ph name="PRODUCT_NAME"/> als Standardbrowser festlegen</translation>
+<translation id="3046910703532196514">Webseite, vollständig</translation>
 <translation id="9112614144067920641">Wählen Sie eine neue PIN.</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="7138678301420049075">Sonstiges</translation>
@@ -3133,8 +3302,10 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8941882480823041320">Vorheriges Wort</translation>
 <translation id="2489435327075806094">Zeigergeschwindigkeit:</translation>
 <translation id="2574102660421949343">Cookies von <ph name="DOMAIN"/> sind zulässig.</translation>
+<translation id="2157875535253991059">Diese Seite wird nun im Vollbildmodus angezeigt.</translation>
 <translation id="1503894213707460512">Zum Ausführen des <ph name="PLUGIN_NAME"/>-Plug-ins ist Ihre Genehmigung erforderlich.</translation>
 <translation id="471800408830181311">Privater Schlüssel konnte nicht ausgegeben werden.</translation>
+<translation id="2262505173081785042">Laufwerk hinzufügen</translation>
 <translation id="1639058970766796751">Warteschlange</translation>
 <translation id="1177437665183591855">Fehler wegen unbekanntem Serverzertifikat</translation>
 <translation id="8467473010914675605">Koreanische Eingabemethode</translation>
@@ -3165,10 +3336,10 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="923467487918828349">Alle einblenden</translation>
 <translation id="4298972503445160211">Dänische Tastatur</translation>
 <translation id="6621440228032089700">Ermöglicht den Aufbau einer nicht sichtbaren Hintergrundtextur statt der direkten Anzeige</translation>
+<translation id="1009005254199639493">Anzeigen und bearbeiten</translation>
 <translation id="3488065109653206955">Teilweise aktiviert</translation>
 <translation id="1481244281142949601">Sie haben ausreichend trainiert.</translation>
 <translation id="4849517651082200438">Nicht installieren</translation>
-<translation id="8602882075393902833">Google Instant für schnelleres Suchen und Surfen aktivieren</translation>
 <translation id="6349678711452810642">Als Standard festlegen</translation>
 <translation id="6263284346895336537">Nicht kritisch</translation>
 <translation id="6409731863280057959">Pop-ups</translation>
@@ -3189,9 +3360,10 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3268451620468152448">Geöffnete Tabs</translation>
 <translation id="5095208057601539847">Bundesland</translation>
 <translation id="4085298594534903246">JavaScript wurde auf dieser Seite blockiert.</translation>
-<translation id="5630492933376732170">Hinweis: Wenn Sie auf &quot;Feedback geben&quot; klicken, sendet Google Chrome auch ein Protokoll der Systemereignisse auf Ihrem Gerät. Diese Informationen werden von uns genutzt, um Probleme zu diagnostizieren, zu verstehen, wie Sie mit dem Gerät interagieren, und seine Leistung stetig zu verbessern. Alle persönlichen Informationen, die in Ihrem Feedbackbericht enthalten sind (ob ausdrücklich in Ihren Kommentaren oder unbeabsichtigt in den Systemprotokollen oder dem Screenshot), werden gemäß unserer <ph name="BEGIN_LINK"/>Datenschutzrichtlinien<ph name="END_LINK"/> vertraulich behandelt. Um keine Systemprotokolle zu übermitteln, deaktivieren Sie das Kästchen &quot;Systeminformationen senden&quot;.</translation>
+<translation id="5630492933376732170">Hinweis: Wenn Sie auf &quot;Feedback geben&quot; klicken, sendet Google Chrome auch ein Protokoll der Systemereignisse auf Ihrem Gerät. Diese Informationen werden von uns genutzt, um Probleme zu diagnostizieren, zu verstehen, wie Sie mit dem Gerät interagieren, und seine Leistung stetig zu verbessern. Alle persönlichen Informationen, die in Ihrem Feedbackbericht enthalten sind (ob ausdrücklich in Ihren Kommentaren oder unbeabsichtigt in den Systemprotokollen oder dem Screenshot), werden gemäß unserer <ph name="BEGIN_LINK"/>Datenschutzbestimmungen<ph name="END_LINK"/> vertraulich behandelt. Um keine Systemprotokolle zu übermitteln, deaktivieren Sie das Kästchen &quot;Systeminformationen senden&quot;.</translation>
 <translation id="4341977339441987045">Speicherung von Daten für alle Websites blockieren</translation>
 <translation id="806812017500012252">Neu sortieren nach Titel</translation>
+<translation id="9167350110873177156">oder <ph name="IDS_SYNC_CREATE_ACCOUNT"/></translation>
 <translation id="3781751432212184938">Tab-Übersicht anzeigen...</translation>
 <translation id="2960316970329790041">Import anhalten</translation>
 <translation id="3835522725882634757">Oh nein! <ph name="PRODUCT_NAME"/> versteht die von diesem Server gesendeten Daten nicht. Bitte <ph name="BEGIN_LINK"/>melden Sie einen Programmfehler<ph name="END_LINK"/> und geben Sie die <ph name="BEGIN2_LINK"/>Rohdaten<ph name="END2_LINK"/> an.</translation>
@@ -3204,6 +3376,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2904079386864173492">Modell:</translation>
 <translation id="3447644283769633681">Alle Drittanbieter-Cookies blockieren</translation>
 <translation id="8917047707340793412">Ändern in <ph name="ENGINE_NAME"/></translation>
+<translation id="728836202927797241">Automatische Anmeldung für Websites von Google mit diesem Konto anbieten</translation>
 <translation id="6129953537138746214">Leerzeichen</translation>
 <translation id="3704331259350077894">Vorgangsende</translation>
 <translation id="1535919895260326054">Romaja</translation>
@@ -3245,11 +3418,13 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1275718070701477396">Ausgewählt</translation>
 <translation id="1178581264944972037">Anhalten</translation>
 <translation id="6492313032770352219">Größe auf Datenträger:</translation>
+<translation id="3225919329040284222">Der Server hat ein Zertifikat übermittelt, das nicht mit den integrierten Erwartungen übereinstimmt. Diese Erwartungen sind zu Ihrem Schutz in bestimmten Websites mit hohen Sicherheitsstandards enthalten.</translation>
 <translation id="5233231016133573565">Vorgangs-ID</translation>
 <translation id="5941711191222866238">Verkleinern</translation>
 <translation id="4121428309786185360">Gültig bis</translation>
 <translation id="3406605057700382950">&amp;Lesezeichenleiste anzeigen</translation>
 <translation id="2049137146490122801">Der Zugriff auf lokale Dateien auf Ihrem Gerät wurde von Ihrem Administrator deaktiviert.</translation>
+<translation id="9093962717119152200">Diese Seite wird nun im Vollbildmodus angezeigt und möchte den Mauszeiger ausblenden.</translation>
 <translation id="1146498888431277930">SSL-Verbindungsfehler</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT"/>)</translation>
 <translation id="8041089156583427627">Feedback geben</translation>
@@ -3258,6 +3433,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="253434972992662860">&amp;Pause</translation>
 <translation id="335985608243443814">Durchsuchen...</translation>
 <translation id="7802488492289385605">Google Japanese Input (für US-Dvorak-Tastatur)</translation>
+<translation id="3876481682997626897">Nicht übereinstimmende Signaturen</translation>
 <translation id="910083018063317242">Hiermit wird das Pre-Rendering von Vervollständigungen aus der Omnibox ermöglicht und geeignete Netzwerkaktionen wie z. B. Pre-Rendering, Instant oder DNS-Vorverbindung antizipiert, indem für jedes Omnibox-Ergebnis ein Wahrscheinlichkeitswert berechnet wird.</translation>
 <translation id="7452120598248906474">Schriftart mit fester Breite</translation>
 <translation id="3129687551880844787">Sitzungsspeicher</translation>
@@ -3271,17 +3447,20 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2455981314101692989">Auf dieser Webseite ist die Autofill-Funktion für das Formular deaktiviert.</translation>
 <translation id="1646136617204068573">Ungarische Tastatur</translation>
 <translation id="5988840637546770870">In der Entwicklerversion werden Ideen getestet. Diese Version kann oftmals instabil sein. Seien Sie daher vorsichtig, wenn Sie fortfahren.</translation>
+<translation id="6815551780062710681">Bearbeiten</translation>
 <translation id="4032664149172368180">Japanische Eingabemethode (für US-Dvorak-Tastatur)</translation>
-<translation id="8978871066297869356">Aktiviert das Drucken über <ph name="CLOUD_PRINT_NAME"/>. Beachten Sie, dass dies wahrscheinlich nur funktioniert, wenn auch die Druckvorschau aktiviert ist.</translation>
+<translation id="5061708541166515394">Kontrast</translation>
 <translation id="747459581954555080">Alle wiederherstellen</translation>
+<translation id="5552015602664972314">PDF wird gedruckt.</translation>
 <translation id="3748706263662799310">Programmfehler melden</translation>
 <translation id="7167486101654761064">Dateien dieses Typs &amp;immer öffnen</translation>
 <translation id="4283623729247862189">Optisches Gerät</translation>
+<translation id="4015231516463170357">Experimentelle Lesezeichenfunktionen auf &quot;Neuer Tab&quot;-Seite aktivieren</translation>
 <translation id="5826507051599432481">Allgemeiner Name (CN)</translation>
 <translation id="8914326144705007149">Sehr groß</translation>
 <translation id="4215444178533108414">Fertig</translation>
 <translation id="5154702632169343078">Antragsteller</translation>
-<translation id="2575379921941782763">Eingabehilfen sind aktiviert.</translation>
+<translation id="2575379921941782763">Bedienungshilfen sind aktiviert.</translation>
 <translation id="2273562597641264981">Betreiber:</translation>
 <translation id="122082903575839559">Algorithmus für Zertifikatsignatur</translation>
 <translation id="2181257377760181418">Ermöglicht eine Vorschau eines Druckvorgangs im Tab.</translation>
@@ -3289,6 +3468,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="6900113680982781280">Autofill aktivieren, um Webformulare mit nur einem Klick ausfüllen zu können</translation>
 <translation id="1131850611586448366">Die Website unter <ph name="HOST_NAME"/> wurde als &quot;Phishing&quot;-Website gemeldet. Solche Websites täuschen Nutzer, damit diese ihre privaten oder finanziellen Daten freigeben. Dies geschieht oft dadurch, dass sich Phishing-Websites als vertrauenswürdige Einrichtungen wie zum Beispiel Banken ausgeben.</translation>
 <translation id="5413218268059792983">Suche mit <ph name="SEARCH_ENGINE"/> direkt von hier aus</translation>
+<translation id="3490189295481528797">Zum Abbrechen beide Umschalttasten drücken</translation>
 <translation id="1049337682107026577">Passphrase zur Synchronisierung eingeben</translation>
 <translation id="1161575384898972166">Melden Sie sich in <ph name="TOKEN_NAME"/> an, um das Client-Zertifikat zu exportieren.</translation>
 <translation id="1718559768876751602">Jetzt ein Google-Konto erstellen</translation>
@@ -3320,6 +3500,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="883487340845134897">Suchtaste mit linker Steuerungstaste tauschen</translation>
 <translation id="5692957461404855190">Streichen Sie mit drei Fingern über das Touchpad, um eine Übersicht über all Ihre Tabs zu erhalten. Klicken Sie zum Auswählen auf eine Miniaturansicht. Dies funktioniert am besten im Vollbildmodus.</translation>
 <translation id="1375215959205954975">Neu! Passwortsynchronisierung konfigurieren</translation>
+<translation id="6510391806634703461">Neuer Nutzer</translation>
 <translation id="5183088099396036950">Verbindung zum Server konnte nicht hergestellt werden.</translation>
 <translation id="4469842253116033348">Benachrichtigungen von <ph name="SITE"/> deaktivieren</translation>
 <translation id="7999229196265990314">Folgende Dateien wurden erstellt:
@@ -3333,6 +3514,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="2966459079597787514">Schwedische Tastatur</translation>
 <translation id="7685049629764448582">JavaScript-Speicher</translation>
 <translation id="6398765197997659313">Vollbildmodus beenden</translation>
+<translation id="1283104188183927512">Fehlerhafte Erweiterung</translation>
 <translation id="6059652578941944813">Zertifikathierarchie</translation>
 <translation id="4886690096315032939">Fokus beim Öffnen auf vorhandenen Tab</translation>
 <translation id="5729712731028706266">&amp;Ansicht</translation>
@@ -3355,6 +3537,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="1384721974622518101">Wussten Sie, dass Sie Ihre Suche direkt vom obigen Feld aus durchführen können?</translation>
 <translation id="992543612453727859">Wortgruppen im Vordergrund hinzufügen</translation>
 <translation id="4728558894243024398">Plattform</translation>
+<translation id="4998873842614926205">Änderungen bestätigen</translation>
 <translation id="1559528461873125649">Datei oder Verzeichnis nicht vorhanden</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="1244147615850840081">Mobilfunkanbieter</translation>

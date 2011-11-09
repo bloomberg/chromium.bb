@@ -60,13 +60,6 @@
       Om du aktiverar eller inaktiverar den här inställningen kan användarna inte åsidosätta den i <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8781881969636812184">Gör det möjligt att använda STUN och reläservrar när fjärrklienter försöker upprätta en anslutning till datorn. Om den här inställningen är aktiverad kan fjärrklienter upptäcka och ansluta till datorn även om det finns en brandvägg emellan. Om inställningen är inaktiverad och utgående UDP-anslutningar filtreras genom brandväggen tillåter datorn endast anslutningar från klientenheter inom det lokala nätverket.</translation>
 <translation id="5912364507361265851">Tillåt att användarna visar lösenord i lösenordshanteraren</translation>
-<translation id="6999540307315670568">Aktiverar bokmärkesfältet på sidan Ny flik i <ph name="PRODUCT_NAME"/>.
-
-      Om du aktiverar den här inställningen visas ett bokmärkesfält på sidan Ny flik i <ph name="PRODUCT_NAME"/>.
-
-      Om du inaktiverar den här inställningen visas inte bokmärkesfältet.
-
-      Om du aktiverar eller inaktiverar den här inställningen kan användarna inte åsidosätta den i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8828766846428537606">Konfigurerar standardstartsidan i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar den.
 
       Användarnas inställningar för startsidan blir bara helt låsta om du väljer att startsidan ska vara sidan Ny flik eller att den ska vara en webbadress som du anger. Om du inte anger en webbadress för startsidan kan användaren fortfarande ställa in startsidan på sidan Ny flik genom att ange &quot;chrome://newtab&quot;.</translation>
@@ -260,6 +253,7 @@
       Den börjar med <ph name="CHROMIUM_KEY"/> för Chromiums policyer och med <ph name="GOOGLE_CHROME_KEY"/> för Google Chromes policyer.</translation>
 <translation id="7003746348783715221">Inställningar för <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Aktivera brandväggspassage från fjärråtkomstklient</translation>
+<translation id="7082208731926398296">Tillåter att nätverkskonfigurationen distribueras till användare som har en enhet med <ph name="PRODUCT_OS_NAME"/>. Nätverkskonfigurationen är en JSON-formaterad sträng definierad av formatet för öppen nätverkskonfiguration som beskrivs här: https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
 <translation id="9096086085182305205">Vitlista för autentiseringsserver</translation>
 <translation id="7063895219334505671">Tillåt popup-fönster på dessa webbplatser</translation>
 <translation id="2824715612115726353">Aktivera inkognitoläge</translation>
@@ -289,6 +283,7 @@
 
           Om du aktiverar eller inte konfigurerar inställningen kan användarna visa sina lösenord i klartext i lösenordshanteraren.</translation>
 <translation id="8731693562790917685">Med innehållsinställningarna kan du ange hur innehåll av en viss typ (till exempel cookies, bilder eller JavaScript) ska hanteras.</translation>
+<translation id="2411919772666155530">Blockera meddelanden på dessa webbplatser</translation>
 <translation id="467236746355332046">Funktioner som stöds:</translation>
 <translation id="7632724434767231364">GSSAPI-biblioteksnamn</translation>
 <translation id="4985088509112317247">Innebär att du kan ange om webbplatser ska få ange lokala data. Att ange lokala data kan tillåtas för alla webbplatser eller nekas för alla webbplatser.</translation>
@@ -307,6 +302,7 @@
 
           Avgränsa servernamn med komma. Jokertecken (*) får användas.</translation>
 <translation id="538108065117008131">Tillåt att <ph name="PRODUCT_FRAME_NAME"/> hanterar följande innehållstyper.</translation>
+<translation id="2886164457168401177">Innebär att du kan skapa en lista med webbadressmönster över webbplatser som får visa meddelanden.</translation>
 <translation id="2312134445771258233">Innebär att du kan konfigurera sidorna som läses in vid start.
 
       Innehållet på listan &quot;Webbadresser att öppna vid start&quot; ignoreras om du inte väljer &quot;Öppna följande sidor&quot; i &quot;Vid start&quot;.</translation>
@@ -410,6 +406,7 @@
 
       Om du inaktiverar den här inställningen kan webbsidor tillåtas att använda WebGL API och plugin-program att använda Pepper 3D API. Standardinställningarna i webbläsaren kan fortfarande kräva att kommandoradsargument skickas för att programmeringsgränssnitten ska kunna användas.</translation>
 <translation id="7202926611616207807">Tillåt alla webbplatser att ange lokala data.</translation>
+<translation id="5868414965372171132">Nätverkskonfiguration på användarnivå</translation>
 <translation id="678228246386317063">Innebär att du kan skapa en lista med webbadressmönster som anger webbplatser som får ställa in sessionscookies.</translation>
 <translation id="5774856474228476867">Sökadress för standardsökleverantör</translation>
 <translation id="4650759511838826572">Inaktivera protokollscheman för webbadresser</translation>
@@ -451,6 +448,8 @@
 
       Om du inaktiverar den här inställningen sparas webbhistorik.</translation>
 <translation id="1897365952389968758">Tillåt alla webbplatser att köra JavaScript (rekommenderas)</translation>
+<translation id="3963316686348464884">Tillåter att nätverkskonfigurationen distribueras till alla användare som har en enhet med <ph name="PRODUCT_OS_NAME"/>. Nätverkskonfigurationen är en JSON-formaterad sträng definierad av formatet för öppen nätverkskonfiguration som beskrivs här: https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
+<translation id="560746250309032104">Aktiverar bokmärkesfältet i <ph name="PRODUCT_NAME"/>. Om du aktiverar den här inställningen visas ett bokmärkesfält i <ph name="PRODUCT_NAME"/>. Om du inaktiverar den här inställningen visas inte bokmärkesfältet. Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra eller åsidosätta den i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6931242315485576290">Inaktivera synkronisering av data med Google</translation>
 <translation id="7006788746334555276">Innehållsinställningar</translation>
 <translation id="3676473196461789250">Innebär att du kan ange en lista med webbadressmönster som anger webbadresser som får köra plugin-program.</translation>
@@ -506,6 +505,7 @@
       Standardinställningen är att låta värdwebbläsaren utföra renderingen, men du
       kan välja att åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME"/> rendera HTML-sidor som standard.</translation>
 <translation id="4121350739760194865">Förhindra att appkampanjer visas på den nya fliksidan</translation>
+<translation id="2127599828444728326">Tillåt meddelanden på dessa webbplatser</translation>
 <translation id="4486602758942612946">Anpassa listan med webbadressmönster som alltid ska renderas av värdwebbläsaren.
           Exempel på mönster finns på http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Anger en tid i millisekunder för hur ofta enhetshanteringstjänsten avfrågas för policyinformation. Om du anger den här policyn åsidosätts standardvärdet tre timmar. Giltiga värden är från 30 minuter till en dag. Värden utanför intervallet ändras till närmaste gräns.</translation>
@@ -536,6 +536,7 @@
 <translation id="6510914645829248303">Om &quot;Öppna följande sidor&quot; har valts som startåtgärd kan du ange en lista med webbadresser som ska öppnas.</translation>
 <translation id="3780152581321609624">Inkludera port som inte är standard i Kerberos SPN</translation>
 <translation id="2660846099862559570">Använd aldrig en proxy</translation>
+<translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
 <translation id="5512418063782665071">Webbadress för startsida</translation>
 <translation id="6049075103826767200">Aktiverar anonym rapportering av användning och kraschrelaterade data om <ph name="PRODUCT_NAME"/> till Google och förhindrar att användarna ändrar inställningen.
 
@@ -570,6 +571,7 @@
 
       Policyn är begränsad till 100 poster. Efterföljande poster kommer att ignoreras.</translation>
 <translation id="5645779841392247734">Tillåt cookies på dessa webbplatser</translation>
+<translation id="791491514268619407">Innebär att du kan skapa en lista med webbadressmönster över webbplatser som inte får visa meddelanden.</translation>
 <translation id="3906388518501362918">Aktiverar JavaScript i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
 
       Om inställningen är aktiverad eller inte konfigurerad kan JavaScript användas på webbsidor.

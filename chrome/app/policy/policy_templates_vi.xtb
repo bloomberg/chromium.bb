@@ -44,7 +44,6 @@
 
           Nếu cài đặt này bị vô hiệu và kết nối UDP đi bị lọc bởi tường lửa, máy này sẽ chỉ cho phép kết nối từ các máy khách trong mạng cục bộ.</translation>
 <translation id="5912364507361265851">Cho phép người dùng hiển thị mật khẩu trong Trình quản lý mật khẩu</translation>
-<translation id="6999540307315670568">Bật thanh dấu trang trên trang tab mới trong <ph name="PRODUCT_NAME"/>. Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME"/> sẽ hiển thị một thanh dấu trang trên trang &quot;Tab mới&quot;. Nếu bạn tắt cài đặt này, người dùng sẽ không bao giờ nhìn thấy thanh dấu trang. Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8828766846428537606">Định cấu hình trang chủ mặc định trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi cấu hình đó. Cài đặt trang chủ của người dùng chỉ được khóa hoàn toàn nếu bạn chọn trang chủ là trang tab mới hoặc đặt trang chủ là một URL và chỉ định URL trang chủ. Nếu bạn không chỉ định URL trang chủ, người dùng sẽ vẫn có thể đặt trang chủ là trang tab mới bằng cách chỉ định 'chrome://newtab'.</translation>
 <translation id="2231817271680715693">Nhập lịch sử duyệt từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
 <translation id="1353966721814789986">Trang khởi động</translation>
@@ -138,6 +137,7 @@
 <translation id="2741921267428646309">Đây là danh sách các chính sách mà <ph name="PRODUCT_NAME"/> tuân theo. Bạn không cần thay đổi các cài đặt này bằng tay! Bạn có thể tải xuống các mẫu dễ sử dụng từ <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>. Danh sách các chính sách được hỗ trợ cho Chromium và Google Chrome giống nhau nhưng vị trí sổ đăng ký Windows của chúng khác nhau. Danh sách này bắt đầu bằng <ph name="CHROMIUM_KEY"/> đối với các chính sách cho Chromium và <ph name="GOOGLE_CHROME_KEY"/> đối với các chính sách cho Google Chrome.</translation>
 <translation id="7003746348783715221">Tùy chọn <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Bật tính năng chặn tường lửa từ máy khách truy cập từ xa</translation>
+<translation id="7082208731926398296">Cho phép áp dụng gửi cấu hình mạng cho thiết bị <ph name="PRODUCT_OS_NAME"/> đối với từng người dùng. Cấu hình mạng là một chuỗi có định dạng JSON như được định nghĩa theo định dạng Cấu hình mạng mở được mô tả tại https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
 <translation id="9096086085182305205">Danh sách trắng máy chủ xác thực</translation>
 <translation id="7063895219334505671">Cho phép cửa sổ bật lên trên các trang web này</translation>
 <translation id="2824715612115726353">Bật chế độ Ẩn danh</translation>
@@ -161,6 +161,7 @@
 <translation id="8451988835943702790">Sử dụng Trang tab mới làm trang chủ</translation>
 <translation id="823695959636476037">Kiểm soát người dùng có thể hiển thị mật khẩu bằng văn bản rõ rằng trong trình quản lý mật khẩu hay không. Nếu bạn tắt cài đặt này, trình quản lý mật khẩu không cho phép hiển thị mật khẩu được lưu trữ bằng văn bản rõ ràng trong cửa sổ trình quản lý mật khẩu. Nếu bạn bật hoặc không định cấu hình cài đặt này, người dùng có thể xem mật khẩu của họ bằng văn bản rõ ràng trong trình quản lý mật khẩu.</translation>
 <translation id="8731693562790917685">Cài đặt nội dung cho phép bạn chỉ định cách xử lý những loại nội dung cụ thể (ví dụ: Cookie, Hình ảnh hoặc JavaScript).</translation>
+<translation id="2411919772666155530">Chặn thông báo trên các trang web này</translation>
 <translation id="467236746355332046">Các tính năng được hỗ trợ:</translation>
 <translation id="7632724434767231364">Tên thư viện GSSAPI</translation>
 <translation id="4985088509112317247">Cho phép bạn đặt có cho phép các trang web đặt dữ liệu cục bộ hay không. Bạn có thể cho phép hoặc từ chối đặt dữ liệu cục bộ đối với tất cả các trang web.</translation>
@@ -172,6 +173,7 @@
 <translation id="2745445908503591390">Xóa dữ liệu trang web khi tắt trình duyệt</translation>
 <translation id="8665913667133665583">Chỉ định máy chủ nào nên được đưa vào danh sách trắng để xác thực tích hợp. Xác thực tích hợp chỉ được bật khi <ph name="PRODUCT_NAME"/> nhận được thử thách xác thực từ proxy hoặc từ máy chủ nằm trong danh sách được phép này. Phân tách nhiều tên máy chủ bằng dấu phẩy. Cho phép ký tự đại diện  (*).</translation>
 <translation id="538108065117008131">Cho phép <ph name="PRODUCT_FRAME_NAME"/> xử lý các loại nội dung sau.</translation>
+<translation id="2886164457168401177">Cho phép bạn thiết lập danh sách các mẫu url chỉ định các trang web được phép hiển thị thông báo.</translation>
 <translation id="2312134445771258233">Cho phép bạn định cấu hình các trang được tải khi khởi động. Nội dung của danh sách 'Các URL được mở khi khởi động' bị bỏ qua trừ khi bạn chọn 'Mở danh sách các URL' trong' Tác vụ khi khởi động'.</translation>
 <translation id="8344454543174932833">Nhập dấu trang từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
 <translation id="7931766636395791713">Cho phép bạn thiết lập danh sách các mẫu url chỉ định trang web được phép chạy JavaScript.</translation>
@@ -232,6 +234,7 @@
 <translation id="4983201894483989687">Cho phép chạy các trình cắm đã lỗi thời</translation>
 <translation id="7492608050778218564">Tắt hỗ trợ dành cho API đồ họa 3D. Bật cài đặt này sẽ ngăn các trang web truy cập đơn vị xử lý đồ họa (GPU). Cụ thể, các trang web không truy cập API WebGL và các trình cắm không thể sử dụng API Pepper 3D. Tắt cài đặt này có thể cho phép các trang web sử dụng API WebGL và các trình cắm để sử dụng API Pepper 3D. Cài đặt mặc định của trình duyệt này có thể vẫn yêu cầu phải thông qua đối số dòng lệnh để sử dụng các API này.</translation>
 <translation id="7202926611616207807">Cho phép tất cả các trang web đặt dữ liệu cục bộ.</translation>
+<translation id="5868414965372171132">Cấu hình mạng ở mức người dùng</translation>
 <translation id="678228246386317063">Cho phép bạn thiết lập danh sách các mẫu url chỉ định các trang web được phép đặt các cookie chỉ trong phiên.</translation>
 <translation id="5774856474228476867">URL tìm kiếm nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="4650759511838826572">Tắt lược đồ giao thức URL</translation>
@@ -255,6 +258,14 @@
 <translation id="924557436754151212">Nhập mật khẩu đã lưu từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
 <translation id="8754704265300028644">Vô hiệu hóa lưu lịch sử trình duyệt trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi cài đặt này. Nếu cài đặt này được bật, lịch sử duyệt web sẽ không được lưu. Nếu cài đặt này bị tắt hoặc không được định cấu hình, lịch sử duyệt web sẽ được lưu.</translation>
 <translation id="1897365952389968758">Cho phép tất cả các trang web chạy JavaScript</translation>
+<translation id="3963316686348464884">Cho phép áp dụng gửi cấu hình mạng cho tất cả người dùng thiết bị <ph name="PRODUCT_OS_NAME"/>. Cấu hình mạng là một chuỗi có định dạng JSON như được định nghĩa theo định dạng Cấu hình mạng mở được mô tả tại https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
+<translation id="560746250309032104">Bật thanh dấu trang trên <ph name="PRODUCT_NAME"/>.
+
+      Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME"/> sẽ hiển thị thanh dấu trang.
+
+      Nếu bạn tắt cài đặt này, người dùng sẽ không bao giờ thấy thanh dấu trang.
+
+      Nếu bạn bật hoặc tắt cài đặt này, người dùng sẽ không thể thay đổi hoặc ghi đè cài đặt trong <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6931242315485576290">Tắt đồng bộ hóa dữ liệu với Google</translation>
 <translation id="7006788746334555276">Cài đặt nội dung</translation>
 <translation id="3676473196461789250">Cho phép bạn thiết lập danh sách các mẫu url chỉ định các trang web được phép chạy trình cắm.</translation>
@@ -296,6 +307,7 @@
 <translation id="3653673712530669976">Cho phép bạn định cấu hình trình hiển thị HTML mặc định khi <ph name="PRODUCT_FRAME_NAME"/> được cài đặt. Cài đặt mặc định cho phép trình duyệt chính thực hiện chức năng hiển thị nhưng bạn có thể tùy chọn ghi đè cài đặt này và yêu cầu <ph name="PRODUCT_FRAME_NAME"/> hiển thị các trang HTML theo mặc định.</translation>
 <translation id="7848840259379156480">Cho phép bạn định cấu hình trình hiển thị HTML mặc định khi <ph name="PRODUCT_FRAME_NAME"/> được cài đặt. Cài đặt mặc định cho phép trình duyệt chính thực hiện chức năng hiển thị nhưng bạn có thể tùy chọn ghi đè cài đặt này và yêu cầu <ph name="PRODUCT_FRAME_NAME"/> hiển thị các trang HTML theo mặc định.</translation>
 <translation id="4121350739760194865">Chặn các quảng cáo ứng dụng xuất hiện trên trang tab mới</translation>
+<translation id="2127599828444728326">Cho phép thông báo trên các trang web này</translation>
 <translation id="4486602758942612946">Tùy chỉnh danh sách các mẫu URL sẽ luôn được trình duyệt chính hiển thị. Để xem các mẫu ví dụ, xem http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Chỉ định khoảng thời gian tính bằng mili giây mà dịch vụ quản lý thiết bị được truy vấn về thông tin chính sách thiết bị. Việc thiết lập chính sách này ghi đè giá trị mặc định là 3 giờ. Các giá trị hợp lệ dành cho chính sách này nằm trong khoảng từ 1800000 (30 phút) tới 86400000 (1 ngày). Mọi giá trị không nằm trong khoảng này sẽ được gắn với ranh giới tương ứng.</translation>
 <translation id="1734716591049455502">Định cấu hình tùy chọn truy cập từ xa</translation>
@@ -313,6 +325,7 @@
 <translation id="6510914645829248303">Nếu &quot;Mở danh sách URL 'được chọn là tác vụ khởi động, điều này cho phép bạn chỉ định danh sách URL được mở.</translation>
 <translation id="3780152581321609624">Bao gồm cổng không chuẩn trong  Kerberos SPN</translation>
 <translation id="2660846099862559570">Không bao giờ sử dụng proxy</translation>
+<translation id="1435659902881071157">Cấu hình mạng ở mức thiết bị</translation>
 <translation id="5512418063782665071">URL trang chủ</translation>
 <translation id="6049075103826767200">Cho phép báo cáo ẩn danh về sử dụng và dữ liệu liên quan đến sự cố về <ph name="PRODUCT_NAME"/> tới Google và ngăn người dùng thay đổi cài đặt này. Nếu bạn bật cài đặt này, báo cáo ẩn danh về sử dụng và dữ liên quan đến sự cố sẽ được gửi tới Google. Nếu bạn tắt cài đặt này, báo cáo ẩn danh về sử dụng và dữ liệu liên quan đến sự cố sẽ không bao giờ được gửi tới Google. Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME"/></translation>
 <translation id="2263362640517427542">Bật khóa khi thiết bị sử dụng ChromeOS ngừng hoạt động hoặc bị treo.</translation>
@@ -331,6 +344,7 @@
 
       Chính sách này bị giới hạn ở 100 mục nhập; các mục nhập tiếp theo sẽ bị bỏ qua.</translation>
 <translation id="5645779841392247734">Cho phép cookie trên các trang web này</translation>
+<translation id="791491514268619407">Cho phép bạn thiết lập danh sách các mẫu url chỉ định các trang web không được phép hiển thị thông báo.</translation>
 <translation id="3906388518501362918">Bật JavaScript trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi cài đặt này. Nếu cài đặt này được bật hoặc không được định cấu hình, các trang web có thể sử dụng JavaScript. Nếu cài đặt này bị tắt, các trang web không thể sử dụng JavaScript.</translation>
 <translation id="4821854788360803313">Chỉ định danh sách các trình cắm được bật trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi cài đặt này. Các ký tự đại diện '*' và '?' có thể được sử dụng để khớp với thứ tự của các ký tự ngẫu nhiên. '*' khớp với một số ngẫu nhiên các ký tự còn '?' chỉ định ký tự đơn tùy chọn, tức là khớp với ký tự 0 hoặc 1. Ký tự thoát là '\', vì vậy để khớp với các ký tự '*', '?' hoặc '\' thực, bạn có thể đặt '\' trước các ký tự này. Nếu bạn bật cài đặt này, danh sách trình cắm được chỉ định sẽ không bao giờ được sử dụng trong <ph name="PRODUCT_NAME"/>. Các trình cắm này được đánh dấu là được bật trong 'about:plugins' và người dùng không thể bật các trình cắm này. Xin lưu ý rằng chính sách này có thể bị EnabledPlugins và DisabledPluginsExceptions ghi đè.</translation>
 </translationbundle>

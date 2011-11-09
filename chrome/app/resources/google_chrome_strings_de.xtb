@@ -69,7 +69,6 @@
 <translation id="6757767188268205357">Keine Anfragen mehr</translation>
 <translation id="2290095356545025170">Möchten Sie Google Chrome wirklich deinstallieren?</translation>
 <translation id="1243097286641060337">Google Chrome oder Google Chrome Frame kann aufgrund inkonsistenter Einstellungen der Gruppenrichtlinien für Google Update nicht aktualisiert werden. Verwenden Sie den Editor für Gruppenrichtlinien, um den Vorrang von Update-Richtlinien für die Google Chrome-Binärdateien einzurichten, und versuchen Sie es erneut.</translation>
-<translation id="6087062680442281307">Google Chrome ist ein Webbrowser, der Webseiten und Anwendungen in Sekundenschnelle lädt und dabei äußerst stabil und nutzerfreundlich ist. Dank des integrierten Malware- und Phishing-Schutzes können Sie bedenkenlos im Internet surfen.</translation>
 <translation id="5941830788786076944">Google Chrome als Standardbrowser festlegen</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">In Google Chrome können Sie auf eine Telefonnummer im Web klicken und diese mit Skype anrufen.</translation>
@@ -88,7 +87,7 @@
 <translation id="8614913330719544658">Google Chrome reagiert nicht. Jetzt neu starten?</translation>
 <translation id="2681064822612051220">Auf dem System wurde eine Installation von Google Chrome gefunden, die einen Konflikt verursacht. Deinstallieren Sie sie und versuchen Sie es erneut.</translation>
 <translation id="5318056482164160049">Google Chrome-Plug-in-Host</translation>
-<translation id="6126631249883707068">Möchten Sie, dass Google Chrome Ihr Passwort speichert?</translation>
+<translation id="6126631249883707068">Möchten Sie, dass Ihr Passwort von Google Chrome gespeichert wird?</translation>
 <translation id="5046764976540625289">Google Chrome beenden</translation>
 <translation id="2925521875688282191">Melden Sie sich von Chrome OS ab und wieder an, damit diese Änderung wirksam wird.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
@@ -106,6 +105,7 @@
 <translation id="1001534784610492198">Das Installationsarchiv ist beschädigt oder ungültig. Laden Sie Google Chrome erneut herunter.</translation>
 <translation id="6626317981028933585">Leider sind Ihre Mozilla Firefox-Einstellungen nicht verfügbar, wenn dieser Browser ausgeführt wird. Um diese Einstellungen in Google Chrome zu importieren, speichern Sie Ihre Arbeit und schließen Sie alle Firefox-Fenster. Klicken Sie anschließend auf &quot;Weiter&quot;.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="1698376642261615901">Google Chrome ist ein Webbrowser, der Webseiten und Anwendungen in Sekundenschnelle lädt und dabei äußerst stabil und nutzerfreundlich ist. Dank des integrierten Malware- und Phishing-Schutzes können Sie bedenkenlos im Internet surfen.</translation>
 <translation id="3419750618886995598">Google Chrome Frame-Update.</translation>
 <translation id="6049075767726609708">Ein Administrator hat Google Chrome auf diesem System installiert. Es ist für alle Nutzer verfügbar. Durch die Installation von Google Chrome auf Systemebene wird Ihre Installation auf Nutzerebene jetzt ersetzt.</translation>
 <translation id="7123348595797445166">Testen (bereits installiert)</translation>

@@ -15,6 +15,7 @@
 <translation id="3990502903496589789">Marginea dreaptă</translation>
 <translation id="932327136139879170">Pagina de pornire</translation>
 <translation id="3909791450649380159">&amp;Decupați</translation>
+<translation id="688711909580084195">Pagină web fără titlu</translation>
 <translation id="5076340679995252485">&amp;Inserați</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY"/> TO</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
@@ -54,7 +55,6 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TO/s</translation>
 <translation id="6040143037577758943">Închideți</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> O/s</translation>
-<translation id="7000311294523403548">Pagină Web fără titlu</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PO/s</translation>
 <translation id="6965382102122355670">OK</translation>

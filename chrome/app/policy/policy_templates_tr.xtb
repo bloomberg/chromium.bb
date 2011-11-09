@@ -44,7 +44,6 @@
 
           Bu ayar devre dışıysa ve giden UDP bağlantılarına güvenlik duvarı tarafından filtre uygulanıyorsa, bu makine, yalnızca yerel ağ içindeki istemci makinelerden gelen bağlantılara izin verir.</translation>
 <translation id="5912364507361265851">Kullanıcıların şifreleri Şifre Yöneticisi'nde görüntülemelerine izin ver</translation>
-<translation id="6999540307315670568"><ph name="PRODUCT_NAME"/> içinde yeni sekme sayfasındaki yer işareti çubuğunu etkinleştirir. Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME"/> &quot;Yeni sekme&quot; sayfasında bir yer işareti çubuğu görüntüler. Bu ayarı devre dışı bırakırsanız, kullanıcılar yer işareti çubuğunu hiçbir zaman görmezler. Bu ayarı etkinleştirir veya devre dışı bırakırsanız, kullanıcılar <ph name="PRODUCT_NAME"/> içinden bu ayarı değiştiremez veya geçersiz kılamazlar.</translation>
 <translation id="8828766846428537606"><ph name="PRODUCT_NAME"/> varsayılan ana sayfasını yapılandırır ve kullanıcıların ana sayfayı değiştirmelerini önler. Kullanıcının ana sayfa ayarlarının tümüyle kilitlenmesi, yalnızca ana sayfayı yeni sekme sayfası olarak seçmeniz veya URL olarak ayarlayıp ardından bir ana sayfa URL'si belirlemeniz durumunda olur. Ana sayfa URL'sini belirtmezseniz, kullanıcı yine de 'chrome://newtab' şeklinde belirterek ana sayfayı yeni sekme sayfasına ayarlayabilir.</translation>
 <translation id="2231817271680715693">İlk çalıştırmada tarama geçmişini varsayılan tarayıcıdan içe aktar</translation>
 <translation id="1353966721814789986">Başlangıç sayfaları</translation>
@@ -140,6 +139,7 @@
 <translation id="2741921267428646309"><ph name="PRODUCT_NAME"/> ürününün kabul ettiği politikaların listesidir. Bu ayarları el ile değiştirmenize gerek yoktur! <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/> içinden kolayca kullanılabilecek şablonları indirebilirsiniz. Chromium ve Google Chrome tarafından desteklenen politikaların listesi aynıdır, ancak bunların Windows kayıt defterindeki konumları farklıdır. Bu konumlar Chromium politikaları için <ph name="CHROMIUM_KEY"/> ve Google Chrome politikaları için <ph name="GOOGLE_CHROME_KEY"/> ile başlar.</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME"/> tercihleri</translation>
 <translation id="4723829699367336876">Uzaktan erişim istemcisinden güvenlik duvarı geçişini etkinleştir</translation>
+<translation id="7082208731926398296">Uygulanacak ağ yapılandırmasının bir <ph name="PRODUCT_OS_NAME"/> cihazının her bir kullanıcısına gönderilmesine izin verir. Ağ yapılandırması, https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration adresinde açıklanan Açık Ağ Yapılandırması biçimiyle tanımlanmış JSON biçimli bir dizedir</translation>
 <translation id="9096086085182305205">Kimlik doğrulama sunucusu beyaz listesi</translation>
 <translation id="7063895219334505671">Bu sitelerde pop-up'lara izin ver</translation>
 <translation id="2824715612115726353">Gizli modu etkinleştir</translation>
@@ -163,6 +163,7 @@
 <translation id="8451988835943702790">Ana sayfa olarak Yeni Sekme Sayfası'nı kullan</translation>
 <translation id="823695959636476037">Kullanıcının şifreleri şifre yöneticisinde açık metin olarak gösterip gösteremeyeceğini denetler. Bu ayarı devre dışı bırakırsanız, şifre yöneticisi saklanmış olan şifreleri şifre yöneticisi penceresinde açık metin olarak göstermeye izin vermez. Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrelerini şifre yöneticisi penceresinde açık metin olarak görüntüleyebilirler.</translation>
 <translation id="8731693562790917685">İçerik Ayarları belirli türdeki içeriklerin (ör. Çerezler, Resimler veya JavaScript) nasıl işleneceğini belirlemenize izin verir.</translation>
+<translation id="2411919772666155530">Bu sitelerde bildirimleri engelle</translation>
 <translation id="467236746355332046">Desteklenen özellikler:</translation>
 <translation id="7632724434767231364">GSSAPI kitaplığı adı</translation>
 <translation id="4985088509112317247">Web sitelerinin yerel verileri ayarlamasına izin verilip verilmediğini ayarlamanıza olanak sağlar. Yerel verilerin ayarlanmasına ya bütün web siteleri için izin verilir ya da hiçbir web sitesi için izin verilmez.</translation>
@@ -174,6 +175,7 @@
 <translation id="2745445908503591390">Tarayıcı kapatıldığında site verilerini temizle</translation>
 <translation id="8665913667133665583">Entegre kimlik doğrulaması için hangi sunucuların beyaz listede bulunacağını belirtir. Entegre kimlik doğrulaması yalnızca <ph name="PRODUCT_NAME"/> bu izin verilenler listesindeki bir proxy'den veya sunucudan kimlik doğrulaması sınaması aldığında etkinleştirilir. Birden fazla sunucu adı olduğunda virgül ile ayırın. Joker karakterlere (*) izin verilir.</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME"/> için aşağıdaki içerik türlerini işlemeye izin ver.</translation>
+<translation id="2886164457168401177">Bildirim görüntülemesine izin verilen siteleri belirten URL kalıpları listesi ayarlamanıza olanak sağlar.</translation>
 <translation id="2312134445771258233">Başlangıçta yüklenen sayfaları yapılandırmanıza olanak verir. 'Başlangıçtaki işlem' içinde 'URL listesi aç'ı seçmediğiniz sürece 'Başlangıçta açılan URL'ler' listesinin içeriği göz ardı edilir.</translation>
 <translation id="8344454543174932833">İlk çalıştırmada yer işaretlerini varsayılan tarayıcıdan içe aktar</translation>
 <translation id="7931766636395791713">JavaScript çalıştırmasına izin verilen siteleri belirten bir url kalıpları listesi ayarlamanıza olanak sağlar.</translation>
@@ -234,6 +236,7 @@
 <translation id="4983201894483989687">Eski eklentilerin çalıştırılmasına izin ver</translation>
 <translation id="7492608050778218564">3D grafik API'ları için desteği devre dışı bırakın. Bu ayarı etkinleştirmek web sayfalarının grafik işlem birimine (GPU) erişmesini önler. Özellikle, web sayfaları WebGL API'sına erişemez ve eklentiler Pepper 3D API'sını kullanamaz. Bu ayarın devre dışı bırakılması potansiyel olarak web sayfalarının WebGL API'sını ve eklentilerin Pepper 3D API'sını kullanmasına izin verir. Bu API'ları kullanmak için tarayıcının varsayılan ayarları yine de komut satırı bağımsız değişkenlerinin geçirilmesini gerektirebilir.</translation>
 <translation id="7202926611616207807">Tüm sitelerin yerel verileri ayarlamasına izin ver.</translation>
+<translation id="5868414965372171132">Kullanıcı düzeyi ağ yapılandırması</translation>
 <translation id="678228246386317063">Yalnızca oturum için olan çerezleri ayarlamasına izin verilen siteleri belirten url kalıpları listesini ayarlamanıza olanak sağlar.</translation>
 <translation id="5774856474228476867">Varsayılan arama sağlayıcı arama URL'si</translation>
 <translation id="4650759511838826572">URL protokol şemalarını devre dışı bırak</translation>
@@ -257,6 +260,8 @@
 <translation id="924557436754151212">İlk çalıştırmada kayıtlı şifreleri varsayılan tarayıcıdan içe aktar</translation>
 <translation id="8754704265300028644"><ph name="PRODUCT_NAME"/> içinde tarama geçmişini kaydetmeyi devre dışı bırakır ve kullanıcıların bu ayarı değiştirmelerini önler. Bu ayar etkinleştirilirse tarama geçmişi kaydedilmez. Bu ayar devre dışı bırakılır veya yapılandırılmazsa tarama geçmişi kaydedilir.</translation>
 <translation id="1897365952389968758">Tüm sitelerin JavaScript çalıştırmasına izin ver</translation>
+<translation id="3963316686348464884">Uygulanacak ağ yapılandırmasının, bir <ph name="PRODUCT_OS_NAME"/> cihazının tüm kullanıcılarına  gönderilmesine izin verir. Ağ yapılandırması https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration adresinde açıklanmış olan Açık Ağ Yapılandırması biçimi ile tanımlanan JSON biçimli bir dizedir</translation>
+<translation id="560746250309032104"><ph name="PRODUCT_NAME"/> uygulamasında yer işareti çubuğunu etkinleştirir. Bu ayarı etkinleştirirseniz, <ph name="PRODUCT_NAME"/> bir yer işareti çubuğu görüntüler. Bu ayarı devre dışı bırakırsanız, kullanıcılar hiçbir zaman yer işareti çubuğunu görmezler. Bu ayarı etkinleştirir veya devre dışı bıraksanız, kullanıcılar <ph name="PRODUCT_NAME"/> uygulamasında ayarı değiştirmez veya yoksayamazlar.</translation>
 <translation id="6931242315485576290">Google ile veri senkronizasyonunu devre dışı bırak</translation>
 <translation id="7006788746334555276">İçerik Ayarları</translation>
 <translation id="3676473196461789250">Eklentiler çalıştırmasına izin verilen siteleri belirten bir url kalıpları listesi ayarlamanıza olanak sağlar.</translation>
@@ -298,6 +303,7 @@
 <translation id="3653673712530669976"><ph name="PRODUCT_FRAME_NAME"/> yüklendiğinde varsayılan HTML oluşturucusunu yapılandırmanıza olanak verir. Varsayılan ayar, oluşturmayı ana makinenin tarayıcısının yapmasına izin vermektir, ancak isteğe bağlı olarak bunu geçersiz kılabilir ve HTML sayfalarının varsayılan olarak <ph name="PRODUCT_FRAME_NAME"/> tarafından oluşturulmasını sağlayabilirsiniz.</translation>
 <translation id="7848840259379156480"><ph name="PRODUCT_FRAME_NAME"/> yüklendiğinde varsayılan HTML oluşturucusunu yapılandırmanıza olanak verir. Varsayılan ayar, oluşturmayı ana makinenin tarayıcısının yapmasına izin vermektir, ancak isteğe bağlı olarak bunu geçersiz kılabilir ve HTML sayfalarının varsayılan olarak <ph name="PRODUCT_FRAME_NAME"/> tarafından oluşturulmasını sağlayabilirsiniz.</translation>
 <translation id="4121350739760194865">Uygulama tanıtımlarının yeni sekme sayfasında görünmesini önle</translation>
+<translation id="2127599828444728326">Bu sitelerde bildirimlere izin ver</translation>
 <translation id="4486602758942612946">Ana makine tarayıcısı tarafından her zaman oluşturulması gereken URL kalıplarının listesini özelleştirir. Örnek kalıplar için http://www.chromium.org/developers/how-tos/chrome-frame-getting-started adresine bakın.</translation>
 <translation id="2257451316169619209">Cihaz yönetim hizmetinin cihaz politika bilgileri için sorgulandığı süreyi milisaniye olarak belirtir. Bu politika ayarlandığında 3 saat olan varsayılan değer geçersiz olur. Bu politika için geçerli değerler 1800000 (30 dakika) ile 86400000 (1 gün) aralığındadır. Bu aralıkta bulunmayan değerler ilgili sınıra çekilir.</translation>
 <translation id="1734716591049455502">Uzaktan erişim seçeneklerini yapılandır</translation>
@@ -313,6 +319,7 @@
 <translation id="6510914645829248303">Başlangıç işlemi olarak 'URL'ler listesi aç' seçilirse, açılan URL'lerin listesini belirtme olanağı sağlar.</translation>
 <translation id="3780152581321609624">Kerberos SPN'sine standart dışı bağlantı noktasını dahil et</translation>
 <translation id="2660846099862559570">Hiçbir zaman proxy kullanma</translation>
+<translation id="1435659902881071157">Cihaz düzeyinde ağ yapılandırması</translation>
 <translation id="5512418063782665071">Ana sayfa URL'si</translation>
 <translation id="6049075103826767200"><ph name="PRODUCT_NAME"/> hakkındaki kullanım ve kilitlenme ile ilgili verilerin Google'a anonim olarak raporlanmasını etkinleştirir ve kullanıcıların bu ayarı değiştirmelerini önler. Bu ayarı etkinleştirirseniz kullanım ve kilitlenme ile ilgili anonim raporlama Google'a gönderilir. Bu ayarı devre dışı bırakırsanız kullanım ve kilitlenme ile ilgili anonim raporlama hiçbir zaman Google'a gönderilmez. Bu ayarı etkinleştirir veya devre dışı bırakırsanız, kullanıcılar bu ayarı <ph name="PRODUCT_NAME"/> içinde değiştiremez veya geçersiz kılamazlar.</translation>
 <translation id="2263362640517427542">ChromeOS cihazları boşta olduğunda veya askıya alındığında kilidi etkinleştir.</translation>
@@ -331,6 +338,7 @@
 
       Bu politika 100 giriş ile sınırlıdır; sonraki girişler yoksayılır.</translation>
 <translation id="5645779841392247734">Bu sitelerde çerezlere izin ver</translation>
+<translation id="791491514268619407">Bildirimleri görüntülemesine izin verilmeyen siteleri belirten URL kalıpları listesini ayarlamanıza olanak sağlar.</translation>
 <translation id="3906388518501362918"><ph name="PRODUCT_NAME"/> içinde JavaScript'i etkinleştirir ve ve kullanıcıların bu ayarı değiştirmelerini önler. Bu ayar etkinleştirilirse veya yapılandırılmazsa, web sayfaları JavaScript kullanabilir. Bu ayar devre dışı bırakılırsa web sayfaları JavaScript kullanamaz.</translation>
 <translation id="4821854788360803313"><ph name="PRODUCT_NAME"/> içinde devre dışı bırakılmış olan eklentilerin bir listesini belirtir ve kullanıcıların bu ayarı değiştirmelerini önler. '*' ve '?' joker karakterleri herhangi bir karakter dizesine uyacak şekilde kullanılabilir. '*' herhangi bir sayıda karakter ile eşleşirken '?' isteğe bağlı tek bir karakteri, yani sıfır veya bir karakteri belirtir. Çıkış karakteri '\' olduğundan gerçek '*', '?' veya '\' karakterleri ile eşleştirmek için bu karakterlerin önüne '\' getirebilirsiniz. Bu ayarı etkinleştirirseniz belirtilen eklentiler listesi <ph name="PRODUCT_NAME"/> içinde hiçbir zaman kullanılmaz. Eklentiler 'about:plugins' içinde devre dışı bırakılmış olarak işaretlenir ve kullanıcılar bu eklentileri etkinleştiremez. Bu politikanın EnabledPlugins ve DisabledPluginsExceptions politikaları tarafından geçersiz kılınabileceğini unutmayın.</translation>
 </translationbundle>

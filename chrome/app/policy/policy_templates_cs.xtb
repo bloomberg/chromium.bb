@@ -66,13 +66,6 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
 
           Pokud je toto nastavení vypnuto a odchozí připojení UDP jsou filtrována bránou firewall, lze se k tomuto počítači připojit pouze z klientských počítačů v místní síti.</translation>
 <translation id="5912364507361265851">Umožnit uživatelům zobrazit hesla ve Správci hesel</translation>
-<translation id="6999540307315670568">Aktivuje v prohlížeči <ph name="PRODUCT_NAME"/> panel záložek na stránce Nová karta.
-
-      Pokud toto nastavení aktivujete, <ph name="PRODUCT_NAME"/> zobrazí na stránce Nová karta panel záložek.
-
-      Pokud toto nastavení deaktivujete, panel záložek se uživatelům nezobrazí.
-
-      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.</translation>
 <translation id="8828766846428537606">Slouží ke konfiguraci výchozí domovské stránky v prohlížeči <ph name="PRODUCT_NAME"/> a brání uživatelům, aby nastavenou domovskou stránku měnili.
 
       Nastavení domovské stránky uživatele jsou zcela uzamčena pouze v případě, že jako domovskou stránku nastavíte buď stránku Nová karta, nebo adresu URL, kterou zadáte. Pokud adresu URL domovské stránky nezadáte, uživatel bude moci domovskou stránku změnit na stránku Nová karta, a to tím, že zadá řetězec „chrome://newtab“.</translation>
@@ -261,6 +254,7 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
       U zásad projektu Chromium začínají klíčem <ph name="CHROMIUM_KEY"/> a u zásad prohlížeče Google Chrome klíčem <ph name="GOOGLE_CHROME_KEY"/>.</translation>
 <translation id="7003746348783715221">Nastavení prohlížeče <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Povolení přechodu přes bránu firewall z klienta vzdáleného připojení</translation>
+<translation id="7082208731926398296">Umožňuje odeslat do zařízení se systémem <ph name="PRODUCT_OS_NAME"/> konfiguraci sítě a použít ji pro konkrétní uživatele. Konfigurace sítě je řetězec ve formátu JSON podle pravidel formátu Open Network Configuration, která jsou uvedena na stránce https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
 <translation id="9096086085182305205">Bílá listina serverů pro ověřování</translation>
 <translation id="7063895219334505671">Povolit na těchto stránkách vyskakovací okna</translation>
 <translation id="2824715612115726353">Povolit anonymní režim</translation>
@@ -286,6 +280,7 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
 
           Pokud toto nastavení aktivujete nebo jej nenakonfigurujete, uživatelé budou ve správci hesel moci zobrazit uložená hesla jako čitelný text.</translation>
 <translation id="8731693562790917685">Nastavení obsahu umožňují určit, jakým způsobem bude zpracováván obsah určitého typu (například soubory cookie, obrázky nebo JavaScript).</translation>
+<translation id="2411919772666155530">Blokovat upozornění na těchto stránkách</translation>
 <translation id="467236746355332046">Podporované funkce:</translation>
 <translation id="7632724434767231364">Název knihovny GSSAPI</translation>
 <translation id="4985088509112317247">Umožňuje nastavit, zda mohou webové stránky nastavovat místní data. Nastavení místních dat lze buď povolit pro všechny weby, nebo je pro všechny weby zakázat.</translation>
@@ -304,6 +299,7 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
 
           Chcete-li zadat několik názvů serverů, oddělte je čárkami. Zástupné znaky (*) jsou povoleny.</translation>
 <translation id="538108065117008131">Umožňuje pluginu <ph name="PRODUCT_FRAME_NAME"/> zpracovávat následující typy obsahu.</translation>
+<translation id="2886164457168401177">Umožňuje nastavit seznam vzorů adres URL webových stránek, které mají povoleno nastavovat upozornění.</translation>
 <translation id="2312134445771258233">Umožňuje konfigurovat stránky, které se načtou při spuštění.
 
       Pokud jste v části „Akce při spuštění“ nezvolili možnost „Otevřít seznam adres URL“, budou položky v seznamu „Adresy URL otevírané při spuštění“ ignorovány.</translation>
@@ -409,6 +405,7 @@ Nastavení této zásady přepíše výchozí hodnotu 3 hodiny. Platné hodnoty 
 
       Pokud toto nastavení deaktivujete, umožníte webovým stránkám využívat rozhraní WebGL API a pluginům umožníte využívat rozhraní Pepper 3D API. Výchozí nastavení prohlížeče však mohou k použití těchto rozhraní API i nadále vyžadovat předání argumentů příkazového řádku.</translation>
 <translation id="7202926611616207807">Umožnit nastavení místních dat všem webům</translation>
+<translation id="5868414965372171132">Konfigurace sítě na úrovni uživatele</translation>
 <translation id="678228246386317063">Umožňuje nastavit seznam vzorů adres URL stránek, které mohou nastavovat soubory cookie pouze pro relaci.</translation>
 <translation id="5774856474228476867">Adresa URL vyhledávání výchozího poskytovatele vyhledávání</translation>
 <translation id="4650759511838826572">Deaktivovat schémata protokolu adresy URL</translation>
@@ -450,6 +447,14 @@ Nastavení této zásady přepíše výchozí hodnotu 3 hodiny. Platné hodnoty 
 
       Pokud je toto nastavení deaktivováno nebo není nakonfigurováno, historie prohlížení bude ukládána.</translation>
 <translation id="1897365952389968758">Povolit všem webům spouštět JavaScript</translation>
+<translation id="3963316686348464884">Umožňuje odeslat do zařízení se systémem <ph name="PRODUCT_OS_NAME"/> konfiguraci sítě a použít ji pro všechny uživatele. Konfigurace sítě je řetězec ve formátu JSON podle pravidel formátu Open Network Configuration uvedených na stránce https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
+<translation id="560746250309032104">Aktivuje v prohlížeči <ph name="PRODUCT_NAME"/> panel záložek. 
+
+      Pokud toto nastavení aktivujete, <ph name="PRODUCT_NAME"/> zobrazí panel záložek.
+
+      Pokud toto nastavení deaktivujete, panel záložek se uživatelům nezobrazí.  
+
+      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.</translation>
 <translation id="6931242315485576290">Deaktivovat synchronizaci dat se servery Google</translation>
 <translation id="7006788746334555276">Nastavení obsahu</translation>
 <translation id="3676473196461789250">Umožňuje nastavit seznam vzorů adres URL určujících stránky, které mohou spouštět pluginy.</translation>
@@ -508,6 +513,7 @@ Nastavení této zásady přepíše výchozí hodnotu 3 hodiny. Platné hodnoty 
 <translation id="7848840259379156480">Umožňuje konfigurovat modul vykreslení obsahu HTML, pokud je nainstalován plugin <ph name="PRODUCT_FRAME_NAME"/>.
       Ve výchozím nastavení vykresluje obsah hostitelský prohlížeč, toto nastavení však můžete přepsat a namísto toho vykreslovat stránky HTML pomocí pluginu <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="4121350739760194865">Zabraňuje zobrazování propagace aplikací na stránce Nová karta</translation>
+<translation id="2127599828444728326">Povolit na těchto stránkách oznámení</translation>
 <translation id="4486602758942612946">Umožňuje personalizovat seznam vzorů adres URL, které by měl vždy vykreslit hostitelský prohlížeč.
           Ukázkové vzory naleznete na stránce http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Určuje interval (v ms), ve kterém budou službě správy zařízení zasílány požadavky na informace o zásadách pro zařízení. Nastavení této zásady přepíše výchozí hodnotu 3 hodiny. Platné hodnoty pro tuto zásadu se pohybují v rozmezí od 1800000 (30 minut) do 86400000 (1 den). Místo hodnot mimo tento rozsah bude použita příslušná mezní hodnota.</translation>
@@ -540,6 +546,7 @@ Nastavení této zásady přepíše výchozí hodnotu 3 hodiny. Platné hodnoty 
 <translation id="6510914645829248303">Pokud je jako akce při spuštění zaškrtnuto políčko „Otevřít seznam adres URL“, tato zásada umožňuje zvolit seznam adres URL, které budou otevřeny.</translation>
 <translation id="3780152581321609624">Zahrnout do hlavního názvu služby protokolu Kerberos nestandardní port</translation>
 <translation id="2660846099862559570">Nikdy nepoužívat server proxy</translation>
+<translation id="1435659902881071157">Konfigurace sítě na úrovni zařízení</translation>
 <translation id="5512418063782665071">Adresa URL domovské stránky</translation>
 <translation id="6049075103826767200">Aktivuje funkci anonymního odesílání dat týkajících se využití nebo selhání prohlížeče <ph name="PRODUCT_NAME"/> společnosti Google a brání uživatelům, aby toto nastavení změnili.
 
@@ -574,6 +581,7 @@ Nastavení této zásady přepíše výchozí hodnotu 3 hodiny. Platné hodnoty 
 
       Tato zásada je omezena na 100 záznamů. Další záznamy budou ignorovány.</translation>
 <translation id="5645779841392247734">Povolit soubory cookie na těchto stránkách</translation>
+<translation id="791491514268619407">Umožňuje nastavit seznam vzorů adres URL webových stránek, které nemají povoleno zobrazovat oznámení.</translation>
 <translation id="3906388518501362918">Aktivuje v prohlížeči <ph name="PRODUCT_NAME"/> JavaScript a brání uživatelům, aby toto nastavení změnili.
 
       Pokud je toto nastavení aktivováno nebo není nakonfigurováno, webové stránky mohou používat JavaScript.

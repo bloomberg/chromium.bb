@@ -66,13 +66,6 @@
 
           Če je nastavitev onemogočena in požarni zid filtrira odhodne povezave UDP, bo ta računalnik dovolil samo povezave od odjemalskih računalnikov v lokalnem omrežju.</translation>
 <translation id="5912364507361265851">Dovoli uporabnikom, da pokažejo gesla v upravitelju gesel</translation>
-<translation id="6999540307315670568">Omogoči vrstico z zaznamki na strani za nov zavihek v programu <ph name="PRODUCT_NAME"/>.
-
-      Če to nastavitev omogočite, bo <ph name="PRODUCT_NAME"/> na strani »Nov zavihek« prikazal vrstico z zaznamki.
-
-      Če nastavitev onemogočite, uporabniki ne bodo videli vrstice z zaznamki.
-
-      Če to nastavitev onemogočite ali omogočite, je uporabniki ne bodo mogli spremeniti ali preglasiti v <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8828766846428537606">Nastavi privzeto domačo stran za <ph name="PRODUCT_NAME"/> in prepreči, da bi jo uporabniki spreminjali.
 
       Nastavitve domače strani uporabnika so popolnoma zaklenjene, če nastavite, da je stran z novim zavihkom domača stran oziroma izberete URL za domačo stran. Če ne navedete URL-ja domače strani, bo lahko uporabnik z ukazom »chrome://newtab« še vedno nastavil, da je domača stran stran z novim zavihkom.</translation>
@@ -262,6 +255,7 @@
       Za pravilnike za Chromium se začne z <ph name="CHROMIUM_KEY"/>, za tiste za Google Chrome pa z <ph name="GOOGLE_CHROME_KEY"/>.</translation>
 <translation id="7003746348783715221">Nastavitve za <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Omogoči prehod skozi požarni zid iz odjemalca za oddaljeni dostop</translation>
+<translation id="7082208731926398296">Omogoča potiskanje omrežne konfiguracije, ki bo veljala za posameznega uporabnika, v napravo <ph name="PRODUCT_OS_NAME"/>. Omrežna konfiguracija je niz v obliki JSON, določen z obliko zapisa Open Network Configuration, ki je opisan na https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
 <translation id="9096086085182305205">Seznam dovoljenih strežnikov za preverjanje pristnosti</translation>
 <translation id="7063895219334505671">Dovoli pojavna okna na teh mestih</translation>
 <translation id="2824715612115726353">Omogoči način brez beleženja zgodovine</translation>
@@ -287,6 +281,7 @@
 
           Če nastavitev omogočite ali je ne nastavite, so uporabnikom gesla v upravitelju gesel prikazana nešifrirana.</translation>
 <translation id="8731693562790917685">Z nastavitvami vsebine lahko določite, kako se obravnava vsebina različnih vrst (npr. piškotki, slike ali JavaScript).</translation>
+<translation id="2411919772666155530">Blokiraj obvestila na teh mestih</translation>
 <translation id="467236746355332046">Podprte funkcije:</translation>
 <translation id="7632724434767231364">Ime knjižnice GSSAPI</translation>
 <translation id="4985088509112317247">Omogoča, da nastavite, ali je spletnim mestom dovoljeno nastavljanje lokalnih podatkov. Nastavljanje lokalnih podatkov je lahko dovoljeno za vsa mesta ali onemogočeno za vsa mesta.</translation>
@@ -305,6 +300,7 @@
 
           Imena strežnikov ločite z vejicami. Nadomestni znaki (*) niso dovoljeni.</translation>
 <translation id="538108065117008131">Dovoli, da <ph name="PRODUCT_FRAME_NAME"/> obravnava te vrste vsebine.</translation>
+<translation id="2886164457168401177">Omogoča določanje seznama vzorcev spletnih naslovov mest, ki smejo prikazovati obvestila.</translation>
 <translation id="2312134445771258233">Omogoča, da nastavite strani, ki se naložijo pri zagonu.
 
       Vsebina seznama »URL-ji, ki naj se odprejo ob zagonu« se prezre, razen če v možnosti »Dejanje ob zagonu« izberete »Odpri seznam URL-jev«.</translation>
@@ -397,6 +393,7 @@
 
       Če to nastavitev onemogočite, bodo spletne strani lahko uporabljale API-je WebGL, vtičniki pa API Pepper 3D. Privzete nastavitve brskalnika lahko še vedno določajo, da je treba za uporabo teh API-jev uporabiti argumente ukazne vrstice.</translation>
 <translation id="7202926611616207807">Dovoli vsem mestom nastavljanje lokalnih podatkov</translation>
+<translation id="5868414965372171132">Konfiguracija omrežja na ravni uporabnika</translation>
 <translation id="678228246386317063">Omogoča nastavitev seznama vzorcev za URL-je, ki določajo mesta, ki lahko nastavljajo sejne piškotke.</translation>
 <translation id="5774856474228476867">Privzeti URL iskalnika za iskanje</translation>
 <translation id="4650759511838826572">Onemogoči protokolne sheme URL-ja</translation>
@@ -438,6 +435,8 @@
 
       Če jo onemogočite ali ne nastavite, se zgodovina brskanja shranjuje.</translation>
 <translation id="1897365952389968758">Dovoli izvajanje JavaScripta vsem mestom</translation>
+<translation id="3963316686348464884">Omogoča potiskanje omrežne konfiguracije, ki bi veljala za vse uporabnike, v napravo <ph name="PRODUCT_OS_NAME"/>. Omrežna konfiguracija je niz v obliki JSON, določen z obliko zapisa Open Network Configuration, ki je opisan na https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
+<translation id="560746250309032104">Omogoči vrstico z zaznamki v storitvi <ph name="PRODUCT_NAME"/>. Če to nastavitev omogočite, bo v <ph name="PRODUCT_NAME"/> prikazana vrstica z zaznamki. Če nastavitev onemogočite, uporabniki ne bodo videli vrstice z zaznamki. Če to nastavitev omogočite ali onemogočite, je uporabniki v <ph name="PRODUCT_NAME"/> ne bodo mogli spremeniti ali preglasiti.</translation>
 <translation id="6931242315485576290">Onemogoči sinhroniziranje podatkov z Googlom</translation>
 <translation id="7006788746334555276">Nastavitve vsebine</translation>
 <translation id="3676473196461789250">Omogoča nastavitev seznama vzorcev URL-jev, ki določajo mesta, ki smejo izvajati vtičnike.</translation>
@@ -491,6 +490,7 @@
           lahko to preglasite in določite, da <ph name="PRODUCT_FRAME_NAME"/> privzeto upodablja strani HTML.</translation>
 <translation id="7848840259379156480">Omogoča nastavitev privzetega upodabljalnika HTML-ja, ko je nameščen <ph name="PRODUCT_FRAME_NAME"/>. Privzeta nastavitev je, da upodabljanje izvaja gostiteljski brskalnik, vendar lahko to preglasite in določite, da <ph name="PRODUCT_FRAME_NAME"/> privzeto upodablja strani HTML.</translation>
 <translation id="4121350739760194865">Onemogoči prikaz oglasov za programe na strani »Nov zavihek«.</translation>
+<translation id="2127599828444728326">Dovoli obvestila na teh mestih</translation>
 <translation id="4486602758942612946">Prilagodi seznam vzorcev URL-jev, ki jih vedno upodablja gostiteljski brskalnik.
           Primere vzorcev si lahko ogledate tukaj: http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Določa, kako pogosto (v milisekundah) se storitvi za upravljanje naprave pošlje poizvedba za podatke o pravilnikih. Če nastavite ta pravilnik, preglasite privzeto nastavitev (3 ure). Veljavne vrednosti za ta pravilnik so od 1800000 (30 minut) do 86400000  (1 dan). Vse vrednosti, ki niso v tem obsegu, bodo zaokrožene na ustrezno omejitev.</translation>
@@ -523,6 +523,7 @@
 <translation id="6510914645829248303">Če je za dejanje, ki se izvede ob zagonu, izbrano »Odpri seznam URL-jev«, lahko s tem določite seznam URL-jev, ki se odprejo.</translation>
 <translation id="3780152581321609624">Vključi nestandardna vrata v SPN za Kerberos</translation>
 <translation id="2660846099862559570">Nikoli ne uporabi proxyja</translation>
+<translation id="1435659902881071157">Konfiguracija omrežja na ravni naprave</translation>
 <translation id="5512418063782665071">URL domače strani</translation>
 <translation id="6049075103826767200">Omogoča anonimno poročanje Googlu o uporabi in podatkih, povezanih z zrušitvami, za <ph name="PRODUCT_NAME"/> in uporabniku preprečuje spreminjanje te nastavitve.
 
@@ -549,6 +550,7 @@
 <translation id="6938581770853731947">Nastavi vrsto privzete domače strani v programu <ph name="PRODUCT_NAME"/> in uporabnikom preprečuje spreminjanje nastavitev domače strani. Domačo stran lahko nastavite na URL, ki ga določite, ali na stran »Nov zavihek«. Če to nastavitev omogočite, bo za domačo stran vedno uporabljena stran »Nov zavihek«, URL domače strani pa se prezre. Če jo onemogočite, uporabnikova domača stran nikoli ne bo stran »Nov zavihek«, razen če je njen URL nastavljen na »chrome://newtab«. Če to nastavitev omogočite ali onemogočite, uporabniki ne morejo spremeniti vrste domače strani v programu <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2844287278346661435">Omogoča dostop do navedenih spletnih naslovov, kot izjeme seznama blokiranih URL-jev. V pravilniku za blokirane URL-je si oglejte opis oblike vnosov na tem seznamu. Pravilnik je mogoče uporabiti za odpiranje izjem omejevalnih seznamov blokiranih URL-jev. Na primer, »*« lahko na seznamu blokira vse zahteve in pravilnik je mogoče uporabiti za omogočanje dostopa do omejenega seznama URL-jev. Uporabiti ga je mogoče za odpiranje izjem nekaterih shem, poddomen drugih domen, vrat ali določenih poti. Najbolj podroben filter določi, ali je URL blokiran ali omogočen. Seznam dovoljenih URL-jev ima prednost pred seznamom blokiranih. V pravilnike lahko dodate največ 100 vnosov; vsi dodatni vnosi ne bodo upoštevani.</translation>
 <translation id="5645779841392247734">Dovoli piškotke na teh mestih</translation>
+<translation id="791491514268619407">Omogoča določanje seznama vzorcev spletnih naslovov mest, ki ne smejo prikazovati obvestil.</translation>
 <translation id="3906388518501362918">Omogoči JavaScript v programu <ph name="PRODUCT_NAME"/> in uporabnikom prepreči spreminjanje te nastavitve.
 
       Če je ta nastavitev omogočena ali ni nastavljena, lahko spletne strani uporabljajo JavaScript.

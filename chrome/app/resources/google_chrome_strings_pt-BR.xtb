@@ -69,7 +69,6 @@
 <translation id="6757767188268205357">Não estou a fim</translation>
 <translation id="2290095356545025170">Tem certeza de que deseja desinstalar o Google Chrome?</translation>
 <translation id="1243097286641060337">O Google Chrome ou o Google Chrome Frame não pode ser atualizado por conta de configurações inconsistentes nas políticas de grupo do Google Update. Use o Editor de políticas de Grupo, defina a substituição da política de atualização para o aplicativo Binários do Google Chrome e tente novamente.</translation>
-<translation id="6087062680442281307">O Google Chrome é um navegador que executa páginas e aplicativos da web na velocidade da luz. É rápido, estável e fácil de usar. Navegue pela web de modo mais seguro com a proteção contra malware e phishing integrada ao Google Chrome.</translation>
 <translation id="5941830788786076944">Fazer do Google Chrome o navegador padrão</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">O Google Chrome permite que você clique em um número de telefone na web e ligue para ele com o Skype!</translation>
@@ -107,6 +106,7 @@ Se continuar, o Chrome não procurará nenhuma outra correspondência incorreta 
 <translation id="1001534784610492198">O arquivo do instalador está corrompido ou é inválido. Baixe o Google Chrome novamente.</translation>
 <translation id="6626317981028933585">Infelizmente, suas configurações do Mozilla Firefox não ficarão disponíveis enquanto esse navegador estiver sendo executado. Para importar essas configurações para o Google Chrome, salve o seu trabalho e feche todas as janelas do Firefox. Em seguida, clique em &quot;Continuar&quot;.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="1698376642261615901">O Google Chrome é um navegador que executa páginas e aplicativos da web em alta velocidade. É rápido, estável e fácil de usar. Navegue pela web de forma segura com proteção contra malware e phishing integrada ao Google Chrome.</translation>
 <translation id="3419750618886995598">Atualização do Frame do Google Chrome.</translation>
 <translation id="6049075767726609708">Um administrador instalou o Google Chrome no sistema e ele está disponível para todos os usuários. O Google Chrome no nível do sistema substituirá sua instalação no nível do usuário agora.</translation>
 <translation id="7123348595797445166">Experimentar (já instalado)</translation>

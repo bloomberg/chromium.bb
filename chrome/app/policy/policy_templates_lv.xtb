@@ -56,13 +56,6 @@
       Ja šis iestatījums ir iespējots vai atspējots, lietotāji nevar mainīt vai ignorēt šo iestatījumu produktā <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8781881969636812184">Ļauj izmantot STUN un pārraides serverus, ja attālie klienti mēģina izveidot savienojumu ar šo iekārtu. Ja šis iestatījums ir iespējots, attālie klienti var atrast šīs iekārtas un izveidot ar tām savienojumus arī tad, ja tām tiek izmantots ugunsmūris. Ja šis iestatījums ir atspējots un izejošos UDP savienojumus filtrē ugunsmūris, šī iekārta atļauj savienojumus tikai no vietējā tīkla klientu iekārtām.</translation>
 <translation id="5912364507361265851">Atļauj rādīt paroles paroļu pārvaldniekā</translation>
-<translation id="6999540307315670568">Iespējo grāmatzīmju joslu produkta <ph name="PRODUCT_NAME"/> Jaunas cilnes lapā.
-
-      Ja šis iestatījums ir iespējots, produkts <ph name="PRODUCT_NAME"/> lapā Jauna cilne rāda grāmatzīmju joslu.
-
-      Ja šis iestatījums ir atspējots, grāmatzīmju josla lietotājiem nav redzama.
-
-      Ja šis iestatījums ir iespējots vai atspējots, lietotāji to nevar mainīt vai ignorēt produktā <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8828766846428537606">Konfigurē produkta <ph name="PRODUCT_NAME"/> noklusējuma sākumlapu un neļauj lietotājiem to mainīt.
 
       Lietotāja sākumlapas iestatījumi ir pilnībā nobloķēti tikai tad, ja sākumlapa ir iestatīta kā Jaunas cilnes lapa vai kā URL un ir norādīts sākumlapas URL. Ja nav norādīts sākumlapas URL, lietotājs var iestatīt sākumlapu kā Jaunas cilnes lapu, norādot chrome://newtab.</translation>
@@ -252,6 +245,7 @@
       Chromium politikām tas sākas ar <ph name="CHROMIUM_KEY"/>, bet Google Chrome tas sākas ar <ph name="GOOGLE_CHROME_KEY"/>.</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME"/> preferences</translation>
 <translation id="4723829699367336876">Ugunsmūra apvada iespējošana no attālās piekļuves klienta</translation>
+<translation id="7082208731926398296">Ļauj pārsūtīt tīkla konfigurāciju, kas piemērojama lietotājam ierīcē ar operētājsistēmu <ph name="PRODUCT_OS_NAME"/>. Tīkla konfigurācija ir JSON formatēta virkne, kā definējis atvērtā tīkla konfigurācijas formāts, kas aprakstīts šeit: https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
 <translation id="9096086085182305205">Autentifikācijas serveru baltais saraksts</translation>
 <translation id="7063895219334505671">Atļauj uznirstošos logus šajās vietnēs</translation>
 <translation id="2824715612115726353">Iespējo inkognito režīmu</translation>
@@ -277,6 +271,7 @@
 
           Ja šis iestatījums ir iespējots vai nav konfigurēts, paroles paroļu pārvaldniekā ir redzamas nešifrētā tekstā.</translation>
 <translation id="8731693562790917685">Satura iestatījumi ļauj norādīt, kā jārīkojas ar noteikta veida saturu (piem., sīkfailiem, attēliem vai JavaScript).</translation>
+<translation id="2411919772666155530">Bloķēt paziņojumus šajās vietnēs</translation>
 <translation id="467236746355332046">Atbalstītās funkcijas</translation>
 <translation id="7632724434767231364">GSSAPI bibliotēkas nosaukums</translation>
 <translation id="4985088509112317247">Ļauj iestatīt, vai vietnēm ir atļauts iestatīt lokālus datus. Lokālu datu iestatīšana var tikt atļauta vai aizliegta visām vietnēm.</translation>
@@ -295,6 +290,7 @@
 
           Vairāki serveru nosaukumi jāatdala ar komatu. Aizstājējzīmes (*) ir atļautas.</translation>
 <translation id="538108065117008131">Atļauj produktam <ph name="PRODUCT_FRAME_NAME"/> apstrādāt tālāk minētos satura veidus.</translation>
+<translation id="2886164457168401177">Ļauj iestatīt URL struktūru sarakstu, kurā norādītas vietnes, kurām ir atļauts rādīt paziņojumus.</translation>
 <translation id="2312134445771258233">Ļauj konfigurēt lapas, kas tiek ielādētas startēšanas brīdī.
 
       Saraksta vietrāžu URL, kas jāatver startēšanas brīdī, saturs tiek ignorēts, ja vien iestatījumam Darbība startēšanas brīdī tiek atlasīts iestatījums Atvērt URL sarakstu.</translation>
@@ -377,6 +373,7 @@
 
       Ja šis iestatījums ir atspējots, tīmekļa lapas potenciāli var lietot WebGL API un spraudņi var lietot Pepper 3D API. Pārlūka noklusējuma iestatījumi šo API lietošanai joprojām var pieprasīt, lai tiktu pieņemti komandrindas argumenti.</translation>
 <translation id="7202926611616207807">Atļaut visām vietnēm iestatīt lokālus datus</translation>
+<translation id="5868414965372171132">Lietotāja līmeņa tīkla konfigurācija</translation>
 <translation id="678228246386317063">Ļauj iestatīt URL struktūru sarakstu, kurā norādītas vietnes, kurām ir atļauts iestatīt sesijai lietojamus sīkfailus.</translation>
 <translation id="5774856474228476867">Noklusējuma meklētājprogrammas meklēšanas  URL</translation>
 <translation id="4650759511838826572">Atspējo URL protokolu shēmas</translation>
@@ -418,6 +415,8 @@
 
       Ja šis iestatījums ir atspējots vai nav konfigurēts, pārlūkošanas vēsture tiek saglabāta.</translation>
 <translation id="1897365952389968758">Atļaut visām vietnēm izpildīt JavaScript</translation>
+<translation id="3963316686348464884">Ļauj pārsūtīt tīkla konfigurāciju, kas piemērojama lietotājam ierīcē ar operētājsistēmu <ph name="PRODUCT_OS_NAME"/>. Tīkla konfigurācija ir JSON formatēta virkne, kā definējis atvērtā tīkla konfigurācijas formāts, kas aprakstīts šeit: https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
+<translation id="560746250309032104">Iespējo grāmatzīmju joslu pakalpojumā <ph name="PRODUCT_NAME"/>. Ja šis iestatījums ir iespējots, pakalpojums <ph name="PRODUCT_NAME"/> rāda grāmatzīmju joslu. Ja šis iestatījums ir atspējots, grāmatzīmju josla lietotājiem nav redzama. Ja šis iestatījums ir iespējots vai atspējots, lietotāji to nevar mainīt vai ignorēt pakalpojumā <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6931242315485576290">Atspējo datu sinhronizāciju ar Google</translation>
 <translation id="7006788746334555276">Satura iestatījumi</translation>
 <translation id="3676473196461789250">Ļauj iestatīt URL struktūru sarakstu, kurā norādītas vietnes, kurām ir atļauts izpildīt spraudņus.</translation>
@@ -473,6 +472,7 @@
       Atbilstoši noklusējuma iestatījumam renderēšanu izpilda saimniekdatora pārlūks, taču
       pēc izvēles šo iestatījumu var ignorēt un likt, lai HTML lappuses pēc noklusējuma tiktu renderētas produktā <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="4121350739760194865">Novērst lietotņu reklāmu rādīšanu Jaunas cilnes lapā.</translation>
+<translation id="2127599828444728326">Paziņojumu atļaušana šajās vietnēs</translation>
 <translation id="4486602758942612946">Pielāgo URL struktūru sarakstu, kas vienmēr jārenderē ar saimniekdatora pārlūku.
           Struktūru piemērus skatiet šeit: http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Norāda laika periodu milisekundēs, pēc kura ierīces pārvaldības pakalpojumam tiek vaicāti ierīces politikas dati. Iestatot šo politiku, tiek ignorēta noklusējuma vērtība 3 stundas. Šīs politikas derīgo vērtību diapazons ir no 1 800 000 (30 minūtēm) līdz 86 400 000 (1 dienai). Jebkura vērtība ārpus šī diapazona tiks pieskaņota attiecīgajai robežvērtībai.</translation>
@@ -503,6 +503,7 @@
 <translation id="6510914645829248303">Ja par startēšanas darbību ir atlasīta opcija Atvērt vietrāžu URL sarakstu, šī politika ļauj norādīt vietrāžu URL sarakstu, kas jāatver.</translation>
 <translation id="3780152581321609624">Ietver Kerberos SPN nestandarta portu</translation>
 <translation id="2660846099862559570">Nekad nelietot starpniekserveri</translation>
+<translation id="1435659902881071157">Ierīces līmeņa tīkla konfigurācija</translation>
 <translation id="5512418063782665071">Sākumlapas URL</translation>
 <translation id="6049075103826767200">Ļauj anonīmi pārsūtīt uzņēmumam Google produkta <ph name="PRODUCT_NAME"/> datus, kas saistīti ar lietojumu un avārijām, un neļauj lietotājiem mainīt šo iestatījumu.
 
@@ -529,6 +530,7 @@
 <translation id="6938581770853731947">Konfigurē noklusējuma sākumlapas veidu produktā <ph name="PRODUCT_NAME"/> un neļauj lietotājiem mainīt sākumlapas preferences. Par sākumlapu var tikt iestatīts konkrēts URL vai Jaunas cilnes lapa. Ja šis iestatījums ir iespējots, par sākumlapu vienmēr tiek izmantota Jaunas cilnes lapa un tiek ignorēta sākumlapas URL atrašanās vieta. Ja šis iestatījums ir atspējots, par lietotāja sākumlapu nekad netiek izmantota Jaunas cilnes lapa, ja vien par tās URL nav iestatīta vērtība chrome://newtab. Ja šis iestatījums ir iespējots vai atspējots, lietotāji nevar mainīt savu sākumlapas veidu produktā <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2844287278346661435">Ļauj piekļūt sarakstā iekļautajiem vietrāžiem URL kā izņēmumiem vietrāžu URL melnajam sarakstam. Informāciju par šī saraksta ierakstu formātu skatiet URL melnā saraksta politikas aprakstā. Šo politiku var izmantot, lai atvērtu ierobežoto melno sarakstu izņēmumus. Piemēram, “*” var būt iekļauts melnajā sarakstā, lai bloķētu visus pieprasījumus, kā arī šo politiku var izmantot, lai ļautu piekļūt ierobežotam vietrāžu URL sarakstam. To var izmantot, lai atvērtu izņēmumus konkrētām shēmām, citu domēnu apakšdomēniem, portiem vai konkrētiem ceļiem. Visspecifiskākais filtrs noteiks, vai URL ir bloķēts vai atļauts. Priekšroka tiek sniegta baltajam sarakstam, nevis melnajam sarakstam. Šajā politikā var ietvert tikai 100 ierakstus; visi citi ieraksti tiks ignorēti.</translation>
 <translation id="5645779841392247734">Atļauj sīkfailus šajās vietnēs</translation>
+<translation id="791491514268619407">Ļauj iestatīt URL struktūru sarakstu, kurā norādītas vietnes, kurām nav atļauts rādīt paziņojumus.</translation>
 <translation id="3906388518501362918">Iespējo JavaScript produktā <ph name="PRODUCT_NAME"/> un neļauj lietotājiem mainīt šo iestatījumu.
 
       Ja šis iestatījums ir iespējots vai nav konfigurēts, tīmekļa lapas var lietot JavaScript.

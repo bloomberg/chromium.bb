@@ -69,7 +69,6 @@
 <translation id="6757767188268205357">Netraucējiet mani</translation>
 <translation id="2290095356545025170">Vai tiešām vēlaties atinstalēt Google Chrome?</translation>
 <translation id="1243097286641060337">Google Chrome vai Google Chrome Frame nevar atjaunināt neatbilstīgu Google atjauninājumu grupas politikas iestatījumu dēļ. Lai Google Chrome Binaries lietojumprogrammai iestatītu atjauninājumu politikas ignorēšanas iestatījumu, izmantojiet grupas politikas redaktoru un mēģiniet vēlreiz.</translation>
-<translation id="6087062680442281307">Google Chrome ir tīmekļa pārlūks, kas zibenīgi atver tīmekļa lapas un izpilda lietojumprogrammas. Tā ir ātra, stabila un ērti lietotojama. Google Chrome iebūvētā aizsardzība pret ļaunprātīgu programmatūru un pikšķerēšanu nodrošina daudz drošāku tīmekļa pārlūkošanu.</translation>
 <translation id="5941830788786076944">Izveidot Google Chrome par noklusējuma pārlūku</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ļauj jums noklikšķināt uz tālruņa numura un zvanīt ar to pakalpojumā Skype!</translation>
@@ -106,6 +105,7 @@
 <translation id="1001534784610492198">Instalētāja arhīvs ir bojāts vai nav derīgs. Lūdzu, vēlreiz lejupielādējiet Google Chrome.</translation>
 <translation id="6626317981028933585">Diemžēl, kamēr darbojas šī pārlūkprogramma, jūsu Mozilla Firefox iestatījumi nav pieejami. Lai importētu šos iestatījumus uz Google Chrome, saglabājiet savu darbu un aizveriet visus Firefox logus. Tad klikšķiniet uz Turpināt.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="1698376642261615901">Google Chrome ir tīmekļa pārlūks, kas zibenīgi atver tīmekļa lapas un izpilda lietojumprogrammas. Tas ir ātrs, stabils un ērti lietojams. Google Chrome iebūvētā aizsardzība pret ļaunprātīgu programmatūru un pikšķerēšanu nodrošina daudz drošāku tīmekļa pārlūkošanu.</translation>
 <translation id="3419750618886995598">Chrome Frame atjauninājums.</translation>
 <translation id="6049075767726609708">Administrators šai sistēmai ir instalējis Google Chrome, un tas ir pieejams visiem lietotājiem. Google Chrome lietotāja līmeņa instalācija tagad aizvietota ar sistēmas līmeņa instalāciju.</translation>
 <translation id="7123348595797445166">Izmēģināt (jau instalēta)</translation>

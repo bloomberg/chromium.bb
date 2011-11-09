@@ -69,7 +69,6 @@
 <translation id="6757767188268205357">谢绝打扰</translation>
 <translation id="2290095356545025170">确定要卸载 Google Chrome 浏览器吗？</translation>
 <translation id="1243097286641060337">如果帐户的“Google 更新组策略”设置不一致，Google Chrome 浏览器或 Google Chrome 浏览器内嵌框架就无法更新。请使用“组策略编辑器”设置覆盖 Google Chrome 浏览器二进制 (Google Chrome Binaries) 应用程序的更新策略，然后重试。</translation>
-<translation id="6087062680442281307">Google Chrome 浏览器是一款可高速运行网页和应用程序的网络浏览器。它快捷、稳定且易于使用。Google Chrome 浏览器内置的恶意软件和网上诱骗防护功能可让您更加安全地浏览网页。</translation>
 <translation id="5941830788786076944">将 Google Chrome 浏览器设为默认浏览器</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">您可以在 Google Chrome 浏览器中点击网上的电话号码，然后通过 Skype 拨打！</translation>
@@ -106,6 +105,7 @@
 <translation id="1001534784610492198">安装程序存档文件损坏或无效。请重新下载 Google Chrome 浏览器。</translation>
 <translation id="6626317981028933585">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入 Google Chrome 浏览器，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
 <translation id="8540666473246803645">Google Chrome 浏览器</translation>
+<translation id="1698376642261615901">Google Chrome 浏览器是一款可高速运行网页和应用程序的网络浏览器。它快捷、稳定且易于使用。Google Chrome 浏览器内置的恶意软件和网上诱骗防护功能可让您更安全地浏览网页。</translation>
 <translation id="3419750618886995598">Chrome 浏览器内嵌框架更新。</translation>
 <translation id="6049075767726609708">管理员已为该系统安装了 Google Chrome 浏览器，并且所有用户均可使用它。因此，原来针对个别用户安装的浏览器现在可供系统上的所有用户使用。</translation>
 <translation id="7123348595797445166">试用（已安装）</translation>

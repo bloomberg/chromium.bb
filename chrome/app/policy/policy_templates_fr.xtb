@@ -20,7 +20,7 @@
           Par défaut, toutes les extensions figurent sur la liste blanche. Toutefois, si toutes les extensions ont été mises sur la liste noire par la stratégie, seules les extensions expressément indiquées dans la liste blanche pourront être utilisées.</translation>
 <translation id="3185009703220253572">depuis la version <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Bloquer les images sur ces sites</translation>
-<translation id="7812822355979915508">Indique si l'utilisateur peut ouvrir des pages en mode navigation privé dans <ph name="PRODUCT_NAME"/>. Si cette règle est activée, les pages peuvent être ouvertes dans ce mode. Dans le cas contraire, cela n'est pas possible. Si la règle est configurée sur &quot;Forcé&quot;, les pages peuvent être ouvertes UNIQUEMENT en mode navigation privée.</translation>
+<translation id="7812822355979915508">Indique si l'utilisateur peut ouvrir des pages en mode navigation privée dans <ph name="PRODUCT_NAME"/>. Si cette règle est activée, les pages peuvent être ouvertes dans ce mode. Dans le cas contraire, cela n'est pas possible. Si la règle est configurée sur &quot;Forcé&quot;, les pages peuvent être ouvertes UNIQUEMENT en mode navigation privée.</translation>
 <translation id="2908277604670530363">Nombre maximal de connexions simultanées au serveur proxy</translation>
 <translation id="3512877396423730277">Contrôle si le sous-contenu tiers d'une page est autorisé à ouvrir un pop-up d'authentification HTTP de base (Basic Auth). Cette option est habituellement désactivée dans le cadre de la protection contre le phishing.</translation>
 <translation id="1438955478865681012">Configure les règles relatives aux extensions. L'utilisateur n'est pas autorisé à installer les extensions inscrites sur la liste noires, sauf si elles figurent sur la liste blanche. Vous pouvez également forcer <ph name="PRODUCT_NAME"/> à installer des extensions. Pour ce faire, dressez la liste de ces extensions dans <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. La liste noire est prioritaire sur la liste des extensions dont l'installation est forcée.</translation>
@@ -56,13 +56,6 @@
       Dans les deux cas, les utilisateurs ne peuvent pas modifier ni remplacer ce paramétre dans <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8781881969636812184">Permet d'utiliser des serveurs STUN et relais lorsque les clients distants tentent d'établir une connexion à cette machine. Lorsque ce paramètre est activé, les clients distants peuvent identifier ces machines et s'y connecter, même si un pare-feu les sépare. Lorsque ce paramètre est désactivé et que les connexions UDP sortantes sont filtrées par le pare-feu, cette machine ne permet que la connexion de machines clientes au sein du réseau local.</translation>
 <translation id="5912364507361265851">Permet aux utilisateurs d'afficher les mots de passe dans le gestionnaire de mots de passe.</translation>
-<translation id="6999540307315670568">Active la barre de favoris sur la page &quot;Nouvel onglet&quot; de <ph name="PRODUCT_NAME"/>.
-
-      Si vous activez ce paramètre, <ph name="PRODUCT_NAME"/> affichera une barre de favoris sur la page &quot;Nouvel onglet&quot;.
-
-      Si vous désactivez ce paramètre, les utilisateurs ne verront jamais la barre de favoris.
-
-      Dans les deux cas, les utilisateurs ne peuvent pas modifier ni remplacer ce paramétrage dans <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8828766846428537606">Configure la page d'accueil par défaut de <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier cette dernière.
 
       Les paramètres de page d'accueil de l'utilisateur ne sont complètement verrouillés que si vous définissez la page &quot;Nouvel onglet&quot; ou une URL spécifique comme page d'accueil. Si vous ne précisez pas l'URL de la page d'accueil, l'utilisateur est toujours en mesure de définir la page d'accueil sur la page &quot;Nouvel onglet&quot; au moyen de la valeur &quot;chrome://newtab&quot;.</translation>
@@ -250,6 +243,7 @@
       Cette liste commence par <ph name="CHROMIUM_KEY"/> pour les stratégies Chromium et par <ph name="GOOGLE_CHROME_KEY"/> pour les stratégies Google Chrome.</translation>
 <translation id="7003746348783715221">Préférences de <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Activer la traversée de pare-feu depuis le client d'accès à distance</translation>
+<translation id="7082208731926398296">Permet le transfert de la configuration réseau sur un appareil <ph name="PRODUCT_OS_NAME"/> pour chaque utilisateur. La configuration réseau est une chaîne au format JSON, tel que cela est défini par le format de configuration réseau ouvert décrit à l'adresse https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration.</translation>
 <translation id="9096086085182305205">Liste blanche des serveurs d'authentification</translation>
 <translation id="7063895219334505671">Autoriser les fenêtres pop-up sur ces sites</translation>
 <translation id="2824715612115726353">Activer le mode navigation privée</translation>
@@ -275,6 +269,7 @@
 
           Si vous activez ou ne configurez pas ce paramètre, les utilisateurs peuvent afficher leurs mots de passe en texte clair dans le gestionnaire de mots de passe.</translation>
 <translation id="8731693562790917685">L'option &quot;Paramètres de contenu&quot; permet d'indiquer la manière dont le contenu d'un type spécifique (par exemple, Cookies, Images ou JavaScript) est géré.</translation>
+<translation id="2411919772666155530">Bloquer les notifications sur ces sites</translation>
 <translation id="467236746355332046">Fonctionnalités compatibles :</translation>
 <translation id="7632724434767231364">Nom de la bibliothèque GSSAPI</translation>
 <translation id="4985088509112317247">Vous permet d'indiquer si les sites Web sont autorisés à définir des données locales. La définition de données locales peut être soit autorisée pour tous les sites Web, soit refusée pour tous les sites Web.</translation>
@@ -293,6 +288,7 @@
 
           Séparez les noms des serveurs par des virgules. Les caractères génériques (*) sont autorisés.</translation>
 <translation id="538108065117008131">Autoriser <ph name="PRODUCT_FRAME_NAME"/> à gérer les types de contenus suivants.</translation>
+<translation id="2886164457168401177">Vous permet de définir une liste de formats d'URL indiquant les sites autorisés à afficher des notifications.</translation>
 <translation id="2312134445771258233">Vous permet de configurer les pages chargées au démarrage.
 
       Le contenu de la liste &quot;URL à ouvrir au démarrage&quot; est ignoré, sauf si vous sélectionnez &quot;Ouvrir les pages suivantes&quot; dans &quot;Action au démarrage&quot;.</translation>
@@ -375,6 +371,7 @@
 
       Si vous désactivez ce paramètre, les pages Web peuvent utiliser l'API WebGL et les plug-ins ont accès à l'API Pepper 3D. La transmission d'arguments de ligne de commande aux paramètres par défaut du navigateur peut toutefois être nécessaire pour utiliser ces API.</translation>
 <translation id="7202926611616207807">Autoriser tous les sites à définir des données locales.</translation>
+<translation id="5868414965372171132">Configuration réseau au niveau de l'utilisateur</translation>
 <translation id="678228246386317063">Vous permet de définir une liste de formats d'URL qui indiquent les sites autorisés à placer des cookies limités à la session.</translation>
 <translation id="5774856474228476867">URL de recherche du moteur de recherche par défaut</translation>
 <translation id="4650759511838826572">Désactiver les schémas de protocole d'URL</translation>
@@ -416,6 +413,8 @@
 
       Si ce paramètre est désactivé ou n'est pas configuré, l'historique du navigateur est enregistré.</translation>
 <translation id="1897365952389968758">Autoriser tous les sites à exécuter JavaScript</translation>
+<translation id="3963316686348464884">Permet le transfert de la configuration réseau pour tous les utilisateurs d'un appareil <ph name="PRODUCT_OS_NAME"/>. La configuration réseau est une chaîne au format JSON, tel que cela est défini par le format de configuration réseau ouvert décrit à l'adresse https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration.</translation>
+<translation id="560746250309032104">Active la barre de favoris sur <ph name="PRODUCT_NAME"/>. Si vous activez ce paramètre, <ph name="PRODUCT_NAME"/> affichera une barre de favoris. Si vous le désactivez, les utilisateurs ne verront jamais cette barre. Dans les deux cas, les utilisateurs ne peuvent ni modifier, ni remplacer ce paramètre dans <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6931242315485576290">Désactiver la synchronisation des données avec Google</translation>
 <translation id="7006788746334555276">Paramètres de contenu</translation>
 <translation id="3676473196461789250">Vous permet de définir une liste de formats d'URL indiquant les sites autorisés à exécuter des plug-ins.</translation>
@@ -470,6 +469,7 @@
       Le paramétrage par défaut de cette stratégie autorise le navigateur hôte à effectuer le rendu. Toutefois, vous pouvez
       remplacer ce paramétrage pour que <ph name="PRODUCT_FRAME_NAME"/> assure le rendu des pages HTML pages par défaut.</translation>
 <translation id="4121350739760194865">Empêcher les promotions pour des applications de s'afficher sur la page &quot;Nouvel onglet&quot;</translation>
+<translation id="2127599828444728326">Autoriser les notifications sur ces sites</translation>
 <translation id="4486602758942612946">Personnalise la liste des formats d'URL qui doivent être systématiquement rendus par le navigateur hôte.
           Pour consulter des exemples de formats, accédez à : http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Indique en millisecondes l'intervalle de temps entre chaque demande d'informations sur les règles relatives aux appareils auprès du service de gestion d'appareils. Si cette règle est définie, la valeur par défaut de trois heures est remplacée. Les valeurs admises pour cette règle sont comprises entre 1 800 000 (30 minutes) et 86 400 000 (un jour). Les valeurs situées en dehors de cette plage sont remplacées par la valeur limite la plus proche.</translation>
@@ -500,6 +500,7 @@
 <translation id="6510914645829248303">Si l'action de démarrage sélectionnée est &quot;Ouvrir les pages suivantes&quot;, cette stratégie permet de définir la liste des pages qui s'affichent.</translation>
 <translation id="3780152581321609624">Inclure un port non standard dans le SPN Kerberos</translation>
 <translation id="2660846099862559570">Ne jamais utiliser de proxy</translation>
+<translation id="1435659902881071157">Configuration réseau au niveau de l'appareil</translation>
 <translation id="5512418063782665071">URL de la page d'accueil</translation>
 <translation id="6049075103826767200">Autorise l'envoi à Google de rapports anonymes concernant l'utilisation et les incidents de <ph name="PRODUCT_NAME"/>, et empêche les utilisateurs de modifier ce paramétrage.
 
@@ -526,6 +527,7 @@
 <translation id="6938581770853731947">Configure le type de la page d'accueil par défaut dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier les préférences de page d'accueil. Vous pouvez définir la page d'accueil sur une URL spécifique que vous indiquez ou sur la page &quot;Nouvel onglet&quot;. Si vous activez ce paramètre, la page &quot;Nouvel onglet&quot; est systématiquement utilisée en tant que page d'accueil et l'adresse URL de la page d'accueil est ignorée. Si vous désactivez ce paramètre, la page d'accueil de l'utilisateur ne correspondra jamais à la page &quot;Nouvel onglet&quot;, sauf si l'URL de la page d'accueil est définie en tant que &quot;chrome://newtab&quot;. Dans les deux cas, les utilisateurs ne peuvent pas modifier leur type de page d'accueil dans <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2844287278346661435">Permet d'accéder aux URL répertoriées comme des exceptions à la liste noire des URL. Voir la description de la règle de la liste noire des URL pour connnaître le format des entrées de cette liste. Cette règle peut être utilisée pour ouvrir des exceptions aux listes noires restrictives. Par exemple, &quot;*&quot; peut figurer sur la liste noire pour bloquer toutes les demandes. Cette règle peut être utilisée pour permettre l'accès à une liste limitée d'URL. Elle peut être utilisée pour ouvrir des exceptions à certains protocoles, sous-domaines d'autres domaines, ports ou chemins spécifiques. Le filtre le plus spécifique permettra de déterminer si une URL est bloquée ou non. La liste blanche est prioritaire sur la liste noire. Cette règle étant limitée à 100 entrées, les entrées suivantes seront ignorées.</translation>
 <translation id="5645779841392247734">Autoriser les cookies sur ces sites</translation>
+<translation id="791491514268619407">Vous permet de définir une liste de formats d'URL indiquant les sites non autorisés à afficher des notifications.</translation>
 <translation id="3906388518501362918">Active JavaScript dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier ce paramètre.
 
       Si ce paramètre est activé ou n'est pas configuré, les pages Web peuvent utiliser JavaScript.

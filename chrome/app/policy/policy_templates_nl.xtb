@@ -66,13 +66,6 @@
 
           Als deze instelling is uitgeschakeld en uitgaande UDP-verbindingen worden gefilterd door de firewall, staat dit apparaat alleen verbindingen toe met clientapparaten binnen het lokale netwerk.</translation>
 <translation id="5912364507361265851">Gebruikers toestaan wachtwoorden weer te geven in Wachtwoordbeheer</translation>
-<translation id="6999540307315670568">Hiermee wordt de bladwijzerbalk ingeschakeld op de pagina 'Nieuw tabblad' in <ph name="PRODUCT_NAME"/>.
-
-      Als u deze instelling inschakelt, geeft <ph name="PRODUCT_NAME"/> een bladwijzerbalk weer op de pagina 'Nieuw tabblad'.
-
-      Als u deze instelling uitschakelt, krijgen gebruikers de bladwijzerbalk nooit te zien.
-
-      Als u deze instelling in- of uitschakelt, kunnen gebruikers de instelling niet aanpassen of negeren in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8828766846428537606">Hiermee wordt de standaard startpagina in <ph name="PRODUCT_NAME"/> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
       De instellingen voor de startpagina worden alleen volledig voor de gebruiker vergrendeld als u de pagina 'Nieuw tabblad' als de startpagina selecteert of als u zelf een URL voor de startpagina specificeert. Als u geen URL voor de startpagina opgeeft, kan de gebruiker nog steeds de pagina 'Nieuw tabblad' als startpagina instellen door 'chrome://newtab' op te geven.</translation>
@@ -262,6 +255,7 @@
       Deze locatie begint met <ph name="CHROMIUM_KEY"/> voor beleid voor Chromium en <ph name="GOOGLE_CHROME_KEY"/> voor beleid voor Google Chrome.</translation>
 <translation id="7003746348783715221">Voorkeuren voor <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Firewallpassage vanaf client voor externe toegang inschakelen</translation>
+<translation id="7082208731926398296">Hiermee kan de netwerkconfiguratie per gebruiker op een apparaat met <ph name="PRODUCT_OS_NAME"/> worden ingesteld. De netwerkconfiguratie is een JSON-tekenreeks zoals gedefinieerd in de Open Network Configuration-indeling die wordt beschreven op https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration.</translation>
 <translation id="9096086085182305205">Witte lijst voor verificatieserver</translation>
 <translation id="7063895219334505671">Pop-ups toestaan ​​op deze sites</translation>
 <translation id="2824715612115726353">Incognitomodus inschakelen</translation>
@@ -300,6 +294,7 @@
 
           Als u deze instelling inschakelt of niet configureert, kunnen gebruikers hun wachtwoorden als leesbare tekst bekijken in Wachtwoordbeheer.</translation>
 <translation id="8731693562790917685">Met instellingen voor inhoud kunt u opgeven hoe inhoud van een bepaald type (zoals cookies, afbeeldingen of JavaScript) wordt verwerkt.</translation>
+<translation id="2411919772666155530">Meldingen op deze sites blokkeren</translation>
 <translation id="467236746355332046">Ondersteunde functies:</translation>
 <translation id="7632724434767231364">Naam van GSSAPI-bibliotheek</translation>
 <translation id="4985088509112317247">Hiermee kunt u instellen of websites lokaal gegevens mogen instellen. Het instellen van lokale gegevens kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.</translation>
@@ -318,6 +313,7 @@
 
           Scheid meerdere servernamen van elkaar met komma's. Jokertekens (*) zijn toegestaan.</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME"/> toestaan de volgende soorten inhoud te verwerken.</translation>
+<translation id="2886164457168401177">Hiermee kunt u een lijst met URL-patronen opgeven van sites waarop meldingen mogen worden weergegeven.</translation>
 <translation id="2312134445771258233">Hiermee kunt u de pagina's configureren die bij het starten worden geladen.
 
       De inhoud van de lijst 'URL's die worden geopend bij starten' wordt genegeerd, tenzij u 'Een lijst met URL's openen' selecteert bij 'Actie bij starten'.</translation>
@@ -421,6 +417,7 @@
 
       Als u deze instelling uitschakelt, kunnen webpagina's de WebGL-API en plug-ins de Pepper 3D-API gebruiken. In de standaardinstellingen van de browser kan zijn ingesteld dat er opdrachtregelargumenten nodig zijn om deze API's te gebruiken.</translation>
 <translation id="7202926611616207807">Alle sites toestaan lokale gegevens in te stellen.</translation>
+<translation id="5868414965372171132">Netwerkconfiguratie op gebruikersniveau</translation>
 <translation id="678228246386317063">Hiermee kunt u een lijst met URL-patronen instellen waarmee sites worden gespecificeerd die sessiecookies mogen instellen.</translation>
 <translation id="5774856474228476867">Zoek-URL voor standaardzoekprovider</translation>
 <translation id="4650759511838826572">URL-protocolschema's uitschakelen</translation>
@@ -462,6 +459,8 @@
 
       Als deze instelling is uitgeschakeld of niet is geconfigureerd, wordt de browsegeschiedenis opgeslagen.</translation>
 <translation id="1897365952389968758">Alle sites toestaan JavaScript uit te voeren</translation>
+<translation id="3963316686348464884">Hiermee kan de netwerkconfiguratie worden toegepast voor alle gebruikers van een apparaat met <ph name="PRODUCT_OS_NAME"/>. De netwerkconfiguratie is een JSON-tekenreeks zoals gedefinieerd in de Open Network Configuration-indeling die wordt beschreven op https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration.</translation>
+<translation id="560746250309032104">Hiermee wordt de bladwijzerbalk ingeschakeld in <ph name="PRODUCT_NAME"/>. Als u deze instelling inschakelt, geeft <ph name="PRODUCT_NAME"/> een bladwijzerbalk weer. Als u deze instelling uitschakelt, krijgen gebruikers de bladwijzerbalk nooit te zien. Als u deze instelling in- of uitschakelt, kunnen gebruikers de instelling niet aanpassen of negeren in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6931242315485576290">Synchronisatie van gegevens met Google uitschakelen</translation>
 <translation id="7006788746334555276">Instellingen voor inhoud</translation>
 <translation id="3676473196461789250">Hiermee kunt u een lijst met URL-patronen opgeven waarmee sites worden gespecificeerd waarop plug-ins mogen worden uitgevoerd.</translation>
@@ -521,6 +520,7 @@
           De standaardinstelling is om de hostbrowser de rendering te laten regelen, maar
           u kunt dit aanpassen en <ph name="PRODUCT_FRAME_NAME"/> HTML-pagina's standaard laten renderen.</translation>
 <translation id="4121350739760194865">Voorkomen dat app-promoties worden weergegeven op de pagina 'Nieuw tabblad'</translation>
+<translation id="2127599828444728326">Meldingen op deze sites toestaan</translation>
 <translation id="4486602758942612946">Hiermee kunt u de lijst aanpassen van URL-patronen die altijd moeten worden verwerkt door de hostbrowser.
           Ga voor voorbeeldpatronen naar http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Hiermee wordt de periode in milliseconden gespecificeerd waarna de apparaatbeheerservice wordt gevraagd om apparaatbeleidsinformatie. Als u dit beleid instelt, wordt de standaardwaarde van 3 uur genegeerd. Geldige waarden voor dit beleid liggen tussen 1800000 (30 minuten) en 86400000 (1 dag). Alle waarden die niet binnen dit bereik vallen, worden afgerond tot de betreffende minimum of maximum grens.</translation>
@@ -553,6 +553,7 @@
 <translation id="6510914645829248303">Als 'Een lijst met URL's openen' is geselecteerd als de actie na het starten, kunt u hier de lijst specificeren met URL's die worden geopend.</translation>
 <translation id="3780152581321609624">Niet-standaardpoort in Kerberos-SPN opnemen</translation>
 <translation id="2660846099862559570">Nooit een proxy gebruiken</translation>
+<translation id="1435659902881071157">Netwerkconfiguratie op apparaatniveau</translation>
 <translation id="5512418063782665071">URL van startpagina</translation>
 <translation id="6049075103826767200">Hiermee wordt anonieme rapportage van gebruiks- en crashgegevens voor <ph name="PRODUCT_NAME"/> aan Google ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
@@ -593,6 +594,7 @@
 
       Dit beleid is beperkt tot 100 items; daaropvolgende items worden genegeerd.</translation>
 <translation id="5645779841392247734">Cookies toestaan op deze sites</translation>
+<translation id="791491514268619407">Hiermee kunt u een lijst met URL-patronen opgeven van sites waarop geen meldingen mogen worden weergegeven.</translation>
 <translation id="3906388518501362918">Hiermee wordt JavaScript in <ph name="PRODUCT_NAME"/> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
       Als deze instelling is ingeschakeld of niet is geconfigureerd, kunnen webpagina's JavaScript gebruiken.

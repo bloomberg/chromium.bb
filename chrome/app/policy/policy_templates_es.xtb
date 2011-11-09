@@ -66,13 +66,6 @@
 
           Si esta opción está inhabilitada y el cortafuegos filtra las conexiones UDP salientes, este ordenador solo permitirá conexiones de ordenadores cliente que se encuentren en la red local.</translation>
 <translation id="5912364507361265851">Permitir que los usuarios muestren contraseñas en el Administrador de contraseñas</translation>
-<translation id="6999540307315670568">Permite habilitar la barra de marcadores en la página Nueva pestaña de <ph name="PRODUCT_NAME"/>.
-
-      Si habilitas esta opción, se mostrará una barra de marcadores en la página Nueva pestaña de <ph name="PRODUCT_NAME"/>.
-
-      Si inhabilitas esta opción, nunca se mostrará la barra de marcadores a los usuarios.
-
-      Tanto si habilitas esta opción como si la inhabilitas, los usuarios no podrán modificarla ni anularla en <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8828766846428537606">Permite configurar la página principal predeterminada en <ph name="PRODUCT_NAME"/> e impide que los usuarios la cambien.
 
       Para bloquear completamente la configuración de la página principal de los usuarios, es necesario establecerla como página Nueva pestaña o definirla como URL y establecerla como URL de página principal. Si no especificas la URL de página principal, los usuarios podrán establecer la página Nueva pestaña como página principal especificando &quot;chrome://newtab&quot;.</translation>
@@ -265,6 +258,7 @@
       El de las políticas de Chromium empieza por <ph name="CHROMIUM_KEY"/> y el de las de Google Chrome empieza por <ph name="GOOGLE_CHROME_KEY"/>.</translation>
 <translation id="7003746348783715221">Preferencias de <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
+<translation id="7082208731926398296">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME"/> de cada usuario. La configuración de red es una cadena escrita en formato JSON, tal como se define en la siguiente página sobre el formato Open Network Configuration: https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
 <translation id="9096086085182305205">Lista de admisión de servidores de autenticación</translation>
 <translation id="7063895219334505671">Permitir pop-ups en estos sitios</translation>
 <translation id="2824715612115726353">Habilitar modo de incógnito</translation>
@@ -303,6 +297,7 @@
 
           Si habilitas esta opción o no la configuras, los usuarios podrán ver sus contraseñas sin cifrar en el Administrador de contraseñas.</translation>
 <translation id="8731693562790917685">La configuración de contenido permite especificar la gestión de un tipo específico de contenido (por ejemplo, cookies, imágenes o JavaScript).</translation>
+<translation id="2411919772666155530">Bloquear notificaciones en estos sitios</translation>
 <translation id="467236746355332046">Funciones admitidas:</translation>
 <translation id="7632724434767231364">Nombre de biblioteca GSSAPI</translation>
 <translation id="4985088509112317247">Permite especificar si los sitios web pueden establecer o no datos locales. Este permiso se concede o se deniega a todos los sitios web.</translation>
@@ -321,6 +316,7 @@
 
           Si hay varios nombres de servidor, se deben separar con comas. Se admite el uso de caracteres comodín (*).</translation>
 <translation id="538108065117008131">Permitir que <ph name="PRODUCT_FRAME_NAME"/> gestione los tipos de contenido que se indican a continuación.</translation>
+<translation id="2886164457168401177">Permite establecer una lista de patrones de URL que especifiquen sitios que puedan mostrar notificaciones.</translation>
 <translation id="2312134445771258233">Permite configurar las páginas que se cargan al iniciar el navegador.
 
       Se ignorará el contenido de la lista &quot;URL que se deben abrir al inicio&quot; a menos que se seleccione la opción &quot;Abrir una lista de URL&quot; en la política &quot;Acción al iniciar&quot;.</translation>
@@ -418,6 +414,7 @@
 
       Al inhabilitar esta opción, las páginas web tienen la posibilidad de utilizar el API de WebGL y los complementos pueden utilizar el API de Pepper 3D. En función de la configuración predeterminada del navegador, es posible que el uso de estas API requiera la especificación de una serie de argumentos en la línea de comandos.</translation>
 <translation id="7202926611616207807">Permitir que todos los sitios establezcan datos locales</translation>
+<translation id="5868414965372171132">Configuración de red de usuarios</translation>
 <translation id="678228246386317063">Permite definir una lista de patrones de URL para especificar los sitios que pueden establecer cookies de sesión.</translation>
 <translation id="5774856474228476867">URL de búsqueda del proveedor de búsquedas predeterminadas</translation>
 <translation id="4650759511838826572">Inhabilitar esquemas de protocolo de URL</translation>
@@ -459,6 +456,14 @@
 
       Si se inhabilita esta opción, se almacenará el historial de navegación.</translation>
 <translation id="1897365952389968758">Permitir que todos los sitios ejecuten JavaScript</translation>
+<translation id="3963316686348464884">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME"/> de cada usuario. La configuración de red es una cadena escrita en formato JSON, tal como se define en la siguiente página sobre el formato Open Network Configuration: https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
+<translation id="560746250309032104">Permite habilitar la barra de marcadores en <ph name="PRODUCT_NAME"/>.
+
+      Si habilitas esta opción, <ph name="PRODUCT_NAME"/> mostrará una barra de marcadores.
+
+      Si inhabilitas esta opción, nunca se mostrará la barra de marcadores a los usuarios.
+
+      Tanto si habilitas esta opción como si la inhabilitas, los usuarios no podrán modificarla ni anularla en <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6931242315485576290">Inhabilitar sincronización de datos con Google</translation>
 <translation id="7006788746334555276">Configuración de contenido</translation>
 <translation id="3676473196461789250">Permite establecer una lista de patrones de URL que especifiquen sitios que puedan ejecutar complementos.</translation>
@@ -514,6 +519,7 @@
       De forma predeterminada, se permite que el navegador del host muestre las páginas HTML,
       pero puedes anular esta opción para que <ph name="PRODUCT_FRAME_NAME"/> muestre las páginas HTML de forma predeterminada.</translation>
 <translation id="4121350739760194865">Evitar que las promociones de aplicaciones aparezcan en la página Nueva pestaña</translation>
+<translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="4486602758942612946">Permite personalizar la lista de patrones de URL que siempre debe mostrar el navegador del host.
           Puedes consultar ejemplos de patrones en la página http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Permite especificar el período en milisegundos en el que se solicita información sobre políticas de dispositivos al servicio de administración de dispositivos. Al establecer esta política, se anula el valor predeterminado de tres horas. Los valores válidos están comprendidos entre 1800000 (30 minutos) y 86400000 (un día). Si el valor no está incluido en este intervalo, se redondeará al límite correspondiente.</translation>
@@ -546,6 +552,7 @@
 <translation id="6510914645829248303">Si la acción al iniciar seleccionada es &quot;Abrir una lista de URL&quot;, esta política permite especificar la lista de URL que se deben abrir.</translation>
 <translation id="3780152581321609624">Incluir un puerto no estándar en SPN de Kerberos</translation>
 <translation id="2660846099862559570">No utilizar nunca un proxy</translation>
+<translation id="1435659902881071157">Configuración de red de dispositivos</translation>
 <translation id="5512418063782665071">URL de la página de inicio</translation>
 <translation id="6049075103826767200">Permite habilitar el envío anónimo de informes de uso y de datos sobre fallos correspondientes a <ph name="PRODUCT_NAME"/> a Google e impide que los usuarios modifiquen esta configuración.
 
@@ -586,6 +593,7 @@
 
       Esta política se limita a 100 entradas, y se ignorarán las entradas que superen este número.</translation>
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
+<translation id="791491514268619407">Te permite establecer una lista de patrones de URL para especificar los sitios que no pueden mostrar notificaciones.</translation>
 <translation id="3906388518501362918">Permite habilitar JavaScript en <ph name="PRODUCT_NAME"/> e impide que los usuarios modifiquen esta configuración.
 
       Si esta opción se habilita o no se configura, las páginas web podrán utilizar JavaScript.

@@ -64,13 +64,6 @@
           Įgalinus šį nustatymą, nuotolinės klientų programos gali surasti šį kompiuterį ir prisijungti prie jo, net jei juos skiria užkarda.
           Jei šis nustatymas neįgalintas ir išsiunčiamieji UDP ryšiai yra filtruojami užkardos, kompiuteris leis užmegzti ryšius tik vietinio tinklo klientų kompiuteriams.</translation>
 <translation id="5912364507361265851">Leisti naudotojams rodyti slaptažodžius slaptažodžių tvarkytuvėje</translation>
-<translation id="6999540307315670568">„<ph name="PRODUCT_NAME"/>“ naujo skirtuko puslapyje įgalinama žymių juosta.
-
-      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME"/>“ naujo skirtuko puslapyje bus rodoma žymių juosta.
-
-      Jei šio nustatymo neleisite, naudotojams niekada nebus rodoma žymių juosta.
-
-      Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės jo nei pakeisti, nei nepaisyti.</translation>
 <translation id="8828766846428537606">Konfigūruojamas numatytasis pagrindinis „<ph name="PRODUCT_NAME"/>“ puslapis, kurio keisti naudotojams neleidžiama.
 
       Naudotojo pagrindinio puslapio nustatymai bus visiškai užrakinti tik tada, jei kaip pagrindinį puslapį pasirinksite naujo skirtuko puslapį arba nustatysite, kad į jį būtų įkeltas URL, ir nurodysite pagrindinio puslapio URL. Jei pagrindinio puslapio URL nenurodysite, naudotojui ir toliau bus leidžiama kaip pagrindinį puslapį nustatyti naujo skirtuko puslapį nurodant „chrome://newtab“.</translation>
@@ -260,6 +253,7 @@
       „Chromium“ politika prasideda <ph name="CHROMIUM_KEY"/>, o „Google Chrome“ <ph name="GOOGLE_CHROME_KEY"/>.</translation>
 <translation id="7003746348783715221">„<ph name="PRODUCT_NAME"/>“ nuostatos</translation>
 <translation id="4723829699367336876">Įgalinti užkardos apėjimą iš nuotolinės prieigos kliento programos</translation>
+<translation id="7082208731926398296">Leidžiama būsimą tinklo konfigūraciją pritaikyti pagal naudotoją „<ph name="PRODUCT_OS_NAME"/>“ įrenginiui. Tinklo konfigūracija yra JSON suformatuota eilutė, kaip apibrėžta pagal atvirojo tinklo konfigūracijos formatą, aprašytą adresu https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration.</translation>
 <translation id="9096086085182305205">Tapatumo nustatymo serverio baltasis sąrašas</translation>
 <translation id="7063895219334505671">Leisti iššokančiuosius langus šiose svetainėse</translation>
 <translation id="2824715612115726353">Įgalinti inkognito režimą</translation>
@@ -285,6 +279,7 @@
 
           Jei šį nustatymą įgalinsite arba jo nekonfigūruosite, slaptažodžių tvarkytuvėje pateiktus slaptažodžius naudotojai matys kaip aiškų tekstą.</translation>
 <translation id="8731693562790917685">Turinio nustatymų skiltyje leidžiama nurodyti, kaip turi būti naudojamas konkretaus tipo turinys (pvz., slapukai, vaizdai arba „JavaScript“).</translation>
+<translation id="2411919772666155530">Blokuoti pranešimus šiose svetainėse</translation>
 <translation id="467236746355332046">Palaikomos funkcijos:</translation>
 <translation id="7632724434767231364">GSSAPI bibliotekos pavadinimas</translation>
 <translation id="4985088509112317247">Leidžiama nustatyti, ar svetainėse turi būti leidžiama nustatyti vietinius duomenis. Nustatyti vietinius duomenis gali būti leidžiama visose svetainėse arba neleidžiama nė vienoje.</translation>
@@ -303,6 +298,7 @@
 
           Serverių pavadinimus atskirkite kableliais. Galite naudoti pakaitos simbolius („*“).</translation>
 <translation id="538108065117008131">Leisti „<ph name="PRODUCT_FRAME_NAME"/>“ naudoti šio tipo turinį.</translation>
+<translation id="2886164457168401177">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama pateikti pranešimus, sąrašą.</translation>
 <translation id="2312134445771258233">Leidžiama konfigūruoti paleidžiant įkeliamus puslapius.
 
       Jei skiltyje „Veiksmai paleidžiant“ nepasirinksite „Atidaryti URL sąrašą“, sąrašo „Paleidžiant atidaromi URL“ turinio bus nepaisoma.</translation>
@@ -391,6 +387,7 @@
 
       Jei šio nustatymo neleisite, tinklalapiuose bus galima naudoti „WebGL“ API, o papildiniai galės naudoti „Pepper“ trimatę API. Tačiau norint naudoti šią API pagal numatytuosius naršyklės nustatymus dar gali būti reikalaujama, kad būtų patenkinti komandų eilutės argumentai.</translation>
 <translation id="7202926611616207807">Leisti visose svetainėse nustatyti vietinius duomenis.</translation>
+<translation id="5868414965372171132">Naudotojo lygio tinklo konfigūracija</translation>
 <translation id="678228246386317063">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama nustatyti tik sesijų slapukus, sąrašą.</translation>
 <translation id="5774856474228476867">Numatytojo paieškos teikėjo paieškos URL</translation>
 <translation id="4650759511838826572">Neleisti URL protokolų schemų</translation>
@@ -432,6 +429,8 @@
 
       Jei šio nustatymo neleisite arba nekonfigūruosite, naršymo istorija bus išsaugoma.</translation>
 <translation id="1897365952389968758">Leisti visose svetainėse paleisti „JavaScript“</translation>
+<translation id="3963316686348464884">Leidžiama būsimą tinklo konfigūraciją pritaikyti visiems „<ph name="PRODUCT_OS_NAME"/>“ įrenginio naudotojams. Tinklo konfigūracija yra JSON suformatuota eilutė, kaip apibrėžta pagal atvirojo tinklo konfigūracijos formatą, aprašytą adresu https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration.</translation>
+<translation id="560746250309032104">Įgalinama žymių juosta „<ph name="PRODUCT_NAME"/>“. Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME"/>“ bus rodoma žymių juosta. Jei šio nustatymo neleisite, naudotojams niekada nebus rodoma žymių juosta. Jei šį nustatymą įgalinsite arba jo neleisite, naudotojai negalės jo pakeisti ar nepaisyti „<ph name="PRODUCT_NAME"/>“.</translation>
 <translation id="6931242315485576290">Neleisti sinchronizuoti duomenų su „Google“</translation>
 <translation id="7006788746334555276">Turinio nustatymai</translation>
 <translation id="3676473196461789250">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama paleisti papildinius, sąrašą.</translation>
@@ -490,6 +489,7 @@
 <translation id="7848840259379156480">Įdiegus „<ph name="PRODUCT_FRAME_NAME"/>“ leidžiama sukonfigūruoti numatytąjį HTML teikėją.
       Pagal numatytuosius nustatymus teikti leidžiama prieglobos naršyklei, bet jūs savo nuožiūra šios nuostatos galite nepaisyti ir nustatyti, kad pagal numatytuosius nustatymus „<ph name="PRODUCT_FRAME_NAME"/>“ pateiktų HTML puslapius.</translation>
 <translation id="4121350739760194865">Neleisti rodyti programų reklamų naujo skirtuko puslapyje</translation>
+<translation id="2127599828444728326">Leisti pranešimus šiose svetainėse</translation>
 <translation id="4486602758942612946">Tinkinkite URL šablonų, kurie visada turi pateikiami prieglobos naršyklės, sąrašą.
           Šablonų pavyzdžių žr. šiuo adresu: http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Milisekundėmis nurodomas laikotarpis, per kurį įrenginio valdymo paslaugos prašoma pateikti įrenginio politikos informaciją. Nustačius šią politiką nepaisoma numatytosios 3 val. vertės. Nustačius šią politiką galima rinktis vertes nuo 1 800 000 (30 min.) iki 86 400 000 (1 d.). Visos į šį diapazoną nepatenkančios vertės bus blokuojamos už atitinkamos ribos.</translation>
@@ -522,6 +522,7 @@
 <translation id="6510914645829248303">Pasirinkus paleidžiant atliekamo veiksmo nuostatą „Atidaryti URL sąrašą“, bus leidžiama nurodyti atidarytų URL sąrašą.</translation>
 <translation id="3780152581321609624">Įtraukti nestandartinį prievadą į „Kerberos“ SPN</translation>
 <translation id="2660846099862559570">Niekada nenaudoti tarpinio serverio</translation>
+<translation id="1435659902881071157">Įrenginio lygio tinklo konfigūracija</translation>
 <translation id="5512418063782665071">Pagrindinio puslapio URL</translation>
 <translation id="6049075103826767200">Įgalinamas anonimiškų „Google“ skirtų „<ph name="PRODUCT_NAME"/>“ naudojimo ir su strigtimis susijusių duomenų ataskaitų kūrimas; naudotojams šio nustatymo keisti neleidžiama.
 
@@ -548,6 +549,7 @@
 <translation id="6938581770853731947">Konfigūruojamas numatytojo „<ph name="PRODUCT_NAME"/>“ pagrindinio puslapio tipas; naudotojams pagrindinio puslapio nuostatų keisti neleidžiama. Pagrindinį puslapį galima nustatyti nurodant URL arba nustatant naujo skirtuko puslapį. Jei įgalinsite šį nustatymą, naujo skirtuko puslapis visada bus naudojamas kaip pagrindinis puslapis, o pagrindinio puslapio URL vietos bus nepaisoma. Jei šio nustatymo neleisite, naudotojo pagrindinis puslapis niekada nebus naujo skirtuko puslapis, jei jo URL nebus nustatytas kaip „chrome://newtab“. Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės pakeisti pagrindinio puslapio tipo.</translation>
 <translation id="2844287278346661435">Suteikiama prieiga prie sąraše nurodytų URL – juodojo URL sąrašo išimčių. Jei reikia šio sąrašo įrašų formatų, žr. juodojo URL sąrašo politiką. Naudojant šią politiką, galima daryti išimtis ribojantiems juodiesiems sąrašams. Pavyzdžiui, į juodąjį sąrašą galima įtraukti „*“, kad būtų blokuojamos visos užklausos. Be to, galima suteikti prieigą prie riboto URL sąrašo ir daryti išimtis tam tikroms schemoms, kitų domenų padomeniams, prievadams ar konkretiems keliams. Naudojant tiksliausią filtrą, nustatoma, ar URL gali būti leidžiamas, ar turi būti blokuojamas. Baltasis sąrašas turi pirmenybę juodojo sąrašo atžvilgiu. Į politiką galima įtraukti iki 100 įrašų – į kitus nebus atsižvelgiama.</translation>
 <translation id="5645779841392247734">Leisti slapukus šiose svetainėse</translation>
+<translation id="791491514268619407">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama pateikti pranešimų, sąrašą.</translation>
 <translation id="3906388518501362918">„<ph name="PRODUCT_NAME"/>“ įgalinamas „JavaScript“; naudotojams šio nustatymo keisti neleidžiama.
 
       Jei šį nustatymą įgalinsite arba jo nekonfigūruosite, tinklalapiuose bus galima naudoti „JavaScript“.

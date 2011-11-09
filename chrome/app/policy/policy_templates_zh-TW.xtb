@@ -38,7 +38,6 @@
 
           如果停用這項設定，而防火牆又同時過濾了外送 UDP 連線，這台電腦就只會接受來自區域網路中用戶端機器的連線。</translation>
 <translation id="5912364507361265851">允許使用者在密碼管理員中顯示密碼</translation>
-<translation id="6999540307315670568">啟用 <ph name="PRODUCT_NAME"/> 新分頁中的書籤列。如果您啟用這項設定，那麼 <ph name="PRODUCT_NAME"/> 會在「新分頁」中顯示書籤列。如果您停用這項設定，書籤列就不會顯示。不論您啟用或停用這項設定，使用者都無法在 <ph name="PRODUCT_NAME"/> 中變更或覆寫這項設定。</translation>
 <translation id="8828766846428537606">設定 <ph name="PRODUCT_NAME"/> 中的預設首頁並禁止使用者變更這項設定。如果您選取使用者的首頁作為新分頁，或是將使用者的首頁設為網址並指定為首頁網址，系統會完全鎖定使用者的首頁設定。如果您沒有指定首頁網址，那麼使用者只需將網址設為「chrome://newtab」，就能以新分頁做為首頁。</translation>
 <translation id="2231817271680715693">第一次執行時從預設瀏覽器匯入瀏覽記錄</translation>
 <translation id="1353966721814789986">起始網頁</translation>
@@ -130,6 +129,7 @@
 <translation id="2741921267428646309">這是 <ph name="PRODUCT_NAME"/> 遵循的政策清單。您不需手動變更這些設定，前往 <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/> 就能下載簡單易用的範例。本支援政策清單與 Chromium 和 Google Chrome 的相同，只是 Windows 登陸位置不一樣。Chromium 政策以 <ph name="CHROMIUM_KEY"/> 為開頭，而 Google Chrome 政策以 <ph name="GOOGLE_CHROME_KEY"/> 為開頭。</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME"/> 偏好設定</translation>
 <translation id="4723829699367336876">允許遠端存取用戶端穿越防火牆</translation>
+<translation id="7082208731926398296">允許將網路設定案使用者套用至安裝了 <ph name="PRODUCT_OS_NAME"/> 的裝置。此網路設定是由「開放網路設定」格式 (網址為：https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration) 所定義的 JSON 格式字串。</translation>
 <translation id="9096086085182305205">驗證伺服器許可清單</translation>
 <translation id="7063895219334505671">允許這些網站的彈出式視窗</translation>
 <translation id="2824715612115726353">啟用無痕模式</translation>
@@ -149,6 +149,7 @@
 <translation id="8451988835943702790">將新分頁設為首頁</translation>
 <translation id="823695959636476037">控制使用者是否要在密碼管理員內以純文字顯示密碼。如果您停用這項設定，那麼密碼管理員就不會允許密碼管理員視窗以純文字顯示儲存的密碼。如果您啟用或尚未設定這項設定，那麼使用者就能在密碼管理員中以純文字查看密碼。</translation>
 <translation id="8731693562790917685">內容設定允許您指定特定內容型類 (例如，Cookie、圖片或 JavaScript) 的處理方式。</translation>
+<translation id="2411919772666155530">封鎖這些網站的通知</translation>
 <translation id="467236746355332046">支援功能</translation>
 <translation id="7632724434767231364">GSSAPI 資料庫名稱</translation>
 <translation id="4985088509112317247">允許您設定是否要讓網站設定本機資料。您可以允許或禁止所有網站設定本機資料。</translation>
@@ -160,6 +161,7 @@
 <translation id="2745445908503591390">瀏覽器關閉時清除網站資料</translation>
 <translation id="8665913667133665583">指定要列入整合驗證許可清單的伺服器。只有當 Proxy 或許可清單上的伺服器傳送驗證要求給 <ph name="PRODUCT_NAME"/> 時，才會啟用整合驗證。請以逗號間隔數個伺服器名稱，並且允許使用萬用字元 (*)。</translation>
 <translation id="538108065117008131">允許 <ph name="PRODUCT_FRAME_NAME"/> 處理下列內容類型。</translation>
+<translation id="2886164457168401177">允許您設定網址模式清單，指定可以顯示通知的網站。</translation>
 <translation id="2312134445771258233">允許您設定起始時載入的網頁。系統會忽略 [起始時開啟的網址] 網頁清單內容，除非您在 [起始動作] 中選取 [開啟網址清單]。</translation>
 <translation id="8344454543174932833">第一次執行時從預設瀏覽器匯入書籤</translation>
 <translation id="7931766636395791713">允許您設定網址模式清單以指定允許執行 JavaScript 的網站。</translation>
@@ -205,6 +207,7 @@
 <translation id="4983201894483989687">允許執行過舊的外掛程式</translation>
 <translation id="7492608050778218564">停止支援 3D 圖形 API。啟用這項設定會禁止網頁存取圖形處理單位 (GPU)。明確地說，網頁無法存取 WebGL API，而外掛程式則無法使用 Pepper 3D API。停用這項設定有可能允許網頁使用 WebGL API，並且允許外掛程式使用 Pepper 3D API。瀏覽器的預設設定可能仍需收到命令列引數，才能使用這些 API。</translation>
 <translation id="7202926611616207807">允許所有網站設定本機資料。</translation>
+<translation id="5868414965372171132">使用者層級網路設定</translation>
 <translation id="678228246386317063">允許您設定網址模式清單以指定可以設定本次工作階段允許的 Cookie 的網站。</translation>
 <translation id="5774856474228476867">預設搜尋引擎搜尋網址</translation>
 <translation id="4650759511838826572">停用網址通訊協定機制</translation>
@@ -228,6 +231,8 @@
 <translation id="924557436754151212">第一次執行時從預設瀏覽器匯入已儲存的密碼</translation>
 <translation id="8754704265300028644">停用 <ph name="PRODUCT_NAME"/> 的儲存瀏覽記錄功能並禁止使用者變更這項設定。如果您啟用這項設定，系統就不會儲存瀏覽記錄。如果您停用或尚未設定這項設定，系統就會儲存瀏覽記錄。</translation>
 <translation id="1897365952389968758">允許所有網站執行 JavaScript</translation>
+<translation id="3963316686348464884">允許將網路設定案使用者套用至安裝了 <ph name="PRODUCT_OS_NAME"/> 的裝置。該網路設定是由「開放網路設定」格式 (網址為：https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration) 所定義的 JSON 格式字串。</translation>
+<translation id="560746250309032104">啟用「<ph name="PRODUCT_NAME"/>」的書籤列。如果您啟用這項設定，那麼「<ph name="PRODUCT_NAME"/>」就會顯示書籤列。如果您停用這項設定，使用者就看不到書籤列。不論您是否啟用這項設定，使用者都無法在「<ph name="PRODUCT_NAME"/>」中變更或覆寫這項設定。</translation>
 <translation id="6931242315485576290">停用 Google 資料同步處理功能</translation>
 <translation id="7006788746334555276">內容設定</translation>
 <translation id="3676473196461789250">允許您設定網址模式清單以指定可以執行外掛程式的網站。</translation>
@@ -269,6 +274,7 @@
 <translation id="3653673712530669976">允許您在安裝 <ph name="PRODUCT_FRAME_NAME"/> 之後，設定預設的 HTML 轉譯器。預設的設定允許主機瀏覽器進行轉譯，但是您可以覆寫這項預設，改由 <ph name="PRODUCT_FRAME_NAME"/> 轉譯 HTML 網頁。</translation>
 <translation id="7848840259379156480">允許您在安裝 <ph name="PRODUCT_FRAME_NAME"/> 之後設定預設的 HTML 轉譯器。預設的設定允許主機瀏覽器進行轉譯，但是您可以覆寫這項預設，改由 <ph name="PRODUCT_FRAME_NAME"/> 轉譯 HTML 網頁。</translation>
 <translation id="4121350739760194865">阻止應用程式宣傳資訊在新分頁上顯示</translation>
+<translation id="2127599828444728326">允許這些網站的通知</translation>
 <translation id="4486602758942612946">自訂一律由主機瀏覽器轉譯的網站模式清單。如需模式範例，請參閱 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="2257451316169619209">以毫秒數指定對裝置管理服務詢問裝置政策資訊的時間。設定這項政策會覆寫 3 小時的預設值。本政策的有效值範圍由 1800000 (30 分鐘) 到 86400000 (1 天)。超出範圍的值會自動歸類為上限值或下限值。</translation>
 <translation id="1734716591049455502">設定遠端存取選項</translation>
@@ -286,6 +292,7 @@
 <translation id="6510914645829248303">如果您選取 [開啟網址清單] 作為起始動作，就可以指定開啟的網址清單。</translation>
 <translation id="3780152581321609624">Kerberos SPN 包含非標準通訊埠</translation>
 <translation id="2660846099862559570">永不使用 Proxy</translation>
+<translation id="1435659902881071157">裝置層級網路設定</translation>
 <translation id="5512418063782665071">首頁網址</translation>
 <translation id="6049075103826767200">啟用向 Google 匿名回報 <ph name="PRODUCT_NAME"/> 使用狀況和相關當機資料的功能，並禁止使用者變更這項設定。如果您啟用這項設定，系統會以匿名方式傳送使用狀況和相關當機資料給 Google。如果您停用這項設定，系統永遠都不會將這些報告傳送給 Google。不論您啟用或停用這項設定，使用者都無法在 <ph name="PRODUCT_NAME"/> 變更或覆寫這項設定。</translation>
 <translation id="2263362640517427542">當 ChromeOS 裝置閒置或暫停時啟用鎖定。</translation>
@@ -296,6 +303,7 @@
 <translation id="6938581770853731947">設定 <ph name="PRODUCT_NAME"/> 中的預設首頁類型並禁止使用者變更首頁的偏好設定。您可以將首頁設為指定的網址或「新分頁」。如果您啟用這項設定，系統會一律使用「新分頁」當作首頁，並忽略首頁網址位置。如果您停用這項設定，系統永遠不會使用「新分頁」當作使用者首頁，除非首頁網址設為「chrome://newtab」。不論您啟用或停用這項設定，使用者都無法在 <ph name="PRODUCT_NAME"/> 變更他們的首頁類型。</translation>
 <translation id="2844287278346661435">允許存取所列網址，這些網址是網址黑名單的例外情況。本清單項目的格式請參閱網址黑名單政策的說明。這項政策可用來對限制性的黑名單開放例外情況。例如，黑名單中可列出「*」來封鎖所有要求，但您可使用這項政策開放存取少數的網址。您也可使用這項政策對特定通訊協定、其他網域的子網域、通訊埠或特定路徑開放例外情況。最明確的篩選政策會判斷某個網址是否受到封鎖或允許。許可清單比黑名單具備更高的優先順序。這項政策僅限 100 項內容，之後的項目將遭到忽略。</translation>
 <translation id="5645779841392247734">允許這些網站的 Cookie</translation>
+<translation id="791491514268619407">允許您設定網址模式清單，指定不得顯示通知的網站。</translation>
 <translation id="3906388518501362918">啟用 <ph name="PRODUCT_NAME"/> 中的 JavaScript，並禁止使用者變更這項設定。如果您啟用或尚未設定這項設定，網頁就能使用 JavaScript。如果您停用這項設定，網頁就無法使用 JavaScript。</translation>
 <translation id="4821854788360803313">指定 <ph name="PRODUCT_NAME"/> 中停用的外掛程式清單並禁止使用者變更這項設定。萬用字元「*」和「?」可與任意字元序列相配。「*」可與任意數量的字元相配，但「?」只能指定選擇性的單一字元，例如與零或一個字元相配。逸出字元為「\」，因此如要與真正的「*」、「?」或「\」字元配對，請在這些字元前方插入「\」。如果您啟用這項設定，<ph name="PRODUCT_NAME"/> 就永遠不會使用指定的外掛程式清單。系統會在「about:plugins」內將外掛程式標示為停用，讓使用者無法啟用這些外掛程式。請注意，EnabledPlugins 和 DisabledPluginsExceptionsthis 會覆寫本政策。</translation>
 </translationbundle>

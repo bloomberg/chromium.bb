@@ -44,7 +44,6 @@
 
           この設定が無効であり、かつ発信 UDP 接続がファイアウォールによってフィルタリングされている場合は、ローカル ネットワーク内にあるクライアント コンピュータからこのコンピュータへの接続のみが許可されます。</translation>
 <translation id="5912364507361265851">ユーザーに対してパスワード マネージャでのパスワードの表示を許可する</translation>
-<translation id="6999540307315670568"><ph name="PRODUCT_NAME"/> の新しいタブ ページでブックマーク バーを有効にします。この設定を有効にすると、<ph name="PRODUCT_NAME"/> の [新しいタブ] ページにブックマーク バーが表示されます。この設定を無効にすると、ブックマーク バーは表示されません。この設定を有効または無効にすると、<ph name="PRODUCT_NAME"/> でこの設定の変更や上書きができなくなります。</translation>
 <translation id="8828766846428537606"><ph name="PRODUCT_NAME"/> のデフォルトのホームページを設定し、ユーザーが変更できないようにします。ホームページが新しいタブ ページになることを選択するか、ホームページ URL を指定すると、ユーザーのホームページ設定は完全にロックダウンされます。ホームページ URL を指定しない場合は、ユーザーが「chrome://newtab」を指定してホームページを新しいタブ ページに設定することができます。</translation>
 <translation id="2231817271680715693">初回実行時にデフォルトのブラウザから閲覧履歴をインポートする</translation>
 <translation id="1353966721814789986">起動ページ</translation>
@@ -136,6 +135,7 @@
 <translation id="2741921267428646309">これは、<ph name="PRODUCT_NAME"/> で重視されるポリシーのリストです。これらの設定は手動で変更できません。使いやすいテンプレートを <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/> からダウンロードすることができます。サポートされるポリシーのリストは、Chromium と Google Chrome で同じですが、Windows レジストリの場所が異なります。Chromium ポリシーでは <ph name="CHROMIUM_KEY"/> で開始しますが、Google Chrome ポリシーでは  <ph name="GOOGLE_CHROME_KEY"/> で開始します。</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME"/> の設定</translation>
 <translation id="4723829699367336876">リモート アクセス クライアントからのファイアウォール トラバーサルを有効にする</translation>
+<translation id="7082208731926398296"><ph name="PRODUCT_OS_NAME"/> 端末のユーザーごとにプッシュ型ネットワーク設定を適用できます。ネットワーク設定は、Open Network Configuration 形式（https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration を参照）で定義された JSON 形式の文字列です。</translation>
 <translation id="9096086085182305205">認証サーバーのホワイトリスト</translation>
 <translation id="7063895219334505671">これらのサイトのポップアップを許可する</translation>
 <translation id="2824715612115726353">シークレット モードを有効にする</translation>
@@ -155,6 +155,7 @@
 <translation id="8451988835943702790">新しいタブ ページをホームページとして使用する</translation>
 <translation id="823695959636476037">パスワード マネージャでのクリア テキストのパスワードの表示をユーザーに対して許可するかどうかを管理します。この設定を無効にすると、保存されたクリア テキストのパスワードをパスワード マネージャのパスワード マネージャ ウィンドウで表示することはできません。この設定を有効にするか設定しないと、ユーザーはパスワード マネージャでクリア テキストのパスワードを表示することができます。</translation>
 <translation id="8731693562790917685">[コンテンツの設定] では、特定のタイプ（Cookie、画像、Javascript など）のコンテンツの処理方法を指定できます。</translation>
+<translation id="2411919772666155530">これらのサイトの通知をブロックする</translation>
 <translation id="467236746355332046">サポートされる機能:</translation>
 <translation id="7632724434767231364">GSSAPI ライブラリ名</translation>
 <translation id="4985088509112317247">ウェブサイトに対してローカル データの設定を許可するかどうかを設定できます。ローカル データの設定は、すべてのウェブサイトに対して許可または禁止することができます。</translation>
@@ -166,6 +167,7 @@
 <translation id="2745445908503591390">ブラウザのシャットダウンでサイトのデータを消去する</translation>
 <translation id="8665913667133665583">統合された認証でどのサーバーをホワイトリストに登録するかを指定します。統合された認証は、<ph name="PRODUCT_NAME"/> がこの許可されたリストに含まれているプロキシやサーバーから認証チャレンジを受信するときにのみ有効になります。サーバー名が複数ある場合はカンマで区切ります。ワイルドカード（*）が使用できます。</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME"/> に対して次のコンテンツ タイプの処理を許可する</translation>
+<translation id="2886164457168401177">通知表示を許可するサイトを指定する URL パターンのリストを設定できます。</translation>
 <translation id="2312134445771258233">起動時に読み込まれるページを設定できます。[起動時の操作] の [URL のリストを開く] を選択しない場合、[起動時に開く URL] リストのコンテンツは無視されます。</translation>
 <translation id="8344454543174932833">初回実行時にデフォルトのブラウザからブックマークをインポートする</translation>
 <translation id="7931766636395791713">Javascript の実行を許可するサイトを指定する URL パターンのリストを設定できます。</translation>
@@ -232,6 +234,7 @@
 <translation id="4983201894483989687">古いプラグインの実行を許可する</translation>
 <translation id="7492608050778218564">3D グラフィック API のサポートを無効にします。この設定を有効にすると、ウェブページがグラフィック処理ユニット（GPU）にアクセスできなくなります。具体的には、ウェブページは WebGL API にアクセスできなくなり、プラグインは Pepper 3D API を使用できなくなります。この設定を無効にすると、ウェブページは WebGL API を使用でき、プラグインは Pepper 3D API を使用できる可能性が高くなります。ブラウザのデフォルト設定では、これらの API を使用するために場合によってコマンド ライン引数を渡す必要があります。</translation>
 <translation id="7202926611616207807">すべてのサイトに対してローカル データの設定を許可する</translation>
+<translation id="5868414965372171132">ユーザー レベルのネットワーク設定</translation>
 <translation id="678228246386317063">セッションのみの Cookie の設定を許可するサイトを指定する URL パターンのリストを設定できます。</translation>
 <translation id="5774856474228476867">デフォルトの検索プロバイダの検索 URL</translation>
 <translation id="4650759511838826572">URL プロトコル スキームを無効にする</translation>
@@ -255,6 +258,8 @@
 <translation id="924557436754151212">初回実行時にデフォルトのブラウザから保存したパスワードをインポートする</translation>
 <translation id="8754704265300028644"><ph name="PRODUCT_NAME"/> のブラウザ履歴の保存を無効にし、ユーザーがこの設定を変更できないようにします。この設定を有効にすると、閲覧履歴が保存されません。この設定を無効にするか設定しないと、閲覧履歴は保存されます。</translation>
 <translation id="1897365952389968758">すべてのサイトに対して Javascript の実行を許可する</translation>
+<translation id="3963316686348464884"><ph name="PRODUCT_OS_NAME"/> 端末のすべてのユーザーにプッシュ型ネットワーク設定を適用できます。ネットワーク設定は、Open Network Configuration 形式（https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration を参照）で定義された JSON 形式の文字列です。</translation>
+<translation id="560746250309032104"><ph name="PRODUCT_NAME"/> でブックマーク バーを有効にします。この設定を有効にすると、<ph name="PRODUCT_NAME"/> にブックマーク バーが表示されます。この設定を無効にすると、ブックマーク バーは表示されません。この設定を有効または無効にすると、<ph name="PRODUCT_NAME"/> でこの設定の変更や上書きができなくなります。</translation>
 <translation id="6931242315485576290">Google とのデータの同期を無効にする</translation>
 <translation id="7006788746334555276">コンテンツの設定</translation>
 <translation id="3676473196461789250">プラグインの実行を許可するサイトを指定する URL パターンのリストを設定できます。</translation>
@@ -296,6 +301,7 @@
 <translation id="3653673712530669976"><ph name="PRODUCT_FRAME_NAME"/> がインストールされている場合、デフォルトの HTML レンダラを設定できます。デフォルト設定では、ホスト ブラウザがレンダリングを実行しますが、この設定を無効にして <ph name="PRODUCT_FRAME_NAME"/> にデフォルトで HTML ページのレンダリングを実行させることもできます。</translation>
 <translation id="7848840259379156480"><ph name="PRODUCT_FRAME_NAME"/> がインストールされている場合、デフォルトの HTML レンダラを設定できます。デフォルト設定では、ホスト ブラウザがレンダリングを実行しますが、この設定を無効にして <ph name="PRODUCT_FRAME_NAME"/> にデフォルトで HTML ページのレンダリングを実行させることもできます。</translation>
 <translation id="4121350739760194865">アプリケーションのプロモーションが新しいタブ ページに表示されないようにする</translation>
+<translation id="2127599828444728326">これらのサイトの通知を許可する</translation>
 <translation id="4486602758942612946">ホスト ブラウザによって常にレンダリングされる URL パターンのリストをカスタマイズします。パターンの例については、http://www.chromium.org/developers/how-tos/chrome-frame-getting-started をご覧ください。</translation>
 <translation id="2257451316169619209">デバイス管理サービスが端末ポリシー情報を照会される時間をミリ秒で指定します。このポリシーを指定すると、デフォルト値である 3 時間よりも優先されます。このポリシーの有効値は 1800000（30 分）から 86400000（1 日）の範囲の値です。この範囲外の値を指定すると、その値に最も近い範囲内の値が指定されます。</translation>
 <translation id="1734716591049455502">リモート アクセス オプションを設定</translation>
@@ -313,6 +319,7 @@
 <translation id="6510914645829248303">起動操作として [URL のリストを開く] を選択すると、開かれる URL のリストを指定できます。</translation>
 <translation id="3780152581321609624">Kerberos SPN に非標準ポートを含める</translation>
 <translation id="2660846099862559570">プロキシを使用しない</translation>
+<translation id="1435659902881071157">デバイス レベルのネットワーク設定</translation>
 <translation id="5512418063782665071">ホームページの URL</translation>
 <translation id="6049075103826767200"><ph name="PRODUCT_NAME"/> に関する使用状況とクラッシュ関連データの Google への匿名レポートを有効にし、ユーザーがこの設定を変更できないようにします。この設定を有効にすると、使用状況とクラッシュ関連データの匿名レポートが Google に送信されます。この設定を無効にすると、使用状況とクラッシュ関連データの匿名レポートが Google に送信されません。この設定を有効または無効にすると、<ph name="PRODUCT_NAME"/> でこの設定の変更や上書きができなくなります。</translation>
 <translation id="2263362640517427542">Chrome OS デバイスがアイドルまたは一時停止の状態になったときにロックを有効にする</translation>
@@ -331,6 +338,7 @@
 
       このポリシーに登録できるエントリは 100 件までです。それ以降のエントリは無視されます。</translation>
 <translation id="5645779841392247734">これらのサイトの Cookie を許可する</translation>
+<translation id="791491514268619407">通知表示を許可しないサイトを指定する URL パターンのリストを設定できます。</translation>
 <translation id="3906388518501362918"><ph name="PRODUCT_NAME"/> で Javascript を有効にし、ユーザーがこの設定を変更できないようにします。この設定を有効にするか設定しないと、ウェブページは Javascript を使用できます。この設定を無効にすると、ウェブページは Javascript を使用できません。</translation>
 <translation id="4821854788360803313"><ph name="PRODUCT_NAME"/> で無効になっているプラグインのリストを指定し、ユーザーがこの設定を変更できないようにします。任意の文字列に一致するワイルドカード文字「*」と「?」を使用できます。「*」は任意の数の文字に一致しますが、「?」は省略可能な 1 文字を示します。つまり、0 または 1 文字に一致します。エスケープ文字は「\」であり、実際の「*」、「?」、「\」文字に一致させるには、これらの文字の前に「\」を指定します。この設定を有効にすると、指定したプラグインのリストは <ph name="PRODUCT_NAME"/> で使用されません。プラグインは「about:plugins」で有効であることが表示され、ユーザーが無効にすることはできません。このポリシーは、EnabledPlugins と DisabledPluginsExceptions で上書きされる場合があります。</translation>
 </translationbundle>
