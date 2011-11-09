@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/debug/debugger.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ref_counted.h"
@@ -92,9 +94,11 @@ static void HandleRendererErrorTestParameters(const CommandLine& command_line) {
     *bad_pointer = 0;
   }
 
-  if (command_line.HasSwitch(switches::kRendererStartupDialog)) {
+  if (command_line.HasSwitch(switches::kWaitForDebugger))
+    base::debug::WaitForDebugger(60, true);
+
+  if (command_line.HasSwitch(switches::kRendererStartupDialog))
     ChildProcess::WaitForDebugger("Renderer");
-  }
 }
 
 // This is a simplified version of the browser Jankometer, which measures
