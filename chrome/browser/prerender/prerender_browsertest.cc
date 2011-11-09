@@ -1832,6 +1832,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToURL(url);
 }
 
+#if defined(OS_MACOSX) || defined(OS_WIN)
+// http://crbug.com/103563
+#define PrerenderSessionStorage FLAKY_PrerenderSessionStorage
+#endif
 // Validate that the sessionStorage namespace remains the same when swapping
 // in a prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSessionStorage) {
