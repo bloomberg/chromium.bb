@@ -46,8 +46,9 @@ void HideNativeWindow(gfx::NativeWindow window) {
   window->Hide();
 }
 
-void ShowAndFocusNativeWindow(gfx::NativeWindow window) {
+bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
   window->Show();
+  return true;
 }
 
 }  // namespace ui_test_utils
