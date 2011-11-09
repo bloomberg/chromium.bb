@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -237,14 +238,14 @@ void WebDragDestGtk::OnDragLeave(GtkWidget* sender, GdkDragContext* context,
   // in this order so delay telling it about the drag-leave till we are sure
   // we are not getting a drop as well.
   MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&WebDragDestGtk::DragLeave));
+      base::Bind(&WebDragDestGtk::DragLeave, method_factory_.GetWeakPtr()));
 }
 
 // Called by GTK when the user releases the mouse, executing a drop.
 gboolean WebDragDestGtk::OnDragDrop(GtkWidget* sender, GdkDragContext* context,
                                     gint x, gint y, guint time) {
   // Cancel that drag leave!
-  method_factory_.RevokeAll();
+  method_factory_.InvalidateWeakPtrs();
 
   tab_contents_->render_view_host()->
       DragTargetDrop(ui::ClientPoint(widget_), ui::ScreenPoint(widget_));

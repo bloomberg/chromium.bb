@@ -10,6 +10,7 @@
 #include "third_party/zlib/zlib.h"
 #endif
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "content/common/clipboard_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -166,8 +167,8 @@ void ClipboardMessageFilter::OnReadImage(
 #if defined(USE_X11)
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &ClipboardMessageFilter::OnReadImageReply, bitmap, reply_msg));
+      base::Bind(
+          &ClipboardMessageFilter::OnReadImageReply, this, bitmap, reply_msg));
 #else
   OnReadImageReply(bitmap, reply_msg);
 #endif

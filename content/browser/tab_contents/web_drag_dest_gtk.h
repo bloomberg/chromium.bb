@@ -10,7 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -96,7 +96,7 @@ class CONTENT_EXPORT WebDragDestGtk {
   // A delegate that can receive drag information about drag events.
   WebDragDestDelegate* delegate_;
 
-  ScopedRunnableMethodFactory<WebDragDestGtk> method_factory_;
+  base::WeakPtrFactory<WebDragDestGtk> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDragDestGtk);
 };

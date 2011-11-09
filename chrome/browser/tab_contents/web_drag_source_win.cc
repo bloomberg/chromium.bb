@@ -4,7 +4,7 @@
 
 #include "chrome/browser/tab_contents/web_drag_source_win.h"
 
-#include "base/task.h"
+#include "base/bind.h"
 #include "chrome/browser/tab_contents/web_drag_utils_win.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -51,7 +51,7 @@ void WebDragSource::OnDragSourceCancel() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &WebDragSource::OnDragSourceCancel));
+        base::Bind(&WebDragSource::OnDragSourceCancel, this));
     return;
   }
 
@@ -74,7 +74,7 @@ void WebDragSource::OnDragSourceDrop() {
   // OnDragSourceDrop after the current task.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &WebDragSource::DelayedOnDragSourceDrop));
+      base::Bind(&WebDragSource::DelayedOnDragSourceDrop, this));
 }
 
 void WebDragSource::DelayedOnDragSourceDrop() {
@@ -94,7 +94,7 @@ void WebDragSource::OnDragSourceMove() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &WebDragSource::OnDragSourceMove));
+        base::Bind(&WebDragSource::OnDragSourceMove, this));
     return;
   }
 
