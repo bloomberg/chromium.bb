@@ -151,3 +151,41 @@ def PlatformNames():
 def PutEnvAndLog(env_name, env_value):
   os.putenv(env_name, env_value)
   logging.info('export %s=%s', env_name, env_value)
+
+def BoringCallers(mangled, use_re_wildcards):
+  """Return a list of 'boring' function names (optinally mangled)
+  with */? wildcards (optionally .*/.).
+  Boring = we drop off the bottom of stack traces below such functions.
+  """
+
+  need_mangling = [
+    # Don't show our testing framework:
+    ("testing::Test::Run",     "_ZN7testing4Test3RunEv"),
+    ("testing::TestInfo::Run", "_ZN7testing8TestInfo3RunEv"),
+    ("testing::internal::Handle*ExceptionsInMethodIfSupported",
+     "_ZN7testing8internal3?Handle*ExceptionsInMethodIfSupported*"),
+
+    # Depend on scheduling:
+    ("MessageLoop::Run",     "_ZN11MessageLoop3RunEv"),
+    ("MessageLoop::RunTask", "_ZN11MessageLoop7RunTask*"),
+    ("RunnableMethod*",      "_ZN14RunnableMethod*"),
+    ("RunnableFunction*",    "_ZN16RunnableFunction*"),
+    ("DispatchToMethod*",    "_Z*16DispatchToMethod*"),
+  ]
+
+  ret = []
+  for pair in need_mangling:
+    ret.append(pair[1 if mangled else 0])
+
+  ret += [
+    # Also don't show the internals of libc/pthread.
+    "start_thread",
+    "main",
+    "BaseThreadInitThunk",
+  ]
+
+  if use_re_wildcards:
+    for i in range(0, len(ret)):
+      ret[i] = ret[i].replace('*', '.*').replace('?', '.')
+
+  return ret

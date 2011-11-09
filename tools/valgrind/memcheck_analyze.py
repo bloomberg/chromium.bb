@@ -30,25 +30,7 @@ TheAddressTable = None
 # or generating suppressions.
 # Just stop printing the stack/suppression frames when the current one
 # matches any of these.
-_BORING_CALLERS = [
-  # TODO(timurrrr): add more boring callers when needed
-
-  # Don't show our testing framework:
-  "_ZN7testing4Test3RunEv",
-  "_ZN7testing8TestInfo3RunEv",
-  "_ZN7testing8internal35HandleExceptionsInMethodIfSupported.*",
-  "_ZN7testing8internal38HandleSehExceptionsInMethodIfSupported.*",
-
-  # Depends on scheduling:
-  "_ZN11MessageLoop3RunEv",
-  "_ZN11MessageLoop7RunTask.*",
-  "_ZN14RunnableMethod.*",
-  "_ZN16RunnableFunction.*",
-  "_Z.?16DispatchToMethod.*",
-
-  # Also don't show the internals of libc/pthread.
-  "start_thread"
-]
+_BORING_CALLERS = common.BoringCallers(mangled=True, use_re_wildcards=True)
 
 def getTextOf(top_node, name):
   ''' Returns all text in all DOM nodes with a certain |name| that are children

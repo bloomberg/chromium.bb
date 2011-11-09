@@ -636,16 +636,10 @@ class ThreadSanitizerBase(object):
       ret += ["--show-pc=yes"]
     ret += ["--show-pid=no"]
 
-    # Don't show googletest frames in stacks.
-    # TODO(timurrrr): we should have an array of functions (since used by
-    # different tools in different formats and .join it
-    ret += ["--cut_stack_below=testing*Test*Run*"]
-    ret += ["--cut_stack_below=testing*Handle*ExceptionsInMethodIfSupported"]
-    ret += ["--cut_stack_below=MessageLoop*Run"]
-    ret += ["--cut_stack_below=MessageLoop*RunTask"]
-    ret += ["--cut_stack_below=RunnableMethod*"]
-    ret += ["--cut_stack_below=RunnableFunction*"]
-    ret += ["--cut_stack_below=DispatchToMethod*"]
+    boring_callers = common.BoringCallers(mangled=False, use_re_wildcards=False)
+    # TODO(timurrrr): In fact, we want "starting from .." instead of "below .."
+    for bc in boring_callers:
+      ret += ["--cut_stack_below=%s" % bc]
 
     return ret
 
@@ -826,13 +820,12 @@ class DrMemory(BaseTool):
     # make callstacks easier to read
     proc += ["-callstack_srcfile_prefix",
              "build\\src,chromium\\src,crt_build\\self_x86"]
-    proc += ["-callstack_truncate_below",
-             "main,BaseThreadInitThunk,"+
-             "testing::Test*::Run*,testing::internal::Handle*Exceptions*,"+
-             "MessageLoop::Run,MessageLoop::RunTask,"+
-             "RunnableMethod*,RunnableFunction*,DispatchToMethod*"]
     proc += ["-callstack_modname_hide",
              "*.exe,chrome.dll"]
+
+    boring_callers = common.BoringCallers(mangled=False, use_re_wildcards=False)
+    # TODO(timurrrr): In fact, we want "starting from .." instead of "below .."
+    proc += ["-callstack_truncate_below", ",".join(boring_callers)]
 
     if not self.handle_uninits_and_leaks:
       proc += ["-no_check_uninitialized", "-no_count_leaks"]
