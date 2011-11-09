@@ -233,6 +233,8 @@
         'common/worker_thread_ticker.h',
         'common/zip.cc',  # Requires zlib directly.
         'common/zip.h',
+        'common/zip_internal.cc',
+        'common/zip_internal.h',
       ],
       'conditions': [
         ['OS=="win"', {
