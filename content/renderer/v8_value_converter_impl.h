@@ -9,6 +9,12 @@
 #include "content/common/content_export.h"
 #include "content/public/renderer/v8_value_converter.h"
 
+namespace base {
+class DictionaryValue;
+class ListValue;
+class Value;
+}
+
 class CONTENT_EXPORT V8ValueConverterImpl : public content::V8ValueConverter {
  public:
   V8ValueConverterImpl();
@@ -51,4 +57,4 @@ class CONTENT_EXPORT V8ValueConverterImpl : public content::V8ValueConverter {
   bool allow_regexp_;
 };
 
-#endif // CONTENT_RENDERER_V8_VALUE_CONVERTER_IMPL_H_
+#endif  // CONTENT_RENDERER_V8_VALUE_CONVERTER_IMPL_H_

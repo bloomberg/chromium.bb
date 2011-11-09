@@ -12,7 +12,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"
 #include "ui/gfx/native_widget_types.h"
 
-class FilePath;
 struct WebPreferences;
 
 namespace WebKit {
@@ -38,7 +37,7 @@ namespace content {
 
 class RenderViewVisitor;
 
-class CONTENT_EXPORT RenderView : public IPC::Message::Sender{
+class CONTENT_EXPORT RenderView : public IPC::Message::Sender {
  public:
   // Returns the RenderView containing the given WebView.
   static RenderView* FromWebView(WebKit::WebView* webview);

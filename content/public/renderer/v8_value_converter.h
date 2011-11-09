@@ -9,8 +9,6 @@
 #include "v8/include/v8.h"
 
 namespace base {
-class DictionaryValue;
-class ListValue;
 class Value;
 }
 
@@ -44,4 +42,4 @@ class CONTENT_EXPORT V8ValueConverter {
 
 }  // namespace content
 
-#endif // CONTENT_PUBLIC_RENDERER_V8_VALUE_CONVERTER_H_
+#endif  // CONTENT_PUBLIC_RENDERER_V8_VALUE_CONVERTER_H_

@@ -11,8 +11,6 @@
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIconURL.h"
 
-class RenderView;
-
 namespace WebKit {
 class WebDataSource;
 class WebFrame;
@@ -99,7 +97,6 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Channel::Listener,
   int routing_id() { return routing_id_; }
 
  private:
-
   RenderView* render_view_;
   // The routing ID of the associated RenderView.
   int routing_id_;

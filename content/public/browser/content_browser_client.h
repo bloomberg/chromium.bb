@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "content/public/common/window_container_type.h"
@@ -52,7 +53,6 @@ class CookieOptions;
 class NetLog;
 class URLRequest;
 class URLRequestContext;
-class URLRequestContextGetter;
 class X509Certificate;
 }
 

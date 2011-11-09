@@ -14,7 +14,6 @@ class GURL;
 class ResourceDispatcherHostLoginDelegate;
 class ResourceHandler;
 class ResourceMessageFilter;
-class TabContents;
 struct ResourceHostMsg_Request;
 struct ResourceResponse;
 
@@ -118,8 +117,8 @@ class ResourceDispatcherHostDelegate {
       ResourceMessageFilter* filter) = 0;
 
  protected:
-   ResourceDispatcherHostDelegate() {}
-   virtual ~ResourceDispatcherHostDelegate() {}
+  ResourceDispatcherHostDelegate() {}
+  virtual ~ResourceDispatcherHostDelegate() {}
 };
 
 }  // namespace content

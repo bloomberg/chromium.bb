@@ -13,7 +13,6 @@
 #include "content/public/common/content_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"
 
-class FilePath;
 class GURL;
 class SkBitmap;
 
