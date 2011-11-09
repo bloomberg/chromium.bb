@@ -205,7 +205,7 @@ void ScreenLocker::Init() {
     delegate_.reset(new WebUIScreenLocker(this));
   else
     delegate_.reset(new ScreenLockerViews(this));
-  delegate_->Init(unlock_on_input_);
+  delegate_->LockScreen(unlock_on_input_);
 }
 
 void ScreenLocker::OnLoginFailure(const LoginFailure& error) {

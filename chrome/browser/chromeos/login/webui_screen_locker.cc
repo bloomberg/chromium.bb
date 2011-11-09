@@ -100,7 +100,7 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
     : ScreenLockerDelegate(screen_locker) {
 }
 
-void WebUIScreenLocker::Init(bool unlock_on_input) {
+void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
   static const GdkColor kGdkBlack = {0, 0, 0, 0};
 
   gfx::Rect bounds(gfx::Screen::GetMonitorAreaNearestWindow(NULL));

@@ -22,7 +22,7 @@ class ScreenLockerDelegate {
 
   // Initialize the screen locker delegate. This will call ScreenLockReady when
   // done to notify ScreenLocker.
-  virtual void Init(bool unlock_on_input) = 0;
+  virtual void LockScreen(bool unlock_on_input) = 0;
 
   // Inform the screen locker that the screen has been locked
   virtual void ScreenLockReady();

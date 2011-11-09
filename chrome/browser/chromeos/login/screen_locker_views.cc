@@ -600,7 +600,7 @@ ScreenLockerViews::ScreenLockerViews(ScreenLocker* screen_locker)
   screen_locker_view_ = this;
 }
 
-void ScreenLockerViews::Init(bool unlock_on_input) {
+void ScreenLockerViews::LockScreen(bool unlock_on_input) {
   static const GdkColor kGdkBlack = {0, 0, 0, 0};
 
   gfx::Point left_top(1, 1);
