@@ -63,6 +63,8 @@
         'shared_impl/ppapi_preferences.h',
         'shared_impl/ppp_instance_combined.cc',
         'shared_impl/ppp_instance_combined.h',
+        # TODO(viettrungluu): Split this out; it won't be used in NaCl.
+        'shared_impl/private/flash_net_address_impl.cc',
         'shared_impl/proxy_lock.cc',
         'shared_impl/proxy_lock.h',
         'shared_impl/resource.cc',
