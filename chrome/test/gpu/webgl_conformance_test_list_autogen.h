@@ -345,9 +345,9 @@ CONFORMANCE_TEST(conformance_glsl_functions_glsl_function_acos,
   "conformance/glsl/functions/glsl-function-acos.html");
 CONFORMANCE_TEST(conformance_glsl_functions_glsl_function_asin,
   "conformance/glsl/functions/glsl-function-asin.html");
-CONFORMANCE_TEST(conformance_glsl_functions_glsl_function_atan,
+CONFORMANCE_TEST(FAILS_conformance_glsl_functions_glsl_function_atan,
   "conformance/glsl/functions/glsl-function-atan.html");
-CONFORMANCE_TEST(conformance_glsl_functions_glsl_function_atan_xy,
+CONFORMANCE_TEST(FAILS_conformance_glsl_functions_glsl_function_atan_xy,
   "conformance/glsl/functions/glsl-function-atan-xy.html");
 CONFORMANCE_TEST(conformance_glsl_functions_glsl_function_ceil,
   "conformance/glsl/functions/glsl-function-ceil.html");
@@ -385,7 +385,7 @@ CONFORMANCE_TEST(conformance_glsl_functions_glsl_function_mix_gentype,
   "conformance/glsl/functions/glsl-function-mix-gentype.html");
 CONFORMANCE_TEST(conformance_glsl_functions_glsl_function_mod_float,
   "conformance/glsl/functions/glsl-function-mod-float.html");
-CONFORMANCE_TEST(conformance_glsl_functions_glsl_function_mod_gentype,
+CONFORMANCE_TEST(FAILS_conformance_glsl_functions_glsl_function_mod_gentype,
   "conformance/glsl/functions/glsl-function-mod-gentype.html");
 CONFORMANCE_TEST(conformance_glsl_functions_glsl_function_normalize,
   "conformance/glsl/functions/glsl-function-normalize.html");

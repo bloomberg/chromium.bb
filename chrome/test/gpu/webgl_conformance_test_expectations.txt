@@ -20,21 +20,15 @@
 // SLOW TESTS
 // -----------------------------------------------------------------------------
 
-91530 MAC WIN LINUX : conformance_context_lost_restored = TIMEOUT
-91530 LINUX MAC : conformance_more_conformance_quickCheckAPI = TIMEOUT
-91530 WIN : conformance_drawingbuffer_static_canvas_test = TIMEOUT
-
 // -----------------------------------------------------------------------------
 // FAILING TESTS
 // -----------------------------------------------------------------------------
 
-91532 LINUX : conformance_uniform_location = FAIL  // Probably a driver error.
-91533 WIN : conformance_gl_min_uniforms = FAIL
-91533 WIN : conformance_oes_standard_derivatives = FAIL
-91533 WIN : conformance_texture_npot = FAIL
+103573 WIN : conformance_glsl_functions_glsl_function_atan = FAIL
+103573 WIN : conformance_glsl_functions_glsl_function_atan_xy = FAIL
+103573 WIN : conformance_glsl_functions_glsl_function_mod_gentype = FAIL
 
 // -----------------------------------------------------------------------------
 // FLAKY TESTS
 // -----------------------------------------------------------------------------
 
-92587 MAC : conformance_tex_image_and_sub_image_2d_with_video = PASS FAIL
