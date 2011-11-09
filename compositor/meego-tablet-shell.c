@@ -201,13 +201,9 @@ meego_tablet_zoom_run(struct meego_tablet_shell *shell,
 	return zoom;
 }
 
-/* FIXME: We should be handling map, not attach...  Map is when the
- * surface becomes visible, which is what we want to catch.  Attach
- * will happen whenever the surface changes. */
-
 static void
-meego_tablet_shell_attach(struct wlsc_shell *base,
-			  struct wlsc_surface *surface)
+meego_tablet_shell_map(struct wlsc_shell *base, struct wlsc_surface *surface,
+		       int32_t width, int32_t height)
 {
 	struct meego_tablet_shell *shell =
 		container_of(base, struct meego_tablet_shell, shell);
@@ -234,6 +230,18 @@ meego_tablet_shell_attach(struct wlsc_shell *base,
 		shell->current_client->surface = surface;
 		meego_tablet_zoom_run(shell, surface, 0.3, 1.0);
 	}
+
+	wl_list_insert(&shell->compositor->surface_list, &surface->link);
+	wlsc_surface_configure(surface, surface->x, surface->y, width, height);
+}
+
+static void
+meego_tablet_shell_configure(struct wlsc_shell *base,
+			     struct wlsc_surface *surface,
+			     int32_t x, int32_t y,
+			     int32_t width, int32_t height)
+{
+	wlsc_surface_configure(surface, x, y, width, height);
 }
 
 static void
@@ -679,7 +687,8 @@ shell_init(struct wlsc_compositor *compositor)
 	compositor->shell = &shell->shell;
 
 	shell->shell.lock = meego_tablet_shell_lock;
-	shell->shell.attach = meego_tablet_shell_attach;
+	shell->shell.map = meego_tablet_shell_map;
+	shell->shell.configure = meego_tablet_shell_configure;
 	shell->shell.set_selection_focus =
 		meego_tablet_shell_set_selection_focus;
 	launch_ux_daemon(shell);

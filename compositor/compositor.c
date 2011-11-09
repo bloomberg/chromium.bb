@@ -1094,8 +1094,8 @@ surface_attach(struct wl_client *client,
 	       struct wl_resource *buffer_resource, int32_t x, int32_t y)
 {
 	struct wlsc_surface *es = resource->data;
+	struct wlsc_shell *shell = es->compositor->shell;
 	struct wl_buffer *buffer = buffer_resource->data;
-	int repick = 0;
 
 	if (es->buffer) {
 		wlsc_buffer_post_release(es->buffer);
@@ -1108,23 +1108,15 @@ surface_attach(struct wl_client *client,
 		       &es->buffer_destroy_listener.link);
 
 	if (es->visual == WLSC_NONE_VISUAL) {
-		wl_list_insert(&es->compositor->surface_list, &es->link);
-		repick = 1;
-	}
-
-	if (x != 0 || y != 0 ||
-	    es->width != buffer->width || es->height != buffer->height) {
-		wlsc_surface_configure(es, es->x + x, es->y + y,
-				       buffer->width, buffer->height);
-		repick = 1;
+		shell->map(shell, es, buffer->width, buffer->height);
+	} else if (x != 0 || y != 0 ||
+		   es->width != buffer->width ||
+		   es->height != buffer->height) {
+		shell->configure(shell, es, es->x + x, es->y + y,
+				 buffer->width, buffer->height);
 	}
 
 	wlsc_buffer_attach(buffer, &es->surface);
-
-	es->compositor->shell->attach(es->compositor->shell, es);
-
-	if (repick)
-		wlsc_compositor_repick(es->compositor);
 }
 
 static void

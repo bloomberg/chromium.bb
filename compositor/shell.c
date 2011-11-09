@@ -919,18 +919,37 @@ lock(struct wlsc_shell *shell)
 }
 
 static void
-attach(struct wlsc_shell *base, struct wlsc_surface *es)
+map(struct wlsc_shell *base,
+    struct wlsc_surface *surface, int32_t width, int32_t height)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	struct wlsc_compositor *compositor = shell->compositor;
 
-	if (es == shell->background) {
-		wl_list_remove(&es->link);
-		wl_list_insert(compositor->surface_list.prev, &es->link);
-	} else if (es->map_type == WLSC_SURFACE_MAP_FULLSCREEN) {
-		es->x = (es->fullscreen_output->current->width - es->width) / 2;
-		es->y = (es->fullscreen_output->current->height - es->height) / 2;
+	/* Map background at the bottom of the stack, panel on top,
+	   everything else just below panel. */
+	if (surface == shell->background)
+		wl_list_insert(compositor->surface_list.prev, &surface->link);
+	else if (surface == shell->panel)
+		wl_list_insert(&compositor->surface_list, &surface->link);
+	else
+		wl_list_insert(&shell->panel->link, &surface->link);
+
+	wlsc_surface_configure(surface, surface->x, surface->y, width, height);
+}
+
+static void
+configure(struct wlsc_shell *shell, struct wlsc_surface *surface,
+	  int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	struct wlsc_mode *current;
+
+	if (surface->map_type == WLSC_SURFACE_MAP_FULLSCREEN) {
+		current = surface->fullscreen_output->current;
+		x = (current->width - surface->width) / 2;
+		y = (current->height - surface->height) / 2;
 	}
+
+	wlsc_surface_configure(surface, x, y, width, height);
 }
 
 static void
@@ -1032,7 +1051,8 @@ shell_init(struct wlsc_compositor *ec)
 	shell->compositor = ec;
 	shell->shell.activate = activate;
 	shell->shell.lock = lock;
-	shell->shell.attach = attach;
+	shell->shell.map = map;
+	shell->shell.configure = configure;
 	shell->shell.set_selection_focus = wlsc_selection_set_focus;
 
 	if (wl_display_add_global(ec->wl_display, &wl_shell_interface,
