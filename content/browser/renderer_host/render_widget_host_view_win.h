@@ -189,6 +189,7 @@ class RenderWidgetHostViewWin
   virtual void Destroy() OVERRIDE;
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
+  virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual void SetVisuallyDeemphasized(const SkColor* color,
                                        bool animate) OVERRIDE;
@@ -199,7 +200,6 @@ class RenderWidgetHostViewWin
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
-  virtual void ShowCompositorHostWindow(bool show) OVERRIDE;
   virtual void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params
       ) OVERRIDE;

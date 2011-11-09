@@ -219,6 +219,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
                                 const ui::Range& range) OVERRIDE;
   virtual void ShowingContextMenu(bool showing) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
+  virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE;
   // See comment in RenderWidgetHostView!
   virtual gfx::Rect GetViewCocoaBounds() const OVERRIDE;
@@ -269,7 +270,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
       int renderer_id,
       int32 route_id,
       int gpu_host_id) OVERRIDE;
-  virtual void GpuRenderingStateDidChange() OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
@@ -402,6 +402,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   // selected text on the renderer.
   std::string selected_text_;
+
+  bool accelerated_compositing_active_;
 
   // When rendering transitions from gpu to software, the gpu widget can't be
   // hidden until the software backing store has been updated. This variable is

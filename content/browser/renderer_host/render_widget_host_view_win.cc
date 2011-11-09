@@ -1807,7 +1807,8 @@ gfx::PluginWindowHandle RenderWidgetHostViewWin::GetCompositingSurface() {
   return static_cast<gfx::PluginWindowHandle>(compositor_host_window_);
 }
 
-void RenderWidgetHostViewWin::ShowCompositorHostWindow(bool show) {
+void RenderWidgetHostViewWin::OnAcceleratedCompositingStateChange() {
+  bool show = render_widget_host_->is_accelerated_compositing_active();
   // When we first create the compositor, we will get a show request from
   // the renderer before we have gotten the create request from the GPU. In this
   // case, simply ignore the show request.

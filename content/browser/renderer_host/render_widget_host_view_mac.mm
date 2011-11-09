@@ -221,6 +221,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       is_hidden_(false),
       is_showing_context_menu_(false),
       shutdown_factory_(this),
+      accelerated_compositing_active_(false),
       needs_gpu_visibility_update_after_repaint_(false),
       compositing_surface_(gfx::kNullPluginWindow) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_| goes away.
@@ -947,11 +948,16 @@ void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
   }
 }
 
-void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {
+void RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (GetRenderWidgetHost()->is_accelerated_compositing_active()) {
-    UpdateRootGpuViewVisibility(
-        GetRenderWidgetHost()->is_accelerated_compositing_active());
+  bool activated = GetRenderWidgetHost()->is_accelerated_compositing_active();
+  bool changed = accelerated_compositing_active_ != activated;
+  accelerated_compositing_active_ = activated;
+  if (!changed)
+    return;
+
+  if (accelerated_compositing_active_) {
+    UpdateRootGpuViewVisibility(accelerated_compositing_active_);
   } else {
     needs_gpu_visibility_update_after_repaint_ = true;
   }

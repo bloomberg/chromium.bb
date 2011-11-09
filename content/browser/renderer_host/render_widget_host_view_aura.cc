@@ -279,6 +279,9 @@ BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
   return new BackingStoreSkia(host_, size);
 }
 
+void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
+}
+
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
       int32 width,
@@ -375,10 +378,6 @@ void RenderWidgetHostViewAura::SetScrollOffsetPinning(
 
 #if defined(OS_WIN)
 void RenderWidgetHostViewAura::WillWmDestroy() {
-  // Nothing to do.
-}
-
-void RenderWidgetHostViewAura::ShowCompositorHostWindow(bool show) {
   // Nothing to do.
 }
 #endif

@@ -460,6 +460,21 @@ BackingStore* RenderWidgetHostViewViews::AllocBackingStore(
   return new BackingStoreSkia(host_, size);
 }
 
+void RenderWidgetHostViewViews::OnAcceleratedCompositingStateChange() {
+#if defined(TOOLKIT_USES_GTK)
+  bool activated = host_->is_accelerated_compositing_active();
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+  // If we don't use a views compositor, we currently have no way of
+  // supporting rendering via the GPU process.
+  if (!get_use_acceleration_when_possible() && activated)
+    NOTREACHED();
+#else
+  if (activated)
+    NOTIMPLEMENTED();
+#endif
+#endif
+}
+
 void RenderWidgetHostViewViews::SetBackground(const SkBitmap& background) {
   RenderWidgetHostView::SetBackground(background);
   if (host_)
@@ -1065,18 +1080,6 @@ void RenderWidgetHostViewViews::DestroyPluginContainer(
   // TODO(anicolao): plugin_container_manager_.DestroyPluginContainer(id);
 }
 
-void RenderWidgetHostViewViews::AcceleratedCompositingActivated(
-    bool activated) {
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  // If we don't use a views compositor, we currently have no way of
-  // supporting rendering via the GPU process.
-  if (!get_use_acceleration_when_possible() && activated)
-    NOTREACHED();
-#else
-  if (activated)
-    NOTIMPLEMENTED();
-#endif
-}
 #endif  // TOOLKIT_USES_GTK
 
 #if defined(OS_POSIX)

@@ -99,6 +99,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
                                       const gfx::Rect& end_rect) OVERRIDE;
   virtual void ShowingContextMenu(bool showing) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
+  virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 #if defined(OS_POSIX)
   virtual void GetDefaultScreenInfo(WebKit::WebScreenInfo* results);
@@ -117,12 +118,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
-#if defined(TOOLKIT_USES_GTK)
-  virtual void AcceleratedCompositingActivated(bool activated) OVERRIDE;
-#endif
 #if defined(OS_WIN)
   virtual void WillWmDestroy() OVERRIDE;
-  virtual void ShowCompositorHostWindow(bool show) OVERRIDE;
 #endif
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
   virtual bool LockMouse() OVERRIDE;

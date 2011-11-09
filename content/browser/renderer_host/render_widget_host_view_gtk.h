@@ -94,6 +94,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView,
                                       const gfx::Rect& end_rect) OVERRIDE;
   virtual void ShowingContextMenu(bool showing) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
+  virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
@@ -105,7 +106,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView,
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
-  virtual void AcceleratedCompositingActivated(bool activated) OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;

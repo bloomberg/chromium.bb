@@ -88,6 +88,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void Destroy() OVERRIDE {}
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE {}
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
+  virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
 #if defined(OS_MACOSX)
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE {}
   virtual gfx::Rect GetViewCocoaBounds() const OVERRIDE;
@@ -118,10 +119,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
       int renderer_id,
       int32 route_id,
       int gpu_host_id) OVERRIDE;
-  virtual void GpuRenderingStateDidChange() OVERRIDE;
 #elif defined(OS_WIN)
   virtual void WillWmDestroy() OVERRIDE;
-  virtual void ShowCompositorHostWindow(bool show) OVERRIDE;
 #endif
 #if defined(OS_POSIX)
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE {}
@@ -149,7 +148,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
 #if defined(TOOLKIT_USES_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) { }
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) { }
-  virtual void AcceleratedCompositingActivated(bool activated) { }
 #endif
 
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;

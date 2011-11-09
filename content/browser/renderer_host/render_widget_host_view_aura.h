@@ -68,6 +68,7 @@ class RenderWidgetHostViewAura : public RenderWidgetHostView,
   virtual void Destroy() OVERRIDE;
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
+  virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   virtual void AcceleratedSurfaceNew(
       int32 width,
@@ -96,7 +97,6 @@ class RenderWidgetHostViewAura : public RenderWidgetHostView,
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
 #if defined(OS_WIN)
   virtual void WillWmDestroy() OVERRIDE;
-  virtual void ShowCompositorHostWindow(bool show) OVERRIDE;
 #endif
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
   virtual bool LockMouse() OVERRIDE;

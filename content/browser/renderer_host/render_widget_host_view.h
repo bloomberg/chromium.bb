@@ -189,6 +189,9 @@ class RenderWidgetHostView {
   // Allocate a backing store for this view
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) = 0;
 
+  // Called when accelerated compositing state changes.
+  virtual void OnAcceleratedCompositingStateChange() = 0;
+
 #if defined(OS_MACOSX)
   // Tells the view whether or not to accept first responder status.  If |flag|
   // is true, the view does not accept first responder status and instead
@@ -255,7 +258,6 @@ class RenderWidgetHostView {
       int renderer_id,
       int32 route_id,
       int gpu_host_id) = 0;
-  virtual void GpuRenderingStateDidChange() = 0;
 #endif
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
@@ -274,12 +276,10 @@ class RenderWidgetHostView {
 #if defined(TOOLKIT_USES_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) = 0;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) = 0;
-  virtual void AcceleratedCompositingActivated(bool activated) = 0;
 #endif
 
 #if defined(OS_WIN)
   virtual void WillWmDestroy() = 0;
-  virtual void ShowCompositorHostWindow(bool show) = 0;
 #endif
 
 #if defined(OS_POSIX)

@@ -14,10 +14,6 @@ void RenderWidgetHostViewViews::WillWmDestroy() {
   NOTIMPLEMENTED();
 }
 
-void RenderWidgetHostViewViews::ShowCompositorHostWindow(bool show) {
-  NOTIMPLEMENTED();
-}
-
 gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
   NOTIMPLEMENTED();
   return NULL;

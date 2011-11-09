@@ -176,6 +176,9 @@ BackingStore* TestRenderWidgetHostView::AllocBackingStore(
   return new TestBackingStore(rwh_, size);
 }
 
+void TestRenderWidgetHostView::OnAcceleratedCompositingStateChange() {
+}
+
 #if defined(OS_MACOSX)
 
 gfx::Rect TestRenderWidgetHostView::GetViewCocoaBounds() const {
@@ -231,15 +234,10 @@ void TestRenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(
     int gpu_host_id) {
 }
 
-void TestRenderWidgetHostView::GpuRenderingStateDidChange() {
-}
-
 #elif defined(OS_WIN)
 void TestRenderWidgetHostView::WillWmDestroy() {
 }
 
-void TestRenderWidgetHostView::ShowCompositorHostWindow(bool show) {
-}
 #endif
 
 #if defined(OS_POSIX)

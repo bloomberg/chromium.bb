@@ -1193,20 +1193,9 @@ void RenderWidgetHost::OnMsgImeCancelComposition() {
 }
 
 void RenderWidgetHost::OnMsgDidActivateAcceleratedCompositing(bool activated) {
-#if defined(OS_MACOSX)
-  bool old_state = is_accelerated_compositing_active_;
-#endif
   is_accelerated_compositing_active_ = activated;
-#if defined(OS_MACOSX)
-  if (old_state != is_accelerated_compositing_active_ && view_)
-    view_->GpuRenderingStateDidChange();
-#elif defined(OS_WIN)
   if (view_)
-    view_->ShowCompositorHostWindow(is_accelerated_compositing_active_);
-#elif defined(TOOLKIT_USES_GTK)
-  if (view_)
-    view_->AcceleratedCompositingActivated(activated);
-#endif
+    view_->OnAcceleratedCompositingStateChange();
 }
 
 void RenderWidgetHost::OnMsgLockMouse() {
