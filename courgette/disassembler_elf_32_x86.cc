@@ -549,12 +549,12 @@ CheckBool DisassemblerElf32X86::ParseRel32RelocsFromSection(
     // addressing mode?
     const uint8* rel32 = NULL;
 
-    if (p + 5 < end_pointer) {
+    if (p + 5 <= end_pointer) {
       if (*p == 0xE8 || *p == 0xE9) {  // jmp rel32 and call rel32
         rel32 = p + 1;
       }
     }
-    if (p + 6 < end_pointer) {
+    if (p + 6 <= end_pointer) {
       if (*p == 0x0F  &&  (*(p+1) & 0xF0) == 0x80) {  // Jcc long form
         if (p[1] != 0x8A && p[1] != 0x8B)  // JPE/JPO unlikely
           rel32 = p + 2;
@@ -571,7 +571,7 @@ CheckBool DisassemblerElf32X86::ParseRel32RelocsFromSection(
 #if COURGETTE_HISTOGRAM_TARGETS
         ++rel32_target_rvas_[target_rva];
 #endif
-        p += 4;
+        p = rel32 + 4;
         continue;
       }
     }

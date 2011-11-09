@@ -67,5 +67,5 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
 }
 
 TEST_F(DisassemblerElf32X86Test, All) {
-  TestExe("elf-32-1", 200, 3441);
+  TestExe("elf-32-1", 200, 3442);
 }
