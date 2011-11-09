@@ -19,14 +19,6 @@ PageMargins::PageMargins()
       bottom(0) {
 }
 
-void PageMargins::Rotate() {
-  int temp_right = right;
-  right = bottom;
-  bottom = left;
-  left = top;
-  top = temp_right;
-}
-
 void PageMargins::Clear() {
   header = 0;
   footer = 0;
@@ -107,7 +99,6 @@ void PageSetup::FlipOrientation() {
                                  new_y,
                                  printable_area_.height(),
                                  printable_area_.width());
-    requested_margins_.Rotate();
     Init(new_size, new_printable_area, text_height_);
   }
 }

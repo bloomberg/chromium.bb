@@ -229,20 +229,18 @@ TEST(PageSetupTest, FlipOrientation) {
   // Expected values.
   gfx::Size flipped_page_size(70, 100);
   gfx::Rect flipped_printable_area(9, 0, 50, 92);
-  gfx::Rect flipped_overlay_area(14, 2, 45, 90);
-  gfx::Rect flipped_content_area(14, 7, 45, 80);
+  gfx::Rect flipped_overlay_area(9, 2, 50, 90);
+  gfx::Rect flipped_content_area(9, 14, 50, 73);
 
   // Test values.
   EXPECT_EQ(flipped_page_size, setup.physical_size());
-  EXPECT_EQ(flipped_overlay_area, setup.overlay_area()) << " " <<
-      flipped_page_size.ToString() << " " << flipped_printable_area.ToString();
-  EXPECT_EQ(flipped_content_area, setup.content_area()) << " " <<
-      flipped_page_size.ToString() << " " << flipped_printable_area.ToString();
+  EXPECT_EQ(flipped_overlay_area, setup.overlay_area());
+  EXPECT_EQ(flipped_content_area, setup.content_area());
   EXPECT_EQ(flipped_printable_area, setup.printable_area());
 
   // Margin values are updated as per the flipped values.
-  EXPECT_EQ(setup.effective_margins().left, 14);
-  EXPECT_EQ(setup.effective_margins().top, 7);
+  EXPECT_EQ(setup.effective_margins().left, 9);
+  EXPECT_EQ(setup.effective_margins().top, 14);
   EXPECT_EQ(setup.effective_margins().right, 11);
   EXPECT_EQ(setup.effective_margins().bottom, 13);
 
@@ -259,8 +257,8 @@ TEST(PageSetupTest, FlipOrientation) {
 
   // Expected values.
   gfx::Rect new_printable_area(9, 0, 50, 92);
-  gfx::Rect new_overlay_area(14, 2, 49, 95);
-  gfx::Rect new_content_area(14, 6, 49, 90);
+  gfx::Rect new_overlay_area(4, 2, 60, 95);
+  gfx::Rect new_content_area(4, 14, 60, 79);
 
   // Test values.
   EXPECT_EQ(flipped_page_size, setup.physical_size());
@@ -269,8 +267,8 @@ TEST(PageSetupTest, FlipOrientation) {
   EXPECT_EQ(new_printable_area, setup.printable_area());
 
   // Margins values are changed respectively.
-  EXPECT_EQ(setup.effective_margins().left,14);
-  EXPECT_EQ(setup.effective_margins().top, 6);
-  EXPECT_EQ(setup.effective_margins().right, 7);
-  EXPECT_EQ(setup.effective_margins().bottom, 4);
+  EXPECT_EQ(setup.effective_margins().left, 4);
+  EXPECT_EQ(setup.effective_margins().top, 14);
+  EXPECT_EQ(setup.effective_margins().right, 6);
+  EXPECT_EQ(setup.effective_margins().bottom, 7);
 }

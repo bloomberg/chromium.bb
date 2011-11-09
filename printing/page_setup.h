@@ -15,9 +15,6 @@ class PRINTING_EXPORT PageMargins {
  public:
   PageMargins();
 
-  // Rotates the margin values in anti-clockwise direction.
-  void Rotate();
-
   void Clear();
 
   // Equality operator.
