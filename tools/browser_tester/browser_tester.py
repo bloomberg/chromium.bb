@@ -259,7 +259,7 @@ def RunFromCommandLine():
     parser.error('Must specify a URL')
 
   if options.hard_timeout is None:
-    options.hard_timeout = options.timeout * 3
+    options.hard_timeout = options.timeout * 4
 
   return Run(url, options)
 

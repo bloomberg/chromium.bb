@@ -503,11 +503,11 @@ function NaClWaiter(body_element) {
     this.doneCallback = doneCallback;
     this.pingCallback = pingCallback;
 
-    // Wait for up to thirty seconds for the nexes to load.
+    // Wait for up to forty seconds for the nexes to load.
     // TODO(ncbray) use error handling mechanisms (when they are implemented)
     // rather than a timeout.
     this.totalWait = 0;
-    this.maxTotalWait = 90000;
+    this.maxTotalWait = 40000;
     this.retryWait = 10;
     this.waitForPlugins();
   }
@@ -577,6 +577,7 @@ function logLoadStatus(rpc, load_errors_are_test_errors, loaded, waiting) {
     var ready = getCarefully(function(){
         var readyStateString =
         ['UNSENT', 'OPENED', 'HEADERS_RECEIVED', 'LOADING', 'DONE'];
+        // An undefined index value will return and undefined result.
         return readyStateString[waiting[j].readyState];
       });
     var last = getCarefully(function(){
