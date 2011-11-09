@@ -47,10 +47,15 @@ void HideNativeWindow(gfx::NativeWindow window) {
   ::ShowWindow(window, SW_HIDE);
 }
 
-void ShowAndFocusNativeWindow(gfx::NativeWindow window) {
+bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
   // TODO(jcampan): retrieve the NativeWidgetWin and show/hide on it instead of
   // using Windows API.
   ::ShowWindow(window, SW_SHOW);
+
+  // ShowWindow does not necessarily activate the window. In particular if a
+  // window from another app is the foreground window then the request to
+  // activate the window fails. See SetForegroundWindow for details.
+  return GetForegroundWindow() == window;
 }
 
 }  // namespace ui_test_utils

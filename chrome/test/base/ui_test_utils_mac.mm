@@ -55,13 +55,14 @@ void HideNativeWindow(gfx::NativeWindow window) {
   [window orderOut:nil];
 }
 
-void ShowAndFocusNativeWindow(gfx::NativeWindow window) {
+bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
   // Make sure an unbundled program can get the input focus.
   ProcessSerialNumber psn = { 0, kCurrentProcess };
   TransformProcessType(&psn,kProcessTransformToForegroundApplication);
   SetFrontProcess(&psn);
 
   [window makeKeyAndOrderFront:nil];
+  return true;
 }
 
 }  // namespace ui_test_utils

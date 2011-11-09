@@ -87,11 +87,10 @@ void HideNativeWindow(gfx::NativeWindow window) {
   gtk_widget_hide(GTK_WIDGET(window));
 }
 
-void ShowAndFocusNativeWindow(gfx::NativeWindow window) {
-  if (gtk_window_has_toplevel_focus(GTK_WINDOW(window)))
-    return;
-
-  gtk_window_present(GTK_WINDOW(window));
+bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
+  if (!gtk_window_has_toplevel_focus(GTK_WINDOW(window)))
+    gtk_window_present(GTK_WINDOW(window));
+  return true;
 }
 
 }  // namespace ui_test_utils

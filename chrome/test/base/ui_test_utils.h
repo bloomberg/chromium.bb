@@ -519,8 +519,8 @@ bool SendKeyPressAndWaitWithDetails(
 // Hide a native window.
 void HideNativeWindow(gfx::NativeWindow window);
 
-// Show and focus a native window.
-void ShowAndFocusNativeWindow(gfx::NativeWindow window);
+// Show and focus a native window. Returns true on success.
+bool ShowAndFocusNativeWindow(gfx::NativeWindow window) WARN_UNUSED_RESULT;
 
 // Watches for responses from the DOMAutomationController and keeps them in a
 // queue. Useful for waiting for a message to be received.

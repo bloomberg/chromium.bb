@@ -288,11 +288,14 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   pool.Recycle();
 #endif
 
-  RunTestOnMainThread();
+  if (!HasFatalFailure())
+    RunTestOnMainThread();
 #if defined(OS_MACOSX)
   pool.Recycle();
 #endif
 
+  // Invoke cleanup and quit even if there are failures. This is similar to
+  // gtest in that it invokes TearDown even if Setup fails.
   CleanUpOnMainThread();
 #if defined(OS_MACOSX)
   pool.Recycle();

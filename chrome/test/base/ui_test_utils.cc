@@ -584,8 +584,7 @@ bool BringBrowserWindowToFront(const Browser* browser) {
   if (!GetNativeWindow(browser, &window))
     return false;
 
-  ui_test_utils::ShowAndFocusNativeWindow(window);
-  return true;
+  return ui_test_utils::ShowAndFocusNativeWindow(window);
 }
 
 Browser* GetBrowserNotInSet(std::set<Browser*> excluded_browsers) {
