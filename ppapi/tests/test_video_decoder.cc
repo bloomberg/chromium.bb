@@ -18,8 +18,8 @@ bool TestVideoDecoder::Init() {
   return video_decoder_interface_ && InitTestingInterface();
 }
 
-void TestVideoDecoder::RunTests(const std::string& filter) {
-  RUN_TEST(CreateFailure, filter);
+void TestVideoDecoder::RunTest() {
+  RUN_TEST(CreateFailure);
 }
 
 void TestVideoDecoder::QuitMessageLoop() {

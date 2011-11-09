@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,27 +13,27 @@ bool TestPaintAggregator::Init() {
   return true;
 }
 
-void TestPaintAggregator::RunTests(const std::string& filter) {
-  RUN_TEST(InitialState, filter);
-  RUN_TEST(SingleInvalidation, filter);
-  RUN_TEST(DoubleDisjointInvalidation, filter);
-  RUN_TEST(SingleScroll, filter);
-  RUN_TEST(DoubleOverlappingScroll, filter);
-  RUN_TEST(NegatingScroll, filter);
-  RUN_TEST(DiagonalScroll, filter);
-  RUN_TEST(ContainedPaintAfterScroll, filter);
-  RUN_TEST(ContainedPaintBeforeScroll, filter);
-  RUN_TEST(ContainedPaintsBeforeAndAfterScroll, filter);
-  RUN_TEST(LargeContainedPaintAfterScroll, filter);
-  RUN_TEST(LargeContainedPaintBeforeScroll, filter);
-  RUN_TEST(OverlappingPaintBeforeScroll, filter);
-  RUN_TEST(OverlappingPaintAfterScroll, filter);
-  RUN_TEST(DisjointPaintBeforeScroll, filter);
-  RUN_TEST(DisjointPaintAfterScroll, filter);
-  RUN_TEST(ContainedPaintTrimmedByScroll, filter);
-  RUN_TEST(ContainedPaintEliminatedByScroll, filter);
-  RUN_TEST(ContainedPaintAfterScrollTrimmedByScrollDamage, filter);
-  RUN_TEST(ContainedPaintAfterScrollEliminatedByScrollDamage, filter);
+void TestPaintAggregator::RunTest() {
+  RUN_TEST(InitialState);
+  RUN_TEST(SingleInvalidation);
+  RUN_TEST(DoubleDisjointInvalidation);
+  RUN_TEST(SingleScroll);
+  RUN_TEST(DoubleOverlappingScroll);
+  RUN_TEST(NegatingScroll);
+  RUN_TEST(DiagonalScroll);
+  RUN_TEST(ContainedPaintAfterScroll);
+  RUN_TEST(ContainedPaintBeforeScroll);
+  RUN_TEST(ContainedPaintsBeforeAndAfterScroll);
+  RUN_TEST(LargeContainedPaintAfterScroll);
+  RUN_TEST(LargeContainedPaintBeforeScroll);
+  RUN_TEST(OverlappingPaintBeforeScroll);
+  RUN_TEST(OverlappingPaintAfterScroll);
+  RUN_TEST(DisjointPaintBeforeScroll);
+  RUN_TEST(DisjointPaintAfterScroll);
+  RUN_TEST(ContainedPaintTrimmedByScroll);
+  RUN_TEST(ContainedPaintEliminatedByScroll);
+  RUN_TEST(ContainedPaintAfterScrollTrimmedByScrollDamage);
+  RUN_TEST(ContainedPaintAfterScrollEliminatedByScrollDamage);
 }
 
 std::string TestPaintAggregator::TestInitialState() {

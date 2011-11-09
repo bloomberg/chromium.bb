@@ -24,9 +24,9 @@ bool TestMemory::Init() {
   return memory_dev_interface_ && InitTestingInterface();
 }
 
-void TestMemory::RunTests(const std::string& filter) {
-  RUN_TEST(MemAlloc, filter);
-  RUN_TEST(NullMemFree, filter);
+void TestMemory::RunTest() {
+  RUN_TEST(MemAlloc);
+  RUN_TEST(NullMemFree);
 }
 
 std::string TestMemory::TestMemAlloc() {

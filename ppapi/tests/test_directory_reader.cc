@@ -75,8 +75,8 @@ bool TestDirectoryReader::Init() {
   return InitTestingInterface() && EnsureRunningOverHTTP();
 }
 
-void TestDirectoryReader::RunTests(const std::string& filter) {
-  RUN_TEST(GetNextFile, filter);
+void TestDirectoryReader::RunTest() {
+  RUN_TEST(GetNextFile);
 }
 
 std::string TestDirectoryReader::TestGetNextFile() {

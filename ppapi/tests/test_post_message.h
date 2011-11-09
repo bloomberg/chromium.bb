@@ -18,7 +18,7 @@ class TestPostMessage : public TestCase {
  private:
   // TestCase implementation.
   virtual bool Init();
-  virtual void RunTests(const std::string& filter);
+  virtual void RunTest();
 
   // A handler for JS->Native calls to postMessage.  Simply pushes
   // the given value to the back of message_data_

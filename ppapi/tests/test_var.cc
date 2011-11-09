@@ -31,14 +31,14 @@ bool TestVar::Init() {
   return var_interface_ && InitTestingInterface();
 }
 
-void TestVar::RunTests(const std::string& filter) {
-  RUN_TEST(BasicString, filter);
-  RUN_TEST(InvalidAndEmpty, filter);
-  RUN_TEST(InvalidUtf8, filter);
-  RUN_TEST(NullInputInUtf8Conversion, filter);
-  RUN_TEST(ValidUtf8, filter);
-  RUN_TEST(Utf8WithEmbeddedNulls, filter);
-  RUN_TEST(VarToUtf8ForWrongType, filter);
+void TestVar::RunTest() {
+  RUN_TEST(BasicString);
+  RUN_TEST(InvalidAndEmpty);
+  RUN_TEST(InvalidUtf8);
+  RUN_TEST(NullInputInUtf8Conversion);
+  RUN_TEST(ValidUtf8);
+  RUN_TEST(Utf8WithEmbeddedNulls);
+  RUN_TEST(VarToUtf8ForWrongType);
 }
 
 std::string TestVar::TestBasicString() {

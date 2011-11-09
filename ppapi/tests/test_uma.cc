@@ -17,7 +17,7 @@ bool TestUMA::Init() {
   return !!uma_interface_;
 }
 
-void TestUMA::RunTests(const std::string& filter) {
+void TestUMA::RunTest() {
   instance_->LogTest("Count", TestCount());
   instance_->LogTest("Time", TestTime());
   instance_->LogTest("Enum", TestEnum());

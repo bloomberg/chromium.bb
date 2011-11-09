@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,8 +22,8 @@ bool TestBroker::Init() {
   return !!broker_interface_;
 }
 
-void TestBroker::RunTests(const std::string& filter) {
-  RUN_TEST(Create, filter);
+void TestBroker::RunTest() {
+  RUN_TEST(Create);
 }
 
 std::string TestBroker::TestCreate() {

@@ -32,9 +32,9 @@ bool TestCore::Init() {
   return true;
 }
 
-void TestCore::RunTests(const std::string& filter) {
-  RUN_TEST(Time, filter);
-  RUN_TEST(TimeTicks, filter);
+void TestCore::RunTest() {
+  RUN_TEST(Time);
+  RUN_TEST(TimeTicks);
 }
 
 std::string TestCore::TestTime() {

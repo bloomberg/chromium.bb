@@ -18,7 +18,7 @@ class TestMemory : public TestCase {
  private:
   // TestCase implementation.
   virtual bool Init();
-  virtual void RunTests(const std::string& filter);
+  virtual void RunTest();
 
   std::string TestMemAlloc();
   std::string TestNullMemFree();

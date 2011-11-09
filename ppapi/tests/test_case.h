@@ -37,12 +37,9 @@ class TestCase {
   // Default implementation just returns true.
   virtual bool Init();
 
-  // Override to implement the test case. It will be called after the plugin is
-  // first displayed, passing a string. If the string is empty, the
-  // should run all tests for this test case. Otherwise, it should run the test
-  // whose name matches test_filter exactly (if there is one). This should
-  // generally be implemented using the RUN_TEST* macros.
-  virtual void RunTests(const std::string& test_filter) = 0;
+  // Override to implement the test. It will be called after the plugin is
+  // first displayed.
+  virtual void RunTest() = 0;
 
   static std::string MakeFailureMessage(const char* file, int line,
                                         const char* cmd);
@@ -85,10 +82,6 @@ class TestCase {
 
   // Makes sure the test is run over HTTP.
   bool EnsureRunningOverHTTP();
-
-  // Return true if the given test name matches the filter. This is true if
-  // (a) filter is empty or (b) test_name and filter match exactly.
-  bool MatchesFilter(const std::string& test_name, const std::string& filter);
 
   // Pointer to the instance that owns us.
   TestingInstance* instance_;
@@ -147,24 +140,24 @@ class TestCaseFactory {
 // Helper macro for calling functions implementing specific tests in the
 // RunTest function. This assumes the function name is TestFoo where Foo is the
 // test |name|.
-#define RUN_TEST(name, test_filter) \
-  if (MatchesFilter(#name, test_filter)) { \
+#define RUN_TEST(name) \
+  do { \
     force_async_ = false; \
     instance_->LogTest(#name, Test##name()); \
-  }
+  } while (false)
 
 // Like RUN_TEST above but forces functions taking callbacks to complete
 // asynchronously on success or error.
-#define RUN_TEST_FORCEASYNC(name, test_filter) \
-  if (MatchesFilter(#name"ForceAsync", test_filter)) { \
+#define RUN_TEST_FORCEASYNC(name) \
+  do { \
     force_async_ = true; \
     instance_->LogTest(#name"ForceAsync", Test##name()); \
-  }
+  } while (false)
 
-#define RUN_TEST_FORCEASYNC_AND_NOT(name, test_filter) \
+#define RUN_TEST_FORCEASYNC_AND_NOT(name) \
   do { \
-    RUN_TEST_FORCEASYNC(name, test_filter); \
-    RUN_TEST(name, test_filter); \
+    RUN_TEST_FORCEASYNC(name); \
+    RUN_TEST(name); \
   } while (false)
 
 

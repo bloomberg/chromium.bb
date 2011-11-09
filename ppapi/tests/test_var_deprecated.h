@@ -18,7 +18,7 @@ class TestVarDeprecated : public TestCase {
 
   // TestCase implementation.
   virtual bool Init();
-  virtual void RunTests(const std::string& filter);
+  virtual void RunTest();
 
   void set_var_from_page(const pp::VarPrivate& v) { var_from_page_ = v; }
 

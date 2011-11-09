@@ -21,8 +21,8 @@ bool TestGraphics3D::Init() {
   return opengl_es2_ && InitTestingInterface();
 }
 
-void TestGraphics3D::RunTests(const std::string& filter) {
-  RUN_TEST(Frame, filter);
+void TestGraphics3D::RunTest() {
+  RUN_TEST(Frame);
 }
 
 std::string TestGraphics3D::TestFrame() {

@@ -223,19 +223,10 @@ TEST_PPAPI_IN_PROCESS(VarDeprecated)
 #ifdef PostMessage
 #undef PostMessage
 #endif
-TEST_PPAPI_IN_PROCESS(PostMessage_SendInInit)
-TEST_PPAPI_IN_PROCESS(PostMessage_SendingData)
-TEST_PPAPI_IN_PROCESS(PostMessage_MessageEvent)
-TEST_PPAPI_IN_PROCESS(PostMessage_NoHandler)
-TEST_PPAPI_IN_PROCESS(PostMessage_ExtraParam)
-TEST_PPAPI_OUT_OF_PROCESS(PostMessage_SendInInit)
-TEST_PPAPI_OUT_OF_PROCESS(PostMessage_SendingData)
-TEST_PPAPI_OUT_OF_PROCESS(PostMessage_MessageEvent)
-TEST_PPAPI_OUT_OF_PROCESS(PostMessage_NoHandler)
-TEST_PPAPI_OUT_OF_PROCESS(PostMessage_ExtraParam)
+TEST_PPAPI_IN_PROCESS(PostMessage)
 #if !defined(OS_WIN)
 // Times out on Windows XP: http://crbug.com/95557
-TEST_PPAPI_OUT_OF_PROCESS(PostMessage_NonMainThread)
+TEST_PPAPI_OUT_OF_PROCESS(PostMessage)
 #endif
 
 TEST_PPAPI_IN_PROCESS(Memory)

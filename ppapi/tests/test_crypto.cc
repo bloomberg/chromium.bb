@@ -21,8 +21,8 @@ bool TestCrypto::Init() {
   return !!crypto_interface_;
 }
 
-void TestCrypto::RunTests(const std::string& filter) {
-  RUN_TEST(GetRandomBytes, filter);
+void TestCrypto::RunTest() {
+  RUN_TEST(GetRandomBytes);
 }
 
 std::string TestCrypto::TestGetRandomBytes() {

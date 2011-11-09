@@ -87,18 +87,8 @@ pp::InstancePrivate {
   void ExecuteTests(int32_t unused);
 
   // Creates a new TestCase for the give test name, or NULL if there is no such
-  // test. Ownership is passed to the caller. The given string is split by '_'.
-  // The test case name is the first part.
-  TestCase* CaseForTestName(const std::string& name);
-  // Returns the filter (second part) of the given string. If there is no '_',
-  // returns the empty string, which means 'run all tests for this test case'.
-  // E.g.:
-  //  http://testserver/test_case.html?testcase=PostMessage
-  // Otherwise, the part of the testcase after '_' is returned, and the test
-  // whose name matches that string (if any) will be run:
-  //  http://testserver/test_case.html?testcase=PostMessage_SendingData
-  // Runs 'PostMessage_SendingData.
-  std::string FilterForTestName(const std::string& name);
+  // test. Ownership is passed to the caller.
+  TestCase* CaseForTestName(const char* name);
 
   // Appends a list of available tests to the console in the document.
   void LogAvailableTests();
@@ -118,10 +108,6 @@ pp::InstancePrivate {
 
   // Owning pointer to the current test case. Valid after Init has been called.
   TestCase* current_case_;
-
-  // A filter to use when running tests. This is passed to 'RunTests', which
-  // runs only tests whose name contains test_filter_ as a substring.
-  std::string test_filter_;
 
   // The current step we're on starting at 0. This is incremented every time we
   // report progress via a cookie. See comment above the class.

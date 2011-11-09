@@ -20,14 +20,14 @@ bool TestURLUtil::Init() {
   return !!util_;
 }
 
-void TestURLUtil::RunTests(const std::string& filter) {
-  RUN_TEST(Canonicalize, filter);
-  RUN_TEST(ResolveRelative, filter);
-  RUN_TEST(IsSameSecurityOrigin, filter);
-  RUN_TEST(DocumentCanRequest, filter);
-  RUN_TEST(DocumentCanAccessDocument, filter);
-  RUN_TEST(GetDocumentURL, filter);
-  RUN_TEST(GetPluginInstanceURL, filter);
+void TestURLUtil::RunTest() {
+  RUN_TEST(Canonicalize);
+  RUN_TEST(ResolveRelative);
+  RUN_TEST(IsSameSecurityOrigin);
+  RUN_TEST(DocumentCanRequest);
+  RUN_TEST(DocumentCanAccessDocument);
+  RUN_TEST(GetDocumentURL);
+  RUN_TEST(GetPluginInstanceURL);
 }
 
 std::string TestURLUtil::TestCanonicalize() {

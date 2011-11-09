@@ -49,9 +49,9 @@ bool TestFlashFullscreen::Init() {
   return InitTestingInterface();
 }
 
-void TestFlashFullscreen::RunTests(const std::string& filter) {
-  RUN_TEST(GetScreenSize, filter);
-  RUN_TEST(NormalToFullscreenToNormal, filter);
+void TestFlashFullscreen::RunTest() {
+  RUN_TEST(GetScreenSize);
+  RUN_TEST(NormalToFullscreenToNormal);
 }
 
 std::string TestFlashFullscreen::TestGetScreenSize() {

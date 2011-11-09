@@ -19,7 +19,7 @@ class TestVar : public TestCase {
  private:
   // TestCase implementation.
   virtual bool Init();
-  virtual void RunTests(const std::string& filter);
+  virtual void RunTest();
 
   std::string TestBasicString();
   std::string TestInvalidAndEmpty();

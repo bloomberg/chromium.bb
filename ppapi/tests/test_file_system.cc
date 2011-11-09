@@ -17,9 +17,9 @@ bool TestFileSystem::Init() {
   return InitTestingInterface() && EnsureRunningOverHTTP();
 }
 
-void TestFileSystem::RunTests(const std::string& filter) {
-  RUN_TEST_FORCEASYNC_AND_NOT(Open, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(MultipleOpens, filter);
+void TestFileSystem::RunTest() {
+  RUN_TEST_FORCEASYNC_AND_NOT(Open);
+  RUN_TEST_FORCEASYNC_AND_NOT(MultipleOpens);
 }
 
 std::string TestFileSystem::TestOpen() {

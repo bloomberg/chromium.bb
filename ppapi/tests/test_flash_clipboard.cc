@@ -22,8 +22,8 @@ bool TestFlashClipboard::Init() {
   return !!clipboard_interface_;
 }
 
-void TestFlashClipboard::RunTests(const std::string& filter) {
-  RUN_TEST(ReadWrite, filter);
+void TestFlashClipboard::RunTest() {
+  RUN_TEST(ReadWrite);
 }
 
 std::string TestFlashClipboard::TestReadWrite() {
