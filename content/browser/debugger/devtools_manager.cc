@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
@@ -228,7 +229,7 @@ void DevToolsManager::BindClientHost(
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        NewRunnableFunction(&DevToolsNetLogObserver::Attach));
+        base::Bind(&DevToolsNetLogObserver::Attach));
   }
   agent_to_client_host_[agent_host] = client_host;
   client_to_agent_host_[client_host] = agent_host;
@@ -256,7 +257,7 @@ void DevToolsManager::UnbindClientHost(DevToolsAgentHost* agent_host,
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        NewRunnableFunction(&DevToolsNetLogObserver::Detach));
+        base::Bind(&DevToolsNetLogObserver::Detach));
   }
   agent_host->Detach();
 

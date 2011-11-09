@@ -7,7 +7,7 @@
 #include <list>
 #include <map>
 
-#include "base/tuple.h"
+#include "base/bind.h"
 #include "content/browser/debugger/devtools_agent_host.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/worker_devtools_message_filter.h"
@@ -98,7 +98,7 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        NewRunnableFunction(
+        base::Bind(
             &RegisterAgent,
             worker_id.first,
             worker_id.second));
@@ -133,7 +133,7 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
   virtual void SendMessageToAgent(IPC::Message* message) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(
+        base::Bind(
             &WorkerDevToolsAgentHost::ForwardToWorkerDevToolsAgent,
             worker_id_.first,
             worker_id_.second,
@@ -205,7 +205,7 @@ class WorkerDevToolsManager::DetachedClientHosts {
   static void RemovePendingWorkerData(WorkerId id) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(RemoveInspectedWorkerDataOnIOThread, id));
+        base::Bind(RemoveInspectedWorkerDataOnIOThread, id));
   }
 
   static void RemoveInspectedWorkerDataOnIOThread(WorkerId id) {
@@ -303,9 +303,7 @@ void WorkerDevToolsManager::WorkerDestroyed(
   inspected_workers_.erase(it);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
-          DetachedClientHosts::WorkerDestroyed,
-          worker_id));
+      base::Bind(DetachedClientHosts::WorkerDestroyed, worker_id));
 }
 
 void WorkerDevToolsManager::WorkerContextStarted(WorkerProcessHost* process,
@@ -317,7 +315,7 @@ void WorkerDevToolsManager::WorkerContextStarted(WorkerProcessHost* process,
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
+      base::Bind(
           DetachedClientHosts::WorkerReloaded,
           it->second,
           new_worker_id));
@@ -395,7 +393,7 @@ void WorkerDevToolsManager::ForwardToDevToolsClient(
   }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
+      base::Bind(
           ForwardToDevToolsClientOnUIThread,
           worker_process_id,
           worker_route_id,
@@ -407,7 +405,7 @@ void WorkerDevToolsManager::SaveAgentRuntimeState(int worker_process_id,
                                                   const std::string& state) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
+      base::Bind(
           SaveAgentRuntimeStateOnUIThread,
           worker_process_id,
           worker_route_id,
@@ -460,7 +458,7 @@ void WorkerDevToolsManager::NotifyWorkerDestroyedOnIOThread(
     int worker_route_id) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
+      base::Bind(
           &WorkerDevToolsManager::NotifyWorkerDestroyedOnUIThread,
           worker_process_id,
           worker_route_id));
