@@ -101,12 +101,15 @@ or <code>/home/share/extension.crx</code>.)
     <br />
     Example: <code>c:\Users\Me\AppData\Local\Google\Chrome\Application\6.0.422.0\Extensions\</code>
     </dd>
-  <dt> Mac OS X: </dt>
-    <dd> <code>/Library/Application Support/Google/Chrome/External Extensions/</code> </dd>
-    <p class="note"><b>Note:</b> The external extensions file is read only if every directory in the path is owned by the user <code>root</code>, has the group <code>admin</code> or <code>wheel</code>, and is not world writable.  The path must also be free of symbolic links.  These restrictions prevent an unprivileged user from causing extensions to be installed for all users.  See <a href="#troubleshooting">troubleshooting</a> for details.</p>
+  <dt> Mac OS X:</dt>
+    <dd>For a specific user: <code>~USERNAME/Library/Application Support/Google/Chrome/External Extensions/</code><br>
+        For all users: <code>/Library/Application Support/Google/Chrome/External Extensions/</code>
+    <p>The external extensions file for all users is read only if every directory in the path is owned by the user <code>root</code>, has the group <code>admin</code> or <code>wheel</code>, and is not world writable.  The path must also be free of symbolic links.  These restrictions prevent an unprivileged user from causing extensions to be installed for all users.  See <a href="#troubleshooting">troubleshooting</a> for details.</p>
     <p class="note">
-    <b>Note:</b> The above path was added in Chrome 16.  Prior versions used a different path, which is now deprecated:
+    <b>Note:</b> The above path for all users was added in Chrome 16.  Prior versions used a different path, which is now deprecated:
     <code>/Applications/Google Chrome.app/Contents/Extensions/</code> .</p>
+  </dd>
+
   <dt> Linux: </dt>
     <dd> <code>/opt/google/chrome/extensions/</code> <br>
     <b>Note:</b> Use <code>chmod</code> if necessary
@@ -171,7 +174,7 @@ you should see the extension listed. </li>
 
 <h3 id="troubleshooting">Troubleshooting Mac OS permissions problems</h3>
 
-<p>On Mac OS, if you do not see the external extension installed when Chrome is launched, there may be a permissions problem with the external extensions preferences file.  To see if this is the problem, follow these steps:</p>
+<p>On Mac OS, the external extensions file for all users is only read if file system permissions prevent unprivelaged users from changing it.  If you do not see external extensions installed when Chrome is launched, there may be a permissions problem with the external extensions preferences file.  To see if this is the problem, follow these steps:</p>
 
 <ol>
   <li> Launch the Console program.  You can find it under /Applications/Utilities/Console. </li>
