@@ -45,8 +45,6 @@ class BookmarkInputWindowDialogController : public InputWindowDialog::Delegate,
   virtual void BookmarkModelChanged() OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
 
-  Profile* profile_;
-
   BookmarkModel* model_;
 
   BookmarkEditor::EditDetails details_;

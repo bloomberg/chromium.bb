@@ -55,8 +55,7 @@ BookmarkInputWindowDialogController::BookmarkInputWindowDialogController(
     Profile* profile,
     gfx::NativeWindow wnd,
     const BookmarkEditor::EditDetails& details)
-    : profile_(profile),
-      model_(profile->GetBookmarkModel()),
+    : model_(profile->GetBookmarkModel()),
       details_(details) {
 
   model_->AddObserver(this);
