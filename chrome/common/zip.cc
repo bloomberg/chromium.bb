@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/string_split.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/file_stream.h"
@@ -17,50 +17,45 @@
 #include "third_party/zlib/contrib/minizip/iowin32.h"
 #endif
 
-namespace zip {
+namespace {
 
-static const int kZipMaxPath = 256;
-static const int kZipBufSize = 8192;
+const int kZipMaxPath = 256;
+const int kZipBufSize = 8192;
 
 // Extract the 'current' selected file from the zip into dest_dir.
 // Output filename is stored in out_file.  Returns true on success.
-static bool ExtractCurrentFile(unzFile zip_file,
-                               const FilePath& dest_dir) {
-  char filename_inzip[kZipMaxPath] = {0};
+bool ExtractCurrentFile(unzFile zip_file,
+                        const FilePath& dest_dir) {
+  // We assume that the file names in zip files to be UTF-8. This is true
+  // for zip files created with Zip() and friends in the file.
+  char filename_in_zip_utf8[kZipMaxPath] = {0};
   unz_file_info file_info;
-  int err = unzGetCurrentFileInfo(zip_file, &file_info, filename_inzip,
-                                  sizeof(filename_inzip) - 1, NULL, 0, NULL, 0);
+  int err = unzGetCurrentFileInfo(
+      zip_file, &file_info, filename_in_zip_utf8,
+      sizeof(filename_in_zip_utf8) - 1, NULL, 0, NULL, 0);
   if (err != UNZ_OK)
     return false;
-  if (filename_inzip[0] == '\0')
+  if (filename_in_zip_utf8[0] == '\0')
     return false;
 
   err = unzOpenCurrentFile(zip_file);
   if (err != UNZ_OK)
     return false;
 
-  FilePath::StringType filename;
-  std::vector<FilePath::StringType> filename_parts;
-#if defined(OS_WIN)
-  filename = UTF8ToWide(filename_inzip);
-#elif defined(OS_POSIX)
-  filename = filename_inzip;
-#endif
+  // Use of "Unsafe" function looks not good, but there is no safe way to
+  // do this on Linux anyway. See file_path.h for details.
+  FilePath file_path_in_zip = FilePath::FromUTF8Unsafe(filename_in_zip_utf8);
 
   // Check the filename here for directory traversal issues. In the name of
   // simplicity and security, we might reject a valid filename such as "a..b".
-  if (filename.find(FILE_PATH_LITERAL("..")) != FilePath::StringType::npos)
+  if (file_path_in_zip.value().find(FILE_PATH_LITERAL(".."))
+      != FilePath::StringType::npos)
     return false;
 
-  base::SplitString(filename, '/', &filename_parts);
-
-  FilePath dest_file(dest_dir);
-  std::vector<FilePath::StringType>::iterator iter;
-  for (iter = filename_parts.begin(); iter != filename_parts.end(); ++iter)
-    dest_file = dest_file.Append(*iter);
+  FilePath dest_file = dest_dir.Append(file_path_in_zip);
 
   // If this is a directory, just create it and return.
-  if (filename_inzip[strlen(filename_inzip) - 1] == '/') {
+  if (EndsWith(filename_in_zip_utf8, "/", false)) {
     if (!file_util::CreateDirectory(dest_file))
       return false;
     return true;
@@ -117,7 +112,7 @@ typedef struct {
 // This function is derived from third_party/minizip/iowin32.c.
 // Its only difference is that it treats the char* as UTF8 and
 // uses the Unicode version of CreateFile.
-static void* ZipOpenFunc(void *opaque, const char* filename, int mode) {
+void* ZipOpenFunc(void *opaque, const char* filename, int mode) {
   DWORD desired_access, creation_disposition;
   DWORD share_mode, flags_and_attributes;
   HANDLE file = 0;
@@ -137,9 +132,9 @@ static void* ZipOpenFunc(void *opaque, const char* filename, int mode) {
     creation_disposition = CREATE_ALWAYS;
   }
 
-  std::wstring filename_wstr = UTF8ToWide(filename);
+  string16 filename16 = UTF8ToUTF16(filename);
   if ((filename != NULL) && (desired_access != 0)) {
-    file = CreateFile(filename_wstr.c_str(), desired_access, share_mode,
+    file = CreateFile(filename16.c_str(), desired_access, share_mode,
         NULL, creation_disposition, flags_and_attributes, NULL);
   }
 
@@ -160,52 +155,36 @@ static void* ZipOpenFunc(void *opaque, const char* filename, int mode) {
 }
 #endif
 
-bool Unzip(const FilePath& src_file, const FilePath& dest_dir) {
+// Opens the given file name in UTF-8 for unzipping, with some setup for
+// Windows.
+unzFile OpenForUnzipping(const std::string& file_name_utf8) {
+  zlib_filefunc_def* zip_func_ptrs = NULL;
 #if defined(OS_WIN)
   zlib_filefunc_def zip_funcs;
   fill_win32_filefunc(&zip_funcs);
   zip_funcs.zopen_file = ZipOpenFunc;
+  zip_func_ptrs = &zip_funcs;
 #endif
-
-#if defined(OS_POSIX)
-  std::string src_file_str = src_file.value();
-  unzFile zip_file = unzOpen(src_file_str.c_str());
-#elif defined(OS_WIN)
-  std::string src_file_str = WideToUTF8(src_file.value());
-  unzFile zip_file = unzOpen2(src_file_str.c_str(), &zip_funcs);
-#endif
-  if (!zip_file) {
-    DLOG(WARNING) << "couldn't create file " << src_file_str;
-    return false;
-  }
-  unz_global_info zip_info;
-  int err;
-  err = unzGetGlobalInfo(zip_file, &zip_info);
-  if (err != UNZ_OK) {
-    DLOG(WARNING) << "couldn't open zip " << src_file_str;
-    return false;
-  }
-  bool ret = true;
-  for (unsigned int i = 0; i < zip_info.number_entry; ++i) {
-    if (!ExtractCurrentFile(zip_file, dest_dir)) {
-      ret = false;
-      break;
-    }
-
-    if (i + 1 < zip_info.number_entry) {
-      err = unzGoToNextFile(zip_file);
-      if (err != UNZ_OK) {
-        DLOG(WARNING) << "error %d in unzGoToNextFile";
-        ret = false;
-        break;
-      }
-    }
-  }
-  unzClose(zip_file);
-  return ret;
+  return unzOpen2(file_name_utf8.c_str(), zip_func_ptrs);
 }
 
-static bool AddFileToZip(zipFile zip_file, const FilePath& src_dir) {
+// Opens the given file name in UTF-8 for zipping, with some setup for
+// Windows.  |append_flag| will be passed to zipOpen2().
+zipFile OpenForZipping(const std::string& file_name_utf8, int append_flag) {
+  zlib_filefunc_def* zip_func_ptrs = NULL;
+#if defined(OS_WIN)
+  zlib_filefunc_def zip_funcs;
+  fill_win32_filefunc(&zip_funcs);
+  zip_funcs.zopen_file = ZipOpenFunc;
+  zip_func_ptrs = &zip_funcs;
+#endif
+  return zipOpen2(file_name_utf8.c_str(),
+                  append_flag,
+                  NULL,  // global comment
+                  zip_func_ptrs);
+}
+
+bool AddFileToZip(zipFile zip_file, const FilePath& src_dir) {
   net::FileStream stream;
   int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
   if (stream.Open(src_dir, flags) != 0) {
@@ -230,14 +209,12 @@ static bool AddFileToZip(zipFile zip_file, const FilePath& src_dir) {
   return true;
 }
 
-static bool AddEntryToZip(zipFile zip_file, const FilePath& path,
-                          const FilePath& root_path) {
-#if defined(OS_WIN)
+bool AddEntryToZip(zipFile zip_file, const FilePath& path,
+                   const FilePath& root_path) {
   std::string str_path =
-      WideToUTF8(path.value().substr(root_path.value().length() + 1));
+      path.AsUTF8Unsafe().substr(root_path.value().length() + 1);
+#if defined(OS_WIN)
   ReplaceSubstringsAfterOffset(&str_path, 0u, "\\", "/");
-#else
-  std::string str_path = path.value().substr(root_path.value().length() + 1);
 #endif
 
   bool is_directory = file_util::DirectoryExists(path);
@@ -266,29 +243,60 @@ static bool AddEntryToZip(zipFile zip_file, const FilePath& path,
   return success;
 }
 
+bool ExcludeNoFilesFilter(const FilePath& file_path) {
+  return true;
+}
+
+bool ExcludeHiddenFilesFilter(const FilePath& file_path) {
+  return file_path.BaseName().value()[0] != '.';
+}
+
+}  // namespace
+
+namespace zip {
+
+bool Unzip(const FilePath& src_file, const FilePath& dest_dir) {
+  unzFile zip_file = OpenForUnzipping(src_file.AsUTF8Unsafe());
+  if (!zip_file) {
+    DLOG(WARNING) << "couldn't create file " << src_file.value();
+    return false;
+  }
+  unz_global_info zip_info;
+  int err;
+  err = unzGetGlobalInfo(zip_file, &zip_info);
+  if (err != UNZ_OK) {
+    DLOG(WARNING) << "couldn't open zip " << src_file.value();
+    return false;
+  }
+  bool ret = true;
+  for (unsigned int i = 0; i < zip_info.number_entry; ++i) {
+    if (!ExtractCurrentFile(zip_file, dest_dir)) {
+      ret = false;
+      break;
+    }
+
+    if (i + 1 < zip_info.number_entry) {
+      err = unzGoToNextFile(zip_file);
+      if (err != UNZ_OK) {
+        DLOG(WARNING) << "error %d in unzGoToNextFile";
+        ret = false;
+        break;
+      }
+    }
+  }
+  unzClose(zip_file);
+  return ret;
+}
+
 bool ZipWithFilterCallback(const FilePath& src_dir, const FilePath& dest_file,
                            const FilterCallback& filter_cb) {
   DCHECK(file_util::DirectoryExists(src_dir));
 
-#if defined(OS_WIN)
-  zlib_filefunc_def zip_funcs;
-  fill_win32_filefunc(&zip_funcs);
-  zip_funcs.zopen_file = ZipOpenFunc;
-#endif
-
-#if defined(OS_POSIX)
-  std::string dest_file_str = dest_file.value();
-  std::string src_dir_str = src_dir.value();
-  zipFile zip_file = zipOpen(dest_file_str.c_str(), APPEND_STATUS_CREATE);
-#elif defined(OS_WIN)
-  std::string dest_file_str = WideToUTF8(dest_file.value());
-  zipFile zip_file = zipOpen2(dest_file_str.c_str(), APPEND_STATUS_CREATE,
-                              NULL,  // global comment
-                              &zip_funcs);
-#endif
+  zipFile zip_file = OpenForZipping(dest_file.AsUTF8Unsafe(),
+                                    APPEND_STATUS_CREATE);
 
   if (!zip_file) {
-    DLOG(WARNING) << "couldn't create file " << dest_file_str;
+    DLOG(WARNING) << "couldn't create file " << dest_file.value();
     return false;
   }
 
@@ -311,19 +319,11 @@ bool ZipWithFilterCallback(const FilePath& src_dir, const FilePath& dest_file,
   }
 
   if (ZIP_OK != zipClose(zip_file, NULL)) {  // global comment
-    DLOG(ERROR) << "Error closing zip file " << dest_file_str;
+    DLOG(ERROR) << "Error closing zip file " << dest_file.value();
     return false;
   }
 
   return success;
-}
-
-static bool ExcludeNoFilesFilter(const FilePath& file_path) {
-  return true;
-}
-
-static bool ExcludeHiddenFilesFilter(const FilePath& file_path) {
-  return file_path.BaseName().value()[0] != '.';
 }
 
 bool Zip(const FilePath& src_dir, const FilePath& dest_file,
