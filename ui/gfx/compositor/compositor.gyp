@@ -184,6 +184,8 @@
         '../test/gfx_test_utils.h',
       ],
       'conditions': [
+        # We allow on platforms without a compositor (such as OS_WIN).
+        # They will use compositor_stub.cc.
         ['toolkit_views == 1', {
           'dependencies': [
             '<(DEPTH)/skia/skia.gyp:skia',

@@ -58,6 +58,10 @@
 #include "views/focus/accelerator_handler.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/desktop.h"
+#endif
+
 namespace ui_test_utils {
 
 namespace {
@@ -230,7 +234,9 @@ void RunMessageLoop() {
   MessageLoopForUI* loop = MessageLoopForUI::current();
   bool did_allow_task_nesting = loop->NestableTasksAllowed();
   loop->SetNestableTasksAllowed(true);
-#if defined(TOOLKIT_VIEWS)
+#if defined(USE_AURA)
+  aura::Desktop::GetInstance()->Run();
+#elif defined(TOOLKIT_VIEWS)
   views::AcceleratorHandler handler;
   loop->RunWithDispatcher(&handler);
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
