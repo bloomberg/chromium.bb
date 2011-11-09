@@ -459,6 +459,9 @@ def GuessVCS(options, path, file_list):
         ['git', 'rev-parse', '--is-inside-work-tree'], cwd=real_path,
         stderr=subprocess2.VOID)
     return GIT(options, path, file_list)
+  except OSError, e:
+    if e.errno != errno.ENOENT:
+      raise
   except subprocess2.CalledProcessError, e:
     if e.returncode != errno.ENOENT and e.returncode != 128:
       # ENOENT == 2 = they don't have git installed.
