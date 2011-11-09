@@ -60,11 +60,9 @@ class OmniboxViewWin
 
   DECLARE_WND_CLASS(L"Chrome_OmniboxView");
 
-  OmniboxViewWin(const gfx::Font& font,
-                 AutocompleteEditController* controller,
+  OmniboxViewWin(AutocompleteEditController* controller,
                  ToolbarModel* toolbar_model,
                  LocationBarView* parent_view,
-                 HWND hwnd,
                  CommandUpdater* command_updater,
                  bool popup_window_mode,
                  views::View* location_bar);
@@ -143,7 +141,7 @@ class OmniboxViewWin
   virtual int TextWidth() const OVERRIDE;
   virtual string16 GetInstantSuggestion() const OVERRIDE;
   virtual bool IsImeComposing() const OVERRIDE;
-
+  virtual int GetMaxEditWidth(int entry_width) const OVERRIDE;
   virtual views::View* AddToView(views::View* parent) OVERRIDE;
   virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
 

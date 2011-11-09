@@ -188,26 +188,13 @@ void LocationBarView::Init() {
   // URL edit field.
   // View container for URL edit field.
   Profile* profile = browser_->profile();
-#if defined(USE_AURA)
-  OmniboxViewViews* omnibox_view = new OmniboxViewViews(this, model_, profile,
-      browser_->command_updater(), mode_ == POPUP, this);
-  omnibox_view->Init();
-  location_entry_.reset(omnibox_view);
-#elif defined(OS_WIN)
-  if (views::Widget::IsPureViews()) {
-    OmniboxViewViews* omnibox_view = new OmniboxViewViews(this, model_, profile,
-        browser_->command_updater(), mode_ == POPUP, this);
-    omnibox_view->Init();
-    location_entry_.reset(omnibox_view);
-  } else {
-    location_entry_.reset(new OmniboxViewWin(font_, this, model_, this,
-        GetWidget()->GetNativeView(), browser_->command_updater(),
-        mode_ == POPUP, this));
-  }
-#else
-  location_entry_.reset(OmniboxViewGtk::Create(this, model_, profile,
-      browser_->command_updater(), mode_ == POPUP, this));
-#endif
+  location_entry_.reset(OmniboxView::CreateOmniboxView(
+      this,
+      model_,
+      profile,
+      browser_->command_updater(),
+      mode_ == POPUP,
+      this));
 
   location_entry_view_ = location_entry_->AddToView(this);
   location_entry_view_->set_id(VIEW_ID_AUTOCOMPLETE);
@@ -553,24 +540,7 @@ void LocationBarView::Layout() {
     entry_width -= (total_padding + ev_bubble_width);
   }
 
-#if defined(OS_WIN)
-  int max_edit_width = entry_width;
-  if (views::Widget::IsPureViews()) {
-    NOTIMPLEMENTED();
-  } else {
-#if !defined(USE_AURA)
-    RECT formatting_rect;
-    GetOmniboxViewWin()->GetRect(&formatting_rect);
-    RECT edit_bounds;
-    GetOmniboxViewWin()->GetClientRect(&edit_bounds);
-    max_edit_width = entry_width - formatting_rect.left -
-                     (edit_bounds.right - formatting_rect.right);
-#endif
-  }
-#else
-  int max_edit_width = entry_width;
-#endif
-
+  int max_edit_width = location_entry_->GetMaxEditWidth(entry_width);
   if (max_edit_width < 0)
     return;
   const int available_width = AvailableWidth(max_edit_width);
