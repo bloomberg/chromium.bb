@@ -2510,7 +2510,8 @@ class CommitTest(CpuTestBase):
   #
 
   def _TestAmendCommitMessage(self, new_upgrade_lines,
-                              old_upgrade_lines, git_show):
+                              old_upgrade_lines, remaining_lines,
+                              git_show):
     """Test Upgrader._AmendCommitMessage"""
     mocked_upgrader = self._MockUpgrader()
 
@@ -2526,7 +2527,8 @@ class CommitTest(CpuTestBase):
     mocked_upgrader._RunGit(mocked_upgrader._stable_repo,
                             mox.IgnoreArg(), redirect_stdout=True,
                             ).AndReturn(git_result)
-    mocked_upgrader._CreateCommitMessage(mox.Func(all_lines_verifier))
+    mocked_upgrader._CreateCommitMessage(mox.Func(all_lines_verifier),
+                                         remaining_lines)
     self.mox.ReplayAll()
 
     # Verify
@@ -2541,15 +2543,23 @@ class CommitTest(CpuTestBase):
     old_upgrade_lines = ["Upgraded xyz/uvw to version 3.2.1 on arm, x86",
                          "Upgraded mno/pqr to version 12345 on x86",
                          ]
+    remaining_lines = ["Extraneous extra comments in commit body.",
+                       "",
+                       "BUG=chromium-os:12345",
+                       "TEST=test everything",
+                       "again and again",
+                       ]
     git_show_output = ("__BEGIN BODY__\n"
                        + "\n".join(old_upgrade_lines) + "\n"
+                       + "\n"
+                       + "\n".join(remaining_lines) +
                        "__END BODY__\n"
                        "some other stuff\n"
                        "even more stuff\n"
                        "not important\n"
                        )
     self._TestAmendCommitMessage(new_upgrade_lines, old_upgrade_lines,
-                                 git_show_output)
+                                 remaining_lines, git_show_output)
 
   def testOldOnly(self):
     old_upgrade_lines = ["Upgraded xyz/uvw to version 3.2.1 on arm, x86",
@@ -2562,7 +2572,7 @@ class CommitTest(CpuTestBase):
                        "even more stuff\n"
                        "not important\n"
                        )
-    self._TestAmendCommitMessage([], old_upgrade_lines, git_show_output)
+    self._TestAmendCommitMessage([], old_upgrade_lines, [], git_show_output)
 
   def testNewOnly(self):
     new_upgrade_lines = ["Upgraded abc/efg to version 1.2.3 on amd64, arm, x86",
@@ -2572,7 +2582,37 @@ class CommitTest(CpuTestBase):
                        "even more stuff\n"
                        "not important\n"
                        )
-    self._TestAmendCommitMessage(new_upgrade_lines, [], git_show_output)
+    self._TestAmendCommitMessage(new_upgrade_lines, [], [], git_show_output)
+
+  def testOldEditedAndNew(self):
+    new_upgrade_lines = ["Upgraded abc/efg to version 1.2.3 on amd64, arm, x86",
+                         "Upgraded mno/pqr to version 4.5-r1 on x86",
+                         ]
+    old_upgrade_lines = ["So I upgraded xyz/uvw to version 3.2.1 on arm, x86",
+                         "Then I Upgraded mno/pqr to version 12345 on x86",
+                         ]
+    remaining_lines = ["Extraneous extra comments in commit body.",
+                       "",
+                       "BUG=chromium-os:12345",
+                       "TEST=test everything",
+                       "again and again",
+                       ]
+    git_show_output = ("__BEGIN BODY__\n"
+                       + "\n".join(old_upgrade_lines) + "\n"
+                       + "\n"
+                       + "\n".join(remaining_lines) +
+                       "__END BODY__\n"
+                       "some other stuff\n"
+                       "even more stuff\n"
+                       "not important\n"
+                       )
+
+    # In this test, it should not recognize the existing old_upgrade_lines
+    # as a previous commit message from this script.  So it should give a
+    # warning and push those lines to the end (grouped with remaining_lines).
+    remaining_lines = old_upgrade_lines + [''] + remaining_lines
+    self._TestAmendCommitMessage(new_upgrade_lines, [],
+                                 remaining_lines, git_show_output)
 
   #
   # _CreateCommitMessage
