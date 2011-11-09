@@ -41,6 +41,7 @@
       },
       {'target_name': 'content_app',
        'type': 'static_library',
+       'variables': { 'enable_wexit_time_destructors': 1, },
        'includes': [
           'content_app.gypi',
         ],
@@ -50,6 +51,7 @@
       },
       {'target_name': 'content_browser',
        'type': 'static_library',
+       'variables': { 'enable_wexit_time_destructors': 1, },
        'includes': [
           'content_browser.gypi',
         ],
@@ -59,12 +61,14 @@
       },
       {'target_name': 'content_common',
        'type': 'static_library',
+       'variables': { 'enable_wexit_time_destructors': 1, },
        'includes': [
           'content_common.gypi',
         ],
       },
       {'target_name': 'content_gpu',
        'type': 'static_library',
+       'variables': { 'enable_wexit_time_destructors': 1, },
        'includes': [
           'content_gpu.gypi',
         ],
@@ -74,6 +78,7 @@
       },
       {'target_name': 'content_plugin',
        'type': 'static_library',
+       'variables': { 'enable_wexit_time_destructors': 1, },
        'includes': [
           'content_plugin.gypi',
         ],
@@ -83,12 +88,14 @@
       },
       {'target_name': 'content_ppapi_plugin',
        'type': 'static_library',
+       'variables': { 'enable_wexit_time_destructors': 1, },
        'includes': [
           'content_ppapi_plugin.gypi',
         ],
       },
       {'target_name': 'content_renderer',
        'type': 'static_library',
+       'variables': { 'enable_wexit_time_destructors': 1, },
        'includes': [
           'content_renderer.gypi',
         ],
@@ -98,6 +105,7 @@
       },
       {'target_name': 'content_utility',
        'type': 'static_library',
+       'variables': { 'enable_wexit_time_destructors': 1, },
        'includes': [
           'content_utility.gypi',
         ],
@@ -107,6 +115,7 @@
       },
       {'target_name': 'content_worker',
        'type': 'static_library',
+       'variables': { 'enable_wexit_time_destructors': 1, },
        'includes': [
           'content_worker.gypi',
        ],
@@ -185,6 +194,7 @@
      'targets': [
       {'target_name': 'content',
        'type': 'shared_library',
+       'variables': { 'enable_wexit_time_destructors': 1, },
        'includes': [
         'content_app.gypi',
         'content_browser.gypi',
