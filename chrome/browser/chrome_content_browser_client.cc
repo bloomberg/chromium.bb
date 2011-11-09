@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_content_browser_client.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/browser_about_handler.h"
@@ -626,9 +627,8 @@ bool ChromeContentBrowserClient::AllowGetCookie(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
-          &TabSpecificContentSettings::CookiesRead,
-          render_process_id, render_view_id, url, cookie_list, !allow));
+      base::Bind(&TabSpecificContentSettings::CookiesRead, render_process_id,
+                 render_view_id, url, cookie_list, !allow));
   return allow;
 }
 
@@ -652,10 +652,8 @@ bool ChromeContentBrowserClient::AllowSetCookie(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
-          &TabSpecificContentSettings::CookieChanged,
-          render_process_id, render_view_id, url, cookie_line, *options,
-          !allow));
+      base::Bind(&TabSpecificContentSettings::CookieChanged, render_process_id,
+                 render_view_id, url, cookie_line, *options, !allow));
   return allow;
 }
 
@@ -693,7 +691,7 @@ void ChromeContentBrowserClient::OpenItem(const FilePath& path) {
 #else
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&platform_util::OpenItem, path));
+      base::Bind(&platform_util::OpenItem, path));
 #endif
 }
 
@@ -704,7 +702,7 @@ void ChromeContentBrowserClient::ShowItemInFolder(const FilePath& path) {
 #else
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&platform_util::ShowItemInFolder, path));
+      base::Bind(&platform_util::ShowItemInFolder, path));
 #endif
 }
 

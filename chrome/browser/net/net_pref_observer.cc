@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/net_pref_observer.h"
 
+#include "base/bind.h"
 #include "base/task.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -20,8 +21,8 @@ using content::BrowserThread;
 
 namespace {
 
-// Function (for NewRunnableFunction) to call the set_enforce_throttling
-// member on the URLRequestThrottlerManager singleton.
+// Callback function to call the set_enforce_throttling member on the
+// URLRequestThrottlerManager singleton.
 void SetEnforceThrottlingOnThrottlerManager(bool enforce) {
   net::URLRequestThrottlerManager::GetInstance()->set_enforce_throttling(
       enforce);
@@ -70,8 +71,8 @@ void NetPrefObserver::ApplySettings(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kHttpThrottlingEnabled) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(SetEnforceThrottlingOnThrottlerManager,
-                            *http_throttling_enabled_));
+        base::Bind(SetEnforceThrottlingOnThrottlerManager,
+                   *http_throttling_enabled_));
   }
 }
 

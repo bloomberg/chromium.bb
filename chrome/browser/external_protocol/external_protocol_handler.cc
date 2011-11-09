@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -287,8 +288,7 @@ void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(const GURL& url) {
     return;
   }
 
-  loop->PostTask(FROM_HERE,
-      NewRunnableFunction(&platform_util::OpenExternal, url));
+  loop->PostTask(FROM_HERE, base::Bind(&platform_util::OpenExternal, url));
 #endif
 }
 

@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -219,8 +220,9 @@ bool PepperFlashComponentInstaller::Install(base::DictionaryValue* manifest,
   current_version_ = version;
   path = path.Append(kPepperFlashPluginFileName);
   PathService::Override(chrome::FILE_PEPPER_FLASH_PLUGIN, path);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&RegisterPepperFlashWithChrome, path, version));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&RegisterPepperFlashWithChrome, path, version));
   return true;
 }
 
@@ -307,15 +309,17 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
   if (GetLatestPepperFlashDirectory(&path, &version)) {
     path = path.Append(kPepperFlashPluginFileName);
     if (file_util::PathExists(path)) {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          NewRunnableFunction(&RegisterPepperFlashWithChrome, path, version));
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&RegisterPepperFlashWithChrome, path, version));
     } else {
       version = Version(kNullVersion);
     }
   }
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&FinishPepperFlashUpdateRegistration, cus, version));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&FinishPepperFlashUpdateRegistration, cus, version));
 }
 
 }  // namespace
@@ -323,6 +327,6 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
 void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
 // #if defined(GOOGLE_CHROME_BUILD)
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&StartPepperFlashUpdateRegistration, cus));
+                          base::Bind(&StartPepperFlashUpdateRegistration, cus));
 // #endif
 }

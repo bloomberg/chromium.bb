@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_resource/gpu_blacklist_updater.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/values.h"
@@ -101,7 +102,7 @@ void GpuBlacklistUpdater::SetupOnFileThread() {
   // initialzed on UI thread.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&GpuBlacklistUpdater::SetupOnUIThread));
+      base::Bind(&GpuBlacklistUpdater::SetupOnUIThread));
 }
 
 // static

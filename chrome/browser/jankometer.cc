@@ -7,6 +7,7 @@
 #include "chrome/browser/jankometer.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
@@ -409,8 +410,7 @@ void InstallJankometer(const CommandLine& parsed_command_line) {
           io_watchdog_enabled));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(io_observer->get(),
-                        &IOJankObserver::AttachToCurrentThread));
+      base::Bind(&IOJankObserver::AttachToCurrentThread, io_observer->get()));
 }
 
 void UninstallJankometer() {

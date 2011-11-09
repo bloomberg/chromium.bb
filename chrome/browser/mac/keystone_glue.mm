@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -69,7 +70,7 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
 
     scoped_refptr<PerformBridge> op = new PerformBridge(target, sel, arg);
     base::WorkerPool::PostTask(
-        FROM_HERE, NewRunnableMethod(op.get(), &PerformBridge::Run), true);
+        FROM_HERE, base::Bind(&PerformBridge::Run, op.get()), true);
   }
 
   // Convenience for the no-argument case.
