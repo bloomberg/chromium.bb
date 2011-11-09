@@ -93,6 +93,8 @@ string16 PluginTypeToString(int type) {
       return l10n_util::GetStringUTF16(IDS_PLUGINS_PPAPI_IN_PROCESS);
     case WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS:
       return l10n_util::GetStringUTF16(IDS_PLUGINS_PPAPI_OUT_OF_PROCESS);
+    case WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED:
+      return l10n_util::GetStringUTF16(IDS_PLUGINS_PPAPI_UNSANDBOXED);
   }
   NOTREACHED();
   return string16();

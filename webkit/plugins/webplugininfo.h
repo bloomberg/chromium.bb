@@ -41,7 +41,8 @@ struct WebPluginInfo {
   enum PluginType {
     PLUGIN_TYPE_NPAPI,
     PLUGIN_TYPE_PEPPER_IN_PROCESS,
-    PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS
+    PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS,
+    PLUGIN_TYPE_PEPPER_UNSANDBOXED
   };
 
   WebPluginInfo();
@@ -76,6 +77,8 @@ struct WebPluginInfo {
 
 // Checks whether a plugin is a Pepper plugin, enabled or disabled.
 bool IsPepperPlugin(const WebPluginInfo& plugin);
+
+bool IsOutOfProcessPlugin(const WebPluginInfo& plugin);
 
 }  // namespace webkit
 

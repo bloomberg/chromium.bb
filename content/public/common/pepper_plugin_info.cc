@@ -8,7 +8,8 @@ namespace content {
 
 PepperPluginInfo::PepperPluginInfo()
     : is_internal(false),
-      is_out_of_process(false) {
+      is_out_of_process(false),
+      is_sandboxed(true) {
 }
 
 PepperPluginInfo::~PepperPluginInfo() {

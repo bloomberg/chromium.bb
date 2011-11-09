@@ -4327,6 +4327,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGINS_PPAPI_OUT_OF_PROCESS" desc="Text that indicates the plugin is an out-of-process PPAPI plugin.">
         PPAPI (out-of-process)
       </message>
+      <message name="IDS_PLUGINS_PPAPI_UNSANDBOXED" desc="Text that indicates the plugin is an unsandboxed out-of-process PPAPI plugin.">
+        PPAPI (unsandboxed)
+      </message>
 
       <!-- about:policy -->
       <message name="IDS_POLICY_TITLE" desc="The title for the about:policies page.">

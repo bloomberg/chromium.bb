@@ -31,6 +31,10 @@ struct CONTENT_EXPORT PepperPluginInfo {
   // True when this plugin should be run out of process. Defaults to false.
   bool is_out_of_process;
 
+  // True when an out-of-process plugin should also be run within sandbox.
+  // Defaults to true.
+  bool is_sandboxed;
+
   FilePath path;  // Internal plugins have "internal-[name]" as path.
   std::string name;
   std::string description;

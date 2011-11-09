@@ -157,14 +157,18 @@ bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
   if (!plugin_launcher.empty())
     cmd_line->PrependWrapper(plugin_launcher);
 
-  // On posix, having a plugin launcher means we need to use another process
-  // instead of just forking the zygote.
+  // On posix, never use the zygote for the broker. Also, only use the zygote if
+  // the plugin is sandboxed, and we are not using a plugin launcher - having a
+  // plugin launcher means we need to use another process instead of just
+  // forking the zygote.
+#if defined(OS_POSIX)
+  bool use_zygote = !is_broker_ && plugin_launcher.empty() && info.is_sandboxed;
+#endif  // OS_POSIX
   Launch(
 #if defined(OS_WIN)
       FilePath(),
 #elif defined(OS_POSIX)
-      is_broker_ ? false  // Never use the zygote for the broker.
-                 : plugin_launcher.empty(),
+      use_zygote,
       base::environment_vector(),
 #endif
       cmd_line);

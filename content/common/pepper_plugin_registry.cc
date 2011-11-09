@@ -79,7 +79,9 @@ webkit::WebPluginInfo content::PepperPluginInfo::ToWebPluginInfo() const {
   webkit::WebPluginInfo info;
 
   info.type = is_out_of_process ?
-      webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS :
+      (is_sandboxed ?
+        webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS :
+        webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED) :
       webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
 
   info.name = name.empty() ?
@@ -97,9 +99,9 @@ bool MakePepperPluginInfo(const webkit::WebPluginInfo& webplugin_info,
   if (!webkit::IsPepperPlugin(webplugin_info))
     return false;
 
-  pepper_info->is_out_of_process =
-      webplugin_info.type ==
-          webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS;
+  pepper_info->is_out_of_process = webkit::IsOutOfProcessPlugin(webplugin_info);
+  pepper_info->is_sandboxed = webplugin_info.type !=
+      webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED;
 
   pepper_info->path = FilePath(webplugin_info.path);
   pepper_info->name = UTF16ToASCII(webplugin_info.name);
@@ -131,7 +133,7 @@ void PepperPluginRegistry::PreloadModules() {
   std::vector<content::PepperPluginInfo> plugins;
   ComputeList(&plugins);
   for (size_t i = 0; i < plugins.size(); ++i) {
-    if (!plugins[i].is_internal) {
+    if (!plugins[i].is_internal && plugins[i].is_sandboxed) {
       std::string error;
       base::NativeLibrary library = base::LoadNativeLibrary(plugins[i].path,
                                                             &error);
