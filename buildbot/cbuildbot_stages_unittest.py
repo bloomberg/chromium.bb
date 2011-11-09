@@ -556,6 +556,8 @@ class HWTestStageTest(AbstractStageTest):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
+    self.options.hw_tests = True
+    self.options.remote_ip = '1.1.1.1'
 
   def ConstructStage(self):
     return stages.HWTestStage(self.bot_id, self.options, self.build_config)
@@ -566,7 +568,6 @@ class HWTestStageTest(AbstractStageTest):
     self.build_config = config.config[self.bot_id].copy()
     self.build_config['hw_tests'] = [('test_Test',)]
     self.build_config['hw_tests_reimage'] = True
-    ip = self.options.remote_ip = '1.1.1.1'
 
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
@@ -575,10 +576,10 @@ class HWTestStageTest(AbstractStageTest):
     commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
                             mox.IgnoreArg(),
-                            ip)
+                            self.options.remote_ip)
     commands.RunRemoteTest(self.build_root,
                            self.build_config['board'],
-                           ip,
+                           self.options.remote_ip,
                            'test_Test',
                            ())
 
@@ -592,7 +593,6 @@ class HWTestStageTest(AbstractStageTest):
     self.build_config = config.config[self.bot_id].copy()
     self.build_config['hw_tests'] = [('test_Test', 'abc',)]
     self.build_config['hw_tests_reimage'] = True
-    ip = self.options.remote_ip = '1.1.1.1'
 
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
@@ -601,10 +601,10 @@ class HWTestStageTest(AbstractStageTest):
     commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
                             mox.IgnoreArg(),
-                            ip)
+                            self.options.remote_ip)
     commands.RunRemoteTest(self.build_root,
                            self.build_config['board'],
-                           ip,
+                           self.options.remote_ip,
                            'test_Test',
                            (('abc',)))
 
@@ -618,7 +618,6 @@ class HWTestStageTest(AbstractStageTest):
     self.build_config = config.config[self.bot_id].copy()
     self.build_config['hw_tests'] = None
     self.build_config['hw_tests_reimage'] = True
-    ip = self.options.remote_ip = '1.1.1.1'
 
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
@@ -635,7 +634,6 @@ class HWTestStageTest(AbstractStageTest):
     self.build_config = config.config[self.bot_id].copy()
     self.build_config['hw_tests'] = [('test_Test',), ('test_Test2',)]
     self.build_config['hw_tests_reimage'] = True
-    ip = self.options.remote_ip = '1.1.1.1'
 
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
@@ -644,16 +642,16 @@ class HWTestStageTest(AbstractStageTest):
     commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
                             mox.IgnoreArg(),
-                            ip)
+                            self.options.remote_ip)
     commands.RunRemoteTest(self.build_root,
                            self.build_config['board'],
-                           ip,
+                           self.options.remote_ip,
                            'test_Test',
                            ())
 
     commands.RunRemoteTest(self.build_root,
                            self.build_config['board'],
-                           ip,
+                           self.options.remote_ip,
                            'test_Test2',
                            ())
 
@@ -667,7 +665,6 @@ class HWTestStageTest(AbstractStageTest):
     self.build_config = config.config[self.bot_id].copy()
     self.build_config['hw_tests'] = [('test_Test',)]
     self.build_config['hw_tests_reimage'] = False
-    ip = self.options.remote_ip = '1.1.1.1'
 
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
@@ -675,7 +672,7 @@ class HWTestStageTest(AbstractStageTest):
 
     commands.RunRemoteTest(self.build_root,
                            self.build_config['board'],
-                           ip,
+                           self.options.remote_ip,
                            'test_Test',
                            ())
 
@@ -689,8 +686,7 @@ class HWTestStageTest(AbstractStageTest):
     self.build_config = config.config[self.bot_id].copy()
     self.build_config['hw_tests'] = [('test_Test',)]
     self.build_config['hw_tests_reimage'] = True
-    ip = '1.1.1.1'
-    self.build_config['remote_ip'] = ip
+    self.build_config['remote_ip'] = self.options.remote_ip
 
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
@@ -699,10 +695,10 @@ class HWTestStageTest(AbstractStageTest):
     commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
                             mox.IgnoreArg(),
-                            ip)
+                            self.options.remote_ip)
     commands.RunRemoteTest(self.build_root,
                            self.build_config['board'],
-                           ip,
+                           self.options.remote_ip,
                            'test_Test',
                            ())
 

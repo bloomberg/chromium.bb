@@ -220,11 +220,11 @@ class BuilderStage(object):
 
   def Run(self):
     """Have the builder execute the stage."""
-    run_stage = True
-    if self.option_name:
-      run_stage = getattr(self._options, self.option_name)
+    if self.option_name and not getattr(self._options, self.option_name):
+      self._PrintLoudly('Not running Stage %s' % self.name)
+      return
 
-    if results_lib.Results.PreviouslyCompleted(self.name) or not run_stage:
+    if results_lib.Results.PreviouslyCompleted(self.name):
       self._PrintLoudly('Skipping Stage %s' % self.name)
       results_lib.Results.Record(self.name, results_lib.Results.SKIPPED)
       return

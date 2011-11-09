@@ -100,7 +100,7 @@ REFRESH_PACKAGES_TYPE = 'refresh_packages'
 
 VALID_BUILD_TYPES = [PFQ_TYPE, COMMIT_QUEUE_TYPE, CHROME_PFQ_TYPE,
                      BUILD_FROM_SOURCE_TYPE, CHROOT_BUILDER_TYPE,
-                     REFRESH_PACKAGES_TYPE]
+                     REFRESH_PACKAGES_TYPE, CANARY_TYPE]
 
 # Defines VM Test types.
 SMOKE_SUITE_TEST_TYPE = 'smoke_suite'
