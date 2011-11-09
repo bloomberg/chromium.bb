@@ -225,12 +225,8 @@ cr.define('ntp4', function() {
       loginBubble.content = bubbleContent;
       bubbleContent.hidden = false;
 
-      var learnMoreLink = loginBubble.querySelector('#login-status-learn-more');
-      learnMoreLink.onclick = loginBubble.hide.bind(loginBubble);
-
       var advancedButton = loginBubble.querySelector('#login-status-advanced');
       advancedButton.onclick = function() {
-        loginBubble.hide();
         chrome.send('showAdvancedLoginUI');
       }
 
