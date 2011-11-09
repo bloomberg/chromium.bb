@@ -255,14 +255,7 @@ TEST_F(WorkerTest, SharedWorkerHttpAuth) {
   // dialogs displayed by non-navigating tabs.
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/101996
-#define MAYBE_StressJSExecution) FLAKY_StressJSExecution
-#else
-#define MAYBE_StressJSExecution StressJSExecution
-#endif
-
-TEST_F(WorkerTest, MAYBE_StressJSExecution) {
+TEST_F(WorkerTest, StressJSExecution) {
   RunWorkerFastLayoutTest("stress-js-execution.html");
 }
 
@@ -277,14 +270,7 @@ TEST_F(WorkerTest, MAYBE_UseMachineStack) {
   RunWorkerFastLayoutTest("use-machine-stack.html");
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/101996
-#define MAYBE_WorkerCall FLAKY_WorkerCall
-#else
-#define MAYBE_WorkerCall WorkerCall
-#endif
-
-TEST_F(WorkerTest, MAYBE_WorkerCall) {
+TEST_F(WorkerTest, WorkerCall) {
   RunWorkerFastLayoutTest("worker-call.html");
 }
 
@@ -294,7 +280,7 @@ TEST_F(WorkerTest, DISABLED_WorkerClonePort) {
   RunWorkerFastLayoutTest("worker-cloneport.html");
 }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_WIN)
 // http://crbug.com/101996
 #define MAYBE_WorkerCloseFast FLAKY_WorkerCloseFast
 #else
@@ -364,14 +350,7 @@ TEST_F(WorkerTest, DISABLED_WorkerLifecycle) {
   RunWorkerFastLayoutTest("worker-lifecycle.html");
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/101996
-#define MAYBE_WorkerLocation FLAKY_WorkerLocation
-#else
-#define MAYBE_WorkerLocation WorkerLocation
-#endif
-
-TEST_F(WorkerTest, MAYBE_WorkerLocation) {
+TEST_F(WorkerTest, WorkerLocation) {
   RunWorkerFastLayoutTest("worker-location.html");
 }
 
@@ -889,13 +868,6 @@ class WorkerFileSystemTest : public WorkerTest {
 #define MAYBE_AsyncOperations FLAKY_AsyncOperations
 #define MAYBE_SyncOperations FLAKY_SyncOperations
 #define MAYBE_FileEntryToURISync FLAKY_FileEntryToURISync
-#elif defined(OS_MACOSX)
-#define MAYBE_Temporary Temporary
-#define MAYBE_Persistent Persistent
-#define MAYBE_SyncTemporary SyncTemporary
-#define MAYBE_AsyncOperations AsyncOperations
-#define MAYBE_SyncOperations FLAKY_SyncOperations
-#define MAYBE_FileEntryToURISync FileEntryToURISync
 #else
 #define MAYBE_Temporary Temporary
 #define MAYBE_Persistent Persistent
