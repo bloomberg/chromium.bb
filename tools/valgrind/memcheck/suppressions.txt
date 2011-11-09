@@ -5196,6 +5196,7 @@
    bug_103433
    Memcheck:Leak
    fun:malloc
+   ...
    fun:XGetAtomName
    fun:_ZN8chromeos12input_method9XKeyboard14GetNumLockMaskEv
 }
