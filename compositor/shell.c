@@ -263,17 +263,10 @@ shell_set_toplevel(struct wl_client *client,
 
 {
 	struct wlsc_surface *es = surface_resource->data;
-	struct wlsc_compositor *ec = es->compositor;
 
 	if (es->map_type == WLSC_SURFACE_MAP_FULLSCREEN) {
 		es->x = es->saved_x;
 		es->y = es->saved_y;
-	} else if (es->map_type == WLSC_SURFACE_MAP_UNMAPPED) {
-		es->x = 10 + random() % 400;
-		es->y = 10 + random() % 400;
-		/* assign to first output */
-		es->output = container_of(ec->output_list.next,
-					  struct wlsc_output, link);
 	}
 
 	wlsc_surface_damage(es);
@@ -933,6 +926,11 @@ map(struct wlsc_shell *base,
 		wl_list_insert(&compositor->surface_list, &surface->link);
 	else
 		wl_list_insert(&shell->panel->link, &surface->link);
+
+	if (surface->map_type == WLSC_SURFACE_MAP_TOPLEVEL) {
+		surface->x = 10 + random() % 400;
+		surface->y = 10 + random() % 400;
+	}
 
 	wlsc_surface_configure(surface, surface->x, surface->y, width, height);
 }
