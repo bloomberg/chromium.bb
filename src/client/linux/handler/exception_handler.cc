@@ -503,7 +503,8 @@ void ExceptionHandler::AddMappingInfo(const std::string& name,
   info.start_addr = start_address;
   info.size = mapping_size;
   info.offset = file_offset;
-  strncpy(info.name, name.c_str(), std::min(name.size(), sizeof(info)));
+  strncpy(info.name, name.c_str(), sizeof(info.name) - 1);
+  info.name[sizeof(info.name) - 1] = '\0';
 
   MappingEntry mapping;
   mapping.first = info;
