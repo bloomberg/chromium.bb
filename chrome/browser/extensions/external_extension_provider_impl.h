@@ -55,7 +55,7 @@ class ExternalExtensionProviderImpl
 
   // ExternalExtensionProvider implementation:
   virtual void ServiceShutdown() OVERRIDE;
-  virtual void VisitRegisteredExtension() const OVERRIDE;
+  virtual void VisitRegisteredExtension() OVERRIDE;
   virtual bool HasExtension(const std::string& id) const OVERRIDE;
   virtual bool GetExtensionDetails(const std::string& id,
                                    Extension::Location* location,

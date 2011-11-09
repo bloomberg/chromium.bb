@@ -144,7 +144,7 @@ class MockExtensionProvider : public ExternalExtensionProviderInterface {
   }
 
   // ExternalExtensionProvider implementation:
-  virtual void VisitRegisteredExtension() const {
+  virtual void VisitRegisteredExtension() {
     visit_count_++;
     for (DataMap::const_iterator i = extension_map_.begin();
          i != extension_map_.end(); ++i) {

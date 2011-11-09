@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "chrome/browser/extensions/external_extension_provider_impl.h"
 
 class PrefService;
 class Profile;
@@ -26,10 +27,28 @@ enum InstallState {
 // install state.
 void RegisterUserPrefs(PrefService* prefs);
 
-// Determines whether default apps should be installed into the specified
-// profile.  If true, then an instance of ExternalExtensionProviderImpl
-// specific to default apps should be added to the external providers list.
-bool ShouldInstallInProfile(Profile* profile);
+
+// A specialization of the ExternalExtensionProviderImpl that conditionally
+// installs apps from the chrome::DIR_DEFAULT_APPS location based on a
+// preference in the profile.
+class Provider : public ExternalExtensionProviderImpl {
+ public:
+  Provider(Profile* profile,
+           VisitorInterface* service,
+           ExternalExtensionLoader* loader,
+           Extension::Location crx_location,
+           Extension::Location download_location,
+           int creation_flags);
+
+  // ExternalExtensionProviderImpl overrides:
+  virtual void VisitRegisteredExtension() OVERRIDE;
+
+ private:
+  Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(Provider);
+};
+
 
 }  // namespace default_apps
 

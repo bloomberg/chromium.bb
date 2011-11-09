@@ -14,14 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace default_apps {
-
-void RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kDefaultAppsInstallState, kUnknown,
-                             PrefService::UNSYNCABLE_PREF);
-}
-
-bool ShouldInstallInProfile(Profile* profile) {
+static bool ShouldInstallInProfile(Profile* profile) {
   // We decide to install or not install default apps based on the following
   // criteria, from highest priority to lowest priority:
   //
@@ -37,10 +30,11 @@ bool ShouldInstallInProfile(Profile* profile) {
   bool install_apps =
       profile->GetPrefs()->GetString(prefs::kDefaultApps) == "install";
 
-  InstallState state = static_cast<InstallState>(profile->GetPrefs()->
-      GetInteger(prefs::kDefaultAppsInstallState));
+  default_apps::InstallState state =
+      static_cast<default_apps::InstallState>(profile->GetPrefs()->GetInteger(
+          prefs::kDefaultAppsInstallState));
   switch (state) {
-    case kUnknown: {
+    case default_apps::kUnknown: {
       // We get here for either new profile, or profiles created before the
       // default apps feature was implemented.  In the former case, we always
       // want to install default apps.  In the latter case, we don't want to
@@ -53,10 +47,10 @@ bool ShouldInstallInProfile(Profile* profile) {
         install_apps = false;
       break;
     }
-    case kAlwaysProvideDefaultApps:
+    case default_apps::kAlwaysProvideDefaultApps:
       install_apps = true;
       break;
-    case kNeverProvideDefaultApps:
+    case default_apps::kNeverProvideDefaultApps:
       install_apps = false;
       break;
     default:
@@ -89,18 +83,47 @@ bool ShouldInstallInProfile(Profile* profile) {
   }
 
   // Save the state if needed.
-  if (state == kUnknown) {
+  if (state == default_apps::kUnknown) {
     if (install_apps) {
       profile->GetPrefs()->SetInteger(prefs::kDefaultAppsInstallState,
-                                      kAlwaysProvideDefaultApps);
+                                      default_apps::kAlwaysProvideDefaultApps);
     } else {
       profile->GetPrefs()->SetInteger(prefs::kDefaultAppsInstallState,
-                                      kNeverProvideDefaultApps);
+                                      default_apps::kNeverProvideDefaultApps);
     }
     profile->GetPrefs()->ScheduleSavePersistentPrefs();
   }
 
   return install_apps;
+}
+
+namespace default_apps {
+
+void RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterIntegerPref(prefs::kDefaultAppsInstallState, kUnknown,
+                             PrefService::UNSYNCABLE_PREF);
+}
+
+Provider::Provider(Profile* profile,
+                   VisitorInterface* service,
+                   ExternalExtensionLoader* loader,
+                   Extension::Location crx_location,
+                   Extension::Location download_location,
+                   int creation_flags)
+    : ExternalExtensionProviderImpl(service, loader, crx_location,
+                                    download_location, creation_flags),
+      profile_(profile) {
+  DCHECK(profile);
+}
+
+void Provider::VisitRegisteredExtension() {
+  if (!profile_ || !ShouldInstallInProfile(profile_)) {
+    base::DictionaryValue* prefs = new base::DictionaryValue;
+    SetPrefs(prefs);
+    return;
+  }
+
+  ExternalExtensionProviderImpl::VisitRegisteredExtension();
 }
 
 }  // namespace default_apps

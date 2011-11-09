@@ -57,7 +57,7 @@ class ExternalExtensionProviderInterface {
   // Enumerate registered extensions, calling
   // OnExternalExtension(File|UpdateUrl)Found on the |visitor| object for each
   // registered extension found.
-  virtual void VisitRegisteredExtension() const = 0;
+  virtual void VisitRegisteredExtension() = 0;
 
   // Test if this provider has an extension with id |id| registered.
   virtual bool HasExtension(const std::string& id) const = 0;

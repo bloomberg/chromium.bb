@@ -65,7 +65,7 @@ ExternalExtensionProviderImpl::~ExternalExtensionProviderImpl() {
   loader_->OwnerShutdown();
 }
 
-void ExternalExtensionProviderImpl::VisitRegisteredExtension() const {
+void ExternalExtensionProviderImpl::VisitRegisteredExtension() {
   // The loader will call back to SetPrefs.
   loader_->StartLoading();
 }
@@ -354,17 +354,16 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
               Extension::NO_FLAGS)));
 
 #if !defined(OS_CHROMEOS)
-  if (default_apps::ShouldInstallInProfile(profile)) {
-    provider_list->push_back(
-        linked_ptr<ExternalExtensionProviderInterface>(
-            new ExternalExtensionProviderImpl(
-                service,
-                new ExternalPrefExtensionLoader(
-                    chrome::DIR_DEFAULT_APPS,
-                    ExternalPrefExtensionLoader::NONE),
-                Extension::EXTERNAL_PREF,
-                Extension::INVALID,
-                Extension::FROM_BOOKMARK)));
-  }
+  provider_list->push_back(
+      linked_ptr<ExternalExtensionProviderInterface>(
+          new default_apps::Provider(
+              profile,
+              service,
+              new ExternalPrefExtensionLoader(
+                  chrome::DIR_DEFAULT_APPS,
+                  ExternalPrefExtensionLoader::NONE),
+              Extension::EXTERNAL_PREF,
+              Extension::INVALID,
+              Extension::FROM_BOOKMARK)));
 #endif
 }
