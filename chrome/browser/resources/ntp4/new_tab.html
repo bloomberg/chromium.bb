@@ -26,7 +26,7 @@ document.documentElement.setAttribute('touchui', true);
 </script>
 </if>
 
-<link rel="stylesheet" href="../shared/css/gradient_button.css">
+<link rel="stylesheet" href="../shared/css/button.css">
 <link rel="stylesheet" href="../shared/css/bubble.css">
 <link rel="stylesheet" href="../shared/css/expandable_bubble.css">
 <link rel="stylesheet" href="../shared/css/menu.css">
@@ -71,7 +71,7 @@ document.documentElement.setAttribute('touchui', true);
 </head>
 
 <body>
-  <button id="login-container" hidden>
+  <button id="login-container" class="custom-appearance" hidden>
     <div id="login-status-header"></div>
     <div id="login-status-sub-header"></div>
   </button>
@@ -80,15 +80,17 @@ document.documentElement.setAttribute('touchui', true);
     <div id="notification">
       <span></span>
       <div id="notificationLinks"></div>
-      <button class="close-button"></button>
+      <button class="close-button" class="custom-appearance"></button>
     </div>
   </div>
 
   <div id="card-slider-frame">
-    <button id="page-switcher-start" class="page-switcher" tabindex="2" hidden>‹
+    <button id="page-switcher-start" class="page-switcher custom-appearance"
+        tabindex="2" hidden>‹
     </button>
     <div id="page-list"></div>
-    <button id="page-switcher-end" class="page-switcher" tabindex="2" hidden>›
+    <button id="page-switcher-end" class="page-switcher custom-appearance"
+        tabindex="2" hidden>›
     </button>
     <div id="attribution">
       <span i18n-content="attributionintro"></span>
@@ -104,7 +106,7 @@ document.documentElement.setAttribute('touchui', true);
       <ul id="dot-list">
       </ul>
 
-      <button id="recently-closed-menu-button">
+      <button id="recently-closed-menu-button" class="custom-appearance">
         <span i18n-content="recentlyclosed"></span>
         <div class="disclosure-triangle"></div>
       </button>
@@ -134,8 +136,8 @@ document.documentElement.setAttribute('touchui', true);
       <a id="login-status-advanced"
           i18n-content="login_status_advanced" href="#"></a>
     </div>
-    <button id="login-status-dismiss" i18n-content="login_status_dismiss"
-        class="gradient-button"></button>
+    <button id="login-status-dismiss" i18n-content="login_status_dismiss">
+    </button>
   </div>
 </div>
   

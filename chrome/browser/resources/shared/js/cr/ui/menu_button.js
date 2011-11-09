@@ -24,6 +24,10 @@ cr.define('cr.ui', function() {
       this.addEventListener('mousedown', this);
       this.addEventListener('keydown', this);
 
+      // Adding the 'custom-appearance' class prevents button.css from changing
+      // the appearance of this element.
+      this.classList.add('custom-appearance');
+
       var menu;
       if ((menu = this.getAttribute('menu')))
         this.menu = menu;

@@ -20,8 +20,6 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/css/checkbox.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_DIALOGS"
                file="shared/css/dialogs.css" type="BINDATA" />
-      <include name="IDR_SHARED_CSS_GRADIENT_BUTTON"
-               file="shared/css/gradient_button.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_LIST"
                file="shared/css/list.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_MENU"
