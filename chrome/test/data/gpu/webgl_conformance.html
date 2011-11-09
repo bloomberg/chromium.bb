@@ -5,15 +5,10 @@
 </script>
 <script>
 var BASE_URL = "../../../../third_party/webgl_conformance/";
-var running;
-var result;
+var gl = null;
 var message;
 
 function start(start_url) {
-  running = true;
-  result = true;
-  message = "";
-
   // Report function called by each conformance test.
   function report(type, msg, success) {
     var reportType = WebGLTestHarnessModule.TestHarness.reportType;
@@ -22,21 +17,26 @@ function start(start_url) {
         // Accept every page loaded.
         return true;
       case reportType.TEST_RESULT:
-        if (!success) {
-          // If any test fails, the result is false.
-          result = false;
-          message += msg + "\n";
-        }
+        if (!success)
+          message = "FAILURE: " + msg;
+        else
+          message = "SUCCESS";
         break;
       case reportType.FINISH_PAGE:
-        if (!success) {
-          // Result is false if a timeout occurs.
-          result = false;
-          message += "Timeout (" + window.webglTestHarness.timeoutDelay +
-                     " ms)\n";
-        }
+        if (!success)
+          message = "TIMEOUT (" + window.webglTestHarness.timeoutDelay + " ms)";
       case reportType.FINISHED_ALL_TESTS:
-        running = false;
+        if (message.substr(0, 7) != "SUCCESS") {
+          var ext = gl.getExtension("WEBGL_debug_renderer_info");
+          if (ext) {
+            message += "\nGL_VENDOR:   " +
+                gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) + "\n";
+            message += "GL_RENDERER: " +
+                gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
+          }
+        }
+        domAutomationController.setAutomationId(1);
+        domAutomationController.send(message);
         break;
     }
   }
@@ -57,16 +57,16 @@ function start(start_url) {
     return context;
   }
 
+  message = "";
+
   // Assert the WebGL context exists.
-  var context = create3DContext();
-  if (!context) {
-    message += "Unable to fetch WebGL rendering context for Canvas.\n";
-    running = false;
-    result = false;
+  gl = create3DContext();
+  if (!gl) {
+    message = "FAILURE: unable to fetch WebGL context";
+    domAutomationController.setAutomationId(1);
+    domAutomationController.send(message);
     return;
   }
-  message += "WebGL VENDOR:   " + context.getParameter(context.VENDOR) + "\n";
-  message += "WebGL RENDERER: " + context.getParameter(context.RENDERER) + "\n";
 
   var iframe = document.getElementById("testframe");
   var testHarness = new WebGLTestHarnessModule.TestHarness(
