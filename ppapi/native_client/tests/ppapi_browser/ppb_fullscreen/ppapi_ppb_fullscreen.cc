@@ -212,16 +212,6 @@ const PPP_InputEvent ppp_input_event_interface = {
 // PPP_Instance
 ////////////////////////////////////////////////////////////////////////////////
 
-bool HasMidScreen(const PP_Rect* position) {
-  static PP_Size screen_size = g_screen_size;
-  static int32_t mid_x = screen_size.width / 2;
-  static int32_t mid_y = screen_size.height / 2;
-  PP_Point origin = position->point;
-  PP_Size size = position->size;
-  return (origin.x < mid_x && mid_x < origin.x + size.width &&
-          origin.y < mid_y && mid_y < origin.y + size.height);
-}
-
 // DidChangeView completes transition to/from fullscreen mode.
 // The plugin is resized to the size of the screen.
 // NOTE: The number of DidChangeView calls for <object> might be different.
