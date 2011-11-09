@@ -4,6 +4,9 @@
 
 #include "ui/gfx/render_text_win.h"
 
+#include <algorithm>
+#include <map>
+
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
@@ -22,6 +25,42 @@ const int kMaxItems = 10000;
 // TODO(msw): Review memory use/failure? Max string length? Alternate approach?
 const int kMaxGlyphs = 100000;
 
+// Draw underline and strike through text decorations.
+// Based on |SkCanvas::DrawTextDecorations()| and constants from:
+//   third_party/skia/src/core/SkTextFormatParams.h
+void DrawTextRunDecorations(SkCanvas* canvas_skia,
+                            const SkPaint& paint,
+                            const gfx::internal::TextRun& run,
+                            SkScalar x,
+                            SkScalar y) {
+  // Fraction of the text size to lower a strike through below the baseline.
+  const SkScalar kStrikeThroughOffset = (-SK_Scalar1 * 6 / 21);
+  // Fraction of the text size to lower an underline below the baseline.
+  const SkScalar kUnderlineOffset = (SK_Scalar1 / 9);
+  // Fraction of the text size to use for a strike through or under-line.
+  const SkScalar kLineThickness = (SK_Scalar1 / 18);
+
+  SkScalar text_size = paint.getTextSize();
+  SkScalar height = SkScalarMul(text_size, kLineThickness);
+  SkRect r;
+
+  r.fLeft = x;
+  r.fRight = x + run.width;
+
+  if (run.underline) {
+    SkScalar offset = SkScalarMulAdd(text_size, kUnderlineOffset, y);
+    r.fTop = offset;
+    r.fBottom = offset + height;
+    canvas_skia->drawRect(r, paint);
+  }
+  if (run.strike) {
+    SkScalar offset = SkScalarMulAdd(text_size, kStrikeThroughOffset, y);
+    r.fTop = offset;
+    r.fBottom = offset + height;
+    canvas_skia->drawRect(r, paint);
+  }
+}
+
 }  // namespace
 
 namespace gfx {
@@ -30,6 +69,7 @@ namespace internal {
 
 TextRun::TextRun()
   : strike(false),
+    underline(false),
     width(0),
     preceding_run_widths(0),
     glyph_count(0) {
@@ -297,9 +337,9 @@ bool RenderTextWin::IsCursorablePosition(size_t position) {
 size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) {
   size_t run_index = GetRunContainingPosition(index);
   internal::TextRun* run = run_index < runs_.size() ? runs_[run_index] : NULL;
-  long start = run ? run->range.start() : 0;
-  long length = run ? run->range.length() : text().length();
-  long ch = index - start;
+  int start = run ? run->range.start() : 0;
+  int length = run ? run->range.length() : text().length();
+  int ch = index - start;
   WORD cluster = run ? run->logical_clusters[ch] : 0;
 
   if (!next) {
@@ -310,7 +350,7 @@ size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) {
     while (ch < length && run && run->logical_clusters[ch] == cluster)
       ch++;
   }
-  return std::max(static_cast<long>(std::min(ch, length) + start), 0L);
+  return std::max(std::min(ch, length) + start, 0);
 }
 
 void RenderTextWin::ItemizeAndLayoutText() {
@@ -359,10 +399,10 @@ void RenderTextWin::ItemizeLogicalText() {
   for (int run_break = 0; run_break < text_length;) {
     internal::TextRun* run = new internal::TextRun();
     run->range.set_start(run_break);
-    run->font = !style->underline ? style->font :
-        style->font.DeriveFont(0, style->font.GetStyle() | Font::UNDERLINED);
+    run->font = style->font;
     run->foreground = style->foreground;
     run->strike = style->strike;
+    run->underline = style->underline;
     run->script_analysis = script_item->a;
 
     // Find the range end and advance the structures as needed.
@@ -516,7 +556,7 @@ SelectionModel RenderTextWin::LeftSelectionModel(
       caret = IndexOfAdjacentGrapheme(caret, false);
       return SelectionModel(caret, caret, SelectionModel::LEADING);
     }
-  } else { // The caret's associated character is in a RTL run.
+  } else {  // The caret's associated character is in a RTL run.
     if (caret_placement == SelectionModel::LEADING) {
       size_t cursor = IndexOfAdjacentGrapheme(caret, true);
       return SelectionModel(cursor, caret, SelectionModel::TRAILING);
@@ -554,7 +594,7 @@ SelectionModel RenderTextWin::RightSelectionModel(
       size_t cursor = IndexOfAdjacentGrapheme(caret, true);
       return SelectionModel(cursor, caret, SelectionModel::TRAILING);
     }
-  } else { // The caret's associated character is in a RTL run.
+  } else {  // The caret's associated character is in a RTL run.
     if (caret_placement == SelectionModel::TRAILING)
       return SelectionModel(caret, caret, SelectionModel::LEADING);
     else if (caret > run->range.start()) {
@@ -590,12 +630,12 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
   // TODO(msw): Establish a vertical baseline for strings of mixed font heights.
   size_t height = default_style().font.GetHeight();
 
-  float base_x = SkIntToScalar(offset.x());
-  float base_y = SkIntToScalar(offset.y());
+  SkScalar x = SkIntToScalar(offset.x());
+  SkScalar y = SkIntToScalar(offset.y());
   // Center the text vertically in the display area.
-  base_y += (display_rect().height() - height) / 2;
+  y += (display_rect().height() - height) / 2;
   // Offset by the font size to account for Skia expecting y to be the bottom.
-  base_y += default_style().font.GetFontSize();
+  y += default_style().font.GetFontSize();
 
   SkPaint paint;
   paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
@@ -604,15 +644,15 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
   paint.setSubpixelText(true);
   paint.setLCDRenderText(true);
 
-  scoped_array<SkPoint> pos;
+  std::vector<SkPoint> pos;
   for (size_t i = 0; i < runs_.size(); ++i) {
     // Get the run specified by the visual-to-logical map.
     internal::TextRun* run = runs_[visual_to_logical_[i]];
 
     // TODO(msw): Font default/fallback and style integration.
-    std::string font(run->font.GetFontName());
     SkTypeface::Style style = SkTypeface::kNormal;
-    SkTypeface* typeface = SkTypeface::CreateFromName(font.c_str(), style);
+    SkTypeface* typeface =
+        SkTypeface::CreateFromName(run->font.GetFontName().c_str(), style);
     if (typeface) {
       paint.setTypeface(typeface);
       // |paint| adds its own ref. Release the ref from CreateFromName.
@@ -621,31 +661,21 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
     paint.setTextSize(run->font.GetFontSize());
     paint.setColor(run->foreground);
 
-    // Based on WebCore::skiaDrawText.
-    pos.reset(new SkPoint[run->glyph_count]);
-    for (int glyph = 0; glyph < run->glyph_count; glyph++) {
-        pos[glyph].set(base_x + run->offsets[glyph].du,
-                       base_y + run->offsets[glyph].dv);
-        base_x += SkIntToScalar(run->advance_widths[glyph]);
-    }
-    size_t byte_length = run->glyph_count * sizeof(WORD);
-    canvas_skia->drawPosText(run->glyphs.get(), byte_length, pos.get(), paint);
+    SkScalar run_x = x;
 
-    // Draw the strikethrough.
-    if (run->strike) {
-      Rect bounds(offset, Size(run->width, run->font.GetHeight()));
-      SkPaint strike;
-      strike.setAntiAlias(true);
-      strike.setStyle(SkPaint::kFill_Style);
-      strike.setColor(run->foreground);
-      strike.setStrokeWidth(kStrikeWidth);
-      canvas_skia->drawLine(SkIntToScalar(bounds.x()),
-                            SkIntToScalar(bounds.bottom()),
-                            SkIntToScalar(bounds.right()),
-                            SkIntToScalar(bounds.y()),
-                            strike);
+    // Based on WebCore::skiaDrawText.
+    pos.resize(run->glyph_count);
+    for (int glyph = 0; glyph < run->glyph_count; glyph++) {
+        pos[glyph].set(x + run->offsets[glyph].du,
+                       y + run->offsets[glyph].dv);
+        x += SkIntToScalar(run->advance_widths[glyph]);
     }
-    offset.Offset(run->width, 0);
+
+    size_t byte_length = run->glyph_count * sizeof(WORD);
+    canvas_skia->drawPosText(run->glyphs.get(), byte_length, &pos[0], paint);
+
+    if (run->strike || run->underline)
+      DrawTextRunDecorations(canvas_skia, paint, *run, run_x, y);
   }
 }
 

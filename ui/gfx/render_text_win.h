@@ -8,6 +8,8 @@
 
 #include <usp10.h>
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/render_text.h"
 
@@ -25,6 +27,7 @@ struct TextRun {
   //            See the example at: http://www.catch22.net/tuts/neatpad/12.
   SkColor foreground;
   bool strike;
+  bool underline;
 
   int width;
   // The cumulative widths of preceding runs.
