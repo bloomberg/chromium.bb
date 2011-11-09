@@ -460,7 +460,7 @@ cr.define('print_preview', function() {
      */
     addCustomMarginEventListeners_: function() {
       $('mainview').onmouseover = this.onMainviewMouseOver_.bind(this);
-      $('sidebar').onmouseover = this.onSidebarMouseOver_.bind(this);
+      $('navbar-container').onmouseover = this.onSidebarMouseOver_.bind(this);
       this.eventTracker_.add(this.marginsUI,
                              customEvents.MARGIN_LINE_DRAG,
                              this.onMarginsLineDrag_.bind(this),
@@ -475,7 +475,7 @@ cr.define('print_preview', function() {
      */
     removeCustomMarginEventListeners_: function() {
       $('mainview').onmouseover = null;
-      $('sidebar').onmouseover = null;
+      $('navbar-container').onmouseover = null;
       this.eventTracker_.remove(this.marginsUI, customEvents.MARGIN_LINE_DRAG);
       this.eventTracker_.remove(document, customEvents.MARGIN_TEXTBOX_FOCUSED);
       this.marginsUI.hide(true);

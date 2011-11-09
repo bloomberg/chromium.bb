@@ -47,13 +47,11 @@ html[dir='rtl'] .form {
  * higher specificity.
  */
 .link-button,
-.link-button:active,
 .link-button:focus,
 .link-button:hover {
   -webkit-box-shadow: none !important;
   background: transparent none !important;
   border: none !important;
-  color: blue;
   cursor: pointer;
   text-decoration: underline;
 }

@@ -8,54 +8,55 @@ html {
 }
 
 body {
-  display: -webkit-box;
   height: 100%;
   margin: 0;
   overflow: hidden;
 }
 
-#main {
-  display: block;
-  margin-bottom: 0;
-  min-height: 0;
-  padding-top: 10px;
-}
-
-/* Layout: Sidebar */
-
-#sidebar {
-  -webkit-user-select: none;
-  border-right: 1px solid #a0a0a0;
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
-  width: 310px;
-}
-
-html[dir='rtl'] #sidebar {
-  border-left: 1px solid #a0a0a0;
-  border-right-width: 0;
-}
-
 /* Header */
 
 header {
-  -webkit-box-shadow: 0 2px 2px rgba(0, 0, 0, .1);
-  background-image: none,
-                    -webkit-linear-gradient(#dcdcdc, #f0f0f0);
-  border-bottom: 1px solid rgba(255, 255, 255, .5);
+  -webkit-padding-start: 16px;
 }
 
-header > h1 {
-  -webkit-font-smoothing: antialiased;
-  -webkit-padding-start: 16px;
-  color: #000;
-  font-size: 26px;
-  font-weight: 600;
-  letter-spacing: -1px;
-  margin: 0;
-  padding-top: 14px;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, .75);
+#print-preview #navbar-container {
+  -webkit-box-orient: vertical;
+  -webkit-user-select: none;
+  display: -webkit-box;
+  width: 310px;
+}
+
+#print-preview #navbar-content-title {
+  text-align: start;
+}
+
+#print-header {
+  -webkit-padding-end: 16px;
+  font-size: 13px;
+  line-height: 22px;
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+#print-summary {
+  color: #53637d;
+  display: block;
+  min-height: 30px;
+}
+
+/* Settings */
+
+#settings {
+  -webkit-box-flex: 1;
+  -webkit-box-shadow: inset 0 2px 2px rgba(0, 0, 0, .3);
+  background: white;
+  overflow-y: auto;
+  padding-top: 2px;
+}
+
+input[disabled] + label,
+input[type=text][disabled] {
+  color: gray;
 }
 
 .two-column {
@@ -89,14 +90,6 @@ header > h1 {
   padding-top: 0;
 }
 
-#print-header {
-  -webkit-padding-start: 16px;
-  font-size: 13px;
-  line-height: 22px;
-  margin-bottom: 10px;
-  margin-top: 10px;
-}
-
 p {
   -webkit-line-box-contain: block;
   margin: 0;
@@ -109,34 +102,16 @@ h1 {
   font-weight: 300;
 }
 
-/* TODO(jhawkins): Remove this specialization once all WebUI shares the same
- * link-button styling.
- */
 #system-dialog-link {
   -webkit-padding-start: 16px;
-  -webkit-transition: text-shadow 150ms;
-  color: #4080fa;
   outline: 0;
   padding-top: 10px;
   text-decoration: none;
-  text-shadow: 0 0 1px white;
+  text-align: start;
 }
 
-#system-dialog-link:hover {
-  text-shadow: 0 0 1px rgba(85, 143, 250, .75);
-}
-
-#system-dialog-link:active {
-  color: #4080fa;
-  text-shadow: 0 0 1px rgba(64, 128, 250, 1);
-}
-
-#system-dialog-link:focus {
-  -webkit-transition: border-color 200ms;
-  border-radius: 2px;
-  border: 1px solid rgba(85, 143, 250, .8);
-  margin: -2px -5px;
-  padding: 1px 4px;
+#system-dialog-link:hover:not(:disabled) {
+  text-decoration: underline;
 }
 
 #system-dialog-link:disabled {
@@ -145,36 +120,16 @@ h1 {
   text-shadow: none;
 }
 
-strong {
-  font-weight: 600;
-}
-
-button {
-  -webkit-box-shadow: inset 0 1px 2px white,
-                      0 1px 2px rgba(0, 0, 0, .2);
-  -webkit-user-select: none;
-  background: -webkit-linear-gradient(#fafafa, #dcdcdc);
-  border-radius: 3px;
-  border: 1px solid #a0a0a0;
-  cursor: default;
-  font-size: 13px;
-  font-weight: 400;
-  margin: 0;
-  padding: 4px 14px;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
-}
-
 button.loading {
   cursor: progress;
 }
 
 button.default {
-  border-color: #808080;
   font-weight: bold;
 }
 
-button.default:disabled {
-  border-color: #a0a0a0;
+button.default:not(:focus):not(:disabled) {
+  border-color: #808080;
 }
 
 #increment,
@@ -182,6 +137,7 @@ button.default:disabled {
   -webkit-padding-end: 8px;
   -webkit-padding-start: 8px;
   font-weight: 600;
+  min-width: 0;
   position: relative;
   width: 25px;
 }
@@ -204,198 +160,6 @@ html[dir='rtl'] #decrement {
   border-bottom-right-radius: 0;
   border-top-left-radius: 3px;
   border-top-right-radius: 0;
-}
-
-button:disabled {
-  color: rgba(0, 0, 0, .5);
-}
-
-button:not(:disabled):not(.disabled):hover {
-  -webkit-box-shadow: inset 0 1px 2px white,
-                      0 2px 4px rgba(0, 0, 0, .2);
-  background: -webkit-linear-gradient(#fff, #e6e6e6);
-  /* Using opacity 0.99 instead of 1 because of http://crbug.com/68370 */
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.99);
-}
-
-button:not(:disabled):not(.disabled):active,
-button.active {
-  -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, .3);
-  background: -webkit-linear-gradient(#f0f0f0, #bebebe);
-  border-color: #808080;
-  position: relative;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .25);
-}
-
-input[type='text'] + button {
-  -webkit-margin-start: 0;
-}
-
-input[type='checkbox'] {
-  -webkit-box-shadow: inset 0 1px 2px white,
-                      0 1px 2px rgba(0, 0, 0, .2);
-  -webkit-appearance: none;
-  -webkit-margin-start: 0;
-  -webkit-margin-end: 5px;
-  background: -webkit-linear-gradient(#fafafa, #dcdcdc);
-  border-radius: 3px;
-  border: 1px solid #a0a0a0;
-  display: inline-block;
-  height: 16px;
-  margin-bottom: 0;
-  margin-top: 0;
-  position: relative;
-  top: 3px;
-  vertical-align: baseline;
-  width: 16px;
-}
-
-input[type='checkbox']:disabled {
-  opacity: .75;
-}
-
-input[type='checkbox']:not(:disabled):not(.disabled):hover {
-  background: -webkit-linear-gradient(#fff, #e6e6e6);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 1);
-}
-
-input[type='checkbox']:active {
-  -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, .2);
-  background: -webkit-linear-gradient(#f0f0f0, #bebebe);
-  border: 1px solid #808080;
-  padding-bottom: 4px;
-  padding-top: 6px;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .25);
-}
-
-input[type='checkbox']:checked::before {
-  color: #808080;
-  content: url('./checkmark.png');
-  height: 16px;
-  left: 2px;
-  position: absolute;
-}
-
-html[os=mac] input[type='checkbox']:checked::before {
-  top: 2px;
-}
-
-input[type='radio'] {
-  -webkit-box-shadow: inset 0 1px 2px white,
-                      0 1px 2px rgba(0, 0, 0, .2);
-  -webkit-appearance: none;
-  -webkit-margin-start: 0;
-  -webkit-margin-end: 5px;
-  -webkit-transition: border 500ms;
-  background: -webkit-linear-gradient(#fafafa, #dcdcdc);
-  border-radius: 100%;
-  border: 1px solid #a0a0a0;
-  display: inline-block;
-  height: 15px;
-  margin-top: 0;
-  position: relative;
-  top: 2px;
-  vertical-align: baseline;
-  width: 15px;
-}
-
-input[type='radio']:disabled {
-  opacity: .75;
-}
-
-input[type='radio']:not(:disabled):not(.disabled):hover {
-  background: -webkit-linear-gradient(#fff, #e6e6e6);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 1);
-}
-
-input[type='radio']:active {
-  -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, .2);
-  background: -webkit-linear-gradient(#f0f0f0, #bebebe);
-  border: 1px solid #808080;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .25);
-}
-
-input[type='radio']:checked::before {
-  -webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, .5);
-  -webkit-margin-start: 4px;
-  background: #808080;
-  border-radius: 10px;
-  content: '';
-  display: inline-block;
-  font-size: 13px;
-  font-weight: 400;
-  height: 5px;
-  left: 0;
-  margin-top: 4px;
-  opacity: 1;
-  position: absolute;
-  top: 0;
-  vertical-align: top;
-  width: 5px;
-}
-
-html[dir='rtl'] input[type='radio']:checked::before {
-  right: 0;
-}
-
-input[type='radio']:active:checked::before {
-  background: #606060;
-}
-
-#sidebar input[type='text'] {
-  -webkit-box-shadow: inset 0 2px 2px rgba(0, 0, 0, .1),
-                      0 1px 0 white,
-                      0 0 1px transparent,
-                      0 0 1px transparent,
-                      0 0 1px transparent;
-  -webkit-margin-end: 7px;
-  -webkit-margin-start: 2px;
-  -webkit-transition: -webkit-box-shadow 100ms, background 100ms, border 500ms;
-  border: 1px solid #a0a0a0;
-  margin: 0;
-  padding: 4px 6px 4px 6px;
-}
-
-input[type='text'] {
-  border-radius: 3px;
-  outline: none;
-}
-
-#sidebar input[type='text']:-webkit-input-placeholder {
-  color: #a0a0a0;
-}
-
-#sidebar input[type='text']:first-child {
-  -webkit-margin-start: 0;
-}
-
-#sidebar input[type='text']:last-child {
-  -webkit-margin-end: 0;
-}
-
-#sidebar input[type='text']:focus {
-  -webkit-box-shadow: inset 0 2px 2px rgba(0, 0, 0, .15),
-                      0 1px 0 transparent,
-                      0 0 1px #c0c0c0,
-                      0 0 1px #c0c0c0,
-                      0 0 1px #c0c0c0;
-  -webkit-transition: -webkit-box-shadow 200ms, background 200ms, border 200ms;
-  background: #f8f8f8;
-  border-color: #4080fa;
-}
-
-#sidebar input[type='text']:disabled {
-  background: #f8f8f8;
-  border-color: #c0c0c0;
-}
-
-#sidebar input[type='text'].small {
-  width: 2em;
-}
-
-#sidebar input[type='text'].invalid {
-  background: #fff0f0;
-  color: #8c1414;
 }
 
 span.hint {
@@ -449,46 +213,8 @@ span.hint.closing {
   opacity: 0;
 }
 
-
 select {
-  -webkit-box-shadow: inset 0 1px 2px white,
-                      0 1px 2px rgba(0, 0, 0, .2);
-  -webkit-appearance: none;
-  -webkit-padding-end: 20px;
-  -webkit-padding-start: 14px;
-  -webkit-user-select: none;
-  background-image: url('./black_arrow.png'),
-                    -webkit-linear-gradient(#fafafa, #dcdcdc);
-  background-position: 95% 55%, left top;
-  background-repeat: no-repeat, repeat;
-  border-radius: 3px;
-  border: 1px solid #a0a0a0;
-  font-size: 13px;
-  font-weight: 400;
-  outline: 0;
-  padding-bottom: 3px;
-  padding-top: 3px;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
   width: 100%;
-}
-
-html[dir='rtl'] select {
-  background-position: 5% 55%, right top;
-}
-
-select:disabled,
-select.disabled {
-  background-image: url('./gray_arrow.png'),
-                    -webkit-linear-gradient(#fafafa, #dcdcdc);
-}
-
-select:not(:disabled):not(.disabled):hover {
-  -webkit-box-shadow: inset 0 1px 2px white,
-                      0 2px 4px rgba(0, 0, 0, .2);
-  background-image: url('./black_arrow.png'),
-                    -webkit-linear-gradient(#fff, #e6e6e6);
-  /* Using opacity 0.99 instead of 1 because of http://crbug.com/68370 */
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.99);
 }
 
 label {
@@ -496,21 +222,6 @@ label {
   -webkit-padding-start: 5px;
   -webkit-user-select: none;
   cursor: default;
-}
-
-button:focus,
-button.default:focus,
-select:focus,
-input[type='checkbox']:focus,
-input[type='radio']:focus {
-  -webkit-box-shadow: inset 0 1px 2px white,
-                      0 1px 2px rgba(0, 0, 0, .2),
-                      0 0 1px #c0c0c0,
-                      0 0 1px #c0c0c0,
-                      0 0 1px #c0c0c0;
-  -webkit-transition: border-color 200ms;
-  border-color: #4080fa;
-  outline: none;
 }
 
 .hidden-section {
@@ -539,7 +250,8 @@ input[type='radio']:focus {
 }
 
 .closing .extra {
-  -webkit-transition: padding-top 100ms, height 100ms, opacity 200ms, background 300ms;
+  -webkit-transition: padding-top 100ms, height 100ms, opacity 200ms,
+      background 300ms;
   height: 0 !important;
   opacity: 0;
   overflow: hidden;
@@ -547,6 +259,8 @@ input[type='radio']:focus {
   position: static;
   visibility: visible;
 }
+
+/* Individual settings sections  */
 
 #print-pages-div {
   -webkit-box-align: center;
@@ -565,11 +279,6 @@ input[type='radio']:focus {
   display: block;
 }
 
-#print-summary {
-  display: block;
-  min-height: 30px;
-}
-
 #collate-option {
  -webkit-transition: opacity 200ms, -webkit-transform 200ms;
  -webkit-padding-start: 5px;
@@ -583,19 +292,23 @@ input[type='radio']:focus {
  pointer-events: none;
 }
 
-body,
-button,
-input[type='text'],
-select {
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+#copies {
+  width: 2em;
 }
 
-#mainview {
-  -webkit-box-flex: 1;
+#copies.invalid {
+  background: #fff0f0;
+  color: #8c1414;
+}
+
+/* PDF view */
+
+#print-preview #mainview {
+  -webkit-margin-start: 310px;
+  -webkit-padding-start: 0;
   -webkit-user-select: none;
   background-color: #ccc;
   overflow: hidden;
-  position: relative;
 }
 
 #pdf-viewer {
@@ -620,6 +333,8 @@ select {
   padding: 20px;
 }
 
+/* TODO(estade): this should be in a shared location but I'm afraid of the
+ * damage it could do. */
 [hidden] {
   display: none !important;
 }
@@ -652,10 +367,6 @@ select {
   text-align: center;
   text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
   top: 50%;
-}
-
-html[dir='rtl'] .messages {
-  right: 25%;
 }
 
 @-webkit-keyframes dancing-dots-jump {
@@ -692,10 +403,17 @@ html[dir='rtl'] .messages {
   margin-top: 10px;
 }
 
-input[disabled] + label {
-  color: gray;
-}
-
 #error-action-area {
   margin-top: 10px;
+}
+
+/* TODO(estade): unfork this code. */
+.button-strip {
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+  display: -webkit-box;
+}
+
+html[toolkit=views] .button-strip {
+  -webkit-box-direction: reverse;
 }

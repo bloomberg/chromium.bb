@@ -141,6 +141,7 @@ function onLoad() {
 
   if (!checkCompatiblePluginExists()) {
     disableInputElementsInSidebar();
+    $('cancel-button').focus();
     previewArea.displayErrorMessageWithButtonAndNotify(
         localStrings.getString('noPlugin'),
         localStrings.getString('launchNativeDialog'),
@@ -172,7 +173,7 @@ function onLoad() {
  * Disables the input elements in the sidebar.
  */
 function disableInputElementsInSidebar() {
-  var els = $('sidebar').querySelectorAll('input, button, select');
+  var els = $('navbar-container').querySelectorAll('input, button, select');
   for (var i = 0; i < els.length; i++) {
     if (els[i] == printHeader.cancelButton)
       continue;
@@ -672,7 +673,7 @@ function createDestinationListOption(optionText, optionValue, isDefault,
   option.disabled = isSeparator || isDisabled;
   // Adding attribute for improved accessibility.
   if (isSeparator)
-    option.setAttribute("role", "separator");
+    option.setAttribute('role', 'separator');
   return option;
 }
 

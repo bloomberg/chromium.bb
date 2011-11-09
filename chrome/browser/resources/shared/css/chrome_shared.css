@@ -147,8 +147,10 @@ input:not([type]) {
 }
 
 /* CHECKBOX, RADIO */
-input[type=checkbox],
-input[type=radio] {
+/* TODO(estade): all of this should be merged into checkbox.css and then we can
+ * remove the print-preview hack. */
+html:not(#print-preview) input[type=checkbox],
+html:not(#print-preview) input[type=radio] {
   margin-left: 0;
   margin-right: 0;
   position: relative;
@@ -159,42 +161,41 @@ input[type=radio] {
  * following rules have platform specific tweaks.
  * TODO(arv): Test the vertical position on Linux and CrOS as well.
  */
-
-label > input[type=checkbox],
-label > input[type=radio] {
+html:not(#print-preview) label > input[type=checkbox],
+html:not(#print-preview) label > input[type=radio] {
   opacity: 0.7;
   margin-top: 1px;
 }
 
-html[os=mac] label > input[type=checkbox],
-html[os=mac] label > input[type=radio] {
+html[os=mac]:not(#print-preview) label > input[type=checkbox],
+html[os=mac]:not(#print-preview) label > input[type=radio] {
   margin-top: 2px;
 }
 
-html[os=chromeos] label > input[type=checkbox],
-html[os=chromeos] label > input[type=radio] {
+html[os=chromeos]:not(#print-preview) label > input[type=checkbox],
+html[os=chromeos]:not(#print-preview) label > input[type=radio] {
   top: 2px;
 }
 
 /* Checkbox and radio hover visuals.
  * Their appearance when checked is set to be the same.
  */
-label:hover > input[type=checkbox]:not([disabled]),
-label:hover > input[type=radio]:not([disabled]),
-label > input:not([disabled]):checked {
+label:hover:not(#print-preview) > input[type=checkbox]:not([disabled]),
+label:hover:not(#print-preview) > input[type=radio]:not([disabled]),
+label:not(#print-preview) > input:not([disabled]):checked {
   opacity: 1;
 }
 
-label:hover > input[type=checkbox]:not([disabled]) ~ span,
-label:hover > input[type=radio]:not([disabled]) ~ span,
-label > input:not([disabled]):checked ~ span {
+label:hover:not(#print-preview) > input[type=checkbox]:not([disabled]) ~ span,
+label:hover:not(#print-preview) > input[type=radio]:not([disabled]) ~ span,
+label:not(#print-preview) > input:not([disabled]):checked ~ span {
   color: #222;
 }
 
 /* This will 'disable' the label associated with any input whose next sibling is
  * the span containing the label (usually a checkbox or radio).
  */
-label > input[disabled] ~ span {
+label:not(#print-preview) > input[disabled] ~ span {
   color: #888;
 }
 
@@ -253,5 +254,3 @@ html[dir='rtl'] .weakrtl input::-webkit-input-placeholder {
   padding-top: 13px;
   text-shadow: white 0 1px 2px;
 }
-
-
