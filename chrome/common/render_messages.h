@@ -98,14 +98,6 @@ struct ParamTraits<gfx::NativeView> {
 #endif  // defined(OS_POSIX) && !defined(USE_AURA)
 
 template <>
-struct ParamTraits<ContentSettings> {
-  typedef ContentSettings param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
 struct ParamTraits<ContentSettingsPattern> {
   typedef ContentSettingsPattern param_type;
   static void Write(Message* m, const param_type& p);
@@ -230,25 +222,6 @@ IPC_MESSAGE_CONTROL1(ChromeViewMsg_VisitedLink_Add, std::vector<uint64>)
 // deleted, which at this point means that all link coloring state must be
 // re-calculated.
 IPC_MESSAGE_CONTROL0(ChromeViewMsg_VisitedLink_Reset)
-
-// Set the content settings for a particular url that the renderer is in the
-// process of loading.  This will be stored, to be used if the load commits
-// and ignored otherwise.
-IPC_MESSAGE_ROUTED2(ChromeViewMsg_SetContentSettingsForLoadingURL,
-                    GURL /* url */,
-                    ContentSettings /* content_settings */)
-
-// Set the content settings for a particular url, so all render views
-// displaying this host url update their content settings to match.
-IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetContentSettingsForCurrentURL,
-                     GURL /* url */,
-                     ContentSettings /* content_settings */)
-
-// Set the content settings for a particular url that the renderer is in the
-// process of loading.  This will be stored, to be used if the load commits
-// and ignored otherwise.
-IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetDefaultContentSettings,
-                     ContentSettings /* content_settings */)
 
 // Set the content setting rules stored by the renderer.
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetContentSettingRules,

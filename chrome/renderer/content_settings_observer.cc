@@ -80,7 +80,6 @@ ContentSettingsObserver::ContentSettingsObserver(
     content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<ContentSettingsObserver>(render_view),
-      default_content_settings_(NULL),
       content_setting_rules_(NULL),
       plugins_temporarily_allowed_(false) {
   ClearBlockedContentSettings();
@@ -89,26 +88,9 @@ ContentSettingsObserver::ContentSettingsObserver(
 ContentSettingsObserver::~ContentSettingsObserver() {
 }
 
-void ContentSettingsObserver::SetContentSettings(
-    const ContentSettings& settings) {
-  current_content_settings_ = settings;
-}
-
-void ContentSettingsObserver::SetDefaultContentSettings(
-    const ContentSettings* settings) {
-  default_content_settings_ = settings;
-}
-
 void ContentSettingsObserver::SetContentSettingRules(
     const RendererContentSettingRules* content_setting_rules) {
   content_setting_rules_ = content_setting_rules;
-}
-
-ContentSetting ContentSettingsObserver::GetContentSetting(
-    ContentSettingsType type) {
-  // Don't call this for plug-ins.
-  DCHECK_NE(CONTENT_SETTINGS_TYPE_PLUGINS, type);
-  return current_content_settings_.settings[type];
 }
 
 void ContentSettingsObserver::DidBlockContentType(
@@ -132,8 +114,6 @@ bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {
     // blocked plugin.
     IPC_MESSAGE_HANDLER_GENERIC(ChromeViewMsg_LoadBlockedPlugins,
                                 OnLoadBlockedPlugins(); handled = false)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetContentSettingsForLoadingURL,
-                        OnSetContentSettingsForLoadingURL)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -156,46 +136,10 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(
   }
 
   GURL url = frame->document().url();
-
-  if (frame->document().securityOrigin().toString() == "null" &&
-      !url.SchemeIs(chrome::kFileScheme)) {
-    // The Frame has a unique security origin. Instead of granting the frame
-    // privileges based on it's URL, we fall back to the default content
-    // settings.
-
-    // We exempt file URLs here because we sandbox them by default, but folks
-    // might reasonably want to supply non-default content settings for various
-    // file URLs.
-    if (default_content_settings_)
-      SetContentSettings(*default_content_settings_);
-    return;
-  }
-
   // If we start failing this DCHECK, please makes sure we don't regress
   // this bug: http://code.google.com/p/chromium/issues/detail?id=79304
-  DCHECK(!url.SchemeIs(chrome::kDataScheme));
-
-  // Set content settings. Default them from the parent window if one exists.
-  // This makes sure about:blank windows work as expected.
-  HostContentSettings::iterator host_content_settings =
-      host_content_settings_.find(url);
-  if (host_content_settings != host_content_settings_.end()) {
-    SetContentSettings(host_content_settings->second);
-
-    // These content settings were merely recorded transiently for this load.
-    // We can erase them now.  If at some point we reload this page, the
-    // browser will send us new, up-to-date content settings.
-    host_content_settings_.erase(host_content_settings);
-  } else if (frame->opener()) {
-    // The opener's view is not guaranteed to be non-null (it could be
-    // detached from its page but not yet destructed).
-    if (WebView* opener_view = frame->opener()->view()) {
-      content::RenderView* opener =
-          content::RenderView::FromWebView(opener_view);
-      ContentSettingsObserver* observer = ContentSettingsObserver::Get(opener);
-      SetContentSettings(observer->current_content_settings_);
-    }
-  }
+  DCHECK(frame->document().securityOrigin().toString() == "null" ||
+         !url.SchemeIs(chrome::kDataScheme));
 }
 
 bool ContentSettingsObserver::AllowDatabase(WebFrame* frame,
@@ -332,21 +276,8 @@ void ContentSettingsObserver::DidNotAllowScript(WebFrame* frame) {
   DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string());
 }
 
-void ContentSettingsObserver::OnSetContentSettingsForLoadingURL(
-    const GURL& url,
-    const ContentSettings& content_settings) {
-  host_content_settings_[url] = content_settings;
-}
-
 void ContentSettingsObserver::OnLoadBlockedPlugins() {
   plugins_temporarily_allowed_ = true;
-}
-
-bool ContentSettingsObserver::AllowContentType(
-    ContentSettingsType settings_type) {
-  // CONTENT_SETTING_ASK is only valid for cookies.
-  return current_content_settings_.settings[settings_type] !=
-      CONTENT_SETTING_BLOCK;
 }
 
 void ContentSettingsObserver::ClearBlockedContentSettings() {

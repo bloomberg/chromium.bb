@@ -60,11 +60,6 @@ class HostContentSettingsMap
   ContentSetting GetDefaultContentSetting(ContentSettingsType content_type,
                                           std::string* provider_id) const;
 
-  // Returns the default settings for all content types.
-  //
-  // This may be called on any thread.
-  ContentSettings GetDefaultContentSettings() const;
-
   // Returns a single |ContentSetting| which applies to the given URLs.  Note
   // that certain internal schemes are whitelisted. For |CONTENT_TYPE_COOKIES|,
   // |CookieSettings| should be used instead. For content types that can't be
@@ -97,14 +92,6 @@ class HostContentSettingsMap
       ContentSettingsType content_type,
       const std::string& resource_identifier,
       content_settings::SettingInfo* info) const;
-
-  // Returns all ContentSettings which apply to the given |primary_url|. For
-  // content setting types that require an additional resource identifier, the
-  // default content setting is returned.
-  //
-  // This may be called on any thread.
-  ContentSettings GetContentSettings(
-      const GURL& primary_url) const;
 
   // For a given content type, returns all patterns with a non-default setting,
   // mapped to their actual settings, in the precedence order of the rules.

@@ -106,30 +106,6 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(RendererResourceDelegate);
 };
 
-class RenderViewContentSettingsSetter : public content::RenderViewVisitor {
- public:
-  RenderViewContentSettingsSetter(const GURL& url,
-                                  const ContentSettings& content_settings)
-      : url_(url),
-        content_settings_(content_settings) {
-  }
-
-  virtual bool Visit(content::RenderView* render_view) {
-    if (GURL(render_view->GetWebView()->mainFrame()->document().url()) ==
-        url_) {
-      ContentSettingsObserver::Get(render_view)->SetContentSettings(
-          content_settings_);
-    }
-    return true;
-  }
-
- private:
-  GURL url_;
-  ContentSettings content_settings_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderViewContentSettingsSetter);
-};
-
 #if defined(OS_WIN)
 static base::win::IATPatchFunction g_iat_patch_createdca;
 HDC WINAPI CreateDCAPatch(LPCSTR driver_name,
@@ -263,10 +239,6 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderProcessObserver, message)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsIncognitoProcess,
                         OnSetIsIncognitoProcess)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetDefaultContentSettings,
-                        OnSetDefaultContentSettings)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetContentSettingsForCurrentURL,
-                        OnSetContentSettingsForCurrentURL)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetContentSettingRules,
                         OnSetContentSettingRules)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetCacheCapacities, OnSetCacheCapacities)
@@ -296,18 +268,6 @@ void ChromeRenderProcessObserver::WebKitInitialized() {
 void ChromeRenderProcessObserver::OnSetIsIncognitoProcess(
     bool is_incognito_process) {
   is_incognito_process_ = is_incognito_process;
-}
-
-void ChromeRenderProcessObserver::OnSetContentSettingsForCurrentURL(
-    const GURL& url,
-    const ContentSettings& content_settings) {
-  RenderViewContentSettingsSetter setter(url, content_settings);
-  content::RenderView::ForEach(&setter);
-}
-
-void ChromeRenderProcessObserver::OnSetDefaultContentSettings(
-    const ContentSettings& content_settings) {
-  default_content_settings_ = content_settings;
 }
 
 void ChromeRenderProcessObserver::OnSetContentSettingRules(
@@ -433,9 +393,4 @@ void ChromeRenderProcessObserver::ExecutePendingClearCache() {
 const RendererContentSettingRules*
 ChromeRenderProcessObserver::content_setting_rules() const {
   return &content_setting_rules_;
-}
-
-const ContentSettings*
-ChromeRenderProcessObserver::default_content_settings() const {
-  return &default_content_settings_;
 }
