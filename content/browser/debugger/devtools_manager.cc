@@ -146,7 +146,8 @@ void DevToolsManager::UnregisterDevToolsClientHostFor(
 void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
                                                  RenderViewHost* dest_rvh,
                                                  const GURL& gurl) {
-  if (rvh == dest_rvh)
+  if (rvh == dest_rvh && rvh->render_view_termination_status() ==
+          base::TERMINATION_STATUS_STILL_RUNNING)
     return;
   int cookie = DetachClientHost(rvh);
   if (cookie != -1) {

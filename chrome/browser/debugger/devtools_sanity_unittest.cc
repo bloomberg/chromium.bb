@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -501,6 +502,23 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkRawHeadersText) {
 // Tests that console messages are not duplicated on navigation back.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleOnNavigateBack) {
   RunTest("testConsoleOnNavigateBack", kNavigateBackTestPage);
+}
+
+// Tests that inspector will reattach to inspected page when it is reloaded
+// after a crash. See http://crbug.com/101952
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestReattachAfterCrash) {
+  OpenDevToolsWindow(kDebuggerTestPage);
+
+  ui_test_utils::CrashTab(GetInspectedTab());
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<NavigationController>(
+          &browser()->GetSelectedTabContentsWrapper()->controller()));
+  browser()->Reload(CURRENT_TAB);
+  observer.Wait();
+
+  RunTestFuntion(window_, "testReattachAfterCrash");
+  CloseDevToolsWindow();
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
