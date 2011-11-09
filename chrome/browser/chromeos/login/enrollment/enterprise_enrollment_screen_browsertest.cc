@@ -6,7 +6,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/mock_screen_observer.h"
-#include "chrome/browser/chromeos/login/views_oobe_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"

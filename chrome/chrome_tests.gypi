@@ -1270,7 +1270,6 @@
         'browser/chromeos/login/signed_settings_helper_unittest.cc',
         'browser/chromeos/login/signed_settings_temp_storage_unittest.cc',
         'browser/chromeos/login/signed_settings_unittest.cc',
-        'browser/chromeos/login/user_controller_unittest.cc',
         'browser/chromeos/login/wizard_accessibility_handler_unittest.cc',
         'browser/chromeos/mobile_config_unittest.cc',
         'browser/chromeos/status/network_menu_icon.cc',
@@ -1852,7 +1851,6 @@
         'browser/ui/views/tabs/fake_base_tab_strip_controller.h',
         'browser/ui/views/tabs/tab_strip_unittest.cc',
         'browser/ui/webui/chrome_web_ui_data_source_unittest.cc',
-        'browser/ui/webui/chromeos/enterprise_enrollment_ui_unittest.cc',
         'browser/ui/webui/chromeos/imageburner/imageburner_utils_unittest.cc',
         'browser/ui/webui/html_dialog_tab_contents_delegate_unittest.cc',
         'browser/ui/webui/options/chromeos/virtual_keyboard_manager_handler_unittest.cc',
@@ -2078,7 +2076,6 @@
           'conditions': [
             ['use_aura==1', {
               'sources!': [
-                'browser/chromeos/login/user_controller_unittest.cc',
                 'browser/chromeos/notifications/desktop_notifications_unittest.cc',
               ],
             }],

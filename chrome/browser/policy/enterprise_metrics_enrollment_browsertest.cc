@@ -12,6 +12,8 @@
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "content/browser/plugin_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,6 +23,16 @@ namespace {
 
 void assert_handler(const std::string& str) {
   LOG(INFO) << "Previous failure was expected, ignoring.";
+}
+
+void QuitMessageLoop() {
+  MessageLoop::current()->Quit();
+}
+
+void OnGetPluginsCallback(const std::vector<webkit::WebPluginInfo>&) {
+  content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                   FROM_HERE,
+                                   base::Bind(&QuitMessageLoop));
 }
 
 }  // namespace
@@ -148,6 +160,16 @@ IN_PROC_BROWSER_TEST_F(EnterpriseMetricsEnrollmentTest, EnrollmentOK) {
   screen_->OnPolicyStateChanged(policy::CloudPolicySubsystem::SUCCESS,
                                 policy::CloudPolicySubsystem::NO_DETAILS);
   CheckSample(policy::kMetricEnrollmentOK);
+
+  // The PluginService might be trying to retrieve information from the
+  // plugin process. Wait until it completes before shutting down.
+  //
+  // During tests the channel to the plugin process may fail to open, and
+  // PluginDataRemover::OnError logs a LOG(DFATAL). The ExpectNOTREACHED here
+  // Prevents this test failing in that case too.
+  ExpectNOTREACHED();
+  PluginService::GetInstance()->GetPlugins(base::Bind(&OnGetPluginsCallback));
+  MessageLoop::current()->Run();
 }
 
 IN_PROC_BROWSER_TEST_F(EnterpriseMetricsEnrollmentTest, AuthErrorConnection) {

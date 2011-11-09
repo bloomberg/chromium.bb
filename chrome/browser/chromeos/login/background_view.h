@@ -25,7 +25,6 @@ class Profile;
 
 namespace chromeos {
 
-class OobeProgressBar;
 class ShutdownButton;
 
 // View used to render the background during login. BackgroundView contains
@@ -77,15 +76,6 @@ class BackgroundView : public views::View,
   // Toggles whether status area is enabled.
   void SetStatusAreaEnabled(bool enable);
 
-  // Toggles OOBE progress bar visibility, the bar is hidden by default.
-  void SetOobeProgressBarVisible(bool visible);
-
-  // Gets progress bar visibility.
-  bool IsOobeProgressBarVisible();
-
-  // Sets current step on OOBE progress bar.
-  void SetOobeProgress(LoginStep step);
-
   // Shows screen saver.
   void ShowScreenSaver();
 
@@ -136,8 +126,6 @@ class BackgroundView : public views::View,
   void InitStatusArea();
   // Creates and adds the labels for version and boot time.
   void InitInfoLabels();
-  // Creates and add OOBE progress bar.
-  void InitProgressBar();
 
   // Invokes SetWindowType for the window. This is invoked during startup and
   // after we've painted.
@@ -148,7 +136,6 @@ class BackgroundView : public views::View,
   StatusAreaViewChromeos::ScreenMode screen_mode_;
   views::Label* os_version_label_;
   views::Label* boot_times_label_;
-  OobeProgressBar* progress_bar_;
   ShutdownButton* shutdown_button_;
 
   // True if running official BUILD.

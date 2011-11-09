@@ -13,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/login/oobe_progress_bar.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/shutdown_button.h"
@@ -80,7 +79,6 @@ BackgroundView::BackgroundView()
       screen_mode_(StatusAreaViewChromeos::LOGIN_MODE_VIEWS),
       os_version_label_(NULL),
       boot_times_label_(NULL),
-      progress_bar_(NULL),
       shutdown_button_(NULL),
 #if defined(OFFICIAL_BUILD)
       is_official_build_(true),
@@ -173,24 +171,6 @@ void BackgroundView::SetStatusAreaEnabled(bool enable) {
   status_area_->MakeButtonsActive(enable);
 }
 
-void BackgroundView::SetOobeProgressBarVisible(bool visible) {
-  if (!progress_bar_ && visible)
-    InitProgressBar();
-
-  if (progress_bar_)
-    progress_bar_->SetVisible(visible);
-}
-
-bool BackgroundView::IsOobeProgressBarVisible() {
-  return progress_bar_ && progress_bar_->IsVisible();
-}
-
-void BackgroundView::SetOobeProgress(LoginStep step) {
-  DCHECK(step < STEPS_COUNT);
-  if (progress_bar_)
-    progress_bar_->SetStep(GetStepId(step));
-}
-
 void BackgroundView::ShowScreenSaver() {
   SetStatusAreaVisible(false);
   background_area_->SetVisible(true);
@@ -224,9 +204,6 @@ void BackgroundView::Layout() {
   const int kInfoLeftPadding = 10;
   const int kInfoBottomPadding = 10;
   const int kInfoBetweenLinesPadding = 1;
-  const int kProgressBarBottomPadding = 20;
-  const int kProgressBarWidth = 750;
-  const int kProgressBarHeight = 70;
   gfx::Size status_area_size = status_area_->GetPreferredSize();
   status_area_->SetBounds(
       width() - status_area_size.width() - kCornerPadding,
@@ -248,13 +225,6 @@ void BackgroundView::Layout() {
         height() - (version_size.height() + kInfoBottomPadding),
         width() - 2 * kInfoLeftPadding,
         version_size.height());
-  }
-  if (progress_bar_) {
-    progress_bar_->SetBounds(
-        (width() - kProgressBarWidth) / 2,
-        (height() - kProgressBarBottomPadding - kProgressBarHeight),
-        kProgressBarWidth,
-        kProgressBarHeight);
   }
   if (shutdown_button_) {
     shutdown_button_->LayoutIn(this);
@@ -360,22 +330,6 @@ void BackgroundView::InitInfoLabels() {
   }
 
   version_info_updater_.StartUpdate(is_official_build_);
-}
-
-void BackgroundView::InitProgressBar() {
-  std::vector<int> steps;
-  steps.push_back(GetStepId(SELECT_NETWORK));
-#if defined(OFFICIAL_BUILD)
-  steps.push_back(GetStepId(EULA));
-#endif
-  steps.push_back(GetStepId(SIGNIN));
-#if defined(OFFICIAL_BUILD)
-  if (WizardController::IsRegisterScreenDefined())
-    steps.push_back(GetStepId(REGISTRATION));
-#endif
-  steps.push_back(GetStepId(PICTURE));
-  progress_bar_ = new OobeProgressBar(steps);
-  AddChildView(progress_bar_);
 }
 
 void BackgroundView::UpdateWindowType() {

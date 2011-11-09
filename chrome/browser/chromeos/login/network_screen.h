@@ -15,9 +15,7 @@
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/network_screen_actor.h"
-#include "chrome/browser/chromeos/login/network_selection_view.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
-#include "chrome/browser/chromeos/options/network_config_view.h"
 
 namespace chromeos {
 

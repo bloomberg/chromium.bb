@@ -6296,8 +6296,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         The <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> connector process has crashed. Restart?
       </message>
 
-      <!-- Enterprise enrollment strings -->
-
       <!-- Print Preview -->
       <message name="IDS_PRINT_PREVIEW_TITLE" desc="Fallback title for print preview page.">
         Print
@@ -14329,35 +14327,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       The credentials used to share your printers to  <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> have expired. Please click here to re-enter your username and password.
     </message>
 
-    <!-- Enterprise enrollment dialog -->
+    <!-- Strings for the new-style OAuth-based enterprise enrollment page -->
     <if expr="pp_ifdef('chromeos')">
-      <message name="IDS_ENTERPRISE_ENROLLMENT_LOGIN_HEADER" desc="The title on the enterprise enrollment dialog">
-        Enterprise enrollment
-      </message>
-      <message name="IDS_ENTERPRISE_ENROLLMENT_LOGIN_EXPLAIN" desc="Description text on the enterprise enrollment dialog">
-        By signing in with your Google Apps for your Domain account, you can remotely manage the configuration of this <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph> device from the cloud.
-      </message>
-      <message name="IDS_ENTERPRISE_ENROLLMENT_CLOUD_HEADER" desc="Heading for the cloud management item on the enterprise enrollment dialog">
-        Manage your devices from the cloud
-      </message>
-      <message name="IDS_ENTERPRISE_ENROLLMENT_CLOUD_EXPLAIN" desc="Description text for the cloud management item on the enterprise enrollment dialog">
-        Chrome OS for enterprise allows you to connect your device to Google Apps for Your Domain, allowing you to find and control your device from your Google Apps for Your Domain Control Panel.
-      </message>
-      <message name="IDS_ENTERPRISE_ENROLLMENT_ACCESSCONTROL_HEADER" desc="Heading for the access control item on the enterprise enrollment dialog">
-        Set access control for your devices
-      </message>
-      <message name="IDS_ENTERPRISE_ENROLLMENT_ACCESSCONTROL_EXPLAIN" desc="Description text for the access control item on the enterprise enrollment dialog">
-        Control which users are allowed to log in to a device and configure whether guest browsing sessions are permitted.
-      </message>
-      <message name="IDS_ENTERPRISE_ENROLLMENT_CONFIRMATION_HEADER" desc="Heading for the confirmation screen in the enterprise enrollment dialog">
-        Enrollment successful
-      </message>
-      <message name="IDS_ENTERPRISE_ENROLLMENT_CONFIRMATION_MESSAGE" desc="Message on confirmation screen in the enterprise enrollment dialog">
-        Your device has successfully been enrolled for enterprise management.
-      </message>
-      <message name="IDS_ENTERPRISE_ENROLLMENT_CONFIRMATION_CLOSE" desc="Label for the close button on the confirmation screen in the enterprise enrollment dialog">
-        Done
-      </message>
       <message name="IDS_ENTERPRISE_ENROLLMENT_ACCOUNT_ERROR" desc="Error message to show when there is a problem with the user account.">
         This user account is not eligible for the service.
       </message>
@@ -14373,8 +14344,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ENTERPRISE_ENROLLMENT_SERIAL_NUMBER_ERROR" desc="Error message to show when the serial number reported by the device cannot be enrolled in the requested domain.">
         This device cannot be enrolled in the domain this user account belongs to.
       </message>
-
-      <!-- Strings for the new-style OAuth-based enterprise enrollment page -->
       <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">
         Enterprise enrollment
       </message>

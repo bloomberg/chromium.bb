@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/login/rounded_view.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColorShader.h"
 #include "third_party/skia/include/core/SkComposeShader.h"

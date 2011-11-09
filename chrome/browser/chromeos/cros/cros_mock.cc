@@ -211,21 +211,21 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, ethernet_connected())
-      .Times(1)
+      .Times(AnyNumber())
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, ethernet_connecting())
-      .Times(1)
+      .Times(AnyNumber())
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
 }
 
 void CrosMock::SetPowerLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_power_library_, AddObserver(_))
-      .Times(3)
+      .Times(AnyNumber())
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_power_library_, RemoveObserver(_))
-      .Times(3)
+      .Times(AnyNumber())
       .RetiresOnSaturation();
 }
 

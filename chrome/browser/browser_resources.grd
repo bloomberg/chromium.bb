@@ -130,8 +130,6 @@
         <include name="IDR_CHOOSE_MOBILE_NETWORK_JS" file="resources\chromeos\choose_mobile_network.js" type="BINDATA" />
         <!-- manifest file of ChromeVox accessibility extension -->
         <include name="IDR_CHROMEVOX_MANIFEST" file="resources\access_chromevox\manifest.json" type="BINDATA" />
-        <!-- Enterprise enrollment dialog -->
-        <include name="IDR_ENTERPRISE_ENROLLMENT_HTML" file="policy\resources\enrollment.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_GAIA_AUTH_MANIFEST" file="resources\gaia_auth\manifest.json" type="BINDATA" />
         <include name="IDR_GAIA_TEST_AUTH_MANIFEST" file="resources\gaia_auth\manifest_test.json" type="BINDATA" />
         <include name="IDR_GUEST_SESSION_TAB_HTML" file="resources\guest_session_tab.html" flattenhtml="true" type="BINDATA" />

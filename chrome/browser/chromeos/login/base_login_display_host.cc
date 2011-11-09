@@ -22,14 +22,12 @@
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/login/views_login_display_host.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -248,16 +246,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
       first_screen_name == chromeos::WizardController::kLoginScreenName;
 
   chromeos::LoginDisplayHost* display_host;
-#if defined(USE_AURA)
-  // Under Aura we always use the WebUI.
   display_host = new chromeos::WebUILoginDisplayHost(screen_bounds);
-#else
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin)) {
-    display_host = new chromeos::WebUILoginDisplayHost(screen_bounds);
-  } else {
-    display_host = new chromeos::ViewsLoginDisplayHost(screen_bounds);
-  }
-#endif
 
   if (show_login_screen && chromeos::CrosLibrary::Get()->EnsureLoaded()) {
     // R11 > R12 migration fix. See http://crosbug.com/p/4898.

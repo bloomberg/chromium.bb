@@ -50,7 +50,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
-#include "chrome/browser/ui/webui/chromeos/enterprise_enrollment_ui.h"
 #include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_ui.h"
 #include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/lock_screen_ui.h"
@@ -219,8 +218,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<ActiveDownloadsUI>;
   if (url.host() == chrome::kChromeUIChooseMobileNetworkHost)
     return &NewWebUI<chromeos::ChooseMobileNetworkUI>;
-  if (url.host() == chrome::kChromeUIEnterpriseEnrollmentHost)
-    return &NewWebUI<chromeos::EnterpriseEnrollmentUI>;
   if (url.host() == chrome::kChromeUIImageBurnerHost)
     return &NewWebUI<ImageBurnUI>;
   if (url.host() == chrome::kChromeUIKeyboardOverlayHost)

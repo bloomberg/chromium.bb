@@ -57,7 +57,6 @@ cr.define('cr.ui', function() {
     oobe.NetworkScreen.register();
     oobe.EulaScreen.register();
     oobe.UpdateScreen.register();
-    oobe.EnrollmentScreen.register();
     oobe.OAuthEnrollmentScreen.register();
     login.AccountPickerScreen.register();
     login.GaiaSigninScreen.register();

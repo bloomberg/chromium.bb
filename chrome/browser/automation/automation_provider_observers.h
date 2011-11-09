@@ -27,7 +27,6 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
-#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_view.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -1001,7 +1000,7 @@ class EnrollmentObserver
 
   virtual ~EnrollmentObserver();
 
-  // chromeos::EnterpriseEnrollmentView::Observer implementation.
+  // chromeos::EnterpriseEnrollmentScreenActor::Observer implementation.
   virtual void OnEnrollmentComplete(
       chromeos::EnterpriseEnrollmentScreenActor* enrollment_screen_actor,
       bool succeeded);

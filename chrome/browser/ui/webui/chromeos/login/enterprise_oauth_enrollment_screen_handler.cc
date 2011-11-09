@@ -83,7 +83,10 @@ EnterpriseOAuthEnrollmentScreenHandler::EnterpriseOAuthEnrollmentScreenHandler()
 }
 
 EnterpriseOAuthEnrollmentScreenHandler::
-    ~EnterpriseOAuthEnrollmentScreenHandler() {}
+    ~EnterpriseOAuthEnrollmentScreenHandler() {
+  if (browsing_data_remover_)
+    browsing_data_remover_->RemoveObserver(this);
+}
 
 // EnterpriseOAuthEnrollmentScreenHandler, WebUIMessageHandler implementation --
 

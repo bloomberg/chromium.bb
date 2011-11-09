@@ -16,9 +16,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
-#include "chrome/browser/chromeos/login/network_selection_view.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
-#include "chrome/browser/chromeos/login/views_network_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
@@ -68,12 +66,6 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     // Minimal set of expectations needed on NetworkScreen initialization.
     // Status bar expectations are defined with RetiresOnSaturation() so
     // these mocks will be active once status bar is initialized.
-    EXPECT_CALL(*mock_network_library_, ethernet_connected())
-        .Times(2)
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_network_library_, ethernet_connecting())
-        .Times(2)
-        .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, wifi_connected())
         .Times(1)
         .WillRepeatedly(Return(false));
@@ -125,10 +117,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     ASSERT_TRUE(network_screen_ != NULL);
     ASSERT_EQ(controller()->current_screen(), network_screen_);
     network_screen_->screen_observer_ = mock_screen_observer_.get();
-    // We need a couple of methods defined only in views version.
-    // TODO(avayvod): Refactor this when WebUI implementation is finished.
-    actor_ = static_cast<ViewsNetworkScreenActor*>(network_screen_->actor());
-    ASSERT_TRUE(actor_ != NULL);
+    ASSERT_TRUE(network_screen_->actor() != NULL);
   }
 
   virtual void TearDownInProcessBrowserTestFixture() {
@@ -151,7 +140,6 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   MockNetworkLibrary* mock_network_library_;
   scoped_ptr<NetworkDevice> cellular_;
   NetworkScreen* network_screen_;
-  ViewsNetworkScreenActor* actor_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkScreenTest);
@@ -166,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Ethernet) {
       .WillOnce((Return(false)));
   EXPECT_CALL(*mock_network_library_, ethernet_connecting())
       .WillOnce((Return(true)));
-  EXPECT_FALSE(actor_->IsContinueEnabled());
+  // EXPECT_FALSE(actor_->IsContinueEnabled());
   network_screen_->OnNetworkManagerChanged(mock_network_library_);
 
   EXPECT_CALL(*mock_network_library_, ethernet_connected())
@@ -174,11 +162,12 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Ethernet) {
   EXPECT_CALL(*mock_network_library_, Connected())
       .Times(3)
       .WillRepeatedly(Return(true));
-  EXPECT_FALSE(actor_->IsContinueEnabled());
-  EXPECT_FALSE(actor_->IsConnecting());
+  // TODO(nkostylev): Add integration with WebUI actor http://crosbug.com/22570
+  // EXPECT_FALSE(actor_->IsContinueEnabled());
+  // EXPECT_FALSE(actor_->IsConnecting());
   network_screen_->OnNetworkManagerChanged(mock_network_library_);
 
-  EXPECT_TRUE(actor_->IsContinueEnabled());
+  // EXPECT_TRUE(actor_->IsContinueEnabled());
   EmulateContinueButtonExit(network_screen_);
 }
 
@@ -200,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Wifi) {
       .WillRepeatedly(Return(wifi.get()));
   EXPECT_CALL(*mock_network_library_, wifi_networks())
       .WillRepeatedly(ReturnRef(wifi_networks));
-  EXPECT_FALSE(actor_->IsContinueEnabled());
+  // EXPECT_FALSE(actor_->IsContinueEnabled());
   network_screen_->OnNetworkManagerChanged(mock_network_library_);
 
   EXPECT_CALL(*mock_network_library_, ethernet_connected())
@@ -208,11 +197,12 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Wifi) {
   EXPECT_CALL(*mock_network_library_, Connected())
         .Times(3)
         .WillRepeatedly(Return(true));
-  EXPECT_FALSE(actor_->IsContinueEnabled());
-  EXPECT_FALSE(actor_->IsConnecting());
+  // TODO(nkostylev): Add integration with WebUI actor http://crosbug.com/22570
+  // EXPECT_FALSE(actor_->IsContinueEnabled());
+  // EXPECT_FALSE(actor_->IsConnecting());
   network_screen_->OnNetworkManagerChanged(mock_network_library_);
 
-  EXPECT_TRUE(actor_->IsContinueEnabled());
+  // EXPECT_TRUE(actor_->IsContinueEnabled());
   EmulateContinueButtonExit(network_screen_);
 }
 
@@ -232,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Cellular) {
   scoped_ptr<CellularNetwork> cellular(new CellularNetwork("cellular"));
   EXPECT_CALL(*mock_network_library_, cellular_network())
       .WillOnce(Return(cellular.get()));
-  EXPECT_FALSE(actor_->IsContinueEnabled());
+  // EXPECT_FALSE(actor_->IsContinueEnabled());
   network_screen_->OnNetworkManagerChanged(mock_network_library_);
 
   EXPECT_CALL(*mock_network_library_, ethernet_connected())
@@ -240,11 +230,12 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Cellular) {
   EXPECT_CALL(*mock_network_library_, Connected())
       .Times(3)
       .WillRepeatedly(Return(true));
-  EXPECT_FALSE(actor_->IsContinueEnabled());
-  EXPECT_FALSE(actor_->IsConnecting());
+  // TODO(nkostylev): Add integration with WebUI actor http://crosbug.com/22570
+  // EXPECT_FALSE(actor_->IsContinueEnabled());
+  // EXPECT_FALSE(actor_->IsConnecting());
   network_screen_->OnNetworkManagerChanged(mock_network_library_);
 
-  EXPECT_TRUE(actor_->IsContinueEnabled());
+  // EXPECT_TRUE(actor_->IsContinueEnabled());
   EmulateContinueButtonExit(network_screen_);
 }
 
@@ -268,20 +259,21 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, MAYBE_Timeout) {
   scoped_ptr<WifiNetwork> wifi(new WifiNetwork("wifi"));
   EXPECT_CALL(*mock_network_library_, wifi_network())
       .WillOnce(Return(wifi.get()));
-  EXPECT_FALSE(actor_->IsContinueEnabled());
+  // EXPECT_FALSE(actor_->IsContinueEnabled());
   network_screen_->OnNetworkManagerChanged(mock_network_library_);
 
   EXPECT_CALL(*mock_network_library_, Connected())
       .Times(2)
       .WillRepeatedly(Return(false));
-  EXPECT_FALSE(actor_->IsContinueEnabled());
-  EXPECT_FALSE(actor_->IsConnecting());
+  // TODO(nkostylev): Add integration with WebUI actor http://crosbug.com/22570
+  // EXPECT_FALSE(actor_->IsContinueEnabled());
+  // EXPECT_FALSE(actor_->IsConnecting());
   network_screen_->OnConnectionTimeout();
 
   // Close infobubble with error message - it makes the test stable.
-  EXPECT_FALSE(actor_->IsContinueEnabled());
-  EXPECT_FALSE(actor_->IsConnecting());
-  actor_->ClearErrors();
+  // EXPECT_FALSE(actor_->IsContinueEnabled());
+  // EXPECT_FALSE(actor_->IsConnecting());
+  // actor_->ClearErrors();
 }
 
 }  // namespace chromeos

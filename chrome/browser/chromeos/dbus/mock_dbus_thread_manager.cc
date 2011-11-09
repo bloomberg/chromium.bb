@@ -11,7 +11,9 @@
 #include "chrome/browser/chromeos/dbus/mock_session_manager_client.h"
 #include "chrome/browser/chromeos/dbus/mock_speech_synthesizer_client.h"
 
+using ::testing::AnyNumber;
 using ::testing::Return;
+using ::testing::_;
 
 namespace chromeos {
 
@@ -34,6 +36,16 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_session_manager_client_.get()));
   EXPECT_CALL(*this, GetSpeechSynthesizerClient())
       .WillRepeatedly(Return(mock_speech_synthesizer_client_.get()));
+
+  // These observers calls are used in ChromeBrowserMainPartsChromeos.
+  EXPECT_CALL(*mock_power_manager_client_.get(), AddObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_power_manager_client_.get(), RemoveObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_session_manager_client_.get(), AddObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_session_manager_client_.get(), RemoveObserver(_))
+      .Times(AnyNumber());
 }
 
 MockDBusThreadManager::~MockDBusThreadManager() {}
