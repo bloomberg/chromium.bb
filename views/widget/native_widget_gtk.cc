@@ -25,6 +25,7 @@
 #include "ui/base/gtk/gtk_windowing.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/gtk/scoped_handle_gtk.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -42,7 +43,6 @@
 #include "views/widget/native_widget_views.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_delegate.h"
-#include "views/window/hit_test.h"
 
 #if defined(TOUCH_UI)
 #include "ui/base/touch/touch_factory.h"

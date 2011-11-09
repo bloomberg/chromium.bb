@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "views/window/client_view.h"
+
 #include "base/logging.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "views/window/client_view.h"
-#if defined(OS_LINUX)
-#include "views/window/hit_test.h"
-#endif
+#include "ui/base/hit_test.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
 

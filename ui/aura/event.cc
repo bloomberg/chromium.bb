@@ -81,9 +81,11 @@ MouseEvent::MouseEvent(const MouseEvent& model, Window* source, Window* target)
 MouseEvent::MouseEvent(const MouseEvent& model,
                        Window* source,
                        Window* target,
-                       ui::EventType type)
+                       ui::EventType type,
+                       int flags)
     : LocatedEvent(model, source, target) {
   set_type(type);
+  set_flags(flags);
 }
 
 MouseEvent::MouseEvent(ui::EventType type,

@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/base/hit_test.h"
 #include "views/bubble/bubble_border.h"
 #include "views/bubble/border_contents_view.h"
 #include "views/bubble/bubble_delegate.h"
 #include "views/bubble/bubble_frame_view.h"
 #include "views/test/views_test_base.h"
 #include "views/widget/widget.h"
-#if !defined(OS_WIN)
-#include "views/window/hit_test.h"
-#endif
 
 namespace views {
 

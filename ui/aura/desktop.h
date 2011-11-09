@@ -58,6 +58,7 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
 
   ui::Compositor* compositor() { return compositor_.get(); }
   gfx::Point last_mouse_location() const { return last_mouse_location_; }
+  gfx::NativeCursor last_cursor() const { return last_cursor_; }
   DesktopDelegate* delegate() { return delegate_.get(); }
   Window* active_window() { return active_window_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
@@ -188,6 +189,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
 
   // Last location seen in a mouse event.
   gfx::Point last_mouse_location_;
+
+  // Last cursor set.  Used for testing.
+  gfx::NativeCursor last_cursor_;
 
   // Are we in the process of being destroyed? Used to avoid processing during
   // destruction.

@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tabs/abstract_tab_strip_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "ui/base/hit_test.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/gfx/size.h"
@@ -23,10 +24,6 @@
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
-#endif
-
-#if !defined(OS_WIN)
-#include "views/window/hit_test.h"
 #endif
 
 namespace {

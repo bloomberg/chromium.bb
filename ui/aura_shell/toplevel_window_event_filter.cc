@@ -8,9 +8,9 @@
 #include "ui/aura/cursor.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
-#include "ui/aura/hit_test.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 
 namespace aura_shell {

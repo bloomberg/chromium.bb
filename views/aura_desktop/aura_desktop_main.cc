@@ -13,6 +13,7 @@
 #include "ui/aura/desktop_host.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/canvas.h"
@@ -20,10 +21,6 @@
 #include "ui/gfx/rect.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
-
-#if !defined(OS_WIN)
-#include "ui/aura/hit_test.h"
-#endif
 
 namespace {
 

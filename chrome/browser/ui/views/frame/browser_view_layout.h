@@ -46,7 +46,7 @@ class BrowserViewLayout : public views::LayoutManager {
 
   // Tests to see if the specified |point| (in nonclient view's coordinates)
   // is within the views managed by the laymanager. Returns one of
-  // HitTestCompat enum defined in views/window/hit_test.h.
+  // HitTestCompat enum defined in ui/base/hit_test.h.
   // See also ClientView::NonClientHitTest.
   virtual int NonClientHitTest(const gfx::Point& point);
 

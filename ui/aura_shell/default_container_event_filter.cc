@@ -5,10 +5,10 @@
 #include "ui/aura_shell/default_container_event_filter.h"
 
 #include "ui/aura/event.h"
-#include "ui/aura/hit_test.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/default_container_layout_manager.h"
 #include "ui/aura_shell/window_frame.h"
+#include "ui/base/hit_test.h"
 
 namespace {
 

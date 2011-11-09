@@ -21,6 +21,7 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
@@ -34,10 +35,6 @@
 #include "views/controls/label.h"
 #include "views/painter.h"
 #include "views/widget/widget_delegate.h"
-
-#if !defined(OS_WIN)
-#include "views/window/hit_test.h"
-#endif
 
 namespace {
 

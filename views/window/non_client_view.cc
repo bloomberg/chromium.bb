@@ -5,13 +5,10 @@
 #include "views/window/non_client_view.h"
 
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/hit_test.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/window/client_view.h"
-
-#if !defined(OS_WIN)
-#include "views/window/hit_test.h"
-#endif
 
 namespace views {
 

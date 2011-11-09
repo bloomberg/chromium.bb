@@ -33,7 +33,7 @@ class VIEWS_EXPORT WindowManager {
   // Starts resizing window give by |widget|. |point| represents the
   // initial location of the mouse pointer and |hittest_code| represents
   // the edge of the window a user selected to resize the window. See
-  // views/window/hit_test.h for the hittest_code definition.
+  // ui/base/hit_test.h for the hittest_code definition.
   virtual void StartResizeDrag(
       Widget* widget, const gfx::Point& point, int hittest_code) = 0;
 

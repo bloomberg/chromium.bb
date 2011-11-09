@@ -28,6 +28,7 @@
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -42,10 +43,6 @@
 
 #if defined(USE_VIRTUAL_KEYBOARD)
 #include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
-#endif
-
-#if !defined(OS_WIN)
-#include "views/window/hit_test.h"
 #endif
 
 namespace {

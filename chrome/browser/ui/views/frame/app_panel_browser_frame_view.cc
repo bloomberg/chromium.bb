@@ -13,6 +13,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -21,10 +22,6 @@
 #include "views/controls/button/image_button.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
-
-#if !defined(OS_WIN)
-#include "views/window/hit_test.h"
-#endif
 
 namespace {
 // The frame border is only visible in restored mode and is hardcoded to 1 px on

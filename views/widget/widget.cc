@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_font_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -981,7 +982,9 @@ void Widget::OnNativeWidgetPaint(gfx::Canvas* canvas) {
 }
 
 int Widget::GetNonClientComponent(const gfx::Point& point) {
-  return non_client_view_ ? non_client_view_->NonClientHitTest(point) : 0;
+  return non_client_view_ ?
+      non_client_view_->NonClientHitTest(point) :
+      HTNOWHERE;
 }
 
 bool Widget::OnKeyEvent(const KeyEvent& event) {

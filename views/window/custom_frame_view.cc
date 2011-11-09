@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -18,10 +19,6 @@
 #include "views/window/client_view.h"
 #include "views/window/window_resources.h"
 #include "views/window/window_shape.h"
-
-#if defined(OS_LINUX)
-#include "views/window/hit_test.h"
-#endif
 
 #if defined(USE_AURA)
 #include "views/widget/native_widget_aura.h"

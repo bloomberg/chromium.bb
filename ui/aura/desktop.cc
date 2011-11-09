@@ -24,6 +24,7 @@
 #include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/hit_test.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
@@ -43,6 +44,37 @@ static const int kDefaultHostWindowX = 200;
 static const int kDefaultHostWindowY = 200;
 static const int kDefaultHostWindowWidth = 1280;
 static const int kDefaultHostWindowHeight = 1024;
+
+// Returns the default cursor for a window component.
+gfx::NativeCursor CursorForWindowComponent(int window_component) {
+  switch (window_component) {
+    case HTBOTTOM:
+      return aura::kCursorSouthResize;
+    case HTBOTTOMLEFT:
+      return aura::kCursorSouthWestResize;
+    case HTBOTTOMRIGHT:
+      return aura::kCursorSouthEastResize;
+    case HTLEFT:
+      return aura::kCursorWestResize;
+    case HTRIGHT:
+      return aura::kCursorEastResize;
+    case HTTOP:
+      return aura::kCursorNorthResize;
+    case HTTOPLEFT:
+      return aura::kCursorNorthWestResize;
+    case HTTOPRIGHT:
+      return aura::kCursorNorthEastResize;
+    default:
+      return aura::kCursorNull;
+  }
+}
+
+bool IsNonClientLocation(Window* target, const gfx::Point& location) {
+  if (!target->delegate())
+    return false;
+  int hit_test_code = target->delegate()->GetNonClientComponent(location);
+  return hit_test_code != HTCLIENT && hit_test_code != HTNOWHERE;
+}
 
 class DefaultDesktopDelegate : public DesktopDelegate {
  public:
@@ -86,7 +118,7 @@ class DesktopEventFilter : public EventFilter {
         ActivateIfNecessary(target, event);
         break;
       case ui::ET_MOUSE_MOVED:
-        Desktop::GetInstance()->SetCursor(target->GetCursor(event->location()));
+        HandleMouseMoved(target, event);
         break;
       default:
         break;
@@ -127,6 +159,18 @@ class DesktopEventFilter : public EventFilter {
       return;
 
     Desktop::GetInstance()->SetActiveWindow(toplevel_window, window);
+  }
+
+  // Updates the cursor if the target provides a custom one, and provides
+  // default resize cursors for window edges.
+  void HandleMouseMoved(Window* target, MouseEvent* event) {
+    gfx::NativeCursor cursor = target->GetCursor(event->location());
+    if (event->flags() & ui::EF_IS_NON_CLIENT) {
+      int window_component =
+          target->delegate()->GetNonClientComponent(event->location());
+      cursor = CursorForWindowComponent(window_component);
+    }
+    Desktop::GetInstance()->SetCursor(cursor);
   }
 
   DISALLOW_COPY_AND_ASSIGN(DesktopEventFilter);
@@ -199,6 +243,7 @@ Desktop::Desktop()
           delegate_(new DefaultDesktopDelegate(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
       active_window_(NULL),
+      last_cursor_(kCursorNull),
       in_destructor_(false),
       screen_(new ScreenAura),
       capture_window_(NULL),
@@ -263,6 +308,9 @@ gfx::Size Desktop::GetHostSize() const {
 }
 
 void Desktop::SetCursor(gfx::NativeCursor cursor) {
+  last_cursor_ = cursor;
+  // A lot of code seems to depend on NULL cursors actually showing an arrow,
+  // so just pass everything along to the host.
   host_->SetCursor(cursor);
 }
 
@@ -299,7 +347,10 @@ bool Desktop::DispatchMouseEvent(MouseEvent* event) {
       break;
   }
   if (target && target->delegate()) {
-    MouseEvent translated_event(*event, this, target);
+    int flags = event->flags();
+    if (IsNonClientLocation(target, event->location()))
+      flags |= ui::EF_IS_NON_CLIENT;
+    MouseEvent translated_event(*event, this, target, event->type(), flags);
     return ProcessMouseEvent(target, &translated_event);
   }
   return false;
@@ -484,14 +535,14 @@ void Desktop::HandleMouseMoved(const MouseEvent& event, Window* target) {
   // Send an exited event.
   if (mouse_moved_handler_ && mouse_moved_handler_->delegate()) {
     MouseEvent translated_event(event, this, mouse_moved_handler_,
-                                ui::ET_MOUSE_EXITED);
+                                ui::ET_MOUSE_EXITED, event.flags());
     ProcessMouseEvent(mouse_moved_handler_, &translated_event);
   }
   mouse_moved_handler_ = target;
   // Send an entered event.
   if (mouse_moved_handler_ && mouse_moved_handler_->delegate()) {
     MouseEvent translated_event(event, this, mouse_moved_handler_,
-                                ui::ET_MOUSE_ENTERED);
+                                ui::ET_MOUSE_ENTERED, event.flags());
     ProcessMouseEvent(mouse_moved_handler_, &translated_event);
   }
 }

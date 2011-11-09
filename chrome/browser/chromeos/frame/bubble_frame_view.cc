@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "grit/theme_resources_standard.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
@@ -21,7 +22,6 @@
 #include "views/controls/throbber.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
-#include "views/window/hit_test.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 

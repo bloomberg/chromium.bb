@@ -5,13 +5,10 @@
 #include "chrome/browser/ui/views/frame/popup_non_client_frame_view.h"
 
 #include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "ui/base/hit_test.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-
-#if !defined(OS_WIN)
-#include "views/window/hit_test.h"
-#endif
 
 PopupNonClientFrameView::PopupNonClientFrameView(BrowserFrame* frame)
     : BrowserNonClientFrameView(frame, NULL) {

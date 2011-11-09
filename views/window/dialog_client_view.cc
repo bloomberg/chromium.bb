@@ -18,6 +18,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "grit/ui_strings.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -33,7 +34,6 @@
 #include "ui/gfx/native_theme.h"
 #else
 #include "ui/gfx/skia_utils_gtk.h"
-#include "views/window/hit_test.h"
 #endif
 
 namespace views {

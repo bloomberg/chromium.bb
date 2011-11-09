@@ -25,6 +25,7 @@
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
 #include "net/base/net_util.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
@@ -38,10 +39,6 @@
 #include "views/window/non_client_view.h"
 #include "views/window/window_resources.h"
 #include "views/window/window_shape.h"
-
-#if defined(OS_LINUX)
-#include "views/window/hit_test.h"
-#endif
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "views/widget/native_widget_win.h"

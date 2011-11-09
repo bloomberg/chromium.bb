@@ -13,11 +13,11 @@
 #include "chrome/browser/ui/views/frame/browser_frame_views.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "ui/base/hit_test.h"
 #include "ui/gfx/font.h"
 #include "views/views_delegate.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-#include "views/window/hit_test.h"
 
 // static
 const gfx::Font& BrowserFrame::GetTitleFont() {

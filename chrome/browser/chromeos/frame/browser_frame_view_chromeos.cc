@@ -10,7 +10,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
-#include "views/window/hit_test.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/theme_provider.h"
 
 namespace {

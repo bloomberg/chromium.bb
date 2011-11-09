@@ -5,6 +5,7 @@
 #include "views/widget/native_widget_views.h"
 
 #include "base/bind.h"
+#include "ui/base/hit_test.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
@@ -19,10 +20,6 @@
 #include "views/ime/input_method_ibus.h"
 #else
 #include "views/ime/mock_input_method.h"
-#endif
-
-#if defined(OS_LINUX)
-#include "views/window/hit_test.h"
 #endif
 
 namespace {

@@ -88,7 +88,7 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   // tree if necessary when accelerated painting is enabled.
   virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) = 0;
 
-  // Returns the non-client component (see views/window/hit_test.h) containing
+  // Returns the non-client component (see ui/base/hit_test.h) containing
   // |point|, in client coordinates.
   virtual int GetNonClientComponent(const gfx::Point& point) = 0;
 

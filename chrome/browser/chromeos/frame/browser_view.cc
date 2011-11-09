@@ -32,6 +32,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"
@@ -44,7 +45,6 @@
 #include "views/controls/menu/menu_runner.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-#include "views/window/hit_test.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/wm_ipc.h"

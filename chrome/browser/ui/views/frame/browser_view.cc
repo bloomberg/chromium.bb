@@ -91,6 +91,7 @@
 #include "grit/ui_resources.h"
 #include "grit/webkit_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
@@ -118,7 +119,6 @@
 #include "views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/views/accelerator_table.h"
-#include "views/window/hit_test.h"
 #if !defined(TOUCH_UI)
 #include "chrome/browser/ui/views/handle_web_keyboard_event.h"
 #endif

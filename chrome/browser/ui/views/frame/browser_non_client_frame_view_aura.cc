@@ -13,6 +13,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/aura/cursor.h"
 #include "ui/base/animation/throb_animation.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -20,10 +21,6 @@
 #include "views/controls/button/custom_button.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
-
-#if !defined(OS_WIN)
-#include "views/window/hit_test.h"
-#endif
 
 namespace {
 // Our window is larger than it appears, as it includes space around the edges

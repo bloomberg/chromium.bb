@@ -4,7 +4,7 @@
 
 #include "ui/aura/test/test_window_delegate.h"
 
-#include "ui/aura/hit_test.h"
+#include "ui/base/hit_test.h"
 
 namespace aura {
 namespace test {
