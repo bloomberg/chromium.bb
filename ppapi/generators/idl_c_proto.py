@@ -20,7 +20,7 @@ Option('cgen_debug', 'Debug generate.')
 
 class CGenError(Exception):
   def __init__(self, msg):
-    self.value = value
+    self.value = msg
 
   def __str__(self):
     return repr(self.value)
