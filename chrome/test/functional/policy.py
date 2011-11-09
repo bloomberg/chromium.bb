@@ -30,6 +30,7 @@ class PolicyTest(pyauto.PyUITest):
     return blocked
 
   def IsJavascriptEnabled(self):
+    """Returns true if Javascript is enabled, false otherwise."""
     try:
       ret = self.ExecuteJavascript('domAutomationController.send("done");')
       return ret == 'done'
@@ -39,6 +40,22 @@ class PolicyTest(pyauto.PyUITest):
         return False
       else:
         raise e
+
+  def IsWebGLEnabled(self):
+    """Returns true if WebGL is enabled, false otherwise."""
+    ret = self.GetDOMValue("""
+        document.createElement('canvas').
+            getContext('experimental-webgl') ? 'ok' : ''
+    """)
+    return ret == 'ok'
+
+  def RestartRenderer(self, windex=0):
+    """Kills the current renderer, and reloads it again."""
+    info = self.GetBrowserInfo()
+    tab = self.GetActiveTabIndex()
+    pid = info['windows'][windex]['tabs'][tab]['renderer_pid']
+    self.KillRendererProcess(pid)
+    self.ReloadActiveTab()
 
   def testBlacklistPolicy(self):
     """Tests the URLBlacklist and URLWhitelist policies."""
@@ -159,6 +176,19 @@ class PolicyTest(pyauto.PyUITest):
     self.SetPolicies(policy)
     self.NavigateToURL('about:blank')
     self.assertTrue(self.IsJavascriptEnabled())
+
+  def testDisable3DAPIs(self):
+    """Tests the policy that disables the 3D APIs."""
+    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kDisable3DAPIs))
+    self.assertTrue(self.IsWebGLEnabled())
+
+    self.SetPolicies({
+        'Disable3DAPIs': True
+    })
+    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kDisable3DAPIs))
+    # The Disable3DAPIs policy only applies updated values to new renderers.
+    self.RestartRenderer()
+    self.assertFalse(self.IsWebGLEnabled())
 
 
 if __name__ == '__main__':

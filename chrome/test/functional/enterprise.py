@@ -364,17 +364,6 @@ class EnterpriseTest(pyauto.PyUITest):
       return
     self._CheckIfPrefCanBeModified(pyauto.kEditBookmarksEnabled, True, False)
 
-  def testDisable3DAPI(self):
-    """Verify when disable 3D API policy is set, webGL page does not work."""
-
-    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
-      return
-
-    self.SetPrefs(pyauto.kDisable3DAPIs, True)
-    self.assertEqual(self.GetDOMValue('document.createElement("canvas").' +
-                                      'getContext("experimental-webgl")' +
-                                      '== null ? "ok" : ""'), 'ok')
-
   def testDefaultSearchProviderEnabled(self):
     """Verify a default search is performed when the user types text in the
        omnibox that is not a URL
@@ -687,16 +676,6 @@ class EnterpriseTestReverse(pyauto.PyUITest):
     if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
       return
     self._CheckIfPrefCanBeModified(pyauto.kEditBookmarksEnabled, False, True)
-
-  def testEnable3DAPI(self):
-    """Verify when disable 3D API policy set to 0, webGL page works."""
-    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
-      return
-
-    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kDisable3DAPIs))
-    self.assertEqual(self.GetDOMValue('document.createElement("canvas").' +
-                                      'getContext("experimental-webgl")' +
-                                      '!= null ? "ok" : ""'), 'ok')
 
   def testDefaultSearchProviderDisabled(self):
     """Verify that inputting text in omnibox does not trigger search when
