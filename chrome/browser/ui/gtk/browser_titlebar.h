@@ -96,9 +96,9 @@ class BrowserTitlebar : public content::NotificationObserver,
     explicit ContextMenuModel(ui::SimpleMenuModel::Delegate* delegate);
   };
 
-  // Build the titlebar, the space above the tab
-  // strip, and (maybe) the min, max, close buttons.  |container| is the gtk
-  // continer that we put the widget into.
+  // Build the titlebar, the space above the tab strip, and (maybe) the min,
+  // max, close buttons. |container_| is the gtk container that we put the
+  // widget into.
   void Init();
 
   // Lazily builds and returns |titlebar_{left,right}_buttons_vbox_| and their

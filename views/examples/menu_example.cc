@@ -205,7 +205,7 @@ MenuExample::~MenuExample() {
 
 void MenuExample::CreateExampleView(views::View* container) {
   // views::Menu2 is not a sub class of View, hence we cannot directly
-  // add to the continer. Instead, we add a button to open a menu.
+  // add to the container. Instead, we add a button to open a menu.
   const bool show_menu_marker = true;
   ExampleMenuButton* menu_button = new ExampleMenuButton(
       ASCIIToUTF16("Open a menu"), show_menu_marker);
