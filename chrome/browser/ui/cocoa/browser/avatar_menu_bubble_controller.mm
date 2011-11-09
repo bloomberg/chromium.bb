@@ -330,6 +330,8 @@ const CGFloat kLabelInset = 49.0;
 
 - (void)dealloc {
   static_cast<AvatarMenuItemView*>(self.view).viewController = nil;
+  [linkAnimation_ stopAnimation];
+  [linkAnimation_ setDelegate:nil];
   [super dealloc];
 }
 
