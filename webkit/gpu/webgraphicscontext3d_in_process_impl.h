@@ -479,9 +479,6 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
   // For tracking which texture is bound
   WebGLId bound_texture_;
 
-  // FBO used for copying child texture to parent texture.
-  WebGLId copy_texture_to_parent_texture_fbo_;
-
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
   unsigned char* scanline_;
 #endif

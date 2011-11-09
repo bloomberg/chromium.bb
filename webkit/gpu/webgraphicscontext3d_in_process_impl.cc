@@ -62,7 +62,6 @@ WebGraphicsContext3DInProcessImpl::WebGraphicsContext3DInProcessImpl(
       multisample_color_buffer_(0),
       bound_fbo_(0),
       bound_texture_(0),
-      copy_texture_to_parent_texture_fbo_(0),
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
       scanline_(0),
 #endif
@@ -88,7 +87,6 @@ WebGraphicsContext3DInProcessImpl::~WebGraphicsContext3DInProcessImpl() {
       glDeleteRenderbuffersEXT(1, &depth_stencil_buffer_);
   }
   glDeleteTextures(1, &texture_);
-  glDeleteFramebuffersEXT(1, &copy_texture_to_parent_texture_fbo_);
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
   if (scanline_)
     delete[] scanline_;
@@ -233,8 +231,6 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
     AngleDestroyCompilers();
     return false;
   }
-
-  glGenFramebuffersEXT(1, &copy_texture_to_parent_texture_fbo_);
 
   initialized_ = true;
   gl_context_->ReleaseCurrent(gl_surface_.get());
@@ -1254,10 +1250,6 @@ WebString WebGraphicsContext3DInProcessImpl::getString(WGC3Denum name) {
         // extension that are a subset of it.
         result += " GL_EXT_texture_format_BGRA8888 GL_EXT_read_format_bgra";
       }
-      // GL_CHROMIUM_copy_texture_to_parent_texture requires the
-      // desktopGL-only function glGetTexLevelParameteriv (GLES2
-      // doesn't support it).
-      result += " GL_CHROMIUM_copy_texture_to_parent_texture";
     }
   }
   return WebString::fromUTF8(result.c_str());

@@ -1233,19 +1233,6 @@ typedef void* (GL_APIENTRYP PFNGLMAPTEXSUBIMAGE2DCHROMIUM) (GLenum target, GLint
 typedef void  (GL_APIENTRYP PFNGLUNMAPTEXSUBIMAGE2DCHROMIUM) (const void* mem);
 #endif
 
-/* GL_CHROMIUM_copy_texture_to_parent_texture */
-#ifndef GL_CHROMIUM_copy_texture_to_parent_texture
-#define GL_CHROMIUM_copy_texture_to_parent_texture 1
-#ifdef GL_GLEXT_PROTOTYPES
-#define glCopyTextureToParentTextureCHROMIUM GLES2_GET_FUN(CopyTextureToParentTextureCHROMIUM)
-#if !defined(GLES2_USE_CPP_BINDINGS)
-GL_APICALL void GL_APIENTRY glCopyTextureToParentTextureCHROMIUM (GLuint id, GLuint id2);
-#endif
-#else
-typedef void (GL_APIENTRYP PFNGLCOPYTEXTURETOPARENTTEXTURECHROMIUM) (GLuint id, GLuint id2);
-#endif
-#endif
-
 /* GL_CHROMIUM_resize */
 #ifndef GL_CHROMIUM_resize
 #define GL_CHROMIUM_resize 1
@@ -1284,27 +1271,6 @@ GL_APICALL void GL_APIENTRY glRequestExtensionCHROMIUM (const GLchar *extension)
 #else
 typedef const GLchar* (GL_APIENTRYP PFNGLGETREQUESTABLEEXTENSIONSCHROMIUM) (void);
 typedef void (GL_APIENTRYP PFNGLREQUESTEXTENSIONCHROMIUM) (const GLchar *extension);
-#endif
-#endif
-
-/* GL_CHROMIUM_latch */
-/*
- * This extension is similar in spirit to GL_NV_fence except
- * that GL_CHROMIUM_latch does not require resources to be shared
- * and it does not require glFlush semantics to work.
- */
-#ifndef GL_CHROMIUM_latch
-#define GL_CHROMIUM_latch 1
-#ifdef GL_GLEXT_PROTOTYPES
-#define glSetLatchCHROMIUM  GLES2_GET_FUN(SetLatchCHROMIUM)
-#define glWaitLatchCHROMIUM GLES2_GET_FUN(WaitLatchCHROMIUM)
-#if !defined(GLES2_USE_CPP_BINDINGS)
-GL_APICALL void GL_APIENTRY glSetLatchCHROMIUM (GLuint latch_id);
-GL_APICALL void GL_APIENTRY glWaitLatchCHROMIUM (GLuint latch_id);
-#endif
-#else
-typedef void (GL_APIENTRYP PFNGLSETLATCHCHROMIUM) (GLuint latch_id);
-typedef void (GL_APIENTRYP PFNGLWaitLATCHCHROMIUM) (GLuint latch_id);
 #endif
 #endif
 
