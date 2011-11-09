@@ -1531,6 +1531,8 @@
         'browser/profiles/profile_info_cache_unittest.cc',
         'browser/profiles/profile_manager_unittest.cc',
         'browser/renderer_host/web_cache_manager_unittest.cc',
+        'browser/resources/print_preview/print_preview_utils.js',
+        'browser/resources/print_preview/print_preview_utils_unittest.gtestjs',
         'browser/resources_util_unittest.cc',
         'browser/rlz/rlz_unittest.cc',
         'browser/safe_browsing/bloom_filter_unittest.cc',
@@ -1956,7 +1958,7 @@
         'test/base/v8_unit_test.cc',
         'test/base/v8_unit_test.h',
         'test/data/resource.rc',
-        'test/data/unit/framework_unittest.js',
+        'test/data/unit/framework_unittest.gtestjs',
         'tools/convert_dict/convert_dict_unittest.cc',
         '../content/browser/renderer_host/render_widget_host_unittest.cc',
         '../content/browser/renderer_host/text_input_client_mac_unittest.mm',
@@ -1980,8 +1982,25 @@
       ],
       'rules': [
         {
-          'rule_name': 'js2unit',
+          'rule_name': 'copyjs',
           'extension': 'js',
+          'msvs_external_rule': 1,
+          'inputs': [
+            '../build/cp.py',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/test_data/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).<(_extension)',
+          ],
+          'action': [
+            'python',
+            '<@(_inputs)',
+            '<(RULE_INPUT_PATH)',
+            '<@(_outputs)',
+          ],
+        },
+        {
+          'rule_name': 'js2unit',
+          'extension': 'gtestjs',
           'msvs_external_rule': 1,
           'inputs': [
             '<(gypv8sh)',
@@ -1992,7 +2011,7 @@
           ],
           'outputs': [
             '<(js2gtest_out_dir)/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).cc',
-            '<(PRODUCT_DIR)/test_data/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
+            '<(PRODUCT_DIR)/test_data/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).<(_extension)',
           ],
           'process_outputs_as_sources': 1,
           'action': [
@@ -2000,7 +2019,7 @@
             '<@(_inputs)',
             'unit',
             '<(RULE_INPUT_PATH)',
-            'chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
+            'chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).<(_extension)',
             '<@(_outputs)',
           ],
         },
