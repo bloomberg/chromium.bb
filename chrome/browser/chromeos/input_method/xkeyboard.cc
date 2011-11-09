@@ -105,6 +105,15 @@ XKeyboard::XKeyboard(const InputMethodUtil& util)
     : is_running_on_chrome_os_(
         system::runtime_environment::IsRunningOnChromeOS()) {
   num_lock_mask_ = GetNumLockMask();
+
+#if defined(USE_AURA)
+  // web_input_event_aurax11.cc seems to assume that Mod2Mask is always assigned
+  // to Num Lock.
+  // TODO(yusukes): Check the assumption is really okay. If not, modify the Aura
+  // code, and then remove the CHECK below.
+  CHECK(!is_running_on_chrome_os_ || (num_lock_mask_ == Mod2Mask));
+#endif
+
   GetLockedModifiers(
       num_lock_mask_, &current_caps_lock_status_, &current_num_lock_status_);
 
@@ -165,13 +174,6 @@ unsigned int XKeyboard::GetNumLockMask() {
     }
   }
   XkbFreeKeyboard(xkb_desc, 0, True /* free all components */);
-
-  // Some code in Chrome, e.g. web_input_event_aurax11.cc, assume that Mod2Mask
-  // is always assigned to Num Lock.
-  // TODO(yusukes): Check the assumption is really okay. If not, modify such
-  // code, and then remove the CHECK below.
-  CHECK(real_mask == Mod2Mask);
-
   return real_mask;
 }
 
