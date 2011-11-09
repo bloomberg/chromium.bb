@@ -220,7 +220,8 @@ class NinjaWriter:
   def WriteSpec(self, spec, config):
     """The main entry point for NinjaWriter: write the build rules for a spec.
 
-    Returns the path to the build output, or None."""
+    Returns the path to the build output, or None, and a list of targets for
+    dependencies of its compile steps."""
 
     self.name = spec['target_name']
     self.toolset = spec['toolset']
@@ -235,43 +236,56 @@ class NinjaWriter:
       spec['type'] = 'none'
 
     # Compute predepends for all rules.
-    # prebuild is the dependencies this target depends on before
-    # running any of its internal steps.
-    prebuild = []
+    # actions_depends is the dependencies this target depends on before running
+    # any of its action/rule/copy steps.
+    # compile_depends is the dependencies this target depends on before running
+    # any of its compile steps.
+    actions_depends = []
+    compile_depends = []
     if 'dependencies' in spec:
       for dep in spec['dependencies']:
         if dep in self.target_outputs:
-          prebuild.append(self.target_outputs[dep][0])
-      prebuild = self.WriteCollapsedDependencies('predepends', prebuild)
+          input, precompile_input, linkable = self.target_outputs[dep]
+          actions_depends.append(input)
+          compile_depends.extend(precompile_input)
+      actions_depends = self.WriteCollapsedDependencies('actions_depends',
+                                                        actions_depends)
 
     # Write out actions, rules, and copies.  These must happen before we
     # compile any sources, so compute a list of predependencies for sources
     # while we do it.
     extra_sources = []
-    sources_predepends = self.WriteActionsRulesCopies(spec, extra_sources,
-                                                      prebuild)
+    sources_depends = self.WriteActionsRulesCopies(spec, extra_sources,
+                                                   actions_depends)
+
+    # If we have actions/rules/copies, we depend directly on those, but
+    # otherwise we depend on dependent target's actions/rules/copies etc.
+    # We never need to explicitly depend on previous target's link steps,
+    # because no compile ever depends on them.
+    compile_depends = self.WriteCollapsedDependencies('compile_depends',
+        sources_depends or compile_depends)
 
     # Write out the compilation steps, if any.
     link_deps = []
     sources = spec.get('sources', []) + extra_sources
     if sources:
-      link_deps = self.WriteSources(config, sources,
-                                    sources_predepends or prebuild)
+      link_deps = self.WriteSources(config, sources, compile_depends)
       # Some actions/rules output 'sources' that are already object files.
       link_deps += [self.GypPathToNinja(f) for f in sources if f.endswith('.o')]
 
     # The final output of our target depends on the last output of the
     # above steps.
     output = None
-    final_deps = link_deps or sources_predepends or prebuild
+    final_deps = link_deps or sources_depends or actions_depends
     if final_deps:
-      output = self.WriteTarget(spec, config, final_deps)
+      output = self.WriteTarget(spec, config, final_deps,
+                                order_only=actions_depends)
       if self.name != output and self.toolset == 'target':
         # Write a short name to build this target.  This benefits both the
         # "build chrome" case as well as the gyp tests, which expect to be
         # able to run actions and build libraries by their short name.
         self.ninja.build(self.name, 'phony', output)
-    return output
+    return output, compile_depends
 
   def WriteActionsRulesCopies(self, spec, extra_sources, prebuild):
     """Write out the Actions, Rules, and Copies steps.  Return any outputs
@@ -448,7 +462,7 @@ class NinjaWriter:
     self.ninja.newline()
     return outputs
 
-  def WriteTarget(self, spec, config, final_deps):
+  def WriteTarget(self, spec, config, final_deps, order_only):
     if spec['type'] == 'none':
       # This target doesn't have any explicit final output, but is instead
       # used for its effects before the final output (e.g. copies steps).
@@ -471,7 +485,7 @@ class NinjaWriter:
       if output_uses_linker:
         extra_deps = set()
         for dep in spec['dependencies']:
-          input, linkable = self.target_outputs.get(dep, (None, False))
+          input, _, linkable = self.target_outputs.get(dep, (None, [], False))
           if not input:
             continue
           if linkable:
@@ -505,6 +519,7 @@ class NinjaWriter:
 
     self.ninja.build(output, command, final_deps,
                      implicit=list(implicit_deps),
+                     order_only=order_only,
                      variables=extra_bindings)
 
     return output
@@ -722,10 +737,10 @@ def GenerateOutput(target_list, target_dicts, data, params):
                                                  output_file)))
     master_ninja.subninja(output_file)
 
-    output = writer.WriteSpec(spec, config)
+    output, compile_depends = writer.WriteSpec(spec, config)
     if output:
       linkable = spec['type'] in ('static_library', 'shared_library')
-      target_outputs[qualified_target] = (output, linkable)
+      target_outputs[qualified_target] = (output, compile_depends, linkable)
 
       if qualified_target in all_targets:
         all_outputs.add(output)
