@@ -8,6 +8,7 @@
 
 #include "views/bubble/bubble_border.h"
 #include "views/bubble/border_contents_view.h"
+#include "views/layout/fill_layout.h"
 #include "views/widget/widget.h"
 #include "views/window/client_view.h"
 
@@ -23,6 +24,7 @@ BubbleFrameView::BubbleFrameView(BubbleBorder::ArrowLocation location,
   border_contents_->Init();
   bubble_border()->set_arrow_location(location_);
   bubble_border()->set_background_color(color);
+  SetLayoutManager(new views::FillLayout());
   AddChildView(border_contents_);
   gfx::Rect bounds(gfx::Point(), client_size);
   gfx::Rect windows_bounds = GetWindowBoundsForClientBounds(bounds);
