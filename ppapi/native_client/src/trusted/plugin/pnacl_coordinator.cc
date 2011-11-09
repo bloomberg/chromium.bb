@@ -419,12 +419,14 @@ string_vector LinkResources(const nacl::string& sandbox_isa,
   nacl::string base_dir = "pnacl_support/" + sandbox_isa;
 
   // NOTE: order of items == link order.
+  results.push_back(base_dir + "/crtbegin.o");
   if (withGenerated) {
     results.push_back(GeneratedObjectFileName());
   }
   results.push_back(base_dir + "/libcrt_platform.a");
   results.push_back(base_dir + "/libgcc.a");
   results.push_back(base_dir + "/libgcc_eh.a");
+  results.push_back(base_dir + "/crtend.o");
   return results;
 }
 
