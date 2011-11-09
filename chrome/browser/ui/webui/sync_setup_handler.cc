@@ -196,25 +196,25 @@ bool HasConfigurationChanged(const SyncConfiguration& config,
     return true;
 
   const syncable::ModelTypeSet& types = config.data_types;
-  if ((types.find(syncable::BOOKMARKS) == types.end() &&
+  if (((types.find(syncable::BOOKMARKS) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncBookmarks)) ||
-      (types.find(syncable::PREFERENCES) == types.end() &&
+      ((types.find(syncable::PREFERENCES) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncPreferences)) ||
-      (types.find(syncable::THEMES) == types.end() &&
+      ((types.find(syncable::THEMES) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncThemes)) ||
-      (types.find(syncable::PASSWORDS) == types.end() &&
+      ((types.find(syncable::PASSWORDS) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncPasswords)) ||
-      (types.find(syncable::AUTOFILL) == types.end() &&
+      ((types.find(syncable::AUTOFILL) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncAutofill)) ||
-      (types.find(syncable::EXTENSIONS) == types.end() &&
+      ((types.find(syncable::EXTENSIONS) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncExtensions)) ||
-      (types.find(syncable::TYPED_URLS) == types.end() &&
+      ((types.find(syncable::TYPED_URLS) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncTypedUrls)) ||
-      (types.find(syncable::SEARCH_ENGINES) == types.end() &&
+      ((types.find(syncable::SEARCH_ENGINES) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncSearchEngines)) ||
-      (types.find(syncable::SESSIONS) == types.end() &&
+      ((types.find(syncable::SESSIONS) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncSessions)) ||
-      (types.find(syncable::APPS) == types.end() &&
+      ((types.find(syncable::APPS) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncApps)))
     return true;
 
