@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "content/browser/plugin_service.h"
@@ -77,8 +78,8 @@ class CONTENT_EXPORT PluginLoaderPosix : public UtilityProcessHost::Client,
   virtual void LoadPluginsInternal();
 
   // Message handlers.
-  void OnPluginLoaded(uint32_t index, const webkit::WebPluginInfo& plugin);
-  void OnPluginLoadFailed(uint32_t index, const FilePath& plugin_path);
+  void OnPluginLoaded(uint32 index, const webkit::WebPluginInfo& plugin);
+  void OnPluginLoadFailed(uint32 index, const FilePath& plugin_path);
 
   // Checks if the plugin path is an internal plugin, and, if it is, adds it to
   // |loaded_plugins_|.

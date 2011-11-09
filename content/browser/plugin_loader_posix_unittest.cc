@@ -45,11 +45,11 @@ class MockPluginLoaderPosix : public PluginLoaderPosix {
     PluginLoaderPosix::LoadPluginsInternal();
   }
 
-  void TestOnPluginLoaded(uint32_t index, const webkit::WebPluginInfo& plugin) {
+  void TestOnPluginLoaded(uint32 index, const webkit::WebPluginInfo& plugin) {
     OnPluginLoaded(index, plugin);
   }
 
-  void TestOnPluginLoadFailed(uint32_t index, const FilePath& path) {
+  void TestOnPluginLoadFailed(uint32 index, const FilePath& path) {
     OnPluginLoadFailed(index, path);
   }
 };
