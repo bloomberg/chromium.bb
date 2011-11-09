@@ -329,7 +329,9 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, SelectSecond) {
   EXPECT_CALL(*auth_handler_, CertificateSelectedNoNotify(NULL));
 }
 
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest, Escape) {
+// http://crbug.com/103529
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest,
+                       FLAKY_Escape) {
   EXPECT_CALL(*auth_handler_1_, CertificateSelectedNoNotify(NULL));
 
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
