@@ -18,6 +18,11 @@
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #endif
 
+namespace {
+const char kPermissionDeniedError[] =
+    "Extension does not have permission to use this method.";
+}
+
 WebSocketProxyPrivate::WebSocketProxyPrivate()
     : is_finalized_(false), listening_port_(-1) {
 }
@@ -45,12 +50,6 @@ void WebSocketProxyPrivate::Finalize() {
   Release();
 }
 
-WebSocketProxyPrivateGetPassportForTCPFunction::
-    WebSocketProxyPrivateGetPassportForTCPFunction() {
-  // This obsolete API uses fixed port to listen websocket connections.
-  listening_port_ = 10101;
-}
-
 void WebSocketProxyPrivateGetURLForTCPFunction::Observe(
     int type, const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -60,57 +59,14 @@ void WebSocketProxyPrivateGetURLForTCPFunction::Observe(
 
 void WebSocketProxyPrivateGetURLForTCPFunction::Finalize() {
 #if defined(OS_CHROMEOS)
+  if (listening_port_ < 1)
+    listening_port_ = chromeos::WebSocketProxyController::GetPort();
   StringValue* url = Value::CreateStringValue(std::string(
       "ws://127.0.0.1:" + base::IntToString(listening_port_) +
       "/tcpproxy?" + query_));
   result_.reset(url);
-  if (listening_port_ < 1)
-    listening_port_ = chromeos::WebSocketProxyController::GetPort();
 #endif
   WebSocketProxyPrivate::Finalize();
-}
-
-bool WebSocketProxyPrivateGetPassportForTCPFunction::RunImpl() {
-  AddRef();
-  bool delay_response = false;
-  result_.reset(Value::CreateStringValue(""));
-
-#if defined(OS_CHROMEOS)
-  std::string hostname;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &hostname));
-  int port = -1;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &port));
-
-  if (chromeos::WebSocketProxyController::CheckCredentials(
-          extension_id(), hostname, port,
-          chromeos::WebSocketProxyController::PLAIN_TCP)) {
-    listening_port_ = chromeos::WebSocketProxyController::GetPort();
-    if (listening_port_ < 1) {
-      delay_response = true;
-      registrar_.Add(
-          this, chrome::NOTIFICATION_WEB_SOCKET_PROXY_STARTED,
-          content::NotificationService::AllSources());
-    }
-
-    std::map<std::string, std::string> map;
-    map["hostname"] = hostname;
-    map["port"] = base::IntToString(port);
-    map["extension_id"] = extension_id();
-    StringValue* passport = Value::CreateStringValue(
-        browser::InternalAuthGeneration::GeneratePassport(
-            "web_socket_proxy", map));
-    result_.reset(passport);
-  }
-#endif  // defined(OS_CHROMEOS)
-
-  if (delay_response) {
-    const int kTimeout = 3;
-    timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kTimeout),
-        this, &WebSocketProxyPrivateGetPassportForTCPFunction::Finalize);
-  } else {
-    Finalize();
-  }
-  return true;
 }
 
 bool WebSocketProxyPrivateGetURLForTCPFunction::RunImpl() {
@@ -155,6 +111,9 @@ bool WebSocketProxyPrivateGetURLForTCPFunction::RunImpl() {
         net::EscapeQueryParamValue(hostname, false) + "&port=" + map["port"] +
         "&tls=" + map["tls"] + "&passport=" +
         net::EscapeQueryParamValue(passport, false);
+  } else {
+    error_ = kPermissionDeniedError;
+    return false;
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -162,6 +121,58 @@ bool WebSocketProxyPrivateGetURLForTCPFunction::RunImpl() {
     const int kTimeout = 12;
     timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kTimeout),
         this, &WebSocketProxyPrivate::Finalize);
+  } else {
+    Finalize();
+  }
+  return true;
+}
+
+WebSocketProxyPrivateGetPassportForTCPFunction::
+    WebSocketProxyPrivateGetPassportForTCPFunction() {
+  // This obsolete API uses fixed port to listen websocket connections.
+  listening_port_ = 10101;
+}
+
+bool WebSocketProxyPrivateGetPassportForTCPFunction::RunImpl() {
+  AddRef();
+  bool delay_response = false;
+  result_.reset(Value::CreateStringValue(""));
+
+#if defined(OS_CHROMEOS)
+  std::string hostname;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &hostname));
+  int port = -1;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &port));
+
+  if (chromeos::WebSocketProxyController::CheckCredentials(
+          extension_id(), hostname, port,
+          chromeos::WebSocketProxyController::PLAIN_TCP)) {
+    listening_port_ = chromeos::WebSocketProxyController::GetPort();
+    if (listening_port_ < 1) {
+      delay_response = true;
+      registrar_.Add(
+          this, chrome::NOTIFICATION_WEB_SOCKET_PROXY_STARTED,
+          content::NotificationService::AllSources());
+    }
+
+    std::map<std::string, std::string> map;
+    map["hostname"] = hostname;
+    map["port"] = base::IntToString(port);
+    map["extension_id"] = extension_id();
+    StringValue* passport = Value::CreateStringValue(
+        browser::InternalAuthGeneration::GeneratePassport(
+            "web_socket_proxy", map));
+    result_.reset(passport);
+  } else {
+    error_ = kPermissionDeniedError;
+    return false;
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  if (delay_response) {
+    const int kTimeout = 3;
+    timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kTimeout),
+        this, &WebSocketProxyPrivateGetPassportForTCPFunction::Finalize);
   } else {
     Finalize();
   }

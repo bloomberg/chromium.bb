@@ -39,18 +39,6 @@ class WebSocketProxyPrivate
   int listening_port_;
 };
 
-class WebSocketProxyPrivateGetPassportForTCPFunction
-    : public WebSocketProxyPrivate {
- public:
-  WebSocketProxyPrivateGetPassportForTCPFunction();
-
- private:
-  // ExtensionFunction implementation.
-  virtual bool RunImpl() OVERRIDE;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("webSocketProxyPrivate.getPassportForTCP")
-};
-
 class WebSocketProxyPrivateGetURLForTCPFunction
     : public WebSocketProxyPrivate {
  private:
@@ -69,6 +57,19 @@ class WebSocketProxyPrivateGetURLForTCPFunction
   std::string query_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("webSocketProxyPrivate.getURLForTCP")
+};
+
+// Legacy, deprecated, to be eliminated.
+class WebSocketProxyPrivateGetPassportForTCPFunction
+    : public WebSocketProxyPrivate {
+ public:
+  WebSocketProxyPrivateGetPassportForTCPFunction();
+
+ private:
+  // ExtensionFunction implementation.
+  virtual bool RunImpl() OVERRIDE;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("webSocketProxyPrivate.getPassportForTCP")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_SOCKET_PROXY_PRIVATE_API_H_
