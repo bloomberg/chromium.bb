@@ -856,7 +856,7 @@ bool OmniboxViewGtk::IsImeComposing() const {
 }
 
 #if defined(TOOLKIT_VIEWS)
-int OmniboxViewGtk::GetMaxEditWidth(int entry_width) const OVERRIDE {
+int OmniboxViewGtk::GetMaxEditWidth(int entry_width) const {
   return entry_width;
 }
 
