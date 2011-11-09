@@ -467,8 +467,6 @@ void GpuProcessHost::OnProcessLaunched() {
   // respond to any requests to establish a GPU channel. The response
   // to such requests require that the GPU process handle be known.
 
-  TRACE_EVENT0("test_gpu", "GpuProcessLaunched");
-
   base::ProcessHandle child_handle = in_process_ ?
       base::GetCurrentProcessHandle() : handle();
 
