@@ -7,39 +7,32 @@
 #pragma once
 
 #include "base/timer.h"
-#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "views/controls/button/button.h"
-#include "views/view.h"
+#include "views/bubble/bubble_delegate.h"
 
 namespace views {
-class ImageView;
 class Label;
 class NativeTextButton;
 }
 
-class CriticalNotificationBubbleView : public views::View,
-                                       public views::ButtonListener,
-                                       public BubbleDelegate,
-                                       public ui::AnimationDelegate {
+class CriticalNotificationBubbleView : public views::BubbleDelegateView,
+                                       public views::ButtonListener {
  public:
-  CriticalNotificationBubbleView();
+  explicit CriticalNotificationBubbleView(const gfx::Point& anchor_point);
   virtual ~CriticalNotificationBubbleView();
 
-  void set_bubble(Bubble* bubble) { bubble_ = bubble; }
-
-  // views::View methods:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void Layout() OVERRIDE;
-
-  // views::ButtonListener methods:
+  // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
-  // BubbleDelegate methods:
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
-  virtual bool CloseOnEscape() OVERRIDE;
-  virtual bool FadeInOnShow() OVERRIDE;
-  virtual string16 GetAccessibleName() OVERRIDE;
+  // views::WidgetDelegate overrides:
+  virtual void WindowClosing() OVERRIDE;
+
+ protected:
+  // views::BubbleDelegateView overrides:
+  virtual bool AcceleratorPressed(
+      const views::Accelerator& accelerator) OVERRIDE;
+  virtual void Init() OVERRIDE;
 
  private:
   // Helper function to calculate the remaining time (in seconds) until
@@ -52,13 +45,8 @@ class CriticalNotificationBubbleView : public views::View,
   // Called when the timer fires each time the clock ticks.
   void OnCountdown();
 
-  // Global pointer to the bubble that is hosting our view.
-  static Bubble* bubble_;
-
-  // The views on the bubble.
-  views::ImageView* image_;
+  // The headline and buttons on the bubble.
   views::Label* headline_;
-  views::Label* message_;
   views::NativeTextButton* restart_button_;
   views::NativeTextButton* dismiss_button_;
 

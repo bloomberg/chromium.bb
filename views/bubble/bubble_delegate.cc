@@ -76,7 +76,7 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble, Widget* parent) {
 BubbleDelegateView::BubbleDelegateView()
     : close_on_esc_(true),
       close_on_deactivate_(true),
-      allow_bubble_offscreen_(true),
+      allow_bubble_offscreen_(false),
       arrow_location_(BubbleBorder::TOP_LEFT),
       color_(SK_ColorWHITE),
       border_widget_(NULL),
@@ -91,7 +91,7 @@ BubbleDelegateView::BubbleDelegateView(
     const SkColor& color)
     : close_on_esc_(true),
       close_on_deactivate_(true),
-      allow_bubble_offscreen_(true),
+      allow_bubble_offscreen_(false),
       anchor_point_(anchor_point),
       arrow_location_(arrow_location),
       color_(color),

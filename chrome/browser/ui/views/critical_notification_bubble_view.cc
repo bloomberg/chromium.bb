@@ -21,13 +21,17 @@
 #include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
+#include "views/layout/grid_layout.h"
+#include "views/layout/layout_constants.h"
+#include "views/widget/widget.h"
 
 namespace {
 
 // Layout constants.
-const int kPaddingAfterImage = 5;
-const int kPaddingAboveButtonRow = 4;
-const int kPaddingBetweenButtons = 7;
+const int kInset = 2;
+const int kImageHeadlinePadding = 4;
+const int kHeadlineMessagePadding = 4;
+const int kMessageBubblePadding = 11;
 
 // How long to give the user until auto-restart if no action is taken. The code
 // assumes this to be less than a minute.
@@ -42,48 +46,12 @@ const int kRefreshBubbleEvery = 1000;  // Millisecond.
 ////////////////////////////////////////////////////////////////////////////////
 // CriticalNotificationBubbleView
 
-Bubble* CriticalNotificationBubbleView::bubble_ = NULL;
-
-CriticalNotificationBubbleView::CriticalNotificationBubbleView() {
-  bubble_created_ = base::Time::Now();
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
-  image_ = new views::ImageView();
-  image_->SetImage(ResourceBundle::GetSharedInstance().
-       GetBitmapNamed(IDR_UPDATE_MENU3));
-  AddChildView(image_);
-
-  headline_ = new views::Label();
-  headline_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
-  UpdateBubbleHeadline(GetRemainingTime());
-  AddChildView(headline_);
-
-  message_ = new views::Label();
-  message_->SetMultiLine(true);
-  message_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  message_->SetText(UTF16ToWide(
-      l10n_util::GetStringFUTF16(IDS_CRITICAL_NOTIFICATION_TEXT,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))));
-  AddChildView(message_);
-
-  restart_button_ = new views::NativeTextButton(this,
-      UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_CRITICAL_NOTIFICATION_RESTART)));
-  restart_button_->SetIsDefault(true);
-  AddChildView(restart_button_);
-  dismiss_button_ = new views::NativeTextButton(this, UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_DISMISS)));
-  AddChildView(dismiss_button_);
-
-  if (bubble_)
-    bubble_->Close();
-
-  refresh_timer_.Start(FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kRefreshBubbleEvery),
-      this, &CriticalNotificationBubbleView::OnCountdown);
-
-  UserMetrics::RecordAction(UserMetricsAction("CriticalNotificationShown"));
+CriticalNotificationBubbleView::CriticalNotificationBubbleView(
+    const gfx::Point& anchor_point)
+    : BubbleDelegateView(anchor_point,
+                         views::BubbleBorder::TOP_RIGHT,
+                         SK_ColorWHITE) {
+  set_close_on_deactivate(false);
 }
 
 CriticalNotificationBubbleView::~CriticalNotificationBubbleView() {
@@ -122,56 +90,7 @@ void CriticalNotificationBubbleView::OnCountdown() {
   // an onbeforeunload handler, leaving the bubble up when the browser should
   // have restarted (giving the user another chance).
   UpdateBubbleHeadline(seconds);
-  // TODO(msw): figure out why SchedulePaint doesn't work here.
-#if !defined(USE_AURA)
-  bubble_->ScheduleDraw();
-#endif
-}
-
-gfx::Size CriticalNotificationBubbleView::GetPreferredSize() {
-  int width = views::Widget::GetLocalizedContentsWidth(
-      IDS_CRUCIAL_NOTIFICATION_BUBBLE_WIDTH_CHARS);
-  gfx::Size size(width, 0);
-
-  gfx::Size headline = headline_->GetPreferredSize();
-  int height = message_->GetHeightForWidth(size.width());
-  gfx::Size button_row = dismiss_button_->GetPreferredSize();
-
-  size.set_height(headline.height() +
-                  height +
-                  kPaddingAboveButtonRow +
-                  button_row.height());
-  return size;
-}
-
-void CriticalNotificationBubbleView::Layout() {
-  gfx::Size bubble_size = GetPreferredSize();
-
-  gfx::Size sz = image_->GetPreferredSize();
-  image_->SetBounds(0, 0, sz.width(), sz.height());
-
-  sz = headline_->GetPreferredSize();
-  headline_->SetBounds(image_->width() + kPaddingAfterImage,
-                       (image_->height() - sz.height()) / 2,
-                       sz.width(), sz.height());
-
-  sz = message_->GetPreferredSize();
-  int height = message_->GetHeightForWidth(bubble_size.width());
-  message_->SetBounds(0, headline_->height(), bubble_size.width(), height);
-
-  sz = dismiss_button_->GetPreferredSize();
-  dismiss_button_->SetBounds(bubble_size.width() - sz.width(),
-                             message_->y() + message_->height() +
-                                 kPaddingAboveButtonRow,
-                             sz.width(),
-                             sz.height());
-
-  sz = restart_button_->GetPreferredSize();
-  restart_button_->SetBounds(dismiss_button_->x() - sz.width() -
-                                 kPaddingBetweenButtons,
-                             dismiss_button_->y(),
-                             sz.width(),
-                             sz.height());
+  SchedulePaint();
 }
 
 void CriticalNotificationBubbleView::ButtonPressed(
@@ -184,8 +103,6 @@ void CriticalNotificationBubbleView::ButtonPressed(
     BrowserList::AttemptRestart();
   } else if (sender == dismiss_button_) {
     UserMetrics::RecordAction(UserMetricsAction("CriticalNotification_Ignore"));
-    bubble_->Close();
-
     // If the counter reaches 0, we set a restart flag that must be cleared if
     // the user selects, for example, "Stay on this page" during an
     // onbeforeunload handler.
@@ -195,26 +112,90 @@ void CriticalNotificationBubbleView::ButtonPressed(
   } else {
     NOTREACHED();
   }
+
+  GetWidget()->Close();
 }
 
-void CriticalNotificationBubbleView::BubbleClosing(Bubble* bubble,
-                                                   bool closed_by_escape) {
-  bubble_ = NULL;
-
+void CriticalNotificationBubbleView::WindowClosing() {
   refresh_timer_.Stop();
+}
 
-  if (closed_by_escape)
+bool CriticalNotificationBubbleView::AcceleratorPressed(
+    const views::Accelerator& accelerator) {
+  if (accelerator.key_code() == ui::VKEY_ESCAPE)
     UpgradeDetector::GetInstance()->acknowledge_critical_update();
+  return BubbleDelegateView::AcceleratorPressed(accelerator);
 }
 
-bool CriticalNotificationBubbleView::CloseOnEscape() {
-  return true;
-}
+void CriticalNotificationBubbleView::Init() {
+  bubble_created_ = base::Time::Now();
 
-bool CriticalNotificationBubbleView::FadeInOnShow() {
-  return true;
-}
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-string16 CriticalNotificationBubbleView::GetAccessibleName() {
-  return ASCIIToWide("CriticalNotification");
+  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
+  layout->SetInsets(0, kInset, kInset, kInset);
+  SetLayoutManager(layout);
+
+  const int top_column_set_id = 0;
+  views::ColumnSet* top_columns = layout->AddColumnSet(top_column_set_id);
+  top_columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+                         0, views::GridLayout::USE_PREF, 0, 0);
+  top_columns->AddPaddingColumn(0, kImageHeadlinePadding);
+  top_columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+                         0, views::GridLayout::USE_PREF, 0, 0);
+  top_columns->AddPaddingColumn(1, 0);
+  layout->StartRow(0, top_column_set_id);
+
+  views::ImageView* image = new views::ImageView();
+  image->SetImage(ResourceBundle::GetSharedInstance().
+       GetBitmapNamed(IDR_UPDATE_MENU3));
+  layout->AddView(image);
+
+  headline_ = new views::Label();
+  headline_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+  UpdateBubbleHeadline(GetRemainingTime());
+  layout->AddView(headline_);
+
+  const int middle_column_set_id = 1;
+  views::ColumnSet* middle_column = layout->AddColumnSet(middle_column_set_id);
+  middle_column->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+                           0, views::GridLayout::USE_PREF, 0, 0);
+  layout->StartRowWithPadding(0, middle_column_set_id,
+                              0, kHeadlineMessagePadding);
+
+  views::Label* message = new views::Label();
+  message->SetMultiLine(true);
+  message->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  message->SetText(UTF16ToWide(
+      l10n_util::GetStringFUTF16(IDS_CRITICAL_NOTIFICATION_TEXT,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))));
+  message->SizeToFit(views::Widget::GetLocalizedContentsWidth(
+                         IDS_CRUCIAL_NOTIFICATION_BUBBLE_WIDTH_CHARS));
+  layout->AddView(message);
+
+  const int bottom_column_set_id = 2;
+  views::ColumnSet* bottom_columns = layout->AddColumnSet(bottom_column_set_id);
+  bottom_columns->AddPaddingColumn(1, 0);
+  bottom_columns->AddColumn(views::GridLayout::CENTER,
+      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
+  bottom_columns->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
+  bottom_columns->AddColumn(views::GridLayout::CENTER,
+      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
+  layout->StartRowWithPadding(0, bottom_column_set_id,
+                              0, kMessageBubblePadding);
+
+  restart_button_ = new views::NativeTextButton(this,
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_CRITICAL_NOTIFICATION_RESTART)));
+  restart_button_->SetIsDefault(true);
+  layout->AddView(restart_button_);
+  dismiss_button_ = new views::NativeTextButton(this, UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_DISMISS)));
+  layout->AddView(dismiss_button_);
+
+  refresh_timer_.Start(FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kRefreshBubbleEvery),
+      this, &CriticalNotificationBubbleView::OnCountdown);
+
+  UserMetrics::RecordAction(UserMetricsAction("CriticalNotificationShown"));
 }

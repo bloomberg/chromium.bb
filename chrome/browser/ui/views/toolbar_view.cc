@@ -116,7 +116,7 @@ ToolbarView::ToolbarView(Browser* browser)
 
   registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                  content::NotificationService::AllSources());
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   registrar_.Add(this, chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED,
                  content::NotificationService::AllSources());
 #endif
@@ -426,7 +426,7 @@ void ToolbarView::Observe(int type,
     case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
       UpdateAppMenuState();
       break;
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
     case chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED:
       ShowCriticalNotification();
       break;
@@ -722,20 +722,14 @@ void ToolbarView::LoadImages() {
 }
 
 void ToolbarView::ShowCriticalNotification() {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  gfx::Point screen_loc;
+#if defined(OS_WIN)
+  gfx::Point screen_loc(app_menu_->width() / 2, app_menu_->height());
   views::View::ConvertPointToScreen(app_menu_, &screen_loc);
 
-  CriticalNotificationBubbleView* critical_notification_bubble =
-      new CriticalNotificationBubbleView();
-  Bubble* bubble = Bubble::Show(GetWidget(),
-                                gfx::Rect(screen_loc, app_menu_->size()),
-                                views::BubbleBorder::TOP_RIGHT,
-                                views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-                                critical_notification_bubble,
-                                critical_notification_bubble);
-  bubble->set_close_on_deactivate(false);
-  critical_notification_bubble->set_bubble(bubble);
+  CriticalNotificationBubbleView* bubble_delegate =
+      new CriticalNotificationBubbleView(screen_loc);
+  views::BubbleDelegateView::CreateBubble(bubble_delegate, GetWidget());
+  bubble_delegate->StartFade(true);
 #endif
 }
 
