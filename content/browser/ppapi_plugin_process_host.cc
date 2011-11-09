@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_message_filter.h"
+#include "content/common/child_process_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "ipc/ipc_switches.h"
@@ -56,6 +57,10 @@ PpapiPluginProcessHost::~PpapiPluginProcessHost() {
   DVLOG(1) << "PpapiPluginProcessHost" << (is_broker_ ? "[broker]" : "")
            << "~PpapiPluginProcessHost()";
   CancelRequests();
+
+#if defined(OS_WIN)
+  ReleaseCachedFonts(process_id_);
+#endif
 }
 
 PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
@@ -98,13 +103,15 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(net::HostResolver* host_resolver)
     : BrowserChildProcessHost(ChildProcessInfo::PPAPI_PLUGIN_PROCESS),
       filter_(new PepperMessageFilter(host_resolver)),
       network_observer_(new PluginNetworkObserver(this)),
-      is_broker_(false) {
+      is_broker_(false),
+      process_id_(ChildProcessInfo::GenerateChildProcessUniqueId()) {
   AddFilter(filter_.get());
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost()
     : BrowserChildProcessHost(ChildProcessInfo::PPAPI_BROKER_PROCESS),
-      is_broker_(true) {
+      is_broker_(true),
+      process_id_(ChildProcessInfo::GenerateChildProcessUniqueId()) {
 }
 
 bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
@@ -203,6 +210,9 @@ bool PpapiPluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PpapiPluginProcessHost, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_ChannelCreated,
                         OnRendererPluginChannelCreated)
+#if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_PreCacheFont, OnPreCacheFont)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
@@ -280,3 +290,9 @@ void PpapiPluginProcessHost::OnRendererPluginChannelCreated(
 
   client->OnChannelOpened(renderers_plugin_handle, channel_handle);
 }
+
+#if defined(OS_WIN)
+void PpapiPluginProcessHost::OnPreCacheFont(const LOGFONT& font) {
+  PreCacheFont(font, process_id_);
+}
+#endif

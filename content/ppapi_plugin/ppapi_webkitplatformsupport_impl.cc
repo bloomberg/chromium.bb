@@ -10,6 +10,9 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "build/build_config.h"
+#include "content/common/child_process_messages.h"
+#include "content/common/child_thread.h"
+#include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
@@ -59,11 +62,11 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport : public WebSandboxSupport 
 
 bool PpapiWebKitPlatformSupportImpl::SandboxSupport::ensureFontLoaded(
     HFONT font) {
-  // TODO(brettw) this should do the something similar to what
-  // RendererWebKitPlatformSupportImpl does and request that the browser load
-  // the font.
-  NOTIMPLEMENTED();
-  return false;
+  LOGFONT logfont;
+  GetObject(font, sizeof(LOGFONT), &logfont);
+
+  return ChildThread::current()->sync_message_filter()->Send(
+      new ChildProcessHostMsg_PreCacheFont(logfont));
 }
 
 #elif defined(OS_MACOSX)

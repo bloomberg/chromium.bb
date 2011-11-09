@@ -58,7 +58,7 @@ void FreeDirContents(PP_Instance /* instance */,
 }  // namespace
 
 // ModuleLocalThreadAdapter ----------------------------------------------------
-
+// TODO(yzshen): Refactor to use IPC::SyncMessageFilter.
 class ModuleLocalThreadAdapter
     : public base::RefCountedThreadSafe<ModuleLocalThreadAdapter> {
   class Filter;
