@@ -14,6 +14,7 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../gpu/gpu.gyp:gles2_implementation',
+        '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icuuc',
         '../ui/gfx/surface/surface.gyp:surface',
