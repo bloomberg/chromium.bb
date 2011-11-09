@@ -272,7 +272,8 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, Escape) {
   Mock::VerifyAndClear(auth_handler_);
 }
 
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, SelectDefault) {
+// http://crbug.com/103534
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, FLAKY_SelectDefault) {
   EXPECT_CALL(*auth_handler_,
               CertificateSelectedNoNotify(mit_davidben_cert_.get()));
 
