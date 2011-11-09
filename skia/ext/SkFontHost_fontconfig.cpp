@@ -326,14 +326,6 @@ SkStream* SkFontHost::OpenStream(uint32_t id)
     return SkNEW_ARGS(SkFileDescriptorStream, (fd));
 }
 
-size_t SkFontHost::ShouldPurgeFontCache(size_t sizeAllocatedSoFar)
-{
-    if (sizeAllocatedSoFar > kFontCacheMemoryBudget)
-        return sizeAllocatedSoFar - kFontCacheMemoryBudget;
-    else
-        return 0;   // nothing to do
-}
-
 // static
 size_t SkFontHost::GetFileName(SkFontID fontID, char path[], size_t length,
                                int32_t* index) {
