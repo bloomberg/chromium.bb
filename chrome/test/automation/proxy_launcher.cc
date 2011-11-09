@@ -423,9 +423,6 @@ void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,
   command_line->AppendSwitch(switches::kDebugOnStart);
 #endif
 
-  // The tests assume that file:// URIs can freely access other file:// URIs.
-  command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
-
   // Disable TabCloseableStateWatcher for tests.
   command_line->AppendSwitch(switches::kDisableTabCloseableStateWatcher);
 

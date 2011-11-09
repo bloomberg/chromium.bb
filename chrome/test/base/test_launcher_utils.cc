@@ -45,6 +45,9 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   // auto-update.
   command_line->AppendSwitch(switches::kSkipGpuDataLoading);
 
+  // The tests assume that file:// URIs can freely access other file:// URIs.
+  command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   // Don't use the native password stores on Linux since they may
   // prompt for additional UI during tests and cause test failures or

@@ -26,10 +26,6 @@ class FileSystemBrowserTest : public InProcessBrowserTest {
     EnableDOMAutomation();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
-  }
-
   GURL testUrl(const FilePath& file_path) {
     const FilePath kTestDir(FILE_PATH_LITERAL("fileapi"));
     return ui_test_utils::GetTestUrl(kTestDir, file_path);

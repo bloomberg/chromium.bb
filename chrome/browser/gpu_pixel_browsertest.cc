@@ -116,9 +116,6 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
         !command_line->HasSwitch(kUseGpuInTests)) {
       command_line->AppendSwitchASCII(switches::kUseGL, "any");
     }
-    // Allow file access from "file://" protocol. Otherwise, test fails with
-    // "Uncaught Error: SECURITY_ERR: DOM Exception 18."
-    command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {
