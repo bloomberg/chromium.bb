@@ -444,11 +444,19 @@ Browser* Browser::CreateForApp(Type type,
     type = TYPE_POPUP;
   }
 #if defined(TOOLKIT_GTK)
-  // We require a window manager for panels to work correctly with GTK.
-  // See crbug/100381 for details.
-  std::string wm_name;
-  if (type == TYPE_PANEL && !ui::GetWindowManagerName(&wm_name))
-    type = TYPE_POPUP;
+  // Panels are only supported on a white list of window managers for Linux.
+  if (type == TYPE_PANEL) {
+    // Some window managers seem to include version (icewm for example), so
+    // limiting the comparison to the name part of the string.
+    std::string wm_name;
+    if (!ui::GetWindowManagerName(&wm_name) ||
+        (strncasecmp(wm_name.c_str(), "compiz", sizeof("compiz") - 1) &&
+         strncasecmp(wm_name.c_str(), "metacity", sizeof("metacity") - 1) &&
+         strncasecmp(wm_name.c_str(), "icewm", sizeof("icewm") - 1) &&
+         strncasecmp(wm_name.c_str(), "kwin", sizeof("kwin") - 1))) {
+      type = TYPE_POPUP;
+    }
+  }
 #endif  // TOOLKIT_GTK
 
   CreateParams params(type, profile);
