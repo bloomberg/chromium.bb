@@ -472,7 +472,7 @@ GURL BookmarkEditorView::GetInputURL() const {
   return URLFixerUpper::FixupURL(UTF16ToUTF8(url_tf_->text()), std::string());
 }
 
-std::wstring BookmarkEditorView::GetInputTitle() const {
+string16 BookmarkEditorView::GetInputTitle() const {
   return title_tf_.text();
 }
 
@@ -591,7 +591,7 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
   bb_model_->RemoveObserver(this);
 
   GURL new_url(GetInputURL());
-  string16 new_title(WideToUTF16Hack(GetInputTitle()));
+  string16 new_title(GetInputTitle());
 
   if (!show_tree_) {
     bookmark_utils::ApplyEditsWithNoFolderChange(

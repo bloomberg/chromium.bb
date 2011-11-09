@@ -209,7 +209,7 @@ class BookmarkEditorView : public BookmarkEditor,
   GURL GetInputURL() const;
 
   // Returns the title the user has input.
-  std::wstring GetInputTitle() const;
+  string16 GetInputTitle() const;
 
   // Invoked when the url or title has possibly changed. Updates the background
   // of Textfields and ok button appropriately.
