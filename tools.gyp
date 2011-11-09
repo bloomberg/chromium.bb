@@ -129,7 +129,11 @@
             'build_glibc': 0,
             'build_newlib': 1,
             'enable_x86_32': 0,
-            'extra_args': ['--no-suffix', '--strip=_x86_64'],
+            'extra_args': [
+              '--empty',
+              '--no-suffix',
+              '--strip=_x86_64'
+             ],
             'objdir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64',
             'sources': [
               'src/untrusted/stubs/crti_x86_64.S',
@@ -152,7 +156,11 @@
             'build_glibc': 0,
             'build_newlib': 1,
             'enable_x86_64': 0,
-            'extra_args': ['--no-suffix', '--strip=_x86_32'],
+            'extra_args': [
+              '--empty',
+              '--no-suffix',
+              '--strip=_x86_32'
+            ],
             'objdir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32',
             'sources': [
               'src/untrusted/stubs/crti_x86_32.S',

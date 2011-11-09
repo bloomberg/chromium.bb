@@ -114,6 +114,7 @@ class Builder(object):
     self.verbose = options.verbose
     self.suffix = options.suffix
     self.strip = options.strip
+    self.empty = options.empty
 
     if self.verbose:
       print 'Compile options: %s' % self.compile_options
@@ -214,8 +215,12 @@ class Builder(object):
       print '\nLink %s' % out
     bin_name = self.GetBinName('g++')
     MakeDir(os.path.dirname(out))
-    cmd_line = [bin_name, '-o', out, '-Wl,--as-needed'] + srcs
+
+    cmd_line = [bin_name, '-o', out, '-Wl,--as-needed']
+    if not self.empty:
+      cmd_line += srcs
     cmd_line += self.link_options
+
     err = self.Run(cmd_line, out)
     # TODO( Retry on windows
     if sys.platform.startswith('win') and err == 5:
@@ -231,13 +236,18 @@ class Builder(object):
     if self.verbose:
       print '\nArchive %s' % out
 
+
     if '-r' in self.link_options:
       bin_name = self.GetBinName('g++')
-      cmd_line = [bin_name, '-o', out, '-Wl,--as-needed'] + srcs
+      cmd_line = [bin_name, '-o', out, '-Wl,--as-needed']
+      if not self.empty:
+        cmd_line += srcs
       cmd_line += self.link_options
     else:
       bin_name = self.GetBinName('ar')
-      cmd_line = [bin_name, '-rc', out] + srcs
+      cmd_line = [bin_name, '-rc', out]
+      if not self.empty:
+        cmd_line += srcs
 
     MakeDir(os.path.dirname(out))
     err = self.Run(cmd_line, out)
@@ -261,6 +271,8 @@ class Builder(object):
 
 def Main(argv):
   parser = OptionParser()
+  parser.add_option('--empty', dest='empty', default=False,
+                    help='Do not pass sources to library.', action='store_true')
   parser.add_option('--no-suffix', dest='suffix', default=True,
                     help='Do not append arch suffix.', action='store_false')
   parser.add_option('--sufix', dest='suffix',
