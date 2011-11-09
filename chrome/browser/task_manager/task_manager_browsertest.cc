@@ -395,8 +395,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   TaskManagerBrowserTestUtil::WaitForResourceChange(3);
 }
 
-#if defined(OS_WIN)
-// Bug 93158.
+#if defined(OS_LINUX) || defined(OS_WIN)
+// http://crbug.com/93158.
 #define MAYBE_ReloadExtension FLAKY_ReloadExtension
 #else
 #define MAYBE_ReloadExtension ReloadExtension
