@@ -5,8 +5,10 @@
 #include "chrome/common/extensions/extension_file_util.h"
 
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -236,6 +238,47 @@ TEST(ExtensionFileUtil, ExtensionURLToRelativeFilePath) {
     EXPECT_EQ(expected_path.value(), actual_path.value()) <<
       " For the path " << url;
   }
+}
+
+static scoped_refptr<Extension> LoadExtensionManifest(
+    const std::string& manifest_value,
+    const FilePath& manifest_dir,
+    Extension::Location location,
+    int extra_flags,
+    std::string* error) {
+  JSONStringValueSerializer serializer(manifest_value);
+  scoped_ptr<Value> result(serializer.Deserialize(NULL, error));
+  if (!result.get())
+    return NULL;
+
+  scoped_refptr<Extension> extension = Extension::Create(
+      manifest_dir, location, *static_cast<DictionaryValue*>(result.get()),
+      extra_flags, error);
+  return extension;
+}
+
+TEST(ExtensionFileUtil, ValidateThemeUTF8) {
+  ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  // "aeo" with accents. Use http://0xcc.net/jsescape/ to decode them.
+  std::string non_ascii_file = "\xC3\xA0\xC3\xA8\xC3\xB2.png";
+  FilePath non_ascii_path = temp.path().Append(FilePath::FromUTF8Unsafe(
+      non_ascii_file));
+  file_util::WriteFile(non_ascii_path, "", 0);
+
+  std::string kManifest =
+      base::StringPrintf(
+          "{ \"name\": \"Test\", \"version\": \"1.0\", "
+          "  \"theme\": { \"images\": { \"theme_frame\": \"%s\" } }"
+          "}", non_ascii_file.c_str());
+  std::string error;
+  scoped_refptr<Extension> extension = LoadExtensionManifest(
+      kManifest, temp.path(), Extension::LOAD, 0, &error);
+  ASSERT_TRUE(extension.get()) << error;
+
+  EXPECT_TRUE(extension_file_util::ValidateExtension(extension, &error)) <<
+      error;
 }
 
 // TODO(aa): More tests as motivation allows. Maybe steal some from

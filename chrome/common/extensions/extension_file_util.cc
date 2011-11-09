@@ -164,7 +164,8 @@ bool ValidateExtension(const Extension* extension, std::string* error) {
            iter != images_value->end_keys(); ++iter) {
         std::string val;
         if (images_value->GetStringWithoutPathExpansion(*iter, &val)) {
-          FilePath image_path = extension->path().AppendASCII(val);
+          FilePath image_path = extension->path().Append(
+              FilePath::FromUTF8Unsafe(val));
           if (!file_util::PathExists(image_path)) {
             *error =
                 l10n_util::GetStringFUTF8(IDS_EXTENSION_INVALID_IMAGE_PATH,

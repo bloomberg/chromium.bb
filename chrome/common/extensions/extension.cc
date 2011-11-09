@@ -1797,7 +1797,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       // displayed across platforms.
 #if !defined(OS_CHROMEOS)
       plugins_.push_back(PluginInfo());
-      plugins_.back().path = path().AppendASCII(path_str);
+      plugins_.back().path = path().Append(FilePath::FromUTF8Unsafe(path_str));
       plugins_.back().is_public = is_public;
 #endif
     }
