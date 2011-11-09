@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_WINDOW_GTK_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_WINDOW_GTK_H_
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/panels/native_panel.h"
@@ -152,7 +153,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   // when the drag has ended when the user presses space or enter.  We queue
   // a task to end the drag and only run it if GTK+ didn't send us the
   // drag-failed event.
-  ScopedRunnableMethodFactory<PanelBrowserWindowGtk> drag_end_factory_;
+  base::WeakPtrFactory<PanelBrowserWindowGtk> drag_end_factory_;
 
   scoped_ptr<Panel> panel_;
   gfx::Rect bounds_;

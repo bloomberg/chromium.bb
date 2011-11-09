@@ -6,7 +6,9 @@
 
 #include "chrome/browser/ui/browser_list.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -65,7 +67,7 @@ class MockAutoHidingDesktopBarImpl :
 
   Observer* observer_;
   MockDesktopBar mock_desktop_bars[3];
-  ScopedRunnableMethodFactory<MockAutoHidingDesktopBarImpl> method_factory_;
+  base::WeakPtrFactory<MockAutoHidingDesktopBarImpl> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAutoHidingDesktopBarImpl);
 };
@@ -73,8 +75,7 @@ class MockAutoHidingDesktopBarImpl :
 
 MockAutoHidingDesktopBarImpl::MockAutoHidingDesktopBarImpl(
     AutoHidingDesktopBar::Observer* observer)
-    : observer_(observer),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+    : observer_(observer), method_factory_(this) {
   memset(mock_desktop_bars, 0, sizeof(mock_desktop_bars));
 }
 
@@ -117,10 +118,10 @@ void MockAutoHidingDesktopBarImpl::SetVisibility(
   bar->visibility = visibility;
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &MockAutoHidingDesktopBarImpl::NotifyVisibilityChange,
-          alignment,
-          visibility));
+      base::Bind(&MockAutoHidingDesktopBarImpl::NotifyVisibilityChange,
+                 method_factory_.GetWeakPtr(),
+                 alignment,
+                 visibility));
 }
 
 void MockAutoHidingDesktopBarImpl::SetThickness(
@@ -133,8 +134,8 @@ void MockAutoHidingDesktopBarImpl::SetThickness(
   bar->thickness = thickness;
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &MockAutoHidingDesktopBarImpl::NotifyThicknessChange));
+      base::Bind(&MockAutoHidingDesktopBarImpl::NotifyThicknessChange,
+                 method_factory_.GetWeakPtr()));
 }
 
 void MockAutoHidingDesktopBarImpl::NotifyVisibilityChange(

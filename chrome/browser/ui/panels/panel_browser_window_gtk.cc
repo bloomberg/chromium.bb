@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/panels/panel_browser_window_gtk.h"
 
+#include "base/bind.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -494,14 +495,14 @@ void PanelBrowserWindowGtk::DestroyDragWidget() {
 void PanelBrowserWindowGtk::EndDrag(bool canceled) {
   // Make sure we only run EndDrag once by canceling any tasks that want
   // to call EndDrag.
-  drag_end_factory_.RevokeAll();
+  drag_end_factory_.InvalidateWeakPtrs();
 
   // We must let gtk clean up after we handle the drag operation, otherwise
   // there will be outstanding references to the drag widget when we try to
   // destroy it.
   MessageLoop::current()->PostTask(FROM_HERE,
-      destroy_drag_widget_factory_.NewRunnableMethod(
-      &PanelBrowserWindowGtk::DestroyDragWidget));
+      base::Bind(&PanelBrowserWindowGtk::DestroyDragWidget,
+                 drag_end_factory_.GetWeakPtr()));
   CleanupDragDrop();
   panel_->manager()->EndDragging(canceled);
 }
@@ -608,8 +609,9 @@ gboolean PanelBrowserWindowGtk::OnDragButtonReleased(GtkWidget* widget,
   // GTK+ a chance to send the drag-failed event with the right status.  If
   // GTK+ does send the drag-failed event, we cancel the task.
   MessageLoop::current()->PostTask(FROM_HERE,
-      drag_end_factory_.NewRunnableMethod(
-          &PanelBrowserWindowGtk::EndDrag, false));
+      base::Bind(&PanelBrowserWindowGtk::EndDrag,
+                 drag_end_factory_.GetWeakPtr(),
+                 false));
   return TRUE;
 }
 

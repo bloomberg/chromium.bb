@@ -9,9 +9,8 @@
 #include <vector>
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/panels/auto_hiding_desktop_bar.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
@@ -211,7 +210,7 @@ class PanelManager : public PanelMouseWatcher::Observer,
   TitlebarAction delayed_titlebar_action_;
   bool remove_delays_for_testing_;
   // Owned by MessageLoop after posting.
-  CancelableTask* titlebar_action_task_;
+  base::WeakPtrFactory<PanelManager> titlebar_action_factory_;
 
   // Whether or not bounds will be updated when the preferred content size is
   // changed. The testing code could set this flag to false so that other tests
@@ -231,9 +230,5 @@ class PanelManager : public PanelMouseWatcher::Observer,
 
   DISALLOW_COPY_AND_ASSIGN(PanelManager);
 };
-
-// Required for CancellableTask to be used with non-refcounted objects.
-// Defines empty AddRef/Release.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(PanelManager);
 
 #endif  // CHROME_BROWSER_UI_PANELS_PANEL_MANAGER_H_

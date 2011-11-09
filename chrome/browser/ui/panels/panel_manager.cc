@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -58,7 +59,7 @@ PanelManager::PanelManager()
       dragging_panel_original_x_(0),
       delayed_titlebar_action_(NO_ACTION),
       remove_delays_for_testing_(false),
-      titlebar_action_task_(NULL),
+      titlebar_action_factory_(this),
       auto_sizing_enabled_(true),
       mouse_watching_disabled_(false) {
   panel_mouse_watcher_.reset(PanelMouseWatcher::Create(this));
@@ -70,10 +71,6 @@ PanelManager::~PanelManager() {
   DCHECK(panels_.empty());
   DCHECK(panels_pending_to_remove_.empty());
   DCHECK_EQ(0, minimized_panel_count_);
-  if (titlebar_action_task_) {
-     titlebar_action_task_->Cancel();
-     titlebar_action_task_ = NULL;
-  }
 }
 
 void PanelManager::OnDisplayChanged() {
@@ -446,21 +443,17 @@ void PanelManager::BringUpOrDownTitlebars(bool bring_up) {
 
   // If user moves the mouse in and out of mouse tracking area, we might have
   // previously posted but not yet dispatched task in the queue. New action
-  // shoudl always 'reset' the delays so cancel the old task and post a new one.
-  if (titlebar_action_task_)
-    titlebar_action_task_->Cancel();
-
-  titlebar_action_task_ = NewRunnableMethod(
-      this, &PanelManager::DelayedBringUpOrDownTitlebarsCheck);
-
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          titlebar_action_task_,
-                                          task_delay_milliseconds);
+  // should always 'reset' the delays so cancel any tasks that haven't run yet
+  // and post a new one.
+  titlebar_action_factory_.InvalidateWeakPtrs();
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&PanelManager::DelayedBringUpOrDownTitlebarsCheck,
+                 titlebar_action_factory_.GetWeakPtr()),
+      task_delay_milliseconds);
 }
 
 void PanelManager::DelayedBringUpOrDownTitlebarsCheck() {
-  titlebar_action_task_ = NULL;
-
   // Task was already processed or cancelled - bail out.
   if (delayed_titlebar_action_ == NO_ACTION)
     return;
