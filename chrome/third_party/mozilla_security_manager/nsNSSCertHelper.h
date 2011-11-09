@@ -48,14 +48,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/cert_database.h"
 
-class FreePRArenaPool {
- public:
-  inline void operator()(PRArenaPool* x) const {
-    PORT_FreeArena(x, PR_FALSE);
-  }
-};
-typedef scoped_ptr_malloc<PRArenaPool, FreePRArenaPool> ScopedPRArenaPool;
-
 namespace mozilla_security_manager {
 
 extern SECOidTag ms_cert_ext_certtype;

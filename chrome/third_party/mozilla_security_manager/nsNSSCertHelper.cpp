@@ -49,6 +49,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "crypto/scoped_nss_types.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "net/third_party/mozilla_security_manager/nsNSSCertTrust.h"
@@ -583,7 +584,7 @@ std::string ProcessGeneralNames(PRArenaPool* arena,
 std::string ProcessAltName(SECItem* extension_data) {
   CERTGeneralName* name_list;
 
-  ScopedPRArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
+  crypto::ScopedPLArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
   CHECK(arena.get());
 
   name_list = CERT_DecodeAltNameExtension(arena.get(), extension_data);
@@ -595,7 +596,7 @@ std::string ProcessAltName(SECItem* extension_data) {
 
 std::string ProcessSubjectKeyId(SECItem* extension_data) {
   SECItem decoded;
-  ScopedPRArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
+  crypto::ScopedPLArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
   CHECK(arena.get());
 
   std::string rv;
@@ -613,7 +614,7 @@ std::string ProcessSubjectKeyId(SECItem* extension_data) {
 
 std::string ProcessAuthKeyId(SECItem* extension_data) {
   CERTAuthKeyID* ret;
-  ScopedPRArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
+  crypto::ScopedPLArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
   std::string rv;
 
   CHECK(arena.get());
@@ -777,7 +778,7 @@ std::string ProcessCrlDistPoints(SECItem* extension_data) {
     {RF_CERTIFICATE_HOLD, IDS_CERT_REVOCATION_REASON_CERTIFICATE_HOLD},
   };
 
-  ScopedPRArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
+  crypto::ScopedPLArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
   CHECK(arena.get());
 
   crldp = CERT_DecodeCRLDistributionPoints(arena.get(), extension_data);
@@ -824,7 +825,7 @@ std::string ProcessAuthInfoAccess(SECItem* extension_data) {
   std::string rv;
   CERTAuthInfoAccess** aia;
   CERTAuthInfoAccess* desc;
-  ScopedPRArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
+  crypto::ScopedPLArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
   CHECK(arena.get());
 
   aia = CERT_DecodeAuthInfoAccessExtension(arena.get(), extension_data);
@@ -867,7 +868,7 @@ std::string ProcessIA5String(SECItem* extension_data) {
 std::string ProcessBMPString(SECItem* extension_data) {
   std::string rv;
   SECItem item;
-  ScopedPRArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
+  crypto::ScopedPLArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
   CHECK(arena.get());
 
   if (SEC_ASN1DecodeItem(arena.get(), &item,

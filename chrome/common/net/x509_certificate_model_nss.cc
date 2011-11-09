@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "crypto/nss_util.h"
+#include "crypto/scoped_nss_types.h"
 #include "net/base/x509_certificate.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
@@ -331,7 +332,7 @@ string GetDerString(X509Certificate::OSCertHandle cert_handle) {
 
 string GetCMSString(const X509Certificate::OSCertHandles& cert_chain,
                     size_t start, size_t end) {
-  ScopedPRArenaPool arena(PORT_NewArena(1024));
+  crypto::ScopedPLArenaPool arena(PORT_NewArena(1024));
   DCHECK(arena.get());
 
   ScopedNSSCMSMessage message(NSS_CMSMessage_Create(arena.get()));
