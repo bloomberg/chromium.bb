@@ -83,6 +83,9 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
   // Encapsulates the request parameters for |request_id|.
   struct ExtensionIconRequest;
 
+  // Returns the bitmap for the webstore icon.
+  const SkBitmap* GetWebStoreImage();
+
   // Returns the bitmap for the default app image.
   const SkBitmap* GetDefaultAppImage();
 
@@ -160,6 +163,8 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
   scoped_ptr<ImageLoadingTracker> tracker_;
 
   int next_tracker_id_;
+
+  scoped_ptr<SkBitmap> web_store_icon_data_;
 
   scoped_ptr<SkBitmap> default_app_data_;
 
