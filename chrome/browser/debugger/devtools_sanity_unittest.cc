@@ -504,6 +504,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleOnNavigateBack) {
   RunTest("testConsoleOnNavigateBack", kNavigateBackTestPage);
 }
 
+#if defined(OS_LINUX)
+// http://crbug.com/103539
+#define TestReattachAfterCrash FLAKY_TestReattachAfterCrash
+#endif
 // Tests that inspector will reattach to inspected page when it is reloaded
 // after a crash. See http://crbug.com/101952
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestReattachAfterCrash) {
