@@ -12,6 +12,11 @@ import sys
 import time
 import unittest
 
+try:
+  import fcntl
+except ImportError:
+  fcntl = None
+
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
@@ -182,6 +187,16 @@ class S2Test(unittest.TestCase):
     super(S2Test, self).setUp()
     self.exe_path = __file__
     self.exe = [sys.executable, self.exe_path, '--child']
+    self.states = {}
+    if fcntl:
+      for v in (sys.stdin, sys.stdout, sys.stderr):
+        fileno = v.fileno()
+        self.states[fileno] = fcntl.fcntl(fileno, fcntl.F_GETFL)
+
+  def tearDown(self):
+    for fileno, fl in self.states.iteritems():
+      self.assertEquals(fl, fcntl.fcntl(fileno, fcntl.F_GETFL))
+    super(S2Test, self).tearDown()
 
   def _run_test(self, function):
     """Runs tests in 6 combinations:
