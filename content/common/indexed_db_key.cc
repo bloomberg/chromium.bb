@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 
 using WebKit::WebIDBKey;
 
@@ -26,6 +27,11 @@ void IndexedDBKey::SetInvalid() {
   type_ = WebIDBKey::InvalidType;
 }
 
+void IndexedDBKey::SetArray(const std::vector<IndexedDBKey>& array) {
+  type_ = WebIDBKey::ArrayType;
+  array_ = array;
+}
+
 void IndexedDBKey::SetString(const string16& string) {
   type_ = WebIDBKey::StringType;
   string_ = string;
@@ -43,6 +49,12 @@ void IndexedDBKey::SetNumber(double number) {
 
 void IndexedDBKey::Set(const WebIDBKey& key) {
   type_ = key.type();
+  array_.clear();
+  if (key.type() == WebIDBKey::ArrayType) {
+    for (size_t i = 0; i < key.array().size(); ++i) {
+      array_.push_back(IndexedDBKey(key.array()[i]));
+    }
+  }
   string_ = key.type() == WebIDBKey::StringType ?
                 static_cast<string16>(key.string()) : string16();
   number_ = key.type() == WebIDBKey::NumberType ? key.number() : 0;
@@ -51,6 +63,8 @@ void IndexedDBKey::Set(const WebIDBKey& key) {
 
 IndexedDBKey::operator WebIDBKey() const {
   switch (type_) {
+    case WebIDBKey::ArrayType:
+      return WebIDBKey::createArray(array_);
     case WebIDBKey::StringType:
       return WebIDBKey::createString(string_);
     case WebIDBKey::DateType:
@@ -58,7 +72,6 @@ IndexedDBKey::operator WebIDBKey() const {
     case WebIDBKey::NumberType:
       return WebIDBKey::createNumber(number_);
     case WebIDBKey::InvalidType:
-    default: // TODO(jsbell): Remove after WebIDBKey::ArrayType added.
       return WebIDBKey::createInvalid();
   }
   NOTREACHED();

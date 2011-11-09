@@ -6,6 +6,8 @@
 #define CONTENT_COMMON_INDEXED_DB_KEY_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
@@ -18,12 +20,14 @@ class CONTENT_EXPORT IndexedDBKey {
   ~IndexedDBKey();
 
   void SetInvalid();
+  void SetArray(const std::vector<IndexedDBKey>& array);
   void SetString(const string16& string);
   void SetDate(double date);
   void SetNumber(double number);
   void Set(const WebKit::WebIDBKey& key);
 
   WebKit::WebIDBKey::Type type() const { return type_; }
+  const std::vector<IndexedDBKey>& array() const { return array_; }
   const string16& string() const { return string_; }
   double date() const { return date_; }
   double number() const { return number_; }
@@ -32,6 +36,7 @@ class CONTENT_EXPORT IndexedDBKey {
 
  private:
   WebKit::WebIDBKey::Type type_;
+  std::vector<IndexedDBKey> array_;
   string16 string_;
   double date_;
   double number_;
