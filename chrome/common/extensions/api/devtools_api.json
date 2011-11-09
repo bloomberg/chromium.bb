@@ -573,12 +573,12 @@
       {
         "id": "AuditCategory",
         "type": "object",
-        "description": "A set of audit rules",
+        "description": "A group of logically related audit checks.",
         "events": [
           {
             "name": "onAuditStarted",
             "type": "function",
-            "description": "Fired when the audit is started, if the category is enabled -- the extension is expected to begin executing audit rules.",
+            "description": "If the category is enabled, this event is fired when the audit is started. The event handler is expected to initiate execution of the audit logic that will populate the <code>results</code> collection.",
             "parameters": [
               { "name": "results", "$ref": "AuditResults" }
             ]
@@ -588,21 +588,22 @@
       {
         "id": "FormattedValue",
         "type": "object",
-        "description": "A value returned from one of the formatters (a URL, code snippet etc), to be passed to createResult or addChild."
+        "description": "A value returned from one of the formatters (a URL, code snippet etc), to be passed to <code>createResult()</code> or <code>addChild()</code>. See <a href=\"#method-AuditResults-createSnippet\"><code>createSnippet()</code></a> and <a href=\"#method-AuditResults-createURL\"><code>createURL()</code></a>."
       },
       {
         "id": "AuditResults",
         "type": "object",
-        "description": "A collection of audit results for current run of the audit category.",
+        "description": "A collection of audit results for the current run of the audit category.",
         "functions": [
           {
             "name": "addResult",
             "type": "function",
+            "description": "Adds an audit result. The results are rendered as bulleted items under the audit category assoicated with the <code>AuditResults</code> object.",
             "parameters": [
               {
                 "name": "displayName",
                 "type": "string",
-                "description": "A concise, high-level description of audit rule result."
+                "description": "A concise, high-level description of the result."
               },
               {
                 "name": "description",
@@ -611,20 +612,20 @@
               },
               {
                 "name": "severity",
-                "$ref": "AuditResultSeverety"
+                "$ref": "AuditResultSeverity"
               },
               {
                 "name": "details",
                 "$ref": "AuditResultNode",
                 "optional": true,
-                "description": "A subtree that appears under added result that may provide additional details on the violations found."
+                "description": "A subtree that appears under the added result that may provide additional details on the violations found."
               }
             ]
           },
           {
             "name": "createResult",
             "type": "function",
-            "description": "Creates a result node that may be user as details parameters to addResult.",
+            "description": "Creates a result node that may be used as the <code>details</code> parameters to the <code>addResult()</code> method.",
             "parameters": [
               {
                 "name": "content ...",
@@ -632,7 +633,7 @@
                   { "type": "string" },
                   { "$ref": "FormattedValue" }
                 ],
-                "description": "Either string or formatted values returned by one of the AuditResult formatters (URL, snippet etc). If multiple arguments are passed, these will be concatenated into a single node."
+                "description": "Either string or formatted values returned by one of the AuditResult formatters (a URL, a snippet etc). If multiple arguments are passed, these will be concatenated into a single node."
               }
             ],
             "returns": {
@@ -642,15 +643,15 @@
           {
             "name": "done",
             "type": "function",
-            "description": "Signals the WebInspector Audits panel that the run of this category is over. Normally the run completes automatically when a number of added top-level results is equal to that declared when AuditCategory was created."
+            "description": "Signals the DevTools Audits panel that the run of this category is over. The audit run also completes automatically when the number of added top-level results is equal to that declared when AuditCategory was created."
           },
           {
             "name": "createURL",
             "type": "function",
-            "description": "Render passed value as a URL in the Audits panel",
+            "description": "Render passed value as a URL in the Audits panel.",
             "parameters": [
-              { "name": "href", "type": "string", "description": "A URL that will appear as the href value on the resulting link." },
-              { "name": "displayText", "type": "string", "description": "A text that will appear to the user.", "optional": true }
+              { "name": "href", "type": "string", "description": "A URL that appears as the href value on the resulting link." },
+              { "name": "displayText", "type": "string", "description": "Text that appears to the user.", "optional": true }
             ],
             "returns": { "$ref": "FormattedValue" }
           },
@@ -667,7 +668,7 @@
         "properties": {
           "Severity": {
             "$ref": "AuditResultSeverity",
-            "description": "A class that contains possible values for audit result severities."
+            "description": "A class that contains possible values for the audit result severities."
           },
           "text": {
             "type": "string",
@@ -689,11 +690,11 @@
       {
         "id": "AuditResultNode",
         "type": "object",
-        "description": "A node in the audit result tree. Displays some content and optionally has children node.",
+        "description": "A node in the audit result tree. Displays content and may optionally have children nodes.",
         "functions": [
           {
             "name": "addChild",
-            "description": "Adds another child node to this node.",
+            "description": "Adds a child node to this node.",
             "parameters": [
               {
                 "name": "content ...",
@@ -719,6 +720,7 @@
       {
         "id": "AuditResultSeverity",
         "type": "object",
+        "description": "This type contains possible values for a result severity. The results of different severities are distinguished by colored bullets near the result's display name.", 
         "properties": {
           "Info": {
             "type": "string"

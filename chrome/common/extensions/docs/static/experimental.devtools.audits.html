@@ -1,13 +1,13 @@
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
 Use the <code>chrome.experimental.devtools.audits</code> module to add new audit
-categories and rules to Developer Tools' Audit panel.
+categories to Developer Tools' Audit panel.
 </p><p>
 See <a href="experimental.devtools.html">DevTools APIs summary</a> for
 general introduction to using Developer Tools APIs</a>.
 </p>
 
-<h2>Notes</h2>
+<h2>Overview</h2>
 
 <p>
 Each audit category is represented by a line on <em>Select audits to run</em>
@@ -29,18 +29,20 @@ as an argument and should add one or more results using <code>addResult()</code>
 method. This may be done asynchronously, i.e. after the handler returns. The
 run of the category is considered to be complete once the extension adds the
 number of results declared when adding the  category with
-<code>chrome.experimental.devtools.audits.addCategory()</code> or
+<code>addCategory()</code> or
 calls AuditResult's <code>done()</code> method.
 </p>
 <p>The results may include additional details visualized as an expandable
-tree by the Audits panel. You may build the details tree using
+tree by the Audits panel. You may build the details tree using the
 <code>createResult()</code> and <code>addChild()</code> methods. The child node
-may include specially formatted fragments created by
+may include specially formatted fragments created by the
 <code>auditResults.createSnippet()</code>
-or <code>auditResults.createURL()</code>.
-</p><p>
-The following example adds a handler for onAuditStarted event that creates two
-audit results and populates one of them with the additional details:
+and <code>auditResults.createURL()</code> methods.
+</p>
+
+<h2>Examples</h2>
+<p>The following example adds a handler for onAuditStarted event that creates
+two audit results and populates one of them with the additional details:
 </p>
 
 <pre>
@@ -65,10 +67,8 @@ category.onAuditStarted.addListener(function(results) {
      width="330" height="169"
      alt="Audit results example" />
 
-<h2 id="examples">Examples</h2>
-
 <p>
-You can find examples that use this API in
+You can find more examples that use this API in
 <a href="samples.html#devtools.audits">Samples</a>.
 </p>
 <!-- END AUTHORED CONTENT -->

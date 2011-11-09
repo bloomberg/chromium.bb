@@ -298,14 +298,14 @@
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#H2-0">Notes</a>
+              <a href="#H2-0">Overview</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#examples">Examples</a>
+              <a href="#H2-1">Examples</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
@@ -468,13 +468,13 @@
         <div id="static"><!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
 Use the <code>chrome.experimental.devtools.audits</code> module to add new audit
-categories and rules to Developer Tools' Audit panel.
+categories to Developer Tools' Audit panel.
 </p><p>
 See <a href="experimental.devtools.html">DevTools APIs summary</a> for
 general introduction to using Developer Tools APIs.
 </p>
 
-<a name="H2-0"></a><h2>Notes</h2>
+<a name="H2-0"></a><h2>Overview</h2>
 
 <p>
 Each audit category is represented by a line on <em>Select audits to run</em>
@@ -492,18 +492,20 @@ as an argument and should add one or more results using <code>addResult()</code>
 method. This may be done asynchronously, i.e. after the handler returns. The
 run of the category is considered to be complete once the extension adds the
 number of results declared when adding the  category with
-<code>chrome.experimental.devtools.audits.addCategory()</code> or
+<code>addCategory()</code> or
 calls AuditResult's <code>done()</code> method.
 </p>
 <p>The results may include additional details visualized as an expandable
-tree by the Audits panel. You may build the details tree using
+tree by the Audits panel. You may build the details tree using the
 <code>createResult()</code> and <code>addChild()</code> methods. The child node
-may include specially formatted fragments created by
+may include specially formatted fragments created by the
 <code>auditResults.createSnippet()</code>
-or <code>auditResults.createURL()</code>.
-</p><p>
-The following example adds a handler for onAuditStarted event that creates two
-audit results and populates one of them with the additional details:
+and <code>auditResults.createURL()</code> methods.
+</p>
+
+<a name="H2-1"></a><h2>Examples</h2>
+<p>The following example adds a handler for onAuditStarted event that creates
+two audit results and populates one of them with the additional details:
 </p>
 
 <pre>category.onAuditStarted.addListener(function(results) {
@@ -524,10 +526,8 @@ audit results and populates one of them with the additional details:
 </p>
 <img src="images/devtools-audits-results.png" style="margin-left: 20px" width="330" height="169" alt="Audit results example">
 
-<h2 id="examples">Examples</h2>
-
 <p>
-You can find examples that use this API in
+You can find more examples that use this API in
 <a href="samples.html#devtools.audits">Samples</a>.
 </p>
 <!-- END AUTHORED CONTENT -->
@@ -927,7 +927,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A set of audit rules</dd>
+          <dd>A group of logically related audit checks.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -970,7 +970,7 @@ You can find examples that use this API in
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when the audit is started, if the category is enabled -- the extension is expected to begin executing audit rules.</p>
+                <p>If the category is enabled, this event is fired when the audit is started. The event handler is expected to initiate execution of the audit logic that will populate the <code>results</code> collection.</p>
 
                 <!-- LISTENER PARAMETERS -->
                 <div>
@@ -1117,7 +1117,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A value returned from one of the formatters (a URL, code snippet etc), to be passed to createResult or addChild.</dd>
+          <dd>A value returned from one of the formatters (a URL, code snippet etc), to be passed to <code>createResult()</code> or <code>addChild()</code>. See <a href="#method-AuditResults-createSnippet"><code>createSnippet()</code></a> and <a href="#method-AuditResults-createURL"><code>createURL()</code></a>.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1189,7 +1189,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A collection of audit results for current run of the audit category.</dd>
+          <dd>A collection of audit results for the current run of the audit category.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1234,7 +1234,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A class that contains possible values for audit result severities.</dd>
+          <dd>A class that contains possible values for the audit result severities.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1505,13 +1505,13 @@ You can find examples that use this API in
                   <!-- Note: intentionally longer 80 columns -->
                   <span>auditResults.addResult</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
                       <var><span>displayName</span></var></span><span class="null"><span>, </span><span>string</span>
-                      <var><span>description</span></var></span><span class="null"><span>, </span><span>AuditResultSeverety</span>
+                      <var><span>description</span></var></span><span class="null"><span>, </span><span>AuditResultSeverity</span>
                       <var><span>severity</span></var></span><span class="optional"><span>, </span><span>AuditResultNode</span>
                       <var><span>details</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p style="display: none; ">Adds an audit category.</p>
+                <p>Adds an audit result. The results are rendered as bulleted items under the audit category assoicated with the <code>AuditResults</code> object.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1547,7 +1547,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A concise, high-level description of audit rule result.</dd>
+          <dd>A concise, high-level description of the result.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1665,7 +1665,7 @@ You can find examples that use this API in
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span style="">
-                        <a>AuditResultSeverety</a>
+                        <a href="experimental.devtools.audits.html#type-AuditResultSeverity">AuditResultSeverity</a>
                       </span>
                       <span style="display: none; ">
                         <span style="display: none; ">
@@ -1751,7 +1751,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A subtree that appears under added result that may provide additional details on the violations found.</dd>
+          <dd>A subtree that appears under the added result that may provide additional details on the violations found.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1911,7 +1911,7 @@ You can find examples that use this API in
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Creates a result node that may be user as details parameters to addResult.</p>
+                <p>Creates a result node that may be used as the <code>details</code> parameters to the <code>addResult()</code> method.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1947,7 +1947,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Either string or formatted values returned by one of the AuditResult formatters (URL, snippet etc). If multiple arguments are passed, these will be concatenated into a single node.</dd>
+          <dd>Either string or formatted values returned by one of the AuditResult formatters (a URL, a snippet etc). If multiple arguments are passed, these will be concatenated into a single node.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2304,7 +2304,7 @@ You can find examples that use this API in
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Render passed value as a URL in the Audits panel</p>
+                <p>Render passed value as a URL in the Audits panel.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -2340,7 +2340,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A URL that will appear as the href value on the resulting link.</dd>
+          <dd>A URL that appears as the href value on the resulting link.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2408,7 +2408,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A text that will appear to the user.</dd>
+          <dd>Text that appears to the user.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2569,7 +2569,7 @@ You can find examples that use this API in
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Signals the WebInspector Audits panel that the run of this category is over. Normally the run completes automatically when a number of added top-level results is equal to that declared when AuditCategory was created.</p>
+                <p>Signals the DevTools Audits panel that the run of this category is over. The audit run also completes automatically when the number of added top-level results is equal to that declared when AuditCategory was created.</p>
 
                 <!-- PARAMETERS -->
                 <h4 style="display: none; ">Parameters</h4>
@@ -2873,7 +2873,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A node in the audit result tree. Displays some content and optionally has children node.</dd>
+          <dd>A node in the audit result tree. Displays content and may optionally have children nodes.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2977,7 +2977,7 @@ You can find examples that use this API in
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Adds another child node to this node.</p>
+                <p>Adds a child node to this node.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -3210,12 +3210,10 @@ You can find examples that use this API in
 
               </em>
           </dt>
-          <dd class="todo">
+          <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
+          <dd>This type contains possible values for a result severity. The results of different severities are distinguished by colored bullets near the result's display name.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
