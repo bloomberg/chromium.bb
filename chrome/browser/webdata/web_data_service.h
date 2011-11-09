@@ -364,19 +364,19 @@ class WebDataService
   //
   //////////////////////////////////////////////////////////////////////////////
 
-  // Adds a web intent provider registration.
-  void AddWebIntent(const webkit_glue::WebIntentServiceData& service);
+  // Adds a web intent service registration.
+  void AddWebIntentService(const webkit_glue::WebIntentServiceData& service);
 
-  // Removes a web intent provider registration.
-  void RemoveWebIntent(const webkit_glue::WebIntentServiceData& service);
+  // Removes a web intent service registration.
+  void RemoveWebIntentService(const webkit_glue::WebIntentServiceData& service);
 
-  // Get all web intent providers registered for the specified |action|.
+  // Get all web intent services registered for the specified |action|.
   // |consumer| must not be NULL.
-  Handle GetWebIntents(const string16& action,
-                       WebDataServiceConsumer* consumer);
+  Handle GetWebIntentServices(const string16& action,
+                              WebDataServiceConsumer* consumer);
 
-  // Get all web intent providers registered. |consumer| must not be NULL.
-  Handle GetAllWebIntents(WebDataServiceConsumer* consumer);
+  // Get all web intent services registered. |consumer| must not be NULL.
+  Handle GetAllWebIntentServices(WebDataServiceConsumer* consumer);
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -622,12 +622,12 @@ class WebDataService
   // Web Intents.
   //
   //////////////////////////////////////////////////////////////////////////////
-  void AddWebIntentImpl(
+  void AddWebIntentServiceImpl(
       GenericRequest<webkit_glue::WebIntentServiceData>* request);
-  void RemoveWebIntentImpl(
+  void RemoveWebIntentServiceImpl(
       GenericRequest<webkit_glue::WebIntentServiceData>* request);
-  void GetWebIntentsImpl(GenericRequest<string16>* request);
-  void GetAllWebIntentsImpl(GenericRequest<std::string>* request);
+  void GetWebIntentServicesImpl(GenericRequest<string16>* request);
+  void GetAllWebIntentServicesImpl(GenericRequest<std::string>* request);
 
   //////////////////////////////////////////////////////////////////////////////
   //

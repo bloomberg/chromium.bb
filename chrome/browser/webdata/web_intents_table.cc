@@ -69,7 +69,7 @@ bool WebIntentsTable::IsSyncable() {
   return false;
 }
 
-bool WebIntentsTable::GetWebIntents(
+bool WebIntentsTable::GetWebIntentServices(
     const string16& action,
     std::vector<WebIntentServiceData>* services) {
   DCHECK(services);
@@ -83,7 +83,7 @@ bool WebIntentsTable::GetWebIntents(
   return ExtractIntents(&s, services);
 }
 
-bool WebIntentsTable::GetAllWebIntents(
+bool WebIntentsTable::GetAllWebIntentServices(
     std::vector<WebIntentServiceData>* services) {
   DCHECK(services);
   sql::Statement s(db_->GetUniqueStatement(
@@ -94,7 +94,7 @@ bool WebIntentsTable::GetAllWebIntents(
   return ExtractIntents(&s, services);
 }
 
-bool WebIntentsTable::SetWebIntent(const WebIntentServiceData& service) {
+bool WebIntentsTable::SetWebIntentService(const WebIntentServiceData& service) {
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT OR REPLACE INTO web_intents "
       "(service_url, type, action, title, disposition) "
@@ -117,7 +117,8 @@ bool WebIntentsTable::SetWebIntent(const WebIntentServiceData& service) {
 // TODO(jhawkins): Investigate the need to remove rows matching only
 // |service.service_url|. It's unlikely the user will be given the ability to
 // remove at the granularity of actions or types.
-bool WebIntentsTable::RemoveWebIntent(const WebIntentServiceData& service) {
+bool WebIntentsTable::RemoveWebIntentService(
+    const WebIntentServiceData& service) {
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM web_intents "
       "WHERE service_url = ? AND action = ? AND type = ?"));

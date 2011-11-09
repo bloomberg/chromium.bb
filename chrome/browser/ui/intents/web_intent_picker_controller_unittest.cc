@@ -160,7 +160,7 @@ class WebIntentPickerControllerTest : public TabContentsWrapperTestHarness {
     service.action = action;
     service.type = kType;
     service.service_url = service_url;
-    web_data_service_->AddWebIntent(service);
+    web_data_service_->AddWebIntentService(service);
   }
 
   void AddFaviconForURL(const GURL& url) {

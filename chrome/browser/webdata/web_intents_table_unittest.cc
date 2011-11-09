@@ -61,25 +61,25 @@ TEST_F(WebIntentsTableTest, SetGetDeleteIntent) {
   std::vector<WebIntentServiceData> services;
 
   // By default, no intent services exist.
-  EXPECT_TRUE(IntentsTable()->GetWebIntents(test_action, &services));
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServices(test_action, &services));
   EXPECT_EQ(0U, services.size());
 
   // Now adding one.
   WebIntentServiceData service =
       MakeIntentService(test_url, test_action, mime_image, test_title);
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(service));
+  EXPECT_TRUE(IntentsTable()->SetWebIntentService(service));
 
   // Make sure that service can now be fetched
-  EXPECT_TRUE(IntentsTable()->GetWebIntents(test_action, &services));
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServices(test_action, &services));
   ASSERT_EQ(1U, services.size());
   EXPECT_EQ(service, services[0]);
 
   // Remove the service.
-  EXPECT_TRUE(IntentsTable()->RemoveWebIntent(service));
+  EXPECT_TRUE(IntentsTable()->RemoveWebIntentService(service));
 
   // Should now be gone.
   services.clear();
-  EXPECT_TRUE(IntentsTable()->GetWebIntents(test_action, &services));
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServices(test_action, &services));
   EXPECT_EQ(0U, services.size());
 }
 
@@ -89,14 +89,14 @@ TEST_F(WebIntentsTableTest, SetMultipleIntents) {
 
   WebIntentServiceData service =
       MakeIntentService(test_url, test_action, mime_image, test_title);
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(service));
+  EXPECT_TRUE(IntentsTable()->SetWebIntentService(service));
 
   service.type = mime_video;
   service.title = test_title_2;
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(service));
+  EXPECT_TRUE(IntentsTable()->SetWebIntentService(service));
 
   // Recover stored intent services from DB.
-  EXPECT_TRUE(IntentsTable()->GetWebIntents(test_action, &services));
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServices(test_action, &services));
   ASSERT_EQ(2U, services.size());
 
   // WebIntentsTable does not guarantee order, so ensure order here.
@@ -116,14 +116,14 @@ TEST_F(WebIntentsTableTest, GetAllIntents) {
 
   WebIntentServiceData service =
       MakeIntentService(test_url, test_action, mime_image, test_title);
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(service));
+  EXPECT_TRUE(IntentsTable()->SetWebIntentService(service));
 
   service.action = test_action_2;
   service.title = test_title_2;
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(service));
+  EXPECT_TRUE(IntentsTable()->SetWebIntentService(service));
 
   // Recover stored services from DB.
-  EXPECT_TRUE(IntentsTable()->GetAllWebIntents(&services));
+  EXPECT_TRUE(IntentsTable()->GetAllWebIntentServices(&services));
   ASSERT_EQ(2U, services.size());
 
   // WebIntentsTable does not guarantee order, so ensure order here.
@@ -141,14 +141,14 @@ TEST_F(WebIntentsTableTest, DispositionToStringMapping) {
   WebIntentServiceData service =
       MakeIntentService(test_url, test_action, mime_image, test_title);
   service.disposition = WebIntentServiceData::DISPOSITION_WINDOW;
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(service));
+  EXPECT_TRUE(IntentsTable()->SetWebIntentService(service));
 
   service = MakeIntentService(test_url, test_action, mime_video, test_title);
   service.disposition = WebIntentServiceData::DISPOSITION_INLINE;
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(service));
+  EXPECT_TRUE(IntentsTable()->SetWebIntentService(service));
 
   std::vector<WebIntentServiceData> services;
-  EXPECT_TRUE(IntentsTable()->GetAllWebIntents(&services));
+  EXPECT_TRUE(IntentsTable()->GetAllWebIntentServices(&services));
   ASSERT_EQ(2U, services.size());
 
   if (services[0].disposition == WebIntentServiceData::DISPOSITION_WINDOW)

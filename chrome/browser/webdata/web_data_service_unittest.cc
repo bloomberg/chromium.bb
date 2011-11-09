@@ -634,7 +634,7 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
 TEST_F(WebDataServiceTest, WebIntents) {
   WebIntentsConsumer consumer;
 
-  wds_->GetWebIntents(ASCIIToUTF16("share"), &consumer);
+  wds_->GetWebIntentServices(ASCIIToUTF16("share"), &consumer);
   WebIntentsConsumer::WaitUntilCalled();
   EXPECT_EQ(0U, consumer.services_.size());
 
@@ -642,12 +642,12 @@ TEST_F(WebDataServiceTest, WebIntents) {
   service.service_url = GURL("http://google.com");
   service.action = ASCIIToUTF16("share");
   service.type = ASCIIToUTF16("image/*");
-  wds_->AddWebIntent(service);
+  wds_->AddWebIntentService(service);
 
   service.type = ASCIIToUTF16("video/*");
-  wds_->AddWebIntent(service);
+  wds_->AddWebIntentService(service);
 
-  wds_->GetWebIntents(ASCIIToUTF16("share"), &consumer);
+  wds_->GetWebIntentServices(ASCIIToUTF16("share"), &consumer);
   WebIntentsConsumer::WaitUntilCalled();
   ASSERT_EQ(2U, consumer.services_.size());
 
@@ -662,9 +662,9 @@ TEST_F(WebDataServiceTest, WebIntents) {
   EXPECT_EQ(service.type, consumer.services_[1].type);
 
   service.type = ASCIIToUTF16("image/*");
-  wds_->RemoveWebIntent(service);
+  wds_->RemoveWebIntentService(service);
 
-  wds_->GetWebIntents(ASCIIToUTF16("share"), &consumer);
+  wds_->GetWebIntentServices(ASCIIToUTF16("share"), &consumer);
   WebIntentsConsumer::WaitUntilCalled();
   ASSERT_EQ(1U, consumer.services_.size());
 
@@ -681,12 +681,12 @@ TEST_F(WebDataServiceTest, WebIntentsGetAll) {
   service.service_url = GURL("http://google.com");
   service.action = ASCIIToUTF16("share");
   service.type = ASCIIToUTF16("image/*");
-  wds_->AddWebIntent(service);
+  wds_->AddWebIntentService(service);
 
   service.action = ASCIIToUTF16("edit");
-  wds_->AddWebIntent(service);
+  wds_->AddWebIntentService(service);
 
-  wds_->GetAllWebIntents(&consumer);
+  wds_->GetAllWebIntentServices(&consumer);
   WebIntentsConsumer::WaitUntilCalled();
   ASSERT_EQ(2U, consumer.services_.size());
 

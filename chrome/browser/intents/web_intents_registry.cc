@@ -117,7 +117,7 @@ WebIntentsRegistry::QueryID WebIntentsRegistry::GetIntentProviders(
   query->consumer_ = consumer;
   query->action_ = action;
   query->type_ = mimetype;
-  query->pending_query_ = wds_->GetWebIntents(action, this);
+  query->pending_query_ = wds_->GetWebIntentServices(action, this);
   queries_[query->pending_query_] = query;
 
   return query->query_id_;
@@ -132,7 +132,7 @@ WebIntentsRegistry::QueryID WebIntentsRegistry::GetAllIntentProviders(
   query->query_id_ = next_query_id_++;
   query->consumer_ = consumer;
   query->type_ = ASCIIToUTF16("*");
-  query->pending_query_ = wds_->GetAllWebIntents(this);
+  query->pending_query_ = wds_->GetAllWebIntentServices(this);
   queries_[query->pending_query_] = query;
 
   return query->query_id_;
@@ -141,11 +141,11 @@ WebIntentsRegistry::QueryID WebIntentsRegistry::GetAllIntentProviders(
 void WebIntentsRegistry::RegisterIntentProvider(
     const WebIntentServiceData& service) {
   DCHECK(wds_.get());
-  wds_->AddWebIntent(service);
+  wds_->AddWebIntentService(service);
 }
 
 void WebIntentsRegistry::UnregisterIntentProvider(
     const WebIntentServiceData& service) {
   DCHECK(wds_.get());
-  wds_->RemoveWebIntent(service);
+  wds_->RemoveWebIntentService(service);
 }
