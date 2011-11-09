@@ -22,8 +22,8 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/translate/translate_prefs.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -37,8 +37,8 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/url_fetcher.h"
@@ -603,7 +603,7 @@ void TranslateManager::ReportLanguageDetectionError(TabContents* tab_contents) {
   DCHECK(!page_url.SchemeIsSecure());
   std::string report_error_url(kReportLanguageDetectionErrorURL);
   report_error_url += "?client=cr&action=langidc&u=";
-  report_error_url += EscapeUrlEncodedData(page_url.spec(), true);
+  report_error_url += net::EscapeUrlEncodedData(page_url.spec(), true);
   report_error_url += "&sl=";
 
   TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(

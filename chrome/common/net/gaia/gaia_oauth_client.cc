@@ -67,10 +67,11 @@ void GaiaOAuthClient::Core::GetTokensFromAuthCode(
     int max_retries,
     GaiaOAuthClient::Delegate* delegate) {
   std::string post_body =
-      "code=" + EscapeUrlEncodedData(auth_code, true) +
-      "&client_id=" + EscapeUrlEncodedData(oauth_client_info.client_id, true) +
+      "code=" + net::EscapeUrlEncodedData(auth_code, true) +
+      "&client_id=" + net::EscapeUrlEncodedData(oauth_client_info.client_id,
+                                                true) +
       "&client_secret=" +
-      EscapeUrlEncodedData(oauth_client_info.client_secret, true) +
+      net::EscapeUrlEncodedData(oauth_client_info.client_secret, true) +
       "&redirect_uri=oob&grant_type=authorization_code";
   MakeGaiaRequest(post_body, max_retries, delegate);
 }
@@ -81,10 +82,11 @@ void GaiaOAuthClient::Core::RefreshToken(
     int max_retries,
     GaiaOAuthClient::Delegate* delegate) {
   std::string post_body =
-      "refresh_token=" + EscapeUrlEncodedData(refresh_token, true) +
-      "&client_id=" + EscapeUrlEncodedData(oauth_client_info.client_id, true) +
+      "refresh_token=" + net::EscapeUrlEncodedData(refresh_token, true) +
+      "&client_id=" + net::EscapeUrlEncodedData(oauth_client_info.client_id,
+                                                true) +
       "&client_secret=" +
-      EscapeUrlEncodedData(oauth_client_info.client_secret, true) +
+      net::EscapeUrlEncodedData(oauth_client_info.client_secret, true) +
       "&grant_type=refresh_token";
   MakeGaiaRequest(post_body, max_retries, delegate);
 }

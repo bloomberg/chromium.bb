@@ -32,10 +32,10 @@
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
 #include "chrome/browser/sync/syncable/syncable_columns.h"
 #include "chrome/browser/sync/syncable/syncable_enum_conversions.h"
-#include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/transaction_observer.h"
 #include "chrome/browser/sync/util/logging.h"
 #include "net/base/escape.h"
@@ -1916,8 +1916,8 @@ std::ostream& operator<<(std::ostream& os, const Entry& entry) {
   }
   for ( ; i < PROTO_FIELDS_END; ++i) {
     os << g_metas_columns[i].name << ": "
-       << EscapePath(
-           kernel->ref(static_cast<ProtoField>(i)).SerializeAsString())
+       << net::EscapePath(
+              kernel->ref(static_cast<ProtoField>(i)).SerializeAsString())
        << ", ";
   }
   os << "TempFlags: ";

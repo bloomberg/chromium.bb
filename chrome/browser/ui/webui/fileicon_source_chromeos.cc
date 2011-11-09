@@ -176,7 +176,7 @@ void GetExtensionAndQuery(const std::string& url,
                           std::string* extension,
                           std::string* query) {
   // We receive the url with chrome://fileicon/ stripped but GURL expects it.
-  const GURL gurl("chrome://fileicon/" + EscapePath(url));
+  const GURL gurl("chrome://fileicon/" + net::EscapePath(url));
   const std::string path = gurl.path();
   *extension = StringToLowerASCII(FilePath(path).Extension());
   *query = gurl.query();

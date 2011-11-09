@@ -156,10 +156,12 @@ std::string GaiaAuthFetcher::MakeClientLoginBody(
     const std::string& login_token,
     const std::string& login_captcha,
     HostedAccountsSetting allow_hosted_accounts) {
-  std::string encoded_username = EscapeUrlEncodedData(username, true);
-  std::string encoded_password = EscapeUrlEncodedData(password, true);
-  std::string encoded_login_token = EscapeUrlEncodedData(login_token, true);
-  std::string encoded_login_captcha = EscapeUrlEncodedData(login_captcha, true);
+  std::string encoded_username = net::EscapeUrlEncodedData(username, true);
+  std::string encoded_password = net::EscapeUrlEncodedData(password, true);
+  std::string encoded_login_token = net::EscapeUrlEncodedData(login_token,
+                                                              true);
+  std::string encoded_login_captcha = net::EscapeUrlEncodedData(login_captcha,
+                                                                true);
 
   const char* account_type = allow_hosted_accounts == HostedAccountsAllowed ?
       kAccountTypeHostedOrGoogle :
@@ -191,8 +193,8 @@ std::string GaiaAuthFetcher::MakeIssueAuthTokenBody(
     const std::string& sid,
     const std::string& lsid,
     const char* const service) {
-  std::string encoded_sid = EscapeUrlEncodedData(sid, true);
-  std::string encoded_lsid = EscapeUrlEncodedData(lsid, true);
+  std::string encoded_sid = net::EscapeUrlEncodedData(sid, true);
+  std::string encoded_lsid = net::EscapeUrlEncodedData(lsid, true);
 
   // All tokens should be session tokens except the gaia auth token.
   bool session = true;
@@ -208,7 +210,7 @@ std::string GaiaAuthFetcher::MakeIssueAuthTokenBody(
 
 // static
 std::string GaiaAuthFetcher::MakeGetUserInfoBody(const std::string& lsid) {
-  std::string encoded_lsid = EscapeUrlEncodedData(lsid, true);
+  std::string encoded_lsid = net::EscapeUrlEncodedData(lsid, true);
   return base::StringPrintf(kGetUserInfoFormat, encoded_lsid.c_str());
 }
 
@@ -216,9 +218,10 @@ std::string GaiaAuthFetcher::MakeGetUserInfoBody(const std::string& lsid) {
 std::string GaiaAuthFetcher::MakeTokenAuthBody(const std::string& auth_token,
                                                const std::string& continue_url,
                                                const std::string& source) {
-  std::string encoded_auth_token = EscapeUrlEncodedData(auth_token, true);
-  std::string encoded_continue_url = EscapeUrlEncodedData(continue_url, true);
-  std::string encoded_source = EscapeUrlEncodedData(source, true);
+  std::string encoded_auth_token = net::EscapeUrlEncodedData(auth_token, true);
+  std::string encoded_continue_url = net::EscapeUrlEncodedData(continue_url,
+                                                               true);
+  std::string encoded_source = net::EscapeUrlEncodedData(source, true);
   return base::StringPrintf(kTokenAuthFormat,
                             encoded_auth_token.c_str(),
                             encoded_continue_url.c_str(),
@@ -230,9 +233,10 @@ std::string GaiaAuthFetcher::MakeMergeSessionBody(
     const std::string& auth_token,
     const std::string& continue_url,
     const std::string& source) {
-  std::string encoded_auth_token = EscapeUrlEncodedData(auth_token, true);
-  std::string encoded_continue_url = EscapeUrlEncodedData(continue_url, true);
-  std::string encoded_source = EscapeUrlEncodedData(source, true);
+  std::string encoded_auth_token = net::EscapeUrlEncodedData(auth_token, true);
+  std::string encoded_continue_url = net::EscapeUrlEncodedData(continue_url,
+                                                               true);
+  std::string encoded_source = net::EscapeUrlEncodedData(source, true);
   return base::StringPrintf(kMergeSessionFormat,
                             encoded_auth_token.c_str(),
                             encoded_continue_url.c_str(),

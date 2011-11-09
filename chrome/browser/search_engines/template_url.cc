@@ -364,7 +364,7 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
       input_encoding = "UTF-8";
     }
   } else {
-    encoded_terms = UTF8ToUTF16(EscapePath(UTF16ToUTF8(terms)));
+    encoded_terms = UTF8ToUTF16(net::EscapePath(UTF16ToUTF8(terms)));
     input_encoding = "UTF-8";
   }
 

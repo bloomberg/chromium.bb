@@ -45,9 +45,9 @@
 #if defined(OS_WIN)
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebInputEventFactory.h"
 #endif
+#include "v8/include/v8.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/user_agent.h"
-#include "v8/include/v8.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebData;
@@ -215,7 +215,7 @@ static std::string DumpHistoryItem(const WebHistoryItem& item,
     url.replace(0, pos + kLayoutTestsPatternSize, kFileTestPrefix);
   } else if (url.find(kDataUrlPattern) == 0) {
     // URL-escape data URLs to match results upstream.
-    std::string path = EscapePath(url.substr(kDataUrlPatternSize));
+    std::string path = net::EscapePath(url.substr(kDataUrlPatternSize));
     url.replace(kDataUrlPatternSize, url.length(), path);
   }
 

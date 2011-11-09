@@ -110,7 +110,7 @@ net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
   // will redirect the browser to this new URL.
   if (supported_mime_types_.count(mime_type) > 0) {
     std::string url(kGViewUrlPrefix);
-    url += EscapePath(request->url().spec());
+    url += net::EscapePath(request->url().spec());
     return new net::URLRequestRedirectJob(request, GURL(url));
   }
   return NULL;

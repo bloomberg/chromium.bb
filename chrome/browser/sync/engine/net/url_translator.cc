@@ -27,7 +27,7 @@ string CgiEscapeString(const char* src) {
 }
 
 string CgiEscapeString(const string& src) {
-  return EscapeUrlEncodedData(src, true);
+  return net::EscapeUrlEncodedData(src, true);
 }
 
 // This method appends the query string to the sync server path.

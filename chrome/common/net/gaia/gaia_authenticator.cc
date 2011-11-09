@@ -146,15 +146,15 @@ bool GaiaAuthenticator::PerformGaiaRequest(const AuthParams& params,
   GURL gaia_auth_url(gaia_url_);
 
   string post_body;
-  post_body += "Email=" + EscapeUrlEncodedData(params.email, true);
-  post_body += "&Passwd=" + EscapeUrlEncodedData(params.password, true);
-  post_body += "&source=" + EscapeUrlEncodedData(user_agent_, true);
+  post_body += "Email=" + net::EscapeUrlEncodedData(params.email, true);
+  post_body += "&Passwd=" + net::EscapeUrlEncodedData(params.password, true);
+  post_body += "&source=" + net::EscapeUrlEncodedData(user_agent_, true);
   post_body += "&service=" + service_id_;
   if (!params.captcha_token.empty() && !params.captcha_value.empty()) {
     post_body += "&logintoken=" +
-                 EscapeUrlEncodedData(params.captcha_token, true);
+                 net::EscapeUrlEncodedData(params.captcha_token, true);
     post_body += "&logincaptcha=" +
-                 EscapeUrlEncodedData(params.captcha_value, true);
+                 net::EscapeUrlEncodedData(params.captcha_value, true);
   }
   post_body += "&PersistentCookie=true";
   // We set it to GOOGLE (and not HOSTED or HOSTED_OR_GOOGLE) because we only
@@ -205,7 +205,7 @@ bool GaiaAuthenticator::LookupEmail(AuthResults* results) {
 
   string post_body;
   post_body += "LSID=";
-  post_body += EscapeUrlEncodedData(results->lsid, true);
+  post_body += net::EscapeUrlEncodedData(results->lsid, true);
 
   unsigned long server_response_code;
   string message_text;
@@ -255,7 +255,7 @@ bool GaiaAuthenticator::IssueAuthToken(AuthResults* results,
 
   string post_body;
   post_body += "LSID=";
-  post_body += EscapeUrlEncodedData(results->lsid, true);
+  post_body += net::EscapeUrlEncodedData(results->lsid, true);
   post_body += "&service=" + service_id;
   post_body += "&Session=true";
 

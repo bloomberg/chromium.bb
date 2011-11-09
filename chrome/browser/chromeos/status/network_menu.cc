@@ -1051,9 +1051,9 @@ void NetworkMenu::ShowTabbedNetworkSettings(const Network* network) const {
   std::string page = StringPrintf(
       "%s?servicePath=%s&networkType=%d&networkName=%s",
       chrome::kInternetOptionsSubPage,
-      EscapeUrlEncodedData(network->service_path(), true).c_str(),
+      net::EscapeUrlEncodedData(network->service_path(), true).c_str(),
       network->type(),
-      EscapeUrlEncodedData(network_name, false).c_str());
+      net::EscapeUrlEncodedData(network_name, false).c_str());
   browser->ShowOptionsTab(page);
 }
 

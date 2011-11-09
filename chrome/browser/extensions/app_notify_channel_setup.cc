@@ -233,8 +233,8 @@ std::string AppNotifyChannelSetup::MakeOAuth2IssueTokenBody(
     const std::string& extension_id) {
   return StringPrintf(kOAuth2IssueTokenBodyFormat,
       kOAuth2IssueTokenScope,
-      EscapeUrlEncodedData(oauth_client_id, true).c_str(),
-      EscapeUrlEncodedData(extension_id, true).c_str());
+      net::EscapeUrlEncodedData(oauth_client_id, true).c_str(),
+      net::EscapeUrlEncodedData(extension_id, true).c_str());
 }
 
 // static

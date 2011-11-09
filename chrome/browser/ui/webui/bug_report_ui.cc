@@ -144,7 +144,7 @@ void ShowHtmlBugReportView(Browser* browser,
 
   std::string bug_report_url = std::string(chrome::kChromeUIBugReportURL) +
       "#" + base::IntToString(browser->active_index()) +
-      "?description=" + EscapeUrlEncodedData(description_template, false) +
+      "?description=" + net::EscapeUrlEncodedData(description_template, false) +
       "&issueType=" + base::IntToString(issue_type);
   browser->ShowSingletonTab(GURL(bug_report_url));
 }

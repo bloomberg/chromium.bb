@@ -388,5 +388,5 @@ SyncData AutocompleteSyncableService::CreateSyncData(
 std::string AutocompleteSyncableService::KeyToTag(const std::string& name,
                                                   const std::string& value) {
   std::string ns(kAutofillEntryNamespaceTag);
-  return ns + EscapePath(name) + "|" + EscapePath(value);
+  return ns + net::EscapePath(name) + "|" + net::EscapePath(value);
 }

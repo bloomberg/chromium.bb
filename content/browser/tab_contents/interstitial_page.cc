@@ -219,7 +219,7 @@ void InterstitialPage::Show() {
   CreateTabContentsView();
 
   std::string data_url = "data:text/html;charset=utf-8," +
-                         EscapePath(GetHTMLContents());
+                         net::EscapePath(GetHTMLContents());
   render_view_host_->NavigateToURL(GURL(data_url));
 
   notification_registrar_.Add(this,

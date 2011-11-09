@@ -422,11 +422,11 @@ std::string PasswordModelAssociator::MakeTag(
     const std::string& username_value,
     const std::string& password_element,
     const std::string& signon_realm) {
-  return EscapePath(origin_url) + "|" +
-         EscapePath(username_element) + "|" +
-         EscapePath(username_value) + "|" +
-         EscapePath(password_element) + "|" +
-         EscapePath(signon_realm);
+  return net::EscapePath(origin_url) + "|" +
+         net::EscapePath(username_element) + "|" +
+         net::EscapePath(username_value) + "|" +
+         net::EscapePath(password_element) + "|" +
+         net::EscapePath(signon_realm);
 }
 
 }  // namespace browser_sync

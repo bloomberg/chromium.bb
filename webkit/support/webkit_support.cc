@@ -45,8 +45,8 @@
 #include "ui/gfx/gl/gl_surface.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/media/video_renderer_impl.h"
-#include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/user_agent.h"
+#include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/glue/webmediaplayer_impl.h"
@@ -56,8 +56,8 @@
 #include "webkit/plugins/webplugininfo.h"
 #include "webkit/support/platform_support.h"
 #include "webkit/support/simple_database_system.h"
-#include "webkit/support/test_webplugin_page_delegate.h"
 #include "webkit/support/test_webkit_platform_support.h"
+#include "webkit/support/test_webplugin_page_delegate.h"
 #include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
@@ -541,7 +541,7 @@ int64 GetCurrentTimeInMillisecond() {
 }
 
 std::string EscapePath(const std::string& path) {
-  return ::EscapePath(path);
+  return net::EscapePath(path);
 }
 
 std::string MakeURLErrorDescription(const WebKit::WebURLError& error) {

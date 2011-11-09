@@ -228,7 +228,7 @@ GURL FileManagerUtil::GetFileBrowserUrlWithParams(
   // kChromeUIFileManagerURL could not be used since query parameters are not
   // supported for it.
   std::string url = FileManagerUtil::GetFileBrowserUrl().spec() +
-                    '?' + EscapeUrlEncodedData(json_args, false);
+                    '?' + net::EscapeUrlEncodedData(json_args, false);
   return GURL(url);
 
 }
@@ -248,7 +248,7 @@ void FileManagerUtil::ShowFullTabUrl(Profile*,
   }
 
   std::string url = chrome::kChromeUIFileManagerURL;
-  url += "#/" + EscapeUrlEncodedData(virtual_path.value(), false);
+  url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(), false);
 
   UserMetrics::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
   browser->ShowSingletonTabRespectRef(GURL(url));
@@ -262,7 +262,7 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
       ShouldBeOpenedWithPdfPlugin(ext.data())) {
     std::string path;
     path = "file://";
-    path.append(EscapeUrlEncodedData(full_path.value(), false));
+    path.append(net::EscapeUrlEncodedData(full_path.value(), false));
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       bool result = BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
