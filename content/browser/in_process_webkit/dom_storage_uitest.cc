@@ -96,6 +96,10 @@ class DOMStorageTest : public UILayoutTest {
 };
 
 
+#if defined(OS_WIN)
+// http://crbug.com/101996
+#define RootLayoutTests FLAKY_RootLayoutTests
+#endif
 TEST_F(DOMStorageTest, RootLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath(), kNoHttpPort);
   AddJSTestResources();
