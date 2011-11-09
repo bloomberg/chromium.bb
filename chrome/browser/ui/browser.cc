@@ -3182,7 +3182,7 @@ void Browser::BookmarkAllTabs() {
   DCHECK(model && model->IsLoaded());
 
   BookmarkEditor::EditDetails details =
-      BookmarkEditor::EditDetails::AddFolder(model->GetParentForNewNodes());
+      BookmarkEditor::EditDetails::AddFolder(model->GetParentForNewNodes(), -1);
   bookmark_utils::GetURLsForOpenTabs(this, &(details.urls));
   DCHECK(!details.urls.empty());
 

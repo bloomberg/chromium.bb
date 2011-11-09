@@ -12,33 +12,35 @@ body {
 }
 
 .vbox {
+  -webkit-box-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: center;
+  display: -webkit-box;
   height: 100%;
   width: 100%;
 }
 
-.input-area {
+.vbox > div {
   -webkit-box-align: center;
+  -webkit-box-flex: 1;
   -webkit-box-pack: center;
   display: -webkit-box;
-  height: 60%;
+  width: 80%;
 }
 
-.buttons-area {
-  display: table;
-  float: right;
-  height: 100%;
-  margin-right: 8px;
-  width: auto;
+.vbox > div.area-hidden {
+  display: none;
+}
+
+.vbox > div.buttons-area {
+  -webkit-box-pack: end;
 }
 
 .buttons-area > div {
-  display: table-cell;
   padding: 3px;
-  vertical-align: top;
-  width: 50%;
+  width: 30%;
 }
 
 button {
-  white-space: nowrap;
   width: 100%;
 }

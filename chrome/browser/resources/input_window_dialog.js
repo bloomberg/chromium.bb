@@ -14,16 +14,26 @@ cr.define('inputWindowDialog', function() {
   }
 
   /**
+   * Returns true if URL area is shown.
+   */
+  function isURLAreaShown() {
+    return !$('url-area').classList.contains('area-hidden');
+  }
+
+  /**
    * Close the dialog and pass a result value to the dialog close handler.
    * @param {boolean} result The value to pass to the dialog close handler.
    */
   function closeWithResult(result) {
     disableControls();
-    var value = [result];
+    var values = [result];
     if (result) {
-      value.push($('name').value);
+      values.push($('name').value);
+      if (isURLAreaShown()) {
+        values.push($('url').value);
+      }
     }
-    var json = JSON.stringify(value);
+    var json = JSON.stringify(values);
     chrome.send('DialogClose', [json]);
   }
 
@@ -34,9 +44,16 @@ cr.define('inputWindowDialog', function() {
     i18nTemplate.process(document, templateData);
 
     var args = JSON.parse(chrome.dialogArguments);
-    $('name-label').textContent = args.label;
-    $('name').value = args.contents;
+    $('name-label').textContent = args.nameLabel;
+    $('name').value = args.name;
     $('ok').textContent = args.ok_button_title;
+
+    if (args.urlLabel && args.url) {
+      $('url-label').textContent = args.urlLabel;
+      $('url').value = args.url;
+    } else {
+      $('url-area').classList.add('area-hidden');
+    }
 
     $('cancel').onclick = function() {
       closeWithResult(false);
@@ -48,10 +65,16 @@ cr.define('inputWindowDialog', function() {
       }
     }
 
-    $('name').oninput = function() {
-      var name = $('name').value;
-      chrome.send('validate', [name]);
+    function validate() {
+      var values = [$('name').value];
+      if (isURLAreaShown()) {
+        values.push($('url').value);
+      }
+      chrome.send('validate', values);
     }
+
+    $('name').oninput = validate;
+    $('url').oninput = isURLAreaShown() ? validate : null;
 
     document.body.onkeydown = function(evt) {
       if (evt.keyCode == 13) {  // Enter key

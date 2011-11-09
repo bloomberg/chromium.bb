@@ -12,24 +12,29 @@
 #include "chrome/browser/ui/input_window_dialog_gtk.h"
 #endif
 
-InputWindowDialog* InputWindowDialog::Create(gfx::NativeWindow parent,
-                                             const string16& window_title,
-                                             const string16& label,
-                                             const string16& contents,
-                                             Delegate* delegate,
-                                             ButtonType type) {
+InputWindowDialog* InputWindowDialog::Create(
+    gfx::NativeWindow parent,
+    const string16& window_title,
+    const LabelContentsPairs& label_contents_pairs,
+    Delegate* delegate,
+    ButtonType type) {
 #if defined(USE_AURA)
-  return new InputWindowDialogWebUI(window_title, label, contents, delegate,
+  return new InputWindowDialogWebUI(window_title,
+                                    label_contents_pairs,
+                                    delegate,
                                     type);
 #else
   if (ChromeWebUI::IsMoreWebUI()) {
-    return new InputWindowDialogWebUI(window_title, label, contents, delegate,
+    return new InputWindowDialogWebUI(window_title,
+                                      label_contents_pairs,
+                                      delegate,
                                       type);
   } else {
+    DCHECK_EQ(1U, label_contents_pairs.size());
     return new InputWindowDialogGtk(parent,
                                     UTF16ToUTF8(window_title),
-                                    UTF16ToUTF8(label),
-                                    UTF16ToUTF8(contents),
+                                    UTF16ToUTF8(label_contents_pairs[0].first),
+                                    UTF16ToUTF8(label_contents_pairs[0].second),
                                     delegate,
                                     type);
   }

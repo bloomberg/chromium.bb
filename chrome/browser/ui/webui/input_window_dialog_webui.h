@@ -24,9 +24,8 @@ class InputWindowDialogWebUI : public InputWindowDialog,
                                private HtmlDialogUIDelegate {
  public:
   InputWindowDialogWebUI(const string16& window_title,
-                         const string16& label,
-                         const string16& contents,
-                         Delegate* delegate,
+                         const LabelContentsPairs& label_contents_pairs,
+                         InputWindowDialog::Delegate* delegate,
                          ButtonType type);
   virtual ~InputWindowDialogWebUI();
 
@@ -52,8 +51,7 @@ class InputWindowDialogWebUI : public InputWindowDialog,
   InputWindowDialogHandler* handler_;
 
   string16 window_title_;
-  string16 label_;
-  string16 contents_;
+  LabelContentsPairs label_contents_pairs_;
   bool closed_;
 
   Delegate* delegate_;

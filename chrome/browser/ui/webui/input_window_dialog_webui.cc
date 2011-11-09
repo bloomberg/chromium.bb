@@ -21,23 +21,23 @@
 
 namespace {
 
-const int kInputWindowDialogWidth = 240;
-const int kInputWindowDialogHeight = 120;
+const int kInputWindowDialogWidth = 300;
+const int kInputWindowDialogBaseHeight = 90;
+const int kInputWindowDialogContentsHeight = 20;
 
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // InputWindowWebUIDailog private methods
 
-InputWindowDialogWebUI::InputWindowDialogWebUI(const string16& window_title,
-                                               const string16& label,
-                                               const string16& contents,
-                                               Delegate* delegate,
-                                               ButtonType type)
+InputWindowDialogWebUI::InputWindowDialogWebUI(
+    const string16& window_title,
+    const LabelContentsPairs& label_contents_pairs,
+    InputWindowDialog::Delegate* delegate,
+    ButtonType type)
     : handler_(new InputWindowDialogHandler(delegate)),
       window_title_(window_title),
-      label_(label),
-      contents_(contents),
+      label_contents_pairs_(label_contents_pairs),
       closed_(true),
       delegate_(delegate),
       type_(type) {
@@ -78,13 +78,19 @@ void InputWindowDialogWebUI::GetWebUIMessageHandlers(
 }
 
 void InputWindowDialogWebUI::GetDialogSize(gfx::Size* size) const {
-  size->SetSize(kInputWindowDialogWidth, kInputWindowDialogHeight);
+  const int height = kInputWindowDialogBaseHeight +
+      kInputWindowDialogContentsHeight * label_contents_pairs_.size();
+  size->SetSize(kInputWindowDialogWidth, height);
 }
 
 std::string InputWindowDialogWebUI::GetDialogArgs() const {
   DictionaryValue value;
-  value.SetString("label", label_);
-  value.SetString("contents", contents_);
+  value.SetString("nameLabel", label_contents_pairs_[0].first);
+  value.SetString("name", label_contents_pairs_[0].second);
+  if (label_contents_pairs_.size() == 2) {
+    value.SetString("urlLabel", label_contents_pairs_[1].first);
+    value.SetString("url", label_contents_pairs_[1].second);
+  }
   string16 ok_button_title = l10n_util::GetStringUTF16(
       type_ == BUTTON_TYPE_ADD ? IDS_ADD : IDS_SAVE);
   value.SetString("ok_button_title", ok_button_title);
@@ -103,10 +109,18 @@ void InputWindowDialogWebUI::OnDialogClosed(const std::string& json_retval) {
   // field is added to the list.
   if (root.get() && root->GetAsList(&list) && list &&
       list->GetBoolean(0, &response) && response) {
-    DCHECK_EQ(2U, list->GetSize());
-    string16 text;
-    if (list->GetString(1, &text)) {
-      delegate_->InputAccepted(text);
+    DCHECK(list->GetSize() == 2 || list->GetSize() == 3);
+    InputTexts texts;
+    string16 name;
+    if (list->GetString(1, &name)) {
+      texts.push_back(name);
+    }
+    string16 url;
+    if (list->GetSize() == 3 && list->GetString(2, &url)) {
+      texts.push_back(url);
+    }
+    if (delegate_->IsValid(texts)) {
+      delegate_->InputAccepted(texts);
       accepted = true;
     }
   }
@@ -144,12 +158,17 @@ void InputWindowDialogHandler::RegisterMessages() {
 }
 
 void InputWindowDialogHandler::Validate(const base::ListValue* args) {
-  DCHECK_EQ(1U, args->GetSize());
-  bool valid = false;
-  string16 text;
-  if (args->GetString(0, &text)) {
-    valid = delegate_->IsValid(text);
+  DCHECK(args->GetSize() == 1U || args->GetSize() == 2U);
+  InputWindowDialog::InputTexts texts;
+  string16 name;
+  if (args->GetString(0, &name)) {
+    texts.push_back(name);
   }
+  string16 url;
+  if (args->GetSize() == 2 && args->GetString(0, &url)) {
+    texts.push_back(url);
+  }
+  const bool valid = delegate_->IsValid(texts);
   scoped_ptr<Value> result(Value::CreateBooleanValue(valid));
   web_ui_->CallJavascriptFunction("inputWindowDialog.ackValidation",
                                   *result);

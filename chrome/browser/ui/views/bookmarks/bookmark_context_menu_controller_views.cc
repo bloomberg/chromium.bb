@@ -7,7 +7,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
-#include "chrome/browser/bookmarks/bookmark_folder_editor_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -130,15 +129,11 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
         return;
       }
 
-      if (selection_[0]->is_url()) {
-        BookmarkEditor::Show(parent_widget_->GetNativeWindow(), profile_,
-            BookmarkEditor::EditDetails::EditNode(selection_[0]),
-            BookmarkEditor::SHOW_TREE);
-      } else {
-        BookmarkFolderEditorController::Show(profile_,
-            parent_widget_->GetNativeWindow(), selection_[0], -1,
-            BookmarkFolderEditorController::EXISTING_BOOKMARK);
-      }
+      BookmarkEditor::Show(
+          parent_widget_->GetNativeWindow(),
+          profile_,
+          BookmarkEditor::EditDetails::EditNode(selection_[0]),
+          BookmarkEditor::SHOW_TREE);
       break;
 
     case IDC_BOOKMARK_BAR_REMOVE: {
@@ -159,11 +154,13 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       UserMetrics::RecordAction(
           UserMetricsAction("BookmarkBar_ContextMenu_Add"));
 
-      // TODO: this should honor the index from GetParentForNewNodes.
+      int index;
+      const BookmarkNode* parent =
+          bookmark_utils::GetParentForNewNodes(parent_, selection_, &index);
       BookmarkEditor::Show(
-          parent_widget_->GetNativeWindow(), profile_,
-          BookmarkEditor::EditDetails::AddNodeInFolder(
-            bookmark_utils::GetParentForNewNodes(parent_, selection_, NULL)),
+          parent_widget_->GetNativeWindow(),
+          profile_,
+          BookmarkEditor::EditDetails::AddNodeInFolder(parent, index),
           BookmarkEditor::SHOW_TREE);
       break;
     }
@@ -171,12 +168,15 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
     case IDC_BOOKMARK_BAR_NEW_FOLDER: {
       UserMetrics::RecordAction(
           UserMetricsAction("BookmarkBar_ContextMenu_NewFolder"));
+
       int index;
       const BookmarkNode* parent =
           bookmark_utils::GetParentForNewNodes(parent_, selection_, &index);
-      BookmarkFolderEditorController::Show(profile_,
-           parent_widget_->GetNativeWindow(), parent, index,
-           BookmarkFolderEditorController::NEW_BOOKMARK);
+      BookmarkEditor::Show(
+          parent_widget_->GetNativeWindow(),
+          profile_,
+          BookmarkEditor::EditDetails::AddFolder(parent, index),
+          BookmarkEditor::SHOW_TREE);
       break;
     }
 

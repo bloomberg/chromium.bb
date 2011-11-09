@@ -73,15 +73,19 @@ void InputWindowDialogGtk::Close() {
 
 void InputWindowDialogGtk::OnEntryChanged(GtkEditable* entry) {
   string16 value(UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(entry))));
+  InputWindowDialog::InputTexts texts;
+  texts.push_back(value);
   gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_),
                                     GTK_RESPONSE_ACCEPT,
-                                    delegate_->IsValid(value));
+                                    delegate_->IsValid(texts));
 }
 
 void InputWindowDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
   if (response_id == GTK_RESPONSE_ACCEPT) {
     string16 value(UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(input_))));
-    delegate_->InputAccepted(value);
+    InputTexts texts;
+    texts.push_back(value);
+    delegate_->InputAccepted(texts);
   } else {
     delegate_->InputCanceled();
   }

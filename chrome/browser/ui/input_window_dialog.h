@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_INPUT_WINDOW_DIALOG_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
@@ -17,16 +19,18 @@ class InputWindowDialog {
     BUTTON_TYPE_ADD,
     BUTTON_TYPE_SAVE,
   };
+  typedef std::vector<std::pair<string16, string16> > LabelContentsPairs;
+  typedef std::vector<string16> InputTexts;
 
   class Delegate {
    public:
     virtual ~Delegate() {}
 
     // Checks whether |text| is a valid input string.
-    virtual bool IsValid(const string16& text) = 0;
+    virtual bool IsValid(const InputTexts& texts) = 0;
 
     // Callback for when the user clicks the OK button.
-    virtual void InputAccepted(const string16& text) = 0;
+    virtual void InputAccepted(const InputTexts& texts) = 0;
 
     // Callback for when the user clicks the Cancel button.
     virtual void InputCanceled() = 0;
@@ -34,12 +38,12 @@ class InputWindowDialog {
 
   // Creates a new input window dialog parented to |parent|. Ownership of
   // |delegate| is taken by InputWindowDialog or InputWindowDialog's owner.
-  static InputWindowDialog* Create(gfx::NativeWindow parent,
-                                   const string16& window_title,
-                                   const string16& label,
-                                   const string16& contents,
-                                   Delegate* delegate,
-                                   ButtonType type);
+  static InputWindowDialog* Create(
+      gfx::NativeWindow parent,
+      const string16& window_title,
+      const LabelContentsPairs& label_contents_pairs,
+      Delegate* delegate,
+      ButtonType type);
 
   // Displays the window.
   virtual void Show() = 0;

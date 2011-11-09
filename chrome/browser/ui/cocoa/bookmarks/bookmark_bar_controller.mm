@@ -782,7 +782,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     parent = bookmarkModel_->bookmark_bar_node();
   BookmarkEditor::Show([[self view] window],
                        browser_->profile(),
-                       BookmarkEditor::EditDetails::AddNodeInFolder(parent),
+                       BookmarkEditor::EditDetails::AddNodeInFolder(parent, -1),
                        BookmarkEditor::SHOW_TREE);
 }
 

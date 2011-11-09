@@ -132,7 +132,7 @@ class BookmarkEditorViewTest : public testing::Test {
 // Makes sure the tree model matches that of the bookmark bar model.
 TEST_F(BookmarkEditorViewTest, ModelsMatch) {
   CreateEditor(profile_.get(), NULL,
-               BookmarkEditor::EditDetails::AddNodeInFolder(NULL),
+               BookmarkEditor::EditDetails::AddNodeInFolder(NULL, -1),
                BookmarkEditorView::SHOW_TREE);
   BookmarkEditorView::EditorNode* editor_root = editor_tree_model()->GetRoot();
   // The root should have two or three children: bookmark bar, other bookmarks
@@ -263,7 +263,7 @@ TEST_F(BookmarkEditorViewTest, MoveToNewParent) {
 // Brings up the editor, creating a new URL on the bookmark bar.
 TEST_F(BookmarkEditorViewTest, NewURL) {
   CreateEditor(profile_.get(), NULL,
-               BookmarkEditor::EditDetails::AddNodeInFolder(NULL),
+               BookmarkEditor::EditDetails::AddNodeInFolder(NULL, -1),
                BookmarkEditorView::SHOW_TREE);
 
   SetURLText(UTF8ToWide(GURL(base_path() + "a").spec()));
@@ -325,7 +325,7 @@ TEST_F(BookmarkEditorViewTest, ChangeTitleNoTree) {
 TEST_F(BookmarkEditorViewTest, NewFolder) {
   const BookmarkNode* bb_node = model_->bookmark_bar_node();
   BookmarkEditor::EditDetails details =
-      BookmarkEditor::EditDetails::AddFolder(bb_node);
+      BookmarkEditor::EditDetails::AddFolder(bb_node, -1);
   details.urls.push_back(std::make_pair(GURL(base_path() + "x"),
                                         ASCIIToUTF16("z")));
   CreateEditor(profile_.get(), bb_node, details, BookmarkEditorView::SHOW_TREE);
@@ -354,7 +354,7 @@ TEST_F(BookmarkEditorViewTest, NewFolder) {
 // in then the editor is initially created showing.
 TEST_F(BookmarkEditorViewTest, MoveFolder) {
   BookmarkEditor::EditDetails details = BookmarkEditor::EditDetails::AddFolder(
-      model_->bookmark_bar_node());
+      model_->bookmark_bar_node(), -1);
   details.urls.push_back(std::make_pair(GURL(base_path() + "x"),
                                         ASCIIToUTF16("z")));
   CreateEditor(profile_.get(), model_->bookmark_bar_node(),

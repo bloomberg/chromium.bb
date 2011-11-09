@@ -101,9 +101,12 @@ class BookmarkEditorGtkTest : public testing::Test {
 
 // Makes sure the tree model matches that of the bookmark bar model.
 TEST_F(BookmarkEditorGtkTest, ModelsMatch) {
-  BookmarkEditorGtk editor(NULL, profile_.get(), NULL,
-                           BookmarkEditor::EditDetails::AddNodeInFolder(NULL),
-                           BookmarkEditor::SHOW_TREE);
+  BookmarkEditorGtk editor(
+      NULL,
+      profile_.get(),
+      NULL,
+      BookmarkEditor::EditDetails::AddNodeInFolder(NULL, -1),
+      BookmarkEditor::SHOW_TREE);
 
   // The root should have two or three children, one for the bookmark bar node,
   // another for the 'other bookmarks' folder, and depending on the visib
@@ -277,9 +280,12 @@ TEST_F(BookmarkEditorGtkTest, MoveToNewParent) {
 
 // Brings up the editor, creating a new URL on the bookmark bar.
 TEST_F(BookmarkEditorGtkTest, NewURL) {
-  BookmarkEditorGtk editor(NULL, profile_.get(), NULL,
-                           BookmarkEditor::EditDetails::AddNodeInFolder(NULL),
-                           BookmarkEditor::SHOW_TREE);
+  BookmarkEditorGtk editor(
+      NULL,
+      profile_.get(),
+      NULL,
+      BookmarkEditor::EditDetails::AddNodeInFolder(NULL, -1),
+      BookmarkEditor::SHOW_TREE);
 
   gtk_entry_set_text(GTK_ENTRY(editor.url_entry_),
                      GURL(base_path() + "a").spec().c_str());

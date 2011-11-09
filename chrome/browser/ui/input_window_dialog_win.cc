@@ -8,6 +8,8 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "chrome/browser/ui/webui/input_window_dialog_webui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/label.h"
@@ -133,15 +135,20 @@ string16 ContentView::GetDialogButtonLabel(ui::DialogButton button) const {
 }
 
 bool ContentView::IsDialogButtonEnabled(ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK &&
-      !delegate_->delegate()->IsValid(text_field_->text())) {
-    return false;
+  if (button == ui::DIALOG_BUTTON_OK) {
+    InputWindowDialog::InputTexts texts;
+    texts.push_back(text_field_->text());
+    if (!delegate_->delegate()->IsValid(texts)) {
+      return false;
+    }
   }
   return true;
 }
 
 bool ContentView::Accept() {
-  delegate_->delegate()->InputAccepted(text_field_->text());
+  InputWindowDialog::InputTexts texts;
+  texts.push_back(text_field_->text());
+  delegate_->delegate()->InputAccepted(texts);
   return true;
 }
 
@@ -251,12 +258,24 @@ void InputWindowDialogWin::Close() {
 }
 
 // static
-InputWindowDialog* InputWindowDialog::Create(gfx::NativeWindow parent,
-                                             const string16& window_title,
-                                             const string16& label,
-                                             const string16& contents,
-                                             Delegate* delegate,
-                                             ButtonType type) {
-  return new InputWindowDialogWin(parent, window_title, label, contents,
-                                  delegate, type);
+InputWindowDialog* InputWindowDialog::Create(
+    gfx::NativeWindow parent,
+    const string16& window_title,
+    const LabelContentsPairs& label_contents_pairs,
+    Delegate* delegate,
+    ButtonType type) {
+  if (ChromeWebUI::IsMoreWebUI()) {
+    return new InputWindowDialogWebUI(window_title,
+                                      label_contents_pairs,
+                                      delegate,
+                                      type);
+  } else {
+    DCHECK_EQ(1U, label_contents_pairs.size());
+    return new InputWindowDialogWin(parent,
+                                    window_title,
+                                    label_contents_pairs[0].first,
+                                    label_contents_pairs[0].second,
+                                    delegate,
+                                    type);
+  }
 }
