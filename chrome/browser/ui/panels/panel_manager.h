@@ -8,6 +8,7 @@
 
 #include <vector>
 #include "base/basictypes.h"
+#include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
@@ -28,8 +29,6 @@ class PanelManager : public PanelMouseWatcher::Observer,
 
   // Returns a single instance.
   static PanelManager* GetInstance();
-
-  virtual ~PanelManager();
 
   // Called when the display is changed, i.e. work area is updated.
   void OnDisplayChanged();
@@ -119,6 +118,8 @@ class PanelManager : public PanelMouseWatcher::Observer,
 #endif
 
  private:
+  friend struct base::DefaultLazyInstanceTraits<PanelManager>;
+
   enum TitlebarAction {
     NO_ACTION,
     BRING_UP,
@@ -126,6 +127,7 @@ class PanelManager : public PanelMouseWatcher::Observer,
   };
 
   PanelManager();
+  virtual ~PanelManager();
 
   // Overridden from AutoHidingDesktopBar::Observer:
   virtual void OnAutoHidingDesktopBarThicknessChanged() OVERRIDE;

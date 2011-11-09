@@ -43,16 +43,12 @@ const int kMillisecondsBeforeCollapsingFromTitleOnlyState = 3000;
 #else
 const int kMillisecondsBeforeCollapsingFromTitleOnlyState = 0;
 #endif
-
-// Single instance of PanelManager.
-scoped_ptr<PanelManager> panel_manager_instance;
 }  // namespace
 
 // static
 PanelManager* PanelManager::GetInstance() {
-  if (!panel_manager_instance.get())
-    panel_manager_instance.reset(new PanelManager());
-  return panel_manager_instance.get();
+  static base::LazyInstance<PanelManager> instance(base::LINKER_INITIALIZED);
+  return instance.Pointer();
 }
 
 PanelManager::PanelManager()
