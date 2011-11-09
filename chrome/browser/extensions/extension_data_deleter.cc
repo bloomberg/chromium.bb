@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_settings_frontend.h"
+#include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
@@ -66,7 +66,7 @@ void ExtensionDataDeleter::StartDeleting(
       base::Bind(
           &ExtensionDataDeleter::DeleteAppcachesOnIOThread, deleter));
 
-  profile->GetExtensionService()->extension_settings_frontend()->
+  profile->GetExtensionService()->settings_frontend()->
       DeleteStorageSoon(extension_id);
 }
 

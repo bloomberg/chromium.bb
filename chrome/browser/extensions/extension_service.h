@@ -26,7 +26,7 @@
 #include "chrome/browser/extensions/extension_permissions_api.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extension_settings_frontend.h"
+#include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
@@ -410,7 +410,7 @@ class ExtensionService
   // ExtensionPrefs* mutable_extension_prefs().
   ExtensionPrefs* extension_prefs();
 
-  ExtensionSettingsFrontend* extension_settings_frontend();
+  extensions::SettingsFrontend* settings_frontend();
 
   ExtensionContentSettingsStore* GetExtensionContentSettingsStore();
 
@@ -661,7 +661,7 @@ class ExtensionService
   ExtensionPrefs* extension_prefs_;
 
   // Settings for the owning profile.
-  ExtensionSettingsFrontend extension_settings_frontend_;
+  extensions::SettingsFrontend settings_frontend_;
 
   // The current list of installed extensions.
   // TODO(aa): This should use chrome/common/extensions/extension_set.h.

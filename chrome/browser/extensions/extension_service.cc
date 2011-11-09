@@ -362,7 +362,7 @@ ExtensionService::ExtensionService(Profile* profile,
                                    bool extensions_enabled)
     : profile_(profile),
       extension_prefs_(extension_prefs),
-      extension_settings_frontend_(profile),
+      settings_frontend_(profile),
       pending_extension_manager_(*ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       install_directory_(install_directory),
       extensions_enabled_(extensions_enabled),
@@ -1122,8 +1122,8 @@ ExtensionPrefs* ExtensionService::extension_prefs() {
   return extension_prefs_;
 }
 
-ExtensionSettingsFrontend* ExtensionService::extension_settings_frontend() {
-  return &extension_settings_frontend_;
+extensions::SettingsFrontend* ExtensionService::settings_frontend() {
+  return &settings_frontend_;
 }
 
 ExtensionContentSettingsStore*

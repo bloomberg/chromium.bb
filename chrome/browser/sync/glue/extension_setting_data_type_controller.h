@@ -11,11 +11,14 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 
-class ExtensionSettingsFrontend;
 class Profile;
 class ProfileSyncFactory;
 class ProfileSyncService;
 class SyncableService;
+
+namespace extensions {
+class SettingsFrontend;
+}
 
 namespace browser_sync {
 
@@ -55,7 +58,7 @@ class ExtensionSettingDataTypeController
   syncable::ModelType type_;
 
   // These only used on the UI thread.
-  ExtensionSettingsFrontend* extension_settings_frontend_;
+  extensions::SettingsFrontend* settings_frontend_;
   ProfileSyncService* profile_sync_service_;
 
   // Only used on the FILE thread.

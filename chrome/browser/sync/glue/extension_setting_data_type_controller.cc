@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_settings_frontend.h"
+#include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
@@ -24,8 +24,8 @@ ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
     ProfileSyncService* profile_sync_service)
     : NonFrontendDataTypeController(profile_sync_factory, profile),
       type_(type),
-      extension_settings_frontend_(
-          profile->GetExtensionService()->extension_settings_frontend()),
+      settings_frontend_(
+          profile->GetExtensionService()->settings_frontend()),
       profile_sync_service_(profile_sync_service),
       settings_service_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -51,7 +51,7 @@ bool ExtensionSettingDataTypeController::StartModels() {
 bool ExtensionSettingDataTypeController::StartAssociationAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), ASSOCIATING);
-  extension_settings_frontend_->RunWithSyncableService(
+  settings_frontend_->RunWithSyncableService(
       type_,
       base::Bind(
           &ExtensionSettingDataTypeController::

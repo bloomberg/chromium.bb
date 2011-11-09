@@ -39,7 +39,7 @@
 #include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/extensions/extension_save_page_api.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_settings_api.h"
+#include "chrome/browser/extensions/settings/settings_api.h"
 #include "chrome/browser/extensions/extension_sidebar_api.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_test_api.h"
@@ -424,10 +424,10 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SendCommandDebuggerFunction>();
 
   // Settings
-  RegisterFunction<GetSettingsFunction>();
-  RegisterFunction<SetSettingsFunction>();
-  RegisterFunction<RemoveSettingsFunction>();
-  RegisterFunction<ClearSettingsFunction>();
+  RegisterFunction<extensions::GetSettingsFunction>();
+  RegisterFunction<extensions::SetSettingsFunction>();
+  RegisterFunction<extensions::RemoveSettingsFunction>();
+  RegisterFunction<extensions::ClearSettingsFunction>();
 
   // Content settings.
   RegisterFunction<GetResourceIdentifiersFunction>();
