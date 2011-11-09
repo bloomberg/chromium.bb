@@ -362,8 +362,10 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
     const GURL& primary_url,
     const GURL& secondary_url,
     ContentSettingsType content_type) {
-  if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+  if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
+      content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     return false;
+  }
   if (primary_url.SchemeIs(chrome::kExtensionScheme)) {
     return content_type != CONTENT_SETTINGS_TYPE_COOKIES ||
         secondary_url.SchemeIs(chrome::kExtensionScheme);
