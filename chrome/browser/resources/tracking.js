@@ -107,28 +107,33 @@ var MainView = (function() {
   // Row keys
   // --------------------------------------------------------------------------
 
-  // These keys represent the properties in each row of our data. They
-  // correspond with the paths inside the raw JSON that was fed to us from the
-  // browser. Note that periods can be used to identify sub-properties.
+  // Each row of our data is an array of values rather than a dictionary. This
+  // avoids some overhead from repeating the key string multiple times, and
+  // speeds up the property accesses a bit. The following keys are well-known
+  // indexes into the array for various properties.
+  //
+  // Note that the declaration order will also define the default display order.
 
-  var KEY_BIRTH_THREAD = 'birth_thread';
-  var KEY_DEATH_THREAD = 'death_thread';
-  var KEY_FUNCTION_NAME = 'location.function_name';
-  var KEY_FILE_NAME = 'location.file_name';
-  var KEY_LINE_NUMBER = 'location.line_number';
-  var KEY_COUNT = 'death_data.count';
-  var KEY_QUEUE_TIME = 'death_data.queue_ms';
-  var KEY_MAX_QUEUE_TIME = 'death_data.queue_ms_max';
-  var KEY_RUN_TIME = 'death_data.run_ms';
-  var KEY_MAX_RUN_TIME = 'death_data.run_ms_max';
-  var KEY_PROCESS_ID = 'process_id';
-  var KEY_PROCESS_TYPE = 'process_type';
+  var BEGIN_KEY = 1;  // Start at 1 rather than 0 to simplify sorting code.
+  var END_KEY = BEGIN_KEY;
 
-  // The following are computed properties which we add to each row. They
-  // are not present in the original JSON stream.
-  var KEY_AVG_QUEUE_TIME = 'avg_queue_ms';
-  var KEY_AVG_RUN_TIME = 'avg_run_ms';
-  var KEY_SOURCE_LOCATION = 'source_location';
+  var KEY_COUNT = END_KEY++;
+  var KEY_RUN_TIME = END_KEY++;
+  var KEY_AVG_RUN_TIME = END_KEY++;
+  var KEY_MAX_RUN_TIME = END_KEY++;
+  var KEY_QUEUE_TIME = END_KEY++;
+  var KEY_AVG_QUEUE_TIME = END_KEY++;
+  var KEY_MAX_QUEUE_TIME = END_KEY++;
+  var KEY_BIRTH_THREAD = END_KEY++;
+  var KEY_DEATH_THREAD = END_KEY++;
+  var KEY_PROCESS_TYPE = END_KEY++;
+  var KEY_PROCESS_ID = END_KEY++;
+  var KEY_FUNCTION_NAME = END_KEY++;
+  var KEY_SOURCE_LOCATION = END_KEY++;
+  var KEY_FILE_NAME = END_KEY++;
+  var KEY_LINE_NUMBER = END_KEY++;
+
+  var NUM_KEYS = END_KEY - BEGIN_KEY;
 
   // --------------------------------------------------------------------------
   // Aggregators
@@ -154,7 +159,7 @@ var MainView = (function() {
 
     Aggregator.prototype = {
       consume: function(e) {
-        this.valuesSet_[getPropertyByPath(e, this.key_)] = true;
+        this.valuesSet_[e[this.key_]] = true;
       },
 
       getValueAsText: function() {
@@ -178,7 +183,7 @@ var MainView = (function() {
 
     Aggregator.prototype = {
       consume: function(e) {
-        this.sum_ += getPropertyByPath(e, this.key_);
+        this.sum_ += e[this.key_];
       },
 
       getValueAsText: function() {
@@ -206,8 +211,8 @@ var MainView = (function() {
 
     Aggregator.prototype = {
       consume: function(e) {
-        this.numeratorSum_ += getPropertyByPath(e, this.numeratorKey_);
-        this.divisorSum_ += getPropertyByPath(e, this.divisorKey_);
+        this.numeratorSum_ += e[this.numeratorKey_];
+        this.divisorSum_ += e[this.divisorKey_];
       },
 
       getValueAsText: function() {
@@ -237,7 +242,7 @@ var MainView = (function() {
 
     Aggregator.prototype = {
       consume: function(e) {
-        this.max_ = Math.max(this.max_, getPropertyByPath(e, this.key_));
+        this.max_ = Math.max(this.max_, e[this.key_]);
       },
 
       getValueAsText: function() {
@@ -272,7 +277,7 @@ var MainView = (function() {
    * property, and what function should be used to aggregate the property when
    * displayed in a column.
    */
-  var KEY_PROPERTIES = {};
+  var KEY_PROPERTIES = [];
 
   KEY_PROPERTIES[KEY_PROCESS_ID] = {
     name: 'PID',
@@ -289,6 +294,7 @@ var MainView = (function() {
   KEY_PROPERTIES[KEY_BIRTH_THREAD] = {
     name: 'Birth thread',
     type: 'string',
+    inputJsonKey: 'birth_thread',
     aggregator: UniquifyAggregator,
     comparator: threadNameComparator,
   };
@@ -296,6 +302,7 @@ var MainView = (function() {
   KEY_PROPERTIES[KEY_DEATH_THREAD] = {
     name: 'Death thread',
     type: 'string',
+    inputJsonKey: 'death_thread',
     aggregator: UniquifyAggregator,
     comparator: threadNameComparator,
   };
@@ -303,42 +310,49 @@ var MainView = (function() {
   KEY_PROPERTIES[KEY_FUNCTION_NAME] = {
     name: 'Function name',
     type: 'string',
+    inputJsonKey: 'location.function_name',
     aggregator: UniquifyAggregator,
   };
 
   KEY_PROPERTIES[KEY_FILE_NAME] = {
     name: 'File name',
     type: 'string',
+    inputJsonKey: 'location.file_name',
     aggregator: UniquifyAggregator,
   };
 
   KEY_PROPERTIES[KEY_LINE_NUMBER] = {
     name: 'Line number',
     type: 'number',
+    inputJsonKey: 'location.line_number',
     aggregator: UniquifyAggregator,
   };
 
   KEY_PROPERTIES[KEY_COUNT] = {
     name: 'Count',
     type: 'number',
+    inputJsonKey: 'death_data.count',
     aggregator: SumAggregator,
   };
 
   KEY_PROPERTIES[KEY_QUEUE_TIME] = {
     name: 'Total queue time',
     type: 'number',
+    inputJsonKey: 'death_data.queue_ms',
     aggregator: SumAggregator,
   };
 
   KEY_PROPERTIES[KEY_MAX_QUEUE_TIME] = {
     name: 'Max queue time',
     type: 'number',
+    inputJsonKey: 'death_data.queue_ms_max',
     aggregator: MaxAggregator,
   };
 
   KEY_PROPERTIES[KEY_RUN_TIME] = {
     name: 'Total run time',
     type: 'number',
+    inputJsonKey: 'death_data.run_ms',
     aggregator: SumAggregator,
   };
 
@@ -351,6 +365,7 @@ var MainView = (function() {
   KEY_PROPERTIES[KEY_MAX_RUN_TIME] = {
     name: 'Max run time',
     type: 'number',
+    inputJsonKey: 'death_data.run_ms_max',
     aggregator: MaxAggregator,
   };
 
@@ -378,25 +393,11 @@ var MainView = (function() {
 
   /**
    * Ordered list of all keys. This is the order we generally want
-   * to display the properties in.
+   * to display the properties in. Default to declaration order.
    */
-  var ALL_KEYS = [
-    KEY_COUNT,
-    KEY_RUN_TIME,
-    KEY_AVG_RUN_TIME,
-    KEY_MAX_RUN_TIME,
-    KEY_QUEUE_TIME,
-    KEY_AVG_QUEUE_TIME,
-    KEY_MAX_QUEUE_TIME,
-    KEY_BIRTH_THREAD,
-    KEY_DEATH_THREAD,
-    KEY_PROCESS_TYPE,
-    KEY_PROCESS_ID,
-    KEY_FUNCTION_NAME,
-    KEY_SOURCE_LOCATION,
-    KEY_FILE_NAME,
-    KEY_LINE_NUMBER,
-  ];
+  var ALL_KEYS = [];
+  for (var k = BEGIN_KEY; k < END_KEY; ++k)
+    ALL_KEYS.push(k);
 
   // --------------------------------------------------------------------------
   // Default settings
@@ -443,12 +444,12 @@ var MainView = (function() {
   /**
    * The initial keys to sort by when loading the page (can be changed later).
    */
-  var INITIAL_SORT_KEYS = ['-' + KEY_COUNT];
+  var INITIAL_SORT_KEYS = [-KEY_COUNT];
 
   /**
    * The default sort keys to use when nothing has been specified.
    */
-  var DEFAULT_SORT_KEYS = ['-' + KEY_COUNT];
+  var DEFAULT_SORT_KEYS = [-KEY_COUNT];
 
   /**
    * The initial keys to group by when loading the page (can be changed later).
@@ -632,8 +633,6 @@ var MainView = (function() {
     for (var i = 0; i < rows.length; ++i) {
       var e = rows[i];
 
-      augmentDataRow(e);
-
       if (!filterFunc(e))
         continue;  // Not matched by our filter, discard the row.
 
@@ -667,13 +666,9 @@ var MainView = (function() {
    * Adds new derived properties to row. Mutates the provided dictionary |e|.
    */
   function augmentDataRow(e) {
-    e[KEY_AVG_QUEUE_TIME] =
-        getPropertyByPath(e, KEY_QUEUE_TIME) / getPropertyByPath(e, KEY_COUNT);
-    e[KEY_AVG_RUN_TIME] =
-        getPropertyByPath(e, KEY_RUN_TIME) / getPropertyByPath(e, KEY_COUNT);
-    e[KEY_SOURCE_LOCATION] =
-        getPropertyByPath(e, KEY_FILE_NAME) + ' [' +
-        getPropertyByPath(e, KEY_LINE_NUMBER) + ']';
+    e[KEY_AVG_QUEUE_TIME] = e[KEY_QUEUE_TIME] / e[KEY_COUNT];
+    e[KEY_AVG_RUN_TIME] = e[KEY_RUN_TIME] / e[KEY_COUNT];
+    e[KEY_SOURCE_LOCATION] = e[KEY_FILE_NAME] + ' [' + e[KEY_LINE_NUMBER] + ']';
   }
 
   /**
@@ -790,7 +785,7 @@ var MainView = (function() {
         if (sortKeysMatch(currentSortKeys[j], key)) {
           var sortIndicator = addNode(th, 'span', '*');
           sortIndicator.style.color = 'red';
-          if (parseSortKeyAndFactor(currentSortKeys[j]).factor == -1) {
+          if (sortKeyIsReversed(currentSortKeys[j])) {
             // Use double-asterisk for descending columns.
             addText(sortIndicator, '*');
           }
@@ -841,7 +836,7 @@ var MainView = (function() {
 
       for (var c = 0; c < columns.length; ++c) {
         var key = columns[c];
-        var value = getPropertyByPath(e, key);
+        var value = e[key];
 
         var td = addNode(tr, 'td');
         drawValueToCell(td, key, value);
@@ -883,7 +878,7 @@ var MainView = (function() {
     for (var i = 0; i < SORT_DROPDOWN_CHOICES.length; ++i) {
       var key = SORT_DROPDOWN_CHOICES[i];
       var n = addNode(select, 'option', getNameForKey(key) + ' (DESC)');
-      n.value = '-' + key;
+      n.value = reverseSortKey(key);
     }
   }
 
@@ -921,27 +916,16 @@ var MainView = (function() {
     return simpleCompare(value1, value2);
   }
 
-  /**
-   * Sort keys can be prefixed with a '-' which means "reverse the sort order".
-   * This function strips off the leading hyphen if it exists, and makes note
-   * of it in the 'factor' field.
-   */
-  function parseSortKeyAndFactor(key) {
-    var m = /^(-?)(.*)$/.exec(key);
-    return {
-      factor: m[1] == '-' ? -1 : 1,
-      key: m[2],
-    };
+  function reverseSortKey(key) {
+    return -key;
   }
 
-  function reverseSortKey(key) {
-    var parsedKey = parseSortKeyAndFactor(key);
-    return (parsedKey.factor == 1 ? '-' : '') + parsedKey.key;
+  function sortKeyIsReversed(key) {
+    return key < 0;
   }
 
   function sortKeysMatch(key1, key2) {
-    // Ignore ascending/descending when comparing the sort keys.
-    return parseSortKeyAndFactor(key1).key == parseSortKeyAndFactor(key2).key;
+    return Math.abs(key1) == Math.abs(key2);
   }
 
   // --------------------------------------------------------------------------
@@ -950,23 +934,45 @@ var MainView = (function() {
    * @constructor
    */
   function MainView() {
+    // Make sure we have a definition for each key.
+    for (var k = BEGIN_KEY; k < END_KEY; ++k) {
+      if (!KEY_PROPERTIES[k])
+        throw 'KEY_PROPERTIES[] not defined for key: ' + k;
+    }
+
     this.init_();
   }
 
   MainView.prototype = {
     addData: function(data) {
-      var pid = data[KEY_PROCESS_ID];
-      var ptype = data[KEY_PROCESS_TYPE];
+      var pid = data.process_id;
+      var ptype = data.process_type;
 
       // Augment each data row with the process information.
       var rows = data.list;
       for (var i = 0; i < rows.length; ++i) {
-        var e = rows[i];
-        e[KEY_PROCESS_ID] = pid;
-        e[KEY_PROCESS_TYPE] = ptype;
+        // Transform the data from a dictionary to an array. This internal
+        // representation is more compact and faster to access.
+        var origRow = rows[i];
+        var newRow = [];
+
+        newRow[KEY_PROCESS_ID] = pid;
+        newRow[KEY_PROCESS_TYPE] = ptype;
+
+        // Copy over the known properties which have a 1:1 mapping with JSON.
+        for (var k = BEGIN_KEY; k < END_KEY; ++k) {
+          var inputJsonKey = KEY_PROPERTIES[k].inputJsonKey;
+          if (inputJsonKey != undefined) {
+            newRow[k] = getPropertyByPath(origRow, inputJsonKey);
+          }
+        }
+
+        // Add our computed properties.
+        augmentDataRow(newRow);
+
+        this.allData_.push(newRow);
       }
 
-      this.allData_ = this.allData_.concat(rows);
       this.redrawData_();
     },
 
@@ -1040,8 +1046,8 @@ var MainView = (function() {
       $(FILTER_HELP_LINK_ID).onclick = this.toggleFilterHelp_.bind(this);
       var propsUl = $(FILTER_HELP_PROPERTY_NAMES_UL);
       propsUl = $(FILTER_HELP_PROPERTY_NAMES_UL);
-      for (var i = 0; i < ALL_KEYS.length; ++i)
-        addNode(propsUl, 'li', ALL_KEYS[i]);
+      for (var k = BEGIN_KEY; k < END_KEY; ++k)
+        addNode(propsUl, 'li', k);
     },
 
     // TODO(eroman): This is basically the same as toggleFilterHelp();
@@ -1152,8 +1158,6 @@ var MainView = (function() {
       if (KEY_PROPERTIES[key].type == 'number')
         key = reverseSortKey(key);
 
-      var parsedKey = parseSortKeyAndFactor(key);
-
       // Scan through our sort order and see if we are already sorted on this
       // key. If so, reverse that sort ordering.
       var found_i = -1;
@@ -1199,20 +1203,13 @@ var MainView = (function() {
       if (sortKeys.length == 0)
         sortKeys = [DEFAULT_SORT_KEYS];
 
-      // Note that the keys in the sort array may be prefixed with a '-' meaning
-      // to inverse the sort order. Parse this out and make sortKeys into an
-      // array of objects instead of strings.
-      for (var i = 0; i < sortKeys.length; ++i) {
-        sortKeys[i] = parseSortKeyAndFactor(sortKeys[i]);
-      }
-
       return function(a, b) {
         for (var i = 0; i < sortKeys.length; ++i) {
-          var key = sortKeys[i].key;
-          var factor = sortKeys[i].factor;
+          var key = Math.abs(sortKeys[i]);
+          var factor = sortKeys[i] < 0 ? -1 : 1;
 
-          var propA = getPropertyByPath(a, key);
-          var propB = getPropertyByPath(b, key);
+          var propA = a[key];
+          var propB = b[key];
 
           var comparison = compareValuesForKey(key, propA, propB);
           comparison *= factor;  // Possibly reverse the ordering.
@@ -1289,7 +1286,7 @@ var MainView = (function() {
 
         for (var i = 0; i < groupings.length; ++i) {
           var entry = {key: groupings[i],
-                       value: getPropertyByPath(e, groupings[i])};
+                       value: e[groupings[i]]};
           groupKey.push(entry);
         }
 
