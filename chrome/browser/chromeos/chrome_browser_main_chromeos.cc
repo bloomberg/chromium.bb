@@ -80,6 +80,12 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
+  // Shutdown the network change notifier for Chrome OS. The network
+  // change notifier stops monitoring changes from the power manager and
+  // the network manager.
+  if (chromeos::CrosNetworkChangeNotifierFactory::GetInstance())
+    chromeos::CrosNetworkChangeNotifierFactory::GetInstance()->Shutdown();
+
   chromeos::BluetoothManager::Shutdown();
 
   // We should remove observers attached to D-Bus clients before
