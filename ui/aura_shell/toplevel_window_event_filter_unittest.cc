@@ -9,7 +9,7 @@
 #include "ui/aura/event.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
-#include "ui/aura/test/test_desktop_delegate.h"
+#include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura_shell/toplevel_window_event_filter.h"
 #include "ui/base/hit_test.h"
@@ -59,8 +59,9 @@ class ToplevelWindowEventFilterTest : public aura::test::AuraTestBase {
   virtual void SetUp() OVERRIDE {
     aura::test::AuraTestBase::SetUp();
     aura::Window* default_container =
-        static_cast<aura::test::TestDesktopDelegate*>(
-            aura::Desktop::GetInstance()->delegate())->default_container();
+        static_cast<aura::test::TestStackingClient*>(
+            aura::Desktop::GetInstance()->stacking_client())->
+                default_container();
     default_container->SetEventFilter(
         new ToplevelWindowEventFilter(default_container));
   }

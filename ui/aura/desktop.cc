@@ -14,7 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "ui/aura/aura_switches.h"
-#include "ui/aura/desktop_delegate.h"
+#include "ui/aura/client/stacking_client.h"
 #include "ui/aura/desktop_host.h"
 #include "ui/aura/desktop_observer.h"
 #include "ui/aura/event.h"
@@ -76,10 +76,10 @@ bool IsNonClientLocation(Window* target, const gfx::Point& location) {
   return hit_test_code != HTCLIENT && hit_test_code != HTNOWHERE;
 }
 
-class DefaultDesktopDelegate : public DesktopDelegate {
+class DefaultStackingClient : public StackingClient {
  public:
-  explicit DefaultDesktopDelegate(Desktop* desktop) : desktop_(desktop) {}
-  virtual ~DefaultDesktopDelegate() {}
+  explicit DefaultStackingClient(Desktop* desktop) : desktop_(desktop) {}
+  virtual ~DefaultStackingClient() {}
 
  private:
   virtual void AddChildToDefaultParent(Window* window) OVERRIDE {
@@ -100,7 +100,7 @@ class DefaultDesktopDelegate : public DesktopDelegate {
 
   Desktop* desktop_;
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultDesktopDelegate);
+  DISALLOW_COPY_AND_ASSIGN(DefaultStackingClient);
 };
 
 class DesktopEventFilter : public EventFilter {
@@ -240,7 +240,7 @@ Desktop::Desktop()
     : Window(NULL),
       host_(aura::DesktopHost::Create(GetInitialHostWindowBounds())),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          delegate_(new DefaultDesktopDelegate(this))),
+          stacking_client_(new DefaultStackingClient(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
       active_window_(NULL),
       last_cursor_(kCursorNull),
@@ -287,8 +287,8 @@ void Desktop::DeleteInstanceForTesting() {
   instance_ = NULL;
 }
 
-void Desktop::SetDelegate(DesktopDelegate* delegate) {
-  delegate_.reset(delegate);
+void Desktop::SetStackingClient(StackingClient* stacking_client) {
+  stacking_client_.reset(stacking_client);
 }
 
 void Desktop::ShowDesktop() {
@@ -433,7 +433,7 @@ void Desktop::SetActiveWindow(Window* window, Window* to_focus) {
 }
 
 void Desktop::ActivateTopmostWindow() {
-  SetActiveWindow(delegate_->GetTopmostWindowToActivate(NULL), NULL);
+  SetActiveWindow(stacking_client_->GetTopmostWindowToActivate(NULL), NULL);
 }
 
 void Desktop::Deactivate(Window* window) {
@@ -448,7 +448,7 @@ void Desktop::Deactivate(Window* window) {
     return;  // Top level ancestor is already not active.
 
   Window* to_activate =
-      delegate_->GetTopmostWindowToActivate(toplevel_ancestor);
+      stacking_client_->GetTopmostWindowToActivate(toplevel_ancestor);
   if (to_activate)
     SetActiveWindow(to_activate, NULL);
 }
@@ -476,7 +476,7 @@ void Desktop::WindowDestroying(Window* window) {
   // Reset active_window_ before invoking SetActiveWindow so that we don't
   // attempt to notify it while running its destructor.
   active_window_ = NULL;
-  SetActiveWindow(delegate_->GetTopmostWindowToActivate(window), NULL);
+  SetActiveWindow(stacking_client_->GetTopmostWindowToActivate(window), NULL);
 }
 
 MessageLoop::Dispatcher* Desktop::GetDispatcher() {

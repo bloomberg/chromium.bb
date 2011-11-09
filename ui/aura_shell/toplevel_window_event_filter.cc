@@ -4,7 +4,7 @@
 
 #include "ui/aura_shell/toplevel_window_event_filter.h"
 
-#include "ui/aura/aura_constants.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/cursor.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"

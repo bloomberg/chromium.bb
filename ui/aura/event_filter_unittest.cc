@@ -10,7 +10,6 @@
 #include "ui/aura/event.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
-#include "ui/aura/test/test_desktop_delegate.h"
 #include "ui/aura/test/test_window_delegate.h"
 
 #if defined(OS_WIN)

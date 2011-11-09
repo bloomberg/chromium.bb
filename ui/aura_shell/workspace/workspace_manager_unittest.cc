@@ -4,11 +4,11 @@
 
 #include "ui/aura_shell/workspace/workspace_manager.h"
 
-#include "ui/aura/aura_constants.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/test_desktop_delegate.h"
+#include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/workspace/workspace.h"
 #include "ui/aura_shell/workspace/workspace_observer.h"
@@ -97,7 +97,7 @@ class WorkspaceManagerTestBase : public aura::test::AuraTestBase {
   }
 
   aura::Window* viewport() {
-    return GetTestDesktopDelegate()->default_container();
+    return GetTestStackingClient()->default_container();
   }
   scoped_ptr<WorkspaceManager> manager_;
 

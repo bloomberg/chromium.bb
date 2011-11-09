@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/aura/aura_constants.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/test/aura_test_base.h"

@@ -5,7 +5,7 @@
 #include "ui/aura_shell/workspace_controller.h"
 
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/test_desktop_delegate.h"
+#include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/workspace/workspace.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"
@@ -22,7 +22,7 @@ class WorkspaceControllerTest : public aura::test::AuraTestBase {
 
   virtual void SetUp() OVERRIDE {
     aura::test::AuraTestBase::SetUp();
-    contents_view_ = GetTestDesktopDelegate()->default_container();
+    contents_view_ = GetTestStackingClient()->default_container();
     controller_.reset(new WorkspaceController(contents_view_));
   }
 
@@ -87,7 +87,7 @@ TEST_F(WorkspaceControllerTest, Overview) {
   EXPECT_EQ(ws1, workspace_manager()->GetActiveWorkspace());
   EXPECT_FALSE(workspace_manager()->is_overview());
 
-  // Deleting w1 without DesktopDelegate resets the active workspace
+  // Deleting w1 without StackingClient resets the active workspace
   ws1->RemoveWindow(w1.get());
   delete ws1;
   w1.reset();

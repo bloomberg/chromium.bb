@@ -9,7 +9,7 @@
 #endif
 
 #include "ui/aura/desktop.h"
-#include "ui/aura/test/test_desktop_delegate.h"
+#include "ui/aura/test/test_stacking_client.h"
 
 namespace aura {
 namespace test {
@@ -21,8 +21,8 @@ AuraTestBase::AuraTestBase()
   OleInitialize(NULL);
 #endif
 
-  // TestDesktopDelegate is owned by the desktop.
-  new TestDesktopDelegate();
+  // TestStackingClient is owned by the desktop.
+  new TestStackingClient();
   Desktop::GetInstance()->Show();
   Desktop::GetInstance()->SetHostSize(gfx::Size(600, 600));
 }
@@ -46,9 +46,9 @@ AuraTestBase::~AuraTestBase() {
   aura::Desktop::DeleteInstanceForTesting();
 }
 
-TestDesktopDelegate* AuraTestBase::GetTestDesktopDelegate() {
-  return static_cast<TestDesktopDelegate*>(
-      aura::Desktop::GetInstance()->delegate());
+TestStackingClient* AuraTestBase::GetTestStackingClient() {
+  return static_cast<TestStackingClient*>(
+      aura::Desktop::GetInstance()->stacking_client());
 }
 
 void AuraTestBase::SetUp() {

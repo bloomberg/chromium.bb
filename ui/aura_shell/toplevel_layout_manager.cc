@@ -4,7 +4,7 @@
 
 #include "ui/aura_shell/toplevel_layout_manager.h"
 
-#include "ui/aura/aura_constants.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/property_util.h"
 #include "ui/aura_shell/shelf_layout_controller.h"

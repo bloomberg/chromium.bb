@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "ui/gfx/compositor/compositor_export.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
 
 namespace ui {
@@ -16,8 +15,7 @@ class LayerAnimationSequence;
 
 // Listens to animation ended notifications. Remembers the last sequence that
 // it was notified about.
-class COMPOSITOR_EXPORT TestLayerAnimationObserver
-    : public LayerAnimationObserver {
+class TestLayerAnimationObserver : public LayerAnimationObserver {
  public:
   TestLayerAnimationObserver();
   virtual ~TestLayerAnimationObserver();

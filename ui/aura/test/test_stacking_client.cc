@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/test/test_desktop_delegate.h"
+#include "ui/aura/test/test_stacking_client.h"
 
 #include "ui/aura/desktop.h"
 
 namespace aura {
 namespace test {
 
-TestDesktopDelegate::TestDesktopDelegate()
+TestStackingClient::TestStackingClient()
     : default_container_(new ToplevelWindowContainer) {
-  Desktop::GetInstance()->SetDelegate(this);
+  Desktop::GetInstance()->SetStackingClient(this);
   default_container_->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
   default_container_->SetBounds(
       gfx::Rect(gfx::Point(), Desktop::GetInstance()->GetHostSize()));
@@ -19,14 +19,14 @@ TestDesktopDelegate::TestDesktopDelegate()
   default_container_->Show();
 }
 
-TestDesktopDelegate::~TestDesktopDelegate() {
+TestStackingClient::~TestStackingClient() {
 }
 
-void TestDesktopDelegate::AddChildToDefaultParent(Window* window) {
+void TestStackingClient::AddChildToDefaultParent(Window* window) {
   default_container_->AddChild(window);
 }
 
-Window* TestDesktopDelegate::GetTopmostWindowToActivate(Window* ignore) const {
+Window* TestStackingClient::GetTopmostWindowToActivate(Window* ignore) const {
   return default_container_->GetTopmostWindowToActivate(ignore);
 }
 

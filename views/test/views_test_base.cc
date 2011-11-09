@@ -10,7 +10,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/desktop.h"
-#include "ui/aura/test/test_desktop_delegate.h"
+#include "ui/aura/test/test_stacking_client.h"
 #endif
 
 namespace views {
@@ -22,7 +22,7 @@ ViewsTestBase::ViewsTestBase()
   OleInitialize(NULL);
 #endif
 #if defined(USE_AURA)
-  new aura::test::TestDesktopDelegate;
+  new aura::test::TestStackingClient;
 #endif
 }
 

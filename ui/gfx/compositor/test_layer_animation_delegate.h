@@ -9,15 +9,13 @@
 #include "base/compiler_specific.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
-#include "ui/gfx/compositor/compositor_export.h"
 #include "ui/gfx/compositor/layer_animation_delegate.h"
 
 namespace ui {
 
 class LayerAnimationSequence;
 
-class COMPOSITOR_EXPORT TestLayerAnimationDelegate
-    : public LayerAnimationDelegate {
+class TestLayerAnimationDelegate : public LayerAnimationDelegate {
  public:
   TestLayerAnimationDelegate();
   TestLayerAnimationDelegate(const LayerAnimationDelegate& other);

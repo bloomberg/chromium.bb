@@ -14,7 +14,7 @@
 namespace aura {
 namespace test {
 
-class TestDesktopDelegate;
+class TestStackingClient;
 
 // A base class for aura unit tests.
 class AuraTestBase : public testing::Test {
@@ -22,7 +22,7 @@ class AuraTestBase : public testing::Test {
   AuraTestBase();
   virtual ~AuraTestBase();
 
-  TestDesktopDelegate* GetTestDesktopDelegate();
+  TestStackingClient* GetTestStackingClient();
 
   // testing::Test:
   virtual void SetUp() OVERRIDE;

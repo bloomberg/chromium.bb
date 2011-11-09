@@ -83,7 +83,7 @@ Shell* Shell::instance_ = NULL;
 
 Shell::Shell()
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-  aura::Desktop::GetInstance()->SetDelegate(this);
+  aura::Desktop::GetInstance()->SetStackingClient(this);
 }
 
 Shell::~Shell() {
@@ -177,7 +177,7 @@ void Shell::EnableWorkspaceManager() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Shell, aura::DesktopDelegate implementation:
+// Shell, aura::StackingClient implementation:
 
 void Shell::AddChildToDefaultParent(aura::Window* window) {
   aura::Window* parent = NULL;

@@ -18,7 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #if defined(USE_AURA)
-#include "ui/aura/aura_constants.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #endif

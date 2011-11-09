@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "ui/aura/client/stacking_client.h"
 #include "ui/aura/desktop.h"
-#include "ui/aura/desktop_delegate.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/layout_manager.h"
@@ -166,8 +166,8 @@ void Window::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
 void Window::SetParent(Window* parent) {
   if (parent)
     parent->AddChild(this);
-  else if (Desktop::GetInstance()->delegate())
-    Desktop::GetInstance()->delegate()->AddChildToDefaultParent(this);
+  else if (Desktop::GetInstance()->stacking_client())
+    Desktop::GetInstance()->stacking_client()->AddChildToDefaultParent(this);
   else
     NOTREACHED();
 }

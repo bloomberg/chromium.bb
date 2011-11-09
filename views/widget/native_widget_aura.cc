@@ -5,7 +5,7 @@
 #include "views/widget/native_widget_aura.h"
 
 #include "base/bind.h"
-#include "ui/aura/aura_constants.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/desktop_observer.h"
 #include "ui/aura/event.h"

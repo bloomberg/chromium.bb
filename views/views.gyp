@@ -607,8 +607,6 @@
         'widget/native_widget_unittest.cc',
         'widget/native_widget_win_unittest.cc',
         'widget/widget_unittest.cc',
-        '../ui/aura/test/test_desktop_delegate.cc',
-        '../ui/aura/test/test_desktop_delegate.h',
 
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
@@ -656,6 +654,9 @@
           ],
         }],
         [ 'use_aura==1', {
+          'dependencies': [
+            '../ui/aura/aura.gyp:test_support_aura',
+          ],
           'sources/': [
             ['exclude', 'focus/focus_manager_unittest.cc'], # TODO(beng):
             ['exclude', 'widget/native_widget_win_unittest.cc'],

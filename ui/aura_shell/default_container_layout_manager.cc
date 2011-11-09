@@ -4,7 +4,7 @@
 
 #include "ui/aura_shell/default_container_layout_manager.h"
 
-#include "ui/aura/aura_constants.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"

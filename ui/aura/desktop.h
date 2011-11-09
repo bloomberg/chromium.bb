@@ -32,12 +32,12 @@ class Transform;
 
 namespace aura {
 
-class DesktopDelegate;
 class DesktopHost;
 class DesktopObserver;
 class KeyEvent;
 class MouseEvent;
 class ScreenAura;
+class StackingClient;
 class TouchEvent;
 
 // Desktop is responsible for hosting a set of windows.
@@ -59,13 +59,13 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   ui::Compositor* compositor() { return compositor_.get(); }
   gfx::Point last_mouse_location() const { return last_mouse_location_; }
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
-  DesktopDelegate* delegate() { return delegate_.get(); }
+  StackingClient* stacking_client() { return stacking_client_.get(); }
   Window* active_window() { return active_window_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* capture_window() { return capture_window_; }
   ScreenAura* screen() { return screen_; }
 
-  void SetDelegate(DesktopDelegate* delegate);
+  void SetStackingClient(StackingClient* stacking_client);
 
   // Shows the desktop host.
   void ShowDesktop();
@@ -173,7 +173,7 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
 
   scoped_ptr<DesktopHost> host_;
 
-  scoped_ptr<DesktopDelegate> delegate_;
+  scoped_ptr<StackingClient> stacking_client_;
 
   static Desktop* instance_;
 

@@ -29,7 +29,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
     OPACITY
   };
 
-  struct TargetValue {
+  struct COMPOSITOR_EXPORT TargetValue {
     TargetValue();
     // Initializes the target value to match the delegate. NULL may be supplied.
     explicit TargetValue(const LayerAnimationDelegate* delegate);
