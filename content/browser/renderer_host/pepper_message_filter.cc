@@ -43,7 +43,6 @@
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_flash_tcp_socket_proxy.h"
-#include "ppapi/shared_impl/private/flash_net_address_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
 
 #if defined(ENABLE_FLAPPER_HACKS)
@@ -55,7 +54,25 @@ using content::BrowserThread;
 
 namespace {
 
-// TODO(viettrungluu): Move (some of) these to flash_net_address_impl.h.
+bool ValidateNetAddress(const PP_Flash_NetAddress& addr) {
+  if (addr.size < sizeof(reinterpret_cast<sockaddr*>(0)->sa_family))
+    return false;
+
+  // TODO(viettrungluu): more careful validation?
+  // Just do a size check for AF_INET.
+  if (reinterpret_cast<const sockaddr*>(addr.data)->sa_family == AF_INET &&
+      addr.size >= sizeof(sockaddr_in))
+    return true;
+
+  // Ditto for AF_INET6.
+  if (reinterpret_cast<const sockaddr*>(addr.data)->sa_family == AF_INET6 &&
+      addr.size >= sizeof(sockaddr_in6))
+    return true;
+
+  // Reject everything else.
+  return false;
+}
+
 bool SockaddrToNetAddress(const sockaddr* sa,
                           socklen_t sa_length,
                           PP_Flash_NetAddress* net_addr) {
@@ -88,8 +105,7 @@ bool AddressListToNetAddress(const net::AddressList& address_list,
 
 bool NetAddressToIPEndPoint(const PP_Flash_NetAddress& net_addr,
                             net::IPEndPoint* ip_end_point) {
-  if (!ip_end_point ||
-      !ppapi::FlashNetAddressImpl::ValidateNetAddress(net_addr))
+  if (!ip_end_point || !ValidateNetAddress(net_addr))
     return false;
 
   if (!ip_end_point->FromSockAddr(
@@ -1089,7 +1105,7 @@ void PepperMessageFilter::OnConnectTcpAddress(int routing_id,
 
   // Validate the address and then continue (doing |connect()|) on a worker
   // thread.
-  if (!ppapi::FlashNetAddressImpl::ValidateNetAddress(addr) ||
+  if (!ValidateNetAddress(addr) ||
       !base::WorkerPool::PostTask(FROM_HERE,
            NewRunnableMethod(
                this,
