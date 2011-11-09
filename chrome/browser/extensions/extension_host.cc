@@ -148,10 +148,6 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   if (enable_dom_automation_)
     render_view_host_->AllowBindings(content::BINDINGS_POLICY_DOM_AUTOMATION);
 
-  // Listen for when the render process' handle is available so we can add it
-  // to the task manager then.
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 content::Source<RenderProcessHost>(render_process_host()));
   // Listen for when an extension is unloaded from the same profile, as it may
   // be the same extension that this points to.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -296,12 +292,6 @@ void ExtensionHost::Observe(int type,
       DCHECK(profile_->GetExtensionService()->
           IsBackgroundPageReady(extension_));
       NavigateToURL(url_);
-      break;
-    case content::NOTIFICATION_RENDERER_PROCESS_CREATED:
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED,
-          content::Source<Profile>(profile_),
-          content::Details<ExtensionHost>(this));
       break;
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
       // The extension object will be deleted after this notification has been
@@ -808,4 +798,11 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
         render_view_host->EnablePreferredSizeMode(
             kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
   }
+}
+
+void ExtensionHost::RenderViewReady(RenderViewHost* render_view_host) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
+      content::Source<Profile>(profile_),
+      content::Details<ExtensionHost>(this));
 }

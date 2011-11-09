@@ -534,10 +534,6 @@ void ExtensionProcessManager::OnExtensionHostCreated(ExtensionHost* host,
   all_hosts_.insert(host);
   if (is_background)
     background_hosts_.insert(host);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
-      content::Source<ExtensionProcessManager>(this),
-      content::Details<ExtensionHost>(host));
 }
 
 void ExtensionProcessManager::CloseBackgroundHost(ExtensionHost* host) {

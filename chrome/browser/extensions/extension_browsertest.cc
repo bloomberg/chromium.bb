@@ -466,11 +466,6 @@ void ExtensionBrowserTest::Observe(
       MessageLoopForUI::current()->Quit();
       break;
 
-    case chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED:
-      VLOG(1) << "Got EXTENSION_PROCESS_CREATED notification.";
-      MessageLoopForUI::current()->Quit();
-      break;
-
     case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
       VLOG(1) << "Got EXTENSION_PROCESS_TERMINATED notification.";
       MessageLoopForUI::current()->Quit();

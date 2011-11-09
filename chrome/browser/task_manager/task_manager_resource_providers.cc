@@ -1161,33 +1161,31 @@ void TaskManagerExtensionProcessResourceProvider::StartUpdating() {
   DCHECK(!updating_);
   updating_ = true;
 
-  // Add all the existing ExtensionHosts.
+  // Add all the existing ExtensionHosts from all Profiles, including those from
+  // incognito split mode.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
+  size_t num_default_profiles = profiles.size();
+  for (size_t i = 0; i < num_default_profiles; ++i) {
+    if (profiles[i]->HasOffTheRecordProfile()) {
+      profiles.push_back(profiles[i]->GetOffTheRecordProfile());
+    }
+  }
   for (size_t i = 0; i < profiles.size(); ++i) {
     ExtensionProcessManager* process_manager =
         profiles[i]->GetExtensionProcessManager();
     if (process_manager) {
       ExtensionProcessManager::const_iterator jt;
-      for (jt = process_manager->begin(); jt != process_manager->end(); ++jt)
-        AddToTaskManager(*jt);
-    }
-
-    // If we have an incognito profile active, include the split-mode incognito
-    // extensions.
-    if (BrowserList::IsOffTheRecordSessionActiveForProfile(profiles[i])) {
-      ExtensionProcessManager* process_manager =
-          profiles[i]->GetOffTheRecordProfile()->GetExtensionProcessManager();
-      if (process_manager) {
-      ExtensionProcessManager::const_iterator jt;
-      for (jt = process_manager->begin(); jt != process_manager->end(); ++jt)
-        AddToTaskManager(*jt);
+      for (jt = process_manager->begin(); jt != process_manager->end(); ++jt) {
+        // Don't add dead extension processes.
+        if ((*jt)->IsRenderViewLive())
+          AddToTaskManager(*jt);
       }
     }
   }
 
   // Register for notifications about extension process changes.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -1201,7 +1199,7 @@ void TaskManagerExtensionProcessResourceProvider::StopUpdating() {
 
   // Unregister for notifications about extension process changes.
   registrar_.Remove(
-      this, chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED,
+      this, chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
       content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Remove(
       this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
@@ -1222,7 +1220,7 @@ void TaskManagerExtensionProcessResourceProvider::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED:
+    case chrome::NOTIFICATION_EXTENSION_HOST_CREATED:
       AddToTaskManager(content::Details<ExtensionHost>(details).ptr());
       break;
     case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
@@ -1237,10 +1235,6 @@ void TaskManagerExtensionProcessResourceProvider::Observe(
 
 void TaskManagerExtensionProcessResourceProvider::AddToTaskManager(
     ExtensionHost* extension_host) {
-  // Don't add dead extension processes.
-  if (!extension_host->IsRenderViewLive())
-    return;
-
   TaskManagerExtensionProcessResource* resource =
       new TaskManagerExtensionProcessResource(extension_host);
   DCHECK(resources_.find(extension_host) == resources_.end());

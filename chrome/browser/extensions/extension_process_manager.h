@@ -163,7 +163,6 @@ class ExtensionProcessManager : public content::NotificationObserver {
   typedef std::set<RenderViewHost*> RenderViewHostSet;
   RenderViewHostSet all_extension_views_;
 
- private:
   // Close the given |host| iff it's a background page.
   void CloseBackgroundHost(ExtensionHost* host);
 

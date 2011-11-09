@@ -417,7 +417,7 @@ enum NotificationType {
   NOTIFICATION_EXTENSION_UNLOADED,
 
   // Sent after a new ExtensionHost is created. The details are
-  // an ExtensionHost* and the source is an ExtensionProcessManager*.
+  // an ExtensionHost* and the source is a Profile*.
   NOTIFICATION_EXTENSION_HOST_CREATED,
 
   // Sent before an ExtensionHost is destroyed. The details are
@@ -432,10 +432,6 @@ enum NotificationType {
   // window.close(). The details are an ExtensionHost* and the source is a
   // Profile*.
   NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-
-  // Sent after an extension render process is created and fully functional.
-  // The details are an ExtensionHost*.
-  NOTIFICATION_EXTENSION_PROCESS_CREATED,
 
   // Sent when extension render process ends (whether it crashes or closes).
   // The details are an ExtensionHost* and the source is a Profile*. Not sent

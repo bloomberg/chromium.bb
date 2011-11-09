@@ -210,14 +210,14 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
   // Register for notifications that we need to reload the page.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED,
-                 content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_WARNING_CHANGED,
                  content::Source<Profile>(profile));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
                  content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -597,9 +597,9 @@ void ExtensionSettingsHandler::Observe(
   switch (type) {
     // We listen for notifications that will result in the page being
     // repopulated with data twice for the same event in certain cases.
-    // For instance, EXTENSION_LOADED & EXTENSION_PROCESS_CREATED because
+    // For instance, EXTENSION_LOADED & EXTENSION_HOST_CREATED because
     // we don't know about the views for an extension at EXTENSION_LOADED, but
-    // if we only listen to EXTENSION_PROCESS_CREATED, we'll miss extensions
+    // if we only listen to EXTENSION_HOST_CREATED, we'll miss extensions
     // that don't have a process at startup.
     //
     // Doing it this way gets everything but causes the page to be rendered
@@ -620,13 +620,13 @@ void ExtensionSettingsHandler::Observe(
           content::Details<BackgroundContents>(details)->render_view_host();
       // Fall through.
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED:
+    case chrome::NOTIFICATION_EXTENSION_HOST_CREATED:
       source_profile = content::Source<Profile>(source).ptr();
       if (!profile->IsSameProfile(source_profile))
           return;
       MaybeUpdateAfterNotification();
       break;
     case chrome::NOTIFICATION_EXTENSION_LOADED:
-    case chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED:
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
     case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED:
     case chrome::NOTIFICATION_EXTENSION_WARNING_CHANGED:

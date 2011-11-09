@@ -116,6 +116,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewReady(RenderViewHost* render_view_host) OVERRIDE;
   virtual content::ViewType GetRenderViewType() const OVERRIDE;
   virtual void RenderViewGone(RenderViewHost* render_view_host,
                               base::TerminationStatus status,
