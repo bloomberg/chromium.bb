@@ -13,7 +13,7 @@ const NativeTheme* NativeTheme::instance() {
 
 // static
 const NativeThemeGtk* NativeThemeGtk::instance() {
-  static const NativeThemeGtk s_native_theme;
+  CR_DEFINE_STATIC_LOCAL(NativeThemeGtk, s_native_theme, ());
   return &s_native_theme;
 }
 

@@ -240,7 +240,7 @@ const NativeTheme* NativeTheme::instance() {
 // static
 const NativeThemeChromeos* NativeThemeChromeos::instance() {
   // The global NativeThemeChromeos instance.
-  static NativeThemeChromeos s_native_theme;
+  CR_DEFINE_STATIC_LOCAL(NativeThemeChromeos, s_native_theme, ());
   return &s_native_theme;
 }
 

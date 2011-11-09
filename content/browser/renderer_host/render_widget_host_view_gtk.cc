@@ -1023,7 +1023,7 @@ void RenderWidgetHostViewGtk::ModifyEventForEdgeDragging(
   int new_dragged_at_vertical_edge = 0;
   // Used for checking the edges of the monitor. We cache the values to save
   // roundtrips to the X server.
-  static gfx::Size drag_monitor_size;
+  CR_DEFINE_STATIC_LOCAL(gfx::Size, drag_monitor_size, ());
   if (event->state & GDK_BUTTON1_MASK) {
     if (drag_monitor_size.IsEmpty()) {
       // We can safely cache the monitor size for the duration of a drag.

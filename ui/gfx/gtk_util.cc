@@ -137,7 +137,7 @@ void SubtractRectanglesFromRegion(GdkRegion* region,
 }
 
 GdkCursor* GetCursor(int type) {
-  static GdkCursorCache impl;
+  CR_DEFINE_STATIC_LOCAL(GdkCursorCache, impl, ());
   return impl.GetCursorImpl(static_cast<GdkCursorType>(type));
 }
 

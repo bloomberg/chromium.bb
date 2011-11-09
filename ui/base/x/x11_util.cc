@@ -216,7 +216,7 @@ int GetDefaultScreen(Display* display) {
 }
 
 Cursor GetXCursor(int cursor_shape) {
-  static XCursorCache cache;
+  CR_DEFINE_STATIC_LOCAL(XCursorCache, cache, ());
   return cache.GetCursor(cursor_shape);
 }
 
