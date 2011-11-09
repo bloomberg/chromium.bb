@@ -41,6 +41,10 @@ cr.define('login', function() {
         Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
         Oobe.resetSigninUI();
       });
+      $('sign-out-user-button').addEventListener('click', function(e) {
+        chrome.send('signOutUser');
+        this.disabled = true;
+      });
     },
 
     /**

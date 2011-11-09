@@ -70,6 +70,14 @@ cr.define('login', function() {
    */
   AccountPickerScreen.loadUsers = function(users, animated) {
     $('pod-row').loadPods(users, animated);
+
+    // If this is showing for the lock screen display the sign out button, hide
+    // the add user button and activate the locked user's pod.
+    var lockedPod = $('pod-row').lockedPod;
+    $('add-user-header-bar-item').hidden = !!lockedPod;
+    $('sign-out-user-item').hidden = !lockedPod;
+    if (lockedPod)
+      lockedPod.activate();
   };
 
   /**

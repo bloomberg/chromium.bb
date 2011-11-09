@@ -212,3 +212,17 @@ html[dir=rtl] .pod .capslock-hint {
   padding: 2px 4px;
   width: initial;
 }
+
+.signed-in-indicator {
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: small;
+  margin: 5px;
+  position: absolute;
+  padding-bottom: 3px;
+  padding-top: 3px;
+  text-align: center;
+  /* Width of .user-image. */
+  width: 160px;
+  z-index: 1;
+}

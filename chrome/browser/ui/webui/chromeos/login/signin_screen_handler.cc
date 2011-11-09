@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
+#include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
@@ -53,6 +54,7 @@ const char kGaiaExtStartPage[] =
 // User dictionary keys.
 const char kKeyName[] = "name";
 const char kKeyEmailAddress[] = "emailAddress";
+const char kKeySignedIn[] = "signedIn";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyImageUrl[] = "imageUrl";
 const char kKeyOauthTokenStatus[] = "oauthTokenStatus";
@@ -247,6 +249,8 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_REMOVE_BUTTON_ACCESSIBLE_NAME));
   localized_strings->SetString("passwordFieldAccessibleName",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME));
+  localized_strings->SetString("signedIn",
+      l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_ACTIVE_USER));
   localized_strings->SetString("signinButton",
       l10n_util::GetStringUTF16(IDS_LOGIN_BUTTON));
   localized_strings->SetString("enterGuestButton",
@@ -260,6 +264,8 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_ADD_USER_BUTTON));
   localized_strings->SetString("cancel",
       l10n_util::GetStringUTF16(IDS_CANCEL));
+  localized_strings->SetString("signOutUser",
+      l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT));
   localized_strings->SetString("addUserErrorMessage",
       l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_ADD_USER_OFFLINE));
   localized_strings->SetString("offlineMessageTitle",
@@ -377,6 +383,9 @@ void SigninScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui_->RegisterMessageCallback("loginRemoveNetworkStateObserver",
       base::Bind(&SigninScreenHandler::HandleLoginRemoveNetworkStateObserver,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("signOutUser",
+      base::Bind(&SigninScreenHandler::HandleSignOutUser,
                  base::Unretained(this)));
 }
 
@@ -590,12 +599,15 @@ void SigninScreenHandler::SendUserList(bool animated) {
        it != users.end(); ++it) {
     const std::string& email = it->email();
     bool is_owner = email == UserCrosSettingsProvider::cached_owner();
+    bool signed_in = UserManager::Get()->user_is_logged_in() &&
+        email == UserManager::Get()->logged_in_user().email();
 
     if (non_owner_count < max_non_owner_users || is_owner) {
       DictionaryValue* user_dict = new DictionaryValue();
       user_dict->SetString(kKeyName, it->GetDisplayName());
       user_dict->SetString(kKeyEmailAddress, email);
       user_dict->SetInteger(kKeyOauthTokenStatus, it->oauth_token_status());
+      user_dict->SetBoolean(kKeySignedIn, signed_in);
 
       // Single user check here is necessary because owner info might not be
       // available when running into login screen on first boot.
@@ -603,7 +615,8 @@ void SigninScreenHandler::SendUserList(bool animated) {
       user_dict->SetBoolean(kKeyCanRemove,
                             !single_user &&
                             !email.empty() &&
-                            !is_owner);
+                            !is_owner &&
+                            !signed_in);
 
       if (!email.empty()) {
         long long timestamp = base::TimeTicks::Now().ToInternalValue();
@@ -694,6 +707,12 @@ void SigninScreenHandler::HandleLoginRemoveNetworkStateObserver(
     return;
   }
   network_state_informer_->RemoveObserver(callback);
+}
+
+void SigninScreenHandler::HandleSignOutUser(const base::ListValue* args) {
+  // TODO(flackr): Deliver this message to the delegate.
+  if (ScreenLocker::default_screen_locker())
+    ScreenLocker::default_screen_locker()->Signout();
 }
 
 void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {

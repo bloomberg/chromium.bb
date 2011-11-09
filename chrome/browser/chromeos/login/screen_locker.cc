@@ -28,7 +28,7 @@
 #include "chrome/browser/chromeos/login/login_performer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_locker_views.h"
-#include "chrome/browser/chromeos/login/screen_locker_webui.h"
+#include "chrome/browser/chromeos/login/webui_screen_locker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -202,7 +202,7 @@ ScreenLocker::ScreenLocker(const UserManager::User& user)
 void ScreenLocker::Init() {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   if (UseWebUILockScreen())
-    delegate_.reset(new ScreenLockerWebUI(this));
+    delegate_.reset(new WebUIScreenLocker(this));
   else
     delegate_.reset(new ScreenLockerViews(this));
   delegate_->Init(unlock_on_input_);

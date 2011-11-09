@@ -193,6 +193,9 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Handle 'loginRemoveNetworkStateObserver' request.
   void HandleLoginRemoveNetworkStateObserver(const base::ListValue* args);
 
+  // Handle 'signOutUser' request.
+  void HandleSignOutUser(const base::ListValue* args);
+
   // Sends user list to account picker.
   void SendUserList(bool animated);
 

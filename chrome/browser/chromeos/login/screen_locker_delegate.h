@@ -8,6 +8,8 @@
 
 #include "base/string16.h"
 
+class GURL;
+
 namespace chromeos {
 
 class ScreenLocker;

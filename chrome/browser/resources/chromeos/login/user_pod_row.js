@@ -93,11 +93,19 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets signed in indicator element.
+     * @type {!HTMLDivElement}
+     */
+    get signedInIndicatorElement() {
+      return this.firstElementChild;
+    },
+
+    /**
      * Gets image element.
      * @type {!HTMLImageElement}
      */
     get imageElement() {
-      return this.firstElementChild;
+      return this.signedInIndicatorElement.nextElementSibling;
     },
 
     /**
@@ -170,6 +178,7 @@ cr.define('login', function() {
       this.nameElement.textContent = userDict.name;
       this.imageElement.src = userDict.imageUrl;
       this.removeUserButtonElement.hidden = !userDict.canRemove;
+      this.signedInIndicatorElement.hidden = !userDict.signedIn;
 
       if (this.isGuest) {
         this.imageElement.title = userDict.name;
@@ -204,10 +213,11 @@ cr.define('login', function() {
      */
     get needGaiaSignin() {
       // Gaia signin is performed if we are using gaia extenstion for signin,
-      // the user has an invalid oauth token and device is online.
+      // the user has an invalid oauth token and device is online and the
+      // user is not currently signed in (i.e. not the lock screen).
       return localStrings.getString('authType') == 'ext' &&
           this.user.oauthTokenStatus != OAUTH_TOKEN_STATUS_VALID &&
-          window.navigator.onLine;
+          window.navigator.onLine && !this.user.signedIn;
     },
 
     /**
@@ -539,6 +549,13 @@ cr.define('login', function() {
 
         for (var i = 0; i < this.pods.length; ++i)
           this.pods[i].mainInput.disabled = true;
+      }
+    },
+
+    get lockedPod() {
+      for (var i = 0; i < this.pods.length; ++i) {
+        if (this.pods[i].user.signedIn)
+          return this.pods[i];
       }
     },
 

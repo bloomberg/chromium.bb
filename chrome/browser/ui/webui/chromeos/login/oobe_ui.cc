@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
@@ -77,7 +78,8 @@ OobeUIHTMLSource::OobeUIHTMLSource(DictionaryValue* localized_strings)
 void OobeUIHTMLSource::StartDataRequest(const std::string& path,
                                         bool is_incognito,
                                         int request_id) {
-  if (UserManager::Get()->user_is_logged_in()) {
+  if (UserManager::Get()->user_is_logged_in() &&
+      !ScreenLocker::default_screen_locker()) {
     scoped_refptr<RefCountedBytes> empty_bytes(new RefCountedBytes());
     SendResponse(request_id, empty_bytes);
     return;
