@@ -18,7 +18,7 @@ void HttpSession::OnRequest(HttpListenSocket* connection,
   // TODO(mbelshe):  Make this function more interesting.
 
   // Generate a 10KB sequence of data.
-  static std::string data;
+  CR_DEFINE_STATIC_LOCAL(std::string, data, ());
   if (data.length() == 0) {
     while (data.length() < (10 * 1024))
       data += 'a' + (rand() % 26);
