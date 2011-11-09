@@ -5,3 +5,7 @@ Security Critical: no
 
 Description:
 This directory contains selected tools from the Debian's devscripts collection.
+
+An .orig file is checked in so that our patched version can be easily
+compared with the unpatched script (e.g. when sending the changes upstream).
+Having a .patch file checked in was too inconvenient to keep up to date.
