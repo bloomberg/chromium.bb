@@ -20,8 +20,6 @@ using base::PlatformFileError;
 class FileSystemOperationContext;
 
 // A large part of this implementation is taken from base::FileUtilProxy.
-// TODO(dmikurube, kinuko): Clean up base::FileUtilProxy to factor out common
-// routines. It includes dropping FileAPI-specific routines from FileUtilProxy.
 //
 // The default implementations of the virtual methods below (*1) assume the
 // given paths are native ones for the host platform.  The subclasses that

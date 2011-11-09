@@ -132,10 +132,11 @@ void FileSystemOperation::DelayedCreateFileForQuota(
       operation_context_.src_origin_url(),
       operation_context_.src_type()));
 
-  FileSystemFileUtilProxy::EnsureFileExists(
-      operation_context_,
+  FileSystemFileUtilProxy::RelayEnsureFileExists(
       proxy_,
-      src_virtual_path_,
+      base::Bind(&FileSystemFileUtil::EnsureFileExists,
+                 base::Unretained(operation_context_.src_file_util()),
+                 &operation_context_, src_virtual_path_),
       base::Bind(
           exclusive ? &FileSystemOperation::DidEnsureFileExistsExclusive
                     : &FileSystemOperation::DidEnsureFileExistsNonExclusive,
@@ -263,8 +264,11 @@ void FileSystemOperation::DirectoryExists(const GURL& path) {
     return;
   }
 
-  FileSystemFileUtilProxy::GetFileInfo(
-      operation_context_, proxy_, src_virtual_path_,
+  FileSystemFileUtilProxy::RelayGetFileInfo(
+      proxy_,
+      base::Bind(&FileSystemFileUtil::GetFileInfo,
+                 base::Unretained(operation_context_.src_file_util()),
+                 &operation_context_, src_virtual_path_),
       base::Bind(&FileSystemOperation::DidDirectoryExists, base::Owned(this)));
 }
 
@@ -278,8 +282,11 @@ void FileSystemOperation::FileExists(const GURL& path) {
     return;
   }
 
-  FileSystemFileUtilProxy::GetFileInfo(
-      operation_context_, proxy_, src_virtual_path_,
+  FileSystemFileUtilProxy::RelayGetFileInfo(
+      proxy_,
+      base::Bind(&FileSystemFileUtil::GetFileInfo,
+                 base::Unretained(operation_context_.src_file_util()),
+                 &operation_context_, src_virtual_path_),
       base::Bind(&FileSystemOperation::DidFileExists, base::Owned(this)));
 }
 
@@ -293,8 +300,11 @@ void FileSystemOperation::GetMetadata(const GURL& path) {
     return;
   }
 
-  FileSystemFileUtilProxy::GetFileInfo(
-      operation_context_, proxy_, src_virtual_path_,
+  FileSystemFileUtilProxy::RelayGetFileInfo(
+      proxy_,
+      base::Bind(&FileSystemFileUtil::GetFileInfo,
+                 base::Unretained(operation_context_.src_file_util()),
+                 &operation_context_, src_virtual_path_),
       base::Bind(&FileSystemOperation::DidGetMetadata, base::Owned(this)));
 }
 
@@ -308,8 +318,11 @@ void FileSystemOperation::ReadDirectory(const GURL& path) {
     return;
   }
 
-  FileSystemFileUtilProxy::ReadDirectory(
-      operation_context_, proxy_, src_virtual_path_,
+  FileSystemFileUtilProxy::RelayReadDirectory(
+      proxy_,
+      base::Bind(&FileSystemFileUtil::ReadDirectory,
+                 base::Unretained(operation_context_.src_file_util()),
+                 &operation_context_, src_virtual_path_),
       base::Bind(&FileSystemOperation::DidReadDirectory, base::Owned(this)));
 }
 
@@ -327,8 +340,7 @@ void FileSystemOperation::Remove(const GURL& path, bool recursive) {
       proxy_, FROM_HERE,
       base::Bind(&FileSystemFileUtil::Delete,
                  base::Unretained(operation_context_.src_file_util()),
-                 &operation_context_,
-                 src_virtual_path_, recursive),
+                 &operation_context_, src_virtual_path_, recursive),
       base::Bind(&FileSystemOperation::DidFinishFileOperation,
                  base::Owned(this)));
 }
@@ -375,8 +387,7 @@ void FileSystemOperation::DelayedWriteForQuota(quota::QuotaStatusCode status,
       proxy_,
       base::Bind(&FileSystemFileUtil::CreateOrOpen,
                  base::Unretained(operation_context_.src_file_util()),
-                 &operation_context_,
-                 src_virtual_path_, file_flags),
+                 &operation_context_, src_virtual_path_, file_flags),
       base::Bind(&FileSystemFileUtil::Close,
                  base::Unretained(operation_context_.src_file_util()),
                  &operation_context_),
@@ -413,8 +424,7 @@ void FileSystemOperation::DelayedTruncateForQuota(int64 length,
       proxy_, FROM_HERE,
       base::Bind(&FileSystemFileUtil::Truncate,
                  base::Unretained(operation_context_.src_file_util()),
-                 &operation_context_,
-                 src_virtual_path_, length),
+                 &operation_context_, src_virtual_path_, length),
       base::Bind(&FileSystemOperation::DidFinishFileOperation,
                  base::Owned(this)));
 }
@@ -575,6 +585,8 @@ void FileSystemOperation::GetUsageAndQuotaThenCallback(
 void FileSystemOperation::DidGetRootPath(
     bool success,
     const FilePath& path, const std::string& name) {
+  if (!dispatcher_.get())
+    return;
   DCHECK(success || path.empty());
   GURL result;
   if (!dispatcher_.get())

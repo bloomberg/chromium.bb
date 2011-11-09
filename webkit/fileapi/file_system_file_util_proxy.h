@@ -29,8 +29,10 @@ using base::PlatformFile;
 using base::PlatformFileError;
 using base::PlatformFileInfo;
 
-// This class provides asynchronous access to common file routines for the
-// FileSystem API.
+// This class provides relay methods for supporting asynchronous access to
+// FileSystem API operations.  (Most of necessary relay methods are provided
+// by base::FileUtilProxy, but there are a few operations that are not
+// covered or are slightly different from the version of base::FileUtilProxy.
 class FileSystemFileUtilProxy {
  public:
   typedef base::FileUtilProxy::Entry Entry;
@@ -46,33 +48,31 @@ class FileSystemFileUtilProxy {
                               const std::vector<Entry>&
                               )> ReadDirectoryCallback;
 
-  // Ensures that the given |file_path| exist.  This creates a empty new file
-  // at |file_path| if the |file_path| does not exist.
-  // If a new file han not existed and is created at the |file_path|,
-  // |created| of the callback argument is set true and |error code|
-  // is set PLATFORM_FILE_OK.
-  // If the file already exists, |created| is set false and |error code|
-  // is set PLATFORM_FILE_OK.
-  // If the file hasn't existed but it couldn't be created for some other
-  // reasons, |created| is set false and |error code| indicates the error.
-  static bool EnsureFileExists(
-      const FileSystemOperationContext& context,
+  typedef base::Callback<PlatformFileError(bool* /* created */
+                                           )> EnsureFileExistsTask;
+  typedef base::Callback<PlatformFileError(PlatformFileInfo*,
+                                           FilePath*)> GetFileInfoTask;
+  typedef base::Callback<PlatformFileError(std::vector<Entry>*
+                                           )> ReadDirectoryTask;
+
+  // Calls EnsureFileExistsTask |task| on the given |message_loop_proxy|.
+  static bool RelayEnsureFileExists(
       scoped_refptr<MessageLoopProxy> message_loop_proxy,
-      const FilePath& file_path,
+      const EnsureFileExistsTask& task,
       const EnsureFileExistsCallback& callback);
 
-  // Retrieves the information about a file. It is invalid to pass NULL for the
-  // callback.
-  static bool GetFileInfo(
-      const FileSystemOperationContext& context,
+  // Calls GetFileInfoTask |task| on the given |message_loop_proxy|.
+  static bool RelayGetFileInfo(
       scoped_refptr<MessageLoopProxy> message_loop_proxy,
-      const FilePath& file_path,
+      const GetFileInfoTask& task,
       const GetFileInfoCallback& callback);
 
-  static bool ReadDirectory(const FileSystemOperationContext& context,
-                            scoped_refptr<MessageLoopProxy> message_loop_proxy,
-                            const FilePath& file_path,
-                            const ReadDirectoryCallback& callback);
+  // Calls ReadDirectoryTask |task| on the given |message_loop_proxy|.
+  // TODO: this should support returning entries in multiple chunks.
+  static bool RelayReadDirectory(
+      scoped_refptr<MessageLoopProxy> message_loop_proxy,
+      const ReadDirectoryTask& task,
+      const ReadDirectoryCallback& callback);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileSystemFileUtilProxy);

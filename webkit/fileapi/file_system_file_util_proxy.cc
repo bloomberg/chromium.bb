@@ -6,200 +6,116 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
-#include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_file_util.h"
-#include "webkit/fileapi/file_system_operation_context.h"
 
 namespace {
 
-class MessageLoopRelay
-    : public base::RefCountedThreadSafe<MessageLoopRelay> {
+using base::Bind;
+using base::Callback;
+using base::Owned;
+using base::PlatformFileError;
+using base::Unretained;
+
+typedef fileapi::FileSystemFileUtilProxy Proxy;
+
+class EnsureFileExistsHelper {
  public:
-  // FileSystemOperationContext is passed by value from the IO thread to the
-  // File thread.
-  explicit MessageLoopRelay(const fileapi::FileSystemOperationContext& context)
-      : origin_message_loop_proxy_(
-            base::MessageLoopProxy::current()),
-        error_code_(base::PLATFORM_FILE_OK),
-        context_(context),
-        file_util_(NULL) {
+  EnsureFileExistsHelper() : error_(base::PLATFORM_FILE_OK) {}
+
+  void RunWork(const Proxy::EnsureFileExistsTask& task) {
+    error_ = task.Run(&created_);
   }
 
-  bool Start(scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
-             const tracked_objects::Location& from_here) {
-    return message_loop_proxy->PostTask(
-        from_here, base::Bind(&MessageLoopRelay::ProcessOnTargetThread, this));
-  }
-
- protected:
-  friend class base::RefCountedThreadSafe<MessageLoopRelay>;
-  virtual ~MessageLoopRelay() {}
-
-  // Called to perform work on the FILE thread.
-  virtual void RunWork() = 0;
-
-  // Called to notify the callback on the origin thread.
-  virtual void RunCallback() = 0;
-
-  void set_error_code(base::PlatformFileError error_code) {
-    error_code_ = error_code;
-  }
-
-  base::PlatformFileError error_code() const {
-    return error_code_;
-  }
-
-  fileapi::FileSystemOperationContext* context() {
-    return &context_;
-  }
-
-  fileapi::FileSystemFileUtil* file_util() const {
-    // TODO(ericu): Support calls that have two different FSFU subclasses.
-    return context_.src_file_util();
+  void Reply(const Proxy::EnsureFileExistsCallback& callback) {
+    if (!callback.is_null()) {
+      callback.Run(error_, created_);
+    }
   }
 
  private:
-  void ProcessOnTargetThread() {
-    RunWork();
-    origin_message_loop_proxy_->PostTask(
-        FROM_HERE, base::Bind(&MessageLoopRelay::RunCallback, this));
-  }
-
-  scoped_refptr<base::MessageLoopProxy> origin_message_loop_proxy_;
-  base::PlatformFileError error_code_;
-  fileapi::FileSystemOperationContext context_;
-  fileapi::FileSystemFileUtil* file_util_;
-};
-
-class RelayEnsureFileExists : public MessageLoopRelay {
- public:
-  RelayEnsureFileExists(
-      const fileapi::FileSystemOperationContext& context,
-      scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
-      const FilePath& file_path,
-      const fileapi::FileSystemFileUtilProxy::EnsureFileExistsCallback&
-          callback)
-      : MessageLoopRelay(context),
-        message_loop_proxy_(message_loop_proxy),
-        file_path_(file_path),
-        callback_(callback),
-        created_(false) {
-    DCHECK_EQ(false, callback.is_null());
-  }
-
- protected:
-  virtual void RunWork() {
-    set_error_code(file_util()->EnsureFileExists(
-        context(), file_path_, &created_));
-  }
-
-  virtual void RunCallback() {
-    callback_.Run(error_code(), created_);
-  }
-
- private:
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
-  FilePath file_path_;
-  fileapi::FileSystemFileUtilProxy::EnsureFileExistsCallback callback_;
+  base::PlatformFileError error_;
   bool created_;
+  DISALLOW_COPY_AND_ASSIGN(EnsureFileExistsHelper);
 };
 
-
-class RelayGetFileInfo : public MessageLoopRelay {
+class GetFileInfoHelper {
  public:
-  RelayGetFileInfo(
-      const fileapi::FileSystemOperationContext& context,
-      const FilePath& file_path,
-      const fileapi::FileSystemFileUtilProxy::GetFileInfoCallback& callback)
-      : MessageLoopRelay(context),
-        callback_(callback),
-        file_path_(file_path) {
-    DCHECK_EQ(false, callback.is_null());
+  GetFileInfoHelper() : error_(base::PLATFORM_FILE_OK) {}
+
+  void RunWork(const Proxy::GetFileInfoTask& task) {
+    error_ = task.Run(&file_info_, &platform_path_);
   }
 
- protected:
-  virtual void RunWork() {
-    set_error_code(file_util()->GetFileInfo(
-        context(), file_path_, &file_info_, &platform_path_));
-  }
-
-  virtual void RunCallback() {
-    callback_.Run(error_code(), file_info_, platform_path_);
+  void Reply(const Proxy::GetFileInfoCallback& callback) {
+    if (!callback.is_null()) {
+      callback.Run(error_, file_info_, platform_path_);
+    }
   }
 
  private:
-  fileapi::FileSystemFileUtilProxy::GetFileInfoCallback callback_;
-  FilePath file_path_;
+  base::PlatformFileError error_;
   base::PlatformFileInfo file_info_;
   FilePath platform_path_;
+  DISALLOW_COPY_AND_ASSIGN(GetFileInfoHelper);
 };
 
-class RelayReadDirectory : public MessageLoopRelay {
+class ReadDirectoryHelper {
  public:
-  RelayReadDirectory(
-      const fileapi::FileSystemOperationContext& context,
-      const FilePath& file_path,
-      const fileapi::FileSystemFileUtilProxy::ReadDirectoryCallback& callback)
-      : MessageLoopRelay(context),
-        callback_(callback), file_path_(file_path) {
-    DCHECK_EQ(false, callback.is_null());
+  ReadDirectoryHelper() : error_(base::PLATFORM_FILE_OK) {}
+
+  void RunWork(const Proxy::ReadDirectoryTask& task) {
+    error_ = task.Run(&entries_);
   }
 
- protected:
-  virtual void RunWork() {
-    // TODO(kkanetkar): Implement directory read in multiple chunks.
-    set_error_code(file_util()->ReadDirectory(
-        context(), file_path_, &entries_));
-  }
-
-  virtual void RunCallback() {
-    callback_.Run(error_code(), entries_);
+  void Reply(const Proxy::ReadDirectoryCallback& callback) {
+    if (!callback.is_null()) {
+      callback.Run(error_, entries_);
+    }
   }
 
  private:
-  fileapi::FileSystemFileUtilProxy::ReadDirectoryCallback callback_;
-  FilePath file_path_;
-  std::vector<base::FileUtilProxy::Entry> entries_;
+  base::PlatformFileError error_;
+  std::vector<Proxy::Entry> entries_;
+  DISALLOW_COPY_AND_ASSIGN(ReadDirectoryHelper);
 };
-
-bool Start(const tracked_objects::Location& from_here,
-           scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
-           scoped_refptr<MessageLoopRelay> relay) {
-  return relay->Start(message_loop_proxy, from_here);
-}
 
 }  // namespace
 
 namespace fileapi {
 
 // static
-bool FileSystemFileUtilProxy::EnsureFileExists(
-    const FileSystemOperationContext& context,
+bool FileSystemFileUtilProxy::RelayEnsureFileExists(
     scoped_refptr<MessageLoopProxy> message_loop_proxy,
-    const FilePath& file_path,
+    const EnsureFileExistsTask& task,
     const EnsureFileExistsCallback& callback) {
-  return Start(FROM_HERE, message_loop_proxy, new RelayEnsureFileExists(
-      context, message_loop_proxy, file_path, callback));
+  EnsureFileExistsHelper* helper = new EnsureFileExistsHelper;
+  return message_loop_proxy->PostTaskAndReply(
+        FROM_HERE,
+        Bind(&EnsureFileExistsHelper::RunWork, Unretained(helper), task),
+        Bind(&EnsureFileExistsHelper::Reply, Owned(helper), callback));
 }
 
 // static
-bool FileSystemFileUtilProxy::GetFileInfo(
-    const FileSystemOperationContext& context,
+bool FileSystemFileUtilProxy::RelayGetFileInfo(
     scoped_refptr<MessageLoopProxy> message_loop_proxy,
-    const FilePath& file_path,
+    const GetFileInfoTask& task,
     const GetFileInfoCallback& callback) {
-  return Start(FROM_HERE, message_loop_proxy, new RelayGetFileInfo(context,
-               file_path, callback));
+  GetFileInfoHelper* helper = new GetFileInfoHelper;
+  return message_loop_proxy->PostTaskAndReply(
+        FROM_HERE,
+        Bind(&GetFileInfoHelper::RunWork, Unretained(helper), task),
+        Bind(&GetFileInfoHelper::Reply, Owned(helper), callback));
 }
 
 // static
-bool FileSystemFileUtilProxy::ReadDirectory(
-    const FileSystemOperationContext& context,
+bool FileSystemFileUtilProxy::RelayReadDirectory(
     scoped_refptr<MessageLoopProxy> message_loop_proxy,
-    const FilePath& file_path,
+    const ReadDirectoryTask& task,
     const ReadDirectoryCallback& callback) {
-  return Start(FROM_HERE, message_loop_proxy, new RelayReadDirectory(context,
-               file_path, callback));
+  ReadDirectoryHelper* helper = new ReadDirectoryHelper;
+  return message_loop_proxy->PostTaskAndReply(
+        FROM_HERE,
+        Bind(&ReadDirectoryHelper::RunWork, Unretained(helper), task),
+        Bind(&ReadDirectoryHelper::Reply, Owned(helper), callback));
 }
 
 }  // namespace fileapi
