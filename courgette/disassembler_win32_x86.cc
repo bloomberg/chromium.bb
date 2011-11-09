@@ -336,10 +336,9 @@ std::string DisassemblerWin32X86::SectionName(const Section* section) {
 }
 
 CheckBool DisassemblerWin32X86::ParseFile(AssemblyProgram* program) {
-  bool ok = true;
   // Walk all the bytes in the file, whether or not in a section.
   uint32 file_offset = 0;
-  while (ok && file_offset < length()) {
+  while (file_offset < length()) {
     const Section* section = FindNextSection(file_offset);
     if (section == NULL) {
       // No more sections.  There should not be extra stuff following last
@@ -349,15 +348,16 @@ CheckBool DisassemblerWin32X86::ParseFile(AssemblyProgram* program) {
     }
     if (file_offset < section->file_offset_of_raw_data) {
       uint32 section_start_offset = section->file_offset_of_raw_data;
-      ok = ParseNonSectionFileRegion(file_offset, section_start_offset,
-                                     program);
+      if(!ParseNonSectionFileRegion(file_offset, section_start_offset,
+                                    program))
+        return false;
+
       file_offset = section_start_offset;
     }
-    if (ok) {
-      uint32 end = file_offset + section->size_of_raw_data;
-      ok = ParseFileRegion(section, file_offset, end, program);
-      file_offset = end;
-    }
+    uint32 end = file_offset + section->size_of_raw_data;
+    if (!ParseFileRegion(section, file_offset, end, program))
+      return false;
+    file_offset = end;
   }
 
 #if COURGETTE_HISTOGRAM_TARGETS
@@ -365,7 +365,7 @@ CheckBool DisassemblerWin32X86::ParseFile(AssemblyProgram* program) {
   HistogramTargets("rel32 relocs", rel32_target_rvas_);
 #endif
 
-  return ok;
+  return true;
 }
 
 bool DisassemblerWin32X86::ParseAbs32Relocs() {
@@ -523,13 +523,13 @@ CheckBool DisassemblerWin32X86::ParseNonSectionFileRegion(
 
   const uint8* p = start;
 
-  bool ok = true;
-  while (p < end && ok) {
-    ok = program->EmitByteInstruction(*p);
+  while (p < end) {
+    if (!program->EmitByteInstruction(*p))
+      return false;
     ++p;
   }
 
-  return ok;
+  return true;
 }
 
 CheckBool DisassemblerWin32X86::ParseFileRegion(
@@ -551,20 +551,20 @@ CheckBool DisassemblerWin32X86::ParseFileRegion(
   std::vector<RVA>::iterator rel32_pos = rel32_locations_.begin();
   std::vector<RVA>::iterator abs32_pos = abs32_locations_.begin();
 
-  bool ok = program->EmitOriginInstruction(start_rva);
+  if (!program->EmitOriginInstruction(start_rva))
+    return false;
 
   const uint8* p = start_pointer;
 
-  while (ok && p < end_pointer) {
+  while (p < end_pointer) {
     RVA current_rva = static_cast<RVA>(p - adjust_pointer_to_rva);
 
     // The base relocation table is usually in the .relocs section, but it could
     // actually be anywhere.  Make sure we skip it because we will regenerate it
     // during assembly.
     if (current_rva == relocs_start_rva) {
-      ok = program->EmitPeRelocsInstruction();
-      if (!ok)
-        break;
+      if (!program->EmitPeRelocsInstruction())
+        return false;
       uint32 relocs_size = base_relocation_table().size_;
       if (relocs_size) {
         p += relocs_size;
@@ -580,9 +580,8 @@ CheckBool DisassemblerWin32X86::ParseFileRegion(
       RVA target_rva = target_address - image_base();
       // TODO(sra): target could be Label+offset.  It is not clear how to guess
       // which it might be.  We assume offset==0.
-      ok = program->EmitAbs32(program->FindOrMakeAbs32Label(target_rva));
-      if (!ok)
-        break;
+      if (!program->EmitAbs32(program->FindOrMakeAbs32Label(target_rva)))
+        return false;
       p += 4;
       continue;
     }
@@ -592,7 +591,8 @@ CheckBool DisassemblerWin32X86::ParseFileRegion(
 
     if (rel32_pos != rel32_locations_.end() && *rel32_pos == current_rva) {
       RVA target_rva = current_rva + 4 + Read32LittleEndian(p);
-      ok = program->EmitRel32(program->FindOrMakeRel32Label(target_rva));
+      if (!program->EmitRel32(program->FindOrMakeRel32Label(target_rva)))
+        return false;
       p += 4;
       continue;
     }
@@ -606,11 +606,12 @@ CheckBool DisassemblerWin32X86::ParseFileRegion(
       }
     }
 
-    ok = program->EmitByteInstruction(*p);
+    if (!program->EmitByteInstruction(*p))
+      return false;
     p += 1;
   }
 
-  return ok;
+  return true;
 }
 
 #if COURGETTE_HISTOGRAM_TARGETS

@@ -255,19 +255,17 @@ CheckBool DisassemblerElf32X86::RVAsToOffsets(std::vector<RVA>* rvas,
 }
 
 CheckBool DisassemblerElf32X86::ParseFile(AssemblyProgram* program) {
-  bool ok = true;
-
   // Walk all the bytes in the file, whether or not in a section.
   uint32 file_offset = 0;
 
   std::vector<size_t> abs_offsets;
   std::vector<size_t> rel_offsets;
 
-  if (ok)
-    ok = RVAsToOffsets(&abs32_locations_, &abs_offsets);
+  if (!RVAsToOffsets(&abs32_locations_, &abs_offsets))
+    return false;
 
-  if (ok)
-    ok = RVAsToOffsets(&rel32_locations_, &rel_offsets);
+  if (!RVAsToOffsets(&rel32_locations_, &rel_offsets))
+    return false;
 
   std::vector<size_t>::iterator current_abs_offset = abs_offsets.begin();
   std::vector<size_t>::iterator current_rel_offset = rel_offsets.begin();
@@ -276,34 +274,30 @@ CheckBool DisassemblerElf32X86::ParseFile(AssemblyProgram* program) {
   std::vector<size_t>::iterator end_rel_offset = rel_offsets.end();
 
   for (int section_id = 0;
-       ok && (section_id < SectionHeaderCount());
+       section_id < SectionHeaderCount();
        section_id++) {
 
     const Elf32_Shdr *section_header = SectionHeader(section_id);
 
-    if (ok) {
-      ok = ParseSimpleRegion(file_offset,
-                             section_header->sh_offset,
-                             program);
-      file_offset = section_header->sh_offset;
-    }
+    if (!ParseSimpleRegion(file_offset,
+                           section_header->sh_offset,
+                           program))
+      return false;
+    file_offset = section_header->sh_offset;
 
     switch (section_header->sh_type) {
       case SHT_REL:
-        if (ok) {
-          ok = ParseRelocationSection(section_header, program);
-          file_offset = section_header->sh_offset + section_header->sh_size;
-        }
+        if (!ParseRelocationSection(section_header, program))
+          return false;
+        file_offset = section_header->sh_offset + section_header->sh_size;
         break;
       case SHT_PROGBITS:
-        if (ok) {
-          ok = ParseProgbitsSection(section_header,
-                                    &current_abs_offset, end_abs_offset,
-                                    &current_rel_offset, end_rel_offset,
-                                    program);
-          file_offset = section_header->sh_offset + section_header->sh_size;
-        }
-
+        if (!ParseProgbitsSection(section_header,
+                                  &current_abs_offset, end_abs_offset,
+                                  &current_rel_offset, end_rel_offset,
+                                  program))
+          return false;
+        file_offset = section_header->sh_offset + section_header->sh_size;
         break;
       default:
         break;
@@ -311,16 +305,13 @@ CheckBool DisassemblerElf32X86::ParseFile(AssemblyProgram* program) {
   }
 
   // Rest of the file past the last section
-  if (ok) {
-    ok = ParseSimpleRegion(file_offset,
-                           length(),
-                           program);
-  }
+  if (!ParseSimpleRegion(file_offset,
+                         length(),
+                         program))
+    return false;
 
   // Make certain we consume all of the relocations as expected
-  ok = ok && (current_abs_offset == end_abs_offset);
-
-  return ok;
+  return (current_abs_offset == end_abs_offset);
 }
 
 CheckBool DisassemblerElf32X86::ParseRelocationSection(
@@ -342,7 +333,6 @@ CheckBool DisassemblerElf32X86::ParseRelocationSection(
   // all of our R_386_RELATIVE entries in the expected order followed
   // by assorted other entries we can't use special handling for.
 
-  bool ok = true;
   bool match = true;
 
   // Walk all the bytes in the section, matching relocation table or not
@@ -370,15 +360,12 @@ CheckBool DisassemblerElf32X86::ParseRelocationSection(
 
   if (match) {
     // Skip over relocation tables
-    ok = program->EmitElfRelocationInstruction();
+    if (!program->EmitElfRelocationInstruction())
+      return false;
     file_offset += sizeof(Elf32_Rel) * abs32_locations_.size();
   }
 
-  if (ok) {
-    ok = ParseSimpleRegion(file_offset, section_end, program);
-  }
-
-  return ok;
+  return ParseSimpleRegion(file_offset, section_end, program);
 }
 
 CheckBool DisassemblerElf32X86::ParseProgbitsSection(
@@ -389,22 +376,20 @@ CheckBool DisassemblerElf32X86::ParseProgbitsSection(
     std::vector<size_t>::iterator end_rel_offset,
     AssemblyProgram* program) {
 
-  bool ok = true;
-
   // Walk all the bytes in the file, whether or not in a section.
   size_t file_offset = section_header->sh_offset;
   size_t section_end = section_header->sh_offset + section_header->sh_size;
 
   Elf32_Addr origin = section_header->sh_addr;
   size_t origin_offset = section_header->sh_offset;
-  ok = program->EmitOriginInstruction(origin);
+  if (!program->EmitOriginInstruction(origin))
+    return false;
 
-  while (ok && file_offset < section_end) {
+  while (file_offset < section_end) {
 
     if (*current_abs_offset != end_abs_offset &&
-        file_offset > **current_abs_offset) {
-      ok = false;
-    }
+        file_offset > **current_abs_offset)
+      return false;
 
     while (*current_rel_offset != end_rel_offset &&
            file_offset > **current_rel_offset) {
@@ -424,28 +409,28 @@ CheckBool DisassemblerElf32X86::ParseProgbitsSection(
         next_relocation > (**current_rel_offset + 3))
       next_relocation = **current_rel_offset;
 
-    if (ok && (next_relocation > file_offset)) {
-      ok = ParseSimpleRegion(file_offset, next_relocation, program);
+    if (next_relocation > file_offset) {
+      if (!ParseSimpleRegion(file_offset, next_relocation, program))
+        return false;
 
       file_offset = next_relocation;
       continue;
     }
 
-    if (ok &&
-        *current_abs_offset != end_abs_offset &&
+    if (*current_abs_offset != end_abs_offset &&
         file_offset == **current_abs_offset) {
 
       const uint8* p = OffsetToPointer(file_offset);
       RVA target_rva = Read32LittleEndian(p);
 
-      ok = program->EmitAbs32(program->FindOrMakeAbs32Label(target_rva));
+      if (!program->EmitAbs32(program->FindOrMakeAbs32Label(target_rva)))
+        return false;
       file_offset += sizeof(RVA);
       (*current_abs_offset)++;
       continue;
     }
 
-    if (ok &&
-        *current_rel_offset != end_rel_offset &&
+    if (*current_rel_offset != end_rel_offset &&
         file_offset == **current_rel_offset) {
 
       const uint8* p = OffsetToPointer(file_offset);
@@ -455,7 +440,8 @@ CheckBool DisassemblerElf32X86::ParseProgbitsSection(
       RVA target_rva = (RVA)(origin + (file_offset - origin_offset) +
                              4 + relative_target);
 
-      ok = program->EmitRel32(program->FindOrMakeRel32Label(target_rva));
+      if (!program->EmitRel32(program->FindOrMakeRel32Label(target_rva)))
+        return false;
       file_offset += sizeof(RVA);
       (*current_rel_offset)++;
       continue;
@@ -463,11 +449,7 @@ CheckBool DisassemblerElf32X86::ParseProgbitsSection(
   }
 
   // Rest of the section (if any)
-  if (ok) {
-    ok = ParseSimpleRegion(file_offset, section_end, program);
-  }
-
-  return ok;
+  return ParseSimpleRegion(file_offset, section_end, program);
 }
 
 CheckBool DisassemblerElf32X86::ParseSimpleRegion(
@@ -480,13 +462,13 @@ CheckBool DisassemblerElf32X86::ParseSimpleRegion(
 
   const uint8* p = start;
 
-  bool ok = true;
-  while (p < end && ok) {
-    ok = program->EmitByteInstruction(*p);
+  while (p < end) {
+    if (!program->EmitByteInstruction(*p))
+      return false;
     ++p;
   }
 
-  return ok;
+  return true;
 }
 
 CheckBool DisassemblerElf32X86::ParseAbs32Relocs() {
