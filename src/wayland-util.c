@@ -49,6 +49,8 @@ wl_list_remove(struct wl_list *elm)
 {
 	elm->prev->next = elm->next;
 	elm->next->prev = elm->prev;
+	elm->next = NULL;
+	elm->prev = NULL;
 }
 
 WL_EXPORT int
