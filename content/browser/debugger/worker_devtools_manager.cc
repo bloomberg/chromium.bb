@@ -19,6 +19,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 using content::BrowserThread;
 
@@ -161,6 +164,9 @@ class WorkerDevToolsManager::DetachedClientHosts {
       RemovePendingWorkerData(id);
       return;
     }
+    DevToolsManager::GetInstance()->ForwardToDevToolsClient(agent,
+        DevToolsClientMsg_DispatchOnInspectorFrontend(MSG_ROUTING_NONE,
+            WebKit::WebDevToolsAgent::disconnectEventAsText().utf8()));
     int cookie = DevToolsManager::GetInstance()->DetachClientHost(agent);
     if (cookie == -1) {
       RemovePendingWorkerData(id);
