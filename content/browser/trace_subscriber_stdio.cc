@@ -56,7 +56,7 @@ void TraceSubscriberStdio::OnTraceDataCollected(
 
 void TraceSubscriberStdio::Write(const std::string& output_str) {
   if (IsValid()) {
-    size_t written = fwrite(output_str.c_str(), 1, output_str.size(), file_);
+    size_t written = fwrite(output_str.data(), 1, output_str.size(), file_);
     if (written != output_str.size()) {
       LOG(ERROR) << "Error " << ferror(file_) << " when writing to trace file";
       CloseFile();

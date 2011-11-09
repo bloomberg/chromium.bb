@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/debug/trace_event.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -344,6 +345,12 @@ int ContentMain(int argc,
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string process_type =
         command_line.GetSwitchValueASCII(switches::kProcessType);
+
+  // Enable startup tracing asap to avoid early TRACE_EVENT calls being ignored.
+  if (command_line.HasSwitch(switches::kTraceStartup)) {
+    base::debug::TraceLog::GetInstance()->SetEnabled(
+        command_line.GetSwitchValueASCII(switches::kTraceStartup));
+  }
 
 #if defined(OS_MACOSX)
   // We need to allocate the IO Ports before the Sandbox is initialized or

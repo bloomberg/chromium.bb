@@ -465,6 +465,29 @@ const char kSkipGpuDataLoading[]            = "skip-gpu-data-loading";
 // Runs the security test for the renderer sandbox.
 const char kTestSandbox[]                   = "test-sandbox";
 
+// Causes TRACE_EVENT flags to be recorded from startup. Optionally, can
+// specify the specific trace categories to include (e.g.
+// --trace-startup=base,net) otherwise, all events are recorded. Setting this
+// flag results in the first call to BeginTracing() to receive all trace events
+// since startup. In Chrome, you may find --trace-startup-file and
+// --trace-startup-duration to control the auto-saving of the trace (not
+// supported in the base-only TraceLog component).
+const char kTraceStartup[]                  = "trace-startup";
+
+// If supplied, sets the file which startup tracing will be stored into, if
+// omitted the default will be used "chrometrace.log" in the current directory.
+// Has no effect unless --trace-startup is also supplied.
+// Example: --trace-startup --trace-startup-file=/tmp/trace_event.log
+// As a special case, can be set to 'none' - this disables automatically saving
+// the result to a file and the first manually recorded trace will then receive
+// all events since startup.
+const char kTraceStartupFile[]              = "trace-startup-file";
+
+// Sets the time in seconds until startup tracing ends. If omitted a default of
+// 5 seconds is used. Has no effect without --trace-startup, or if
+// --startup-trace-file=none was supplied.
+const char kTraceStartupDuration[]          = "trace-startup-duration";
+
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[]                     = "user-agent";
 

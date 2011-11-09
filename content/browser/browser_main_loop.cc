@@ -13,6 +13,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/trace_controller.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/sandbox_policy.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -245,6 +246,10 @@ void BrowserMainLoop::MainMessageLoopStart() {
   main_message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
 
   InitializeMainThread();
+
+  // Start tracing to a file if needed.
+  if (base::debug::TraceLog::GetInstance()->IsEnabled())
+    TraceController::GetInstance()->InitStartupTracing(parsed_command_line_);
 
   system_monitor_.reset(new base::SystemMonitor);
   hi_res_timer_manager_.reset(new HighResolutionTimerManager);

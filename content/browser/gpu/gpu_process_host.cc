@@ -560,7 +560,8 @@ bool GpuProcessHost::LaunchGpuProcess() {
     switches::kGpuNoContextLost,
     switches::kGpuStartupDialog,
     switches::kLoggingLevel,
-    switches::kNoSandbox
+    switches::kNoSandbox,
+    switches::kTraceStartup,
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));
