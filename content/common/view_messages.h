@@ -244,6 +244,7 @@ IPC_STRUCT_TRAITS_BEGIN(WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(allow_displaying_insecure_content)
   IPC_STRUCT_TRAITS_MEMBER(allow_running_insecure_content)
   IPC_STRUCT_TRAITS_MEMBER(enable_scroll_animator)
+  IPC_STRUCT_TRAITS_MEMBER(visual_word_movement_enabled)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(WebMenuItem)

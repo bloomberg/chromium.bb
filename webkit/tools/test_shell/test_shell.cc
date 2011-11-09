@@ -363,6 +363,7 @@ void TestShell::ResetWebPreferences() {
         // LayoutTests/http/tests/local, to access http server.
         if (layout_test_mode_)
           web_prefs_->allow_universal_access_from_file_urls = true;
+        web_prefs_->visual_word_movement_enabled = false;
     }
 }
 

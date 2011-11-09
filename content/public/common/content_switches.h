@@ -161,6 +161,8 @@ CONTENT_EXPORT extern const char kWorkerProcess[];
 CONTENT_EXPORT extern const char kZygoteCmdPrefix[];
 CONTENT_EXPORT extern const char kZygoteProcess[];
 
+extern const char kEnableVisualWordMovement[];
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 extern const char kScrollPixels[];
 #endif

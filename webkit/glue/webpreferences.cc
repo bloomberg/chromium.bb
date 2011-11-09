@@ -92,7 +92,8 @@ WebPreferences::WebPreferences()
       allow_running_insecure_content(false),
       should_print_backgrounds(false),
       enable_scroll_animator(false),
-      hixie76_websocket_protocol_enabled(false) {
+      hixie76_websocket_protocol_enabled(false),
+      visual_word_movement_enabled(false) {
 }
 
 WebPreferences::~WebPreferences() {
@@ -318,6 +319,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setEnableScrollAnimator(enable_scroll_animator);
   settings->setHixie76WebSocketProtocolEnabled(
       hixie76_websocket_protocol_enabled);
+  settings->setVisualWordMovementEnabled(visual_word_movement_enabled);
 
   WebNetworkStateNotifier::setOnLine(is_online);
 }

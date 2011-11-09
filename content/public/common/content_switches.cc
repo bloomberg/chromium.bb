@@ -505,6 +505,9 @@ const char kZygoteCmdPrefix[]               = "zygote-cmd-prefix";
 // Causes the process to run as a renderer zygote.
 const char kZygoteProcess[]                 = "zygote";
 
+// Enables moving cursor by word in visual order.
+const char kEnableVisualWordMovement[]      = "enable-visual-word-movement";
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 // Specify the amount the trackpad should scroll by.
 const char kScrollPixels[]                  = "scroll-pixels";

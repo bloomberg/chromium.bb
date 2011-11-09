@@ -498,6 +498,9 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     } else {
       web_prefs.user_style_sheet_enabled = false;
     }
+
+    web_prefs.visual_word_movement_enabled =
+        command_line.HasSwitch(switches::kEnableVisualWordMovement);
   }
 
   {  // Certain GPU features might have been blacklisted.
