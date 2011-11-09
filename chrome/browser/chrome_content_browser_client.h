@@ -35,6 +35,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual bool IsURLSameAsAnySiteInstance(const GURL& url) OVERRIDE;
   virtual bool IsSuitableHost(RenderProcessHost* process_host,
                               const GURL& url) OVERRIDE;
+  virtual void SiteInstanceGotProcess(SiteInstance* site_instance) OVERRIDE;
+  virtual void SiteInstanceDeleting(SiteInstance* site_instance) OVERRIDE;
   virtual bool ShouldSwapProcessesForNavigation(const GURL& current_url,
                                                 const GURL& new_url) OVERRIDE;
   virtual std::string GetCanonicalEncodingNameByAliasName(

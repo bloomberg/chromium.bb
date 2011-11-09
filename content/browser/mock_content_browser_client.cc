@@ -79,6 +79,14 @@ bool MockContentBrowserClient::IsSuitableHost(
   return true;
 }
 
+void MockContentBrowserClient::SiteInstanceGotProcess(
+    SiteInstance* site_instance) {
+}
+
+void MockContentBrowserClient::SiteInstanceDeleting(
+    SiteInstance* site_instance) {
+}
+
 bool MockContentBrowserClient::ShouldSwapProcessesForNavigation(
     const GURL& current_url,
     const GURL& new_url) {

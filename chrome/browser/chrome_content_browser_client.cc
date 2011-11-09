@@ -193,16 +193,19 @@ RenderProcessHostPrivilege GetPrivilegeRequiredByUrl(
 
 RenderProcessHostPrivilege GetProcessPrivilege(
     RenderProcessHost* process_host,
-    ExtensionProcessManager* extension_process_manager) {
-  if (!extension_process_manager->IsExtensionProcess(process_host->id()))
+    extensions::ProcessMap* process_map,
+    ExtensionService* service) {
+  // TODO(aa): It seems like hosted apps should be grouped separately from
+  // extensions: crbug.com/102533.
+  std::set<std::string> extension_ids =
+      process_map->GetExtensionsInProcess(process_host->id());
+  if (extension_ids.empty())
     return PRIV_NORMAL;
 
-  std::set<const Extension*> extensions_for_process(
-      extension_process_manager->GetExtensionsForProcess(process_host->id()));
-  for (std::set<const Extension*>::iterator iter =
-           extensions_for_process.begin();
-       iter != extensions_for_process.end(); ++iter) {
-    if ((*iter)->is_storage_isolated())
+  for (std::set<std::string>::iterator iter = extension_ids.begin();
+       iter != extension_ids.end(); ++iter) {
+    const Extension* extension = service->GetExtensionById(*iter, false);
+    if (extension && extension->is_storage_isolated())
       return PRIV_ISOLATED;
   }
 
@@ -396,13 +399,12 @@ bool ChromeContentBrowserClient::IsSuitableHost(
     const GURL& site_url) {
   Profile* profile =
       Profile::FromBrowserContext(process_host->browser_context());
-  ExtensionProcessManager* extension_process_manager =
-      profile->GetExtensionProcessManager();
   ExtensionService* service = profile->GetExtensionService();
+  extensions::ProcessMap* process_map = service->process_map();
 
   // These may be NULL during tests. In that case, just assume any site can
   // share any host.
-  if (!extension_process_manager || !service)
+  if (!service || !process_map)
     return true;
 
   // Experimental:
@@ -415,8 +417,63 @@ bool ChromeContentBrowserClient::IsSuitableHost(
   if (command_line.HasSwitch(switches::kEnableStrictSiteIsolation))
     return false;
 
-  return GetProcessPrivilege(process_host, extension_process_manager) ==
+  return GetProcessPrivilege(process_host, process_map, service) ==
       GetPrivilegeRequiredByUrl(site_url, service);
+}
+
+void ChromeContentBrowserClient::SiteInstanceGotProcess(
+    SiteInstance* site_instance) {
+  CHECK(site_instance->HasProcess());
+
+  Profile* profile = Profile::FromBrowserContext(
+      site_instance->browsing_instance()->browser_context());
+  ExtensionService* service = profile->GetExtensionService();
+  if (!service)
+    return;
+
+  const Extension* extension =
+      service->GetExtensionByURL(site_instance->site());
+  if (!extension)
+    extension = service->GetExtensionByWebExtent(site_instance->site());
+  if (!extension)
+    return;
+
+  service->process_map()->Insert(
+      extension->id(), site_instance->GetProcess()->id());
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ExtensionInfoMap::RegisterExtensionProcess,
+                 profile->GetExtensionInfoMap(),
+                 extension->id(),
+                 site_instance->GetProcess()->id()));
+}
+
+void ChromeContentBrowserClient::SiteInstanceDeleting(
+    SiteInstance* site_instance) {
+  if (!site_instance->HasProcess())
+    return;
+
+  Profile* profile = Profile::FromBrowserContext(
+      site_instance->browsing_instance()->browser_context());
+  ExtensionService* service = profile->GetExtensionService();
+  if (!service)
+    return;
+
+  const Extension* extension =
+      service->GetExtensionByURL(site_instance->site());
+  if (!extension)
+    extension = service->GetExtensionByWebExtent(site_instance->site());
+  if (!extension)
+    return;
+
+  service->process_map()->Remove(
+      extension->id(), site_instance->GetProcess()->id());
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ExtensionInfoMap::UnregisterExtensionProcess,
+                 profile->GetExtensionInfoMap(),
+                 extension->id(),
+                 site_instance->GetProcess()->id()));
 }
 
 bool ChromeContentBrowserClient::ShouldSwapProcessesForNavigation(
@@ -483,13 +540,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     RenderProcessHost* process = RenderProcessHost::FromID(child_process_id);
 
     Profile* profile = Profile::FromBrowserContext(process->browser_context());
-
-    ExtensionProcessManager* extension_process_manager =
-        profile->GetExtensionProcessManager();
-    if (extension_process_manager->IsExtensionProcess(
-        process->id())) {
+    extensions::ProcessMap* process_map =
+        profile->GetExtensionService()->process_map();
+    if (process_map && process_map->Contains(process->id()))
       command_line->AppendSwitch(switches::kExtensionProcess);
-    }
 
     PrefService* prefs = profile->GetPrefs();
     // Currently this pref is only registered if applied via a policy.

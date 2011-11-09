@@ -93,6 +93,14 @@ bool ShellContentBrowserClient::IsSuitableHost(
   return true;
 }
 
+void ShellContentBrowserClient::SiteInstanceGotProcess(
+    SiteInstance* site_instance) {
+}
+
+void ShellContentBrowserClient::SiteInstanceDeleting(
+    SiteInstance* site_instance) {
+}
+
 bool ShellContentBrowserClient::ShouldSwapProcessesForNavigation(
     const GURL& current_url,
     const GURL& new_url) {

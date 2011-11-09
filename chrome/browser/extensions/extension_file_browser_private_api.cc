@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/file_manager_util.h"
+#include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -633,12 +634,17 @@ class ExecuteTasksFileSystemCallbackDispatcher
       const std::string task_id,
       const std::vector<GURL>& file_urls)
       : function_(function),
+        process_id_(0),
         profile_(profile),
         source_url_(source_url),
         extension_(extension),
         task_id_(task_id),
         origin_file_urls_(file_urls) {
     DCHECK(function_);
+    if (function_->render_view_host() &&
+        function_->render_view_host()->process()) {
+      process_id_ = function_->render_view_host()->process()->id();
+    }
   }
 
   // fileapi::FileSystemCallbackDispatcher overrides.
@@ -708,8 +714,11 @@ class ExecuteTasksFileSystemCallbackDispatcher
   // Checks legitimacy of file url and grants file RO access permissions from
   // handler (target) extension and its renderer process.
   bool SetupFileAccessPermissions(const GURL& origin_file_url,
-     GURL* target_file_url, FilePath* file_path, bool* is_directory) {
+    GURL* target_file_url, FilePath* file_path, bool* is_directory) {
     if (!extension_.get())
+      return false;
+
+    if (process_id_ == 0)
       return false;
 
     GURL file_origin_url;
@@ -776,19 +785,13 @@ class ExecuteTasksFileSystemCallbackDispatcher
     // TODO(zelidrag): Add explicit R/W + R/O permissions for non-component
     // extensions.
 
-    // Get target extension's process.
-    RenderProcessHost* target_host =
-        profile_->GetExtensionProcessManager()->GetExtensionProcess(
-            target_extension_id);
-    if (!target_host)
-      return false;
-
     // Grant R/O access permission to non-component extension and R/W to
     // component extensions.
     ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-        target_host->id(), final_file_path,
+        process_id_,
+        final_file_path,
         extension_->location() != Extension::COMPONENT ?
-            kReadOnlyFilePermissions : kReadWriteFilePermissions);
+        kReadOnlyFilePermissions : kReadWriteFilePermissions);
 
     // Grant access to this particular file to target extension. This will
     // ensure that the target extension can access only this FS entry and
@@ -809,6 +812,7 @@ class ExecuteTasksFileSystemCallbackDispatcher
   }
 
   ExecuteTasksFileBrowserFunction* function_;
+  int process_id_;
   Profile* profile_;
   // Extension source URL.
   GURL source_url_;

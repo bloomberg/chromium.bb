@@ -156,7 +156,8 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
@@ -1243,11 +1244,9 @@ void MetricsService::LogRendererCrash(RenderProcessHost* host,
                                       base::TerminationStatus status,
                                       bool was_alive) {
   Profile* profile = Profile::FromBrowserContext(host->browser_context());
-  ExtensionProcessManager* extension_process_manager =
-      profile->GetExtensionProcessManager();
-  bool was_extension_process = extension_process_manager ?
-      extension_process_manager->IsExtensionProcess(host->id()) :
-      false;
+  ExtensionService* service = profile->GetExtensionService();
+  bool was_extension_process =
+      service && service->process_map()->Contains(host->id());
   if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
       status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
     if (was_extension_process)

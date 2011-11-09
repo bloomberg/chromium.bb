@@ -47,8 +47,6 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
   virtual void CreateBackgroundHost(const Extension* extension,
                                     const GURL& url);
   virtual SiteInstance* GetSiteInstanceForURL(const GURL& url);
-  virtual RenderProcessHost* GetExtensionProcess(const GURL& url);
-  virtual const Extension* GetExtensionForSiteInstance(int site_instance_id);
 
  private:
   // content::NotificationObserver:
@@ -109,10 +107,6 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(profile));
-  // We can listen to everything for SITE_INSTANCE_DELETED because we check the
-  // |site_instance_id| in UnregisterExtensionSiteInstance.
-  registrar_.Add(this, content::NOTIFICATION_SITE_INSTANCE_DELETED,
-                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 }
@@ -265,161 +259,11 @@ void ExtensionProcessManager::RegisterRenderViewHost(
     RenderViewHost* render_view_host,
     const Extension* extension) {
   all_extension_views_.insert(render_view_host);
-  RegisterExtensionSiteInstance(render_view_host->site_instance(), extension);
 }
 
 void ExtensionProcessManager::UnregisterRenderViewHost(
     RenderViewHost* render_view_host) {
   all_extension_views_.erase(render_view_host);
-}
-
-void ExtensionProcessManager::RegisterExtensionSiteInstance(
-    SiteInstance* site_instance,
-    const Extension* extension) {
-  if (!site_instance->HasProcess()) {
-    NOTREACHED();
-    return;
-  }
-
-  int site_instance_id = site_instance->id();
-  int render_process_id = site_instance->GetProcess()->id();
-  if (process_ids_[render_process_id].insert(site_instance_id).second) {
-    // Register process hosting extensions that have access to extension
-    // bindings with the ExtensionInfoMap on the IO thread.
-    Profile* profile =
-        Profile::FromBrowserContext(browsing_instance_->browser_context());
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&ExtensionInfoMap::RegisterExtensionProcess,
-                   profile->GetExtensionInfoMap(),
-                   extension->id(),
-                   render_process_id));
-  }
-
-  SiteInstanceIDMap::const_iterator it = extension_ids_.find(site_instance_id);
-  if (it != extension_ids_.end() && (*it).second == extension->id())
-    return;
-
-  // SiteInstance ids should get removed from the map before the extension ids
-  // get used for a new SiteInstance.
-  DCHECK(it == extension_ids_.end());
-  extension_ids_[site_instance_id] = extension->id();
-}
-
-void ExtensionProcessManager::UnregisterExtensionSiteInstance(
-    SiteInstance* site_instance) {
-  int site_instance_id = site_instance->id();
-  std::string extension_id = extension_ids_[site_instance_id];
-  if (!extension_id.empty())
-    extension_ids_.erase(site_instance_id);
-
-  int render_process_id = ClearSiteInstanceID(site_instance_id);
-  if (render_process_id == -1)
-    return;
-
-  Profile* profile = Profile::FromBrowserContext(
-      browsing_instance_->browser_context());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ExtensionInfoMap::UnregisterExtensionProcess,
-                 profile->GetExtensionInfoMap(),
-                 extension_id,
-                 render_process_id));
-}
-
-int ExtensionProcessManager::ClearSiteInstanceID(int site_instance_id) {
-  for (ProcessIDMap::iterator i = process_ids_.begin();
-       i != process_ids_.end(); ++i) {
-    SiteInstanceIDSet& site_instance_id_set = i->second;
-    for (SiteInstanceIDSet::iterator j = site_instance_id_set.begin();
-         j != site_instance_id_set.end(); ++j) {
-      if (*j == site_instance_id) {
-        int render_process_id = i->first;
-        site_instance_id_set.erase(j);
-        if (site_instance_id_set.empty())
-          process_ids_.erase(i);
-        return render_process_id;
-      }
-    }
-  }
-  return -1;
-}
-
-bool ExtensionProcessManager::IsExtensionProcess(int render_process_id) {
-  return process_ids_.find(render_process_id) != process_ids_.end();
-}
-
-bool ExtensionProcessManager::AreBindingsEnabledForProcess(
-    int render_process_id) {
-  // Must behave logically the same as AreBindingsEnabledForProcess() in
-  // extension_info_map.cc.
-  ProcessIDMap::iterator it = process_ids_.find(render_process_id);
-  if (it == process_ids_.end())
-    return false;
-
-  Profile* profile =
-      Profile::FromBrowserContext(browsing_instance_->browser_context());
-  ExtensionService* service = profile->GetExtensionService();
-  for (std::set<int>::iterator site_instance_id = it->second.begin();
-       site_instance_id != it->second.end(); ++site_instance_id) {
-    const Extension* extension =
-        GetExtensionForSiteInstance(*site_instance_id);
-    if (extension == NULL)
-      continue;
-    if (service->ExtensionBindingsAllowed(extension->url()))
-      return true;
-  }
-  return false;
-}
-
-RenderProcessHost* ExtensionProcessManager::GetExtensionProcess(
-    const GURL& url) {
-  if (!browsing_instance_->HasSiteInstance(url))
-    return NULL;
-  scoped_refptr<SiteInstance> site(
-      browsing_instance_->GetSiteInstanceForURL(url));
-  if (site->HasProcess())
-    return site->GetProcess();
-  return NULL;
-}
-
-RenderProcessHost* ExtensionProcessManager::GetExtensionProcess(
-    const std::string& extension_id) {
-  return GetExtensionProcess(
-      Extension::GetBaseURLFromExtensionId(extension_id));
-}
-
-const Extension* ExtensionProcessManager::GetExtensionForSiteInstance(
-    int site_instance_id) {
-  SiteInstanceIDMap::const_iterator it = extension_ids_.find(site_instance_id);
-  if (it != extension_ids_.end()) {
-    // Look up the extension by ID, including disabled extensions in case
-    // this gets called while an old process is still around.
-    Profile* profile =
-        Profile::FromBrowserContext(browsing_instance_->browser_context());
-    ExtensionService* service = profile->GetExtensionService();
-    return service->GetExtensionById(it->second, false);
-  }
-
-  return NULL;
-}
-
-std::set<const Extension*> ExtensionProcessManager::GetExtensionsForProcess(
-    int process_id) {
-  std::set<const Extension*> result;
-
-  ProcessIDMap::iterator site_id_set = process_ids_.find(process_id);
-  if (site_id_set == process_ids_.end())
-    return result;
-
-  for (std::set<int>::iterator site_id = site_id_set->second.begin();
-       site_id != site_id_set->second.end(); ++site_id) {
-    const Extension* extension = GetExtensionForSiteInstance(*site_id);
-    if (extension)
-      result.insert(extension);
-  }
-
-  return result;
 }
 
 SiteInstance* ExtensionProcessManager::GetSiteInstanceForURL(const GURL& url) {
@@ -496,12 +340,6 @@ void ExtensionProcessManager::Observe(
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       all_hosts_.erase(host);
       background_hosts_.erase(host);
-      break;
-    }
-
-    case content::NOTIFICATION_SITE_INSTANCE_DELETED: {
-      SiteInstance* site_instance = content::Source<SiteInstance>(source).ptr();
-      UnregisterExtensionSiteInstance(site_instance);
       break;
     }
 
@@ -606,27 +444,6 @@ SiteInstance* IncognitoExtensionProcessManager::GetSiteInstanceForURL(
     return ExtensionProcessManager::GetSiteInstanceForURL(url);
   } else {
     return original_manager_->GetSiteInstanceForURL(url);
-  }
-}
-
-RenderProcessHost* IncognitoExtensionProcessManager::GetExtensionProcess(
-    const GURL& url) {
-  const Extension* extension = GetExtensionOrAppByURL(url);
-  if (!extension || extension->incognito_split_mode()) {
-    return ExtensionProcessManager::GetExtensionProcess(url);
-  } else {
-    return original_manager_->GetExtensionProcess(url);
-  }
-}
-
-const Extension* IncognitoExtensionProcessManager::GetExtensionForSiteInstance(
-    int site_instance_id) {
-  const Extension* extension =
-      ExtensionProcessManager::GetExtensionForSiteInstance(site_instance_id);
-  if (extension && extension->incognito_split_mode()) {
-    return extension;
-  } else {
-    return original_manager_->GetExtensionForSiteInstance(site_instance_id);
   }
 }
 

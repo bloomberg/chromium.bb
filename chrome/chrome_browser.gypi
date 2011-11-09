@@ -1250,6 +1250,8 @@
         'browser/extensions/pending_extension_info.h',
         'browser/extensions/pending_extension_manager.cc',
         'browser/extensions/pending_extension_manager.h',
+        'browser/extensions/process_map.cc',
+        'browser/extensions/process_map.h',
         'browser/extensions/sandboxed_extension_unpacker.cc',
         'browser/extensions/sandboxed_extension_unpacker.h',
         'browser/extensions/speech_input/extension_speech_input_api.cc',

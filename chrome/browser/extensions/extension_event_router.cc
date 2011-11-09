@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
+#include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -29,7 +30,7 @@ namespace {
 
 const char kDispatchEvent[] = "Event.dispatchJSON";
 
-static void NotifyEventListenerRemovedOnIOThread(
+void NotifyEventListenerRemovedOnIOThread(
     void* profile,
     const std::string& extension_id,
     const std::string& sub_event_name) {
@@ -257,16 +258,6 @@ void ExtensionEventRouter::DispatchEventImpl(
   // Send the event only to renderers that are listening for it.
   for (std::set<EventListener>::iterator listener = listeners.begin();
        listener != listeners.end(); ++listener) {
-    Profile* listener_profile = Profile::FromBrowserContext(
-        listener->process->browser_context());
-    ExtensionProcessManager* extension_process_manager =
-        listener_profile->GetExtensionProcessManager();
-    if (!extension_process_manager->AreBindingsEnabledForProcess(
-        listener->process->id())) {
-      // Don't send browser-level events to unprivileged processes.
-      continue;
-    }
-
     if (!event->extension_id.empty() &&
         event->extension_id != listener->extension_id)
       continue;
@@ -277,6 +268,13 @@ void ExtensionEventRouter::DispatchEventImpl(
     // The extension could have been removed, but we do not unregister it until
     // the extension process is unloaded.
     if (!extension)
+      continue;
+
+    Profile* listener_profile = Profile::FromBrowserContext(
+        listener->process->browser_context());
+    extensions::ProcessMap* process_map =
+        listener_profile->GetExtensionService()->process_map();
+    if (!process_map->Contains(extension->id(), listener->process->id()))
       continue;
 
     // Is this event from a different profile than the renderer (ie, an

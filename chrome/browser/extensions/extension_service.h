@@ -33,6 +33,7 @@
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
+#include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/sync/api/sync_change.h"
@@ -185,6 +186,8 @@ class ExtensionService
   const FilePath& install_directory() const { return install_directory_; }
 
   AppsPromo* apps_promo() { return &apps_promo_; }
+
+  extensions::ProcessMap* process_map() { return &process_map_; }
 
   // Whether this extension can run in an incognito window.
   virtual bool IsIncognitoEnabled(const std::string& extension_id) const;
@@ -787,6 +790,8 @@ class ExtensionService
 
   // Contains an entry for each warning that shall be currently shown.
   ExtensionWarningSet extension_warnings_;
+
+  extensions::ProcessMap process_map_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsWithUnlimtedStorage);

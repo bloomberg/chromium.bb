@@ -44,6 +44,10 @@ ExtensionInfoMap::ExtensionInfoMap() {
 ExtensionInfoMap::~ExtensionInfoMap() {
 }
 
+const extensions::ProcessMap& ExtensionInfoMap::process_map() const {
+  return process_map_;
+}
+
 void ExtensionInfoMap::AddExtension(const Extension* extension,
                                     base::Time install_time,
                                     bool incognito_enabled) {
@@ -102,29 +106,23 @@ bool ExtensionInfoMap::CanCrossIncognito(const Extension* extension) {
 
 void ExtensionInfoMap::RegisterExtensionProcess(const std::string& extension_id,
                                                 int process_id) {
-  DCHECK(!IsExtensionInProcess(extension_id, process_id));
-  extension_process_ids_.insert(
-      ExtensionProcessIDMap::value_type(extension_id, process_id));
+  if (!process_map_.Insert(extension_id, process_id)) {
+    NOTREACHED() << "Duplicate extension process registration for: "
+                 << extension_id << "," << process_id << ".";
+  }
 }
 
 void ExtensionInfoMap::UnregisterExtensionProcess(
     const std::string& extension_id,
     int process_id) {
-  ExtensionProcessIDMap::iterator iter =
-      std::find(extension_process_ids_.begin(),
-                extension_process_ids_.end(),
-                ExtensionProcessIDMap::value_type(extension_id, process_id));
-  if (iter != extension_process_ids_.end())
-    extension_process_ids_.erase(iter);
+  if (!process_map_.Remove(extension_id, process_id)) {
+    NOTREACHED() << "Unknown extension process registration for: "
+                 << extension_id << "," << process_id << ".";
+  }
 }
 
-bool ExtensionInfoMap::IsExtensionInProcess(
-    const std::string& extension_id, int process_id) const {
-  return std::find(
-      extension_process_ids_.begin(),
-      extension_process_ids_.end(),
-      ExtensionProcessIDMap::value_type(extension_id, process_id)) !=
-          extension_process_ids_.end();
+void ExtensionInfoMap::UnregisterAllExtensionsInProcess(int process_id) {
+  process_map_.Remove(process_id);
 }
 
 bool ExtensionInfoMap::SecurityOriginHasAPIPermission(
@@ -133,13 +131,13 @@ bool ExtensionInfoMap::SecurityOriginHasAPIPermission(
   if (origin.SchemeIs(chrome::kExtensionScheme)) {
     const std::string& id = origin.host();
     return extensions_.GetByID(id)->HasAPIPermission(permission) &&
-           IsExtensionInProcess(id, process_id);
+        process_map_.Contains(id, process_id);
   }
 
   ExtensionSet::ExtensionMap::const_iterator i = extensions_.begin();
   for (; i != extensions_.end(); ++i) {
     if (i->second->web_extent().MatchesSecurityOrigin(origin) &&
-        IsExtensionInProcess(i->first, process_id) &&
+        process_map_.Contains(i->first, process_id) &&
         i->second->HasAPIPermission(permission)) {
       return true;
     }

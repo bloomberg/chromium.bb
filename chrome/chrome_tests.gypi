@@ -1367,6 +1367,7 @@
         'browser/extensions/in_memory_extension_settings_storage_unittest.cc',
         'browser/extensions/key_identifier_conversion_views_unittest.cc',
         'browser/extensions/network_delay_listener_unittest.cc',
+        'browser/extensions/process_map_unittest.cc',
         'browser/extensions/sandboxed_extension_unpacker_unittest.cc',
         'browser/extensions/user_script_listener_unittest.cc',
         'browser/extensions/user_script_master_unittest.cc',

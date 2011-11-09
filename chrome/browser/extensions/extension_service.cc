@@ -2339,6 +2339,13 @@ void ExtensionService::Observe(int type,
           break;
 
       installed_app_hosts_.erase(process->id());
+
+      process_map_.Remove(process->id());
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&ExtensionInfoMap::UnregisterAllExtensionsInProcess,
+                     profile_->GetExtensionInfoMap(),
+                     process->id()));
       break;
     }
     case chrome::NOTIFICATION_PREF_CHANGED: {

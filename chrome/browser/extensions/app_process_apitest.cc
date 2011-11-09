@@ -5,7 +5,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -84,8 +85,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
-  ExtensionProcessManager* extension_process_manager =
-      browser()->profile()->GetExtensionProcessManager();
+  extensions::ProcessMap* process_map =
+      browser()->profile()->GetExtensionService()->process_map();
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
@@ -103,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), base_url.Resolve("path1/empty.html"), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
+  EXPECT_TRUE(process_map->Contains(
       browser()->GetTabContentsAt(1)->render_view_host()->process()->id()));
   EXPECT_FALSE(browser()->GetTabContentsAt(1)->web_ui());
   LOG(INFO) << "Nav 1.";
@@ -111,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), base_url.Resolve("path2/empty.html"), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
+  EXPECT_TRUE(process_map->Contains(
       browser()->GetTabContentsAt(2)->render_view_host()->process()->id()));
   EXPECT_FALSE(browser()->GetTabContentsAt(2)->web_ui());
   LOG(INFO) << "Nav 2.";
@@ -124,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   LOG(INFO) << "New tab.";
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path3/empty.html"));
   LOG(INFO) << "Nav 3.";
-  EXPECT_FALSE(extension_process_manager->IsExtensionProcess(
+  EXPECT_FALSE(process_map->Contains(
       browser()->GetTabContentsAt(3)->render_view_host()->process()->id()));
   EXPECT_FALSE(browser()->GetTabContentsAt(3)->web_ui());
 
@@ -196,8 +197,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
-  ExtensionProcessManager* extension_process_manager =
-      browser()->profile()->GetExtensionProcessManager();
+  extensions::ProcessMap* process_map =
+      browser()->profile()->GetExtensionService()->process_map();
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
@@ -215,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
       browser(), base_url.Resolve("path1/empty.html"), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   LOG(INFO) << "Nav 1.";
-  EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
+  EXPECT_TRUE(process_map->Contains(
       browser()->GetTabContentsAt(1)->render_view_host()->process()->id()));
   EXPECT_FALSE(browser()->GetTabContentsAt(1)->web_ui());
 
@@ -227,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
   LOG(INFO) << "New tab.";
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path2/empty.html"));
   LOG(INFO) << "Nav 2.";
-  EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
+  EXPECT_TRUE(process_map->Contains(
       browser()->GetTabContentsAt(2)->render_view_host()->process()->id()));
   EXPECT_FALSE(browser()->GetTabContentsAt(2)->web_ui());
 
@@ -293,8 +294,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
-  ExtensionProcessManager* extension_process_manager =
-      browser()->profile()->GetExtensionProcessManager();
+  extensions::ProcessMap* process_map =
+      browser()->profile()->GetExtensionService()->process_map();
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
@@ -306,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   // Load an app URL before loading the app.
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
   TabContents* contents = browser()->GetTabContentsAt(0);
-  EXPECT_FALSE(extension_process_manager->IsExtensionProcess(
+  EXPECT_FALSE(process_map->Contains(
       contents->render_view_host()->process()->id()));
 
   // Load app and navigate to the page.
@@ -314,13 +315,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
       LoadExtension(test_data_dir_.AppendASCII("app_process"));
   ASSERT_TRUE(app);
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
-  EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
+  EXPECT_TRUE(process_map->Contains(
       contents->render_view_host()->process()->id()));
 
   // Disable app and navigate to the page.
   DisableExtension(app->id());
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
-  EXPECT_FALSE(extension_process_manager->IsExtensionProcess(
+  EXPECT_FALSE(process_map->Contains(
       contents->render_view_host()->process()->id()));
 
   // Enable app and reload the page.
@@ -331,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
           &browser()->GetSelectedTabContentsWrapper()->controller()));
   browser()->Reload(CURRENT_TAB);
   reload_observer.Wait();
-  EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
+  EXPECT_TRUE(process_map->Contains(
       contents->render_view_host()->process()->id()));
 
   // Disable app and reload the page.
@@ -342,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
           &browser()->GetSelectedTabContentsWrapper()->controller()));
   browser()->Reload(CURRENT_TAB);
   reload_observer2.Wait();
-  EXPECT_FALSE(extension_process_manager->IsExtensionProcess(
+  EXPECT_FALSE(process_map->Contains(
       contents->render_view_host()->process()->id()));
 
   // Enable app and reload via JavaScript.
@@ -354,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(contents->render_view_host(),
                                                L"", L"location.reload();"));
   js_reload_observer.Wait();
-  EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
+  EXPECT_TRUE(process_map->Contains(
       contents->render_view_host()->process()->id()));
 
   // Disable app and reload via JavaScript.
@@ -366,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(contents->render_view_host(),
                                                L"", L"location.reload();"));
   js_reload_observer2.Wait();
-  EXPECT_FALSE(extension_process_manager->IsExtensionProcess(
+  EXPECT_FALSE(process_map->Contains(
       contents->render_view_host()->process()->id()));
 }
 
@@ -379,8 +380,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
-  ExtensionProcessManager* extension_process_manager =
-      browser()->profile()->GetExtensionProcessManager();
+  extensions::ProcessMap* process_map =
+      browser()->profile()->GetExtensionService()->process_map();
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
@@ -397,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
       CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION |
           ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
-  EXPECT_FALSE(extension_process_manager->IsExtensionProcess(
+  EXPECT_FALSE(process_map->Contains(
       browser()->GetTabContentsAt(0)->render_view_host()->process()->id()));
 
   // Wait for popup window to appear.
@@ -419,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
   }
 
   // Popup window should be in the app's process.
-  EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
+  EXPECT_TRUE(process_map->Contains(
       last_active_browser->GetTabContentsAt(0)->render_view_host()->process()->
           id()));
 }
@@ -435,8 +436,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
-  ExtensionProcessManager* extension_process_manager =
-      browser()->profile()->GetExtensionProcessManager();
+  extensions::ProcessMap* process_map =
+      browser()->profile()->GetExtensionService()->process_map();
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
@@ -458,8 +459,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
           ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
   RenderProcessHost* process =
       browser()->GetTabContentsAt(0)->render_view_host()->process();
-  EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
-      process->id()));
+  EXPECT_TRUE(process_map->Contains(process->id()));
 
   // Wait for popup window to appear.  The new Browser may not have been
   // added with SetLastActive, in which case we need to show it first.
@@ -485,8 +485,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadAppAfterCrash) {
-  ExtensionProcessManager* extension_process_manager =
-      browser()->profile()->GetExtensionProcessManager();
+  extensions::ProcessMap* process_map =
+      browser()->profile()->GetExtensionService()->process_map();
+
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
@@ -497,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadAppAfterCrash) {
   // Load the app, chrome.app.isInstalled should be true.
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
   TabContents* contents = browser()->GetTabContentsAt(0);
-  EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
+  EXPECT_TRUE(process_map->Contains(
       contents->render_view_host()->process()->id()));
   bool is_installed = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(

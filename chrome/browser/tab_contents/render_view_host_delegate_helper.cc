@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
+#include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -114,11 +115,11 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
     return NULL;
 
   // Ensure that we're trying to open this from the extension's process.
-  ExtensionProcessManager* process_manager =
-      profile->GetExtensionProcessManager();
-  if (!site->GetProcess() || !process_manager ||
-      site->GetProcess() != process_manager->GetExtensionProcess(opener_url))
+  extensions::ProcessMap* process_map = extensions_service->process_map();
+  if (!site->GetProcess() ||
+      !process_map->Contains(extension->id(), site->GetProcess()->id())) {
     return NULL;
+  }
 
   // Only allow a single background contents per app. If one already exists,
   // close it (even if it was specified in the manifest).
@@ -542,12 +543,10 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
 
   web_prefs.is_online = !net::NetworkChangeNotifier::IsOffline();
 
-  ExtensionProcessManager* extension_process_manager =
-      profile->GetExtensionProcessManager();
-  if (extension_process_manager) {
+  ExtensionService* service = profile->GetExtensionService();
+  if (service) {
     const Extension* extension =
-        extension_process_manager->GetExtensionForSiteInstance(
-            rvh->site_instance()->id());
+        service->GetExtensionByURL(rvh->site_instance()->site());
     extension_webkit_preferences::SetPreferences(&web_prefs, extension);
   }
 

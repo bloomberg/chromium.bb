@@ -90,8 +90,10 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
     ASSERT_TRUE(extension_host);
     ASSERT_TRUE(GetExtensionProcessManager()->HasExtensionHost(extension_host));
     ASSERT_TRUE(extension_host->IsRenderViewLive());
-    ASSERT_EQ(extension_host->render_view_host()->process(),
-        GetExtensionProcessManager()->GetExtensionProcess(extension->id()));
+    extensions::ProcessMap* process_map =
+        browser()->profile()->GetExtensionService()->process_map();
+    ASSERT_TRUE(process_map->Contains(
+        extension->id(), extension_host->render_view_host()->process()->id()));
   }
 
   void LoadTestExtension() {

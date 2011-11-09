@@ -356,10 +356,6 @@ enum NotificationType {
   // the new state is "visible."
   NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
 
-  // Sent from ~SiteInstance.  The source is the SiteInstance, and the details
-  // are unused.
-  NOTIFICATION_SITE_INSTANCE_DELETED,
-
   // The focused element inside a page has changed.  The source is the
   // TabContents containing the render view host for the page. The details is
   // a Details<const bool> that indicates whether or not an editable node was

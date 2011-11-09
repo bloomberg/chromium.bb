@@ -267,13 +267,11 @@ string16 TaskManagerTabContentsResource::GetTitle() const {
   // Only classify as an app if the URL is an app and the tab is hosting an
   // extension process.  (It's possible to be showing the URL from before it
   // was installed as an app.)
-  ExtensionService* extensions_service =
+  ExtensionService* extension_service =
       tab_contents_->profile()->GetExtensionService();
-  ExtensionProcessManager* extension_process_manager =
-      tab_contents_->profile()->GetExtensionProcessManager();
-  bool is_app = extensions_service->IsInstalledApp(url) &&
-      extension_process_manager->IsExtensionProcess(
-          contents->GetRenderProcessHost()->id());
+  extensions::ProcessMap* process_map = extension_service->process_map();
+  bool is_app = extension_service->IsInstalledApp(url) &&
+      process_map->Contains(contents->GetRenderProcessHost()->id());
 
   int message_id = GetMessagePrefixID(
       is_app,
@@ -306,9 +304,9 @@ TabContentsWrapper* TaskManagerTabContentsResource::GetTabContents() const {
 
 const Extension* TaskManagerTabContentsResource::GetExtension() const {
   if (HostsExtension()) {
-    ExtensionService* extensions_service =
+    ExtensionService* extension_service =
         tab_contents_->profile()->GetExtensionService();
-    return extensions_service->GetExtensionByURL(
+    return extension_service->GetExtensionByURL(
         tab_contents_->tab_contents()->GetURL());
   }
 

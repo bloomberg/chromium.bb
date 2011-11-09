@@ -68,6 +68,8 @@ class ExtensionProcessManager : public content::NotificationObserver {
   ExtensionHost* GetBackgroundHostForExtension(const std::string& extension_id);
 
   // Returns the SiteInstance that the given URL belongs to.
+  // TODO(aa): This only returns correct results for extensions and packaged
+  // apps, not hosted apps.
   virtual SiteInstance* GetSiteInstanceForURL(const GURL& url);
 
   // Registers a RenderViewHost as hosting a given extension.
@@ -81,28 +83,6 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // extension.
   std::set<RenderViewHost*> GetRenderViewHostsForExtension(
       const std::string& extension_id);
-
-  // True if this process host is hosting an extension.
-  bool IsExtensionProcess(int render_process_id);
-
-  // True if this process host is hosting an extension with extension bindings
-  // enabled.
-  bool AreBindingsEnabledForProcess(int render_process_id);
-
-  // Returns the extension process that |url| is associated with if it exists.
-  // This is not valid for hosted apps without the background permission, since
-  // such apps may have multiple processes.
-  virtual RenderProcessHost* GetExtensionProcess(const GURL& url);
-
-  // Returns the process that the extension with the given ID is running in.
-  RenderProcessHost* GetExtensionProcess(const std::string& extension_id);
-
-  // Returns the Extension associated with the given SiteInstance id, if any.
-  virtual const Extension* GetExtensionForSiteInstance(int site_instance_id);
-
-  // Returns the set of extensions for the specified process. If the process is
-  // not an extension process, or contains no extensions, returns an empty set.
-  std::set<const Extension*> GetExtensionsForProcess(int process_id);
 
   // Returns true if |host| is managed by this process manager.
   bool HasExtensionHost(ExtensionHost* host) const;
@@ -142,23 +122,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // controls process grouping.
   scoped_refptr<BrowsingInstance> browsing_instance_;
 
-  // A map of site instance ID to the ID of the extension it hosts.
-  typedef std::map<int, std::string> SiteInstanceIDMap;
-  SiteInstanceIDMap extension_ids_;
-
-  // A map of process ID to site instance ID of the site instances it hosts.
-  typedef std::set<int> SiteInstanceIDSet;
-  typedef std::map<int, SiteInstanceIDSet> ProcessIDMap;
-  ProcessIDMap process_ids_;
-
  private:
-  // Registers a site instance as hosting a given extension.
-  void RegisterExtensionSiteInstance(SiteInstance* site_instance,
-                                     const Extension* extension);
-
-  // Unregisters the extension associated with |site_instance|.
-  void UnregisterExtensionSiteInstance(SiteInstance* site_instance);
-
   // Contains all extension-related RenderViewHost instances for all extensions.
   typedef std::set<RenderViewHost*> RenderViewHostSet;
   RenderViewHostSet all_extension_views_;
@@ -168,10 +132,6 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // Excludes background page.
   bool HasVisibleViews(const std::string& extension_id);
-
-  // Clears the mapping for the specified site instance. Returns the process the
-  // site was mapped to, or -1 if it wasn't found.
-  int ClearSiteInstanceID(int site_instance_id);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
 };

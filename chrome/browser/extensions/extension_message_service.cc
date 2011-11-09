@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -93,6 +94,18 @@ static void DispatchOnMessage(const ExtensionMessageService::MessagePort& port,
           port.routing_id, target_port_id, message));
 }
 
+static RenderProcessHost* GetExtensionProcess(Profile* profile,
+                                              const std::string& extension_id) {
+  SiteInstance* site_instance =
+      profile->GetExtensionProcessManager()->GetSiteInstanceForURL(
+          Extension::GetBaseURLFromExtensionId(extension_id));
+
+  if (!site_instance->HasProcess())
+    return NULL;
+
+  return site_instance->GetProcess();
+}
+
 }  // namespace
 
 // static
@@ -149,8 +162,7 @@ void ExtensionMessageService::OpenChannelToExtension(
   // process, we will use the incognito EPM to find the right extension process,
   // which depends on whether the extension uses spanning or split mode.
   MessagePort receiver(
-      profile->GetExtensionProcessManager()->GetExtensionProcess(
-          target_extension_id),
+      GetExtensionProcess(profile, target_extension_id),
       MSG_ROUTING_CONTROL);
   TabContents* source_contents = tab_util::GetTabContentsByID(
       source_process_id, source_routing_id);
@@ -258,7 +270,7 @@ int ExtensionMessageService::OpenSpecialChannelToExtension(
   AllocatePortIdPair(&port1_id, &port2_id);
 
   MessagePort receiver(
-      profile_->GetExtensionProcessManager()->GetExtensionProcess(extension_id),
+      GetExtensionProcess(profile_, extension_id),
       MSG_ROUTING_CONTROL);
   if (!OpenChannelImpl(source, tab_json, receiver, port2_id,
                        extension_id, extension_id, channel_name))

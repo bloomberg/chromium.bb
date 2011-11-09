@@ -144,8 +144,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       Profile* profile =
           Profile::FromBrowserContext(render_process_host->browser_context());
       ExtensionService* extension_service = profile->GetExtensionService();
-      ExtensionProcessManager* extension_process_manager =
-          profile->GetExtensionProcessManager();
+      extensions::ProcessMap* extension_process_map =
+          extension_service->process_map();
 
       // The RenderProcessHost may host multiple TabContents.  Any
       // of them which contain diagnostics information make the whole
@@ -175,14 +175,25 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
             process.renderer_type = ChildProcessInfo::RENDERER_DEVTOOLS;
           else
             process.renderer_type = ChildProcessInfo::RENDERER_CHROME;
-        } else if (extension_process_manager->AreBindingsEnabledForProcess(
-                   host->process()->id())) {
-          process.renderer_type = ChildProcessInfo::RENDERER_EXTENSION;
+        } else if (extension_process_map->Contains(host->process()->id())) {
+          // For our purposes, don't count processes containing only hosted apps
+          // as extension processes. See also: crbug.com/102533.
+          std::set<std::string> extension_ids =
+              extension_process_map->GetExtensionsInProcess(
+                  host->process()->id());
+          for (std::set<std::string>::iterator iter = extension_ids.begin();
+               iter != extension_ids.end(); ++iter) {
+            const Extension* extension =
+                extension_service->GetExtensionById(*iter, false);
+            if (extension && !extension->is_hosted_app()) {
+              process.renderer_type = ChildProcessInfo::RENDERER_EXTENSION;
+              break;
+            }
+          }
         }
         TabContents* contents = host_delegate->GetAsTabContents();
         if (!contents) {
-          if (extension_process_manager->IsExtensionProcess(
-              host->process()->id())) {
+          if (extension_process_map->Contains(host->process()->id())) {
             const Extension* extension =
                 extension_service->GetExtensionByURL(url);
             if (extension) {

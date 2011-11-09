@@ -24,6 +24,10 @@ class RenderViewHost;
 class TabContents;
 struct ExtensionHostMsg_Request_Params;
 
+namespace extensions {
+class ProcessMap;
+}
+
 // A factory function for creating new ExtensionFunction instances.
 typedef ExtensionFunction* (*ExtensionFunctionFactory)();
 
@@ -117,6 +121,8 @@ class ExtensionFunctionDispatcher
   static ExtensionFunction* CreateExtensionFunction(
       const ExtensionHostMsg_Request_Params& params,
       const Extension* extension,
+      int requesting_process_id,
+      const extensions::ProcessMap& process_map,
       void* profile,
       IPC::Message::Sender* ipc_sender,
       int routing_id);

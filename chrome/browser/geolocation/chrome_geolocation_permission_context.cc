@@ -530,18 +530,11 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
     if (!ext)
       ext = extensions->GetExtensionByWebExtent(requesting_frame);
     if (ext && ext->HasAPIPermission(ExtensionAPIPermission::kGeolocation)) {
-      // Make sure this matches the current extension.
-      RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
-                                                   render_view_id);
-      if (rvh && rvh->site_instance()) {
-        ExtensionProcessManager* epm = profile_->GetExtensionProcessManager();
-        const Extension* current_ext = epm->GetExtensionForSiteInstance(
-            rvh->site_instance()->id());
-        if (ext == current_ext) {
-          NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
-                              requesting_frame, true);
-          return;
-        }
+      // Make sure the extension is in the calling process.
+      if (extensions->process_map()->Contains(ext->id(), render_process_id)) {
+        NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
+                            requesting_frame, true);
+        return;
       }
     }
   }

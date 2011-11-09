@@ -527,17 +527,10 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
   const Extension* extension =
       extension_info_map->extensions().GetByURL(params.source_url);
 
-  if (!extension_info_map->IsExtensionInProcess(extension->id(),
-                                                render_process_id)) {
-    // TODO(aa): Allow content scripts access to low-threat extension APIs.
-    // See: crbug.com/80308.
-    LOG(ERROR) << "Extension API called from non-extension process.";
-    SendAccessDenied(ipc_sender, routing_id, params.request_id);
-    return;
-  }
-
-  scoped_refptr<ExtensionFunction> function(CreateExtensionFunction(
-      params, extension, profile, ipc_sender, routing_id));
+  scoped_refptr<ExtensionFunction> function(
+      CreateExtensionFunction(params, extension, render_process_id,
+                              extension_info_map->process_map(), profile,
+                              ipc_sender, routing_id));
   if (!function)
     return;
 
@@ -600,27 +593,9 @@ void ExtensionFunctionDispatcher::Dispatch(
     const ExtensionHostMsg_Request_Params& params,
     RenderViewHost* render_view_host) {
   ExtensionService* service = profile()->GetExtensionService();
-  ExtensionProcessManager* extension_process_manager =
-      profile()->GetExtensionProcessManager();
-  if (!service || !extension_process_manager)
+  extensions::ProcessMap* process_map = service->process_map();
+  if (!service || !process_map)
     return;
-
-  if (!service->ExtensionBindingsAllowed(params.source_url)) {
-    LOG(ERROR) << "Extension bindings not allowed for URL: "
-               << params.source_url.spec();
-    SendAccessDenied(render_view_host, render_view_host->routing_id(),
-                     params.request_id);
-    return;
-  }
-  if (!extension_process_manager->AreBindingsEnabledForProcess(
-      render_view_host->process()->id())) {
-    // TODO(aa): Allow content scripts access to low-threat extension APIs.
-    // See: crbug.com/80308.
-    LOG(ERROR) << "Extension API called from non-extension process.";
-    SendAccessDenied(render_view_host, render_view_host->routing_id(),
-                     params.request_id);
-    return;
-  }
 
   // TODO(aa): When we allow content scripts to call extension APIs, we will
   // have to pass the extension ID explicitly here, not use the source URL.
@@ -629,7 +604,10 @@ void ExtensionFunctionDispatcher::Dispatch(
     extension = service->GetExtensionByWebExtent(params.source_url);
 
   scoped_refptr<ExtensionFunction> function(
-      CreateExtensionFunction(params, extension, profile(), render_view_host,
+      CreateExtensionFunction(params, extension,
+                              render_view_host->process()->id(),
+                              *(service->process_map()),
+                              profile(), render_view_host,
                               render_view_host->routing_id()));
   if (!function)
     return;
@@ -661,12 +639,21 @@ void ExtensionFunctionDispatcher::Dispatch(
 ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     const ExtensionHostMsg_Request_Params& params,
     const Extension* extension,
+    int requesting_process_id,
+    const extensions::ProcessMap& process_map,
     void* profile,
     IPC::Message::Sender* ipc_sender,
     int routing_id) {
   if (!extension) {
-    LOG(ERROR) << "Extension does not exist for URL: "
-               << params.source_url.spec();
+    LOG(ERROR) << "Specified extension does not exist.";
+    SendAccessDenied(ipc_sender, routing_id, params.request_id);
+    return NULL;
+  }
+
+  if (!process_map.Contains(extension->id(), requesting_process_id)) {
+    LOG(ERROR) << "Extension API called from incorrect process "
+               << requesting_process_id
+               << " from URL " << params.source_url.spec();
     SendAccessDenied(ipc_sender, routing_id, params.request_id);
     return NULL;
   }

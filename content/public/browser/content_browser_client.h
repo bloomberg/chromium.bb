@@ -29,6 +29,7 @@ class RenderViewHost;
 class RenderWidgetHost;
 class RenderWidgetHostView;
 class ResourceDispatcherHost;
+class SiteInstance;
 class SSLCertErrorHandler;
 class SSLClientAuthHandler;
 class SkBitmap;
@@ -144,6 +145,12 @@ class ContentBrowserClient {
   // given |process_host|.
   virtual bool IsSuitableHost(RenderProcessHost* process_host,
                               const GURL& site_url) = 0;
+
+  // Called when a site instance is first associated with a process.
+  virtual void SiteInstanceGotProcess(SiteInstance* site_instance) = 0;
+
+  // Called from a site instance's destructor.
+  virtual void SiteInstanceDeleting(SiteInstance* site_instance) = 0;
 
   // Returns true if for the navigation from |current_url| to |new_url|,
   // processes should be swapped (even if we are in a process model that

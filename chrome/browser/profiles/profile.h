@@ -217,6 +217,10 @@ class Profile : public content::BrowserContext {
   // Return the incognito version of this profile. The returned pointer
   // is owned by the receiving profile. If the receiving profile is off the
   // record, the same profile is returned.
+  //
+  // WARNING: This will create the OffTheRecord profile if it doesn't already
+  // exist. If this isn't what you want, you need to check
+  // HasOffTheRecordProfile() first.
   virtual Profile* GetOffTheRecordProfile() = 0;
 
   // Destroys the incognito profile.
