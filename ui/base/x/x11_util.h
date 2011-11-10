@@ -178,8 +178,22 @@ UI_EXPORT void PutARGBImage(Display* display, void* visual, int depth,
 void FreePicture(Display* display, XID picture);
 void FreePixmap(Display* display, XID pixmap);
 
-// Get the window manager name.
-UI_EXPORT bool GetWindowManagerName(std::string* name);
+enum WindowManagerName {
+  WM_UNKNOWN,
+  WM_BLACKBOX,
+  WM_CHROME_OS,
+  WM_COMPIZ,
+  WM_ENLIGHTENMENT,
+  WM_ICE_WM,
+  WM_KWIN,
+  WM_METACITY,
+  WM_MUTTER,
+  WM_OPENBOX,
+  WM_XFWM4,
+};
+// Attempts to guess the window maager. Returns WM_UNKNOWN if we can't
+// determine it for one reason or another.
+UI_EXPORT WindowManagerName GuessWindowManager();
 
 // Change desktop for |window| to the desktop of |destination| window.
 UI_EXPORT bool ChangeWindowDesktop(XID window, XID destination);

@@ -24,13 +24,6 @@
 #include "content/public/browser/notification_service.h"
 #include "ui/base/x/x11_util.h"
 
-namespace {
-
-// The name of ChromeOS's window manager.
-const char* kChromeOsWindowManagerName = "chromeos-wm";
-
-}  // namespace
-
 namespace chromeos {
 
 class NotificationTest : public InProcessBrowserTest,
@@ -50,13 +43,12 @@ class NotificationTest : public InProcessBrowserTest,
   virtual void SetUp() {
     // Detect if we're running under ChromeOS WindowManager. See
     // the description for "under_chromeos_" below for why we need this.
-    std::string wm_name;
-    bool wm_name_valid = ui::GetWindowManagerName(&wm_name);
+    ui::WindowManagerName wm_type = ui::GuessWindowManager();
     // NOTE: On Chrome OS the wm and Chrome are started in parallel. This
     // means it's possible for us not to be able to get the name of the window
     // manager. We assume that when this happens we're on Chrome OS.
-    under_chromeos_ = (!wm_name_valid ||
-                       wm_name == kChromeOsWindowManagerName);
+    under_chromeos_ = (wm_type == ui::WM_CHROME_OS ||
+                       wm_type == ui::WM_UNKNOWN);
     InProcessBrowserTest::SetUp();
   }
 

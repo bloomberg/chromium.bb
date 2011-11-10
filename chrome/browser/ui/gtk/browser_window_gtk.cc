@@ -348,8 +348,7 @@ void BrowserWindowGtk::Init() {
   // are partially off-screen causes them to get snapped back on screen, not
   // always even on the current virtual desktop.  If we are running under
   // compiz, suppress such raises, as they are not necessary in compiz anyway.
-  std::string wm_name;
-  if (ui::GetWindowManagerName(&wm_name) && wm_name == "compiz")
+  if (ui::GuessWindowManager() == ui::WM_COMPIZ)
     suppress_window_raise_ = true;
 
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
@@ -878,9 +877,8 @@ void BrowserWindowGtk::ExitFullscreen() {
   // fullscreens us again.  This is a little flickery and not necessary if
   // there's a gnome-panel, but it's not easy to detect whether there's a
   // panel or not.
-  std::string wm_name;
   bool unmaximize_before_unfullscreen = IsMaximized() &&
-      ui::GetWindowManagerName(&wm_name) && wm_name == "Metacity";
+      ui::GuessWindowManager() == ui::WM_METACITY;
   if (unmaximize_before_unfullscreen)
     UnMaximize();
 
@@ -2388,10 +2386,6 @@ BrowserWindowGtk::TitleDecoration BrowserWindowGtk::GetWindowTitle(
 
 // static
 bool BrowserWindowGtk::GetCustomFramePrefDefault() {
-  std::string wm_name;
-  if (!ui::GetWindowManagerName(&wm_name))
-    return false;
-
   // Ideally, we'd use the custom frame by default and just fall back on using
   // system decorations for the few (?) tiling window managers where the custom
   // frame doesn't make sense (e.g. awesome, ion3, ratpoison, xmonad, etc.) or
@@ -2399,16 +2393,15 @@ bool BrowserWindowGtk::GetCustomFramePrefDefault() {
   // _NET_SUPPORTING_WM property makes it easy to look up a name for the current
   // WM, but at least some of the WMs in the latter group don't set it.
   // Instead, we default to using system decorations for all WMs and
-  // special-case the ones where the custom frame should be used.  These names
-  // are taken from the WMs' source code.
-  return (wm_name == "Blackbox" ||
-          wm_name == "compiz" ||
-          wm_name == "Compiz" ||
-          wm_name == "e16" ||  // Enlightenment DR16
-          wm_name == "Metacity" ||
-          wm_name == "Mutter" ||
-          wm_name == "Openbox" ||
-          wm_name == "Xfwm4");
+  // special-case the ones where the custom frame should be used.
+  ui::WindowManagerName wm_type = ui::GuessWindowManager();
+  return (wm_type == ui::WM_BLACKBOX ||
+          wm_type == ui::WM_COMPIZ ||
+          wm_type == ui::WM_ENLIGHTENMENT ||
+          wm_type == ui::WM_METACITY ||
+          wm_type == ui::WM_MUTTER ||
+          wm_type == ui::WM_OPENBOX ||
+          wm_type == ui::WM_XFWM4);
 }
 
 // static

@@ -19,8 +19,9 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/rect.h"
@@ -709,6 +710,34 @@ bool GetWindowManagerName(std::string* wm_name) {
   gdk_flush();
   got_error = gdk_error_trap_pop();
   return !got_error && result;
+}
+
+WindowManagerName GuessWindowManager() {
+  std::string name;
+  if (GetWindowManagerName(&name)) {
+    // These names are taken from the WMs' source code.
+    if (name == "Compiz" || name == "compiz")
+      return WM_COMPIZ;
+    if (name == "KWin")
+      return WM_KWIN;
+    if (name == "Metacity")
+      return WM_METACITY;
+    if (name == "Mutter")
+      return WM_MUTTER;
+    if (name == "Xfwm4")
+      return WM_XFWM4;
+    if (name == "chromeos-wm")
+      return WM_CHROME_OS;
+    if (name == "Blackbox")
+      return WM_BLACKBOX;
+    if (name == "e16")
+      return WM_ENLIGHTENMENT;
+    if (StartsWithASCII(name, "IceWM", true))
+      return WM_ICE_WM;
+    if (name == "Openbox")
+      return WM_OPENBOX;
+  }
+  return WM_UNKNOWN;
 }
 
 bool ChangeWindowDesktop(XID window, XID destination) {

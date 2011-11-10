@@ -254,13 +254,10 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
     panel->Show();
   } else {
 #if defined(OS_LINUX)
-    std::string wm_name;
-    bool has_name = ui::GetWindowManagerName(&wm_name);
     // On bots, we might have a simple window manager which always activates new
     // windows, and can't always deactivate them. Activate previously active
     // window back to ensure the new window is inactive.
-    // IceWM has a name string like "IceWM 1.3.6 (Linux 2.6.24-23-server/x86)"
-    if (has_name && wm_name.find("IceWM") != std::string::npos) {
+    if (ui::GuessWindowManager() == ui::WM_ICE_WM) {
       Browser* last_active_browser = BrowserList::GetLastActive();
       EXPECT_TRUE(last_active_browser);
       EXPECT_NE(last_active_browser, panel->browser());

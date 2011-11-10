@@ -446,14 +446,12 @@ Browser* Browser::CreateForApp(Type type,
 #if defined(TOOLKIT_GTK)
   // Panels are only supported on a white list of window managers for Linux.
   if (type == TYPE_PANEL) {
-    // Some window managers seem to include version (icewm for example), so
-    // limiting the comparison to the name part of the string.
-    std::string wm_name;
-    if (!ui::GetWindowManagerName(&wm_name) ||
-        (strncasecmp(wm_name.c_str(), "compiz", sizeof("compiz") - 1) &&
-         strncasecmp(wm_name.c_str(), "metacity", sizeof("metacity") - 1) &&
-         strncasecmp(wm_name.c_str(), "icewm", sizeof("icewm") - 1) &&
-         strncasecmp(wm_name.c_str(), "kwin", sizeof("kwin") - 1))) {
+    ui::WindowManagerName wm_type = ui::GuessWindowManager();
+    if (wm_type != ui::WM_COMPIZ &&
+        wm_type != ui::WM_ICE_WM &&
+        wm_type != ui::WM_KWIN &&
+        wm_type != ui::WM_METACITY &&
+        wm_type != ui::WM_MUTTER) {
       type = TYPE_POPUP;
     }
   }
