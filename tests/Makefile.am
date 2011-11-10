@@ -16,6 +16,10 @@ if HAVE_LIBKMS
 SUBDIRS += kmstest modetest
 endif
 
+if HAVE_RADEON
+SUBDIRS += radeon
+endif
+
 if HAVE_LIBUDEV
 
 check_LTLIBRARIES = libdrmtest.la
