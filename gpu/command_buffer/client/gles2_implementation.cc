@@ -566,34 +566,23 @@ GLES2Implementation::GLES2Implementation(
 
   if (share_resources) {
     if (!bind_generates_resource) {
-      buffer_id_handler_.reset(
-          new StrictSharedIdHandler(this, id_namespaces::kBuffers));
-      framebuffer_id_handler_.reset(
-          new StrictSharedIdHandler(this, id_namespaces::kFramebuffers));
-      renderbuffer_id_handler_.reset(
-          new StrictSharedIdHandler(this, id_namespaces::kRenderbuffers));
-      program_and_shader_id_handler_.reset(
-          new StrictSharedIdHandler(this, id_namespaces::kProgramsAndShaders));
-      texture_id_handler_.reset(
-          new StrictSharedIdHandler(this, id_namespaces::kTextures));
+      for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
+        id_handlers_[i].reset(new StrictSharedIdHandler(
+              this, static_cast<id_namespaces::IdNamespaces>(i)));
+      }
     } else {
-      buffer_id_handler_.reset(
-          new SharedIdHandler(this, id_namespaces::kBuffers));
-      framebuffer_id_handler_.reset(
-          new SharedIdHandler(this, id_namespaces::kFramebuffers));
-      renderbuffer_id_handler_.reset(
-          new SharedIdHandler(this, id_namespaces::kRenderbuffers));
-      program_and_shader_id_handler_.reset(
-          new SharedIdHandler(this, id_namespaces::kProgramsAndShaders));
-      texture_id_handler_.reset(
-          new SharedIdHandler(this, id_namespaces::kTextures));
+      for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
+        id_handlers_[i].reset(new SharedIdHandler(
+              this, static_cast<id_namespaces::IdNamespaces>(i)));
+      }
     }
   } else {
-    buffer_id_handler_.reset(new NonSharedIdHandler());
-    framebuffer_id_handler_.reset(new NonSharedIdHandler());
-    renderbuffer_id_handler_.reset(new NonSharedIdHandler());
-    program_and_shader_id_handler_.reset(new NonSharedNonReusedIdHandler());
-    texture_id_handler_.reset(new NonSharedIdHandler());
+    for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
+      if (i == id_namespaces::kProgramsAndShaders)
+        id_handlers_[i].reset(new NonSharedNonReusedIdHandler);
+      else
+        id_handlers_[i].reset(new NonSharedIdHandler);
+    }
   }
 
   static const GLenum pnames[] = {
@@ -626,7 +615,7 @@ GLES2Implementation::GLES2Implementation(
   program_info_manager_.reset(ProgramInfoManager::Create(sharing_resources_));
 
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
-  buffer_id_handler_->MakeIds(
+  id_handlers_[id_namespaces::kBuffers]->MakeIds(
       kClientSideArrayId, arraysize(reserved_ids_), &reserved_ids_[0]);
 
   client_side_buffer_helper_.reset(new ClientSideBufferHelper(
@@ -1104,7 +1093,7 @@ void GLES2Implementation::GetVertexAttribPointerv(
 }
 
 bool GLES2Implementation::DeleteProgramHelper(GLuint program) {
-  if (!program_and_shader_id_handler_->FreeIds(1, &program)) {
+  if (!id_handlers_[id_namespaces::kProgramsAndShaders]->FreeIds(1, &program)) {
     SetGLError(
         GL_INVALID_VALUE,
         "glDeleteProgram: id not created by this context.");
@@ -1117,7 +1106,7 @@ bool GLES2Implementation::DeleteProgramHelper(GLuint program) {
 }
 
 bool GLES2Implementation::DeleteShaderHelper(GLuint shader) {
-  if (!program_and_shader_id_handler_->FreeIds(1, &shader)) {
+  if (!id_handlers_[id_namespaces::kProgramsAndShaders]->FreeIds(1, &shader)) {
     SetGLError(
         GL_INVALID_VALUE,
         "glDeleteShader: id not created by this context.");
@@ -2076,7 +2065,7 @@ void GLES2Implementation::BindBufferHelper(
   }
   // TODO(gman): There's a bug here. If the target is invalid the ID will not be
   // used even though it's marked it as used here.
-  buffer_id_handler_->MarkAsUsedForBind(buffer);
+  id_handlers_[id_namespaces::kBuffers]->MarkAsUsedForBind(buffer);
 }
 
 void GLES2Implementation::BindFramebufferHelper(
@@ -2091,7 +2080,7 @@ void GLES2Implementation::BindFramebufferHelper(
   }
   // TODO(gman): There's a bug here. If the target is invalid the ID will not be
   // used even though it's marked it as used here.
-  framebuffer_id_handler_->MarkAsUsedForBind(framebuffer);
+  id_handlers_[id_namespaces::kFramebuffers]->MarkAsUsedForBind(framebuffer);
 }
 
 void GLES2Implementation::BindRenderbufferHelper(
@@ -2106,7 +2095,7 @@ void GLES2Implementation::BindRenderbufferHelper(
   }
   // TODO(gman): There's a bug here. If the target is invalid the ID will not be
   // used even though it's marked it as used here.
-  renderbuffer_id_handler_->MarkAsUsedForBind(renderbuffer);
+  id_handlers_[id_namespaces::kRenderbuffers]->MarkAsUsedForBind(renderbuffer);
 }
 
 void GLES2Implementation::BindTextureHelper(GLenum target, GLuint texture) {
@@ -2124,7 +2113,7 @@ void GLES2Implementation::BindTextureHelper(GLenum target, GLuint texture) {
   }
   // TODO(gman): There's a bug here. If the target is invalid the ID will not be
   // used. even though it's marked it as used here.
-  texture_id_handler_->MarkAsUsedForBind(texture);
+  id_handlers_[id_namespaces::kTextures]->MarkAsUsedForBind(texture);
 }
 
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
@@ -2144,7 +2133,7 @@ bool GLES2Implementation::IsBufferReservedId(GLuint /* id */) {
 
 void GLES2Implementation::DeleteBuffersHelper(
     GLsizei n, const GLuint* buffers) {
-  if (!buffer_id_handler_->FreeIds(n, buffers)) {
+  if (!id_handlers_[id_namespaces::kBuffers]->FreeIds(n, buffers)) {
     SetGLError(
         GL_INVALID_VALUE,
         "glDeleteBuffers: id not created by this context.");
@@ -2164,7 +2153,7 @@ void GLES2Implementation::DeleteBuffersHelper(
 
 void GLES2Implementation::DeleteFramebuffersHelper(
     GLsizei n, const GLuint* framebuffers) {
-  if (!framebuffer_id_handler_->FreeIds(n, framebuffers)) {
+  if (!id_handlers_[id_namespaces::kFramebuffers]->FreeIds(n, framebuffers)) {
     SetGLError(
         GL_INVALID_VALUE,
         "glDeleteFramebuffers: id not created by this context.");
@@ -2181,7 +2170,7 @@ void GLES2Implementation::DeleteFramebuffersHelper(
 
 void GLES2Implementation::DeleteRenderbuffersHelper(
     GLsizei n, const GLuint* renderbuffers) {
-  if (!renderbuffer_id_handler_->FreeIds(n, renderbuffers)) {
+  if (!id_handlers_[id_namespaces::kRenderbuffers]->FreeIds(n, renderbuffers)) {
     SetGLError(
         GL_INVALID_VALUE,
         "glDeleteRenderbuffers: id not created by this context.");
@@ -2198,7 +2187,7 @@ void GLES2Implementation::DeleteRenderbuffersHelper(
 
 void GLES2Implementation::DeleteTexturesHelper(
     GLsizei n, const GLuint* textures) {
-  if (!texture_id_handler_->FreeIds(n, textures)) {
+  if (!id_handlers_[id_namespaces::kTextures]->FreeIds(n, textures)) {
     SetGLError(
         GL_INVALID_VALUE,
         "glDeleteTextures: id not created by this context.");

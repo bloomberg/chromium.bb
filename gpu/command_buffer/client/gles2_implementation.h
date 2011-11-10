@@ -189,12 +189,12 @@ class GLES2Implementation {
 
   GLuint MakeTextureId() {
     GLuint id;
-    texture_id_handler_->MakeIds(0, 1, &id);
+    id_handlers_[id_namespaces::kTextures]->MakeIds(0, 1, &id);
     return id;
   }
 
   void FreeTextureId(GLuint id) {
-    texture_id_handler_->FreeIds(1, &id);
+    id_handlers_[id_namespaces::kTextures]->FreeIds(1, &id);
   }
 
   void SetSharedMemoryChunkSizeMultiple(unsigned int multiple);
@@ -422,11 +422,7 @@ class GLES2Implementation {
 
   GLES2Util util_;
   GLES2CmdHelper* helper_;
-  scoped_ptr<IdHandlerInterface> buffer_id_handler_;
-  scoped_ptr<IdHandlerInterface> framebuffer_id_handler_;
-  scoped_ptr<IdHandlerInterface> renderbuffer_id_handler_;
-  scoped_ptr<IdHandlerInterface> program_and_shader_id_handler_;
-  scoped_ptr<IdHandlerInterface> texture_id_handler_;
+  scoped_ptr<IdHandlerInterface> id_handlers_[id_namespaces::kNumIdNamespaces];
   AlignedRingBuffer transfer_buffer_;
   int transfer_buffer_id_;
   void* result_buffer_;

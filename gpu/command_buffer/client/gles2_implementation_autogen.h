@@ -183,7 +183,8 @@ void CopyTexSubImage2D(
 GLuint CreateProgram() {
   GPU_CLIENT_LOG("[" << this << "] glCreateProgram(" << ")");
   GLuint client_id;
-  program_and_shader_id_handler_->MakeIds(0, 1, &client_id);
+  id_handlers_[id_namespaces::kProgramsAndShaders]->
+      MakeIds(0, 1, &client_id);
   helper_->CreateProgram(client_id);
   GPU_CLIENT_LOG("returned " << client_id);
   return client_id;
@@ -192,7 +193,8 @@ GLuint CreateProgram() {
 GLuint CreateShader(GLenum type) {
   GPU_CLIENT_LOG("[" << this << "] glCreateShader(" << GLES2Util::GetStringShaderType(type) << ")");  // NOLINT
   GLuint client_id;
-  program_and_shader_id_handler_->MakeIds(0, 1, &client_id);
+  id_handlers_[id_namespaces::kProgramsAndShaders]->
+      MakeIds(0, 1, &client_id);
   helper_->CreateShader(type, client_id);
   GPU_CLIENT_LOG("returned " << client_id);
   return client_id;
@@ -359,7 +361,8 @@ void GenBuffers(GLsizei n, GLuint* buffers) {
     SetGLError(GL_INVALID_VALUE, "glGenBuffers: n < 0");
     return;
   }
-  buffer_id_handler_->MakeIds(0, n, buffers);
+  id_handlers_[id_namespaces::kBuffers]->
+      MakeIds(0, n, buffers);
   helper_->GenBuffersImmediate(n, buffers);
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
@@ -379,7 +382,8 @@ void GenFramebuffers(GLsizei n, GLuint* framebuffers) {
     SetGLError(GL_INVALID_VALUE, "glGenFramebuffers: n < 0");
     return;
   }
-  framebuffer_id_handler_->MakeIds(0, n, framebuffers);
+  id_handlers_[id_namespaces::kFramebuffers]->
+      MakeIds(0, n, framebuffers);
   helper_->GenFramebuffersImmediate(n, framebuffers);
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
@@ -394,7 +398,8 @@ void GenRenderbuffers(GLsizei n, GLuint* renderbuffers) {
     SetGLError(GL_INVALID_VALUE, "glGenRenderbuffers: n < 0");
     return;
   }
-  renderbuffer_id_handler_->MakeIds(0, n, renderbuffers);
+  id_handlers_[id_namespaces::kRenderbuffers]->
+      MakeIds(0, n, renderbuffers);
   helper_->GenRenderbuffersImmediate(n, renderbuffers);
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
@@ -409,7 +414,8 @@ void GenTextures(GLsizei n, GLuint* textures) {
     SetGLError(GL_INVALID_VALUE, "glGenTextures: n < 0");
     return;
   }
-  texture_id_handler_->MakeIds(0, n, textures);
+  id_handlers_[id_namespaces::kTextures]->
+      MakeIds(0, n, textures);
   helper_->GenTexturesImmediate(n, textures);
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {

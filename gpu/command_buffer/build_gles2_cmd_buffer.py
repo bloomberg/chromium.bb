@@ -2818,7 +2818,7 @@ class GENnHandler(TypeHandler):
         'name': func.original_name,
         'typed_args': func.MakeTypedOriginalArgString(""),
         'args': func.MakeOriginalArgString(""),
-        'resource_type': func.name[3:-1].lower(),
+        'resource_type': func.name[3:],
         'count_name': func.GetOriginalArgs()[0].name,
       }
     file.Write("%(return_type)s %(name)s(%(typed_args)s) {\n" % args)
@@ -2826,7 +2826,8 @@ class GENnHandler(TypeHandler):
     self.WriteClientGLCallLog(func, file)
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
-    code = """  %(resource_type)s_id_handler_->MakeIds(0, %(args)s);
+    code = """  id_handlers_[id_namespaces::k%(resource_type)s]->
+      MakeIds(0, %(args)s);
   helper_->%(name)sImmediate(%(args)s);
 %(log_code)s
 }
@@ -3045,7 +3046,8 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
     file.Write("  GLuint client_id;\n")
-    file.Write("  program_and_shader_id_handler_->MakeIds(0, 1, &client_id);\n")
+    file.Write("  id_handlers_[id_namespaces::kProgramsAndShaders]->\n")
+    file.Write("      MakeIds(0, 1, &client_id);\n")
     file.Write("  helper_->%s(%s);\n" %
                (func.name, func.MakeCmdArgString("")))
     file.Write('  GPU_CLIENT_LOG("returned " << client_id);\n')
