@@ -81,6 +81,9 @@ cr.define('options', function() {
       // Add special entry for adding new values.
       list.dataModel.splice(list.dataModel.length, 0, null);
 
+      // Update the status of the 'OK' button.
+      this.inputFieldChanged_();
+
       var self = this;
       list.dataModel.addEventListener(
         'splice', function(event) { self.inputFieldChanged_(); });
