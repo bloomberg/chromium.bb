@@ -6,7 +6,7 @@
 #define PPAPI_CPP_INSTANCE_H_
 
 /// @file
-/// Defines the C++ wrapper for an instance.
+/// This file defines the C++ wrapper for an instance.
 
 #include <map>
 #include <string>

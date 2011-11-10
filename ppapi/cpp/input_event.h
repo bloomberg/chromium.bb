@@ -176,7 +176,7 @@ class WheelInputEvent : public InputEvent {
   /// is_null() or is not a wheel input event, the wheel object will be
   /// is_null().
   ///
-  /// @param[in] A generic input event.
+  /// @param[in] event A generic input event.
   explicit WheelInputEvent(const InputEvent& event);
 
   /// Constructs a wheel input even from the given parameters.
