@@ -38,9 +38,6 @@ class TaskManagerHandler : public WebUIMessageHandler,
   // Callback for the "killProcess" message.
   void HandleKillProcess(const base::ListValue* indexes);
 
-  // Callback for the "activatePage" message.
-  void HandleActivatePage(const base::ListValue* resource_index);
-
   // Callback for the "inspect" message.
   void HandleInspect(const base::ListValue* resource_index);
 

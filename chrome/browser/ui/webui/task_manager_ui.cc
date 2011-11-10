@@ -49,7 +49,6 @@ ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
   SET_LOCALIZED_STRING(SQLITE_MEMORY_USED_COLUMN);
   SET_LOCALIZED_STRING(JAVASCRIPT_MEMORY_ALLOCATED_COLUMN);
   SET_LOCALIZED_STRING(INSPECT);
-  SET_LOCALIZED_STRING(ACTIVATE);
   source->set_json_path("strings.js");
   source->add_resource_path("main.js", IDR_TASK_MANAGER_JS);
   source->add_resource_path("includes.js", IDR_TASK_MANAGER_INCLUDES_JS);

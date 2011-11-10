@@ -566,11 +566,6 @@ bool TaskManagerModel::GetV8Memory(int index, size_t* result) const {
   return true;
 }
 
-bool TaskManagerModel::CanActivate(int index) const {
-  CHECK_LT(index, ResourceCount());
-  return GetResourceTabContents(index);
-}
-
 bool TaskManagerModel::CanInspect(int index) const {
   CHECK_LT(index, ResourceCount());
   return resources_[index]->CanInspect();

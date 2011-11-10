@@ -120,8 +120,6 @@ static Value* CreateColumnValue(const TaskManagerModel* tm,
   }
   if (column_name == "canInspect")
     return Value::CreateBooleanValue(tm->CanInspect(i));
-  if (column_name == "canActivate")
-    return Value::CreateBooleanValue(tm->CanActivate(i));
 
   NOTREACHED();
   return NULL;
@@ -191,7 +189,6 @@ static DictionaryValue* CreateTaskGroupValue(const TaskManagerModel* tm,
   CreateGroupColumnList(tm, "goatsTeleported", index, length, val);
   CreateGroupColumnList(tm, "goatsTeleportedValue", index, length, val);
   CreateGroupColumnList(tm, "canInspect", index, length, val);
-  CreateGroupColumnList(tm, "canActivate", index, length, val);
 
   return val;
 }
@@ -313,9 +310,6 @@ void TaskManagerHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("inspect",
       base::Bind(&TaskManagerHandler::HandleInspect,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("activatePage",
-      base::Bind(&TaskManagerHandler::HandleActivatePage,
-                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("openAboutMemory",
       base::Bind(&TaskManagerHandler::OpenAboutMemory,
                  base::Unretained(this)));
@@ -354,25 +348,6 @@ void TaskManagerHandler::HandleKillProcess(const ListValue* indexes) {
 
     LOG(INFO) << "kill PID:" << model_->GetResourceProcessId(resource_index);
     task_manager_->KillProcess(resource_index);
-  }
-}
-
-void TaskManagerHandler::HandleActivatePage(const ListValue* resource_index) {
-  for (ListValue::const_iterator i = resource_index->begin();
-       i != resource_index->end(); ++i) {
-    int unique_id = parseIndex(*i);
-    if (unique_id == -1)
-      continue;
-
-    for (int resource_index = 0; resource_index < model_->ResourceCount();
-         ++resource_index) {
-      if (model_->GetResourceUniqueId(resource_index) == unique_id) {
-        task_manager_->ActivateProcess(resource_index);
-        break;
-      }
-    }
-
-    break;
   }
 }
 

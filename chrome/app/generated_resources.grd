@@ -3694,9 +3694,6 @@ are declared in build/common.gypi.
       <message name="IDS_TASK_MANAGER_INSPECT" desc="Menu item initiating resource inspection">
         Inspect
       </message>
-      <message name="IDS_TASK_MANAGER_ACTIVATE" desc="Menu item initiating page activation">
-        Activate
-      </message>
       <message name="IDS_TASK_MANAGER_MEM_CELL_TEXT" desc="The value displayed in the memory usage cells.">
         <ph name="NUM_KILOBYTES">$1<ex>5,000</ex></ph>K
       </message>

@@ -29,9 +29,6 @@ var DEFAULT_COLUMNS = [
     ['v8MemoryAllocatedSize', 'JAVASCRIPT_MEMORY_ALLOCATED_COLUMN', 120, false],
 ];
 
-var COMMAND_CONTEXTMENU_COLUMN_PREFIX = 'columnContextMenu';
-var COMMAND_CONTEXTMENU_TABLE_PREFIX = 'tableContextMenu';
-
 var localStrings = new LocalStrings();
 
 TaskManager.prototype = {
@@ -123,14 +120,6 @@ TaskManager.prototype = {
    */
   enableTaskManager: function () {
     chrome.send('enableTaskManager');
-  },
-
-  /**
-   * Sends command to activate a page.
-   * @public
-   */
-  activatePage: function (uniqueId) {
-    chrome.send('activatePage', [uniqueId]);
   },
 
   /**
@@ -244,7 +233,7 @@ TaskManager.prototype = {
 
       // Creates command element to receive event.
       var command = this.document_.createElement('command');
-      command.id = COMMAND_CONTEXTMENU_COLUMN_PREFIX + '-' + column[0];
+      command.id = 'columnContextMenu-' + column[0];
       cr.ui.Command.decorate(command);
       this.column_menu_commands_[command.id] = command;
       this.commandsElement_.appendChild(command);
@@ -275,25 +264,20 @@ TaskManager.prototype = {
     this.table_menu_commands_ = [];
     this.tableContextMenu_ = this.document_.createElement('menu');
 
-    var addMenuItem = function (tm, command_id, string_id, default_label) {
-      // Creates command element to receive event.
-      var command = tm.document_.createElement('command');
-      command.id = COMMAND_CONTEXTMENU_TABLE_PREFIX + '-' + command_id;
-      cr.ui.Command.decorate(command);
-      tm.table_menu_commands_[command.id] = command;
-      tm.commandsElement_.appendChild(command);
+    // Creates command element to receive event.
+    var command = this.document_.createElement('command');
+    command.id = 'tableContextMenu-inspect';
+    cr.ui.Command.decorate(command);
+    this.table_menu_commands_[command.id] = command;
+    this.commandsElement_.appendChild(command);
 
-      // Creates menuitem element.
-      var item = tm.document_.createElement('menuitem');
-      item.command = command;
-      command.menuitem = item;
-      var localized_label = localStrings.getString(string_id);
-      item.textContent = localized_label || default_label;
-      tm.tableContextMenu_.appendChild(item);
-    };
-
-    addMenuItem(this, 'inspect', 'INSPECT', "Inspect");
-    addMenuItem(this, 'activate', 'ACTIVATE', "Activate");
+    // Creates menuitem element.
+    var item = this.document_.createElement('menuitem');
+    item.command = command;
+    command.menuitem = item;
+    var localized_label = localStrings.getString('INSPECT');
+    item.textContent = (localized_label != "") ? localized_label : "Inspect";
+    this.tableContextMenu_.appendChild(item);
 
     this.document_.body.appendChild(this.tableContextMenu_);
     cr.ui.Menu.decorate(this.tableContextMenu_);
@@ -366,10 +350,6 @@ TaskManager.prototype = {
           cr.ui.contextMenuHandler.addContextMenuProperty(label);
           label.contextMenu = this.tableContextMenu_;
 
-          label.addEventListener('dblclick', (function(uniqueId) {
-              this.activatePage(uniqueId);
-          }).bind(this, entry['uniqueId'][i]));
-
           label.data = entry;
           label.index_in_group = i;
         } else {
@@ -424,25 +404,15 @@ TaskManager.prototype = {
    */
   onCommand_: function(event) {
     var command = event.command;
-    var command_id = command.id.split('-', 2);
-
-    var main_command = command_id[0];
-    var sub_command = command_id[1];
-
-    if (main_command == COMMAND_CONTEXTMENU_COLUMN_PREFIX) {
-      this.onColumnContextMenu_(sub_command, command);
-    } else if (main_command == COMMAND_CONTEXTMENU_TABLE_PREFIX) {
-      var target_unique_id = this.currentContextMenuTarget_;
-
-      if (!target_unique_id)
-        return;
-
-      if (sub_command == 'inspect')
-        this.inspect(target_unique_id);
-      else if (sub_command == 'activate')
-        this.activatePage(target_unique_id);
-
-      this.currentContextMenuTarget_ = undefined;
+    if (command.id.substr(0, 18) == 'columnContextMenu-') {
+      console.log(command.id.substr(18));
+      this.onColumnContextMenu_(command.id.substr(18), command);
+    } else if (command.id == 'tableContextMenu-inspect') {
+      var contextMenuTarget = this.currentContextMenuTarget_;
+      if (contextMenuTarget) {
+        this.inspect(contextMenuTarget);
+        this.currentContextMenuTarget_ = undefined;
+      }
     }
   },
 
@@ -455,15 +425,12 @@ TaskManager.prototype = {
    * will be replaced when it is refleshed.
    */
   onTableContextMenuOpened_: function (e) {
-    var mc = this.table_menu_commands_;
-    var inspect_menuitem =
-        mc[COMMAND_CONTEXTMENU_TABLE_PREFIX + '-inspect'].menuitem;
-    var activate_menuitem =
-        mc[COMMAND_CONTEXTMENU_TABLE_PREFIX + '-activate'].menuitem;
+    var command = this.table_menu_commands_['tableContextMenu-inspect'];
+    var menuItem = command.menuitem;
 
     // Disabled by default.
-    inspect_menuitem.disabled = true;
-    activate_menuitem.disabled = true;
+    menuItem.disabled = true;
+    this.currentContextMenuTarget_ = undefined;
 
     var target = e.target;
     var classes = target.classList;
@@ -478,16 +445,12 @@ TaskManager.prototype = {
 
     var index_in_group = target.index_in_group;
 
-    // Sets the uniqueId for current target page under the mouse corsor.
-    this.currentContextMenuTarget_ = target.data['uniqueId'][index_in_group];
-
-    // Enables if the page can be inspected.
-    if (target.data['canInspect'][index_in_group])
-      inspect_menuitem.disabled = false;
-
-    // Enables if the page can be activated.
-    if (target.data['canActivate'][index_in_group])
-      activate_menuitem.disabled = false;
+    var canInspect = target.data['canInspect'][index_in_group];
+    if (canInspect) {
+      menuItem.disabled = false;
+      this.currentContextMenuTarget_ =
+          target.data['uniqueId'][index_in_group];
+    }
   },
 
   onColumnContextMenu_: function(id, command) {
