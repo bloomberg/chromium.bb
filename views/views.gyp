@@ -24,6 +24,11 @@
                       ['exclude', '_x\\.(h|cc)$'] ],
         'dependencies': [ '../ui/aura/aura.gyp:aura', ],
       }],
+      ['use_wayland == 1', {
+        'dependencies': [
+          '../build/linux/system.gyp:wayland',
+        ],
+      }],
     ],
   },
   'targets': [
