@@ -613,3 +613,32 @@
   fun:base::::WorkerThread::ThreadMain
   fun:base::::ThreadFunc
 }
+{
+  bug_103711a
+  ThreadSanitizer:Race
+  fun:webrtc::Trace::SetLevelFilter
+}
+{
+  bug_103711b
+  ThreadSanitizer:Race
+  fun:webrtc::TraceImpl::TraceCheck
+}
+{
+  bug_103711c
+  ThreadSanitizer:Race
+  fun:webrtc::ThreadPosix::*
+}
+{
+  bug_103711c
+  ThreadSanitizer:Race
+  fun:webrtc::FileWrapper*::*
+  ...
+  fun:webrtc::TraceImpl::StaticInstance
+  fun:webrtc::Trace::ReturnTrace
+  fun:webrtc::voe::SharedData::~SharedData
+  fun:webrtc::VoiceEngineImpl::~VoiceEngineImpl
+  fun:webrtc::VoiceEngine::Delete
+  fun:WebRTCAutoDelete::reset
+  fun:WebRTCAutoDelete::~WebRTCAutoDelete
+  fun:WebRTCAudioDeviceTest_Construct_Test::TestBody
+}
