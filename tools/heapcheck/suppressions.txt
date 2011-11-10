@@ -1704,3 +1704,13 @@
    fun:base::Bind
    fun:chromeos::::GViewRequestInterceptorTest::SetUp
 }
+{
+   bug_103704
+   Heapcheck:Leak
+   fun:std::string::_Rep::_S_create
+   fun:std::string::copy
+   fun:std::basic_string::basic_string
+   fun:TestingBrowserProcess
+   fun:::ChromeTestSuiteInitializer::OnTestStart
+   fun:testing::internal::TestEventRepeater::OnTestStart
+}
