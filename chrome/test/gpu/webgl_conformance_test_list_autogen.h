@@ -289,7 +289,7 @@ CONFORMANCE_TEST(conformance_textures_tex_image_with_format_and_type,
   "conformance/textures/tex-image-with-format-and-type.html");
 CONFORMANCE_TEST(conformance_textures_tex_image_with_invalid_data,
   "conformance/textures/tex-image-with-invalid-data.html");
-CONFORMANCE_TEST(conformance_textures_tex_input_validation,
+CONFORMANCE_TEST(DISABLED_conformance_textures_tex_input_validation,
   "conformance/textures/tex-input-validation.html");
 CONFORMANCE_TEST(conformance_textures_tex_sub_image_2d_bad_args,
   "conformance/textures/tex-sub-image-2d-bad-args.html");
