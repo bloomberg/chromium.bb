@@ -9,8 +9,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/ui/views/accessible_pane_view.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "views/accessible_pane_view.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link_listener.h"
 #include "views/mouse_watcher.h"
@@ -35,7 +35,7 @@ class ImageView;
 //
 // DownloadShelfView does not hold an infinite number of download views, rather
 // it'll automatically remove views once a certain point is reached.
-class DownloadShelfView : public AccessiblePaneView,
+class DownloadShelfView : public views::AccessiblePaneView,
                           public ui::AnimationDelegate,
                           public DownloadShelf,
                           public views::ButtonListener,
@@ -82,8 +82,10 @@ class DownloadShelfView : public AccessiblePaneView,
   virtual void MouseMovedOutOfView();
 
   // Override views::FocusChangeListener method from AccessiblePaneView.
-  virtual void FocusWillChange(View* focused_before,
-                               View* focused_now) OVERRIDE;
+  virtual void OnWillChangeFocus(View* focused_before,
+                                 View* focused_now) OVERRIDE;
+  virtual void OnDidChangeFocus(View* focused_before,
+                                View* focused_now) OVERRIDE;
 
   // Removes a specified download view. The supplied view is deleted after
   // it's removed.

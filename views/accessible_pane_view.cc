@@ -2,20 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/accessible_pane_view.h"
+#include "views/accessible_pane_view.h"
 
-#include "base/bind.h"
-#include "base/logging.h"
-#include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "views/controls/button/menu_button.h"
-#include "views/controls/native/native_view_host.h"
 #include "views/focus/focus_search.h"
 #include "views/focus/view_storage.h"
-#include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
+
+namespace views {
 
 AccessiblePaneView::AccessiblePaneView()
     : pane_has_focus_(false),
@@ -25,8 +19,7 @@ AccessiblePaneView::AccessiblePaneView()
       end_key_(ui::VKEY_END, false, false, false),
       escape_key_(ui::VKEY_ESCAPE, false, false, false),
       left_key_(ui::VKEY_LEFT, false, false, false),
-      right_key_(ui::VKEY_RIGHT, false, false, false),
-      last_focused_view_storage_id_(-1) {
+      right_key_(ui::VKEY_RIGHT, false, false, false) {
   focus_search_.reset(new views::FocusSearch(this, true, true));
 }
 
@@ -36,17 +29,14 @@ AccessiblePaneView::~AccessiblePaneView() {
   }
 }
 
-bool AccessiblePaneView::SetPaneFocus(int view_storage_id,
-                                      views::View* initial_focus) {
+bool AccessiblePaneView::SetPaneFocus(views::View* initial_focus) {
   if (!IsVisible())
     return false;
 
-  // Save the storage id to the last focused view. This would be used to request
-  // focus to the view when the traversal is ended.
-  last_focused_view_storage_id_ = view_storage_id;
-
   if (!focus_manager_)
     focus_manager_ = GetFocusManager();
+
+  focus_manager_->StoreFocusedView();
 
   // Use the provided initial focus if it's visible and enabled, otherwise
   // use the first focusable child.
@@ -61,13 +51,7 @@ bool AccessiblePaneView::SetPaneFocus(int view_storage_id,
   if (!initial_focus)
     return false;
 
-  // Set focus to the initial view. If it's a location bar, use a special
-  // method that tells it to select all, also.
-  if (initial_focus->GetClassName() == LocationBarView::kViewClassName) {
-    static_cast<LocationBarView*>(initial_focus)->FocusLocation(true);
-  } else {
-    focus_manager_->SetFocusedView(initial_focus);
-  }
+  focus_manager_->SetFocusedView(initial_focus);
 
   // If we already have pane focus, we're done.
   if (pane_has_focus_)
@@ -85,9 +69,8 @@ bool AccessiblePaneView::SetPaneFocus(int view_storage_id,
   return true;
 }
 
-bool AccessiblePaneView::SetPaneFocusAndFocusDefault(
-    int view_storage_id) {
-  return SetPaneFocus(view_storage_id, GetDefaultFocusableChild());
+bool AccessiblePaneView::SetPaneFocusAndFocusDefault() {
+  return SetPaneFocus(GetDefaultFocusableChild());
 }
 
 views::View* AccessiblePaneView::GetDefaultFocusableChild() {
@@ -103,31 +86,6 @@ void AccessiblePaneView::RemovePaneFocus() {
   focus_manager_->UnregisterAccelerator(escape_key_, this);
   focus_manager_->UnregisterAccelerator(left_key_, this);
   focus_manager_->UnregisterAccelerator(right_key_, this);
-}
-
-void AccessiblePaneView::LocationBarSelectAll() {
-  views::View* focused_view = GetFocusManager()->GetFocusedView();
-  if (focused_view &&
-      focused_view->GetClassName() == LocationBarView::kViewClassName) {
-    static_cast<LocationBarView*>(focused_view)->SelectAll();
-  }
-}
-
-void AccessiblePaneView::RestoreLastFocusedView() {
-  views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
-  views::View* last_focused_view =
-      view_storage->RetrieveView(last_focused_view_storage_id_);
-  if (last_focused_view) {
-    focus_manager_->SetFocusedViewWithReason(
-        last_focused_view, views::FocusManager::kReasonFocusRestore);
-  } else {
-    // Focus the location bar
-    views::View* view = GetAncestorWithClassName(BrowserView::kViewClassName);
-    if (view) {
-      BrowserView* browser_view = static_cast<BrowserView*>(view);
-      browser_view->SetFocusToLocationBar(false);
-    }
-  }
 }
 
 views::View* AccessiblePaneView::GetFirstFocusableChild() {
@@ -158,19 +116,15 @@ views::FocusTraversable* AccessiblePaneView::GetPaneFocusTraversable() {
 
 bool AccessiblePaneView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
-  // Special case: don't handle any accelerators for the location bar,
-  // so that it behaves exactly the same whether you focus it with Ctrl+L
-  // or F6 or Alt+D or Alt+Shift+T.
+
   const views::View* focused_view = focus_manager_->GetFocusedView();
-  if ((focused_view->GetClassName() == LocationBarView::kViewClassName ||
-       focused_view->GetClassName() == views::NativeViewHost::kViewClassName)) {
+  if (!Contains(focused_view))
     return false;
-  }
 
   switch (accelerator.key_code()) {
     case ui::VKEY_ESCAPE:
       RemovePaneFocus();
-      RestoreLastFocusedView();
+      focus_manager_->RestoreFocusedView();
       return true;
     case ui::VKEY_LEFT:
       focus_manager_->AdvanceFocus(true);
@@ -194,7 +148,7 @@ bool AccessiblePaneView::AcceleratorPressed(
 void AccessiblePaneView::SetVisible(bool flag) {
   if (IsVisible() && !flag && pane_has_focus_) {
     RemovePaneFocus();
-    RestoreLastFocusedView();
+    focus_manager_->RestoreFocusedView();
   }
   View::SetVisible(flag);
 }
@@ -206,38 +160,26 @@ void AccessiblePaneView::GetAccessibleState(ui::AccessibleViewState* state) {
 ////////////////////////////////////////////////////////////////////////////////
 // FocusChangeListener overrides:
 
-void AccessiblePaneView::FocusWillChange(views::View* focused_before,
-                                         views::View* focused_now) {
+void AccessiblePaneView::OnWillChangeFocus(views::View* focused_before,
+                                           views::View* focused_now) {
+  //  Act when focus has changed.
+}
+
+void AccessiblePaneView::OnDidChangeFocus(views::View* focused_before,
+                                          views::View* focused_now) {
   if (!focused_now)
     return;
 
   views::FocusManager::FocusChangeReason reason =
       focus_manager_->focus_change_reason();
 
-  if (focused_now->GetClassName() == LocationBarView::kViewClassName &&
-      reason == views::FocusManager::kReasonFocusTraversal) {
-    // Tabbing to the location bar should select all. Defer so that it happens
-    // after the focus.
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AccessiblePaneView::LocationBarSelectAll,
-                   method_factory_.GetWeakPtr()));
-  }
-
   if (!Contains(focused_now) ||
       reason == views::FocusManager::kReasonDirectFocusChange) {
     // We should remove pane focus (i.e. make most of the controls
-    // not focusable again) either because the focus is leaving the pane,
+    // not focusable again) because the focus has left the pane,
     // or because the focus changed within the pane due to the user
     // directly focusing to a specific view (e.g., clicking on it).
-    //
-    // Defer rather than calling RemovePaneFocus right away, because we can't
-    // remove |this| as a focus change listener while FocusManager is in the
-    // middle of iterating over the list of listeners.
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AccessiblePaneView::RemovePaneFocus,
-                   method_factory_.GetWeakPtr()));
+    RemovePaneFocus();
   }
 }
 
@@ -258,3 +200,5 @@ views::View* AccessiblePaneView::GetFocusTraversableParentView() {
   DCHECK(pane_has_focus_);
   return NULL;
 }
+
+}  // namespace views

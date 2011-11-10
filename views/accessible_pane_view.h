@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ACCESSIBLE_PANE_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_ACCESSIBLE_PANE_VIEW_H_
+#ifndef VIEWS_ACCESSIBLE_PANE_VIEW_H_
+#define VIEWS_ACCESSIBLE_PANE_VIEW_H_
 #pragma once
 
 #include "base/hash_tables.h"
@@ -14,58 +14,56 @@
 
 namespace views {
 class FocusSearch;
-}
 
 // This class provides keyboard access to any view that extends it, typically
 // a toolbar.  The user sets focus to a control in this view by pressing
 // F6 to traverse all panes, or by pressing a shortcut that jumps directly
 // to this pane.
-class AccessiblePaneView : public views::View,
-                           public views::FocusChangeListener,
-                           public views::FocusTraversable {
+class AccessiblePaneView : public View,
+                           public FocusChangeListener,
+                           public FocusTraversable {
  public:
   AccessiblePaneView();
   virtual ~AccessiblePaneView();
 
   // Set focus to the pane with complete keyboard access.
-  // Focus will be restored to the ViewStorage with id |view_storage_id|
-  // if the user escapes. If |initial_focus| is not NULL, that control will get
+  // Focus will be restored to the last focused view if the user escapes.
+  // If |initial_focus| is not NULL, that control will get
   // the initial focus, if it's enabled and focusable. Returns true if
   // the pane was able to receive focus.
-  virtual bool SetPaneFocus(int view_storage_id, View* initial_focus);
+  virtual bool SetPaneFocus(View* initial_focus);
 
   // Set focus to the pane with complete keyboard access, with the
   // focus initially set to the default child. Focus will be restored
-  // to the ViewStorage with id |view_storage_id| if the user escapes.
+  // to the last focused view if the user escapes.
   // Returns true if the pane was able to receive focus.
-  virtual bool SetPaneFocusAndFocusDefault(int view_storage_id);
+  virtual bool SetPaneFocusAndFocusDefault();
 
-  // Overridden from views::View:
+  // Overridden from View:
   virtual FocusTraversable* GetPaneFocusTraversable() OVERRIDE;
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator)
+  virtual bool AcceleratorPressed(const Accelerator& accelerator)
       OVERRIDE;
   virtual void SetVisible(bool flag) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // Overridden from views::FocusChangeListener:
-  virtual void FocusWillChange(View* focused_before,
-                               View* focused_now) OVERRIDE;
+  // Overridden from FocusChangeListener:
+  virtual void OnWillChangeFocus(View* focused_before,
+                                 View* focused_now) OVERRIDE;
+  virtual void OnDidChangeFocus(View* focused_before,
+                                View* focused_now) OVERRIDE;
 
-  // Overridden from views::FocusTraversable:
-  virtual views::FocusSearch* GetFocusSearch() OVERRIDE;
+  // Overridden from FocusTraversable:
+  virtual FocusSearch* GetFocusSearch() OVERRIDE;
   virtual FocusTraversable* GetFocusTraversableParent() OVERRIDE;
   virtual View* GetFocusTraversableParentView() OVERRIDE;
 
  protected:
   // A subclass can override this to provide a default focusable child
   // other than the first focusable child.
-  virtual views::View* GetDefaultFocusableChild();
+  virtual View* GetDefaultFocusableChild();
 
   // Remove pane focus.
   virtual void RemovePaneFocus();
-
-  // Select all text in the location bar
-  virtual void LocationBarSelectAll();
 
   void RestoreLastFocusedView();
 
@@ -78,24 +76,23 @@ class AccessiblePaneView : public views::View,
 
   // Save the focus manager rather than calling GetFocusManager(),
   // so that we can remove focus listeners in the destructor.
-  views::FocusManager* focus_manager_;
+  FocusManager* focus_manager_;
 
   // Our custom focus search implementation that traps focus in this
   // pane and traverses all views that are focusable for accessibility,
   // not just those that are normally focusable.
-  scoped_ptr<views::FocusSearch> focus_search_;
+  scoped_ptr<FocusSearch> focus_search_;
 
   // Registered accelerators
-  views::Accelerator home_key_;
-  views::Accelerator end_key_;
-  views::Accelerator escape_key_;
-  views::Accelerator left_key_;
-  views::Accelerator right_key_;
-
-  // Last focused view that issued this traversal.
-  int last_focused_view_storage_id_;
+  Accelerator home_key_;
+  Accelerator end_key_;
+  Accelerator escape_key_;
+  Accelerator left_key_;
+  Accelerator right_key_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessiblePaneView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ACCESSIBLE_PANE_VIEW_H_
+}  // namespace views
+
+#endif  // VIEWS_ACCESSIBLE_PANE_VIEW_H_

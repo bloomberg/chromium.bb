@@ -139,12 +139,9 @@ void StatusAreaView::ReturnFocus(bool reverse) {
   return_focus_cb_.Run(reverse);
 }
 
-void StatusAreaView::FocusWillChange(views::View* focused_before,
-                                     views::View* focused_now) {
-  // Call superclass.
-  AccessiblePaneView::FocusWillChange(focused_before, focused_now);
-
-  // If focus has been wrapped, postpone focus return task.
+void StatusAreaView::OnDidChangeFocus(views::View* focused_before,
+                                      views::View* focused_now) {
+  views::AccessiblePaneView::OnDidChangeFocus(focused_before, focused_now);
   if (need_return_focus_) {
     const views::View* first = GetFirstFocusableChild();
     const views::View* last = GetLastFocusableChild();
@@ -152,7 +149,6 @@ void StatusAreaView::FocusWillChange(views::View* focused_before,
     const bool last_to_first = (focused_now == first && focused_before == last);
 
     if (first_to_last || last_to_first)
-      MessageLoop::current()->PostTask(FROM_HERE,
-          base::Bind(&StatusAreaView::ReturnFocus, AsWeakPtr(), first_to_last));
+      ReturnFocus(first_to_last);
   }
 }

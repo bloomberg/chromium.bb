@@ -47,8 +47,8 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   virtual void OnBrowserSetLastActive(const Browser* browser) OVERRIDE;
 
 #if defined(TOOLKIT_VIEWS)
-  virtual void NativeFocusWillChange(gfx::NativeView focused_before,
-                                     gfx::NativeView focused_now) OVERRIDE;
+  virtual void OnNativeFocusChange(gfx::NativeView focused_before,
+                                   gfx::NativeView focused_now) OVERRIDE;
 #elif defined(TOOLKIT_GTK)
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
 #endif

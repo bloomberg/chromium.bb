@@ -127,11 +127,15 @@ void DownloadShelfView::MouseMovedOutOfView() {
   Close();
 }
 
-void DownloadShelfView::FocusWillChange(views::View* focused_before,
-                                        views::View* focused_now) {
+void DownloadShelfView::OnWillChangeFocus(views::View* focused_before,
+                                          views::View* focused_now) {
   SchedulePaintForDownloadItem(focused_before);
   SchedulePaintForDownloadItem(focused_now);
-  AccessiblePaneView::FocusWillChange(focused_before, focused_now);
+}
+
+void DownloadShelfView::OnDidChangeFocus(views::View* focused_before,
+                                         views::View* focused_now) {
+  AccessiblePaneView::OnDidChangeFocus(focused_before, focused_now);
 }
 
 void DownloadShelfView::RemoveDownloadView(View* view) {

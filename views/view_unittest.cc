@@ -1408,7 +1408,7 @@ TEST_F(DefaultButtonTest, DialogDefaultButtonTest) {
   SimulatePressingEnterAndCheckDefaultButton(OK);
 
   // Simulate focusing another button, it should become the default button.
-  client_view_->FocusWillChange(ok_button_, test_dialog_->button1_);
+  client_view_->OnWillChangeFocus(ok_button_, test_dialog_->button1_);
   EXPECT_FALSE(ok_button_->is_default());
   EXPECT_TRUE(test_dialog_->button1_->is_default());
   // Simulate pressing enter, that should trigger button1.
@@ -1416,29 +1416,29 @@ TEST_F(DefaultButtonTest, DialogDefaultButtonTest) {
 
   // Now select something that is not a button, the OK should become the default
   // button again.
-  client_view_->FocusWillChange(test_dialog_->button1_,
-                                test_dialog_->checkbox_);
+  client_view_->OnWillChangeFocus(test_dialog_->button1_,
+                                  test_dialog_->checkbox_);
   EXPECT_TRUE(ok_button_->is_default());
   EXPECT_FALSE(test_dialog_->button1_->is_default());
   SimulatePressingEnterAndCheckDefaultButton(OK);
 
   // Select yet another button.
-  client_view_->FocusWillChange(test_dialog_->checkbox_,
-                                test_dialog_->button2_);
+  client_view_->OnWillChangeFocus(test_dialog_->checkbox_,
+                                  test_dialog_->button2_);
   EXPECT_FALSE(ok_button_->is_default());
   EXPECT_FALSE(test_dialog_->button1_->is_default());
   EXPECT_TRUE(test_dialog_->button2_->is_default());
   SimulatePressingEnterAndCheckDefaultButton(BUTTON2);
 
   // Focus nothing.
-  client_view_->FocusWillChange(test_dialog_->button2_, NULL);
+  client_view_->OnWillChangeFocus(test_dialog_->button2_, NULL);
   EXPECT_TRUE(ok_button_->is_default());
   EXPECT_FALSE(test_dialog_->button1_->is_default());
   EXPECT_FALSE(test_dialog_->button2_->is_default());
   SimulatePressingEnterAndCheckDefaultButton(OK);
 
   // Focus the cancel button.
-  client_view_->FocusWillChange(NULL, cancel_button_);
+  client_view_->OnWillChangeFocus(NULL, cancel_button_);
   EXPECT_FALSE(ok_button_->is_default());
   EXPECT_TRUE(cancel_button_->is_default());
   EXPECT_FALSE(test_dialog_->button1_->is_default());

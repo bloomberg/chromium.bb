@@ -190,8 +190,8 @@ void DialogClientView::SetDefaultButton(NativeTextButton* new_default_button) {
   }
 }
 
-void DialogClientView::FocusWillChange(View* focused_before,
-                                       View* focused_now) {
+void DialogClientView::OnWillChangeFocus(View* focused_before,
+                                         View* focused_now) {
   NativeTextButton* new_default_button = NULL;
   if (focused_now &&
       focused_now->GetClassName() == NativeTextButton::kViewClassName) {
@@ -207,6 +207,10 @@ void DialogClientView::FocusWillChange(View* focused_before,
       new_default_button = cancel_button_;
   }
   SetDefaultButton(new_default_button);
+}
+
+void DialogClientView::OnDidChangeFocus(View* focused_before,
+                                        View* focused_now) {
 }
 
 // Changing dialog labels will change button widths.

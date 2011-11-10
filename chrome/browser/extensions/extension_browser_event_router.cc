@@ -186,7 +186,7 @@ void ExtensionBrowserEventRouter::OnBrowserRemoved(const Browser* browser) {
 }
 
 #if defined(TOOLKIT_VIEWS)
-void ExtensionBrowserEventRouter::NativeFocusWillChange(
+void ExtensionBrowserEventRouter::OnNativeFocusChange(
     gfx::NativeView focused_before,
     gfx::NativeView focused_now) {
   if (!focused_now)

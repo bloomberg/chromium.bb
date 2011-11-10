@@ -26,6 +26,7 @@ class SimpleMenuModel;
 }  // namespace ui
 
 namespace views {
+class AccessiblePaneView;
 class ImageButton;
 class ImageView;
 class MenuDelegate;
@@ -120,7 +121,7 @@ class BrowserView : public ::BrowserView,
 
  protected:
   virtual void GetAccessiblePanes(
-      std::vector<AccessiblePaneView*>* panes);
+      std::vector<views::AccessiblePaneView*>* panes);
 
  private:
   void InitSystemMenu();

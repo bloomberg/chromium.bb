@@ -11,12 +11,12 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
-#include "chrome/browser/ui/views/accessible_pane_view.h"
+#include "views/accessible_pane_view.h"
 #include "views/view.h"
 
 // This class is used to wrap the small informative widgets in the upper-right
 // of the window title bar. It is used on ChromeOS only.
-class StatusAreaView : public AccessiblePaneView,
+class StatusAreaView : public views::AccessiblePaneView,
                        public base::SupportsWeakPtr<StatusAreaView> {
  public:
   explicit StatusAreaView();
@@ -36,8 +36,8 @@ class StatusAreaView : public AccessiblePaneView,
                  const ReturnFocusCallback& return_focus_cb);
 
   // Overridden from views::FocusChangeListener:
-  virtual void FocusWillChange(views::View* focused_before,
-                               views::View* focused_now) OVERRIDE;
+  virtual void OnDidChangeFocus(views::View* focused_before,
+                                views::View* focused_now) OVERRIDE;
 
   // views::View* overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE;

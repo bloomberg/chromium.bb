@@ -29,7 +29,7 @@ void WidgetFocusManager::OnWidgetFocusEvent(gfx::NativeView focused_before,
                                             gfx::NativeView focused_now) {
   if (enabled_) {
     FOR_EACH_OBSERVER(WidgetFocusChangeListener, focus_change_listeners_,
-                      NativeFocusWillChange(focused_before, focused_now));
+                      OnNativeFocusChange(focused_before, focused_now));
   }
 }
 

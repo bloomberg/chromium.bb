@@ -59,6 +59,8 @@
         'accelerator.h',
         'accessibility/native_view_accessibility_win.cc',
         'accessibility/native_view_accessibility_win.h',
+        'accessible_pane_view.cc',
+        'accessible_pane_view.h',
         'animation/bounds_animator.cc',
         'animation/bounds_animator.h',
         'background.cc',
@@ -575,6 +577,7 @@
         '..',
       ],
       'sources': [
+        'accessible_pane_view_unittest.cc',
         'animation/bounds_animator_unittest.cc',
         'bubble/bubble_delegate_unittest.cc',
         'bubble/bubble_frame_view_unittest.cc',

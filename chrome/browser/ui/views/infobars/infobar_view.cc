@@ -375,7 +375,7 @@ gfx::Size InfoBarView::GetPreferredSize() {
   return gfx::Size(0, total_height());
 }
 
-void InfoBarView::FocusWillChange(View* focused_before, View* focused_now) {
+void InfoBarView::OnWillChangeFocus(View* focused_before, View* focused_now) {
   // This will trigger some screen readers to read the entire contents of this
   // infobar.
   if (focused_before && focused_now && !Contains(focused_before) &&
@@ -383,4 +383,7 @@ void InfoBarView::FocusWillChange(View* focused_before, View* focused_now) {
     GetWidget()->NotifyAccessibilityEvent(
         this, ui::AccessibilityTypes::EVENT_ALERT, true);
   }
+}
+
+void InfoBarView::OnDidChangeFocus(View* focused_before, View* focused_now) {
 }

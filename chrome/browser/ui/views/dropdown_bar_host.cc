@@ -152,8 +152,8 @@ bool DropdownBarHost::IsVisible() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // DropdownBarHost, views::FocusChangeListener implementation:
-void DropdownBarHost::FocusWillChange(views::View* focused_before,
-                                      views::View* focused_now) {
+void DropdownBarHost::OnWillChangeFocus(views::View* focused_before,
+                                        views::View* focused_now) {
   // First we need to determine if one or both of the views passed in are child
   // views of our view.
   bool our_view_before = focused_before && view_->Contains(focused_before);
@@ -173,6 +173,10 @@ void DropdownBarHost::FocusWillChange(views::View* focused_before,
     // original handler for Escape.
     UnregisterAccelerators();
   }
+}
+
+void DropdownBarHost::OnDidChangeFocus(views::View* focused_before,
+                                       views::View* focused_now) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -71,8 +71,10 @@ class DropdownBarHost : public views::AcceleratorTarget,
   virtual void SetDialogPosition(const gfx::Rect& new_pos, bool no_redraw) = 0;
 
   // Overridden from views::FocusChangeListener:
-  virtual void FocusWillChange(views::View* focused_before,
-                               views::View* focused_now);
+  virtual void OnWillChangeFocus(views::View* focused_before,
+                                 views::View* focused_now) OVERRIDE;
+  virtual void OnDidChangeFocus(views::View* focused_before,
+                                views::View* focused_now) OVERRIDE;
 
   // Overridden from views::AcceleratorTarget:
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator) = 0;

@@ -65,6 +65,7 @@ class FirstRunBubbleViewBase : public views::View,
   // Called by FirstRunBubble::Show to request focus for the proper button
   // in the FirstRunBubbleView when it is shown.
   virtual void BubbleShown() = 0;
+  virtual void OnDidChangeFocus(View* focused_before, View* focused_now) {}
 };
 
 // FirstRunBubbleView ---------------------------------------------------------
@@ -85,7 +86,7 @@ class FirstRunBubbleView : public FirstRunBubbleViewBase {
   virtual gfx::Size GetPreferredSize();
 
   // FocusChangeListener:
-  virtual void FocusWillChange(View* focused_before, View* focused_now);
+  virtual void OnWillChangeFocus(View* focused_before, View* focused_now);
 
   FirstRunBubble* bubble_window_;
   views::Label* label1_;
@@ -217,8 +218,8 @@ gfx::Size FirstRunBubbleView::GetPreferredSize() {
       IDS_FIRSTRUNBUBBLE_DIALOG_HEIGHT_LINES));
 }
 
-void FirstRunBubbleView::FocusWillChange(View* focused_before,
-                                         View* focused_now) {
+void FirstRunBubbleView::OnWillChangeFocus(View* focused_before,
+                                           View* focused_now) {
   if (focused_before &&
       (focused_before->GetClassName() ==
           views::NativeTextButton::kViewClassName)) {
@@ -253,7 +254,7 @@ class FirstRunOEMBubbleView : public FirstRunBubbleViewBase {
   virtual gfx::Size GetPreferredSize();
 
   // FocusChangeListener:
-  virtual void FocusWillChange(View* focused_before, View* focused_now);
+  virtual void OnWillChangeFocus(View* focused_before, View* focused_now);
 
   FirstRunBubble* bubble_window_;
   views::Label* label1_;
@@ -381,8 +382,8 @@ gfx::Size FirstRunOEMBubbleView::GetPreferredSize() {
   return size;
 }
 
-void FirstRunOEMBubbleView::FocusWillChange(View* focused_before,
-                                            View* focused_now) {
+void FirstRunOEMBubbleView::OnWillChangeFocus(View* focused_before,
+                                              View* focused_now) {
   // No buttons in oem_bubble to register focus changes.
 }
 
@@ -406,7 +407,7 @@ class FirstRunMinimalBubbleView : public FirstRunBubbleViewBase {
   virtual gfx::Size GetPreferredSize();
 
   // FocusChangeListener:
-  virtual void FocusWillChange(View* focused_before, View* focused_now);
+  virtual void OnWillChangeFocus(View* focused_before, View* focused_now);
 
   FirstRunBubble* bubble_window_;
   Profile* profile_;
@@ -477,8 +478,8 @@ gfx::Size FirstRunMinimalBubbleView::GetPreferredSize() {
       IDS_FIRSTRUN_MINIMAL_BUBBLE_DIALOG_HEIGHT_LINES));
 }
 
-void FirstRunMinimalBubbleView::FocusWillChange(View* focused_before,
-                                                View* focused_now) {
+void FirstRunMinimalBubbleView::OnWillChangeFocus(View* focused_before,
+                                                  View* focused_now) {
   // No buttons in minimal bubble to register focus changes.
 }
 

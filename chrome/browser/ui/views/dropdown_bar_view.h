@@ -8,7 +8,7 @@
 
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
-#include "chrome/browser/ui/views/accessible_pane_view.h"
+#include "views/accessible_pane_view.h"
 
 namespace gfx {
 class Canvas;
@@ -20,7 +20,7 @@ class Canvas;
 // DropdownBarHost.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class DropdownBarView : public AccessiblePaneView,
+class DropdownBarView : public views::AccessiblePaneView,
                         public DropdownBarHostDelegate {
  public:
   explicit DropdownBarView(DropdownBarHost* host);

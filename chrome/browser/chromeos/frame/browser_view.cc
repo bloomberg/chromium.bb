@@ -388,8 +388,7 @@ void BrowserView::ShowInternal(bool is_active) {
 }
 
 void BrowserView::FocusChromeOSStatus() {
-  SaveFocusedView();
-  status_area_->SetPaneFocus(last_focused_view_storage_id(), NULL);
+  status_area_->SetPaneFocus(NULL);
 }
 
 views::LayoutManager* BrowserView::CreateLayoutManager() const {
@@ -574,7 +573,7 @@ void BrowserView::DidProcessEvent(GdkEvent* event) {
 // BrowserView protected:
 
 void BrowserView::GetAccessiblePanes(
-    std::vector<AccessiblePaneView*>* panes) {
+    std::vector<views::AccessiblePaneView*>* panes) {
   ::BrowserView::GetAccessiblePanes(panes);
   panes->push_back(status_area_);
 }

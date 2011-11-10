@@ -76,8 +76,10 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   virtual const DialogClientView* AsDialogClientView() const OVERRIDE;
 
   // FocusChangeListener implementation:
-  virtual void FocusWillChange(View* focused_before,
-                               View* focused_now) OVERRIDE;
+  virtual void OnWillChangeFocus(View* focused_before,
+                                 View* focused_now) OVERRIDE;
+  virtual void OnDidChangeFocus(View* focused_before,
+                                View* focused_now) OVERRIDE;
 
  protected:
   // View overrides:

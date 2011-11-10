@@ -871,17 +871,14 @@ void BrowserView::UpdateToolbar(TabContentsWrapper* contents,
 }
 
 void BrowserView::FocusToolbar() {
-  // Start the traversal within the main toolbar, passing it the storage id
-  // of the view where focus should be returned if the user exits the toolbar.
-  SaveFocusedView();
-  toolbar_->SetPaneFocus(last_focused_view_storage_id_, NULL);
+  // Start the traversal within the main toolbar. SetPaneFocus stores
+  // the current focused view before changing focus.
+  toolbar_->SetPaneFocus(NULL);
 }
 
 void BrowserView::FocusBookmarksToolbar() {
-  if (active_bookmark_bar_ && bookmark_bar_view_->IsVisible()) {
-    SaveFocusedView();
-    bookmark_bar_view_->SetPaneFocus(last_focused_view_storage_id_, NULL);
-  }
+  if (active_bookmark_bar_ && bookmark_bar_view_->IsVisible())
+    bookmark_bar_view_->SetPaneFocus(bookmark_bar_view_.get());
 }
 
 void BrowserView::FocusAppMenu() {
@@ -895,8 +892,7 @@ void BrowserView::FocusAppMenu() {
   if (toolbar_->IsAppMenuFocused()) {
     RestoreFocus();
   } else {
-    SaveFocusedView();
-    toolbar_->SetPaneFocusAndFocusAppMenu(last_focused_view_storage_id_);
+    toolbar_->SetPaneFocusAndFocusAppMenu();
   }
 }
 
@@ -911,7 +907,7 @@ void BrowserView::RotatePaneFocus(bool forwards) {
   // with NULL to represent the tab contents getting focus. If one of these
   // is currently invisible or has no focusable children it will be
   // automatically skipped.
-  std::vector<AccessiblePaneView*> accessible_panes;
+  std::vector<views::AccessiblePaneView*> accessible_panes;
   GetAccessiblePanes(&accessible_panes);
   int pane_count = static_cast<int>(accessible_panes.size());
 
@@ -940,7 +936,7 @@ void BrowserView::RotatePaneFocus(bool forwards) {
   // If the focus isn't currently in a pane, save the focus so we
   // can restore it if the user presses Escape.
   if (focused_view && index >= pane_count)
-    SaveFocusedView();
+    GetFocusManager()->StoreFocusedView();
 
   // Try to focus the next pane; if SetPaneFocusAndFocusDefault returns
   // false it means the pane didn't have any focusable controls, so skip
@@ -952,24 +948,13 @@ void BrowserView::RotatePaneFocus(bool forwards) {
       index = ((index - 1) + count) % count;
 
     if (index < pane_count) {
-      if (accessible_panes[index]->SetPaneFocusAndFocusDefault(
-              last_focused_view_storage_id_)) {
+      if (accessible_panes[index]->SetPaneFocusAndFocusDefault())
         break;
-      }
     } else {
       accessible_views[index]->RequestFocus();
       break;
     }
   }
-}
-
-void BrowserView::SaveFocusedView() {
-  views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
-  if (view_storage->RetrieveView(last_focused_view_storage_id_))
-    view_storage->RemoveView(last_focused_view_storage_id_);
-  views::View* focused_view = GetFocusManager()->GetFocusedView();
-  if (focused_view)
-    view_storage->StoreView(last_focused_view_storage_id_, focused_view);
 }
 
 void BrowserView::DestroyBrowser() {
@@ -1725,7 +1710,7 @@ gfx::Size BrowserView::GetMinimumSize() {
 // BrowserView, protected
 
 void BrowserView::GetAccessiblePanes(
-    std::vector<AccessiblePaneView*>* panes) {
+    std::vector<views::AccessiblePaneView*>* panes) {
   // This should be in the order of pane traversal of the panes using F6.
   // If one of these is invisible or has no focusable children, it will be
   // automatically skipped.

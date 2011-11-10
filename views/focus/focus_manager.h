@@ -99,10 +99,13 @@ class VIEWS_EXPORT FocusTraversable {
 
 // This interface should be implemented by classes that want to be notified when
 // the focus is about to change.  See the Add/RemoveFocusChangeListener methods.
-// No change to focus state has occurred yet when this function is called.
 class VIEWS_EXPORT FocusChangeListener {
  public:
-  virtual void FocusWillChange(View* focused_before, View* focused_now) = 0;
+  // No change to focus state has occurred yet when this function is called.
+  virtual void OnWillChangeFocus(View* focused_before, View* focused_now) = 0;
+
+  // Called after focus state has changed.
+  virtual void OnDidChangeFocus(View* focused_before, View* focused_now) = 0;
 
  protected:
   virtual ~FocusChangeListener() {}

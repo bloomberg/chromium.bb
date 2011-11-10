@@ -22,8 +22,8 @@ namespace views {
 // children of a single top-level native-view.
 class WidgetFocusChangeListener {
  public:
-  virtual void NativeFocusWillChange(gfx::NativeView focused_before,
-                                     gfx::NativeView focused_now) = 0;
+  virtual void OnNativeFocusChange(gfx::NativeView focused_before,
+                                   gfx::NativeView focused_now) = 0;
 
  protected:
   virtual ~WidgetFocusChangeListener() {}

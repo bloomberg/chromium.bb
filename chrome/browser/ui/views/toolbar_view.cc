@@ -229,12 +229,12 @@ void ToolbarView::Update(TabContents* tab, bool should_restore_state) {
     browser_actions_->RefreshBrowserActionViews();
 }
 
-void ToolbarView::SetPaneFocusAndFocusLocationBar(int view_storage_id) {
-  SetPaneFocus(view_storage_id, location_bar_);
+void ToolbarView::SetPaneFocusAndFocusLocationBar() {
+  SetPaneFocus(location_bar_);
 }
 
-void ToolbarView::SetPaneFocusAndFocusAppMenu(int view_storage_id) {
-  SetPaneFocus(view_storage_id, app_menu_);
+void ToolbarView::SetPaneFocusAndFocusAppMenu() {
+  SetPaneFocus(app_menu_);
 }
 
 bool ToolbarView::IsAppMenuFocused() {
@@ -313,9 +313,8 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, AccessiblePaneView overrides:
 
-bool ToolbarView::SetPaneFocus(
-    int view_storage_id, views::View* initial_focus) {
-  if (!AccessiblePaneView::SetPaneFocus(view_storage_id, initial_focus))
+bool ToolbarView::SetPaneFocus(views::View* initial_focus) {
+  if (!AccessiblePaneView::SetPaneFocus(initial_focus))
     return false;
 
   location_bar_->SetShowFocusRect(true);
@@ -631,6 +630,13 @@ void ToolbarView::OnThemeChanged() {
 
 std::string ToolbarView::GetClassName() const {
   return kViewClassName;
+}
+
+bool ToolbarView::AcceleratorPressed(const views::Accelerator& accelerator) {
+  const views::View* focused_view = focus_manager_->GetFocusedView();
+  if (focused_view == location_bar_)
+    return false;  // Let location bar handle all accelerator events.
+  return AccessiblePaneView::AcceleratorPressed(accelerator);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

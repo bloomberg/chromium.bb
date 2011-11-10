@@ -178,7 +178,7 @@ bool FindBarHost::AcceleratorPressed(const views::Accelerator& accelerator) {
   } else if (key == ui::VKEY_ESCAPE) {
     // This will end the Find session and hide the window, causing it to loose
     // focus and in the process unregister us as the handler for the Escape
-    // accelerator through the FocusWillChange event.
+    // accelerator through the OnWillChangeFocus event.
     find_bar_controller_->EndFindSession(FindBarController::kKeepSelection);
   } else {
     NOTREACHED() << "Unknown accelerator";

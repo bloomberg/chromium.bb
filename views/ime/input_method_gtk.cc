@@ -8,6 +8,7 @@
 #include <gdk/gdkkeysyms.h>
 
 #include <algorithm>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -134,16 +135,16 @@ void InputMethodGtk::DispatchKeyEvent(const KeyEvent& key) {
 
   handling_key_event_ = false;
 
-  const View* old_focused_view = focused_view();
+  const View* old_focused_view = GetFocusedView();
   if (key.type() == ui::ET_KEY_PRESSED && filtered)
     ProcessFilteredKeyPressEvent(key);
 
   // Ensure no focus change from processing the key event.
-  if (old_focused_view == focused_view()) {
+  if (old_focused_view == GetFocusedView()) {
     if (HasInputMethodResult())
       ProcessInputMethodResult(key, filtered);
     // Ensure no focus change sending input method results to the focused View.
-    if (old_focused_view == focused_view()) {
+    if (old_focused_view == GetFocusedView()) {
       if (key.type() == ui::ET_KEY_PRESSED && !filtered)
         ProcessUnfilteredKeyPressEvent(key);
       else if (key.type() == ui::ET_KEY_RELEASED)
@@ -194,17 +195,17 @@ bool InputMethodGtk::IsActive() {
   return true;
 }
 
-void InputMethodGtk::FocusedViewWillChange() {
+void InputMethodGtk::OnWillChangeFocus() {
   ConfirmCompositionText();
 }
 
-void InputMethodGtk::FocusedViewDidChange() {
+void InputMethodGtk::OnDidChangeFocus() {
   UpdateContextFocusState();
 
   // Force to update caret bounds, in case the View thinks that the caret
   // bounds has not changed.
   if (context_focused_)
-    OnCaretBoundsChanged(focused_view());
+    OnCaretBoundsChanged(GetFocusedView());
 }
 
 void InputMethodGtk::ConfirmCompositionText() {
@@ -220,7 +221,7 @@ void InputMethodGtk::ResetContext() {
     return;
 
   DCHECK(widget_focused());
-  DCHECK(focused_view());
+  DCHECK(GetFocusedView());
   DCHECK(!handling_key_event_);
 
   // To prevent any text from being committed when resetting the |context_|;
@@ -282,12 +283,12 @@ void InputMethodGtk::ProcessFilteredKeyPressEvent(const KeyEvent& key) {
 }
 
 void InputMethodGtk::ProcessUnfilteredKeyPressEvent(const KeyEvent& key) {
-  const View* old_focused_view = focused_view();
+  const View* old_focused_view = GetFocusedView();
   DispatchKeyEventPostIME(key);
 
   // We shouldn't dispatch the character anymore if the key event caused focus
   // change.
-  if (old_focused_view != focused_view())
+  if (old_focused_view != GetFocusedView())
     return;
 
   // If a key event was not filtered by |context_| or |context_simple_|, then

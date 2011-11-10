@@ -38,7 +38,6 @@
 // NOTE: For more information about the objects and files in this directory,
 // view: http://dev.chromium.org/developers/design-documents/browser-window
 
-class AccessiblePaneView;
 class BookmarkBarView;
 class Browser;
 class BrowserBubble;
@@ -68,6 +67,7 @@ class LauncherIconUpdater;
 #endif
 
 namespace views {
+class AccessiblePaneView;
 class ExternalFocusTracker;
 class Menu;
 }
@@ -415,10 +415,7 @@ class BrowserView : public BrowserBubbleHost,
   // can be traversed using F6, in the order they should be traversed.
   // Abstracted here so that it can be extended for Chrome OS.
   virtual void GetAccessiblePanes(
-      std::vector<AccessiblePaneView*>* panes);
-
-  // Save the current focused view to view storage
-  void SaveFocusedView();
+      std::vector<views::AccessiblePaneView*>* panes);
 
   int last_focused_view_storage_id() const {
     return last_focused_view_storage_id_;

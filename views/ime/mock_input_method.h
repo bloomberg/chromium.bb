@@ -6,6 +6,8 @@
 #define VIEWS_IME_MOCK_INPUT_METHOD_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "views/ime/input_method_base.h"
@@ -48,7 +50,7 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
 
  private:
   // Overridden from InputMethodBase.
-  virtual void FocusedViewWillChange() OVERRIDE;
+  virtual void OnWillChangeFocus(View* focused_before, View* focused) OVERRIDE;
 
   // Clears boolean states defined below.
   void ClearStates();

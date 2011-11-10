@@ -50,6 +50,7 @@ class TabContentsWrapper;
 class TemplateURLService;
 
 namespace views {
+class Accelerator;
 class HorizontalPainter;
 class Label;
 }  // namespace views

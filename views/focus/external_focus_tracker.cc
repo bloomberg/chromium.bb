@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,13 +28,17 @@ ExternalFocusTracker::~ExternalFocusTracker() {
     focus_manager_->RemoveFocusChangeListener(this);
 }
 
-void ExternalFocusTracker::FocusWillChange(View* focused_before,
-                                           View* focused_now) {
+void ExternalFocusTracker::OnWillChangeFocus(View* focused_before,
+                                             View* focused_now) {
   if (focused_now && !parent_view_->Contains(focused_now) &&
       parent_view_ != focused_now) {
     // Store the newly focused view.
     StoreLastFocusedView(focused_now);
   }
+}
+
+void ExternalFocusTracker::OnDidChangeFocus(View* focused_before,
+                                            View* focused_now) {
 }
 
 void ExternalFocusTracker::FocusLastFocusedExternalView() {

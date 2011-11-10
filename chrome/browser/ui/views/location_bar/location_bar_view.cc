@@ -350,7 +350,7 @@ void LocationBarView::OnFocus() {
 
   // Then focus the native location view which implements accessibility for
   // Windows.
-  location_entry_->SetFocus();
+  FocusLocation(true);
 }
 
 void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
@@ -1138,8 +1138,7 @@ void LocationBarView::AcceptInput() {
 
 void LocationBarView::FocusLocation(bool select_all) {
   location_entry_->SetFocus();
-  if (select_all)
-    location_entry_->SelectAll(true);
+  location_entry_->SelectAll(select_all);
 }
 
 void LocationBarView::FocusSearch() {

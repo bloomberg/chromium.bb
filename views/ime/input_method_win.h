@@ -67,8 +67,8 @@ class InputMethodWin : public InputMethodBase {
   LRESULT OnReconvertString(RECONVERTSTRING *reconv);
 
   // Overridden from InputMethodBase.
-  virtual void FocusedViewWillChange() OVERRIDE;
-  virtual void FocusedViewDidChange() OVERRIDE;
+  virtual void OnWillChangeFocus(View* focused_before, View* focused) OVERRIDE;
+  virtual void OnDidChangeFocus(View* focused_before, View* focused) OVERRIDE;
 
   // A helper function to return the Widget's native window.
   HWND hwnd() const { return widget()->GetNativeView(); }

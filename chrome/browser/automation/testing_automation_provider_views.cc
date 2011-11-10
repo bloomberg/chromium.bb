@@ -36,7 +36,7 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
     focus_manager_->AddFocusChangeListener(this);
     // Call the focus change notification once in case the focus has
     // already changed.
-    FocusWillChange(NULL, focus_manager_->GetFocusedView());
+    OnWillChangeFocus(NULL, focus_manager_->GetFocusedView());
   }
 
   virtual ~ViewFocusChangeWaiter() {
@@ -44,19 +44,12 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
   }
 
   // Inherited from FocusChangeListener
-  virtual void FocusWillChange(views::View* focused_before,
-                               views::View* focused_now) {
-    // This listener is called before focus actually changes. Post a task
-    // that will get run after focus changes.
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewFocusChangeWaiter::FocusChanged,
-                   weak_factory_.GetWeakPtr(), focused_before, focused_now));
+  virtual void OnWillChangeFocus(views::View* focused_before,
+                                 views::View* focused_now) {
   }
 
- private:
-  void FocusChanged(views::View* focused_before,
-                    views::View* focused_now) {
+  virtual void OnDidChangeFocus(views::View* focused_before,
+                                views::View* focused_now) {
     if (focused_now && focused_now->id() != previous_view_id_) {
       AutomationMsg_WaitForFocusedViewIDToChange::WriteReplyParams(
           reply_message_, true, focused_now->id());
@@ -66,6 +59,7 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
     }
   }
 
+ private:
   views::FocusManager* focus_manager_;
   int previous_view_id_;
   AutomationProvider* automation_;

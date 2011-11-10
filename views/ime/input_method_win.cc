@@ -137,11 +137,11 @@ LRESULT InputMethodWin::OnImeMessages(
   return result;
 }
 
-void InputMethodWin::FocusedViewWillChange() {
+void InputMethodWin::OnWillChangeFocus(View* focused_before, View* focused) {
   ConfirmCompositionText();
 }
 
-void InputMethodWin::FocusedViewDidChange() {
+void InputMethodWin::OnDidChangeFocus(View* focused_before, View* focused) {
   UpdateIMEState();
 }
 

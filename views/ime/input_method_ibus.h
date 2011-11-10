@@ -63,8 +63,8 @@ class InputMethodIBus : public InputMethodBase {
   class PendingCreateICRequest;
 
   // Overridden from InputMethodBase:
-  virtual void FocusedViewWillChange() OVERRIDE;
-  virtual void FocusedViewDidChange() OVERRIDE;
+  virtual void OnWillChangeFocus(View* focused_before, View* focused) OVERRIDE;
+  virtual void OnDidChangeFocus(View* focused_before, View* focused) OVERRIDE;
 
   // Creates |context_| instance asynchronously.
   void CreateContext();

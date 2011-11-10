@@ -14,11 +14,11 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
-#include "chrome/browser/ui/views/accessible_pane_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/reload_button.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/models/accelerator.h"
+#include "views/accessible_pane_view.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
@@ -33,7 +33,7 @@ class MenuListener;
 }
 
 // The Browser Window's toolbar.
-class ToolbarView : public AccessiblePaneView,
+class ToolbarView : public views::AccessiblePaneView,
                     public views::ViewMenuDelegate,
                     public ui::AcceleratorProvider,
                     public LocationBarView::Delegate,
@@ -58,13 +58,13 @@ class ToolbarView : public AccessiblePaneView,
 
   // Set focus to the toolbar with complete keyboard access, with the
   // focus initially set to the location bar. Focus will be restored
-  // to the ViewStorage with id |view_storage_id| if the user escapes.
-  void SetPaneFocusAndFocusLocationBar(int view_storage_id);
+  // to the last focused view if the user escapes.
+  void SetPaneFocusAndFocusLocationBar();
 
   // Set focus to the toolbar with complete keyboard access, with the
   // focus initially set to the app menu. Focus will be restored
-  // to the ViewStorage with id |view_storage_id| if the user escapes.
-  void SetPaneFocusAndFocusAppMenu(int view_storage_id);
+  // to the last focused view if the user escapes.
+  void SetPaneFocusAndFocusAppMenu();
 
   // Returns true if the app menu is focused.
   bool IsAppMenuFocused();
@@ -89,7 +89,7 @@ class ToolbarView : public AccessiblePaneView,
   views::MenuButton* app_menu() const { return app_menu_; }
 
   // Overridden from AccessiblePaneView
-  virtual bool SetPaneFocus(int view_storage_id, View* initial_focus) OVERRIDE;
+  virtual bool SetPaneFocus(View* initial_focus) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Overridden from views::ViewMenuDelegate:
@@ -128,6 +128,7 @@ class ToolbarView : public AccessiblePaneView,
   virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
+  virtual bool AcceleratorPressed(const views::Accelerator& acc) OVERRIDE;
 
   // The apparent horizontal space between most items, and the vertical padding
   // above and below them.

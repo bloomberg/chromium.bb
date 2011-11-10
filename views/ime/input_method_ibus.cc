@@ -5,14 +5,15 @@
 #include "views/ime/input_method_ibus.h"
 
 #include <ibus.h>
-
-#include <cstring>
-#include <set>
-
 #if defined(TOUCH_UI)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #endif
+
+#include <algorithm>
+#include <cstring>
+#include <set>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/basictypes.h"
@@ -127,7 +128,7 @@ void ExtractCompositionTextFromIBusPreedit(IBusText* text,
   composition->selection = ui::Range(cursor_offset);
   if (text->attrs) {
     guint i = 0;
-    while(true) {
+    while (true) {
       IBusAttribute* attr = ibus_attr_list_get(text->attrs, i++);
       if (!attr)
         break;
@@ -489,17 +490,17 @@ void InputMethodIBus::SetEnableInputMethodIBus(bool enabled) {
   inputmethod_ibus_enabled = enabled;
 }
 
-void InputMethodIBus::FocusedViewWillChange() {
+void InputMethodIBus::OnWillChangeFocus(View* focused_before, View* focused) {
   ConfirmCompositionText();
 }
 
-void InputMethodIBus::FocusedViewDidChange() {
+void InputMethodIBus::OnDidChangeFocus(View* focused_before, View* focused) {
   UpdateContextFocusState();
 
   // Force to update caret bounds, in case the View thinks that the caret
   // bounds has not changed.
   if (context_focused_)
-    OnCaretBoundsChanged(focused_view());
+    OnCaretBoundsChanged(GetFocusedView());
 }
 
 void InputMethodIBus::CreateContext() {
@@ -607,7 +608,7 @@ void InputMethodIBus::ResetContext() {
     return;
 
   DCHECK(widget_focused());
-  DCHECK(focused_view());
+  DCHECK(GetFocusedView());
 
   // Because ibus runs in asynchronous mode, the input method may still send us
   // results after sending out the reset request, so we use a flag to discard
@@ -693,7 +694,7 @@ void InputMethodIBus::ProcessKeyEventPostIME(const KeyEvent& key,
     return;
   }
 
-  const View* old_focused_view = focused_view();
+  const View* old_focused_view = GetFocusedView();
 
   // Same reason as above DCHECK.
   DCHECK(old_focused_view);
@@ -703,7 +704,7 @@ void InputMethodIBus::ProcessKeyEventPostIME(const KeyEvent& key,
 
   // In case the focus was changed by the key event. The |context_| should have
   // been reset when the focused view changed.
-  if (old_focused_view != focused_view())
+  if (old_focused_view != GetFocusedView())
     return;
 
   if (HasInputMethodResult())
@@ -711,7 +712,7 @@ void InputMethodIBus::ProcessKeyEventPostIME(const KeyEvent& key,
 
   // In case the focus was changed when sending input method results to the
   // focused View.
-  if (old_focused_view != focused_view())
+  if (old_focused_view != GetFocusedView())
     return;
 
   if (key.type() == ui::ET_KEY_PRESSED && !handled)
@@ -731,12 +732,12 @@ void InputMethodIBus::ProcessFilteredKeyPressEvent(const KeyEvent& key) {
 
 void InputMethodIBus::ProcessUnfilteredKeyPressEvent(const KeyEvent& key,
                                                      guint32 ibus_keyval) {
-  const View* old_focused_view = focused_view();
+  const View* old_focused_view = GetFocusedView();
   DispatchKeyEventPostIME(key);
 
   // We shouldn't dispatch the character anymore if the key event caused focus
   // change.
-  if (old_focused_view != focused_view())
+  if (old_focused_view != GetFocusedView())
     return;
 
   // Process compose and dead keys

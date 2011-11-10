@@ -820,8 +820,10 @@ TEST_F(FocusManagerTest, ViewFocusCallbacks) {
 typedef std::pair<View*, View*> ViewPair;
 class TestFocusChangeListener : public FocusChangeListener {
  public:
-  virtual void FocusWillChange(View* focused_before, View* focused_now) {
+  virtual void OnWillChangeFocus(View* focused_before, View* focused_now) {
     focus_changes_.push_back(ViewPair(focused_before, focused_now));
+  }
+  virtual void OnDidChangeFocus(View* focused_before, View* focused_now) {
   }
 
   const std::vector<ViewPair>& focus_changes() const { return focus_changes_; }
