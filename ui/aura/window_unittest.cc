@@ -1128,6 +1128,48 @@ TEST_F(WindowTest, Property) {
   EXPECT_EQ(0, w->GetIntProperty(key));
 }
 
+TEST_F(WindowTest, SetBoundsInternalShouldCheckTargetBounds) {
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithBounds(gfx::Rect(0, 0, 100, 100), NULL));
+
+  EXPECT_FALSE(!w1->layer());
+  w1->layer()->GetAnimator()->set_disable_timer_for_test(true);
+  ui::AnimationContainerElement* element = w1->layer()->GetAnimator();
+
+  EXPECT_EQ("0,0 100x100", w1->bounds().ToString());
+  EXPECT_EQ("0,0 100x100", w1->layer()->GetTargetBounds().ToString());
+
+  // Animate to a different position.
+  {
+    ui::LayerAnimator::ScopedSettings settings(w1->layer()->GetAnimator());
+    w1->SetBounds(gfx::Rect(100, 100, 100, 100));
+  }
+
+  EXPECT_EQ("0,0 100x100", w1->bounds().ToString());
+  EXPECT_EQ("100,100 100x100", w1->layer()->GetTargetBounds().ToString());
+
+  // Animate back to the first position. The animation hasn't started yet, so
+  // the current bounds are still (0, 0, 100, 100), but the target bounds are
+  // (100, 100, 100, 100). If we step the animator ahead, we should find that
+  // we're at (0, 0, 100, 100). That is, the second animation should be applied.
+  {
+    ui::LayerAnimator::ScopedSettings settings(w1->layer()->GetAnimator());
+    w1->SetBounds(gfx::Rect(0, 0, 100, 100));
+  }
+
+  EXPECT_EQ("0,0 100x100", w1->bounds().ToString());
+  EXPECT_EQ("0,0 100x100", w1->layer()->GetTargetBounds().ToString());
+
+  // Confirm that the target bounds are reached.
+  base::TimeTicks start_time =
+      w1->layer()->GetAnimator()->get_last_step_time_for_test();
+
+  element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
+
+  EXPECT_EQ("0,0 100x100", w1->bounds().ToString());
+}
+
+
 class WindowObserverTest : public WindowTest,
                            public WindowObserver {
  public:

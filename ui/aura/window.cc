@@ -423,11 +423,17 @@ Desktop* Window::GetDesktop() {
 }
 
 void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
-  const gfx::Rect old_bounds = bounds();
+  const gfx::Rect old_bounds = layer_->GetTargetBounds();
+
+  // Always need to set the layer's bounds -- even if it is to the same thing.
+  // This may cause important side effects such as stopping animation.
+  layer_->SetBounds(new_bounds);
+
+  // If we're not changing the effective bounds, then we can bail early and skip
+  // notifying our listeners.
   if (old_bounds == new_bounds)
     return;
 
-  layer_->SetBounds(new_bounds);
   if (layout_manager_.get())
     layout_manager_->OnWindowResized();
   if (delegate_)
@@ -495,7 +501,8 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
 }
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {
-  delegate_->OnPaint(canvas);
+  if (delegate_)
+    delegate_->OnPaint(canvas);
 }
 
 }  // namespace aura
