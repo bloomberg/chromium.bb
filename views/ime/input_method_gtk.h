@@ -38,8 +38,8 @@ class InputMethodGtk : public InputMethodBase {
 
  private:
   // Overridden from InputMethodBase:
-  virtual void OnWillChangeFocus() OVERRIDE;
-  virtual void OnDidChangeFocus() OVERRIDE;
+  virtual void OnWillChangeFocus(View* focused_before, View* focused) OVERRIDE;
+  virtual void OnDidChangeFocus(View* focused_before, View* focused) OVERRIDE;
 
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();

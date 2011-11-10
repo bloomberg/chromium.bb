@@ -195,11 +195,11 @@ bool InputMethodGtk::IsActive() {
   return true;
 }
 
-void InputMethodGtk::OnWillChangeFocus() {
+void InputMethodGtk::OnWillChangeFocus(View* focused_before, View* focused) {
   ConfirmCompositionText();
 }
 
-void InputMethodGtk::OnDidChangeFocus() {
+void InputMethodGtk::OnDidChangeFocus(View* focused_before, View* focused) {
   UpdateContextFocusState();
 
   // Force to update caret bounds, in case the View thinks that the caret
