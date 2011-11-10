@@ -132,7 +132,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
 #else
 #include "chrome/browser/download/download_shelf.h"
@@ -196,7 +196,8 @@ TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_END,
                  content::NotificationService::AllSources());
 #if defined(OS_CHROMEOS)
-  chromeos::CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      AddObserver(this);
 #endif
 }
 

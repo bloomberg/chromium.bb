@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -98,9 +99,9 @@ void NetworkChangeNotifierChromeos::Shutdown() {
   lib->RemoveNetworkManagerObserver(this);
   lib->RemoveObserverForAllNetworks(this);
 
-  chromeos::PowerLibrary* power =
-      chromeos::CrosLibrary::Get()->GetPowerLibrary();
-  power->RemoveObserver(this);
+  chromeos::CrosLibrary::Get()->GetPowerLibrary()->RemoveObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()
+      ->RemoveObserver(this);
 }
 
 void NetworkChangeNotifierChromeos::PowerChanged(

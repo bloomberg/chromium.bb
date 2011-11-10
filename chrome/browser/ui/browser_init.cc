@@ -95,6 +95,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/enterprise_extension_observer.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
@@ -614,7 +615,7 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
     // in a static so that it isn't reported as a leak.
     static chromeos::LowBatteryObserver* low_battery_observer =
         new chromeos::LowBatteryObserver(profile);
-    chromeos::CrosLibrary::Get()->GetPowerLibrary()->AddObserver(
+    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
         low_battery_observer);
 
     static chromeos::NetworkMessageObserver* network_message_observer =

@@ -18,26 +18,6 @@ namespace chromeos {
 
 typedef base::Callback<void(int64_t)> CalculateIdleTimeCallback;
 
-struct PowerSupplyStatus {
-  bool line_power_on;
-
-  bool battery_is_present;
-  bool battery_is_full;
-
-  // Time in seconds until the battery is empty or full, 0 for unknown.
-  int64 battery_seconds_to_empty;
-  int64 battery_seconds_to_full;
-
-  double battery_percentage;
-
-  PowerSupplyStatus() : line_power_on(false),
-                        battery_is_present(false),
-                        battery_is_full(false),
-                        battery_seconds_to_empty(0),
-                        battery_seconds_to_full(0),
-                        battery_percentage(0) {}
-};
-
 // This interface defines interaction with the ChromeOS power library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
 // library class like this: chromeos::CrosLibrary::Get()->GetPowerLibrary()
@@ -45,7 +25,6 @@ class PowerLibrary {
  public:
   class Observer {
    public:
-    virtual void PowerChanged(const PowerSupplyStatus& status) = 0;
     virtual void SystemResumed() = 0;
 
    protected:
@@ -71,9 +50,6 @@ class PowerLibrary {
 
   // Requests shutdown of the system.
   virtual void RequestShutdown() = 0;
-
-  // UI initiated request for status update.
-  virtual void RequestStatusUpdate() = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().

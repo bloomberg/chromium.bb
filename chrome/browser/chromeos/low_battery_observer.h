@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/notifications/system_notification.h"
 
 class Profile;
@@ -18,14 +18,13 @@ namespace chromeos {
 // The low battery observer displays a system notification when the battery
 // is low.
 
-class LowBatteryObserver : public PowerLibrary::Observer {
+class LowBatteryObserver : public PowerManagerClient::Observer {
  public:
   explicit LowBatteryObserver(Profile* profile);
   virtual ~LowBatteryObserver();
 
  private:
   virtual void PowerChanged(const PowerSupplyStatus& power_status);
-  virtual void SystemResumed() {}
 
   void Show(base::TimeDelta remaining, bool urgent);
   void Hide();

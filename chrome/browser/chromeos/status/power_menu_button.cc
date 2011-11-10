@@ -11,7 +11,7 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/status/status_area_bubble.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "grit/generated_resources.h"
@@ -216,11 +216,11 @@ PowerMenuButton::PowerMenuButton(StatusAreaButton::Delegate* delegate)
       status_(NULL) {
   set_id(VIEW_ID_STATUS_BUTTON_POWER);
   UpdateIconAndLabelInfo();
-  CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 }
 
 PowerMenuButton::~PowerMenuButton() {
-  CrosLibrary::Get()->GetPowerLibrary()->RemoveObserver(this);
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
 }
 
 // PowerMenuButton, views::MenuDelegate implementation:
@@ -277,7 +277,7 @@ void PowerMenuButton::OnLocaleChanged() {
 
 void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   // Explicitly query the power status.
-  CrosLibrary::Get()->GetPowerLibrary()->RequestStatusUpdate();
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate();
 
   views::MenuItemView* menu = new views::MenuItemView(this);
   // MenuRunner takes ownership of |menu|.
@@ -307,7 +307,7 @@ void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PowerMenuButton, PowerLibrary::Observer implementation:
+// PowerMenuButton, PowerManagerClient::Observer implementation:
 
 void PowerMenuButton::PowerChanged(const PowerSupplyStatus& power_status) {
   power_status_ = power_status;

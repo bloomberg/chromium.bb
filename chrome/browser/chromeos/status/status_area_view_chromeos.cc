@@ -33,9 +33,6 @@ void StatusAreaViewChromeos::Init(StatusAreaButton::Delegate* delegate,
   AddChromeosButtons(this, delegate, screen_mode);
 }
 
-void StatusAreaViewChromeos::PowerChanged(const PowerSupplyStatus& status) {
-}
-
 void StatusAreaViewChromeos::SystemResumed() {
   UpdateClockText();
 }

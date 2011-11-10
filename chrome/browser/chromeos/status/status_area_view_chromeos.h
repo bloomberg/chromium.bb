@@ -39,7 +39,6 @@ class StatusAreaViewChromeos : public StatusAreaView,
   void Init(StatusAreaButton::Delegate* delegate, ScreenMode screen_mode);
 
   // PowerLibrary::Observer:
-  virtual void PowerChanged(const PowerSupplyStatus& status) OVERRIDE;
   virtual void SystemResumed() OVERRIDE;
 
   // TimezoneSettings::Observer:

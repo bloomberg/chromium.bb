@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_POWER_MENU_BUTTON_H_
 #pragma once
 
-#include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "views/controls/menu/menu_delegate.h"
 #include "views/controls/menu/view_menu_delegate.h"
@@ -30,7 +30,7 @@ class StatusAreaBubbleContentView;
 class PowerMenuButton : public StatusAreaButton,
                         public views::MenuDelegate,
                         public views::ViewMenuDelegate,
-                        public PowerLibrary::Observer {
+                        public PowerManagerClient::Observer {
  public:
   explicit PowerMenuButton(StatusAreaButton::Delegate* delegate);
   virtual ~PowerMenuButton();

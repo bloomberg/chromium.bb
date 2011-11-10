@@ -11,6 +11,7 @@
 #include "base/task.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "net/base/network_change_notifier.h"
 
 namespace chromeos {
@@ -20,6 +21,7 @@ class OnlineStatusReportThreadTask;
 class NetworkChangeNotifierChromeos
     : public net::NetworkChangeNotifier,
       public chromeos::PowerLibrary::Observer,
+      public chromeos::PowerManagerClient::Observer,
       public chromeos::NetworkLibrary::NetworkObserver,
       public chromeos::NetworkLibrary::NetworkManagerObserver {
  public:
@@ -37,8 +39,10 @@ class NetworkChangeNotifierChromeos
  private:
   friend class OnlineStatusReportThreadTask;
 
-  // PowerLibrary::Observer overrides.
+  // PowerManagerClient::Observer overrides.
   virtual void PowerChanged(const PowerSupplyStatus& status) OVERRIDE;
+
+  // PowerLibrary::Observer overrides
   virtual void SystemResumed() OVERRIDE;
 
   // NetworkChangeNotifier overrides.

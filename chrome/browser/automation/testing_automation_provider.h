@@ -24,7 +24,7 @@
 
 #if defined(OS_CHROMEOS)
 // TODO(sque): move to a ChromeOS-specific class.  See crosbug.com/22081.
-#include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #endif  // defined(OS_CHROMEOS)
 
 class ImporterList;
@@ -43,7 +43,7 @@ class TestingAutomationProvider : public AutomationProvider,
                                   public BrowserList::Observer,
                                   public importer::ImporterListObserver,
 #if defined(OS_CHROMEOS)
-                                  public chromeos::PowerLibrary::Observer,
+                                  public chromeos::PowerManagerClient::Observer,
 #endif // defined(OS_CHROMEOS)
                                   public content::NotificationObserver {
 
@@ -1331,9 +1331,8 @@ class TestingAutomationProvider : public AutomationProvider,
                            DictionaryValue* args,
                            IPC::Message* reply_message);
 
-  // chromeos::PowerLibrary::Observer overrides.
+  // chromeos::PowerManagerClient::Observer overrides.
   virtual void PowerChanged(const chromeos::PowerSupplyStatus& status) OVERRIDE;
-  virtual void SystemResumed() OVERRIDE {}
 #endif  // defined(OS_CHROMEOS)
 
   void WaitForTabCountToBecome(int browser_handle,
