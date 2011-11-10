@@ -12,6 +12,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
+#include "base/task.h"
 #include "base/threading/thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabaseObserver.h"
 #include "webkit/database/database_connections.h"
@@ -99,5 +100,7 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
 
   static SimpleDatabaseSystem* instance_;
 };
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(SimpleDatabaseSystem);
 
 #endif  // WEBKIT_SUPPORT_SIMPLE_DATABASE_SYSTEM_H_
