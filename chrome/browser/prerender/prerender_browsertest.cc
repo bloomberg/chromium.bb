@@ -566,14 +566,17 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   // in. This must be called when the prerendered page is the current page
   // in the active tab.
   void GoBackToPageBeforePrerender(Browser* browser) {
+    TabContents* tab = browser->GetSelectedTabContents();
+    ASSERT_TRUE(tab);
+    EXPECT_FALSE(tab->IsLoading());
     ui_test_utils::WindowedNotificationObserver back_nav_observer(
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::Source<NavigationController>(&tab->controller()));
     browser->GoBack(CURRENT_TAB);
     back_nav_observer.Wait();
     bool js_result;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser->GetSelectedTabContents()->render_view_host(), L"",
+        tab->render_view_host(), L"",
         L"window.domAutomationController.send(DidBackToOriginalPagePass())",
         &js_result));
     EXPECT_TRUE(js_result);
@@ -1832,10 +1835,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToURL(url);
 }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
-// http://crbug.com/103563
-#define PrerenderSessionStorage FLAKY_PrerenderSessionStorage
-#endif
 // Validate that the sessionStorage namespace remains the same when swapping
 // in a prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSessionStorage) {
