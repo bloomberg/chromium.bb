@@ -364,11 +364,10 @@ void BookmarkBarGtk::PopupForButton(GtkWidget* button) {
   }
 
   current_menu_.reset(
-      new BookmarkMenuController(browser_, browser_->profile(), page_navigator_,
-                                 GTK_WINDOW(gtk_widget_get_toplevel(button)),
-                                 node,
-                                 button == overflow_button_ ?
-                                     first_hidden : 0));
+      new BookmarkMenuController(browser_->profile(), page_navigator_,
+          GTK_WINDOW(gtk_widget_get_toplevel(button)),
+          node,
+          button == overflow_button_ ? first_hidden : 0));
   menu_bar_helper_.MenuStartedShowing(button, current_menu_->widget());
   GdkEvent* event = gtk_get_current_event();
   current_menu_->Popup(button, event->button.button, event->button.time);

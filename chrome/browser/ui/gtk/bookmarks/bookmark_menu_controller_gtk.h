@@ -17,7 +17,6 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class Browser;
 class Profile;
 class Profiler;
 class PageNavigator;
@@ -35,8 +34,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
  public:
   // Creates a BookmarkMenuController showing the children of |node| starting
   // at index |start_child_index|.
-  BookmarkMenuController(Browser* browser,
-                         Profile* profile,
+  BookmarkMenuController(Profile* profile,
                          PageNavigator* page_navigator,
                          GtkWindow* window,
                          const BookmarkNode* node,
@@ -100,7 +98,6 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   CHROMEGTK_CALLBACK_4(BookmarkMenuController, void, OnMenuItemDragGet,
                        GdkDragContext*, GtkSelectionData*, guint, guint);
 
-  Browser* browser_;
   Profile* profile_;
   PageNavigator* page_navigator_;
 
