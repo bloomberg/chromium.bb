@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/timer.h"
+#include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
@@ -52,12 +53,14 @@ class DraggedTabController : public TabContentsDelegate,
   // pointer from the origin of the first tab in |tabs| and |source_tab_offset|
   // the offset from |source_tab|. |source_tab_offset| is the horizontal distant
   // for a horizontal tab strip, and the vertical distance for a vertical tab
-  // strip.
+  // strip. |initial_selection_model| is the selection model before the drag
+  // started and is only non-empty if |source_tab| was not initially selected.
   void Init(BaseTabStrip* source_tabstrip,
             BaseTab* source_tab,
             const std::vector<BaseTab*>& tabs,
             const gfx::Point& mouse_offset,
-            int source_tab_offset);
+            int source_tab_offset,
+            const TabStripSelectionModel& initial_selection_model);
 
   // Returns true if there is a drag underway and the drag is attached to
   // |tab_strip|.
@@ -375,6 +378,13 @@ class DraggedTabController : public TabContentsDelegate,
 
   // True until |MoveAttached| is invoked once.
   bool initial_move_;
+
+  // The selection model before the drag started. See comment above Init() for
+  // details.
+  TabStripSelectionModel initial_selection_model_;
+
+  // The selection model of |attached_tabstrip_| before the tabs were attached.
+  TabStripSelectionModel selection_model_before_attach_;
 
   DISALLOW_COPY_AND_ASSIGN(DraggedTabController);
 };

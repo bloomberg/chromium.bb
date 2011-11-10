@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -288,6 +289,8 @@ bool BaseTab::OnMousePressed(const views::MouseEvent& event) {
     return false;
 
   if (event.IsOnlyLeftMouseButton()) {
+    TabStripSelectionModel original_selection;
+    original_selection.Copy(controller()->GetSelectionModel());
     if (event.IsShiftDown() && event.IsControlDown()) {
       controller()->AddSelectionFromAnchorTo(this);
     } else if (event.IsShiftDown()) {
@@ -303,7 +306,7 @@ bool BaseTab::OnMousePressed(const views::MouseEvent& event) {
     } else if (IsActive()) {
       controller()->ClickActiveTab(this);
     }
-    controller()->MaybeStartDrag(this, event);
+    controller()->MaybeStartDrag(this, event, original_selection);
   }
   return true;
 }

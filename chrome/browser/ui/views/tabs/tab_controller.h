@@ -7,6 +7,7 @@
 #pragma once
 
 class BaseTab;
+class TabStripSelectionModel;
 
 namespace gfx {
 class Point;
@@ -18,6 +19,8 @@ class MouseEvent;
 // Controller for tabs.
 class TabController {
  public:
+  virtual const TabStripSelectionModel& GetSelectionModel() = 0;
+
   // Selects the tab.
   virtual void SelectTab(BaseTab* tab) = 0;
 
@@ -50,7 +53,10 @@ class TabController {
   virtual bool IsTabCloseable(const BaseTab* tab) const = 0;
 
   // Potentially starts a drag for the specified Tab.
-  virtual void MaybeStartDrag(BaseTab* tab, const views::MouseEvent& event) = 0;
+  virtual void MaybeStartDrag(
+      BaseTab* tab,
+      const views::MouseEvent& event,
+      const TabStripSelectionModel& original_selection) = 0;
 
   // Continues dragging a Tab.
   virtual void ContinueDrag(const views::MouseEvent& event) = 0;

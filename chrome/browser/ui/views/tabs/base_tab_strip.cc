@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/tabs/base_tab_strip.h"
 
 #include "base/logging.h"
+#include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/dragged_tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
@@ -229,6 +230,10 @@ void BaseTabStrip::UpdateLoadingAnimations() {
   controller_->UpdateLoadingAnimations();
 }
 
+const TabStripSelectionModel& BaseTabStrip::GetSelectionModel() {
+  return controller_->GetSelectionModel();
+}
+
 void BaseTabStrip::SelectTab(BaseTab* tab) {
   int model_index = GetModelIndexOfBaseTab(tab);
   if (IsValidModelIndex(model_index))
@@ -300,8 +305,10 @@ bool BaseTabStrip::IsTabCloseable(const BaseTab* tab) const {
       controller_->IsTabCloseable(model_index);
 }
 
-void BaseTabStrip::MaybeStartDrag(BaseTab* tab,
-                                  const views::MouseEvent& event) {
+void BaseTabStrip::MaybeStartDrag(
+    BaseTab* tab,
+    const views::MouseEvent& event,
+    const TabStripSelectionModel& original_selection) {
   // Don't accidentally start any drag operations during animations if the
   // mouse is down... during an animation tabs are being resized automatically,
   // so the View system can misinterpret this easily if the mouse is down that
@@ -334,8 +341,12 @@ void BaseTabStrip::MaybeStartDrag(BaseTab* tab,
   }
   DCHECK(!tabs.empty());
   DCHECK(std::find(tabs.begin(), tabs.end(), tab) != tabs.end());
-  drag_controller_->Init(this, tab, tabs, gfx::Point(x, y),
-                         tab->GetMirroredXInView(event.x()));
+  TabStripSelectionModel selection_model;
+  if (!original_selection.IsSelected(model_index))
+    selection_model.Copy(original_selection);
+  drag_controller_->Init(
+      this, tab, tabs, gfx::Point(x, y), tab->GetMirroredXInView(event.x()),
+      selection_model);
 }
 
 void BaseTabStrip::ContinueDrag(const views::MouseEvent& event) {

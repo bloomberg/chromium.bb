@@ -331,11 +331,13 @@ DraggedTabController::~DraggedTabController() {
   ResetDelegates();
 }
 
-void DraggedTabController::Init(BaseTabStrip* source_tabstrip,
-                                BaseTab* source_tab,
-                                const std::vector<BaseTab*>& tabs,
-                                const gfx::Point& mouse_offset,
-                                int source_tab_offset) {
+void DraggedTabController::Init(
+    BaseTabStrip* source_tabstrip,
+    BaseTab* source_tab,
+    const std::vector<BaseTab*>& tabs,
+    const gfx::Point& mouse_offset,
+    int source_tab_offset,
+    const TabStripSelectionModel& initial_selection_model) {
   DCHECK(!tabs.empty());
   DCHECK(std::find(tabs.begin(), tabs.end(), source_tab) != tabs.end());
   source_tabstrip_ = source_tabstrip;
@@ -357,6 +359,7 @@ void DraggedTabController::Init(BaseTabStrip* source_tabstrip,
         static_cast<float>(source_tab->width());
   }
   InitWindowCreatePoint();
+  initial_selection_model_.Copy(initial_selection_model);
 }
 
 // static
@@ -829,6 +832,8 @@ void DraggedTabController::Attach(BaseTabStrip* attached_tabstrip,
     // There is no Tab in |attached_tabstrip| that corresponds to the dragged
     // TabContents. We must now create one.
 
+    selection_model_before_attach_.Copy(attached_tabstrip->GetSelectionModel());
+
     // Remove ourselves as the delegate now that the dragged TabContents is
     // being inserted back into a Browser.
     for (size_t i = 0; i < drag_data_.size(); ++i) {
@@ -922,8 +927,28 @@ void DraggedTabController::Detach() {
   }
 
   // If we've removed the last Tab from the TabStrip, hide the frame now.
-  if (attached_model->empty())
+  if (attached_model->empty()) {
     HideFrame();
+  } else if (!selection_model_before_attach_.empty() &&
+             selection_model_before_attach_.active() >= 0 &&
+             selection_model_before_attach_.active() <
+             attached_model->count()) {
+    // Restore the selection.
+    attached_model->SetSelectionFromModel(selection_model_before_attach_);
+  } else if (attached_tabstrip_ == source_tabstrip_ &&
+             !initial_selection_model_.empty()) {
+    // First time detaching from the source tabstrip. Reset selection model to
+    // initial_selection_model_. Before resetting though we have to remove all
+    // the tabs from initial_selection_model_ as it was created with the tabs
+    // still there.
+    TabStripSelectionModel selection_model;
+    selection_model.Copy(initial_selection_model_);
+    for (DragData::const_reverse_iterator i = drag_data_.rbegin();
+         i != drag_data_.rend(); ++i) {
+      selection_model.DecrementFrom(i->source_model_index);
+    }
+    attached_model->SetSelectionFromModel(selection_model);
+  }
 
   // Create the dragged view.
   CreateDraggedView(tab_data, drag_bounds);
@@ -1076,7 +1101,12 @@ void DraggedTabController::RevertDrag() {
 
   attached_tabstrip_ = source_tabstrip_;
 
-  ResetSelection(GetModel(attached_tabstrip_));
+  if (initial_selection_model_.empty()) {
+    ResetSelection(GetModel(attached_tabstrip_));
+  } else {
+    GetModel(attached_tabstrip_)->SetSelectionFromModel(
+        initial_selection_model_);
+  }
 
   // If we're not attached to any TabStrip, or attached to some other TabStrip,
   // we need to restore the bounds of the original TabStrip's frame, in case

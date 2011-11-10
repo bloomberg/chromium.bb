@@ -4,7 +4,14 @@
 
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 
+FakeBaseTabStripController::FakeBaseTabStripController() {
+}
+
 FakeBaseTabStripController::~FakeBaseTabStripController() {
+}
+
+const TabStripSelectionModel& FakeBaseTabStripController::GetSelectionModel() {
+  return selection_model_;
 }
 
 int FakeBaseTabStripController::GetCount() const {

@@ -111,6 +111,7 @@ class BaseTabStrip : public AbstractTabStripView,
   virtual void UpdateLoadingAnimations() OVERRIDE;
 
   // TabController overrides:
+  virtual const TabStripSelectionModel& GetSelectionModel() OVERRIDE;
   virtual void SelectTab(BaseTab* tab) OVERRIDE;
   virtual void ExtendSelectionTo(BaseTab* tab) OVERRIDE;
   virtual void ToggleSelected(BaseTab* tab) OVERRIDE;
@@ -122,8 +123,10 @@ class BaseTabStrip : public AbstractTabStripView,
   virtual bool IsTabSelected(const BaseTab* tab) const OVERRIDE;
   virtual bool IsTabPinned(const BaseTab* tab) const OVERRIDE;
   virtual bool IsTabCloseable(const BaseTab* tab) const OVERRIDE;
-  virtual void MaybeStartDrag(BaseTab* tab,
-                              const views::MouseEvent& event) OVERRIDE;
+  virtual void MaybeStartDrag(
+      BaseTab* tab,
+      const views::MouseEvent& event,
+      const TabStripSelectionModel& original_selection) OVERRIDE;
   virtual void ContinueDrag(const views::MouseEvent& event) OVERRIDE;
   virtual bool EndDrag(bool canceled) OVERRIDE;
   virtual BaseTab* GetTabAt(BaseTab* tab,
