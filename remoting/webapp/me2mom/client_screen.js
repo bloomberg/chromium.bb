@@ -458,8 +458,10 @@ function parseHostListResponse_(xhr) {
         remoting.debug.log('Error response: ' + xhr.responseText);
       }
 
-      // If the error is unlikely to be recoverable then notify the user.
-      if (xhr.status >= 400 && xhr.status <= 499) {
+      // For most errors in the 4xx range, tell the user to re-authorize us.
+      if (xhr.status == 403) {
+        // The user's account is not enabled for Me2Me, so fail silently.
+      } else if (xhr.status >= 400 && xhr.status <= 499) {
         // TODO(wez): We need to replace this with a more general showError_().
         showConnectError_(remoting.Error.GENERIC);
       }
