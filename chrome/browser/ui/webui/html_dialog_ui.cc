@@ -70,7 +70,7 @@ void HtmlDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
-      content::Source<HtmlDialogUI>(this),
+      content::Source<WebUI>(this),
       content::NotificationService::NoDetails());
 }
 

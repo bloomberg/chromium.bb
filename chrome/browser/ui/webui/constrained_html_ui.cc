@@ -12,8 +12,10 @@
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/notification_service.h"
 
 static base::LazyInstance<PropertyAccessor<ConstrainedHtmlUIDelegate*> >
     g_constrained_html_ui_property_accessor(base::LINKER_INITIALIZED);
@@ -45,6 +47,11 @@ void ConstrainedHtmlUI::RenderViewCreated(RenderViewHost* render_view_host) {
   RegisterMessageCallback("DialogClose",
       base::Bind(&ConstrainedHtmlUI::OnDialogCloseMessage,
                  base::Unretained(this)));
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
+      content::Source<WebUI>(this),
+      content::NotificationService::NoDetails());
 }
 
 void ConstrainedHtmlUI::OnDialogCloseMessage(const ListValue* args) {

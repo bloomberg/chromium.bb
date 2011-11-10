@@ -12,7 +12,11 @@
 #include "grit/generated_resources.h"
 
 CertificateViewerUI::CertificateViewerUI(TabContents* contents)
+#if defined(USE_AURA)
+    : ConstrainedHtmlUI(contents) {
+#else
     : HtmlDialogUI(contents) {
+#endif
 
   // Set up the chrome://view-cert source.
   ChromeWebUIDataSource* html_source =
