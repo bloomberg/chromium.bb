@@ -204,7 +204,7 @@ void DisconnectWindowWin::Show(ChromotingHost* host,
 
 void DisconnectWindowWin::ShutdownHost() {
   CHECK(host_);
-  host_->Shutdown(NULL);
+  host_->Shutdown(base::Closure());
 }
 
 static int GetControlTextWidth(HWND control) {

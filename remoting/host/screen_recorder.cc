@@ -60,7 +60,7 @@ ScreenRecorder::~ScreenRecorder() {
 
 void ScreenRecorder::Start() {
   capture_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &ScreenRecorder::DoStart));
+      FROM_HERE, base::Bind(&ScreenRecorder::DoStart, this));
 }
 
 void ScreenRecorder::Stop(const base::Closure& done_task) {
@@ -82,35 +82,31 @@ void ScreenRecorder::Stop(const base::Closure& done_task) {
 void ScreenRecorder::AddConnection(
     scoped_refptr<ConnectionToClient> connection) {
   capture_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &ScreenRecorder::DoInvalidateFullScreen));
+      FROM_HERE, base::Bind(&ScreenRecorder::DoInvalidateFullScreen, this));
 
   // Add the client to the list so it can receive update stream.
   network_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &ScreenRecorder::DoAddConnection, connection));
+      FROM_HERE, base::Bind(&ScreenRecorder::DoAddConnection,
+                            this, connection));
 }
 
 void ScreenRecorder::RemoveConnection(
     scoped_refptr<ConnectionToClient> connection) {
   network_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &ScreenRecorder::DoRemoveClient, connection));
+      FROM_HERE, base::Bind(&ScreenRecorder::DoRemoveClient, this, connection));
 }
 
 void ScreenRecorder::RemoveAllConnections() {
   network_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &ScreenRecorder::DoRemoveAllClients));
+      FROM_HERE, base::Bind(&ScreenRecorder::DoRemoveAllClients, this));
 }
 
 void ScreenRecorder::UpdateSequenceNumber(int64 sequence_number) {
   // Sequence number is used and written only on the capture thread.
   if (MessageLoop::current() != capture_loop_) {
     capture_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &ScreenRecorder::UpdateSequenceNumber,
-                          sequence_number));
+        FROM_HERE, base::Bind(&ScreenRecorder::UpdateSequenceNumber,
+                              this, sequence_number));
     return;
   }
 
@@ -183,7 +179,7 @@ void ScreenRecorder::DoCapture() {
   // And finally perform one capture.
   capture_start_time_ = base::Time::Now();
   capturer()->CaptureInvalidRegion(
-      NewCallback(this, &ScreenRecorder::CaptureDoneCallback));
+      base::Bind(&ScreenRecorder::CaptureDoneCallback, this));
 }
 
 void ScreenRecorder::CaptureDoneCallback(
@@ -209,8 +205,7 @@ void ScreenRecorder::CaptureDoneCallback(
   }
 
   encode_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &ScreenRecorder::DoEncode, capture_data));
+      FROM_HERE, base::Bind(&ScreenRecorder::DoEncode, this, capture_data));
 }
 
 void ScreenRecorder::DoFinishOneRecording() {
@@ -273,8 +268,7 @@ void ScreenRecorder::FrameSentCallback(VideoPacket* packet) {
     return;
 
   capture_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(this,
-                                   &ScreenRecorder::DoFinishOneRecording));
+      FROM_HERE, base::Bind(&ScreenRecorder::DoFinishOneRecording, this));
 }
 
 void ScreenRecorder::DoAddConnection(
@@ -314,9 +308,8 @@ void ScreenRecorder::DoStopOnNetworkThread(const base::Closure& done_task) {
   network_stopped_ = true;
 
   encode_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &ScreenRecorder::DoStopOnEncodeThread,
-                        done_task));
+      FROM_HERE, base::Bind(&ScreenRecorder::DoStopOnEncodeThread,
+                            this, done_task));
 }
 
 // Encoder thread --------------------------------------------------------------
@@ -331,17 +324,15 @@ void ScreenRecorder::DoEncode(
     VideoPacket* packet = new VideoPacket();
     packet->set_flags(VideoPacket::LAST_PARTITION);
     network_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this,
-                          &ScreenRecorder::DoSendVideoPacket,
-                          packet));
+        FROM_HERE, base::Bind(&ScreenRecorder::DoSendVideoPacket,
+                              this, packet));
     return;
   }
 
   encode_start_time_ = base::Time::Now();
   encoder()->Encode(
       capture_data, false,
-      NewCallback(this, &ScreenRecorder::EncodedDataAvailableCallback));
+      base::Bind(&ScreenRecorder::EncodedDataAvailableCallback, this));
 }
 
 void ScreenRecorder::DoStopOnEncodeThread(const base::Closure& done_task) {
@@ -371,8 +362,7 @@ void ScreenRecorder::EncodedDataAvailableCallback(VideoPacket* packet) {
   }
 
   network_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &ScreenRecorder::DoSendVideoPacket, packet));
+      FROM_HERE, base::Bind(&ScreenRecorder::DoSendVideoPacket, this, packet));
 }
 
 }  // namespace remoting

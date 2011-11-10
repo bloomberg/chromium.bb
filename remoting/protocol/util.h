@@ -23,9 +23,6 @@ namespace protocol {
 scoped_refptr<net::IOBufferWithSize> SerializeAndFrameMessage(
     const google::protobuf::MessageLite& msg);
 
-// Create a runnable task that deletes a message.
-Task* NewDeleteMessageTask(google::protobuf::MessageLite* message);
-
 }  // namespace protocol
 }  // namespace remoting
 

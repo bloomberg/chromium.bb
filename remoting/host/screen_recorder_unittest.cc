@@ -25,7 +25,6 @@ using ::testing::DeleteArg;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
-using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArg;
 
@@ -36,15 +35,13 @@ namespace {
 ACTION_P2(RunCallback, region, data) {
   SkRegion& dirty_region = data->mutable_dirty_region();
   dirty_region.op(region, SkRegion::kUnion_Op);
-  arg0->Run(data);
-  delete arg0;
+  arg0.Run(data);
 }
 
 ACTION(FinishEncode) {
   scoped_ptr<VideoPacket> packet(new VideoPacket());
   packet->set_flags(VideoPacket::LAST_PACKET | VideoPacket::LAST_PARTITION);
-  arg2->Run(packet.release());
-  delete arg2;
+  arg2.Run(packet.release());
 }
 
 ACTION(FinishSend) {
@@ -119,11 +116,11 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
   EXPECT_CALL(capturer_, InvalidateFullScreen());
 
   // First the capturer is called.
-  EXPECT_CALL(capturer_, CaptureInvalidRegion(NotNull()))
+  EXPECT_CALL(capturer_, CaptureInvalidRegion(_))
       .WillRepeatedly(RunCallback(update_region, data));
 
   // Expect the encoder be called.
-  EXPECT_CALL(*encoder_, Encode(data, false, NotNull()))
+  EXPECT_CALL(*encoder_, Encode(data, false, _))
       .WillRepeatedly(FinishEncode());
 
   MockVideoStub video_stub;

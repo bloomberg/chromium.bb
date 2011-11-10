@@ -30,7 +30,8 @@ class MockCapturer : public Capturer {
   MOCK_METHOD1(InvalidateRegion, void(const SkRegion& invalid_region));
   MOCK_METHOD1(InvalidateScreen, void(const SkISize&));
   MOCK_METHOD0(InvalidateFullScreen, void());
-  MOCK_METHOD1(CaptureInvalidRegion, void(CaptureCompletedCallback* callback));
+  MOCK_METHOD1(CaptureInvalidRegion,
+               void(const CaptureCompletedCallback& callback));
   MOCK_CONST_METHOD0(size_most_recent, const SkISize&());
 
  private:

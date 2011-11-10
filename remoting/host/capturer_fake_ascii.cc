@@ -52,9 +52,7 @@ void CapturerFakeAscii::InvalidateFullScreen() {
 }
 
 void CapturerFakeAscii::CaptureInvalidRegion(
-    CaptureCompletedCallback* callback) {
-  scoped_ptr<CaptureCompletedCallback> callback_deleter(callback);
-
+    const CaptureCompletedCallback& callback) {
   GenerateImage();
   DataPlanes planes;
   planes.data[0] = buffers_[current_buffer_].get();
@@ -65,7 +63,7 @@ void CapturerFakeAscii::CaptureInvalidRegion(
 
   helper_.set_size_most_recent(capture_data->size());
 
-  callback->Run(capture_data);
+  callback.Run(capture_data);
 }
 
 const SkISize& CapturerFakeAscii::size_most_recent() const {

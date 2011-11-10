@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
 #include "media/base/video_frame.h"
 #include "remoting/proto/video.pb.h"
 #include "third_party/skia/include/core/SkRect.h"

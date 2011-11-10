@@ -129,7 +129,7 @@ void BufferedSocketWriterBase::OnWritten(int result) {
 
   // Schedule next write.
   message_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &BufferedSocketWriterBase::DoWrite));
+      FROM_HERE, base::Bind(&BufferedSocketWriterBase::DoWrite, this));
 }
 
 void BufferedSocketWriterBase::HandleError(int result) {

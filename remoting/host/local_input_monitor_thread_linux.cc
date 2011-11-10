@@ -173,7 +173,7 @@ void LocalInputMonitorThread::LocalKeyPressed(int key_code, bool down) {
   } else if (key_sym == XK_Alt_L || key_sym == XK_Alt_R) {
     alt_pressed_ = down;
   } else if (alt_pressed_ && ctrl_pressed_ && key_sym == XK_Escape && down) {
-    host_->Shutdown(NULL);
+    host_->Shutdown(base::Closure());
   }
 }
 

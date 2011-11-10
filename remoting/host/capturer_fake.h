@@ -27,8 +27,8 @@ class CapturerFake : public Capturer {
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void InvalidateScreen(const SkISize& size) OVERRIDE;
   virtual void InvalidateFullScreen() OVERRIDE;
-  virtual void CaptureInvalidRegion(CaptureCompletedCallback* callback)
-      OVERRIDE;
+  virtual void CaptureInvalidRegion(
+      const CaptureCompletedCallback& callback) OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:

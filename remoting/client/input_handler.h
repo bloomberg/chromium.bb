@@ -50,6 +50,4 @@ class InputHandler {
 
 }  // namespace remoting
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::InputHandler);
-
 #endif  // REMOTING_CLIENT_INPUT_HANDLER_H_

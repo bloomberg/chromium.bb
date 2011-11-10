@@ -79,8 +79,8 @@ class CapturerLinux : public Capturer {
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void InvalidateScreen(const SkISize& size) OVERRIDE;
   virtual void InvalidateFullScreen() OVERRIDE;
-  virtual void CaptureInvalidRegion(CaptureCompletedCallback* callback)
-      OVERRIDE;
+  virtual void CaptureInvalidRegion(
+      const CaptureCompletedCallback& callback) OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
@@ -264,9 +264,7 @@ void CapturerLinux::InvalidateFullScreen() {
 }
 
 void CapturerLinux::CaptureInvalidRegion(
-    CaptureCompletedCallback* callback) {
-  scoped_ptr<CaptureCompletedCallback> callback_deleter(callback);
-
+    const CaptureCompletedCallback& callback) {
   // TODO(lambroslambrou): In the non-DAMAGE case, there should be no need
   // for any X event processing in this class.
   ProcessPendingXEvents();
@@ -286,7 +284,7 @@ void CapturerLinux::CaptureInvalidRegion(
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
   helper_.set_size_most_recent(capture_data->size());
 
-  callback->Run(capture_data);
+  callback.Run(capture_data);
 }
 
 void CapturerLinux::ProcessPendingXEvents() {

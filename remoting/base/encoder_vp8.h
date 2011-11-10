@@ -22,9 +22,10 @@ class EncoderVp8 : public Encoder {
   EncoderVp8();
   virtual ~EncoderVp8();
 
-  virtual void Encode(scoped_refptr<CaptureData> capture_data,
-                      bool key_frame,
-                      DataAvailableCallback* data_available_callback);
+  virtual void Encode(
+      scoped_refptr<CaptureData> capture_data,
+      bool key_frame,
+      const DataAvailableCallback& data_available_callback) OVERRIDE;
 
  private:
   typedef std::vector<SkIRect> RectVector;

@@ -317,7 +317,7 @@ class ChannelTesterBase : public base::RefCountedThreadSafe<ChannelTesterBase> {
 
   void Start() {
     MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &ChannelTesterBase::DoStart));
+        FROM_HERE, base::Bind(&ChannelTesterBase::DoStart, this));
   }
 
   bool WaitFinished() {
@@ -607,7 +607,7 @@ class UDPChannelTester : public ChannelTesterBase {
       EXPECT_EQ(kMessageSize, result);
       packets_sent_++;
       MessageLoop::current()->PostDelayedTask(
-          FROM_HERE, NewRunnableMethod(this, &UDPChannelTester::DoWrite),
+          FROM_HERE, base::Bind(&UDPChannelTester::DoWrite, this),
           kUdpWriteDelayMs);
     }
   }

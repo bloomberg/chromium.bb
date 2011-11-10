@@ -8,6 +8,7 @@
 
 #include <ostream>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -88,14 +89,14 @@ TEST_F(CapturerMacTest, Capture) {
   SCOPED_TRACE("");
   // Check that we get an initial full-screen updated.
   CapturerCallback1 callback1;
-  capturer_->CaptureInvalidRegion(
-      NewCallback(&callback1, &CapturerCallback1::CaptureDoneCallback));
+  capturer_->CaptureInvalidRegion(base::Bind(
+      &CapturerCallback1::CaptureDoneCallback, base::Unretained(&callback1)));
   // Check that subsequent dirty rects are propagated correctly.
   AddDirtyRect();
   CapturerCallback2 callback2(region_);
   capturer_->InvalidateRegion(region_);
-  capturer_->CaptureInvalidRegion(
-      NewCallback(&callback2, &CapturerCallback2::CaptureDoneCallback));
+  capturer_->CaptureInvalidRegion(base::Bind(
+      &CapturerCallback2::CaptureDoneCallback, base::Unretained(&callback2)));
 }
 
 }  // namespace remoting

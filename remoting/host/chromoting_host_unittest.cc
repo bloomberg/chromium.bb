@@ -171,24 +171,20 @@ class ChromotingHostTest : public testing::Test {
     connection->set_host_stub(client.get());
 
     context_.network_message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableFunction(&ChromotingHostTest::AddClientToHost,
-                            host_, client));
+        FROM_HERE, base::Bind(&ChromotingHostTest::AddClientToHost,
+                              host_, client));
     if (authenticate) {
       context_.network_message_loop()->PostTask(
-          FROM_HERE,
-          NewRunnableMethod(client.get(),
-                            &ClientSession::OnAuthenticationComplete));
+          FROM_HERE, base::Bind(&ClientSession::OnAuthenticationComplete,
+                                client.get()));
     }
   }
 
   // Helper method to remove a client connection from ChromotingHost.
   void RemoveClientConnection() {
     context_.network_message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(host_.get(),
-                          &ChromotingHost::OnClientDisconnected,
-                          connection_));
+        FROM_HERE, base::Bind(&ChromotingHost::OnClientDisconnected,
+                              host_.get(), connection_));
   }
 
   static void AddClientToHost(scoped_refptr<ChromotingHost> host,
@@ -197,8 +193,7 @@ class ChromotingHostTest : public testing::Test {
   }
 
   void ShutdownHost() {
-    host_->Shutdown(
-        NewRunnableFunction(&PostQuitTask, &message_loop_));
+    host_->Shutdown(base::Bind(&PostQuitTask, &message_loop_));
   }
 
  protected:
@@ -237,9 +232,9 @@ TEST_F(ChromotingHostTest, DISABLED_StartAndShutdown) {
   host_->Start();
 
   message_loop_.PostTask(
-      FROM_HERE,NewRunnableMethod(
-          host_.get(), &ChromotingHost::Shutdown,
-          NewRunnableFunction(&PostQuitTask, &message_loop_)));
+      FROM_HERE, base::Bind(
+          &ChromotingHost::Shutdown, host_.get(),
+          base::Bind(&PostQuitTask, &message_loop_)));
   message_loop_.Run();
 }
 

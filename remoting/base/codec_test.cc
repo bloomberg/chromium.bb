@@ -5,6 +5,8 @@
 #include <deque>
 #include <stdlib.h>
 
+#include "base/bind.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/video_frame.h"
 #include "remoting/base/base_mock_objects.h"
@@ -269,8 +271,8 @@ static void TestEncodingRects(Encoder* encoder,
   }
   tester->AddRects(rects, count);
 
-  encoder->Encode(data, true,
-                  NewCallback(tester, &EncoderTester::DataAvailable));
+  encoder->Encode(data, true, base::Bind(
+      &EncoderTester::DataAvailable, base::Unretained(tester)));
 }
 
 void TestEncoder(Encoder* encoder, bool strict) {
@@ -318,8 +320,8 @@ static void TestEncodingRects(Encoder* encoder,
     }
   }
 
-  encoder->Encode(data, true,
-                  NewCallback(encoder_tester, &EncoderTester::DataAvailable));
+  encoder->Encode(data, true, base::Bind(&EncoderTester::DataAvailable,
+                                         base::Unretained(encoder_tester)));
   decoder_tester->VerifyResults();
   decoder_tester->Reset();
 }
@@ -351,5 +353,3 @@ void TestEncoderDecoder(Encoder* encoder, Decoder* decoder, bool strict) {
 }
 
 }  // namespace remoting
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::DecoderTester);

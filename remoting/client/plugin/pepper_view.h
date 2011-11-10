@@ -47,16 +47,13 @@ class PepperView : public ChromotingView,
 
   // FrameConsumer implementation.
   virtual void AllocateFrame(media::VideoFrame::Format format,
-                             size_t width,
-                             size_t height,
-                             base::TimeDelta timestamp,
-                             base::TimeDelta duration,
+                             const SkISize& size,
                              scoped_refptr<media::VideoFrame>* frame_out,
-                             Task* done);
-  virtual void ReleaseFrame(media::VideoFrame* frame);
+                             const base::Closure& done) OVERRIDE;
+  virtual void ReleaseFrame(media::VideoFrame* frame) OVERRIDE;
   virtual void OnPartialFrameOutput(media::VideoFrame* frame,
                                     RectVector* rects,
-                                    Task* done);
+                                    const base::Closure& done) OVERRIDE;
 
   // This is called when the dimension of the plugin element has changed.
   // Return true if plugin size has changed, false otherwise.

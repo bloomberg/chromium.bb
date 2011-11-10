@@ -216,7 +216,7 @@ void EncoderVp8::PrepareActiveMap(const RectVector& updated_rects) {
 
 void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
                         bool key_frame,
-                        DataAvailableCallback* data_available_callback) {
+                        const DataAvailableCallback& data_available_callback) {
   if (!initialized_ || (capture_data->size() != size_)) {
     bool ret = Init(capture_data->size());
     // TODO(hclam): Handle error better.
@@ -293,8 +293,7 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
     rect->set_height(updated_rects[i].height());
   }
 
-  data_available_callback->Run(message);
-  delete data_available_callback;
+  data_available_callback.Run(message);
 }
 
 }  // namespace remoting

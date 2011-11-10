@@ -120,7 +120,7 @@ void DisconnectWindowLinux::OnResponse(GtkWidget* dialog, int response_id) {
   // button were visible).
   CHECK(host_);
 
-  host_->Shutdown(NULL);
+  host_->Shutdown(base::Closure());
   Hide();
 }
 

@@ -5,6 +5,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/base/capture_data.h"
@@ -51,13 +52,15 @@ TEST(EncoderVp8Test, TestSizeChangeNoLeak) {
   scoped_refptr<CaptureData> capture_data(new CaptureData(
       planes, SkISize::Make(width, height), media::VideoFrame::RGB32));
   encoder.Encode(capture_data, false,
-                 NewCallback(&callback, &EncoderCallback::DataAvailable));
+                 base::Bind(&EncoderCallback::DataAvailable,
+                            base::Unretained(&callback)));
 
   height /= 2;
   capture_data = new CaptureData(planes, SkISize::Make(width, height),
                                  media::VideoFrame::RGB32);
   encoder.Encode(capture_data, false,
-                 NewCallback(&callback, &EncoderCallback::DataAvailable));
+                 base::Bind(&EncoderCallback::DataAvailable,
+                            base::Unretained(&callback)));
 }
 
 TEST(EncoderVp8Test, AlignAndClipRect) {

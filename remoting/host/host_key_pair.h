@@ -43,6 +43,4 @@ class HostKeyPair {
 
 }  // namespace remoting
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::HostKeyPair);
-
 #endif  // REMOTING_HOST_HOST_KEY_PAIR_H_

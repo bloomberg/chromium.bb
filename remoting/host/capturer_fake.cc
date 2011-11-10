@@ -68,9 +68,8 @@ void CapturerFake::InvalidateFullScreen() {
   helper.InvalidateFullScreen();
 }
 
-void CapturerFake::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
-  scoped_ptr<CaptureCompletedCallback> callback_deleter(callback);
-
+void CapturerFake::CaptureInvalidRegion(
+    const CaptureCompletedCallback& callback) {
   GenerateImage();
   InvalidateScreen(size_);
 
@@ -89,7 +88,7 @@ void CapturerFake::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
 
   helper.set_size_most_recent(capture_data->size());
 
-  callback->Run(capture_data);
+  callback.Run(capture_data);
 }
 
 const SkISize& CapturerFake::size_most_recent() const {

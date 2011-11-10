@@ -90,7 +90,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   // Asynchronously shutdown the host process. |shutdown_task| is
   // called after shutdown is completed.
-  void Shutdown(Task* shutdown_task);
+  void Shutdown(const base::Closure& shutdown_task);
 
   // Adds |observer| to the list of status observers. Doesn't take
   // ownership of |observer|, so |observer| must outlive this
@@ -245,9 +245,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   std::string access_code_;
 
-  // Stores list of tasks that should be executed when we finish
+  // Stores list of closures that should be executed when we finish
   // shutdown. Used only while |state_| is set to kStopping.
-  std::vector<Task*> shutdown_tasks_;
+  std::vector<base::Closure> shutdown_tasks_;
 
   UiStrings ui_strings_;
 

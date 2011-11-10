@@ -578,7 +578,8 @@ void HostNPScriptObject::DisconnectInternal() {
       DCHECK(host_);
       SetState(kDisconnecting);
       host_->Shutdown(
-          NewRunnableMethod(this, &HostNPScriptObject::OnShutdownFinished));
+          base::Bind(&HostNPScriptObject::OnShutdownFinished,
+                     base::Unretained(this)));
   }
 }
 

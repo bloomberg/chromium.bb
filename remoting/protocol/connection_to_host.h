@@ -178,6 +178,4 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
 }  // namespace protocol
 }  // namespace remoting
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::protocol::ConnectionToHost);
-
 #endif  // REMOTING_PROTOCOL_CONNECTION_TO_HOST_H_

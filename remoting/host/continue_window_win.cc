@@ -95,7 +95,7 @@ BOOL ContinueWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
           return TRUE;
         case IDC_CONTINUE_CANCEL:
           CHECK(host_);
-          host_->Shutdown(NULL);
+          host_->Shutdown(base::Closure());
           ::EndDialog(hwnd, LOWORD(wParam));
           hwnd_ = NULL;
           return TRUE;

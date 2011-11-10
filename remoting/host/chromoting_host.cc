@@ -104,7 +104,7 @@ void ChromotingHost::Start() {
 }
 
 // This method is called when we need to destroy the host process.
-void ChromotingHost::Shutdown(Task* shutdown_task) {
+void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
   if (MessageLoop::current() != context_->main_message_loop()) {
     context_->main_message_loop()->PostTask(
         FROM_HERE,
@@ -121,7 +121,7 @@ void ChromotingHost::Shutdown(Task* shutdown_task) {
       context_->main_message_loop()->PostTask(FROM_HERE, shutdown_task);
       return;
     }
-    if (shutdown_task)
+    if (!shutdown_task.is_null())
       shutdown_tasks_.push_back(shutdown_task);
     if (state_ == kStopping)
       return;
@@ -263,7 +263,7 @@ void ChromotingHost::OnIncomingSession(
     *response = protocol::SessionManager::DECLINE;
 
     // Close existing sessions and shutdown the host.
-    Shutdown(NULL);
+    Shutdown(base::Closure());
     return;
   }
 
@@ -331,10 +331,7 @@ void ChromotingHost::LocalMouseMoved(const SkIPoint& new_pos) {
 void ChromotingHost::PauseSession(bool pause) {
   if (context_->main_message_loop() != MessageLoop::current()) {
     context_->main_message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this,
-                          &ChromotingHost::PauseSession,
-                          pause));
+        FROM_HERE, base::Bind(&ChromotingHost::PauseSession, this, pause));
     return;
   }
   ClientList::iterator client;
@@ -610,10 +607,9 @@ void ChromotingHost::ShutdownFinish() {
     (*it)->OnShutdown();
   }
 
-  for (std::vector<Task*>::iterator it = shutdown_tasks_.begin();
+  for (std::vector<base::Closure>::iterator it = shutdown_tasks_.begin();
        it != shutdown_tasks_.end(); ++it) {
-    (*it)->Run();
-    delete *it;
+    it->Run();
   }
   shutdown_tasks_.clear();
 }

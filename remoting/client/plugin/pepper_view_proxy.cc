@@ -30,7 +30,7 @@ bool PepperViewProxy::Initialize() {
 void PepperViewProxy::TearDown() {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
     plugin_message_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &PepperViewProxy::TearDown));
+        FROM_HERE, base::Bind(&PepperViewProxy::TearDown, this));
     return;
   }
 
@@ -41,7 +41,7 @@ void PepperViewProxy::TearDown() {
 void PepperViewProxy::Paint() {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
     plugin_message_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &PepperViewProxy::Paint));
+        FROM_HERE, base::Bind(&PepperViewProxy::Paint, this));
     return;
   }
 
@@ -51,8 +51,8 @@ void PepperViewProxy::Paint() {
 
 void PepperViewProxy::SetSolidFill(uint32 color) {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
-    plugin_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &PepperViewProxy::SetSolidFill, color));
+    plugin_message_loop_->PostTask(FROM_HERE, base::Bind(
+        &PepperViewProxy::SetSolidFill, this, color));
     return;
   }
 
@@ -63,7 +63,7 @@ void PepperViewProxy::SetSolidFill(uint32 color) {
 void PepperViewProxy::UnsetSolidFill() {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
     plugin_message_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &PepperViewProxy::UnsetSolidFill));
+        FROM_HERE, base::Bind(&PepperViewProxy::UnsetSolidFill, this));
     return;
   }
 
@@ -75,8 +75,8 @@ void PepperViewProxy::SetConnectionState(
     protocol::ConnectionToHost::State state,
     protocol::ConnectionToHost::Error error) {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
-    plugin_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &PepperViewProxy::SetConnectionState, state, error));
+    plugin_message_loop_->PostTask(FROM_HERE, base::Bind(
+        &PepperViewProxy::SetConnectionState, this, state, error));
     return;
   }
 
@@ -106,29 +106,24 @@ double PepperViewProxy::GetVerticalScaleRatio() const {
 
 void PepperViewProxy::AllocateFrame(
     media::VideoFrame::Format format,
-    size_t width,
-    size_t height,
-    base::TimeDelta timestamp,
-    base::TimeDelta duration,
+    const SkISize& size,
     scoped_refptr<media::VideoFrame>* frame_out,
-    Task* done) {
+    const base::Closure& done) {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
-    plugin_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &PepperViewProxy::AllocateFrame, format, width,
-        height, timestamp, duration, frame_out, done));
+    plugin_message_loop_->PostTask(FROM_HERE, base::Bind(
+        &PepperViewProxy::AllocateFrame, this, format, size, frame_out, done));
     return;
   }
 
   if (view_) {
-    view_->AllocateFrame(format, width, height, timestamp, duration, frame_out,
-                         done);
+    view_->AllocateFrame(format, size, frame_out, done);
   }
 }
 
 void PepperViewProxy::ReleaseFrame(media::VideoFrame* frame) {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
-    plugin_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &PepperViewProxy::ReleaseFrame, make_scoped_refptr(frame)));
+    plugin_message_loop_->PostTask(FROM_HERE, base::Bind(
+        &PepperViewProxy::ReleaseFrame, this, make_scoped_refptr(frame)));
     return;
   }
 
@@ -138,10 +133,10 @@ void PepperViewProxy::ReleaseFrame(media::VideoFrame* frame) {
 
 void PepperViewProxy::OnPartialFrameOutput(media::VideoFrame* frame,
                                            RectVector* rects,
-                                           Task* done) {
+                                           const base::Closure& done) {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
-    plugin_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &PepperViewProxy::OnPartialFrameOutput,
+    plugin_message_loop_->PostTask(FROM_HERE, base::Bind(
+        &PepperViewProxy::OnPartialFrameOutput, this,
         make_scoped_refptr(frame), rects, done));
     return;
   }

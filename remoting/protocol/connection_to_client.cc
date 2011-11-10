@@ -58,8 +58,7 @@ void ConnectionToClient::Disconnect() {
   // This method can be called from main thread so perform threading switching.
   if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &ConnectionToClient::Disconnect));
+        FROM_HERE, base::Bind(&ConnectionToClient::Disconnect, this));
     return;
   }
 

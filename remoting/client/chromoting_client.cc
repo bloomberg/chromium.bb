@@ -28,7 +28,7 @@ ChromotingClient::ChromotingClient(const ClientConfig& config,
                                    ChromotingView* view,
                                    RectangleUpdateDecoder* rectangle_decoder,
                                    InputHandler* input_handler,
-                                   Task* client_done)
+                                   const base::Closure& client_done)
     : config_(config),
       context_(context),
       connection_(connection),
@@ -81,8 +81,9 @@ void ChromotingClient::OnDisconnected(const base::Closure& shutdown_task) {
 }
 
 void ChromotingClient::ClientDone() {
-  if (client_done_ != NULL) {
+  if (!client_done_.is_null()) {
     message_loop()->PostTask(FROM_HERE, client_done_);
+    client_done_.Reset();
   }
 }
 
@@ -152,8 +153,8 @@ void ChromotingClient::DispatchPacket() {
     decode_start = base::Time::Now();
 
   rectangle_decoder_->DecodePacket(
-      packet, NewRunnableMethod(this, &ChromotingClient::OnPacketDone,
-                                last_packet, decode_start));
+      packet, base::Bind(&ChromotingClient::OnPacketDone,
+                         base::Unretained(this), last_packet, decode_start));
 }
 
 void ChromotingClient::OnConnectionState(

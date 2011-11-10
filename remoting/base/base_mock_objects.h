@@ -20,7 +20,7 @@ class MockEncoder : public Encoder {
   MOCK_METHOD3(Encode, void(
       scoped_refptr<CaptureData> capture_data,
       bool key_frame,
-      DataAvailableCallback* data_available_callback));
+      const DataAvailableCallback& data_available_callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockEncoder);

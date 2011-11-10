@@ -97,7 +97,7 @@ void ContinueWindowLinux::OnResponse(GtkWidget* dialog, int response_id) {
   if (response_id == GTK_RESPONSE_OK) {
     host_->PauseSession(false);
   } else {
-    host_->Shutdown(NULL);
+    host_->Shutdown(base::Closure());
   }
   Hide();
 }

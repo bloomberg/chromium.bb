@@ -45,6 +45,4 @@ class PepperInputHandler : public InputHandler {
 
 }  // namespace remoting
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::PepperInputHandler);
-
 #endif  // REMOTING_CLIENT_PLUGIN_PEPPER_INPUT_HANDLER_H_

@@ -30,8 +30,8 @@ class CapturerGdi : public Capturer {
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void InvalidateScreen(const SkISize& size) OVERRIDE;
   virtual void InvalidateFullScreen() OVERRIDE;
-  virtual void CaptureInvalidRegion(CaptureCompletedCallback* callback)
-      OVERRIDE;
+  virtual void CaptureInvalidRegion(
+      const CaptureCompletedCallback& callback) OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
@@ -62,7 +62,7 @@ class CapturerGdi : public Capturer {
 
   void CalculateInvalidRegion();
   void CaptureRegion(const SkRegion& region,
-                     CaptureCompletedCallback* callback);
+                     const CaptureCompletedCallback& callback);
 
   void ReleaseBuffers();
   // Generates an image in the current buffer.
@@ -144,7 +144,8 @@ void CapturerGdi::InvalidateFullScreen() {
   helper_.InvalidateFullScreen();
 }
 
-void CapturerGdi::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
+void CapturerGdi::CaptureInvalidRegion(
+    const CaptureCompletedCallback& callback) {
   CalculateInvalidRegion();
   SkRegion invalid_region;
   helper_.SwapInvalidRegion(&invalid_region);
@@ -277,9 +278,7 @@ void CapturerGdi::CalculateInvalidRegion() {
 }
 
 void CapturerGdi::CaptureRegion(const SkRegion& region,
-                                CaptureCompletedCallback* callback) {
-  scoped_ptr<CaptureCompletedCallback> callback_deleter(callback);
-
+                                const CaptureCompletedCallback& callback) {
   const VideoFrameBuffer& buffer = buffers_[current_buffer_];
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
 
@@ -294,7 +293,7 @@ void CapturerGdi::CaptureRegion(const SkRegion& region,
 
   helper_.set_size_most_recent(data->size());
 
-  callback->Run(data);
+  callback.Run(data);
 }
 
 void CapturerGdi::CaptureImage() {

@@ -6,7 +6,7 @@
 #define REMOTING_BASE_ENCODER_H_
 
 #include "base/basictypes.h"
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "media/base/data_buffer.h"
 
 namespace media {
@@ -29,7 +29,7 @@ class Encoder {
   // of HostMessage to reduce the amount of memory copies.
   // The callback takes ownership of the HostMessage and is responsible for
   // deleting it.
-  typedef Callback1<VideoPacket*>::Type DataAvailableCallback;
+  typedef base::Callback<void(VideoPacket*)> DataAvailableCallback;
 
   virtual ~Encoder() {}
 
@@ -42,7 +42,7 @@ class Encoder {
   // is called.
   virtual void Encode(scoped_refptr<CaptureData> capture_data,
                       bool key_frame,
-                      DataAvailableCallback* data_available_callback) = 0;
+                      const DataAvailableCallback& data_available_callback) = 0;
 };
 
 }  // namespace remoting

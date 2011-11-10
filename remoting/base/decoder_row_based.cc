@@ -4,6 +4,7 @@
 
 #include "remoting/base/decoder_row_based.h"
 
+#include "base/logging.h"
 #include "remoting/base/decompressor.h"
 #include "remoting/base/decompressor_zlib.h"
 #include "remoting/base/decompressor_verbatim.h"

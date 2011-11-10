@@ -136,7 +136,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
 
   client_.reset(new ChromotingClient(config, &context_, host_connection_.get(),
                                      view_proxy_, rectangle_decoder_.get(),
-                                     input_handler_.get(), NULL));
+                                     input_handler_.get(), base::Closure()));
 
   LOG(INFO) << "Connecting to " << config.host_jid
             << ". Local jid: " << config.local_jid << ".";

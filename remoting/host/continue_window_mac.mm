@@ -143,7 +143,7 @@ ContinueWindow* ContinueWindow::Create() {
 
 - (void)onCancel:(id)sender {
   [self hide];
-  host_->Shutdown(NULL);
+  host_->Shutdown(base::Closure());
   host_ = nil;
 }
 

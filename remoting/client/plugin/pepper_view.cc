@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/point.h"
@@ -309,21 +310,16 @@ double PepperView::GetVerticalScaleRatio() const {
 }
 
 void PepperView::AllocateFrame(media::VideoFrame::Format format,
-                               size_t width,
-                               size_t height,
-                               base::TimeDelta timestamp,
-                               base::TimeDelta duration,
+                               const SkISize& size,
                                scoped_refptr<media::VideoFrame>* frame_out,
-                               Task* done) {
+                               const base::Closure& done) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
-  *frame_out = media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
-                                              width, height,
-                                              base::TimeDelta(),
-                                              base::TimeDelta());
+  *frame_out = media::VideoFrame::CreateFrame(
+      media::VideoFrame::RGB32, size.width(), size.height(),
+      base::TimeDelta(), base::TimeDelta());
   (*frame_out)->AddRef();
-  done->Run();
-  delete done;
+  done.Run();
 }
 
 void PepperView::ReleaseFrame(media::VideoFrame* frame) {
@@ -335,14 +331,13 @@ void PepperView::ReleaseFrame(media::VideoFrame* frame) {
 
 void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
                                       RectVector* rects,
-                                      Task* done) {
+                                      const base::Closure& done) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   // TODO(ajwong): Clean up this API to be async so we don't need to use a
   // member variable as a hack.
   PaintFrame(frame, rects);
-  done->Run();
-  delete done;
+  done.Run();
 }
 
 void PepperView::OnPaintDone(base::Time paint_start) {

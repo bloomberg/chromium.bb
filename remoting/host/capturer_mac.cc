@@ -153,8 +153,8 @@ class CapturerMac : public Capturer {
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void InvalidateScreen(const SkISize& size) OVERRIDE;
   virtual void InvalidateFullScreen() OVERRIDE;
-  virtual void CaptureInvalidRegion(CaptureCompletedCallback* callback)
-      OVERRIDE;
+  virtual void CaptureInvalidRegion(
+      const CaptureCompletedCallback& callback) OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
@@ -163,12 +163,12 @@ class CapturerMac : public Capturer {
   void CgBlitPreLion(const VideoFrameBuffer& buffer, const SkRegion& region);
   void CgBlitPostLion(const VideoFrameBuffer& buffer, const SkRegion& region);
   void CaptureRegion(const SkRegion& region,
-                     CaptureCompletedCallback* callback);
+                     const CaptureCompletedCallback& callback);
 
   void ScreenRefresh(CGRectCount count, const CGRect *rect_array);
   void ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
-                                size_t count,
-                                const CGRect *rect_array);
+                        size_t count,
+                        const CGRect *rect_array);
   void DisplaysReconfigured(CGDirectDisplayID display,
                             CGDisplayChangeSummaryFlags flags);
   static void ScreenRefreshCallback(CGRectCount count,
@@ -346,7 +346,8 @@ void CapturerMac::InvalidateFullScreen() {
   helper_.InvalidateFullScreen();
 }
 
-void CapturerMac::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
+void CapturerMac::CaptureInvalidRegion(
+    const CaptureCompletedCallback& callback) {
   // Only allow captures when the display configuration is not occurring.
   scoped_refptr<CaptureData> data;
 
@@ -391,8 +392,7 @@ void CapturerMac::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
   helper_.set_size_most_recent(data->size());
   display_configuration_capture_event_.Signal();
 
-  callback->Run(data);
-  delete callback;
+  callback.Run(data);
 }
 
 void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,

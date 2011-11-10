@@ -4,6 +4,7 @@
 
 #include "remoting/client/rectangle_update_decoder.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "remoting/base/decoder.h"
@@ -17,28 +18,6 @@ using remoting::protocol::ChannelConfig;
 using remoting::protocol::SessionConfig;
 
 namespace remoting {
-
-class PartialFrameCleanup : public Task {
- public:
-  PartialFrameCleanup(media::VideoFrame* frame, RectVector* rects,
-                      RectangleUpdateDecoder* decoder)
-      : frame_(frame), rects_(rects), decoder_(decoder) {
-  }
-
-  virtual void Run() {
-    delete rects_;
-    frame_ = NULL;
-
-    // There maybe pending request to refresh rectangles.
-    decoder_->OnFrameConsumed();
-    decoder_ = NULL;
-  }
-
- private:
-  scoped_refptr<media::VideoFrame> frame_;
-  RectVector* rects_;
-  scoped_refptr<RectangleUpdateDecoder> decoder_;
-};
 
 RectangleUpdateDecoder::RectangleUpdateDecoder(MessageLoop* message_loop,
                                                FrameConsumer* consumer)
@@ -69,31 +48,25 @@ void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
 }
 
 void RectangleUpdateDecoder::DecodePacket(const VideoPacket* packet,
-                                          Task* done) {
+                                          const base::Closure& done) {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this,
-                          &RectangleUpdateDecoder::DecodePacket, packet,
-                          done));
+        FROM_HERE, base::Bind(&RectangleUpdateDecoder::DecodePacket,
+                              this, packet, done));
     return;
   }
-  base::ScopedTaskRunner done_runner(done);
-
-  AllocateFrame(packet, done_runner.Release());
+  AllocateFrame(packet, done);
 }
 
 void RectangleUpdateDecoder::AllocateFrame(const VideoPacket* packet,
-                                           Task* done) {
+                                           const base::Closure& done) {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &RectangleUpdateDecoder::AllocateFrame, packet, done));
+        FROM_HERE, base::Bind(&RectangleUpdateDecoder::AllocateFrame,
+                              this, packet, done));
     return;
   }
-  base::ScopedTaskRunner done_runner(done);
+  base::ScopedClosureRunner done_runner(done);
 
   // Find the required frame size.
   bool has_screen_size = packet->format().has_screen_width() &&
@@ -120,13 +93,10 @@ void RectangleUpdateDecoder::AllocateFrame(const VideoPacket* packet,
       frame_ = NULL;
     }
 
-    consumer_->AllocateFrame(media::VideoFrame::RGB32,
-                             screen_size.width(), screen_size.height(),
-                             base::TimeDelta(), base::TimeDelta(),
-                             &frame_,
-                             NewRunnableMethod(this,
-                                 &RectangleUpdateDecoder::ProcessPacketData,
-                                 packet, done_runner.Release()));
+    consumer_->AllocateFrame(
+        media::VideoFrame::RGB32, screen_size, &frame_,
+        base::Bind(&RectangleUpdateDecoder::ProcessPacketData,
+                   this, packet, done_runner.Release()));
     frame_is_new_ = true;
     return;
   }
@@ -134,16 +104,14 @@ void RectangleUpdateDecoder::AllocateFrame(const VideoPacket* packet,
 }
 
 void RectangleUpdateDecoder::ProcessPacketData(
-    const VideoPacket* packet, Task* done) {
+    const VideoPacket* packet, const base::Closure& done) {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this,
-                          &RectangleUpdateDecoder::ProcessPacketData, packet,
-                          done));
+        FROM_HERE, base::Bind(&RectangleUpdateDecoder::ProcessPacketData,
+                              this, packet, done));
     return;
   }
-  base::ScopedTaskRunner done_runner(done);
+  base::ScopedClosureRunner done_runner(done);
 
   if (frame_is_new_) {
     decoder_->Reset();
@@ -165,11 +133,8 @@ void RectangleUpdateDecoder::SetScaleRatios(double horizontal_ratio,
                                             double vertical_ratio) {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this,
-                          &RectangleUpdateDecoder::SetScaleRatios,
-                          horizontal_ratio,
-                          vertical_ratio));
+        FROM_HERE, base::Bind(&RectangleUpdateDecoder::SetScaleRatios,
+                              this, horizontal_ratio, vertical_ratio));
     return;
   }
 
@@ -182,10 +147,8 @@ void RectangleUpdateDecoder::SetScaleRatios(double horizontal_ratio,
 void RectangleUpdateDecoder::UpdateClipRect(const SkIRect& new_clip_rect) {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &RectangleUpdateDecoder::UpdateClipRect, new_clip_rect));
+        FROM_HERE, base::Bind(&RectangleUpdateDecoder::UpdateClipRect,
+                              this, new_clip_rect));
     return;
   }
 
@@ -233,8 +196,7 @@ void RectangleUpdateDecoder::UpdateClipRect(const SkIRect& new_clip_rect) {
 void RectangleUpdateDecoder::RefreshFullFrame() {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &RectangleUpdateDecoder::RefreshFullFrame));
+        FROM_HERE, base::Bind(&RectangleUpdateDecoder::RefreshFullFrame, this));
     return;
   }
 
@@ -259,9 +221,8 @@ void RectangleUpdateDecoder::SubmitToConsumer() {
   decoder_->GetUpdatedRects(dirty_rects);
 
   frame_is_consuming_ = true;
-  consumer_->OnPartialFrameOutput(
-      frame_, dirty_rects,
-      new PartialFrameCleanup(frame_, dirty_rects, this));
+  consumer_->OnPartialFrameOutput(frame_, dirty_rects, base::Bind(
+      &RectangleUpdateDecoder::OnFrameConsumed, this, dirty_rects));
 }
 
 void RectangleUpdateDecoder::DoRefresh() {
@@ -275,13 +236,15 @@ void RectangleUpdateDecoder::DoRefresh() {
   SubmitToConsumer();
 }
 
-void RectangleUpdateDecoder::OnFrameConsumed() {
+void RectangleUpdateDecoder::OnFrameConsumed(RectVector* rects) {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &RectangleUpdateDecoder::OnFrameConsumed));
+        FROM_HERE, base::Bind(&RectangleUpdateDecoder::OnFrameConsumed,
+                              this, rects));
     return;
   }
+
+  delete rects;
 
   frame_is_consuming_ = false;
   DoRefresh();

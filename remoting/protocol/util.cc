@@ -35,9 +35,5 @@ scoped_refptr<net::IOBufferWithSize> SerializeAndFrameMessage(
   return buffer;
 }
 
-Task* NewDeleteMessageTask(google::protobuf::MessageLite* message) {
-  return NewRunnableFunction(&DeleteMessage, message);
-}
-
 }  // namespace protocol
 }  // namespace remoting

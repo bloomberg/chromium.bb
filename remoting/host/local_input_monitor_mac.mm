@@ -7,6 +7,7 @@
 #import <AppKit/AppKit.h>
 #include <set>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -99,7 +100,7 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
 - (void)hotKeyHit:(GTMCarbonHotKey*)hotKey {
   base::AutoLock lock(hostsLock_);
   for (Hosts::const_iterator i = hosts_.begin(); i != hosts_.end(); ++i) {
-    (*i)->Shutdown(NULL);
+    (*i)->Shutdown(base::Closure());
   }
 }
 

@@ -30,9 +30,10 @@ class EncoderRowBased : public Encoder {
 
   virtual ~EncoderRowBased();
 
-  virtual void Encode(scoped_refptr<CaptureData> capture_data,
-                      bool key_frame,
-                      DataAvailableCallback* data_available_callback);
+  virtual void Encode(
+      scoped_refptr<CaptureData> capture_data,
+      bool key_frame,
+      const DataAvailableCallback& data_available_callback) OVERRIDE;
 
  private:
   EncoderRowBased(Compressor* compressor, VideoPacketFormat::Encoding encoding);
@@ -58,7 +59,7 @@ class EncoderRowBased : public Encoder {
   scoped_ptr<Compressor> compressor_;
 
   scoped_refptr<CaptureData> capture_data_;
-  scoped_ptr<DataAvailableCallback> callback_;
+  DataAvailableCallback callback_;
 
   // The most recent screen size.
   SkISize screen_size_;

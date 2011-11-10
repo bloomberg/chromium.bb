@@ -6,7 +6,7 @@
 #define REMOTING_HOST_CAPTURER_H_
 
 #include "base/basictypes.h"
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "remoting/base/capture_data.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
@@ -38,7 +38,8 @@ namespace remoting {
 class Capturer {
  public:
   // CaptureCompletedCallback is called when the capturer has completed.
-  typedef Callback1<scoped_refptr<CaptureData> >::Type CaptureCompletedCallback;
+  typedef base::Callback<void(scoped_refptr<CaptureData>)>
+      CaptureCompletedCallback;
 
   virtual ~Capturer() {};
 
@@ -73,7 +74,8 @@ class Capturer {
   // data of the previous capture.
   // There can be at most one concurrent read going on when this
   // method is called.
-  virtual void CaptureInvalidRegion(CaptureCompletedCallback* callback) = 0;
+  virtual void CaptureInvalidRegion(
+      const CaptureCompletedCallback& callback) = 0;
 
   // Get the size of the most recently captured screen.
   virtual const SkISize& size_most_recent() const = 0;

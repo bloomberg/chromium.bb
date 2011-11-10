@@ -129,8 +129,8 @@ void ProtocolTestConnection::Write(const std::string& str) {
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(str.length()));
   memcpy(buf->data(), str.c_str(), str.length());
   message_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(
-          this, &ProtocolTestConnection::DoWrite, buf, str.length()));
+      FROM_HERE, base::Bind(&ProtocolTestConnection::DoWrite,
+                            this, buf, str.length()));
 }
 
 void ProtocolTestConnection::DoWrite(
@@ -156,8 +156,7 @@ void ProtocolTestConnection::DoWrite(
 
 void ProtocolTestConnection::Read() {
   message_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(
-          this, &ProtocolTestConnection::DoRead));
+      FROM_HERE, base::Bind(&ProtocolTestConnection::DoRead, this));
 }
 
 void ProtocolTestConnection::DoRead() {

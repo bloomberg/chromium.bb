@@ -4,7 +4,8 @@
 
 #include <string>
 
-#include "base/callback_old.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/io_buffer.h"
 #include "remoting/base/compound_buffer.h"
@@ -82,7 +83,7 @@ class CompoundBufferTest : public testing::Test {
   // Iterate over chunks of data with sizes specified in |sizes| in the
   // interval [0..kDataSize]. |function| is called for each chunk.
   void IterateOverPieces(const int sizes[],
-                         Callback2<int, int>::Type* function) {
+                         const base::Callback<void(int, int)>& function) {
     DCHECK_GT(sizes[0], 0);
 
     int pos = 0;
@@ -93,11 +94,10 @@ class CompoundBufferTest : public testing::Test {
       if (sizes[index] <= 0)
         index = 0;
 
-      function->Run(pos, size);
+      function.Run(pos, size);
 
       pos += size;
     }
-    delete function;
   }
 
   bool CompareData(const CompoundBuffer& buffer, char* data, int size) {
@@ -179,89 +179,81 @@ class CompoundBufferTest : public testing::Test {
 
 TEST_F(CompoundBufferTest, Append) {
   target_.Clear();
-  IterateOverPieces(kChunkSizes0, NewCallback(
-      static_cast<CompoundBufferTest*>(this), &CompoundBufferTest::Append));
+  IterateOverPieces(kChunkSizes0, base::Bind(
+      &CompoundBufferTest::Append, base::Unretained(this)));
   EXPECT_TRUE(CompareData(target_, data_->data(), kDataSize));
 
   target_.Clear();
-  IterateOverPieces(kChunkSizes1, NewCallback(
-      static_cast<CompoundBufferTest*>(this), &CompoundBufferTest::Append));
+  IterateOverPieces(kChunkSizes1, base::Bind(
+      &CompoundBufferTest::Append, base::Unretained(this)));
   EXPECT_TRUE(CompareData(target_, data_->data(), kDataSize));
 }
 
 TEST_F(CompoundBufferTest, AppendCopyOf) {
   target_.Clear();
-  IterateOverPieces(kChunkSizes0, NewCallback(
-      static_cast<CompoundBufferTest*>(this),
-      &CompoundBufferTest::AppendCopyOf));
+  IterateOverPieces(kChunkSizes0, base::Bind(
+      &CompoundBufferTest::AppendCopyOf, base::Unretained(this)));
   EXPECT_TRUE(CompareData(target_, data_->data(), kDataSize));
 
   target_.Clear();
-  IterateOverPieces(kChunkSizes1, NewCallback(
-      static_cast<CompoundBufferTest*>(this),
-      &CompoundBufferTest::AppendCopyOf));
+  IterateOverPieces(kChunkSizes1, base::Bind(
+      &CompoundBufferTest::AppendCopyOf, base::Unretained(this)));
   EXPECT_TRUE(CompareData(target_, data_->data(), kDataSize));
 }
 
 TEST_F(CompoundBufferTest, Prepend) {
   target_.Clear();
-  IterateOverPieces(kChunkSizes0, NewCallback(
-      static_cast<CompoundBufferTest*>(this), &CompoundBufferTest::Prepend));
+  IterateOverPieces(kChunkSizes0, base::Bind(
+      &CompoundBufferTest::Prepend, base::Unretained(this)));
   EXPECT_TRUE(CompareData(target_, data_->data(), kDataSize));
 
   target_.Clear();
-  IterateOverPieces(kChunkSizes1, NewCallback(
-      static_cast<CompoundBufferTest*>(this), &CompoundBufferTest::Prepend));
+  IterateOverPieces(kChunkSizes1, base::Bind(
+      &CompoundBufferTest::Prepend, base::Unretained(this)));
   EXPECT_TRUE(CompareData(target_, data_->data(), kDataSize));
 }
 
 TEST_F(CompoundBufferTest, PrependCopyOf) {
   target_.Clear();
-  IterateOverPieces(kChunkSizes0, NewCallback(
-      static_cast<CompoundBufferTest*>(this),
-      &CompoundBufferTest::PrependCopyOf));
+  IterateOverPieces(kChunkSizes0, base::Bind(
+      &CompoundBufferTest::PrependCopyOf, base::Unretained(this)));
   EXPECT_TRUE(CompareData(target_, data_->data(), kDataSize));
 
   target_.Clear();
-  IterateOverPieces(kChunkSizes1, NewCallback(
-      static_cast<CompoundBufferTest*>(this),
-      &CompoundBufferTest::PrependCopyOf));
+  IterateOverPieces(kChunkSizes1, base::Bind(
+      &CompoundBufferTest::PrependCopyOf, base::Unretained(this)));
   EXPECT_TRUE(CompareData(target_, data_->data(), kDataSize));
 }
 
 TEST_F(CompoundBufferTest, CropFront) {
   target_.Clear();
-  IterateOverPieces(kChunkSizes1, NewCallback(
-      static_cast<CompoundBufferTest*>(this), &CompoundBufferTest::Append));
-  IterateOverPieces(kCropSizes, NewCallback(
-        static_cast<CompoundBufferTest*>(this),
-      &CompoundBufferTest::TestCropFront));
+  IterateOverPieces(kChunkSizes1, base::Bind(
+      &CompoundBufferTest::Append, base::Unretained(this)));
+  IterateOverPieces(kCropSizes, base::Bind(
+      &CompoundBufferTest::TestCropFront, base::Unretained(this)));
 }
 
 TEST_F(CompoundBufferTest, CropBack) {
   target_.Clear();
-  IterateOverPieces(kChunkSizes1, NewCallback(
-      static_cast<CompoundBufferTest*>(this), &CompoundBufferTest::Append));
-  IterateOverPieces(kCropSizes, NewCallback(
-      static_cast<CompoundBufferTest*>(this),
-      &CompoundBufferTest::TestCropBack));
+  IterateOverPieces(kChunkSizes1, base::Bind(
+      &CompoundBufferTest::Append, base::Unretained(this)));
+  IterateOverPieces(kCropSizes, base::Bind(
+      &CompoundBufferTest::TestCropBack, base::Unretained(this)));
 }
 
 TEST_F(CompoundBufferTest, CopyFrom) {
   target_.Clear();
-  IterateOverPieces(kChunkSizes1, NewCallback(
-      static_cast<CompoundBufferTest*>(this), &CompoundBufferTest::Append));
+  IterateOverPieces(kChunkSizes1, base::Bind(
+      &CompoundBufferTest::Append, base::Unretained(this)));
   {
     SCOPED_TRACE("CopyFrom.kCopySizes0");
-    IterateOverPieces(kCopySizes0, NewCallback(
-        static_cast<CompoundBufferTest*>(this),
-        &CompoundBufferTest::TestCopyFrom));
+    IterateOverPieces(kCopySizes0, base::Bind(
+        &CompoundBufferTest::TestCopyFrom, base::Unretained(this)));
   }
   {
     SCOPED_TRACE("CopyFrom.kCopySizes1");
-    IterateOverPieces(kCopySizes1, NewCallback(
-        static_cast<CompoundBufferTest*>(this),
-        &CompoundBufferTest::TestCopyFrom));
+    IterateOverPieces(kCopySizes1, base::Bind(
+        &CompoundBufferTest::TestCopyFrom, base::Unretained(this)));
   }
 }
 

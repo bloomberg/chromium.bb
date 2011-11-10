@@ -90,7 +90,7 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
 
 - (IBAction)stopSharing:(id)sender {
   if (self.host) {
-    self.host->Shutdown(NULL);
+    self.host->Shutdown(base::Closure());
     self.host = NULL;
   }
 }

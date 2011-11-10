@@ -202,7 +202,7 @@ void DesktopEnvironment::OnShutdownHostTimer() {
   DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
 
   ShowContinueWindow(false);
-  host_->Shutdown(NULL);
+  host_->Shutdown(base::Closure());
 }
 
 }  // namespace remoting
