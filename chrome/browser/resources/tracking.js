@@ -5,9 +5,6 @@
 var g_browserBridge;
 var g_mainView;
 
-// TODO(eroman): Don't comma-separate PID numbers (since they aren't
-//               really quantities).
-
 /**
  * Main entry point called once the page has loaded.
  */
@@ -84,18 +81,6 @@ var MainView = (function() {
 
   // The container node to put all the column checkboxes into.
   var COLUMN_TOGGLES_CONTAINER_ID = 'column-toggles-container';
-
-  // The anchor node that toggles the filter help.
-  var FILTER_HELP_LINK_ID = 'filter-help-link';
-
-  // The container node where the (initially hidden) filter help text is
-  // drawn into.
-  var FILTER_HELP_CONTAINER_ID = 'filter-help-container';
-
-  // The UL which should be filled with each of the key names. This is
-  // used by the filter help text to identify what value property names
-  // are.
-  var FILTER_HELP_PROPERTY_NAMES_UL = 'filter-help-property-names-ul';
 
   // The anchor which toggles visibility of column checkboxes.
   var EDIT_COLUMNS_LINK_ID = 'edit-columns-link';
@@ -276,24 +261,49 @@ var MainView = (function() {
    * expected to be numeric or is a string, a descriptive name (title) for the
    * property, and what function should be used to aggregate the property when
    * displayed in a column.
+   *
+   * --------------------------------------
+   * The following properties are required:
+   * --------------------------------------
+   *
+   *   [name]: This is displayed as the column's label.
+   *   [aggregator]: Aggregator factory that is used to compute an aggregate
+   *                 value for this column.
+   *
+   * --------------------------------------
+   * The following properties are optional:
+   * --------------------------------------
+   *
+   *   [inputJsonKey]: The corresponding key for this property in the original
+   *                   JSON dictionary received from the browser. If this is
+   *                   present, values for this key will be automatically
+   *                   populated during import.
+   *   [comparator]: A comparator function for sorting this column.
+   *   [textPrinter]: A function that transforms values into the user-displayed
+   *                  text shown in the UI. If unspecified, will default to the
+   *                  "toString()" function.
+   *   [cellAlignment]: The horizonal alignment to use for columns of this
+   *                    property (for instance 'right'). If unspecified will
+   *                    default to left alignment.
+   *   [sortDescending]: When first clicking on this column, we will default to
+   *                     sorting by |comparator| in ascending order. If this
+   *                     property is true, we will reverse that to descending.
    */
   var KEY_PROPERTIES = [];
 
   KEY_PROPERTIES[KEY_PROCESS_ID] = {
     name: 'PID',
-    type: 'number',
+    cellAlignment: 'right',
     aggregator: UniquifyAggregator,
   };
 
   KEY_PROPERTIES[KEY_PROCESS_TYPE] = {
     name: 'Process type',
-    type: 'string',
     aggregator: UniquifyAggregator,
   };
 
   KEY_PROPERTIES[KEY_BIRTH_THREAD] = {
     name: 'Birth thread',
-    type: 'string',
     inputJsonKey: 'birth_thread',
     aggregator: UniquifyAggregator,
     comparator: threadNameComparator,
@@ -301,7 +311,6 @@ var MainView = (function() {
 
   KEY_PROPERTIES[KEY_DEATH_THREAD] = {
     name: 'Exec thread',
-    type: 'string',
     inputJsonKey: 'death_thread',
     aggregator: UniquifyAggregator,
     comparator: threadNameComparator,
@@ -309,69 +318,81 @@ var MainView = (function() {
 
   KEY_PROPERTIES[KEY_FUNCTION_NAME] = {
     name: 'Function name',
-    type: 'string',
     inputJsonKey: 'location.function_name',
     aggregator: UniquifyAggregator,
   };
 
   KEY_PROPERTIES[KEY_FILE_NAME] = {
     name: 'File name',
-    type: 'string',
     inputJsonKey: 'location.file_name',
     aggregator: UniquifyAggregator,
   };
 
   KEY_PROPERTIES[KEY_LINE_NUMBER] = {
     name: 'Line number',
-    type: 'number',
+    cellAlignment: 'right',
     inputJsonKey: 'location.line_number',
     aggregator: UniquifyAggregator,
   };
 
   KEY_PROPERTIES[KEY_COUNT] = {
     name: 'Count',
-    type: 'number',
+    cellAlignment: 'right',
+    sortDescending: true,
+    textPrinter: formatNumberAsText,
     inputJsonKey: 'death_data.count',
     aggregator: SumAggregator,
   };
 
   KEY_PROPERTIES[KEY_QUEUE_TIME] = {
     name: 'Total queue time',
-    type: 'number',
+    cellAlignment: 'right',
+    sortDescending: true,
+    textPrinter: formatNumberAsText,
     inputJsonKey: 'death_data.queue_ms',
     aggregator: SumAggregator,
   };
 
   KEY_PROPERTIES[KEY_MAX_QUEUE_TIME] = {
     name: 'Max queue time',
-    type: 'number',
+    cellAlignment: 'right',
+    sortDescending: true,
+    textPrinter: formatNumberAsText,
     inputJsonKey: 'death_data.queue_ms_max',
     aggregator: MaxAggregator,
   };
 
   KEY_PROPERTIES[KEY_RUN_TIME] = {
     name: 'Total run time',
-    type: 'number',
+    cellAlignment: 'right',
+    sortDescending: true,
+    textPrinter: formatNumberAsText,
     inputJsonKey: 'death_data.run_ms',
     aggregator: SumAggregator,
   };
 
   KEY_PROPERTIES[KEY_AVG_RUN_TIME] = {
     name: 'Avg run time',
-    type: 'number',
+    cellAlignment: 'right',
+    sortDescending: true,
+    textPrinter: formatNumberAsText,
     aggregator: AvgAggregator.create(KEY_RUN_TIME, KEY_COUNT),
   };
 
   KEY_PROPERTIES[KEY_MAX_RUN_TIME] = {
     name: 'Max run time',
-    type: 'number',
+    cellAlignment: 'right',
+    sortDescending: true,
+    textPrinter: formatNumberAsText,
     inputJsonKey: 'death_data.run_ms_max',
     aggregator: MaxAggregator,
   };
 
   KEY_PROPERTIES[KEY_AVG_QUEUE_TIME] = {
     name: 'Avg queue time',
-    type: 'number',
+    cellAlignment: 'right',
+    sortDescending: true,
+    textPrinter: formatNumberAsText,
     aggregator: AvgAggregator.create(KEY_QUEUE_TIME, KEY_COUNT),
   };
 
@@ -795,24 +816,25 @@ var MainView = (function() {
     }
   }
 
+  function getTextValueForProperty(key, value) {
+    var textPrinter = KEY_PROPERTIES[key].textPrinter;
+    if (textPrinter)
+      return textPrinter(value);
+    return value.toString();
+  }
+
   /**
    * Renders the property value |value| into cell |td|. The name of this
    * property is |key|.
    */
   function drawValueToCell(td, key, value) {
-    // Lookup the expected type of this property.
-    var isNumeric = KEY_PROPERTIES[key].type == 'number';
+    // Get a text representation of the value.
+    var text = getTextValueForProperty(key, value);
 
-    if (isNumeric) {
-      // Numbers should be aligned to the right.
-      td.align = 'right';
-    }
-
-    // Truncate numbers to integers. Also add comma separators for readability.
-    if (isNumeric) {
-      td.innerText = formatNumberAsText(value);
-      return;
-    }
+    // Apply the desired cell alignment.
+    var cellAlignment = KEY_PROPERTIES[key].cellAlignment;
+    if (cellAlignment)
+      td.align = cellAlignment;
 
     // String values can get pretty long. If the string contains no spaces, then
     // CSS fails to wrap it, and it overflows the cell causing the table to get
@@ -821,10 +843,10 @@ var MainView = (function() {
     // value, and hence avoid it overflowing!
     var kMinLengthBeforeWrap = 20;
 
-    addText(td, value.substr(0, kMinLengthBeforeWrap));
-    for (var i = kMinLengthBeforeWrap; i < value.length; ++i) {
+    addText(td, text.substr(0, kMinLengthBeforeWrap));
+    for (var i = kMinLengthBeforeWrap; i < text.length; ++i) {
       addNode(td, 'wbr');
-      addText(td, value.substr(i, 1));
+      addText(td, text.substr(i, 1));
     }
   }
 
@@ -1041,28 +1063,10 @@ var MainView = (function() {
       this.fillSortingDropdowns_();
 
       $(EDIT_COLUMNS_LINK_ID).onclick = this.toggleEditColumns_.bind(this);
-
-      // Hook up the filter help section.
-      $(FILTER_HELP_LINK_ID).onclick = this.toggleFilterHelp_.bind(this);
-      var propsUl = $(FILTER_HELP_PROPERTY_NAMES_UL);
-      propsUl = $(FILTER_HELP_PROPERTY_NAMES_UL);
-      for (var k = BEGIN_KEY; k < END_KEY; ++k)
-        addNode(propsUl, 'li', k);
     },
 
-    // TODO(eroman): This is basically the same as toggleFilterHelp();
-    //               extract to helper.
     toggleEditColumns_: function() {
       var n = $(EDIT_COLUMNS_ROW);
-      if (n.style.display == '') {
-        n.style.display = 'none';
-      } else {
-        n.style.display = '';
-      }
-    },
-
-    toggleFilterHelp_: function() {
-      var n = $(FILTER_HELP_CONTAINER_ID);
       if (n.style.display == '') {
         n.style.display = 'none';
       } else {
@@ -1153,9 +1157,9 @@ var MainView = (function() {
      * order.
      */
     onClickColumn_: function(key, event) {
-      // For numeric properties default to a descending order, since that is
-      // generally more useful.
-      if (KEY_PROPERTIES[key].type == 'number')
+      // If this property wants to start off in descending order rather then
+      // ascending, flip it.
+      if (KEY_PROPERTIES[key].sortDescending)
         key = reverseSortKey(key);
 
       // Scan through our sort order and see if we are already sorted on this
@@ -1244,29 +1248,25 @@ var MainView = (function() {
     },
 
     getFilterFunction_: function() {
-      var text = $(FILTER_SEARCH_ID).value;
-      text = trimWhitespace(text);
+      var searchStr = $(FILTER_SEARCH_ID).value;
+
+      // Normalize the search expression.
+      searchStr = trimWhitespace(searchStr);
+      searchStr = searchStr.toLowerCase();
 
       return function(x) {
-        if (text == '')
+        // Match everything when there was no filter.
+        if (searchStr == '')
           return true;
 
-        if (text.indexOf('x.') != -1) {
-          // To be a javascript expression, it must have be testing something on
-          // |x|...
-          try {
-            var result = eval(text);
-            if (typeof result == 'boolean')
-              return result;
-          } catch (e) {
-            // Do nothing, we will fall back to substring search.
-          }
+        // Treat the search text as a LOWERCASE substring search.
+        for (var k = BEGIN_KEY; k < END_KEY; ++k) {
+          var propertyText = getTextValueForProperty(k, x[k]);
+          if (propertyText.toLowerCase().indexOf(searchStr) != -1)
+            return true;
         }
 
-        // Interpret the query as a substring search (case insensitive)
-        // TODO(eromn): Don't search through the JSON.
-        return JSON.stringify(x).toLowerCase().indexOf(
-            text.toLowerCase()) != -1;
+        return false;
       };
     },
 

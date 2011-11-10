@@ -70,6 +70,13 @@ table.results-table,
   margin-bottom: 1ex;
 }
 
+/* Pseudo-link which toggles display of columns checkboxes */
+#edit-columns-link {
+  color: blue;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 </style>
 </head>
 <body>
@@ -80,36 +87,12 @@ table.results-table,
         <b>Sort by: </b> <span id=sort-by-container></span> 
       </td>
       <td align=right>
-        <a href=# id=edit-columns-link>[Edit columns]</a>
+        <a id=edit-columns-link>[Edit columns]</a>
         <input type='search' incremental id='filter-search' />
-        <a href='#' id=filter-help-link>?</a>
       </td>
     </tr>
     <tr id=edit-columns-row style='display:none'>
       <td colspan=2 id=column-toggles-container></td>
-    </tr>
-    <tr id=filter-help-container style='display:none'>
-      <td colspan=2>
-        <div style='border: 1px dashed black; padding: 1em'>
-          <p>You can filter elements either by entering a case insensitive
-             substring to match, or by entering a javascript boolean expression
-             (solved using 'eval()').</p>
-          <u>Examples:</u>
-          <ul>
-            <li>
-              <pre style='display:inline'>BrowserWatchdog</pre>
-            </li>
-            <li>
-              <pre style='display:inline'>browser/net/sqlite</pre>
-            </li>
-            <li>
-              <pre style='display:inline'>(x.avg_queue_ms &gt; 0.5 || x.death_data.count &gt; 1000) &amp;&amp; x.birth_thread == 'CrBrowserMain'</pre>
-            </li>
-          </ul>
-          <u>All property names:</u>
-          <ul id='filter-help-property-names-ul'></ul>
-        </div>
-      </td>
     </tr>
   </table>
 
