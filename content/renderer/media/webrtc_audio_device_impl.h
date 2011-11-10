@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/time.h"
+#include "content/common/content_export.h"
 #include "content/renderer/media/audio_device.h"
 #include "content/renderer/media/audio_input_device.h"
 #include "third_party/webrtc/modules/audio_device/main/interface/audio_device.h"
@@ -97,7 +98,7 @@ class WebRtcAudioDeviceImpl
       public AudioInputDevice::CaptureEventHandler {
  public:
   // Methods called on main render thread.
-  WebRtcAudioDeviceImpl();
+  CONTENT_EXPORT WebRtcAudioDeviceImpl();
 
   // webrtc::RefCountedModule implementation.
   // The creator must call AddRef() after construction and use Release()
@@ -249,7 +250,7 @@ class WebRtcAudioDeviceImpl
   virtual int32_t GetLoudspeakerStatus(bool* enabled) const OVERRIDE;
 
   // Sets the session id.
-  void SetSessionId(int session_id);
+  CONTENT_EXPORT void SetSessionId(int session_id);
 
   // Accessors.
   size_t input_buffer_size() const { return input_buffer_size_; }
