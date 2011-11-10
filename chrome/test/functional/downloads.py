@@ -92,6 +92,7 @@ class DownloadsTest(pyauto.PyUITest):
     os.write(fd, 'a')
     os.close(fd)
     logging.debug('Created temporary file %s of size %d' % (file_path, size))
+    self._DeleteAfterShutdown(file_path)
     return file_path
 
   def _GetAllDownloadIDs(self):
