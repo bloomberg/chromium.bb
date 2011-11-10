@@ -28,6 +28,7 @@ AudioRendererImpl::LatencyType AudioRendererImpl::latency_type_ =
 AudioRendererImpl::AudioRendererImpl()
     : AudioRendererBase(),
       bytes_per_second_(0),
+      stream_created_(false),
       stream_id_(0),
       shared_memory_(NULL),
       shared_memory_size_(0),
@@ -340,6 +341,8 @@ void AudioRendererImpl::CreateStreamTask(const AudioParameters& audio_params) {
   if (stopped_)
     return;
 
+  stream_created_ = true;
+
   // Make sure we don't call create more than once.
   DCHECK_EQ(0, stream_id_);
   stream_id_ = filter_->AddDelegate(this);
@@ -378,6 +381,12 @@ void AudioRendererImpl::SeekTask() {
 
 void AudioRendererImpl::DestroyTask() {
   DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+
+  base::AutoLock auto_lock(lock_);
+  // Errors can cause us to get here before CreateStreamTask ever ran, in which
+  // case there's nothing to do.
+  if (!stream_created_)
+    return;
 
   // Make sure we don't call destroy more than once.
   DCHECK_NE(0, stream_id_);
@@ -458,11 +467,13 @@ void AudioRendererImpl::WillDestroyCurrentMessageLoop() {
           ChildProcess::current()->io_message_loop()));
 
   // We treat the IO loop going away the same as stopping.
-  base::AutoLock auto_lock(lock_);
-  if (stopped_)
-    return;
+  {
+    base::AutoLock auto_lock(lock_);
+    if (stopped_)
+      return;
 
-  stopped_ = true;
+    stopped_ = true;
+  }
   DestroyTask();
 }
 

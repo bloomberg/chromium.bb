@@ -173,6 +173,9 @@ class CONTENT_EXPORT AudioRendererImpl
   // Used to calculate audio delay given bytes.
   uint32 bytes_per_second_;
 
+  // Whether the stream has been created yet.
+  bool stream_created_;
+
   // ID of the stream created in the browser process.
   int32 stream_id_;
 
