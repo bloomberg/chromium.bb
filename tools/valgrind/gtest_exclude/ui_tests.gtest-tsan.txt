@@ -32,3 +32,4 @@ NPAPITesterBase.GetJavaScriptURL
 NPAPITesterBase.NPObjectProxy
 NPAPITesterBase.PluginThreadAsyncCall
 NPAPITesterBase.ScheduleTimer
+NPAPIVisiblePluginTester.DeletePluginInDeallocate

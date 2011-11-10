@@ -637,8 +637,21 @@
   fun:webrtc::Trace::ReturnTrace
   fun:webrtc::voe::SharedData::~SharedData
   fun:webrtc::VoiceEngineImpl::~VoiceEngineImpl
+  ...
   fun:webrtc::VoiceEngine::Delete
   fun:WebRTCAutoDelete::reset
-  fun:WebRTCAutoDelete::~WebRTCAutoDelete
+  ...
   fun:WebRTCAudioDeviceTest_Construct_Test::TestBody
+}
+{
+   bug_103711d
+   ThreadSanitizer:Race
+   fun:WebRTCAudioDeviceTest::OnMessageReceived
+   ...
+   fun:IPC::Channel::ChannelImpl::ProcessIncomingMessages
+   fun:IPC::Channel::ChannelImpl::OnFileCanReadWithoutBlocking
+   fun:base::MessagePumpLibevent::FileDescriptorWatcher::OnFileCanReadWithoutBlocking
+   fun:base::MessagePumpLibevent::OnLibeventNotification
+   fun:event_process_active
+   fun:event_base_loop
 }
