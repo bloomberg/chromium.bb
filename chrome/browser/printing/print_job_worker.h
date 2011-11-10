@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "printing/page_number.h"
@@ -58,7 +59,7 @@ class PrintJobWorker : public base::Thread {
   // Updates the printed document.
   void OnDocumentChanged(PrintedDocument* new_document);
 
-  // Unqueues waiting pages. Called when PrintJob receives a
+  // Dequeues waiting pages. Called when PrintJob receives a
   // NOTIFY_PRINTED_DOCUMENT_UPDATED notification. It's time to look again if
   // the next page can be printed.
   void OnNewPage();
@@ -77,7 +78,6 @@ class PrintJobWorker : public base::Thread {
   // notifications are sent this way, except USER_INIT_DONE, USER_INIT_CANCELED
   // and DEFAULT_INIT_DONE. These three are sent through PrintJob::InitDone().
   class NotificationTask;
-  friend struct RunnableMethodTraits<PrintJobWorker>;
 
   // Renders a page in the printer.
   void SpoolPage(PrintedPage& page);
@@ -126,17 +126,12 @@ class PrintJobWorker : public base::Thread {
   // Current page number to print.
   PageNumber page_number_;
 
+  // Used to generate a WeakPtr for callbacks.
+  base::WeakPtrFactory<PrintJobWorker> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(PrintJobWorker);
 };
 
 }  // namespace printing
-
-template <>
-struct RunnableMethodTraits<printing::PrintJobWorker> {
-  void RetainCallee(printing::PrintJobWorker* obj);
-  void ReleaseCallee(printing::PrintJobWorker* obj);
- private:
-  scoped_refptr<printing::PrintJobWorkerOwner> owner_;
-};
 
 #endif  // CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H__

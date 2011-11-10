@@ -4,6 +4,10 @@
 
 #include "chrome/browser/printing/print_job_worker.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -17,14 +21,22 @@
 
 using content::BrowserThread;
 
+namespace {
+
+// Helper function to ensure |owner| is valid until at least |callback| returns.
+void HoldRefCallback(const scoped_refptr<printing::PrintJobWorkerOwner>& owner,
+                     const base::Closure& callback) {
+  callback.Run();
+}
+
+}  // namespace
+
 namespace printing {
 
 class PrintJobWorker::NotificationTask : public Task {
  public:
-  NotificationTask() : print_job_(NULL), details_(NULL) {
-  }
-  ~NotificationTask() {
-  }
+  NotificationTask() : print_job_(NULL), details_(NULL) {}
+  ~NotificationTask() {}
 
   // Initializes the object. This object can't be initialized in the constructor
   // since it is not created directly.
@@ -52,10 +64,10 @@ class PrintJobWorker::NotificationTask : public Task {
   scoped_refptr<JobEventDetails> details_;
 };
 
-
 PrintJobWorker::PrintJobWorker(PrintJobWorkerOwner* owner)
     : Thread("Printing_Worker"),
-      owner_(owner) {
+      owner_(owner),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   // The object is created in the IO thread.
   DCHECK_EQ(owner_->message_loop(), MessageLoop::current());
 
@@ -86,7 +98,7 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
 
   // Recursive task processing is needed for the dialog in case it needs to be
   // destroyed by a task.
-  // TODO(thestig): this code is wrong, SetNestableTasksAllowed(true) is needed
+  // TODO(thestig): This code is wrong. SetNestableTasksAllowed(true) is needed
   // on the thread where the PrintDlgEx is called, and definitely both calls
   // should happen on the same thread. See http://crbug.com/73466
   // MessageLoop::current()->SetNestableTasksAllowed(true);
@@ -95,21 +107,27 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
   if (ask_user_for_settings) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &PrintJobWorker::GetSettingsWithUI,
-                          parent_view, document_page_count,
-                          has_selection));
+        base::Bind(&HoldRefCallback, make_scoped_refptr(owner_),
+                   base::Bind(&PrintJobWorker::GetSettingsWithUI,
+                              base::Unretained(this), parent_view,
+                              document_page_count, has_selection)));
   } else {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &PrintJobWorker::UseDefaultSettings));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&HoldRefCallback, make_scoped_refptr(owner_),
+                   base::Bind(&PrintJobWorker::UseDefaultSettings,
+                              base::Unretained(this))));
   }
 }
 
 void PrintJobWorker::SetSettings(const DictionaryValue* const new_settings) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PrintJobWorker::UpdatePrintSettings,
-                        new_settings));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&HoldRefCallback, make_scoped_refptr(owner_),
+                 base::Bind(&PrintJobWorker::UpdatePrintSettings,
+                            base::Unretained(this), new_settings)));
 }
 
 void PrintJobWorker::UpdatePrintSettings(
@@ -145,7 +163,7 @@ void PrintJobWorker::UpdatePrintSettings(
 void PrintJobWorker::GetSettingsDone(PrintingContext::Result result) {
   // Most PrintingContext functions may start a message loop and process
   // message recursively, so disable recursive task processing.
-  // TODO(thestig): see above comment.  SetNestableTasksAllowed(false) needs to
+  // TODO(thestig): See above comment. SetNestableTasksAllowed(false) needs to
   // be called on the same thread as the previous call.  See
   // http://crbug.com/73466
   // MessageLoop::current()->SetNestableTasksAllowed(false);
@@ -153,11 +171,11 @@ void PrintJobWorker::GetSettingsDone(PrintingContext::Result result) {
   // We can't use OnFailure() here since owner_ may not support notifications.
 
   // PrintJob will create the new PrintedDocument.
-  owner_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      owner_,
-      &PrintJobWorkerOwner::GetSettingsDone,
-      printing_context_->settings(),
-      result));
+  owner_->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&PrintJobWorkerOwner::GetSettingsDone,
+                 make_scoped_refptr(owner_), printing_context_->settings(),
+                 result));
 }
 
 void PrintJobWorker::GetSettingsWithUI(gfx::NativeView parent_view,
@@ -166,15 +184,16 @@ void PrintJobWorker::GetSettingsWithUI(gfx::NativeView parent_view,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   printing_context_->AskUserForSettings(
-      parent_view,
-      document_page_count,
-      has_selection,
+      parent_view, document_page_count, has_selection,
       NewCallback(this, &PrintJobWorker::GetSettingsWithUIDone));
 }
 
 void PrintJobWorker::GetSettingsWithUIDone(PrintingContext::Result result) {
-  message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &PrintJobWorker::GetSettingsDone, result));
+  message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&HoldRefCallback, make_scoped_refptr(owner_),
+                 base::Bind(&PrintJobWorker::GetSettingsDone,
+                            base::Unretained(this), result)));
 }
 
 void PrintJobWorker::UseDefaultSettings() {
@@ -223,10 +242,9 @@ void PrintJobWorker::OnDocumentChanged(PrintedDocument* new_document) {
 }
 
 void PrintJobWorker::OnNewPage() {
-  if (!document_.get()) {
-    // Spurious message.
+  if (!document_.get())  // Spurious message.
     return;
-  }
+
   // message_loop() could return NULL when the print job is cancelled.
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
@@ -244,14 +262,14 @@ void PrintJobWorker::OnNewPage() {
   }
   DCHECK_NE(page_number_, PageNumber::npos());
 
-  for (;;) {
+  while (true) {
     // Is the page available?
     scoped_refptr<PrintedPage> page;
     if (!document_->GetPage(page_number_.ToInt(), &page)) {
       // We need to wait for the page to be available.
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
-          NewRunnableMethod(this, &PrintJobWorker::OnNewPage),
+          base::Bind(&PrintJobWorker::OnNewPage, weak_factory_.GetWeakPtr()),
           500);
       break;
     }
@@ -355,15 +373,3 @@ void PrintJobWorker::OnFailure() {
 }
 
 }  // namespace printing
-
-void RunnableMethodTraits<printing::PrintJobWorker>::RetainCallee(
-    printing::PrintJobWorker* obj) {
-  DCHECK(!owner_.get());
-  owner_ = obj->owner_;
-}
-
-void RunnableMethodTraits<printing::PrintJobWorker>::ReleaseCallee(
-    printing::PrintJobWorker* obj) {
-  DCHECK_EQ(owner_, obj->owner_);
-  owner_ = NULL;
-}

@@ -46,21 +46,21 @@ class PrintJob : public PrintJobWorkerOwner,
   void Initialize(PrintJobWorkerOwner* job, PrintedPagesSource* source,
                   int page_count);
 
-  // content::NotificationObserver
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
-  // PrintJobWorkerOwner
+  // PrintJobWorkerOwner implementation.
   virtual void GetSettingsDone(const PrintSettings& new_settings,
-                               PrintingContext::Result result);
-  virtual PrintJobWorker* DetachWorker(PrintJobWorkerOwner* new_owner);
-  virtual MessageLoop* message_loop();
-  virtual const PrintSettings& settings() const;
-  virtual int cookie() const;
+                               PrintingContext::Result result) OVERRIDE;
+  virtual PrintJobWorker* DetachWorker(PrintJobWorkerOwner* new_owner) OVERRIDE;
+  virtual MessageLoop* message_loop() OVERRIDE;
+  virtual const PrintSettings& settings() const OVERRIDE;
+  virtual int cookie() const OVERRIDE;
 
-  // DestructionObserver
-  virtual void WillDestroyCurrentMessageLoop();
+  // DestructionObserver implementation.
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
   // Starts the actual printing. Signals the worker that it should begin to
   // spool as soon as data is available.

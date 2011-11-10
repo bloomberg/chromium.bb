@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/printer_query.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -84,14 +86,12 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
 
   // Real work is done in PrintJobWorker::Init().
   is_print_dialog_box_shown_ = ask_user_for_settings == ASK_USER;
-  worker_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      worker_.get(),
-      &PrintJobWorker::GetSettings,
-      is_print_dialog_box_shown_,
-      parent_view,
-      expected_page_count,
-      has_selection,
-      margin_type));
+  worker_->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&PrintJobWorker::GetSettings,
+                 base::Unretained(worker_.get()),
+                 is_print_dialog_box_shown_, parent_view,
+                 expected_page_count, has_selection, margin_type));
 }
 
 void PrinterQuery::SetSettings(const DictionaryValue& new_settings,
@@ -99,10 +99,11 @@ void PrinterQuery::SetSettings(const DictionaryValue& new_settings,
   if (!StartWorker(callback))
     return;
 
-  worker_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      worker_.get(),
-      &PrintJobWorker::SetSettings,
-      new_settings.DeepCopy()));
+  worker_->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&PrintJobWorker::SetSettings,
+                 base::Unretained(worker_.get()),
+                 new_settings.DeepCopy()));
 }
 
 bool PrinterQuery::StartWorker(CancelableTask* callback) {

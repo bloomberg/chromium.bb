@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
@@ -288,9 +289,8 @@ void PrintDialogGtk::PrintDocument(const printing::Metafile* metafile,
     // No errors, continue printing.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &PrintDialogGtk::SendDocumentToPrinter,
-                          document_name));
+        base::Bind(&PrintDialogGtk::SendDocumentToPrinter, this,
+                   document_name));
   }
 }
 

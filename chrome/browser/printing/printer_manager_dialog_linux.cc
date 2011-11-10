@@ -4,6 +4,7 @@
 
 #include "chrome/browser/printing/printer_manager_dialog.h"
 
+#include "base/bind.h"
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
 #include "base/process_util.h"
@@ -62,7 +63,7 @@ namespace printing {
 
 void PrinterManagerDialog::ShowPrinterManagerDialog() {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&DetectAndOpenPrinterConfigDialog));
+                          base::Bind(&DetectAndOpenPrinterConfigDialog));
 }
 
 }  // namespace printing

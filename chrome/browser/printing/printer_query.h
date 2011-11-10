@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PRINTING_PRINTER_QUERY_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/printing/print_job_worker_owner.h"
 #include "printing/print_job_constants.h"
@@ -34,13 +35,13 @@ class PrinterQuery : public PrintJobWorkerOwner {
 
   PrinterQuery();
 
-  // PrintJobWorkerOwner
+  // PrintJobWorkerOwner implementation.
   virtual void GetSettingsDone(const PrintSettings& new_settings,
-                               PrintingContext::Result result);
-  virtual PrintJobWorker* DetachWorker(PrintJobWorkerOwner* new_owner);
-  virtual MessageLoop* message_loop();
-  virtual const PrintSettings& settings() const;
-  virtual int cookie() const;
+                               PrintingContext::Result result) OVERRIDE;
+  virtual PrintJobWorker* DetachWorker(PrintJobWorkerOwner* new_owner) OVERRIDE;
+  virtual MessageLoop* message_loop() OVERRIDE;
+  virtual const PrintSettings& settings() const OVERRIDE;
+  virtual int cookie() const OVERRIDE;
 
   // Initializes the printing context. It is fine to call this function multiple
   // times to reinitialize the settings. |parent_view| parameter's window will

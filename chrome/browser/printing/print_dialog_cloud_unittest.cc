@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/weak_ptr.h"
@@ -247,11 +248,10 @@ TEST_F(CloudPrintDataSenderTest, CanSend) {
       WillOnce(Return());
 
   FilePath test_data_file_name = GetTestDataFileName();
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          NewRunnableMethod(
-                              print_data_sender_.get(),
-                              &CloudPrintDataSender::ReadPrintDataFile,
-                              test_data_file_name));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CloudPrintDataSender::ReadPrintDataFile,
+                 print_data_sender_.get(), test_data_file_name));
   MessageLoop::current()->RunAllPending();
 }
 
@@ -263,11 +263,10 @@ TEST_F(CloudPrintDataSenderTest, BadFile) {
 #else
   FilePath bad_data_file_name("/some/file/that/isnot/there");
 #endif
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          NewRunnableMethod(
-                              print_data_sender_.get(),
-                              &CloudPrintDataSender::ReadPrintDataFile,
-                             bad_data_file_name));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CloudPrintDataSender::ReadPrintDataFile,
+                 print_data_sender_.get(), bad_data_file_name));
   MessageLoop::current()->RunAllPending();
 }
 
@@ -275,11 +274,10 @@ TEST_F(CloudPrintDataSenderTest, EmptyFile) {
   EXPECT_CALL(*mock_helper_, CallJavascriptFunction(_, _, _)).Times(0);
 
   FilePath empty_data_file_name = GetEmptyDataFileName();
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          NewRunnableMethod(
-                              print_data_sender_.get(),
-                              &CloudPrintDataSender::ReadPrintDataFile,
-                              empty_data_file_name));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CloudPrintDataSender::ReadPrintDataFile,
+                 print_data_sender_.get(), empty_data_file_name));
   MessageLoop::current()->RunAllPending();
 }
 
