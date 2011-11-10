@@ -3538,4 +3538,35 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckDeleteCanonicalCookie) {
   EXPECT_TRUE(callback.result());
 }
 
+TEST_F(CookieMonsterTest, ShortLivedSessionCookies) {
+  scoped_refptr<MockPersistentCookieStore> store(
+      new MockPersistentCookieStore);
+  scoped_refptr<CookieMonster> cm(new CookieMonster(store, NULL));
+
+  // Create a short-lived session cookie.
+  CookieOptions options;
+  options.set_force_session();
+  Time current = Time::Now();
+  EXPECT_TRUE(SetCookieWithOptions(cm, url_google_,
+                                   std::string(kValidCookieLine) +
+                                   "; max-age=10",
+                                   options));
+
+  // FindCookiesForKey asserts that its caller holds this lock.
+  base::AutoLock auto_lock(cm->lock_);
+
+  // Get cookies before the cookie has expired.
+  std::vector<CookieMonster::CanonicalCookie*> cookies;
+  cm->FindCookiesForKey(cm->GetKey(url_google_.host()), url_google_,
+                        CookieOptions(), current, false, &cookies);
+  EXPECT_EQ(1U, cookies.size());
+
+  // Get cookies after the cookie has expired.
+  cookies.clear();
+  cm->FindCookiesForKey(cm->GetKey(url_google_.host()), url_google_,
+                        CookieOptions(), current + TimeDelta::FromSeconds(20),
+                        false, &cookies);
+  EXPECT_EQ(0U, cookies.size());
+}
+
 }  // namespace net

@@ -301,8 +301,8 @@ std::string CanonPath(const GURL& url,
   return CanonPathWithString(url, path_string);
 }
 
-Time CanonExpirationInternal(const CookieMonster::ParsedCookie& pc,
-                             const Time& current) {
+Time CanonExpiration(const CookieMonster::ParsedCookie& pc,
+                     const Time& current) {
   // First, try the Max-Age attribute.
   uint64 max_age = 0;
   if (pc.HasMaxAge() &&
@@ -321,21 +321,6 @@ Time CanonExpirationInternal(const CookieMonster::ParsedCookie& pc,
 
   // Invalid or no expiration, persistent cookie.
   return Time();
-}
-
-Time CanonExpiration(const CookieMonster::ParsedCookie& pc,
-                     const Time& current,
-                     const CookieOptions& options) {
-  Time expiration_time = CanonExpirationInternal(pc, current);
-
-  if (options.force_session()) {
-    // Only override the expiry date if it's in the future. If the expiry date
-    // is before the creation date, the cookie is supposed to be deleted.
-    if (expiration_time.is_null() || expiration_time > current)
-      return Time();
-  }
-
-  return expiration_time;
 }
 
 // Helper for GarbageCollection.  If |cookie_its->size() > num_max|, remove the
@@ -1182,7 +1167,7 @@ bool CookieMonster::SetCookieWithDetails(
       url, name, value, domain, path,
       mac_key, mac_algorithm,
       creation_time, expiration_time,
-      secure, http_only));
+      secure, http_only, !expiration_time.is_null()));
 
   if (!cc.get())
     return false;
@@ -1904,13 +1889,15 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
       pc.MACAlgorithm() : std::string();
 
   scoped_ptr<CanonicalCookie> cc;
-  Time cookie_expires = CanonExpiration(pc, creation_time, options);
+  Time cookie_expires = CanonExpiration(pc, creation_time);
 
+  bool session_only = options.force_session() || cookie_expires.is_null();
   cc.reset(new CanonicalCookie(url, pc.Name(), pc.Value(), cookie_domain,
                                cookie_path, mac_key, mac_algorithm,
                                creation_time, cookie_expires,
                                creation_time, pc.IsSecure(), pc.IsHttpOnly(),
-                               !cookie_expires.is_null()));
+                               !cookie_expires.is_null(),
+                               !session_only));
 
   if (!cc.get()) {
     VLOG(kVlogSetCookies) << "WARNING: Failed to allocate CanonicalCookie";
@@ -2597,7 +2584,8 @@ void CookieMonster::ParsedCookie::SetupAttributes() {
 CookieMonster::CanonicalCookie::CanonicalCookie()
     : secure_(false),
       httponly_(false),
-      has_expires_(false) {
+      has_expires_(false),
+      is_persistent_(false) {
   SetSessionCookieExpiryTime();
 }
 
@@ -2606,7 +2594,8 @@ CookieMonster::CanonicalCookie::CanonicalCookie(
     const std::string& domain, const std::string& path,
     const std::string& mac_key, const std::string& mac_algorithm,
     const base::Time& creation, const base::Time& expiration,
-    const base::Time& last_access, bool secure, bool httponly, bool has_expires)
+    const base::Time& last_access, bool secure, bool httponly, bool has_expires,
+    bool is_persistent)
     : source_(GetCookieSourceFromURL(url)),
       name_(name),
       value_(value),
@@ -2619,9 +2608,12 @@ CookieMonster::CanonicalCookie::CanonicalCookie(
       last_access_date_(last_access),
       secure_(secure),
       httponly_(httponly),
-      has_expires_(has_expires) {
-  if (!has_expires_)
+      has_expires_(has_expires),
+      is_persistent_(is_persistent) {
+  if (!has_expires_) {
+    DCHECK(!is_persistent_);
     SetSessionCookieExpiryTime();
+  }
 }
 
 CookieMonster::CanonicalCookie::CanonicalCookie(const GURL& url,
@@ -2636,9 +2628,10 @@ CookieMonster::CanonicalCookie::CanonicalCookie(const GURL& url,
       last_access_date_(Time()),
       secure_(pc.IsSecure()),
       httponly_(pc.IsHttpOnly()),
-      has_expires_(pc.HasExpires()) {
+      has_expires_(pc.HasExpires()),
+      is_persistent_(pc.HasExpires()) {
   if (has_expires_)
-    expiry_date_ = CanonExpiration(pc, creation_date_, CookieOptions());
+    expiry_date_ = CanonExpiration(pc, creation_date_);
   else
     SetSessionCookieExpiryTime();
 
@@ -2704,7 +2697,7 @@ CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(
 
   return (Create(url, pc.Name(), pc.Value(), domain_string, path_string,
                  mac_key, mac_algorithm, creation_time, expiration_time,
-                 pc.IsSecure(), pc.IsHttpOnly()));
+                 pc.IsSecure(), pc.IsHttpOnly(), pc.HasExpires()));
 }
 
 CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(
@@ -2718,7 +2711,8 @@ CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(
       const base::Time& creation,
       const base::Time& expiration,
       bool secure,
-      bool http_only) {
+      bool http_only,
+      bool is_persistent) {
   // Expect valid attribute tokens and values, as defined by the ParsedCookie
   // logic, otherwise don't create the cookie.
   std::string parsed_name = ParsedCookie::ParseTokenString(name);
@@ -2755,7 +2749,7 @@ CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(
   return new CanonicalCookie(url, parsed_name, parsed_value, cookie_domain,
                              cookie_path, mac_key, mac_algorithm, creation,
                              expiration, creation, secure, http_only,
-                             !expiration.is_null());
+                             !expiration.is_null(), is_persistent);
 }
 
 bool CookieMonster::CanonicalCookie::IsOnPath(

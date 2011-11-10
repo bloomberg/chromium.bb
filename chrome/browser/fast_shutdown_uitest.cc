@@ -101,7 +101,8 @@ TEST_F(FastShutdown, FLAKY_SlowTermination) {
       base::Time(),  // last_access
       false,         // secure
       false,         // httponly
-      false);        // has_expires
+      false,         // has_expires
+      false);        // is_persistent
 
   // This page has an unload handler.
   const FilePath dir(FILE_PATH_LITERAL("fast_shutdown"));

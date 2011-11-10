@@ -342,7 +342,7 @@ void SetCookieJSON(AutomationProvider* provider,
       net::CookieMonster::CanonicalCookie::Create(
           GURL(url), name, value, domain, path,
           mac_key, mac_algorithm, base::Time(),
-          base::Time::FromDoubleT(expiry), secure, http_only));
+          base::Time::FromDoubleT(expiry), secure, http_only, expiry != 0));
   if (!cookie.get()) {
     reply.SendError("given 'cookie' parameters are invalid");
     return;

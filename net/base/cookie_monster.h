@@ -322,6 +322,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, GetKey);
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestGetKey);
 
+  // For FindCookiesForKey.
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, ShortLivedSessionCookies);
+
   // Internal reasons for deletion, used to populate informative histograms
   // and to provide a public cause for onCookieChange notifications.
   //
@@ -700,7 +703,8 @@ class NET_EXPORT CookieMonster::CanonicalCookie {
                   const base::Time& last_access,
                   bool secure,
                   bool httponly,
-                  bool has_expires);
+                  bool has_expires,
+                  bool is_persistent);
 
   // This constructor does canonicalization but not validation.
   // The result of this constructor should not be relied on in contexts
@@ -730,7 +734,8 @@ class NET_EXPORT CookieMonster::CanonicalCookie {
                                  const base::Time& creation,
                                  const base::Time& expiration,
                                  bool secure,
-                                 bool http_only);
+                                 bool http_only,
+                                 bool is_persistent);
 
   const std::string& Source() const { return source_; }
   const std::string& Name() const { return name_; }
@@ -742,7 +747,7 @@ class NET_EXPORT CookieMonster::CanonicalCookie {
   const base::Time& CreationDate() const { return creation_date_; }
   const base::Time& LastAccessDate() const { return last_access_date_; }
   bool DoesExpire() const { return has_expires_; }
-  bool IsPersistent() const { return DoesExpire(); }
+  bool IsPersistent() const { return is_persistent_; }
   const base::Time& ExpiryDate() const { return expiry_date_; }
   bool IsSecure() const { return secure_; }
   bool IsHttpOnly() const { return httponly_; }
@@ -807,6 +812,7 @@ class NET_EXPORT CookieMonster::CanonicalCookie {
   bool secure_;
   bool httponly_;
   bool has_expires_;
+  bool is_persistent_;
 };
 
 class CookieMonster::Delegate

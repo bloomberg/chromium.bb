@@ -72,7 +72,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
                                             base::Time::Now(),
                                             base::Time::Now(),
                                             base::Time::Now(),
-                                            false, false, true));
+                                            false, false, true, true));
   }
 
  protected:
@@ -164,19 +164,19 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
     net::CookieMonster::CanonicalCookie(GURL(), "A", "B",
                                         "www.aaa.com", "/",
                                         std::string(), std::string(),
-                                        t, t, t, false, false, true));
+                                        t, t, t, false, false, true, true));
   t += base::TimeDelta::FromInternalValue(10);
   store_->AddCookie(
     net::CookieMonster::CanonicalCookie(GURL(), "A", "B",
                                         "travel.aaa.com", "/",
                                         std::string(), std::string(),
-                                        t, t, t, false, false, true));
+                                        t, t, t, false, false, true, true));
   t += base::TimeDelta::FromInternalValue(10);
   store_->AddCookie(
     net::CookieMonster::CanonicalCookie(GURL(), "A", "B",
                                         "www.bbb.com", "/",
                                         std::string(), std::string(),
-                                        t, t, t, false, false, true));
+                                        t, t, t, false, false, true, true));
   store_ = NULL;
 
   scoped_refptr<base::ThreadTestHelper> helper(
@@ -253,7 +253,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestFlush) {
                                             "http://foo.bar", "/",
                                             std::string(), std::string(),
                                             t, t, t,
-                                            false, false, true));
+                                            false, false, true, true));
   }
 
   // Call Flush() and wait until the DB thread is idle.
