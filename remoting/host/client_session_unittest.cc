@@ -27,36 +27,31 @@ class ClientSessionTest : public testing::Test {
 
   virtual void SetUp() {
     client_jid_ = "user@domain/rest-of-jid";
-    EXPECT_CALL(session_, jid()).WillRepeatedly(ReturnRef(client_jid_));
-
-    connection_ = new MockConnectionToClient(
-        &connection_event_handler_, &host_stub_, &input_stub_);
-
-    EXPECT_CALL(*connection_, session()).WillRepeatedly(Return(&session_));
 
     // Set up a large default screen size that won't affect most tests.
     default_screen_size_.set(1000, 1000);
     EXPECT_CALL(capturer_, size_most_recent())
         .WillRepeatedly(ReturnRef(default_screen_size_));
 
+    protocol::MockSession* session = new MockSession();
+    EXPECT_CALL(*session, jid()).WillRepeatedly(ReturnRef(client_jid_));
+    EXPECT_CALL(*session, SetStateChangeCallback(_));
+
     client_session_ = new ClientSession(
         &session_event_handler_,
-        connection_,
-        &input_stub_,
-        &capturer_);
+        new protocol::ConnectionToClient(
+            base::MessageLoopProxy::current(), session),
+        &input_stub_, &capturer_);
   }
 
  protected:
   SkISize default_screen_size_;
   MessageLoop message_loop_;
   std::string client_jid_;
-  MockSession session_;
-  MockConnectionToClientEventHandler connection_event_handler_;
   MockHostStub host_stub_;
   MockInputStub input_stub_;
   MockCapturer capturer_;
   MockClientSessionEventHandler session_event_handler_;
-  scoped_refptr<MockConnectionToClient> connection_;
   scoped_refptr<ClientSession> client_session_;
 };
 
@@ -102,7 +97,7 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   mouse_event3.set_y(301);
 
   InSequence s;
-  EXPECT_CALL(session_event_handler_, OnAuthenticationComplete(_));
+  EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(input_stub_, InjectKeyEvent(EqualsKeyEvent(2, true)));
   EXPECT_CALL(input_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
   EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
@@ -111,12 +106,12 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   // because the client isn't authenticated yet.
   client_session_->InjectKeyEvent(key_event1);
   client_session_->InjectMouseEvent(mouse_event1);
-  client_session_->OnAuthenticationComplete();
+  client_session_->OnConnectionOpened(client_session_->connection());
   // These events should get through to the input stub.
   client_session_->InjectKeyEvent(key_event2_down);
   client_session_->InjectKeyEvent(key_event2_up);
   client_session_->InjectMouseEvent(mouse_event2);
-  client_session_->OnDisconnected();
+  client_session_->Disconnect();
   // These events should not get through to the input stub,
   // because the client has disconnected.
   client_session_->InjectKeyEvent(key_event3);
@@ -135,11 +130,12 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   mouse_event3.set_y(301);
 
   InSequence s;
-  EXPECT_CALL(session_event_handler_, OnAuthenticationComplete(_));
+  EXPECT_CALL(session_event_handler_,
+              OnSessionAuthenticated(client_session_.get()));
   EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(100, 101)));
   EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
 
-  client_session_->OnAuthenticationComplete();
+  client_session_->OnConnectionOpened(client_session_->connection());
   // This event should get through to the input stub.
   client_session_->InjectMouseEvent(mouse_event1);
   // This one should too because the local event echoes the remote one.
@@ -152,7 +148,7 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   client_session_->InjectMouseEvent(mouse_event3);
   // TODO(jamiewalch): Verify that remote inputs are re-enabled eventually
   // (via dependency injection, not sleep!)
-  client_session_->OnDisconnected();
+  client_session_->Disconnect();
 }
 
 TEST_F(ClientSessionTest, RestoreEventState) {
@@ -185,8 +181,9 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
   EXPECT_CALL(capturer_, size_most_recent())
       .WillRepeatedly(ReturnRef(screen));
 
-  EXPECT_CALL(session_event_handler_, OnAuthenticationComplete(_));
-  client_session_->OnAuthenticationComplete();
+  EXPECT_CALL(session_event_handler_,
+              OnSessionAuthenticated(client_session_.get()));
+  client_session_->OnConnectionOpened(client_session_->connection());
 
   int input_x[3] = { -999, 100, 999 };
   int expected_x[3] = { 0, 100, 199 };

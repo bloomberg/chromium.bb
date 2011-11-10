@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/message_loop_proxy.h"
 #include "base/task.h"
 #include "remoting/host/capturer.h"
 #include "remoting/proto/event.pb.h"
@@ -38,14 +39,16 @@ ClientSession::ClientSession(
       authenticated_(false),
       awaiting_continue_approval_(false),
       remote_mouse_button_state_(0) {
+  connection_->SetEventHandler(this);
+
+  // TODO(sergeyu): Currently ConnectionToClient expects stubs to be
+  // set before channels are connected. Make it possible to set stubs
+  // later and set them only when connection is authenticated.
+  connection_->set_host_stub(this);
+  connection_->set_input_stub(this);
 }
 
 ClientSession::~ClientSession() {
-}
-
-void ClientSession::OnAuthenticationComplete() {
-  authenticated_ = true;
-  event_handler_->OnAuthenticationComplete(connection_.get());
 }
 
 void ClientSession::InjectKeyEvent(const KeyEvent& event) {
@@ -86,9 +89,40 @@ void ClientSession::InjectMouseEvent(const MouseEvent& event) {
   }
 }
 
-void ClientSession::OnDisconnected() {
-  RestoreEventState();
+void ClientSession::OnConnectionOpened(
+    protocol::ConnectionToClient* connection) {
+  DCHECK_EQ(connection_.get(), connection);
+  authenticated_ = true;
+  event_handler_->OnSessionAuthenticated(this);
+}
+
+void ClientSession::OnConnectionClosed(
+    protocol::ConnectionToClient* connection) {
+  DCHECK_EQ(connection_.get(), connection);
+  scoped_refptr<ClientSession> self = this;
+  event_handler_->OnSessionClosed(this);
+  Disconnect();
+}
+
+void ClientSession::OnConnectionFailed(
+    protocol::ConnectionToClient* connection) {
+  DCHECK_EQ(connection_.get(), connection);
+  // TODO(sergeyu): Log failure reason?
+  scoped_refptr<ClientSession> self = this;
+  event_handler_->OnSessionClosed(this);
+  Disconnect();
+}
+
+void ClientSession::OnSequenceNumberUpdated(
+    protocol::ConnectionToClient* connection, int64 sequence_number) {
+  DCHECK_EQ(connection_.get(), connection);
+  event_handler_->OnSessionSequenceNumber(this, sequence_number);
+}
+
+void ClientSession::Disconnect() {
+  connection_->Disconnect();
   authenticated_ = false;
+  RestoreEventState();
 }
 
 void ClientSession::LocalMouseMoved(const SkIPoint& mouse_pos) {

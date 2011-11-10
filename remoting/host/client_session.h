@@ -22,16 +22,20 @@ class Capturer;
 // per-client state.
 class ClientSession : public protocol::HostStub,
                       public protocol::InputStub,
+                      public protocol::ConnectionToClient::EventHandler,
                       public base::RefCountedThreadSafe<ClientSession> {
  public:
   // Callback interface for passing events to the ChromotingHost.
+  // Called only for external events, i.e. OnSessionClosed() is not
+  // called when Disconnect() is called.
   class EventHandler {
    public:
     virtual ~EventHandler() {}
 
-    // Called to signal that authentication has succeeded.
-    virtual void OnAuthenticationComplete(
-        scoped_refptr<protocol::ConnectionToClient> client) = 0;
+    virtual void OnSessionAuthenticated(ClientSession* client) = 0;
+    virtual void OnSessionClosed(ClientSession* client) = 0;
+    virtual void OnSessionSequenceNumber(ClientSession* client,
+                                         int64 sequence_number) = 0;
   };
 
   // Takes ownership of |user_authenticator|. Does not take ownership of
@@ -45,12 +49,21 @@ class ClientSession : public protocol::HostStub,
   virtual void InjectKeyEvent(const protocol::KeyEvent& event);
   virtual void InjectMouseEvent(const protocol::MouseEvent& event);
 
-  // Notifier called when the client is being disconnected.
-  // This should only be called by ChromotingHost.
-  void OnDisconnected();
+  // protocol::ConnectionToClient::EventHandler interface.
+  virtual void OnConnectionOpened(
+      protocol::ConnectionToClient* connection) OVERRIDE;
+  virtual void OnConnectionClosed(
+      protocol::ConnectionToClient* connection) OVERRIDE;
+  virtual void OnConnectionFailed(
+      protocol::ConnectionToClient* connection) OVERRIDE;
+  virtual void OnSequenceNumberUpdated(
+      protocol::ConnectionToClient* connection, int64 sequence_number) OVERRIDE;
 
-  // Set the authenticated flag.
-  void OnAuthenticationComplete();
+  // Disconnects the session and destroys the transport. Event handler
+  // is guaranteed not to be called after this method is called. Can
+  // be called multiple times. The object should not be used after
+  // this method returns.
+  void Disconnect();
 
   protocol::ConnectionToClient* connection() const {
     return connection_.get();

@@ -14,27 +14,23 @@
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
 
-// TODO(hclam): Remove this header once MessageDispatcher is used.
-#include "remoting/base/compound_buffer.h"
-
 namespace remoting {
 namespace protocol {
 
-// Determine how many update streams we should count to find the size of
-// average update stream.
-static const size_t kAverageUpdateStream = 10;
-
 ConnectionToClient::ConnectionToClient(base::MessageLoopProxy* message_loop,
-                                       EventHandler* handler)
+                                       protocol::Session* session)
     : message_loop_(message_loop),
-      handler_(handler),
+      handler_(NULL),
       host_stub_(NULL),
       input_stub_(NULL),
+      session_(session),
       control_connected_(false),
       input_connected_(false),
       video_connected_(false) {
   DCHECK(message_loop_);
-  DCHECK(handler_);
+  session_->SetStateChangeCallback(
+      base::Bind(&ConnectionToClient::OnSessionStateChange,
+                 base::Unretained(this)));
 }
 
 ConnectionToClient::~ConnectionToClient() {
@@ -42,12 +38,9 @@ ConnectionToClient::~ConnectionToClient() {
   // connection.
 }
 
-void ConnectionToClient::Init(protocol::Session* session) {
+void ConnectionToClient::SetEventHandler(EventHandler* event_handler) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  session_.reset(session);
-  session_->SetStateChangeCallback(
-      base::Bind(&ConnectionToClient::OnSessionStateChange,
-                 base::Unretained(this)));
+  handler_ = event_handler;
 }
 
 protocol::Session* ConnectionToClient::session() {

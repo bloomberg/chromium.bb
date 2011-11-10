@@ -96,9 +96,11 @@ class MockClientSessionEventHandler : public ClientSession::EventHandler {
   MockClientSessionEventHandler();
   virtual ~MockClientSessionEventHandler();
 
-  MOCK_METHOD1(OnAuthenticationComplete,
-               void(scoped_refptr<protocol::ConnectionToClient>));
-
+  MOCK_METHOD1(OnSessionAuthenticated, void(ClientSession* client));
+  MOCK_METHOD1(OnSessionClosed, void(ClientSession* client));
+  MOCK_METHOD1(OnSessionFailed, void(ClientSession* client));
+  MOCK_METHOD2(OnSessionSequenceNumber, void(ClientSession* client,
+                                             int64 sequence_number));
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientSessionEventHandler);
 };

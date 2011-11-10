@@ -130,7 +130,9 @@ void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
 
   // Disconnect all of the clients, implicitly stopping the ScreenRecorder.
   while (!clients_.empty()) {
-    OnClientDisconnected(clients_.front()->connection());
+    scoped_refptr<ClientSession> client = clients_.front();
+    client->Disconnect();
+    OnClientDisconnected(client);
   }
 
   ShutdownNetwork();
@@ -142,40 +144,32 @@ void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {
 }
 
 ////////////////////////////////////////////////////////////////////////////
-// protocol::ConnectionToClient::EventHandler implementations
-void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
+// protocol::ClientSession::EventHandler implementation.
+void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
-  VLOG(1) << "Connection to client established.";
+  protocol::Session* session = client->connection()->session();
   context_->main_message_loop()->PostTask(
-      FROM_HERE, base::Bind(&ChromotingHost::ProcessPreAuthentication, this,
-                              make_scoped_refptr(connection)));
+      FROM_HERE, base::Bind(&ChromotingHost::AddAuthenticatedClient,
+                            this, make_scoped_refptr(client),
+                            session->config(), session->jid()));
 }
 
-void ChromotingHost::OnConnectionClosed(ConnectionToClient* connection) {
+void ChromotingHost::OnSessionClosed(ClientSession* client) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
   VLOG(1) << "Connection to client closed.";
   context_->main_message_loop()->PostTask(
       FROM_HERE, base::Bind(&ChromotingHost::OnClientDisconnected, this,
-                            make_scoped_refptr(connection)));
+                            make_scoped_refptr(client)));
 }
 
-void ChromotingHost::OnConnectionFailed(ConnectionToClient* connection) {
-  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
-
-  LOG(ERROR) << "Connection failed unexpectedly.";
-  context_->main_message_loop()->PostTask(
-      FROM_HERE, base::Bind(&ChromotingHost::OnClientDisconnected, this,
-                            make_scoped_refptr(connection)));
-}
-
-void ChromotingHost::OnSequenceNumberUpdated(ConnectionToClient* connection,
+void ChromotingHost::OnSessionSequenceNumber(ClientSession* session,
                                              int64 sequence_number) {
   // Update the sequence number in ScreenRecorder.
   if (MessageLoop::current() != context_->main_message_loop()) {
     context_->main_message_loop()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingHost::OnSequenceNumberUpdated, this,
-                              make_scoped_refptr(connection), sequence_number));
+        FROM_HERE, base::Bind(&ChromotingHost::OnSessionSequenceNumber, this,
+                              make_scoped_refptr(session), sequence_number));
     return;
   }
 
@@ -292,19 +286,14 @@ void ChromotingHost::OnIncomingSession(
 
   LOG(INFO) << "Client connected: " << session->jid();
 
-  // We accept the connection, so create a connection object.
-  ConnectionToClient* connection = new ConnectionToClient(
-      context_->network_message_loop(), this);
-  connection->Init(session);
-
   // Create a client object.
+  scoped_refptr<protocol::ConnectionToClient> connection =
+      new protocol::ConnectionToClient(context_->network_message_loop(),
+                                       session);
   ClientSession* client = new ClientSession(
-      this,
-      connection,
+      this, connection,
       desktop_environment_->event_executor(),
       desktop_environment_->capturer());
-  connection->set_host_stub(client);
-  connection->set_input_stub(client);
 
   clients_.push_back(client);
 }
@@ -348,31 +337,21 @@ void ChromotingHost::SetUiStrings(const UiStrings& ui_strings) {
   ui_strings_ = ui_strings;
 }
 
-void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
+void ChromotingHost::OnClientDisconnected(ClientSession* client) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
-  // Find the client session corresponding to the given connection.
+  scoped_refptr<ClientSession> client_ref = client;
+
   ClientList::iterator it;
   for (it = clients_.begin(); it != clients_.end(); ++it) {
-    if (it->get()->connection() == connection)
+    if (it->get() == client)
       break;
   }
-  if (it == clients_.end())
-    return;
-
-  scoped_refptr<ClientSession> client = *it;
-
   clients_.erase(it);
 
   if (recorder_.get()) {
-    recorder_->RemoveConnection(connection);
+    recorder_->RemoveConnection(client->connection());
   }
-
-  // Close the connection to client just to be safe.
-  // TODO(garykac): This should be removed when we revisit our shutdown and
-  // disconnect code. This should only need to be done in
-  // ClientSession::Disconnect().
-  connection->Disconnect();
 
   for (StatusObserverList::iterator it = status_observers_.begin();
        it != status_observers_.end(); ++it) {
@@ -387,12 +366,8 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
 
     // Disable the "curtain" if there are no more active clients.
     EnableCurtainMode(false);
-    if (is_it2me_) {
-      desktop_environment_->OnLastDisconnect();
-    }
+    desktop_environment_->OnLastDisconnect();
   }
-
-  client->OnDisconnected();
 }
 
 // TODO(sergeyu): Move this to SessionManager?
@@ -436,18 +411,8 @@ void ChromotingHost::EnableCurtainMode(bool enable) {
   is_curtained_ = enable;
 }
 
-void ChromotingHost::OnAuthenticationComplete(
-    scoped_refptr<ConnectionToClient> connection) {
-  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
-
-  context_->main_message_loop()->PostTask(
-      FROM_HERE, base::Bind(&ChromotingHost::AddAuthenticatedClient,
-                            this, connection, connection->session()->config(),
-                            connection->session()->jid()));
-}
-
 void ChromotingHost::AddAuthenticatedClient(
-    scoped_refptr<ConnectionToClient> connection,
+    ClientSession* client,
     const protocol::SessionConfig& config,
     const std::string& jid) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
@@ -456,13 +421,14 @@ void ChromotingHost::AddAuthenticatedClient(
   // Iterate over a copy of the list of clients, to avoid mutating the list
   // while iterating over it.
   ClientList clients_copy(clients_);
-  for (ClientList::const_iterator client = clients_copy.begin();
-       client != clients_copy.end(); client++) {
-    ConnectionToClient* connection_other = client->get()->connection();
-    if (connection_other != connection) {
-      OnClientDisconnected(connection_other);
+  for (ClientList::const_iterator other_client = clients_copy.begin();
+       other_client != clients_copy.end(); ++other_client) {
+    if ((*other_client) != client) {
+      (*other_client)->Disconnect();
+      OnClientDisconnected(*other_client);
     }
   }
+
   // Those disconnections should have killed the screen recorder.
   CHECK(recorder_.get() == NULL);
 
@@ -480,7 +446,7 @@ void ChromotingHost::AddAuthenticatedClient(
   }
 
   // Immediately add the connection and start the session.
-  recorder_->AddConnection(connection);
+  recorder_->AddConnection(client->connection());
   recorder_->Start();
   // Notify observers that there is at least one authenticated client.
   for (StatusObserverList::iterator it = status_observers_.begin();
@@ -497,22 +463,6 @@ void ChromotingHost::AddAuthenticatedClient(
       username.replace(pos, std::string::npos, "");
     desktop_environment_->OnConnect(username);
   }
-}
-
-void ChromotingHost::ProcessPreAuthentication(
-    const scoped_refptr<ConnectionToClient>& connection) {
-  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
-  // Find the client session corresponding to the given connection.
-  ClientList::iterator client;
-  for (client = clients_.begin(); client != clients_.end(); ++client) {
-    if (client->get()->connection() == connection)
-      break;
-  }
-  CHECK(client != clients_.end());
-
-  context_->network_message_loop()->PostTask(
-      FROM_HERE, base::Bind(&ClientSession::OnAuthenticationComplete,
-                            client->get()));
 }
 
 void ChromotingHost::StopScreenRecorder() {

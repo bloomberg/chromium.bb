@@ -10,11 +10,10 @@ namespace remoting {
 namespace protocol {
 
 MockConnectionToClient::MockConnectionToClient(
-    EventHandler* handler,
+    Session* session,
     HostStub* host_stub,
     InputStub* input_stub)
-    : ConnectionToClient(base::MessageLoopProxy::current(),
-                         handler) {
+    : ConnectionToClient(base::MessageLoopProxy::current(), session) {
   set_host_stub(host_stub);
   set_input_stub(input_stub);
 }

@@ -26,7 +26,6 @@ class Task;
 namespace remoting {
 
 namespace protocol {
-class ConnectionToClient;
 class HostStub;
 class InputStub;
 class SessionConfig;
@@ -64,7 +63,6 @@ class ScreenRecorder;
 //    return to the idle state. We then go to step (2) if there a new
 //    incoming connection.
 class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
-                       public protocol::ConnectionToClient::EventHandler,
                        public ClientSession::EventHandler,
                        public SignalStrategy::StatusObserver,
                        public protocol::SessionManager::Listener {
@@ -99,15 +97,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void AddStatusObserver(HostStatusObserver* observer);
 
   ////////////////////////////////////////////////////////////////////////////
-  // protocol::ConnectionToClient::EventHandler implementation.
-  // TODO(sergeyu): Move this to ClientSession.
-  virtual void OnConnectionOpened(protocol::ConnectionToClient* client);
-  virtual void OnConnectionClosed(protocol::ConnectionToClient* client);
-  virtual void OnConnectionFailed(protocol::ConnectionToClient* client);
-  virtual void OnSequenceNumberUpdated(protocol::ConnectionToClient* client,
-                                       int64 sequence_number);
-
-  ////////////////////////////////////////////////////////////////////////////
   // SignalStrategy::StatusObserver implementation.
   virtual void OnStateChange(
       SignalStrategy::StatusObserver::State state) OVERRIDE;
@@ -115,19 +104,16 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   ////////////////////////////////////////////////////////////////////////////
   // ClientSession::EventHandler implementation.
-  virtual void OnAuthenticationComplete(
-      scoped_refptr<protocol::ConnectionToClient> client);
+  virtual void OnSessionAuthenticated(ClientSession* client) OVERRIDE;
+  virtual void OnSessionClosed(ClientSession* session) OVERRIDE;
+  virtual void OnSessionSequenceNumber(ClientSession* session,
+                                       int64 sequence_number) OVERRIDE;
 
   // SessionManager::Listener implementation.
   virtual void OnSessionManagerInitialized() OVERRIDE;
   virtual void OnIncomingSession(
       protocol::Session* session,
       protocol::SessionManager::IncomingSessionResponse* response) OVERRIDE;
-
-  void AddAuthenticatedClient(
-      scoped_refptr<protocol::ConnectionToClient> connection,
-      const protocol::SessionConfig& config,
-      const std::string& jid);
 
   // Sets desired configuration for the protocol. Ownership of the
   // |config| is transferred to the object. Must be called before Start().
@@ -178,19 +164,20 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   virtual ~ChromotingHost();
 
   // This method is called if a client is disconnected from the host.
-  void OnClientDisconnected(protocol::ConnectionToClient* client);
+  void OnClientDisconnected(ClientSession* client);
 
   // Creates encoder for the specified configuration.
   Encoder* CreateEncoder(const protocol::SessionConfig& config);
 
   std::string GenerateHostAuthToken(const std::string& encoded_client_token);
 
+  void AddAuthenticatedClient(ClientSession* client,
+                              const protocol::SessionConfig& config,
+                              const std::string& jid);
+
   int AuthenticatedClientsCount() const;
 
   void EnableCurtainMode(bool enable);
-
-  void ProcessPreAuthentication(
-      const scoped_refptr<protocol::ConnectionToClient>& connection);
 
   void StopScreenRecorder();
   void OnScreenRecorderStopped();

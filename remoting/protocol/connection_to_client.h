@@ -53,14 +53,15 @@ class ConnectionToClient :
                                          int64 sequence_number) = 0;
   };
 
-  // Constructs a ConnectionToClient object. |message_loop| is the message loop
-  // that this object runs on. A viewer object receives events and messages from
-  // a libjingle channel, these events are delegated to |handler|.
-  // It is guaranteed that |handler| is called only on the |message_loop|.
-  ConnectionToClient(base::MessageLoopProxy* message_loop,
-                     EventHandler* handler);
+  // Constructs a ConnectionToClient object for the
+  // |session|. |message_loop| is the message loop that this object
+  // runs on.
+  ConnectionToClient(base::MessageLoopProxy* message_loop, Session* session);
 
-  virtual void Init(Session* session);
+  // Set |event_handler| for connection events. |event_handler| is
+  // guaranteed to be used only on the network thread. Must be called
+  // once when this object is created.
+  void SetEventHandler(EventHandler* event_handler);
 
   // Returns the connection in use.
   virtual Session* session();
