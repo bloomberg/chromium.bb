@@ -81,6 +81,10 @@ struct AutocompleteMatch {
     NUM_TYPES,
   };
 
+  // Null-terminated array of characters that are not valid within |contents|
+  // and |description| strings.
+  static const char16 kInvalidChars[];
+
   AutocompleteMatch();
   AutocompleteMatch(AutocompleteProvider* provider,
                     int relevance,
@@ -124,7 +128,7 @@ struct AutocompleteMatch {
                                        int style,
                                        ACMatchClassifications* classifications);
 
-  // Removes invalid characters from |str|. Should be called on strings coming
+  // Removes invalid characters from |text|. Should be called on strings coming
   // from external sources (such as extensions) before assigning to |contents|
   // or |description|.
   static string16 SanitizeString(const string16& text);

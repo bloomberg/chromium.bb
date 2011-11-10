@@ -9,6 +9,14 @@
 
 // AutocompleteMatch ----------------------------------------------------------
 
+// static
+const char16 AutocompleteMatch::kInvalidChars[] = {
+  '\n', '\r', '\t',
+  0x2028,  // Line separator
+  0x2029,  // Paragraph separator
+  0
+};
+
 AutocompleteMatch::AutocompleteMatch()
     : provider(NULL),
       relevance(0),
@@ -161,14 +169,9 @@ void AutocompleteMatch::ClassifyLocationInString(
 string16 AutocompleteMatch::SanitizeString(const string16& text) {
   // NOTE: This logic is mirrored by |sanitizeString()| in
   // extension_process_bindings.js.
-  // 0x2028 = line separator; 0x2029 = paragraph separator.
-  const char16 kRemoveChars[] = { '\n', '\r', '\t',
-                                  0x2028,  // Line separator
-                                  0x2029,  // Paragraph separator
-                                  0 };
   string16 result;
   TrimWhitespace(text, TRIM_LEADING, &result);
-  RemoveChars(result, kRemoveChars, &result);
+  RemoveChars(result, kInvalidChars, &result);
   return result;
 }
 

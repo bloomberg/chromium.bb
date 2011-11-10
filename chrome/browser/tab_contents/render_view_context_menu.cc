@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <set>
+#include <utility>
 
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 
@@ -398,7 +399,7 @@ void RenderViewContextMenu::RecursivelyAppendExtensionItems(
     const ExtensionMenuItem::List& items,
     bool can_cross_incognito,
     ui::SimpleMenuModel* menu_model,
-    int *index) {
+    int* index) {
   string16 selection_text = PrintableSelectionText();
   ExtensionMenuItem::Type last_type = ExtensionMenuItem::NORMAL;
   int radio_group_id = 1;
@@ -798,6 +799,9 @@ void RenderViewContextMenu::AppendSearchProvider() {
   TrimWhitespace(params_.selection_text, TRIM_ALL, &params_.selection_text);
   if (params_.selection_text.empty())
     return;
+
+  ReplaceChars(params_.selection_text, AutocompleteMatch::kInvalidChars,
+               ASCIIToUTF16(" "), &params_.selection_text);
 
   AutocompleteMatch match;
   profile_->GetAutocompleteClassifier()->Classify(
