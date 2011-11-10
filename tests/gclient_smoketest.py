@@ -10,8 +10,6 @@ Shell out 'gclient' and run basic conformance tests.
 This test assumes GClientSmokeBase.URL_BASE is valid.
 """
 
-# pylint: disable=E1103,W0403
-
 import logging
 import os
 import re
@@ -19,12 +17,14 @@ import subprocess
 import sys
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(ROOT_DIR))
-from tests.fake_repos import join, write, FakeReposTestBase
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
+
+from fake_repos import join, write, FakeReposTestBase
+
 import subprocess2
 
-GCLIENT_PATH = os.path.join(os.path.dirname(ROOT_DIR), 'gclient')
+GCLIENT_PATH = os.path.join(ROOT_DIR, 'gclient')
 COVERAGE = False
 
 
@@ -50,6 +50,7 @@ class GClientSmokeBase(FakeReposTestBase):
     (stdout, stderr) = process.communicate()
     logging.debug("XXX: %s\n%s\nXXX" % (' '.join(cmd), stdout))
     logging.debug("YYY: %s\n%s\nYYY" % (' '.join(cmd), stderr))
+    # pylint: disable=E1103
     return (stdout.replace('\r\n', '\n'), stderr.replace('\r\n', '\n'),
             process.returncode)
 

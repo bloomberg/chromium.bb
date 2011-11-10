@@ -662,7 +662,7 @@ class Change(object):
   _AFFECTED_FILES = AffectedFile
 
   # Matches key/value (or "tag") lines in changelist descriptions.
-  _TAG_LINE_RE = re.compile(
+  TAG_LINE_RE = re.compile(
       '^\s*(?P<key>[A-Z][A-Z_0-9]*)\s*=\s*(?P<value>.*?)\s*$')
   scm = ''
 
@@ -683,7 +683,7 @@ class Change(object):
     description_without_tags = []
     self.tags = {}
     for line in self._full_description.splitlines():
-      m = self._TAG_LINE_RE.match(line)
+      m = self.TAG_LINE_RE.match(line)
       if m:
         self.tags[m.group('key')] = m.group('value')
       else:

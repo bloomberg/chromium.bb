@@ -5,9 +5,11 @@
 
 """Unit tests for trychange.py."""
 
-# pylint: disable=E1103,W0403
+import os
+import sys
 
-# Fixes include path.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from super_mox import SuperMoxTestBase
 
 import subprocess2
@@ -91,6 +93,7 @@ class GITUnittest(TryChangeTestsBase):
     self.compareMembers(trychange.GIT, members)
 
   def testBasic(self):
+    # pylint: disable=E1103
     trychange.os.path.abspath(self.fake_root).AndReturn(self.fake_root)
     trychange.scm.GIT.GetCheckoutRoot(self.fake_root).AndReturn(self.fake_root)
     trychange.scm.GIT.GetUpstreamBranch(self.fake_root).AndReturn('somewhere')

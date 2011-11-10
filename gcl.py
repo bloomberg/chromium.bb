@@ -278,7 +278,7 @@ class ChangeInfo(object):
     rietveld: rietveld server for this change
   """
   # Kept for unit test support. This is for the old format, it's deprecated.
-  _SEPARATOR = "\n-----\n"
+  SEPARATOR = "\n-----\n"
 
   def __init__(self, name, issue, patchset, description, files, local_root,
                rietveld_url, needs_upload):
@@ -576,15 +576,15 @@ class ChangeInfo(object):
   def _LoadOldFormat(content):
     # The info files have the following format:
     # issue_id, patchset\n   (, patchset is optional)
-    # _SEPARATOR\n
+    # SEPARATOR\n
     # filepath1\n
     # filepath2\n
     # .
     # .
     # filepathn\n
-    # _SEPARATOR\n
+    # SEPARATOR\n
     # description
-    split_data = content.split(ChangeInfo._SEPARATOR, 2)
+    split_data = content.split(ChangeInfo.SEPARATOR, 2)
     if len(split_data) != 3:
       raise ValueError('Bad change format')
     values = {

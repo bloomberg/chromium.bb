@@ -14,8 +14,7 @@ import unittest
 from xml.etree import ElementTree
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-BASE_DIR = os.path.join(ROOT_DIR, '..')
-sys.path.insert(0, BASE_DIR)
+sys.path.insert(0, os.path.dirname(ROOT_DIR))
 
 import checkout
 import patch

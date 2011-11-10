@@ -5,13 +5,14 @@
 
 """Unit tests for scm.py."""
 
-# pylint: disable=E1101,W0403
 from __future__ import with_statement
 import logging
+import os
 import sys
 import unittest
 
-# Fixes include path.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from super_mox import SuperMoxTestBase
 
 import fake_repos
@@ -102,11 +103,11 @@ class SVNTestCase(BaseSCMTestCase):
     self.compareMembers(scm.SVN, members)
 
   def testGetCheckoutRoot(self):
+    # pylint: disable=E1103
     self.mox.StubOutWithMock(scm.SVN, 'CaptureInfo')
     self.mox.StubOutWithMock(scm, 'GetCasedPath')
     scm.os.path.abspath = lambda x: x
     scm.GetCasedPath = lambda x: x
-    # pylint: disable=E1103
     scm.SVN.CaptureInfo(self.root_dir + '/foo/bar').AndReturn({
         'Repository Root': 'svn://svn.chromium.org/chrome',
         'URL': 'svn://svn.chromium.org/chrome/trunk/src',

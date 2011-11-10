@@ -5,9 +5,11 @@
 
 """Unit tests for breakpad.py."""
 
-# pylint: disable=W0403
+import os
+import sys
 
-# Fixes include path.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from super_mox import SuperMoxTestBase
 
 import breakpad

@@ -5,8 +5,12 @@
 
 """Unit tests for watchlists.py."""
 
-# pylint is too confused.
-# pylint: disable=E1103,E1120,W0212,W0403
+# pylint: disable=E1103,E1120,W0212
+
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import super_mox
 import watchlists

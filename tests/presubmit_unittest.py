@@ -5,20 +5,22 @@
 
 """Unit tests for presubmit_support.py and presubmit_canned_checks.py."""
 
-# pylint is too confused.
-# pylint: disable=E1101,E1103,R0201,W0212,W0403
+# pylint: disable=E1101,E1103
 
 import logging
+import os
 import StringIO
 import sys
 import time
 
-# Fixes include path.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from super_mox import mox, SuperMoxTestBase
 
 import owners
 import presubmit_support as presubmit
 import rietveld
+
 # Shortcut.
 presubmit_canned_checks = presubmit.presubmit_canned_checks
 
@@ -233,7 +235,7 @@ class PresubmitUnittest(PresubmitTestsBase):
 
   def testTagLineRe(self):
     self.mox.ReplayAll()
-    m = presubmit.Change._TAG_LINE_RE.match(' BUG =1223, 1445  \t')
+    m = presubmit.Change.TAG_LINE_RE.match(' BUG =1223, 1445  \t')
     self.failUnless(m)
     self.failUnlessEqual(m.group('key'), 'BUG')
     self.failUnlessEqual(m.group('value'), '1223, 1445')
@@ -1346,6 +1348,7 @@ class ChangeUnittest(PresubmitTestsBase):
         'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTextFiles',
         'DescriptionText', 'FullDescriptionText', 'LocalPaths', 'Name',
         'RepositoryRoot', 'RightHandSideLines', 'ServerPaths',
+        'TAG_LINE_RE',
         'author_email', 'issue', 'patchset', 'scm', 'tags',
     ]
     # If this test fails, you should add the relevant test.
@@ -1372,10 +1375,8 @@ class ChangeUnittest(PresubmitTestsBase):
 class CannedChecksUnittest(PresubmitTestsBase):
   """Tests presubmit_canned_checks.py."""
 
-  def setUp(self):
-    PresubmitTestsBase.setUp(self)
-
   def MockInputApi(self, change, committing):
+    # pylint: disable=R0201
     input_api = self.mox.CreateMock(presubmit.InputApi)
     input_api.cStringIO = presubmit.cStringIO
     input_api.json = presubmit.json
@@ -1684,6 +1685,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results1), 1)
     self.assertEquals(results1[0].__class__,
         presubmit.OutputApi.PresubmitPromptWarning)
+    # pylint: disable=W0212
     self.assertEquals(results1[0]._long_text,
         'makefile.foo, line 46')
 
@@ -1973,6 +1975,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__,
                       presubmit.OutputApi.PresubmitNotifyResult)
+    # pylint: disable=W0212
     self.assertEquals('test_module failed!\nfoo', results[0]._message)
 
   def testRunPythonUnitTestsFailureCommitting(self):
@@ -1987,6 +1990,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api, presubmit.OutputApi, ['test_module'])
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__, presubmit.OutputApi.PresubmitError)
+    # pylint: disable=W0212
     self.assertEquals('test_module failed!\nfoo', results[0]._message)
 
   def testRunPythonUnitTestsSuccess(self):
@@ -2227,6 +2231,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         project_name=None,
         owners_check=True)
     self.assertEqual(1, len(results))
+    # pylint: disable=W0212
     self.assertEqual(
         'Found line ending with white spaces in:', results[0]._message)
     self.checkstdout('')

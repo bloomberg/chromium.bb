@@ -11,13 +11,9 @@ import sys
 import time
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ROOT_DIR)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import subprocess2
-
-# Method could be a function
-# pylint: disable=R0201
 
 class Subprocess2Test(unittest.TestCase):
   # Can be mocked in a test.
@@ -62,7 +58,8 @@ class Subprocess2Test(unittest.TestCase):
         assert not results
         results.update(kwargs)
         results['args'] = args
-      def communicate(self):
+      @staticmethod
+      def communicate():
         return None, None
     subprocess2.Popen = fake_Popen
     return results
@@ -76,7 +73,8 @@ class Subprocess2Test(unittest.TestCase):
         assert not results
         results.update(kwargs)
         results['args'] = args
-      def communicate(self):
+      @staticmethod
+      def communicate():
         return None, None
     subprocess2.subprocess.Popen = fake_Popen
     return results

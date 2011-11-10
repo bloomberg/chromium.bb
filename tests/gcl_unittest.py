@@ -5,10 +5,13 @@
 
 """Unit tests for gcl.py."""
 
-# pylint is too confused.
-# pylint: disable=E1101,E1103,E1120,W0212,W0403
+# pylint: disable=E1103,E1101,E1120
 
-# Fixes include path.
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from super_mox import mox, SuperMoxTestBase
 
 import gcl
@@ -180,6 +183,7 @@ class ChangeInfoUnittest(GclTestsBase):
       'CloseIssue', 'Delete', 'Exists', 'GetFiles', 'GetFileNames',
       'GetLocalRoot', 'GetIssueDescription', 'Load', 'MissingTests',
       'NeedsUpload', 'PrimeLint', 'RpcServer', 'Save', 'SendToRietveld',
+      'SEPARATOR',
       'UpdateRietveldDescription',
       'description', 'issue', 'name',
       'needs_upload', 'patch', 'patchset', 'reviewers', 'rietveld',
@@ -217,7 +221,7 @@ class ChangeInfoUnittest(GclTestsBase):
     gcl.GetChangelistInfoFile('bleh').AndReturn('bleeeh')
     gcl.os.path.exists('bleeeh').AndReturn(True)
     gcl.gclient_utils.FileRead('bleeeh').AndReturn(
-      gcl.ChangeInfo._SEPARATOR.join(["42, 53", "G      b.cc"] + description))
+      gcl.ChangeInfo.SEPARATOR.join(["42, 53", "G      b.cc"] + description))
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('foo')
     # Does an upgrade.
     gcl.GetChangelistInfoFile('bleh').AndReturn('bleeeh')
@@ -229,7 +233,7 @@ class ChangeInfoUnittest(GclTestsBase):
     self.assertEquals(change_info.issue, 42)
     self.assertEquals(change_info.patchset, 53)
     self.assertEquals(change_info.description,
-                      gcl.ChangeInfo._SEPARATOR.join(description))
+                      gcl.ChangeInfo.SEPARATOR.join(description))
     self.assertEquals(change_info.GetFiles(), [('G      ', 'b.cc')])
 
   def testLoadEmpty(self):
@@ -237,7 +241,7 @@ class ChangeInfoUnittest(GclTestsBase):
     gcl.GetChangelistInfoFile('bleh').AndReturn('bleeeh')
     gcl.os.path.exists('bleeeh').AndReturn(True)
     gcl.gclient_utils.FileRead('bleeeh').AndReturn(
-        gcl.ChangeInfo._SEPARATOR.join(["", "", ""]))
+        gcl.ChangeInfo.SEPARATOR.join(["", "", ""]))
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('foo')
     # Does an upgrade.
     gcl.GetChangelistInfoFile('bleh').AndReturn('bleeeh')
@@ -566,6 +570,7 @@ class CMDCommitUnittest(GclTestsBase):
 
     self.assertEquals(retval, 0)
     self.assertEquals(change_info.description, 'deescription')
+    # pylint: disable=W0212
     self.assertFalse(change_info._deleted)
     self.assertFalse(change_info._closed)
 
@@ -581,6 +586,7 @@ class CMDCommitUnittest(GclTestsBase):
     self.assertEquals(retval, 0)
     self.assertEquals(change_info.description,
         'deescription\n\nCommitted: http://view/12345')
+    # pylint: disable=W0212
     self.assertTrue(change_info._deleted)
     self.assertTrue(change_info._closed)
 

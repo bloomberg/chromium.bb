@@ -11,8 +11,7 @@ import posixpath
 import sys
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(ROOT_DIR, '..'))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import patch
 from tests.patches_data import GIT, RAW
@@ -92,8 +91,6 @@ class PatchTest(unittest.TestCase):
         p, 'foo', GIT.NEW, is_new=True, is_git_diff=True, patchlevel=1)
 
   def testValidSvn(self):
-    # pylint: disable=R0201
-    # Method could be a function
     # Should not throw.
     p = patch.FilePatchDiff('chrome/file.cc', RAW.PATCH, [])
     lines = RAW.PATCH.splitlines(True)

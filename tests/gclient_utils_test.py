@@ -3,12 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# pylint: disable=E1101,W0403
-
 import os
 import StringIO
+import sys
 
-# Fixes include path.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from super_mox import SuperMoxTestBase
 import trial_dir
 
@@ -57,6 +57,7 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
         '\n________ running \'boo foo bar\' in \'bleh\'\n')
     for i in test_string:
       gclient_utils.sys.stdout.write(i)
+    # pylint: disable=E1101
     subprocess2.Popen(
         args,
         cwd=cwd,

@@ -10,15 +10,11 @@ import os
 import sys
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(ROOT_DIR, '..'))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import patch
 import rietveld
 from tests.patches_data import GIT, RAW
-
-# Access to a protected member XX of a client class
-# pylint: disable=W0212
 
 
 def _api(files):
@@ -40,12 +36,16 @@ def _file(
 
 class RietveldTest(unittest.TestCase):
   def setUp(self):
+    super(RietveldTest, self).setUp()
+    # Access to a protected member XX of a client class
+    # pylint: disable=W0212
     self.rietveld = rietveld.Rietveld('url', 'email', 'password')
     self.rietveld._send = self._rietveld_send
     self.requests = []
 
   def tearDown(self):
     self.assertEquals([], self.requests)
+    super(RietveldTest, self).tearDown()
 
   def _rietveld_send(self, url, *args, **kwargs):
     self.assertTrue(self.requests, url)

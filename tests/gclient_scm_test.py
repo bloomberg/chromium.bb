@@ -5,21 +5,25 @@
 
 """Unit tests for gclient_scm.py."""
 
-# pylint: disable=E1101,E1103,W0403
+# pylint: disable=E1103
 
 # Import before super_mox to keep valid references.
 from os import rename
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
+
+import logging
+import os
+import sys
 import tempfile
 import unittest
 import __builtin__
 
-# Fixes include path.
-from super_mox import mox, StdoutCheck, TestCaseUtils, SuperMoxTestBase
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import logging
-import sys
+from super_mox import mox, StdoutCheck, SuperMoxTestBase
+from super_mox import TestCaseUtils
+
 import gclient_scm
 import subprocess2
 
@@ -30,6 +34,7 @@ join = gclient_scm.os.path.join
 class GCBaseTestCase(object):
   def assertRaisesError(self, msg, fn, *args, **kwargs):
     """Like unittest's assertRaises() but checks for Gclient.Error."""
+    # pylint: disable=E1101
     try:
       fn(*args, **kwargs)
     except gclient_scm.gclient_utils.Error, e:
@@ -252,9 +257,8 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.islink(file_path).AndReturn(False)
     gclient_scm.os.path.isdir(file_path).AndReturn(True)
     gclient_scm.gclient_utils.RemoveDirectory(file_path)
-    gclient_scm.os.path.isdir(self.base_path).AndReturn(False)
-    # The mock is unbound so self is not necessary.
     # pylint: disable=E1120
+    gclient_scm.os.path.isdir(self.base_path).AndReturn(False)
     gclient_scm.SVNWrapper.update(options, [], ['.'])
 
     self.mox.ReplayAll()
