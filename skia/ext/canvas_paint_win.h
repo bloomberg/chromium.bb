@@ -109,10 +109,7 @@ class CanvasPaintT : public T {
     // inset pixels to the screen.
     const int width = ps_.rcPaint.right - ps_.rcPaint.left;
     const int height = ps_.rcPaint.bottom - ps_.rcPaint.top;
-    if (!canvas->initialize(width, height, opaque, NULL)) {
-      // Cause a deliberate crash;
-      *(char*) 0 = 0;
-    }
+    CHECK(canvas->initialize(width, height, opaque, NULL));
 
     // This will bring the canvas into the screen coordinate system for the
     // dirty rect
