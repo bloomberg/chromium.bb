@@ -322,6 +322,9 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // resource for the given row isn't a renderer.
   bool GetV8Memory(int index, size_t* result) const;
 
+  // Returns true if resource for the given row can be activated.
+  bool CanActivate(int index) const;
+
   // Returns true if resource for the given row can be inspected using developer
   // tools.
   bool CanInspect(int index) const;
