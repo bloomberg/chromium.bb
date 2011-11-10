@@ -683,15 +683,16 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
     gfx::NativeView native_view) {
   if (!native_view)
     return NULL;
-  aura::Window* toplevel = native_view;
-  aura::Window* parent = native_view->parent();
-  while (parent) {
-    if (parent->AsToplevelWindowContainer())
-      return GetNativeWidgetForNativeView(toplevel);
-    toplevel = parent;
-    parent = parent->parent();
+
+  aura::Window* window = native_view;
+  NativeWidgetPrivate* top_level_native_widget = NULL;
+  while (window) {
+    NativeWidgetPrivate* native_widget = GetNativeWidgetForNativeView(window);
+    if (native_widget)
+      top_level_native_widget = native_widget;
+    window = window->parent();
   }
-  return NULL;
+  return top_level_native_widget;
 }
 
 // static

@@ -62,7 +62,6 @@ TEST_F(NativeWidgetTest, GetTopLevelNativeWidget1) {
                 widget->GetWidget()->GetNativeView()));
 }
 
-#if !defined(USE_AURA)
 // |toplevel_widget| has the toplevel NativeWidget.
 TEST_F(NativeWidgetTest, GetTopLevelNativeWidget2) {
   ScopedTestWidget toplevel_widget(internal::CreateNativeWidget());
@@ -80,6 +79,5 @@ TEST_F(NativeWidgetTest, GetTopLevelNativeWidget2) {
             internal::NativeWidgetPrivate::GetTopLevelNativeWidget(
                 child_widget->GetWidget()->GetNativeView()));
 }
-#endif
 
 }  // namespace views
