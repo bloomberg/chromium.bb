@@ -4,22 +4,21 @@
 
 #include "chrome/browser/ui/views/browser_bubble.h"
 
+// TODO(msw|oshima): This will be replaced with new bubble.
+// See crbug.com/97248.
+
 void BrowserBubble::InitPopup(const gfx::Insets& content_margins) {
-  // TODO(beng):
   NOTIMPLEMENTED();
 }
 
 void BrowserBubble::Show(bool activate) {
-  // TODO(beng):
   NOTIMPLEMENTED();
 }
 
 void BrowserBubble::Hide() {
-  // TODO(beng):
   NOTIMPLEMENTED();
 }
 
 void BrowserBubble::ResizeToView() {
-  // TODO(beng):
   NOTIMPLEMENTED();
 }
