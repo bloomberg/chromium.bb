@@ -138,15 +138,11 @@ bool NativeTabContentsViewAura::OnMouseEvent(aura::MouseEvent* event) {
   return views::NativeWidgetAura::OnMouseEvent(event);
 }
 
-#if !defined(TOUCH_UI)
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsView, public:
 
 // static
 NativeTabContentsView* NativeTabContentsView::CreateNativeTabContentsView(
     internal::NativeTabContentsViewDelegate* delegate) {
-  // return new NativeTabContentsViewViews(delegate);
-  // TODO(beng): switch over to this.
   return new NativeTabContentsViewAura(delegate);
 }
-#endif

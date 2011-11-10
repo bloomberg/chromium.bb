@@ -80,7 +80,7 @@ void DOMView::ViewHierarchyChanged(bool is_add, views::View* parent,
 }
 
 void DOMView::AttachTabContents() {
-#if defined(TOUCH_UI) || !defined(USE_AURA)
+#if !defined(USE_AURA)
   if (views::Widget::IsPureViews()) {
     TabContentsViewViews* widget = static_cast<TabContentsViewViews*>(
         dom_contents_->tab_contents()->view());
@@ -90,7 +90,7 @@ void DOMView::AttachTabContents() {
   } else {
 #endif
     Attach(dom_contents_->tab_contents()->GetNativeView());
-#if defined(TOUCH_UI) || !defined(USE_AURA)
+#if !defined(USE_AURA)
   }
 #endif
 }

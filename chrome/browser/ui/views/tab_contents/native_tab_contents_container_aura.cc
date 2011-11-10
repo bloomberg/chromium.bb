@@ -139,10 +139,5 @@ gfx::NativeViewAccessible
 // static
 NativeTabContentsContainer* NativeTabContentsContainer::CreateNativeContainer(
     TabContentsContainer* container) {
-#if defined(TOUCH_UI)
-  return new NativeTabContentsContainerViews(container);
-#else
-  // TODO(beng): switch this over once we're using this container.
   return new NativeTabContentsContainerAura(container);
-#endif
 }
