@@ -407,12 +407,7 @@ void ChromeRenderProcessObserver::OnPurgeMemory() {
   while (sqlite3_release_memory(std::numeric_limits<int>::max()) > 0) {
   }
 
-  // Repeatedly call the V8 idle notification until it returns true ("nothing
-  // more to free").  Note that it makes more sense to do this than to implement
-  // a new "delete everything" pass because object references make it difficult
-  // to free everything possible in just one pass.
-  while (!v8::V8::IdleNotification()) {
-  }
+  v8::V8::LowMemoryNotification();
 
 #if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
   // Tell tcmalloc to release any free pages it's still holding.
