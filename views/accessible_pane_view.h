@@ -19,9 +19,9 @@ class FocusSearch;
 // a toolbar.  The user sets focus to a control in this view by pressing
 // F6 to traverse all panes, or by pressing a shortcut that jumps directly
 // to this pane.
-class AccessiblePaneView : public View,
-                           public FocusChangeListener,
-                           public FocusTraversable {
+class VIEWS_EXPORT AccessiblePaneView : public View,
+                                        public FocusChangeListener,
+                                        public FocusTraversable {
  public:
   AccessiblePaneView();
   virtual ~AccessiblePaneView();
