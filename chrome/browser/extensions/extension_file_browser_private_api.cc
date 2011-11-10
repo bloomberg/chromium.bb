@@ -634,17 +634,14 @@ class ExecuteTasksFileSystemCallbackDispatcher
       const std::string task_id,
       const std::vector<GURL>& file_urls)
       : function_(function),
-        process_id_(0),
+        target_process_id_(0),
         profile_(profile),
         source_url_(source_url),
         extension_(extension),
         task_id_(task_id),
         origin_file_urls_(file_urls) {
     DCHECK(function_);
-    if (function_->render_view_host() &&
-        function_->render_view_host()->process()) {
-      process_id_ = function_->render_view_host()->process()->id();
-    }
+    ExtractTargetExtensionAndProcessID();
   }
 
   // fileapi::FileSystemCallbackDispatcher overrides.
@@ -711,14 +708,33 @@ class ExecuteTasksFileSystemCallbackDispatcher
   }
 
  private:
+  // Extracts target extension's id and process from the tasks's id.
+  void ExtractTargetExtensionAndProcessID() {
+    // Get task details.
+    std::string action_id;
+    if (!CrackTaskIdentifier(task_id_, &target_extension_id_, &action_id))
+      return;
+
+    GURL extension_url =
+        Extension::GetBaseURLFromExtensionId(target_extension_id_);
+    ExtensionProcessManager* manager = profile_->GetExtensionProcessManager();
+
+    SiteInstance* site_instance = manager->GetSiteInstanceForURL(extension_url);
+    if (!site_instance || !site_instance->HasProcess())
+      return;
+    RenderProcessHost* process = site_instance->GetProcess();
+
+    target_process_id_ = process->id();
+  }
+
   // Checks legitimacy of file url and grants file RO access permissions from
   // handler (target) extension and its renderer process.
   bool SetupFileAccessPermissions(const GURL& origin_file_url,
-    GURL* target_file_url, FilePath* file_path, bool* is_directory) {
+      GURL* target_file_url, FilePath* file_path, bool* is_directory) {
     if (!extension_.get())
       return false;
 
-    if (process_id_ == 0)
+    if (target_process_id_ == 0)
       return false;
 
     GURL file_origin_url;
@@ -774,21 +790,13 @@ class ExecuteTasksFileSystemCallbackDispatcher
     if (file_info.is_symbolic_link)
       return false;
 
-    // Get task details.
-    std::string target_extension_id;
-    std::string action_id;
-    if (!CrackTaskIdentifier(task_id_, &target_extension_id,
-                             &action_id)) {
-      return false;
-    }
-
     // TODO(zelidrag): Add explicit R/W + R/O permissions for non-component
     // extensions.
 
     // Grant R/O access permission to non-component extension and R/W to
     // component extensions.
     ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-        process_id_,
+        target_process_id_,
         final_file_path,
         extension_->location() != Extension::COMPONENT ?
         kReadOnlyFilePermissions : kReadWriteFilePermissions);
@@ -796,12 +804,12 @@ class ExecuteTasksFileSystemCallbackDispatcher
     // Grant access to this particular file to target extension. This will
     // ensure that the target extension can access only this FS entry and
     // prevent from traversing FS hierarchy upward.
-    external_provider->GrantFileAccessToExtension(target_extension_id,
+    external_provider->GrantFileAccessToExtension(target_extension_id_,
                                                   virtual_path);
 
     // Output values.
     GURL target_origin_url(Extension::GetBaseURLFromExtensionId(
-        target_extension_id));
+        target_extension_id_));
     GURL base_url = fileapi::GetFileSystemRootURI(target_origin_url,
         fileapi::kFileSystemTypeExternal);
     *target_file_url = GURL(base_url.spec() + virtual_path.value());
@@ -812,12 +820,13 @@ class ExecuteTasksFileSystemCallbackDispatcher
   }
 
   ExecuteTasksFileBrowserFunction* function_;
-  int process_id_;
+  int target_process_id_;
   Profile* profile_;
   // Extension source URL.
   GURL source_url_;
   scoped_refptr<const Extension> extension_;
   std::string task_id_;
+  std::string target_extension_id_;
   std::vector<GURL> origin_file_urls_;
   DISALLOW_COPY_AND_ASSIGN(ExecuteTasksFileSystemCallbackDispatcher);
 };
