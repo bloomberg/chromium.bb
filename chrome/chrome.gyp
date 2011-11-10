@@ -218,6 +218,7 @@
       'target_name': 'plugin',
       'type': 'static_library',
       'dependencies': [
+        'chrome_resources.gyp:chrome_strings',
         '../base/base.gyp:base',
         '../content/content.gyp:content_plugin',
       ],
