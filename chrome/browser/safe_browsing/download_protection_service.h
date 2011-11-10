@@ -72,9 +72,18 @@ class DownloadProtectionService {
   // Checks whether the given client download is likely to be malicious or not.
   // The result is delivered asynchronously via the given callback.  This
   // method must be called on the UI thread, and the callback will also be
-  // invoked on the UI thread.
+  // invoked on the UI thread.  This method must be called once the download
+  // is finished and written to disk.
   virtual void CheckClientDownload(const DownloadInfo& info,
                                    const CheckDownloadCallback& callback);
+
+  // Checks whether any of the URLs in the redirect chain of the
+  // download match the SafeBrowsing bad binary URL list.  The result is
+  // delivered asynchronously via the given callback.  This method must be
+  // called on the UI thread, and the callback will also be invoked on the UI
+  // thread.  Pre-condition: !info.download_url_chain.empty().
+  virtual void CheckDownloadUrl(const DownloadInfo& info,
+                                const CheckDownloadCallback& callback);
 
   // Enables or disables the service.  This is usually called by the
   // SafeBrowsingService, which tracks whether any profile uses these services
@@ -101,6 +110,9 @@ class DownloadProtectionService {
     REASON_REQUEST_CANCELED,
     REASON_DOWNLOAD_DANGEROUS,
     REASON_DOWNLOAD_SAFE,
+    REASON_EMPTY_URL_CHAIN,
+    REASON_HTTPS_URL,
+    REASON_PING_DISABLED,
     REASON_MAX  // Always add new values before this one.
   };
 

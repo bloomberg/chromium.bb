@@ -188,7 +188,8 @@ class SafeBrowsingService
 
   // Check if the prefix for |url| is in safebrowsing download add lists.
   // Result will be passed to callback in |client|.
-  bool CheckDownloadUrl(const std::vector<GURL>& url_chain, Client* client);
+  virtual bool CheckDownloadUrl(const std::vector<GURL>& url_chain,
+                                Client* client);
 
   // Check if the prefix for |full_hash| is in safebrowsing binhash add lists.
   // Result will be passed to callback in |client|.

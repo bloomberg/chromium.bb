@@ -24,7 +24,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::ContainerEq;
+using ::testing::DoAll;
+using ::testing::Mock;
+using ::testing::NotNull;
 using ::testing::Return;
+using ::testing::SaveArg;
+using ::testing::StrictMock;
 using ::testing::_;
 using content::BrowserThread;
 
@@ -36,6 +42,9 @@ class MockSafeBrowsingService : public SafeBrowsingService {
   virtual ~MockSafeBrowsingService() {}
 
   MOCK_METHOD1(MatchDownloadWhitelistUrl, bool(const GURL&));
+  MOCK_METHOD2(CheckDownloadUrl, bool(const std::vector<GURL>& url_chain,
+                                      Client* client));
+  MOCK_METHOD2(CheckDownloadHash, bool(const std::string&, Client* client));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingService);
@@ -44,18 +53,52 @@ class MockSafeBrowsingService : public SafeBrowsingService {
 class MockSignatureUtil : public SignatureUtil {
  public:
   MockSignatureUtil() {}
-
+  virtual ~MockSignatureUtil() {}
   MOCK_METHOD2(CheckSignature,
                void(const FilePath&, ClientDownloadRequest_SignatureInfo*));
 
  private:
-  virtual ~MockSignatureUtil() {}
   DISALLOW_COPY_AND_ASSIGN(MockSignatureUtil);
 };
 }  // namespace
 
 ACTION_P(SetCertificateContents, contents) {
   arg1->set_certificate_contents(contents);
+}
+
+// We can't call OnSafeBrowsingResult directly because SafeBrowsingCheck does
+// not have any copy constructor which means it can't be stored in a callback
+// easily.  Note: check will be deleted automatically when the callback is
+// deleted.
+void OnSafeBrowsingResult(SafeBrowsingService::SafeBrowsingCheck* check) {
+  check->client->OnSafeBrowsingResult(*check);
+}
+
+ACTION_P(CheckDownloadUrlDone, result) {
+  SafeBrowsingService::SafeBrowsingCheck* check =
+      new SafeBrowsingService::SafeBrowsingCheck();
+  check->urls = arg0;
+  check->is_download = true;
+  check->result = result;
+  check->client = arg1;
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&OnSafeBrowsingResult,
+                                     base::Owned(check)));
+}
+
+ACTION_P(CheckDownloadHashDone, result) {
+  SafeBrowsingService::SafeBrowsingCheck* check =
+      new SafeBrowsingService::SafeBrowsingCheck();
+  check->full_hash.reset(new SBFullHash());
+  CHECK_EQ(arg0.size(), sizeof(check->full_hash->full_hash));
+  memcpy(check->full_hash->full_hash, arg0.data(), arg0.size());
+  check->result = result;
+  check->client = arg1;
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&OnSafeBrowsingResult,
+                                     base::Owned(check)));
 }
 
 class DownloadProtectionServiceTest : public testing::Test {
@@ -69,8 +112,8 @@ class DownloadProtectionServiceTest : public testing::Test {
     ASSERT_TRUE(io_thread_->Start());
     file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE));
     ASSERT_TRUE(file_thread_->Start());
-    sb_service_ = new MockSafeBrowsingService();
-    signature_util_ = new MockSignatureUtil();
+    sb_service_ = new StrictMock<MockSafeBrowsingService>();
+    signature_util_ = new StrictMock<MockSignatureUtil>();
     download_service_ = sb_service_->download_protection_service();
     download_service_->signature_util_ = signature_util_;
     download_service_->SetEnabled(true);
@@ -402,5 +445,170 @@ TEST_F(DownloadProtectionServiceTest,
       base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
                  base::Unretained(this), fetcher));
   msg_loop_.Run();
+}
+
+TEST_F(DownloadProtectionServiceTest, CheckClientDownloadDigestList) {
+  DownloadProtectionService::DownloadInfo info;
+  info.local_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+  // HTTPs URLs never result in a server ping for privacy reasons.  However,
+  // we do lookup the bad binary digest list.
+  info.download_url_chain.push_back(GURL("https://www.evil.com/a.exe"));
+  info.referrer_url = GURL("http://www.google.com/");
+  info.sha256_hash = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+
+  // CheckDownloadHash returns immediately which means the hash is not
+  // malicious.
+  EXPECT_CALL(*sb_service_,
+              CheckDownloadHash(info.sha256_hash, NotNull()))
+      .WillOnce(Return(true));
+  download_service_->CheckClientDownload(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+  EXPECT_EQ(DownloadProtectionService::SAFE, result_);
+  Mock::VerifyAndClearExpectations(sb_service_);
+
+  // The hash does not match the bad binary digest list.
+  EXPECT_CALL(*sb_service_,
+              CheckDownloadHash(info.sha256_hash, NotNull()))
+      .WillOnce(DoAll(CheckDownloadHashDone(SafeBrowsingService::SAFE),
+                      Return(false)));
+  download_service_->CheckClientDownload(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+  EXPECT_EQ(DownloadProtectionService::SAFE, result_);
+  Mock::VerifyAndClearExpectations(sb_service_);
+
+  // The hash matches the bad binary URL list but not the bad binary digest
+  // list.  This is an artificial example to make sure we really check the
+  // result value in the code.
+  EXPECT_CALL(*sb_service_,
+              CheckDownloadHash(info.sha256_hash, NotNull()))
+      .WillOnce(DoAll(
+          CheckDownloadHashDone(SafeBrowsingService::BINARY_MALWARE_URL),
+          Return(false)));
+  download_service_->CheckClientDownload(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+  EXPECT_EQ(DownloadProtectionService::SAFE, result_);
+  Mock::VerifyAndClearExpectations(sb_service_);
+
+  // A match is found with the bad binary digest list.
+  EXPECT_CALL(*sb_service_,
+              CheckDownloadHash(info.sha256_hash, NotNull()))
+      .WillOnce(DoAll(
+          CheckDownloadHashDone(SafeBrowsingService::BINARY_MALWARE_HASH),
+          Return(false)));
+  download_service_->CheckClientDownload(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+  EXPECT_EQ(DownloadProtectionService::DANGEROUS, result_);
+  Mock::VerifyAndClearExpectations(sb_service_);
+
+  // If the download is not an executable we do not send a server ping but we
+  // still want to lookup the binary digest list.
+  info.local_file = FilePath(FILE_PATH_LITERAL("a.pdf"));
+  info.download_url_chain[0] = GURL("http://www.evil.com/a.pdf");
+  EXPECT_CALL(*sb_service_,
+              CheckDownloadHash(info.sha256_hash, NotNull()))
+      .WillOnce(DoAll(
+          CheckDownloadHashDone(SafeBrowsingService::BINARY_MALWARE_HASH),
+          Return(false)));
+  download_service_->CheckClientDownload(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+  EXPECT_EQ(DownloadProtectionService::DANGEROUS, result_);
+  Mock::VerifyAndClearExpectations(sb_service_);
+
+  // If the URL or the referrer matches the download whitelist we cannot send
+  // a server ping for privacy reasons but we still match the digest against
+  // the bad binary digest list.
+  info.local_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+  info.download_url_chain[0] = GURL("http://www.evil.com/a.exe");
+  EXPECT_CALL(*sb_service_, MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*signature_util_, CheckSignature(info.local_file, _));
+  EXPECT_CALL(*sb_service_,
+              CheckDownloadHash(info.sha256_hash, NotNull()))
+      .WillOnce(DoAll(
+          CheckDownloadHashDone(SafeBrowsingService::BINARY_MALWARE_HASH),
+          Return(false)));
+  download_service_->CheckClientDownload(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+  EXPECT_EQ(DownloadProtectionService::DANGEROUS, result_);
+}
+
+TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
+  DownloadProtectionService::DownloadInfo info;
+  info.download_url_chain.push_back(GURL("http://www.google.com/"));
+  info.download_url_chain.push_back(GURL("http://www.google.com/bla.exe"));
+  info.referrer_url = GURL("http://www.google.com/");
+
+  // CheckDownloadURL returns immediately which means the client object callback
+  // will never be called.  Nevertheless the callback provided to
+  // CheckClientDownload must still be called.
+  EXPECT_CALL(*sb_service_,
+              CheckDownloadUrl(ContainerEq(info.download_url_chain),
+                               NotNull()))
+      .WillOnce(Return(true));
+  download_service_->CheckDownloadUrl(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+  EXPECT_EQ(DownloadProtectionService::SAFE, result_);
+  Mock::VerifyAndClearExpectations(sb_service_);
+
+  EXPECT_CALL(*sb_service_,
+              CheckDownloadUrl(ContainerEq(info.download_url_chain),
+                               NotNull()))
+      .WillOnce(DoAll(CheckDownloadUrlDone(SafeBrowsingService::SAFE),
+                      Return(false)));
+  download_service_->CheckDownloadUrl(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+  EXPECT_EQ(DownloadProtectionService::SAFE, result_);
+  Mock::VerifyAndClearExpectations(sb_service_);
+
+  EXPECT_CALL(*sb_service_,
+              CheckDownloadUrl(ContainerEq(info.download_url_chain),
+                               NotNull()))
+      .WillOnce(DoAll(
+          CheckDownloadUrlDone(SafeBrowsingService::URL_MALWARE),
+          Return(false)));
+  download_service_->CheckDownloadUrl(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+  EXPECT_EQ(DownloadProtectionService::SAFE, result_);
+  Mock::VerifyAndClearExpectations(sb_service_);
+
+  EXPECT_CALL(*sb_service_,
+              CheckDownloadUrl(ContainerEq(info.download_url_chain),
+                               NotNull()))
+      .WillOnce(DoAll(
+          CheckDownloadUrlDone(SafeBrowsingService::BINARY_MALWARE_URL),
+          Return(false)));
+  download_service_->CheckDownloadUrl(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+  EXPECT_EQ(DownloadProtectionService::DANGEROUS, result_);
 }
 }  // namespace safe_browsing

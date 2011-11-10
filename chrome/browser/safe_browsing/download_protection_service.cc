@@ -8,7 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/signature_util.h"
 #include "chrome/common/net/http_return.h"
@@ -86,6 +89,22 @@ void RecordFileExtensionType(const FilePath& file) {
                             GetExtensionType(file),
                             EXTENSION_MAX);
 }
+
+// Enumerate for histogramming purposes.
+// DO NOT CHANGE THE ORDERING OF THESE VALUES (different histogram data will
+// be mixed together based on their values).
+enum SBStatsType {
+  DOWNLOAD_URL_CHECKS_TOTAL,
+  DOWNLOAD_URL_CHECKS_CANCELED,
+  DOWNLOAD_URL_CHECKS_MALWARE,
+
+  DOWNLOAD_HASH_CHECKS_TOTAL,
+  DOWNLOAD_HASH_CHECKS_MALWARE,
+
+  // Memory space for histograms is determined by the max.
+  // ALWAYS ADD NEW VALUES BEFORE THIS ONE.
+  DOWNLOAD_CHECKS_MAX
+};
 }  // namespace
 
 DownloadProtectionService::DownloadInfo::DownloadInfo()
@@ -106,6 +125,168 @@ DownloadProtectionService::DownloadInfo::FromDownloadItem(
   // TODO(bryner): Populate user_initiated
   return download_info;
 }
+
+// Parent SafeBrowsing::Client class used to lookup the bad binary
+// URL and digest list.  There are two sub-classes (one for each list).
+class DownloadSBClient
+    : public SafeBrowsingService::Client,
+      public base::RefCountedThreadSafe<DownloadSBClient> {
+ public:
+  DownloadSBClient(
+      const DownloadProtectionService::DownloadInfo& info,
+      const DownloadProtectionService::CheckDownloadCallback& callback,
+      SafeBrowsingService* sb_service,
+      SBStatsType total_type,
+      SBStatsType dangerous_type)
+      : info_(info),
+        callback_(callback),
+        sb_service_(sb_service),
+        start_time_(base::TimeTicks::Now()),
+        total_type_(total_type),
+        dangerous_type_(dangerous_type) {}
+
+  virtual void StartCheck() = 0;
+  virtual bool IsDangerous(SafeBrowsingService::UrlCheckResult res) const = 0;
+
+ protected:
+  friend class base::RefCountedThreadSafe<DownloadSBClient>;
+  virtual ~DownloadSBClient() {}
+
+  void CheckDone(SafeBrowsingService::UrlCheckResult sb_result) {
+    DownloadProtectionService::DownloadCheckResult result =
+        IsDangerous(sb_result) ?
+        DownloadProtectionService::DANGEROUS :
+        DownloadProtectionService::SAFE;
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(callback_, result));
+    UpdateDownloadCheckStats(total_type_);
+    if (IsDangerous(sb_result)) {
+      UpdateDownloadCheckStats(dangerous_type_);
+      BrowserThread::PostTask(
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&DownloadSBClient::ReportMalware,
+                     this, sb_result));
+    }
+  }
+
+  void ReportMalware(SafeBrowsingService::UrlCheckResult result) {
+    std::string post_data;
+    if (!info_.sha256_hash.empty())
+      post_data += base::HexEncode(info_.sha256_hash.data(),
+                                   info_.sha256_hash.size()) + "\n";
+    for (size_t i = 0; i < info_.download_url_chain.size(); ++i) {
+      post_data += info_.download_url_chain[i].spec() + "\n";
+    }
+    sb_service_->ReportSafeBrowsingHit(
+        info_.download_url_chain.back(),  // malicious_url
+        info_.download_url_chain.front(), // page_url
+        info_.referrer_url,
+        true,  // is_subresource
+        result,
+        post_data);
+  }
+
+  void UpdateDownloadCheckStats(SBStatsType stat_type) {
+    UMA_HISTOGRAM_ENUMERATION("SB2.DownloadChecks",
+                              stat_type,
+                              DOWNLOAD_CHECKS_MAX);
+  }
+
+  DownloadProtectionService::DownloadInfo info_;
+  DownloadProtectionService::CheckDownloadCallback callback_;
+  scoped_refptr<SafeBrowsingService> sb_service_;
+  base::TimeTicks start_time_;
+
+ private:
+  const SBStatsType total_type_;
+  const SBStatsType dangerous_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadSBClient);
+};
+
+class DownloadUrlSBClient : public DownloadSBClient {
+ public:
+  DownloadUrlSBClient(
+      const DownloadProtectionService::DownloadInfo& info,
+      const DownloadProtectionService::CheckDownloadCallback& callback,
+      SafeBrowsingService* sb_service)
+      : DownloadSBClient(info, callback, sb_service,
+                         DOWNLOAD_URL_CHECKS_TOTAL,
+                         DOWNLOAD_URL_CHECKS_MALWARE) {}
+
+  virtual void StartCheck() OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    if (!sb_service_ ||
+        sb_service_->CheckDownloadUrl(info_.download_url_chain, this)) {
+      CheckDone(SafeBrowsingService::SAFE);
+    } else {
+      AddRef();  // SafeBrowsingService takes a pointer not a scoped_refptr.
+    }
+  }
+
+  virtual bool IsDangerous(
+      SafeBrowsingService::UrlCheckResult result) const OVERRIDE {
+    return result == SafeBrowsingService::BINARY_MALWARE_URL;
+  }
+
+  virtual void OnDownloadUrlCheckResult(
+      const std::vector<GURL>& url_chain,
+      SafeBrowsingService::UrlCheckResult sb_result) OVERRIDE {
+    CheckDone(sb_result);
+    UMA_HISTOGRAM_TIMES("SB2.DownloadUrlCheckDuration",
+                        base::TimeTicks::Now() - start_time_);
+    Release();
+  }
+
+ protected:
+  virtual ~DownloadUrlSBClient() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DownloadUrlSBClient);
+};
+
+class DownloadHashSBClient : public DownloadSBClient {
+ public:
+  DownloadHashSBClient(
+      const DownloadProtectionService::DownloadInfo& info,
+      const DownloadProtectionService::CheckDownloadCallback& callback,
+      SafeBrowsingService* sb_service)
+      : DownloadSBClient(info, callback, sb_service,
+                         DOWNLOAD_HASH_CHECKS_TOTAL,
+                         DOWNLOAD_HASH_CHECKS_MALWARE) {}
+
+  virtual void StartCheck() OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    if (!sb_service_ ||
+        sb_service_->CheckDownloadHash(info_.sha256_hash, this)) {
+      CheckDone(SafeBrowsingService::SAFE);
+    } else {
+      AddRef();  // SafeBrowsingService takes a pointer not a scoped_refptr.
+    }
+  }
+
+  virtual bool IsDangerous(
+      SafeBrowsingService::UrlCheckResult result) const OVERRIDE {
+    return result == SafeBrowsingService::BINARY_MALWARE_HASH;
+  }
+
+  virtual void OnDownloadHashCheckResult(
+      const std::string& hash,
+      SafeBrowsingService::UrlCheckResult sb_result) OVERRIDE {
+    CheckDone(sb_result);
+    UMA_HISTOGRAM_TIMES("SB2.DownloadHashCheckDuration",
+                        base::TimeTicks::Now() - start_time_);
+    Release();
+  }
+
+ protected:
+  virtual ~DownloadHashSBClient() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DownloadHashSBClient);
+};
 
 class DownloadProtectionService::CheckClientDownloadRequest
     : public base::RefCountedThreadSafe<
@@ -133,22 +314,25 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // request over and over again if a user downloads the same binary multiple
     // times.
     if (info_.download_url_chain.empty()) {
-      RecordStats(REASON_INVALID_URL);
+      RecordImprovedProtectionStats(REASON_EMPTY_URL_CHAIN);
       PostFinishTask(SAFE);
       return;
     }
     const GURL& final_url = info_.download_url_chain.back();
-    if (!final_url.is_valid() || final_url.is_empty() ||
-        !final_url.SchemeIs("http")) {
-      RecordStats(REASON_INVALID_URL);
+    if (!final_url.is_valid() || final_url.is_empty()) {
+      RecordImprovedProtectionStats(REASON_INVALID_URL);
       PostFinishTask(SAFE);
-      return;  // For now we only support HTTP download URLs.
+      return;
     }
     RecordFileExtensionType(info_.local_file);
 
-    if (!IsBinaryFile(info_.local_file)) {
-      RecordStats(REASON_NOT_BINARY_FILE);
-      PostFinishTask(SAFE);
+    if (!final_url.SchemeIs("http") || !IsBinaryFile(info_.local_file)) {
+      RecordImprovedProtectionStats(!final_url.SchemeIs("http") ?
+                  REASON_HTTPS_URL : REASON_NOT_BINARY_FILE);
+      BrowserThread::PostTask(
+          BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(&CheckClientDownloadRequest::CheckDigestList, this));
       return;
     }
 
@@ -206,7 +390,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     }
     // We don't need the fetcher anymore.
     fetcher_.reset();
-    RecordStats(reason);
+    RecordImprovedProtectionStats(reason);
     FinishRequest(result);
   }
 
@@ -238,6 +422,21 @@ class DownloadProtectionService::CheckClientDownloadRequest
         base::Bind(&CheckClientDownloadRequest::CheckWhitelists, this));
   }
 
+  void CheckDigestList() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    if (!sb_service_.get() || info_.sha256_hash.empty()) {
+      PostFinishTask(SAFE);
+    } else {
+      scoped_refptr<DownloadSBClient> client(
+          new DownloadHashSBClient(
+              info_,
+              base::Bind(&CheckClientDownloadRequest::FinishRequest, this),
+              sb_service_.get()));
+      // The client will release itself once it is done.
+      client->StartCheck();
+    }
+  }
+
   void CheckWhitelists() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     DownloadCheckResultReason reason = REASON_MAX;
@@ -260,11 +459,11 @@ class DownloadProtectionService::CheckClientDownloadRequest
       }
     }
     if (reason != REASON_MAX) {
-      RecordStats(reason);
-      PostFinishTask(SAFE);
+      RecordImprovedProtectionStats(reason);
+      CheckDigestList();
     } else if (!pingback_enabled_) {
-      RecordStats(REASON_SB_DISABLED);
-      PostFinishTask(SAFE);
+      RecordImprovedProtectionStats(REASON_PING_DISABLED);
+      CheckDigestList();
     } else {
       // TODO(noelutz): check signature and CA against whitelist.
 
@@ -283,7 +482,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // This is our last chance to check whether the request has been canceled
     // before sending it.
     if (!service_) {
-      RecordStats(REASON_REQUEST_CANCELED);
+      RecordImprovedProtectionStats(REASON_REQUEST_CANCELED);
       FinishRequest(SAFE);
       return;
     }
@@ -308,7 +507,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     request.mutable_signature()->CopyFrom(signature_info_);
     std::string request_data;
     if (!request.SerializeToString(&request_data)) {
-      RecordStats(REASON_INVALID_REQUEST_PROTO);
+      RecordImprovedProtectionStats(REASON_INVALID_REQUEST_PROTO);
       FinishRequest(SAFE);
       return;
     }
@@ -342,7 +541,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     }
   }
 
-  void RecordStats(DownloadCheckResultReason reason) {
+  void RecordImprovedProtectionStats(DownloadCheckResultReason reason) {
     UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats",
                               reason,
                               REASON_MAX);
@@ -395,6 +594,19 @@ void DownloadProtectionService::CheckClientDownload(
   request->Start();
 }
 
+void DownloadProtectionService::CheckDownloadUrl(
+    const DownloadProtectionService::DownloadInfo& info,
+    const CheckDownloadCallback& callback) {
+  DCHECK(!info.download_url_chain.empty());
+  scoped_refptr<DownloadUrlSBClient> client(
+      new DownloadUrlSBClient(info, callback, sb_service_));
+  // The client will release itself once it is done.
+  BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&DownloadUrlSBClient::StartCheck, client));
+}
+
 void DownloadProtectionService::CancelPendingRequests() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (std::set<scoped_refptr<CheckClientDownloadRequest> >::iterator it =
@@ -413,5 +625,4 @@ void DownloadProtectionService::RequestFinished(
   DCHECK(it != download_requests_.end());
   download_requests_.erase(*it);
 }
-
 }  // namespace safe_browsing
