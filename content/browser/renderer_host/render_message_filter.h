@@ -178,6 +178,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnCheckNotificationPermission(const GURL& source_origin,
                                      int* permission_level);
 
+  void OnGetHardwareBufferSize(uint32* buffer_size);
   void OnGetHardwareInputSampleRate(double* sample_rate);
   void OnGetHardwareSampleRate(double* sample_rate);
 

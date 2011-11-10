@@ -213,7 +213,6 @@ void AudioDevice::Run() {
   while ((sizeof(pending_data) == socket_->Receive(&pending_data,
                                                    sizeof(pending_data))) &&
          (pending_data >= 0)) {
-
     // Convert the number of pending bytes in the render buffer
     // into milliseconds.
     audio_delay_milliseconds_ = pending_data / bytes_per_ms;
@@ -247,10 +246,12 @@ double AudioDevice::GetAudioHardwareSampleRate() {
 
 size_t AudioDevice::GetAudioHardwareBufferSize() {
   // Uses cached value if possible.
-  static size_t buffer_size = 0;
+  static uint32 buffer_size = 0;
 
-  if (!buffer_size)
-    buffer_size = media::GetAudioHardwareBufferSize();
+  if (!buffer_size) {
+    RenderThreadImpl::current()->Send(
+        new ViewHostMsg_GetHardwareBufferSize(&buffer_size));
+  }
 
-  return buffer_size;
+  return static_cast<size_t>(buffer_size);
 }
