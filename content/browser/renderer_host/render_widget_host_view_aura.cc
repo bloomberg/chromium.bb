@@ -134,15 +134,12 @@ void RenderWidgetHostViewAura::InitAsPopup(
 void RenderWidgetHostViewAura::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
   is_fullscreen_ = true;
-  window_->SetType(aura::WINDOW_TYPE_POPUP);
+  window_->SetType(aura::WINDOW_TYPE_NORMAL);
   window_->Init(ui::Layer::LAYER_HAS_TEXTURE);
-
-  window_->SetParent(NULL);
   window_->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  window_->SetParent(NULL);
   Show();
   Focus();
-  // TODO(derat): The window is visible but it's not being updated.  Figure out
-  // why.
 }
 
 RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {
