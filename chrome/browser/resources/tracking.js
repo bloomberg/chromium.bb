@@ -5,6 +5,13 @@
 var g_browserBridge;
 var g_mainView;
 
+// TODO(eroman): Don't repeat the work of grouping, sorting, merging on every
+//               redraw. Rather do it only once when one of its dependencies
+//               change and cache the result.
+
+// TODO(eroman): Add a checkbox to merge similar named threads (like worker
+//               theads/PAC threads).
+
 /**
  * Main entry point called once the page has loaded.
  */
@@ -79,8 +86,11 @@ var MainView = (function() {
   // The DIV to put all the tables into.
   var RESULTS_DIV_ID = 'results-div';
 
-  // The container node to put all the column checkboxes into.
+  // The container node to put all the column (visibility) checkboxes into.
   var COLUMN_TOGGLES_CONTAINER_ID = 'column-toggles-container';
+
+  // The container node to put all the column (merge) checkboxes into.
+  var COLUMN_MERGE_TOGGLES_CONTAINER_ID = 'column-merge-toggles-container';
 
   // The anchor which toggles visibility of column checkboxes.
   var EDIT_COLUMNS_LINK_ID = 'edit-columns-link';
@@ -171,8 +181,12 @@ var MainView = (function() {
         this.sum_ += e[this.key_];
       },
 
+      getValue: function() {
+        return this.sum_;
+      },
+
       getValueAsText: function() {
-        return formatNumberAsText(this.sum_);
+        return formatNumberAsText(this.getValue());
       },
     };
 
@@ -200,8 +214,12 @@ var MainView = (function() {
         this.divisorSum_ += e[this.divisorKey_];
       },
 
+      getValue: function() {
+        return this.numeratorSum_ / this.divisorSum_;
+      },
+
       getValueAsText: function() {
-        return formatNumberAsText(this.numeratorSum_ / this.divisorSum_);
+        return formatNumberAsText(this.getValue());
       },
     };
 
@@ -230,8 +248,12 @@ var MainView = (function() {
         this.max_ = Math.max(this.max_, e[this.key_]);
       },
 
+      getValue: function() {
+        return this.max_;
+      },
+
       getValueAsText: function() {
-        return formatNumberAsText(this.max_);
+        return formatNumberAsText(this.getValue());
       },
     };
 
@@ -477,6 +499,39 @@ var MainView = (function() {
    */
   var INITIAL_GROUP_KEYS = [];
 
+  /**
+   * The columns to give the option to merge on.
+   */
+  var MERGEABLE_KEYS = [
+    KEY_PROCESS_ID,
+    KEY_PROCESS_TYPE,
+    KEY_BIRTH_THREAD,
+    KEY_DEATH_THREAD,
+  ];
+
+  /**
+   * The columns to merge by default.
+   */
+  var INITIALLY_MERGED_KEYS = [];
+
+  /**
+   * The full set of columns which define the "identity" for a row. A row is
+   * considered equivalent to another row if it matches on all of these
+   * fields. This list is used when merging the data, to determine which rows
+   * should be merged together. The remaining columns not listed in
+   * IDENTITY_KEYS will be aggregated.
+   */
+  var IDENTITY_KEYS = [
+    KEY_BIRTH_THREAD,
+    KEY_DEATH_THREAD,
+    KEY_PROCESS_TYPE,
+    KEY_PROCESS_ID,
+    KEY_FUNCTION_NAME,
+    KEY_SOURCE_LOCATION,
+    KEY_FILE_NAME,
+    KEY_LINE_NUMBER,
+  ];
+
   // --------------------------------------------------------------------------
   // General utility functions
   // --------------------------------------------------------------------------
@@ -588,9 +643,10 @@ var MainView = (function() {
   }
 
   /**
-   * Deletes all the strings in |array| which have a key in |valueSet|.
+   * Deletes all the strings in |array| which appear in |valuesToDelete|.
    */
-  function deleteStringsFromArrayMatching(array, valueSet) {
+  function deleteValuesFromArray(array, valuesToDelete) {
+    var valueSet = arrayToSet(valuesToDelete);
     for (var i = 0; i < array.length; ) {
       if (valueSet[array[i]]) {
         array.splice(i, 1);
@@ -616,6 +672,16 @@ var MainView = (function() {
         i++;
       }
     }
+  }
+
+  /**
+   * Builds a map out of the array |list|.
+   */
+  function arrayToSet(list) {
+    var set = {};
+    for (var i = 0; i < list.length; ++i)
+      set[list[i]] = true;
+    return set;
   }
 
   function trimWhitespace(text) {
@@ -672,8 +738,7 @@ var MainView = (function() {
       groupData.rows.push(e);
 
       // Update aggregates for each column.
-      for (var key in groupData.aggregates)
-        groupData.aggregates[key].consume(e);
+      consumeAggregates(groupData.aggregates, e);
     }
 
     // Sort all the data.
@@ -694,20 +759,88 @@ var MainView = (function() {
 
   /**
    * Creates and initializes an aggregator object for each key in |columns|.
-   * Returns a dictionary whose keys are values from |columns|, and whose
+   * Returns an array whose keys are values from |columns|, and whose
    * values are Aggregator instances.
    */
   function initializeAggregates(columns) {
-    var aggregates = {};
+    var aggregates = [];
 
     for (var i = 0; i < columns.length; ++i) {
       var key = columns[i];
       var aggregatorFactory = KEY_PROPERTIES[key].aggregator;
-      if (aggregatorFactory)
-        aggregates[key] = aggregatorFactory.create(key);
+      aggregates[key] = aggregatorFactory.create(key);
     }
 
     return aggregates;
+  }
+
+  function consumeAggregates(aggregates, row) {
+    for (var key in aggregates)
+      aggregates[key].consume(row);
+  }
+
+  /**
+   * Merges the rows in |origRows|, by collapsing the columns listed in
+   * |mergeKeys|. Returns an array with the merged rows (in no particular
+   * order).
+   */
+  function mergeRows(origRows, mergeKeys) {
+    // Determine which sets of properties a row needs to match on to be
+    // considered identical to another row.
+    var identityKeys = IDENTITY_KEYS.slice(0);
+    deleteValuesFromArray(identityKeys, mergeKeys);
+
+    // Set |aggregateKeys| to everything else, since we will be aggregating
+    // their value as part of the merge.
+    var aggregateKeys = ALL_KEYS.slice(0);
+    deleteValuesFromArray(aggregateKeys, IDENTITY_KEYS);
+
+    // Group all the identical rows together, bucketed into |identicalRows|.
+    var identicalRows = {};
+    for (var i = 0; i < origRows.length; ++i) {
+      var e = origRows[i];
+
+      var rowIdentity = [];
+      for (var j = 0; j < identityKeys.length; ++j)
+        rowIdentity.push(e[identityKeys[j]]);
+      rowIdentity = rowIdentity.join('\n');
+
+      var l = identicalRows[rowIdentity];
+      if (!l) {
+        l = [];
+        identicalRows[rowIdentity] = l;
+      }
+      l.push(e);
+    }
+
+    var mergedRows = [];
+
+    // Merge the rows and save the results to |mergedRows|.
+    for (var k in identicalRows) {
+      // We need to smash the list |l| down to a single row...
+      var l = identicalRows[k];
+
+      var newRow = [];
+      mergedRows.push(newRow);
+
+      // Copy over all the identity columns to the new row (since they
+      // were the same for each row matched).
+      for (var i = 0; i < identityKeys.length; ++i)
+        newRow[identityKeys[i]] = l[0][identityKeys[i]];
+
+      // Compute aggregates for the other columns.
+      var aggregates = initializeAggregates(aggregateKeys);
+
+      // Feed the rows to the aggregators.
+      for (var i = 0; i < l.length; ++i)
+        consumeAggregates(aggregates, l[i]);
+
+      // Suck out the data generated by the aggregators.
+      for (var aggregateKey in aggregates)
+        newRow[aggregateKey] = aggregates[aggregateKey].getValue();
+    }
+
+    return mergedRows;
   }
 
   // --------------------------------------------------------------------------
@@ -817,6 +950,12 @@ var MainView = (function() {
   }
 
   function getTextValueForProperty(key, value) {
+    if (value == undefined) {
+      // A value may be undefined as a result of having merging rows. We
+      // won't actually draw it, but this might be called by the filter.
+      return '';
+    }
+
     var textPrinter = KEY_PROPERTIES[key].textPrinter;
     if (textPrinter)
       return textPrinter(value);
@@ -950,6 +1089,15 @@ var MainView = (function() {
     return Math.abs(key1) == Math.abs(key2);
   }
 
+  function getKeysForCheckedBoxes(checkboxes) {
+    var keys = [];
+    for (var k in checkboxes) {
+      if (checkboxes[k].checked)
+        keys.push(k);
+    }
+    return keys;
+  }
+
   // --------------------------------------------------------------------------
 
   /**
@@ -999,16 +1147,13 @@ var MainView = (function() {
     },
 
     redrawData_: function() {
-      var data = this.allData_;
+      // Eliminate columns which we are merging on.
+      var mergedKeys = this.getMergeColumns_();
+      var data = mergeRows(this.allData_, mergedKeys);
 
       // Figure out what columns to include, based on the selected checkboxes.
-      var columns = [];
-      for (var i = 0; i < ALL_TABLE_COLUMNS.length; ++i) {
-        var key = ALL_TABLE_COLUMNS[i];
-        if (this.selectionCheckboxes_[key].checked) {
-          columns.push(key);
-        }
-      }
+      var columns = this.getSelectionColumns_();
+      deleteValuesFromArray(columns, mergedKeys);
 
       // Group, aggregate, filter, and sort the data.
       var groupedData = prepareData(
@@ -1029,12 +1174,12 @@ var MainView = (function() {
 
         // The grouped properties are going to be the same for each row in our,
         // table, so avoid drawing them in our table!
-        var keysToExcludeSet = {};
+        var keysToExclude = []
 
         for (var i = 0; i < randomGroupKey.length; ++i)
-          keysToExcludeSet[randomGroupKey[i].key] = true;
+          keysToExclude.push(randomGroupKey[i].key);
         columns = columns.slice(0);
-        deleteStringsFromArrayMatching(columns, keysToExcludeSet);
+        deleteValuesFromArray(columns, keysToExclude);
       }
 
       var columnOnClickHandler = this.onClickColumn_.bind(this);
@@ -1053,6 +1198,7 @@ var MainView = (function() {
     init_: function() {
       this.allData_ = [];
       this.fillSelectionCheckboxes_($(COLUMN_TOGGLES_CONTAINER_ID));
+      this.fillMergeCheckboxes_($(COLUMN_MERGE_TOGGLES_CONTAINER_ID));
 
       $(FILTER_SEARCH_ID).onsearch = this.onChangedFilter_.bind(this);
 
@@ -1089,6 +1235,32 @@ var MainView = (function() {
 
       for (var i = 0; i < INITIALLY_HIDDEN_KEYS.length; ++i) {
         this.selectionCheckboxes_[INITIALLY_HIDDEN_KEYS[i]].checked = false;
+      }
+    },
+
+    getSelectionColumns_: function() {
+      return getKeysForCheckedBoxes(this.selectionCheckboxes_);
+    },
+
+    getMergeColumns_: function() {
+      return getKeysForCheckedBoxes(this.mergeCheckboxes_);
+    },
+
+    fillMergeCheckboxes_: function(parent) {
+      this.mergeCheckboxes_ = {};
+
+      for (var i = 0; i < MERGEABLE_KEYS.length; ++i) {
+        var key = MERGEABLE_KEYS[i];
+        var checkbox = addNode(parent, 'input');
+        checkbox.type = 'checkbox';
+        checkbox.onchange = this.onMergeCheckboxChanged_.bind(this);
+        checkbox.checked = false;
+        addNode(parent, 'span', getNameForKey(key) + ' ');
+        this.mergeCheckboxes_[key] = checkbox;
+      }
+
+      for (var i = 0; i < INITIALLY_MERGED_KEYS.length; ++i) {
+        this.mergeCheckboxes_[INITIALLY_MERGED_KEYS[i]].checked = true;
       }
     },
 
@@ -1141,6 +1313,10 @@ var MainView = (function() {
     },
 
     onSelectCheckboxChanged_: function() {
+      this.redrawData_();
+    },
+
+    onMergeCheckboxChanged_: function() {
       this.redrawData_();
     },
 
@@ -1201,7 +1377,7 @@ var MainView = (function() {
       var sortKeys = this.currentSortKeys_.slice(0);
 
       // Eliminate the empty string keys (which means they were unspecified).
-      deleteStringsFromArrayMatching(sortKeys, {'': true});
+      deleteValuesFromArray(sortKeys, ['']);
 
       // If no sort is specified, use our default sort.
       if (sortKeys.length == 0)
@@ -1275,7 +1451,7 @@ var MainView = (function() {
 
       // Eliminate the empty string groupings (which means they were
       // unspecified).
-      deleteStringsFromArrayMatching(groupings, {'': true});
+      deleteValuesFromArray(groupings, ['']);
 
       // Eliminate duplicate primary/secondary group by directives, since they
       // are redundant.
