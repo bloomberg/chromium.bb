@@ -655,11 +655,8 @@ void UserManager::SetUserImage(const std::string& username,
                                const SkBitmap& image) {
   User* user = const_cast<User*>(FindUser(username));
   // User may have been removed by now.
-  if (user) {
+  if (user)
     user->SetImage(image, image_index);
-    LOG(ERROR) << "Set user image for " << username
-               << " to index " << image_index;
-  }
 }
 
 void UserManager::SaveUserImageInternal(const std::string& username,
@@ -714,9 +711,6 @@ void UserManager::SaveImageToLocalState(const std::string& username,
                                         int image_index,
                                         bool is_async) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  LOG(ERROR) << "Save to Local State for " << username
-             << " " << image_path << ":" << image_index;
 
   // TODO(ivankr): use unique filenames for user images each time
   // a new image is set so that only the last image update is saved
