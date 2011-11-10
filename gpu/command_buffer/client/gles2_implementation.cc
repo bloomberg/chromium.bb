@@ -115,6 +115,9 @@ class SharedIdHandler : public IdHandlerInterface {
 
   virtual bool FreeIds(GLsizei n, const GLuint* ids) {
     gles2_->DeleteSharedIdsCHROMIUM(id_namespace_, n, ids);
+    // We need to ensure that the delete call is evaluated on the service side
+    // before any other contexts issue commands using these client ids.
+    gles2_->helper()->CommandBufferHelper::Flush();
     return true;
   }
 
@@ -1101,7 +1104,6 @@ bool GLES2Implementation::DeleteProgramHelper(GLuint program) {
   }
   program_info_manager_->DeleteInfo(program);
   helper_->DeleteProgram(program);
-  Flush();
   return true;
 }
 
@@ -1114,7 +1116,6 @@ bool GLES2Implementation::DeleteShaderHelper(GLuint shader) {
   }
   program_info_manager_->DeleteInfo(shader);
   helper_->DeleteShader(shader);
-  Flush();
   return true;
 }
 
@@ -2148,7 +2149,6 @@ void GLES2Implementation::DeleteBuffersHelper(
     }
   }
   helper_->DeleteBuffersImmediate(n, buffers);
-  Flush();
 }
 
 void GLES2Implementation::DeleteFramebuffersHelper(
@@ -2165,7 +2165,6 @@ void GLES2Implementation::DeleteFramebuffersHelper(
     }
   }
   helper_->DeleteFramebuffersImmediate(n, framebuffers);
-  Flush();
 }
 
 void GLES2Implementation::DeleteRenderbuffersHelper(
@@ -2182,7 +2181,6 @@ void GLES2Implementation::DeleteRenderbuffersHelper(
     }
   }
   helper_->DeleteRenderbuffersImmediate(n, renderbuffers);
-  Flush();
 }
 
 void GLES2Implementation::DeleteTexturesHelper(
@@ -2205,7 +2203,6 @@ void GLES2Implementation::DeleteTexturesHelper(
     }
   }
   helper_->DeleteTexturesImmediate(n, textures);
-  Flush();
 }
 
 void GLES2Implementation::DisableVertexAttribArray(GLuint index) {
