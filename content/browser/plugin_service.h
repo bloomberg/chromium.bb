@@ -81,6 +81,9 @@ class CONTENT_EXPORT PluginService
   // Returns the PluginService singleton.
   static PluginService* GetInstance();
 
+  // Must be called on the instance to finish initialization.
+  void Init();
+
   // Starts watching for changes in the list of installed plug-ins.
   void StartWatchingPlugins();
 
@@ -173,7 +176,6 @@ class CONTENT_EXPORT PluginService
   }
   content::PluginServiceFilter* filter() { return filter_; }
 
-
   // The following functions are wrappers around webkit::npapi::PluginList.
   // These must be used instead of those in order to ensure that we have a
   // single global list in the component build and so that we don't
@@ -188,6 +190,8 @@ class CONTENT_EXPORT PluginService
 
   // TODO(dpranke): This should be private.
   webkit::npapi::PluginList* plugin_list();
+
+  void SetPluginListForTesting(webkit::npapi::PluginList* plugin_list);
 
  private:
   friend struct DefaultSingletonTraits<PluginService>;
@@ -244,6 +248,9 @@ class CONTENT_EXPORT PluginService
       const FilePath& path,
       base::files::FilePathWatcher::Delegate* delegate);
 #endif
+
+  // The plugin list instance.
+  webkit::npapi::PluginList* plugin_list_;
 
   // The browser's UI locale.
   const std::string ui_locale_;

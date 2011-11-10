@@ -126,7 +126,8 @@ class PluginList {
 
   // Returns true if the list of plugins is cached and is copied into the out
   // pointer; returns false if the plugin list needs to be refreshed.
-  bool GetPluginsIfNoRefreshNeeded(std::vector<webkit::WebPluginInfo>* plugins);
+  virtual bool GetPluginsIfNoRefreshNeeded(
+      std::vector<webkit::WebPluginInfo>* plugins);
 
   // Returns a list in |info| containing plugins that are found for
   // the given url and mime type (including disabled plugins, for

@@ -787,6 +787,7 @@ void BrowserProcessImpl::CreateIOThread() {
   // on the main thread. The service ctor is inexpensive and does not
   // invoke the io_thread() accessor.
   PluginService* plugin_service = PluginService::GetInstance();
+  plugin_service->Init();
   plugin_service->set_filter(ChromePluginServiceFilter::GetInstance());
   plugin_service->StartWatchingPlugins();
 

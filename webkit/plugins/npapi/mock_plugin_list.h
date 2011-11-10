@@ -21,6 +21,10 @@ class MockPluginList : public PluginList {
   void AddPluginToLoad(const WebPluginInfo& plugin);
   void ClearPluginsToLoad();
 
+  // PluginList:
+  virtual bool GetPluginsIfNoRefreshNeeded(
+      std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE;
+
  private:
   std::vector<WebPluginInfo> plugins_to_load_;
 

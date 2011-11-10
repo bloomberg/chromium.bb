@@ -23,6 +23,12 @@ void MockPluginList::ClearPluginsToLoad() {
   plugins_to_load_.clear();
 }
 
+bool MockPluginList::GetPluginsIfNoRefreshNeeded(
+      std::vector<webkit::WebPluginInfo>* plugins) {
+  GetPlugins(plugins);
+  return true;
+}
+
 void MockPluginList::LoadPluginsInternal(
     ScopedVector<PluginGroup>* plugin_groups) {
   for (size_t i = 0; i < plugins_to_load_.size(); ++i)

@@ -13,7 +13,6 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 
 using content::BrowserThread;
-using webkit::npapi::PluginList;
 
 PluginLoaderPosix::PluginLoaderPosix()
     : next_load_index_(0) {
@@ -66,11 +65,12 @@ void PluginLoaderPosix::GetPluginsToLoad() {
   next_load_index_ = 0;
 
   canonical_list_.clear();
-  webkit::npapi::PluginList::Singleton()->GetPluginPathsToLoad(
+  PluginService::GetInstance()->plugin_list()->GetPluginPathsToLoad(
       &canonical_list_);
 
   internal_plugins_.clear();
-  PluginList::Singleton()->GetInternalPlugins(&internal_plugins_);
+  PluginService::GetInstance()->plugin_list()->GetInternalPlugins(
+      &internal_plugins_);
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&PluginLoaderPosix::LoadPluginsInternal,
@@ -149,7 +149,7 @@ bool PluginLoaderPosix::MaybeRunPendingCallbacks() {
   if (next_load_index_ < canonical_list_.size())
     return false;
 
-  PluginList::Singleton()->SetPlugins(loaded_plugins_);
+  PluginService::GetInstance()->plugin_list()->SetPlugins(loaded_plugins_);
   for (std::vector<PendingCallback>::iterator it = callbacks_.begin();
        it != callbacks_.end();
        ++it) {

@@ -113,9 +113,30 @@ PluginService* PluginService::GetInstance() {
 }
 
 PluginService::PluginService()
-    : ui_locale_(
+    : plugin_list_(NULL),
+      ui_locale_(
           content::GetContentClient()->browser()->GetApplicationLocale()),
       filter_(NULL) {
+}
+
+PluginService::~PluginService() {
+#if defined(OS_WIN)
+  // Release the events since they're owned by RegKey, not WaitableEvent.
+  hkcu_watcher_.StopWatching();
+  hklm_watcher_.StopWatching();
+  if (hkcu_event_.get())
+    hkcu_event_->Release();
+  if (hklm_event_.get())
+    hklm_event_->Release();
+#endif
+  // Make sure no plugin channel requests have been leaked.
+  DCHECK(pending_plugin_clients_.empty());
+}
+
+void PluginService::Init() {
+  if (!plugin_list_)
+    plugin_list_ = webkit::npapi::PluginList::Singleton();
+
   plugin_list()->set_will_load_plugins_callback(
       base::Bind(&WillLoadPluginsCallback));
 
@@ -138,20 +159,6 @@ PluginService::PluginService()
   registrar_.Add(this, content::NOTIFICATION_APP_ACTIVATED,
                  content::NotificationService::AllSources());
 #endif
-}
-
-PluginService::~PluginService() {
-#if defined(OS_WIN)
-  // Release the events since they're owned by RegKey, not WaitableEvent.
-  hkcu_watcher_.StopWatching();
-  hklm_watcher_.StopWatching();
-  if (hkcu_event_.get())
-    hkcu_event_->Release();
-  if (hklm_event_.get())
-    hklm_event_->Release();
-#endif
-  // Make sure no plugin channel requests have been leaked.
-  DCHECK(pending_plugin_clients_.empty());
 }
 
 void PluginService::StartWatchingPlugins() {
@@ -638,6 +645,11 @@ void PluginService::UnregisterInternalPlugin(const FilePath& path) {
 
 webkit::npapi::PluginList* PluginService::plugin_list() {
   return webkit::npapi::PluginList::Singleton();
+}
+
+void PluginService::SetPluginListForTesting(
+    webkit::npapi::PluginList* plugin_list) {
+  plugin_list_ = plugin_list;
 }
 
 void PluginService::RegisterInternalPlugin(const webkit::WebPluginInfo& info) {
