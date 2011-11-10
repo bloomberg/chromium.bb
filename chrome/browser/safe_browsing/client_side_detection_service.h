@@ -286,7 +286,7 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
 
   // Used to asynchronously call the callbacks for
   // SendClientReportPhishingRequest.
-  ScopedRunnableMethodFactory<ClientSideDetectionService> method_factory_;
+  base::WeakPtrFactory<ClientSideDetectionService> weak_factory_;
 
   // The context we use to issue network requests.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;

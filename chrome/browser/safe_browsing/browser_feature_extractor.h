@@ -149,7 +149,7 @@ class BrowserFeatureExtractor {
   TabContents* tab_;
   ClientSideDetectionService* service_;
   CancelableRequestConsumer request_consumer_;
-  ScopedRunnableMethodFactory<BrowserFeatureExtractor> method_factory_;
+  base::WeakPtrFactory<BrowserFeatureExtractor> weak_factory_;
 
   // Set of pending extractions (i.e. extractions for which ExtractFeatures was
   // called but not StartExtractFeatures).

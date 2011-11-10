@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -40,7 +41,7 @@ PhishingClassifier::PhishingClassifier(content::RenderView* render_view,
     : render_view_(render_view),
       scorer_(NULL),
       clock_(clock),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   Clear();
 }
 
@@ -96,8 +97,8 @@ void PhishingClassifier::BeginClassification(const string16* page_text,
   // iteration of the message loop.
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &PhishingClassifier::BeginFeatureExtraction));
+      base::Bind(&PhishingClassifier::BeginFeatureExtraction,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void PhishingClassifier::BeginFeatureExtraction() {
@@ -146,7 +147,7 @@ void PhishingClassifier::CancelPendingClassification() {
   DCHECK(is_ready());
   dom_extractor_->CancelPendingExtraction();
   term_extractor_->CancelPendingExtraction();
-  method_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   Clear();
 }
 

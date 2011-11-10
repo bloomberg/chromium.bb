@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -70,14 +71,14 @@ ClientSideDetectionService::CacheState::CacheState(bool phish, base::Time time)
 ClientSideDetectionService::ClientSideDetectionService(
     net::URLRequestContextGetter* request_context_getter)
     : enabled_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       request_context_getter_(request_context_getter) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
 ClientSideDetectionService::~ClientSideDetectionService() {
-  method_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   STLDeleteContainerPairPointers(client_phishing_reports_.begin(),
                                  client_phishing_reports_.end());
   client_phishing_reports_.clear();
@@ -133,9 +134,8 @@ void ClientSideDetectionService::SendClientReportPhishingRequest(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &ClientSideDetectionService::StartClientReportPhishingRequest,
-          verdict, callback));
+      base::Bind(&ClientSideDetectionService::StartClientReportPhishingRequest,
+                 weak_factory_.GetWeakPtr(), verdict, callback));
 }
 
 bool ClientSideDetectionService::IsPrivateIPAddress(
@@ -244,8 +244,8 @@ void ClientSideDetectionService::SendModelToRenderers() {
 void ClientSideDetectionService::ScheduleFetchModel(int64 delay_ms) {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &ClientSideDetectionService::StartFetchModel),
+      base::Bind(&ClientSideDetectionService::StartFetchModel,
+                 weak_factory_.GetWeakPtr()),
       delay_ms);
 }
 

@@ -7,6 +7,7 @@
 #include <list>
 #include <map>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
@@ -101,7 +102,7 @@ PhishingTermFeatureExtractor::PhishingTermFeatureExtractor(
       murmurhash3_seed_(murmurhash3_seed),
       negative_word_cache_(kMaxNegativeWordCacheSize),
       clock_(clock),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   Clear();
 }
 
@@ -129,13 +130,13 @@ void PhishingTermFeatureExtractor::ExtractFeatures(
   state_.reset(new ExtractionState(*page_text_, clock_->Now()));
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout));
+      base::Bind(&PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void PhishingTermFeatureExtractor::CancelPendingExtraction() {
   // Cancel any pending callbacks, and clear our state.
-  method_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   Clear();
 }
 
@@ -196,8 +197,9 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
                             chunk_elapsed);
         MessageLoop::current()->PostTask(
             FROM_HERE,
-            method_factory_.NewRunnableMethod(
-                &PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout));
+            base::Bind(
+                &PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout,
+                weak_factory_.GetWeakPtr()));
         return;
       }
       // Otherwise, continue.

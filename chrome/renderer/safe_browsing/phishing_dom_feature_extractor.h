@@ -145,9 +145,9 @@ class PhishingDOMFeatureExtractor {
   // accumulated across all frames in the RenderView.
   scoped_ptr<PageFeatureState> page_feature_state_;
 
-  // Used to create ExtractFeaturesWithTimeout tasks.
-  // These tasks are revoked if extraction is cancelled.
-  ScopedRunnableMethodFactory<PhishingDOMFeatureExtractor> method_factory_;
+  // Used in scheduling ExtractFeaturesWithTimeout tasks.
+  // These pointers are invalidated if extraction is cancelled.
+  base::WeakPtrFactory<PhishingDOMFeatureExtractor> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PhishingDOMFeatureExtractor);
 };

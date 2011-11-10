@@ -153,9 +153,9 @@ class PhishingTermFeatureExtractor {
   // Stores the current state of term extraction from |page_text_|.
   scoped_ptr<ExtractionState> state_;
 
-  // Used to create ExtractFeaturesWithTimeout tasks.
-  // These tasks are revoked if extraction is cancelled.
-  ScopedRunnableMethodFactory<PhishingTermFeatureExtractor> method_factory_;
+  // Used in scheduling ExtractFeaturesWithTimeout tasks.
+  // These pointers are invalidated if extraction is cancelled.
+  base::WeakPtrFactory<PhishingTermFeatureExtractor> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PhishingTermFeatureExtractor);
 };

@@ -138,9 +138,9 @@ class PhishingClassifier {
   const string16* page_text_;  // owned by the caller
   scoped_ptr<DoneCallback> done_callback_;
 
-  // Used to create BeginFeatureExtraction tasks.
-  // These tasks are revoked if classification is cancelled.
-  ScopedRunnableMethodFactory<PhishingClassifier> method_factory_;
+  // Used in scheduling BeginFeatureExtraction tasks.
+  // These pointers are invalidated if classification is cancelled.
+  base::WeakPtrFactory<PhishingClassifier> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PhishingClassifier);
 };

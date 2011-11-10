@@ -111,12 +111,12 @@ BrowserFeatureExtractor::BrowserFeatureExtractor(
     ClientSideDetectionService* service)
     : tab_(tab),
       service_(service),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(tab);
 }
 
 BrowserFeatureExtractor::~BrowserFeatureExtractor() {
-  method_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   // Delete all the pending extractions (delete callback and request objects).
   STLDeleteContainerPairPointers(pending_extractions_.begin(),
                                  pending_extractions_.end());
@@ -201,9 +201,8 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   pending_extractions_.insert(std::make_pair(request, callback));
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &BrowserFeatureExtractor::StartExtractFeatures,
-          request, callback));
+      base::Bind(&BrowserFeatureExtractor::StartExtractFeatures,
+                 weak_factory_.GetWeakPtr(), request, callback));
 }
 
 void BrowserFeatureExtractor::ExtractBrowseInfoFeatures(

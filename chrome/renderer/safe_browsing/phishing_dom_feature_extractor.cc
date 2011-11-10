@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/safe_browsing/phishing_dom_feature_extractor.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
@@ -102,7 +103,7 @@ PhishingDOMFeatureExtractor::PhishingDOMFeatureExtractor(
     FeatureExtractorClock* clock)
     : render_view_(render_view),
       clock_(clock),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   Clear();
 }
 
@@ -133,13 +134,13 @@ void PhishingDOMFeatureExtractor::ExtractFeatures(
 
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout));
+      base::Bind(&PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void PhishingDOMFeatureExtractor::CancelPendingExtraction() {
   // Cancel any pending callbacks, and clear our state.
-  method_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   Clear();
 }
 
@@ -216,8 +217,9 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
                               chunk_elapsed);
           MessageLoop::current()->PostTask(
               FROM_HERE,
-              method_factory_.NewRunnableMethod(
-                  &PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout));
+              base::Bind(
+                  &PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout,
+                  weak_factory_.GetWeakPtr()));
           return;
         }
         // Otherwise, continue.
