@@ -561,10 +561,11 @@ void Panel::Observe(int type,
 
     case content::NOTIFICATION_TAB_CONTENTS_SWAPPED: {
       RenderViewHost* render_view_host = GetRenderViewHost();
-      DCHECK(render_view_host);
-      render_view_host->EnablePreferredSizeMode(
-          kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
-      RequestRenderViewHostToDisableScrollbars(render_view_host);
+      if (render_view_host) {
+        render_view_host->EnablePreferredSizeMode(
+            kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
+        RequestRenderViewHostToDisableScrollbars(render_view_host);
+      }
       break;
     }
     default:
