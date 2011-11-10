@@ -15,6 +15,8 @@
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::mac::ScopedCFTypeRef;
+
 namespace policy {
 
 namespace {
@@ -63,28 +65,31 @@ void TestHarness::InstallEmptyPolicy() {}
 
 void TestHarness::InstallStringPolicy(const std::string& policy_name,
                                       const std::string& policy_value) {
-  prefs_->AddTestItem(base::SysUTF8ToCFStringRef(policy_name),
-                      base::SysUTF8ToCFStringRef(policy_value),
-                      true);
+  ScopedCFTypeRef<CFStringRef> name(base::SysUTF8ToCFStringRef(policy_name));
+  ScopedCFTypeRef<CFStringRef> value(base::SysUTF8ToCFStringRef(policy_value));
+  prefs_->AddTestItem(name, value, true);
 }
 
 void TestHarness::InstallIntegerPolicy(const std::string& policy_name,
                                        int policy_value) {
-  prefs_->AddTestItem(base::SysUTF8ToCFStringRef(policy_name),
-                      CFNumberCreate(NULL, kCFNumberIntType, &policy_value),
-                      true);
+  ScopedCFTypeRef<CFStringRef> name(base::SysUTF8ToCFStringRef(policy_name));
+  ScopedCFTypeRef<CFNumberRef> value(
+      CFNumberCreate(NULL, kCFNumberIntType, &policy_value));
+  prefs_->AddTestItem(name, value, true);
 }
 
 void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
                                        bool policy_value) {
-  prefs_->AddTestItem(base::SysUTF8ToCFStringRef(policy_name),
-                      CFRetain(policy_value ? kCFBooleanTrue : kCFBooleanFalse),
+  ScopedCFTypeRef<CFStringRef> name(base::SysUTF8ToCFStringRef(policy_name));
+  prefs_->AddTestItem(name,
+                      policy_value ? kCFBooleanTrue : kCFBooleanFalse,
                       true);
 }
 
 void TestHarness::InstallStringListPolicy(const std::string& policy_name,
                                           const ListValue* policy_value) {
-  base::mac::ScopedCFTypeRef<CFMutableArrayRef> array(
+  ScopedCFTypeRef<CFStringRef> name(base::SysUTF8ToCFStringRef(policy_name));
+  ScopedCFTypeRef<CFMutableArrayRef> array(
       CFArrayCreateMutable(NULL, policy_value->GetSize(),
                            &kCFTypeArrayCallBacks));
   for (ListValue::const_iterator element(policy_value->begin());
@@ -92,12 +97,12 @@ void TestHarness::InstallStringListPolicy(const std::string& policy_name,
     std::string element_value;
     if (!(*element)->GetAsString(&element_value))
       continue;
-    CFArrayAppendValue(array, base::SysUTF8ToCFStringRef(element_value));
+    ScopedCFTypeRef<CFStringRef> value(
+        base::SysUTF8ToCFStringRef(element_value));
+    CFArrayAppendValue(array, value);
   }
 
-  prefs_->AddTestItem(base::SysUTF8ToCFStringRef(policy_name),
-                      array.release(),
-                      true);
+  prefs_->AddTestItem(name, array, true);
 }
 
 // static
@@ -126,10 +131,9 @@ class ConfigurationPolicyProviderMacTest : public AsynchronousPolicyTestBase {
 };
 
 TEST_F(ConfigurationPolicyProviderMacTest, Invalid) {
-  base::mac::ScopedCFTypeRef<CFStringRef> name(
+  ScopedCFTypeRef<CFStringRef> name(
       base::SysUTF8ToCFStringRef(test_policy_definitions::kKeyString));
-  base::mac::ScopedCFTypeRef<CFDataRef> invalid_data(
-      CFDataCreate(NULL, NULL, 0));
+  ScopedCFTypeRef<CFDataRef> invalid_data(CFDataCreate(NULL, NULL, 0));
   prefs_->AddTestItem(name, invalid_data.get(), true);
 
   // Create the provider and have it read |prefs_|.
@@ -140,9 +144,9 @@ TEST_F(ConfigurationPolicyProviderMacTest, Invalid) {
 }
 
 TEST_F(ConfigurationPolicyProviderMacTest, TestNonForcedValue) {
-  base::mac::ScopedCFTypeRef<CFStringRef> name(
+  ScopedCFTypeRef<CFStringRef> name(
       base::SysUTF8ToCFStringRef(test_policy_definitions::kKeyString));
-  base::mac::ScopedCFTypeRef<CFPropertyListRef> test_value(
+  ScopedCFTypeRef<CFPropertyListRef> test_value(
       base::SysUTF8ToCFStringRef("string value"));
   ASSERT_TRUE(test_value.get());
   prefs_->AddTestItem(name, test_value.get(), false);
