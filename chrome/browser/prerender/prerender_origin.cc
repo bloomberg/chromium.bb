@@ -16,6 +16,7 @@ const char* kOriginNames[] = {
   "Omnibox (original)",
   "GWS Prerender",
   "Omnibox (conservative)",
+  "Omnibox (exact)",
   "Max"
 };
 COMPILE_ASSERT(arraysize(kOriginNames) == ORIGIN_MAX + 1,

@@ -130,6 +130,7 @@ class ProfileImpl : public Profile,
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
   virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
+  virtual NetworkActionPredictor* GetNetworkActionPredictor() OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   virtual void ChangeAppLocale(const std::string& locale,
@@ -241,6 +242,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<WebKitContext> webkit_context_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
+  scoped_ptr<NetworkActionPredictor> network_action_predictor_;
   bool history_service_created_;
   bool favicon_service_created_;
   bool created_web_data_service_;

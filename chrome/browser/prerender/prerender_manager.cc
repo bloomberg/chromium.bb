@@ -296,6 +296,10 @@ bool PrerenderManager::AddPrerenderFromOmnibox(
       origin = ORIGIN_OMNIBOX_CONSERVATIVE;
       break;
 
+    case OMNIBOX_HEURISTIC_EXACT:
+      origin = ORIGIN_OMNIBOX_EXACT;
+      break;
+
     default:
       NOTREACHED();
       break;
@@ -332,9 +336,8 @@ bool PrerenderManager::AddPrerender(
 
   GURL url = url_arg;
   GURL alias_url;
-  if (IsControlGroup() && MaybeGetQueryStringBasedAliasURL(url, &alias_url)) {
+  if (IsControlGroup() && MaybeGetQueryStringBasedAliasURL(url, &alias_url))
     url = alias_url;
-  }
 
   if (FindEntry(url))
     return false;
@@ -969,9 +972,20 @@ DictionaryValue* PrerenderManager::GetAsValue() const {
   dict_value->SetBoolean("enabled", enabled_);
   dict_value->SetBoolean("omnibox_enabled", IsOmniboxEnabled(profile_));
   if (IsOmniboxEnabled(profile_)) {
-    dict_value->SetString("omnibox_heuristic",
-        GetOmniboxHeuristicToUse() == OMNIBOX_HEURISTIC_ORIGINAL ?
-            "(original)" : "(conservative)");
+    switch (GetOmniboxHeuristicToUse()) {
+      case OMNIBOX_HEURISTIC_ORIGINAL:
+        dict_value->SetString("omnibox_heuristic", "(original)");
+        break;
+      case OMNIBOX_HEURISTIC_CONSERVATIVE:
+        dict_value->SetString("omnibox_heuristic", "(conservative)");
+        break;
+      case OMNIBOX_HEURISTIC_EXACT:
+        dict_value->SetString("omnibox_heuristic", "(exact)");
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
   }
   // If prerender is disabled via a flag this method is not even called.
   if (IsControlGroup())

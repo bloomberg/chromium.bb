@@ -798,6 +798,10 @@ GURL TestingProfile::GetHomePage() {
   return GURL(chrome::kChromeUINewTabURL);
 }
 
+NetworkActionPredictor* TestingProfile::GetNetworkActionPredictor() {
+  return NULL;
+}
+
 PrefService* TestingProfile::GetOffTheRecordPrefs() {
   return NULL;
 }

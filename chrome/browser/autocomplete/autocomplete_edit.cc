@@ -16,6 +16,7 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
+#include "chrome/browser/autocomplete/network_action_predictor.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/command_updater.h"
@@ -89,8 +90,7 @@ AutocompleteEditModel::AutocompleteEditModel(
       profile_(profile),
       in_revert_(false),
       allow_exact_keyword_match_(false),
-      instant_complete_behavior_(INSTANT_COMPLETE_DELAYED),
-      network_action_predictor_(profile) {
+      instant_complete_behavior_(INSTANT_COMPLETE_DELAYED) {
 }
 
 AutocompleteEditModel::~AutocompleteEditModel() {
@@ -217,9 +217,15 @@ void AutocompleteEditModel::OnChanged() {
 
   // Confer with the NetworkActionPredictor to determine what action, if any,
   // we should take. Get the recommended action here even if we don't need it
-  // so we can get stats for anyone who is opted in to UMA.
-  NetworkActionPredictor::Action recommended_action =
-      network_action_predictor_.RecommendAction(user_text_, current_match);
+  // so we can get stats for anyone who is opted in to UMA, but only get it if
+  // the user has actually typed something to avoid constructing it before it's
+  // needed. Note: This event is triggered as part of startup when the initial
+  // tab transitions to the start page.
+  NetworkActionPredictor* network_action_predictor = user_input_in_progress() ?
+      profile_->GetNetworkActionPredictor() : NULL;
+  NetworkActionPredictor::Action recommended_action = network_action_predictor ?
+       network_action_predictor->RecommendAction(user_text_, current_match) :
+       NetworkActionPredictor::ACTION_NONE;
   UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.Action_" +
                             prerender::GetOmniboxHistogramSuffix(),
                             recommended_action,
@@ -227,10 +233,6 @@ void AutocompleteEditModel::OnChanged() {
   if (DoInstant(current_match, &suggested_text)) {
     SetSuggestedText(suggested_text, instant_complete_behavior_);
   } else {
-    // Ignore the recommended action if Omnibox prerendering is not enabled.
-    if (!prerender::IsOmniboxEnabled(profile_))
-      recommended_action = NetworkActionPredictor::ACTION_NONE;
-
     switch (recommended_action) {
       case NetworkActionPredictor::ACTION_PRERENDER:
         DoPrerender(current_match);
@@ -1034,15 +1036,13 @@ void AutocompleteEditModel::DoPrerender(const AutocompleteMatch& match) {
   // Do not prerender if the destination URL is the same as the current URL.
   if (match.destination_url == PermanentURL())
     return;
-  if (user_input_in_progress() && popup_->IsOpen()) {
-    TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
-    prerender::PrerenderManager* prerender_manager =
-        prerender::PrerenderManagerFactory::GetForProfile(tab->profile());
-    if (prerender_manager) {
-      RenderViewHost* current_host = tab->tab_contents()->render_view_host();
-      prerender_manager->AddPrerenderFromOmnibox(
-          match.destination_url, current_host->session_storage_namespace());
-    }
+  TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForProfile(tab->profile());
+  if (prerender_manager) {
+    RenderViewHost* current_host = tab->tab_contents()->render_view_host();
+    prerender_manager->AddPrerenderFromOmnibox(
+        match.destination_url, current_host->session_storage_namespace());
   }
 }
 

@@ -571,6 +571,10 @@ GURL OffTheRecordProfileImpl::GetHomePage() {
   return profile_->GetHomePage();
 }
 
+NetworkActionPredictor* OffTheRecordProfileImpl::GetNetworkActionPredictor() {
+  return NULL;
+}
+
 void OffTheRecordProfileImpl::Observe(int type,
                      const content::NotificationSource& source,
                      const content::NotificationDetails& details) {

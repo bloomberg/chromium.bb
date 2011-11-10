@@ -66,6 +66,7 @@ class FindBarState;
 class HistoryService;
 class HostContentSettingsMap;
 class NavigationController;
+class NetworkActionPredictor;
 class PasswordStore;
 class PrefService;
 class ProfileSyncFactory;
@@ -496,6 +497,10 @@ class Profile : public content::BrowserContext {
 
   // Returns the home page for this profile.
   virtual GURL GetHomePage() = 0;
+
+  // Returns the NetworkActionPredictor used by the Omnibox to decide when to
+  // prerender or prefetch a result.
+  virtual NetworkActionPredictor* GetNetworkActionPredictor() = 0;
 
   std::string GetDebugName();
 

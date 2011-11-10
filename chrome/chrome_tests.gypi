@@ -1174,6 +1174,7 @@
         'browser/autocomplete/history_url_provider_unittest.cc',
         'browser/autocomplete/keyword_provider_unittest.cc',
         'browser/autocomplete/network_action_predictor_unittest.cc',
+        'browser/autocomplete/network_action_predictor_database_unittest.cc',
         'browser/autocomplete/search_provider_unittest.cc',
         'browser/autocomplete/shortcuts_provider_unittest.cc',
         'browser/autocomplete_history_manager_unittest.cc',

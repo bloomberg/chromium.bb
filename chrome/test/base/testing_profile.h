@@ -284,6 +284,8 @@ class TestingProfile : public Profile {
   virtual chrome_browser_net::Predictor* GetNetworkPredictor();
   virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
+  virtual NetworkActionPredictor* GetNetworkActionPredictor() OVERRIDE;
+
   virtual PrefService* GetOffTheRecordPrefs();
 
   // TODO(jam): remove me once webkit_context_unittest.cc doesn't use Profile

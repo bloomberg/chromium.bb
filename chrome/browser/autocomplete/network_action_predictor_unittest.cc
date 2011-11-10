@@ -4,12 +4,19 @@
 
 #include "chrome/browser/autocomplete/network_action_predictor.h"
 
+#include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/url_database.h"
+#include "chrome/browser/prerender/prerender_field_trial.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/guid.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,49 +25,53 @@ using content::BrowserThread;
 
 namespace {
 
+// TODO(dominich): Set hits/misses to match expected action if the test switches
+// to the Exact Algorithm.
 struct TestUrlInfo {
   GURL url;
   string16 title;
   int typed_count;
   int days_from_now;
   string16 user_text;
+  int number_of_hits;
+  int number_of_misses;
   NetworkActionPredictor::Action expected_action;
 } test_url_db[] = {
   { GURL("http://www.testsite.com/a.html"),
     ASCIIToUTF16("Test - site - just a test"), 1, 1,
-    ASCIIToUTF16("just"),
+    ASCIIToUTF16("just"), 1, 2,
     NetworkActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/b.html"),
     ASCIIToUTF16("Test - site - just a test"), 0, 1,
-    ASCIIToUTF16("just"),
+    ASCIIToUTF16("just"), 0, 0,
     NetworkActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/c.html"),
     ASCIIToUTF16("Test - site - just a test"), 1, 5,
-    ASCIIToUTF16("just"),
+    ASCIIToUTF16("just"), 0, 0,
     NetworkActionPredictor::ACTION_PRECONNECT },
   { GURL("http://www.testsite.com/d.html"),
     ASCIIToUTF16("Test - site - just a test"), 2, 5,
-    ASCIIToUTF16("just"),
+    ASCIIToUTF16("just"), 0, 0,
     NetworkActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/e.html"),
     ASCIIToUTF16("Test - site - just a test"), 1, 8,
-    ASCIIToUTF16("just"),
+    ASCIIToUTF16("just"), 0, 0,
     NetworkActionPredictor::ACTION_PRECONNECT },
   { GURL("http://www.testsite.com/f.html"),
     ASCIIToUTF16("Test - site - just a test"), 4, 8,
-    ASCIIToUTF16("just"),
+    ASCIIToUTF16("just"), 0, 0,
     NetworkActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/g.html"),
     ASCIIToUTF16("Test - site - just a test"), 1, 12,
-    ASCIIToUTF16("just a"),
+    ASCIIToUTF16("just a"), 0, 0,
     NetworkActionPredictor::ACTION_NONE },
   { GURL("http://www.testsite.com/h.html"),
     ASCIIToUTF16("Test - site - just a test"), 2, 21,
-    ASCIIToUTF16("just a test"),
+    ASCIIToUTF16("just a test"), 0, 0,
     NetworkActionPredictor::ACTION_NONE },
   { GURL("http://www.testsite.com/i.html"),
     ASCIIToUTF16("Test - site - just a test"), 3, 28,
-    ASCIIToUTF16("just a test"),
+    ASCIIToUTF16("just a test"), 0, 0,
     NetworkActionPredictor::ACTION_NONE }
 };
 
@@ -71,61 +82,150 @@ class NetworkActionPredictorTest : public testing::Test {
   NetworkActionPredictorTest()
       : loop_(MessageLoop::TYPE_DEFAULT),
         ui_thread_(BrowserThread::UI, &loop_),
+        db_thread_(BrowserThread::DB, &loop_),
         file_thread_(BrowserThread::FILE, &loop_),
-        predictor_(&profile_) {
+        predictor_(new NetworkActionPredictor(&profile_)) {
   }
 
   void SetUp() {
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kPrerenderFromOmnibox,
+        switches::kPrerenderFromOmniboxSwitchValueEnabled);
+
+    ASSERT_TRUE(prerender::GetOmniboxHeuristicToUse() ==
+          prerender::OMNIBOX_HEURISTIC_ORIGINAL)
+        << "The heuristic has changed so the expectations need to be updated.";
     profile_.CreateHistoryService(true, false);
     profile_.BlockUntilHistoryProcessesPendingRequests();
 
+    ASSERT_TRUE(predictor_->initialized_);
+    ASSERT_TRUE(db_cache()->empty());
+    ASSERT_TRUE(db_id_cache()->empty());
+  }
+
+  void TearDown() {
+    profile_.DestroyHistoryService();
+  }
+
+ protected:
+  typedef NetworkActionPredictor::DBCacheKey DBCacheKey;
+  typedef NetworkActionPredictor::DBCacheValue DBCacheValue;
+  typedef NetworkActionPredictor::DBCacheMap DBCacheMap;
+  typedef NetworkActionPredictor::DBIdCacheMap DBIdCacheMap;
+
+  void AddAllRowsToHistory() {
+    for (size_t i = 0; i < arraysize(test_url_db); ++i)
+      ASSERT_TRUE(AddRowToHistory(test_url_db[i]));
+  }
+
+  history::URLID AddRowToHistory(const TestUrlInfo& test_row) {
     HistoryService* history =
         profile_.GetHistoryService(Profile::EXPLICIT_ACCESS);
     CHECK(history);
     history::URLDatabase* url_db = history->InMemoryDatabase();
     CHECK(url_db);
 
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_url_db); ++i) {
-      const base::Time visit_time =
-          base::Time::Now() - base::TimeDelta::FromDays(
-              test_url_db[i].days_from_now);
+    const base::Time visit_time =
+        base::Time::Now() - base::TimeDelta::FromDays(
+            test_row.days_from_now);
 
-      history::URLRow row(test_url_db[i].url);
-      row.set_title(test_url_db[i].title);
-      row.set_typed_count(test_url_db[i].typed_count);
-      row.set_last_visit(visit_time);
+    history::URLRow row(test_row.url);
+    row.set_title(test_row.title);
+    row.set_typed_count(test_row.typed_count);
+    row.set_last_visit(visit_time);
 
-      CHECK(url_db->AddURL(row));
-    }
+    return url_db->AddURL(row);
   }
 
-  const NetworkActionPredictor& predictor() const { return predictor_; }
+  NetworkActionPredictorDatabase::Row CreateRowFromTestUrlInfo(
+      const TestUrlInfo& test_row) const {
+    NetworkActionPredictorDatabase::Row row;
+    row.id = guid::GenerateGUID();
+    row.user_text = test_row.user_text;
+    row.url = test_row.url;
+    row.number_of_hits = test_row.number_of_hits;
+    row.number_of_misses = test_row.number_of_misses;
+    return row;
+  }
+
+  std::string AddRow(const TestUrlInfo& test_row) {
+    NetworkActionPredictor::DBCacheKey key = { test_row.user_text,
+                                               test_row.url };
+    NetworkActionPredictorDatabase::Row row =
+        CreateRowFromTestUrlInfo(test_row);
+    predictor_->AddRow(key, row);
+
+    return row.id;
+  }
+
+  void UpdateRow(NetworkActionPredictor::DBCacheKey key,
+                 const NetworkActionPredictorDatabase::Row& row) {
+    NetworkActionPredictor::DBCacheMap::iterator it =
+        db_cache()->find(key);
+    ASSERT_TRUE(it != db_cache()->end());
+
+    predictor_->UpdateRow(it, row);
+  }
+
+  void DeleteAllRows() {
+    predictor_->DeleteAllRows();
+  }
+
+  void DeleteRowsWithURLs(const std::set<GURL>& urls) {
+    predictor_->DeleteRowsWithURLs(urls);
+  }
+
+  void DeleteOldIdsFromCaches(
+      std::vector<NetworkActionPredictorDatabase::Row::Id>* id_list) {
+    HistoryService* history_service =
+        profile_.GetHistoryService(Profile::EXPLICIT_ACCESS);
+    ASSERT_TRUE(history_service);
+
+    history::URLDatabase* url_db = history_service->InMemoryDatabase();
+    ASSERT_TRUE(url_db);
+
+    predictor_->DeleteOldIdsFromCaches(url_db, id_list);
+  }
+
+  NetworkActionPredictor* predictor() { return predictor_.get(); }
+
+  DBCacheMap* db_cache() { return &predictor_->db_cache_; }
+  DBIdCacheMap* db_id_cache() { return &predictor_->db_id_cache_; }
+
+  static int maximum_days_to_keep_entry() {
+    return NetworkActionPredictor::kMaximumDaysToKeepEntry;
+  }
 
  private:
   MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;
   TestingProfile profile_;
-  NetworkActionPredictor predictor_;
+  scoped_ptr<NetworkActionPredictor> predictor_;
 };
 
 TEST_F(NetworkActionPredictorTest, RecommendActionURL) {
+  ASSERT_NO_FATAL_FAILURE(AddAllRowsToHistory());
+
   AutocompleteMatch match;
   match.type = AutocompleteMatch::HISTORY_URL;
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_url_db); ++i) {
     match.destination_url = GURL(test_url_db[i].url);
     EXPECT_EQ(test_url_db[i].expected_action,
-              predictor().RecommendAction(test_url_db[i].user_text, match))
+              predictor()->RecommendAction(test_url_db[i].user_text, match))
         << "Unexpected action for " << match.destination_url;
   }
 }
 
 TEST_F(NetworkActionPredictorTest, RecommendActionSearch) {
+  ASSERT_NO_FATAL_FAILURE(AddAllRowsToHistory());
+
   AutocompleteMatch match;
   match.type = AutocompleteMatch::SEARCH_WHAT_YOU_TYPED;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_url_db); ++i) {
+  for (size_t i = 0; i < arraysize(test_url_db); ++i) {
     match.destination_url = GURL(test_url_db[i].url);
     const NetworkActionPredictor::Action expected =
         (test_url_db[i].expected_action ==
@@ -134,7 +234,135 @@ TEST_F(NetworkActionPredictorTest, RecommendActionSearch) {
             test_url_db[i].expected_action;
 
     EXPECT_EQ(expected,
-              predictor().RecommendAction(test_url_db[i].user_text, match))
+              predictor()->RecommendAction(test_url_db[i].user_text, match))
         << "Unexpected action for " << match.destination_url;
+  }
+}
+
+TEST_F(NetworkActionPredictorTest, AddRow) {
+  // Add a test entry to the predictor.
+  std::string guid = AddRow(test_url_db[0]);
+
+  // Get the data back out of the cache.
+  const DBCacheKey key = { test_url_db[0].user_text, test_url_db[0].url };
+  DBCacheMap::const_iterator it = db_cache()->find(key);
+  EXPECT_TRUE(it != db_cache()->end());
+
+  const DBCacheValue value = { test_url_db[0].number_of_hits,
+                               test_url_db[0].number_of_misses };
+  EXPECT_EQ(value.number_of_hits, it->second.number_of_hits);
+  EXPECT_EQ(value.number_of_misses, it->second.number_of_misses);
+
+  DBIdCacheMap::const_iterator id_it = db_id_cache()->find(key);
+  EXPECT_TRUE(id_it != db_id_cache()->end());
+  EXPECT_EQ(guid, id_it->second);
+}
+
+TEST_F(NetworkActionPredictorTest, UpdateRow) {
+  for (size_t i = 0; i < arraysize(test_url_db); ++i)
+    AddRow(test_url_db[i]);
+
+  EXPECT_EQ(arraysize(test_url_db), db_cache()->size());
+  EXPECT_EQ(arraysize(test_url_db), db_id_cache()->size());
+
+  // Get the data back out of the cache.
+  const DBCacheKey key = { test_url_db[0].user_text, test_url_db[0].url };
+  DBCacheMap::const_iterator it = db_cache()->find(key);
+  EXPECT_TRUE(it != db_cache()->end());
+
+  DBIdCacheMap::const_iterator id_it = db_id_cache()->find(key);
+  EXPECT_TRUE(id_it != db_id_cache()->end());
+
+  NetworkActionPredictorDatabase::Row update_row;
+  update_row.id = id_it->second;
+  update_row.user_text = key.user_text;
+  update_row.url = key.url;
+  update_row.number_of_hits = it->second.number_of_hits + 1;
+  update_row.number_of_misses = it->second.number_of_misses + 2;
+
+  UpdateRow(key, update_row);
+
+  // Get the updated version.
+  DBCacheMap::const_iterator update_it = db_cache()->find(key);
+  EXPECT_TRUE(update_it != db_cache()->end());
+
+  EXPECT_EQ(update_row.number_of_hits, update_it->second.number_of_hits);
+  EXPECT_EQ(update_row.number_of_misses, update_it->second.number_of_misses);
+
+  DBIdCacheMap::const_iterator update_id_it = db_id_cache()->find(key);
+  EXPECT_TRUE(update_id_it != db_id_cache()->end());
+
+  EXPECT_EQ(id_it->second, update_id_it->second);
+}
+
+TEST_F(NetworkActionPredictorTest, DeleteAllRows) {
+  for (size_t i = 0; i < arraysize(test_url_db); ++i)
+    AddRow(test_url_db[i]);
+
+  EXPECT_EQ(arraysize(test_url_db), db_cache()->size());
+  EXPECT_EQ(arraysize(test_url_db), db_id_cache()->size());
+
+  DeleteAllRows();
+
+  EXPECT_TRUE(db_cache()->empty());
+  EXPECT_TRUE(db_id_cache()->empty());
+}
+
+TEST_F(NetworkActionPredictorTest, DeleteRowsWithURLs) {
+  for (size_t i = 0; i < arraysize(test_url_db); ++i)
+    AddRow(test_url_db[i]);
+
+  EXPECT_EQ(arraysize(test_url_db), db_cache()->size());
+  EXPECT_EQ(arraysize(test_url_db), db_id_cache()->size());
+
+  std::set<GURL> urls;
+  for (size_t i = 0; i < 2; ++i)
+    urls.insert(test_url_db[i].url);
+
+  DeleteRowsWithURLs(urls);
+
+  EXPECT_EQ(arraysize(test_url_db) - 2, db_cache()->size());
+  EXPECT_EQ(arraysize(test_url_db) - 2, db_id_cache()->size());
+
+  for (size_t i = 0; i < arraysize(test_url_db); ++i) {
+    DBCacheKey key = { test_url_db[i].user_text, test_url_db[i].url };
+
+    bool deleted = (i < 2);
+    EXPECT_EQ(deleted, db_cache()->find(key) == db_cache()->end());
+    EXPECT_EQ(deleted, db_id_cache()->find(key) == db_id_cache()->end());
+  }
+}
+
+TEST_F(NetworkActionPredictorTest, DeleteOldIdsFromCaches) {
+  std::vector<NetworkActionPredictorDatabase::Row::Id> expected;
+  std::vector<NetworkActionPredictorDatabase::Row::Id> all_ids;
+
+  for (size_t i = 0; i < arraysize(test_url_db); ++i) {
+    std::string row_id = AddRow(test_url_db[i]);
+    all_ids.push_back(row_id);
+
+    bool exclude_url = StartsWithASCII(test_url_db[i].url.path(), "/d", true) ||
+        (test_url_db[i].days_from_now > maximum_days_to_keep_entry());
+
+    if (exclude_url)
+      expected.push_back(row_id);
+    else
+      ASSERT_TRUE(AddRowToHistory(test_url_db[i]));
+  }
+
+  std::vector<NetworkActionPredictorDatabase::Row::Id> id_list;
+  DeleteOldIdsFromCaches(&id_list);
+  EXPECT_EQ(expected.size(), id_list.size());
+  EXPECT_EQ(all_ids.size() - expected.size(), db_cache()->size());
+  EXPECT_EQ(all_ids.size() - expected.size(), db_id_cache()->size());
+
+  for (std::vector<NetworkActionPredictorDatabase::Row::Id>::iterator it =
+       all_ids.begin();
+       it != all_ids.end(); ++it) {
+    bool in_expected =
+        (std::find(expected.begin(), expected.end(), *it) != expected.end());
+    bool in_list =
+        (std::find(id_list.begin(), id_list.end(), *it) != id_list.end());
+    EXPECT_EQ(in_expected, in_list);
   }
 }

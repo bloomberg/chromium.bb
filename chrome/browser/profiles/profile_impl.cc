@@ -16,6 +16,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/autocomplete/network_action_predictor.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/background/background_mode_manager.h"
@@ -1582,6 +1583,12 @@ GURL ProfileImpl::GetHomePage() {
   if (!home_page.is_valid())
     return GURL(chrome::kChromeUINewTabURL);
   return home_page;
+}
+
+NetworkActionPredictor* ProfileImpl::GetNetworkActionPredictor() {
+  if (!network_action_predictor_.get())
+    network_action_predictor_.reset(new NetworkActionPredictor(this));
+  return network_action_predictor_.get();
 }
 
 SpellCheckProfile* ProfileImpl::GetSpellCheckProfile() {

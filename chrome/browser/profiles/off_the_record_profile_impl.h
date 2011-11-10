@@ -129,6 +129,7 @@ class OffTheRecordProfileImpl : public Profile,
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
   virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
+  virtual NetworkActionPredictor* GetNetworkActionPredictor() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

@@ -22,10 +22,12 @@ namespace {
 
 int omnibox_original_group_id = 0;
 int omnibox_conservative_group_id = 0;
+int omnibox_exact_group_id = 0;
 
 const char* kOmniboxHeuristicNames[] = {
   "Original",
   "Conservative",
+  "Exact"
 };
 COMPILE_ASSERT(arraysize(kOmniboxHeuristicNames) == OMNIBOX_HEURISTIC_MAX,
                OmniboxHeuristic_name_count_mismatch);
@@ -170,7 +172,8 @@ void ConfigurePrerenderFromOmnibox() {
   enabled_trial->AppendGroup("OmniboxPrerenderEnabled", kEnabledProbability);
 
   // Field trial to see which heuristic to use.
-  const base::FieldTrial::Probability kConservativeProbability = 50;
+  const base::FieldTrial::Probability kConservativeProbability = 33;
+  const base::FieldTrial::Probability kExactProbability = 33;
   scoped_refptr<base::FieldTrial> heuristic_trial(
       new base::FieldTrial("PrerenderFromOmniboxHeuristic", kDivisor,
                            "OriginalAlgorithm", 2012, 8, 30));
@@ -178,6 +181,8 @@ void ConfigurePrerenderFromOmnibox() {
   omnibox_conservative_group_id =
       heuristic_trial->AppendGroup("ConservativeAlgorithm",
                                    kConservativeProbability);
+  omnibox_exact_group_id =
+      heuristic_trial->AppendGroup("ExactAlgorithm", kExactProbability);
 }
 
 bool IsOmniboxEnabled(Profile* profile) {
@@ -218,6 +223,8 @@ OmniboxHeuristic GetOmniboxHeuristicToUse() {
     return OMNIBOX_HEURISTIC_ORIGINAL;
   if (group == omnibox_conservative_group_id)
     return OMNIBOX_HEURISTIC_CONSERVATIVE;
+  if (group == omnibox_exact_group_id)
+    return OMNIBOX_HEURISTIC_EXACT;
 
   // If we don't have a group just return the original heuristic.
   return OMNIBOX_HEURISTIC_ORIGINAL;

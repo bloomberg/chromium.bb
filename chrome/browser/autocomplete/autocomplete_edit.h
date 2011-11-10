@@ -10,7 +10,6 @@
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/network_action_predictor.h"
 #include "chrome/common/instant_types.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
@@ -23,7 +22,6 @@ class AutocompleteEditModel;
 class AutocompletePopupModel;
 class AutocompleteResult;
 class InstantController;
-class NetworkActionPredictor;
 class OmniboxView;
 class Profile;
 class SkBitmap;
@@ -554,9 +552,6 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
 
   // Last value of InstantCompleteBehavior supplied to |SetSuggestedText|.
   InstantCompleteBehavior instant_complete_behavior_;
-
-  // Used to determine what network actions to take in different circumstances.
-  NetworkActionPredictor network_action_predictor_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditModel);
 };
