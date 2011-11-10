@@ -37,7 +37,9 @@
 
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
+#include <X11/keysym.h>
 
+#include "base/basictypes.h"
 #include "build/build_config.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/keycodes/keyboard_codes_posix.h"
@@ -413,210 +415,24 @@ KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
     }
 }
 
-// TODO(jcampan): this method might be incomplete.
 int GdkKeyCodeForWindowsKeyCode(KeyboardCode keycode, bool shift) {
-  switch (keycode) {
-    case VKEY_NUMPAD0:
-      return GDK_KP_0;
-    case VKEY_NUMPAD1:
-      return GDK_KP_1;
-    case VKEY_NUMPAD2:
-      return GDK_KP_2;
-    case VKEY_NUMPAD3:
-      return GDK_KP_3;
-    case VKEY_NUMPAD4:
-      return GDK_KP_4;
-    case VKEY_NUMPAD5:
-      return GDK_KP_5;
-    case VKEY_NUMPAD6:
-      return GDK_KP_6;
-    case VKEY_NUMPAD7:
-      return GDK_KP_7;
-    case VKEY_NUMPAD8:
-      return GDK_KP_8;
-    case VKEY_NUMPAD9:
-      return GDK_KP_9;
-    case VKEY_MULTIPLY:
-      return GDK_KP_Multiply;
-    case VKEY_ADD:
-      return GDK_KP_Add;
-    case VKEY_SUBTRACT:
-      return GDK_KP_Subtract;
-    case VKEY_DECIMAL:
-      return GDK_KP_Decimal;
-    case VKEY_DIVIDE:
-      return GDK_KP_Divide;
-
-    case VKEY_BACK:
-      return GDK_BackSpace;
-    case VKEY_TAB:
-      return shift ? GDK_ISO_Left_Tab : GDK_Tab;
-    case VKEY_CLEAR:
-      return GDK_Clear;
-    case VKEY_RETURN:
-      return GDK_Return;
-    case VKEY_SHIFT:
-      return GDK_Shift_L;
-    case VKEY_CONTROL:
-      return GDK_Control_L;
-    case VKEY_MENU:
-      return GDK_Alt_L;
-    case VKEY_APPS:
-      return GDK_Menu;
-
-    case VKEY_PAUSE:
-      return GDK_Pause;
-    case VKEY_CAPITAL:
-      return GDK_Caps_Lock;
-    case VKEY_KANA:
-      return GDK_Kana_Lock;
-    case VKEY_HANJA:
-      return GDK_Hangul_Hanja;
-    case VKEY_ESCAPE:
-      return GDK_Escape;
-    case VKEY_SPACE:
-      return GDK_space;
-    case VKEY_PRIOR:
-      return GDK_Page_Up;
-    case VKEY_NEXT:
-      return GDK_Page_Down;
-    case VKEY_END:
-      return GDK_End;
-    case VKEY_HOME:
-      return GDK_Home;
-    case VKEY_LEFT:
-      return GDK_Left;
-    case VKEY_UP:
-      return GDK_Up;
-    case VKEY_RIGHT:
-      return GDK_Right;
-    case VKEY_DOWN:
-      return GDK_Down;
-    case VKEY_SELECT:
-      return GDK_Select;
-    case VKEY_PRINT:
-      return GDK_Print;
-    case VKEY_EXECUTE:
-      return GDK_Execute;
-    case VKEY_INSERT:
-      return GDK_Insert;
-    case VKEY_DELETE:
-      return GDK_Delete;
-    case VKEY_HELP:
-      return GDK_Help;
-    case VKEY_0:
-      return shift ? GDK_parenright : GDK_0;
-    case VKEY_1:
-      return shift ? GDK_exclam : GDK_1;
-    case VKEY_2:
-      return shift ? GDK_at : GDK_2;
-    case VKEY_3:
-      return shift ? GDK_numbersign : GDK_3;
-    case VKEY_4:
-      return shift ? GDK_dollar : GDK_4;
-    case VKEY_5:
-      return shift ? GDK_percent : GDK_5;
-    case VKEY_6:
-      return shift ? GDK_asciicircum : GDK_6;
-    case VKEY_7:
-      return shift ? GDK_ampersand : GDK_7;
-    case VKEY_8:
-      return shift ? GDK_asterisk : GDK_8;
-    case VKEY_9:
-      return shift ? GDK_parenleft : GDK_9;
-
-    case VKEY_A:
-    case VKEY_B:
-    case VKEY_C:
-    case VKEY_D:
-    case VKEY_E:
-    case VKEY_F:
-    case VKEY_G:
-    case VKEY_H:
-    case VKEY_I:
-    case VKEY_J:
-    case VKEY_K:
-    case VKEY_L:
-    case VKEY_M:
-    case VKEY_N:
-    case VKEY_O:
-    case VKEY_P:
-    case VKEY_Q:
-    case VKEY_R:
-    case VKEY_S:
-    case VKEY_T:
-    case VKEY_U:
-    case VKEY_V:
-    case VKEY_W:
-    case VKEY_X:
-    case VKEY_Y:
-    case VKEY_Z:
-      return (shift ? GDK_A : GDK_a) + (keycode - VKEY_A);
-
-    case VKEY_LWIN:
-      return GDK_Meta_L;
-    case VKEY_RWIN:
-      return GDK_Meta_R;
-
-    case VKEY_NUMLOCK:
-      return GDK_Num_Lock;
-
-    case VKEY_SCROLL:
-      return GDK_Scroll_Lock;
-
-    case VKEY_OEM_1:
-      return shift ? GDK_colon : GDK_semicolon;
-    case VKEY_OEM_PLUS:
-      return shift ? GDK_plus : GDK_equal;
-    case VKEY_OEM_COMMA:
-      return shift ? GDK_less : GDK_comma;
-    case VKEY_OEM_MINUS:
-      return shift ? GDK_underscore : GDK_minus;
-    case VKEY_OEM_PERIOD:
-      return shift ? GDK_greater : GDK_period;
-    case VKEY_OEM_2:
-      return shift ? GDK_question : GDK_slash;
-    case VKEY_OEM_3:
-      return shift ? GDK_asciitilde : GDK_quoteleft;
-    case VKEY_OEM_4:
-      return shift ? GDK_braceleft : GDK_bracketleft;
-    case VKEY_OEM_5:
-      return shift ? GDK_bar : GDK_backslash;
-    case VKEY_OEM_6:
-      return shift ? GDK_braceright : GDK_bracketright;
-    case VKEY_OEM_7:
-      return shift ? GDK_quotedbl : GDK_quoteright;
-
-    case VKEY_F1:
-    case VKEY_F2:
-    case VKEY_F3:
-    case VKEY_F4:
-    case VKEY_F5:
-    case VKEY_F6:
-    case VKEY_F7:
-    case VKEY_F8:
-    case VKEY_F9:
-    case VKEY_F10:
-    case VKEY_F11:
-    case VKEY_F12:
-    case VKEY_F13:
-    case VKEY_F14:
-    case VKEY_F15:
-    case VKEY_F16:
-    case VKEY_F17:
-    case VKEY_F18:
-    case VKEY_F19:
-    case VKEY_F20:
-    case VKEY_F21:
-    case VKEY_F22:
-    case VKEY_F23:
-    case VKEY_F24:
-      return GDK_F1 + (keycode - VKEY_F1);
-
-    default:
-      return 0;
-    }
+  // Gdk key codes (e.g. GDK_BackSpace) and X keysyms (e.g. XK_BackSpace) share
+  // the same values.
+  // TODO(yusukes): We might want to consolidate WindowsKeyCodeForGdkKeyCode()
+  // and KeyboardCodeFromXKeysym() as well. http://crbug.com/103511
+  return XKeysymForWindowsKeyCode(keycode, shift);
 }
+
+// Just in case, test whether Gdk key codes match X ones.
+COMPILE_ASSERT(GDK_KP_0 == XK_KP_0, keycode_check);
+COMPILE_ASSERT(GDK_A == XK_A, keycode_check);
+COMPILE_ASSERT(GDK_Escape == XK_Escape, keycode_check);
+COMPILE_ASSERT(GDK_F1 == XK_F1, keycode_check);
+COMPILE_ASSERT(GDK_Kanji == XK_Kanji, keycode_check);
+COMPILE_ASSERT(GDK_Page_Up == XK_Page_Up, keycode_check);
+COMPILE_ASSERT(GDK_Tab == XK_Tab, keycode_check);
+COMPILE_ASSERT(GDK_a == XK_a, keycode_check);
+COMPILE_ASSERT(GDK_space == XK_space, keycode_check);
 
 int GdkNativeKeyCodeForWindowsKeyCode(KeyboardCode keycode, bool shift) {
   int keyval = GdkKeyCodeForWindowsKeyCode(keycode, shift);

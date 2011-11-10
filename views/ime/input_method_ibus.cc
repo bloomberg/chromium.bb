@@ -22,12 +22,13 @@
 #include "base/third_party/icu/icu_utf.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #include "views/events/event.h"
 #include "views/widget/widget.h"
 
-#if defined(TOUCH_UI)
+#if defined(USE_AURA) || defined(TOUCH_UI)
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
+#elif defined(TOOLKIT_USES_GTK)
+#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #endif
 
 namespace {
@@ -61,7 +62,12 @@ void IBusKeyEventFromViewsKeyEvent(const views::KeyEvent& key,
                                    guint32* ibus_keyval,
                                    guint32* ibus_keycode,
                                    guint32* ibus_state) {
-#if defined(TOUCH_UI)
+#if defined(USE_AURA)
+  // TODO(yusukes): Handle native_event()?
+  *ibus_keyval = ui::XKeysymForWindowsKeyCode(
+      key.key_code(), key.IsShiftDown() ^ key.IsCapsLockDown());
+  *ibus_keycode = 0;
+#elif defined(TOUCH_UI)
   if (key.native_event()) {
     XKeyEvent* x_key = reinterpret_cast<XKeyEvent*>(key.native_event());
     // Yes, ibus uses X11 keysym. We cannot use XLookupKeysym(), which doesn't
@@ -70,19 +76,17 @@ void IBusKeyEventFromViewsKeyEvent(const views::KeyEvent& key,
     ::XLookupString(x_key, NULL, 0, &keysym, NULL);
     *ibus_keyval = keysym;
     *ibus_keycode = x_key->keycode;
+  } else {
+    *ibus_keyval = ui::XKeysymForWindowsKeyCode(
+        key.key_code(), key.IsShiftDown() ^ key.IsCapsLockDown());
+    *ibus_keycode = 0;
   }
 #elif defined(TOOLKIT_USES_GTK)
   if (key.gdk_event()) {
     GdkEventKey* gdk_key = reinterpret_cast<GdkEventKey*>(key.gdk_event());
     *ibus_keyval = gdk_key->keyval;
     *ibus_keycode = gdk_key->hardware_keycode;
-  }
-#endif
-#if defined(TOUCH_UI) || defined(TOOLKIT_USES_GTK)
-  else {
-    // GdkKeyCodeForWindowsKeyCode() is actually nothing to do with Gtk, we
-    // probably want to rename it to something like XKeySymForWindowsKeyCode(),
-    // because Gtk keyval is actually same as X KeySym.
+  } else {
     *ibus_keyval = ui::GdkKeyCodeForWindowsKeyCode(
         key.key_code(), key.IsShiftDown() ^ key.IsCapsLockDown());
     *ibus_keycode = 0;
@@ -853,7 +857,7 @@ void InputMethodIBus::OnForwardKeyEvent(IBusInputContext* context,
   DCHECK_EQ(context_, context);
 
   ui::KeyboardCode key_code = ui::VKEY_UNKNOWN;
-#if defined(TOUCH_UI)
+#if defined(USE_AURA) || defined(TOUCH_UI)
   key_code = ui::KeyboardCodeFromXKeysym(keyval);
 #elif defined(TOOLKIT_USES_GTK)
   key_code = ui::WindowsKeyCodeForGdkKeyCode(keyval);
