@@ -461,8 +461,39 @@ class HttpRpcServer(AbstractRpcServer):
     return opener
 
 
+class CondensedHelpFormatter(optparse.IndentedHelpFormatter):
+   """Frees more horizontal space by removing indentation from group
+      options and collapsing arguments between short and long, e.g.
+      '-o ARG, --opt=ARG' to -o --opt ARG"""
+
+   def format_heading(self, heading):
+     return "%s:\n" % heading
+
+   def format_option(self, option):
+     self.dedent()
+     res = optparse.HelpFormatter.format_option(self, option)
+     self.indent()
+     return res
+
+   def format_option_strings(self, option):
+     self.set_long_opt_delimiter(" ")
+     optstr = optparse.HelpFormatter.format_option_strings(self, option)
+     optlist = optstr.split(", ")
+     if len(optlist) > 1:
+       if option.takes_value():
+         # strip METAVAR from all but the last option
+         optlist = [x.split()[0] for x in optlist[:-1]] + optlist[-1:]
+       optstr = " ".join(optlist)
+     return optstr
+
+
 parser = optparse.OptionParser(
-    usage="%prog [options] [-- diff_options] [path...]")
+    usage="%prog [options] [-- diff_options] [path...]",
+    add_help_option=False,
+    formatter=CondensedHelpFormatter()
+)
+parser.add_option("-h", "--help", action="store_true",
+                  help="Show this help message and exit.")
 parser.add_option("-y", "--assume_yes", action="store_true",
                   dest="assume_yes", default=False,
                   help="Assume that the answer to yes/no questions is 'yes'.")
@@ -528,7 +559,7 @@ group.add_option("-i", "--issue", type="int", action="store",
                  metavar="ISSUE", default=None,
                  help="Issue number to which to add. Defaults to new issue.")
 group.add_option("--base_url", action="store", dest="base_url", default=None,
-                 help="Base repository URL (listed as \"Base URL\" when "
+                 help="Base URL path for files (listed as \"Base URL\" when "
                  "viewing issue).  If omitted, will be guessed automatically "
                  "for SVN repos and left blank for others.")
 group.add_option("--download_base", action="store_true",
@@ -544,10 +575,8 @@ group.add_option("--send_mail", action="store_true",
                  help="Send notification email to reviewers.")
 group.add_option("-p", "--send_patch", action="store_true",
                  dest="send_patch", default=False,
-                 help="Send notification email to reviewers, with a diff of "
-                      "the changes included as an attachment instead of "
-                      "inline. Also prepends 'PATCH:' to the email subject. "
-                      "(implies --send_mail)")
+                 help="Same as --send_mail, but include diff as an "
+                      "attachment, and prepend email subject with 'PATCH:'.")
 group.add_option("--vcs", action="store", dest="vcs",
                  metavar="VCS", default=None,
                  help=("Version control system (optional, usually upload.py "
@@ -756,6 +785,12 @@ class VersionControlSystem(object):
       options: Command line options.
     """
     self.options = options
+    
+  def GetGUID(self):
+    """Return string to distinguish the repository from others, for example to
+    query all opened review issues for it"""
+    raise NotImplementedError(
+        "abstract method -- subclass %s must override" % self.__class__)
 
   def PostProcessDiff(self, diff):
     """Return the diff with any special post processing this VCS needs, e.g.
@@ -910,6 +945,9 @@ class SubversionVCS(VersionControlSystem):
     # Result is cached to not guess it over and over again in GetBaseFile().
     required = self.options.download_base or self.options.revision is not None
     self.svn_base = self._GuessBase(required)
+    
+  def GetGUID(self):
+    return self._GetInfo("Repository UUID")
 
   def GuessBase(self, required):
     """Wrapper for _GuessBase."""
@@ -922,12 +960,11 @@ class SubversionVCS(VersionControlSystem):
       required: If true, exits if the url can't be guessed, otherwise None is
         returned.
     """
-    info = RunShell(["svn", "info"])
-    for line in info.splitlines():
-      if line.startswith("URL: "):
-        url = line.split()[1]
+    url = self._GetInfo("URL")
+    if url:
         scheme, netloc, path, params, query, fragment = urlparse.urlparse(url)
         guess = ""
+        # TODO(anatoli) - repository specific hacks should be handled by server
         if netloc == "svn.python.org" and scheme == "svn+ssh":
           path = "projects" + path
           scheme = "http"
@@ -943,6 +980,12 @@ class SubversionVCS(VersionControlSystem):
     if required:
       ErrorExit("Can't find URL in output from svn info")
     return None
+    
+  def _GetInfo(self, key):
+    """Parses 'svn info' for current dir. Returns value for key or None"""
+    for line in RunShell(["svn", "info"]).splitlines():
+      if line.startswith(key + ": "):
+        return line.split(":", 1)[1].strip()
 
   def _EscapeFilename(self, filename):
     """Escapes filename for SVN commands."""
@@ -1180,6 +1223,15 @@ class GitVCS(VersionControlSystem):
     self.hashes = {}
     # Map of new filename -> old filename for renames.
     self.renames = {}
+    
+  def GetGUID(self):
+    revlist = RunShell("git rev-list --parents HEAD".split()).splitlines()
+    # M-A: Return the 1st root hash, there could be multiple when a
+    # subtree is merged. In that case, more analysis would need to
+    # be done to figure out which HEAD is the 'most representative'.
+    for r in revlist:
+      if ' ' not in r:
+        return r
 
   def PostProcessDiff(self, gitdiff):
     """Converts the diff output to include an svn-style "Index:" line as well
@@ -1291,7 +1343,8 @@ class GitVCS(VersionControlSystem):
       status = "A +"  # Match svn attribute name for renames.
       if filename not in self.hashes:
         # If a rename doesn't change the content, we never get a hash.
-        base_content = RunShell(["git", "show", "HEAD:" + filename])
+        base_content = RunShell(
+            ["git", "show", "HEAD:" + filename], silent_ok=True)
     elif not hash_before:
       status = "A"
       base_content = ""
@@ -1322,6 +1375,10 @@ class CVSVCS(VersionControlSystem):
 
   def __init__(self, options):
     super(CVSVCS, self).__init__(options)
+
+  def GetGUID(self):
+    """For now we don't know how to get repository ID for CVS"""
+    return
 
   def GetOriginalContent_(self, filename):
     RunShell(["cvs", "up", filename], silent_ok=True)
@@ -1397,6 +1454,12 @@ class MercurialVCS(VersionControlSystem):
       self.base_rev = self.options.revision
     else:
       self.base_rev = RunShell(["hg", "parent", "-q"]).split(':')[1].strip()
+
+  def GetGUID(self):
+    # See chapter "Uniquely identifying a repository"
+    # http://hgbook.red-bean.com/read/customizing-the-output-of-mercurial.html
+    info = RunShell("hg log -r0 --template {node}".split())
+    return info.strip()
 
   def _GetRelPath(self, filename):
     """Get relative path of a file according to the current directory,
@@ -1521,6 +1584,10 @@ class PerforceVCS(VersionControlSystem):
         lines = raw_message.splitlines()
         if len(lines):
           options.message = lines[0]
+
+  def GetGUID(self):
+    """For now we don't know how to get repository ID for Perforce"""
+    return
 
   def RunPerforceCommandWithReturnCode(self, extra_args, marshal_output=False,
                                        universal_newlines=True):
@@ -2108,6 +2175,14 @@ def RealMain(argv, data=None):
     script (applies only to SVN checkouts).
   """
   options, args = parser.parse_args(argv[1:])
+  if options.help:
+    if options.verbose < 2:
+      # hide Perforce options
+      parser.epilog = "Use '--help -v' to show additional Perforce options."
+      parser.option_groups.remove(parser.get_option_group('--p4_port'))
+    parser.print_help()
+    sys.exit(0)
+
   global verbosity
   verbosity = options.verbose
   if verbosity >= 3:
@@ -2157,6 +2232,10 @@ def RealMain(argv, data=None):
                             options.save_cookies,
                             options.account_type)
   form_fields = [("subject", message)]
+  
+  repo_guid = vcs.GetGUID()
+  if repo_guid:
+    form_fields.append(("repo_guid", repo_guid))
   if base:
     b = urlparse.urlparse(base)
     username, netloc = urllib.splituser(b.netloc)
