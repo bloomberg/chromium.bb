@@ -15,7 +15,6 @@
 #include "chrome/browser/chrome_plugin_message_filter.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/chrome_worker_message_filter.h"
-#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_util.h"
@@ -318,10 +317,10 @@ void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
       profile->IsOffTheRecord()));
 
   SendExtensionWebRequestStatusToHost(host);
-
-  RendererContentSettingRules rules;
-  GetRendererContentSettingRules(profile->GetHostContentSettingsMap(), &rules);
-  host->Send(new ChromeViewMsg_SetContentSettingRules(rules));
+  ContentSettingsForOneType settings;
+  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES, "", &settings);
+  host->Send(new ChromeViewMsg_SetImageSettingRules(settings));
 }
 
 void ChromeContentBrowserClient::PluginProcessHostCreated(
