@@ -322,9 +322,17 @@ void DevToolsWindow::RequestSetDocked(bool docked) {
 }
 
 void DevToolsWindow::OnCloseWindow() {
-    DCHECK(docked_);
-    NotifyCloseListener();
-    InspectedTabClosing();
+  DCHECK(docked_);
+  NotifyCloseListener();
+  InspectedTabClosing();
+}
+
+void DevToolsWindow::OnMoveWindow(int x, int y) {
+  if (!docked_) {
+    gfx::Rect bounds = browser_->window()->GetBounds();
+    bounds.Offset(x, y);
+    browser_->window()->SetBounds(bounds);
+  }
 }
 
 void DevToolsWindow::OnSaveAs(const std::string& suggested_file_name,
@@ -655,6 +663,7 @@ bool DevToolsWindow::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_ForwardToAgent, ForwardToDevToolsAgent)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_ActivateWindow, OnActivateWindow)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_CloseWindow, OnCloseWindow)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_MoveWindow, OnMoveWindow)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestDockWindow, OnRequestDockWindow)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestUndockWindow,
                         OnRequestUndockWindow)

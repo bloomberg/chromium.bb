@@ -37,21 +37,23 @@ class DevToolsClient : public content::RenderViewObserver,
 
  private:
   // RenderView::Observer implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // WebDevToolsFrontendClient implementation
-  virtual void sendFrontendLoaded();
-  virtual void sendMessageToBackend(const WebKit::WebString&);
-  virtual void sendDebuggerCommandToAgent(const WebKit::WebString& command);
+  // WebDevToolsFrontendClient implementation.
+  virtual void sendFrontendLoaded() OVERRIDE;
+  virtual void sendMessageToBackend(const WebKit::WebString&) OVERRIDE;
+  virtual void sendDebuggerCommandToAgent(
+      const WebKit::WebString& command) OVERRIDE;
 
-  virtual void activateWindow();
-  virtual void closeWindow();
-  virtual void requestDockWindow();
-  virtual void requestUndockWindow();
+  virtual void activateWindow() OVERRIDE;
+  virtual void closeWindow() OVERRIDE;
+  virtual void moveWindowBy(const WebKit::WebFloatPoint& offset) OVERRIDE;
+  virtual void requestDockWindow() OVERRIDE;
+  virtual void requestUndockWindow() OVERRIDE;
   virtual void saveAs(const WebKit::WebString& file_name,
-                      const WebKit::WebString& content);
+                      const WebKit::WebString& content) OVERRIDE;
 
-  virtual bool shouldHideScriptsPanel();
+  virtual bool shouldHideScriptsPanel() OVERRIDE;
 
   void OnDispatchOnInspectorFrontend(const std::string& message);
 

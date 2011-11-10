@@ -12,6 +12,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsFrontend.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -68,6 +69,10 @@ void DevToolsClient::activateWindow() {
 
 void DevToolsClient::closeWindow() {
   Send(new DevToolsHostMsg_CloseWindow(routing_id()));
+}
+
+void DevToolsClient::moveWindowBy(const WebKit::WebFloatPoint& offset) {
+  Send(new DevToolsHostMsg_MoveWindow(routing_id(), offset.x, offset.y));
 }
 
 void DevToolsClient::requestDockWindow() {

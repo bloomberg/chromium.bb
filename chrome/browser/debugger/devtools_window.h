@@ -130,6 +130,7 @@ class DevToolsWindow
 
   void OnActivateWindow();
   void OnCloseWindow();
+  void OnMoveWindow(int x, int y);
   void OnRequestDockWindow();
   void OnRequestUndockWindow();
   void OnSaveAs(const std::string& file_name,

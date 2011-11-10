@@ -131,6 +131,11 @@ IPC_MESSAGE_ROUTED0(DevToolsHostMsg_ActivateWindow)
 // Closes dev tools window that is inspecting current render_view_host.
 IPC_MESSAGE_ROUTED0(DevToolsHostMsg_CloseWindow)
 
+// Moves the corresponding dev tools window by the specified offset.
+IPC_MESSAGE_ROUTED2(DevToolsHostMsg_MoveWindow,
+                    int /* x */,
+                    int /* y */)
+
 // Attaches dev tools window that is inspecting current render_view_host.
 IPC_MESSAGE_ROUTED0(DevToolsHostMsg_RequestDockWindow)
 
