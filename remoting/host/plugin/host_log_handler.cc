@@ -4,6 +4,7 @@
 
 #include "remoting/host/plugin/host_log_handler.h"
 
+#include "base/lazy_instance.h"
 #include "remoting/base/util.h"
 #include "remoting/host/plugin/host_script_object.h"
 
@@ -15,7 +16,9 @@ namespace remoting {
 static bool g_has_logging_scriptable_object = false;
 
 // The lock that protects the logging globals.
-static base::Lock g_logging_lock;
+static base::LazyInstance<base::Lock,
+                          base::LeakyLazyInstanceTraits<base::Lock> >
+    g_logging_lock(base::LINKER_INITIALIZED);
 
 // The scriptable object that will display the log information to the user.
 static HostNPScriptObject* g_logging_scriptable_object = NULL;
@@ -30,7 +33,7 @@ static bool g_has_registered_log_handler = false;
 
 // static
 void HostLogHandler::RegisterLogMessageHandler() {
-  base::AutoLock lock(g_logging_lock);
+  base::AutoLock lock(g_logging_lock.Get());
 
   if (g_has_registered_log_handler)
     return;
@@ -51,7 +54,7 @@ void HostLogHandler::RegisterLogMessageHandler() {
 // static
 void HostLogHandler::RegisterLoggingScriptObject(
     HostNPScriptObject* script_object) {
-  base::AutoLock lock(g_logging_lock);
+  base::AutoLock lock(g_logging_lock.Get());
 
   VLOG(1) << "Registering log handler scriptable object";
 
@@ -66,7 +69,7 @@ void HostLogHandler::RegisterLoggingScriptObject(
 // static
 void HostLogHandler::UnregisterLoggingScriptObject(
     HostNPScriptObject* script_object) {
-  base::AutoLock lock(g_logging_lock);
+  base::AutoLock lock(g_logging_lock.Get());
 
   // Ignore unless we're the currently registered script object.
   if (script_object != g_logging_scriptable_object)
@@ -101,7 +104,7 @@ bool HostLogHandler::LogToUI(int severity, const char* file, int line,
   // reasons: a mis-read either skips a log message or causes us to take a lock
   // unnecessarily.
   if (g_has_logging_scriptable_object) {
-    base::AutoLock lock(g_logging_lock);
+    base::AutoLock lock(g_logging_lock.Get());
 
     if (g_logging_scriptable_object) {
       std::string message = remoting::GetTimestampString();

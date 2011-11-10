@@ -198,6 +198,7 @@
     {
       'target_name': 'remoting_client_plugin',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'defines': [
         'HAVE_STDINT_H',  # Required by on2_integer.h
       ],
@@ -239,6 +240,7 @@
     {
       'target_name': 'remoting_host_plugin',
       'type': 'loadable_module',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'product_extension': '<(host_plugin_extension)',
       'product_prefix': '<(host_plugin_prefix)',
       'defines': [
@@ -385,6 +387,7 @@
     {
       'target_name': 'remoting_base',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -454,6 +457,7 @@
     {
       'target_name': 'remoting_host',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'remoting_base',
         'remoting_jingle_glue',
@@ -580,6 +584,7 @@
     {
       'target_name': 'remoting_client',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'remoting_base',
         'remoting_jingle_glue',
@@ -607,6 +612,7 @@
     {
       'target_name': 'remoting_simple_host',
       'type': 'executable',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'remoting_base',
         'remoting_host',
@@ -649,6 +655,7 @@
     {
       'target_name': 'remoting_jingle_glue',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '../base/base.gyp:base',
         '../jingle/jingle.gyp:jingle_glue',
@@ -687,6 +694,7 @@
     {
       'target_name': 'remoting_protocol',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'remoting_base',
         'remoting_jingle_glue',
@@ -784,6 +792,7 @@
     {
       'target_name': 'differ_block',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '../media/media.gyp:cpu_features',
       ],
@@ -818,6 +827,7 @@
     {
       'target_name': 'chromotocol_test_client',
       'type': 'executable',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'remoting_base',
         'remoting_protocol',

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
@@ -40,11 +41,14 @@ namespace remoting {
 // while sending the log message to the UI.
 static bool g_logging_to_plugin = false;
 static bool g_has_logging_instance = false;
-static base::Lock g_logging_lock;
 static ChromotingInstance* g_logging_instance = NULL;
 static logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
 
-const char* ChromotingInstance::kMimeType = "pepper-application/x-chromoting";
+const char ChromotingInstance::kMimeType[] = "pepper-application/x-chromoting";
+
+static base::LazyInstance<base::Lock,
+                          base::LeakyLazyInstanceTraits<base::Lock> >
+    g_logging_lock(base::LINKER_INITIALIZED);
 
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::InstancePrivate(pp_instance),
@@ -298,7 +302,7 @@ void ChromotingInstance::SetScaleToFit(bool scale_to_fit) {
 
 // static
 void ChromotingInstance::RegisterLogMessageHandler() {
-  base::AutoLock lock(g_logging_lock);
+  base::AutoLock lock(g_logging_lock.Get());
 
   VLOG(1) << "Registering global log handler";
 
@@ -311,7 +315,7 @@ void ChromotingInstance::RegisterLogMessageHandler() {
 }
 
 void ChromotingInstance::RegisterLoggingInstance() {
-  base::AutoLock lock(g_logging_lock);
+  base::AutoLock lock(g_logging_lock.Get());
 
   // Register this instance as the one that will handle all logging calls
   // and display them to the user.
@@ -322,7 +326,7 @@ void ChromotingInstance::RegisterLoggingInstance() {
 }
 
 void ChromotingInstance::UnregisterLoggingInstance() {
-  base::AutoLock lock(g_logging_lock);
+  base::AutoLock lock(g_logging_lock.Get());
 
   // Don't unregister unless we're the currently registered instance.
   if (this != g_logging_instance)
@@ -352,7 +356,7 @@ bool ChromotingInstance::LogToUI(int severity, const char* file, int line,
   // the lock and check |g_logging_instance| unnecessarily. This is not
   // problematic because we always set |g_logging_instance| inside a lock.
   if (g_has_logging_instance) {
-    base::AutoLock lock(g_logging_lock);
+    base::AutoLock lock(g_logging_lock.Get());
     if (g_logging_instance) {
       std::string message = remoting::GetTimestampString();
       message += (str.c_str() + message_start);

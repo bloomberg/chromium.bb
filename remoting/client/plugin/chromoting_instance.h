@@ -56,7 +56,7 @@ class HostConnection;
 class ChromotingInstance : public pp::InstancePrivate {
  public:
   // The mimetype for which this plugin is registered.
-  static const char *kMimeType;
+  static const char kMimeType[];
 
   explicit ChromotingInstance(PP_Instance instance);
   virtual ~ChromotingInstance();
