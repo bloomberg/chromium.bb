@@ -85,8 +85,6 @@
           ],
           'dependencies': [
             '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-            '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib',
-            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
           ],
         },
       ],

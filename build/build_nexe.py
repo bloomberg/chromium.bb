@@ -309,6 +309,7 @@ def Main(argv):
     return -1
 
   build = Builder(options)
+  build.verbose = 1
   objs = []
   for filename in files:
     out = build.Compile(filename)

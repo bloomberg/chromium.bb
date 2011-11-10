@@ -33,6 +33,8 @@
           'extra_args': [],
           'enable_x86_32': 1,
           'enable_x86_64': 1,
+          'extra_deps64': [],
+          'extra_deps32': [],
           'lib_dirs': [],
           'include_dirs': ['<(DEPTH)','<(DEPTH)/ppapi'],
           'defines': [
@@ -79,6 +81,7 @@
                  'description': 'building >(out64)',
                  'inputs': [
                     '>!@(>(get_sources) -I. -I.. >(sources))',
+                    '>@(extra_deps64)',
                  ],
                  'outputs': ['>(out64)'],
                  'action': [
@@ -120,6 +123,7 @@
                  'description': 'building >(out64)',
                  'inputs': [
                     '>!@(>(get_sources) -I. -I.. >(sources))',
+                    '>@(extra_deps64)',
                  ],
                  'outputs': ['>(out64)'],
                  'action': [
@@ -161,6 +165,7 @@
                  'description': 'building >(out32)',
                  'inputs': [
                     '>!@(>(get_sources) -I. -I.. >(sources))',
+                    '>@(extra_deps32)',
                  ],
                  'outputs': ['>(out32)'],
                  'action': [
@@ -202,6 +207,7 @@
                  'description': 'building >(out32)',
                  'inputs': [
                     '>!@(>(get_sources) -I. -I.. >(sources))',
+                    '>@(extra_deps32)',
                  ],
                  'outputs': ['>(out32)'],
                  'action': [
