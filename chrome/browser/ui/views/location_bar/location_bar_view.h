@@ -55,7 +55,7 @@ class HorizontalPainter;
 class Label;
 }  // namespace views
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
 class SuggestedTextView;
 #endif
 
@@ -165,7 +165,7 @@ class LocationBarView : public LocationBar,
   // appears, not where the icons are shown).
   gfx::Point GetLocationEntryOrigin() const;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
   // Invoked from OmniboxViewWin to show the instant suggestion.
   void SetInstantSuggestion(const string16& text,
                             bool animate_to_complete);
@@ -325,7 +325,7 @@ class LocationBarView : public LocationBar,
   // Sets the visibility of view to new_vis.
   void ToggleVisibility(bool new_vis, views::View* view);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
 #if !defined(USE_AURA)
   // Helper for the Mouse event handlers that does all the real work.
   void OnMouseEvent(const views::MouseEvent& event, UINT msg);
@@ -390,7 +390,7 @@ class LocationBarView : public LocationBar,
   // Shown if the user has selected a keyword.
   SelectedKeywordView* selected_keyword_view_;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
   // View responsible for showing suggested text. This is NULL when there is no
   // suggested text.
   SuggestedTextView* suggested_text_view_;

@@ -63,6 +63,9 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/first_run_bubble.h"
+#endif
+
+#if defined(OS_WIN) || defined(USE_AURA)
 #include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
 #endif
 
@@ -413,7 +416,7 @@ gfx::Point LocationBarView::GetLocationEntryOrigin() const {
   return origin;
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
 void LocationBarView::SetInstantSuggestion(const string16& text,
                                            bool animate_to_complete) {
   // Don't show the suggested text if inline autocomplete is prevented.
@@ -1238,7 +1241,7 @@ void LocationBarView::Observe(int type,
   }
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
 bool LocationBarView::HasValidSuggestText() const {
   return suggested_text_view_ && !suggested_text_view_->size().IsEmpty() &&
       !suggested_text_view_->GetText().empty();

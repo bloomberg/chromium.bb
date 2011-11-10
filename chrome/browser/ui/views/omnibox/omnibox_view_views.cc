@@ -148,7 +148,7 @@ OmniboxViewViews::OmniboxViewViews(AutocompleteEditController* controller,
                                    Profile* profile,
                                    CommandUpdater* command_updater,
                                    bool popup_window_mode,
-                                   views::View* location_bar)
+                                   LocationBarView* location_bar)
     : model_(new AutocompleteEditModel(this, controller, profile)),
       popup_view_(CreatePopupView(location_bar)),
       controller_(controller),
@@ -157,7 +157,8 @@ OmniboxViewViews::OmniboxViewViews(AutocompleteEditController* controller,
       popup_window_mode_(popup_window_mode),
       security_level_(ToolbarModel::NONE),
       ime_composing_before_change_(false),
-      delete_at_end_pressed_(false) {
+      delete_at_end_pressed_(false),
+      location_bar_view_(location_bar) {
   set_border(views::Border::CreateEmptyBorder(kAutocompleteVerticalMargin, 0,
                                               kAutocompleteVerticalMargin, 0));
 }
@@ -562,12 +563,11 @@ CommandUpdater* OmniboxViewViews::GetCommandUpdater() {
 
 void OmniboxViewViews::SetInstantSuggestion(const string16& input,
                                             bool animate_to_complete) {
-  NOTIMPLEMENTED();
+  location_bar_view_->SetInstantSuggestion(input, animate_to_complete);
 }
 
 string16 OmniboxViewViews::GetInstantSuggestion() const {
-  NOTIMPLEMENTED();
-  return string16();
+  return location_bar_view_->GetInstantSuggestion();
 }
 
 int OmniboxViewViews::TextWidth() const {
