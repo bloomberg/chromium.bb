@@ -131,8 +131,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   if (window_type == Widget::InitParams::TYPE_CONTROL)
     window_->Show();
 
-  // TODO(beng): respect |params| authoritah wrt transparency.
-  window_->layer()->SetFillsBoundsOpaquely(false);
+  window_->layer()->SetFillsBoundsOpaquely(!params.transparent);
   delegate_->OnNativeWidgetCreated();
   window_->set_minimum_size(delegate_->GetMinimumSize());
   window_->SetBounds(params.bounds);

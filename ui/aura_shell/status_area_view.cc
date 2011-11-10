@@ -41,6 +41,7 @@ views::Widget* CreateStatusArea() {
   params.parent = Shell::GetInstance()->GetContainer(
       aura_shell::internal::kShellWindowId_StatusContainer);
   params.delegate = status_area_view;
+  params.transparent = true;
   widget->Init(params);
   widget->SetContentsView(status_area_view);
   widget->Show();

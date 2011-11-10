@@ -143,6 +143,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     WidgetDelegate* delegate;
     bool child;
     bool transient;
+    // If true, the widget may be fully or partially transparent.  If false,
+    // we can perform optimizations based on the widget being fully opaque.
+    // Defaults to false.
     bool transparent;
     bool accept_events;
     bool can_activate;
