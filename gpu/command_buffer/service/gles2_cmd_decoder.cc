@@ -2050,6 +2050,10 @@ bool GLES2DecoderImpl::Initialize(
     return false;
   }
 
+  // TRACE_EVENT for gpu tests:
+  TRACE_EVENT_INSTANT1("test_gpu", "GLES2DecoderImpl::Initialize", "GLImpl",
+                       static_cast<int>(gfx::GetGLImplementation()));
+
   return true;
 }
 
