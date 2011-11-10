@@ -33,6 +33,14 @@ ConfigurationPolicyLoaderWin::ConfigurationPolicyLoaderWin(
   }
 }
 
+void ConfigurationPolicyLoaderWin::Reload(bool force) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  // Reset the watches BEFORE reading the individual policies to avoid
+  // missing a change notification.
+  SetupWatches();
+  AsynchronousPolicyLoader::Reload(force);
+}
+
 void ConfigurationPolicyLoaderWin::InitOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   AsynchronousPolicyLoader::InitOnFileThread();
@@ -69,21 +77,13 @@ void ConfigurationPolicyLoaderWin::SetupWatches() {
     ScheduleFallbackReloadTask();
 }
 
-void ConfigurationPolicyLoaderWin::Reload() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  // Reset the watches BEFORE reading the individual policies to avoid
-  // missing a change notification.
-  SetupWatches();
-  AsynchronousPolicyLoader::Reload();
-}
-
 void ConfigurationPolicyLoaderWin::OnObjectSignaled(HANDLE object) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(object == user_policy_changed_event_.handle() ||
          object == machine_policy_changed_event_.handle())
       << "unexpected object signaled policy reload, obj = "
       << std::showbase << std::hex << object;
-  Reload();
+  Reload(false);
 }
 
 }  // namespace policy

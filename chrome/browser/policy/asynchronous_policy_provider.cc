@@ -27,15 +27,15 @@ AsynchronousPolicyProvider::~AsynchronousPolicyProvider() {
   loader_->Stop();
 }
 
+void AsynchronousPolicyProvider::ForceReload() {
+  loader_->Reload(true);
+}
+
 bool AsynchronousPolicyProvider::ProvideInternal(PolicyMap* map) {
   DCHECK(CalledOnValidThread());
   DCHECK(loader_->policy());
   map->LoadFrom(loader_->policy(), policy_definition_list());
   return true;
-}
-
-scoped_refptr<AsynchronousPolicyLoader> AsynchronousPolicyProvider::loader() {
-  return loader_;
 }
 
 }  // namespace policy

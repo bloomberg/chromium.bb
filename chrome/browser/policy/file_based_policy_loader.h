@@ -33,7 +33,7 @@ class FileBasedPolicyLoader : public AsynchronousPolicyLoader {
       FileBasedPolicyProvider::ProviderDelegate* provider_delegate);
 
   // AsynchronousPolicyLoader overrides:
-  virtual void Reload() OVERRIDE;
+  virtual void Reload(bool force) OVERRIDE;
 
   void OnFilePathChanged(const FilePath& path);
   void OnFilePathError(const FilePath& path);

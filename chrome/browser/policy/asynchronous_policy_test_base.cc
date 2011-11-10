@@ -19,10 +19,6 @@ AsynchronousPolicyTestBase::AsynchronousPolicyTestBase()
 
 AsynchronousPolicyTestBase::~AsynchronousPolicyTestBase() {}
 
-void AsynchronousPolicyTestBase::SetUp() {
-  delegate_.reset(new ProviderDelegateMock());
-}
-
 void AsynchronousPolicyTestBase::TearDown() {
   loop_.RunAllPending();
 }

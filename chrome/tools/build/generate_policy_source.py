@@ -3,10 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-'''python %prog [options] platform template
+'''python %prog [options] platform chromium_os_flag template
 
 platform specifies which platform source is being generated for
-  and can be one of (win, mac, linux).
+  and can be one of (win, mac, linux)
+chromium_os_flag should be 1 if this is a Chromium OS build
 template is the path to a .json policy template file.'''
 
 from __future__ import with_statement
@@ -47,11 +48,11 @@ def main():
 
   (opts, args) = parser.parse_args();
 
-  if len(args) < 2 or len(args) > 2:
-    print "exactly one platform and input file must be specified."
+  if len(args) != 3:
+    print "exactly platform, chromium_os flag and input file must be specified."
     parser.print_help()
     sys.exit(2)
-  template_file_contents = _LoadJSONFile(args[1]);
+  template_file_contents = _LoadJSONFile(args[2]);
   if opts.header_path is not None:
     _WritePolicyConstantHeader(template_file_contents, args, opts);
   if opts.source_path is not None:
@@ -82,10 +83,9 @@ def _GetPolicyDetails(policy):
     sys.exit(3)
   vtype = TYPE_MAP[policy['type']]
   # platforms is a list of "chrome", "chrome_os" and/or "chrome_frame".
-  platforms = [ x.split('.')[0].split(':')[0] for x in policy['supported_on'] ]
+  platforms = [ x.split(':')[0] for x in policy['supported_on'] ]
   is_deprecated = policy.get('deprecated', False)
-  is_device_policy = policy.get('device_only', False)
-  return (name, vtype, platforms, is_deprecated, is_device_policy)
+  return (name, vtype, platforms, is_deprecated)
 
 
 def _GetPolicyList(template_file_contents):
@@ -103,25 +103,16 @@ def _GetPolicyList(template_file_contents):
 
 
 def _GetPolicyNameList(template_file_contents):
-  return [name for (name, _, _, _, _) in _GetPolicyList(template_file_contents)]
+  return [name for (name, _, _, _) in _GetPolicyList(template_file_contents)]
 
 
 def _GetChromePolicyList(template_file_contents):
-  return [(name, vtype) for (name, vtype, platforms, _, is_device_only)
-                        in _GetPolicyList(template_file_contents)
-                        if 'chrome' in platforms and not is_device_only]
-
-
-def _GetChromeOSPolicyList(template_file_contents):
-  return [(name, vtype) for (name, vtype, platforms, _, is_device_only)
-                        in _GetPolicyList(template_file_contents)
-                        if 'chrome_os' in platforms
-                          and not 'chrome' in platforms
-                          and not is_device_only]
+  return [(name, platforms, vtype) for (name, vtype, platforms, _)
+                                   in _GetPolicyList(template_file_contents)]
 
 
 def _GetDeprecatedPolicyList(template_file_contents):
-  return [name for (name, _, _, is_deprecated, _)
+  return [name for (name, _, _, is_deprecated)
                in _GetPolicyList(template_file_contents)
                if is_deprecated]
 
@@ -134,9 +125,9 @@ def _LoadJSONFile(json_file):
 
 #------------------ policy constants header ------------------------#
 def _WritePolicyConstantHeader(template_file_contents, args, opts):
-  platform = args[0];
+  os = args[0];
   with open(opts.header_path, "w") as f:
-    _OutputGeneratedWarningForC(f, args[1])
+    _OutputGeneratedWarningForC(f, args[2])
 
     f.write('#ifndef CHROME_COMMON_POLICY_CONSTANTS_H_\n'
             '#define CHROME_COMMON_POLICY_CONSTANTS_H_\n'
@@ -147,7 +138,7 @@ def _WritePolicyConstantHeader(template_file_contents, args, opts):
             '\n'
             'namespace policy {\n\n')
 
-    if platform == "win":
+    if os == "win":
       f.write('// The windows registry path where policy configuration '
               'resides.\n'
               'extern const wchar_t kRegistrySubKey[];\n\n')
@@ -184,9 +175,17 @@ def _WritePolicyConstantHeader(template_file_contents, args, opts):
 
 #------------------ policy constants source ------------------------#
 def _WritePolicyConstantSource(template_file_contents, args, opts):
-  platform = args[0];
+  os = args[0];
+  is_chromium_os = args[1] == "1"
+  platform = None
+  platform_wildcard = None
+  if is_chromium_os:
+    platform = 'chrome_os'
+  else:
+    platform = 'chrome.' + os.lower()
+    platform_wildcard = 'chrome.*'
   with open(opts.source_path, "w") as f:
-    _OutputGeneratedWarningForC(f, args[1])
+    _OutputGeneratedWarningForC(f, args[2])
 
     f.write('#include "base/basictypes.h"\n'
             '#include "base/logging.h"\n'
@@ -197,13 +196,11 @@ def _WritePolicyConstantSource(template_file_contents, args, opts):
     f.write('namespace {\n\n')
 
     f.write('const PolicyDefinitionList::Entry kEntries[] = {\n')
-    for (name, vtype) in _GetChromePolicyList(template_file_contents):
-      f.write('  { kPolicy%s, Value::%s, key::k%s },\n' % (name, vtype, name))
-    f.write('\n#if defined(OS_CHROMEOS)\n')
-    for (name, vtype) in _GetChromeOSPolicyList(template_file_contents):
-      f.write('  { kPolicy%s, Value::%s, key::k%s },\n' % (name, vtype, name))
-    f.write('#endif\n'
-            '};\n\n')
+    policy_list = _GetChromePolicyList(template_file_contents)
+    for (name, platforms, vtype) in policy_list:
+      if (platform in platforms) or (platform_wildcard in platforms):
+        f.write('  { kPolicy%s, Value::%s, key::k%s },\n' % (name, vtype, name))
+    f.write('};\n\n')
 
     f.write('const PolicyDefinitionList kChromePolicyList = {\n'
             '  kEntries,\n'
@@ -224,7 +221,7 @@ def _WritePolicyConstantSource(template_file_contents, args, opts):
 
     f.write('}  // namespace\n\n')
 
-    if platform == "win":
+    if os == "win":
       f.write('#if defined(GOOGLE_CHROME_BUILD)\n'
               'const wchar_t kRegistrySubKey[] = '
               'L"' + CHROME_SUBKEY + '";\n'
@@ -262,7 +259,7 @@ def _WritePolicyConstantSource(template_file_contents, args, opts):
 #------------------ policy type enumeration header -----------------#
 def _WritePolicyTypeEnumerationHeader(template_file_contents, args, opts):
   with open(opts.type_path, "w") as f:
-    _OutputGeneratedWarningForC(f, args[1])
+    _OutputGeneratedWarningForC(f, args[2])
     f.write('#ifndef CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_TYPE_H_\n'
             '#define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_TYPE_H_\n'
             '#pragma once\n'
@@ -332,7 +329,7 @@ def _WritePolicyProto(file, policy, fields):
 
 def _WriteProtobuf(template_file_contents, args, outfilepath):
   with open(outfilepath, 'w') as f:
-    _OutputGeneratedWarningForC(f, args[1])
+    _OutputGeneratedWarningForC(f, args[2])
     f.write(PROTO_HEAD)
 
     fields = []
@@ -454,7 +451,7 @@ def _WritePolicyCode(file, policy):
 
 def _WriteProtobufParser(template_file_contents, args, outfilepath):
   with open(outfilepath, 'w') as f:
-    _OutputGeneratedWarningForC(f, args[1])
+    _OutputGeneratedWarningForC(f, args[2])
     f.write(CPP_HEAD)
     for policy in template_file_contents['policy_definitions']:
       if policy['type'] == 'group':

@@ -34,15 +34,11 @@ class AsynchronousPolicyTestBase : public testing::Test {
   virtual ~AsynchronousPolicyTestBase();
 
   // testing::Test:
-  virtual void SetUp();
   virtual void TearDown();
 
  protected:
-  MessageLoop loop_;
-
-  // The mocks that are used in the test must outlive the scope of the test
-  // because they still get accessed in the RunAllPending of the TearDown.
-  scoped_ptr<ProviderDelegateMock> delegate_;
+  // Create an actual IO loop (needed by FilePathWatcher).
+  MessageLoopForIO loop_;
 
  private:
   content::TestBrowserThread ui_thread_;

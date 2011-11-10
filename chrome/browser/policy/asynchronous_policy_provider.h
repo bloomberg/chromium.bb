@@ -37,13 +37,13 @@ class AsynchronousPolicyProvider
       scoped_refptr<AsynchronousPolicyLoader> loader);
   virtual ~AsynchronousPolicyProvider();
 
+  // Force a policy reload from the underlying data source.
+  void ForceReload();
+
+ protected:
   // ConfigurationPolicyProvider implementation.
   virtual bool ProvideInternal(PolicyMap* map) OVERRIDE;
 
-  // For tests to trigger reloads.
-  scoped_refptr<AsynchronousPolicyLoader> loader();
-
- protected:
   // The loader object used internally.
   scoped_refptr<AsynchronousPolicyLoader> loader_;
 

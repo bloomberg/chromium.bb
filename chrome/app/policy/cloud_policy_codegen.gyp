@@ -48,6 +48,7 @@
             '--policy-protobuf=<(cloud_policy_proto_path)',
             '--protobuf-decoder=<(protobuf_decoder_path)',
             '<(OS)',
+            '<(chromeos)',
             'policy_templates.json',
           ],
           'message': 'Generating policy source',

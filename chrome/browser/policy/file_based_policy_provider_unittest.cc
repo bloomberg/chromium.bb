@@ -72,7 +72,7 @@ TEST_F(AsynchronousPolicyTestBase, ProviderRefresh) {
   DictionaryValue* policies = new DictionaryValue();
   policies->SetBoolean(policy::key::kSyncDisabled, true);
   EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(policies));
-  file_based_provider.loader()->Reload();
+  file_based_provider.ForceReload();
   loop_.RunAllPending();
   PolicyMap policy_map;
   file_based_provider.Provide(&policy_map);

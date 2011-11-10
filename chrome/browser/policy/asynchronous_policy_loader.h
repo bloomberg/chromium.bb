@@ -32,8 +32,9 @@ class AsynchronousPolicyLoader
   virtual void Init(const base::Closure& callback);
 
   // Reloads policy, sending notification of changes if necessary. Must be
-  // called on the FILE thread.
-  virtual void Reload();
+  // called on the FILE thread. When |force| is true, the loader should do an
+  // immediate full reload.
+  virtual void Reload(bool force);
 
   // Stops any pending reload tasks. Updates callbacks won't be performed
   // anymore once the loader is stopped.

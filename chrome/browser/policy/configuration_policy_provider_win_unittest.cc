@@ -5,24 +5,18 @@
 #include <gtest/gtest.h>
 #include <windows.h>
 
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "base/stl_util.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
-#include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "chrome/browser/policy/asynchronous_policy_loader.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/asynchronous_policy_test_base.h"
+#include "chrome/browser/policy/configuration_policy_provider_test.h"
 #include "chrome/browser/policy/configuration_policy_provider_win.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/common/pref_names.h"
-#include "content/test/test_browser_thread.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
-using content::BrowserThread;
 
 namespace policy {
 
@@ -34,153 +28,69 @@ const wchar_t kUnitTestMachineOverrideSubKey[] =
 const wchar_t kUnitTestUserOverrideSubKey[] =
     L"SOFTWARE\\Chromium Unit Tests\\HKCU Override";
 
-// Holds policy type, corresponding policy name string and a valid value for use
-// in parametrized value tests.
-class PolicyTestParams {
+// This class provides sandboxing and mocking for the parts of the Windows
+// Registry implementing Group Policy. It prepares two temporary sandbox keys
+// in |kUnitTestRegistrySubKey|, one for HKLM and one for HKCU. A test's calls
+// to the registry are redirected by Windows to these sandboxes, allowing the
+// tests to manipulate and access policy as if it were active, but without
+// actually changing the parts of the Registry that are managed by Group
+// Policy.
+class ScopedGroupPolicyRegistrySandbox {
  public:
-  // Assumes ownership of |hklm_value| and |hkcu_value|.
-  PolicyTestParams(ConfigurationPolicyType type,
-                   const char* policy_name,
-                   Value* hklm_value,
-                   Value* hkcu_value)
-      : type_(type),
-        policy_name_(policy_name),
-        hklm_value_(hklm_value),
-        hkcu_value_(hkcu_value) {}
-
-  // testing::TestWithParam does copy the parameters, so provide copy
-  // constructor and assignment operator.
-  PolicyTestParams(const PolicyTestParams& other)
-      : type_(other.type_),
-        policy_name_(other.policy_name_),
-        hklm_value_(other.hklm_value_->DeepCopy()),
-        hkcu_value_(other.hkcu_value_->DeepCopy()) {}
-
-  const PolicyTestParams& operator=(PolicyTestParams other) {
-    swap(other);
-    return *this;
-  }
-
-  void swap(PolicyTestParams& other) {
-    std::swap(type_, other.type_);
-    std::swap(policy_name_, other.policy_name_);
-    hklm_value_.swap(other.hklm_value_);
-    hkcu_value_.swap(other.hkcu_value_);
-  }
-
-  ConfigurationPolicyType type() const { return type_; }
-  const char* policy_name() const { return policy_name_; }
-  const Value* hklm_value() const { return hklm_value_.get(); }
-  const Value* hkcu_value() const { return hkcu_value_.get(); }
-
-  // Factory methods for different value types.
-  static PolicyTestParams ForStringPolicy(
-      ConfigurationPolicyType type,
-      const char* policy_name) {
-    return PolicyTestParams(type,
-                            policy_name,
-                            Value::CreateStringValue("string_a"),
-                            Value::CreateStringValue("string_b"));
-  }
-  static PolicyTestParams ForBooleanPolicy(
-      ConfigurationPolicyType type,
-      const char* policy_name) {
-    return PolicyTestParams(type,
-                            policy_name,
-                            Value::CreateBooleanValue(true),
-                            Value::CreateBooleanValue(false));
-  }
-  static PolicyTestParams ForIntegerPolicy(
-      ConfigurationPolicyType type,
-      const char* policy_name) {
-    return PolicyTestParams(type,
-                            policy_name,
-                            Value::CreateIntegerValue(42),
-                            Value::CreateIntegerValue(17));
-  }
-  static PolicyTestParams ForListPolicy(
-      ConfigurationPolicyType type,
-      const char* policy_name) {
-    ListValue* hklm_value = new ListValue;
-    hklm_value->Set(0U, Value::CreateStringValue("It's a plane!"));
-    ListValue* hkcu_value = new ListValue;
-    hkcu_value->Set(0U, Value::CreateStringValue("It's a bird!"));
-    hkcu_value->Set(0U, Value::CreateStringValue("It's a flying carpet!"));
-    return PolicyTestParams(type, policy_name, hklm_value, hkcu_value);
-  }
+  ScopedGroupPolicyRegistrySandbox();
+  ~ScopedGroupPolicyRegistrySandbox();
 
  private:
-  ConfigurationPolicyType type_;
-  const char* policy_name_;
-  scoped_ptr<Value> hklm_value_;
-  scoped_ptr<Value> hkcu_value_;
-};
-
-}  // namespace
-
-// This test class provides sandboxing and mocking for the parts of the
-// Windows Registry implementing Group Policy. The |SetUp| method prepares
-// two temporary sandbox keys in |kUnitTestRegistrySubKey|, one for HKLM and one
-// for HKCU. A test's calls to the registry are redirected by Windows to these
-// sandboxes, allowing the tests to manipulate and access policy as if it
-// were active, but without actually changing the parts of the Registry that
-// are managed by Group Policy.
-class ConfigurationPolicyProviderWinTest
-    : public testing::TestWithParam<PolicyTestParams> {
- public:
-  ConfigurationPolicyProviderWinTest();
-
-  // testing::Test method overrides:
-  virtual void SetUp();
-  virtual void TearDown();
-
   void ActivateOverrides();
-  void DeactivateOverrides();
+  void RemoveOverrides();
 
-  // Deletes the registry key created during the tests.
-  void DeleteRegistrySandbox();
-
-  // Write a string value to the registry.
-  void WriteString(HKEY hive, const char* name, const wchar_t* value);
-  // Write a DWORD value to the registry.
-  void WriteDWORD(HKEY hive, const char* name, DWORD value);
-
-  // Write the given value to the registry.
-  void WriteValue(HKEY hive, const char* name, const Value* value);
-  // Write a value that is not compatible with the given |value|.
-  void WriteInvalidValue(HKEY hive, const char* name, const Value* value);
-
- protected:
-  scoped_ptr<ConfigurationPolicyProviderWin> provider_;
-
-  // A message loop must be declared and instantiated for these tests,
-  // because Windows policy provider create WaitableEvents and
-  // ObjectWatchers that require the tests to have a MessageLoop associated
-  // with the thread executing the tests.
-  MessageLoop loop_;
-
- private:
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  // Deletes the sandbox keys.
+  void DeleteKeys();
 
   // Keys are created for the lifetime of a test to contain
   // the sandboxed HKCU and HKLM hives, respectively.
   RegKey temp_hkcu_hive_key_;
   RegKey temp_hklm_hive_key_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedGroupPolicyRegistrySandbox);
 };
 
-ConfigurationPolicyProviderWinTest::ConfigurationPolicyProviderWinTest()
-    : ui_thread_(BrowserThread::UI, &loop_),
-      file_thread_(BrowserThread::FILE, &loop_),
-      temp_hklm_hive_key_(HKEY_CURRENT_USER, kUnitTestMachineOverrideSubKey,
-                          KEY_READ),
-      temp_hkcu_hive_key_(HKEY_CURRENT_USER, kUnitTestUserOverrideSubKey,
-                          KEY_READ) {
-}
+class TestHarness : public PolicyProviderTestHarness {
+ public:
+  explicit TestHarness(HKEY hive);
+  virtual ~TestHarness();
 
-void ConfigurationPolicyProviderWinTest::SetUp() {
+  virtual void SetUp() OVERRIDE;
+
+  virtual AsynchronousPolicyProvider* CreateProvider(
+      const PolicyDefinitionList* policy_definition_list) OVERRIDE;
+
+  virtual void InstallEmptyPolicy() OVERRIDE;
+  virtual void InstallStringPolicy(const std::string& policy_name,
+                                   const std::string& policy_value) OVERRIDE;
+  virtual void InstallIntegerPolicy(const std::string& policy_name,
+                                    int policy_value) OVERRIDE;
+  virtual void InstallBooleanPolicy(const std::string& policy_name,
+                                    bool policy_value) OVERRIDE;
+  virtual void InstallStringListPolicy(const std::string& policy_name,
+                                       const ListValue* policy_value) OVERRIDE;
+
+  // Creates a harness instance that will install policy in HKCU or HKLM,
+  // respectively.
+  static PolicyProviderTestHarness* CreateHKCU();
+  static PolicyProviderTestHarness* CreateHKLM();
+
+ private:
+  HKEY hive_;
+
+  ScopedGroupPolicyRegistrySandbox registry_sandbox_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestHarness);
+};
+
+ScopedGroupPolicyRegistrySandbox::ScopedGroupPolicyRegistrySandbox() {
   // Cleanup any remnants of previous tests.
-  DeleteRegistrySandbox();
+  DeleteKeys();
 
   // Create the subkeys to hold the overridden HKLM and HKCU
   // policy settings.
@@ -192,339 +102,128 @@ void ConfigurationPolicyProviderWinTest::SetUp() {
                              KEY_ALL_ACCESS);
 
   ActivateOverrides();
-
-  provider_.reset(new ConfigurationPolicyProviderWin(
-      GetChromePolicyDefinitionList()));
 }
 
-void ConfigurationPolicyProviderWinTest::TearDown() {
-  DeactivateOverrides();
-  DeleteRegistrySandbox();
-  loop_.RunAllPending();
+ScopedGroupPolicyRegistrySandbox::~ScopedGroupPolicyRegistrySandbox() {
+  RemoveOverrides();
+  DeleteKeys();
 }
 
-void ConfigurationPolicyProviderWinTest::ActivateOverrides() {
-  HRESULT result = RegOverridePredefKey(HKEY_LOCAL_MACHINE,
-                                        temp_hklm_hive_key_.Handle());
-  EXPECT_EQ(ERROR_SUCCESS, result);
-  result = RegOverridePredefKey(HKEY_CURRENT_USER,
-                                temp_hkcu_hive_key_.Handle());
-  EXPECT_EQ(ERROR_SUCCESS, result);
+void ScopedGroupPolicyRegistrySandbox::ActivateOverrides() {
+  ASSERT_HRESULT_SUCCEEDED(RegOverridePredefKey(HKEY_LOCAL_MACHINE,
+                                                temp_hklm_hive_key_.Handle()));
+  ASSERT_HRESULT_SUCCEEDED(RegOverridePredefKey(HKEY_CURRENT_USER,
+                                                temp_hkcu_hive_key_.Handle()));
 }
 
-void ConfigurationPolicyProviderWinTest::DeactivateOverrides() {
-  uint32 result = RegOverridePredefKey(HKEY_LOCAL_MACHINE, 0);
-  EXPECT_EQ(ERROR_SUCCESS, result);
-  result = RegOverridePredefKey(HKEY_CURRENT_USER, 0);
-  EXPECT_EQ(ERROR_SUCCESS, result);
+void ScopedGroupPolicyRegistrySandbox::RemoveOverrides() {
+  ASSERT_HRESULT_SUCCEEDED(RegOverridePredefKey(HKEY_LOCAL_MACHINE, 0));
+  ASSERT_HRESULT_SUCCEEDED(RegOverridePredefKey(HKEY_CURRENT_USER, 0));
 }
 
-void ConfigurationPolicyProviderWinTest::DeleteRegistrySandbox() {
-  temp_hklm_hive_key_.Close();
-  temp_hkcu_hive_key_.Close();
+void ScopedGroupPolicyRegistrySandbox::DeleteKeys() {
   RegKey key(HKEY_CURRENT_USER, kUnitTestRegistrySubKey, KEY_ALL_ACCESS);
   key.DeleteKey(L"");
 }
 
-void ConfigurationPolicyProviderWinTest::WriteString(HKEY hive,
-                                                     const char* name,
-                                                     const wchar_t* value) {
-  RegKey key(hive, policy::kRegistrySubKey, KEY_ALL_ACCESS);
-  key.WriteValue(UTF8ToUTF16(name).c_str(), value);
+TestHarness::TestHarness(HKEY hive)
+    : hive_(hive) {}
+
+TestHarness::~TestHarness() {}
+
+void TestHarness::SetUp() {}
+
+AsynchronousPolicyProvider* TestHarness::CreateProvider(
+    const PolicyDefinitionList* policy_definition_list) {
+  return new ConfigurationPolicyProviderWin(policy_definition_list);
 }
 
-void ConfigurationPolicyProviderWinTest::WriteDWORD(HKEY hive,
-                                                    const char* name,
-                                                    DWORD value) {
-  RegKey key(hive, policy::kRegistrySubKey, KEY_ALL_ACCESS);
-  key.WriteValue(UTF8ToUTF16(name).c_str(), value);
+void TestHarness::InstallEmptyPolicy() {}
+
+void TestHarness::InstallStringPolicy(const std::string& policy_name,
+                                      const std::string& policy_value) {
+  RegKey key(hive_, policy::kRegistrySubKey, KEY_ALL_ACCESS);
+  key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
+                 UTF8ToUTF16(policy_value).c_str());
 }
 
-void ConfigurationPolicyProviderWinTest::WriteValue(HKEY hive,
-                                                    const char* name,
-                                                    const Value* value) {
-  switch (value->GetType()) {
-    case Value::TYPE_BOOLEAN: {
-      bool v;
-      ASSERT_TRUE(value->GetAsBoolean(&v));
-      WriteDWORD(hive, name, v);
-      break;
-    }
-    case Value::TYPE_INTEGER: {
-      int v;
-      ASSERT_TRUE(value->GetAsInteger(&v));
-      WriteDWORD(hive, name, v);
-      break;
-    }
-    case Value::TYPE_STRING: {
-      std::string v;
-      ASSERT_TRUE(value->GetAsString(&v));
-      WriteString(hive, name, UTF8ToUTF16(v).c_str());
-      break;
-    }
-    case Value::TYPE_LIST: {
-      const ListValue* list = static_cast<const ListValue*>(value);
-      RegKey key(hive,
-                 (string16(policy::kRegistrySubKey) + ASCIIToUTF16("\\") +
-                  UTF8ToUTF16(name)).c_str(),
-                 KEY_ALL_ACCESS);
-      int index = 1;
-      for (ListValue::const_iterator element(list->begin());
-           element != list->end(); ++element) {
-        ASSERT_TRUE((*element)->IsType(Value::TYPE_STRING));
-        std::string element_value;
-        ASSERT_TRUE((*element)->GetAsString(&element_value));
-        key.WriteValue(base::IntToString16(index++).c_str(),
-                       UTF8ToUTF16(element_value).c_str());
-      }
-      break;
-    }
-    default:
-      FAIL() << "Unsupported value type " << value->GetType();
-      break;
+void TestHarness::InstallIntegerPolicy(const std::string& policy_name,
+                                       int policy_value) {
+  RegKey key(hive_, policy::kRegistrySubKey, KEY_ALL_ACCESS);
+  key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
+                 static_cast<DWORD>(policy_value));
+}
+
+void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
+                                       bool policy_value) {
+  RegKey key(hive_, policy::kRegistrySubKey, KEY_ALL_ACCESS);
+  key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
+                 static_cast<DWORD>(policy_value));
+}
+
+void TestHarness::InstallStringListPolicy(const std::string& policy_name,
+                                          const ListValue* policy_value) {
+  RegKey key(hive_,
+             (string16(policy::kRegistrySubKey) + ASCIIToUTF16("\\") +
+              UTF8ToUTF16(policy_name)).c_str(),
+             KEY_ALL_ACCESS);
+  int index = 1;
+  for (ListValue::const_iterator element(policy_value->begin());
+       element != policy_value->end();
+       ++element) {
+    std::string element_value;
+    if (!(*element)->GetAsString(&element_value))
+      continue;
+    std::string name(base::IntToString(index++));
+    key.WriteValue(UTF8ToUTF16(name).c_str(),
+                   UTF8ToUTF16(element_value).c_str());
   }
 }
 
-void ConfigurationPolicyProviderWinTest::WriteInvalidValue(HKEY hive,
-                                                           const char* name,
-                                                           const Value* value) {
-  if (value->IsType(Value::TYPE_STRING))
-    WriteDWORD(hive, name, -1);
-  else
-    WriteString(hive, name, L"bad value");
+// static
+PolicyProviderTestHarness* TestHarness::CreateHKCU() {
+  return new TestHarness(HKEY_CURRENT_USER);
 }
 
-TEST_P(ConfigurationPolicyProviderWinTest, Default) {
-  PolicyMap policy_map;
-  provider_->Provide(&policy_map);
-  EXPECT_TRUE(policy_map.empty());
+// static
+PolicyProviderTestHarness* TestHarness::CreateHKLM() {
+  return new TestHarness(HKEY_LOCAL_MACHINE);
 }
 
-TEST_P(ConfigurationPolicyProviderWinTest, InvalidValue) {
-  WriteInvalidValue(HKEY_LOCAL_MACHINE,
-                    GetParam().policy_name(),
-                    GetParam().hklm_value());
-  WriteInvalidValue(HKEY_CURRENT_USER,
-                    GetParam().policy_name(),
-                    GetParam().hkcu_value());
-  provider_->loader()->Reload();
-  loop_.RunAllPending();
-  PolicyMap policy_map;
-  provider_->Provide(&policy_map);
-  EXPECT_TRUE(policy_map.empty());
-}
+}  // namespace
 
-TEST_P(ConfigurationPolicyProviderWinTest, HKLM) {
-  WriteValue(HKEY_LOCAL_MACHINE,
-             GetParam().policy_name(),
-             GetParam().hklm_value());
-  provider_->loader()->Reload();
-  loop_.RunAllPending();
-  PolicyMap policy_map;
-  provider_->Provide(&policy_map);
-  const Value* value = policy_map.Get(GetParam().type());
-  ASSERT_TRUE(value);
-  EXPECT_TRUE(value->Equals(GetParam().hklm_value()));
-}
-
-TEST_P(ConfigurationPolicyProviderWinTest, HKCU) {
-  WriteValue(HKEY_CURRENT_USER,
-             GetParam().policy_name(),
-             GetParam().hkcu_value());
-  provider_->loader()->Reload();
-  loop_.RunAllPending();
-  PolicyMap policy_map;
-  provider_->Provide(&policy_map);
-  const Value* value = policy_map.Get(GetParam().type());
-  ASSERT_TRUE(value);
-  EXPECT_TRUE(value->Equals(GetParam().hkcu_value()));
-}
-
-TEST_P(ConfigurationPolicyProviderWinTest, HKLMOverHKCU) {
-  WriteValue(HKEY_LOCAL_MACHINE,
-             GetParam().policy_name(),
-             GetParam().hklm_value());
-  WriteValue(HKEY_CURRENT_USER,
-             GetParam().policy_name(),
-             GetParam().hkcu_value());
-  provider_->loader()->Reload();
-  loop_.RunAllPending();
-  PolicyMap policy_map;
-  provider_->Provide(&policy_map);
-  const Value* value = policy_map.Get(GetParam().type());
-  ASSERT_TRUE(value);
-  EXPECT_TRUE(value->Equals(GetParam().hklm_value()));
-}
-
-// Test parameters for all supported policies. testing::Values() has a limit of
-// 50 parameters which is reached in this instantiation; new policies should go
-// in the next instantiation after this one.
+// Instantiate abstract test case for basic policy reading tests.
 INSTANTIATE_TEST_CASE_P(
-    ConfigurationPolicyProviderWinTestInstance,
     ConfigurationPolicyProviderWinTest,
-    testing::Values(
-        PolicyTestParams::ForStringPolicy(
-            kPolicyHomepageLocation,
-            key::kHomepageLocation),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyHomepageIsNewTabPage,
-            key::kHomepageIsNewTabPage),
-        PolicyTestParams::ForIntegerPolicy(
-            kPolicyRestoreOnStartup,
-            key::kRestoreOnStartup),
-        PolicyTestParams::ForListPolicy(
-            kPolicyRestoreOnStartupURLs,
-            key::kRestoreOnStartupURLs),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyDefaultSearchProviderEnabled,
-            key::kDefaultSearchProviderEnabled),
-        PolicyTestParams::ForStringPolicy(
-            kPolicyDefaultSearchProviderName,
-            key::kDefaultSearchProviderName),
-        PolicyTestParams::ForStringPolicy(
-            kPolicyDefaultSearchProviderKeyword,
-            key::kDefaultSearchProviderKeyword),
-        PolicyTestParams::ForStringPolicy(
-            kPolicyDefaultSearchProviderSearchURL,
-            key::kDefaultSearchProviderSearchURL),
-        PolicyTestParams::ForStringPolicy(
-            kPolicyDefaultSearchProviderSuggestURL,
-            key::kDefaultSearchProviderSuggestURL),
-        PolicyTestParams::ForStringPolicy(
-            kPolicyDefaultSearchProviderInstantURL,
-            key::kDefaultSearchProviderInstantURL),
-        PolicyTestParams::ForStringPolicy(
-            kPolicyDefaultSearchProviderIconURL,
-            key::kDefaultSearchProviderIconURL),
-        PolicyTestParams::ForListPolicy(
-            kPolicyDefaultSearchProviderEncodings,
-            key::kDefaultSearchProviderEncodings),
-        PolicyTestParams::ForStringPolicy(
-            kPolicyProxyMode,
-            key::kProxyMode),
-        PolicyTestParams::ForIntegerPolicy(
-            kPolicyProxyServerMode,
-            key::kProxyServerMode),
-        PolicyTestParams::ForStringPolicy(
-            kPolicyProxyServer,
-            key::kProxyServer),
-        PolicyTestParams::ForStringPolicy(
-            kPolicyProxyPacUrl,
-            key::kProxyPacUrl),
-        PolicyTestParams::ForStringPolicy(
-            kPolicyProxyBypassList,
-            key::kProxyBypassList),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyAlternateErrorPagesEnabled,
-            key::kAlternateErrorPagesEnabled),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicySearchSuggestEnabled,
-            key::kSearchSuggestEnabled),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyDnsPrefetchingEnabled,
-            key::kDnsPrefetchingEnabled),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicySafeBrowsingEnabled,
-            key::kSafeBrowsingEnabled),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyMetricsReportingEnabled,
-            key::kMetricsReportingEnabled),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyPasswordManagerEnabled,
-            key::kPasswordManagerEnabled),
-        PolicyTestParams::ForListPolicy(
-            kPolicyDisabledPlugins,
-            key::kDisabledPlugins),
-        PolicyTestParams::ForListPolicy(
-            kPolicyDisabledPluginsExceptions,
-            key::kDisabledPluginsExceptions),
-        PolicyTestParams::ForListPolicy(
-            kPolicyEnabledPlugins,
-            key::kEnabledPlugins),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyAutoFillEnabled,
-            key::kAutoFillEnabled),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicySyncDisabled,
-            key::kSyncDisabled),
-        PolicyTestParams::ForStringPolicy(
-            kPolicyApplicationLocaleValue,
-            key::kApplicationLocaleValue),
-        PolicyTestParams::ForListPolicy(
-            kPolicyExtensionInstallWhitelist,
-            key::kExtensionInstallWhitelist),
-        PolicyTestParams::ForListPolicy(
-            kPolicyExtensionInstallBlacklist,
-            key::kExtensionInstallBlacklist),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyShowHomeButton,
-            key::kShowHomeButton),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyPrintingEnabled,
-            key::kPrintingEnabled),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyInstantEnabled,
-            key::kInstantEnabled),
-        PolicyTestParams::ForIntegerPolicy(
-            kPolicyIncognitoModeAvailability,
-            key::kIncognitoModeAvailability),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyDisablePluginFinder,
-            key::kDisablePluginFinder),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyClearSiteDataOnExit,
-            key::kClearSiteDataOnExit),
-        PolicyTestParams::ForStringPolicy(
-            kPolicyDownloadDirectory,
-            key::kDownloadDirectory),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyDefaultBrowserSettingEnabled,
-            key::kDefaultBrowserSettingEnabled),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyCloudPrintProxyEnabled,
-            key::kCloudPrintProxyEnabled),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyTranslateEnabled,
-            key::kTranslateEnabled),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyAllowOutdatedPlugins,
-            key::kAllowOutdatedPlugins),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyAlwaysAuthorizePlugins,
-            key::kAlwaysAuthorizePlugins),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyBookmarkBarEnabled,
-            key::kBookmarkBarEnabled),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyEditBookmarksEnabled,
-            key::kEditBookmarksEnabled),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyAllowFileSelectionDialogs,
-            key::kAllowFileSelectionDialogs),
-        PolicyTestParams::ForListPolicy(
-            kPolicyDisabledSchemes,
-            key::kDisabledSchemes),
-        PolicyTestParams::ForStringPolicy(
-            kPolicyDiskCacheDir,
-            key::kDiskCacheDir),
-        PolicyTestParams::ForIntegerPolicy(
-            kPolicyMaxConnectionsPerProxy,
-            key::kMaxConnectionsPerProxy),
-        PolicyTestParams::ForListPolicy(
-            kPolicyURLBlacklist,
-            key::kURLBlacklist)));
+    ConfigurationPolicyProviderTest,
+    testing::Values(TestHarness::CreateHKCU, TestHarness::CreateHKLM));
 
-// testing::Values has a limit of 50 test templates, which is reached by the
-// instantiations above. Add tests for new policies here:
-INSTANTIATE_TEST_CASE_P(
-    ConfigurationPolicyProviderWinTestInstance2,
-    ConfigurationPolicyProviderWinTest,
-    testing::Values(
-        PolicyTestParams::ForListPolicy(
-            kPolicyURLWhitelist,
-            key::kURLWhitelist),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyCloudPrintSubmitEnabled,
-            key::kCloudPrintSubmitEnabled)));
+// Test cases for windows policy provider specific functionality.
+class ConfigurationPolicyProviderWinTest : public AsynchronousPolicyTestBase {
+ protected:
+  ConfigurationPolicyProviderWinTest()
+      : provider_(&test_policy_definitions::kList) {}
+  virtual ~ConfigurationPolicyProviderWinTest() {}
+
+  ScopedGroupPolicyRegistrySandbox registry_sandbox_;
+  ConfigurationPolicyProviderWin provider_;
+};
+
+TEST_F(ConfigurationPolicyProviderWinTest, HKLMOverHKCU) {
+  RegKey hklm_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey, KEY_ALL_ACCESS);
+  hklm_key.WriteValue(UTF8ToUTF16(test_policy_definitions::kKeyString).c_str(),
+                      UTF8ToUTF16("hklm").c_str());
+  RegKey hkcu_key(HKEY_CURRENT_USER, policy::kRegistrySubKey, KEY_ALL_ACCESS);
+  hkcu_key.WriteValue(UTF8ToUTF16(test_policy_definitions::kKeyString).c_str(),
+                      UTF8ToUTF16("hkcu").c_str());
+
+  provider_.ForceReload();
+  loop_.RunAllPending();
+
+  PolicyMap policy_map;
+  provider_.Provide(&policy_map);
+  const Value* value = policy_map.Get(test_policy_definitions::kPolicyString);
+  EXPECT_TRUE(StringValue("hklm").Equals(value));
+}
 
 }  // namespace policy

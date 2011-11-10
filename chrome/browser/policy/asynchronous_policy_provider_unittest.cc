@@ -11,9 +11,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Return;
+using ::testing::_;
 
 namespace policy {
 
@@ -22,10 +22,11 @@ TEST_F(AsynchronousPolicyTestBase, Provide) {
   InSequence s;
   DictionaryValue* policies = new DictionaryValue();
   policies->SetBoolean(policy::key::kSyncDisabled, true);
-  EXPECT_CALL(*delegate_, Load()).WillOnce(Return(policies));
+  ProviderDelegateMock* delegate = new ProviderDelegateMock();
+  EXPECT_CALL(*delegate, Load()).WillOnce(Return(policies));
   AsynchronousPolicyProvider provider(
       GetChromePolicyDefinitionList(),
-      new AsynchronousPolicyLoader(delegate_.release(), 10));
+      new AsynchronousPolicyLoader(delegate, 10));
   PolicyMap policy_map;
   provider.Provide(&policy_map);
   EXPECT_TRUE(policy_map.Get(policy::kPolicySyncDisabled));
@@ -38,17 +39,17 @@ TEST_F(AsynchronousPolicyTestBase, ProvideAfterRefresh) {
   InSequence s;
   DictionaryValue* original_policies = new DictionaryValue();
   original_policies->SetBoolean(policy::key::kSyncDisabled, true);
-  EXPECT_CALL(*delegate_, Load()).WillOnce(Return(original_policies));
+  ProviderDelegateMock* delegate = new ProviderDelegateMock();
+  EXPECT_CALL(*delegate, Load()).WillOnce(Return(original_policies));
   DictionaryValue* refresh_policies = new DictionaryValue();
   refresh_policies->SetBoolean(
       policy::key::kJavascriptEnabled,
       true);
-  EXPECT_CALL(*delegate_, Load()).WillOnce(Return(refresh_policies));
-  AsynchronousPolicyLoader* loader =
-      new AsynchronousPolicyLoader(delegate_.release(), 10);
+  EXPECT_CALL(*delegate, Load()).WillOnce(Return(refresh_policies));
+  AsynchronousPolicyLoader* loader = new AsynchronousPolicyLoader(delegate, 10);
   AsynchronousPolicyProvider provider(GetChromePolicyDefinitionList(), loader);
   loop_.RunAllPending();
-  loader->Reload();
+  provider.ForceReload();
   PolicyMap policy_map;
   provider.Provide(&policy_map);
   EXPECT_TRUE(policy_map.Get(policy::kPolicySyncDisabled));

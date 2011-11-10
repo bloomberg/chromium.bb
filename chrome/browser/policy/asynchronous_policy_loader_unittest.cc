@@ -10,9 +10,10 @@
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using ::testing::_;
 using ::testing::InSequence;
+using ::testing::Mock;
 using ::testing::Return;
+using ::testing::_;
 
 namespace policy {
 
@@ -66,9 +67,10 @@ ACTION(RescheduleImmediatePolicyReload) {
 
 TEST_F(AsynchronousPolicyLoaderTest, InitialLoad) {
   DictionaryValue* template_dict(new DictionaryValue());
-  EXPECT_CALL(*delegate_, Load()).WillOnce(Return(template_dict));
+  ProviderDelegateMock* delegate = new ProviderDelegateMock();
+  EXPECT_CALL(*delegate, Load()).WillOnce(Return(template_dict));
   scoped_refptr<AsynchronousPolicyLoader> loader =
-      new AsynchronousPolicyLoader(delegate_.release(), 10);
+      new AsynchronousPolicyLoader(delegate, 10);
   loader->Init(ignore_callback_);
   const DictionaryValue* loaded_dict(loader->policy());
   EXPECT_TRUE(loaded_dict->Equals(template_dict));
@@ -78,15 +80,16 @@ TEST_F(AsynchronousPolicyLoaderTest, InitialLoad) {
 TEST_F(AsynchronousPolicyLoaderTest, InitialLoadWithFallback) {
   int dictionary_number = 0;
   InSequence s;
-  EXPECT_CALL(*delegate_, Load()).WillOnce(
+  ProviderDelegateMock* delegate = new ProviderDelegateMock();
+  EXPECT_CALL(*delegate, Load()).WillOnce(
       CreateSequencedTestDictionary(&dictionary_number));
-  EXPECT_CALL(*delegate_, Load()).WillOnce(
+  EXPECT_CALL(*delegate, Load()).WillOnce(
       CreateSequencedTestDictionary(&dictionary_number));
   scoped_refptr<AsynchronousPolicyLoader> loader =
-      new AsynchronousPolicyLoader(delegate_.release(), 10);
+      new AsynchronousPolicyLoader(delegate, 10);
   loader->Init(ignore_callback_);
   loop_.RunAllPending();
-  loader->Reload();
+  loader->Reload(true);
   loop_.RunAllPending();
 
   const DictionaryValue* loaded_dict(loader->policy());
@@ -98,15 +101,16 @@ TEST_F(AsynchronousPolicyLoaderTest, InitialLoadWithFallback) {
 // Ensure that calling stop on the loader stops subsequent reloads from
 // happening.
 TEST_F(AsynchronousPolicyLoaderTest, Stop) {
-  ON_CALL(*delegate_, Load()).WillByDefault(CreateTestDictionary());
-  EXPECT_CALL(*delegate_, Load()).Times(1);
+  ProviderDelegateMock* delegate = new ProviderDelegateMock();
+  ON_CALL(*delegate, Load()).WillByDefault(CreateTestDictionary());
+  EXPECT_CALL(*delegate, Load()).Times(1);
   scoped_refptr<AsynchronousPolicyLoader> loader =
-      new AsynchronousPolicyLoader(delegate_.release(), 10);
+      new AsynchronousPolicyLoader(delegate, 10);
   loader->Init(ignore_callback_);
   loop_.RunAllPending();
   loader->Stop();
   loop_.RunAllPending();
-  loader->Reload();
+  loader->Reload(true);
   loop_.RunAllPending();
 }
 
@@ -116,30 +120,34 @@ TEST_F(AsynchronousPolicyLoaderTest, ProviderNotificationOnPolicyChange) {
   MockConfigurationPolicyObserver observer;
   int dictionary_number_1 = 0;
   int dictionary_number_2 = 0;
-  EXPECT_CALL(*delegate_, Load()).WillOnce(
+
+  ProviderDelegateMock* delegate = new ProviderDelegateMock();
+  EXPECT_CALL(*delegate, Load()).WillOnce(
       CreateSequencedTestDictionary(&dictionary_number_1));
-  EXPECT_CALL(*delegate_, Load()).WillOnce(
-      CreateSequencedTestDictionary(&dictionary_number_2));
-  EXPECT_CALL(observer, OnUpdatePolicy()).Times(1);
-  EXPECT_CALL(*delegate_, Load()).WillOnce(
-      CreateSequencedTestDictionary(&dictionary_number_2));
-  EXPECT_CALL(observer, OnUpdatePolicy()).Times(1);
-  EXPECT_CALL(*delegate_, Load()).WillOnce(
-      CreateSequencedTestDictionary(&dictionary_number_1));
-  EXPECT_CALL(observer, OnUpdatePolicy()).Times(1);
+
   scoped_refptr<AsynchronousPolicyLoader> loader =
-      new AsynchronousPolicyLoader(delegate_.release(), 10);
+      new AsynchronousPolicyLoader(delegate, 10);
   AsynchronousPolicyProvider provider(NULL, loader);
   // |registrar| must be declared last so that it is destroyed first.
   ConfigurationPolicyObserverRegistrar registrar;
   registrar.Init(&provider, &observer);
+  Mock::VerifyAndClearExpectations(delegate);
+
+  EXPECT_CALL(*delegate, Load()).WillOnce(
+      CreateSequencedTestDictionary(&dictionary_number_2));
+  EXPECT_CALL(observer, OnUpdatePolicy()).Times(1);
+  loader->Reload(true);
   loop_.RunAllPending();
-  loader->Reload();
+  Mock::VerifyAndClearExpectations(delegate);
+  Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(*delegate, Load()).WillOnce(
+      CreateSequencedTestDictionary(&dictionary_number_1));
+  EXPECT_CALL(observer, OnUpdatePolicy()).Times(1);
+  loader->Reload(true);
   loop_.RunAllPending();
-  loader->Reload();
-  loop_.RunAllPending();
-  loader->Reload();
-  loop_.RunAllPending();
+  Mock::VerifyAndClearExpectations(delegate);
+  Mock::VerifyAndClearExpectations(&observer);
 }
 
 }  // namespace policy

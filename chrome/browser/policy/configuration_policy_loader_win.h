@@ -23,6 +23,9 @@ class ConfigurationPolicyLoaderWin
       int reload_interval_minutes);
   virtual ~ConfigurationPolicyLoaderWin() {}
 
+  // AsynchronousPolicyLoader overrides:
+  virtual void Reload(bool force) OVERRIDE;
+
  protected:
   // AsynchronousPolicyLoader overrides:
   virtual void InitOnFileThread() OVERRIDE;
@@ -31,9 +34,6 @@ class ConfigurationPolicyLoaderWin
  private:
   // Updates the watchers and schedules the reload task if appropriate.
   void SetupWatches();
-
-  // Post a reload notification and update the watch machinery.
-  void Reload();
 
   // ObjectWatcher::Delegate overrides:
   virtual void OnObjectSignaled(HANDLE object) OVERRIDE;

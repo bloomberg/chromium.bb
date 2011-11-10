@@ -48,7 +48,7 @@ void AsynchronousPolicyLoader::Stop() {
 AsynchronousPolicyLoader::~AsynchronousPolicyLoader() {
 }
 
-void AsynchronousPolicyLoader::Reload() {
+void AsynchronousPolicyLoader::Reload(bool force) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (delegate_.get()) {
     PostUpdatePolicyTask(delegate_->Load());
@@ -81,7 +81,7 @@ void AsynchronousPolicyLoader::ScheduleFallbackReloadTask() {
 
 void AsynchronousPolicyLoader::ReloadFromTask() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  Reload();
+  Reload(false);
 }
 
 void AsynchronousPolicyLoader::InitOnFileThread() {
