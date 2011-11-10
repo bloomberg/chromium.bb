@@ -63,6 +63,9 @@ def Main(args):
     # http://code.google.com/p/nativeclient/issues/detail?id=2173
     tests_to_disable.append('run_inbrowser_crash_in_syscall_test')
 
+  if sys.platform in ('win32', 'cygwin'):
+    tests_to_disable.append('run_ppapi_ppp_input_event_browser_test')
+
   if sys.platform == 'darwin':
     # The following test fails on debug builds of Chromium.
     # See http://code.google.com/p/nativeclient/issues/detail?id=2077
