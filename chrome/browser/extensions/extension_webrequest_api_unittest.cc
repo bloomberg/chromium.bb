@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/json/json_value_serializer.h"
 #include "base/path_service.h"
-
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/extensions/extension_webrequest_api_constants.h"
@@ -21,6 +21,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
+#include "net/base/auth.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -711,7 +712,20 @@ INSTANTIATE_TEST_CASE_P(
 } // namespace
 
 
+TEST(ExtensionWebRequestHelpersTest,
+     TestInDecreasingExtensionInstallationTimeOrder) {
+  using namespace extension_webrequest_api_helpers;
+  linked_ptr<EventResponseDelta> a(
+      new EventResponseDelta("ext_1", base::Time::FromInternalValue(0)));
+  linked_ptr<EventResponseDelta> b(
+      new EventResponseDelta("ext_2", base::Time::FromInternalValue(1000)));
+  EXPECT_FALSE(InDecreasingExtensionInstallationTimeOrder(a, a));
+  EXPECT_FALSE(InDecreasingExtensionInstallationTimeOrder(a, b));
+  EXPECT_TRUE(InDecreasingExtensionInstallationTimeOrder(b, a));
+}
+
 TEST(ExtensionWebRequestHelpersTest, TestStringToCharList) {
+  using namespace extension_webrequest_api_helpers;
   ListValue list_value;
   list_value.Append(Value::CreateIntegerValue('1'));
   list_value.Append(Value::CreateIntegerValue('2'));
@@ -722,10 +736,123 @@ TEST(ExtensionWebRequestHelpersTest, TestStringToCharList) {
   unsigned char char_value[] = {'1', '2', '3', 0xFE, 0xD1};
   std::string string_value(reinterpret_cast<char *>(char_value), 5);
 
-  scoped_ptr<ListValue> converted_list(helpers::StringToCharList(string_value));
+  scoped_ptr<ListValue> converted_list(StringToCharList(string_value));
   EXPECT_TRUE(list_value.Equals(converted_list.get()));
 
   std::string converted_string;
-  EXPECT_TRUE(helpers::CharListToString(&list_value, &converted_string));
+  EXPECT_TRUE(CharListToString(&list_value, &converted_string));
   EXPECT_EQ(string_value, converted_string);
 }
+
+TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeRequestDelta) {
+  using namespace extension_webrequest_api_helpers;
+  const bool cancel = true;
+  const GURL localhost("http://localhost");
+  scoped_ptr<EventResponseDelta> delta(
+      CalculateOnBeforeRequestDelta("extid", base::Time::Now(),
+          cancel, localhost));
+  ASSERT_TRUE(delta.get());
+  EXPECT_TRUE(delta->cancel);
+  EXPECT_EQ(localhost, delta->new_url);
+}
+
+TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeSendHeadersDelta) {
+  using namespace extension_webrequest_api_helpers;
+  const bool cancel = true;
+  std::string value;
+  net::HttpRequestHeaders old_headers;
+  old_headers.AddHeadersFromString("key1: value1\r\n"
+                                   "key2: value2\r\n");
+
+  // Test adding a header.
+  net::HttpRequestHeaders new_headers_added;
+  new_headers_added.AddHeadersFromString("key1: value1\r\n"
+                                         "key3: value3\r\n"
+                                         "key2: value2\r\n");
+  scoped_ptr<EventResponseDelta> delta_added(
+      CalculateOnBeforeSendHeadersDelta("extid", base::Time::Now(), cancel,
+          &old_headers, &new_headers_added));
+  ASSERT_TRUE(delta_added.get());
+  EXPECT_TRUE(delta_added->cancel);
+  ASSERT_TRUE(delta_added->modified_request_headers.GetHeader("key3", &value));
+  EXPECT_EQ("value3", value);
+
+  // Test deleting a header.
+  net::HttpRequestHeaders new_headers_deleted;
+  new_headers_deleted.AddHeadersFromString("key1: value1\r\n");
+  scoped_ptr<EventResponseDelta> delta_deleted(
+      CalculateOnBeforeSendHeadersDelta("extid", base::Time::Now(), cancel,
+          &old_headers, &new_headers_deleted));
+  ASSERT_TRUE(delta_deleted.get());
+  ASSERT_EQ(1u, delta_deleted->deleted_request_headers.size());
+  ASSERT_EQ("key2", delta_deleted->deleted_request_headers.front());
+
+  // Test modifying a header.
+  net::HttpRequestHeaders new_headers_modified;
+  new_headers_modified.AddHeadersFromString("key1: value1\r\n"
+                                            "key2: value3\r\n");
+  scoped_ptr<EventResponseDelta> delta_modified(
+      CalculateOnBeforeSendHeadersDelta("extid", base::Time::Now(), cancel,
+          &old_headers, &new_headers_modified));
+  ASSERT_TRUE(delta_modified.get());
+  EXPECT_TRUE(delta_modified->deleted_request_headers.empty());
+  ASSERT_TRUE(
+      delta_modified->modified_request_headers.GetHeader("key2", &value));
+  EXPECT_EQ("value3", value);
+
+  // Test modifying a header if extension author just appended a new (key,
+  // value) pair with a key that existed before. This is incorrect
+  // usage of the API that shall be handled gracefully.
+  net::HttpRequestHeaders new_headers_modified2;
+  new_headers_modified2.AddHeadersFromString("key1: value1\r\n"
+                                             "key2: value2\r\n"
+                                             "key2: value3\r\n");
+  scoped_ptr<EventResponseDelta> delta_modified2(
+      CalculateOnBeforeSendHeadersDelta("extid", base::Time::Now(), cancel,
+          &old_headers, &new_headers_modified));
+  ASSERT_TRUE(delta_modified2.get());
+  EXPECT_TRUE(delta_modified2->deleted_request_headers.empty());
+  ASSERT_TRUE(
+      delta_modified2->modified_request_headers.GetHeader("key2", &value));
+  EXPECT_EQ("value3", value);
+}
+
+TEST(ExtensionWebRequestHelpersTest, TestCalculateOnHeadersReceivedDelta) {
+  using namespace extension_webrequest_api_helpers;
+  const bool cancel = true;
+  const char status_line[] = "HTTP/1.0 200 OK";
+  const char response_headers_string[] = "key1: value1\n"
+                                         "key2: value2\n\n";
+
+  scoped_ptr<EventResponseDelta> delta(
+      CalculateOnHeadersReceivedDelta("extid", base::Time::Now(), cancel,
+          status_line, response_headers_string));
+  ASSERT_TRUE(delta.get());
+  EXPECT_TRUE(delta->cancel);
+  ASSERT_TRUE(delta->new_response_headers.get());
+  EXPECT_TRUE(delta->new_response_headers->HasHeader("key1"));
+  EXPECT_TRUE(delta->new_response_headers->HasHeader("key2"));
+  EXPECT_EQ(status_line, delta->new_response_headers->GetStatusLine());
+  // net::HttpResponseHeaders does not have easy access to header values.
+  // Let's be lazy and not test it here.
+}
+
+TEST(ExtensionWebRequestHelpersTest, TestCalculateOnAuthRequiredDelta) {
+  using namespace extension_webrequest_api_helpers;
+  const bool cancel = true;
+
+  string16 username = ASCIIToUTF16("foo");
+  string16 password = ASCIIToUTF16("bar");
+  scoped_ptr<net::AuthCredentials> credentials(
+      new net::AuthCredentials(username, password));
+
+  scoped_ptr<EventResponseDelta> delta(
+      CalculateOnAuthRequiredDelta("extid", base::Time::Now(), cancel,
+          &credentials));
+  ASSERT_TRUE(delta.get());
+  EXPECT_TRUE(delta->cancel);
+  ASSERT_TRUE(delta->auth_credentials.get());
+  EXPECT_EQ(username, delta->auth_credentials->username());
+  EXPECT_EQ(password, delta->auth_credentials->password());
+}
+

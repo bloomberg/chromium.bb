@@ -33,6 +33,10 @@ class ListValue;
 class StringValue;
 }
 
+namespace extension_webrequest_api_helpers {
+struct EventResponseDelta;
+}
+
 namespace net {
 class AuthCredentials;
 class AuthChallengeInfo;
@@ -47,6 +51,8 @@ class URLRequest;
 // thread unless otherwise specified.
 class ExtensionWebRequestEventRouter {
  public:
+  struct BlockedRequest;
+
   enum EventTypes {
     kInvalidEvent = 0,
     kOnBeforeRequest = 1 << 0,
@@ -116,41 +122,6 @@ class ExtensionWebRequestEventRouter {
 
     DISALLOW_COPY_AND_ASSIGN(EventResponse);
   };
-
-  // Contains the modification an extension wants to perform on an event.
-  struct EventResponseDelta {
-    // ID of the extension that sent this response.
-    std::string extension_id;
-
-    // The time that the extension was installed. Used for deciding order of
-    // precedence in case multiple extensions respond with conflicting
-    // decisions.
-    base::Time extension_install_time;
-
-    // Response values. These are mutually exclusive.
-    bool cancel;
-    GURL new_url;
-
-    // Newly introduced or overridden request headers.
-    net::HttpRequestHeaders modified_request_headers;
-
-    // Keys of request headers to be deleted.
-    std::vector<std::string> deleted_request_headers;
-
-    // Complete set of response headers that will replace the original ones.
-    scoped_refptr<net::HttpResponseHeaders> new_response_headers;
-
-    // Authentication Credentials to use.
-    scoped_ptr<net::AuthCredentials> auth_credentials;
-
-    EventResponseDelta(const std::string& extension_id,
-                       const base::Time& extension_install_time);
-    ~EventResponseDelta();
-
-    DISALLOW_COPY_AND_ASSIGN(EventResponseDelta);
-  };
-
-  typedef std::list<linked_ptr<EventResponseDelta> > EventResponseDeltas;
 
   static ExtensionWebRequestEventRouter* GetInstance();
 
@@ -278,7 +249,6 @@ class ExtensionWebRequestEventRouter {
  private:
   friend struct DefaultSingletonTraits<ExtensionWebRequestEventRouter>;
   struct EventListener;
-  struct BlockedRequest;
   typedef std::map<std::string, std::set<EventListener> > ListenerMapForProfile;
   typedef std::map<void*, ListenerMapForProfile> ListenerMap;
   typedef std::map<uint64, BlockedRequest> BlockedRequestMap;
@@ -340,39 +310,6 @@ class ExtensionWebRequestEventRouter {
 
   // Clears the flag that |event_type| has been signaled for |request_id|.
   void ClearSignaled(uint64 request_id, EventTypes event_type);
-
-  // Returns the difference between the original request properties stored
-  // in |blocked_request| and the EventResponse in |response|.
-  linked_ptr<EventResponseDelta> CalculateDelta(
-      BlockedRequest* blocked_request,
-      EventResponse* response) const;
-
-  // These functions merge the responses of blocked request handlers,
-  // assuming that |request| contains valid |respone_deltas| representing the
-  // changes done by the respective handlers. The |response_deltas| need to be
-  // sorted in decreasing order of precedence of extensions.
-  // The functions update the target url or the headers in |request|
-  // and reports extension IDs of extensions whose wishes could not be honored
-  // in |conflicting_extensions|.
-  void MergeOnBeforeRequestResponses(
-      BlockedRequest* request,
-      std::set<std::string>* conflicting_extensions) const;
-  void MergeOnBeforeSendHeadersResponses(
-      BlockedRequest* request,
-      std::set<std::string>* conflicting_extensions) const;
-  void MergeOnHeadersReceivedResponses(
-      BlockedRequest* request,
-      std::set<std::string>* conflicting_extensions) const;
-
-  // Merge the responses of blocked onAuthRequired handlers. The first
-  // registered listener that supplies authentication credentials in a response,
-  // if any, will have its authentication credentials used. |request| must be
-  // non-NULL, and contain |deltas| that are sorted in decreasing order of
-  // precedence.
-  // Returns whether authentication credentials are set.
-  bool MergeOnAuthRequiredResponses(
-      BlockedRequest* request,
-      std::set<std::string>* conflicting_extensions) const;
 
   // Returns whether |request| represents a top level window navigation.
   bool IsPageLoad(net::URLRequest* request) const;
