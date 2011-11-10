@@ -165,30 +165,29 @@ TEST_F(VideoCaptureManagerTest, CreateAndClose) {
   vcm_->Unregister();
 }
 
-// Open the same device twice, should fail.
+// Open the same device twice.
 TEST_F(VideoCaptureManagerTest, OpenTwice) {
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(_))
     .Times(1);
   EXPECT_CALL(*listener_, Opened(media_stream::kVideoCapture, _))
-    .Times(1);
-  EXPECT_CALL(*listener_, Error(media_stream::kVideoCapture, _,
-                                media_stream::kDeviceAlreadyInUse))
-    .Times(1);
+    .Times(2);
   EXPECT_CALL(*listener_, Closed(media_stream::kVideoCapture, _))
-    .Times(1);
+    .Times(2);
 
   vcm_->EnumerateDevices();
 
   // Wait to get device callback...
   SyncWithVideoCaptureManagerThread();
 
-  int video_session_id = vcm_->Open(listener_->devices_.front());
+  int video_session_id_first = vcm_->Open(listener_->devices_.front());
 
   // This should trigger an error callback with error code 'kDeviceAlreadyInUse'
-  vcm_->Open(listener_->devices_.front());
+  int video_session_id_second = vcm_->Open(listener_->devices_.front());
+  EXPECT_NE(video_session_id_first, video_session_id_second);
 
-  vcm_->Close(video_session_id);
+  vcm_->Close(video_session_id_first);
+  vcm_->Close(video_session_id_second);
 
   // Wait to check callbacks before removing the listener
   SyncWithVideoCaptureManagerThread();

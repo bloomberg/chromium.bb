@@ -118,7 +118,9 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // Helpers
   void GetAvailableDevices(media::VideoCaptureDevice::Names* device_names);
   bool DeviceOpened(const media::VideoCaptureDevice::Name& device_name);
-  bool DeviceOpened(const StreamDeviceInfo& device_info);
+  bool DeviceInUse(const media::VideoCaptureDevice* video_capture_device);
+  media::VideoCaptureDevice* GetOpenedDevice(
+      const StreamDeviceInfo& device_info);
   bool IsOnCaptureDeviceThread() const;
   media::VideoCaptureDevice* GetDeviceInternal(int capture_session_id);
 

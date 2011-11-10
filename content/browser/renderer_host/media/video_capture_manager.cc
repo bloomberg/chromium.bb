@@ -164,10 +164,12 @@ void VideoCaptureManager::OnOpen(int capture_session_id,
   DCHECK(IsOnCaptureDeviceThread());
   DCHECK(devices_.find(capture_session_id) == devices_.end());
 
-  // Check if another session has already opened this device, only one user per
-  // device is supported.
-  if (DeviceOpened(device)) {
-    PostOnError(capture_session_id, kDeviceAlreadyInUse);
+  // Check if another session has already opened this device. If so, just
+  // use that opened device.
+  media::VideoCaptureDevice* video_capture_device = GetOpenedDevice(device);
+  if (video_capture_device) {
+    devices_[capture_session_id] = video_capture_device;
+    PostOnOpened(capture_session_id);
     return;
   }
 
@@ -176,7 +178,6 @@ void VideoCaptureManager::OnOpen(int capture_session_id,
   vc_device_name.device_name = device.name;
   vc_device_name.unique_id = device.device_id;
 
-  media::VideoCaptureDevice* video_capture_device = NULL;
   if (!use_fake_device_) {
     video_capture_device = media::VideoCaptureDevice::Create(vc_device_name);
   } else {
@@ -195,13 +196,16 @@ void VideoCaptureManager::OnOpen(int capture_session_id,
 void VideoCaptureManager::OnClose(int capture_session_id) {
   DCHECK(IsOnCaptureDeviceThread());
 
+  media::VideoCaptureDevice* video_capture_device = NULL;
   VideoCaptureDevices::iterator it = devices_.find(capture_session_id);
   if (it != devices_.end()) {
+    video_capture_device = it->second;
+    devices_.erase(it);
+  }
+  if (video_capture_device && !DeviceInUse(video_capture_device)) {
     // Deallocate (if not done already) and delete the device.
-    media::VideoCaptureDevice* video_capture_device = it->second;
     video_capture_device->DeAllocate();
     delete video_capture_device;
-    devices_.erase(it);
   }
 
   PostOnClosed(capture_session_id);
@@ -360,8 +364,7 @@ bool VideoCaptureManager::DeviceOpened(
   DCHECK(IsOnCaptureDeviceThread());
 
   for (VideoCaptureDevices::iterator it = devices_.begin();
-      it != devices_.end();
-      ++it) {
+       it != devices_.end(); ++it) {
     if (device_name.unique_id == it->second->device_name().unique_id) {
       // We've found the device!
       return true;
@@ -370,13 +373,27 @@ bool VideoCaptureManager::DeviceOpened(
   return false;
 }
 
-bool VideoCaptureManager::DeviceOpened(const StreamDeviceInfo& device_info) {
+media::VideoCaptureDevice* VideoCaptureManager::GetOpenedDevice(
+    const StreamDeviceInfo& device_info) {
   DCHECK(IsOnCaptureDeviceThread());
 
   for (VideoCaptureDevices::iterator it = devices_.begin();
-      it != devices_.end();
-      it++) {
+       it != devices_.end(); it++) {
     if (device_info.device_id == it->second->device_name().unique_id) {
+      return it->second;
+    }
+  }
+  return NULL;
+}
+
+bool VideoCaptureManager::DeviceInUse(
+    const media::VideoCaptureDevice* video_capture_device) {
+  DCHECK(IsOnCaptureDeviceThread());
+
+  for (VideoCaptureDevices::iterator it = devices_.begin();
+       it != devices_.end(); ++it) {
+    if (video_capture_device == it->second) {
+      // We've found the device!
       return true;
     }
   }
