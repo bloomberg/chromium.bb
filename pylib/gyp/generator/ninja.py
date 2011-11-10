@@ -65,12 +65,6 @@ def QuoteShellArgument(arg):
   return "'" + arg.replace("'", "'" + '"\'"' + "'")  + "'"
 
 
-def MaybeQuoteShellArgument(arg):
-  if '"' in arg or ' ' in arg:
-    return QuoteShellArgument(arg)
-  return arg
-
-
 def InvertRelativePath(path):
   """Given a relative path like foo/bar, return the inverse relative path:
   the path from the relative path back to the origin dir.
@@ -431,7 +425,7 @@ class NinjaWriter:
       self.ninja.variable('cxx', '$cxx_host')
 
     self.WriteVariableList('defines',
-        ['-D' + MaybeQuoteShellArgument(ninja_syntax.escape(d))
+        [QuoteShellArgument(ninja_syntax.escape('-D' + d))
          for d in config.get('defines', [])])
     self.WriteVariableList('includes',
                            ['-I' + self.GypPathToNinja(i)
