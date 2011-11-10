@@ -78,8 +78,10 @@ const char* kPrefsToObserve[] = {
 #endif
   prefs::kWebKitAllowDisplayingInsecureContent,
   prefs::kWebKitAllowRunningInsecureContent,
+  prefs::kWebKitCursiveFontFamily,
   prefs::kWebKitDefaultFixedFontSize,
   prefs::kWebKitDefaultFontSize,
+  prefs::kWebKitFantasyFontFamily,
   prefs::kWebKitFixedFontFamily,
   prefs::kWebKitJavaEnabled,
   prefs::kWebKitJavascriptEnabled,
@@ -106,6 +108,17 @@ void RegisterFontFamilyMap(PrefService* prefs, const char* map_name) {
     const char* pref_name = pref_name_str.c_str();
     if (!prefs->FindPreference(pref_name))
       prefs->RegisterStringPref(pref_name, "", PrefService::UNSYNCABLE_PREF);
+  }
+}
+
+// Registers |obs| to observe per-script font prefs under the path |map_name|.
+void RegisterFontFamilyMapObserver(PrefChangeRegistrar* registrar,
+                                   const char* map_name,
+                                   content::NotificationObserver* obs) {
+  for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
+    const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
+    std::string pref_name = base::StringPrintf("%s.%s", map_name, script);
+    registrar->Add(pref_name.c_str(), obs);
   }
 }
 
@@ -319,6 +332,19 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   if (prefs) {
     for (int i = 0; i < kPrefsToObserveLength; ++i)
       pref_change_registrar_.Add(kPrefsToObserve[i], this);
+
+    RegisterFontFamilyMapObserver(&pref_change_registrar_,
+                                  prefs::kWebKitStandardFontFamilyMap, this);
+    RegisterFontFamilyMapObserver(&pref_change_registrar_,
+                                  prefs::kWebKitFixedFontFamilyMap, this);
+    RegisterFontFamilyMapObserver(&pref_change_registrar_,
+                                  prefs::kWebKitSerifFontFamilyMap, this);
+    RegisterFontFamilyMapObserver(&pref_change_registrar_,
+                                  prefs::kWebKitSansSerifFontFamilyMap, this);
+    RegisterFontFamilyMapObserver(&pref_change_registrar_,
+                                  prefs::kWebKitCursiveFontFamilyMap, this);
+    RegisterFontFamilyMapObserver(&pref_change_registrar_,
+                                  prefs::kWebKitFantasyFontFamilyMap, this);
   }
 
   renderer_preferences_util::UpdateFromSystemSettings(
