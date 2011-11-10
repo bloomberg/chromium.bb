@@ -77,7 +77,7 @@ function readEntryByUrl() {
                                          errorCallback);
 }
 
-chrome.test.runTests([function tab() {
+function onTabLoaded() {
   var entries = chrome.extension.getBackgroundPage().getLastFileEntries();
   if (!entries || entries.length != 1 || !entries[0]) {
     chrome.extension.sendRequest(
@@ -99,6 +99,6 @@ chrome.test.runTests([function tab() {
   entry.file(function(file) {
     reader.readAsText(file);
   });
-}]);
+}
 </script>
-<html><body><div id="content"></div></body></html>
+<html><body onload="onTabLoaded();"><div id="content"></div></body></html>
