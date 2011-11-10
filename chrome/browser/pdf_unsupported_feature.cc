@@ -127,7 +127,7 @@ void PDFEnableAdobeReaderInfoBarDelegate::OnNo() {
 
 // Launch the url to get the latest Adbobe Reader installer.
 void OpenReaderUpdateURL(TabContents* tab) {
-  tab->OpenURL(GURL(kReaderUpdateUrl), GURL(), CURRENT_TAB,
+  tab->OpenURL(GURL(kReaderUpdateUrl), GURL(), NEW_FOREGROUND_TAB,
                content::PAGE_TRANSITION_LINK);
 }
 
