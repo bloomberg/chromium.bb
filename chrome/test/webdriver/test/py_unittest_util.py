@@ -1,11 +1,12 @@
 #!/usr/bin/python
-
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A |unittest.TextTestRunner| that displays results like Google Test."""
+"""Utilities for dealing with the py unittest module."""
 
+import fnmatch
+import optparse
 import sys
 import unittest
 
@@ -62,3 +63,64 @@ class GTestTextTestRunner(unittest.TextTestRunner):
 
   def _makeResult(self):
     return _GTestTextTestResult(self.stream, self.descriptions, self.verbosity)
+
+
+def GetTestsFromSuite(suite):
+  """Returns all the tests from a given test suite."""
+  tests = []
+  for x in suite:
+    if isinstance(x, unittest.TestSuite):
+      tests += GetTestsFromSuite(x)
+    else:
+      tests += [x]
+  return tests
+
+
+def GetTestNamesFromSuite(suite):
+  """Returns a list of every test name in the given suite."""
+  return map(lambda x: GetTestName(x), GetTestsFromSuite(suite))
+
+
+def GetTestName(test):
+  """Gets the test name of the given unittest test."""
+  return '.'.join([test.__module__, test.__class__.__name__,
+                   test._testMethodName])
+
+
+def FilterTestSuite(suite, gtest_filter):
+  """Returns a new filtered tests suite based on the given gtest filter.
+
+  See http://code.google.com/p/googletest/wiki/AdvancedGuide
+  for gtest_filter specification.
+  """
+  return unittest.TestSuite(FilterTests(GetTestsFromSuite(suite), gtest_filter))
+
+
+def FilterTests(all_tests, gtest_filter):
+  """Returns a filtered list of tests based on the given gtest filter.
+
+  See http://code.google.com/p/googletest/wiki/AdvancedGuide
+  for gtest_filter specification.
+  """
+  pattern_groups = gtest_filter.split('-')
+  positive_patterns = pattern_groups[0].split(':')
+  negative_patterns = None
+  if len(pattern_groups) > 1:
+    negative_patterns = pattern_groups[1].split(':')
+
+  tests = []
+  for test in all_tests:
+    test_name = GetTestName(test)
+    # Test name must by matched by one positive pattern.
+    for pattern in positive_patterns:
+      if fnmatch.fnmatch(test_name, pattern):
+        break
+    else:
+      continue
+    # Test name must not be matched by any negative patterns.
+    for pattern in negative_patterns or []:
+      if fnmatch.fnmatch(test_name, pattern):
+        break
+    else:
+      tests += [test]
+  return tests

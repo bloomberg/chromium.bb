@@ -12,7 +12,7 @@ import types
 import unittest
 
 from chromedriver_launcher import ChromeDriverLauncher
-from gtest_text_test_runner import GTestTextTestRunner
+import py_unittest_util
 import test_paths
 
 # Add the PYTHON_BINDINGS first so that our 'test' module is found instead of
@@ -37,8 +37,6 @@ class Main(object):
   TEST_PREFIX = 'selenium.test.selenium.webdriver.common.'
 
   def __init__(self):
-    self._tests_path = os.path.join(os.path.dirname(__file__),
-                                    self.TESTS_FILENAME)
     self._ParseArgs()
     self._Run()
 
@@ -52,8 +50,17 @@ class Main(object):
         '', '--log-file', type='string', default=None,
         help='Provide a path to a file to which the logger will log')
     parser.add_option(
+        '', '--filter', type='string', default='*',
+        help='Filter for specifying what tests to run, google test style.')
+    parser.add_option(
         '', '--driver-exe', type='string', default=None,
-        help='Path to the ChromeDriver executable.')
+        help='Path to the default ChromeDriver executable to use.')
+    parser.add_option(
+        '', '--chrome-exe', type='string', default=None,
+        help='Path to the default Chrome executable to use.')
+    parser.add_option(
+        '', '--list', action='store_true', default=False,
+        help='List tests instead of running them.')
 
     self._options, self._args = parser.parse_args()
 
@@ -108,40 +115,6 @@ class Main(object):
     return (module, parts[len(parts_copy):])
 
   @staticmethod
-  def _GetTestClassFromName(test_name):
-    """Return the class for this test or None."""
-    (obj, parts) = Main._GetModuleFromName(test_name)
-    for comp in parts:
-      if not Main._IsTestClass(getattr(obj, comp)):
-        break
-      obj = getattr(obj, comp)
-    if Main._IsTestClass(obj):
-      return obj
-    return None
-
-  @staticmethod
-  def _SetTestClassAttributes(test_name, attribute_name, value):
-    """Sets attributes for all the test classes found from |test_name|.
-
-    Args:
-      test_name:      name of the test
-      attribute_name: name of the attribute to set
-      value:          value to set the attribute to
-    """
-    class_obj = Main._GetTestClassFromName(test_name)
-    if class_obj is not None:
-      class_objs = [class_obj]
-    else:
-      class_objs = []
-      module, = Main._GetModuleFromName(class_obj)
-      for name in dir(module):
-        item = getattr(module, name)
-        if type(item) is type.TypeType:
-          class_objs += [item]
-    for c in class_objs:
-      setattr(c, attribute_name, value)
-
-  @staticmethod
   def _GetTestsFromName(name):
     """Get a list of all test names from the given string.
 
@@ -181,35 +154,6 @@ class Main(object):
     else:
       logging.warn('No tests in "%s"' % name)
       return []
-
-  def _HasTestCases(self, module_string):
-    """Determines if we have any test case classes in the module
-       identified by |module_string|."""
-    module = __import__(module_string)
-    for name in dir(module):
-      obj = getattr(module, name)
-      if Main._IsTestClass(obj):
-        return True
-    return False
-
-  def _GetTestNames(self, args):
-    """Returns a suite of tests loaded from the given args.
-
-    The given args can be either a module (ex: module1) or a testcase
-    (ex: module2.MyTestCase) or a test (ex: module1.MyTestCase.testX)
-    If empty, the tests in the already imported modules are loaded.
-
-    Args:
-      args: [module1, module2, module3.testcase, module4.testcase.testX]
-            These modules or test cases or tests should be importable
-    """
-    if not args:  # Load tests ourselves
-      logging.debug("Reading %s", self._tests_path)
-      if not os.path.exists(self._tests_path):
-        logging.warn("%s missing. Cannot load tests." % self._tests_path)
-      else:
-        args = self._GetTestNamesFrom(self._tests_path)
-    return args
 
   @staticmethod
   def _EvalDataFrom(filename):
@@ -275,33 +219,47 @@ class Main(object):
     selenium.test = test
     sys.modules['selenium.test'] = test
 
-    test_names = self._GetTestNames(self._args)
+    # Load and decide which tests to run.
+    test_names = self._GetTestNamesFrom(
+        os.path.join(os.path.dirname(__file__), self.TESTS_FILENAME))
+    all_tests_suite = unittest.defaultTestLoader.loadTestsFromNames(test_names)
+    filtered_suite = py_unittest_util.FilterTestSuite(
+        all_tests_suite, self._options.filter)
+
+    if self._options.list is True:
+      print '\n'.join(py_unittest_util.GetTestNamesFromSuite(filtered_suite))
+      sys.exit(0)
 
     # The tests expect to run with preset 'driver' and 'webserver' class
     # properties.
+    driver_exe = self._options.driver_exe or test_paths.CHROMEDRIVER_EXE
+    chrome_exe = self._options.chrome_exe or test_paths.CHROME_EXE
+    if driver_exe is None or not os.path.exists(os.path.expanduser(driver_exe)):
+      raise RuntimeError('ChromeDriver could not be found')
+    if chrome_exe is None or not os.path.exists(os.path.expanduser(chrome_exe)):
+      raise RuntimeError('Chrome could not be found')
+    driver_exe = os.path.expanduser(driver_exe)
+    chrome_exe = os.path.expanduser(chrome_exe)
     server = ChromeDriverLauncher(
-        self._options.driver_exe or test_paths.CHROMEDRIVER_EXE,
-        test_paths.WEBDRIVER_TEST_DATA).Launch()
-    driver = WebDriver(server.GetUrl(), {})
+        os.path.expanduser(driver_exe), test_paths.WEBDRIVER_TEST_DATA).Launch()
+    driver = WebDriver(server.GetUrl(),
+                       {'chrome.binary': os.path.expanduser(chrome_exe)})
     # The tests expect a webserver. Since ChromeDriver also operates as one,
     # just pass this dummy class with the right info.
     class DummyWebserver:
       pass
     webserver = DummyWebserver()
     webserver.port = server.GetPort()
-    for test in test_names:
-      Main._SetTestClassAttributes(test, 'driver', driver)
-      Main._SetTestClassAttributes(test, 'webserver', webserver)
+    for test in py_unittest_util.GetTestsFromSuite(filtered_suite):
+      test.__class__.driver = driver
+      test.__class__.webserver = webserver
 
-    # Load and run the tests.
-    logging.debug('Loading tests from %s', test_names)
-    loaded_tests = unittest.defaultTestLoader.loadTestsFromNames(test_names)
-    test_suite = unittest.TestSuite()
-    test_suite.addTests(loaded_tests)
     verbosity = 1
     if self._options.verbose:
       verbosity = 2
-    result = GTestTextTestRunner(verbosity=verbosity).run(test_suite)
+    result = py_unittest_util.GTestTextTestRunner(verbosity=verbosity).run(
+        filtered_suite)
+    driver.quit()
     server.Kill()
     sys.exit(not result.wasSuccessful())
 
