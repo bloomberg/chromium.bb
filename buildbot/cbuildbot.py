@@ -288,8 +288,7 @@ class SimpleBuilder(Builder):
       self._RunStage(stages.UploadPrebuiltsStage)
       return
     elif self.build_config['build_type'] == constants.REFRESH_PACKAGES_TYPE:
-      self._RunStage(stages.SDKTestStage)
-      self._RunStage(stages.UploadPrebuiltsStage)
+      self._RunStage(stages.RefreshPackageStatusStage)
       return
 
     self._RunStage(stages.UprevStage)
