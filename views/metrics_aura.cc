@@ -8,13 +8,22 @@
 #include <windows.h>
 #endif
 
+namespace {
+
+// Default double click interval in milliseconds.
+// Use the default double click interval value on gtk.
+const int kDefaultDoubleClickInterval = 500;
+
+}  // namespace
+
 namespace views {
 
 int GetDoubleClickInterval() {
 #if defined(OS_WIN)
   return ::GetDoubleClickTime();
 #else
-  return 5;
+  // TODO(jennyz): This value may need to be adjusted on different platforms.
+  return kDefaultDoubleClickInterval;
 #endif
 }
 
