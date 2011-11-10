@@ -59,7 +59,7 @@ deps = {
     'src/third_party/libjpeg_turbo':
         Var('git_url') + '/chromium/deps/libjpeg_turbo.git@dd03f0f2343b6b732fb65fe8bc38811be877e4f8',
     'src/third_party/libvpx':
-        Var('git_url') + '/chromium/deps/libvpx.git@bbfbc62f9925ae13d57ebb1e778e054817aa6d9b',
+        Var('git_url') + '/chromium/deps/libvpx.git@ff76a77415f22751105d33e49f615cae4f58b52b',
     'src/third_party/libyuv':
         Var('git_url') + '/external/libyuv.git@86e9487d0dd397779f948f2ecef4b46d240ee57c',
     'src/third_party/mozc/session':
