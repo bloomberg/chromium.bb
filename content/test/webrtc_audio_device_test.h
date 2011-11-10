@@ -6,6 +6,8 @@
 #define CONTENT_TEST_WEBRTC_AUDIO_DEVICE_TEST_H_
 #pragma once
 
+#include <string>
+
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,6 +22,12 @@ class AudioInputRendererHost;
 class AudioRendererHost;
 class RenderThreadImpl;
 class WebRTCMockRenderProcess;
+
+namespace base {
+namespace win {
+class ScopedCOMInitializer;
+}
+}
 
 namespace content {
 class ContentRendererClient;
@@ -93,6 +101,7 @@ class WebRTCAutoDelete {
 // when the audio code queries for hardware capabilities on the IO thread.
 class AudioUtilInterface {
  public:
+  virtual ~AudioUtilInterface() {}
   virtual double GetAudioHardwareSampleRate() = 0;
   virtual double GetAudioInputHardwareSampleRate() = 0;
 };
@@ -170,6 +179,8 @@ class WebRTCAudioDeviceTest
   scoped_ptr<content::TestBrowserThread> ui_thread_;
   // Initialized on our IO thread to satisfy BrowserThread::IO checks.
   scoped_ptr<content::TestBrowserThread> io_thread_;
+  // COM initialization on the IO thread for Windows.
+  scoped_ptr<base::win::ScopedCOMInitializer> initialize_com_;
 };
 
 // A very basic implementation of webrtc::Transport that acts as a transport

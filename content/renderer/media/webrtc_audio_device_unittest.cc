@@ -45,9 +45,7 @@ bool IsRunningHeadless() {
 
 // Basic test that instantiates and initializes an instance of
 // WebRtcAudioDeviceImpl.
-// TODO(tommi): Re-enable when the flakiness of CpuWindows in webrtc has
-// been fixed.
-TEST_F(WebRTCAudioDeviceTest, DISABLED_Construct) {
+TEST_F(WebRTCAudioDeviceTest, Construct) {
   AudioUtil audio_util;
   set_audio_util_callback(&audio_util);
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device(
@@ -65,9 +63,7 @@ TEST_F(WebRTCAudioDeviceTest, DISABLED_Construct) {
 
 // Uses WebRtcAudioDeviceImpl to play a local wave file.
 // Disabled when running headless since the bots don't have the required config.
-// TODO(tommi): Re-enable when the flakiness of CpuWindows in webrtc has
-// been fixed.
-TEST_F(WebRTCAudioDeviceTest, DISABLED_PlayLocalFile) {
+TEST_F(WebRTCAudioDeviceTest, PlayLocalFile) {
   if (IsRunningHeadless())
     return;
 
