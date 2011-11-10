@@ -193,6 +193,7 @@ cr.define('options.accounts', function() {
         var removeButton = this.ownerDocument.createElement('button');
         removeButton.classList.add('raw-button');
         removeButton.classList.add('remove-user-button');
+        removeButton.classList.add('custom-appearance');
         this.appendChild(removeButton);
       }
     },
