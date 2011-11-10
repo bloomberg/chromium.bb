@@ -174,11 +174,6 @@ FileManager.prototype = {
   const DOWNLOADS_DIRECTORY = '/Downloads';
 
   /**
-   * Height of the downloads folder warning, in px.
-   */
-  const DOWNLOADS_WARNING_HEIGHT = '57px';
-
-  /**
    * Location of the FAQ about the downloads directory.
    */
   const DOWNLOADS_FAQ_URL = 'http://www.google.com/support/chromeos/bin/' +
@@ -2602,16 +2597,6 @@ FileManager.prototype = {
   };
 
   /**
-   * Returns true if the local disk is low on available space.
-   *
-   * TODO(rginda): This is hardcoded to return false now, needs to be hooked
-   * up for real after tbarzac's change to report disk space lands.
-   */
-  FileManager.prototype.isLocalDiskSpaceLow = function() {
-    return false;
-  };
-
-  /**
    * Queue up a file copy operation based on the current clipboard.
    */
   FileManager.prototype.pasteFromClipboard = function(successCallback) {
@@ -2826,7 +2811,25 @@ FileManager.prototype = {
     } else {
       return this.changeDirectory(entry.fullPath);
     }
-  }
+  };
+
+  /**
+   * Show or hide the "Low disk space" warning.
+   * @param {boolean} show True if the box need to be shown.
+   */
+  FileManager.prototype.showLowDiskSpaceWarning_ = function(show) {
+    if (show) {
+      if (this.downloadsWarning_.hasAttribute('hidden')) {
+        this.downloadsWarning_.removeAttribute('hidden');
+        this.requestResize_(0);
+      }
+    } else {
+      if (!this.downloadsWarning_.hasAttribute('hidden')) {
+        this.downloadsWarning_.setAttribute('hidden', '');
+        this.requestResize_(100);
+      }
+    }
+  };
 
   /**
    * Update the UI when the current directory changes.
@@ -2834,23 +2837,10 @@ FileManager.prototype = {
    * @param {cr.Event} event The directory-changed event.
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
-    if (this.currentDirEntry_.fullPath.substr(0, DOWNLOADS_DIRECTORY.length) ==
-        DOWNLOADS_DIRECTORY &&
-        this.isLocalDiskSpaceLow()) {
-      if (this.downloadsWarning_.style.height != DOWNLOADS_WARNING_HEIGHT) {
-        // Current path starts with DOWNLOADS_DIRECTORY, show the warning.
-        this.downloadsWarning_.style.height = DOWNLOADS_WARNING_HEIGHT;
-        this.requestResize_(100);
-      }
-    } else {
-      if (this.downloadsWarning_.style.height != '0') {
-        this.downloadsWarning_.style.height = '0';
-        this.requestResize_(100);
-      }
-    }
-
     this.updateCommands_();
     this.updateOkButton_();
+
+    this.checkFreeSpace_(this.currentDirEntry_.fullPath);
 
     // New folder should never be enabled in the root or media/ directories.
     this.newFolderButton_.disabled = isSystemDirEntry(this.currentDirEntry_);
@@ -3596,4 +3586,57 @@ FileManager.prototype = {
 
     return true;
   };
+
+  /**
+   * Start or stop monitoring free space depending on the new value of current
+   * directory path. In case the space is low shows a warning box.
+   * @param {string} currentPath New path to the current directory.
+   */
+  FileManager.prototype.checkFreeSpace_ = function(currentPath) {
+    if (currentPath.substr(0, DOWNLOADS_DIRECTORY.length) ==
+        DOWNLOADS_DIRECTORY) {
+      // Setup short timeout if currentPath just changed.
+      if (this.checkFreeSpaceTimer_)
+        clearTimeout(this.checkFreeSpaceTimer_);
+
+      // Right after changing directory the bottom pannel usually hides.
+      // Simultaneous animation looks unpleasent. Also showing the warning is
+      // lower priority task. So delay it.
+      this.checkFreeSpaceTimer_ = setTimeout(doCheck, 500);
+    } else {
+      if (this.checkFreeSpaceTimer_) {
+        clearTimeout(this.checkFreeSpaceTimer_);
+        this.checkFreeSpaceTimer_ = 0;
+
+        // Hide warning immediately.
+        this.showLowDiskSpaceWarning_(false);
+      }
+    }
+
+    var self = this;
+    function doCheck() {
+      self.resolvePath(DOWNLOADS_DIRECTORY, function(downloadsDirEntry) {
+        chrome.fileBrowserPrivate.getSizeStats(downloadsDirEntry.toURL(),
+          function(sizeStats) {
+            // sizeStats is undefined if some error occur.
+            var lowDiskSpace = false;
+            if (sizeStats && sizeStats.totalSizeKB > 0) {
+              var ratio = sizeStats.remainingSizeKB / sizeStats.totalSizeKB;
+
+              lowDiskSpace = ratio < 0.2;
+              self.showLowDiskSpaceWarning_(lowDiskSpace);
+            }
+
+            // If disk space is low check it more often. User can delete files
+            // manually and we should not bother her with warning in this case.
+            setTimeout(doCheck, lowDiskSpace ? 1000 * 5 : 1000 * 30);
+          });
+      }, onError);
+
+      function onError(err) {
+        console.log('Error while checking free space: ' + err);
+        setTimeout(doCheck, 1000 * 60);
+      }
+    }
+  }
 })();

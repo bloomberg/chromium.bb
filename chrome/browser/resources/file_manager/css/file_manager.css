@@ -185,13 +185,17 @@ button.thumbnail-view > img {
 .downloads-warning {
   display: -webkit-box;
   -webkit-box-orient: horizontal;
-  height: 0;
-  -webkit-transition: height 0.07s linear;
+  height: 57px;
   background-color: #f0f0f0;
   font-size: 13px;
   color: #666;
   -webkit-box-align: center;
   overflow: hidden;
+  -webkit-transition: height 0.07s linear;
+}
+
+.downloads-warning[hidden] {
+  height: 0;
 }
 
 .downloads-warning img {
