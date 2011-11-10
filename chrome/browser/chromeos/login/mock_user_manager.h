@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,19 +14,13 @@
 
 namespace chromeos {
 
+// TODO(ivankr): add an interface for UserManager to implement.
 class MockUserManager : public UserManager {
  public:
   MockUserManager();
   virtual ~MockUserManager();
 
-  MOCK_CONST_METHOD0(GetUsers, std::vector<User>());
-  MOCK_METHOD0(OffTheRecordUserLoggedIn, void());
-  MOCK_METHOD1(UserLoggedIn, void(const std::string&));
-  MOCK_METHOD2(RemoveUser, void(const std::string&, RemoveUserDelegate*));
-  MOCK_METHOD1(IsKnownUser, bool(const std::string&));
-  MOCK_CONST_METHOD0(logged_in_user, const User&());
-  MOCK_CONST_METHOD0(current_user_is_owner, bool());
-  MOCK_METHOD1(set_current_user_is_owner, void(bool));
+  MOCK_CONST_METHOD1(IsKnownUser, bool(const std::string&));
 };
 
 }  // namespace chromeos

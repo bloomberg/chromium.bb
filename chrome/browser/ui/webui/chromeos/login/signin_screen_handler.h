@@ -78,7 +78,7 @@ class SigninScreenHandlerDelegate {
   virtual void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) = 0;
 
   // Returns users list to be shown.
-  virtual const std::vector<UserManager::User>& GetUsers() const = 0;
+  virtual const UserList& GetUsers() const = 0;
 
   // Whether login as guest is available.
   virtual bool IsShowGuest() const = 0;

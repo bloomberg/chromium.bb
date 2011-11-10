@@ -31,7 +31,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
-#include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
@@ -240,7 +239,7 @@ class OAuthLoginVerifier : public GaiaOAuthConsumer {
     // caused by network error.
     if (error.state() != GoogleServiceAuthError::CONNECTION_FAILED) {
       UserManager::Get()->SaveUserOAuthStatus(username_,
-            UserManager::OAUTH_TOKEN_STATUS_INVALID);
+                                              User::OAUTH_TOKEN_STATUS_INVALID);
     } else {
       UserManager::Get()->set_offline_login(true);
     }
@@ -829,7 +828,7 @@ void LoginUtilsImpl::RespectLocalePreference(Profile* profile) {
 void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
   VLOG(1) << "Completing incognito login";
 
-  UserManager::Get()->OffTheRecordUserLoggedIn();
+  UserManager::Get()->GuestUserLoggedIn();
 
   if (CrosLibrary::Get()->EnsureLoaded()) {
     // Session Manager may kill the chrome anytime after this point.
@@ -974,12 +973,8 @@ scoped_refptr<Authenticator> LoginUtilsImpl::CreateAuthenticator(
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin))
     authenticator_ = NULL;
 
-  if (authenticator_ == NULL) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kParallelAuth))
-      authenticator_ = new ParallelAuthenticator(consumer);
-    else
-      authenticator_ = new GoogleAuthenticator(consumer);
-  }
+  if (authenticator_ == NULL)
+    authenticator_ = new ParallelAuthenticator(consumer);
   return authenticator_;
 }
 
@@ -1081,7 +1076,7 @@ bool LoginUtilsImpl::ReadOAuth1AccessToken(Profile* user_profile,
                                            std::string* secret) {
   // Skip reading oauth token if user does not have a valid status.
   if (UserManager::Get()->GetUserOAuthStatus(username_) !=
-      UserManager::OAUTH_TOKEN_STATUS_VALID) {
+      User::OAUTH_TOKEN_STATUS_VALID) {
     return false;
   }
 
@@ -1115,7 +1110,7 @@ void LoginUtilsImpl::StoreOAuth1AccessToken(Profile* user_profile,
   // ...then record the presence of valid OAuth token for this account in local
   // state as well.
   UserManager::Get()->SaveUserOAuthStatus(username_,
-      UserManager::OAUTH_TOKEN_STATUS_VALID);
+                                          User::OAUTH_TOKEN_STATUS_VALID);
 }
 
 void LoginUtilsImpl::VerifyOAuth1AccessToken(Profile* user_profile,

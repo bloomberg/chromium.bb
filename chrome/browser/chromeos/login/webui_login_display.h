@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/login_display.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "views/widget/widget.h"
 
@@ -28,11 +28,11 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual ~WebUILoginDisplay();
 
   // LoginDisplay implementation:
-  virtual void Init(const std::vector<UserManager::User>& users,
+  virtual void Init(const UserList& users,
                     bool show_guest,
                     bool show_new_user) OVERRIDE;
   virtual void OnBeforeUserRemoved(const std::string& username) OVERRIDE;
-  virtual void OnUserImageChanged(UserManager::User* user) OVERRIDE;
+  virtual void OnUserImageChanged(const User& user) OVERRIDE;
   virtual void OnUserRemoved(const std::string& username) OVERRIDE;
   virtual void OnFadeOut() OVERRIDE;
   virtual void OnLoginSuccess(const std::string& username) OVERRIDE;
@@ -56,13 +56,13 @@ class WebUILoginDisplay : public LoginDisplay,
       LoginDisplayWebUIHandler* webui_handler) OVERRIDE;
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password);
-  virtual const std::vector<UserManager::User>& GetUsers() const OVERRIDE;
+  virtual const UserList& GetUsers() const OVERRIDE;
   virtual bool IsShowGuest() const OVERRIDE;
   virtual bool IsShowNewUser() const OVERRIDE;
 
  private:
   // Set of Users that are visible.
-  std::vector<UserManager::User> users_;
+  UserList users_;
 
   // Whether to show guest login.
   bool show_guest_;

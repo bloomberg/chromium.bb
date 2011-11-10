@@ -9,7 +9,7 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/image_decoder.h"
 
@@ -23,45 +23,27 @@ namespace chromeos {
 class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
                         public ImageDecoder::Delegate {
  public:
-  class Delegate {
-   public:
-    // Invoked when user image has been read.
-    // |should_save_image| indicates if user image should be saved somewhere
-    // for later use.
-    virtual void OnImageLoaded(const std::string& username,
-                               const SkBitmap& image,
-                               int image_index,
-                               bool should_save_image) = 0;
+  // Callback used to inidicate that image has been loaded.
+  typedef base::Callback<void(const SkBitmap& image)> LoadedCallback;
 
-   protected:
-    virtual ~Delegate() {}
-  };
+  UserImageLoader();
 
-  explicit UserImageLoader(Delegate* delegate);
-
-  // Start reading the image for |username| from |filepath| on the file thread.
-  // |should_save_image| is passed to OnImageLoaded handler.
-  void Start(const std::string& username,
-             const std::string& filepath,
-             int image_index,
-             bool should_save_image);
-
-  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+  // Start reading the image from |filepath| on the file thread. Calls
+  // |loaded_cb| when image has been successfully loaded.
+  // If |size| is positive, image is resized to |size|x|size| pixels.
+  void Start(const std::string& filepath, int size,
+             const LoadedCallback& loaded_cb);
 
  private:
   friend class base::RefCountedThreadSafe<UserImageLoader>;
 
   // Contains attributes we need to know about each image we decode.
   struct ImageInfo {
-    ImageInfo(const std::string& username, int image_index, bool should_save)
-        : username(username),
-          image_index(image_index),
-          should_save_image(should_save) {
-    }
+    ImageInfo(int size, const LoadedCallback& loaded_cb);
+    ~ImageInfo();
 
-    std::string username;
-    int image_index;
-    bool should_save_image;
+    int size;
+    LoadedCallback loaded_cb;
   };
 
   typedef std::map<const ImageDecoder*, ImageInfo> ImageInfoMap;
@@ -77,14 +59,8 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
                               const SkBitmap& decoded_image);
   virtual void OnDecodeImageFailed(const ImageDecoder* decoder);
 
-  // Notifies the delegate that image was loaded, on delegate's thread.
-  void NotifyDelegate(const SkBitmap& image, const ImageInfo& image_info);
-
   // The message loop object of the thread in which we notify the delegate.
   MessageLoop* target_message_loop_;
-
-  // Delegate to notify about finishing the load of the image.
-  Delegate* delegate_;
 
   // Holds info structures about all images we're trying to decode.
   // Accessed only on FILE thread.

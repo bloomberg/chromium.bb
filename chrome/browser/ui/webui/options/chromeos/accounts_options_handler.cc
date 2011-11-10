@@ -103,13 +103,12 @@ void AccountsOptionsHandler::UnwhitelistUser(const ListValue* args) {
 void AccountsOptionsHandler::WhitelistExistingUsers(const ListValue* args) {
   ListValue whitelist_users;
 
-  UserVector users = UserManager::Get()->GetUsers();
-  for (UserVector::const_iterator it = users.begin();
-       it < users.end(); ++it) {
-    const std::string& email = it->email();
+  const UserList& users = UserManager::Get()->GetUsers();
+  for (UserList::const_iterator it = users.begin(); it < users.end(); ++it) {
+    const std::string& email = (*it)->email();
     if (!UserCrosSettingsProvider::IsEmailInCachedWhitelist(email)) {
       DictionaryValue* user_dict = new DictionaryValue;
-      user_dict->SetString("name", it->GetDisplayName());
+      user_dict->SetString("name", (*it)->GetDisplayName());
       user_dict->SetString("email", email);
       user_dict->SetBoolean("owner", false);
 

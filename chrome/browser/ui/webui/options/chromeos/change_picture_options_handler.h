@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CHANGE_PICTURE_OPTIONS_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/profile_image_downloader.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -23,8 +22,7 @@ namespace chromeos {
 // ChromeOS user image options page UI handler.
 class ChangePictureOptionsHandler : public OptionsPageUIHandler,
                                     public SelectFileDialog::Listener,
-                                    public TakePhotoDialog::Delegate,
-                                    public ProfileImageDownloader::Delegate {
+                                    public TakePhotoDialog::Delegate {
  public:
   ChangePictureOptionsHandler();
   virtual ~ChangePictureOptionsHandler();
@@ -43,9 +41,6 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
 
   // Sends current selection to the page.
   void SendSelectedImage();
-
-  // Starts download of user profile image.
-  void DownloadProfileImage();
 
   // Starts camera presence check.
   void CheckCameraPresence();
@@ -76,11 +71,6 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
   // TakePhotoDialog::Delegate implementation.
   virtual void OnPhotoAccepted(const SkBitmap& photo) OVERRIDE;
 
-  // ProfileImageDownloader::Delegate implementation.
-  virtual void OnDownloadSuccess(const SkBitmap& image) OVERRIDE;
-  virtual void OnDownloadFailure() OVERRIDE;
-  virtual void OnDownloadDefaultImage() OVERRIDE;
-
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -92,21 +82,14 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
   // Returns handle to browser window or NULL if it can't be found.
   gfx::NativeWindow GetBrowserWindow() const;
 
-  // Records previous image index and content so that user can switch
-  // back to it.
-  void RecordPreviousImage(int image_index, const SkBitmap& image);
-
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 
+  // Previous user image from camera/file and its data URL.
   SkBitmap previous_image_;
-  int previous_image_index_;
   std::string previous_image_data_url_;
 
-  SkBitmap profile_image_;
-  std::string profile_image_data_url_;
-
-  // Downloads user profile image when it's not set as current image.
-  scoped_ptr<ProfileImageDownloader> profile_image_downloader_;
+  // Index of the previous user image.
+  int previous_image_index_;
 
   content::NotificationRegistrar registrar_;
 

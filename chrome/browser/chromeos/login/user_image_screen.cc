@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -40,6 +41,10 @@ UserImageScreen::UserImageScreen(ScreenObserver* screen_observer,
       this,
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
+      content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
+      content::NotificationService::AllSources());
 }
 
 UserImageScreen::~UserImageScreen() {
@@ -57,23 +62,10 @@ void UserImageScreen::Show() {
     return;
 
   actor_->Show();
+  actor_->SelectImage(UserManager::Get()->logged_in_user().image_index());
 
-  UserManager* user_manager = UserManager::Get();
-  std::string logged_in_user = user_manager->logged_in_user().email();
-  int selected_image_index =
-      user_manager->GetUserDefaultImageIndex(logged_in_user);
-  // The image must have been assigned by UserManager on new user login but
-  // under some circumstances (i.e. the data is not written to Local State
-  // or the file was corrupt) |kExternalImageIndex| could still be returned.
-  if (selected_image_index == UserManager::User::kInvalidImageIndex) {
-    LOG(WARNING) << "Default user image index invalid!";
-    selected_image_index = 0;
-  }
-  actor_->SelectImage(selected_image_index);
-
-  profile_image_downloader_.reset(new ProfileImageDownloader(this));
-  profile_image_downloader_->Start();
-  profile_image_load_start_time_ = base::Time::Now();
+  // Start fetching the profile image.
+  UserManager::Get()->DownloadProfileImage();
 
   WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT).c_str(),
@@ -113,51 +105,34 @@ void UserImageScreen::StopCamera() {
   camera_controller_.Stop();
 }
 
-void UserImageScreen::OnNonDefaultImageSelected(const SkBitmap& image,
-                                                int image_index) {
-  camera_controller_.Stop();
-
-  UserManager* user_manager = UserManager::Get();
-  DCHECK(user_manager);
-
-  const UserManager::User& user = user_manager->logged_in_user();
-  DCHECK(!user.email().empty());
-
-  user_manager->SetLoggedInUserImage(image, image_index);
-  user_manager->SaveUserImage(user.email(), image, image_index);
-  get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
-}
-
 void UserImageScreen::OnPhotoTaken(const SkBitmap& image) {
-  OnNonDefaultImageSelected(image, UserManager::User::kExternalImageIndex);
+  UserManager* user_manager = UserManager::Get();
+  user_manager->SaveUserImage(user_manager->logged_in_user().email(), image);
+
+  get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
+
   UMA_HISTOGRAM_ENUMERATION("UserImage.FirstTimeChoice",
                             kHistogramImageFromCamera,
                             kHistogramImagesCount);
 }
 
-void UserImageScreen::OnProfileImageSelected(const SkBitmap& image) {
-  OnNonDefaultImageSelected(image, UserManager::User::kProfileImageIndex);
+void UserImageScreen::OnProfileImageSelected() {
+  UserManager* user_manager = UserManager::Get();
+  user_manager->SaveUserImageFromProfileImage(
+      user_manager->logged_in_user().email());
+
+  get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
+
   UMA_HISTOGRAM_ENUMERATION("UserImage.FirstTimeChoice",
                             kHistogramImageFromProfile,
                             kHistogramImagesCount);
 }
 
 void UserImageScreen::OnDefaultImageSelected(int index) {
-  camera_controller_.Stop();
-
   UserManager* user_manager = UserManager::Get();
-  DCHECK(user_manager);
+  user_manager->SaveUserDefaultImageIndex(
+      user_manager->logged_in_user().email(), index);
 
-  const UserManager::User& user = user_manager->logged_in_user();
-  DCHECK(!user.email().empty());
-
-  const SkBitmap* image = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      kDefaultImageResources[index]);
-  user_manager->SetLoggedInUserImage(*image, index);
-  user_manager->SaveUserImagePath(
-      user.email(),
-      GetDefaultImagePath(index),
-      index);
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 
   UMA_HISTOGRAM_ENUMERATION("UserImage.FirstTimeChoice",
@@ -173,44 +148,31 @@ void UserImageScreen::OnActorDestroyed(UserImageScreenActor* actor) {
 void UserImageScreen::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
-  bool is_screen_locked = *content::Details<bool>(details).ptr();
-  if (is_screen_locked)
-    StopCamera();
-  else if (actor_ && actor_->IsCapturing())
-    StartCamera();
-}
-
-void UserImageScreen::OnDownloadSuccess(const SkBitmap& image) {
-  DCHECK(profile_image_load_start_time_.is_null());
-
-  base::TimeDelta delta = base::Time::Now() - profile_image_load_start_time_;
-  VLOG(1) << "Profile image download time: " << delta.InSecondsF();
-  UMA_HISTOGRAM_TIMES("UserImage.FirstTimeProfileImageDownload", delta);
-  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.NewUser",
-                            ProfileImageDownloader::kDownloadSuccess,
-                            ProfileImageDownloader::kDownloadResultsCount);
-
-  if (actor_)
-    actor_->AddProfileImage(image);
-}
-
-void UserImageScreen::OnDownloadFailure() {
-  VLOG(1) << "Download of profile image for new user failed.";
-  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.NewUser",
-                            ProfileImageDownloader::kDownloadFailure,
-                            ProfileImageDownloader::kDownloadResultsCount);
-  if (actor_)
-    actor_->OnProfileImageAbsent();
-}
-
-void UserImageScreen::OnDownloadDefaultImage() {
-  VLOG(1) << "New user has the default profile image.";
-  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.NewUser",
-                            ProfileImageDownloader::kDownloadDefault,
-                            ProfileImageDownloader::kDownloadResultsCount);
-  if (actor_)
-    actor_->OnProfileImageAbsent();
+  switch (type) {
+    case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED: {
+      bool is_screen_locked = *content::Details<bool>(details).ptr();
+      if (is_screen_locked)
+        StopCamera();
+      else if (actor_ && actor_->IsCapturing())
+        StartCamera();
+      break;
+    }
+    case chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED: {
+      // We've got a new profile image.
+      if (actor_)
+        actor_->AddProfileImage(
+            *content::Details<const SkBitmap>(details).ptr());
+      break;
+    }
+    case chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED: {
+      // User has a default profile image or fetching profile image has failed.
+      if (actor_)
+        actor_->OnProfileImageAbsent();
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
 }
 
 }  // namespace chromeos

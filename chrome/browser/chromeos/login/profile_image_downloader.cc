@@ -180,7 +180,8 @@ void ProfileImageDownloader::Start() {
     auth_token_ =
         service->GetTokenForService(GaiaConstants::kPicasaService);
     StartFetchingImage();
-  } else {
+  } else if (registrar_.IsEmpty()) {
+    LOG(ERROR) << "Subscribe to NOTIFICATION_TOKEN_AVAILABLE";
     registrar_.Add(this,
                    chrome::NOTIFICATION_TOKEN_AVAILABLE,
                    content::Source<TokenService>(service));

@@ -11,7 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/camera_detector.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/views/window.h"
@@ -33,7 +33,8 @@ namespace chromeos {
 UserImageScreenHandler::UserImageScreenHandler()
     : screen_(NULL),
       show_on_init_(false),
-      selected_image_(UserManager::User::kInvalidImageIndex),
+      selected_image_(User::kInvalidImageIndex),
+      user_photo_data_url_(chrome::kAboutBlankURL),
       profile_picture_data_url_(chrome::kAboutBlankURL),
       profile_picture_absent_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -68,11 +69,11 @@ void UserImageScreenHandler::Initialize() {
   web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setUserImages",
                                   image_urls);
 
-  if (selected_image_ != UserManager::User::kInvalidImageIndex)
+  if (selected_image_ != User::kInvalidImageIndex)
     SelectImage(selected_image_);
 
-  if (!profile_picture_.empty())
-    AddProfileImage(profile_picture_);
+  if (profile_picture_data_url_ != chrome::kAboutBlankURL)
+    SendProfileImage(profile_picture_data_url_);
   else if (profile_picture_absent_)
     OnProfileImageAbsent();
 
@@ -134,25 +135,6 @@ bool UserImageScreenHandler::IsCapturing() const {
   return false;
 }
 
-void UserImageScreenHandler::AddProfileImage(const SkBitmap& image) {
-  profile_picture_ = image;
-  profile_picture_data_url_ = web_ui_util::GetImageDataUrl(image);
-  if (page_is_ready()) {
-    base::StringValue data_url(profile_picture_data_url_);
-    web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setProfileImage",
-                                    data_url);
-  }
-}
-
-void UserImageScreenHandler::OnProfileImageAbsent() {
-  profile_picture_absent_ = true;
-  if (page_is_ready()) {
-    scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
-    web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setProfileImage",
-                                    *null_value);
-  }
-}
-
 void UserImageScreenHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("takePhoto",
       base::Bind(&UserImageScreenHandler::HandleTakePhoto,
@@ -168,10 +150,33 @@ void UserImageScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+void UserImageScreenHandler::AddProfileImage(const SkBitmap& image) {
+  profile_picture_data_url_ = web_ui_util::GetImageDataUrl(image);
+  SendProfileImage(profile_picture_data_url_);
+}
+
+void UserImageScreenHandler::SendProfileImage(const std::string& data_url) {
+  if (page_is_ready()) {
+    base::StringValue data_url_value(data_url);
+    web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setProfileImage",
+                                    data_url_value);
+  }
+}
+
+void UserImageScreenHandler::OnProfileImageAbsent() {
+  profile_picture_absent_ = true;
+  if (page_is_ready()) {
+    scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
+    web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setProfileImage",
+                                    *null_value);
+  }
+}
+
 void UserImageScreenHandler::OnPhotoAccepted(const SkBitmap& photo) {
   user_photo_ = photo;
-  selected_image_ = UserManager::User::kExternalImageIndex;
-  base::StringValue data_url(web_ui_util::GetImageDataUrl(user_photo_));
+  user_photo_data_url_ = web_ui_util::GetImageDataUrl(user_photo_);
+  selected_image_ = User::kExternalImageIndex;
+  base::StringValue data_url(user_photo_data_url_);
   web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setUserPhoto",
                                   data_url);
 }
@@ -194,26 +199,35 @@ void UserImageScreenHandler::HandleSelectImage(const base::ListValue* args) {
     NOTREACHED();
     return;
   }
-  int user_image_index = UserManager::User::kInvalidImageIndex;
-  if (IsDefaultImageUrl(image_url, &user_image_index))
+  if (image_url.empty())
+    return;
+
+  int user_image_index = User::kInvalidImageIndex;
+  if (IsDefaultImageUrl(image_url, &user_image_index)) {
     selected_image_ = user_image_index;
-  else if (image_url == profile_picture_data_url_)
-    selected_image_ = UserManager::User::kProfileImageIndex;
-  else
-    selected_image_ = UserManager::User::kExternalImageIndex;
+  } else if (image_url == user_photo_data_url_) {
+    selected_image_ = User::kExternalImageIndex;
+  } else {
+    selected_image_ = User::kProfileImageIndex;
+  }
 }
 
 void UserImageScreenHandler::HandleImageAccepted(const base::ListValue* args) {
   DCHECK(args && args->empty());
   if (!screen_)
     return;
-  if (selected_image_ == UserManager::User::kExternalImageIndex) {
-    screen_->OnPhotoTaken(user_photo_);
-  } else if (selected_image_ == UserManager::User::kProfileImageIndex) {
-    screen_->OnProfileImageSelected(profile_picture_);
-  } else {
-    DCHECK(selected_image_ >= 0);
-    screen_->OnDefaultImageSelected(selected_image_);
+  switch (selected_image_) {
+    case User::kExternalImageIndex:
+      screen_->OnPhotoTaken(user_photo_);
+      break;
+
+    case User::kProfileImageIndex:
+      screen_->OnProfileImageSelected();
+      break;
+
+    default:
+      DCHECK(selected_image_ >= 0 && selected_image_ < kDefaultImagesCount);
+      screen_->OnDefaultImageSelected(selected_image_);
   }
 }
 

@@ -16,12 +16,10 @@ namespace chromeos {
 std::vector<unsigned char> UserImageSource::GetUserImage(
     const std::string& email) const {
   std::vector<unsigned char> user_image;
-  chromeos::UserVector users = chromeos::UserManager::Get()->GetUsers();
-  for (size_t i = 0; i < users.size(); ++i) {
-    if (users[i].email() == email) {
-      gfx::PNGCodec::EncodeBGRASkBitmap(users[i].image(), false, &user_image);
-      return user_image;
-    }
+  const chromeos::User* user = chromeos::UserManager::Get()->FindUser(email);
+  if (user) {
+    gfx::PNGCodec::EncodeBGRASkBitmap(user->image(), false, &user_image);
+    return user_image;
   }
   gfx::PNGCodec::EncodeBGRASkBitmap(
       *ResourceBundle::GetSharedInstance().GetBitmapNamed(

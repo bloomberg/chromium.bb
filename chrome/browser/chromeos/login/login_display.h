@@ -11,7 +11,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
@@ -71,14 +71,13 @@ class LoginDisplay : public RemoveUserDelegate {
 
   // Initializes login UI with the user pods based on list of known users and
   // guest, new user pods if those are enabled.
-  virtual void Init(const std::vector<UserManager::User>& users,
+  virtual void Init(const UserList& users,
                     bool show_guest,
                     bool show_new_user) = 0;
 
-
   // Called when user image has been changed.
   // |user| contains updated user.
-  virtual void OnUserImageChanged(UserManager::User* user) = 0;
+  virtual void OnUserImageChanged(const User& user) = 0;
 
   // After this call login display should be ready to be smoothly destroyed
   // (e.g. hide throbber, etc.).

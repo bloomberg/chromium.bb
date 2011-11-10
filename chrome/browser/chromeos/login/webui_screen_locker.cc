@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -131,8 +132,8 @@ void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
   lock_window_->Show();
   OnWindowCreated();
   LoadURL(GURL(kLoginURL));
-  UserVector users;
-  users.push_back(chromeos::UserManager::Get()->logged_in_user());
+  // User list consisting of a single logged-in user.
+  UserList users(1, &chromeos::UserManager::Get()->logged_in_user());
   login_display_.reset(new WebUILoginDisplay(this));
   login_display_->set_background_bounds(bounds);
   login_display_->set_parent_window(
@@ -177,7 +178,7 @@ void WebUIScreenLocker::SetSignoutEnabled(bool enabled) {
 }
 
 void WebUIScreenLocker::ShowErrorMessage(const string16& message,
-                                        bool sign_out_only) {
+                                         bool sign_out_only) {
   // TODO(flackr): Use login_display_ to show error message (requires either
   // adding a method to display error strings or strictly passing error ids).
   base::FundamentalValue login_attempts_value(0);
@@ -192,7 +193,7 @@ void WebUIScreenLocker::ShowErrorMessage(const string16& message,
 }
 
 void WebUIScreenLocker::ShowCaptchaAndErrorMessage(const GURL& captcha_url,
-                                                  const string16& message) {
+                                                   const string16& message) {
   ShowErrorMessage(message, true);
 }
 
@@ -222,7 +223,7 @@ void WebUIScreenLocker::Observe(
   if (type != chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED)
     return;
 
-  UserManager::User* user = content::Details<UserManager::User>(details).ptr();
+  const User& user = *content::Details<User>(details).ptr();
   login_display_->OnUserImageChanged(user);
 }
 

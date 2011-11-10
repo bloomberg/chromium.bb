@@ -39,8 +39,8 @@ class MockLoginDisplay : public LoginDisplay {
       : LoginDisplay(NULL, gfx::Rect()) {
   }
 
-  MOCK_METHOD3(Init, void(const UserVector&, bool, bool));
-  MOCK_METHOD1(OnUserImageChanged, void(UserManager::User*));
+  MOCK_METHOD3(Init, void(const UserList&, bool, bool));
+  MOCK_METHOD1(OnUserImageChanged, void(const User&));
   MOCK_METHOD0(OnFadeOut, void(void));
   MOCK_METHOD1(OnLoginSuccess, void(const std::string&));
   MOCK_METHOD1(SetUIEnabled, void(bool));
@@ -151,7 +151,7 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
   virtual void SetUpOnMainThread() {
     ExistingUserController* controller =
         new ExistingUserController(mock_login_display_host_.get());
-    controller->Init(UserVector());
+    controller->Init(UserList());
     MockLoginPerformerDelegate* mock_delegate =
           new MockLoginPerformerDelegate(controller);
     existing_user_controller()->set_login_performer_delegate(mock_delegate);

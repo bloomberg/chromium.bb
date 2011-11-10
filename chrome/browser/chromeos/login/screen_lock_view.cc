@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/textfield_with_margin.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_view.h"
 #include "chrome/browser/chromeos/login/username_view.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
@@ -139,7 +139,7 @@ void ScreenLockView::Init() {
   set_host_view(password_field_);
 
   // User icon.
-  UserManager::User user = screen_locker_->user();
+  const User& user = screen_locker_->user();
   user_view_->SetImage(user.image(), user.image());
 
   // User name.
@@ -254,7 +254,7 @@ void ScreenLockView::Observe(
   if (type != chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED || !user_view_)
     return;
 
-  UserManager::User* user = content::Details<UserManager::User>(details).ptr();
+  User* user = content::Details<User>(details).ptr();
   if (screen_locker_->user().email() != user->email())
     return;
   user_view_->SetImage(user->image(), user->image());

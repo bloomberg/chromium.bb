@@ -59,9 +59,10 @@ SelectFileDialog::FileTypeInfo GetUserImageFileTypeInfo() {
 
 ChangePictureOptionsHandler::ChangePictureOptionsHandler()
     : previous_image_data_url_(chrome::kAboutBlankURL),
-      profile_image_data_url_(chrome::kAboutBlankURL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
+      content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
       content::NotificationService::AllSources());
 }
 
@@ -71,8 +72,6 @@ ChangePictureOptionsHandler::~ChangePictureOptionsHandler() {
 }
 
 void ChangePictureOptionsHandler::Initialize() {
-  const UserManager::User& user = UserManager::Get()->logged_in_user();
-
   // If no camera presence check has been performed in this session,
   // start one now.
   if (CameraDetector::camera_presence() ==
@@ -83,10 +82,6 @@ void ChangePictureOptionsHandler::Initialize() {
   // presume it is present if no check has been performed yet.
   SetCameraPresent(CameraDetector::camera_presence() !=
                    CameraDetector::kCameraAbsent);
-
-  // Save previous profile image as data URL, if any.
-  if (user.default_image_index() == UserManager::User::kProfileImageIndex)
-    profile_image_data_url_ = web_ui_util::GetImageDataUrl(user.image());
 
   SendAvailableImages();
 }
@@ -134,12 +129,6 @@ void ChangePictureOptionsHandler::SendAvailableImages() {
                                   image_urls);
 }
 
-void ChangePictureOptionsHandler::DownloadProfileImage() {
-  if (!profile_image_downloader_.get())
-    profile_image_downloader_.reset(new ProfileImageDownloader(this));
-  profile_image_downloader_->Start();
-}
-
 void ChangePictureOptionsHandler::HandleChooseFile(const ListValue* args) {
   DCHECK(args && args->empty());
   if (!select_file_dialog_.get())
@@ -183,37 +172,46 @@ void ChangePictureOptionsHandler::HandleGetSelectedImage(
   DCHECK(args && args->empty());
   CheckCameraPresence();
   SendSelectedImage();
-  DownloadProfileImage();
+  // Fetch user's profile picture again to see if it has changed.
+  UserManager::Get()->DownloadProfileImage();
 }
 
 void ChangePictureOptionsHandler::SendSelectedImage() {
-  const UserManager::User& user = UserManager::Get()->logged_in_user();
+  const User& user = UserManager::Get()->logged_in_user();
   DCHECK(!user.email().empty());
 
-  int image_index = user.default_image_index();
-  if (image_index == UserManager::User::kInvalidImageIndex) {
-    // This can happen in some test paths.
-    image_index = 0;
+  previous_image_index_ = user.image_index();
+  if (previous_image_index_ == User::kInvalidImageIndex) {
+    // TODO(ivankr): this may happen if user image hasn't completed loading
+    // from file yet.
+    previous_image_index_ = 0;
   }
 
-  if (image_index == UserManager::User::kExternalImageIndex) {
-    // User has image from camera/file, copy it and add to the list of images.
-    RecordPreviousImage(image_index, user.image());
-    web_ui_->CallJavascriptFunction("ChangePictureOptions.setOldImage");
-  } else if (image_index == UserManager::User::kProfileImageIndex) {
-    // User has his/her Profile image as current image.
-    RecordPreviousImage(image_index, user.image());
-    base::StringValue image_data_url(previous_image_data_url_);
-    base::FundamentalValue select(true);
-    web_ui_->CallJavascriptFunction("ChangePictureOptions.setProfileImage",
-                                    image_data_url, select);
-  } else if (image_index >= 0 && image_index < kDefaultImagesCount) {
-    // User has image from the set of default images.
-    base::StringValue image_url(GetDefaultImageUrl(image_index));
-    web_ui_->CallJavascriptFunction("ChangePictureOptions.setSelectedImage",
-                                    image_url);
-  } else {
-    NOTREACHED();
+  switch (previous_image_index_) {
+    case User::kExternalImageIndex: {
+      // User has image from camera/file, record it and add to the image list.
+      previous_image_ = user.image();
+      previous_image_data_url_ = web_ui_util::GetImageDataUrl(previous_image_);
+      web_ui_->CallJavascriptFunction("ChangePictureOptions.setOldImage");
+      break;
+    }
+    case User::kProfileImageIndex: {
+      // User has his/her Profile image as the current image.
+      base::StringValue image_data_url(
+          web_ui_util::GetImageDataUrl(user.image()));
+      base::FundamentalValue select(true);
+      web_ui_->CallJavascriptFunction("ChangePictureOptions.setProfileImage",
+                                      image_data_url, select);
+      break;
+    }
+    default: {
+      DCHECK(previous_image_index_ >= 0 &&
+             previous_image_index_ < kDefaultImagesCount);
+      // User has image from the set of default images.
+      base::StringValue image_url(GetDefaultImageUrl(previous_image_index_));
+      web_ui_->CallJavascriptFunction("ChangePictureOptions.setSelectedImage",
+                                      image_url);
+    }
   }
 }
 
@@ -229,58 +227,56 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
     return;
 
   UserManager* user_manager = UserManager::Get();
-  const UserManager::User& user = user_manager->logged_in_user();
-  int user_image_index = previous_image_index_;
+  const User& user = user_manager->logged_in_user();
+  int image_index = User::kInvalidImageIndex;
 
-  if (StartsWithASCII(image_url, chrome::kChromeUIUserImageURL, false) ||
-      image_url == previous_image_data_url_) {
+  // TODO(ivankr): set profile image from downloaded_profile_image() here.
+
+  if (StartsWithASCII(image_url, chrome::kChromeUIUserImageURL, false)) {
     // Image from file/camera uses kChromeUIUserImageURL as URL while
     // current profile image always has a full data URL.
     // This way transition from (current profile image) to
     // (profile image, current image from file) is easier.
-    DCHECK(!previous_image_.empty());
 
-    user_manager->SetLoggedInUserImage(previous_image_, user_image_index);
-    user_manager->SaveUserImage(
-        user.email(), previous_image_, user_image_index);
+    DCHECK(!previous_image_.empty());
+    user_manager->SaveUserImage(user.email(), previous_image_);
+
     UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                               kHistogramImageOld,
                               kHistogramImagesCount);
-
     VLOG(1) << "Selected old user image";
-  } else if (image_url == profile_image_data_url_) {
-    DCHECK(!profile_image_.empty());
-
-    user_manager->SetLoggedInUserImage(profile_image_,
-                                       UserManager::User::kProfileImageIndex);
-    user_manager->SaveUserImage(
-        user.email(), profile_image_, UserManager::User::kProfileImageIndex);
+  } else if (IsDefaultImageUrl(image_url, &image_index)) {
+    // One of the default user images.
+    user_manager->SaveUserDefaultImageIndex(user.email(), image_index);
 
     UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
-                              kHistogramImageFromProfile,
+                              image_index,
                               kHistogramImagesCount);
+    VLOG(1) << "Selected default user image: " << image_index;
+  } else {
+    // Profile image selected. Could be previous (old) user image.
+    user_manager->SaveUserImageFromProfileImage(user.email());
 
-    VLOG(1) << "Selected profile image";
-  } else if (IsDefaultImageUrl(image_url, &user_image_index)) {
-    const SkBitmap* image = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        kDefaultImageResources[user_image_index]);
-
-    user_manager->SetLoggedInUserImage(*image, user_image_index);
-    user_manager->SaveUserImagePath(user.email(),
-                                    GetDefaultImagePath(user_image_index),
-                                    user_image_index);
-    UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
-                              user_image_index,
-                              kHistogramImagesCount);
-
-    VLOG(1) << "Selected default user image: " << user_image_index;
+    if (previous_image_index_ == User::kProfileImageIndex) {
+      UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
+                                kHistogramImageOld,
+                                kHistogramImagesCount);
+      VLOG(1) << "Selected old (profile) user image";
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
+                                kHistogramImageFromProfile,
+                                kHistogramImagesCount);
+      VLOG(1) << "Selected profile image";
+    }
   }
 }
 
 void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
                                                int index,
                                                void* params) {
-  UserManager::Get()->LoadLoggedInUserImage(path);
+  UserManager* user_manager = UserManager::Get();
+  user_manager->SaveUserImageFromFile(user_manager->logged_in_user().email(),
+                                      path);
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             kHistogramImageFromFile,
                             kHistogramImagesCount);
@@ -288,60 +284,10 @@ void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
 
 void ChangePictureOptionsHandler::OnPhotoAccepted(const SkBitmap& photo) {
   UserManager* user_manager = UserManager::Get();
-  DCHECK(user_manager);
-
-  const UserManager::User& user = user_manager->logged_in_user();
-  DCHECK(!user.email().empty());
-
-  user_manager->SetLoggedInUserImage(photo,
-                                     UserManager::User::kExternalImageIndex);
-  user_manager->SaveUserImage(
-      user.email(), photo, UserManager::User::kExternalImageIndex);
+  user_manager->SaveUserImage(user_manager->logged_in_user().email(), photo);
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             kHistogramImageFromCamera,
                             kHistogramImagesCount);
-}
-
-void ChangePictureOptionsHandler::OnDownloadSuccess(const SkBitmap& image) {
-  // Profile image has been downloaded.
-  VLOG(1) << "Download of profile image on change picture failed.";
-  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.ChangePicture",
-                            ProfileImageDownloader::kDownloadSuccess,
-                            ProfileImageDownloader::kDownloadResultsCount);
-
-  std::string profile_image_data_url = web_ui_util::GetImageDataUrl(image);
-  if (profile_image_data_url != profile_image_data_url_) {
-    VLOG(1) << "Updating profile image for the user";
-    if (profile_image_data_url_ != chrome::kAboutBlankURL) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "UserImageDownloadResult.ChangePicture",
-          ProfileImageDownloader::kDownloadSuccessChanged,
-          ProfileImageDownloader::kDownloadResultsCount);
-    }
-
-    // Differs from the current profile image.
-    profile_image_ = image;
-    profile_image_data_url_ = profile_image_data_url;
-
-    base::StringValue image_data_url(profile_image_data_url);
-    base::FundamentalValue select(false);
-    web_ui_->CallJavascriptFunction("ChangePictureOptions.setProfileImage",
-                                    image_data_url, select);
-  }
-}
-
-void ChangePictureOptionsHandler::OnDownloadFailure() {
-  VLOG(1) << "Download of profile image on change picture failed.";
-  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.ChangePicture",
-                            ProfileImageDownloader::kDownloadFailure,
-                            ProfileImageDownloader::kDownloadResultsCount);
-}
-
-void ChangePictureOptionsHandler::OnDownloadDefaultImage() {
-  VLOG(1) << "User still has the default profile image.";
-  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.ChangePicture",
-                            ProfileImageDownloader::kDownloadDefault,
-                            ProfileImageDownloader::kDownloadResultsCount);
 }
 
 void ChangePictureOptionsHandler::CheckCameraPresence() {
@@ -366,19 +312,14 @@ void ChangePictureOptionsHandler::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   OptionsPageUIHandler::Observe(type, source, details);
-  // User profile image is currently set and it has been updated by UserManager.
-  if (type == chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED)
-    SendSelectedImage();
-}
-
-void ChangePictureOptionsHandler::RecordPreviousImage(int image_index,
-                                                      const SkBitmap& image) {
-  previous_image_index_ = image_index;
-  previous_image_ = image;
-  previous_image_data_url_ = web_ui_util::GetImageDataUrl(image);
-  if (image_index == UserManager::User::kProfileImageIndex) {
-    profile_image_ = previous_image_;
-    profile_image_data_url_ = previous_image_data_url_;
+  if (type == chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED) {
+    // User profile image has been updated.
+    std::string data_url = web_ui_util::GetImageDataUrl(
+        *content::Details<const SkBitmap>(details).ptr());
+    base::StringValue data_url_value(data_url);
+    base::FundamentalValue select(false);
+    web_ui_->CallJavascriptFunction("ChangePictureOptions.setProfileImage",
+                                    data_url_value, select);
   }
 }
 

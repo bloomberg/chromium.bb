@@ -56,6 +56,9 @@ class UserImageScreenHandler : public UserImageScreenActor,
   virtual void OnPhotoAccepted(const SkBitmap& photo) OVERRIDE;
 
  private:
+  // Sends profile image as a data URL to the page.
+  void SendProfileImage(const std::string& data_url);
+
   // Opens the camera capture dialog.
   void HandleTakePhoto(const base::ListValue* args);
 
@@ -76,16 +79,16 @@ class UserImageScreenHandler : public UserImageScreenActor,
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_;
 
-  // Index of the selected default user image. -1 if the photo is taken.
+  // Index of the selected user image.
   int selected_image_;
 
   // Last user photo, if taken.
   SkBitmap user_photo_;
 
-  // Downloaded user profile picture if present.
-  SkBitmap profile_picture_;
+  // Data URL for |user_photo_|.
+  std::string user_photo_data_url_;
 
-  // Its data URL.
+  // Data URL of the profile picture;
   std::string profile_picture_data_url_;
 
   // True if user has no custom profile picture.

@@ -196,11 +196,12 @@ cr.define('oobe', function() {
       this.profileImageSelected = url == this.profileImageUrl_;
       this.buttonImageSelected_ = ButtonImageUrls.indexOf(url) != -1;
 
-      this.updateButtons_();
-
-      if (!$('ok-button').disabled) {
-        // Don't send disabled selections.
+      if (ButtonImageUrls.indexOf(url) == -1) {
+        // Non-button image is selected.
+        $('ok-button').disabled = false;
         chrome.send('selectImage', [url]);
+      } else {
+        $('ok-button').disabled = true;
       }
     },
 
@@ -313,19 +314,6 @@ cr.define('oobe', function() {
     updateCaption_: function() {
       $('user-image-preview-caption').textContent =
           this.profileImageSelected ? this.profileImageCaption : '';
-    },
-
-    /**
-     * Updates the 'OK' button state.
-     * @private
-     */
-    updateButtons_: function() {
-      // Do not allow user to choose a button image or the profile image
-      // if it's still loading or if user has a default picture.
-      var okButton = $('ok-button');
-      if (okButton)
-        okButton.disabled = this.buttonImageSelected_ ||
-            (this.profileImageSelected && !this.profileImagePresent_);
     }
   };
 

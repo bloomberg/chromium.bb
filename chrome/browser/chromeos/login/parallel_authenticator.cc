@@ -305,7 +305,7 @@ void ParallelAuthenticator::RecordOAuthCheckFailure(
   DCHECK(using_oauth_);
   // Mark this account's OAuth token state as invalid in the local state.
   UserManager::Get()->SaveUserOAuthStatus(user_name,
-        UserManager::OAUTH_TOKEN_STATUS_INVALID);
+                                          User::OAUTH_TOKEN_STATUS_INVALID);
 }
 
 void ParallelAuthenticator::RecoverEncryptedData(

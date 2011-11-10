@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <string>
 
-#include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "content/public/common/url_fetcher.h"

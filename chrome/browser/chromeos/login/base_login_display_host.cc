@@ -147,8 +147,7 @@ void BaseLoginDisplayHost::StartWizard(
 
 void BaseLoginDisplayHost::StartSignInScreen() {
   DVLOG(1) << "Starting sign in screen";
-  std::vector<chromeos::UserManager::User> users =
-      chromeos::UserManager::Get()->GetUsers();
+  const chromeos::UserList& users = chromeos::UserManager::Get()->GetUsers();
 
   // Fix for users who updated device and thus never passed register screen.
   // If we already have users, we assume that it is not a second part of

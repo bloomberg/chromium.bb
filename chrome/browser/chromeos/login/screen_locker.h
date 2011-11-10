@@ -13,7 +13,6 @@
 #include "base/time.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/screen_locker_delegate.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "views/accelerator.h"
 
 namespace gfx {
@@ -28,6 +27,7 @@ namespace chromeos {
 
 class Authenticator;
 class LoginFailure;
+class User;
 
 namespace test {
 class ScreenLockerTester;
@@ -38,7 +38,7 @@ class ScreenLockerTester;
 // instance of itself which will be deleted when the system is unlocked.
 class ScreenLocker : public LoginStatusConsumer {
  public:
-  explicit ScreenLocker(const UserManager::User& user);
+  explicit ScreenLocker(const User& user);
 
   // Returns the default instance if it has been created.
   static ScreenLocker* default_screen_locker() {
@@ -85,9 +85,7 @@ class ScreenLocker : public LoginStatusConsumer {
 
 #if defined(TOOLKIT_USES_GTK)
   // Returns the user to authenticate.
-  const UserManager::User& user() const {
-    return user_;
-  }
+  const User& user() const { return user_; }
 #endif
 
   // Allow a LoginStatusConsumer to listen for
@@ -133,7 +131,7 @@ class ScreenLocker : public LoginStatusConsumer {
   scoped_ptr<ScreenLockerDelegate> delegate_;
 
   // Logged in user.
-  UserManager::User user_;
+  const User& user_;
 
 #if defined(TOOLKIT_USES_GTK)
   // Used to authenticate the user to unlock.

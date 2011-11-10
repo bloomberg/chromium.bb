@@ -25,7 +25,7 @@ class UserImageScreenActor {
     // Called when user accepts photo as login user image.
     virtual void OnPhotoTaken(const SkBitmap& image) = 0;
     // Called when user accepts Profile image as login user image.
-    virtual void OnProfileImageSelected(const SkBitmap& image) = 0;
+    virtual void OnProfileImageSelected() = 0;
     // Called when user accepts one of the default images as login user
     // image.
     virtual void OnDefaultImageSelected(int index) = 0;

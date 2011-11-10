@@ -28,8 +28,10 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -40,7 +42,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/url_constants.h"
 #include "crypto/nss_util.h"
+#include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -64,6 +68,9 @@ const char kUserOAuthTokenStatus[] = "OAuthTokenStatus";
 // Incognito user is represented by an empty string (since some code already
 // depends on that and it's hard to figure out what).
 const char kGuestUser[] = "";
+
+// Stub user email (for test paths).
+const char kStubUser[] = "stub-user@example.com";
 
 // Names of nodes with info about user image.
 const char kImagePathNodeName[] = "path";
@@ -143,610 +150,6 @@ class RemoveAttempt : public CryptohomeLibrary::Delegate {
   DISALLOW_COPY_AND_ASSIGN(RemoveAttempt);
 };
 
-}  // namespace
-
-UserManager::User::User()
-    : oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
-      is_displayname_unique_(false),
-      default_image_index_(kInvalidImageIndex) {
-  image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      kDefaultImageResources[0]);
-}
-
-UserManager::User::~User() {}
-
-void UserManager::User::SetImage(const SkBitmap& image,
-                                 int default_image_index) {
-  image_ = image;
-  default_image_index_ = default_image_index;
-}
-
-std::string UserManager::User::GetDisplayName() const {
-  size_t i = email_.find('@');
-  if (i == 0 || i == std::string::npos) {
-    return email_;
-  }
-  return email_.substr(0, i);
-}
-
-bool UserManager::User::NeedsNameTooltip() const {
-  return !is_displayname_unique_;
-}
-
-std::string UserManager::User::GetNameTooltip() const {
-  const std::string& user_email = email();
-  size_t at_pos = user_email.rfind('@');
-  if (at_pos == std::string::npos) {
-    NOTREACHED();
-    return std::string();
-  }
-  size_t domain_start = at_pos + 1;
-  std::string domain = user_email.substr(domain_start,
-                                         user_email.length() - domain_start);
-  return base::StringPrintf("%s (%s)",
-                            GetDisplayName().c_str(),
-                            domain.c_str());
-}
-
-// static
-UserManager* UserManager::Get() {
-  // Not thread-safe.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return &g_user_manager.Get();
-}
-
-// static
-void UserManager::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterListPref(kLoggedInUsers, PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterDictionaryPref(kUserImages,
-                                      PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterDictionaryPref(kUserOAuthTokenStatus,
-                                      PrefService::UNSYNCABLE_PREF);
-}
-
-void UserManager::SaveImageToLocalState(const std::string& username,
-                                        const std::string& image_path,
-                                        int image_index,
-                                        bool is_async) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // TODO(ivankr): use unique filenames for user images each time
-  // a new image is set so that only the last image update is saved
-  // to Local State and notified.
-  if (is_async && !last_image_set_async_) {
-    DVLOG(1) << "Ignoring saved image because it has changed";
-    return;
-  } else if (!is_async) {
-    // Reset the async image save flag if called directly from the UI thread.
-    last_image_set_async_ = false;
-  }
-
-  PrefService* local_state = g_browser_process->local_state();
-  DictionaryPrefUpdate images_update(local_state, kUserImages);
-  base::DictionaryValue* image_properties = new base::DictionaryValue();
-  image_properties->Set(kImagePathNodeName, new StringValue(image_path));
-  image_properties->Set(kImageIndexNodeName,
-                        new base::FundamentalValue(image_index));
-  images_update->SetWithoutPathExpansion(username, image_properties);
-  DVLOG(1) << "Saving path to user image in Local State.";
-  local_state->ScheduleSavePersistentPrefs();
-
-  NotifyLocalStateChanged();
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-      content::Source<UserManager>(this),
-      content::Details<const User>(&logged_in_user_));
-}
-
-void UserManager::SaveImageToFile(const SkBitmap& image,
-                                  const FilePath& image_path,
-                                  const std::string& username,
-                                  int image_index) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  std::vector<unsigned char> encoded_image;
-  if (!gfx::PNGCodec::EncodeBGRASkBitmap(image, true, &encoded_image)) {
-    LOG(ERROR) << "Failed to PNG encode the image.";
-    return;
-  }
-
-  if (file_util::WriteFile(image_path,
-                           reinterpret_cast<char*>(&encoded_image[0]),
-                           encoded_image.size()) == -1) {
-    LOG(ERROR) << "Failed to save image to file.";
-    return;
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&UserManager::SaveImageToLocalState,
-                 base::Unretained(this),
-                 username, image_path.value(), image_index, true));
-}
-
-void UserManager::DeleteUserImage(const FilePath& image_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (!file_util::Delete(image_path, false)) {
-    LOG(ERROR) << "Failed to remove user image.";
-    return;
-  }
-}
-
-void UserManager::UpdateOwnership(bool is_owner) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  set_current_user_is_owner(is_owner);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_OWNERSHIP_CHECKED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
-  if (is_owner) {
-    // Also update cached value.
-    UserCrosSettingsProvider::UpdateCachedOwner(logged_in_user_.email());
-  }
-}
-
-void UserManager::CheckOwnership() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  bool is_owner = OwnershipService::GetSharedInstance()->CurrentUserIsOwner();
-  VLOG(1) << "Current user " << (is_owner ? "is owner" : "is not owner");
-
-  set_current_user_is_owner(is_owner);
-
-  // UserManager should be accessed only on UI thread.
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&UserManager::UpdateOwnership,
-                 base::Unretained(this),
-                 is_owner));
-}
-
-std::vector<UserManager::User> UserManager::GetUsers() const {
-  std::vector<User> users;
-  if (!g_browser_process)
-    return users;
-
-  PrefService* local_state = g_browser_process->local_state();
-  const ListValue* prefs_users = local_state->GetList(kLoggedInUsers);
-  const DictionaryValue* prefs_images = local_state->GetDictionary(kUserImages);
-
-  if (prefs_users) {
-    std::map<std::string, size_t> display_name_count;
-
-    for (ListValue::const_iterator it = prefs_users->begin();
-         it != prefs_users->end();
-         ++it) {
-      std::string email;
-      if ((*it)->GetAsString(&email)) {
-        User user;
-        user.set_email(email);
-        user.set_oauth_token_status(GetUserOAuthStatus(email));
-
-        if (prefs_images) {
-          // Get account image path.
-          // TODO(avayvod): Reading image path as a string is here for
-          // backward compatibility.
-          std::string image_path;
-          base::DictionaryValue* image_properties;
-          if (prefs_images->GetStringWithoutPathExpansion(email, &image_path)) {
-            int default_image_id = kDefaultImagesCount;
-            if (IsDefaultImagePath(image_path, &default_image_id)) {
-              DCHECK(default_image_id >= 0);
-              DCHECK(default_image_id < kDefaultImagesCount);
-              int resource_id = kDefaultImageResources[default_image_id];
-              user.SetImage(
-                  *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                      resource_id),
-                  default_image_id);
-            } else {
-              UserImages::const_iterator image_it = user_images_.find(email);
-              if (image_it == user_images_.end()) {
-                // Insert the default image so we don't send another request if
-                // GetUsers is called twice.
-                user_images_[email] = user.image();
-                image_loader_->Start(
-                    email, image_path, User::kExternalImageIndex, false);
-              } else {
-                user.SetImage(image_it->second, User::kExternalImageIndex);
-              }
-            }
-          } else if (prefs_images->GetDictionaryWithoutPathExpansion(
-                         email, &image_properties)) {
-            int image_index = User::kInvalidImageIndex;
-            image_properties->GetString(kImagePathNodeName, &image_path);
-            image_properties->GetInteger(kImageIndexNodeName, &image_index);
-            if (image_index >= 0 && image_index < kDefaultImagesCount) {
-              int resource_id = kDefaultImageResources[image_index];
-              user.SetImage(
-                  *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                      resource_id),
-                  image_index);
-            } else if (image_index == User::kExternalImageIndex ||
-                       image_index == User::kProfileImageIndex) {
-              UserImages::const_iterator image_it = user_images_.find(email);
-              if (image_it == user_images_.end()) {
-                // Insert the default image so we don't send another request if
-                // GetUsers is called twice.
-                user_images_[email] = user.image();
-                image_loader_->Start(email, image_path, image_index, false);
-              } else {
-                user.SetImage(image_it->second, image_index);
-              }
-            }
-          }
-        }
-
-        // Makes table to determine whether displayname is unique.
-        const std::string& display_name = user.GetDisplayName();
-        ++display_name_count[display_name];
-
-        users.push_back(user);
-      }
-    }
-
-    for (UserVector::iterator it = users.begin(); it != users.end(); ++it) {
-      const std::string& display_name = it->GetDisplayName();
-      it->is_displayname_unique_ = display_name_count[display_name] <= 1;
-    }
-  }
-  return users;
-}
-
-void UserManager::OffTheRecordUserLoggedIn() {
-  user_is_logged_in_ = true;
-  logged_in_user_ = User();
-  logged_in_user_.set_email(kGuestUser);
-  NotifyOnLogin();
-}
-
-void UserManager::UserLoggedIn(const std::string& email) {
-  if (email == kGuestUser) {
-    OffTheRecordUserLoggedIn();
-    return;
-  }
-
-  if (!IsKnownUser(email)) {
-    current_user_is_new_ = true;
-    browser_defaults::skip_restore = true;
-  }
-
-  // Get a copy of the current users.
-  std::vector<User> users = GetUsers();
-
-  // Clear the prefs view of the users.
-  PrefService* prefs = g_browser_process->local_state();
-  ListPrefUpdate prefs_users_update(prefs, kLoggedInUsers);
-  prefs_users_update->Clear();
-
-  user_is_logged_in_ = true;
-  logged_in_user_ = User();
-  logged_in_user_.set_email(email);
-
-  // Make sure this user is first.
-  prefs_users_update->Append(Value::CreateStringValue(email));
-  for (std::vector<User>::iterator it = users.begin();
-       it != users.end();
-       ++it) {
-    std::string user_email = it->email();
-    // Skip the most recent user.
-    if (email != user_email) {
-      prefs_users_update->Append(Value::CreateStringValue(user_email));
-    } else {
-      logged_in_user_ = *it;
-    }
-  }
-  prefs->ScheduleSavePersistentPrefs();
-  NotifyOnLogin();
-  if (current_user_is_new_) {
-    SetDefaultUserImage(email);
-  } else {
-    // Download profile image if it's user image and see if it has changed.
-    int image_index = logged_in_user_.default_image_index();
-    if (image_index == User::kProfileImageIndex) {
-      BrowserThread::PostDelayedTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&UserManager::DownloadProfileImage,
-                     base::Unretained(this)),
-          kProfileImageDownloadDelayMs);
-    }
-
-    int histogram_index = image_index;
-    switch (image_index) {
-      case User::kExternalImageIndex:
-        // TODO(avayvod): Distinguish this from selected from file.
-        histogram_index = kHistogramImageFromCamera;
-        break;
-
-      case User::kProfileImageIndex:
-        histogram_index = kHistogramImageFromProfile;
-        break;
-    }
-    UMA_HISTOGRAM_ENUMERATION("UserImage.LoggedIn",
-                              histogram_index,
-                              kHistogramImagesCount);
-  }
-}
-
-void UserManager::RemoveUser(const std::string& email,
-                             RemoveUserDelegate* delegate) {
-  // Get a copy of the current users.
-  std::vector<User> users = GetUsers();
-
-  // Sanity check: we must not remove single user. This check may seem
-  // redundant at a first sight because this single user must be an owner and
-  // we perform special check later in order not to remove an owner.  However
-  // due to non-instant nature of ownership assignment this later check may
-  // sometimes fail. See http://crosbug.com/12723
-  if (users.size() < 2)
-    return;
-
-  bool user_found = false;
-  for (size_t i = 0; !user_found && i < users.size(); ++i)
-    user_found = (email == users[i].email());
-  if (!user_found)
-    return;
-
-  // |RemoveAttempt| deletes itself when done.
-  new RemoveAttempt(email, delegate);
-}
-
-void UserManager::RemoveUserFromList(const std::string& email) {
-  // Get a copy of the current users.
-  std::vector<User> users = GetUsers();
-
-  // Clear the prefs view of the users.
-  PrefService* prefs = g_browser_process->local_state();
-  ListPrefUpdate prefs_users_update(prefs, kLoggedInUsers);
-  prefs_users_update->Clear();
-
-  for (std::vector<User>::iterator it = users.begin();
-       it != users.end();
-       ++it) {
-    std::string user_email = it->email();
-    // Skip user that we would like to delete.
-    if (email != user_email)
-      prefs_users_update->Append(Value::CreateStringValue(user_email));
-  }
-
-  DictionaryPrefUpdate prefs_images_update(prefs, kUserImages);
-  std::string image_path_string;
-  prefs_images_update->GetStringWithoutPathExpansion(email, &image_path_string);
-  prefs_images_update->RemoveWithoutPathExpansion(email, NULL);
-
-  DictionaryPrefUpdate prefs_oauth_update(prefs, kUserOAuthTokenStatus);
-  int oauth_status;
-  prefs_oauth_update->GetIntegerWithoutPathExpansion(email, &oauth_status);
-  prefs_oauth_update->RemoveWithoutPathExpansion(email, NULL);
-
-  prefs->ScheduleSavePersistentPrefs();
-
-  int default_image_id = kDefaultImagesCount;
-  if (!IsDefaultImagePath(image_path_string, &default_image_id)) {
-    FilePath image_path(image_path_string);
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&UserManager::DeleteUserImage,
-                   base::Unretained(this),
-                   image_path));
-  }
-}
-
-bool UserManager::IsKnownUser(const std::string& email) {
-  std::vector<User> users = GetUsers();
-  for (std::vector<User>::iterator it = users.begin();
-       it < users.end();
-       ++it) {
-    if (it->email() == email)
-      return true;
-  }
-
-  return false;
-}
-
-const UserManager::User& UserManager::logged_in_user() const {
-  return logged_in_user_;
-}
-
-void UserManager::SetLoggedInUserImage(const SkBitmap& image,
-                                       int default_image_index) {
-  profile_image_downloader_.reset();
-  if (logged_in_user_.email().empty())
-    return;
-  SetUserImage(logged_in_user_.email(), image, default_image_index, false);
-}
-
-void UserManager::SetUserImage(const std::string& username,
-                               const SkBitmap& image,
-                               int default_image_index,
-                               bool should_save_image) {
-  user_images_[username] = image;
-  if (logged_in_user_.email() == username)
-    logged_in_user_.SetImage(image, default_image_index);
-  if (should_save_image)
-    SaveUserImage(username, image, default_image_index);
-}
-
-void UserManager::LoadLoggedInUserImage(const FilePath& path) {
-  profile_image_downloader_.reset();
-  if (logged_in_user_.email().empty())
-    return;
-  image_loader_->Start(
-      logged_in_user_.email(), path.value(), User::kExternalImageIndex, true);
-}
-
-void UserManager::SaveUserImage(const std::string& username,
-                                const SkBitmap& image,
-                                int image_index) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FilePath image_path = GetImagePathForUser(username);
-  DVLOG(1) << "Saving user image to " << image_path.value();
-
-  last_image_set_async_ = true;
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&UserManager::SaveImageToFile,
-                 base::Unretained(this),
-                 image, image_path, username, image_index));
-}
-
-void UserManager::SaveUserOAuthStatus(const std::string& username,
-                                      OAuthTokenStatus oauth_token_status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PrefService* local_state = g_browser_process->local_state();
-  DictionaryPrefUpdate oauth_status_update(local_state, kUserOAuthTokenStatus);
-  oauth_status_update->SetWithoutPathExpansion(username,
-      new base::FundamentalValue(static_cast<int>(oauth_token_status)));
-  DVLOG(1) << "Saving user OAuth token status in Local State.";
-  local_state->ScheduleSavePersistentPrefs();
-}
-
-UserManager::OAuthTokenStatus UserManager::GetUserOAuthStatus(
-    const std::string& username) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSkipOAuthLogin)) {
-    // Use OAUTH_TOKEN_STATUS_VALID flag if kSkipOAuthLogin is present.
-    return OAUTH_TOKEN_STATUS_VALID;
-  } else {
-    PrefService* local_state = g_browser_process->local_state();
-    const DictionaryValue* prefs_oauth_status =
-        local_state->GetDictionary(kUserOAuthTokenStatus);
-
-    int oauth_token_status = OAUTH_TOKEN_STATUS_UNKNOWN;
-    if (prefs_oauth_status &&
-        prefs_oauth_status->GetIntegerWithoutPathExpansion(username,
-            &oauth_token_status)) {
-      return static_cast<OAuthTokenStatus>(oauth_token_status);
-    }
-  }
-
-  return OAUTH_TOKEN_STATUS_UNKNOWN;
-}
-
-void UserManager::SaveUserImagePath(const std::string& username,
-                                    const std::string& image_path,
-                                    int image_index) {
-  SaveImageToLocalState(username, image_path, image_index, false);
-}
-
-void UserManager::SetDefaultUserImage(const std::string& username) {
-  if (!g_browser_process)
-    return;
-
-  // Choose a random default image.
-  int image_id = base::RandInt(0, kDefaultImagesCount - 1);
-  std::string user_image_path = GetDefaultImagePath(image_id);
-  int resource_id = kDefaultImageResources[image_id];
-  SkBitmap user_image = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      resource_id);
-
-  SaveImageToLocalState(username, user_image_path, image_id, false);
-  SetLoggedInUserImage(user_image, image_id);
-}
-
-int UserManager::GetUserDefaultImageIndex(const std::string& username) {
-  if (!g_browser_process)
-    return User::kInvalidImageIndex;
-
-  PrefService* local_state = g_browser_process->local_state();
-  const DictionaryValue* prefs_images = local_state->GetDictionary(kUserImages);
-
-  if (!prefs_images)
-    return User::kInvalidImageIndex;
-
-  base::DictionaryValue* image_properties;
-  if (!prefs_images->GetDictionaryWithoutPathExpansion(
-          username, &image_properties))
-    return User::kInvalidImageIndex;
-
-  int image_id = User::kInvalidImageIndex;
-  if (!image_properties->GetInteger(kImageIndexNodeName, &image_id) ||
-      image_id < 0 || image_id >= kDefaultImagesCount)
-    return User::kInvalidImageIndex;
-
-  return image_id;
-}
-
-void UserManager::OnImageLoaded(const std::string& username,
-                                const SkBitmap& image,
-                                int image_index,
-                                bool should_save_image) {
-  DVLOG(1) << "Loaded image for " << username;
-  SetUserImage(username, image, image_index, should_save_image);
-}
-
-void UserManager::OnDownloadSuccess(const SkBitmap& image) {
-  VLOG(1) << "Downloaded profile image for logged-in user.";
-  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
-                            ProfileImageDownloader::kDownloadSuccess,
-                            ProfileImageDownloader::kDownloadResultsCount);
-
-  std::string current_image_data_url =
-      web_ui_util::GetImageDataUrl(logged_in_user_.image());
-  std::string new_image_data_url =
-      web_ui_util::GetImageDataUrl(image);
-  if (current_image_data_url != new_image_data_url) {
-    VLOG(1) << "Updating profile image for logged-in user";
-    UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
-                              ProfileImageDownloader::kDownloadSuccessChanged,
-                              ProfileImageDownloader::kDownloadResultsCount);
-
-    SetLoggedInUserImage(image, User::kProfileImageIndex);
-    SaveUserImage(logged_in_user_.email(), image, User::kProfileImageIndex);
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
-        content::Source<UserManager>(this),
-        content::Details<const UserManager::User>(&logged_in_user()));
-  }
-}
-
-void UserManager::OnDownloadFailure() {
-  VLOG(1) << "Download of profile image for logged-in user failed.";
-  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
-                            ProfileImageDownloader::kDownloadFailure,
-                            ProfileImageDownloader::kDownloadResultsCount);
-}
-
-void UserManager::OnDownloadDefaultImage() {
-  VLOG(1) << "Logged-in user still has the default profile image.";
-  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
-                            ProfileImageDownloader::kDownloadDefault,
-                            ProfileImageDownloader::kDownloadResultsCount);
-}
-
-bool UserManager::IsLoggedInAsGuest() const {
-  return logged_in_user().email() == kGuestUser;
-}
-
-// Private constructor and destructor. Do nothing.
-UserManager::UserManager()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_(new UserImageLoader(this))),
-      offline_login_(false),
-      current_user_is_owner_(false),
-      current_user_is_new_(false),
-      user_is_logged_in_(false),
-      last_image_set_async_(false) {
-  registrar_.Add(this, chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
-      content::NotificationService::AllSources());
-}
-
-UserManager::~UserManager() {
-  image_loader_->set_delegate(NULL);
-}
-
-FilePath UserManager::GetImagePathForUser(const std::string& username) {
-  std::string filename = username + ".png";
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  return user_data_dir.AppendASCII(filename);
-}
-
 class RealTPMTokenInfoDelegate : public crypto::TPMTokenInfoDelegate {
  public:
   RealTPMTokenInfoDelegate();
@@ -780,11 +183,435 @@ void RealTPMTokenInfoDelegate::GetTokenInfo(std::string* token_name,
     *user_pin = local_user_pin;
 }
 
+}  // namespace
+
+// static
+UserManager* UserManager::Get() {
+  // Not thread-safe.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return &g_user_manager.Get();
+}
+
+// static
+void UserManager::RegisterPrefs(PrefService* local_state) {
+  local_state->RegisterListPref(kLoggedInUsers, PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterDictionaryPref(kUserImages,
+                                      PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterDictionaryPref(kUserOAuthTokenStatus,
+                                      PrefService::UNSYNCABLE_PREF);
+}
+
+const UserList& UserManager::GetUsers() const {
+  const_cast<UserManager*>(this)->EnsureUsersLoaded();
+  return users_;
+}
+
+void UserManager::UserLoggedIn(const std::string& email) {
+  DCHECK(!user_is_logged_in_);
+
+  user_is_logged_in_ = true;
+
+  if (email == kGuestUser) {
+    GuestUserLoggedIn();
+    return;
+  }
+
+  EnsureUsersLoaded();
+
+  // Clear the prefs view of the users.
+  PrefService* prefs = g_browser_process->local_state();
+  ListPrefUpdate prefs_users_update(prefs, kLoggedInUsers);
+  prefs_users_update->Clear();
+
+  // Make sure this user is first.
+  prefs_users_update->Append(Value::CreateStringValue(email));
+  UserList::iterator logged_in_user = users_.end();
+  for (UserList::iterator it = users_.begin(); it != users_.end(); ++it) {
+    std::string user_email = (*it)->email();
+    // Skip the most recent user.
+    if (email != user_email)
+      prefs_users_update->Append(Value::CreateStringValue(user_email));
+    else
+      logged_in_user = it;
+  }
+  prefs->ScheduleSavePersistentPrefs();
+
+  if (logged_in_user == users_.end()) {
+    current_user_is_new_ = true;
+    browser_defaults::skip_restore = true;
+    logged_in_user_ = CreateUser(email);
+  } else {
+    logged_in_user_ = *logged_in_user;
+    users_.erase(logged_in_user);
+  }
+  // This user must be in the front of the user list.
+  users_.insert(users_.begin(), logged_in_user_);
+
+  NotifyOnLogin();
+
+  if (current_user_is_new_) {
+    SetInitialUserImage(email);
+  } else {
+    // Download profile image if it's user image and see if it has changed.
+    int image_index = logged_in_user_->image_index();
+    if (image_index == User::kProfileImageIndex) {
+      BrowserThread::PostDelayedTask(
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&UserManager::DownloadProfileImage,
+                     base::Unretained(this)),
+          kProfileImageDownloadDelayMs);
+    }
+
+    int histogram_index = image_index;
+    switch (image_index) {
+      case User::kExternalImageIndex:
+        // TODO(avayvod): Distinguish this from selected from file.
+        histogram_index = kHistogramImageFromCamera;
+        break;
+
+      case User::kProfileImageIndex:
+        histogram_index = kHistogramImageFromProfile;
+        break;
+    }
+    UMA_HISTOGRAM_ENUMERATION("UserImage.LoggedIn",
+                              histogram_index,
+                              kHistogramImagesCount);
+  }
+}
+
+void UserManager::GuestUserLoggedIn() {
+  logged_in_user_ = &guest_user_;
+  NotifyOnLogin();
+}
+
+void UserManager::RemoveUser(const std::string& email,
+                             RemoveUserDelegate* delegate) {
+  if (!IsKnownUser(email))
+    return;
+
+  // Sanity check: we must not remove single user. This check may seem
+  // redundant at a first sight because this single user must be an owner and
+  // we perform special check later in order not to remove an owner.  However
+  // due to non-instant nature of ownership assignment this later check may
+  // sometimes fail. See http://crosbug.com/12723
+  if (users_.size() < 2)
+    return;
+
+  // Sanity check: do not allow the logged-in user to remove himself.
+  if (logged_in_user_ && logged_in_user_->email() == email)
+    return;
+
+  // |RemoveAttempt| deletes itself when done.
+  new RemoveAttempt(email, delegate);
+}
+
+void UserManager::RemoveUserFromList(const std::string& email) {
+  EnsureUsersLoaded();
+
+  // Clear the prefs view of the users.
+  PrefService* prefs = g_browser_process->local_state();
+  ListPrefUpdate prefs_users_update(prefs, kLoggedInUsers);
+  prefs_users_update->Clear();
+
+  UserList::iterator user_to_remove = users_.end();
+  for (UserList::iterator it = users_.begin(); it != users_.end(); ++it) {
+    std::string user_email = (*it)->email();
+    // Skip user that we would like to delete.
+    if (email != user_email)
+      prefs_users_update->Append(Value::CreateStringValue(user_email));
+    else
+      user_to_remove = it;
+  }
+
+  DictionaryPrefUpdate prefs_images_update(prefs, kUserImages);
+  std::string image_path_string;
+  prefs_images_update->GetStringWithoutPathExpansion(email, &image_path_string);
+  prefs_images_update->RemoveWithoutPathExpansion(email, NULL);
+
+  DictionaryPrefUpdate prefs_oauth_update(prefs, kUserOAuthTokenStatus);
+  int oauth_status;
+  prefs_oauth_update->GetIntegerWithoutPathExpansion(email, &oauth_status);
+  prefs_oauth_update->RemoveWithoutPathExpansion(email, NULL);
+
+  prefs->ScheduleSavePersistentPrefs();
+
+  if (user_to_remove != users_.end()) {
+    --display_name_count_[(*user_to_remove)->GetDisplayName()];
+    delete *user_to_remove;
+    users_.erase(user_to_remove);
+  }
+
+  int default_image_id = User::kInvalidImageIndex;
+  if (!image_path_string.empty() &&
+      !IsDefaultImagePath(image_path_string, &default_image_id)) {
+    FilePath image_path(image_path_string);
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&UserManager::DeleteUserImage,
+                   base::Unretained(this),
+                   image_path));
+  }
+}
+
+bool UserManager::IsKnownUser(const std::string& email) const {
+  return FindUser(email) != NULL;
+}
+
+const User* UserManager::FindUser(const std::string& email) const {
+  // Speed up search by checking the logged-in user first.
+  if (logged_in_user_ && logged_in_user_->email() == email)
+    return logged_in_user_;
+  const UserList& users = GetUsers();
+  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+    if ((*it)->email() == email)
+      return *it;
+  }
+  return NULL;
+}
+
+bool UserManager::IsDisplayNameUnique(const std::string& display_name) const {
+  return display_name_count_[display_name] < 2;
+}
+
+void UserManager::SaveUserOAuthStatus(
+    const std::string& username,
+    User::OAuthTokenStatus oauth_token_status) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  PrefService* local_state = g_browser_process->local_state();
+  DictionaryPrefUpdate oauth_status_update(local_state, kUserOAuthTokenStatus);
+  oauth_status_update->SetWithoutPathExpansion(username,
+      new base::FundamentalValue(static_cast<int>(oauth_token_status)));
+  DVLOG(1) << "Saving user OAuth token status in Local State.";
+  local_state->ScheduleSavePersistentPrefs();
+  User* user = const_cast<User*>(FindUser(username));
+  if (user)
+    user->set_oauth_token_status(oauth_token_status);
+}
+
+User::OAuthTokenStatus UserManager::GetUserOAuthStatus(
+    const std::string& username) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSkipOAuthLogin)) {
+    // Use OAUTH_TOKEN_STATUS_VALID flag if kSkipOAuthLogin is present.
+    return User::OAUTH_TOKEN_STATUS_VALID;
+  } else {
+    PrefService* local_state = g_browser_process->local_state();
+    const DictionaryValue* prefs_oauth_status =
+        local_state->GetDictionary(kUserOAuthTokenStatus);
+
+    int oauth_token_status = User::OAUTH_TOKEN_STATUS_UNKNOWN;
+    if (prefs_oauth_status &&
+        prefs_oauth_status->GetIntegerWithoutPathExpansion(username,
+            &oauth_token_status)) {
+      return static_cast<User::OAuthTokenStatus>(oauth_token_status);
+    }
+  }
+
+  return User::OAUTH_TOKEN_STATUS_UNKNOWN;
+}
+
+void UserManager::SaveUserDefaultImageIndex(const std::string& username,
+                                            int image_index) {
+  DCHECK(image_index >= 0 && image_index < kDefaultImagesCount);
+  SetUserImage(username, image_index,
+               *ResourceBundle::GetSharedInstance().
+                   GetBitmapNamed(kDefaultImageResources[image_index]));
+  SaveImageToLocalState(username, "", image_index, false);
+}
+
+void UserManager::SaveUserImage(const std::string& username,
+                                const SkBitmap& image) {
+  SaveUserImageInternal(username, User::kExternalImageIndex, image);
+}
+
+void UserManager::SaveUserImageFromFile(const std::string& username,
+                                        const FilePath& path) {
+  image_loader_->Start(
+      path.value(), login::kUserImageSize,
+      base::Bind(&UserManager::SaveUserImage,
+                 base::Unretained(this), username));
+}
+
+void UserManager::SaveUserImageFromProfileImage(const std::string& username) {
+  if (!downloaded_profile_image_.empty()) {
+    // Profile image has already been downloaded, so save it to file right now.
+    SaveUserImageInternal(username, User::kProfileImageIndex,
+                          downloaded_profile_image_);
+  } else {
+    // No profile image - use the default gray avatar.
+    SetUserImage(username, User::kProfileImageIndex,
+                 *ResourceBundle::GetSharedInstance().
+                     GetBitmapNamed(IDR_PROFILE_PICTURE_LOADING));
+    SaveImageToLocalState(username, "", User::kProfileImageIndex, false);
+  }
+}
+
+void UserManager::DownloadProfileImage() {
+  if (!profile_image_downloader_.get())
+    profile_image_downloader_.reset(new ProfileImageDownloader(this));
+  profile_image_downloader_->Start();
+  profile_image_load_start_time_ = base::Time::Now();
+}
+
+void UserManager::Observe(int type,
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(&UserManager::CheckOwnership,
+                                       base::Unretained(this)));
+  }
+}
+
+bool UserManager::current_user_is_owner() const {
+  base::AutoLock lk(current_user_is_owner_lock_);
+  return current_user_is_owner_;
+}
+
+void UserManager::set_current_user_is_owner(bool current_user_is_owner) {
+  base::AutoLock lk(current_user_is_owner_lock_);
+  current_user_is_owner_ = current_user_is_owner;
+}
+
+bool UserManager::IsLoggedInAsGuest() const {
+  return logged_in_user_ == &guest_user_;
+}
+
+void UserManager::AddObserver(Observer* obs) {
+  observer_list_.AddObserver(obs);
+}
+
+void UserManager::RemoveObserver(Observer* obs) {
+  observer_list_.RemoveObserver(obs);
+}
+
+void UserManager::NotifyLocalStateChanged() {
+  FOR_EACH_OBSERVER(
+    Observer,
+    observer_list_,
+    LocalStateChanged(this));
+}
+
+// Protected constructor and destructor.
+UserManager::UserManager()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_(new UserImageLoader)),
+      guest_user_(kGuestUser),
+      stub_user_(kStubUser),
+      logged_in_user_(NULL),
+      offline_login_(false),
+      current_user_is_owner_(false),
+      current_user_is_new_(false),
+      user_is_logged_in_(false),
+      last_image_set_async_(false),
+      downloaded_profile_image_data_url_(chrome::kAboutBlankURL) {
+  // Use stub as the logged-in user for test paths without login.
+  if (!system::runtime_environment::IsRunningOnChromeOS())
+    StubUserLoggedIn();
+  registrar_.Add(this, chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
+      content::NotificationService::AllSources());
+}
+
+UserManager::~UserManager() {
+}
+
+FilePath UserManager::GetImagePathForUser(const std::string& username) {
+  std::string filename = username + ".png";
+  FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  return user_data_dir.AppendASCII(filename);
+}
+
+void UserManager::EnsureUsersLoaded() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!users_.empty())
+    return;
+  if (!g_browser_process)
+    return;
+
+  PrefService* local_state = g_browser_process->local_state();
+  const ListValue* prefs_users = local_state->GetList(kLoggedInUsers);
+  const DictionaryValue* prefs_images = local_state->GetDictionary(kUserImages);
+
+  if (prefs_users) {
+    for (ListValue::const_iterator it = prefs_users->begin();
+         it != prefs_users->end(); ++it) {
+      std::string email;
+      if ((*it)->GetAsString(&email)) {
+        User* user = CreateUser(email);
+        users_.push_back(user);
+
+        if (prefs_images) {
+          // Get account image path.
+          // TODO(avayvod): Reading image path as a string is here for
+          // backward compatibility.
+          std::string image_path;
+          base::DictionaryValue* image_properties;
+          if (prefs_images->GetStringWithoutPathExpansion(email, &image_path)) {
+            int image_id = User::kInvalidImageIndex;
+            if (IsDefaultImagePath(image_path, &image_id)) {
+              DCHECK(image_id >= 0 && image_id < kDefaultImagesCount);
+              int resource_id = kDefaultImageResources[image_id];
+              user->SetImage(*ResourceBundle::GetSharedInstance().
+                                 GetBitmapNamed(resource_id),
+                             image_id);
+            } else {
+              int image_index = User::kExternalImageIndex;
+              // Load user image asynchronously.
+              image_loader_->Start(
+                  image_path, 0,
+                  base::Bind(&UserManager::SetUserImage,
+                             base::Unretained(this), email, image_index));
+            }
+          } else if (prefs_images->GetDictionaryWithoutPathExpansion(
+                         email, &image_properties)) {
+            int image_index = User::kInvalidImageIndex;
+            image_properties->GetString(kImagePathNodeName, &image_path);
+            image_properties->GetInteger(kImageIndexNodeName, &image_index);
+            if (image_index >= 0 && image_index < kDefaultImagesCount) {
+              int resource_id = kDefaultImageResources[image_index];
+              user->SetImage(*ResourceBundle::GetSharedInstance().
+                                 GetBitmapNamed(resource_id),
+                             image_index);
+            } else if (image_index == User::kProfileImageIndex &&
+                       image_path.empty()) {
+              // User has profile image as his picture but no profile image
+              // has been downloaded yet, so use a grey avatar for now.
+              user->SetImage(*ResourceBundle::GetSharedInstance().
+                                 GetBitmapNamed(IDR_PROFILE_PICTURE_LOADING),
+                             User::kProfileImageIndex);
+            } else if (image_index == User::kExternalImageIndex ||
+                       image_index == User::kProfileImageIndex) {
+              // Load user image asynchronously.
+              image_loader_->Start(
+                  image_path, 0,
+                  base::Bind(&UserManager::SetUserImage,
+                             base::Unretained(this), email, image_index));
+            } else {
+              NOTREACHED();
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+void UserManager::StubUserLoggedIn() {
+  logged_in_user_ = &stub_user_;
+  SetUserImage(stub_user_.email(), 0,
+               *ResourceBundle::GetSharedInstance().
+                   GetBitmapNamed(kDefaultImageResources[0]));
+}
+
 void UserManager::NotifyOnLogin() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
       content::Source<UserManager>(this),
-      content::Details<const User>(&logged_in_user_));
+      content::Details<const User>(logged_in_user_));
 
   chromeos::input_method::InputMethodManager::GetInstance()->
       SetDeferImeStartup(false);
@@ -817,44 +644,210 @@ void UserManager::NotifyOnLogin() {
                                      base::Unretained(this)));
 }
 
-void UserManager::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(&UserManager::CheckOwnership,
-                                       base::Unretained(this)));
+void UserManager::SetInitialUserImage(const std::string& username) {
+  // Choose a random default image.
+  int image_id = base::RandInt(0, kDefaultImagesCount - 1);
+  SaveUserDefaultImageIndex(username, image_id);
+}
+
+void UserManager::SetUserImage(const std::string& username,
+                               int image_index,
+                               const SkBitmap& image) {
+  User* user = const_cast<User*>(FindUser(username));
+  // User may have been removed by now.
+  if (user) {
+    user->SetImage(image, image_index);
+    LOG(ERROR) << "Set user image for " << username
+               << " to index " << image_index;
   }
 }
 
-bool UserManager::current_user_is_owner() const {
-  base::AutoLock lk(current_user_is_owner_lock_);
-  return current_user_is_owner_;
+void UserManager::SaveUserImageInternal(const std::string& username,
+                                        int image_index,
+                                        const SkBitmap& image) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  SetUserImage(username, image_index, image);
+
+  FilePath image_path = GetImagePathForUser(username);
+  DVLOG(1) << "Saving user image to " << image_path.value();
+
+  last_image_set_async_ = true;
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&UserManager::SaveImageToFile,
+                 base::Unretained(this),
+                 username, image, image_path, image_index));
 }
 
-void UserManager::set_current_user_is_owner(bool current_user_is_owner) {
-  base::AutoLock lk(current_user_is_owner_lock_);
-  current_user_is_owner_ = current_user_is_owner;
+void UserManager::SaveImageToFile(const std::string& username,
+                                  const SkBitmap& image,
+                                  const FilePath& image_path,
+                                  int image_index) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  std::vector<unsigned char> encoded_image;
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(image, true, &encoded_image)) {
+    LOG(ERROR) << "Failed to PNG encode the image.";
+    return;
+  }
+
+  if (file_util::WriteFile(image_path,
+                           reinterpret_cast<char*>(&encoded_image[0]),
+                           encoded_image.size()) == -1) {
+    LOG(ERROR) << "Failed to save image to file.";
+    return;
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&UserManager::SaveImageToLocalState,
+                 base::Unretained(this),
+                 username, image_path.value(), image_index, true));
 }
 
-void UserManager::AddObserver(Observer* obs) {
-  observer_list_.AddObserver(obs);
+void UserManager::SaveImageToLocalState(const std::string& username,
+                                        const std::string& image_path,
+                                        int image_index,
+                                        bool is_async) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  LOG(ERROR) << "Save to Local State for " << username
+             << " " << image_path << ":" << image_index;
+
+  // TODO(ivankr): use unique filenames for user images each time
+  // a new image is set so that only the last image update is saved
+  // to Local State and notified.
+  if (is_async && !last_image_set_async_) {
+    DVLOG(1) << "Ignoring saved image because it has changed";
+    return;
+  } else if (!is_async) {
+    // Reset the async image save flag if called directly from the UI thread.
+    last_image_set_async_ = false;
+  }
+
+  PrefService* local_state = g_browser_process->local_state();
+  DictionaryPrefUpdate images_update(local_state, kUserImages);
+  base::DictionaryValue* image_properties = new base::DictionaryValue();
+  image_properties->Set(kImagePathNodeName, new StringValue(image_path));
+  image_properties->Set(kImageIndexNodeName,
+                        new base::FundamentalValue(image_index));
+  images_update->SetWithoutPathExpansion(username, image_properties);
+  DVLOG(1) << "Saving path to user image in Local State.";
+  local_state->ScheduleSavePersistentPrefs();
+
+  NotifyLocalStateChanged();
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
+      content::Source<UserManager>(this),
+      content::Details<const User>(logged_in_user_));
 }
 
-void UserManager::RemoveObserver(Observer* obs) {
-  observer_list_.RemoveObserver(obs);
+void UserManager::DeleteUserImage(const FilePath& image_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (!file_util::Delete(image_path, false)) {
+    LOG(ERROR) << "Failed to remove user image.";
+    return;
+  }
 }
 
-void UserManager::NotifyLocalStateChanged() {
-  FOR_EACH_OBSERVER(
-    Observer,
-    observer_list_,
-    LocalStateChanged(this));
+void UserManager::UpdateOwnership(bool is_owner) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  set_current_user_is_owner(is_owner);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_OWNERSHIP_CHECKED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
+  if (is_owner) {
+    // Also update cached value.
+    UserCrosSettingsProvider::UpdateCachedOwner(logged_in_user().email());
+  }
 }
 
-void UserManager::DownloadProfileImage() {
-  profile_image_downloader_.reset(new ProfileImageDownloader(this));
-  profile_image_downloader_->Start();
+void UserManager::CheckOwnership() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  bool is_owner = OwnershipService::GetSharedInstance()->CurrentUserIsOwner();
+  VLOG(1) << "Current user " << (is_owner ? "is owner" : "is not owner");
+
+  set_current_user_is_owner(is_owner);
+
+  // UserManager should be accessed only on UI thread.
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&UserManager::UpdateOwnership,
+                 base::Unretained(this),
+                 is_owner));
+}
+
+void UserManager::OnDownloadSuccess(const SkBitmap& image) {
+  VLOG(1) << "Downloaded profile image for logged-in user.";
+  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
+                            ProfileImageDownloader::kDownloadSuccess,
+                            ProfileImageDownloader::kDownloadResultsCount);
+
+  // Check if this image is not the same as already downloaded.
+  std::string new_image_data_url = web_ui_util::GetImageDataUrl(image);
+  if (!downloaded_profile_image_data_url_.empty() &&
+      new_image_data_url == downloaded_profile_image_data_url_)
+    return;
+
+  downloaded_profile_image_data_url_ = new_image_data_url;
+  downloaded_profile_image_ = image;
+
+  if (logged_in_user().image_index() == User::kProfileImageIndex) {
+    std::string current_image_data_url =
+        web_ui_util::GetImageDataUrl(logged_in_user().image());
+    if (current_image_data_url == new_image_data_url)
+      return;
+
+    VLOG(1) << "Updating profile image for logged-in user";
+    UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
+                              ProfileImageDownloader::kDownloadSuccessChanged,
+                              ProfileImageDownloader::kDownloadResultsCount);
+
+    // This will persist |downloaded_profile_image_| to file.
+    SaveUserImageFromProfileImage(logged_in_user().email());
+  }
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
+      content::Source<UserManager>(this),
+      content::Details<const SkBitmap>(&image));
+}
+
+void UserManager::OnDownloadFailure() {
+  VLOG(1) << "Download of profile image for logged-in user failed.";
+  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
+                            ProfileImageDownloader::kDownloadFailure,
+                            ProfileImageDownloader::kDownloadResultsCount);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
+      content::Source<UserManager>(this),
+      content::NotificationService::NoDetails());
+}
+
+void UserManager::OnDownloadDefaultImage() {
+  VLOG(1) << "Logged-in user still has the default profile image.";
+  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
+                            ProfileImageDownloader::kDownloadDefault,
+                            ProfileImageDownloader::kDownloadResultsCount);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
+      content::Source<UserManager>(this),
+      content::NotificationService::NoDetails());
+}
+
+User* UserManager::CreateUser(const std::string& email) const {
+  User* user = new User(email);
+  user->set_oauth_token_status(GetUserOAuthStatus(email));
+  // Used to determine whether user's display name is unique.
+  ++display_name_count_[user->GetDisplayName()];
+  return user;
 }
 
 }  // namespace chromeos

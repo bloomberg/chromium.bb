@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -34,7 +35,7 @@ WebUILoginDisplay::WebUILoginDisplay(LoginDisplay::Delegate* delegate)
       webui_handler_(NULL) {
 }
 
-void WebUILoginDisplay::Init(const std::vector<UserManager::User>& users,
+void WebUILoginDisplay::Init(const UserList& users,
                              bool show_guest,
                              bool show_new_user) {
   // Testing that the delegate has been set.
@@ -46,27 +47,21 @@ void WebUILoginDisplay::Init(const std::vector<UserManager::User>& users,
 }
 
 void WebUILoginDisplay::OnBeforeUserRemoved(const std::string& username) {
-  // TODO(rharrison): Figure out if I need to split anything between this and
-  // OnUserRemoved
+  for (UserList::iterator it = users_.begin(); it != users_.end(); ++it) {
+    if ((*it)->email() == username) {
+      users_.erase(it);
+      break;
+    }
+  }
 }
 
-void WebUILoginDisplay::OnUserImageChanged(UserManager::User* user) {
+void WebUILoginDisplay::OnUserImageChanged(const User& user) {
   // TODO(rharrison): Update the user in the user vector
   // TODO(rharrison): Push the change to WebUI Login screen
 }
 
 void WebUILoginDisplay::OnUserRemoved(const std::string& username) {
   DCHECK(webui_handler_);
-
-  for (std::vector<UserManager::User>::iterator it = users_.begin();
-       it != users_.end();
-       ++it) {
-    if (it->email() == username) {
-      users_.erase(it);
-      break;
-    }
-  }
-
   webui_handler_->OnUserRemoved(username);
 }
 
@@ -190,8 +185,7 @@ void WebUILoginDisplay::ShowSigninScreenForCreds(
   webui_handler_->ShowSigninScreenForCreds(username, password);
 }
 
-
-const std::vector<UserManager::User>& WebUILoginDisplay::GetUsers() const {
+const UserList& WebUILoginDisplay::GetUsers() const {
   return users_;
 }
 

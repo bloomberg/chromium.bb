@@ -1248,7 +1248,6 @@
         'browser/chromeos/login/authenticator_unittest.cc',
         'browser/chromeos/login/cookie_fetcher_unittest.cc',
         'browser/chromeos/login/cryptohome_op_unittest.cc',
-        'browser/chromeos/login/google_authenticator_unittest.cc',
         'browser/chromeos/login/mock_auth_attempt_state_resolver.cc',
         'browser/chromeos/login/mock_auth_attempt_state_resolver.h',
         'browser/chromeos/login/mock_auth_response_handler.cc',

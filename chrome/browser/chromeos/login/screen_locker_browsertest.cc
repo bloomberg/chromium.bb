@@ -112,7 +112,7 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
         .Times(1)
         .RetiresOnSaturation();
-    UserManager::Get()->OffTheRecordUserLoggedIn();
+    UserManager::Get()->GuestUserLoggedIn();
     ScreenLocker::Show();
     scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
     tester->EmulateWindowManagerReady();

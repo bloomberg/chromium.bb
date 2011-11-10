@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/io_thread.h"
@@ -592,21 +592,20 @@ void SigninScreenHandler::SendUserList(bool animated) {
   size_t non_owner_count = 0;
 
   ListValue users_list;
-  UserVector users = delegate_->GetUsers();
+  const UserList& users = delegate_->GetUsers();
 
   bool single_user = users.size() == 1;
-  for (UserVector::const_iterator it = users.begin();
-       it != users.end(); ++it) {
-    const std::string& email = it->email();
+  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+    const std::string& email = (*it)->email();
     bool is_owner = email == UserCrosSettingsProvider::cached_owner();
     bool signed_in = UserManager::Get()->user_is_logged_in() &&
         email == UserManager::Get()->logged_in_user().email();
 
     if (non_owner_count < max_non_owner_users || is_owner) {
       DictionaryValue* user_dict = new DictionaryValue();
-      user_dict->SetString(kKeyName, it->GetDisplayName());
+      user_dict->SetString(kKeyName, (*it)->GetDisplayName());
       user_dict->SetString(kKeyEmailAddress, email);
-      user_dict->SetInteger(kKeyOauthTokenStatus, it->oauth_token_status());
+      user_dict->SetInteger(kKeyOauthTokenStatus, (*it)->oauth_token_status());
       user_dict->SetBoolean(kKeySignedIn, signed_in);
 
       // Single user check here is necessary because owner info might not be
@@ -646,7 +645,7 @@ void SigninScreenHandler::SendUserList(bool animated) {
     guest_dict->SetString(kKeyEmailAddress, "");
     guest_dict->SetBoolean(kKeyCanRemove, false);
     guest_dict->SetInteger(kKeyOauthTokenStatus,
-                           UserManager::OAUTH_TOKEN_STATUS_UNKNOWN);
+                           User::OAUTH_TOKEN_STATUS_UNKNOWN);
     std::string image_url(std::string(chrome::kChromeUIScheme) + "://" +
         std::string(chrome::kChromeUIThemePath) + "/IDR_LOGIN_GUEST");
     guest_dict->SetString(kKeyImageUrl, image_url);

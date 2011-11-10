@@ -227,7 +227,7 @@ bool GetUserWhitelist(ListValue* user_list) {
   ListPrefUpdate cached_whitelist_update(prefs, kAccountsPrefUsers);
   cached_whitelist_update->Clear();
 
-  const UserManager::User& self = UserManager::Get()->logged_in_user();
+  const User& self = UserManager::Get()->logged_in_user();
   bool is_owner = UserManager::Get()->current_user_is_owner();
 
   for (size_t i = 0; i < whitelist.size(); ++i) {

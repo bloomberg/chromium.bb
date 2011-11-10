@@ -20,29 +20,36 @@ using content::BrowserThread;
 
 namespace chromeos {
 
-UserImageLoader::UserImageLoader(Delegate* delegate)
-    : target_message_loop_(NULL),
-      delegate_(delegate) {
+UserImageLoader::ImageInfo::ImageInfo(int size, const LoadedCallback& loaded_cb)
+    : size(size),
+      loaded_cb(loaded_cb) {
+}
+
+UserImageLoader::ImageInfo::~ImageInfo() {
+}
+
+UserImageLoader::UserImageLoader()
+    : target_message_loop_(NULL) {
 }
 
 UserImageLoader::~UserImageLoader() {
 }
 
-void UserImageLoader::Start(const std::string& username,
-                            const std::string& filename,
-                            int image_index,
-                            bool should_save_image) {
+void UserImageLoader::Start(const std::string& filepath,
+                            int size,
+                            const LoadedCallback& loaded_cb) {
   target_message_loop_ = MessageLoop::current();
 
-  ImageInfo image_info(username, image_index, should_save_image);
+  ImageInfo image_info(size, loaded_cb);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&UserImageLoader::LoadImage, this, filename, image_info));
+      base::Bind(&UserImageLoader::LoadImage, this, filepath, image_info));
 }
 
 void UserImageLoader::LoadImage(const std::string& filepath,
                                 const ImageInfo& image_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   std::string image_data;
   file_util::ReadFileToString(FilePath(filepath), &image_data);
 
@@ -55,14 +62,17 @@ void UserImageLoader::LoadImage(const std::string& filepath,
 void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
                                      const SkBitmap& decoded_image) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   ImageInfoMap::iterator info_it = image_info_map_.find(decoder);
   if (info_it == image_info_map_.end()) {
     NOTREACHED();
     return;
   }
-  ImageInfo image_info = info_it->second;
+
+  const ImageInfo& image_info = info_it->second;
   SkBitmap final_image = decoded_image;
-  if (image_info.should_save_image) {
+
+  if (image_info.size > 0) {
     // Auto crop the image, taking the largest square in the center.
     // Also make the image smaller to save space and memory.
     int size = std::min(decoded_image.width(), decoded_image.height());
@@ -73,29 +83,20 @@ void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
     final_image =
         skia::ImageOperations::Resize(cropped_image,
                                       skia::ImageOperations::RESIZE_LANCZOS3,
-                                      login::kUserImageSize,
-                                      login::kUserImageSize);
+                                      image_info.size,
+                                      image_info.size);
   }
+
   target_message_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&UserImageLoader::NotifyDelegate, this, final_image,
-                 image_info));
+      base::Bind(image_info.loaded_cb, final_image));
+
   image_info_map_.erase(info_it);
 }
 
 void UserImageLoader::OnDecodeImageFailed(const ImageDecoder* decoder) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   image_info_map_.erase(decoder);
-}
-
-void UserImageLoader::NotifyDelegate(const SkBitmap& image,
-                                     const ImageInfo& image_info) {
-  if (delegate_) {
-    delegate_->OnImageLoaded(image_info.username,
-                             image,
-                             image_info.image_index,
-                             image_info.should_save_image);
-  }
 }
 
 }  // namespace chromeos

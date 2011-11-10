@@ -463,7 +463,7 @@ void PhotoCaptureObserver::OnCapturingStopped(
     return;
   }
 
-  const chromeos::UserManager::User& user = user_manager->logged_in_user();
+  const chromeos::User& user = user_manager->logged_in_user();
   if (user.email().empty()) {
     AutomationJSONReply(automation_,
                         reply_message_.release()).SendError(
@@ -474,10 +474,7 @@ void PhotoCaptureObserver::OnCapturingStopped(
 
   // Set up an observer for UserManager (it will delete itself).
   user_manager->AddObserver(this);
-  user_manager->SetLoggedInUserImage(
-      photo, chromeos::UserManager::User::kExternalImageIndex);
-  user_manager->SaveUserImage(
-      user.email(), photo, chromeos::UserManager::User::kExternalImageIndex);
+  user_manager->SaveUserImage(user.email(), photo);
 }
 
 void PhotoCaptureObserver::LocalStateChanged(

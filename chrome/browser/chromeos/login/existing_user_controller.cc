@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
@@ -91,16 +92,16 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
                  content::NotificationService::AllSources());
 }
 
-void ExistingUserController::Init(const UserVector& users) {
-  UserVector filtered_users;
+void ExistingUserController::Init(const UserList& users) {
+  UserList filtered_users;
   if (UserCrosSettingsProvider::cached_show_users_on_signin()) {
-    for (size_t i = 0; i < users.size(); ++i)
+    for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
       // TODO(xiyuan): Clean user profile whose email is not in whitelist.
       if (UserCrosSettingsProvider::cached_allow_new_user() ||
-          UserCrosSettingsProvider::IsEmailInCachedWhitelist(
-              users[i].email())) {
-        filtered_users.push_back(users[i]);
+          UserCrosSettingsProvider::IsEmailInCachedWhitelist((*it)->email())) {
+        filtered_users.push_back(*it);
       }
+    }
   }
 
   // If no user pods are visible, fallback to single new user pod which will
@@ -125,9 +126,7 @@ void ExistingUserController::Observe(
     const content::NotificationDetails& details) {
   if (type != chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED)
     return;
-
-  UserManager::User* user = content::Details<UserManager::User>(details).ptr();
-  login_display_->OnUserImageChanged(user);
+  login_display_->OnUserImageChanged(*content::Details<User>(details).ptr());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
