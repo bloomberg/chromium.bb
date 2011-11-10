@@ -80,6 +80,8 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out64)',
                  'inputs': [
+                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@(>(get_sources) -I. -I.. >(sources))',
                     '>@(extra_deps64)',
                  ],
@@ -122,6 +124,8 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out64)',
                  'inputs': [
+                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@(>(get_sources) -I. -I.. >(sources))',
                     '>@(extra_deps64)',
                  ],
@@ -164,6 +168,8 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out32)',
                  'inputs': [
+                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@(>(get_sources) -I. -I.. >(sources))',
                     '>@(extra_deps32)',
                  ],
@@ -206,6 +212,8 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out32)',
                  'inputs': [
+                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@(>(get_sources) -I. -I.. >(sources))',
                     '>@(extra_deps32)',
                  ],

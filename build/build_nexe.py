@@ -91,7 +91,6 @@ class Builder(object):
     else:
       ErrOut('Toolchain of type %s not supported.' % toolname)
 
-
     self.root_path = options.root
     self.nacl_path = os.path.join(self.root_path, 'native_client')
 
