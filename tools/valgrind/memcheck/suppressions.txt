@@ -920,7 +920,7 @@
    Memcheck:Leak
    fun:malloc
    fun:PL_ArenaAllocate
-   fun:PORT_ArenaAlloc_Util
+   fun:PORT_ArenaAlloc*
 }
 {
    # PR_GetCurrentThread allocates a PRThread structure and stores it in
@@ -5161,12 +5161,23 @@
    fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_6ObjectEEES4_iPS4_Pbb
 }
 {
-   bug_102327
+   bug_102327a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN15tracked_objects10ThreadData10InitializeEv
    fun:_ZN15tracked_objects10ThreadData30InitializeAndSetTrackingStatusEb
    fun:_ZN15tracked_objects10ThreadData29ShutdownSingleThreadedCleanupEb
+}
+{
+   bug_102327b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKPKN15tracked_objects6BirthsENS3_9DeathDataEEEE8allocateEmPKv
+   ...
+   fun:_ZNSt3mapIPKN15tracked_objects6BirthsENS0_9DeathDataESt4lessIS3_ESaISt4pairIKS3_S4_EEE6insertESt17_Rb_tree_iteratorIS9_ERKS9_
+   fun:_ZNSt3mapIPKN15tracked_objects6BirthsENS0_9DeathDataESt4lessIS3_ESaISt4pairIKS3_S4_EEEixERS8_
+   fun:_ZN15tracked_objects10ThreadData11TallyADeathERKNS_6BirthsERKNS_8DurationES6_
+   fun:_ZN15tracked_objects10ThreadData31TallyRunOnNamedThreadIfTrackingERKN4base12TrackingInfoERKNS_11TrackedTimeES7_
 }
 {
    bug_102614
