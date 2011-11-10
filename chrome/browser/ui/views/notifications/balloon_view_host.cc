@@ -11,12 +11,8 @@
 #include "content/public/browser/content_browser_client.h"
 #include "views/widget/widget.h"
 
-#if defined(USE_AURA)
-#include "content/browser/renderer_host/render_widget_host_view_aura.h"
-#elif defined(TOUCH_UI)
+#if defined(TOUCH_UI) && !defined(USE_AURA)
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
-#elif defined(TOOLKIT_USES_GTK)
-#include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #endif
 
 class BalloonViewHostView : public views::NativeViewHost {
@@ -57,20 +53,12 @@ void BalloonViewHost::Init(gfx::NativeView parent_native_view) {
   BalloonHost::Init();
 
   RenderWidgetHostView* render_widget_host_view =
-        tab_contents_->render_view_host()->view();
-#if defined(OS_WIN) || defined(USE_AURA)
-  native_host_->Attach(render_widget_host_view->GetNativeView());
-#elif defined(TOOLKIT_USES_GTK)
-#if defined(TOUCH_UI)
+      tab_contents_->render_view_host()->view();
+#if defined(TOUCH_UI) && !defined(USE_AURA)
   RenderWidgetHostViewViews* view_views =
       static_cast<RenderWidgetHostViewViews*>(render_widget_host_view);
   native_host_->AttachToView(view_views);
 #else
-  RenderWidgetHostViewGtk* view_gtk =
-      static_cast<RenderWidgetHostViewGtk*>(render_widget_host_view);
-  native_host_->Attach(view_gtk->native_view());
-#endif
-#else
-  NOTIMPLEMENTED();
+  native_host_->Attach(render_widget_host_view->GetNativeView());
 #endif
 }
