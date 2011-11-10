@@ -13,7 +13,7 @@ struct PP_NetAddress_Private;
 
 namespace pp {
 
-class NetAddress {
+class NetAddressPrivate {
  public:
   static bool AreEqual(const PP_NetAddress_Private& addr1,
                        const PP_NetAddress_Private& addr2);

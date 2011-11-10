@@ -21,16 +21,16 @@ template <> const char* interface_name<PPB_NetAddress_Private>() {
 }  // namespace
 
 // static
-bool NetAddress::AreEqual(const PP_NetAddress_Private& addr1,
-                          const PP_NetAddress_Private& addr2) {
+bool NetAddressPrivate::AreEqual(const PP_NetAddress_Private& addr1,
+                                 const PP_NetAddress_Private& addr2) {
   if (!has_interface<PPB_NetAddress_Private>())
     return false;
   return !!get_interface<PPB_NetAddress_Private>()->AreEqual(&addr1, &addr2);
 }
 
 // static
-bool NetAddress::AreHostsEqual(const PP_NetAddress_Private& addr1,
-                               const PP_NetAddress_Private& addr2) {
+bool NetAddressPrivate::AreHostsEqual(const PP_NetAddress_Private& addr1,
+                                      const PP_NetAddress_Private& addr2) {
   if (!has_interface<PPB_NetAddress_Private>())
     return false;
   return !!get_interface<PPB_NetAddress_Private>()->AreHostsEqual(&addr1,
@@ -38,8 +38,8 @@ bool NetAddress::AreHostsEqual(const PP_NetAddress_Private& addr1,
 }
 
 // static
-std::string NetAddress::Describe(const PP_NetAddress_Private& addr,
-                                 bool include_port) {
+std::string NetAddressPrivate::Describe(const PP_NetAddress_Private& addr,
+                                        bool include_port) {
   if (!has_interface<PPB_NetAddress_Private>())
     return std::string();
 
@@ -56,9 +56,9 @@ std::string NetAddress::Describe(const PP_NetAddress_Private& addr,
 }
 
 // static
-bool NetAddress::ReplacePort(const PP_NetAddress_Private& addr_in,
-                             uint16_t port,
-                             PP_NetAddress_Private* addr_out) {
+bool NetAddressPrivate::ReplacePort(const PP_NetAddress_Private& addr_in,
+                                    uint16_t port,
+                                    PP_NetAddress_Private* addr_out) {
   if (!has_interface<PPB_NetAddress_Private>())
     return false;
   return !!get_interface<PPB_NetAddress_Private>()->ReplacePort(&addr_in,
@@ -67,7 +67,8 @@ bool NetAddress::ReplacePort(const PP_NetAddress_Private& addr_in,
 }
 
 // static
-void NetAddress::GetAnyAddress(bool is_ipv6, PP_NetAddress_Private* addr) {
+void NetAddressPrivate::GetAnyAddress(bool is_ipv6,
+                                      PP_NetAddress_Private* addr) {
   if (!has_interface<PPB_NetAddress_Private>())
     return;
   get_interface<PPB_NetAddress_Private>()->GetAnyAddress(PP_FromBool(is_ipv6),
