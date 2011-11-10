@@ -418,8 +418,8 @@ NSString *Breakpad::NextCrashReportToUpload() {
 void Breakpad::UploadNextReport() {
   NSString* configFile = NextCrashReportToUpload();
   if (configFile) {
-    Uploader* uploader = [[Uploader alloc]
-        initWithConfigFile:[configFile UTF8String]];
+    Uploader* uploader = [[[Uploader alloc]
+        initWithConfigFile:[configFile UTF8String]] autorelease];
     if (uploader)
       [uploader report];
   }
