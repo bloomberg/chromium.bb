@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/notifications/system_notification.h"
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -121,7 +122,7 @@ bool XInputHierarchyChangedEventListener::ProcessedXEvent(XEvent* xevent) {
 //////////////////////////////////////////////////////////////////////////////
 // ScreenLocker
 
-ScreenLocker::ScreenLocker(const UserManager::User& user) {
+ScreenLocker::ScreenLocker(const chromeos::User& user) : user_(user) {
   NOTIMPLEMENTED();
 }
 
