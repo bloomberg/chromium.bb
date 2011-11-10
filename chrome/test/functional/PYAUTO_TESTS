@@ -570,6 +570,17 @@
     ],
   },
 
+  # Subset of CONTINUOUS_PUBLIC to be run in a ChromeOS VM.
+  'CHROMEOS_VM_PUBLIC': {
+    'chromeos': [
+      '@CONTINUOUS_PUBLIC',
+      '-chromeos_firmware_version_checker',
+      '-chromeos_power',
+      '-chromeos_prefs.ChromeosPrefsTest.testCaptureUserPhoto',
+      '-chromeos_wifi_sanity',
+    ],
+  },
+
   # ChromeOS flash tests.
   'CHROMEOS_FLASH': {
     'chromeos': [
