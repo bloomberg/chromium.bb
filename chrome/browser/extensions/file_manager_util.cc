@@ -16,6 +16,7 @@
 #include "chrome/browser/simple_message_box.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/plugin_service.h"
@@ -36,6 +37,9 @@ using content::BrowserThread;
 
 #define FILEBROWSER_DOMAIN "hhaomjibdihmijegdhdafkllkbggdgoj"
 const char kFileBrowserDomain[] = FILEBROWSER_DOMAIN;
+
+namespace {
+
 #define FILEBROWSER_URL(PATH) \
     ("chrome-extension://" FILEBROWSER_DOMAIN "/" PATH)
 // This is the "well known" url for the file manager extension from
@@ -117,11 +121,6 @@ bool ShouldBeOpenedWithPdfPlugin(const char* ext) {
   return plugin_prefs->IsPluginEnabled(plugin);
 }
 
-// static
-GURL FileManagerUtil::GetFileBrowserExtensionUrl() {
-  return GURL(kFileBrowserExtensionUrl);
-}
-
 // Returns index |ext| has in the |array|. If there is no |ext| in |array|, last
 // element's index is return (last element should have irrelevant value).
 int UMAExtensionIndex(const char *ext,
@@ -133,6 +132,13 @@ int UMAExtensionIndex(const char *ext,
     }
   }
   return 0;
+}
+
+}  // namespace
+
+// static
+GURL FileManagerUtil::GetFileBrowserExtensionUrl() {
+  return GURL(kFileBrowserExtensionUrl);
 }
 
 // static
@@ -254,7 +260,21 @@ void FileManagerUtil::ShowFullTabUrl(Profile*,
   browser->ShowSingletonTabRespectRef(GURL(url));
 }
 
+// static
 void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    bool result = BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&FileManagerUtil::ViewItem, full_path, enqueue));
+    DCHECK(result);
+    return;
+  }
+
+  // There is nothing we can do if the browser is not present.
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser)
+    return;
+
   std::string ext = full_path.Extension();
   // For things supported natively by the browser, we should open it
   // in a tab.
@@ -263,23 +283,11 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
     std::string path;
     path = "file://";
     path.append(net::EscapeUrlEncodedData(full_path.value(), false));
-    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      bool result = BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ViewItem, full_path, enqueue));
-      DCHECK(result);
-      return;
-    }
-    Browser* browser = BrowserList::GetLastActive();
-    if (browser)
-      browser->AddSelectedTabWithURL(GURL(path), content::PAGE_TRANSITION_LINK);
+    browser->AddSelectedTabWithURL(GURL(path), content::PAGE_TRANSITION_LINK);
     return;
   }
 #if defined(OS_CHROMEOS)
   if (IsSupportedAVExtension(ext.data())) {
-    Browser* browser = BrowserList::GetLastActive();
-    if (!browser)
-      return;
     MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
 
     if (mediaplayer->GetPlaylist().empty())
@@ -305,17 +313,13 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
                             extension_index,
                             arraysize(kUMATrackingExtensions) - 1);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &browser::ShowErrorBox,
-          static_cast<gfx::NativeWindow>(NULL),
-          l10n_util::GetStringFUTF16(
-              IDS_FILEBROWSER_ERROR_VIEWING_FILE_TITLE,
-              UTF8ToUTF16(full_path.BaseName().value())),
-          l10n_util::GetStringUTF16(
-              IDS_FILEBROWSER_ERROR_VIEWING_FILE)
-          ));
+  browser::ShowErrorBox(
+      browser->window()->GetNativeHandle(),
+      l10n_util::GetStringFUTF16(
+          IDS_FILEBROWSER_ERROR_VIEWING_FILE_TITLE,
+          UTF8ToUTF16(full_path.BaseName().value())),
+      l10n_util::GetStringUTF16(
+          IDS_FILEBROWSER_ERROR_VIEWING_FILE));
 }
 
 // static
