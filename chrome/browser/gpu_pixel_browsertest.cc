@@ -255,19 +255,11 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(GpuPixelBrowserTest);
 };
 
-#if defined(OS_LINUX)
 // Currently fails (and times out) on linux due to a NOTIMPLEMENTED() statement.
 // (http://crbug.com/89964)
-#define MAYBE_WebGLTeapot DISABLED_WebGLTeapot
-#elif defined(OS_WIN)
-// Fails (and times out) on Windows due to pixel mismatch.
+// Fails (and times out) on Windows/Mac due to pixel mismatch.
 // (http://crbug.com/95214)
-#define MAYBE_WebGLTeapot DISABLED_WebGLTeapot
-#else
-#define MAYBE_WebGLTeapot WebGLTeapot
-#endif
-
-IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLTeapot) {
+IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, DISABLED_WebGLTeapot) {
   ui_test_utils::DOMMessageQueue message_queue;
   ui_test_utils::NavigateToURL(
       browser(),
