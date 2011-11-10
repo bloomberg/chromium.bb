@@ -74,7 +74,7 @@ class SpeechInputDispatcher;
 class WebPluginDelegateProxy;
 class WebUIBindings;
 struct ContextMenuMediaParams;
-struct PP_Flash_NetAddress;
+struct PP_NetAddress_Private;
 struct ViewHostMsg_RunFileChooser_Params;
 struct ViewMsg_SwapOut_Params;
 struct ViewMsg_Navigate_Params;
@@ -756,8 +756,8 @@ class RenderViewImpl : public RenderWidget,
 #if defined(ENABLE_FLAPPER_HACKS)
   void OnConnectTcpACK(int request_id,
                        IPC::PlatformFileForTransit socket_for_transit,
-                       const PP_Flash_NetAddress& local_addr,
-                       const PP_Flash_NetAddress& remote_addr);
+                       const PP_NetAddress_Private& local_addr,
+                       const PP_NetAddress_Private& remote_addr);
 #endif
   void OnContextMenuClosed(
       const webkit_glue::CustomContextMenuContext& custom_context);

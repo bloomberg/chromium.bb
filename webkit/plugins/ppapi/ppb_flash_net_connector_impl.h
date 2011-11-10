@@ -31,19 +31,19 @@ class PPB_Flash_NetConnector_Impl
   virtual int32_t ConnectTcp(const char* host,
                              uint16_t port,
                              PP_FileHandle* socket_out,
-                             PP_Flash_NetAddress* local_addr_out,
-                             PP_Flash_NetAddress* remote_addr_out,
+                             PP_NetAddress_Private* local_addr_out,
+                             PP_NetAddress_Private* remote_addr_out,
                              PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t ConnectTcpAddress(const PP_Flash_NetAddress* addr,
+  virtual int32_t ConnectTcpAddress(const PP_NetAddress_Private* addr,
                                     PP_FileHandle* socket_out,
-                                    PP_Flash_NetAddress* local_addr_out,
-                                    PP_Flash_NetAddress* remote_addr_out,
+                                    PP_NetAddress_Private* local_addr_out,
+                                    PP_NetAddress_Private* remote_addr_out,
                                     PP_CompletionCallback callback) OVERRIDE;
 
   // Called to complete |ConnectTcp()| and |ConnectTcpAddress()|.
   void CompleteConnectTcp(PP_FileHandle socket,
-                          const PP_Flash_NetAddress& local_addr,
-                          const PP_Flash_NetAddress& remote_addr);
+                          const PP_NetAddress_Private& local_addr,
+                          const PP_NetAddress_Private& remote_addr);
 
  private:
   // Any pending callback (for |ConnectTcp()| or |ConnectTcpAddress()|).
@@ -52,8 +52,8 @@ class PPB_Flash_NetConnector_Impl
   // Output buffers to be filled in when the callback is completed successfully
   // (|{local,remote}_addr_out| are optional and may be null).
   PP_FileHandle* socket_out_;
-  PP_Flash_NetAddress* local_addr_out_;
-  PP_Flash_NetAddress* remote_addr_out_;
+  PP_NetAddress_Private* local_addr_out_;
+  PP_NetAddress_Private* remote_addr_out_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Flash_NetConnector_Impl);
 };

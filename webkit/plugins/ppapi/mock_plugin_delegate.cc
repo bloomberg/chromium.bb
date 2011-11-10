@@ -221,7 +221,7 @@ int32_t MockPluginDelegate::ConnectTcp(
 
 int32_t MockPluginDelegate::ConnectTcpAddress(
     webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-    const struct PP_Flash_NetAddress* addr) {
+    const PP_NetAddress_Private* addr) {
   return PP_ERROR_FAILED;
 }
 

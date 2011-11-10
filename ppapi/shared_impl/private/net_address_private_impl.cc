@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/private/flash_net_address_impl.h"
+#include "ppapi/shared_impl/private/net_address_private_impl.h"
 
 #include <string.h>
 
@@ -14,11 +14,11 @@
 #include "net/base/sys_addrinfo.h"
 #include "net/base/sys_byteorder.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/c/private/ppb_flash_net_address.h"
+#include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/thunk.h"
 
-// The Flash net address interface doesn't have a normal C -> C++ thunk since it
+// The net address interface doesn't have a normal C -> C++ thunk since it
 // doesn't actually have any proxy wrapping or associated objects; it's just a
 // call into base. So we implement the entire interface here, using the thunk
 // namespace so it magically gets hooked up in the proper places.
@@ -32,14 +32,14 @@ namespace {
 typedef ADDRESS_FAMILY sa_family_t;
 #endif
 
-inline sa_family_t GetFamily(const PP_Flash_NetAddress& addr) {
+inline sa_family_t GetFamily(const PP_NetAddress_Private& addr) {
   return reinterpret_cast<const sockaddr*>(addr.data)->sa_family;
 }
 
-PP_Bool AreHostsEqual(const PP_Flash_NetAddress* addr1,
-                      const PP_Flash_NetAddress* addr2) {
-  if (!FlashNetAddressImpl::ValidateNetAddress(*addr1) ||
-      !FlashNetAddressImpl::ValidateNetAddress(*addr2))
+PP_Bool AreHostsEqual(const PP_NetAddress_Private* addr1,
+                      const PP_NetAddress_Private* addr2) {
+  if (!NetAddressPrivateImpl::ValidateNetAddress(*addr1) ||
+      !NetAddressPrivateImpl::ValidateNetAddress(*addr2))
     return PP_FALSE;
 
   if (GetFamily(*addr1) != GetFamily(*addr2))
@@ -63,8 +63,8 @@ PP_Bool AreHostsEqual(const PP_Flash_NetAddress* addr1,
   return PP_FALSE;
 }
 
-PP_Bool AreEqual(const PP_Flash_NetAddress* addr1,
-                 const PP_Flash_NetAddress* addr2) {
+PP_Bool AreEqual(const PP_NetAddress_Private* addr1,
+                 const PP_NetAddress_Private* addr2) {
   // |AreHostsEqual()| will also validate the addresses and return false if
   // either is invalid.
   if (!AreHostsEqual(addr1, addr2))
@@ -87,9 +87,9 @@ PP_Bool AreEqual(const PP_Flash_NetAddress* addr1,
 }
 
 PP_Var Describe(PP_Module module,
-                const struct PP_Flash_NetAddress* addr,
+                const struct PP_NetAddress_Private* addr,
                 PP_Bool include_port) {
-  if (!FlashNetAddressImpl::ValidateNetAddress(*addr))
+  if (!NetAddressPrivateImpl::ValidateNetAddress(*addr))
     return PP_MakeUndefined();
 
   const sockaddr* a = reinterpret_cast<const sockaddr*>(addr->data);
@@ -100,10 +100,10 @@ PP_Var Describe(PP_Module module,
   return StringVar::StringToPPVar(module, description);
 }
 
-PP_Bool ReplacePort(const struct PP_Flash_NetAddress* src_addr,
+PP_Bool ReplacePort(const struct PP_NetAddress_Private* src_addr,
                     uint16_t port,
-                    struct PP_Flash_NetAddress* dest_addr) {
-  if (!FlashNetAddressImpl::ValidateNetAddress(*src_addr))
+                    struct PP_NetAddress_Private* dest_addr) {
+  if (!NetAddressPrivateImpl::ValidateNetAddress(*src_addr))
     return PP_FALSE;
 
   if (GetFamily(*src_addr) == AF_INET) {
@@ -121,7 +121,7 @@ PP_Bool ReplacePort(const struct PP_Flash_NetAddress* src_addr,
   return PP_FALSE;
 }
 
-void GetAnyAddress(PP_Bool is_ipv6, struct PP_Flash_NetAddress* addr) {
+void GetAnyAddress(PP_Bool is_ipv6, PP_NetAddress_Private* addr) {
   memset(addr->data, 0, arraysize(addr->data) * sizeof(addr->data[0]));
   if (is_ipv6) {
     sockaddr_in6* a = reinterpret_cast<sockaddr_in6*>(addr->data);
@@ -136,7 +136,7 @@ void GetAnyAddress(PP_Bool is_ipv6, struct PP_Flash_NetAddress* addr) {
   }
 }
 
-const PPB_Flash_NetAddress flash_net_address_interface = {
+const PPB_NetAddress_Private net_address_private_interface = {
   &AreEqual,
   &AreHostsEqual,
   &Describe,
@@ -148,14 +148,16 @@ const PPB_Flash_NetAddress flash_net_address_interface = {
 
 namespace thunk {
 
-PPAPI_THUNK_EXPORT const PPB_Flash_NetAddress* GetPPB_Flash_NetAddress_Thunk() {
-  return &flash_net_address_interface;
+PPAPI_THUNK_EXPORT const PPB_NetAddress_Private*
+GetPPB_NetAddress_Private_Thunk() {
+  return &net_address_private_interface;
 }
 
 }  // namespace thunk
 
 // static
-bool FlashNetAddressImpl::ValidateNetAddress(const PP_Flash_NetAddress& addr) {
+bool NetAddressPrivateImpl::ValidateNetAddress(
+    const PP_NetAddress_Private& addr) {
   if (addr.size < sizeof(reinterpret_cast<sockaddr*>(0)->sa_family))
     return false;
 

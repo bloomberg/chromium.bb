@@ -59,16 +59,16 @@ class FlashUDPSocket : public PPB_Flash_UDPSocket_API,
   virtual PPB_Flash_UDPSocket_API* AsPPB_Flash_UDPSocket_API() OVERRIDE;
 
   // PPB_Flash_UDPSocket_API implementation.
-  virtual int32_t Bind(const PP_Flash_NetAddress* addr,
+  virtual int32_t Bind(const PP_NetAddress_Private* addr,
                        PP_CompletionCallback callback) OVERRIDE;
   virtual int32_t RecvFrom(char* buffer,
                            int32_t num_bytes,
                            PP_CompletionCallback callback) OVERRIDE;
-  virtual PP_Bool GetRecvFromAddress(PP_Flash_NetAddress* addr) OVERRIDE;
+  virtual PP_Bool GetRecvFromAddress(PP_NetAddress_Private* addr) OVERRIDE;
 
   virtual int32_t SendTo(const char* buffer,
                          int32_t num_bytes,
-                         const PP_Flash_NetAddress* addr,
+                         const PP_NetAddress_Private* addr,
                          PP_CompletionCallback callback) OVERRIDE;
   virtual void Close() OVERRIDE;
 
@@ -76,7 +76,7 @@ class FlashUDPSocket : public PPB_Flash_UDPSocket_API,
   void OnBindCompleted(bool succeeded);
   void OnRecvFromCompleted(bool succeeded,
                            const std::string& data,
-                           const PP_Flash_NetAddress& addr);
+                           const PP_NetAddress_Private& addr);
   void OnSendToCompleted(bool succeeded,
                          int32_t bytes_written);
 
@@ -99,7 +99,7 @@ class FlashUDPSocket : public PPB_Flash_UDPSocket_API,
   char* read_buffer_;
   int32_t bytes_to_read_;
 
-  PP_Flash_NetAddress recvfrom_addr_;
+  PP_NetAddress_Private recvfrom_addr_;
 
   DISALLOW_COPY_AND_ASSIGN(FlashUDPSocket);
 };
@@ -134,7 +134,7 @@ PPB_Flash_UDPSocket_API* FlashUDPSocket::AsPPB_Flash_UDPSocket_API() {
   return this;
 }
 
-int32_t FlashUDPSocket::Bind(const PP_Flash_NetAddress* addr,
+int32_t FlashUDPSocket::Bind(const PP_NetAddress_Private* addr,
                              PP_CompletionCallback callback) {
   if (!addr || !callback.func)
     return PP_ERROR_BADARGUMENT;
@@ -172,7 +172,7 @@ int32_t FlashUDPSocket::RecvFrom(char* buffer,
   return PP_OK_COMPLETIONPENDING;
 }
 
-PP_Bool FlashUDPSocket::GetRecvFromAddress(PP_Flash_NetAddress* addr) {
+PP_Bool FlashUDPSocket::GetRecvFromAddress(PP_NetAddress_Private* addr) {
   if (!addr)
     return PP_FALSE;
 
@@ -182,7 +182,7 @@ PP_Bool FlashUDPSocket::GetRecvFromAddress(PP_Flash_NetAddress* addr) {
 
 int32_t FlashUDPSocket::SendTo(const char* buffer,
                                int32_t num_bytes,
-                               const PP_Flash_NetAddress* addr,
+                               const PP_NetAddress_Private* addr,
                                PP_CompletionCallback callback) {
   if (!buffer || num_bytes <= 0 || !addr || !callback.func)
     return PP_ERROR_BADARGUMENT;
@@ -240,7 +240,7 @@ void FlashUDPSocket::OnBindCompleted(bool succeeded) {
 
 void FlashUDPSocket::OnRecvFromCompleted(bool succeeded,
                                          const std::string& data,
-                                         const PP_Flash_NetAddress& addr) {
+                                         const PP_NetAddress_Private& addr) {
   if (!recvfrom_callback_.func || !read_buffer_) {
     NOTREACHED();
     return;
@@ -343,7 +343,7 @@ void PPB_Flash_UDPSocket_Proxy::OnMsgRecvFromACK(
     uint32 socket_id,
     bool succeeded,
     const std::string& data,
-    const PP_Flash_NetAddress& addr) {
+    const PP_NetAddress_Private& addr) {
   if (!g_id_to_socket) {
     NOTREACHED();
     return;
@@ -371,4 +371,3 @@ void PPB_Flash_UDPSocket_Proxy::OnMsgSendToACK(
 
 }  // namespace proxy
 }  // namespace ppapi
-

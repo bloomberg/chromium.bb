@@ -32,8 +32,8 @@ int32_t ConnectTcp(PP_Resource resource,
                    const char* host,
                    uint16_t port,
                    PP_FileHandle* socket_out,
-                   PP_Flash_NetAddress* local_addr_out,
-                   PP_Flash_NetAddress* remote_addr_out,
+                   PP_NetAddress_Private* local_addr_out,
+                   PP_NetAddress_Private* remote_addr_out,
                    PP_CompletionCallback callback) {
   EnterResource<PPB_Flash_NetConnector_API> enter(resource, true);
   if (enter.failed())
@@ -45,10 +45,10 @@ int32_t ConnectTcp(PP_Resource resource,
 }
 
 int32_t ConnectTcpAddress(PP_Resource resource,
-                          const PP_Flash_NetAddress* addr,
+                          const PP_NetAddress_Private* addr,
                           PP_FileHandle* socket_out,
-                          PP_Flash_NetAddress* local_addr_out,
-                          PP_Flash_NetAddress* remote_addr_out,
+                          PP_NetAddress_Private* local_addr_out,
+                          PP_NetAddress_Private* remote_addr_out,
                           PP_CompletionCallback callback) {
   EnterResource<PPB_Flash_NetConnector_API> enter(resource, true);
   if (enter.failed())

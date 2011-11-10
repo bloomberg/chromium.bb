@@ -41,7 +41,7 @@ interface PPB_Flash_TCPSocket {
    * use-case would be for reconnections.
    */
   int32_t ConnectWithNetAddress([in] PP_Resource tcp_socket,
-                                [in] PP_Flash_NetAddress addr,
+                                [in] PP_NetAddress_Private addr,
                                 [in] PP_CompletionCallback callback);
 
   /**
@@ -49,14 +49,14 @@ interface PPB_Flash_TCPSocket {
    * Returns PP_TRUE on success.
    */
   PP_Bool GetLocalAddress([in] PP_Resource tcp_socket,
-                          [out] PP_Flash_NetAddress local_addr);
+                          [out] PP_NetAddress_Private local_addr);
 
   /**
    * Gets the remote address of the socket, if it has been connected.
    * Returns PP_TRUE on success.
    */
   PP_Bool GetRemoteAddress([in] PP_Resource tcp_socket,
-                           [out] PP_Flash_NetAddress remote_addr);
+                           [out] PP_NetAddress_Private remote_addr);
 
   /**
    * Does SSL handshake and moves to sending and receiving encrypted data. The

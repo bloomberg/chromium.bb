@@ -5,11 +5,13 @@
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_NET_CONNECTOR_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_NET_CONNECTOR_H_
 
+// TODO(viettrungluu): Remove this interface; it's on life-support right now.
+
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_flash_file.h"  // For |PP_FileHandle|.
-#include "ppapi/c/private/ppb_flash_tcp_socket.h"
+#include "ppapi/c/private/ppb_net_address_private.h"
 
 #define PPB_FLASH_NETCONNECTOR_INTERFACE "PPB_Flash_NetConnector;0.2"
 
@@ -24,17 +26,17 @@ struct PPB_Flash_NetConnector {
                         const char* host,
                         uint16_t port,
                         PP_FileHandle* socket_out,
-                        struct PP_Flash_NetAddress* local_addr_out,
-                        struct PP_Flash_NetAddress* remote_addr_out,
+                        struct PP_NetAddress_Private* local_addr_out,
+                        struct PP_NetAddress_Private* remote_addr_out,
                         struct PP_CompletionCallback callback);
 
   // Same as |ConnectTcp()|, but connecting to the address given by |addr|. A
   // typical use-case would be for reconnections.
   int32_t (*ConnectTcpAddress)(PP_Resource connector_id,
-                               const struct PP_Flash_NetAddress* addr,
+                               const struct PP_NetAddress_Private* addr,
                                PP_FileHandle* socket_out,
-                               struct PP_Flash_NetAddress* local_addr_out,
-                               struct PP_Flash_NetAddress* remote_addr_out,
+                               struct PP_NetAddress_Private* local_addr_out,
+                               struct PP_NetAddress_Private* remote_addr_out,
                                struct PP_CompletionCallback callback);
 };
 

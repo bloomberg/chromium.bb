@@ -24,7 +24,7 @@ interface PPB_Flash_UDPSocket {
 
   /* Creates a socket and binds to the address given by |addr|. */
   int32_t Bind([in] PP_Resource udp_socket,
-               [in] PP_Flash_NetAddress addr,
+               [in] PP_NetAddress_Private addr,
                [in] PP_CompletionCallback callback);
 
   /* Performs a non-blocking recvfrom call on socket.
@@ -41,7 +41,7 @@ interface PPB_Flash_UDPSocket {
    * was received from is stored in |addr|.
    */
   PP_Bool GetRecvFromAddress([in] PP_Resource udp_socket,
-                             [out] PP_Flash_NetAddress addr);
+                             [out] PP_NetAddress_Private addr);
 
   /* Performs a non-blocking sendto call on the socket created and
    * bound(has already called Bind).  The callback |callback| is
@@ -50,10 +50,9 @@ interface PPB_Flash_UDPSocket {
   int32_t SendTo([in] PP_Resource udp_socket,
                  [in] str_t buffer,
                  [in] int32_t num_bytes,
-                 [in] PP_Flash_NetAddress addr,
+                 [in] PP_NetAddress_Private addr,
                  [in] PP_CompletionCallback callback);
 
   /* Cancels all pending reads and writes, and closes the socket. */
   void Close([in] PP_Resource udp_socket);
 };
-

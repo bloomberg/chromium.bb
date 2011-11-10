@@ -256,8 +256,8 @@ IPC_MESSAGE_ROUTED5(PpapiMsg_PPBFlashTCPSocket_ConnectACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,
                     bool /* succeeded */,
-                    PP_Flash_NetAddress /* local_addr */,
-                    PP_Flash_NetAddress /* remote_addr */)
+                    PP_NetAddress_Private /* local_addr */,
+                    PP_NetAddress_Private /* remote_addr */)
 IPC_MESSAGE_ROUTED3(PpapiMsg_PPBFlashTCPSocket_SSLHandshakeACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,
@@ -283,7 +283,7 @@ IPC_MESSAGE_ROUTED5(PpapiMsg_PPBFlashUDPSocket_RecvFromACK,
                     uint32 /* socket_id */,
                     bool /* succeeded */,
                     std::string /* data */,
-                    PP_Flash_NetAddress /* remote_addr */)
+                    PP_NetAddress_Private /* remote_addr */)
 IPC_MESSAGE_ROUTED4(PpapiMsg_PPBFlashUDPSocket_SendToACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,
@@ -748,7 +748,7 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBFlashTCPSocket_Connect,
                      uint16_t /* port */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashTCPSocket_ConnectWithNetAddress,
                      uint32 /* socket_id */,
-                     PP_Flash_NetAddress /* net_addr */)
+                     PP_NetAddress_Private /* net_addr */)
 IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBFlashTCPSocket_SSLHandshake,
                      uint32 /* socket_id */,
                      std::string /* server_name */,
@@ -769,14 +769,14 @@ IPC_SYNC_MESSAGE_CONTROL2_1(PpapiHostMsg_PPBFlashUDPSocket_Create,
                             uint32 /* socket_id */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashUDPSocket_Bind,
                      uint32 /* socket_id */,
-                     PP_Flash_NetAddress /* net_addr */)
+                     PP_NetAddress_Private /* net_addr */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashUDPSocket_RecvFrom,
                      uint32 /* socket_id */,
                      int32_t /* num_bytes */)
 IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBFlashUDPSocket_SendTo,
                      uint32 /* socket_id */,
                      std::string /* data */,
-                     PP_Flash_NetAddress /* net_addr */)
+                     PP_NetAddress_Private /* net_addr */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBFlashUDPSocket_Close,
                      uint32 /* socket_id */)
 

@@ -7,6 +7,8 @@
 
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
+struct PP_NetAddress_Private;
+
 namespace webkit {
 namespace ppapi {
 
@@ -97,7 +99,7 @@ class MockPluginDelegate : public PluginDelegate {
       uint16_t port);
   virtual int32_t ConnectTcpAddress(
       webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-      const struct PP_Flash_NetAddress* addr);
+      const PP_NetAddress_Private* addr);
   virtual int32_t ShowContextMenu(
       PluginInstance* instance,
       webkit::ppapi::PPB_Flash_Menu_Impl* menu,

@@ -136,18 +136,19 @@ bool ParamTraits<PP_FileInfo>::Read(const Message* m, void** iter,
 void ParamTraits<PP_FileInfo>::Log(const param_type& p, std::string* l) {
 }
 
-// PP_Flash_NetAddress ---------------------------------------------------------
+// PP_NetAddress_Private -------------------------------------------------------
 
 // static
-void ParamTraits<PP_Flash_NetAddress>::Write(Message* m, const param_type& p) {
+void ParamTraits<PP_NetAddress_Private>::Write(Message* m,
+                                               const param_type& p) {
   WriteParam(m, p.size);
   m->WriteBytes(p.data, static_cast<int>(p.size));
 }
 
 // static
-bool ParamTraits<PP_Flash_NetAddress>::Read(const Message* m,
-                                            void** iter,
-                                            param_type* p) {
+bool ParamTraits<PP_NetAddress_Private>::Read(const Message* m,
+                                              void** iter,
+                                              param_type* p) {
   uint16 size;
   if (!ReadParam(m, iter, &size))
     return false;
@@ -163,9 +164,9 @@ bool ParamTraits<PP_Flash_NetAddress>::Read(const Message* m,
 }
 
 // static
-void ParamTraits<PP_Flash_NetAddress>::Log(const param_type& p,
-                                           std::string* l) {
-  l->append("<PP_Flash_NetAddress (");
+void ParamTraits<PP_NetAddress_Private>::Log(const param_type& p,
+                                             std::string* l) {
+  l->append("<PP_NetAddress_Private (");
   LogParam(p.size, l);
   l->append(" bytes)>");
 }

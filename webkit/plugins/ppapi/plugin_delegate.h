@@ -29,8 +29,10 @@
 
 class AudioMessageFilter;
 class GURL;
+struct PP_NetAddress_Private;
 class SkBitmap;
 class Task;
+class TransportDIB;
 
 namespace base {
 class MessageLoopProxy;
@@ -71,10 +73,6 @@ struct WebFileChooserParams;
 namespace webkit_glue {
 class P2PTransport;
 }  // namespace webkit_glue
-
-struct PP_Flash_NetAddress;
-
-class TransportDIB;
 
 namespace webkit {
 namespace ppapi {
@@ -387,7 +385,7 @@ class PluginDelegate {
       uint16_t port) = 0;
   virtual int32_t ConnectTcpAddress(
       webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-      const struct PP_Flash_NetAddress* addr) = 0;
+      const PP_NetAddress_Private* addr) = 0;
 
   // Show the given context menu at the given position (in the plugin's
   // coordinates).

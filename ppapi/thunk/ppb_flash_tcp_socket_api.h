@@ -17,10 +17,10 @@ class PPB_Flash_TCPSocket_API {
   virtual int32_t Connect(const char* host,
                           uint16_t port,
                           PP_CompletionCallback callback) = 0;
-  virtual int32_t ConnectWithNetAddress(const PP_Flash_NetAddress* addr,
+  virtual int32_t ConnectWithNetAddress(const PP_NetAddress_Private* addr,
                                         PP_CompletionCallback callback) = 0;
-  virtual PP_Bool GetLocalAddress(PP_Flash_NetAddress* local_addr) = 0;
-  virtual PP_Bool GetRemoteAddress(PP_Flash_NetAddress* remote_addr) = 0;
+  virtual PP_Bool GetLocalAddress(PP_NetAddress_Private* local_addr) = 0;
+  virtual PP_Bool GetRemoteAddress(PP_NetAddress_Private* remote_addr) = 0;
   virtual int32_t SSLHandshake(const char* server_name,
                                uint16_t server_port,
                                PP_CompletionCallback callback) = 0;

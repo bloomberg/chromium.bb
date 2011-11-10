@@ -39,8 +39,8 @@ class PPB_Flash_TCPSocket_Proxy : public InterfaceProxy {
   void OnMsgConnectACK(uint32 plugin_dispatcher_id,
                        uint32 socket_id,
                        bool succeeded,
-                       const PP_Flash_NetAddress& local_addr,
-                       const PP_Flash_NetAddress& remote_addr);
+                       const PP_NetAddress_Private& local_addr,
+                       const PP_NetAddress_Private& remote_addr);
   void OnMsgSSLHandshakeACK(uint32 plugin_dispatcher_id,
                             uint32 socket_id,
                             bool succeeded);

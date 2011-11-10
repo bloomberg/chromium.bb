@@ -27,10 +27,10 @@ class TCPSocket : public Resource {
   int32_t Connect(const char* host,
                   uint16_t port,
                   const CompletionCallback& callback);
-  int32_t ConnectWithNetAddress(const PP_Flash_NetAddress* addr,
+  int32_t ConnectWithNetAddress(const PP_NetAddress_Private* addr,
                                 const CompletionCallback& callback);
-  bool GetLocalAddress(PP_Flash_NetAddress* local_addr);
-  bool GetRemoteAddress(PP_Flash_NetAddress* remote_addr);
+  bool GetLocalAddress(PP_NetAddress_Private* local_addr);
+  bool GetRemoteAddress(PP_NetAddress_Private* remote_addr);
   int32_t SSLHandshake(const char* server_name,
                        uint16_t server_port,
                        const CompletionCallback& callback);

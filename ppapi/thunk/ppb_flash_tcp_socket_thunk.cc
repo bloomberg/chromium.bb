@@ -40,7 +40,7 @@ int32_t Connect(PP_Resource tcp_socket,
 }
 
 int32_t ConnectWithNetAddress(PP_Resource tcp_socket,
-                              const PP_Flash_NetAddress* addr,
+                              const PP_NetAddress_Private* addr,
                               PP_CompletionCallback callback) {
   EnterResource<PPB_Flash_TCPSocket_API> enter(tcp_socket, true);
   if (enter.failed())
@@ -50,7 +50,7 @@ int32_t ConnectWithNetAddress(PP_Resource tcp_socket,
 }
 
 PP_Bool GetLocalAddress(PP_Resource tcp_socket,
-                        PP_Flash_NetAddress* local_addr) {
+                        PP_NetAddress_Private* local_addr) {
   EnterResource<PPB_Flash_TCPSocket_API> enter(tcp_socket, true);
   if (enter.failed())
     return PP_FALSE;
@@ -58,7 +58,7 @@ PP_Bool GetLocalAddress(PP_Resource tcp_socket,
 }
 
 PP_Bool GetRemoteAddress(PP_Resource tcp_socket,
-                         PP_Flash_NetAddress* remote_addr) {
+                         PP_NetAddress_Private* remote_addr) {
   EnterResource<PPB_Flash_TCPSocket_API> enter(tcp_socket, true);
   if (enter.failed())
     return PP_FALSE;

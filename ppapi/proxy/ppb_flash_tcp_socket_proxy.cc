@@ -65,10 +65,10 @@ class FlashTCPSocket : public PPB_Flash_TCPSocket_API,
                           uint16_t port,
                           PP_CompletionCallback callback) OVERRIDE;
   virtual int32_t ConnectWithNetAddress(
-      const PP_Flash_NetAddress* addr,
+      const PP_NetAddress_Private* addr,
       PP_CompletionCallback callback) OVERRIDE;
-  virtual PP_Bool GetLocalAddress(PP_Flash_NetAddress* local_addr) OVERRIDE;
-  virtual PP_Bool GetRemoteAddress(PP_Flash_NetAddress* remote_addr) OVERRIDE;
+  virtual PP_Bool GetLocalAddress(PP_NetAddress_Private* local_addr) OVERRIDE;
+  virtual PP_Bool GetRemoteAddress(PP_NetAddress_Private* remote_addr) OVERRIDE;
   virtual int32_t SSLHandshake(const char* server_name,
                                uint16_t server_port,
                                PP_CompletionCallback callback) OVERRIDE;
@@ -82,8 +82,8 @@ class FlashTCPSocket : public PPB_Flash_TCPSocket_API,
 
   // Notifications from the proxy.
   void OnConnectCompleted(bool succeeded,
-                          const PP_Flash_NetAddress& local_addr,
-                          const PP_Flash_NetAddress& remote_addr);
+                          const PP_NetAddress_Private& local_addr,
+                          const PP_NetAddress_Private& remote_addr);
   void OnSSLHandshakeCompleted(bool succeeded);
   void OnReadCompleted(bool succeeded, const std::string& data);
   void OnWriteCompleted(bool succeeded, int32_t bytes_written);
@@ -126,8 +126,8 @@ class FlashTCPSocket : public PPB_Flash_TCPSocket_API,
   char* read_buffer_;
   int32_t bytes_to_read_;
 
-  PP_Flash_NetAddress local_addr_;
-  PP_Flash_NetAddress remote_addr_;
+  PP_NetAddress_Private local_addr_;
+  PP_NetAddress_Private remote_addr_;
 
   DISALLOW_COPY_AND_ASSIGN(FlashTCPSocket);
 };
@@ -175,7 +175,7 @@ int32_t FlashTCPSocket::Connect(const char* host,
 }
 
 int32_t FlashTCPSocket::ConnectWithNetAddress(
-    const PP_Flash_NetAddress* addr,
+    const PP_NetAddress_Private* addr,
     PP_CompletionCallback callback) {
   if (!addr)
     return PP_ERROR_BADARGUMENT;
@@ -186,7 +186,7 @@ int32_t FlashTCPSocket::ConnectWithNetAddress(
       callback);
 }
 
-PP_Bool FlashTCPSocket::GetLocalAddress(PP_Flash_NetAddress* local_addr) {
+PP_Bool FlashTCPSocket::GetLocalAddress(PP_NetAddress_Private* local_addr) {
   if (!IsConnected() || !local_addr)
     return PP_FALSE;
 
@@ -194,7 +194,7 @@ PP_Bool FlashTCPSocket::GetLocalAddress(PP_Flash_NetAddress* local_addr) {
   return PP_TRUE;
 }
 
-PP_Bool FlashTCPSocket::GetRemoteAddress(PP_Flash_NetAddress* remote_addr) {
+PP_Bool FlashTCPSocket::GetRemoteAddress(PP_NetAddress_Private* remote_addr) {
   if (!IsConnected() || !remote_addr)
     return PP_FALSE;
 
@@ -297,8 +297,8 @@ void FlashTCPSocket::Disconnect() {
 
 void FlashTCPSocket::OnConnectCompleted(
     bool succeeded,
-    const PP_Flash_NetAddress& local_addr,
-    const PP_Flash_NetAddress& remote_addr) {
+    const PP_NetAddress_Private& local_addr,
+    const PP_NetAddress_Private& remote_addr) {
   if (connection_state_ != BEFORE_CONNECT || !connect_callback_.func) {
     NOTREACHED();
     return;
@@ -431,8 +431,8 @@ void PPB_Flash_TCPSocket_Proxy::OnMsgConnectACK(
     uint32 /* plugin_dispatcher_id */,
     uint32 socket_id,
     bool succeeded,
-    const PP_Flash_NetAddress& local_addr,
-    const PP_Flash_NetAddress& remote_addr) {
+    const PP_NetAddress_Private& local_addr,
+    const PP_NetAddress_Private& remote_addr) {
   if (!g_id_to_socket) {
     NOTREACHED();
     return;

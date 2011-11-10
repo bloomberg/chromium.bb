@@ -20,15 +20,15 @@ class UDPSocket : public Resource {
  public:
   explicit UDPSocket(Instance* instance);
 
-  int32_t Bind(const PP_Flash_NetAddress* addr,
+  int32_t Bind(const PP_NetAddress_Private* addr,
                const CompletionCallback& callback);
   int32_t RecvFrom(char* buffer,
                    int32_t num_bytes,
                    const CompletionCallback& callback);
-  bool GetRecvFromAddress(PP_Flash_NetAddress* addr);
+  bool GetRecvFromAddress(PP_NetAddress_Private* addr);
   int32_t SendTo(const char* buffer,
                  int32_t num_bytes,
-                 const PP_Flash_NetAddress* addr,
+                 const PP_NetAddress_Private* addr,
                  const CompletionCallback& callback);
   void Close();
 };

@@ -13,7 +13,8 @@
 #include "base/time.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/font_list_async.h"
-#include "ppapi/c/private/ppb_flash_net_connector.h"
+
+struct PP_NetAddress_Private;
 
 namespace content {
 class ResourceContext;
@@ -55,7 +56,7 @@ class PepperMessageFilter : public BrowserMessageFilter {
                     uint16 port);
   void OnConnectTcpAddress(int routing_id,
                            int request_id,
-                           const PP_Flash_NetAddress& address);
+                           const PP_NetAddress_Private& address);
 
   // |Send()| a |PepperMsg_ConnectTcpACK|, which reports an error.
   bool SendConnectTcpACKError(int routing_id,
@@ -76,7 +77,7 @@ class PepperMessageFilter : public BrowserMessageFilter {
   // Continuation of |OnConnectTcpAddress()|.
   void ConnectTcpAddressOnWorkerThread(int routing_id,
                                        int request_id,
-                                       PP_Flash_NetAddress addr);
+                                       PP_NetAddress_Private addr);
 #endif  // ENABLE_FLAPPER_HACKS
 
   void OnGetLocalTimeZoneOffset(base::Time t, double* result);

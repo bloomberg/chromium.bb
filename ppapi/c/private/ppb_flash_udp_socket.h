@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash_udp_socket.idl modified Mon Oct 17 15:55:01 2011. */
+/* From private/ppb_flash_udp_socket.idl modified Wed Nov  9 12:53:35 2011. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_UDP_SOCKET_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_UDP_SOCKET_H_
@@ -14,7 +14,7 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
-#include "ppapi/c/private/ppb_flash_net_address.h"
+#include "ppapi/c/private/ppb_net_address_private.h"
 
 #define PPB_FLASH_UDPSOCKET_INTERFACE_0_1 "PPB_Flash_UDPSocket;0.1"
 #define PPB_FLASH_UDPSOCKET_INTERFACE PPB_FLASH_UDPSOCKET_INTERFACE_0_1
@@ -40,7 +40,7 @@ struct PPB_Flash_UDPSocket {
   PP_Bool (*IsFlashUDPSocket)(PP_Resource resource_id);
   /* Creates a socket and binds to the address given by |addr|. */
   int32_t (*Bind)(PP_Resource udp_socket,
-                  const struct PP_Flash_NetAddress* addr,
+                  const struct PP_NetAddress_Private* addr,
                   struct PP_CompletionCallback callback);
   /* Performs a non-blocking recvfrom call on socket.
    * Bind must be called first. |callback| is invoked when recvfrom
@@ -55,7 +55,7 @@ struct PPB_Flash_UDPSocket {
    * was received from is stored in |addr|.
    */
   PP_Bool (*GetRecvFromAddress)(PP_Resource udp_socket,
-                                struct PP_Flash_NetAddress* addr);
+                                struct PP_NetAddress_Private* addr);
   /* Performs a non-blocking sendto call on the socket created and
    * bound(has already called Bind).  The callback |callback| is
    * invoked when sendto completes.
@@ -63,7 +63,7 @@ struct PPB_Flash_UDPSocket {
   int32_t (*SendTo)(PP_Resource udp_socket,
                     const char* buffer,
                     int32_t num_bytes,
-                    const struct PP_Flash_NetAddress* addr,
+                    const struct PP_NetAddress_Private* addr,
                     struct PP_CompletionCallback callback);
   /* Cancels all pending reads and writes, and closes the socket. */
   void (*Close)(PP_Resource udp_socket);

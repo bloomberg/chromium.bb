@@ -1458,7 +1458,7 @@ int32_t PepperPluginDelegateImpl::ConnectTcp(
 
 int32_t PepperPluginDelegateImpl::ConnectTcpAddress(
     webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-    const struct PP_Flash_NetAddress* addr) {
+    const struct PP_NetAddress_Private* addr) {
   int request_id = pending_connect_tcps_.Add(
       new scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl>(connector));
   IPC::Message* msg =
@@ -1476,8 +1476,8 @@ int32_t PepperPluginDelegateImpl::ConnectTcpAddress(
 void PepperPluginDelegateImpl::OnConnectTcpACK(
     int request_id,
     base::PlatformFile socket,
-    const PP_Flash_NetAddress& local_addr,
-    const PP_Flash_NetAddress& remote_addr) {
+    const PP_NetAddress_Private& local_addr,
+    const PP_NetAddress_Private& remote_addr) {
   scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl> connector =
       *pending_connect_tcps_.Lookup(request_id);
   pending_connect_tcps_.Remove(request_id);

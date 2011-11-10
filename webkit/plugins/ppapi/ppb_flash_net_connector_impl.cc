@@ -36,8 +36,8 @@ int32_t PPB_Flash_NetConnector_Impl::ConnectTcp(
     const char* host,
     uint16_t port,
     PP_FileHandle* socket_out,
-    PP_Flash_NetAddress* local_addr_out,
-    PP_Flash_NetAddress* remote_addr_out,
+    PP_NetAddress_Private* local_addr_out,
+    PP_NetAddress_Private* remote_addr_out,
     PP_CompletionCallback callback) {
   // |socket_out| is not optional.
   if (!socket_out)
@@ -69,10 +69,10 @@ int32_t PPB_Flash_NetConnector_Impl::ConnectTcp(
 }
 
 int32_t PPB_Flash_NetConnector_Impl::ConnectTcpAddress(
-    const PP_Flash_NetAddress* addr,
+    const PP_NetAddress_Private* addr,
     PP_FileHandle* socket_out,
-    PP_Flash_NetAddress* local_addr_out,
-    PP_Flash_NetAddress* remote_addr_out,
+    PP_NetAddress_Private* local_addr_out,
+    PP_NetAddress_Private* remote_addr_out,
     PP_CompletionCallback callback) {
   // |socket_out| is not optional.
   if (!socket_out)
@@ -105,8 +105,8 @@ int32_t PPB_Flash_NetConnector_Impl::ConnectTcpAddress(
 
 void PPB_Flash_NetConnector_Impl::CompleteConnectTcp(
     PP_FileHandle socket,
-    const PP_Flash_NetAddress& local_addr,
-    const PP_Flash_NetAddress& remote_addr) {
+    const PP_NetAddress_Private& local_addr,
+    const PP_NetAddress_Private& remote_addr) {
   int32_t rv = PP_ERROR_ABORTED;
   if (!callback_->aborted()) {
     CHECK(!callback_->completed());

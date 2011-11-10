@@ -43,7 +43,7 @@
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_flash_tcp_socket_proxy.h"
-#include "ppapi/shared_impl/private/flash_net_address_impl.h"
+#include "ppapi/shared_impl/private/net_address_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
 
 #if defined(ENABLE_FLAPPER_HACKS)
@@ -55,10 +55,10 @@ using content::BrowserThread;
 
 namespace {
 
-// TODO(viettrungluu): Move (some of) these to flash_net_address_impl.h.
+// TODO(viettrungluu): Move (some of) these to net_address_private_impl.h.
 bool SockaddrToNetAddress(const sockaddr* sa,
                           socklen_t sa_length,
-                          PP_Flash_NetAddress* net_addr) {
+                          PP_NetAddress_Private* net_addr) {
   if (!sa || sa_length <= 0 || !net_addr)
     return false;
 
@@ -69,7 +69,7 @@ bool SockaddrToNetAddress(const sockaddr* sa,
 }
 
 bool IPEndPointToNetAddress(const net::IPEndPoint& ip,
-                            PP_Flash_NetAddress* net_addr) {
+                            PP_NetAddress_Private* net_addr) {
   sockaddr_storage storage = { 0 };
   size_t length = sizeof(storage);
 
@@ -78,18 +78,18 @@ bool IPEndPointToNetAddress(const net::IPEndPoint& ip,
                               length, net_addr);
 }
 
-// Converts the first address to a PP_Flash_NetAddress.
+// Converts the first address to a PP_NetAddress_Private.
 bool AddressListToNetAddress(const net::AddressList& address_list,
-                             PP_Flash_NetAddress* net_addr) {
+                             PP_NetAddress_Private* net_addr) {
   const addrinfo* head = address_list.head();
   return head &&
          SockaddrToNetAddress(head->ai_addr, head->ai_addrlen, net_addr);
 }
 
-bool NetAddressToIPEndPoint(const PP_Flash_NetAddress& net_addr,
+bool NetAddressToIPEndPoint(const PP_NetAddress_Private& net_addr,
                             net::IPEndPoint* ip_end_point) {
   if (!ip_end_point ||
-      !ppapi::FlashNetAddressImpl::ValidateNetAddress(net_addr))
+      !ppapi::NetAddressPrivateImpl::ValidateNetAddress(net_addr))
     return false;
 
   if (!ip_end_point->FromSockAddr(
@@ -100,7 +100,7 @@ bool NetAddressToIPEndPoint(const PP_Flash_NetAddress& net_addr,
   return true;
 }
 
-bool NetAddressToAddressList(const PP_Flash_NetAddress& net_addr,
+bool NetAddressToAddressList(const PP_NetAddress_Private& net_addr,
                              net::AddressList* address_list) {
   if (!address_list)
     return false;
@@ -118,13 +118,13 @@ bool NetAddressToAddressList(const PP_Flash_NetAddress& net_addr,
 
 // This assert fails on OpenBSD for an unknown reason at the moment.
 #if !defined(OS_OPENBSD)
-// Make sure the storage in |PP_Flash_NetAddress| is big enough. (Do it here
+// Make sure the storage in |PP_NetAddress_Private| is big enough. (Do it here
 // since the data is opaque elsewhere.)
-COMPILE_ASSERT(sizeof(reinterpret_cast<PP_Flash_NetAddress*>(0)->data) >=
-               sizeof(sockaddr_storage), PP_Flash_NetAddress_data_too_small);
+COMPILE_ASSERT(sizeof(reinterpret_cast<PP_NetAddress_Private*>(0)->data) >=
+               sizeof(sockaddr_storage), PP_NetAddress_Private_data_too_small);
 #endif
 
-const PP_Flash_NetAddress kInvalidNetAddress = { 0 };
+const PP_NetAddress_Private kInvalidNetAddress = { 0 };
 
 class PepperMessageFilter::FlashTCPSocket {
  public:
@@ -135,7 +135,7 @@ class PepperMessageFilter::FlashTCPSocket {
   ~FlashTCPSocket();
 
   void Connect(const std::string& host, uint16_t port);
-  void ConnectWithNetAddress(const PP_Flash_NetAddress& net_addr);
+  void ConnectWithNetAddress(const PP_NetAddress_Private& net_addr);
   void SSLHandshake(const std::string& server_name, uint16_t server_port);
   void Read(int32 bytes_to_read);
   void Write(const std::string& data);
@@ -263,7 +263,7 @@ class PepperMessageFilter::FlashTCPSocketManager
                     const std::string& host,
                     uint16_t port);
   void OnMsgConnectWithNetAddress(uint32 socket_id,
-                                  const PP_Flash_NetAddress& net_addr);
+                                  const PP_NetAddress_Private& net_addr);
   void OnMsgSSLHandshake(uint32 socket_id,
                          const std::string& server_name,
                          uint16_t server_port);
@@ -343,7 +343,7 @@ void PepperMessageFilter::FlashTCPSocket::Connect(const std::string& host,
 }
 
 void PepperMessageFilter::FlashTCPSocket::ConnectWithNetAddress(
-    const PP_Flash_NetAddress& net_addr) {
+    const PP_NetAddress_Private& net_addr) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (connection_state_ != BEFORE_CONNECT ||
@@ -486,8 +486,8 @@ void PepperMessageFilter::FlashTCPSocket::OnConnectCompleted(int result) {
   } else {
     net::IPEndPoint ip_end_point;
     net::AddressList address_list;
-    PP_Flash_NetAddress local_addr = kInvalidNetAddress;
-    PP_Flash_NetAddress remote_addr = kInvalidNetAddress;
+    PP_NetAddress_Private local_addr = kInvalidNetAddress;
+    PP_NetAddress_Private remote_addr = kInvalidNetAddress;
 
     if (socket_->GetLocalAddress(&ip_end_point) != net::OK ||
         !IPEndPointToNetAddress(ip_end_point, &local_addr) ||
@@ -554,9 +554,9 @@ class PepperMessageFilter::FlashUDPSocket {
                  uint32 socket_id);
   ~FlashUDPSocket();
 
-  void Bind(const PP_Flash_NetAddress& addr);
+  void Bind(const PP_NetAddress_Private& addr);
   void RecvFrom(int32_t num_bytes);
-  void SendTo(const std::string& data, const PP_Flash_NetAddress& addr);
+  void SendTo(const std::string& data, const PP_NetAddress_Private& addr);
 
  private:
   void SendBindACK(bool result);
@@ -607,7 +607,7 @@ PepperMessageFilter::FlashUDPSocket::~FlashUDPSocket() {
 }
 
 void PepperMessageFilter::FlashUDPSocket::Bind(
-    const PP_Flash_NetAddress& addr) {
+    const PP_NetAddress_Private& addr) {
   socket_.reset(new net::UDPServerSocket(NULL, net::NetLog::Source()));
 
   net::IPEndPoint address;
@@ -639,7 +639,7 @@ void PepperMessageFilter::FlashUDPSocket::RecvFrom(int32_t num_bytes) {
 
 void PepperMessageFilter::FlashUDPSocket::SendTo(
     const std::string& data,
-    const PP_Flash_NetAddress& addr) {
+    const PP_NetAddress_Private& addr) {
   if (sendto_buffer_.get() || data.empty()) {
     SendSendToACKError();
     return;
@@ -665,7 +665,7 @@ void PepperMessageFilter::FlashUDPSocket::SendTo(
 }
 
 void PepperMessageFilter::FlashUDPSocket::SendRecvFromACKError() {
-  PP_Flash_NetAddress addr = kInvalidNetAddress;
+  PP_NetAddress_Private addr = kInvalidNetAddress;
   pepper_message_filter_->Send(
       new PpapiMsg_PPBFlashUDPSocket_RecvFromACK(
           routing_id_, plugin_dispatcher_id_, socket_id_, false,
@@ -687,9 +687,9 @@ void PepperMessageFilter::FlashUDPSocket::SendBindACK(bool result) {
 void PepperMessageFilter::FlashUDPSocket::OnRecvFromCompleted(int result) {
   DCHECK(recvfrom_buffer_.get());
 
-  // Convert IPEndPoint we get back from RecvFrom to a PP_Flash_NetAddress,
+  // Convert IPEndPoint we get back from RecvFrom to a PP_NetAddress_Private,
   // to send back to Flash.
-  PP_Flash_NetAddress addr = kInvalidNetAddress;
+  PP_NetAddress_Private addr = kInvalidNetAddress;
   if (!IPEndPointToNetAddress(recvfrom_address_, &addr) || result < 0) {
     SendRecvFromACKError();
   } else {
@@ -743,7 +743,7 @@ void PepperMessageFilter::FlashTCPSocketManager::OnMsgConnect(
 
 void PepperMessageFilter::FlashTCPSocketManager::OnMsgConnectWithNetAddress(
     uint32 socket_id,
-    const PP_Flash_NetAddress& net_addr) {
+    const PP_NetAddress_Private& net_addr) {
   SocketMap::iterator iter = sockets_.find(socket_id);
   if (iter == sockets_.end()) {
     NOTREACHED();
@@ -823,12 +823,12 @@ class PepperMessageFilter::FlashUDPSocketManager
                    uint32 plugin_dispatcher_id,
                    uint32* socket_id);
   void OnMsgBind(uint32 socket_id,
-                 const PP_Flash_NetAddress& addr);
+                 const PP_NetAddress_Private& addr);
   void OnMsgRecvFrom(uint32 socket_id,
                      int32_t num_bytes);
   void OnMsgSendTo(uint32 socket_id,
                    const std::string& data,
-                   const PP_Flash_NetAddress& addr);
+                   const PP_NetAddress_Private& addr);
   void OnMsgClose(uint32 socket_id);
 
  private:
@@ -854,7 +854,7 @@ void PepperMessageFilter::FlashUDPSocketManager::OnMsgCreate(
 
 void PepperMessageFilter::FlashUDPSocketManager::OnMsgBind(
     uint32 socket_id,
-    const PP_Flash_NetAddress& addr) {
+    const PP_NetAddress_Private& addr) {
   SocketMap::iterator iter = sockets_.find(socket_id);
   if (iter == sockets_.end()) {
     NOTREACHED();
@@ -879,7 +879,7 @@ void PepperMessageFilter::FlashUDPSocketManager::OnMsgRecvFrom(
 void PepperMessageFilter::FlashUDPSocketManager::OnMsgSendTo(
     uint32 socket_id,
     const std::string& data,
-    const PP_Flash_NetAddress& addr) {
+    const PP_NetAddress_Private& addr) {
   SocketMap::iterator iter = sockets_.find(socket_id);
   if (iter == sockets_.end()) {
     NOTREACHED();
@@ -988,9 +988,9 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
 
 namespace {
 
-int ConnectTcpSocket(const PP_Flash_NetAddress& addr,
-                     PP_Flash_NetAddress* local_addr_out,
-                     PP_Flash_NetAddress* remote_addr_out) {
+int ConnectTcpSocket(const PP_NetAddress_Private& addr,
+                     PP_NetAddress_Private* local_addr_out,
+                     PP_NetAddress_Private* remote_addr_out) {
   *local_addr_out = kInvalidNetAddress;
   *remote_addr_out = kInvalidNetAddress;
 
@@ -1082,14 +1082,15 @@ void PepperMessageFilter::OnConnectTcp(int routing_id,
   lookup_request->Start();
 }
 
-void PepperMessageFilter::OnConnectTcpAddress(int routing_id,
-                                              int request_id,
-                                              const PP_Flash_NetAddress& addr) {
+void PepperMessageFilter::OnConnectTcpAddress(
+    int routing_id,
+    int request_id,
+    const PP_NetAddress_Private& addr) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Validate the address and then continue (doing |connect()|) on a worker
   // thread.
-  if (!ppapi::FlashNetAddressImpl::ValidateNetAddress(addr) ||
+  if (!ppapi::NetAddressPrivateImpl::ValidateNetAddress(addr) ||
       !base::WorkerPool::PostTask(FROM_HERE,
            NewRunnableMethod(
                this,
@@ -1132,9 +1133,9 @@ void PepperMessageFilter::ConnectTcpOnWorkerThread(int routing_id,
                                                    net::AddressList addresses) {
   IPC::PlatformFileForTransit socket_for_transit =
       IPC::InvalidPlatformFileForTransit();
-  PP_Flash_NetAddress local_addr = kInvalidNetAddress;
-  PP_Flash_NetAddress remote_addr = kInvalidNetAddress;
-  PP_Flash_NetAddress addr = kInvalidNetAddress;
+  PP_NetAddress_Private local_addr = kInvalidNetAddress;
+  PP_NetAddress_Private remote_addr = kInvalidNetAddress;
+  PP_NetAddress_Private addr = kInvalidNetAddress;
 
   for (const struct addrinfo* ai = addresses.head(); ai; ai = ai->ai_next) {
     if (SockaddrToNetAddress(ai->ai_addr, ai->ai_addrlen, &addr)) {
@@ -1159,11 +1160,11 @@ void PepperMessageFilter::ConnectTcpOnWorkerThread(int routing_id,
 void PepperMessageFilter::ConnectTcpAddressOnWorkerThread(
     int routing_id,
     int request_id,
-    PP_Flash_NetAddress addr) {
+    PP_NetAddress_Private addr) {
   IPC::PlatformFileForTransit socket_for_transit =
       IPC::InvalidPlatformFileForTransit();
-  PP_Flash_NetAddress local_addr = kInvalidNetAddress;
-  PP_Flash_NetAddress remote_addr = kInvalidNetAddress;
+  PP_NetAddress_Private local_addr = kInvalidNetAddress;
+  PP_NetAddress_Private remote_addr = kInvalidNetAddress;
 
   int fd = ConnectTcpSocket(addr, &local_addr, &remote_addr);
   if (fd != -1)

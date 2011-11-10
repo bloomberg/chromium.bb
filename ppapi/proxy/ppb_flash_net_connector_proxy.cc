@@ -24,12 +24,12 @@ using ppapi::thunk::ResourceCreationAPI;
 namespace ppapi {
 namespace proxy {
 
-std::string NetAddressToString(const PP_Flash_NetAddress& addr) {
+std::string NetAddressToString(const PP_NetAddress_Private& addr) {
   return std::string(addr.data, std::min(static_cast<size_t>(addr.size),
                                          sizeof(addr.data)));
 }
 
-void StringToNetAddress(const std::string& str, PP_Flash_NetAddress* addr) {
+void StringToNetAddress(const std::string& str, PP_NetAddress_Private* addr) {
   addr->size = std::min(str.size(), sizeof(addr->data));
   memcpy(addr->data, str.data(), addr->size);
 }
@@ -60,13 +60,13 @@ class FlashNetConnector : public PPB_Flash_NetConnector_API,
   virtual int32_t ConnectTcp(const char* host,
                              uint16_t port,
                              PP_FileHandle* socket_out,
-                             PP_Flash_NetAddress* local_addr_out,
-                             PP_Flash_NetAddress* remote_addr_out,
+                             PP_NetAddress_Private* local_addr_out,
+                             PP_NetAddress_Private* remote_addr_out,
                              PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t ConnectTcpAddress(const PP_Flash_NetAddress* addr,
+  virtual int32_t ConnectTcpAddress(const PP_NetAddress_Private* addr,
                                     PP_FileHandle* socket_out,
-                                    PP_Flash_NetAddress* local_addr_out,
-                                    PP_Flash_NetAddress* remote_addr_out,
+                                    PP_NetAddress_Private* local_addr_out,
+                                    PP_NetAddress_Private* remote_addr_out,
                                     PP_CompletionCallback callback) OVERRIDE;
 
   void ConnectComplete(int32_t result,
@@ -79,14 +79,14 @@ class FlashNetConnector : public PPB_Flash_NetConnector_API,
   // the message is passed in (on error, it's deleted).
   int32_t ConnectWithMessage(IPC::Message* msg,
                              PP_FileHandle* socket_out,
-                             PP_Flash_NetAddress* local_addr_out,
-                             PP_Flash_NetAddress* remote_addr_out,
+                             PP_NetAddress_Private* local_addr_out,
+                             PP_NetAddress_Private* remote_addr_out,
                              PP_CompletionCallback callback);
 
   PP_CompletionCallback callback_;
   PP_FileHandle* socket_out_;
-  PP_Flash_NetAddress* local_addr_out_;
-  PP_Flash_NetAddress* remote_addr_out_;
+  PP_NetAddress_Private* local_addr_out_;
+  PP_NetAddress_Private* remote_addr_out_;
 };
 
 FlashNetConnector::FlashNetConnector(const HostResource& resource)
@@ -112,8 +112,8 @@ int32_t FlashNetConnector::ConnectTcp(
     const char* host,
     uint16_t port,
     PP_FileHandle* socket_out,
-    PP_Flash_NetAddress* local_addr_out,
-    PP_Flash_NetAddress* remote_addr_out,
+    PP_NetAddress_Private* local_addr_out,
+    PP_NetAddress_Private* remote_addr_out,
     PP_CompletionCallback callback) {
   return ConnectWithMessage(
       new PpapiHostMsg_PPBFlashNetConnector_ConnectTcp(
@@ -122,10 +122,10 @@ int32_t FlashNetConnector::ConnectTcp(
 }
 
 int32_t FlashNetConnector::ConnectTcpAddress(
-    const PP_Flash_NetAddress* addr,
+    const PP_NetAddress_Private* addr,
     PP_FileHandle* socket_out,
-    PP_Flash_NetAddress* local_addr_out,
-    PP_Flash_NetAddress* remote_addr_out,
+    PP_NetAddress_Private* local_addr_out,
+    PP_NetAddress_Private* remote_addr_out,
     PP_CompletionCallback callback) {
   return ConnectWithMessage(
       new PpapiHostMsg_PPBFlashNetConnector_ConnectTcpAddress(
@@ -154,8 +154,8 @@ void FlashNetConnector::ConnectComplete(
 int32_t FlashNetConnector::ConnectWithMessage(
     IPC::Message* msg,
     PP_FileHandle* socket_out,
-    PP_Flash_NetAddress* local_addr_out,
-    PP_Flash_NetAddress* remote_addr_out,
+    PP_NetAddress_Private* local_addr_out,
+    PP_NetAddress_Private* remote_addr_out,
     PP_CompletionCallback callback) {
   scoped_ptr<IPC::Message> msg_deletor(msg);
   if (callback_.func != NULL)
@@ -183,8 +183,8 @@ struct PPB_Flash_NetConnector_Proxy::ConnectCallbackInfo {
   HostResource resource;
 
   PP_FileHandle handle;
-  PP_Flash_NetAddress local_addr;
-  PP_Flash_NetAddress remote_addr;
+  PP_NetAddress_Private local_addr;
+  PP_NetAddress_Private remote_addr;
 };
 
 PPB_Flash_NetConnector_Proxy::PPB_Flash_NetConnector_Proxy(
@@ -263,7 +263,7 @@ void PPB_Flash_NetConnector_Proxy::OnMsgConnectTcpAddress(
   pp::CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_Flash_NetConnector_Proxy::OnCompleteCallbackInHost, info);
 
-  PP_Flash_NetAddress net_address;
+  PP_NetAddress_Private net_address;
   StringToNetAddress(net_address_as_string, &net_address);
 
   EnterHostFromHostResource<PPB_Flash_NetConnector_API> enter(resource);

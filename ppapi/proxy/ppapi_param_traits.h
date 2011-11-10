@@ -19,7 +19,7 @@
 struct PP_FileInfo;
 struct PP_ObjectProperty;
 struct PP_Flash_Menu;
-struct PP_Flash_NetAddress;
+struct PP_NetAddress_Private;
 
 namespace ppapi {
 
@@ -57,8 +57,8 @@ struct ParamTraits<PP_FileInfo> {
 };
 
 template <>
-struct PPAPI_PROXY_EXPORT ParamTraits<PP_Flash_NetAddress> {
-  typedef PP_Flash_NetAddress param_type;
+struct PPAPI_PROXY_EXPORT ParamTraits<PP_NetAddress_Private> {
+  typedef PP_NetAddress_Private param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

@@ -30,7 +30,7 @@ UDPSocket::UDPSocket(Instance* instance) {
   }
 }
 
-int32_t UDPSocket::Bind(const PP_Flash_NetAddress* addr,
+int32_t UDPSocket::Bind(const PP_NetAddress_Private* addr,
                         const CompletionCallback& callback) {
   if (!has_interface<PPB_Flash_UDPSocket>())
     return PP_ERROR_NOINTERFACE;
@@ -47,7 +47,7 @@ int32_t UDPSocket::RecvFrom(char* buffer,
       pp_resource(), buffer, num_bytes, callback.pp_completion_callback());
 }
 
-bool UDPSocket::GetRecvFromAddress(PP_Flash_NetAddress* addr) {
+bool UDPSocket::GetRecvFromAddress(PP_NetAddress_Private* addr) {
   if (!has_interface<PPB_Flash_UDPSocket>())
     return false;
 
@@ -58,7 +58,7 @@ bool UDPSocket::GetRecvFromAddress(PP_Flash_NetAddress* addr) {
 
 int32_t UDPSocket::SendTo(const char* buffer,
                           int32_t num_bytes,
-                          const struct PP_Flash_NetAddress* addr,
+                          const PP_NetAddress_Private* addr,
                           const CompletionCallback& callback) {
   if (!has_interface<PPB_Flash_UDPSocket>())
     return PP_ERROR_NOINTERFACE;

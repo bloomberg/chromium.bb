@@ -299,13 +299,13 @@ class PepperPluginDelegateImpl
       uint16_t port) OVERRIDE;
   virtual int32_t ConnectTcpAddress(
       webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-      const struct PP_Flash_NetAddress* addr) OVERRIDE;
+      const struct PP_NetAddress_Private* addr) OVERRIDE;
   // This is the completion for both |ConnectTcp()| and |ConnectTcpAddress()|.
   void OnConnectTcpACK(
       int request_id,
       base::PlatformFile socket,
-      const PP_Flash_NetAddress& local_addr,
-      const PP_Flash_NetAddress& remote_addr);
+      const PP_NetAddress_Private& local_addr,
+      const PP_NetAddress_Private& remote_addr);
   virtual int32_t ShowContextMenu(
       webkit::ppapi::PluginInstance* instance,
       webkit::ppapi::PPB_Flash_Menu_Impl* menu,

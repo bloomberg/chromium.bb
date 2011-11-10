@@ -19,8 +19,8 @@
 IPC_MESSAGE_ROUTED4(PepperMsg_ConnectTcpACK,
                     int /* request_id */,
                     IPC::PlatformFileForTransit /* socket */,
-                    PP_Flash_NetAddress /* local_addr */,
-                    PP_Flash_NetAddress /* remote_addr */)
+                    PP_NetAddress_Private /* local_addr */,
+                    PP_NetAddress_Private /* remote_addr */)
 
 // Pepper (non-file-system) messages sent from the renderer to the browser.
 
@@ -33,7 +33,7 @@ IPC_MESSAGE_CONTROL4(PepperMsg_ConnectTcp,
 IPC_MESSAGE_CONTROL3(PepperMsg_ConnectTcpAddress,
                      int /* routing_id */,
                      int /* request_id */,
-                     PP_Flash_NetAddress /* addr */)
+                     PP_NetAddress_Private /* addr */)
 
 IPC_SYNC_MESSAGE_CONTROL1_1(PepperMsg_GetLocalTimeZoneOffset,
                             base::Time /* t */,

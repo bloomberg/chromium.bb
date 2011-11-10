@@ -41,7 +41,7 @@ int32_t TCPSocket::Connect(const char* host,
       pp_resource(), host, port, callback.pp_completion_callback());
 }
 
-int32_t TCPSocket::ConnectWithNetAddress(const PP_Flash_NetAddress* addr,
+int32_t TCPSocket::ConnectWithNetAddress(const PP_NetAddress_Private* addr,
                                          const CompletionCallback& callback) {
   if (!has_interface<PPB_Flash_TCPSocket>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
@@ -49,7 +49,7 @@ int32_t TCPSocket::ConnectWithNetAddress(const PP_Flash_NetAddress* addr,
       pp_resource(), addr, callback.pp_completion_callback());
 }
 
-bool TCPSocket::GetLocalAddress(PP_Flash_NetAddress* local_addr) {
+bool TCPSocket::GetLocalAddress(PP_NetAddress_Private* local_addr) {
   if (!has_interface<PPB_Flash_TCPSocket>())
     return false;
 
@@ -58,7 +58,7 @@ bool TCPSocket::GetLocalAddress(PP_Flash_NetAddress* local_addr) {
   return PP_ToBool(result);
 }
 
-bool TCPSocket::GetRemoteAddress(PP_Flash_NetAddress* remote_addr) {
+bool TCPSocket::GetRemoteAddress(PP_NetAddress_Private* remote_addr) {
   if (!has_interface<PPB_Flash_TCPSocket>())
     return false;
   PP_Bool result = get_interface<PPB_Flash_TCPSocket>()->GetRemoteAddress(

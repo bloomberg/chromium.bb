@@ -250,6 +250,8 @@
         'cpp/private/flash_fullscreen.h',
         'cpp/private/instance_private.cc',
         'cpp/private/instance_private.h',
+        'cpp/private/net_address_private.cc',
+        'cpp/private/net_address_private.h',
         'cpp/private/var_private.cc',
         'cpp/private/var_private.h',
 

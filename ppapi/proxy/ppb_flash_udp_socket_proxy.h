@@ -42,7 +42,7 @@ class PPB_Flash_UDPSocket_Proxy : public InterfaceProxy {
                         uint32 socket_id,
                         bool succeeded,
                         const std::string& data,
-                        const PP_Flash_NetAddress& addr);
+                        const PP_NetAddress_Private& addr);
   void OnMsgSendToACK(uint32 plugin_dispatcher_id,
                       uint32 socket_id,
                       bool succeeded,

@@ -17,13 +17,13 @@ class PPB_Flash_NetConnector_API {
   virtual int32_t ConnectTcp(const char* host,
                              uint16_t port,
                              PP_FileHandle* socket_out,
-                             PP_Flash_NetAddress* local_addr_out,
-                             PP_Flash_NetAddress* remote_addr_out,
+                             PP_NetAddress_Private* local_addr_out,
+                             PP_NetAddress_Private* remote_addr_out,
                              PP_CompletionCallback callback) = 0;
-  virtual int32_t ConnectTcpAddress(const PP_Flash_NetAddress* addr,
+  virtual int32_t ConnectTcpAddress(const PP_NetAddress_Private* addr,
                                     PP_FileHandle* socket_out,
-                                    PP_Flash_NetAddress* local_addr_out,
-                                    PP_Flash_NetAddress* remote_addr_out,
+                                    PP_NetAddress_Private* local_addr_out,
+                                    PP_NetAddress_Private* remote_addr_out,
                                     PP_CompletionCallback callback) = 0;
 };
 

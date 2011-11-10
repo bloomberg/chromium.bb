@@ -29,7 +29,7 @@ PP_Bool IsFlashUDPSocket(PP_Resource resource) {
 }
 
 int32_t Bind(PP_Resource udp_socket,
-             const PP_Flash_NetAddress *addr,
+             const PP_NetAddress_Private *addr,
              PP_CompletionCallback callback) {
   EnterResource<PPB_Flash_UDPSocket_API> enter(udp_socket, true);
   if (enter.failed())
@@ -52,7 +52,7 @@ int32_t RecvFrom(PP_Resource udp_socket,
 }
 
 PP_Bool GetRecvFromAddress(PP_Resource udp_socket,
-                           PP_Flash_NetAddress* addr) {
+                           PP_NetAddress_Private* addr) {
   EnterResource<PPB_Flash_UDPSocket_API> enter(udp_socket, true);
   if (enter.failed())
     return PP_FALSE;
@@ -62,7 +62,7 @@ PP_Bool GetRecvFromAddress(PP_Resource udp_socket,
 int32_t SendTo(PP_Resource udp_socket,
                const char* buffer,
                int32_t num_bytes,
-               const PP_Flash_NetAddress* addr,
+               const PP_NetAddress_Private* addr,
                PP_CompletionCallback callback) {
   EnterResource<PPB_Flash_UDPSocket_API> enter(udp_socket, true);
   if (enter.failed())
