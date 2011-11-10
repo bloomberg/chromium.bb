@@ -823,7 +823,7 @@ void ResourceDispatcherHost::BeginDownload(
   request->set_method("GET");
   request->set_context(request_context);
   request->set_load_flags(request->load_flags() |
-      net::LOAD_IS_DOWNLOAD);
+                          net::LOAD_IS_DOWNLOAD | net::LOAD_DISABLE_CACHE);
 
   // Check if the renderer is permitted to request the requested URL.
   if (!ChildProcessSecurityPolicy::GetInstance()->

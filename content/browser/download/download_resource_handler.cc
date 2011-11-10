@@ -79,6 +79,10 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   VLOG(20) << __FUNCTION__ << "()" << DebugString()
            << " request_id = " << request_id;
   download_start_time_ = base::TimeTicks::Now();
+
+  // If it's a download, we don't want to poison the cache with it.
+  request_->StopCaching();
+
   std::string content_disposition;
   request_->GetResponseHeaderByName("content-disposition",
                                     &content_disposition);
