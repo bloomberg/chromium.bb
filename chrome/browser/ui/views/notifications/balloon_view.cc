@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -211,7 +212,8 @@ void BalloonViewImpl::RepositionToBalloon() {
     gfx::Rect contents_rect = GetContentsRectangle();
     html_container_->SetBounds(contents_rect);
     html_contents_->SetPreferredSize(contents_rect.size());
-    RenderWidgetHostView* view = html_contents_->render_view_host()->view();
+    RenderWidgetHostView* view =
+        html_contents_->tab_contents()->GetRenderWidgetHostView();
     if (view)
       view->SetSize(contents_rect.size());
     return;
@@ -227,9 +229,11 @@ void BalloonViewImpl::RepositionToBalloon() {
 
 void BalloonViewImpl::Update() {
   DCHECK(html_contents_.get()) << "BalloonView::Update called before Show";
-  if (html_contents_->render_view_host())
-    html_contents_->render_view_host()->NavigateToURL(
-        balloon_->notification().content_url());
+  if (!html_contents_->tab_contents())
+    return;
+  html_contents_->tab_contents()->controller().LoadURL(
+      balloon_->notification().content_url(), GURL(),
+      content::PAGE_TRANSITION_LINK, std::string());
 }
 
 void BalloonViewImpl::AnimationProgressed(const ui::Animation* animation) {
@@ -257,7 +261,8 @@ void BalloonViewImpl::AnimationProgressed(const ui::Animation* animation) {
   html_container_->SetShape(path.CreateNativeRegion());
 
   html_contents_->SetPreferredSize(contents_rect.size());
-  RenderWidgetHostView* view = html_contents_->render_view_host()->view();
+  RenderWidgetHostView* view =
+      html_contents_->tab_contents()->GetRenderWidgetHostView();
   if (view)
     view->SetSize(contents_rect.size());
 }

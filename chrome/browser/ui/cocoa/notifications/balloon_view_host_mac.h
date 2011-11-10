@@ -27,15 +27,7 @@ class BalloonViewHost : public BalloonHost {
   // Accessors.
   gfx::NativeView native_view() const;
 
- protected:
-  virtual void InitRenderWidgetHostView();
-  virtual RenderWidgetHostView* render_widget_host_view() const;
-
  private:
-  // The Mac-specific widget host view.  This is owned by its native view,
-  // which this class frees in its destructor.
-  RenderWidgetHostViewMac* render_widget_host_view_;
-
   DISALLOW_COPY_AND_ASSIGN(BalloonViewHost);
 };
 

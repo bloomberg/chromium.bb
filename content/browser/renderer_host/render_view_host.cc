@@ -168,11 +168,6 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   DCHECK(process()->HasConnection());
   DCHECK(process()->browser_context());
 
-  if (enabled_bindings_ & content::BINDINGS_POLICY_WEB_UI) {
-    ChildProcessSecurityPolicy::GetInstance()->GrantWebUIBindings(
-        process()->id());
-  }
-
   renderer_initialized_ = true;
 
   process()->SetCompositingSurface(routing_id(),
@@ -569,8 +564,14 @@ void RenderViewHost::DragSourceSystemDragEnded() {
 }
 
 void RenderViewHost::AllowBindings(int bindings_flags) {
-  DCHECK(!renderer_initialized_);
+  if (bindings_flags & content::BINDINGS_POLICY_WEB_UI) {
+    ChildProcessSecurityPolicy::GetInstance()->GrantWebUIBindings(
+        process()->id());
+  }
+
   enabled_bindings_ |= bindings_flags;
+  if (renderer_initialized_)
+    Send(new ViewMsg_AllowBindings(routing_id(), enabled_bindings_));
 }
 
 void RenderViewHost::SetWebUIProperty(const std::string& name,

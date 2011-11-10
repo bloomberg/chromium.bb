@@ -35,14 +35,7 @@ class BalloonViewHost : public BalloonHost {
   // Initialize the view, parented to |parent|, and show it.
   void Init(gfx::NativeView parent);
 
- protected:
-  virtual void InitRenderWidgetHostView();
-  virtual RenderWidgetHostView* render_widget_host_view() const;
-
  private:
-  // The platform-specific widget host view.  Pointer is owned by the RVH.
-  RenderWidgetHostView* render_widget_host_view_;
-
   // The views-specific host view. Pointer owned by the views hierarchy.
   views::NativeViewHost* native_host_;
 

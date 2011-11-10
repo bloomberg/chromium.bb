@@ -27,14 +27,7 @@ class BalloonViewHost : public BalloonHost {
   // Accessors.
   gfx::NativeView native_view() const;
 
- protected:
-  virtual void InitRenderWidgetHostView();
-  virtual RenderWidgetHostView* render_widget_host_view() const;
-
  private:
-  // The GTK-specific widget host view.  Owned by its native view.
-  RenderWidgetHostViewGtk* render_widget_host_view_;
-
   DISALLOW_COPY_AND_ASSIGN(BalloonViewHost);
 };
 

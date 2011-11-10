@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
@@ -234,9 +235,11 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
 void BalloonViewImpl::Update() {
   stale_ = false;
-  if (html_contents_->render_view_host())
-    html_contents_->render_view_host()->NavigateToURL(
-        balloon_->notification().content_url());
+  if (!html_contents_->tab_contents())
+    return;
+  html_contents_->tab_contents()->controller().LoadURL(
+      balloon_->notification().content_url(), GURL(),
+      content::PAGE_TRANSITION_LINK, std::string());
 }
 
 void BalloonViewImpl::Close(bool by_user) {
@@ -268,8 +271,9 @@ void BalloonViewImpl::Layout() {
   SetBounds(x(), y(), size.width(), size.height());
 
   html_contents_->view()->SetBounds(0, 0, size.width(), size.height());
-  if (html_contents_->render_view_host()) {
-    RenderWidgetHostView* view = html_contents_->render_view_host()->view();
+  if (html_contents_->tab_contents()) {
+    RenderWidgetHostView* view =
+        html_contents_->tab_contents()->render_view_host()->view();
     if (view)
       view->SetSize(size);
   }
@@ -359,7 +363,8 @@ void BalloonViewImpl::DenyPermission() {
 }
 
 gfx::NativeView BalloonViewImpl::GetParentNativeView() {
-  RenderWidgetHostView* view = html_contents_->render_view_host()->view();
+  RenderWidgetHostView* view =
+      html_contents_->tab_contents()->render_view_host()->view();
   DCHECK(view);
   return view->GetNativeView();
 }

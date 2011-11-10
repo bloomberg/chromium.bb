@@ -2459,8 +2459,10 @@ void GetAllNotificationsObserver::SendMessage() {
     base::DictionaryValue* note = NotificationToJson(
         &(*balloon_iter)->notification());
     BalloonView* view = (*balloon_iter)->view();
-    note->SetInteger("pid", base::GetProcId(
-        view->GetHost()->render_view_host()->process()->GetHandle()));
+    note->SetInteger(
+        "pid",
+        base::GetProcId(view->GetHost()->tab_contents()->render_view_host()->
+            process()-> GetHandle()));
     list->Append(note);
   }
   std::vector<const Notification*> queued_notes;

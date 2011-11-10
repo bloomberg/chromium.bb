@@ -103,6 +103,9 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
     return controller_.browser_context();
   }
 
+  // Allows overriding the type of this tab.
+  void set_view_type(content::ViewType type) { view_type_ = type; }
+
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }
 
@@ -683,6 +686,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
                                       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual void HandleMouseDown() OVERRIDE;
   virtual void HandleMouseUp() OVERRIDE;
   virtual void HandleMouseActivate() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message);
@@ -691,6 +695,10 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   virtual void ToggleFullscreenMode(bool enter_fullscreen) OVERRIDE;
   virtual bool IsFullscreenForCurrentTab() const OVERRIDE;
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
+  virtual void WebUISend(RenderViewHost* render_view_host,
+                         const GURL& source_url,
+                         const std::string& name,
+                         const base::ListValue& args) OVERRIDE;
   virtual void RequestToLockMouse() OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;
 
@@ -858,6 +866,9 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // Content restrictions, used to disable print/copy etc based on content's
   // (full-page plugins for now only) permissions.
   int content_restrictions_;
+
+  // Our view type. Default is VIEW_TYPE_TAB_CONTENTS.
+  content::ViewType view_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContents);
 };

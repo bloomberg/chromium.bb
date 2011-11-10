@@ -6,12 +6,11 @@
 
 #include "chrome/browser/notifications/balloon.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 BalloonViewHost::BalloonViewHost(Balloon* balloon)
-    : BalloonHost(balloon),
-      render_widget_host_view_(NULL) {
+    : BalloonHost(balloon) {
 }
 
 BalloonViewHost::~BalloonViewHost() {
@@ -19,21 +18,11 @@ BalloonViewHost::~BalloonViewHost() {
 }
 
 void BalloonViewHost::UpdateActualSize(const gfx::Size& new_size) {
-  render_widget_host_view_->SetSize(new_size);
+  tab_contents_->render_view_host()->view()->SetSize(new_size);
   gtk_widget_set_size_request(
       native_view(), new_size.width(), new_size.height());
 }
 
 gfx::NativeView BalloonViewHost::native_view() const {
-  return render_widget_host_view_->native_view();
-}
-
-void BalloonViewHost::InitRenderWidgetHostView() {
-  DCHECK(render_view_host_);
-  render_widget_host_view_ = new RenderWidgetHostViewGtk(render_view_host_);
-  render_widget_host_view_->InitAsChild();
-}
-
-RenderWidgetHostView* BalloonViewHost::render_widget_host_view() const {
-  return render_widget_host_view_;
+  return tab_contents_->GetNativeView();
 }

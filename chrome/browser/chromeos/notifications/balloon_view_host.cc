@@ -30,7 +30,7 @@ bool BalloonViewHost::AddWebUIMessageCallback(
   return ret.second;
 }
 
-void BalloonViewHost::WebUISend(RenderViewHost* render_view_host,
+void BalloonViewHost::WebUISend(TabContents* tab,
                                 const GURL& source_url,
                                 const std::string& name,
                                 const ListValue& args) {

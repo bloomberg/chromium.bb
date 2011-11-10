@@ -6,6 +6,8 @@
 
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 
 BalloonViewHost::BalloonViewHost(Balloon* balloon)
     : BalloonHost(balloon) {
@@ -16,7 +18,8 @@ BalloonViewHost::~BalloonViewHost() {
 }
 
 void BalloonViewHost::UpdateActualSize(const gfx::Size& new_size) {
-  NSView* view = render_widget_host_view_->native_view();
+  tab_contents_->view()->SizeContents(new_size);
+  NSView* view = native_view();
   NSRect frame = [view frame];
   frame.size.width = new_size.width();
   frame.size.height = new_size.height();
@@ -26,14 +29,5 @@ void BalloonViewHost::UpdateActualSize(const gfx::Size& new_size) {
 }
 
 gfx::NativeView BalloonViewHost::native_view() const {
-  return render_widget_host_view_->native_view();
-}
-
-void BalloonViewHost::InitRenderWidgetHostView() {
-  DCHECK(render_view_host_);
-  render_widget_host_view_ = new RenderWidgetHostViewMac(render_view_host_);
-}
-
-RenderWidgetHostView* BalloonViewHost::render_widget_host_view() const {
-  return render_widget_host_view_;
+  return tab_contents_->GetContentNativeView();
 }

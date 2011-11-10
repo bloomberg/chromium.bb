@@ -17,8 +17,9 @@
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/public/browser/notification_service.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/renderer_preferences.h"
@@ -26,24 +27,19 @@
 #include "webkit/glue/webpreferences.h"
 
 BalloonHost::BalloonHost(Balloon* balloon)
-    : render_view_host_(NULL),
-      balloon_(balloon),
+    : balloon_(balloon),
       initialized_(false),
       should_notify_on_disconnect_(false),
       enable_web_ui_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(balloon_->profile(), this)) {
-  CHECK(balloon_);
-  site_instance_ = SiteInstance::CreateSiteInstanceForURL(balloon_->profile(),
-                                                          GetURL());
+  site_instance_ = SiteInstance::CreateSiteInstanceForURL(
+      balloon_->profile(), balloon_->notification().content_url());
 }
 
 void BalloonHost::Shutdown() {
   NotifyDisconnect();
-  if (render_view_host_) {
-    render_view_host_->Shutdown();
-    render_view_host_ = NULL;
-  }
+  tab_contents_.reset();
 }
 
 Browser* BalloonHost::GetBrowser() {
@@ -64,20 +60,18 @@ const string16& BalloonHost::GetSource() const {
   return balloon_->notification().display_source();
 }
 
-WebPreferences BalloonHost::GetWebkitPrefs() {
-  WebPreferences web_prefs =
-      RenderViewHostDelegateHelper::GetWebkitPrefs(render_view_host_);
-  web_prefs.allow_scripts_to_close_windows = true;
-  return web_prefs;
-}
-
-const GURL& BalloonHost::GetURL() const {
-  return balloon_->notification().content_url();
-}
-
-void BalloonHost::Close(RenderViewHost* render_view_host) {
+void BalloonHost::CloseContents(TabContents* source) {
   balloon_->CloseByScript();
   NotifyDisconnect();
+}
+
+void BalloonHost::HandleMouseDown() {
+  balloon_->OnClick();
+}
+
+void BalloonHost::UpdatePreferredSize(TabContents* source,
+                                      const gfx::Size& pref_size) {
+  balloon_->SetContentPreferredSize(pref_size);
 }
 
 void BalloonHost::RenderViewCreated(RenderViewHost* render_view_host) {
@@ -86,9 +80,12 @@ void BalloonHost::RenderViewCreated(RenderViewHost* render_view_host) {
   render_view_host->WasResized();
   render_view_host->EnablePreferredSizeMode(
       kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
+
+  if (enable_web_ui_)
+    render_view_host->AllowBindings(content::BINDINGS_POLICY_WEB_UI);
 }
 
-void BalloonHost::RenderViewReady(RenderViewHost* render_view_host) {
+void BalloonHost::RenderViewReady() {
   should_notify_on_disconnect_ = true;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
@@ -96,18 +93,8 @@ void BalloonHost::RenderViewReady(RenderViewHost* render_view_host) {
       content::NotificationService::NoDetails());
 }
 
-void BalloonHost::RenderViewGone(RenderViewHost* render_view_host,
-                                 base::TerminationStatus status,
-                                 int error_code) {
-  Close(render_view_host);
-}
-
-content::ViewType BalloonHost::GetRenderViewType() const {
-  return chrome::VIEW_TYPE_NOTIFICATION;
-}
-
-RenderViewHostDelegate::View* BalloonHost::GetViewDelegate() {
-  return this;
+void BalloonHost::RenderViewGone() {
+  CloseContents(tab_contents_.get());
 }
 
 bool BalloonHost::OnMessageReceived(const IPC::Message& message) {
@@ -120,86 +107,36 @@ bool BalloonHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void BalloonHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
-  extension_function_dispatcher_.Dispatch(params, render_view_host_);
-}
-
-// RenderViewHostDelegate::View methods implemented to allow links to
-// open pages in new tabs.
-void BalloonHost::CreateNewWindow(
-    int route_id,
-    const ViewHostMsg_CreateWindow_Params& params) {
-  delegate_view_helper_.CreateNewWindow(
-      route_id,
-      balloon_->profile(),
-      site_instance_.get(),
-      ChromeWebUIFactory::GetInstance()->GetWebUIType(balloon_->profile(),
-          balloon_->notification().content_url()),
-      this,
-      params.window_container_type,
-      params.frame_name);
-}
-
-void BalloonHost::ShowCreatedWindow(int route_id,
-                                    WindowOpenDisposition disposition,
-                                    const gfx::Rect& initial_pos,
-                                    bool user_gesture) {
-  // Don't allow pop-ups from notifications.
-  if (disposition == NEW_POPUP)
-    return;
-
-  TabContents* contents = delegate_view_helper_.GetCreatedWindow(route_id);
-  if (!contents)
-    return;
-  Browser* browser = BrowserList::GetLastActiveWithProfile(balloon_->profile());
-  if (!browser)
-    return;
-
-  browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
-}
-
-void BalloonHost::UpdatePreferredSize(const gfx::Size& new_size) {
-  balloon_->SetContentPreferredSize(new_size);
-}
-
-void BalloonHost::HandleMouseDown() {
-  balloon_->OnClick();
-}
-
-content::RendererPreferences BalloonHost::GetRendererPrefs(
-    content::BrowserContext* browser_context) const {
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  content::RendererPreferences preferences;
-  renderer_preferences_util::UpdateFromSystemSettings(&preferences, profile);
-  return preferences;
+  extension_function_dispatcher_.Dispatch(params,
+                                          tab_contents_->render_view_host());
 }
 
 void BalloonHost::Init() {
-  DCHECK(!render_view_host_) << "BalloonViewHost already initialized.";
-  RenderViewHost* rvh = new RenderViewHost(
-      site_instance_.get(), this, MSG_ROUTING_NONE, NULL);
-  if (enable_web_ui_)
-    rvh->AllowBindings(content::BINDINGS_POLICY_WEB_UI);
+  DCHECK(!tab_contents_.get()) << "BalloonViewHost already initialized.";
+  tab_contents_.reset(new TabContents(
+      balloon_->profile(),
+      site_instance_.get(),
+      MSG_ROUTING_NONE,
+      NULL,
+      NULL));
+  tab_contents_->set_view_type(chrome::VIEW_TYPE_NOTIFICATION);
+  tab_contents_->set_delegate(this);
+  Observe(tab_contents_.get());
 
-  // Do platform-specific initialization.
-  render_view_host_ = rvh;
-  InitRenderWidgetHostView();
-  DCHECK(render_widget_host_view());
-
-  rvh->SetView(render_widget_host_view());
-  rvh->CreateRenderView(string16());
-  rvh->NavigateToURL(balloon_->notification().content_url());
+  tab_contents_->controller().LoadURL(
+      balloon_->notification().content_url(), GURL(),
+      content::PAGE_TRANSITION_LINK, std::string());
 
   initialized_ = true;
 }
 
 void BalloonHost::EnableWebUI() {
-  DCHECK(render_view_host_ == NULL) <<
+  DCHECK(!tab_contents_.get()) <<
       "EnableWebUI has to be called before a renderer is created.";
   enable_web_ui_ = true;
 }
 
 BalloonHost::~BalloonHost() {
-  DCHECK(!render_view_host_);
 }
 
 void BalloonHost::NotifyDisconnect() {

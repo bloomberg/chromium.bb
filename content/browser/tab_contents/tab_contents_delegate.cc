@@ -186,6 +186,9 @@ void TabContentsDelegate::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
 }
 
+void TabContentsDelegate::HandleMouseDown() {
+}
+
 void TabContentsDelegate::HandleMouseUp() {
 }
 
@@ -324,8 +327,14 @@ void TabContentsDelegate::CrashedPlugin(TabContents* tab,
                                         const FilePath& plugin_path) {
 }
 
-void TabContentsDelegate::UpdatePreferredSize(TabContents* source,
+void TabContentsDelegate::UpdatePreferredSize(TabContents* tab,
                                               const gfx::Size& pref_size) {
+}
+
+void TabContentsDelegate::WebUISend(TabContents* tab,
+                                    const GURL& source_url,
+                                    const std::string& name,
+                                    const base::ListValue& args) {
 }
 
 void TabContentsDelegate::RequestToLockMouse(TabContents* tab) {

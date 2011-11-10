@@ -47,7 +47,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/view_types.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -202,7 +201,8 @@ TabContents::TabContents(content::BrowserContext* browser_context,
       maximum_zoom_percent_(
           static_cast<int>(WebKit::WebView::maxTextSizeMultiplier * 100)),
       temporary_zoom_settings_(false),
-      content_restrictions_(0) {
+      content_restrictions_(0),
+      view_type_(content::VIEW_TYPE_TAB_CONTENTS) {
 
   render_manager_.Init(browser_context, site_instance, routing_id);
 
@@ -484,6 +484,11 @@ void TabContents::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
     delegate_->HandleKeyboardEvent(event);
 }
 
+void TabContents::HandleMouseDown() {
+  if (delegate_)
+    delegate_->HandleMouseDown();
+}
+
 void TabContents::HandleMouseUp() {
   if (delegate_)
     delegate_->HandleMouseUp();
@@ -519,6 +524,14 @@ void TabContents::LostMouseLock() {
 void TabContents::UpdatePreferredSize(const gfx::Size& pref_size) {
   if (delegate_)
     delegate_->UpdatePreferredSize(this, pref_size);
+}
+
+void TabContents::WebUISend(RenderViewHost* render_view_host,
+                            const GURL& source_url,
+                            const std::string& name,
+                            const base::ListValue& args) {
+  if (delegate_)
+    delegate_->WebUISend(this, source_url, name, args);
 }
 
 void TabContents::ShowContents() {
@@ -588,6 +601,9 @@ bool TabContents::NavigateToEntry(
   bool is_allowed_in_web_ui_renderer = content::GetContentClient()->
       browser()->GetWebUIFactory()->IsURLAcceptableForWebUI(browser_context(),
                                                             entry.url());
+#if defined(OS_CHROMEOS)
+  is_allowed_in_web_ui_renderer |= entry.url().SchemeIs(chrome::kDataScheme);
+#endif
   CHECK(!(enabled_bindings & content::BINDINGS_POLICY_WEB_UI) ||
         is_allowed_in_web_ui_renderer);
 
@@ -1408,7 +1424,7 @@ TabContents* TabContents::GetAsTabContents() {
 }
 
 content::ViewType TabContents::GetRenderViewType() const {
-  return content::VIEW_TYPE_TAB_CONTENTS;
+  return view_type_;
 }
 
 void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
@@ -1454,6 +1470,8 @@ void TabContents::RenderViewReady(RenderViewHost* rvh) {
       (!delegate_ || delegate_->ShouldFocusPageAfterCrash())) {
     Focus();
   }
+
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_, RenderViewReady());
 }
 
 void TabContents::RenderViewGone(RenderViewHost* rvh,

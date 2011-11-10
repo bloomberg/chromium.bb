@@ -14,6 +14,12 @@ void TabContentsObserver::RenderViewCreated(RenderViewHost* render_view_host) {
 void TabContentsObserver::RenderViewDeleted(RenderViewHost* render_view_host) {
 }
 
+void TabContentsObserver::RenderViewReady() {
+}
+
+void TabContentsObserver::RenderViewGone() {
+}
+
 void TabContentsObserver::NavigateToPendingEntry(
     const GURL& url,
     NavigationController::ReloadType reload_type) {
@@ -76,9 +82,6 @@ void TabContentsObserver::DidStartLoading() {
 }
 
 void TabContentsObserver::DidStopLoading() {
-}
-
-void TabContentsObserver::RenderViewGone() {
 }
 
 void TabContentsObserver::StopNavigation() {

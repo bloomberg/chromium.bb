@@ -21,6 +21,8 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
  public:
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void RenderViewDeleted(RenderViewHost* render_view_host);
+  virtual void RenderViewReady();
+  virtual void RenderViewGone();
   virtual void NavigateToPendingEntry(
       const GURL& url,
       NavigationController::ReloadType reload_type);
@@ -58,7 +60,6 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
 
   virtual void DidStartLoading();
   virtual void DidStopLoading();
-  virtual void RenderViewGone();
   virtual void StopNavigation();
 
   virtual void DidOpenURL(const GURL& url,

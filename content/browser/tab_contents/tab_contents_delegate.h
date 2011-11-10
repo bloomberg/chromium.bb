@@ -17,14 +17,18 @@
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
-struct ContextMenuParams;
 class DownloadItem;
 class FilePath;
 class GURL;
+class TabContents;
+struct ContextMenuParams;
 struct NativeWebKeyboardEvent;
 struct OpenURLParams;
-class TabContents;
 struct ViewHostMsg_RunFileChooser_Params;
+
+namespace base {
+class ListValue;
+}
 
 namespace content {
 class BrowserContext;
@@ -240,6 +244,7 @@ class CONTENT_EXPORT TabContentsDelegate {
   // the renderer.
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
+  virtual void HandleMouseDown();
   virtual void HandleMouseUp();
   virtual void HandleMouseActivate();
 
@@ -344,8 +349,14 @@ class CONTENT_EXPORT TabContentsDelegate {
   virtual void CrashedPlugin(TabContents* tab, const FilePath& plugin_path);
 
   // Invoked when the preferred size of the contents has been changed.
-  virtual void UpdatePreferredSize(TabContents* source,
+  virtual void UpdatePreferredSize(TabContents* tab,
                                    const gfx::Size& pref_size);
+
+  // Notification message from HTML UI.
+  virtual void WebUISend(TabContents* tab,
+                         const GURL& source_url,
+                         const std::string& name,
+                         const base::ListValue& args);
 
   // Requests to lock the mouse. Once the request is approved or rejected,
   // GotResponseToLockMouseRequest() will be called on the requesting tab

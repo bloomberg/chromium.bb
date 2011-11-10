@@ -38,8 +38,8 @@ class BalloonViewHost : public ::BalloonViewHost {
                                const MessageCallback& callback);
 
  private:
-  // RenderViewHostDelegate
-  virtual void WebUISend(RenderViewHost* render_view_host,
+  // TabContentsDelegate
+  virtual void WebUISend(TabContents* tab,
                          const GURL& source_url,
                          const std::string& name,
                          const base::ListValue& args) OVERRIDE;

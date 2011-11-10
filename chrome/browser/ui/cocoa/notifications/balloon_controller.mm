@@ -19,6 +19,7 @@
 #import "chrome/browser/ui/cocoa/notifications/balloon_view.h"
 #include "chrome/browser/ui/cocoa/notifications/balloon_view_host_mac.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -174,9 +175,11 @@ const int kRightMargin = 2;
 
 - (void)updateContents {
   DCHECK(htmlContents_.get()) << "BalloonView::Update called before Show";
-  if (htmlContents_->render_view_host())
-    htmlContents_->render_view_host()->NavigateToURL(
-        balloon_->notification().content_url());
+  if (htmlContents_->tab_contents()) {
+    htmlContents_->tab_contents()->controller().LoadURL(
+        balloon_->notification().content_url(), GURL(),
+        content::PAGE_TRANSITION_LINK, std::string());
+  }
 }
 
 - (void)repositionToBalloon {
@@ -186,11 +189,10 @@ const int kRightMargin = 2;
   int w = [self desiredTotalWidth];
   int h = [self desiredTotalHeight];
 
+  [[self window] setFrame:NSMakeRect(x, y, w, h)
+                  display:YES];
   if (htmlContents_.get())
     htmlContents_->UpdateActualSize(balloon_->content_size());
-
-  [[[self window] animator] setFrame:NSMakeRect(x, y, w, h)
-                             display:YES];
 }
 
 // Returns the total width the view should be to accommodate the balloon.

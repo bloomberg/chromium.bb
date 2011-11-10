@@ -32,6 +32,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -344,9 +345,11 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
 void BalloonViewImpl::Update() {
   DCHECK(html_contents_.get()) << "BalloonView::Update called before Show";
-  if (html_contents_->render_view_host())
-    html_contents_->render_view_host()->NavigateToURL(
-        balloon_->notification().content_url());
+  if (!html_contents_->tab_contents())
+    return;
+  html_contents_->tab_contents()->controller().LoadURL(
+      balloon_->notification().content_url(), GURL(),
+      content::PAGE_TRANSITION_LINK, std::string());
 }
 
 gfx::Point BalloonViewImpl::GetContentsOffset() const {
