@@ -346,6 +346,12 @@ TEST_F(WindowTest, Focus) {
   // The key press should be sent to the focused sub-window.
   desktop->DispatchKeyEvent(&keyev);
   EXPECT_EQ(ui::VKEY_E, w122delegate->last_key_code());
+
+  // Removing the focused window from parent should reset the focused window.
+  w12->RemoveChild(w122.get());
+  EXPECT_EQ(NULL, w122->GetFocusManager());
+  EXPECT_EQ(NULL, w12->GetFocusManager()->GetFocusedWindow());
+  EXPECT_FALSE(desktop->DispatchKeyEvent(&keyev));
 }
 
 // Various destruction assertions.
@@ -473,6 +479,14 @@ TEST_F(WindowTest, CaptureTests) {
 
   desktop->DispatchTouchEvent(&touchev);
   EXPECT_EQ(0, delegate.touch_event_count());
+
+  // Removing the capture window from parent should reset the capture window
+  // in the desktop.
+  window->SetCapture();
+  EXPECT_EQ(window.get(), desktop->capture_window());
+  window->parent()->RemoveChild(window.get());
+  EXPECT_FALSE(window->HasCapture());
+  EXPECT_EQ(NULL, desktop->capture_window());
 }
 
 // Verifies capture is reset when a window is destroyed.

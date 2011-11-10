@@ -253,7 +253,10 @@ void Window::RemoveChild(Window* child) {
   if (layout_manager_.get())
     layout_manager_->OnWillRemoveWindowFromLayout(child);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWillRemoveWindow(child));
+  aura::Window* desktop = child->GetDesktop();
   child->parent_ = NULL;
+  if (desktop)
+    desktop->WindowDetachedFromDesktop(child);
   layer_->Remove(child->layer_.get());
   children_.erase(i);
 }
@@ -420,6 +423,9 @@ int Window::GetIntProperty(const char* name) const {
 
 Desktop* Window::GetDesktop() {
   return parent_ ? parent_->GetDesktop() : NULL;
+}
+
+void Window::WindowDetachedFromDesktop(aura::Window* window) {
 }
 
 void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {

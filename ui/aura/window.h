@@ -278,6 +278,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Returns the desktop or NULL if we aren't yet attached to a desktop.
   virtual Desktop* GetDesktop();
 
+  // Called when the |window| is detached from the desktop by being
+  // removed from its parent.
+  virtual void WindowDetachedFromDesktop(aura::Window* window);
+
  private:
   friend class LayoutManager;
 

@@ -148,6 +148,7 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   virtual bool CanFocus() const OVERRIDE;
   virtual internal::FocusManager* GetFocusManager() OVERRIDE;
   virtual Desktop* GetDesktop() OVERRIDE;
+  virtual void WindowDetachedFromDesktop(Window* window) OVERRIDE;
 
   // Overridden from ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(

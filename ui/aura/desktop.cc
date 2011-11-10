@@ -513,10 +513,7 @@ void Desktop::SetCapture(Window* window) {
 void Desktop::ReleaseCapture(Window* window) {
   if (capture_window_ != window)
     return;
-
-  if (capture_window_ && capture_window_->delegate())
-    capture_window_->delegate()->OnCaptureLost();
-  capture_window_ = NULL;
+  SetCapture(NULL);
 }
 
 void Desktop::SetTransform(const ui::Transform& transform) {
@@ -611,6 +608,26 @@ internal::FocusManager* Desktop::GetFocusManager() {
 
 Desktop* Desktop::GetDesktop() {
   return this;
+}
+
+void Desktop::WindowDetachedFromDesktop(Window* detached) {
+  DCHECK(capture_window_ != this);
+
+  // If the ancestor of the capture window is detached,
+  // release the capture.
+  aura::Window* window = capture_window_;
+  while (window && window != detached)
+    window = window->parent();
+  if (window && window != this)
+    ReleaseCapture(capture_window_);
+
+  // If the ancestor of the capture window is detached,
+  // release the focus.
+  window = focused_window_;
+  while (window && window != detached)
+    window = window->parent();
+  if (window)
+    SetFocusedWindow(NULL);
 }
 
 void Desktop::OnLayerAnimationEnded(

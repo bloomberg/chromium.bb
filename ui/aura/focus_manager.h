@@ -14,7 +14,7 @@ class Window;
 
 namespace internal {
 
-// An interface implemented by the RootWindow to expose the focused window and
+// An interface implemented by the Desktop to expose the focused window and
 // allow for it to be changed.
 class AURA_EXPORT FocusManager {
  public:
