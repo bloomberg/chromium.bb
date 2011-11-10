@@ -11,12 +11,14 @@
 #include "content/public/browser/content_browser_client.h"
 #include "views/widget/widget.h"
 
-#if defined(OS_WIN)
-#include "content/browser/renderer_host/render_widget_host_view_win.h"
-#elif defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(USE_AURA)
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#elif defined(TOUCH_UI)
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
+#elif defined(OS_WIN)
+#include "content/browser/renderer_host/render_widget_host_view_win.h"
 #endif
 
 ExtensionView::ExtensionView(ExtensionHost* host, Browser* browser)
@@ -88,8 +90,11 @@ void ExtensionView::CreateWidgetHostView() {
 
   // TODO(mpcomplete): RWHV needs a cross-platform Init function.
 #if defined(USE_AURA)
-  // TODO(beng): should be same as TOUCH_UI
-  NOTIMPLEMENTED();
+  static_cast<RenderWidgetHostViewAura*>(view)->InitAsChild();
+#elif defined(TOUCH_UI)
+  static_cast<RenderWidgetHostViewViews*>(view)->InitAsChild();
+#elif defined(TOOLKIT_USES_GTK)
+  static_cast<RenderWidgetHostViewGtk*>(view)->InitAsChild();
 #elif defined(OS_WIN)
   // Create the HWND. Note:
   // RenderWidgetHostHWND supports windowed plugins, but if we ever also
@@ -98,23 +103,13 @@ void ExtensionView::CreateWidgetHostView() {
   // exist in the same z-order as constrained windows.
   RenderWidgetHostViewWin* view_win =
       static_cast<RenderWidgetHostViewWin*>(view);
-  HWND hwnd = view_win->Create(GetWidget()->GetNativeView());
+  view_win->Create(GetWidget()->GetNativeView());
   view_win->ShowWindow(SW_SHOW);
-  Attach(hwnd);
-#elif defined(TOUCH_UI)
-  RenderWidgetHostViewViews* view_views =
-      static_cast<RenderWidgetHostViewViews*>(view);
-  view_views->InitAsChild();
-  AttachToView(view_views);
-#elif defined(TOOLKIT_USES_GTK)
-  RenderWidgetHostViewGtk* view_gtk =
-      static_cast<RenderWidgetHostViewGtk*>(view);
-  view_gtk->InitAsChild();
-  Attach(view_gtk->GetNativeView());
 #else
   NOTIMPLEMENTED();
 #endif
 
+  Attach(view->GetNativeView());
   host_->CreateRenderViewSoon(view);
   SetVisible(false);
 }
