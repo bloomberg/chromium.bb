@@ -310,7 +310,7 @@ TEST_F(WorkerTest, WorkerContextMultiPort) {
   RunWorkerFastLayoutTest("worker-context-multi-port.html");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
 // http://crbug.com/101996
 #define WorkerEventListener FLAKY_WorkerEventListener
 #endif
@@ -403,7 +403,7 @@ TEST_F(WorkerTest, WorkerScriptError) {
   RunWorkerFastLayoutTest("worker-script-error.html");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN)
 // http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
 #define WorkerTerminate FLAKY_WorkerTerminate
 #endif
