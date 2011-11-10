@@ -74,6 +74,7 @@ enum RadioType {
 };
 
 // All data for the cell radio.
+// TODO(joth): Remove RadioData and all usage of it; http://crbug.com/103713
 struct CONTENT_EXPORT RadioData {
   RadioData();
   ~RadioData();
@@ -352,25 +353,16 @@ class DeviceDataProvider : public base::NonThreadSafe {
   // The singleton-like instance of this class. (Not 'true' singleton, as it
   // may go through multiple create/destroy/create cycles per process instance,
   // e.g. when under test).
-  static DeviceDataProvider* instance_;
+  CONTENT_EXPORT static DeviceDataProvider* instance_;
 
   // The factory function used to create the singleton instance.
-  static ImplFactoryFunction factory_function_;
+  CONTENT_EXPORT static ImplFactoryFunction factory_function_;
 
   // The internal implementation.
   scoped_refptr<DeviceDataProviderImplBase<DataType> > impl_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDataProvider);
 };
-
-// static
-template<typename DataType>
-DeviceDataProvider<DataType>* DeviceDataProvider<DataType>::instance_ = NULL;
-
-// static
-template<typename DataType>
-typename DeviceDataProvider<DataType>::ImplFactoryFunction
-    DeviceDataProvider<DataType>::factory_function_ = DefaultFactoryFunction;
 
 typedef DeviceDataProvider<RadioData> RadioDataProvider;
 typedef DeviceDataProvider<WifiData> WifiDataProvider;

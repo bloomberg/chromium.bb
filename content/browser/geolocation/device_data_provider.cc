@@ -4,6 +4,16 @@
 
 #include "content/browser/geolocation/device_data_provider.h"
 
+// statics
+template<> DeviceDataProvider<RadioData>*
+    DeviceDataProvider<RadioData>::instance_ = NULL;
+template<> DeviceDataProvider<RadioData>::ImplFactoryFunction
+    DeviceDataProvider<RadioData>::factory_function_ = DefaultFactoryFunction;
+template<> DeviceDataProvider<WifiData>*
+    DeviceDataProvider<WifiData>::instance_ = NULL;
+template<> DeviceDataProvider<WifiData>::ImplFactoryFunction
+    DeviceDataProvider<WifiData>::factory_function_ = DefaultFactoryFunction;
+
 namespace {
 
 bool CellDataMatches(const CellData &data1, const CellData &data2) {
