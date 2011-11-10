@@ -265,7 +265,7 @@ void Clipboard::ReadData(const std::string& format, std::string* result) {
     *result = std::string(data->custom_data_data(), data->custom_data_len());
 }
 
-uint64 Clipboard::GetSequenceNumber() {
+uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
   NOTIMPLEMENTED();
   return 0;
 }
