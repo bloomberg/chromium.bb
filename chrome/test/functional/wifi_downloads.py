@@ -7,6 +7,7 @@ import hashlib
 import logging
 import os
 import time
+import urllib2
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
@@ -82,7 +83,6 @@ class WifiDownloadsTest(chromeos_network.PyNetworkUITest):
         file_handle.write('\n')
     file_handle.close()
 
-
   def _Md5Checksum(self, file_path):
     """Returns the md5 checksum of a file at a given path.
 
@@ -148,15 +148,17 @@ class WifiDownloadsTest(chromeos_network.PyNetworkUITest):
                     ' the Downloads folder, there are none.')
     filename = os.path.splitext(downloaded_files[0])[0]
     file_path = os.path.join(self.GetDownloadDirectory().value(),
-                                  downloaded_files[0])
+                             downloaded_files[0])
     md5_sum = self._Md5Checksum(file_path)
-    self.assertEqual(filename, md5_sum, 'The checksums do not match.  The '
-                     'download is incomplete.')
+    md5_url = download_url[:-4] + '.md5'  # replacing .slf with .md5
+    md5_file = urllib2.urlopen(md5_url).readlines()[0]
+    self.assertTrue(md5_file.rstrip().endswith(md5_sum.encode()), 
+                    msg='Unexpected checksum.  The download is incomplete.')
     return end - start
 
   def testDownload1MBFile(self):
     """Test downloading a 1MB file from a wireless router."""
-    download_url = 'http://172.22.12.98:8080/1024.lf'
+    download_url = 'http://172.22.12.98:80/downloads/1M.slf'
     router_name = 'Nfiniti'
     self._ConnectToRouterAndVerify(router_name)
     download_time = self._DownloadAndVerifyFile(download_url)
@@ -166,7 +168,7 @@ class WifiDownloadsTest(chromeos_network.PyNetworkUITest):
 
   def testDownload10MBFile(self):
     """Test downloading a 10MB file from a wireless router."""
-    download_url = 'http://172.22.12.98:8080/10240.lf'
+    download_url = 'http://172.22.12.98:80/downloads/10M.slf'
     router_name = 'Belkin_N+'
     self._ConnectToRouterAndVerify(router_name)
     download_time = self._DownloadAndVerifyFile(download_url)
@@ -176,7 +178,7 @@ class WifiDownloadsTest(chromeos_network.PyNetworkUITest):
 
   def testDownload100MBFile(self):
     """Test downloading a 100MB file from a wireless router."""
-    download_url = 'http://172.22.12.98:8080/102400.lf'
+    download_url = 'http://172.22.12.98:80/downloads/100M.slf'
     router_name = 'Trendnet_639gr'
     self._ConnectToRouterAndVerify(router_name)
     download_time = self._DownloadAndVerifyFile(download_url)
