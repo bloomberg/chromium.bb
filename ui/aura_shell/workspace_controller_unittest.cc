@@ -35,6 +35,7 @@ class WorkspaceControllerTest : public aura::test::AuraTestBase {
     aura::Window* window = new aura::Window(NULL);
     window->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
     contents_view()->AddChild(window);
+    window->Show();
     return window;
   }
 
@@ -61,7 +62,6 @@ TEST_F(WorkspaceControllerTest, Overview) {
   // and ws2 which contains window w2.
   Workspace* ws1 = workspace_manager()->CreateWorkspace();
   scoped_ptr<Window> w1(CreateTestWindow());
-
   EXPECT_TRUE(ws1->AddWindowAfter(w1.get(), NULL));
 
   Workspace* ws2 = workspace_manager()->CreateWorkspace();
@@ -81,7 +81,7 @@ TEST_F(WorkspaceControllerTest, Overview) {
   // Switching overview mode doesn't change the active workspace.
   EXPECT_EQ(ws2, workspace_manager()->GetActiveWorkspace());
 
-  // Activaing window w1 switches the active window and
+  // Activating window w1 switches the active window and
   // the mode back to normal mode.
   w1->Activate();
   EXPECT_EQ(ws1, workspace_manager()->GetActiveWorkspace());
@@ -91,7 +91,7 @@ TEST_F(WorkspaceControllerTest, Overview) {
   ws1->RemoveWindow(w1.get());
   delete ws1;
   w1.reset();
-  EXPECT_EQ(NULL, workspace_manager()->GetActiveWorkspace());
+  EXPECT_EQ(ws2, workspace_manager()->GetActiveWorkspace());
   EXPECT_EQ("0,0 500x300", contents_view()->bounds().ToString());
   ws2->RemoveWindow(w2.get());
   delete ws2;

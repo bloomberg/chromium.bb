@@ -21,7 +21,6 @@
 #include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/screen_aura.h"
-#include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -45,30 +44,6 @@ static const int kDefaultHostWindowY = 200;
 static const int kDefaultHostWindowWidth = 1280;
 static const int kDefaultHostWindowHeight = 1024;
 
-// Returns the default cursor for a window component.
-gfx::NativeCursor CursorForWindowComponent(int window_component) {
-  switch (window_component) {
-    case HTBOTTOM:
-      return aura::kCursorSouthResize;
-    case HTBOTTOMLEFT:
-      return aura::kCursorSouthWestResize;
-    case HTBOTTOMRIGHT:
-      return aura::kCursorSouthEastResize;
-    case HTLEFT:
-      return aura::kCursorWestResize;
-    case HTRIGHT:
-      return aura::kCursorEastResize;
-    case HTTOP:
-      return aura::kCursorNorthResize;
-    case HTTOPLEFT:
-      return aura::kCursorNorthWestResize;
-    case HTTOPRIGHT:
-      return aura::kCursorNorthEastResize;
-    default:
-      return aura::kCursorNull;
-  }
-}
-
 bool IsNonClientLocation(Window* target, const gfx::Point& location) {
   if (!target->delegate())
     return false;
@@ -82,10 +57,14 @@ class DefaultStackingClient : public StackingClient {
   virtual ~DefaultStackingClient() {}
 
  private:
+
+  // Overridden from StackingClient:
   virtual void AddChildToDefaultParent(Window* window) OVERRIDE {
     desktop_->AddChild(window);
   }
-
+  virtual bool CanActivateWindow(Window* window) const OVERRIDE {
+    return window->parent() == desktop_;
+  }
   virtual Window* GetTopmostWindowToActivate(Window* ignore) const OVERRIDE {
     Window::Windows::const_reverse_iterator i;
     for (i = desktop_->children().rbegin();
@@ -101,79 +80,6 @@ class DefaultStackingClient : public StackingClient {
   Desktop* desktop_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultStackingClient);
-};
-
-class DesktopEventFilter : public EventFilter {
- public:
-  explicit DesktopEventFilter(Window* owner) : EventFilter(owner) {}
-  virtual ~DesktopEventFilter() {}
-
-  // Overridden from EventFilter:
-  virtual bool PreHandleKeyEvent(Window* target, KeyEvent* event) OVERRIDE {
-    return false;
-  }
-  virtual bool PreHandleMouseEvent(Window* target, MouseEvent* event) OVERRIDE {
-    switch (event->type()) {
-      case ui::ET_MOUSE_PRESSED:
-        ActivateIfNecessary(target, event);
-        break;
-      case ui::ET_MOUSE_MOVED:
-        HandleMouseMoved(target, event);
-        break;
-      default:
-        break;
-    }
-    return false;
-  }
-  virtual ui::TouchStatus PreHandleTouchEvent(Window* target,
-                                              TouchEvent* event) OVERRIDE {
-    if (event->type() == ui::ET_TOUCH_PRESSED)
-      ActivateIfNecessary(target, event);
-    return ui::TOUCH_STATUS_UNKNOWN;
-  }
-
- private:
-  // If necessary, activates |window| and changes focus.
-  void ActivateIfNecessary(Window* window, Event* event) {
-    // TODO(beng): some windows (e.g. disabled ones, tooltips, etc) may not be
-    //             focusable.
-
-    Window* active_window = Desktop::GetInstance()->active_window();
-    Window* toplevel_window = window;
-    while (toplevel_window && toplevel_window != active_window &&
-           toplevel_window->parent() &&
-           !toplevel_window->parent()->AsToplevelWindowContainer()) {
-      toplevel_window = toplevel_window->parent();
-    }
-    if (toplevel_window == active_window) {
-      // |window| is a descendant of the active window, no need to activate.
-      window->GetFocusManager()->SetFocusedWindow(window);
-      return;
-    }
-    if (!toplevel_window) {
-      // |window| is not in a top level window.
-      return;
-    }
-    if (!toplevel_window->delegate() ||
-        !toplevel_window->delegate()->ShouldActivate(event))
-      return;
-
-    Desktop::GetInstance()->SetActiveWindow(toplevel_window, window);
-  }
-
-  // Updates the cursor if the target provides a custom one, and provides
-  // default resize cursors for window edges.
-  void HandleMouseMoved(Window* target, MouseEvent* event) {
-    gfx::NativeCursor cursor = target->GetCursor(event->location());
-    if (event->flags() & ui::EF_IS_NON_CLIENT) {
-      int window_component =
-          target->delegate()->GetNonClientComponent(event->location());
-      cursor = CursorForWindowComponent(window_component);
-    }
-    Desktop::GetInstance()->SetCursor(cursor);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopEventFilter);
 };
 
 typedef std::vector<EventFilter*> EventFilters;
@@ -255,7 +161,6 @@ Desktop::Desktop()
   gfx::Screen::SetInstance(screen_);
   host_->SetDesktop(this);
   last_mouse_location_ = host_->QueryMouseLocation();
-  SetEventFilter(new DesktopEventFilter(this));
 
   if (ui::Compositor::compositor_factory()) {
     compositor_ = (*ui::Compositor::compositor_factory())(this);
@@ -406,14 +311,17 @@ void Desktop::OnHostResized(const gfx::Size& size) {
 }
 
 void Desktop::SetActiveWindow(Window* window, Window* to_focus) {
-  // We only allow top level windows to be active.
-  if (window && window != window->GetToplevelWindow()) {
-    // Ignore requests to activate windows that aren't in a top level window.
+  // The stacking client may impose rules on what window configurations can be
+  // activated or deactivated.
+  if (window && !stacking_client_->CanActivateWindow(window))
     return;
-  }
-
+  // The window may not be activate-able.
+  if (window && !window->CanActivate())
+    return;
+  // Nothing may actually have changed.
   if (active_window_ == window)
     return;
+
   Window* old_active = active_window_;
   active_window_ = window;
   // Invoke OnLostActive after we've changed the active window. That way if the
@@ -437,18 +345,14 @@ void Desktop::ActivateTopmostWindow() {
 }
 
 void Desktop::Deactivate(Window* window) {
-  if (!window)
+  // The stacking client may impose rules on what window configurations can be
+  // activated or deactivated.
+  if (!window || !stacking_client_->CanActivateWindow(window))
+    return;
+  if (active_window_ != window)
     return;
 
-  Window* toplevel_ancestor = window->GetToplevelWindow();
-  if (!toplevel_ancestor || toplevel_ancestor != window)
-    return;  // Not a top level window.
-
-  if (active_window() != toplevel_ancestor)
-    return;  // Top level ancestor is already not active.
-
-  Window* to_activate =
-      stacking_client_->GetTopmostWindowToActivate(toplevel_ancestor);
+  Window* to_activate = stacking_client_->GetTopmostWindowToActivate(window);
   if (to_activate)
     SetActiveWindow(to_activate, NULL);
 }

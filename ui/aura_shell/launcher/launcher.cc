@@ -4,7 +4,7 @@
 
 #include "ui/aura_shell/launcher/launcher.h"
 
-#include "ui/aura/toplevel_window_container.h"
+#include "ui/aura/window.h"
 #include "ui/aura_shell/launcher/launcher_model.h"
 #include "ui/aura_shell/launcher/launcher_view.h"
 #include "ui/aura_shell/shell.h"
@@ -15,7 +15,7 @@
 
 namespace aura_shell {
 
-Launcher::Launcher(aura::ToplevelWindowContainer* window_container)
+Launcher::Launcher(aura::Window* window_container)
     : widget_(NULL),
       window_container_(window_container) {
   window_container->AddObserver(this);

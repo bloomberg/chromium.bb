@@ -8,14 +8,15 @@
 #include "base/compiler_specific.h"
 #include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/stacking_client.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/desktop_observer.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/test_window_delegate.h"
-#include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
@@ -26,6 +27,8 @@
 
 namespace aura {
 namespace test {
+
+typedef AuraTestBase WindowTest;
 
 namespace {
 
@@ -119,75 +122,6 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
   int touch_event_count_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureWindowDelegateImpl);
-};
-
-// A simple WindowDelegate implementation for these tests. It owns itself
-// (deletes itself when the Window it is attached to is destroyed).
-class ColorTestWindowDelegate : public TestWindowDelegate {
- public:
-  ColorTestWindowDelegate(SkColor color)
-      : color_(color),
-        last_key_code_(ui::VKEY_UNKNOWN) {
-  }
-  virtual ~ColorTestWindowDelegate() {}
-
-  ui::KeyboardCode last_key_code() const { return last_key_code_; }
-
-  // Overridden from TestWindowDelegate:
-  virtual bool OnKeyEvent(KeyEvent* event) OVERRIDE {
-    last_key_code_ = event->key_code();
-    return true;
-  }
-  virtual void OnWindowDestroyed() OVERRIDE {
-    delete this;
-  }
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->GetSkCanvas()->drawColor(color_, SkXfermode::kSrc_Mode);
-  }
-
- private:
-  SkColor color_;
-  ui::KeyboardCode last_key_code_;
-
-  DISALLOW_COPY_AND_ASSIGN(ColorTestWindowDelegate);
-};
-
-class WindowTest : public AuraTestBase {
- public:
-  WindowTest() {}
-  virtual ~WindowTest() {}
-
-  Window* CreateTestWindowWithId(int id, Window* parent) {
-    return CreateTestWindowWithDelegate(NULL, id, gfx::Rect(), parent);
-  }
-
-  Window* CreateTestWindowWithBounds(const gfx::Rect& bounds, Window* parent) {
-    return CreateTestWindowWithDelegate(NULL, 0, bounds, parent);
-  }
-
-  Window* CreateTestWindow(SkColor color,
-                           int id,
-                           const gfx::Rect& bounds,
-                           Window* parent) {
-    return CreateTestWindowWithDelegate(new ColorTestWindowDelegate(color),
-                                        id, bounds, parent);
-  }
-
-  Window* CreateTestWindowWithDelegate(WindowDelegate* delegate,
-                                       int id,
-                                       const gfx::Rect& bounds,
-                                       Window* parent) {
-    Window* window = new Window(delegate);
-    window->set_id(id);
-    window->Init(ui::Layer::LAYER_HAS_TEXTURE);
-    window->SetBounds(bounds);
-    window->Show();
-    window->SetParent(parent);
-    return window;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WindowTest);
 };
 
 }  // namespace
@@ -292,66 +226,6 @@ TEST_F(WindowTest, GetTopWindowContainingPoint) {
   EXPECT_EQ(w31.get(), root->GetTopWindowContainingPoint(gfx::Point(200, 200)));
   EXPECT_EQ(w31.get(), root->GetTopWindowContainingPoint(gfx::Point(220, 220)));
   EXPECT_EQ(NULL, root->GetTopWindowContainingPoint(gfx::Point(260, 260)));
-}
-
-TEST_F(WindowTest, Focus) {
-  Desktop* desktop = Desktop::GetInstance();
-  desktop->SetBounds(gfx::Rect(0, 0, 510, 510));
-
-  scoped_ptr<Window> w1(
-      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500), NULL));
-  scoped_ptr<Window> w11(
-      CreateTestWindow(SK_ColorGREEN, 11, gfx::Rect(5, 5, 100, 100), w1.get()));
-  scoped_ptr<Window> w111(
-      CreateTestWindow(SK_ColorCYAN, 111, gfx::Rect(5, 5, 75, 75), w11.get()));
-  scoped_ptr<Window> w1111(
-      CreateTestWindow(SK_ColorRED, 1111, gfx::Rect(5, 5, 50, 50), w111.get()));
-  scoped_ptr<Window> w12(
-      CreateTestWindow(SK_ColorMAGENTA, 12, gfx::Rect(10, 420, 25, 25),
-                       w1.get()));
-  ColorTestWindowDelegate* w121delegate =
-      new ColorTestWindowDelegate(SK_ColorYELLOW);
-  scoped_ptr<Window> w121(
-      CreateTestWindowWithDelegate(w121delegate, 121, gfx::Rect(5, 5, 5, 5),
-                                   w12.get()));
-  ColorTestWindowDelegate* w122delegate =
-      new ColorTestWindowDelegate(SK_ColorRED);
-  scoped_ptr<Window> w122(
-      CreateTestWindowWithDelegate(w122delegate, 121, gfx::Rect(10, 5, 5, 5),
-                                   w12.get()));
-  scoped_ptr<Window> w13(
-      CreateTestWindow(SK_ColorGRAY, 13, gfx::Rect(5, 470, 50, 50), w1.get()));
-
-  // Click on a sub-window (w121) to focus it.
-  gfx::Point click_point = w121->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w121->parent(), desktop, &click_point);
-  MouseEvent mouse(ui::ET_MOUSE_PRESSED, click_point, ui::EF_LEFT_BUTTON_DOWN);
-  desktop->DispatchMouseEvent(&mouse);
-  internal::FocusManager* focus_manager = w121->GetFocusManager();
-  EXPECT_EQ(w121.get(), focus_manager->GetFocusedWindow());
-
-  // The key press should be sent to the focused sub-window.
-  KeyEvent keyev(ui::ET_KEY_PRESSED, ui::VKEY_E, 0);
-  desktop->DispatchKeyEvent(&keyev);
-  EXPECT_EQ(ui::VKEY_E, w121delegate->last_key_code());
-
-  // Touch on a sub-window (w122) to focus it.
-  click_point = w122->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w122->parent(), desktop, &click_point);
-  TouchEvent touchev(ui::ET_TOUCH_PRESSED, click_point, 0);
-  desktop->DispatchTouchEvent(&touchev);
-  focus_manager = w122->GetFocusManager();
-  EXPECT_EQ(w122.get(), focus_manager->GetFocusedWindow());
-
-  // The key press should be sent to the focused sub-window.
-  desktop->DispatchKeyEvent(&keyev);
-  EXPECT_EQ(ui::VKEY_E, w122delegate->last_key_code());
-
-  // Removing the focused window from parent should reset the focused window.
-  w12->RemoveChild(w122.get());
-  EXPECT_EQ(NULL, w122->GetFocusManager());
-  EXPECT_EQ(NULL, w12->GetFocusManager()->GetFocusedWindow());
-  EXPECT_FALSE(desktop->DispatchKeyEvent(&keyev));
 }
 
 // Various destruction assertions.
@@ -587,183 +461,6 @@ TEST_F(WindowTest, MouseEnterExit) {
   EXPECT_TRUE(d1.exited());
   EXPECT_TRUE(d2.entered());
   EXPECT_FALSE(d2.exited());
-}
-
-class ActivateWindowDelegate : public TestWindowDelegate {
- public:
-  ActivateWindowDelegate()
-      : activate_(true),
-        activated_count_(0),
-        lost_active_count_(0),
-        should_activate_count_(0) {
-  }
-
-  ActivateWindowDelegate(bool activate)
-      : activate_(activate),
-        activated_count_(0),
-        lost_active_count_(0),
-        should_activate_count_(0) {
-  }
-
-  void set_activate(bool v) { activate_ = v; }
-  int activated_count() const { return activated_count_; }
-  int lost_active_count() const { return lost_active_count_; }
-  int should_activate_count() const { return should_activate_count_; }
-  void Clear() {
-    activated_count_ = lost_active_count_ = should_activate_count_ = 0;
-  }
-
-  virtual bool ShouldActivate(Event* event) OVERRIDE {
-    should_activate_count_++;
-    return activate_;
-  }
-  virtual void OnActivated() OVERRIDE {
-    activated_count_++;
-  }
-  virtual void OnLostActive() OVERRIDE {
-    lost_active_count_++;
-  }
-
- private:
-  bool activate_;
-  int activated_count_;
-  int lost_active_count_;
-  int should_activate_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(ActivateWindowDelegate);
-};
-
-// Various assertion testing for activating windows.
-TEST_F(WindowTest, ActivateOnMouse) {
-  Desktop* desktop = Desktop::GetInstance();
-
-  ActivateWindowDelegate d1;
-  scoped_ptr<Window> w1(
-      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
-  ActivateWindowDelegate d2;
-  scoped_ptr<Window> w2(
-      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50), NULL));
-  internal::FocusManager* focus_manager = w1->GetFocusManager();
-
-  d1.Clear();
-  d2.Clear();
-
-  // Activate window1.
-  desktop->SetActiveWindow(w1.get(), NULL);
-  EXPECT_EQ(w1.get(), desktop->active_window());
-  EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
-  EXPECT_EQ(1, d1.activated_count());
-  EXPECT_EQ(0, d1.lost_active_count());
-  d1.Clear();
-
-  // Click on window2.
-  gfx::Point press_point = w2->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w2->parent(), desktop, &press_point);
-  EventGenerator generator(press_point);
-  generator.ClickLeftButton();
-
-  // Window2 should have become active.
-  EXPECT_EQ(w2.get(), desktop->active_window());
-  EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
-  EXPECT_EQ(0, d1.activated_count());
-  EXPECT_EQ(1, d1.lost_active_count());
-  EXPECT_EQ(1, d2.activated_count());
-  EXPECT_EQ(0, d2.lost_active_count());
-  d1.Clear();
-  d2.Clear();
-
-  // Click back on window1, but set it up so w1 doesn't activate on click.
-  press_point = w1->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w1->parent(), desktop, &press_point);
-  d1.set_activate(false);
-  generator.ClickLeftButton();
-
-  // Window2 should still be active and focused.
-  EXPECT_EQ(w2.get(), desktop->active_window());
-  EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
-  EXPECT_EQ(0, d1.activated_count());
-  EXPECT_EQ(0, d1.lost_active_count());
-  EXPECT_EQ(0, d2.activated_count());
-  EXPECT_EQ(0, d2.lost_active_count());
-  d1.Clear();
-  d2.Clear();
-
-  // Destroy window2, this should make window1 active.
-  d1.set_activate(true);
-  w2.reset();
-  EXPECT_EQ(0, d2.activated_count());
-  EXPECT_EQ(0, d2.lost_active_count());
-  EXPECT_EQ(w1.get(), desktop->active_window());
-  EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
-  EXPECT_EQ(1, d1.activated_count());
-  EXPECT_EQ(0, d1.lost_active_count());
-}
-
-// Essentially the same as ActivateOnMouse, but for touch events.
-TEST_F(WindowTest, ActivateOnTouch) {
-  Desktop* desktop = Desktop::GetInstance();
-
-  ActivateWindowDelegate d1;
-  scoped_ptr<Window> w1(
-      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
-  ActivateWindowDelegate d2;
-  scoped_ptr<Window> w2(
-      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50), NULL));
-  internal::FocusManager* focus_manager = w1->GetFocusManager();
-
-  d1.Clear();
-  d2.Clear();
-
-  // Activate window1.
-  desktop->SetActiveWindow(w1.get(), NULL);
-  EXPECT_EQ(w1.get(), desktop->active_window());
-  EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
-  EXPECT_EQ(1, d1.activated_count());
-  EXPECT_EQ(0, d1.lost_active_count());
-  d1.Clear();
-
-  // Touch window2.
-  gfx::Point press_point = w2->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w2->parent(), desktop, &press_point);
-  TouchEvent touchev1(ui::ET_TOUCH_PRESSED, press_point, 0);
-  desktop->DispatchTouchEvent(&touchev1);
-
-  // Window2 should have become active.
-  EXPECT_EQ(w2.get(), desktop->active_window());
-  EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
-  EXPECT_EQ(0, d1.activated_count());
-  EXPECT_EQ(1, d1.lost_active_count());
-  EXPECT_EQ(1, d2.activated_count());
-  EXPECT_EQ(0, d2.lost_active_count());
-  d1.Clear();
-  d2.Clear();
-
-  // Touch window1, but set it up so w1 doesn't activate on touch.
-  press_point = w1->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w1->parent(), desktop, &press_point);
-  d1.set_activate(false);
-  TouchEvent touchev2(ui::ET_TOUCH_PRESSED, press_point, 0);
-  desktop->DispatchTouchEvent(&touchev2);
-
-  // Window2 should still be active and focused.
-  EXPECT_EQ(w2.get(), desktop->active_window());
-  EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
-  EXPECT_EQ(0, d1.activated_count());
-  EXPECT_EQ(0, d1.lost_active_count());
-  EXPECT_EQ(0, d2.activated_count());
-  EXPECT_EQ(0, d2.lost_active_count());
-  d1.Clear();
-  d2.Clear();
-
-  // Destroy window2, this should make window1 active.
-  d1.set_activate(true);
-  w2.reset();
-  EXPECT_EQ(0, d2.activated_count());
-  EXPECT_EQ(0, d2.lost_active_count());
-  EXPECT_EQ(w1.get(), desktop->active_window());
-  EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
-  EXPECT_EQ(1, d1.activated_count());
-  EXPECT_EQ(0, d1.lost_active_count());
 }
 
 namespace {
@@ -1072,48 +769,6 @@ TEST_F(WindowTest, TransientChildren) {
   ASSERT_EQ(2u, parent->children().size());
   EXPECT_EQ(w3.get(), parent->children()[0]);
   EXPECT_EQ(w1.get(), parent->children()[1]);
-}
-
-class ToplevelWindowTest : public WindowTest {
- public:
-  ToplevelWindowTest() {}
-  virtual ~ToplevelWindowTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    WindowTest::SetUp();
-    toplevel_container_.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
-    toplevel_container_.SetParent(aura::Desktop::GetInstance());
-    toplevel_container_.SetBounds(
-        aura::Desktop::GetInstance()->bounds());
-    toplevel_container_.Show();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    toplevel_container_.Hide();
-    toplevel_container_.SetParent(NULL);
-    WindowTest::TearDown();
-  }
-
-  Window* CreateTestToplevelWindow(
-      WindowDelegate* delegate, const gfx::Rect& bounds) {
-    return CreateTestWindowWithDelegate(
-        delegate, 0 /* id */, bounds, &toplevel_container_);
-  }
-
-  ToplevelWindowContainer toplevel_container_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ToplevelWindowTest);
-};
-
-TEST_F(ToplevelWindowTest, TopMostActivate) {
-  ActivateWindowDelegate activate;
-  ActivateWindowDelegate non_activate(false);
-
-  scoped_ptr<Window> w1(CreateTestToplevelWindow(&non_activate, gfx::Rect()));
-  scoped_ptr<Window> w2(CreateTestToplevelWindow(&activate, gfx::Rect()));
-  scoped_ptr<Window> w3(CreateTestToplevelWindow(&non_activate, gfx::Rect()));
-  EXPECT_EQ(w2.get(), toplevel_container_.GetTopmostWindowToActivate(NULL));
 }
 
 TEST_F(WindowTest, Property) {

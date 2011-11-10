@@ -19,10 +19,10 @@ namespace internal {
 
 class ShelfLayoutController;
 
-// ToplevelLayoutManager is the LayoutManager installed on the
-// ToplevelWindowContainer. It is used if the WorkspaceManager is not
-// enabled. ToplevelLayoutManager listens for changes to kShowStateKey and
-// resizes the window appropriately.
+// ToplevelLayoutManager is the LayoutManager installed on a container that
+// hosts what the shell considers to be top-level windows. It is used if the
+// WorkspaceManager is not enabled. ToplevelLayoutManager listens for changes to
+// kShowStateKey and resizes the window appropriately.
 class AURA_SHELL_EXPORT ToplevelLayoutManager : public aura::LayoutManager,
                                                 public aura::WindowObserver {
  public:

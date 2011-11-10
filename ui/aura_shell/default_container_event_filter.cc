@@ -7,6 +7,7 @@
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/default_container_layout_manager.h"
+#include "ui/aura_shell/stacking_controller.h"
 #include "ui/aura_shell/window_frame.h"
 #include "ui/base/hit_test.h"
 
@@ -76,7 +77,7 @@ bool DefaultContainerEventFilter::PreHandleMouseEvent(aura::Window* target,
       }
       break;
     case ui::ET_MOUSE_ENTERED:
-      UpdateHoveredWindow(target->GetToplevelWindow());
+      UpdateHoveredWindow(StackingController::GetActivatableWindow(target));
       break;
     case ui::ET_MOUSE_EXITED:
       UpdateHoveredWindow(NULL);

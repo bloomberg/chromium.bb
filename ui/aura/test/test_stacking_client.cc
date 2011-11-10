@@ -10,7 +10,7 @@ namespace aura {
 namespace test {
 
 TestStackingClient::TestStackingClient()
-    : default_container_(new ToplevelWindowContainer) {
+    : default_container_(new Window(NULL)) {
   Desktop::GetInstance()->SetStackingClient(this);
   default_container_->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
   default_container_->SetBounds(
@@ -26,8 +26,19 @@ void TestStackingClient::AddChildToDefaultParent(Window* window) {
   default_container_->AddChild(window);
 }
 
+bool TestStackingClient::CanActivateWindow(Window* window) const {
+  return window->parent() == default_container_;
+}
+
 Window* TestStackingClient::GetTopmostWindowToActivate(Window* ignore) const {
-  return default_container_->GetTopmostWindowToActivate(ignore);
+  for (aura::Window::Windows::const_reverse_iterator i =
+           default_container_->children().rbegin();
+       i != default_container_->children().rend();
+       ++i) {
+    if (*i != ignore && (*i)->CanActivate())
+      return *i;
+  }
+  return NULL;
 }
 
 }  // namespace test

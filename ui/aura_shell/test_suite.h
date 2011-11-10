@@ -9,6 +9,9 @@
 #include "base/compiler_specific.h"
 #include "base/test/test_suite.h"
 
+namespace aura_shell {
+namespace test {
+
 class AuraShellTestSuite : public base::TestSuite {
  public:
   AuraShellTestSuite(int argc, char** argv);
@@ -18,5 +21,8 @@ class AuraShellTestSuite : public base::TestSuite {
   virtual void Initialize() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 };
+
+}  // namespace test
+}  // namespace aura_shell
 
 #endif  // UI_AURA_SHELL_TEST_SUITE_H_

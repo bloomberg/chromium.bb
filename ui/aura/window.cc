@@ -120,14 +120,6 @@ bool Window::IsActive() const {
   return aura::Desktop::GetInstance()->active_window() == this;
 }
 
-ToplevelWindowContainer* Window::AsToplevelWindowContainer() {
-  return NULL;
-}
-
-const ToplevelWindowContainer* Window::AsToplevelWindowContainer() const {
-  return NULL;
-}
-
 void Window::SetTransform(const ui::Transform& transform) {
   layer()->SetTransform(transform);
 }
@@ -213,7 +205,7 @@ void Window::MoveChildAbove(Window* child, Window* other) {
 }
 
 bool Window::CanActivate() const {
-  return IsVisible() && delegate_ && delegate_->ShouldActivate(NULL);
+  return IsVisible() && (!delegate_ || delegate_->ShouldActivate(NULL));
 }
 
 void Window::AddChild(Window* child) {
@@ -385,14 +377,6 @@ void Window::ReleaseCapture() {
 bool Window::HasCapture() {
   Desktop* desktop = GetDesktop();
   return desktop && desktop->capture_window() == this;
-}
-
-Window* Window::GetToplevelWindow() {
-  Window* window = this;
-  while (window && window->parent() &&
-         !window->parent()->AsToplevelWindowContainer())
-    window = window->parent();
-  return window && window->parent() ? window : NULL;
 }
 
 void Window::SetProperty(const char* name, void* value) {

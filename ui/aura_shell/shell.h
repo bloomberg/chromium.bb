@@ -14,7 +14,6 @@
 #include "base/task.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/aura/client/stacking_client.h"
 #include "ui/aura_shell/aura_shell_export.h"
 
 namespace aura {
@@ -36,7 +35,7 @@ class WorkspaceController;
 
 // Shell is a singleton object that presents the Shell API and implements the
 // Desktop's delegate interface.
-class AURA_SHELL_EXPORT Shell : public aura::StackingClient {
+class AURA_SHELL_EXPORT Shell {
  public:
   // Upon creation, the Shell sets itself as the Desktop's delegate, which takes
   // ownership of the Shell.
@@ -44,6 +43,7 @@ class AURA_SHELL_EXPORT Shell : public aura::StackingClient {
   virtual ~Shell();
 
   static Shell* GetInstance();
+  static void DeleteInstanceForTesting();
 
   void Init();
 
@@ -65,11 +65,6 @@ class AURA_SHELL_EXPORT Shell : public aura::StackingClient {
   // Enables WorkspaceManager.
   void EnableWorkspaceManager();
 
-  // Overridden from aura::StackingClient:
-  virtual void AddChildToDefaultParent(aura::Window* window) OVERRIDE;
-  virtual aura::Window* GetTopmostWindowToActivate(
-      aura::Window* ignore) const OVERRIDE;
-
   static Shell* instance_;
 
   std::vector<WindowAndBoundsPair> to_restore_;
@@ -81,7 +76,6 @@ class AURA_SHELL_EXPORT Shell : public aura::StackingClient {
   scoped_ptr<Launcher> launcher_;
 
   scoped_ptr<internal::WorkspaceController> workspace_controller_;
-
   scoped_ptr<internal::ShelfLayoutController> shelf_layout_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);

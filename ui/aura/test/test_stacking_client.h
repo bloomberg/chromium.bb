@@ -10,10 +10,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/stacking_client.h"
-#include "ui/aura/toplevel_window_container.h"
 
 namespace aura {
-class ToplevelWindowContainer;
+class Window;
 
 namespace test {
 
@@ -30,9 +29,10 @@ class TestStackingClient : public StackingClient {
  private:
   // Overridden from StackingClient:
   virtual void AddChildToDefaultParent(Window* window) OVERRIDE;
+  virtual bool CanActivateWindow(Window* window) const OVERRIDE;
   virtual Window* GetTopmostWindowToActivate(Window* ignore) const OVERRIDE;
 
-  scoped_ptr<ToplevelWindowContainer> default_container_;
+  scoped_ptr<Window> default_container_;
 
   DISALLOW_COPY_AND_ASSIGN(TestStackingClient);
 };

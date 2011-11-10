@@ -22,6 +22,11 @@ class AURA_EXPORT StackingClient {
   // of its choosing.
   virtual void AddChildToDefaultParent(Window* window) = 0;
 
+  // Returns true if |window| can be activated or deactivated.
+  // A window manager typically defines some notion of "top level window" that
+  // supports activation/deactivation.
+  virtual bool CanActivateWindow(Window* window) const = 0;
+
   // Returns the window that should be activated other than |ignore|.
   virtual Window* GetTopmostWindowToActivate(Window* ignore) const = 0;
 };

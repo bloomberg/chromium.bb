@@ -13,6 +13,9 @@
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gfx/test/gfx_test_utils.h"
 
+namespace aura_shell {
+namespace test {
+
 AuraShellTestSuite::AuraShellTestSuite(int argc, char** argv)
     : TestSuite(argc, argv) {}
 
@@ -35,3 +38,6 @@ void AuraShellTestSuite::Shutdown() {
 
   base::TestSuite::Shutdown();
 }
+
+}  // namespace test
+}  // namespace aura_shell

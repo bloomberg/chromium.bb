@@ -110,11 +110,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Returns true if this window is active.
   bool IsActive() const;
 
-  // RTTI to a container for top-level windows. Returns NULL if this window is
-  // not a top level window container.
-  virtual ToplevelWindowContainer* AsToplevelWindowContainer();
-  virtual const ToplevelWindowContainer* AsToplevelWindowContainer() const;
-
   virtual void SetTransform(const ui::Transform& transform);
 
   // Assigns a LayoutManager to size and place child windows.
@@ -255,10 +250,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Returns true if this window has a mouse capture.
   bool HasCapture();
-
-  // Returns the first ancestor whose parent window returns true from
-  // IsToplevelWindowContainer.
-  Window* GetToplevelWindow();
 
   // Sets the window property |value| for given |name|. Setting NULL or 0
   // removes the property. It uses |ui::ViewProp| to store the property.

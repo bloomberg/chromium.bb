@@ -14,7 +14,7 @@
 #include "ui/aura_shell/aura_shell_export.h"
 
 namespace aura {
-class ToplevelWindowContainer;
+class Window;
 }
 
 namespace views {
@@ -27,7 +27,7 @@ class LauncherModel;
 
 class AURA_SHELL_EXPORT Launcher : public aura::WindowObserver {
  public:
-  explicit Launcher(aura::ToplevelWindowContainer* window_container);
+  explicit Launcher(aura::Window* window_container);
   ~Launcher();
 
   LauncherModel* model() { return model_.get(); }
@@ -51,7 +51,7 @@ class AURA_SHELL_EXPORT Launcher : public aura::WindowObserver {
   // Widget hosting the view.
   views::Widget* widget_;
 
-  aura::ToplevelWindowContainer* window_container_;
+  aura::Window* window_container_;
 
   // The set of windows we know about. The boolean indicates whether we've asked
   // the delegate if the window should added to the launcher.

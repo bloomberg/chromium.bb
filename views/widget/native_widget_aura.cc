@@ -680,9 +680,6 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
     gfx::NativeView native_view) {
-  if (!native_view)
-    return NULL;
-
   aura::Window* window = native_view;
   NativeWidgetPrivate* top_level_native_widget = NULL;
   while (window) {

@@ -8,17 +8,18 @@
 #include "base/command_line.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/desktop.h"
-#include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
 #include "ui/aura_shell/default_container_event_filter.h"
 #include "ui/aura_shell/default_container_layout_manager.h"
+#include "ui/aura_shell/desktop_event_filter.h"
 #include "ui/aura_shell/desktop_layout_manager.h"
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/shelf_layout_controller.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/aura_shell/shell_window_ids.h"
+#include "ui/aura_shell/stacking_controller.h"
 #include "ui/aura_shell/toplevel_layout_manager.h"
 #include "ui/aura_shell/toplevel_window_event_filter.h"
 #include "ui/aura_shell/workspace_controller.h"
@@ -42,13 +43,13 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
       internal::kShellWindowId_DesktopBackgroundContainer);
   containers->push_back(background_container);
 
-  aura::Window* default_container = new aura::ToplevelWindowContainer;
+  aura::Window* default_container = new aura::Window(NULL);
   default_container->SetEventFilter(
       new ToplevelWindowEventFilter(default_container));
   default_container->set_id(internal::kShellWindowId_DefaultContainer);
   containers->push_back(default_container);
 
-  aura::Window* always_on_top_container = new aura::ToplevelWindowContainer;
+  aura::Window* always_on_top_container = new aura::Window(NULL);
   always_on_top_container->SetEventFilter(
       new ToplevelWindowEventFilter(always_on_top_container));
   always_on_top_container->set_id(
@@ -83,7 +84,10 @@ Shell* Shell::instance_ = NULL;
 
 Shell::Shell()
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-  aura::Desktop::GetInstance()->SetStackingClient(this);
+  aura::Desktop::GetInstance()->SetEventFilter(
+      new internal::DesktopEventFilter);
+  aura::Desktop::GetInstance()->SetStackingClient(
+      new internal::StackingController);
 }
 
 Shell::~Shell() {
@@ -99,6 +103,12 @@ Shell* Shell::GetInstance() {
     instance_->Init();
   }
   return instance_;
+}
+
+// static
+void Shell::DeleteInstanceForTesting() {
+  delete instance_;
+  instance_ = NULL;
 }
 
 void Shell::Init() {
@@ -119,10 +129,9 @@ void Shell::Init() {
   desktop_window->SetLayoutManager(desktop_layout);
 
   desktop_layout->set_background_widget(internal::CreateDesktopBackground());
-  aura::ToplevelWindowContainer* toplevel_container =
-      GetContainer(internal::kShellWindowId_DefaultContainer)->
-          AsToplevelWindowContainer();
-  launcher_.reset(new Launcher(toplevel_container));
+  aura::Window* default_container =
+      GetContainer(internal::kShellWindowId_DefaultContainer);
+  launcher_.reset(new Launcher(default_container));
 
   shelf_layout_controller_.reset(new internal::ShelfLayoutController(
       launcher_->widget(), internal::CreateStatusArea()));
@@ -133,7 +142,7 @@ void Shell::Init() {
   } else {
     internal::ToplevelLayoutManager* toplevel_layout_manager =
         new internal::ToplevelLayoutManager();
-    toplevel_container->SetLayoutManager(toplevel_layout_manager);
+    default_container->SetLayoutManager(toplevel_layout_manager);
     toplevel_layout_manager->set_shelf(shelf_layout_controller_.get());
   }
 
@@ -174,35 +183,6 @@ void Shell::EnableWorkspaceManager() {
   default_container->SetLayoutManager(
       new internal::DefaultContainerLayoutManager(
           workspace_controller_->workspace_manager()));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Shell, aura::StackingClient implementation:
-
-void Shell::AddChildToDefaultParent(aura::Window* window) {
-  aura::Window* parent = NULL;
-  switch (window->type()) {
-    case aura::WINDOW_TYPE_NORMAL:
-    case aura::WINDOW_TYPE_POPUP:
-      parent = GetContainer(internal::kShellWindowId_DefaultContainer);
-      break;
-    case aura::WINDOW_TYPE_MENU:
-    case aura::WINDOW_TYPE_TOOLTIP:
-      parent = GetContainer(internal::kShellWindowId_MenusAndTooltipsContainer);
-      break;
-    default:
-      NOTREACHED() << "Window " << window->id()
-                   << " has unhandled type " << window->type();
-      break;
-  }
-  parent->AddChild(window);
-}
-
-aura::Window* Shell::GetTopmostWindowToActivate(aura::Window* ignore) const {
-  const aura::ToplevelWindowContainer* container =
-      GetContainer(internal::kShellWindowId_DefaultContainer)->
-          AsToplevelWindowContainer();
-  return container->GetTopmostWindowToActivate(ignore);
 }
 
 }  // namespace aura_shell
