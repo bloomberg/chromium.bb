@@ -14,7 +14,6 @@
 #include "native_client/src/untrusted/nacl/nacl_startup.h"
 
 void __libc_init_array(void);
-
 void __pthread_initialize(void);
 
 /*
