@@ -12,3 +12,5 @@ Cert2SPC test.cer test.spc
 pvk2pfx -pvk test.pvk test.cer (export the private key with the cert)
 copy unsigned.exe signed.exe
 signtool sign /f test.pfx /p password signed.exe
+
+wow_helper.exe: Signed Google Chrome binary from an official build.
