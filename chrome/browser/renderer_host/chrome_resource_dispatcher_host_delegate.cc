@@ -333,6 +333,16 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     }
   }
 
+  // We must send the content settings for the URL before sending response
+  // headers to the renderer.
+  const content::ResourceContext& resource_context = filter->resource_context();
+  ProfileIOData* io_data =
+      reinterpret_cast<ProfileIOData*>(resource_context.GetUserData(NULL));
+  HostContentSettingsMap* map = io_data->GetHostContentSettingsMap();
+  filter->Send(new ChromeViewMsg_SetContentSettingsForLoadingURL(
+      info->route_id(), request->url(),
+      map->GetContentSettings(request->url())));
+
   // See if the response contains the X-Auto-Login header.  If so, this was
   // a request for a login page, and the server is allowing the browser to
   // suggest auto-login, if available.

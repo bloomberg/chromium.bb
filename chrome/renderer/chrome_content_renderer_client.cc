@@ -217,6 +217,8 @@ void ChromeContentRendererClient::RenderViewCreated(
   ContentSettingsObserver* content_settings =
       new ContentSettingsObserver(render_view);
   if (chrome_observer_.get()) {
+    content_settings->SetDefaultContentSettings(
+        chrome_observer_->default_content_settings());
     content_settings->SetContentSettingRules(
         chrome_observer_->content_setting_rules());
   }

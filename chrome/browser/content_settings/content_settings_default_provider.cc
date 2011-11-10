@@ -109,7 +109,7 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
 
   // Read global defaults.
   ReadDefaultSettings(true);
-  if (default_content_settings_[CONTENT_SETTINGS_TYPE_COOKIES] ==
+  if (default_content_settings_.settings[CONTENT_SETTINGS_TYPE_COOKIES] ==
       CONTENT_SETTING_BLOCK) {
     UserMetrics::RecordAction(
         UserMetricsAction("CookieBlockingEnabledPerDefault"));
@@ -161,12 +161,12 @@ void DefaultProvider::SetContentSetting(
       base::AutoLock lock(lock_);
       if (setting == CONTENT_SETTING_DEFAULT ||
           setting == kDefaultSettings[content_type]) {
-        default_content_settings_[content_type] =
+        default_content_settings_.settings[content_type] =
             kDefaultSettings[content_type];
         default_settings_dictionary->RemoveWithoutPathExpansion(dictionary_path,
                                                                 NULL);
       } else {
-        default_content_settings_[content_type] = setting;
+        default_content_settings_.settings[content_type] = setting;
         default_settings_dictionary->SetWithoutPathExpansion(
             dictionary_path, Value::CreateIntegerValue(setting));
       }
@@ -194,7 +194,7 @@ RuleIterator* DefaultProvider::GetRuleIterator(
   base::AutoLock lock(lock_);
   if (resource_identifier.empty()) {
     return new DefaultRuleIterator(
-        default_content_settings_[content_type]);
+        default_content_settings_.settings[content_type]);
   } else {
     return new EmptyRuleIterator();
   }
@@ -254,29 +254,27 @@ void DefaultProvider::ReadDefaultSettings(bool overwrite) {
   const DictionaryValue* default_settings_dictionary =
       prefs_->GetDictionary(prefs::kDefaultContentSettings);
 
-  if (overwrite) {
-    for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
-      default_content_settings_[i] = CONTENT_SETTING_DEFAULT;
-  }
+  if (overwrite)
+    default_content_settings_ = ContentSettings();
 
   // Careful: The returned value could be NULL if the pref has never been set.
   if (default_settings_dictionary) {
     GetSettingsFromDictionary(default_settings_dictionary,
-                              default_content_settings_);
+                              &default_content_settings_);
   }
   ForceDefaultsToBeExplicit();
 }
 
 void DefaultProvider::ForceDefaultsToBeExplicit() {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    if (default_content_settings_[i] == CONTENT_SETTING_DEFAULT)
-      default_content_settings_[i] = kDefaultSettings[i];
+    if (default_content_settings_.settings[i] == CONTENT_SETTING_DEFAULT)
+      default_content_settings_.settings[i] = kDefaultSettings[i];
   }
 }
 
 void DefaultProvider::GetSettingsFromDictionary(
     const DictionaryValue* dictionary,
-    ContentSetting* settings) {
+    ContentSettings* settings) {
   for (DictionaryValue::key_iterator i(dictionary->begin_keys());
        i != dictionary->end_keys(); ++i) {
     const std::string& content_type(*i);
@@ -286,18 +284,19 @@ void DefaultProvider::GetSettingsFromDictionary(
         bool found = dictionary->GetIntegerWithoutPathExpansion(content_type,
                                                                 &setting);
         DCHECK(found);
-        settings[type] = IntToContentSetting(setting);
+        settings->settings[type] = IntToContentSetting(setting);
         break;
       }
     }
   }
   // Migrate obsolete cookie prompt mode/
-  if (settings[CONTENT_SETTINGS_TYPE_COOKIES] == CONTENT_SETTING_ASK)
-    settings[CONTENT_SETTINGS_TYPE_COOKIES] = CONTENT_SETTING_BLOCK;
+  if (settings->settings[CONTENT_SETTINGS_TYPE_COOKIES] ==
+      CONTENT_SETTING_ASK)
+    settings->settings[CONTENT_SETTINGS_TYPE_COOKIES] = CONTENT_SETTING_BLOCK;
 
-  settings[CONTENT_SETTINGS_TYPE_PLUGINS] =
+  settings->settings[CONTENT_SETTINGS_TYPE_PLUGINS] =
       ClickToPlayFixup(CONTENT_SETTINGS_TYPE_PLUGINS,
-                       settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
+                       settings->settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
 }
 
 void DefaultProvider::MigrateObsoleteNotificationPref() {

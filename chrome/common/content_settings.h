@@ -27,6 +27,14 @@ enum ContentSetting {
 // prefs off disk.
 ContentSetting IntToContentSetting(int content_setting);
 
+// Aggregates the permissions for the different content types.
+struct ContentSettings {
+  ContentSettings();
+  explicit ContentSettings(ContentSetting default_setting);
+
+  ContentSetting settings[CONTENT_SETTINGS_NUM_TYPES];
+};
+
 struct ContentSettingPatternSource {
   ContentSettingPatternSource(const ContentSettingsPattern& primary_pattern,
                               const ContentSettingsPattern& secondary_patttern,

@@ -163,6 +163,16 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
   return CONTENT_SETTING_DEFAULT;
 }
 
+ContentSettings HostContentSettingsMap::GetDefaultContentSettings() const {
+  ContentSettings output(CONTENT_SETTING_DEFAULT);
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+    if (!ContentTypeHasCompoundValue(ContentSettingsType(i)))
+      output.settings[i] = GetDefaultContentSetting(ContentSettingsType(i),
+                                                    NULL);
+  }
+  return output;
+}
+
 ContentSetting HostContentSettingsMap::GetContentSetting(
     const GURL& primary_url,
     const GURL& secondary_url,
@@ -171,6 +181,23 @@ ContentSetting HostContentSettingsMap::GetContentSetting(
   scoped_ptr<base::Value> value(GetWebsiteSetting(
       primary_url, secondary_url, content_type, resource_identifier, NULL));
   return content_settings::ValueToContentSetting(value.get());
+}
+
+ContentSettings HostContentSettingsMap::GetContentSettings(
+    const GURL& primary_url) const {
+  ContentSettings output;
+  // If we require a resource identifier, set the content settings to default,
+  // otherwise make the defaults explicit. Values for content type
+  // CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE can't be mapped to the type
+  // |ContentSetting|. So we ignore them here.
+  for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
+    ContentSettingsType type = ContentSettingsType(j);
+    if (!ContentTypeHasCompoundValue(type)) {
+      output.settings[j] = GetContentSetting(
+          primary_url, primary_url, ContentSettingsType(j), std::string());
+    }
+  }
+  return output;
 }
 
 void HostContentSettingsMap::GetSettingsForOneType(

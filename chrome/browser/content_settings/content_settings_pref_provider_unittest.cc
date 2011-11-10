@@ -53,6 +53,15 @@ void ExpectObsoleteGeolocationSetting(
 
 namespace content_settings {
 
+bool SettingsEqual(const ContentSettings& settings1,
+                   const ContentSettings& settings2) {
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+    if (settings1.settings[i] != settings2.settings[i])
+      return false;
+  }
+  return true;
+}
+
 class DeadlockCheckerThread : public base::PlatformThread::Delegate {
  public:
   explicit DeadlockCheckerThread(PrefProvider* provider)

@@ -57,7 +57,7 @@ class DefaultProvider : public ObservableProvider,
  private:
   // Sets the fields of |settings| based on the values in |dictionary|.
   void GetSettingsFromDictionary(const base::DictionaryValue* dictionary,
-                                 ContentSetting* settings);
+                                 ContentSettings* settings);
 
   // Forces the default settings to be explicitly set instead of themselves
   // being CONTENT_SETTING_DEFAULT.
@@ -71,7 +71,7 @@ class DefaultProvider : public ObservableProvider,
   void MigrateObsoleteGeolocationPref();
 
   // Copies of the pref data, so that we can read it on the IO thread.
-  ContentSetting default_content_settings_[CONTENT_SETTINGS_NUM_TYPES];
+  ContentSettings default_content_settings_;
 
   PrefService* prefs_;
 

@@ -431,6 +431,15 @@ void TabSpecificContentSettings::DidNavigateMainFramePostCommit(
   }
 }
 
+void TabSpecificContentSettings::RenderViewCreated(
+    RenderViewHost* render_view_host) {
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents()->browser_context());
+  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+  render_view_host->Send(new ChromeViewMsg_SetDefaultContentSettings(
+      map->GetDefaultContentSettings()));
+}
+
 void TabSpecificContentSettings::DidStartProvisionalLoadForFrame(
     int64 frame_id,
     bool is_main_frame,
@@ -477,9 +486,13 @@ void TabSpecificContentSettings::Observe(
       settings_details.ptr()->primary_pattern().Matches(entry_url)) {
     Profile* profile =
         Profile::FromBrowserContext(tab_contents()->browser_context());
+    HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+    Send(new ChromeViewMsg_SetDefaultContentSettings(
+        map->GetDefaultContentSettings()));
+    Send(new ChromeViewMsg_SetContentSettingsForCurrentURL(
+        entry_url, map->GetContentSettings(entry_url)));
     RendererContentSettingRules rules;
-    GetRendererContentSettingRules(profile->GetHostContentSettingsMap(),
-                                   &rules);
+    GetRendererContentSettingRules(map, &rules);
     Send(new ChromeViewMsg_SetContentSettingRules(rules));
   }
 }

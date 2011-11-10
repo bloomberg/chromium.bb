@@ -27,11 +27,21 @@ class ContentSettingsObserver
   explicit ContentSettingsObserver(content::RenderView* render_view);
   virtual ~ContentSettingsObserver();
 
+  // Sets the content settings that back allowScripts() and allowPlugins().
+  void SetContentSettings(const ContentSettings& settings);
+
+  // Sets the default content settings that back allowScripts() and
+  // allowPlugins().
+  void SetDefaultContentSettings(const ContentSettings* settings);
+
   // Sets the content setting rules which back |AllowImage()|, |AllowScript()|,
   // and |AllowScriptFromSource()|. |content_setting_rules| must outlive this
   // |ContentSettingsObserver|.
   void SetContentSettingRules(
       const RendererContentSettingRules* content_setting_rules);
+
+  // Returns the setting for the given type.
+  ContentSetting GetContentSetting(ContentSettingsType type);
 
   bool plugins_temporarily_allowed() {
     return plugins_temporarily_allowed_;
@@ -71,10 +81,28 @@ class ContentSettingsObserver
                                         bool is_new_navigation);
 
   // Message handlers.
+  void OnSetContentSettingsForLoadingURL(
+      const GURL& url,
+      const ContentSettings& content_settings);
   void OnLoadBlockedPlugins();
+
+  // Helper method that returns if the user wants to block content of type
+  // |content_type|.
+  bool AllowContentType(ContentSettingsType settings_type);
 
   // Resets the |content_blocked_| array.
   void ClearBlockedContentSettings();
+
+  typedef std::map<GURL, ContentSettings> HostContentSettings;
+  HostContentSettings host_content_settings_;
+
+  // A pointer to the most up-to-date view of the default content
+  // settings. Normally, they are owned by |ChromeRenderProcessObserver|. In the
+  // tests they are owned by the caller of |SetDefaultContentSettings|.
+  const ContentSettings* default_content_settings_;
+
+  // Stores if loading of scripts and plugins is allowed.
+  ContentSettings current_content_settings_;
 
   // A pointer to content setting rules stored by the renderer. Normally, the
   // |RendererContentSettingRules| object is owned by

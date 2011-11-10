@@ -149,7 +149,14 @@ TEST_F(ChromeRenderViewTest, PluginsTemporarilyAllowed) {
   // Load some HTML.
   LoadHTML("<html>Foo</html>");
 
+  // Block plugins.
+  ContentSettings settings;
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
+    settings.settings[i] = CONTENT_SETTING_ALLOW;
+  settings.settings[CONTENT_SETTINGS_TYPE_PLUGINS] = CONTENT_SETTING_BLOCK;
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
+  observer->SetContentSettings(settings);
+  observer->SetDefaultContentSettings(&settings);
   EXPECT_FALSE(observer->plugins_temporarily_allowed());
 
   // Temporarily allow plugins.

@@ -6,6 +6,26 @@
 
 namespace IPC {
 
+void ParamTraits<ContentSettings>::Write(
+    Message* m, const ContentSettings& settings) {
+  for (size_t i = 0; i < arraysize(settings.settings); ++i)
+    WriteParam(m, settings.settings[i]);
+}
+
+bool ParamTraits<ContentSettings>::Read(
+    const Message* m, void** iter, ContentSettings* r) {
+  for (size_t i = 0; i < arraysize(r->settings); ++i) {
+    if (!ReadParam(m, iter, &r->settings[i]))
+      return false;
+  }
+  return true;
+}
+
+void ParamTraits<ContentSettings>::Log(
+    const ContentSettings& p, std::string* l) {
+  l->append("<ContentSettings>");
+}
+
 void ParamTraits<ContentSettingsPattern>::Write(
     Message* m, const ContentSettingsPattern& pattern) {
   pattern.WriteToMessage(m);

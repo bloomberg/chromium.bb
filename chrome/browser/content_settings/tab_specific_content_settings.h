@@ -163,6 +163,7 @@ class TabSpecificContentSettings : public TabContentsObserver,
   virtual void DidNavigateMainFramePostCommit(
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
       int64 frame_id,
       bool is_main_frame,
