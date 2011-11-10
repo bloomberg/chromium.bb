@@ -190,8 +190,8 @@ class Builder(object):
       bin_name = self.GetBinName('g++')
       extra = []
     else:
-      if self.verbose:
-        print 'Skipping unknown type %s.' % ext
+      if self.verbose and ext != '.h':
+        print 'Skipping unknown type %s for %s.' % (ext, src)
       return None
 
     if self.verbose:
