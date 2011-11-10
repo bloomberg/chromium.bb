@@ -73,13 +73,13 @@ CONFORMANCE_TEST(conformance_more_functions_isTests,
   "conformance/more/functions/isTests.html");
 CONFORMANCE_TEST(conformance_more_functions_readPixels,
   "conformance/more/functions/readPixels.html");
-CONFORMANCE_TEST(conformance_more_functions_readPixelsBadArgs,
+CONFORMANCE_TEST(FAILS_conformance_more_functions_readPixelsBadArgs,
   "conformance/more/functions/readPixelsBadArgs.html");
 CONFORMANCE_TEST(conformance_more_functions_texImage2D,
   "conformance/more/functions/texImage2D.html");
 CONFORMANCE_TEST(conformance_more_functions_texImage2DBadArgs,
   "conformance/more/functions/texImage2DBadArgs.html");
-CONFORMANCE_TEST(conformance_more_functions_texImage2DHTML,
+CONFORMANCE_TEST(FAILS_conformance_more_functions_texImage2DHTML,
   "conformance/more/functions/texImage2DHTML.html");
 CONFORMANCE_TEST(conformance_more_functions_texImage2DHTMLBadArgs,
   "conformance/more/functions/texImage2DHTMLBadArgs.html");
@@ -87,7 +87,7 @@ CONFORMANCE_TEST(conformance_more_functions_texSubImage2D,
   "conformance/more/functions/texSubImage2D.html");
 CONFORMANCE_TEST(conformance_more_functions_texSubImage2DBadArgs,
   "conformance/more/functions/texSubImage2DBadArgs.html");
-CONFORMANCE_TEST(conformance_more_functions_texSubImage2DHTML,
+CONFORMANCE_TEST(FAILS_conformance_more_functions_texSubImage2DHTML,
   "conformance/more/functions/texSubImage2DHTML.html");
 CONFORMANCE_TEST(conformance_more_functions_texSubImage2DHTMLBadArgs,
   "conformance/more/functions/texSubImage2DHTMLBadArgs.html");
