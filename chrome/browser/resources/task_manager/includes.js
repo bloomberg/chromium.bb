@@ -7,9 +7,11 @@
 // reference the resources.
 
 var css = [
+  'chrome_shared.css',
   'list.css',
   'table.css',
   'menu.css',
+  'button.css',
 ];
 
 var script = [
