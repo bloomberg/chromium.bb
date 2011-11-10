@@ -218,6 +218,13 @@ class FileSystemOperation {
                                     FilePath* virtual_path,
                                     FileSystemFileUtil** file_util);
 
+  // Common internal routine for VerifyFileSystemPathFor{Read,Write}.
+  bool VerifyFileSystemPath(const GURL& path,
+                            GURL* root_url,
+                            FileSystemType* type,
+                            FilePath* virtual_path,
+                            FileSystemFileUtil** file_util);
+
   // Setup*Context*() functions will call the appropriate VerifyFileSystem
   // function and store the results to operation_context_ and
   // *_virtual_path_.

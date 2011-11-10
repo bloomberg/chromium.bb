@@ -743,42 +743,8 @@ void FileSystemOperation::OnFileOpenedForWrite(
 bool FileSystemOperation::VerifyFileSystemPathForRead(
     const GURL& path, GURL* origin_url, FileSystemType* type,
     FilePath* virtual_path, FileSystemFileUtil** file_util) {
-
-  // If we have no context, we just allow any operations, for testing.
-  // TODO(ericu): Revisit this hack for security.
-  if (!file_system_context()) {
-#ifdef OS_WIN
-    // On Windows, the path will look like /C:/foo/bar; we need to remove the
-    // leading slash to make it valid.  But if it's empty, we shouldn't do
-    // anything.
-    std::string temp = net::UnescapeURLComponent(path.path(),
-        UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
-    if (temp.size())
-      temp = temp.substr(1);
-    *virtual_path = FilePath(UTF8ToWide(temp)).NormalizeWindowsPathSeparators();
-#else
-    *virtual_path = FilePath(path.path());
-#endif
-    *type = operation_context_.src_type();
-    *origin_url = operation_context_.src_origin_url();
-    *file_util = NULL;
-    return true;
-  }
-
-  // We may want do more checks, but for now it just checks if the given
-  // URL is valid.
-  if (!CrackFileSystemURL(path, origin_url, type, virtual_path)) {
-    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_INVALID_URL);
+  if (!VerifyFileSystemPath(path, origin_url, type, virtual_path, file_util))
     return false;
-  }
-  if (!file_system_context()->path_manager()->IsAccessAllowed(
-      *origin_url, *type, *virtual_path)) {
-    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
-    return false;
-  }
-  DCHECK(file_util);
-  *file_util = file_system_context()->path_manager()->GetFileUtil(*type);
-  DCHECK(*file_util);
 
   // We notify this read access whether the read access succeeds or not.
   // This must be ok since this is used to let the QM's eviction logic know
@@ -798,37 +764,9 @@ bool FileSystemOperation::VerifyFileSystemPathForRead(
 bool FileSystemOperation::VerifyFileSystemPathForWrite(
     const GURL& path, bool create, GURL* origin_url, FileSystemType* type,
     FilePath* virtual_path, FileSystemFileUtil** file_util) {
-
-  // If we have no context, we just allow any operations, for testing.
-  // TODO(ericu): Revisit this hack for security.
-  if (!file_system_context()) {
-#ifdef OS_WIN
-    // On Windows, the path will look like /C:/foo/bar; we need to remove the
-    // leading slash to make it valid.  But if it's empty, we shouldn't do
-    // anything.
-    std::string temp = net::UnescapeURLComponent(path.path(),
-        UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
-    if (temp.size())
-      temp = temp.substr(1);
-    *virtual_path = FilePath(UTF8ToWide(temp)).NormalizeWindowsPathSeparators();
-#else
-    *virtual_path = FilePath(path.path());
-#endif
-    *type = operation_context_.dest_type();
-    *origin_url = operation_context_.dest_origin_url();
-    *file_util = NULL;
-    return true;
-  }
-
-  if (!CrackFileSystemURL(path, origin_url, type, virtual_path)) {
-    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_INVALID_URL);
+  if (!VerifyFileSystemPath(path, origin_url, type, virtual_path, file_util))
     return false;
-  }
-  if (!file_system_context()->path_manager()->IsAccessAllowed(
-      *origin_url, *type, *virtual_path)) {
-    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
-    return false;
-  }
+
   // Any write access is disallowed on the root path.
   if (virtual_path->value().length() == 0 ||
       virtual_path->DirName().value() == virtual_path->value()) {
@@ -837,6 +775,24 @@ bool FileSystemOperation::VerifyFileSystemPathForWrite(
   }
   if (create && file_system_context()->path_manager()->IsRestrictedFileName(
           *type, virtual_path->BaseName())) {
+    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
+    return false;
+  }
+
+  return true;
+}
+
+bool FileSystemOperation::VerifyFileSystemPath(
+    const GURL& path, GURL* origin_url, FileSystemType* type,
+    FilePath* virtual_path, FileSystemFileUtil** file_util) {
+  DCHECK(file_system_context());
+
+  if (!CrackFileSystemURL(path, origin_url, type, virtual_path)) {
+    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_INVALID_URL);
+    return false;
+  }
+  if (!file_system_context()->path_manager()->IsAccessAllowed(
+      *origin_url, *type, *virtual_path)) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
