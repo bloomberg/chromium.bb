@@ -80,15 +80,6 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
 
   Delegate* delegate_;
 
-#if defined(TOOLKIT_USES_GTK)
-  // On X11 we use gdk's pixbuf loader, which has to execute on the UI
-  // thread, so we only read the file on the background thread and parse it
-  // on the main thread.
-  void ParseIcon();
-  FilePath filename_;
-  std::string icon_data_;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(IconLoader);
 };
 

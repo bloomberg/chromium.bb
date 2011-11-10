@@ -8,7 +8,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-#if defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_USES_GTK)
 #include "base/mime_util.h"
 #endif
 
@@ -29,7 +29,7 @@ IconLoader::~IconLoader() {
 void IconLoader::Start() {
   target_message_loop_ = base::MessageLoopProxy::current();
 
-#if defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_USES_GTK)
   // This call must happen on the UI thread before we can start loading icons.
   mime_util::DetectGtkTheme();
 #endif

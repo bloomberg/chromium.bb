@@ -8,10 +8,6 @@
 #include "base/threading/thread_restrictions.h"
 
 IconGroupID IconManager::GetGroupIDFromFilepath(const FilePath& filepath) {
-#if defined(USE_AURA)
-  // TODO(davemoore) Implement this for aura.
-  return std::string();
-#else
   // It turns out the call to mime_util::GetFileMimeType below does IO, but
   // callers of GetGroupIDFromFilepath assume it does not do IO (the Windows
   // and Mac implementations do not). We should fix this by either not doing IO
@@ -20,5 +16,4 @@ IconGroupID IconManager::GetGroupIDFromFilepath(const FilePath& filepath) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   return mime_util::GetFileMimeType(filepath);
-#endif
 }
