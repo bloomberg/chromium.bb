@@ -200,14 +200,12 @@ bool ChromeDownloadManagerDelegate::GenerateFileHash() {
 #endif
 }
 
-void ChromeDownloadManagerDelegate::OnResponseCompleted(
-    DownloadItem* item,
-    const std::string& hash) {
+void ChromeDownloadManagerDelegate::OnResponseCompleted(DownloadItem* item) {
 #if defined(ENABLE_SAFE_BROWSING)
   // When hash is not available, it means either it is not calculated
   // or there is error while it is calculated. We will skip the download hash
   // check in that case.
-  if (hash.empty())
+  if (item->hash().empty())
     return;
 
   scoped_refptr<DownloadSBClient> sb_client =
@@ -217,7 +215,7 @@ void ChromeDownloadManagerDelegate::OnResponseCompleted(
                            profile_->GetPrefs()->GetBoolean(
                                prefs::kSafeBrowsingEnabled));
   sb_client->CheckDownloadHash(
-      hash,
+      item->hash(),
       base::Bind(&ChromeDownloadManagerDelegate::CheckDownloadHashDone,
                  base::Unretained(this)));
 #endif

@@ -681,7 +681,8 @@ void SavePackage::Finish() {
                  save_ids));
 
   if (download_) {
-    download_->OnAllDataSaved(all_save_items_count_);
+    download_->OnAllDataSaved(all_save_items_count_,
+                              DownloadItem::kEmptyFileHash);
     download_->MarkAsComplete();
     FinalizeDownloadEntry();
   }

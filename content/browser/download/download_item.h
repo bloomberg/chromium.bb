@@ -102,6 +102,8 @@ class CONTENT_EXPORT DownloadItem {
   // but is not yet in the table.
   static const int kUninitializedHandle;
 
+  static const char kEmptyFileHash[];
+
   // Interface that observers of a particular download must implement in order
   // to receive updates to the download's status.
   class CONTENT_EXPORT Observer {
@@ -183,8 +185,8 @@ class CONTENT_EXPORT DownloadItem {
   // DownloadManagerDelegate::ShouldOpenDownload.
   void DelayedDownloadOpened();
 
-  // Called when all data has been saved. Only has display effects.
-  void OnAllDataSaved(int64 size);
+  // Called when all data has been saved.
+  void OnAllDataSaved(int64 size, const std::string& final_hash);
 
   // Called when the downloaded file is removed.
   void OnDownloadedFileRemoved();
@@ -281,6 +283,7 @@ class CONTENT_EXPORT DownloadItem {
     total_bytes_ = total_bytes;
   }
   int64 received_bytes() const { return received_bytes_; }
+  const std::string& hash() const { return hash_; }
   int32 id() const { return download_id_.local(); }
   DownloadId global_id() const { return download_id_; }
   base::Time start_time() const { return start_time_; }
@@ -419,6 +422,11 @@ class CONTENT_EXPORT DownloadItem {
 
   // Current received bytes
   int64 received_bytes_;
+
+  // Sha256 hash of the content.  This might be empty either because
+  // the download isn't done yet or because the hash isn't needed
+  // (ChromeDownloadManagerDelegate::GenerateFileHash() returned false).
+  std::string hash_;
 
   // Last reason.
   InterruptReason last_reason_;

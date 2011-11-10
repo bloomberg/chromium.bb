@@ -119,6 +119,8 @@ DownloadItem::DangerType GetDangerType(bool dangerous_file,
 // static
 const int DownloadItem::kUninitializedHandle = 0;
 
+const char DownloadItem::kEmptyFileHash[] = "";
+
 // Constructor for reading from the history service.
 DownloadItem::DownloadItem(DownloadManager* download_manager,
                            const DownloadPersistentStoreInfo& info)
@@ -382,13 +384,14 @@ void DownloadItem::DelayedDownloadOpened() {
   Completed();
 }
 
-void DownloadItem::OnAllDataSaved(int64 size) {
+void DownloadItem::OnAllDataSaved(int64 size, const std::string& final_hash) {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DCHECK(!all_data_saved_);
   all_data_saved_ = true;
   UpdateSize(size);
+  hash_ = final_hash;
 }
 
 void DownloadItem::OnDownloadedFileRemoved() {

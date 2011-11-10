@@ -186,6 +186,9 @@ net::Error RenameFileAndResetSecurityDescriptor(
 
 }  // namespace
 
+// This will initialize the entire array to zero.
+const unsigned char BaseFile::kEmptySha256Hash[] = { 0 };
+
 BaseFile::BaseFile(const FilePath& full_path,
                    const GURL& source_url,
                    const GURL& referrer_url,
@@ -200,7 +203,7 @@ BaseFile::BaseFile(const FilePath& full_path,
       calculate_hash_(false),
       detached_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  memset(sha256_hash_, 0, sizeof(sha256_hash_));
+  memcpy(sha256_hash_, kEmptySha256Hash, kSha256HashLen);
   if (file_stream_.get())
     file_stream_->EnableErrorStatistics();
 }
@@ -382,11 +385,14 @@ void BaseFile::Finish() {
 
 bool BaseFile::GetSha256Hash(std::string* hash) {
   DCHECK(!detached_);
-  if (!calculate_hash_ || in_progress())
-    return false;
   hash->assign(reinterpret_cast<const char*>(sha256_hash_),
                sizeof(sha256_hash_));
-  return true;
+  return (calculate_hash_ && !in_progress());
+}
+
+bool BaseFile::IsEmptySha256Hash(const std::string& hash) {
+  return (hash.size() == kSha256HashLen &&
+          0 == memcmp(hash.data(), kEmptySha256Hash, sizeof(kSha256HashLen)));
 }
 
 void BaseFile::AnnotateWithSourceInformation() {

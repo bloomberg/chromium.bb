@@ -164,9 +164,7 @@ bool ShellDownloadManagerDelegate::GenerateFileHash() {
   return false;
 }
 
-void ShellDownloadManagerDelegate::OnResponseCompleted(
-    DownloadItem* item,
-    const std::string& hash) {
+void ShellDownloadManagerDelegate::OnResponseCompleted(DownloadItem* item) {
 }
 
 void ShellDownloadManagerDelegate::AddItemToPersistentStore(

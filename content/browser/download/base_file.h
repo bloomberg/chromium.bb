@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/power_save_blocker.h"
@@ -67,6 +68,11 @@ class CONTENT_EXPORT BaseFile {
   // Returns true if digest is successfully calculated.
   virtual bool GetSha256Hash(std::string* hash);
 
+  // Returns true if the given hash is considered empty.  An empty hash is
+  // a string of size kSha256HashLen that contains only zeros (initial value
+  // for the hash).
+  static bool IsEmptySha256Hash(const std::string& hash);
+
   virtual std::string DebugString() const;
 
  protected:
@@ -81,8 +87,10 @@ class CONTENT_EXPORT BaseFile {
  private:
   friend class BaseFileTest;
   friend class DownloadFileWithMockStream;
+  FRIEND_TEST_ALL_PREFIXES(BaseFileTest, IsEmptySha256Hash);
 
   static const size_t kSha256HashLen = 32;
+  static const unsigned char kEmptySha256Hash[kSha256HashLen];
 
   // Source URL for the file being downloaded.
   GURL source_url_;

@@ -57,8 +57,7 @@ bool MockDownloadManagerDelegate::GenerateFileHash() {
   return false;
 }
 
-void MockDownloadManagerDelegate::OnResponseCompleted(DownloadItem* item,
-                                                      const std::string& hash) {
+void MockDownloadManagerDelegate::OnResponseCompleted(DownloadItem* item) {
 }
 
 void MockDownloadManagerDelegate::AddItemToPersistentStore(DownloadItem* item) {

@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/download/base_file.h"
 #include "content/browser/download/download_buffer.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
@@ -214,7 +215,7 @@ void DownloadFileManager::OnResponseCompleted(
   }
 
   std::string hash;
-  if (!download_file->GetSha256Hash(&hash))
+  if (!download_file->GetSha256Hash(&hash) || BaseFile::IsEmptySha256Hash(hash))
     hash.clear();
 
   if (reason == DOWNLOAD_INTERRUPT_REASON_NONE) {

@@ -30,6 +30,8 @@ const int kTestDataLength2 = arraysize(kTestData2) - 1;
 const int kTestDataLength3 = arraysize(kTestData3) - 1;
 const int kTestDataLength4 = arraysize(kTestData4) - 1;
 
+}  // namespace
+
 class BaseFileTest : public testing::Test {
  public:
   BaseFileTest()
@@ -403,4 +405,10 @@ TEST_F(BaseFileTest, ReadonlyBaseFile) {
   expect_file_survives_ = true;
 }
 
-}  // namespace
+TEST_F(BaseFileTest, IsEmptySha256Hash) {
+  std::string empty(BaseFile::kSha256HashLen, '\x00');
+  EXPECT_TRUE(BaseFile::IsEmptySha256Hash(empty));
+  std::string not_empty(BaseFile::kSha256HashLen, '\x01');
+  EXPECT_FALSE(BaseFile::IsEmptySha256Hash(not_empty));
+  EXPECT_FALSE(BaseFile::IsEmptySha256Hash(""));
+}
