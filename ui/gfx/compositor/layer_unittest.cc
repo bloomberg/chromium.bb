@@ -757,6 +757,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_DrawPixels) {
 
   SkBitmap bitmap;
   GetCompositor()->ReadPixels(&bitmap);
+  ASSERT_FALSE(bitmap.empty());
 
   SkAutoLockPixels lock(bitmap);
   bool is_all_red = true;
