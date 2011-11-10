@@ -16,6 +16,7 @@
       'nexe_arch.cc',
       'plugin.cc',
       'pnacl_coordinator.cc',
+      'pnacl_resources.cc',
       'pnacl_srpc_lib.cc',
       'scriptable_handle.cc',
       'service_runtime.cc',

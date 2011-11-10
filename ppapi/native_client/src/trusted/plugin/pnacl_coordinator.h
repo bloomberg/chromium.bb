@@ -18,6 +18,7 @@
 #include "native_client/src/trusted/plugin/delayed_callback.h"
 #include "native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
+#include "native_client/src/trusted/plugin/pnacl_resources.h"
 
 #include "ppapi/cpp/completion_callback.h"
 
@@ -27,43 +28,6 @@ namespace plugin {
 
 class Plugin;
 class PnaclCoordinator;
-class PnaclResources;
-
-class PnaclResources {
- public:
-  PnaclResources(Plugin* plugin)
-      : plugin_(plugin),
-        llc_desc_(kNaClSrpcInvalidImcDesc),
-        ld_desc_(kNaClSrpcInvalidImcDesc) { }
-
-  ~PnaclResources() {
-    for (std::map<nacl::string, nacl::DescWrapper*>::iterator
-             i = resource_wrappers_.begin(), e = resource_wrappers_.end();
-         i != e;
-         ++i) {
-      delete i->second;
-    }
-    resource_wrappers_.clear();
-  }
-
-  // The file descriptor for the llc nexe.
-  NaClSrpcImcDescType llc_desc() const { return llc_desc_; }
-  void set_llc_desc(NaClSrpcImcDescType llc_desc) { llc_desc_ = llc_desc; }
-  // The file descriptor for the ld nexe.
-  NaClSrpcImcDescType ld_desc() const { return ld_desc_; }
-  void set_ld_desc(NaClSrpcImcDescType ld_desc) { ld_desc_ = ld_desc; }
-
-  NaClSrpcImcDescType DescForUrl(const nacl::string& url) {
-    return resource_wrappers_[url]->desc();
-  }
-  void AddFDForUrl(const nacl::string& url, int32_t fd);
-
- private:
-  Plugin* plugin_;
-  NaClSrpcImcDescType llc_desc_;
-  NaClSrpcImcDescType ld_desc_;
-  std::map<nacl::string, nacl::DescWrapper*> resource_wrappers_;
-};
 
 struct PnaclTranslationUnit {
   PnaclTranslationUnit(PnaclCoordinator* coord)
@@ -136,102 +100,50 @@ class PnaclCoordinator {
     return translated_fd_.release();
   }
 
-  // Accessors for use by helper threads.
-  Plugin* plugin() const { return plugin_; }
-  NaClSubprocess* llc_subprocess() const { return llc_subprocess_; }
-  NaClSubprocess* ld_subprocess() const { return ld_subprocess_; }
-  bool SubprocessesShouldDie() {
-    NaClXMutexLock(&subprocess_mu_);
-    bool retval =  subprocesses_should_die_;
-    NaClXMutexUnlock(&subprocess_mu_);
-    return retval;
-  }
-  void SetSubprocessesShouldDie(bool subprocesses_should_die) {
-    NaClXMutexLock(&subprocess_mu_);
-    subprocesses_should_die_ = subprocesses_should_die;
-    NaClXMutexUnlock(&subprocess_mu_);
-  }
-  PnaclResources* resources() const { return resources_.get(); }
-
- protected:
-
-  // Delay a callback until |num_dependencies| are met.
-  DelayedCallback* MakeDelayedCallback(pp::CompletionCallback cb,
-                                       uint32_t num_dependencies);
-
-  // Helper functions for generating callbacks that will be run when a
-  // download of |url| has completed. The generated callback will
-  // run |handler|. The |handler| itself is given a pp_error code,
-  // the url of the download, and another callback in the
-  // form of the supplied |delayed_callback|.
-  void AddDownloadToDelayedCallback(
-      void (PnaclCoordinator::*handler)(int32_t,
-                                        const nacl::string&,
-                                        DelayedCallback*),
-      DelayedCallback* delayed_callback,
-      const nacl::string& url,
-      std::vector<url_callback_pair>& queue);
-  void AddDownloadToDelayedCallback(
-      void (PnaclCoordinator::*handler)(int32_t,
-                                        const nacl::string&,
-                                        PnaclTranslationUnit*,
-                                        DelayedCallback*),
-      DelayedCallback* delayed_callback,
-      const nacl::string& url,
-      PnaclTranslationUnit* translation_unit,
-      std::vector<url_callback_pair>& queue);
-
-  bool ScheduleDownload(const nacl::string& url,
-                        const pp::CompletionCallback& cb);
-
-  // Callbacks for when various files, etc. have been downloaded.
-  void PexeReady(int32_t pp_error,
-                 const nacl::string& url,
-                 PnaclTranslationUnit* translation_unit,
-                 DelayedCallback* delayed_callback);
-  void LLCReady(int32_t pp_error,
-                const nacl::string& url,
-                DelayedCallback* delayed_callback);
-  void LDReady(int32_t pp_error,
-               const nacl::string& url,
-               DelayedCallback* delayed_callback);
-  void LinkResourceReady(int32_t pp_error,
-                         const nacl::string& url,
-                         DelayedCallback* delayed_callback);
-
   int32_t GetLoadedFileDesc(int32_t pp_error,
                             const nacl::string& url,
                             const nacl::string& component);
 
-  // Helper for starting helper nexes after they are downloaded.
-  NaClSubprocessId HelperNexeDidLoad(int32_t fd, ErrorInfo* error_info);
-
-  // Callbacks for compute-based translation steps.
-  void RunTranslate(int32_t pp_error,
-                    PnaclTranslationUnit* translation_unit,
-                    DelayedCallback* delayed_callback);
-  void RunTranslateDidFinish(int32_t pp_error,
-                             PnaclTranslationUnit* translation_unit,
-                             DelayedCallback* delayed_callback);
-  void RunLink(int32_t pp_error, PnaclTranslationUnit* translation_unit);
-  void RunLinkDidFinish(int32_t pp_error,
-                        PnaclTranslationUnit* translation_unit);
-
-  // Pnacl translation completed normally.
-  void PnaclDidFinish(int32_t pp_error, PnaclTranslationUnit* translation_unit);
-
   // Run when faced with a PPAPI error condition. It brings control back to the
   // plugin by invoking the |translate_notify_callback_|.
   void PnaclPpapiError(int32_t pp_error);
-
   // Run |translate_notify_callback_| with an error condition that is not
   // PPAPI specific.
   void PnaclNonPpapiError();
-
   // Wrapper for Plugin ReportLoadAbort.
   void ReportLoadAbort();
   // Wrapper for Plugin ReportLoadError.
   void ReportLoadError(const ErrorInfo& error);
+
+
+
+  // Accessors for use by helper threads.
+  Plugin* plugin() const { return plugin_; }
+  nacl::string llc_url() const { return llc_url_; }
+  NaClSubprocess* llc_subprocess() const { return llc_subprocess_; }
+  bool StartLlcSubProcess();
+  nacl::string ld_url() const { return ld_url_; }
+  NaClSubprocess* ld_subprocess() const { return ld_subprocess_; }
+  bool StartLdSubProcess();
+  bool SubprocessesShouldDie();
+  void SetSubprocessesShouldDie(bool subprocesses_should_die);
+  PnaclResources* resources() const { return resources_.get(); }
+
+ protected:
+
+  // Callbacks for when various files, etc. have been downloaded.
+  void ResourcesDidLoad(int32_t pp_error,
+                        const nacl::string& url,
+                        PnaclTranslationUnit* translation_unit);
+
+  // Callbacks for compute-based translation steps.
+  void RunTranslate(int32_t pp_error,
+                    const nacl::string& url,
+                    PnaclTranslationUnit* translation_unit);
+  void RunLink(int32_t pp_error, PnaclTranslationUnit* translation_unit);
+
+  // Pnacl translation completed normally.
+  void PnaclDidFinish(int32_t pp_error, PnaclTranslationUnit* translation_unit);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclCoordinator);
@@ -240,12 +152,9 @@ class PnaclCoordinator {
   pp::CompletionCallback translate_notify_callback_;
   pp::CompletionCallbackFactory<PnaclCoordinator> callback_factory_;
 
-  // State for a single translation.
-  // TODO(jvoung): see if we can manage this state better, especially when we
-  // start having to translate multiple bitcode files for the same application
-  // (for DSOs).
-
-  std::set<DelayedCallback*> delayed_callbacks;
+  // URLs used to lookup downloaded resources.
+  nacl::string llc_url_;
+  nacl::string ld_url_;
 
   // Helper subprocesses loaded by the plugin (deleted by the plugin).
   // We may want to do cleanup ourselves when we are in the
