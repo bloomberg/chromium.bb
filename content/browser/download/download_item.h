@@ -374,7 +374,8 @@ class CONTENT_EXPORT DownloadItem {
   DownloadStateInfo state_info_;
 
   // The handle to the request information.  Used for operations outside the
-  // download system.
+  // download system.  May be null if the download item isn't associated
+  // with a request (e.g. created from persistent store).
   scoped_ptr<DownloadRequestHandleInterface> request_handle_;
 
   // Download ID assigned by DownloadResourceHandler.

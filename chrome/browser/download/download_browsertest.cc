@@ -1546,3 +1546,135 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxLargeTheme) {
       browser()->profile()->GetExtensionService();
   ASSERT_TRUE(extension_service->GetExtensionById(kLargeThemeCrxId, false));
 }
+
+// Sort download items by db_handle.
+static bool DownloadItemSorter(DownloadItem* d1, DownloadItem* d2) {
+  return d1->db_handle() < d2->db_handle();
+}
+
+// Confirm that searching through the history works properly
+IN_PROC_BROWSER_TEST_F(DownloadTest, SearchDownloads) {
+  ASSERT_TRUE(InitialSetup(false));
+
+  // Downloads to populate history with.
+  base::Time current(base::Time::Now());
+  DownloadPersistentStoreInfo population_entries[] = {
+    DownloadPersistentStoreInfo(
+        FilePath(FILE_PATH_LITERAL("/path/to/file")),
+        GURL("http://www.google.com/fantasy_download"),
+        GURL(""),
+        current - base::TimeDelta::FromMinutes(5),
+        current,
+        128,
+        128,
+        DownloadItem::COMPLETE,
+        1,
+        false),
+    DownloadPersistentStoreInfo(
+        FilePath(FILE_PATH_LITERAL("/path/to/another_file")),
+        GURL("http://www.google.com/reality_download"),
+        GURL(""),
+        current - base::TimeDelta::FromMinutes(10),
+        current,
+        256,
+        256,
+        DownloadItem::COMPLETE,
+        2,
+        false),
+    DownloadPersistentStoreInfo(
+        FilePath(FILE_PATH_LITERAL("/different_path/to/another_file")),
+        GURL("http://www.izzle.com/not_really_a_download"),
+        GURL(""),
+        current - base::TimeDelta::FromMinutes(15),
+        current,
+        512,
+        512,
+        DownloadItem::COMPLETE,
+        3,
+        true)
+  };
+  std::vector<DownloadPersistentStoreInfo> entries(
+      population_entries, population_entries + arraysize(population_entries));
+
+  // Populate the manager.
+  DownloadManager* manager = DownloadManagerForBrowser(browser());
+  manager->OnPersistentStoreQueryComplete(&entries);
+
+  // Do some searches and check the results.
+  std::vector<DownloadItem*> search_results;
+
+  manager->SearchDownloads(string16(), &search_results);
+  ASSERT_EQ(3u, search_results.size());
+  std::sort(search_results.begin(), search_results.end(),
+            DownloadItemSorter);
+  // We do a full check only once to protect against the data
+  // somehow getting scrambled on its way into the DownloadItems.
+  {
+    DownloadItem* d1 = search_results[0];
+    DownloadItem* d2 = search_results[1];
+    DownloadItem* d3 = search_results[2];
+    EXPECT_EQ(FilePath(FILE_PATH_LITERAL("/path/to/file")), d1->full_path());
+    EXPECT_EQ(GURL("http://www.google.com/fantasy_download"),
+              d1->original_url());
+    EXPECT_EQ(current - base::TimeDelta::FromMinutes(5),
+              d1->start_time());
+    EXPECT_EQ(current, d1->end_time());
+    EXPECT_EQ(128, d1->received_bytes());
+    EXPECT_EQ(128, d1->total_bytes());
+    EXPECT_EQ(DownloadItem::COMPLETE, d1->state());
+    EXPECT_EQ(1, d1->db_handle());
+    EXPECT_FALSE(d1->opened());
+
+    EXPECT_EQ(FilePath(FILE_PATH_LITERAL("/path/to/another_file")),
+              d2->full_path());
+    EXPECT_EQ(GURL("http://www.google.com/reality_download"),
+              d2->original_url());
+    EXPECT_EQ(current - base::TimeDelta::FromMinutes(10),
+              d2->start_time());
+    EXPECT_EQ(current, d2->end_time());
+    EXPECT_EQ(256, d2->received_bytes());
+    EXPECT_EQ(256, d2->total_bytes());
+    EXPECT_EQ(DownloadItem::COMPLETE, d2->state());
+    EXPECT_EQ(2, d2->db_handle());
+    EXPECT_FALSE(d2->opened());
+
+    EXPECT_EQ(FilePath(FILE_PATH_LITERAL("/different_path/to/another_file")),
+              d3->full_path());
+    EXPECT_EQ(GURL("http://www.izzle.com/not_really_a_download"),
+              d3->original_url());
+    EXPECT_EQ(current - base::TimeDelta::FromMinutes(15),
+              d3->start_time());
+    EXPECT_EQ(current, d3->end_time());
+    EXPECT_EQ(512, d3->received_bytes());
+    EXPECT_EQ(512, d3->total_bytes());
+    EXPECT_EQ(DownloadItem::COMPLETE, d3->state());
+    EXPECT_EQ(3, d3->db_handle());
+    EXPECT_TRUE(d3->opened());
+  }
+  search_results.clear();
+
+  string16 search_input;
+  manager->SearchDownloads(UTF8ToUTF16("www.google.com"), &search_results);
+  ASSERT_EQ(2u, search_results.size());
+  std::sort(search_results.begin(), search_results.end(),
+            DownloadItemSorter);
+  EXPECT_EQ(1, search_results[0]->db_handle());
+  EXPECT_EQ(2, search_results[1]->db_handle());
+  search_results.clear();
+
+  manager->SearchDownloads(UTF8ToUTF16("real"), &search_results);
+  ASSERT_EQ(2u, search_results.size());
+  std::sort(search_results.begin(), search_results.end(),
+            DownloadItemSorter);
+  EXPECT_EQ(2, search_results[0]->db_handle());
+  EXPECT_EQ(3, search_results[1]->db_handle());
+  search_results.clear();
+
+  manager->SearchDownloads(UTF8ToUTF16("another_file"), &search_results);
+  ASSERT_EQ(2u, search_results.size());
+  std::sort(search_results.begin(), search_results.end(),
+            DownloadItemSorter);
+  EXPECT_EQ(2, search_results[0]->db_handle());
+  EXPECT_EQ(3, search_results[1]->db_handle());
+  search_results.clear();
+}
