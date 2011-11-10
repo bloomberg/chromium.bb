@@ -46,7 +46,7 @@ class OmniboxViewViews : public views::View,
                    Profile* profile,
                    CommandUpdater* command_updater,
                    bool popup_window_mode,
-                   LocationBarView* location_bar);
+                   views::View* location_bar);
   virtual ~OmniboxViewViews();
 
   // Initialize, create the underlying views, etc;
@@ -185,7 +185,6 @@ class OmniboxViewViews : public views::View,
 
   // Was the delete key pressed with an empty selection at the end of the edit?
   bool delete_at_end_pressed_;
-  LocationBarView* location_bar_view_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };
