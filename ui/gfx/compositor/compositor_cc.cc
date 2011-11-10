@@ -181,6 +181,10 @@ void CompositorCC::ReadPixels(SkBitmap* bitmap) {
 void CompositorCC::animateAndLayout(double frameBeginTime) {
 }
 
+void CompositorCC::applyScrollAndScale(const WebKit::WebSize& scrollDelta,
+                                       float scaleFactor) {
+}
+
 void CompositorCC::applyScrollDelta(const WebKit::WebSize&) {
 }
 

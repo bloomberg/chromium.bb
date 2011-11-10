@@ -101,6 +101,8 @@ class COMPOSITOR_EXPORT CompositorCC
 
   // WebLayerTreeViewClient implementation.
   virtual void animateAndLayout(double frameBeginTime) OVERRIDE;
+  virtual void applyScrollAndScale(const WebKit::WebSize& scrollDelta,
+                                   float scaleFactor) OVERRIDE;
   virtual void applyScrollDelta(const WebKit::WebSize&) OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* createContext3D() OVERRIDE;
   virtual void didRebindGraphicsContext(bool success) OVERRIDE;
