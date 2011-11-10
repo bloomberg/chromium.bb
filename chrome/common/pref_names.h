@@ -225,7 +225,6 @@ extern const char kDeletePasswords[];
 extern const char kDeleteFormData[];
 extern const char kEnableSpellCheck[];
 extern const char kSpeechInputFilterProfanities[];
-extern const char kSpeechInputTrayNotificationShown[];
 extern const char kEnabledLabsExperiments[];
 extern const char kEnableAutoSpellCorrect[];
 extern const char kSavingBrowserHistoryDisabled[];

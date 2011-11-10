@@ -11,6 +11,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/extensions/speech_input/extension_speech_input_manager.h"
 #include "chrome/browser/plugin_prefs_factory.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/speech/speech_input_extension_manager.h"
 
 class Profile;
 
@@ -42,7 +42,7 @@ void AssertFactoriesBuilt() {
     BackgroundContentsServiceFactory::GetInstance();
     CloudPrintProxyServiceFactory::GetInstance();
     CookieSettings::Factory::GetInstance();
-    SpeechInputExtensionManager::InitializeFactory();
+    ExtensionSpeechInputManager::InitializeFactory();
     PersonalDataManagerFactory::GetInstance();
     PluginPrefsFactory::GetInstance();
     prerender::PrerenderManagerFactory::GetInstance();
