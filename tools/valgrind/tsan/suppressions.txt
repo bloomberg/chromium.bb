@@ -646,6 +646,7 @@
 {
    bug_103711d
    ThreadSanitizer:Race
+   ...
    fun:WebRTCAudioDeviceTest::OnMessageReceived
    ...
    fun:IPC::Channel::ChannelImpl::ProcessIncomingMessages
