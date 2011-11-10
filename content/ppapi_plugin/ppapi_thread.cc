@@ -297,9 +297,10 @@ bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
 
   handle->name = plugin_handle.name;
 #if defined(OS_POSIX)
-  // On POSIX, pass the renderer-side FD.
-  handle->socket = base::FileDescriptor(::dup(dispatcher->GetRendererFD()),
-                                        true);
+  // On POSIX, transfer ownership of the renderer-side (client) FD.
+  // This ensures this process will be notified when it is closed even if a
+  // connection is not established.
+  handle->socket = base::FileDescriptor(dispatcher->TakeRendererFD(), true);
 #endif
 
   // From here, the dispatcher will manage its own lifetime according to the

@@ -42,9 +42,9 @@ void ProxyChannel::OnChannelError() {
 }
 
 #if defined(OS_POSIX)
-int ProxyChannel::GetRendererFD() {
+int ProxyChannel::TakeRendererFD() {
   DCHECK(channel());
-  return channel()->GetClientFileDescriptor();
+  return channel()->TakeClientFileDescriptor();
 }
 #endif
 

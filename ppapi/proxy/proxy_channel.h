@@ -73,7 +73,7 @@ class PPAPI_PROXY_EXPORT ProxyChannel
   }
 
 #if defined(OS_POSIX)
-  int GetRendererFD();
+  int TakeRendererFD();
 #endif
 
  protected:
