@@ -728,9 +728,7 @@
         'GR_AGGRESSIVE_SHADER_OPTS=1',
         'SK_DISABLE_FAST_AA_STROKE_RECT',
         'SK_IGNORE_CF_OPTIMIZATION',
-        # Ninja workaround: use 16777216 instead of (16*1024*1024). There was a
-        # problem handling the parentheses, so just to be safe, use a literal.
-        'SK_DEFAULT_FONT_CACHE_LIMIT=16777216',
+        'SK_DEFAULT_FONT_CACHE_LIMIT=(16*1024*1024)',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
