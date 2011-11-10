@@ -89,7 +89,7 @@ ScoredHistoryMatch::~ScoredHistoryMatch() {}
 // Comparison function for sorting ScoredMatches by their scores.
 bool ScoredHistoryMatch::MatchScoreGreater(const ScoredHistoryMatch& m1,
                                            const ScoredHistoryMatch& m2) {
-  return m1.raw_score >= m2.raw_score;
+  return m1.raw_score > m2.raw_score;
 }
 
 // InMemoryURLIndex's Private Data ---------------------------------------------
