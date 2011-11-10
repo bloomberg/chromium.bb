@@ -411,7 +411,7 @@ TEST_F(WorkerTest, WorkerTerminate) {
   RunWorkerFastLayoutTest("worker-terminate.html");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN)
 // http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
 #define WorkerTimeout FLAKY_WorkerTimeout
 #endif
