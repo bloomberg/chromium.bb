@@ -50,8 +50,11 @@ struct evdev_input_device {
 
 static inline void
 evdev_process_key(struct evdev_input_device *device,
-                        struct input_event *e, int value, int time)
+                        struct input_event *e, int time)
 {
+	if (e->value == 2)
+		return;
+
 	switch (e->code) {
 	case BTN_TOOL_PEN:
 	case BTN_TOOL_RUBBER:
@@ -61,7 +64,7 @@ evdev_process_key(struct evdev_input_device *device,
 	case BTN_TOOL_FINGER:
 	case BTN_TOOL_MOUSE:
 	case BTN_TOOL_LENS:
-		device->tool = value ? e->code : 0;
+		device->tool = e->value ? e->code : 0;
 		if (device->is_touchpad)
 		{
 			device->reset_x_value = 1;
@@ -83,19 +86,19 @@ evdev_process_key(struct evdev_input_device *device,
 	case BTN_BACK:
 	case BTN_TASK:
 		notify_button(&device->master->base.input_device,
-			      time, e->code, value);
+			      time, e->code, e->value);
 		break;
 
 	default:
 		notify_key(&device->master->base.input_device,
-			   time, e->code, value);
+			   time, e->code, e->value);
 		break;
 	}
 }
 
 static inline void
 evdev_process_absolute_motion(struct evdev_input_device *device,
-			struct input_event *e, int value, int *x, int *y,
+			struct input_event *e, int *x, int *y,
 			int *absolute_event)
 {
 	const int screen_width = device->output->current->width;
@@ -104,12 +107,12 @@ evdev_process_absolute_motion(struct evdev_input_device *device,
 	switch (e->code) {
 	case ABS_X:
 		*absolute_event = device->tool;
-		*x = (value - device->min_x) * screen_width /
+		*x = (e->value - device->min_x) * screen_width /
 			(device->max_x - device->min_x) + device->output->x;
 		break;
 	case ABS_Y:
 		*absolute_event = device->tool;
-		*y = (value - device->min_y) * screen_height /
+		*y = (e->value - device->min_y) * screen_height /
 			(device->max_y - device->min_y) + device->output->y;
 		break;
 	}
@@ -117,46 +120,45 @@ evdev_process_absolute_motion(struct evdev_input_device *device,
 
 static inline void
 evdev_process_absolute_motion_touchpad(struct evdev_input_device *device,
-			struct input_event *e, int value, int *dx, int *dy)
+			struct input_event *e, int *dx, int *dy)
 {
 	/* FIXME: Make this configurable somehow. */
 	const int touchpad_speed = 700;
 
 	switch (e->code) {
 	case ABS_X:
-		value -= device->min_x;
+		e->value -= device->min_x;
 		if (device->reset_x_value)
 			device->reset_x_value = 0;
 		else {
-			*dx = (value - device->old_x_value) * touchpad_speed /
+			*dx = (e->value - device->old_x_value) * touchpad_speed /
 				(device->max_x - device->min_x);
 		}
-		device->old_x_value = value;
+		device->old_x_value = e->value;
 		break;
 	case ABS_Y:
-		value -= device->min_y;
+		e->value -= device->min_y;
 		if (device->reset_y_value)
 			device->reset_y_value = 0;
 		else {
-			*dy = (value - device->old_y_value) * touchpad_speed /
+			*dy = (e->value - device->old_y_value) * touchpad_speed /
 				/* maybe use x size here to have the same scale? */
 				(device->max_y - device->min_y);
 		}
-		device->old_y_value = value;
+		device->old_y_value = e->value;
 		break;
 	}
 }
 
 static inline void
-evdev_process_relative_motion(struct input_event *e, int value, int *dx,
-			int *dy)
+evdev_process_relative_motion(struct input_event *e, int *dx, int *dy)
 {
 	switch (e->code) {
 	case REL_X:
-		*dx += value;
+		*dx += e->value;
 		break;
 	case REL_Y:
-		*dy += value;
+		*dy += e->value;
 		break;
 	}
 }
@@ -167,7 +169,7 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	struct wlsc_compositor *ec;
 	struct evdev_input_device *device = data;
 	struct input_event ev[8], *e, *end;
-	int len, value, dx, dy, absolute_event;
+	int len, dx, dy, absolute_event;
 	int x, y;
 	uint32_t time;
 
@@ -191,26 +193,23 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	e = ev;
 	end = (void *) ev + len;
 	for (e = ev; e < end; e++) {
-		/* Get the signed value, earlier kernels had this as unsigned */
-		value = e->value;
 		time = e->time.tv_sec * 1000 + e->time.tv_usec / 1000;
 
 		switch (e->type) {
 		case EV_REL:
-			evdev_process_relative_motion(e, value, &dx, &dy);
+			evdev_process_relative_motion(e, &dx, &dy);
 			break;
 		case EV_ABS:
 			if (device->is_touchpad)
 				evdev_process_absolute_motion_touchpad(device,
-					e, value, &dx, &dy);
+					e, &dx, &dy);
 			else
-				evdev_process_absolute_motion(device, e, value,
+				evdev_process_absolute_motion(device, e,
 					&x, &y, &absolute_event);
 			break;
 		case EV_KEY:
-			if (value == 2)
-				break;
-			evdev_process_key(device, e, value, time);
+			evdev_process_key(device, e, time);
+			break;
 		}
 	}
 
