@@ -64,6 +64,12 @@ void ChromotingClient::Stop(const base::Closure& shutdown_task) {
     return;
   }
 
+  // Drop all pending packets.
+  while(!received_packets_.empty()) {
+    received_packets_.front().done.Run();
+    received_packets_.pop_front();
+  }
+
   connection_->Disconnect(base::Bind(&ChromotingClient::OnDisconnected,
                                      base::Unretained(this), shutdown_task));
 }
