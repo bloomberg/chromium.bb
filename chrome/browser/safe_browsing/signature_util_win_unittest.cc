@@ -27,6 +27,8 @@ TEST(SignatureUtilWinTest, CheckSignature) {
       .AppendASCII("safe_browsing")
       .AppendASCII("download_protection");
 
+  // signed.exe is signed with a self-signed certificate.  The certificate
+  // should be returned, but it is not trusted.
   scoped_refptr<SignatureUtil> signature_util(new SignatureUtil());
   ClientDownloadRequest_SignatureInfo signature_info;
   signature_util->CheckSignature(testdata_path.Append(L"signed.exe"),
@@ -38,16 +40,33 @@ TEST(SignatureUtilWinTest, CheckSignature) {
           signature_info.certificate_contents().size()));
   ASSERT_TRUE(cert.get());
   EXPECT_EQ("Joe's-Software-Emporium", cert->subject().common_name);
+  EXPECT_FALSE(signature_info.trusted());
 
+  // wow_helper.exe is signed using Google's signing certifiacte.
+  signature_info.Clear();
+  signature_util->CheckSignature(testdata_path.Append(L"wow_helper.exe"),
+                                 &signature_info);
+  EXPECT_TRUE(signature_info.has_certificate_contents());
+  cert = net::X509Certificate::CreateFromBytes(
+      signature_info.certificate_contents().data(),
+      signature_info.certificate_contents().size());
+  ASSERT_TRUE(cert.get());
+  EXPECT_EQ("Google Inc", cert->subject().common_name);
+  EXPECT_TRUE(signature_info.trusted());
+
+  // unsigned.exe has no signature information.
   signature_info.Clear();
   signature_util->CheckSignature(testdata_path.Append(L"unsigned.exe"),
                                  &signature_info);
   EXPECT_FALSE(signature_info.has_certificate_contents());
+  EXPECT_FALSE(signature_info.trusted());
 
+  // Test a file that doesn't exist.
   signature_info.Clear();
   signature_util->CheckSignature(testdata_path.Append(L"doesnotexist.exe"),
                                  &signature_info);
   EXPECT_FALSE(signature_info.has_certificate_contents());
+  EXPECT_FALSE(signature_info.trusted());
 }
 
 }  // namespace safe_browsing
