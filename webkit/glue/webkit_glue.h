@@ -174,7 +174,7 @@ base::StringPiece GetDataResource(int resource_id);
 ui::Clipboard* ClipboardGetClipboard();
 
 // Get a sequence number which uniquely identifies clipboard state.
-uint64 ClipboardGetSequenceNumber();
+uint64 ClipboardGetSequenceNumber(ui::Clipboard::Buffer buffer);
 
 // Tests whether the clipboard contains a certain format
 bool ClipboardIsFormatAvailable(const ui::Clipboard::FormatType& format,

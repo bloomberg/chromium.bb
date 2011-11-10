@@ -163,6 +163,13 @@ void Clipboard::WriteWebSmartPaste() {
   [pb setData:nil forType:format];
 }
 
+uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
+
+  NSPasteboard* pb = GetPasteboard();
+  return [pb changeCount];
+}
+
 bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
                                   Clipboard::Buffer buffer) const {
   DCHECK_EQ(buffer, BUFFER_STANDARD);
@@ -327,11 +334,6 @@ void Clipboard::ReadFiles(std::vector<FilePath>* files) const {
     std::string file = [[fileList objectAtIndex:i] UTF8String];
     files->push_back(FilePath(file));
   }
-}
-
-uint64 Clipboard::GetSequenceNumber() {
-  NSPasteboard* pb = GetPasteboard();
-  return [pb changeCount];
 }
 
 // static

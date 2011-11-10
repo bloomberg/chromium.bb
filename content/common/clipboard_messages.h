@@ -28,7 +28,8 @@ IPC_MESSAGE_CONTROL1(ClipboardHostMsg_WriteObjectsAsync,
 IPC_SYNC_MESSAGE_CONTROL2_0(ClipboardHostMsg_WriteObjectsSync,
                             ui::Clipboard::ObjectMap /* objects */,
                             base::SharedMemoryHandle /* bitmap handle */)
-IPC_SYNC_MESSAGE_CONTROL0_1(ClipboardHostMsg_GetSequenceNumber,
+IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_GetSequenceNumber,
+                            ui::Clipboard::Buffer /* buffer */,
                             uint64 /* result */)
 IPC_SYNC_MESSAGE_CONTROL2_1(ClipboardHostMsg_IsFormatAvailable,
                             std::string /* format */,

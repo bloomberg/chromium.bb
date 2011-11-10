@@ -342,6 +342,11 @@ void Clipboard::WriteToClipboard(unsigned int format, HANDLE handle) {
   }
 }
 
+uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  return ::GetClipboardSequenceNumber();
+}
+
 bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
                                   Clipboard::Buffer buffer) const {
   DCHECK_EQ(buffer, BUFFER_STANDARD);
@@ -632,10 +637,6 @@ void Clipboard::ReadData(const std::string& format, std::string* result) {
   result->assign(static_cast<const char*>(::GlobalLock(data)),
                  ::GlobalSize(data));
   ::GlobalUnlock(data);
-}
-
-uint64 Clipboard::GetSequenceNumber() {
-  return ::GetClipboardSequenceNumber();
 }
 
 // static

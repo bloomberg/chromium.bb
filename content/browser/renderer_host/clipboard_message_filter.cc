@@ -125,8 +125,9 @@ void ClipboardMessageFilter::OnWriteObjectsAsync(
       new WriteClipboardTask(long_living_objects));
 }
 
-void ClipboardMessageFilter::OnGetSequenceNumber(uint64* seq_num) {
-  *seq_num = GetClipboard()->GetSequenceNumber();
+void ClipboardMessageFilter::OnGetSequenceNumber(
+    ui::Clipboard::Buffer buffer, uint64* sequence_number) {
+  *sequence_number = GetClipboard()->GetSequenceNumber(buffer);
 }
 
 void ClipboardMessageFilter::OnReadAvailableTypes(

@@ -64,7 +64,15 @@ WebClipboardImpl::~WebClipboardImpl() {
 }
 
 uint64 WebClipboardImpl::getSequenceNumber() {
-  return ClipboardGetSequenceNumber();
+  return sequenceNumber(BufferStandard);
+}
+
+uint64 WebClipboardImpl::sequenceNumber(Buffer buffer) {
+  ui::Clipboard::Buffer buffer_type;
+  if (!ConvertBufferType(buffer, &buffer_type))
+    return 0;
+
+  return ClipboardGetSequenceNumber(buffer_type);
 }
 
 bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
@@ -218,8 +226,6 @@ bool WebClipboardImpl::ConvertBufferType(Buffer buffer,
     case BufferStandard:
       *result = ui::Clipboard::BUFFER_STANDARD;
       break;
-    case BufferDrag:
-      *result = ui::Clipboard::BUFFER_DRAG;
     case BufferSelection:
 #if defined(USE_X11)
       *result = ui::Clipboard::BUFFER_SELECTION;

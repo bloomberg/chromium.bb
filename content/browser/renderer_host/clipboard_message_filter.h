@@ -29,7 +29,8 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
   void OnWriteObjectsSync(const ui::Clipboard::ObjectMap& objects,
                           base::SharedMemoryHandle bitmap_handle);
 
-  void OnGetSequenceNumber(uint64* seq_num);
+  void OnGetSequenceNumber(const ui::Clipboard::Buffer buffer,
+                           uint64* sequence_number);
   void OnIsFormatAvailable(const ui::Clipboard::FormatType& format,
                            ui::Clipboard::Buffer buffer,
                            bool* result);

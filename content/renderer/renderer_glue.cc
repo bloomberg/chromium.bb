@@ -96,11 +96,12 @@ ui::Clipboard* ClipboardGetClipboard() {
   return NULL;
 }
 
-uint64 ClipboardGetSequenceNumber() {
-  uint64 seq_num = 0;
+uint64 ClipboardGetSequenceNumber(ui::Clipboard::Buffer buffer) {
+  uint64 sequence_number = 0;
   RenderThreadImpl::current()->Send(
-      new ClipboardHostMsg_GetSequenceNumber(&seq_num));
-  return seq_num;
+      new ClipboardHostMsg_GetSequenceNumber(buffer,
+                                             &sequence_number));
+  return sequence_number;
 }
 
 bool ClipboardIsFormatAvailable(const ui::Clipboard::FormatType& format,

@@ -89,7 +89,6 @@ class UI_EXPORT Clipboard {
   enum Buffer {
     BUFFER_STANDARD,
     BUFFER_SELECTION,
-    BUFFER_DRAG,
   };
 
   static bool IsValidBuffer(int32 buffer) {
@@ -100,8 +99,6 @@ class UI_EXPORT Clipboard {
       case BUFFER_SELECTION:
         return true;
 #endif
-      case BUFFER_DRAG:
-        return true;
     }
     return false;
   }
@@ -132,6 +129,11 @@ class UI_EXPORT Clipboard {
 #else  // !defined(OS_WIN) && !defined(OS_MACOSX)
   void DidWriteURL(const std::string& utf8_text);
 #endif
+
+  // Returns a sequence number which uniquely identifies clipboard state.
+  // This can be used to version the data on the clipboard and determine
+  // whether it has changed.
+  uint64 GetSequenceNumber(Buffer buffer);
 
   // Tests whether the clipboard contains a certain format
   bool IsFormatAvailable(const FormatType& format, Buffer buffer) const;
@@ -173,11 +175,6 @@ class UI_EXPORT Clipboard {
   // TODO(dcheng): Due to platform limitations on Windows, we should make sure
   // format is never controlled by the user.
   void ReadData(const std::string& format, std::string* result);
-
-  // Returns a sequence number which uniquely identifies clipboard state.
-  // This can be used to version the data on the clipboard and determine
-  // whether it has changed.
-  uint64 GetSequenceNumber();
 
   // Get format Identifiers for various types.
   static FormatType GetUrlFormatType();
