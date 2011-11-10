@@ -32,8 +32,6 @@
 #include "base/basictypes.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 
-class MessageLoop;
-
 namespace media_stream {
 
 class SettingsRequester;

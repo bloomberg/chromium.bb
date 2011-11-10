@@ -16,14 +16,12 @@
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
+struct Geoposition;
 class URLFetcher;
 
 namespace net {
 class URLRequestContextGetter;
 }
-
-struct Geoposition;
-struct Position;
 
 // Takes a set of device data and sends it to a server to get a position fix.
 // It performs formatting of the request and interpretation of the response.

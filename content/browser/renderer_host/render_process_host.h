@@ -18,21 +18,12 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"
 
+class GURL;
 struct ViewMsg_SwapOut_Params;
-
-namespace base {
-class SharedMemory;
-}
 
 namespace content {
 class BrowserContext;
 }
-
-namespace net {
-class URLRequestContextGetter;
-}
-
-class GURL;
 
 // Virtual interface that represents the browser side of the browser <->
 // renderer communication channel. There will generally be one

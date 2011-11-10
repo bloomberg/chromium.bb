@@ -6,7 +6,6 @@
 
 #include "base/string16.h"
 
-class GURL;
 class RenderViewHost;
 class TabContents;
 struct WebDropData;

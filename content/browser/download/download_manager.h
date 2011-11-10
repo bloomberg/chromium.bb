@@ -57,7 +57,6 @@ class DownloadIdFactory;
 class DownloadRequestHandle;
 class DownloadStatusUpdater;
 class GURL;
-class ResourceDispatcherHost;
 class TabContents;
 struct DownloadCreateInfo;
 struct DownloadSaveInfo;

@@ -15,11 +15,11 @@
 #include "content/common/content_export.h"
 #include "content/browser/worker_host/worker_service_observer.h"
 
+class DevToolsAgentHost;
+
 namespace IPC {
 class Message;
 }
-class DevToolsAgentHost;
-class WorkerDevToolsMessageFilter;
 
 // All methods are supposed to be called on the IO thread.
 class WorkerDevToolsManager : private WorkerServiceObserver {
@@ -38,6 +38,7 @@ class WorkerDevToolsManager : private WorkerServiceObserver {
   void SaveAgentRuntimeState(int worker_process_id,
                              int worker_route_id,
                              const std::string& state);
+
  private:
   friend struct DefaultSingletonTraits<WorkerDevToolsManager>;
   typedef std::pair<int, int> WorkerId;

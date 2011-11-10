@@ -11,10 +11,6 @@
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "net/base/ssl_info.h"
 
-namespace net {
-class X509Certificate;
-}
-
 // A CertError represents an error that occurred with the certificate in an
 // SSL session.  A CertError object exists both on the IO thread and on the UI
 // thread and allows us to cancel/continue a request it is associated with.

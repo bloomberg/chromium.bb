@@ -18,7 +18,6 @@
 #include "net/url_request/url_request.h"
 
 class DevToolsClientHost;
-class DevToolsHttpServer;
 class TabContents;
 
 namespace net {

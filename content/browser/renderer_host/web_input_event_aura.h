@@ -12,7 +12,6 @@ namespace aura {
 class KeyEvent;
 class MouseEvent;
 class TouchEvent;
-class Window;
 }
 
 namespace content {
@@ -26,7 +25,6 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEvent(aura::KeyEvent* event);
 // updated.
 WebKit::WebTouchPoint* UpdateWebTouchEvent(aura::TouchEvent* event,
                                            WebKit::WebTouchEvent* web_event);
-
 
 }
 

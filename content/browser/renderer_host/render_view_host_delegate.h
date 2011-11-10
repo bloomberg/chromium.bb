@@ -24,16 +24,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "webkit/glue/window_open_disposition.h"
 
-
 class BackgroundContents;
 class BookmarkNode;
 class GURL;
-class RenderProcessHost;
 class RenderViewHost;
 class SkBitmap;
 class TabContents;
 class WebKeyboardEvent;
-struct BookmarkNodeData;
 struct ContextMenuParams;
 struct NativeWebKeyboardEvent;
 struct ViewHostMsg_CreateWindow_Params;

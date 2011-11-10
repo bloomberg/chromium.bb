@@ -12,14 +12,8 @@
 #include "ui/gfx/native_widget_types.h"
 
 class GpuProcessHost;
-class GpuProcessHostUIShim;
 struct GPUCreateCommandBufferConfig;
-struct GPUInfo;
 class RenderWidgetHelper;
-
-namespace IPC {
-struct ChannelHandle;
-}
 
 // A message filter for messages from the renderer to the GpuProcessHost(UIShim)
 // in the browser. Such messages are typically destined for the GPU process,

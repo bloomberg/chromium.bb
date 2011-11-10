@@ -14,10 +14,6 @@ class RenderViewHostDelegate;
 class SessionStorageNamespace;
 class SiteInstance;
 
-namespace base {
-class WaitableEvent;
-}  // namespace base
-
 // A factory for creating RenderViewHosts. There is a global factory function
 // that can be installed for the purposes of testing to provide a specialized
 // RenderViewHost class.

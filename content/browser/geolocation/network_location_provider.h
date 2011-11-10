@@ -21,8 +21,6 @@
 #include "content/common/content_export.h"
 #include "content/common/geoposition.h"
 
-class URLFetcherProtectEntry;
-
 class NetworkLocationProvider
     : public LocationProviderBase,
       public RadioDataProvider::ListenerInterface,

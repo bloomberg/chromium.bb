@@ -26,14 +26,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/surface/transport_dib.h"
 
-namespace gfx {
-class Rect;
-class Size;
-}
-namespace IPC {
-class Message;
-}
-
 class BackingStore;
 class RenderProcessHost;
 class RenderWidgetHost;
@@ -41,8 +33,9 @@ class WebCursor;
 struct NativeWebKeyboardEvent;
 struct ViewHostMsg_AccessibilityNotification_Params;
 
-namespace webkit_glue {
-struct WebAccessibility;
+namespace gfx {
+class Rect;
+class Size;
 }
 
 namespace webkit {

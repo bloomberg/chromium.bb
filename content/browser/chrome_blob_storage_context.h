@@ -11,8 +11,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 
-class GURL;
-
 namespace webkit_blob {
 class BlobStorageController;
 }

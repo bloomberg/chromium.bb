@@ -13,17 +13,14 @@
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/common/content_export.h"
 
+class DevToolsAgentHost;
+class GURL;
+class RenderViewHost;
+class TabContents;
+
 namespace IPC {
 class Message;
 }
-
-class DevToolsAgentHost;
-class DevToolsNetLogObserver;
-class GURL;
-class IOThread;
-class PrefService;
-class RenderViewHost;
-class TabContents;
 
 // This class is a singleton that manages DevToolsClientHost instances and
 // routes messages between developer tools clients and agents.

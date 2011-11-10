@@ -15,14 +15,12 @@
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
+struct ViewHostMsg_CreateWorker_Params;
+class WorkerServiceObserver;
+
 namespace content {
 class ResourceContext;
 }  // namespace content
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-class WorkerServiceObserver;
-struct ViewHostMsg_CreateWorker_Params;
 
 // A singleton for managing HTML5 web workers.
 class CONTENT_EXPORT WorkerService {

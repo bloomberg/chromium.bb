@@ -15,7 +15,6 @@
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class DownloadIdFactory;
-class ExtensionInfoMap;
 class HostZoomMap;
 class MediaObserver;
 namespace fileapi {

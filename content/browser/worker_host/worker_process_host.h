@@ -7,6 +7,7 @@
 #pragma once
 
 #include <list>
+#include <utility>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -15,12 +16,10 @@
 #include "googleurl/src/gurl.h"
 
 class ResourceDispatcherHost;
+
 namespace content {
 class ResourceContext;
 }  // namespace content
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
 
 // The WorkerProcessHost is the interface that represents the browser side of
 // the browser <-> worker communication channel. There will be one
@@ -30,7 +29,6 @@ class URLRequestContextGetter;
 // BrowserContext.
 class WorkerProcessHost : public BrowserChildProcessHost {
  public:
-
   // Contains information about each worker instance, needed to forward messages
   // between the renderer and worker processes.
   class WorkerInstance {

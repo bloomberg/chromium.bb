@@ -72,7 +72,6 @@ class GURL;
 class SaveFile;
 class SavePackage;
 class ResourceDispatcherHost;
-class Task;
 
 namespace content {
 class ResourceContext;

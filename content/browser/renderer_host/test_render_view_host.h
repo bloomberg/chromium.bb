@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_TEST_TEST_RENDER_VIEW_HOST_H_
-#define CONTENT_BROWSER_RENDERER_HOST_TEST_TEST_RENDER_VIEW_HOST_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_TEST_RENDER_VIEW_HOST_H_
+#define CONTENT_BROWSER_RENDERER_HOST_TEST_RENDER_VIEW_HOST_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -28,7 +28,6 @@ class Rect;
 class NavigationController;
 class SiteInstance;
 class TestTabContents;
-struct WebMenuItem;
 struct ViewHostMsg_FrameNavigate_Params;
 
 // Utility function to initialize ViewHostMsg_NavigateParams_Params
@@ -340,4 +339,4 @@ class RenderViewHostTestHarness : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestHarness);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_TEST_TEST_RENDER_VIEW_HOST_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_TEST_RENDER_VIEW_HOST_H_

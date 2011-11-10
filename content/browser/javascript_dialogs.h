@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_JAVASCRIPT_DIALOG_DELEGATE_H_
-#define CONTENT_BROWSER_JAVASCRIPT_DIALOG_DELEGATE_H_
+#ifndef CONTENT_BROWSER_JAVASCRIPT_DIALOGS_H_
+#define CONTENT_BROWSER_JAVASCRIPT_DIALOGS_H_
 #pragma once
 
 #include "base/string16.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
-
-class GURL;
-class TabContents;
 
 namespace IPC {
 class Message;
@@ -80,4 +77,4 @@ class JavaScriptDialogCreator {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_JAVASCRIPT_DIALOG_DELEGATE_H_
+#endif  // CONTENT_BROWSER_JAVASCRIPT_DIALOGS_H_

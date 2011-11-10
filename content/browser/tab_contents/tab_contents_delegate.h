@@ -17,6 +17,15 @@
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
+struct ContextMenuParams;
+class DownloadItem;
+class FilePath;
+class GURL;
+struct NativeWebKeyboardEvent;
+struct OpenURLParams;
+class TabContents;
+struct ViewHostMsg_RunFileChooser_Params;
+
 namespace content {
 class BrowserContext;
 class JavaScriptDialogCreator;
@@ -35,17 +44,6 @@ class HistoryAddPageArgs;
 namespace webkit_glue {
 struct WebIntentData;
 }
-
-struct ContextMenuParams;
-struct OpenURLParams;
-class DownloadItem;
-class GURL;
-class HtmlDialogUIDelegate;
-struct NativeWebKeyboardEvent;
-class RenderViewHost;
-class TabContents;
-struct ViewHostMsg_RunFileChooser_Params;
-class FilePath;
 
 // Objects implement this interface to get notified about changes in the
 // TabContents and to provide necessary functionality.

@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_GTK_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/backing_store.h"
@@ -18,7 +20,6 @@ class Rect;
 }  // namespace gfx
 
 typedef struct _GdkDrawable GdkDrawable;
-class SkBitmap;
 
 class CONTENT_EXPORT BackingStoreGtk : public BackingStore {
  public:

@@ -21,7 +21,6 @@
 class LoadFromMemoryCacheDetails;
 class NavigationController;
 class NavigationEntry;
-class ProvisionalLoadDetails;
 class ResourceDispatcherHost;
 class ResourceRedirectDetails;
 class ResourceRequestDetails;

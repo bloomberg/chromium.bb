@@ -18,7 +18,6 @@
 #include "webkit/glue/resource_type.h"
 
 class CrossSiteResourceHandler;
-class LoginHandler;
 class ResourceDispatcherHost;
 class ResourceDispatcherHostLoginDelegate;
 class ResourceHandler;

@@ -14,8 +14,6 @@
 
 class FilePath;
 class GURL;
-class Receiver;
-class RenderMessageFilter;
 
 namespace base {
 class Time;

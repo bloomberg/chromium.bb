@@ -13,7 +13,6 @@
 #include "content/browser/renderer_host/resource_handler.h"
 #include "net/url_request/url_request_status.h"
 
-class RefCountedPlatformFile;
 class ResourceDispatcherHost;
 
 namespace net {

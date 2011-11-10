@@ -20,7 +20,6 @@
 #include "third_party/isimpledom/ISimpleDOMText.h"
 #include "webkit/glue/webaccessibility.h"
 
-class BrowserAccessibilityManagerWin;
 class BrowserAccessibilityRelation;
 
 namespace ui {

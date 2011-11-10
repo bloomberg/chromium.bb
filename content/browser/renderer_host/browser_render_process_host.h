@@ -24,7 +24,6 @@ class RendererMainThread;
 class RenderWidgetHelper;
 
 namespace base {
-class SharedMemory;
 class WaitableEvent;
 }
 

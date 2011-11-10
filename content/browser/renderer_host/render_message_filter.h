@@ -27,9 +27,9 @@
 #include "ui/gfx/surface/transport_dib.h"
 
 struct FontDescriptor;
+class PluginService;
 class RenderWidgetHelper;
 struct ViewHostMsg_CreateWindow_Params;
-struct ViewHostMsg_CreateWorker_Params;
 
 namespace WebKit {
 struct WebScreenInfo;
@@ -59,10 +59,6 @@ class URLRequestContextGetter;
 
 namespace webkit {
 struct WebPluginInfo;
-}
-
-namespace webkit_glue {
-struct WebCookie;
 }
 
 // This class filters out incoming IPC messages for the renderer process on the

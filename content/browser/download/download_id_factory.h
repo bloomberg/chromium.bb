@@ -11,14 +11,12 @@
 #include "content/browser/download/download_id.h"
 #include "content/public/browser/browser_thread.h"
 
-class DownloadManager;
-
 class CONTENT_EXPORT DownloadIdFactory
     : public base::RefCountedThreadSafe<DownloadIdFactory> {
  public:
   // TODO(benjhayden): Instantiate with an explicit next id counter read from
   // persistent storage.
-  DownloadIdFactory(DownloadId::Domain domain);
+  explicit DownloadIdFactory(DownloadId::Domain domain);
 
   DownloadId GetNextId();
 

@@ -29,6 +29,14 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"
 
+class BackingStore;
+struct EditCommand;
+class RenderProcessHost;
+class RenderWidgetHostView;
+class TransportDIB;
+struct ViewHostMsg_UpdateRect_Params;
+class WebCursor;
+
 namespace base {
 class TimeTicks;
 }
@@ -47,17 +55,6 @@ class WebMouseEvent;
 struct WebCompositionUnderline;
 struct WebScreenInfo;
 }
-
-class BackingStore;
-class PaintObserver;
-class RenderProcessHost;
-class RenderWidgetHostView;
-class TransportDIB;
-class WebCursor;
-struct ViewHostMsg_UpdateRect_Params;
-struct WebPreferences;
-struct EditCommand;
-class GURL;
 
 // This class manages the browser side of a browser<->renderer HWND connection.
 // The HWND lives in the browser process, and windows events are sent over

@@ -21,10 +21,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 class GURL;
 
 // HostZoomMap needs to be deleted on the UI thread because it listens

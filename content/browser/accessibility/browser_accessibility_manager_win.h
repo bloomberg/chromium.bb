@@ -13,7 +13,6 @@
 #include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibilityWin;
-struct ViewHostMsg_AccessibilityNotification_Params;
 
 using webkit_glue::WebAccessibility;
 

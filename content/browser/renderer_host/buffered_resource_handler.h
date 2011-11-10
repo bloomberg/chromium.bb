@@ -10,7 +10,6 @@
 
 #include "content/browser/renderer_host/resource_handler.h"
 
-class MessageLoop;
 class ResourceDispatcherHost;
 
 namespace net {

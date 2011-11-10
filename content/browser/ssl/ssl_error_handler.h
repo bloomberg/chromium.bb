@@ -18,7 +18,6 @@
 
 class ResourceDispatcherHost;
 class SSLCertErrorHandler;
-class TabContents;
 
 namespace net {
 class URLRequest;

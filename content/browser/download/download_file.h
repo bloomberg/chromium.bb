@@ -18,7 +18,6 @@
 
 struct DownloadCreateInfo;
 class DownloadManager;
-class ResourceDispatcherHost;
 
 // These objects live exclusively on the download thread and handle the writing
 // operations for one download. These objects live only for the duration that

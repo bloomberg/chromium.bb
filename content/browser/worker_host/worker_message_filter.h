@@ -9,15 +9,12 @@
 #include "content/browser/browser_message_filter.h"
 
 class ResourceDispatcherHost;
+struct ViewHostMsg_CreateWorker_Params;
+
 namespace content {
 class ResourceContext;
 }  // namespace content
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
 
-
-struct ViewHostMsg_CreateWorker_Params;
 
 class WorkerMessageFilter : public BrowserMessageFilter {
  public:

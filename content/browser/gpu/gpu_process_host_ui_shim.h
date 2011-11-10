@@ -11,7 +11,7 @@
 // portion of this class, the GpuProcessHost, is responsible for
 // shuttling messages between the browser and GPU processes.
 
-#include <queue>
+#include <string>
 
 #include "base/callback.h"
 #include "base/task.h"
@@ -21,17 +21,15 @@
 #include "content/common/content_export.h"
 #include "content/common/message_router.h"
 
+struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
+struct GpuHostMsg_AcceleratedSurfaceNew_Params;
+struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
+
 namespace gfx {
 class Size;
 }
 
-struct GPUCreateCommandBufferConfig;
-struct GpuHostMsg_AcceleratedSurfaceNew_Params;
-struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
-struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
-
 namespace IPC {
-struct ChannelHandle;
 class Message;
 }
 

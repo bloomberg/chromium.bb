@@ -9,6 +9,7 @@
 #define CONTENT_BROWSER_PLUGIN_SERVICE_H_
 #pragma once
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -54,7 +55,6 @@ namespace webkit {
 namespace npapi {
 class PluginGroup;
 class PluginList;
-struct PluginEntryPoints;
 }
 }
 

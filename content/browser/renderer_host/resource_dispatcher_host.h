@@ -31,15 +31,11 @@
 #include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"
 
-class CrossSiteResourceHandler;
 class DownloadFileManager;
-class LoginHandler;
-class PluginService;
 class ResourceDispatcherHostRequestInfo;
 class ResourceHandler;
 class ResourceMessageFilter;
 class SaveFileManager;
-class SSLClientAuthHandler;
 class TabContents;
 class WebKitThread;
 struct DownloadSaveInfo;

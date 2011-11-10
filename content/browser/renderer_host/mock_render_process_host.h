@@ -14,10 +14,6 @@
 class MockRenderProcessHostFactory;
 class TransportDIB;
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 // A mock render process host that has no corresponding renderer process.  All
 // IPC messages are sent into the message sink for inspection by tests.
 class MockRenderProcessHost : public RenderProcessHost {

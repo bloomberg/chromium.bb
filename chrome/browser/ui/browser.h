@@ -55,6 +55,7 @@ class BrowserTabRestoreServiceDelegate;
 class BrowserWindow;
 class Extension;
 class FindBarController;
+class HtmlDialogUIDelegate;
 class InstantController;
 class InstantUnloadHandler;
 class PrefService;

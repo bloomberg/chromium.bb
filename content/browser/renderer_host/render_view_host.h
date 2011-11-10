@@ -39,7 +39,6 @@ class RenderViewHostObserver;
 class SessionStorageNamespace;
 class SiteInstance;
 class SkBitmap;
-struct UserMetricsAction;
 struct ViewHostMsg_AccessibilityNotification_Params;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_RunFileChooser_Params;
@@ -48,6 +47,7 @@ class ViewMsg_Navigate;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_StopFinding_Params;
 struct WebDropData;
+struct WebPreferences;
 
 namespace base {
 class ListValue;
@@ -70,10 +70,6 @@ namespace WebKit {
 struct WebMediaPlayerAction;
 struct WebFindOptions;
 }  // namespace WebKit
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 // NotificationObserver used to listen for EXECUTE_JAVASCRIPT_RESULT
 // notifications.

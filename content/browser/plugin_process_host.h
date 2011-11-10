@@ -32,8 +32,6 @@ namespace IPC {
 struct ChannelHandle;
 }
 
-class GURL;
-
 // Represents the browser side of the browser <--> plugin communication
 // channel.  Different plugins run in their own process, but multiple instances
 // of the same plugin run in the same process.  There will be one

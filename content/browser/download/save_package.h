@@ -23,20 +23,11 @@
 #include "googleurl/src/gurl.h"
 
 class GURL;
-class MessageLoop;
-class PrefService;
 class SaveFileManager;
 class SaveItem;
 class SavePackage;
 class TabContents;
 struct SaveFileCreateInfo;
-struct SavePackageParam;
-
-namespace base {
-class Thread;
-class Time;
-}
-
 
 // The SavePackage object manages the process of saving a page as only-html or
 // complete-html and providing the information for displaying saving status.

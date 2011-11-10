@@ -55,20 +55,14 @@
 #include "ui/gfx/native_widget_types.h"
 
 struct DownloadCreateInfo;
-struct DownloadSaveInfo;
 class DownloadFile;
 class DownloadManager;
 class DownloadRequestHandle;
 class FilePath;
-class GURL;
 class ResourceDispatcherHost;
 
 namespace content {
 class DownloadBuffer;
-}
-
-namespace net {
-class URLRequestContextGetter;
 }
 
 // Manages all in progress downloads.
