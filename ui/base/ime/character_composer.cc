@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "character_composer.h"
+#include "ui/base/ime/character_composer.h"
 
 #include <algorithm>
 #include <iterator>
 
+// Note for Gtk removal: gdkkeysyms.h only contains a set of
+// '#define GDK_KeyName 0xNNNN' macros and does not #include any Gtk headers.
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
 #include "ui/base/glib/glib_integers.h"
 
@@ -264,6 +266,9 @@ int ComposeCheckerWithCompactTable::CompareSequenceSkipFront::operator()(
 // global constant and contaminate the global namespace.
 #include "third_party/gtk+/gtk/gtkimcontextsimpleseqs.h"
 
+// Note for Gtk removal: gtkimcontextsimpleseqs.h only contains one big guint16
+// array and does not #include any Gtk headers.
+
 
 // Additional table.
 
@@ -331,7 +336,7 @@ bool CheckCharacterComposeTable(const ComposeBufferType& sequence,
 
 }  // namespace
 
-namespace views {
+namespace ui {
 
 CharacterComposer::CharacterComposer() {}
 
@@ -371,4 +376,4 @@ bool CharacterComposer::FilterKeyPress(unsigned int keycode) {
   return false;
 }
 
-}  // namespace views
+}  // namespace ui

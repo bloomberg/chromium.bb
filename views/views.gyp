@@ -283,8 +283,6 @@
         'focus/view_storage.h',
         'focus/widget_focus_manager.cc',
         'focus/widget_focus_manager.h',
-        'ime/character_composer.cc',
-        'ime/character_composer.h',
         'ime/input_method.h',
         'ime/input_method_delegate.h',
         'ime/input_method_base.cc',
@@ -523,8 +521,6 @@
           ],
         }, { # else: use_ibus != 1
           'sources/': [
-            ['exclude', 'ime/character_composer.cc'],
-            ['exclude', 'ime/character_composer.h'],
             ['exclude', 'ime/input_method_ibus.cc'],
             ['exclude', 'ime/input_method_ibus.h'],
           ],
@@ -590,7 +586,6 @@
         'events/event_unittest.cc',
         'focus/accelerator_handler_gtk_unittest.cc',
         'focus/focus_manager_unittest.cc',
-        'ime/character_composer_unittest.cc',
         'layout/grid_layout_unittest.cc',
         'layout/box_layout_unittest.cc',
         'test/views_test_base.cc',
@@ -646,11 +641,6 @@
           },
           'include_dirs': [
             '../third_party/wtl/include',
-          ],
-        }],
-        ['use_ibus!=1', {
-          'sources/': [
-            ['exclude', 'ime/character_composer_unittest.cc'],
           ],
         }],
         [ 'use_aura==1', {

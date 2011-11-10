@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_IME_CHARACTER_COMPOSER_H_
-#define VIEWS_IME_CHARACTER_COMPOSER_H_
+#ifndef UI_BASE_IME_CHARACTER_COMPOSER_H_
+#define UI_BASE_IME_CHARACTER_COMPOSER_H_
 #pragma once
 
 #include <vector>
@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/string_util.h"
 
-namespace views {
+namespace ui {
 
 // A class to recognize compose and dead key sequence.
 // Outputs composed character.
@@ -46,6 +46,6 @@ class CharacterComposer {
   DISALLOW_COPY_AND_ASSIGN(CharacterComposer);
 };
 
-}  // namespace views
+}  // namespace ui
 
-#endif  // VIEWS_IME_CHARACTER_COMPOSER_H_
+#endif  // UI_BASE_IME_CHARACTER_COMPOSER_H_

@@ -14,8 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/glib/glib_integers.h"
 #include "ui/base/glib/glib_signal.h"
+#include "ui/base/ime/character_composer.h"
 #include "views/events/event.h"
-#include "views/ime/character_composer.h"
 #include "views/ime/input_method_base.h"
 #include "views/view.h"
 
@@ -199,7 +199,7 @@ class InputMethodIBus : public InputMethodBase {
 
   // An object to compose a character from a sequence of key presses
   // including dead key etc.
-  CharacterComposer character_composer_;
+  ui::CharacterComposer character_composer_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodIBus);
 };

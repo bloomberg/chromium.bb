@@ -52,6 +52,7 @@
         'base/cocoa/base_view_unittest.mm',
         'base/gtk/gtk_expanded_container_unittest.cc',
         'base/gtk/gtk_im_context_util_unittest.cc',
+        'base/ime/character_composer_unittest.cc',
         'base/l10n/l10n_util_mac_unittest.mm',
         'base/l10n/l10n_util_unittest.cc',
         'base/models/tree_node_iterator_unittest.cc',
@@ -167,6 +168,11 @@
           'sources!': [
             'base/view_prop_unittest.cc',
             'gfx/screen_unittest.cc',
+          ],
+        }],
+        ['use_ibus != 1', {
+          'sources/': [
+            ['exclude', 'base/ime/character_composer_unittest.cc'],
           ],
         }],
       ],

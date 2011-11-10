@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/ime/character_composer.h"
+#include "ui/base/ime/character_composer.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
 #include "ui/base/glib/glib_integers.h"
 
-namespace views {
+namespace ui {
 
 namespace {
 
@@ -193,4 +193,4 @@ TEST(CharacterComposerTest, MainTableIsCorrectlyOrdered) {
   }
 }
 
-}  // namespace views
+}  // namespace ui
