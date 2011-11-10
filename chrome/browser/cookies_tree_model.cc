@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -668,8 +667,9 @@ CookiesTreeModel::CookiesTreeModel(
   }
 
   if (quota_helper_) {
-    quota_helper_->StartFetching(NewCallback(
-        this, &CookiesTreeModel::OnQuotaModelInfoLoaded));
+    quota_helper_->StartFetching(
+        base::Bind(&CookiesTreeModel::OnQuotaModelInfoLoaded,
+                   base::Unretained(this)));
   }
 }
 

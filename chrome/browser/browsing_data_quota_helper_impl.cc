@@ -22,11 +22,12 @@ BrowsingDataQuotaHelper* BrowsingDataQuotaHelper::Create(Profile* profile) {
       profile->GetQuotaManager());
 }
 
-void BrowsingDataQuotaHelperImpl::StartFetching(FetchResultCallback* callback) {
-  DCHECK(callback);
-  DCHECK(!callback_.get());
+void BrowsingDataQuotaHelperImpl::StartFetching(
+    const FetchResultCallback& callback) {
+  DCHECK_EQ(false, callback.is_null());
+  DCHECK(callback_.is_null());
   DCHECK(!is_fetching_);
-  callback_.reset(callback);
+  callback_ = callback;
   quota_info_.clear();
   is_fetching_ = true;
 
@@ -34,7 +35,7 @@ void BrowsingDataQuotaHelperImpl::StartFetching(FetchResultCallback* callback) {
 }
 
 void BrowsingDataQuotaHelperImpl::CancelNotification() {
-  callback_.reset();
+  callback_.Reset();
 }
 
 void BrowsingDataQuotaHelperImpl::RevokeHostQuota(const std::string& host) {
@@ -143,7 +144,7 @@ void BrowsingDataQuotaHelperImpl::GotHostUsage(const std::string& host,
 
 void BrowsingDataQuotaHelperImpl::OnComplete() {
   // Check if CancelNotification was called
-  if (!callback_.get())
+  if (callback_.is_null())
     return;
 
   if (!ui_thread_->BelongsToCurrentThread()) {
@@ -170,8 +171,8 @@ void BrowsingDataQuotaHelperImpl::OnComplete() {
     result.push_back(*info);
   }
 
-  callback_->Run(result);
-  callback_.reset();
+  callback_.Run(result);
+  callback_.Reset();
 }
 
 void BrowsingDataQuotaHelperImpl::DidRevokeHostQuota(

@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/callback_old.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,7 +30,7 @@ class QuotaManager;
 // IO thread, we have to communicate over thread using PostTask.
 class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
  public:
-  virtual void StartFetching(FetchResultCallback* callback) OVERRIDE;
+  virtual void StartFetching(const FetchResultCallback& callback) OVERRIDE;
   virtual void CancelNotification() OVERRIDE;
   virtual void RevokeHostQuota(const std::string& host) OVERRIDE;
 
@@ -59,7 +60,7 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
                           int64 quota);
 
   scoped_refptr<quota::QuotaManager> quota_manager_;
-  scoped_ptr<FetchResultCallback> callback_;
+  FetchResultCallback callback_;
 
   typedef std::set<std::pair<std::string, quota::StorageType> > PendingHosts;
   PendingHosts pending_hosts_;

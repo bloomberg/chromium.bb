@@ -9,7 +9,7 @@
 #include <list>
 #include <string>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/time.h"
@@ -58,11 +58,11 @@ class BrowsingDataQuotaHelper
   };
 
   typedef std::list<QuotaInfo> QuotaInfoArray;
-  typedef Callback1<const QuotaInfoArray&>::Type FetchResultCallback;
+  typedef base::Callback<void(const QuotaInfoArray&)> FetchResultCallback;
 
   static BrowsingDataQuotaHelper* Create(Profile* profile);
 
-  virtual void StartFetching(FetchResultCallback* callback) = 0;
+  virtual void StartFetching(const FetchResultCallback& callback) = 0;
   virtual void CancelNotification() = 0;
 
   virtual void RevokeHostQuota(const std::string& host) = 0;

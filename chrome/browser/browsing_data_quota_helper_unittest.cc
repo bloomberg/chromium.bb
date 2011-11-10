@@ -5,7 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/bind.h"
-#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/browsing_data_quota_helper_impl.h"
@@ -26,8 +26,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
         io_thread_(BrowserThread::IO, &message_loop_),
         fetching_completed_(true),
         quota_(-1),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
   virtual ~BrowsingDataQuotaHelperTest() {}
 
@@ -63,8 +62,8 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   void StartFetching() {
     fetching_completed_ = false;
     helper_->StartFetching(
-        callback_factory_.NewCallback(
-            &BrowsingDataQuotaHelperTest::FetchCompleted));
+        base::Bind(&BrowsingDataQuotaHelperTest::FetchCompleted,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void RegisterClient(const quota::MockOriginData* data, std::size_t data_len) {
@@ -127,7 +126,6 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   QuotaInfoArray quota_info_;
   int64 quota_;
   base::WeakPtrFactory<BrowsingDataQuotaHelperTest> weak_factory_;
-  base::ScopedCallbackFactory<BrowsingDataQuotaHelperTest> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataQuotaHelperTest);
 };
