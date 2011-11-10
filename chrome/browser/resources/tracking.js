@@ -300,7 +300,7 @@ var MainView = (function() {
   };
 
   KEY_PROPERTIES[KEY_DEATH_THREAD] = {
-    name: 'Death thread',
+    name: 'Exec thread',
     type: 'string',
     inputJsonKey: 'death_thread',
     aggregator: UniquifyAggregator,
