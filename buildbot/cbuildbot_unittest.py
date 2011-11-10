@@ -76,9 +76,11 @@ class RunBuildStagesTest(mox.MoxTestBase):
     if 'CHROMEOS_OFFICIAL' in os.environ:
       del os.environ['CHROMEOS_OFFICIAL']
 
-    self.mox.StubOutWithMock(os, 'readlink')
-    os.readlink(mox.IgnoreArg()).AndReturn('/some/path')
-
+    result = self.mox.CreateMock(cros_lib.CommandResult)
+    result.error_code = 0
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    cros_lib.RunCommand(mox.IgnoreArg(), cwd=self.buildroot,
+                        error_code_ok=True).AndReturn(result)
     self.mox.ReplayAll()
 
     self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
@@ -104,8 +106,11 @@ class RunBuildStagesTest(mox.MoxTestBase):
     if 'CHROMEOS_OFFICIAL' in os.environ:
       del os.environ['CHROMEOS_OFFICIAL']
 
-    self.mox.StubOutWithMock(os, 'readlink')
-    os.readlink(mox.IgnoreArg()).AndReturn('/some/path')
+    result = self.mox.CreateMock(cros_lib.CommandResult)
+    result.error_code = 0
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    cros_lib.RunCommand(mox.IgnoreArg(), cwd=self.buildroot,
+                        error_code_ok=True).AndReturn(result)
 
     self.mox.ReplayAll()
 
