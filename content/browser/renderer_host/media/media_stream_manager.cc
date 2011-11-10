@@ -6,6 +6,7 @@
 
 #include <list>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -103,9 +104,17 @@ void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
   requests_.insert(std::make_pair(request_label, new_request));
 
   // Get user confirmation to use capture devices.
-  device_settings_->RequestCaptureDeviceUsage(request_label, render_process_id,
-                                              render_view_id, options,
-                                              security_origin);
+  // Need to make an asynchronous call to make sure the |requester| gets the
+  // |label| before it would receive any event.
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&MediaStreamDeviceSettings::RequestCaptureDeviceUsage,
+                 base::Unretained(device_settings_.get()),
+                 request_label, render_process_id,
+                 render_view_id, options,
+                 security_origin));
+
   (*label) = request_label;
 }
 
