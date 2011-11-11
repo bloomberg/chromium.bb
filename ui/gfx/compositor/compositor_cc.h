@@ -100,16 +100,16 @@ class COMPOSITOR_EXPORT CompositorCC
   virtual void ReadPixels(SkBitmap* bitmap) OVERRIDE;
 
   // WebLayerTreeViewClient implementation.
-  virtual void animateAndLayout(double frameBeginTime) OVERRIDE;
+  virtual void animateAndLayout(double frameBeginTime);
   virtual void applyScrollAndScale(const WebKit::WebSize& scrollDelta,
-                                   float scaleFactor) OVERRIDE;
-  virtual void applyScrollDelta(const WebKit::WebSize&) OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* createContext3D() OVERRIDE;
-  virtual void didRebindGraphicsContext(bool success) OVERRIDE;
-  virtual void scheduleComposite() OVERRIDE;
+                                   float scaleFactor);
+  virtual void applyScrollDelta(const WebKit::WebSize&);
+  virtual WebKit::WebGraphicsContext3D* createContext3D();
+  virtual void didRebindGraphicsContext(bool success);
+  virtual void scheduleComposite();
 
   // WebLayerClient implementation.
-  virtual void notifyNeedsComposite() OVERRIDE;
+  virtual void notifyNeedsComposite();
 
  private:
   gfx::AcceleratedWidget widget_;
