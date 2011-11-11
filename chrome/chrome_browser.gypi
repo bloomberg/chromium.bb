@@ -476,8 +476,6 @@
         'browser/chromeos/frame/bubble_window_gtk.cc',
         'browser/chromeos/frame/bubble_window_style.cc',
         'browser/chromeos/frame/bubble_window_style.h',
-        'browser/chromeos/frame/bubble_window_views.cc',
-        'browser/chromeos/frame/bubble_window_views.h',
         'browser/chromeos/frame/layout_mode_button.cc',
         'browser/chromeos/frame/layout_mode_button.h',
         'browser/chromeos/frame/panel_browser_view.cc',
