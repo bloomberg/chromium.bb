@@ -3724,19 +3724,6 @@
    fun:_ZN20ChildProcessLauncher7Context6NotifyEbi
 }
 {
-   bug_86483b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7history14HistoryBackend12AddPageVisitERK4GURLN4base4Time*
-   fun:_ZN7history14HistoryBackend7AddPageE13scoped_refptrINS_18HistoryAddPageArgsEE
-}
-{
-   bug_86483c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7history14HistoryBackend12SetPageTitleE*
-}
-{
    bug_87094a
    Memcheck:Leak
    fun:_Znw*

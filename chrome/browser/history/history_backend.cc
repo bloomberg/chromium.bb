@@ -2076,6 +2076,8 @@ void HistoryBackend::BroadcastNotifications(
   // HistoryService -> HistroyBackend::Closing().
   if (delegate_.get())
     delegate_->BroadcastNotifications(type, details_deleted);
+  else
+    delete details_deleted;
 }
 
 // Deleting --------------------------------------------------------------------
