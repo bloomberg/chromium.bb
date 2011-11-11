@@ -498,6 +498,11 @@ add_config('amd64-generic-full', [full, {
   'prebuilts' : True,
 }])
 
+add_config('amd64-corei7-full', [full, {
+  'board' : 'amd64-corei7',
+  'prebuilts' : True,
+}])
+
 add_config('x86-generic-asan', [{
   'board' : 'x86-generic',
   'profile' : 'asan',
