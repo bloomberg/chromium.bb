@@ -66,12 +66,6 @@ def Main(args):
   if sys.platform in ('win32', 'cygwin'):
     tests_to_disable.append('run_ppapi_ppp_input_event_browser_test')
 
-  if sys.platform == 'darwin':
-    # The following test fails on debug builds of Chromium.
-    # See http://code.google.com/p/nativeclient/issues/detail?id=2077
-    # TODO(mseaborn): Remove this when the issue is resolved.
-    tests_to_disable.append('run_ppapi_example_font_test')
-
   script_dir = os.path.dirname(os.path.abspath(__file__))
   test_dir = os.path.dirname(script_dir)
   chrome_dir = os.path.dirname(test_dir)
