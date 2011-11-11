@@ -292,8 +292,9 @@ void ShowSSLClientCertificateSelector(
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate) {
 #if defined(USE_AURA)
-  // TODO(saintlou): Aura uses always "more WebUI".
-  ShowNativeSSLClientCertificateSelector(wrapper, cert_request_info, delegate);
+  SSLClientCertificateSelectorWebUI::ShowDialog(wrapper,
+                                                cert_request_info,
+                                                delegate);
 #else
   if (ChromeWebUI::IsMoreWebUI())
     SSLClientCertificateSelectorWebUI::ShowDialog(wrapper,

@@ -503,7 +503,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableTouch(true);
   WebKit::WebPopupMenu::setMinimumRowHeight(kPopupListBoxMinimumRowHeight);
 #else
-  // TODO(saintlou): in the future touch should always be enabled
   WebRuntimeFeatures::enableTouch(false);
 #endif
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 
-// TODO(saintlou): should we handle this define in gyp even if only used once?
 #define XK_MISCELLANY 1
 #include <X11/keysymdef.h>
 #include <X11/XF86keysym.h>

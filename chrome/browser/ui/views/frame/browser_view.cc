@@ -1003,8 +1003,12 @@ void BrowserView::ConfirmSetDefaultSearchProvider(TabContents* tab_contents,
 
 void BrowserView::ConfirmAddSearchProvider(const TemplateURL* template_url,
                                            Profile* profile) {
+#if defined(USE_AURA)
+  browser::ConfirmAddSearchProvider(template_url, profile);
+#else
   browser::EditSearchEngine(GetWidget()->GetNativeWindow(), template_url, NULL,
                             profile);
+#endif
 }
 
 void BrowserView::ToggleBookmarkBar() {

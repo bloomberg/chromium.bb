@@ -34,13 +34,9 @@ namespace views {
 class Widget;
 }
 
-#if !defined(OS_WIN)
-class EditSearchEngineControllerDelegate;
-class TemplateURL;
-#endif
-
 namespace browser {
 
+#if defined(OS_WIN)
 void ShowSSLClientCertificateSelector(
     TabContentsWrapper* parent,
     net::SSLCertRequestInfo* cert_request_info,
@@ -48,6 +44,7 @@ void ShowSSLClientCertificateSelector(
   // TODO(beng):
   NOTIMPLEMENTED();
 }
+#endif
 
 void ShowAboutIPCDialog() {
   // TODO(beng):
@@ -66,15 +63,6 @@ crypto::CryptoModuleBlockingPasswordDelegate*
 #endif
 
 #if !defined(OS_WIN)
-void EditSearchEngine(
-    gfx::NativeWindow,
-    const TemplateURL*,
-    EditSearchEngineControllerDelegate*,
-    Profile*) {
-  // TODO(saintlou):
-  NOTIMPLEMENTED();
-}
-
 void ShowCryptoModulePasswordDialog(
     const std::string& module_name,
     bool retry,
