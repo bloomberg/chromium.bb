@@ -31,7 +31,9 @@ class PrerenderHistograms {
   // when the user navigates to a page to when it finishes loading.  The actual
   // load may have started prior to navigation due to prerender hints.
   void RecordPerceivedPageLoadTime(base::TimeDelta perceived_page_load_time,
-                                   bool was_prerender, const GURL& url);
+                                   bool was_prerender,
+                                   bool was_complete_prerender,
+                                   const GURL& url);
 
   // Records the time from when a page starts prerendering to when the user
   // navigates to it. This must be called on the UI thread.
