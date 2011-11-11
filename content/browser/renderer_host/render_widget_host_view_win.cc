@@ -290,16 +290,6 @@ WebKit::WebMouseWheelEvent MakeFakeScrollWheelEvent(HWND hwnd,
     return result;
 }
 
-static const int kTouchMask = 0x7;
-
-inline int GetTouchType(const TOUCHINPUT& point) {
-  return point.dwFlags & kTouchMask;
-}
-
-inline void SetTouchType(TOUCHINPUT* point, int type) {
-  point->dwFlags = (point->dwFlags & kTouchMask) | type;
-}
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -327,8 +317,7 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       ignore_mouse_movement_(true),
       composition_range_(ui::Range::InvalidRange()),
       ignore_next_lbutton_message_at_same_location(false),
-      last_pointer_down_location_(0),
-      touch_state_(this) {
+      last_pointer_down_location_(0) {
   render_widget_host_->SetView(this);
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -890,24 +879,19 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(m_hWnd));
 
   if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
-    // Use gestures if touch event switch isn't present or registration fails.
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableTouchEvents) ||
-        !RegisterTouchWindow(m_hWnd, 0)) {
-      // Single finger panning is consistent with other windows applications.
-      const DWORD gesture_allow = GC_PAN_WITH_SINGLE_FINGER_VERTICALLY |
-                                  GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
-      const DWORD gesture_block = GC_PAN_WITH_GUTTER;
-      GESTURECONFIG gc[] = {
-          { GID_ZOOM, GC_ZOOM, 0 },
-          { GID_PAN, gesture_allow , gesture_block},
-          { GID_TWOFINGERTAP, GC_TWOFINGERTAP , 0},
-          { GID_PRESSANDTAP, GC_PRESSANDTAP , 0}
-      };
-      if (!SetGestureConfig(m_hWnd, 0, arraysize(gc), gc,
-          sizeof(GESTURECONFIG))) {
-        NOTREACHED();
-      }
+    // Single finger panning is consistent with other windows applications.
+    const DWORD gesture_allow = GC_PAN_WITH_SINGLE_FINGER_VERTICALLY |
+                                GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
+    const DWORD gesture_block = GC_PAN_WITH_GUTTER;
+    GESTURECONFIG gc[] = {
+        { GID_ZOOM, GC_ZOOM, 0 },
+        { GID_PAN, gesture_allow , gesture_block},
+        { GID_TWOFINGERTAP, GC_TWOFINGERTAP , 0},
+        { GID_PRESSANDTAP, GC_PRESSANDTAP , 0}
+    };
+    if (!SetGestureConfig(m_hWnd, 0, arraysize(gc), gc, sizeof(GESTURECONFIG)))
+    {
+      NOTREACHED();
     }
   }
 
@@ -942,9 +926,6 @@ void RenderWidgetHostViewWin::OnDestroy() {
   EnumChildWindows(m_hWnd, DetachPluginWindowsCallback, NULL);
 
   props_.reset();
-
-  if (IsTouchWindow(m_hWnd, NULL))
-    UnregisterTouchWindow(m_hWnd);
 
   CleanupCompositorWindow();
 
@@ -1121,8 +1102,6 @@ void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
     render_widget_host_->GotFocus();
     render_widget_host_->SetActive(true);
   }
-  if (touch_state_.ReleaseTouchPoints())
-    render_widget_host_->ForwardTouchEvent(touch_state_.touch_event());
 }
 
 void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
@@ -1130,8 +1109,6 @@ void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
     render_widget_host_->SetActive(false);
     render_widget_host_->Blur();
   }
-  if (touch_state_.ReleaseTouchPoints())
-    render_widget_host_->ForwardTouchEvent(touch_state_.touch_event());
 }
 
 void RenderWidgetHostViewWin::OnCaptureChanged(HWND window) {
@@ -1590,185 +1567,6 @@ LRESULT RenderWidgetHostViewWin::OnWheelEvent(UINT message, WPARAM wparam,
                                               lparam));
   }
   handled = TRUE;
-  return 0;
-}
-
-RenderWidgetHostViewWin::WebTouchState::WebTouchState(const CWindowImpl* window)
-    : window_(window) { }
-
-size_t RenderWidgetHostViewWin::WebTouchState::UpdateTouchPoints(
-    TOUCHINPUT* points, size_t count) {
-  // First we reset all touch event state. This involves removing any released
-  // touchpoints and marking the rest as stationary. After that we go through
-  // and alter/add any touchpoints (from the touch input buffer) that we can
-  // coalesce into a single message. The return value is the number of consumed
-  // input message.
-  WebKit::WebTouchPoint* point = touch_event_.touches;
-  WebKit::WebTouchPoint* end = point + touch_event_.touchesLength;
-  while (point < end) {
-    if (point->state == WebKit::WebTouchPoint::StateReleased) {
-      *point = *(--end);
-      --touch_event_.touchesLength;
-    } else {
-      point->state = WebKit::WebTouchPoint::StateStationary;
-      point++;
-    }
-  }
-  touch_event_.changedTouchesLength = 0;
-
-  // Consume all events of the same type and add them to the changed list.
-  int last_type = 0;
-  for (size_t i = 0; i < count; ++i) {
-    if (points[i].dwID == 0ul)
-      continue;
-
-    WebKit::WebTouchPoint* point = NULL;
-    for (unsigned j = 0; j < touch_event_.touchesLength; ++j) {
-      if (static_cast<DWORD>(touch_event_.touches[j].id) == points[i].dwID) {
-        point =  &touch_event_.touches[j];
-        break;
-      }
-    }
-
-    // Use a move instead if we see a down on a point we already have.
-    int type = GetTouchType(points[i]);
-    if (point && type == TOUCHEVENTF_DOWN)
-      SetTouchType(&points[i], TOUCHEVENTF_MOVE);
-
-    // Stop processing when the event type changes.
-    if (touch_event_.changedTouchesLength && type != last_type)
-      return i;
-
-    last_type = type;
-    switch (type) {
-      case TOUCHEVENTF_DOWN: {
-        if (!(point = AddTouchPoint(&points[i])))
-          continue;
-        touch_event_.type = WebKit::WebInputEvent::TouchStart;
-        break;
-      }
-
-      case TOUCHEVENTF_UP: {
-        if (!point)  // Just throw away a stray up.
-          continue;
-        point->state = WebKit::WebTouchPoint::StateReleased;
-        UpdateTouchPoint(point, &points[i]);
-        touch_event_.type = WebKit::WebInputEvent::TouchEnd;
-        break;
-      }
-
-      case TOUCHEVENTF_MOVE: {
-        if (point) {
-          point->state = WebKit::WebTouchPoint::StateMoved;
-          // Don't update the message if the point didn't really move.
-          if (UpdateTouchPoint(point, &points[i]))
-            continue;
-          touch_event_.type = WebKit::WebInputEvent::TouchMove;
-        } else if (touch_event_.changedTouchesLength) {
-          // Can't add a point if we're already handling move events.
-          return i;
-        } else {
-          // Treat a move with no existing point as a down.
-          if (!(point = AddTouchPoint(&points[i])))
-            continue;
-          last_type = TOUCHEVENTF_DOWN;
-          SetTouchType(&points[i], TOUCHEVENTF_DOWN);
-          touch_event_.type = WebKit::WebInputEvent::TouchStart;
-        }
-        break;
-      }
-
-      default:
-        NOTREACHED();
-        continue;
-    }
-    touch_event_.changedTouches[touch_event_.changedTouchesLength++] = *point;
-  }
-
-  return count;
-}
-
-bool RenderWidgetHostViewWin::WebTouchState::ReleaseTouchPoints() {
-  if (touch_event_.touchesLength == 0)
-    return false;
-  // Mark every active touchpoint as released.
-  touch_event_.type = WebKit::WebInputEvent::TouchEnd;
-  touch_event_.changedTouchesLength = touch_event_.touchesLength;
-  for (unsigned int i = 0; i < touch_event_.touchesLength; ++i) {
-    touch_event_.touches[i].state = WebKit::WebTouchPoint::StateReleased;
-    touch_event_.changedTouches[i].state =
-        WebKit::WebTouchPoint::StateReleased;
-  }
-
-  return true;
-}
-
-WebKit::WebTouchPoint* RenderWidgetHostViewWin::WebTouchState::AddTouchPoint(
-    TOUCHINPUT* touch_input) {
-  if (touch_event_.touchesLength >= WebKit::WebTouchEvent::touchesLengthCap)
-    return NULL;
-  WebKit::WebTouchPoint* point =
-      &touch_event_.touches[touch_event_.touchesLength++];
-  point->state = WebKit::WebTouchPoint::StatePressed;
-  point->id = touch_input->dwID;
-  UpdateTouchPoint(point, touch_input);
-  return point;
-}
-
-bool RenderWidgetHostViewWin::WebTouchState::UpdateTouchPoint(
-    WebKit::WebTouchPoint* touch_point,
-    TOUCHINPUT* touch_input) {
-  CPoint coordinates(TOUCH_COORD_TO_PIXEL(touch_input->x),
-                     TOUCH_COORD_TO_PIXEL(touch_input->y));
-  int radius_x = 1;
-  int radius_y = 1;
-  if (touch_input->dwMask & TOUCHINPUTMASKF_CONTACTAREA) {
-    radius_x = TOUCH_COORD_TO_PIXEL(touch_input->cxContact);
-    radius_y = TOUCH_COORD_TO_PIXEL(touch_input->cyContact);
-  }
-
-  // Detect and exclude stationary moves.
-  if (GetTouchType(*touch_input) == TOUCHEVENTF_MOVE &&
-      touch_point->screenPosition.x == coordinates.x &&
-      touch_point->screenPosition.y == coordinates.y &&
-      touch_point->radiusX == radius_x &&
-      touch_point->radiusY == radius_y) {
-    touch_point->state = WebKit::WebTouchPoint::StateStationary;
-    return true;
-  }
-
-  touch_point->screenPosition.x = coordinates.x;
-  touch_point->screenPosition.y = coordinates.y;
-  window_->GetParent().ScreenToClient(&coordinates);
-  touch_point->position.x = coordinates.x;
-  touch_point->position.y = coordinates.y;
-  touch_point->radiusX = radius_x;
-  touch_point->radiusY = radius_y;
-  touch_point->force = 0;
-  touch_point->rotationAngle = 0;
-  return false;
-}
-
-LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
-                                              LPARAM lparam, BOOL& handled) {
-  // TODO(jschuh): Add support for an arbitrary number of touchpoints.
-  size_t total = std::min(static_cast<int>(LOWORD(wparam)),
-      static_cast<int>(WebKit::WebTouchEvent::touchesLengthCap));
-  TOUCHINPUT points[WebKit::WebTouchEvent::touchesLengthCap];
-
-  if (!total || !GetTouchInputInfo((HTOUCHINPUT)lparam, total,
-                                   points, sizeof(TOUCHINPUT))) {
-    return 0;
-  }
-
-  for (size_t start = 0; start < total;) {
-    start += touch_state_.UpdateTouchPoints(points + start, total - start);
-    if (touch_state_.is_changed())
-      render_widget_host_->ForwardTouchEvent(touch_state_.touch_event());
-  }
-
-  CloseTouchInputHandle((HTOUCHINPUT)lparam);
-
   return 0;
 }
 

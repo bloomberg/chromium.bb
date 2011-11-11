@@ -141,7 +141,6 @@ class RenderWidgetHostViewWin
     MESSAGE_HANDLER(WM_VSCROLL, OnWheelEvent)
     MESSAGE_HANDLER(WM_CHAR, OnKeyEvent)
     MESSAGE_HANDLER(WM_SYSCHAR, OnKeyEvent)
-    MESSAGE_HANDLER(WM_TOUCH, OnTouchEvent)
     MESSAGE_HANDLER(WM_IME_CHAR, OnKeyEvent)
     MESSAGE_HANDLER(WM_MOUSEACTIVATE, OnMouseActivate)
     MESSAGE_HANDLER(WM_GETOBJECT, OnGetObject)
@@ -247,8 +246,6 @@ class RenderWidgetHostViewWin
   LRESULT OnKeyEvent(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
   LRESULT OnWheelEvent(
-      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
-  LRESULT OnTouchEvent(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
   LRESULT OnMouseActivate(UINT message,
                           WPARAM wparam,
@@ -369,43 +366,6 @@ class RenderWidgetHostViewWin
 
   // true if the View is not visible.
   bool is_hidden_;
-
-  // Wrapper for maintaining touchstate associated with a WebTouchEvent.
-  class WebTouchState {
-   public:
-    explicit WebTouchState(const CWindowImpl* window);
-
-    // Updates the current touchpoint state with the supplied touches.
-    // Touches will be consumed only if they are of the same type (e.g. down,
-    // up, move). Returns the number of consumed touches.
-    size_t UpdateTouchPoints(TOUCHINPUT* points, size_t count);
-
-    // Marks all active touchpoints as released.
-    bool ReleaseTouchPoints();
-
-    // The contained WebTouchEvent.
-    const WebKit::WebTouchEvent& touch_event() { return touch_event_; }
-
-    // Returns if any touches are modified in the event.
-    bool is_changed() { return touch_event_.changedTouchesLength != 0; }
-
-   private:
-    // Adds a touch point or returns NULL if there's not enough space.
-    WebKit::WebTouchPoint* AddTouchPoint(TOUCHINPUT* touch_input);
-
-    // Copy details from a TOUCHINPUT to an existing WebTouchPoint, returning
-    // true if the resulting point is a stationary move.
-    bool UpdateTouchPoint(WebKit::WebTouchPoint* touch_point,
-                          TOUCHINPUT* touch_input);
-
-    WebKit::WebTouchEvent touch_event_;
-    const CWindowImpl* const window_;
-  };
-
-  // The touch-state. Its touch-points are updated as necessary. A new
-  // touch-point is added from an TOUCHEVENTF_DOWN message, and a touch-point
-  // is removed from the list on an TOUCHEVENTF_UP message.
-  WebTouchState touch_state_;
 
   // True if we're in the midst of a paint operation and should respond to
   // DidPaintRect() notifications by merely invalidating.  See comments on
