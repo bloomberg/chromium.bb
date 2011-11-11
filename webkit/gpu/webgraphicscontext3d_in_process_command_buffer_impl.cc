@@ -1105,6 +1105,14 @@ DELEGATE_TO_GL_4(colorMask, ColorMask,
 
 DELEGATE_TO_GL_1(compileShader, CompileShader, WebGLId)
 
+DELEGATE_TO_GL_8(compressedTexImage2D, CompressedTexImage2D,
+                 WGC3Denum, WGC3Dint, WGC3Denum, WGC3Dint, WGC3Dint,
+                 WGC3Dsizei, WGC3Dsizei, const void*)
+
+DELEGATE_TO_GL_9(compressedTexSubImage2D, CompressedTexSubImage2D,
+                 WGC3Denum, WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dint,
+                 WGC3Denum, WGC3Dsizei, const void*)
+
 DELEGATE_TO_GL_8(copyTexImage2D, CopyTexImage2D,
                  WGC3Denum, WGC3Dint, WGC3Denum, WGC3Dint, WGC3Dint,
                  WGC3Dsizei, WGC3Dsizei, WGC3Dint)

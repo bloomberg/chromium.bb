@@ -149,6 +149,25 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
                          WGC3Dboolean blue, WGC3Dboolean alpha);
   virtual void compileShader(WebGLId shader);
 
+  virtual void compressedTexImage2D(
+      WGC3Denum target,
+      WGC3Dint level,
+      WGC3Denum internalformat,
+      WGC3Dsizei width,
+      WGC3Dsizei height,
+      WGC3Dint border,
+      WGC3Dsizei imageSize,
+      const void* data);
+  virtual void compressedTexSubImage2D(
+      WGC3Denum target,
+      WGC3Dint level,
+      WGC3Dint xoffset,
+      WGC3Dint yoffset,
+      WGC3Dsizei width,
+      WGC3Dsizei height,
+      WGC3Denum format,
+      WGC3Dsizei imageSize,
+      const void* data);
   virtual void copyTexImage2D(
       WGC3Denum target,
       WGC3Dint level,

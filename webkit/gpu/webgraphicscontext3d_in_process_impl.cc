@@ -924,6 +924,14 @@ void WebGraphicsContext3DInProcessImpl::compileShader(WebGLId shader) {
 #endif
 }
 
+DELEGATE_TO_GL_8(compressedTexImage2D, CompressedTexImage2D,
+                 WGC3Denum, WGC3Dint, WGC3Denum, WGC3Dint, WGC3Dint,
+                 WGC3Dsizei, WGC3Dsizei, const void*)
+
+DELEGATE_TO_GL_9(compressedTexSubImage2D, CompressedTexSubImage2D,
+                 WGC3Denum, WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dint,
+                 WGC3Denum, WGC3Dsizei, const void*)
+
 void WebGraphicsContext3DInProcessImpl::copyTexImage2D(
     WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dint x,
     WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border) {
