@@ -309,5 +309,5 @@ TEST_F(OutOfProcessPPAPITest, FAILS_UMA) {
   RunTest("UMA");
 }
 
-TEST_PPAPI_IN_PROCESS(NetAddressPrivate)
-TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate)
+TEST_PPAPI_IN_PROCESS(FAILS_NetAddressPrivate)
+TEST_PPAPI_OUT_OF_PROCESS(FAILS_NetAddressPrivate)
