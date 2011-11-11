@@ -8,9 +8,7 @@
 
 #include "base/environment.h"
 #include "base/file_util.h"
-#include "base/message_loop.h"
 #include "base/nix/xdg_util.h"
-#include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -27,7 +25,7 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
       base::nix::GetDesktopEnvironment(env.get());
   if (desktop == base::nix::DESKTOP_ENVIRONMENT_KDE3 ||
       desktop == base::nix::DESKTOP_ENVIRONMENT_KDE4) {
-    return SelectFileDialogImpl::NewSelectFileDialogImplKDE(listener);
+    return SelectFileDialogImpl::NewSelectFileDialogImplKDE(listener, desktop);
   }
   return SelectFileDialogImpl::NewSelectFileDialogImplGTK(listener);
 }
@@ -56,4 +54,3 @@ bool SelectFileDialogImpl::CallDirectoryExistsOnUIThread(const FilePath& path) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   return file_util::DirectoryExists(path);
 }
-
