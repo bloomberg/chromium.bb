@@ -11,14 +11,7 @@
 #include "views/focus/focus_manager.h"
 #include "views/ime/input_method.h"
 #include "views/ime/input_method_delegate.h"
-
-namespace gfx {
-class Rect;
-}  // namespace gfx
-
-namespace ui {
-class TextInputClient;
-}  // namespace ui
+#include "views/ime/text_input_client.h"
 
 namespace views {
 
@@ -53,7 +46,7 @@ class VIEWS_EXPORT InputMethodBase : public InputMethod,
   // implementation.
   virtual void OnTextInputTypeChanged(View* view) OVERRIDE;
 
-  virtual ui::TextInputClient* GetTextInputClient() const OVERRIDE;
+  virtual TextInputClient* GetTextInputClient() const OVERRIDE;
   virtual ui::TextInputType GetTextInputType() const OVERRIDE;
   virtual bool IsMock() const OVERRIDE;
 

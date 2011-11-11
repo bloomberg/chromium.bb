@@ -19,11 +19,11 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
-#include "ui/base/ime/text_input_client.h"
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/events/event.h"
+#include "views/ime/text_input_client.h"
 #include "views/touchui/touch_selection_controller.h"
 #include "views/view.h"
 #include "webkit/glue/webcursor.h"
@@ -49,7 +49,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
                                   public ui::CompositorObserver,
 #endif
                                   public views::TouchSelectionClientView,
-                                  public ui::TextInputClient,
+                                  public views::TextInputClient,
                                   public content::NotificationObserver {
  public:
   // Internal class name.
@@ -157,11 +157,11 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;
-  virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
+  virtual views::TextInputClient* GetTextInputClient() OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
 
-  // Overridden from ui::TextInputClient:
+  // Overridden from TextInputClient:
   virtual void SetCompositionText(
       const ui::CompositionText& composition) OVERRIDE;
   virtual void ConfirmCompositionText() OVERRIDE;
@@ -181,6 +181,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void OnInputMethodChanged() OVERRIDE;
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE;
+  virtual views::View* GetOwnerViewOfTextInputClient() OVERRIDE;
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   virtual void AcceleratedSurfaceNew(

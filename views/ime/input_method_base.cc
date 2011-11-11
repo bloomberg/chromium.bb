@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/text_input_client.h"
 #include "views/ime/input_method_base.h"
 #include "views/ime/text_input_type_tracker.h"
 #include "views/view.h"
@@ -71,13 +70,13 @@ void InputMethodBase::OnTextInputTypeChanged(View* view) {
   }
 }
 
-ui::TextInputClient* InputMethodBase::GetTextInputClient() const {
+TextInputClient* InputMethodBase::GetTextInputClient() const {
   return (widget_focused_ && GetFocusedView()) ?
       GetFocusedView()->GetTextInputClient() : NULL;
 }
 
 ui::TextInputType InputMethodBase::GetTextInputType() const {
-  ui::TextInputClient* client = GetTextInputClient();
+  TextInputClient* client = GetTextInputClient();
   return client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
 }
 
@@ -104,7 +103,7 @@ bool InputMethodBase::IsTextInputTypeNone() const {
 }
 
 void InputMethodBase::OnInputMethodChanged() const {
-  ui::TextInputClient* client = GetTextInputClient();
+  TextInputClient* client = GetTextInputClient();
   if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE)
     client->OnInputMethodChanged();
 }
@@ -116,7 +115,7 @@ void InputMethodBase::DispatchKeyEventPostIME(const KeyEvent& key) const {
 
 bool InputMethodBase::GetCaretBoundsInWidget(gfx::Rect* rect) const {
   DCHECK(rect);
-  ui::TextInputClient* client = GetTextInputClient();
+  TextInputClient* client = GetTextInputClient();
   if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
     return false;
 

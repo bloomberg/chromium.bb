@@ -8,7 +8,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "ui/base/ime/text_input_client.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/font.h"
 #include "views/border.h"
@@ -16,6 +15,7 @@
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/controls/textfield/textfield_views_model.h"
 #include "views/drag_controller.h"
+#include "views/ime/text_input_client.h"
 #include "views/touchui/touch_selection_controller.h"
 #include "views/view.h"
 
@@ -46,7 +46,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
                                           public ContextMenuController,
                                           public DragController,
                                           public NativeTextfieldWrapper,
-                                          public ui::TextInputClient,
+                                          public TextInputClient,
                                           public TextfieldViewsModel::Delegate {
  public:
   explicit NativeTextfieldViews(Textfield* parent);
@@ -119,7 +119,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   virtual bool HandleKeyReleased(const KeyEvent& e) OVERRIDE;
   virtual void HandleFocus() OVERRIDE;
   virtual void HandleBlur() OVERRIDE;
-  virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
+  virtual TextInputClient* GetTextInputClient() OVERRIDE;
   virtual void ApplyStyleRange(const gfx::StyleRange& style) OVERRIDE;
   virtual void ApplyDefaultStyle() OVERRIDE;
   virtual void ClearEditHistory() OVERRIDE;
@@ -143,7 +143,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   friend class NativeTextfieldViewsTest;
   friend class TouchSelectionControllerImplTest;
 
-  // Overridden from ui::TextInputClient:
+  // Overridden from TextInputClient:
   virtual void SetCompositionText(
       const ui::CompositionText& composition) OVERRIDE;
   virtual void ConfirmCompositionText() OVERRIDE;
@@ -163,6 +163,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   virtual void OnInputMethodChanged() OVERRIDE;
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE;
+  virtual View* GetOwnerViewOfTextInputClient() OVERRIDE;
 
   // Overridden from TextfieldViewsModel::Delegate:
   virtual void OnCompositionTextConfirmedOrCleared() OVERRIDE;

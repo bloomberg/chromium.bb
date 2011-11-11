@@ -288,7 +288,7 @@ void NativeTextfieldGtk::HandleFocus() {
 void NativeTextfieldGtk::HandleBlur() {
 }
 
-ui::TextInputClient* NativeTextfieldGtk::GetTextInputClient() {
+TextInputClient* NativeTextfieldGtk::GetTextInputClient() {
   return NULL;
 }
 

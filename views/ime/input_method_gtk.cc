@@ -209,7 +209,7 @@ void InputMethodGtk::OnDidChangeFocus(View* focused_before, View* focused) {
 }
 
 void InputMethodGtk::ConfirmCompositionText() {
-  ui::TextInputClient* client = GetTextInputClient();
+  TextInputClient* client = GetTextInputClient();
   if (client && client->HasCompositionText())
     client->ConfirmCompositionText();
 
@@ -297,14 +297,14 @@ void InputMethodGtk::ProcessUnfilteredKeyPressEvent(const KeyEvent& key) {
   // event (ctrl-a, return, tab, etc.). We need to send the character to the
   // focused text input client by calling TextInputClient::InsertChar().
   char16 ch = key.GetCharacter();
-  ui::TextInputClient* client = GetTextInputClient();
+  TextInputClient* client = GetTextInputClient();
   if (ch && client)
     client->InsertChar(ch, key.flags());
 }
 
 void InputMethodGtk::ProcessInputMethodResult(const KeyEvent& key,
                                               bool filtered) {
-  ui::TextInputClient* client = GetTextInputClient();
+  TextInputClient* client = GetTextInputClient();
   DCHECK(client);
 
   if (result_text_.length()) {
@@ -427,7 +427,7 @@ void InputMethodGtk::OnPreeditEnd(GtkIMContext* context) {
   composition_.Clear();
 
   if (!handling_key_event_) {
-    ui::TextInputClient* client = GetTextInputClient();
+    TextInputClient* client = GetTextInputClient();
     if (client && client->HasCompositionText())
       client->ClearCompositionText();
   }

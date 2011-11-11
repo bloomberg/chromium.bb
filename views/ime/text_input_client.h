@@ -2,26 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_TEXT_INPUT_CLIENT_H_
-#define UI_BASE_IME_TEXT_INPUT_CLIENT_H_
+#ifndef VIEWS_IME_TEXT_INPUT_CLIENT_H_
+#define VIEWS_IME_TEXT_INPUT_CLIENT_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
-#include "base/i18n/rtl.h"
 #include "base/string16.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/range/range.h"
-#include "ui/base/ui_export.h"
+#include "views/views_export.h"
 
 namespace gfx {
 class Rect;
 }
 
-namespace ui {
+namespace views {
+
+class View;
 
 // An interface implemented by a View that needs text input support.
-class UI_EXPORT TextInputClient {
+class VIEWS_EXPORT TextInputClient {
  public:
   virtual ~TextInputClient() {}
 
@@ -112,8 +115,11 @@ class UI_EXPORT TextInputClient {
   // Returns false if the operation is not supported.
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) = 0;
+
+  // Gets the View object who owns this TextInputClient instance.
+  virtual View* GetOwnerViewOfTextInputClient() = 0;
 };
 
-}  // namespace ui
+}  // namespace views
 
-#endif  // UI_BASE_IME_TEXT_INPUT_CLIENT_H_
+#endif  // VIEWS_IME_TEXT_INPUT_CLIENT_H_

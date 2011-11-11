@@ -68,7 +68,7 @@ void InputMethodWayland::ProcessKeyPressEvent(const KeyEvent& key) {
   // event (ctrl-a, return, tab, etc.). We need to send the character to the
   // focused text input client by calling TextInputClient::InsertChar().
   char16 ch = key.GetCharacter();
-  ui::TextInputClient* client = GetTextInputClient();
+  TextInputClient* client = GetTextInputClient();
   if (ch && client)
     client->InsertChar(ch, key.flags());
 }

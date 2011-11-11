@@ -18,13 +18,13 @@ struct StyleRange;
 
 namespace ui {
 class Range;
-class TextInputClient;
 }  // namespace ui
 
 namespace views {
 
 class KeyEvent;
 class Textfield;
+class TextInputClient;
 class View;
 
 // An interface implemented by an object that provides a platform-native
@@ -132,7 +132,7 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
 
   // Returns the View's TextInputClient instance or NULL if the View doesn't
   // support text input.
-  virtual ui::TextInputClient* GetTextInputClient() = 0;
+  virtual TextInputClient* GetTextInputClient() = 0;
 
   // Applies the |style| to the text specified by its range.
   // See |Textfield::ApplyStyleRange| for detail.

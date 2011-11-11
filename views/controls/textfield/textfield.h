@@ -31,7 +31,6 @@ struct StyleRange;
 
 namespace ui {
 class Range;
-class TextInputClient;
 }  // namespace ui
 
 namespace views {
@@ -236,7 +235,7 @@ class VIEWS_EXPORT Textfield : public View {
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
+  virtual TextInputClient* GetTextInputClient() OVERRIDE;
 
  protected:
   virtual void ViewHierarchyChanged(bool is_add, View* parent,

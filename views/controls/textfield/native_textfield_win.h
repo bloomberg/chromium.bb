@@ -92,7 +92,7 @@ class NativeTextfieldWin
   virtual bool HandleKeyReleased(const views::KeyEvent& event) OVERRIDE;
   virtual void HandleFocus() OVERRIDE;
   virtual void HandleBlur() OVERRIDE;
-  virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
+  virtual TextInputClient* GetTextInputClient() OVERRIDE;
   virtual void ApplyStyleRange(const gfx::StyleRange& style) OVERRIDE;
   virtual void ApplyDefaultStyle() OVERRIDE;
   virtual void ClearEditHistory() OVERRIDE;

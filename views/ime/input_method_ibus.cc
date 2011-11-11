@@ -596,7 +596,7 @@ void InputMethodIBus::DestroyContext() {
 }
 
 void InputMethodIBus::ConfirmCompositionText() {
-  ui::TextInputClient* client = GetTextInputClient();
+  TextInputClient* client = GetTextInputClient();
   if (client && client->HasCompositionText())
     client->ConfirmCompositionText();
 
@@ -744,7 +744,7 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(const KeyEvent& key,
   if (character_composer_.FilterKeyPress(ibus_keyval)) {
     string16 composed = character_composer_.composed_character();
     if (!composed.empty()) {
-      ui::TextInputClient* client = GetTextInputClient();
+      TextInputClient* client = GetTextInputClient();
       if (client)
         client->InsertText(composed);
     }
@@ -754,7 +754,7 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(const KeyEvent& key,
   // then it means the key event didn't generate any result text. So we need
   // to send corresponding character to the focused text input client.
 
-  ui::TextInputClient* client = GetTextInputClient();
+  TextInputClient* client = GetTextInputClient();
   char16 ch = key.GetCharacter();
   if (ch && client)
     client->InsertChar(ch, key.flags());
@@ -762,7 +762,7 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(const KeyEvent& key,
 
 void InputMethodIBus::ProcessInputMethodResult(const KeyEvent& key,
                                               bool filtered) {
-  ui::TextInputClient* client = GetTextInputClient();
+  TextInputClient* client = GetTextInputClient();
   DCHECK(client);
 
   if (result_text_.length()) {
@@ -939,7 +939,7 @@ void InputMethodIBus::OnHidePreeditText(IBusInputContext* context) {
   composition_.Clear();
 
   if (pending_key_events_.empty()) {
-    ui::TextInputClient* client = GetTextInputClient();
+    TextInputClient* client = GetTextInputClient();
     if (client && client->HasCompositionText())
       client->ClearCompositionText();
     composition_changed_ = false;

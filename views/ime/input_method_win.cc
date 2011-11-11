@@ -7,8 +7,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "ui/base/ime/composition_text.h"
-#include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/events/event.h"
 
@@ -287,7 +285,7 @@ LRESULT InputMethodWin::OnDeadChar(
 }
 
 LRESULT InputMethodWin::OnDocumentFeed(RECONVERTSTRING* reconv) {
-  ui::TextInputClient* client = GetTextInputClient();
+  TextInputClient* client = GetTextInputClient();
   if (!client)
     return 0;
 
@@ -350,7 +348,7 @@ LRESULT InputMethodWin::OnDocumentFeed(RECONVERTSTRING* reconv) {
 }
 
 LRESULT InputMethodWin::OnReconvertString(RECONVERTSTRING* reconv) {
-  ui::TextInputClient* client = GetTextInputClient();
+  TextInputClient* client = GetTextInputClient();
   if (!client)
     return 0;
 

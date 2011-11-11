@@ -304,6 +304,7 @@
         'ime/input_method_win.h',
         'ime/mock_input_method.cc',
         'ime/mock_input_method.h',
+        'ime/text_input_client.h',
         'ime/text_input_type_tracker.h',
         'ime/text_input_type_tracker.cc',
         'layout/box_layout.cc',

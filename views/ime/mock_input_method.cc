@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/events/event.h"
 #include "views/widget/widget.h"
@@ -58,7 +57,7 @@ void MockInputMethod::DispatchKeyEvent(const KeyEvent& key) {
   if (focus_changed_)
     return;
 
-  ui::TextInputClient* client = GetTextInputClient();
+  TextInputClient* client = GetTextInputClient();
   if (client) {
     if (handled) {
       if (result_text_.length())
@@ -113,7 +112,7 @@ bool MockInputMethod::IsMock() const {
 }
 
 void MockInputMethod::OnWillChangeFocus(View* focused_before, View* focused)  {
-  ui::TextInputClient* client = GetTextInputClient();
+  TextInputClient* client = GetTextInputClient();
   if (client && client->HasCompositionText())
     client->ConfirmCompositionText();
   focus_changed_ = true;
