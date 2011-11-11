@@ -13,13 +13,15 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "content/browser/renderer_host/media/mock_media_observer.h"
-#include "content/renderer/media/audio_renderer_impl.h"
 #include "content/renderer/mock_content_renderer_client.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/common_types.h"
 
+class AudioInputRendererHost;
 class AudioRendererHost;
 class RenderThreadImpl;
 class WebRTCMockRenderProcess;
@@ -34,6 +36,10 @@ namespace content {
 class ContentRendererClient;
 class ResourceContext;
 class TestBrowserThread;
+}
+
+namespace media_stream {
+class MediaStreamManager;
 }
 
 namespace net {
@@ -170,10 +176,13 @@ class WebRTCAudioDeviceTest
   scoped_ptr<WebRTCMockRenderProcess> mock_process_;
   base::WaitableEvent event_;
   scoped_ptr<MockMediaObserver> media_observer_;
+  scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
   scoped_ptr<content::ResourceContext> resource_context_;
   scoped_refptr<net::URLRequestContext> test_request_context_;
   scoped_ptr<IPC::Channel> channel_;
   scoped_refptr<AudioRendererHost> audio_render_host_;
+  scoped_refptr<AudioInputRendererHost> audio_input_renderer_host_;
+
   AudioUtilInterface* audio_util_callback_;  // Weak reference.
 
   // Initialized on the main test thread that we mark as the UI thread.

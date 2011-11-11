@@ -11,7 +11,9 @@
 #include "base/test/signaling_task.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/scoped_com_initializer.h"
+#include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/mock_media_observer.h"
 #include "content/browser/resource_context.h"
 #include "content/common/view_messages.h"
@@ -80,6 +82,9 @@ class WebRTCMockResourceContext : public content::ResourceContext {
   WebRTCMockResourceContext() {}
   virtual ~WebRTCMockResourceContext() {}
   virtual void EnsureInitialized() const OVERRIDE {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebRTCMockResourceContext);
 };
 
 ACTION_P(QuitMessageLoop, loop_or_proxy) {
@@ -143,6 +148,8 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
   resource_context_->set_request_context(test_request_context_.get());
   media_observer_.reset(new MockMediaObserver());
   resource_context_->set_media_observer(media_observer_.get());
+  media_stream_manager_.reset(new media_stream::MediaStreamManager());
+  resource_context_->set_media_stream_manager(media_stream_manager_.get());
 
   CreateChannel(thread_name, resource_context_.get());
 }
@@ -150,6 +157,7 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
 void WebRTCAudioDeviceTest::UninitializeIOThread() {
   DestroyChannel();
   resource_context_.reset();
+  media_stream_manager_.reset();
   test_request_context_ = NULL;
   initialize_com_.reset();
 }
@@ -161,16 +169,23 @@ void WebRTCAudioDeviceTest::CreateChannel(
   audio_render_host_ = new AudioRendererHost(resource_context);
   audio_render_host_->OnChannelConnected(base::GetCurrentProcId());
 
+  audio_input_renderer_host_ = new AudioInputRendererHost(resource_context);
+  audio_input_renderer_host_->OnChannelConnected(base::GetCurrentProcId());
+
   channel_.reset(new IPC::Channel(name, IPC::Channel::MODE_SERVER, this));
   ASSERT_TRUE(channel_->Connect());
 
   audio_render_host_->OnFilterAdded(channel_.get());
+  audio_input_renderer_host_->OnFilterAdded(channel_.get());
 }
 
 void WebRTCAudioDeviceTest::DestroyChannel() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  audio_render_host_->OnChannelClosing();
+  audio_input_renderer_host_->OnChannelClosing();
   channel_.reset();
   audio_render_host_ = NULL;
+  audio_input_renderer_host_ = NULL;
 }
 
 void WebRTCAudioDeviceTest::OnGetHardwareSampleRate(double* sample_rate) {
@@ -201,6 +216,12 @@ bool WebRTCAudioDeviceTest::OnMessageReceived(const IPC::Message& message) {
   if (audio_render_host_.get()) {
     bool message_was_ok = false;
     if (audio_render_host_->OnMessageReceived(message, &message_was_ok))
+      return true;
+  }
+
+  if (audio_input_renderer_host_.get()) {
+    bool message_was_ok = false;
+    if (audio_input_renderer_host_->OnMessageReceived(message, &message_was_ok))
       return true;
   }
 
@@ -251,7 +272,6 @@ WebRTCTransportImpl::WebRTCTransportImpl(webrtc::VoENetwork* network)
 WebRTCTransportImpl::~WebRTCTransportImpl() {}
 
 int WebRTCTransportImpl::SendPacket(int channel, const void* data, int len) {
-  ADD_FAILURE();  // We don't expect a call to this method in our tests.
   return network_->ReceivedRTPPacket(channel, data, len);
 }
 
