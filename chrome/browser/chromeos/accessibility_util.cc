@@ -8,9 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/speech_synthesizer_client.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
+#include "chrome/browser/extensions/extension_tts_api_platform.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/file_reader.h"
@@ -101,8 +100,7 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
 
   Speak(enabled ?
         l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_ENABLED).c_str() :
-        l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_DISABLED).c_str(),
-        false, true);
+        l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_DISABLED).c_str());
 
   // Load/Unload ChromeVox
   Profile* profile = ProfileManager::GetDefaultProfile();
@@ -149,18 +147,13 @@ void ToggleAccessibility(WebUI* login_web_ui) {
   EnableAccessibility(accessibility_enabled, login_web_ui);
 };
 
-void Speak(const char* speak_str, bool queue, bool interruptible) {
-  if (queue || !interruptible) {
-    std::string props = "";
-    props.append("enqueue=");
-    props.append(queue ? "1;" : "0;");
-    props.append("interruptible=");
-    props.append(interruptible ? "1;" : "0;");
-    chromeos::DBusThreadManager::Get()->GetSpeechSynthesizerClient()->
-        SetSpeakProperties(props);
-  }
-  chromeos::DBusThreadManager::Get()->GetSpeechSynthesizerClient()->
-      Speak(speak_str);
+void Speak(const char* utterance) {
+  UtteranceContinuousParameters params;
+  ExtensionTtsPlatformImpl::GetInstance()->Speak(
+      -1,  // No utterance ID because we don't need a callback when it finishes.
+      utterance,
+      g_browser_process->GetApplicationLocale(),
+      params);
 }
 
 

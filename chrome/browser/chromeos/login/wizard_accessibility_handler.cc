@@ -108,7 +108,7 @@ void WizardAccessibilityHandler::Observe(
   std::string description;
   EarconType earcon = NO_EARCON;
   DescribeAccessibilityEvent(type, control_info, &description, &earcon);
-  accessibility::Speak(description.c_str(), false, true);
+  accessibility::Speak(description.c_str());
 }
 
 void WizardAccessibilityHandler::DescribeAccessibilityEvent(

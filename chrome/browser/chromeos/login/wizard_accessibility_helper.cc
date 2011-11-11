@@ -92,7 +92,10 @@ bool WizardAccessibilityHelper::IsAccessibilityEnabled() {
 void WizardAccessibilityHelper::MaybeSpeak(const char* str, bool queue,
     bool interruptible) {
   if (IsAccessibilityEnabled()) {
-    accessibility::Speak(str, queue, interruptible);
+    // Note: queue and interruptible are no longer supported, but
+    // that shouldn't matter because the whole views-based wizard
+    // is obsolete and should be deleted soon.
+    accessibility::Speak(str);
   }
 }
 
