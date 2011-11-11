@@ -119,9 +119,9 @@ void TokenService::UpdateCredentials(
   SaveAuthTokenToDB(GaiaConstants::kGaiaLsid, credentials.lsid);
   SaveAuthTokenToDB(GaiaConstants::kGaiaSid, credentials.sid);
 
-  // Cancels any currently running requests.
+  // Cancel any currently running requests.
   for (int i = 0; i < kNumServices; i++) {
-    fetchers_[i].reset(new GaiaAuthFetcher(this, source_, getter_));
+    fetchers_[i].reset();
   }
 }
 
@@ -135,10 +135,9 @@ void TokenService::UpdateOAuthCredentials(
   SaveAuthTokenToDB(GaiaConstants::kGaiaOAuthToken, oauth_token);
   SaveAuthTokenToDB(GaiaConstants::kGaiaOAuthSecret, oauth_secret);
 
-  // Cancels any currently running requests.
+  // Cancel any currently running requests.
   for (int i = 0; i < kNumOAuthServices; i++) {
-    oauth_fetchers_[i].reset(
-        new GaiaOAuthFetcher(this, getter_, profile_, kUnusedServiceScope));
+    oauth_fetchers_[i].reset();
   }
 }
 
@@ -189,6 +188,22 @@ void TokenService::StartFetchingTokens() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(AreCredentialsValid());
   for (int i = 0; i < kNumServices; i++) {
+    fetchers_[i].reset(new GaiaAuthFetcher(this, source_, getter_));
+    fetchers_[i]->StartIssueAuthToken(credentials_.sid,
+                                      credentials_.lsid,
+                                      kServices[i]);
+  }
+}
+
+void TokenService::StartFetchingMissingTokens() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(AreCredentialsValid());
+  for (int i = 0; i < kNumServices; i++) {
+    // if token exists for a service, skip for that service.
+    if (HasTokenForService(kServices[i]))
+      continue;
+
+    fetchers_[i].reset(new GaiaAuthFetcher(this, source_, getter_));
     fetchers_[i]->StartIssueAuthToken(credentials_.sid,
                                       credentials_.lsid,
                                       kServices[i]);
@@ -199,6 +214,8 @@ void TokenService::StartFetchingOAuthTokens() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(HasOAuthCredentials());
   for (int i = 0; i < kNumOAuthServices; i++) {
+    oauth_fetchers_[i].reset(
+        new GaiaOAuthFetcher(this, getter_, profile_, kUnusedServiceScope));
     oauth_fetchers_[i]->StartOAuthWrapBridge(oauth_token_,
                                              oauth_secret_,
                                              GaiaConstants::kGaiaOAuthDuration,
@@ -208,7 +225,7 @@ void TokenService::StartFetchingOAuthTokens() {
 
 // Services dependent on a token will check if a token is available.
 // If it isn't, they'll go to sleep until they get a token event.
-bool TokenService::HasTokenForService(const char* const service) const {
+bool TokenService::HasTokenForService(const char* service) const {
   return token_map_.count(service) > 0;
 }
 

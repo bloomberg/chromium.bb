@@ -135,7 +135,7 @@ class TokenService : public GaiaAuthConsumer,
   bool HasLsid() const;
   const std::string& GetLsid() const;
   // Did we get a proper LSID?
-  bool AreCredentialsValid() const;
+  virtual bool AreCredentialsValid() const;
 
   // For services with their own auth routines, they can read the OAuth token
   // and secret directly. Deprecated (in the sense of discouraged).
@@ -147,8 +147,12 @@ class TokenService : public GaiaAuthConsumer,
   // Results come back via event channel. Services can also poll before events
   // are issued.
   void StartFetchingTokens();
+  // Fetch tokens for only those services for which we are missing tokens.
+  // This can happen when new services are added in new Chrome versions and the
+  // user is already logged in.
+  void StartFetchingMissingTokens();
   void StartFetchingOAuthTokens();
-  bool HasTokenForService(const char* const service) const;
+  virtual bool HasTokenForService(const char* service) const;
   const std::string& GetTokenForService(const char* const service) const;
 
   // For tests only. Doesn't save to the WebDB.
@@ -249,6 +253,7 @@ class TokenService : public GaiaAuthConsumer,
 
   FRIEND_TEST_ALL_PREFIXES(TokenServiceTest, LoadTokensIntoMemoryBasic);
   FRIEND_TEST_ALL_PREFIXES(TokenServiceTest, LoadTokensIntoMemoryAdvanced);
+  FRIEND_TEST_ALL_PREFIXES(TokenServiceTest, FullIntegrationNewServicesAdded);
 
   DISALLOW_COPY_AND_ASSIGN(TokenService);
 };
