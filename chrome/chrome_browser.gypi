@@ -4786,6 +4786,8 @@
                 ['include', '^browser/ui/views/location_bar/page_action_with_badge_view.h'],
                 ['include', '^browser/ui/views/location_bar/selected_keyword_view.cc'],
                 ['include', '^browser/ui/views/location_bar/selected_keyword_view.h'],
+                ['include', '^browser/ui/views/location_bar/suggested_text_view.cc'],
+                ['include', '^browser/ui/views/location_bar/suggested_text_view.h'],
                 ['include', '^browser/ui/views/location_bar/star_view.cc'],
                 ['include', '^browser/ui/views/location_bar/star_view.h'],
                 ['include', '^browser/ui/views/notifications/balloon_view.cc'],
