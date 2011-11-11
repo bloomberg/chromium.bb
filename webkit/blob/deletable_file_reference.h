@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "webkit/blob/blob_export.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -20,7 +21,8 @@ namespace webkit_blob {
 
 // A refcounted wrapper around a FilePath that schedules the file
 // to be deleted upon final release.
-class DeletableFileReference : public base::RefCounted<DeletableFileReference> {
+class BLOB_EXPORT DeletableFileReference :
+    public base::RefCounted<DeletableFileReference> {
  public:
   typedef base::Callback<void(const FilePath&)> DeletionCallback;
 

@@ -6,10 +6,16 @@
   'targets': [
     {
       'target_name': 'blob',
-      'type': 'static_library',
+      'type': '<(component)',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/base/base.gyp:base_i18n',
+        '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/net/net.gyp:net',
+      ],
+      'defines': [
+        'BLOB_IMPLEMENTATION'
       ],
       'sources': [
         'blob_data.cc',
@@ -29,6 +35,13 @@
         ['inside_chromium_build==0', {
           'dependencies': [
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
+          ],
+        }],
+        # TODO(dpranke): Figure out why this works at all and/or get
+        # rid of it.
+        ['OS=="win" and component == "shared_library"', {
+          'dependencies': [
+            '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
           ],
         }],
       ],

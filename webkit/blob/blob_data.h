@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/blob/blob_export.h"
 #include "webkit/blob/deletable_file_reference.h"
 
 namespace WebKit {
@@ -20,7 +21,7 @@ class WebBlobData;
 
 namespace webkit_blob {
 
-class BlobData : public base::RefCounted<BlobData> {
+class BLOB_EXPORT BlobData : public base::RefCounted<BlobData> {
  public:
   enum Type {
     TYPE_DATA,
@@ -29,7 +30,7 @@ class BlobData : public base::RefCounted<BlobData> {
     TYPE_BLOB
   };
 
-  struct Item {
+  struct BLOB_EXPORT Item {
     Item();
     ~Item();
 

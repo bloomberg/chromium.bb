@@ -1,19 +1,38 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/blob/blob_data.h"
 
 #include "base/logging.h"
+#include "base/sys_string_conversions.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlobData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
-#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebBlobData;
 using WebKit::WebData;
 using WebKit::WebString;
+
+namespace {
+
+// TODO(dpranke): These two functions are cloned from webkit_glue
+// to avoid a dependency on that library. This should be fixed.
+FilePath::StringType WebStringToFilePathString(const WebString& str) {
+#if defined(OS_POSIX)
+  return base::SysWideToNativeMB(UTF16ToWideHack(str));
+#elif defined(OS_WIN)
+  return UTF16ToWideHack(str);
+#endif
+}
+
+FilePath WebStringToFilePath(const WebString& str) {
+  return FilePath(WebStringToFilePathString(str));
+}
+
+}
 
 namespace webkit_blob {
 
@@ -42,7 +61,7 @@ BlobData::BlobData(const WebBlobData& data) {
         break;
       case WebBlobData::Item::TypeFile:
         AppendFile(
-            webkit_glue::WebStringToFilePath(item.filePath),
+            WebStringToFilePath(item.filePath),
             static_cast<uint64>(item.offset),
             static_cast<uint64>(item.length),
             base::Time::FromDoubleT(item.expectedModificationTime));

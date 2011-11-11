@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process.h"
 #include "webkit/blob/blob_data.h"
+#include "webkit/blob/blob_export.h"
 
 class GURL;
 class FilePath;
@@ -26,7 +27,7 @@ class UploadData;
 namespace webkit_blob {
 
 // This class handles the logistics of blob Storage within the browser process.
-class BlobStorageController {
+class BLOB_EXPORT BlobStorageController {
  public:
   BlobStorageController();
   ~BlobStorageController();
