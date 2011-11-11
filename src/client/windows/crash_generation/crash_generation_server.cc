@@ -119,7 +119,8 @@ CrashGenerationServer::CrashGenerationServer(
       shutting_down_(false),
       overlapped_(),
       client_info_(NULL),
-      cleanup_item_count_(0) {
+      cleanup_item_count_(0),
+      preferred_parent_thread_id_(0) {
   InitializeCriticalSection(&clients_sync_);
 
   if (dump_path) {
@@ -600,6 +601,9 @@ bool CrashGenerationServer::PrepareReply(const ClientInfo& client_info,
     CloseHandle(reply->server_alive_handle);
   }
 
+  if (reply->parent_dump_request_handle) {
+    CloseHandle(reply->parent_dump_request_handle);
+  }
   return false;
 }
 
@@ -621,6 +625,16 @@ bool CrashGenerationServer::CreateClientHandles(const ClientInfo& client_info,
                        client_info.process_handle(),
                        &reply->dump_generated_handle,
                        kDumpGeneratedEventAccess,
+                       FALSE,
+                       0)) {
+    return false;
+  }
+
+  if (!DuplicateHandle(current_process,
+                       client_info.parent_dump_requested_handle(),
+                       client_info.process_handle(),
+                       &reply->parent_dump_request_handle,
+                       kDumpRequestEventAccess,
                        FALSE,
                        0)) {
     return false;
@@ -754,6 +768,20 @@ bool CrashGenerationServer::AddClient(ClientInfo* client_info) {
 
   client_info->set_process_exit_wait_handle(process_wait_handle);
 
+  // OnParentDumpRequest will be called if the client requests
+  // a server side minidump be generated.
+  HANDLE parent_request_wait_handle = NULL;
+  if (!RegisterWaitForSingleObject(&parent_request_wait_handle,
+                                   client_info->parent_dump_requested_handle(),
+                                   OnParentDumpRequest,
+                                   client_info,
+                                   INFINITE,
+                                   kDumpRequestThreadFlags)) {
+    return false;
+  }
+
+  client_info->set_parent_dump_request_wait_handle(parent_request_wait_handle);
+
   // New scope to hold the lock for the shortest time.
   {
     AutoCriticalSection lock(&clients_sync_);
@@ -783,6 +811,20 @@ void CALLBACK CrashGenerationServer::OnDumpRequest(void* context, BOOLEAN) {
   crash_server->HandleDumpRequest(*client_info);
 
   ResetEvent(client_info->dump_requested_handle());
+}
+
+// static
+void CALLBACK CrashGenerationServer::OnParentDumpRequest(void* context, BOOLEAN) {
+  assert(context);
+  ClientInfo* client_info = reinterpret_cast<ClientInfo*>(context);
+  client_info->PopulateCustomInfo();
+
+  CrashGenerationServer* crash_server = client_info->crash_server();
+  assert(crash_server);
+
+  crash_server->HandleParentDumpRequest(*client_info);
+
+  ResetEvent(client_info->parent_dump_requested_handle());
 }
 
 // static
@@ -843,7 +885,34 @@ void CrashGenerationServer::HandleDumpRequest(const ClientInfo& client_info) {
 
   if (dump_callback_) {
     std::wstring* ptr_dump_path = (dump_path == L"") ? NULL : &dump_path;
-    dump_callback_(dump_context_, &client_info, ptr_dump_path);
+    dump_callback_(dump_context_, &client_info, DUMP_REQ_CHILD, ptr_dump_path);
+  }
+
+  SetEvent(client_info.dump_generated_handle());
+}
+
+void CrashGenerationServer::HandleParentDumpRequest(const ClientInfo& client_info) {
+  std::wstring dump_path;
+  if (generate_dumps_) {
+    DWORD preferred_thread_id = !preferred_parent_thread_id_ ?
+      GetCurrentThreadId() : preferred_parent_thread_id_;
+    bool success =
+      dump_generator_->WriteMinidump(GetCurrentProcess(),
+                                     GetCurrentProcessId(),
+                                     preferred_thread_id,
+                                     GetCurrentThreadId(),
+                                     NULL, // no exception
+                                     NULL, // no assert info
+                                     MiniDumpNormal,
+                                     true,
+                                     &dump_path);
+    if (!success)
+      return;
+  }
+
+  if (dump_callback_) {
+    std::wstring* ptr_dump_path = (dump_path == L"") ? NULL : &dump_path;
+    dump_callback_(dump_context_, &client_info, DUMP_REQ_PARENT, ptr_dump_path);
   }
 
   SetEvent(client_info.dump_generated_handle());

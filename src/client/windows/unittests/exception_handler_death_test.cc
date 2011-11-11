@@ -131,6 +131,7 @@ static bool gDumpCallbackCalled = false;
 
 void clientDumpCallback(void *dump_context,
                         const google_breakpad::ClientInfo *client_info,
+                        const google_breakpad::CrashGenerationServer::ClientDumpRequestType request_type,
                         const std::wstring *dump_path) {
   gDumpCallbackCalled = true;
 }

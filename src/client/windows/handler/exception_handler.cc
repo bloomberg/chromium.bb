@@ -704,6 +704,12 @@ bool ExceptionHandler::WriteMinidump(const wstring &dump_path,
   return handler.WriteMinidump();
 }
 
+bool ExceptionHandler::RequestMinidumpForParent() {
+  if (!IsOutOfProcess())
+    return false;
+  return crash_generation_client_->RequestParentDump();
+}
+
 bool ExceptionHandler::WriteMinidumpWithException(
     DWORD requesting_thread_id,
     EXCEPTION_POINTERS* exinfo,

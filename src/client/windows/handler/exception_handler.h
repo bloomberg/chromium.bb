@@ -190,6 +190,12 @@ class ExceptionHandler {
   static bool WriteMinidump(const wstring &dump_path,
                             MinidumpCallback callback, void* callback_context);
 
+  // Requests a minidump of the server be generated and waits for completion.
+  // This can be used to capture the execution state of parent process
+  // independent of a crash on either side of the connection. Only valid for
+  // out-of-process clients.
+  bool RequestMinidumpForParent();
+
   // Get the thread ID of the thread requesting the dump (either the exception
   // thread or any other thread that called WriteMinidump directly).  This
   // may be useful if you want to include additional thread state in your

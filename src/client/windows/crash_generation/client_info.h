@@ -65,6 +65,7 @@ class ClientInfo {
   HANDLE process_handle() const { return process_handle_; }
   HANDLE dump_requested_handle() const { return dump_requested_handle_; }
   HANDLE dump_generated_handle() const { return dump_generated_handle_; }
+  HANDLE parent_dump_requested_handle() const { return parent_dump_requested_handle_; }
 
   HANDLE dump_request_wait_handle() const {
     return dump_request_wait_handle_;
@@ -80,6 +81,14 @@ class ClientInfo {
 
   void set_process_exit_wait_handle(HANDLE value) {
     process_exit_wait_handle_ = value;
+  }
+
+  HANDLE parent_dump_request_wait_handle() const {
+    return parent_dump_request_wait_handle_;
+  }
+
+  void set_parent_dump_request_wait_handle(HANDLE value) {
+    parent_dump_request_wait_handle_ = value;
   }
 
   // Unregister all waits for the client.
@@ -150,11 +159,17 @@ class ClientInfo {
   // Dump generated event handle.
   HANDLE dump_generated_handle_;
 
+  // Parent dump request event handle.
+  HANDLE parent_dump_requested_handle_;
+
   // Wait handle for dump request event.
   HANDLE dump_request_wait_handle_;
 
   // Wait handle for process exit event.
   HANDLE process_exit_wait_handle_;
+
+  // Wait handle for parent dump request event.
+  HANDLE parent_dump_request_wait_handle_;
 
   // Time when the client process started. It is used to determine the uptime
   // for the client process when it signals a crash.

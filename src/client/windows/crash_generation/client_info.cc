@@ -50,6 +50,8 @@ ClientInfo::ClientInfo(CrashGenerationServer* crash_server,
       thread_id_(thread_id),
       process_handle_(NULL),
       dump_requested_handle_(NULL),
+      parent_dump_requested_handle_(NULL),
+      parent_dump_request_wait_handle_(NULL),
       dump_generated_handle_(NULL),
       dump_request_wait_handle_(NULL),
       process_exit_wait_handle_(NULL) {
@@ -67,6 +69,14 @@ bool ClientInfo::Initialize() {
                                        FALSE,   // Initial state.
                                        NULL);   // Name.
   if (!dump_requested_handle_) {
+    return false;
+  }
+
+  parent_dump_requested_handle_ = CreateEvent(NULL,    // Security attributes.
+                                              TRUE,    // Manual reset.
+                                              FALSE,   // Initial state.
+                                              NULL);   // Name.
+  if (!parent_dump_requested_handle_) {
     return false;
   }
 
@@ -88,12 +98,20 @@ ClientInfo::~ClientInfo() {
     UnregisterWaitEx(process_exit_wait_handle_, INVALID_HANDLE_VALUE);
   }
 
+  if (parent_dump_request_wait_handle_) {
+    UnregisterWaitEx(parent_dump_request_wait_handle_, INVALID_HANDLE_VALUE);
+  }
+
   if (process_handle_) {
     CloseHandle(process_handle_);
   }
 
   if (dump_requested_handle_) {
     CloseHandle(dump_requested_handle_);
+  }
+
+  if (parent_dump_requested_handle_) {
+    CloseHandle(parent_dump_requested_handle_);
   }
 
   if (dump_generated_handle_) {
@@ -105,6 +123,11 @@ void ClientInfo::UnregisterWaits() {
   if (dump_request_wait_handle_) {
     UnregisterWait(dump_request_wait_handle_);
     dump_request_wait_handle_ = NULL;
+  }
+
+  if (parent_dump_request_wait_handle_) {
+    UnregisterWait(parent_dump_request_wait_handle_);
+    parent_dump_request_wait_handle_ = NULL;
   }
 
   if (process_exit_wait_handle_) {
