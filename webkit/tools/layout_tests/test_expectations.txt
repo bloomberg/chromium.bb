@@ -7,5 +7,8 @@
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
 
+BUG_SENORBLANCO GPU : fast/canvas/canvas-transforms-fillRect-shadow.html = TEXT
+
 // Fixed ES5 bugs during the V8 roll, upstream in progress.
 BUGMSTARZINGER : fast/js/mozilla/strict/15.4.5.1.html = TEXT
+
