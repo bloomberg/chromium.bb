@@ -4,8 +4,11 @@
 
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -59,4 +62,33 @@ bool RegisterIntentHandlerInfoBarDelegate::LinkClicked(
   // written.
   // TODO(jhawkins): Add associated bug for the article here.
   return false;
+}
+
+namespace {
+
+// Helper continuation for MaybeShowIntentInfoBar.
+void CheckProvider(InfoBarTabHelper* infobar_helper,
+                   WebIntentsRegistry* registry,
+                   const webkit_glue::WebIntentServiceData& service,
+                   bool provider_exists) {
+  if (!provider_exists) {
+    infobar_helper->AddInfoBar(new RegisterIntentHandlerInfoBarDelegate(
+        infobar_helper, registry, service));
+  }
+}
+
+}  // namespace
+
+// static
+void RegisterIntentHandlerInfoBarDelegate::MaybeShowIntentInfoBar(
+    InfoBarTabHelper* infobar_helper,
+    WebIntentsRegistry* registry,
+    const webkit_glue::WebIntentServiceData& service) {
+  DCHECK(infobar_helper);
+  DCHECK(registry);
+  registry->IntentProviderExists(service,
+                                 base::Bind(&CheckProvider,
+                                            base::Unretained(infobar_helper),
+                                            registry,
+                                            service));
 }

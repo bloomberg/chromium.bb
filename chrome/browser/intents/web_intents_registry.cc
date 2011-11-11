@@ -4,6 +4,7 @@
 
 #include "chrome/browser/intents/web_intents_registry.h"
 
+#include "base/callback.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "net/base/mime_util.h"
@@ -133,6 +134,53 @@ WebIntentsRegistry::QueryID WebIntentsRegistry::GetAllIntentProviders(
   query->consumer_ = consumer;
   query->type_ = ASCIIToUTF16("*");
   query->pending_query_ = wds_->GetAllWebIntentServices(this);
+  queries_[query->pending_query_] = query;
+
+  return query->query_id_;
+}
+
+// Trampoline consumer for calls to IntentProviderExists. Forwards existence
+// of the provided |service| to the provided |callback|.
+class ProviderCheckConsumer : public WebIntentsRegistry::Consumer {
+ public:
+  ProviderCheckConsumer(const WebIntentServiceData& service,
+                        const base::Callback<void(bool)>& callback)
+      : callback_(callback),
+        service_(service) {}
+  virtual ~ProviderCheckConsumer() {}
+
+  // Gets the list of all providers for a particular action. Check them all
+  // to see if |provider_| is already registered.
+  virtual void OnIntentsQueryDone(
+      WebIntentsRegistry::QueryID id,
+      const WebIntentsRegistry::IntentServiceList& list) OVERRIDE {
+    scoped_ptr<ProviderCheckConsumer> self_deleter(this);
+
+    for (WebIntentsRegistry::IntentServiceList::const_iterator i = list.begin();
+         i != list.end(); ++i) {
+      if (*i == service_) {
+        callback_.Run(true);
+        return;
+      }
+    }
+
+    callback_.Run(false);
+  }
+
+ private:
+  base::Callback<void(bool)> callback_;
+  WebIntentServiceData service_;
+};
+
+WebIntentsRegistry::QueryID WebIntentsRegistry::IntentProviderExists(
+    const WebIntentServiceData& provider,
+    const base::Callback<void(bool)>& callback) {
+  IntentsQuery* query = new IntentsQuery;
+  query->query_id_ = next_query_id_++;
+  query->type_ = ASCIIToUTF16("*");
+  query->consumer_ = new ProviderCheckConsumer(provider, callback);
+  query->pending_query_ = wds_->GetWebIntentServicesForURL(
+      UTF8ToUTF16(provider.service_url.spec()), this);
   queries_[query->pending_query_] = query;
 
   return query->query_id_;

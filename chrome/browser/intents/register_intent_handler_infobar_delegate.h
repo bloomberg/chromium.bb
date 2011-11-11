@@ -11,6 +11,7 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "webkit/glue/web_intent_service_data.h"
 
+class InfoBarTabHelper;
 class TabContents;
 class WebIntentsRegistry;
 
@@ -30,6 +31,17 @@ class RegisterIntentHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+
+  // Shows the intent registration infobar if |service| has not already been
+  // registered.
+  // |infobar_helper| is the infobar controller for the tab in which the infobar
+  // may be shown. Must not be NULL.
+  // |registry| is the data source for web intents. Must not be NULL.
+  // |service| is the candidate service to show the infobar for.
+  static void MaybeShowIntentInfoBar(
+      InfoBarTabHelper* infobar_helper,
+      WebIntentsRegistry* registry,
+      const webkit_glue::WebIntentServiceData& service);
 
  private:
   // The web intents registry to use. Weak pointer.

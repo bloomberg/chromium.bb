@@ -47,6 +47,11 @@ class WebIntentsTable : public WebDatabaseTable {
       const string16& action,
       std::vector<webkit_glue::WebIntentServiceData>* services);
 
+  // Retrieves all |services| from WebIntents table that match |service_url|.
+  bool GetWebIntentServicesForURL(
+      const string16& service_url,
+      std::vector<webkit_glue::WebIntentServiceData>* services);
+
   // Retrieve all |services| from WebIntents table.
   bool GetAllWebIntentServices(
       std::vector<webkit_glue::WebIntentServiceData>* services);

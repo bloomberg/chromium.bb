@@ -640,6 +640,10 @@ TEST_F(WebDataServiceTest, WebIntents) {
 
   WebIntentServiceData service;
   service.service_url = GURL("http://google.com");
+  service.action = ASCIIToUTF16("share1");
+  service.type = ASCIIToUTF16("image/*");
+  wds_->AddWebIntentService(service);
+
   service.action = ASCIIToUTF16("share");
   service.type = ASCIIToUTF16("image/*");
   wds_->AddWebIntentService(service);
@@ -672,6 +676,29 @@ TEST_F(WebDataServiceTest, WebIntents) {
   EXPECT_EQ(service.service_url, consumer.services_[0].service_url);
   EXPECT_EQ(service.action, consumer.services_[0].action);
   EXPECT_EQ(service.type, consumer.services_[0].type);
+}
+
+TEST_F(WebDataServiceTest, WebIntentsForURL) {
+  WebIntentsConsumer consumer;
+
+  WebIntentServiceData service;
+  service.service_url = GURL("http://google.com");
+  service.action = ASCIIToUTF16("share1");
+  service.type = ASCIIToUTF16("image/*");
+  wds_->AddWebIntentService(service);
+
+  service.action = ASCIIToUTF16("share");
+  service.type = ASCIIToUTF16("image/*");
+  wds_->AddWebIntentService(service);
+
+  wds_->GetWebIntentServicesForURL(
+      UTF8ToUTF16(service.service_url.spec()),
+      &consumer);
+  WebIntentsConsumer::WaitUntilCalled();
+  ASSERT_EQ(2U, consumer.services_.size());
+  EXPECT_EQ(service, consumer.services_[0]);
+  service.action = ASCIIToUTF16("share1");
+  EXPECT_EQ(service, consumer.services_[1]);
 }
 
 TEST_F(WebDataServiceTest, WebIntentsGetAll) {

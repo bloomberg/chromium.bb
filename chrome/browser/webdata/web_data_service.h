@@ -375,6 +375,11 @@ class WebDataService
   Handle GetWebIntentServices(const string16& action,
                               WebDataServiceConsumer* consumer);
 
+  // Get all web intent services registered using the specified |service_url|.
+  // |consumer| must not be NULL.
+  Handle GetWebIntentServicesForURL(const string16& service_url,
+                                    WebDataServiceConsumer* consumer);
+
   // Get all web intent services registered. |consumer| must not be NULL.
   Handle GetAllWebIntentServices(WebDataServiceConsumer* consumer);
 
@@ -627,6 +632,7 @@ class WebDataService
   void RemoveWebIntentServiceImpl(
       GenericRequest<webkit_glue::WebIntentServiceData>* request);
   void GetWebIntentServicesImpl(GenericRequest<string16>* request);
+  void GetWebIntentServicesForURLImpl(GenericRequest<string16>* request);
   void GetAllWebIntentServicesImpl(GenericRequest<std::string>* request);
 
   //////////////////////////////////////////////////////////////////////////////

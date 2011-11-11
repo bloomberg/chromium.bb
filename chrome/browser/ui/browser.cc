@@ -2591,11 +2591,10 @@ void Browser::RegisterIntentHandlerHelper(TabContents* tab,
   service.title = title;
   service.setDisposition(disposition);
 
-  InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
-  infobar_helper->AddInfoBar(new RegisterIntentHandlerInfoBarDelegate(
-      infobar_helper,
+  RegisterIntentHandlerInfoBarDelegate::MaybeShowIntentInfoBar(
+      tcw->infobar_tab_helper(),
       WebIntentsRegistryFactory::GetForProfile(tcw->profile()),
-      service));
+      service);
 }
 
 // static

@@ -16,6 +16,9 @@ namespace {
 bool ExtractIntents(sql::Statement* s,
                     std::vector<WebIntentServiceData>* services) {
   DCHECK(s);
+  if (!s->is_valid())
+    return false;
+
   while (s->Step()) {
     WebIntentServiceData service;
     string16 tmp = s->ColumnString16(0);
@@ -55,11 +58,11 @@ bool WebIntentsTable::Init() {
                     "title VARCHAR,"
                     "disposition VARCHAR,"
                     "UNIQUE (service_url, action, type))")) {
-    NOTREACHED();
+    return false;
   }
 
   if (!db_->Execute("CREATE INDEX web_intents_index ON web_intents (action)"))
-    NOTREACHED();
+    return false;
 
   return true;
 }
@@ -76,10 +79,23 @@ bool WebIntentsTable::GetWebIntentServices(
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT service_url, action, type, title, disposition FROM web_intents "
       "WHERE action=?"));
-  if (!s)
-    NOTREACHED() << "Statement prepare failed";
 
   s.BindString16(0, action);
+  return ExtractIntents(&s, services);
+}
+
+// TODO(gbillock): This currently does a full-table scan. Eventually we will
+// store registrations by domain, and so have an indexed origin. At that time,
+// this should just change to do lookup by origin instead of URL.
+bool WebIntentsTable::GetWebIntentServicesForURL(
+    const string16& service_url,
+    std::vector<WebIntentServiceData>* services) {
+  DCHECK(services);
+  sql::Statement s(db_->GetUniqueStatement(
+      "SELECT service_url, action, type, title, disposition FROM web_intents "
+      "WHERE service_url=?"));
+
+  s.BindString16(0, service_url);
   return ExtractIntents(&s, services);
 }
 
@@ -88,8 +104,6 @@ bool WebIntentsTable::GetAllWebIntentServices(
   DCHECK(services);
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT service_url, action, type, title, disposition FROM web_intents"));
-  if (!s)
-    NOTREACHED() << "Statement prepare failed";
 
   return ExtractIntents(&s, services);
 }
@@ -99,8 +113,6 @@ bool WebIntentsTable::SetWebIntentService(const WebIntentServiceData& service) {
       "INSERT OR REPLACE INTO web_intents "
       "(service_url, type, action, title, disposition) "
       "VALUES (?, ?, ?, ?, ?)"));
-  if (!s)
-    NOTREACHED() << "Statement prepare failed";
 
   // Default to window disposition.
   string16 disposition = ASCIIToUTF16("window");
@@ -122,8 +134,6 @@ bool WebIntentsTable::RemoveWebIntentService(
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM web_intents "
       "WHERE service_url = ? AND action = ? AND type = ?"));
-  if (!s)
-    NOTREACHED() << "Statement prepare failed";
 
   s.BindString(0, service.service_url.spec());
   s.BindString16(1, service.action);

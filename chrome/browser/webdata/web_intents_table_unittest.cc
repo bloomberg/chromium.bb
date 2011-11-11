@@ -20,6 +20,7 @@ using webkit_glue::WebIntentServiceData;
 namespace {
 
 GURL test_url("http://google.com/");
+GURL test_url_fake("http://fakegoogle.com/");
 string16 test_action = ASCIIToUTF16("http://webintents.org/intents/share");
 string16 test_action_2 = ASCIIToUTF16("http://webintents.org/intents/view");
 string16 test_title = ASCIIToUTF16("Test WebIntent");
@@ -157,4 +158,28 @@ TEST_F(WebIntentsTableTest, DispositionToStringMapping) {
   EXPECT_EQ(WebIntentServiceData::DISPOSITION_INLINE, services[0].disposition);
   EXPECT_EQ(WebIntentServiceData::DISPOSITION_WINDOW, services[1].disposition);
 }
+
+TEST_F(WebIntentsTableTest, GetByURL) {
+  WebIntentServiceData intent = MakeIntentService(
+      test_url, test_action, mime_image, test_title);
+  ASSERT_TRUE(IntentsTable()->SetWebIntentService(intent));
+
+  std::vector<WebIntentServiceData> intents;
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServicesForURL(
+      UTF8ToUTF16(test_url.spec()), &intents));
+  ASSERT_EQ(1U, intents.size());
+  EXPECT_EQ(intent, intents[0]);
+
+  intents.clear();
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServicesForURL(
+      UTF8ToUTF16(test_url_fake.spec()), &intents));
+  EXPECT_EQ(0U, intents.size());
+
+  intent.action = test_action_2;
+  ASSERT_TRUE(IntentsTable()->SetWebIntentService(intent));
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServicesForURL(
+      UTF8ToUTF16(test_url.spec()), &intents));
+  ASSERT_EQ(2U, intents.size());
+}
+
 } // namespace

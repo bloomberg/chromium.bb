@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_INTENTS_WEB_INTENTS_REGISTRY_H_
 #pragma once
 
+#include "base/callback.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -58,6 +59,13 @@ class WebIntentsRegistry
 
   // Requests all intent providers. |consumer| must not be NULL
   QueryID GetAllIntentProviders(Consumer* consumer);
+
+  // Tests for the existence of the given intent |provider|. Calls the
+  // provided |callback| with true if it exists, false if it does not.
+  // Checks for |provider| equality with ==.
+  QueryID IntentProviderExists(
+      const webkit_glue::WebIntentServiceData& provider,
+      const base::Callback<void(bool)>& callback);
 
  protected:
   // Make sure that only WebIntentsRegistryFactory can create an instance of
