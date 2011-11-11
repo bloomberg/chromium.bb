@@ -19,6 +19,7 @@ namespace gestures {
 // log it when requested.
 
 class LoggingFilterInterpreter : public Interpreter, public PropertyDelegate {
+  FRIEND_TEST(ActivityReplayTest, DISABLED_SimpleTest);
   FRIEND_TEST(LoggingFilterInterpreterTest, SimpleTest);
  public:
   // Takes ownership of |next|:

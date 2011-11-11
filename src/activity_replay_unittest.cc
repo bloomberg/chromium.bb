@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 
 #include "gestures/include/activity_replay.h"
+#include "gestures/include/logging_filter_interpreter.h"
 #include "gestures/include/gestures.h"
 
 using std::string;
@@ -33,6 +34,10 @@ TEST(ActivityReplayTest, DISABLED_SimpleTest) {
   ActivityReplay replay(prop_reg);
   replay.Parse(log_contents);
   replay.Replay(interpreter);
+
+  // Dump the new log
+  static_cast<LoggingFilterInterpreter*>(interpreter)->log_.Dump("testlog.txt");
+
   DeleteGestureInterpreter(c_interpreter);
 }
 

@@ -79,7 +79,7 @@ bool ActivityReplay::ParseProperties(DictionaryValue* dict) {
     Value* value = NULL;
     if (!dict->Get(key, &value)) {
       Err("Log doesn't have value for property %s", key);
-      return false;
+      continue;
     }
     if (!(*it)->SetValue(value)) {
       Err("Unable to restore value for property %s", key);
@@ -370,13 +370,19 @@ bool ActivityReplay::Replay(Interpreter* interpreter) {
       case ActivityLog::kHardwareState: {
         last_timeout_req = -1.0;
         HardwareState hs = entry->details.hwstate;
+        for (size_t i = 0; i < hs.finger_cnt; i++)
+          Log("Input Finger ID: %d", hs.fingers[i].tracking_id);
         last_gs = interpreter->SyncInterpret(&hs, &last_timeout_req);
+        if (last_gs)
+          Log("Ouput Gesture: %s", last_gs->String().c_str());
         break;
       }
       case ActivityLog::kTimerCallback:
         last_timeout_req = -1.0;
         last_gs = interpreter->HandleTimer(entry->details.timestamp,
                                            &last_timeout_req);
+        if (last_gs)
+         Log("Ouput Gesture: %s", last_gs->String().c_str());
         break;
       case ActivityLog::kCallbackRequest:
         if (!DoubleEq(last_timeout_req, entry->details.timestamp)) {
