@@ -127,8 +127,7 @@ class TestPrerenderContents : public PrerenderContents {
         should_be_shown_(expected_final_status == FINAL_STATUS_USED),
         quit_message_loop_on_destruction_(
             expected_final_status != FINAL_STATUS_EVICTED &&
-            expected_final_status != FINAL_STATUS_APP_TERMINATING &&
-            expected_final_status != FINAL_STATUS_MATCH_COMPLETE_DUMMY),
+            expected_final_status != FINAL_STATUS_APP_TERMINATING),
         expected_pending_prerenders_(0) {
     if (expected_number_of_loads == 0)
       MessageLoopForUI::current()->Quit();
@@ -304,11 +303,11 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
       const GURL& referrer,
       Origin origin,
       uint8 experiment_id) OVERRIDE {
-    FinalStatus expected_final_status = FINAL_STATUS_MATCH_COMPLETE_DUMMY;
-    if (!expected_final_status_queue_.empty()) {
-      expected_final_status = expected_final_status_queue_.front();
-      expected_final_status_queue_.pop_front();
-    }
+    CHECK(!expected_final_status_queue_.empty()) <<
+          "Creating prerender contents for " << url.path() <<
+          " with no expected final status";
+    FinalStatus expected_final_status = expected_final_status_queue_.front();
+    expected_final_status_queue_.pop_front();
     VLOG(1) << "Creating prerender contents for " << url.path() <<
                " with expected final status " << expected_final_status;
     VLOG(1) << expected_final_status_queue_.size() << " left in the queue.";
@@ -724,10 +723,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
       }
     } else {
       // In the failure case, we should have removed |dest_url_| from the
-      // prerender_manager.  We ignore dummy PrerenderContents (as indicated
-      // by not having started).
-      EXPECT_TRUE(prerender_contents == NULL ||
-                  !prerender_contents->prerendering_has_started());
+      // prerender_manager.
+      EXPECT_TRUE(prerender_contents == NULL);
     }
   }
 
@@ -1840,8 +1837,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Validate that the sessionStorage namespace remains the same when swapping
 // in a prerendered page.
-// http://crbug.com/103563
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderSessionStorage) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSessionStorage) {
   set_loader_path("files/prerender/prerender_loader_with_session_storage.html");
   PrerenderTestURL(GetCrossDomainTestUrl("files/prerender/prerender_page.html"),
                    FINAL_STATUS_USED,

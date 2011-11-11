@@ -49,7 +49,6 @@ const char* kFinalStatusNames[] = {
   "DevTools Attached To The Tab",
   "Session Storage Namespace Mismatch",
   "No Use Group",
-  "Match Complete Dummy",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,

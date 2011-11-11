@@ -106,7 +106,6 @@ class PrerenderContents : public content::NotificationObserver,
   int32 page_id() const { return page_id_; }
   GURL icon_url() const { return icon_url_; }
   const GURL& prerender_url() const { return prerender_url_; }
-  const GURL& referrer() const { return referrer_; }
   bool has_stopped_loading() const { return has_stopped_loading_; }
   bool prerendering_has_started() const { return prerendering_has_started_; }
 
@@ -125,7 +124,6 @@ class PrerenderContents : public content::NotificationObserver,
   FinalStatus final_status() const { return final_status_; }
 
   Origin origin() const { return origin_; }
-  uint8 experiment_id() const { return experiment_id_; }
 
   base::TimeTicks load_start_time() const { return load_start_time_; }
 
