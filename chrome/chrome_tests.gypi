@@ -6,7 +6,6 @@
     # Variables for js2gtest rules
     'gypv8sh': '../tools/gypv8sh.py',
     'js2gtest': 'test/base/js2gtest.js',
-    'js2gtest_out_dir': '<(SHARED_INTERMEDIATE_DIR)/js2gtest',
     'mock_js': 'third_party/mock4js/mock4js.js',
     'test_api_js': 'test/data/webui/test_api.js',
 
@@ -2013,7 +2012,7 @@
             '<(js2gtest)',
           ],
           'outputs': [
-            '<(js2gtest_out_dir)/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).cc',
+            '<(INTERMEDIATE_DIR)/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT)-gen.cc',
             '<(PRODUCT_DIR)/test_data/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).<(_extension)',
           ],
           'process_outputs_as_sources': 1,
@@ -2670,6 +2669,10 @@
         'test/data/webui/async_gen.js',
         'test/data/webui/certificate_viewer_dialog_test.js',
         'test/data/webui/certificate_viewer_ui_test-inl.h',
+        'test/data/webui/chrome_send_browsertest.cc',
+        'test/data/webui/chrome_send_browsertest.h',
+        'test/data/webui/chrome_send_browsertest.js',
+        'test/data/webui/mock4js_browsertest.js',
         'test/data/webui/ntp4.js',
         'test/data/webui/print_preview.js',
         # TODO(craig): Rename this and run from base_unittests when the test
@@ -2710,7 +2713,7 @@
             '<(js2gtest)',
           ],
           'outputs': [
-            '<(js2gtest_out_dir)/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).cc',
+            '<(INTERMEDIATE_DIR)/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT)-gen.cc',
             '<(PRODUCT_DIR)/test_data/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
           ],
           'process_outputs_as_sources': 1,
