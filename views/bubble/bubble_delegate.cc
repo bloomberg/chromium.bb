@@ -77,6 +77,7 @@ BubbleDelegateView::BubbleDelegateView()
     : close_on_esc_(true),
       close_on_deactivate_(true),
       allow_bubble_offscreen_(false),
+      anchor_view_(NULL),
       arrow_location_(BubbleBorder::TOP_LEFT),
       color_(SK_ColorWHITE),
       border_widget_(NULL),
@@ -86,13 +87,13 @@ BubbleDelegateView::BubbleDelegateView()
 }
 
 BubbleDelegateView::BubbleDelegateView(
-    const gfx::Point& anchor_point,
+    View* anchor_view,
     BubbleBorder::ArrowLocation arrow_location,
     const SkColor& color)
     : close_on_esc_(true),
       close_on_deactivate_(true),
       allow_bubble_offscreen_(false),
-      anchor_point_(anchor_point),
+      anchor_view_(anchor_view),
       arrow_location_(arrow_location),
       color_(color),
       original_opacity_(255),
@@ -108,14 +109,16 @@ BubbleDelegateView::~BubbleDelegateView() {
 }
 
 // static
-Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate,
-                                         Widget* parent_widget) {
+Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate) {
   bubble_delegate->Init();
+  Widget* parent_widget = bubble_delegate->anchor_view() ?
+      bubble_delegate->anchor_view()->GetWidget() : NULL;
   Widget* bubble_widget = CreateBubbleWidget(bubble_delegate, parent_widget);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-  bubble_delegate->InitializeBorderWidget(parent_widget);
+  // First set the contents view to initialize view bounds for widget sizing.
   bubble_widget->SetContentsView(bubble_delegate->GetContentsView());
+  bubble_delegate->InitializeBorderWidget(parent_widget);
   bubble_widget->SetBounds(bubble_delegate->GetBubbleClientBounds());
 #else
   bubble_widget->SetBounds(bubble_delegate->GetBubbleBounds());
@@ -155,7 +158,22 @@ void BubbleDelegateView::OnWidgetActivationChanged(Widget* widget,
 }
 
 gfx::Point BubbleDelegateView::GetAnchorPoint() {
-  return anchor_point_;
+  if (!anchor_view())
+    return gfx::Point();
+
+  BubbleBorder::ArrowLocation location = GetArrowLocation();
+  gfx::Point anchor(anchor_view()->bounds().CenterPoint());
+  // By default, pick the middle of |anchor_view_|'s edge opposite the arrow.
+  if (BubbleBorder::is_arrow_on_horizontal(location)) {
+    anchor.SetPoint(anchor_view()->width() / 2,
+        BubbleBorder::is_arrow_on_top(location) ? anchor_view()->height() : 0);
+  } else if (BubbleBorder::has_arrow(location)) {
+    anchor.SetPoint(
+        BubbleBorder::is_arrow_on_left(location) ? anchor_view()->width() : 0,
+        anchor_view_->height() / 2);
+  }
+  View::ConvertPointToScreen(anchor_view(), &anchor);
+  return anchor;
 }
 
 BubbleBorder::ArrowLocation BubbleDelegateView::GetArrowLocation() const {

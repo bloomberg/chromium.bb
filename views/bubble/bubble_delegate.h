@@ -29,14 +29,13 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
                                         public Widget::Observer {
  public:
   BubbleDelegateView();
-  BubbleDelegateView(const gfx::Point& anchor_point,
+  BubbleDelegateView(View* anchor_view,
                      BubbleBorder::ArrowLocation arrow_location,
                      const SkColor& color);
   virtual ~BubbleDelegateView();
 
   // Create and initialize the bubble Widget(s) with proper bounds.
-  static Widget* CreateBubble(BubbleDelegateView* bubble_delegate,
-                              Widget* parent_widget);
+  static Widget* CreateBubble(BubbleDelegateView* bubble_delegate);
 
   // WidgetDelegate overrides:
   virtual View* GetInitiallyFocusedView() OVERRIDE;
@@ -59,6 +58,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   void set_allow_bubble_offscreen(bool allow_bubble_offscreen) {
     allow_bubble_offscreen_ = allow_bubble_offscreen;
   }
+
+  View* anchor_view() const { return anchor_view_; }
 
   bool use_focusless() const { return use_focusless_; }
   void set_use_focusless(bool use_focusless) {
@@ -124,8 +125,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // re-positioning should be performed.
   bool allow_bubble_offscreen_;
 
-  // The screen point where this bubble's arrow is anchored.
-  gfx::Point anchor_point_;
+  // The view hosting this bubble; the arrow is anchored to this view.
+  View* anchor_view_;
 
   // The arrow's location on the bubble.
   BubbleBorder::ArrowLocation arrow_location_;

@@ -22,27 +22,24 @@ class EditSearchEngineControllerDelegate;
 class Extension;
 class FindBar;
 class GURL;
-class BubbleDelegate;
 class Profile;
 class TabContents;
 class TabContentsWrapper;
 class TemplateURL;
 
 namespace gfx {
-class Rect;
 class Size;
 }
 
 namespace views {
+class View;
 class Widget;
 }
 
 namespace browser {
 
 // Shows or hides the global bookmark bubble for the star button.
-void ShowBookmarkBubbleView(views::Widget* parent,
-                            const gfx::Rect& bounds,
-                            BubbleDelegate* delegate,
+void ShowBookmarkBubbleView(views::View* anchor_view,
                             Profile* profile,
                             const GURL& url,
                             bool newly_bookmarked);

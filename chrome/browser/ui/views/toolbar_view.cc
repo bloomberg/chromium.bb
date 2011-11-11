@@ -729,12 +729,9 @@ void ToolbarView::LoadImages() {
 
 void ToolbarView::ShowCriticalNotification() {
 #if defined(OS_WIN)
-  gfx::Point screen_loc(app_menu_->width() / 2, app_menu_->height());
-  views::View::ConvertPointToScreen(app_menu_, &screen_loc);
-
   CriticalNotificationBubbleView* bubble_delegate =
-      new CriticalNotificationBubbleView(screen_loc);
-  views::BubbleDelegateView::CreateBubble(bubble_delegate, GetWidget());
+      new CriticalNotificationBubbleView(app_menu_);
+  views::BubbleDelegateView::CreateBubble(bubble_delegate);
   bubble_delegate->StartFade(true);
 #endif
 }

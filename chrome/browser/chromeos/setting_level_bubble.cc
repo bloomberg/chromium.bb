@@ -138,9 +138,7 @@ gfx::Point SettingLevelBubbleDelegateView::GetAnchorPoint() {
 
 SettingLevelBubbleDelegateView::SettingLevelBubbleDelegateView(
     views::Widget* parent)
-    : BubbleDelegateView(gfx::Point(),
-                         views::BubbleBorder::FLOAT,
-                         SK_ColorWHITE),
+    : BubbleDelegateView(NULL, views::BubbleBorder::FLOAT, SK_ColorWHITE),
       parent_(parent),
       view_(NULL) {
   set_close_on_esc(false);
@@ -238,8 +236,7 @@ SettingLevelBubbleView* SettingLevelBubble::CreateView() {
   views::Widget* parent = GetToplevelWidget();
   SettingLevelBubbleDelegateView* delegate =
       new SettingLevelBubbleDelegateView(parent);
-  views::Widget* widget =
-      views::BubbleDelegateView::CreateBubble(delegate, parent);
+  views::Widget* widget = views::BubbleDelegateView::CreateBubble(delegate);
   widget->AddObserver(this);
 
 #if !defined(USE_AURA)

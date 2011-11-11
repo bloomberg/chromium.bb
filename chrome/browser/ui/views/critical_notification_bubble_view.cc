@@ -47,8 +47,8 @@ const int kRefreshBubbleEvery = 1000;  // Millisecond.
 // CriticalNotificationBubbleView
 
 CriticalNotificationBubbleView::CriticalNotificationBubbleView(
-    const gfx::Point& anchor_point)
-    : BubbleDelegateView(anchor_point,
+    views::View* anchor_view)
+    : BubbleDelegateView(anchor_view,
                          views::BubbleBorder::TOP_RIGHT,
                          SK_ColorWHITE) {
   set_close_on_deactivate(false);

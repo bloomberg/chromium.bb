@@ -8,18 +8,13 @@
 
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/recently_used_folders_combo_model.h"
-#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "googleurl/src/gurl.h"
-#include "ui/gfx/rect.h"
+#include "views/bubble/bubble_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/link_listener.h"
-#include "views/view.h"
 
 class Profile;
-
-class BookmarkModel;
-class BookmarkNode;
 
 namespace views {
 class TextButton;
@@ -30,18 +25,15 @@ class Textfield;
 // Bubble. BookmarkBubbleView provides views for unstarring and editing the
 // bookmark it is created with. Don't create a BookmarkBubbleView directly,
 // instead use the static Show method.
-class BookmarkBubbleView : public views::View,
+class BookmarkBubbleView : public views::BubbleDelegateView,
                            public views::LinkListener,
                            public views::ButtonListener,
-                           public views::Combobox::Listener,
-                           public BubbleDelegate {
+                           public views::Combobox::Listener {
  public:
-  static void Show(views::Widget* widget,
-                   const gfx::Rect& bounds,
-                   BubbleDelegate* delegate,
-                   Profile* profile,
-                   const GURL& url,
-                   bool newly_bookmarked);
+  static void ShowBubble(views::View* anchor_view,
+                         Profile* profile,
+                         const GURL& url,
+                         bool newly_bookmarked);
 
   static bool IsShowing();
 
@@ -49,25 +41,27 @@ class BookmarkBubbleView : public views::View,
 
   virtual ~BookmarkBubbleView();
 
-  void set_bubble(Bubble* bubble) { bubble_ = bubble; }
+  // views::BubbleDelegateView methods.
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+  virtual gfx::Point GetAnchorPoint() OVERRIDE;
 
-  // Override to close on return.
+  // views::WidgetDelegate method.
+  virtual void WindowClosing() OVERRIDE;
+
+  // views::View method.
   virtual bool AcceleratorPressed(
       const views::Accelerator& accelerator) OVERRIDE;
 
-  virtual void ViewHierarchyChanged(
-      bool is_add, View* parent, View* child) OVERRIDE;
+ protected:
+  // views::BubbleDelegateView method.
+  virtual void Init() OVERRIDE;
 
  private:
   // Creates a BookmarkBubbleView.
-  // |title| is the title of the page. If newly_bookmarked is false, title is
-  // ignored and the title of the bookmark is fetched from the database.
-  BookmarkBubbleView(BubbleDelegate* delegate,
+  BookmarkBubbleView(views::View* anchor_view,
                      Profile* profile,
                      const GURL& url,
                      bool newly_bookmarked);
-  // Creates the child views.
-  void Init();
 
   // Returns the title to display.
   string16 GetTitle();
@@ -85,17 +79,6 @@ class BookmarkBubbleView : public views::View,
                            int prev_index,
                            int new_index) OVERRIDE;
 
-  // BubbleDelegate methods. These forward to the BubbleDelegate supplied in the
-  // constructor as well as sending out the necessary notification.
-  virtual void BubbleShown() OVERRIDE;
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
-  virtual bool CloseOnEscape() OVERRIDE;
-  virtual bool FadeInOnShow() OVERRIDE;
-  virtual string16 GetAccessibleName() OVERRIDE;
-
-  // Closes the bubble.
-  void Close();
-
   // Handle the message when the user presses a button.
   void HandleButtonPressed(views::Button* sender);
 
@@ -107,12 +90,6 @@ class BookmarkBubbleView : public views::View,
 
   // The bookmark bubble, if we're showing one.
   static BookmarkBubbleView* bookmark_bubble_;
-
-  // The Bubble showing us.
-  Bubble* bubble_;
-
-  // Delegate for the bubble, may be null.
-  BubbleDelegate* delegate_;
 
   // The profile.
   Profile* profile_;

@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
@@ -23,20 +22,14 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/events/event.h"
-#include "views/focus/focus_manager.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
-#include "views/window/client_view.h"
-
-#if defined(TOOLKIT_USES_GTK)
-#include "views/widget/native_widget_gtk.h"
-#endif
+#include "views/widget/widget.h"
 
 using views::ColumnSet;
 using views::GridLayout;
@@ -50,18 +43,18 @@ static const int kTitlePadding = 4;
 // of the field's left edge.
 static const int kMinimumFieldSize = 180;
 
+// TODO(msw): Get color from theme/window color.
+static const SkColor kColor = SK_ColorWHITE;
+
 // Declared in browser_dialogs.h so callers don't have to depend on our header.
 
 namespace browser {
 
-void ShowBookmarkBubbleView(views::Widget* parent,
-                            const gfx::Rect& bounds,
-                            BubbleDelegate* delegate,
+void ShowBookmarkBubbleView(views::View* anchor_view,
                             Profile* profile,
                             const GURL& url,
                             bool newly_bookmarked) {
-  BookmarkBubbleView::Show(parent, bounds, delegate, profile, url,
-                           newly_bookmarked);
+  BookmarkBubbleView::ShowBubble(anchor_view, profile, url, newly_bookmarked);
 }
 
 void HideBookmarkBubbleView() {
@@ -79,30 +72,20 @@ bool IsBookmarkBubbleViewShowing() {
 BookmarkBubbleView* BookmarkBubbleView::bookmark_bubble_ = NULL;
 
 // static
-void BookmarkBubbleView::Show(views::Widget* parent,
-                              const gfx::Rect& bounds,
-                              BubbleDelegate* delegate,
-                              Profile* profile,
-                              const GURL& url,
-                              bool newly_bookmarked) {
+void BookmarkBubbleView::ShowBubble(views::View* anchor_view,
+                                    Profile* profile,
+                                    const GURL& url,
+                                    bool newly_bookmarked) {
   if (IsShowing())
     return;
 
-  bookmark_bubble_ = new BookmarkBubbleView(delegate, profile, url,
-                                            newly_bookmarked);
-  Bubble* bubble = Bubble::Show(
-      parent, bounds, views::BubbleBorder::TOP_RIGHT,
-      views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bookmark_bubble_,
-      bookmark_bubble_);
-  // |bubble_| can be set to NULL in BubbleClosing when we close the bubble
-  // asynchronously. However, that can happen during the Show call above if the
-  // window loses activation while we are getting to ready to show the bubble,
-  // so we must check to make sure we still have a valid bubble before
-  // proceeding.
-  if (!bookmark_bubble_)
-    return;
-  bookmark_bubble_->set_bubble(bubble);
-  bubble->SizeToContents();
+  bookmark_bubble_ =
+      new BookmarkBubbleView(anchor_view, profile, url, newly_bookmarked);
+  views::BubbleDelegateView::CreateBubble(bookmark_bubble_);
+  bookmark_bubble_->Show();
+  // Select the entire title textfield contents when the bubble is first shown.
+  bookmark_bubble_->title_tf_->SelectAll();
+
   GURL url_ptr(url);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BOOKMARK_BUBBLE_SHOWN,
@@ -117,7 +100,7 @@ bool BookmarkBubbleView::IsShowing() {
 
 void BookmarkBubbleView::Hide() {
   if (IsShowing())
-    bookmark_bubble_->Close();
+    bookmark_bubble_->GetWidget()->Close();
 }
 
 BookmarkBubbleView::~BookmarkBubbleView() {
@@ -131,54 +114,47 @@ BookmarkBubbleView::~BookmarkBubbleView() {
   }
 }
 
-void BookmarkBubbleView::BubbleShown() {
-  DCHECK(GetWidget());
-  GetFocusManager()->RegisterAccelerator(
-      views::Accelerator(ui::VKEY_RETURN, false, false, false), this);
-
-  title_tf_->RequestFocus();
-  title_tf_->SelectAll();
+views::View* BookmarkBubbleView::GetInitiallyFocusedView() {
+  return title_tf_;
 }
+
+gfx::Point BookmarkBubbleView::GetAnchorPoint() {
+  // Compensate for some built-in padding in the star image.
+  return BubbleDelegateView::GetAnchorPoint().Subtract(gfx::Point(0, 5));
+}
+
+void BookmarkBubbleView::WindowClosing() {
+  // We have to reset |bubble_| here, not in our destructor, because we'll be
+  // destroyed asynchronously and the shown state will be checked before then.
+  DCHECK(bookmark_bubble_ == this);
+  bookmark_bubble_ = NULL;
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN,
+      content::Source<Profile>(profile_->GetOriginalProfile()),
+      content::NotificationService::NoDetails());
+ }
 
 bool BookmarkBubbleView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
-  if (accelerator.key_code() != ui::VKEY_RETURN)
-    return false;
+  if (accelerator.key_code() == ui::VKEY_RETURN) {
+     if (edit_button_->HasFocus())
+       HandleButtonPressed(edit_button_);
+     else
+       HandleButtonPressed(close_button_);
+     return true;
+  } else if (accelerator.key_code() == ui::VKEY_ESCAPE) {
+    remove_bookmark_ = newly_bookmarked_;
+    apply_edits_ = false;
+  }
 
-  if (edit_button_->HasFocus())
-    HandleButtonPressed(edit_button_);
-  else
-    HandleButtonPressed(close_button_);
-  return true;
-}
-
-void BookmarkBubbleView::ViewHierarchyChanged(bool is_add,
-                                              views::View* parent,
-                                              views::View* child) {
-  if (is_add && child == this)
-    Init();
-}
-
-BookmarkBubbleView::BookmarkBubbleView(BubbleDelegate* delegate,
-                                       Profile* profile,
-                                       const GURL& url,
-                                       bool newly_bookmarked)
-    : delegate_(delegate),
-      profile_(profile),
-      url_(url),
-      newly_bookmarked_(newly_bookmarked),
-      parent_model_(
-          profile_->GetBookmarkModel(),
-          profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url)),
-      remove_bookmark_(false),
-      apply_edits_(true) {
+  return BubbleDelegateView::AcceleratorPressed(accelerator);
 }
 
 void BookmarkBubbleView::Init() {
   remove_link_ = new views::Link(l10n_util::GetStringUTF16(
       IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
   remove_link_->set_listener(this);
-  remove_link_->SetBackgroundColor(Bubble::kBackgroundColor);
 
   edit_button_ = new views::NativeTextButton(
       this, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS));
@@ -189,7 +165,6 @@ void BookmarkBubbleView::Init() {
 
   views::Label* combobox_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_FOLDER_TEXT));
-  combobox_label->SetBackgroundColor(Bubble::kBackgroundColor);
 
   parent_combobox_ = new views::Combobox(&parent_model_);
   parent_combobox_->SetSelectedItem(parent_model_.node_parent_index());
@@ -202,7 +177,6 @@ void BookmarkBubbleView::Init() {
                               IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK));
   title_label->SetFont(
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
-  title_label->SetBackgroundColor(Bubble::kBackgroundColor);
   title_label->SetEnabledColor(SkColorSetRGB(6, 45, 117));
 
   GridLayout* layout = new GridLayout(this);
@@ -245,7 +219,6 @@ void BookmarkBubbleView::Init() {
   layout->StartRow(0, 2);
   views::Label* label = new views::Label(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_TITLE_TEXT));
-  label->SetBackgroundColor(Bubble::kBackgroundColor);
   layout->AddView(label);
   title_tf_ = new views::Textfield();
   title_tf_->SetText(GetTitle());
@@ -261,6 +234,23 @@ void BookmarkBubbleView::Init() {
   layout->StartRow(0, 3);
   layout->AddView(edit_button_);
   layout->AddView(close_button_);
+
+  AddAccelerator(views::Accelerator(ui::VKEY_RETURN, 0));
+}
+
+BookmarkBubbleView::BookmarkBubbleView(views::View* anchor_view,
+                                       Profile* profile,
+                                       const GURL& url,
+                                       bool newly_bookmarked)
+    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT, kColor),
+      profile_(profile),
+      url_(url),
+      newly_bookmarked_(newly_bookmarked),
+      parent_model_(
+          profile_->GetBookmarkModel(),
+          profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url)),
+      remove_bookmark_(false),
+      apply_edits_(true) {
 }
 
 string16 BookmarkBubbleView::GetTitle() {
@@ -286,9 +276,7 @@ void BookmarkBubbleView::LinkClicked(views::Link* source, int event_flags) {
   // Set this so we remove the bookmark after the window closes.
   remove_bookmark_ = true;
   apply_edits_ = false;
-
-  bubble_->set_fade_away_on_close(true);
-  Close();
+  StartFade(false);
 }
 
 void BookmarkBubbleView::ItemChanged(views::Combobox* combobox,
@@ -297,97 +285,32 @@ void BookmarkBubbleView::ItemChanged(views::Combobox* combobox,
   if (new_index + 1 == parent_model_.GetItemCount()) {
     UserMetrics::RecordAction(
               UserMetricsAction("BookmarkBubble_EditFromCombobox"));
-
     ShowEditor();
-    return;
   }
-}
-
-void BookmarkBubbleView::BubbleClosing(Bubble* bubble,
-                                       bool closed_by_escape) {
-  if (closed_by_escape) {
-    remove_bookmark_ = newly_bookmarked_;
-    apply_edits_ = false;
-  }
-
-  // We have to reset |bubble_| here, not in our destructor, because we'll be
-  // destroyed asynchronously and the shown state will be checked before then.
-  DCHECK(bookmark_bubble_ == this);
-  bookmark_bubble_ = NULL;
-
-  if (delegate_)
-    delegate_->BubbleClosing(bubble, closed_by_escape);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN,
-      content::Source<Profile>(profile_->GetOriginalProfile()),
-      content::NotificationService::NoDetails());
-}
-
-bool BookmarkBubbleView::CloseOnEscape() {
-  return delegate_ ? delegate_->CloseOnEscape() : true;
-}
-
-bool BookmarkBubbleView::FadeInOnShow() {
-  return false;
-}
-
-string16 BookmarkBubbleView::GetAccessibleName() {
-  return l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_ADD_BOOKMARK);
-}
-
-void BookmarkBubbleView::Close() {
-  ApplyEdits();
-  GetWidget()->Close();
 }
 
 void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
   if (sender == edit_button_) {
     UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Edit"));
-    bubble_->set_fade_away_on_close(true);
     ShowEditor();
   } else {
-    DCHECK(sender == close_button_);
-    bubble_->set_fade_away_on_close(true);
-    Close();
+    DCHECK_EQ(sender, close_button_);
+    StartFade(false);
   }
-  // WARNING: we've most likely been deleted when CloseWindow returns.
 }
 
 void BookmarkBubbleView::ShowEditor() {
   const BookmarkNode* node =
       profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url_);
+  views::Widget* parent = anchor_view()->GetWidget();
+  Profile* profile = profile_;
+  ApplyEdits();
+  GetWidget()->Close();
 
-#if defined(USE_AURA)
-  NOTIMPLEMENTED();
-  gfx::NativeView parent = NULL;
-#elif defined(OS_WIN)
-  // Parent the editor to our root ancestor (not the root we're in, as that
-  // is the info bubble and will close shortly).
-  HWND parent = GetAncestor(GetWidget()->GetNativeView(), GA_ROOTOWNER);
-
-  // We're about to show the bookmark editor. When the bookmark editor closes
-  // we want the browser to become active. NativeWidgetWin::Hide() does a hide
-  // in a such way that activation isn't changed, which means when we close
-  // Windows gets confused as to who it should give active status to. We
-  // explicitly hide the bookmark bubble window in such a way that activation
-  // status changes. That way, when the editor closes, activation is properly
-  // restored to the browser.
-  ShowWindow(GetWidget()->GetNativeView(), SW_HIDE);
-#elif defined(TOOLKIT_USES_GTK)
-  gfx::NativeWindow parent = GTK_WINDOW(
-      static_cast<views::NativeWidgetGtk*>(GetWidget()->native_widget())->
-          GetTransientParent());
-#endif
-
-  // Even though we just hid the window, we need to invoke Close to schedule
-  // the delete and all that.
-  Close();
-
-  if (node) {
-    BookmarkEditor::Show(parent, profile_,
+  if (node)
+    BookmarkEditor::Show(parent->GetNativeWindow(), profile,
                          BookmarkEditor::EditDetails::EditNode(node),
                          BookmarkEditor::SHOW_TREE);
-  }
 }
 
 void BookmarkBubbleView::ApplyEdits() {
@@ -404,8 +327,7 @@ void BookmarkBubbleView::ApplyEdits() {
           UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"));
     }
     // Last index means 'Choose another folder...'
-    if (parent_combobox_->selected_item() <
-        parent_model_.GetItemCount() - 1) {
+    if (parent_combobox_->selected_item() < parent_model_.GetItemCount() - 1) {
       const BookmarkNode* new_parent =
           parent_model_.GetNodeAt(parent_combobox_->selected_item());
       if (new_parent != node->parent()) {

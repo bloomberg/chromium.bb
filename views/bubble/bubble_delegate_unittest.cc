@@ -13,9 +13,9 @@ typedef ViewsTestBase BubbleDelegateTest;
 
 TEST_F(BubbleDelegateTest, CreateDelegate) {
   BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
-      gfx::Point(100, 100), BubbleBorder::LEFT_TOP, SK_ColorGREEN);
+      NULL, BubbleBorder::NONE, SK_ColorGREEN);
   scoped_ptr<Widget> bubble_widget(
-      BubbleDelegateView::CreateBubble(bubble_delegate, NULL));
+      BubbleDelegateView::CreateBubble(bubble_delegate));
   EXPECT_EQ(bubble_delegate, bubble_widget->widget_delegate());
   EXPECT_EQ(bubble_widget, bubble_delegate->GetWidget());
 

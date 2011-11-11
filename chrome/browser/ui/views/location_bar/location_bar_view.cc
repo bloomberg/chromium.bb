@@ -56,7 +56,6 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_util.h"
-#include "views/bubble/bubble_border.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/drag_utils.h"
@@ -395,14 +394,8 @@ void LocationBarView::SetStarToggled(bool on) {
 }
 
 void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
-  gfx::Rect screen_bounds(star_view_->GetImageBounds());
-  // Compensate for some built-in padding in the Star image.
-  screen_bounds.Inset(1, 1, 1, 2);
-  gfx::Point origin(screen_bounds.origin());
-  views::View::ConvertPointToScreen(star_view_, &origin);
-  screen_bounds.set_origin(origin);
-  browser::ShowBookmarkBubbleView(GetWidget(), screen_bounds, star_view_,
-                                  browser_->profile(), url, newly_bookmarked);
+  browser::ShowBookmarkBubbleView(star_view_, browser_->profile(), url,
+                                  newly_bookmarked);
 }
 
 gfx::Point LocationBarView::GetLocationEntryOrigin() const {

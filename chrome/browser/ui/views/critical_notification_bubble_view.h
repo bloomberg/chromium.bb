@@ -18,7 +18,7 @@ class NativeTextButton;
 class CriticalNotificationBubbleView : public views::BubbleDelegateView,
                                        public views::ButtonListener {
  public:
-  explicit CriticalNotificationBubbleView(const gfx::Point& anchor_point);
+  explicit CriticalNotificationBubbleView(views::View* anchor_view);
   virtual ~CriticalNotificationBubbleView();
 
   // views::ButtonListener overrides:

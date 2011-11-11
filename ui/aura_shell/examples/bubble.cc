@@ -15,20 +15,19 @@ namespace examples {
 struct BubbleConfig {
   string16 label;
   SkColor color;
-  gfx::Point anchor_point;
+  views::View* anchor_view;
   views::BubbleBorder::ArrowLocation arrow;
 };
 
 class ExampleBubbleDelegateView : public views::BubbleDelegateView {
  public:
   ExampleBubbleDelegateView(const BubbleConfig& config)
-      : BubbleDelegateView(config.anchor_point, config.arrow, config.color),
+      : BubbleDelegateView(config.anchor_view, config.arrow, config.color),
         label_(config.label) {}
 
   virtual void Init() OVERRIDE {
     SetLayoutManager(new views::FillLayout());
     views::Label* label = new views::Label(label_);
-    label->set_border(views::Border::CreateSolidBorder(10, GetColor()));
     AddChildView(label);
   }
 
@@ -36,14 +35,14 @@ class ExampleBubbleDelegateView : public views::BubbleDelegateView {
   string16 label_;
 };
 
-void CreatePointyBubble(views::Widget* parent, const gfx::Point& origin) {
+void CreatePointyBubble(views::View* anchor_view) {
   BubbleConfig config;
   config.label = ASCIIToUTF16("PointyBubble");
   config.color = SK_ColorWHITE;
-  config.anchor_point = origin;
+  config.anchor_view = anchor_view;
   config.arrow = views::BubbleBorder::TOP_LEFT;
-  views::Widget* bubble = views::BubbleDelegateView::CreateBubble(
-      new ExampleBubbleDelegateView(config), parent);
+  ExampleBubbleDelegateView* bubble = new ExampleBubbleDelegateView(config);
+  views::BubbleDelegateView::CreateBubble(bubble);
   bubble->Show();
 }
 

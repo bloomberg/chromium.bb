@@ -8,18 +8,14 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-namespace gfx {
-class Point;
-}
-
 namespace views {
-class Widget;
+class View;
 }
 
 namespace aura_shell {
 namespace examples {
 
-void CreatePointyBubble(views::Widget* parent, const gfx::Point& origin);
+void CreatePointyBubble(views::View* anchor_view);
 
 void CreateLock();
 
@@ -28,6 +24,5 @@ void CreateWidgetsWindow();
 
 }  // namespace examples
 }  // namespace aura_shell
-
 
 #endif  // UI_AURA_SHELL_SHELL_FACTORY_H_

@@ -17,7 +17,7 @@ namespace examples {
 struct BubbleConfig {
   string16 label;
   SkColor color;
-  gfx::Point anchor_point;
+  views::View* anchor_view;
   views::BubbleBorder::ArrowLocation arrow;
   bool fade_in;
   bool fade_out;
@@ -25,19 +25,19 @@ struct BubbleConfig {
 
 // Create four types of bubbles, one without arrow, one with an arrow, one
 // that fades in, and another that fades out and won't close on the escape key.
-BubbleConfig kRoundConfig = { ASCIIToUTF16("RoundBubble"), 0xFFC1B1E1,
-    gfx::Point(), views::BubbleBorder::NONE, false, false };
-BubbleConfig kArrowConfig = { ASCIIToUTF16("ArrowBubble"), SK_ColorGRAY,
-    gfx::Point(), views::BubbleBorder::TOP_LEFT, false, false };
-BubbleConfig kFadeInConfig = { ASCIIToUTF16("FadeInBubble"), SK_ColorYELLOW,
-    gfx::Point(), views::BubbleBorder::BOTTOM_RIGHT, true, false };
-BubbleConfig kFadeOutConfig = { ASCIIToUTF16("FadeOutBubble"), SK_ColorWHITE,
-    gfx::Point(), views::BubbleBorder::BOTTOM_RIGHT, false, true };
+BubbleConfig kRoundConfig = { ASCIIToUTF16("Round"), 0xFFC1B1E1, NULL,
+                              views::BubbleBorder::NONE, false, false };
+BubbleConfig kArrowConfig = { ASCIIToUTF16("Arrow"), SK_ColorGRAY, NULL,
+                              views::BubbleBorder::TOP_LEFT, false, false };
+BubbleConfig kFadeInConfig = { ASCIIToUTF16("FadeIn"), SK_ColorYELLOW, NULL,
+                               views::BubbleBorder::BOTTOM_RIGHT, true, false };
+BubbleConfig kFadeOutConfig = { ASCIIToUTF16("FadeOut"), SK_ColorWHITE, NULL,
+                                views::BubbleBorder::LEFT_TOP, false, true };
 
 class ExampleBubbleDelegateView : public views::BubbleDelegateView {
  public:
   ExampleBubbleDelegateView(const BubbleConfig& config)
-      : BubbleDelegateView(config.anchor_point, config.arrow, config.color),
+      : BubbleDelegateView(config.anchor_view, config.arrow, config.color),
         label_(config.label) {}
 
  protected:
@@ -81,14 +81,10 @@ void BubbleExample::ButtonPressed(views::Button* sender,
   else if (sender == fade_out_)
     config = kFadeOutConfig;
 
-  config.anchor_point.set_x(sender->width() / 2);
-  config.anchor_point.set_y(sender->height() / 2);
-  views::View::ConvertPointToScreen(sender, &config.anchor_point);
-
+  config.anchor_view = sender;
   ExampleBubbleDelegateView* bubble_delegate =
       new ExampleBubbleDelegateView(config);
-  views::BubbleDelegateView::CreateBubble(bubble_delegate,
-                                          example_view()->GetWidget());
+  views::BubbleDelegateView::CreateBubble(bubble_delegate);
 
   if (config.fade_in)
     bubble_delegate->StartFade(true);

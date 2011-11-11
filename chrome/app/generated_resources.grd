@@ -6686,9 +6686,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- bookmark info bubble messages -->
-      <message name="IDS_BOOKMARK_BUBBLE_ADD_BOOKMARK" desc="Accessible title of the bubble before bookmarking something">
-        Add Bookmark
-      </message>
       <message name="IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED" desc="Title of the bubble after bookmarking something">
         Bookmark Added!
       </message>

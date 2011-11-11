@@ -124,9 +124,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   } else if (sender == create_nonresizable_button_) {
     ToplevelWindow::CreateToplevelWindow(ToplevelWindow::CreateParams());
   } else if (sender == bubble_button_) {
-    gfx::Point origin = bubble_button_->bounds().origin();
-    views::View::ConvertPointToScreen(bubble_button_->parent(), &origin);
-    CreatePointyBubble(GetWidget(), origin);
+    CreatePointyBubble(sender);
   } else if (sender == lock_button_) {
     CreateLock();
   } else if (sender == widgets_button_) {

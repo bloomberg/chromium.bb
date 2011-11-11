@@ -14,7 +14,7 @@ namespace views {
 
 typedef ViewsTestBase BubbleFrameViewBasicTest;
 
-const BubbleBorder::ArrowLocation kArrow =  BubbleBorder::LEFT_BOTTOM;
+const BubbleBorder::ArrowLocation kArrow = BubbleBorder::TOP_LEFT;
 const gfx::Rect kRect(10, 10, 200, 200);
 const SkColor kBackgroundColor = SK_ColorRED;
 const bool kAllowBubbleOffscreen = true;
@@ -54,7 +54,7 @@ gfx::Size SizedBubbleDelegateView::GetPreferredSize() { return kRect.size(); }
 
 TEST_F(BubbleFrameViewBasicTest, NonClientHitTest) {
   BubbleDelegateView* delegate = new SizedBubbleDelegateView();
-  scoped_ptr<Widget> widget(BubbleDelegateView::CreateBubble(delegate, NULL));
+  scoped_ptr<Widget> widget(BubbleDelegateView::CreateBubble(delegate));
   delegate->Show();
   gfx::Point kPtInBound(100, 100);
   gfx::Point kPtOutsideBound(1000, 1000);
