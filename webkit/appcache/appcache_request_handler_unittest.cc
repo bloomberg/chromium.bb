@@ -6,7 +6,11 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/message_loop.h"
+#include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/base/net_errors.h"
@@ -204,8 +208,10 @@ class AppCacheRequestHandlerTest : public testing::Test {
     // We unwind the stack prior to finishing up to let stack
     // based objects get deleted.
     DCHECK(MessageLoop::current() == io_thread_->message_loop());
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &AppCacheRequestHandlerTest::TestFinishedUnwound));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AppCacheRequestHandlerTest::TestFinishedUnwound,
+                   base::Unretained(this)));
   }
 
   void TestFinishedUnwound() {
@@ -213,7 +219,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     test_finished_event_->Signal();
   }
 
-  void PushNextTask(Task* task) {
+  void PushNextTask(const base::Closure& task) {
     task_stack_.push(task);
   }
 
@@ -230,8 +236,9 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // MainResource_Miss --------------------------------------------------
 
   void MainResource_Miss() {
-    PushNextTask(NewRunnableMethod(
-        this, &AppCacheRequestHandlerTest::Verify_MainResource_Miss));
+    PushNextTask(
+        base::Bind(&AppCacheRequestHandlerTest::Verify_MainResource_Miss,
+                   base::Unretained(this)));
 
     request_.reset(new MockURLRequest(GURL("http://blah/")));
     handler_.reset(host_->CreateRequestHandler(request_.get(),
@@ -272,8 +279,9 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // MainResource_Hit --------------------------------------------------
 
   void MainResource_Hit() {
-    PushNextTask(NewRunnableMethod(
-       this, &AppCacheRequestHandlerTest::Verify_MainResource_Hit));
+    PushNextTask(
+        base::Bind(&AppCacheRequestHandlerTest::Verify_MainResource_Hit,
+                   base::Unretained(this)));
 
     request_.reset(new MockURLRequest(GURL("http://blah/")));
     handler_.reset(host_->CreateRequestHandler(request_.get(),
@@ -317,8 +325,9 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // MainResource_Fallback --------------------------------------------------
 
   void MainResource_Fallback() {
-    PushNextTask(NewRunnableMethod(
-       this, &AppCacheRequestHandlerTest::Verify_MainResource_Fallback));
+    PushNextTask(
+        base::Bind(&AppCacheRequestHandlerTest::Verify_MainResource_Fallback,
+                   base::Unretained(this)));
 
     request_.reset(new MockURLRequest(GURL("http://blah/")));
     handler_.reset(host_->CreateRequestHandler(request_.get(),
@@ -373,9 +382,9 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // MainResource_FallbackOverride --------------------------------------------
 
   void MainResource_FallbackOverride() {
-    PushNextTask(NewRunnableMethod(
-       this,
-       &AppCacheRequestHandlerTest::Verify_MainResource_FallbackOverride));
+    PushNextTask(base::Bind(
+        &AppCacheRequestHandlerTest::Verify_MainResource_FallbackOverride,
+        base::Unretained(this)));
 
     request_.reset(new MockURLRequest(GURL("http://blah/fallback-override")));
     handler_.reset(host_->CreateRequestHandler(request_.get(),
@@ -745,8 +754,9 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // MainResource_Blocked --------------------------------------------------
 
   void MainResource_Blocked() {
-    PushNextTask(NewRunnableMethod(
-       this, &AppCacheRequestHandlerTest::Verify_MainResource_Blocked));
+    PushNextTask(
+        base::Bind(&AppCacheRequestHandlerTest::Verify_MainResource_Blocked,
+                   base::Unretained(this)));
 
     request_.reset(new MockURLRequest(GURL("http://blah/")));
     handler_.reset(host_->CreateRequestHandler(request_.get(),
@@ -801,7 +811,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // Data members --------------------------------------------------
 
   scoped_ptr<base::WaitableEvent> test_finished_event_;
-  std::stack<Task*> task_stack_;
+  std::stack<base::Closure> task_stack_;
   scoped_ptr<MockAppCacheService> mock_service_;
   scoped_ptr<AppCacheBackendImpl> backend_impl_;
   scoped_ptr<MockFrontend> mock_frontend_;
@@ -895,7 +905,3 @@ TEST_F(AppCacheRequestHandlerTest, MainResource_Blocked) {
 }
 
 }  // namespace appcache
-
-// AppCacheRequestHandlerTest is expected to always live longer than the
-// runnable methods.  This lets us call NewRunnableMethod on its instances.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(appcache::AppCacheRequestHandlerTest);

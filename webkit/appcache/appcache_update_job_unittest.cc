@@ -4,6 +4,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
@@ -568,7 +570,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   void RunTestOnIOThread(Method method) {
     event_.reset(new base::WaitableEvent(false, false));
     io_thread_->message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, method));
+        FROM_HERE, base::Bind(method, base::Unretained(this)));
 
     // Wait until task is done before exiting the test.
     event_->Wait();
@@ -2819,8 +2821,9 @@ class AppCacheUpdateJobTest : public testing::Test,
   void UpdateFinished() {
     // We unwind the stack prior to finishing up to let stack-based objects
     // get deleted.
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-            this, &AppCacheUpdateJobTest::UpdateFinishedUnwound));
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
+                              base::Unretained(this)));
   }
 
   void UpdateFinishedUnwound() {
@@ -3451,7 +3454,3 @@ TEST_F(AppCacheUpdateJobTest, CrossOriginHttpsDenied) {
 }
 
 }  // namespace appcache
-
-// AppCacheUpdateJobTest is expected to always live longer than the
-// runnable methods.  This lets us call NewRunnableMethod on its instances.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(appcache::AppCacheUpdateJobTest);

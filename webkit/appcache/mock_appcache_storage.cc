@@ -4,6 +4,7 @@
 
 #include "webkit/appcache/mock_appcache_storage.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
@@ -28,7 +29,7 @@ namespace appcache {
 
 MockAppCacheStorage::MockAppCacheStorage(AppCacheService* service)
     : AppCacheStorage(service),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       simulate_make_group_obsolete_failure_(false),
       simulate_store_group_and_newest_cache_failure_(false),
       simulate_find_main_resource_(false),
@@ -42,22 +43,23 @@ MockAppCacheStorage::MockAppCacheStorage(AppCacheService* service)
 }
 
 MockAppCacheStorage::~MockAppCacheStorage() {
-  STLDeleteElements(&pending_tasks_);
 }
 
 void MockAppCacheStorage::GetAllInfo(Delegate* delegate) {
-  ScheduleTask(method_factory_.NewRunnableMethod(
-      &MockAppCacheStorage::ProcessGetAllInfo,
-      make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
+  ScheduleTask(
+      base::Bind(&MockAppCacheStorage::ProcessGetAllInfo,
+                 weak_factory_.GetWeakPtr(),
+                 make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
 }
 
 void MockAppCacheStorage::LoadCache(int64 id, Delegate* delegate) {
   DCHECK(delegate);
   AppCache* cache = working_set_.GetCache(id);
   if (ShouldCacheLoadAppearAsync(cache)) {
-    ScheduleTask(method_factory_.NewRunnableMethod(
-        &MockAppCacheStorage::ProcessLoadCache,
-        id, make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
+    ScheduleTask(
+        base::Bind(&MockAppCacheStorage::ProcessLoadCache,
+                   weak_factory_.GetWeakPtr(), id,
+                   make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
     return;
   }
   ProcessLoadCache(id, GetOrCreateDelegateReference(delegate));
@@ -68,10 +70,10 @@ void MockAppCacheStorage::LoadOrCreateGroup(
   DCHECK(delegate);
   AppCacheGroup* group = working_set_.GetGroup(manifest_url);
   if (ShouldGroupLoadAppearAsync(group)) {
-    ScheduleTask(method_factory_.NewRunnableMethod(
-        &MockAppCacheStorage::ProcessLoadOrCreateGroup,
-        manifest_url,
-        make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
+    ScheduleTask(
+        base::Bind(&MockAppCacheStorage::ProcessLoadOrCreateGroup,
+                   weak_factory_.GetWeakPtr(), manifest_url,
+                   make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
     return;
   }
   ProcessLoadOrCreateGroup(
@@ -83,11 +85,11 @@ void MockAppCacheStorage::StoreGroupAndNewestCache(
   DCHECK(group && delegate && newest_cache);
 
   // Always make this operation look async.
-  ScheduleTask(method_factory_.NewRunnableMethod(
-      &MockAppCacheStorage::ProcessStoreGroupAndNewestCache,
-      make_scoped_refptr(group),
-      make_scoped_refptr(newest_cache),
-      make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
+  ScheduleTask(
+      base::Bind(&MockAppCacheStorage::ProcessStoreGroupAndNewestCache,
+                 weak_factory_.GetWeakPtr(), make_scoped_refptr(group),
+                 make_scoped_refptr(newest_cache),
+                 make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
 }
 
 void MockAppCacheStorage::FindResponseForMainRequest(
@@ -97,10 +99,10 @@ void MockAppCacheStorage::FindResponseForMainRequest(
   // Note: MockAppCacheStorage does not respect the preferred_manifest_url.
 
   // Always make this operation look async.
-  ScheduleTask(method_factory_.NewRunnableMethod(
-      &MockAppCacheStorage::ProcessFindResponseForMainRequest,
-      url,
-      make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
+  ScheduleTask(
+      base::Bind(&MockAppCacheStorage::ProcessFindResponseForMainRequest,
+                 weak_factory_.GetWeakPtr(), url,
+                 make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
 }
 
 void MockAppCacheStorage::FindResponseForSubRequest(
@@ -140,10 +142,10 @@ void MockAppCacheStorage::MakeGroupObsolete(
   DCHECK(group && delegate);
 
   // Always make this method look async.
-  ScheduleTask(method_factory_.NewRunnableMethod(
-      &MockAppCacheStorage::ProcessMakeGroupObsolete,
-      make_scoped_refptr(group),
-      make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
+  ScheduleTask(
+      base::Bind(&MockAppCacheStorage::ProcessMakeGroupObsolete,
+                 weak_factory_.GetWeakPtr(), make_scoped_refptr(group),
+                 make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
 }
 
 AppCacheResponseReader* MockAppCacheStorage::CreateResponseReader(
@@ -405,19 +407,19 @@ void MockAppCacheStorage::ProcessMakeGroupObsolete(
     delegate_ref->delegate->OnGroupMadeObsolete(group, true);
 }
 
-void MockAppCacheStorage::ScheduleTask(Task* task) {
+void MockAppCacheStorage::ScheduleTask(const base::Closure& task) {
   pending_tasks_.push_back(task);
-  MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &MockAppCacheStorage::RunOnePendingTask));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MockAppCacheStorage::RunOnePendingTask,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void MockAppCacheStorage::RunOnePendingTask() {
   DCHECK(!pending_tasks_.empty());
-  Task* task = pending_tasks_.front();
+  base::Closure task = pending_tasks_.front();
   pending_tasks_.pop_front();
-  task->Run();
-  delete task;
+  task.Run();
 }
 
 void MockAppCacheStorage::AddStoredCache(AppCache* cache) {

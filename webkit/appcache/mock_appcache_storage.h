@@ -9,10 +9,11 @@
 #include <map>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_disk_cache.h"
 #include "webkit/appcache/appcache_group.h"
@@ -76,7 +77,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   void ProcessFindResponseForMainRequest(
       const GURL& url, scoped_refptr<DelegateReference> delegate_ref);
 
-  void ScheduleTask(Task* task);
+  void ScheduleTask(const base::Closure& task);
   void RunOnePendingTask();
 
   void AddStoredCache(AppCache* cache);
@@ -168,8 +169,8 @@ class MockAppCacheStorage : public AppCacheStorage {
   StoredGroupMap stored_groups_;
   DoomedResponseIds doomed_response_ids_;
   scoped_ptr<AppCacheDiskCache> disk_cache_;
-  std::deque<Task*> pending_tasks_;
-  ScopedRunnableMethodFactory<MockAppCacheStorage> method_factory_;
+  std::deque<base::Closure> pending_tasks_;
+  base::WeakPtrFactory<MockAppCacheStorage> weak_factory_;
 
   bool simulate_make_group_obsolete_failure_;
   bool simulate_store_group_and_newest_cache_failure_;
