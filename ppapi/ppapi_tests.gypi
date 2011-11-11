@@ -112,6 +112,8 @@
         'tests/test_image_data.h',
         'tests/test_memory.cc',
         'tests/test_memory.h',
+        'tests/test_net_address_private.cc',
+        'tests/test_net_address_private.h',
         'tests/test_paint_aggregator.cc',
         'tests/test_paint_aggregator.h',
         'tests/test_post_message.cc',

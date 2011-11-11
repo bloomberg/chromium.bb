@@ -15,6 +15,9 @@ namespace pp {
 
 class NetAddressPrivate {
  public:
+  // Returns true if the required interface is available.
+  static bool IsAvailable();
+
   static bool AreEqual(const PP_NetAddress_Private& addr1,
                        const PP_NetAddress_Private& addr2);
   static bool AreHostsEqual(const PP_NetAddress_Private& addr1,

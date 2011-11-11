@@ -18,9 +18,9 @@ bool TestUMA::Init() {
 }
 
 void TestUMA::RunTest() {
-  instance_->LogTest("Count", TestCount());
-  instance_->LogTest("Time", TestTime());
-  instance_->LogTest("Enum", TestEnum());
+  RUN_TEST(Count);
+  RUN_TEST(Time);
+  RUN_TEST(Enum);
 }
 
 std::string TestUMA::TestCount() {

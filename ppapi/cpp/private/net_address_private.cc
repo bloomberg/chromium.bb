@@ -21,6 +21,11 @@ template <> const char* interface_name<PPB_NetAddress_Private>() {
 }  // namespace
 
 // static
+bool NetAddressPrivate::IsAvailable() {
+  return has_interface<PPB_NetAddress_Private>();
+}
+
+// static
 bool NetAddressPrivate::AreEqual(const PP_NetAddress_Private& addr1,
                                  const PP_NetAddress_Private& addr2) {
   if (!has_interface<PPB_NetAddress_Private>())
