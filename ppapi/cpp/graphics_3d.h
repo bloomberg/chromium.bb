@@ -14,7 +14,6 @@ namespace pp {
 
 class CompletionCallback;
 class Instance;
-class Var;
 
 /// This class represents a 3D rendering context in the browser.
 class Graphics3D : public Resource {
@@ -191,4 +190,3 @@ class Graphics3D : public Resource {
 }  // namespace pp
 
 #endif  // PPAPI_CPP_GRAPHICS_3D_H_
-

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_PPB_SURFACE_3D_PROXY_H_
-#define PPAPI_PPB_SURFACE_3D_PROXY_H_
+#ifndef PPAPI_PROXY_PPB_SURFACE_3D_PROXY_H_
+#define PPAPI_PROXY_PPB_SURFACE_3D_PROXY_H_
 
 #include <vector>
 
@@ -15,8 +15,6 @@
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_surface_3d_api.h"
-
-struct PPB_Surface3D_Dev;
 
 namespace ppapi {
 namespace proxy {
@@ -63,7 +61,7 @@ class Surface3D : public ppapi::Resource,
 
 class PPB_Surface3D_Proxy : public InterfaceProxy {
  public:
-  PPB_Surface3D_Proxy(Dispatcher* dispatcher);
+  explicit PPB_Surface3D_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Surface3D_Proxy();
 
   static const Info* GetInfo();
@@ -98,4 +96,4 @@ class PPB_Surface3D_Proxy : public InterfaceProxy {
 }  // namespace proxy
 }  // namespace ppapi
 
-#endif  // PPAPI_PPB_SURFACE_3D_PROXY_H_
+#endif  // PPAPI_PROXY_PPB_SURFACE_3D_PROXY_H_

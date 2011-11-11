@@ -36,8 +36,6 @@ class BrowserInterface;
 class ErrorInfo;
 class Plugin;
 class SrpcClient;
-class SrtSocket;
-class ScriptableHandle;
 class ServiceRuntime;
 
 // Callback resources are essentially our continuation state.

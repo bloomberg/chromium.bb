@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_PPB_VAR_DEPRECATED_PROXY_H_
-#define PPAPI_PPB_VAR_DEPRECATED_PROXY_H_
+#ifndef PPAPI_PROXY_PPB_VAR_DEPRECATED_PROXY_H_
+#define PPAPI_PROXY_PPB_VAR_DEPRECATED_PROXY_H_
 
 #include <vector>
 
@@ -17,7 +17,6 @@ namespace ppapi {
 namespace proxy {
 
 class SerializedVar;
-class SerializedVarArray;
 class SerializedVarReceiveInput;
 class SerializedVarVectorOutParam;
 class SerializedVarVectorReceiveInput;
@@ -26,7 +25,7 @@ class SerializedVarReturnValue;
 
 class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
  public:
-  PPB_Var_Deprecated_Proxy(Dispatcher* dispatcher);
+  explicit PPB_Var_Deprecated_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Var_Deprecated_Proxy();
 
   static const Info* GetInfo();
@@ -100,4 +99,4 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
 }  // namespace proxy
 }  // namespace ppapi
 
-#endif  // PPAPI_PPB_VAR_DEPRECATED_PROXY_H_
+#endif  // PPAPI_PROXY_PPB_VAR_DEPRECATED_PROXY_H_

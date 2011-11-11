@@ -23,11 +23,7 @@ template<typename T> struct DefaultSingletonTraits;
 
 namespace ppapi {
 
-class Var;
-
 namespace proxy {
-
-class PluginDispatcher;
 
 class PPAPI_PROXY_EXPORT PluginResourceTracker : public ResourceTracker {
  public:

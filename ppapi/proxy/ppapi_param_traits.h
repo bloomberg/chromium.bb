@@ -18,7 +18,6 @@
 
 struct PP_FileInfo;
 struct PP_ObjectProperty;
-struct PP_Flash_Menu;
 struct PP_NetAddress_Private;
 
 namespace ppapi {

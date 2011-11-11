@@ -17,8 +17,6 @@
 /// your module and the page.
 namespace pp {
 
-class Instance;
-
 /// A generic type used for passing data types between the module and the page.
 class Var {
  public:
@@ -293,7 +291,6 @@ class Var {
   // a bool at Var construction. If somebody makes such a mistake, (s)he will
   // get a compilation error.
   Var(void* non_scriptable_object_pointer);
-
 };
 
 }  // namespace pp

@@ -17,7 +17,6 @@
 namespace pp {
 
 class Instance;
-class Plugin;
 
 class ImageData : public Resource {
  public:

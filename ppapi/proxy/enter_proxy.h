@@ -15,10 +15,6 @@
 
 namespace ppapi {
 
-namespace thunk {
-class ResourceCreationAPI;
-}
-
 namespace proxy {
 
 // Wrapper around EnterResourceNoLock that takes a host resource. This is used
@@ -31,7 +27,7 @@ template<typename ResourceT>
 class EnterPluginFromHostResource
     : public thunk::EnterResourceNoLock<ResourceT> {
  public:
-  EnterPluginFromHostResource(const HostResource& host_resource)
+  explicit EnterPluginFromHostResource(const HostResource& host_resource)
       : thunk::EnterResourceNoLock<ResourceT>(
             PluginGlobals::Get()->plugin_resource_tracker()->
                 PluginResourceForHostResource(host_resource),
@@ -48,7 +44,7 @@ template<typename ResourceT>
 class EnterHostFromHostResource
     : public thunk::EnterResourceNoLock<ResourceT> {
  public:
-  EnterHostFromHostResource(const HostResource& host_resource)
+  explicit EnterHostFromHostResource(const HostResource& host_resource)
       : thunk::EnterResourceNoLock<ResourceT>(
             host_resource.host_resource(), false) {
     // Validate that we're in the host rather than the plugin. Otherwise this

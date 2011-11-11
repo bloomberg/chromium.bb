@@ -17,9 +17,6 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_context_3d_api.h"
 
-struct PPB_Context3D_Dev;
-struct PPB_Context3DTrusted_Dev;
-
 namespace gpu {
 class CommandBuffer;
 
@@ -94,7 +91,7 @@ class Context3D : public Resource, public thunk::PPB_Context3D_API {
 
 class PPB_Context3D_Proxy : public InterfaceProxy {
  public:
-  PPB_Context3D_Proxy(Dispatcher* dispatcher);
+  explicit PPB_Context3D_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Context3D_Proxy();
 
   static PP_Resource Create(PP_Instance instance,

@@ -21,12 +21,6 @@ class GLES2Implementation;
 }  // namespace gpu
 
 namespace ppapi {
-namespace thunk {
-class PPB_Context3D_API;
-}  // namespace thunk
-}  // namespace ppapi
-
-namespace ppapi {
 
 // Implements the logic to set and run callbacks for various video decoder
 // events. Both the proxy and the renderer implementation share this code.

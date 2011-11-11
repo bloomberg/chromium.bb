@@ -14,17 +14,13 @@
 #include "ppapi/shared_impl/webkit_forwarding.h"
 #include "ppapi/thunk/ppb_font_api.h"
 
-struct PPB_Font_Dev;
-
 namespace ppapi {
 namespace proxy {
-
-class SerializedVarReturnValue;
 
 class PPB_Font_Proxy : public InterfaceProxy,
                        public ppapi::thunk::PPB_Font_FunctionAPI {
  public:
-  PPB_Font_Proxy(Dispatcher* dispatcher);
+  explicit PPB_Font_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Font_Proxy();
 
   // FunctionGroupBase overrides.

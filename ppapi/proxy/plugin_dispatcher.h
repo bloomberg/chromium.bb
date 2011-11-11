@@ -5,6 +5,7 @@
 #ifndef PPAPI_PROXY_PLUGIN_DISPATCHER_H_
 #define PPAPI_PROXY_PLUGIN_DISPATCHER_H_
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -18,16 +19,11 @@
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 
-class MessageLoop;
-
-namespace base {
-class WaitableEvent;
-}
-
 namespace ppapi {
 
 struct Preferences;
 class Resource;
+class WebKitForwarding;
 
 namespace proxy {
 

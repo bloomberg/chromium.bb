@@ -16,8 +16,6 @@
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/var_tracker.h"
 
-struct PPB_Var;
-
 template<typename T> struct DefaultSingletonTraits;
 
 namespace ppapi {

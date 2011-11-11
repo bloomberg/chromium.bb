@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_PPB_CURSOR_CONTROL_PROXY_H_
-#define PPAPI_PPB_CURSOR_CONTROL_PROXY_H_
+#ifndef PPAPI_PROXY_PPB_CURSOR_CONTROL_PROXY_H_
+#define PPAPI_PROXY_PPB_CURSOR_CONTROL_PROXY_H_
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_bool.h"
@@ -15,8 +15,6 @@
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/thunk/ppb_cursor_control_api.h"
 
-struct PPB_CursorControl_Dev;
-
 namespace ppapi {
 namespace proxy {
 
@@ -24,7 +22,7 @@ class PPB_CursorControl_Proxy
     : public InterfaceProxy,
       public ppapi::thunk::PPB_CursorControl_FunctionAPI {
  public:
-  PPB_CursorControl_Proxy(Dispatcher* dispatcher);
+  explicit PPB_CursorControl_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_CursorControl_Proxy();
 
   // FunctionGroupBase overrides.
@@ -66,4 +64,4 @@ class PPB_CursorControl_Proxy
 }  // namespace proxy
 }  // namespace ppapi
 
-#endif  // PPAPI_PPB_CURSOR_CONTROL_PROXY_H_
+#endif  // PPAPI_PROXY_PPB_CURSOR_CONTROL_PROXY_H_

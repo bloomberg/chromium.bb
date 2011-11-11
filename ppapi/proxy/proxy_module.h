@@ -15,8 +15,6 @@ template<typename T> struct DefaultSingletonTraits;
 namespace ppapi {
 namespace proxy {
 
-class PluginDispatcher;
-
 class PPAPI_PROXY_EXPORT ProxyModule {
  public:
   // The global singleton getter.

@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_PPB_BUFFER_PROXY_H_
-#define PPAPI_PPB_BUFFER_PROXY_H_
+#ifndef PPAPI_PROXY_PPB_BUFFER_PROXY_H_
+#define PPAPI_PROXY_PPB_BUFFER_PROXY_H_
 
 #include "base/shared_memory.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
-
-struct PPB_Buffer_Dev;
 
 namespace ppapi {
 
@@ -46,7 +44,7 @@ class Buffer : public thunk::PPB_Buffer_API, public Resource {
 
 class PPB_Buffer_Proxy : public InterfaceProxy {
  public:
-  PPB_Buffer_Proxy(Dispatcher* dispatcher);
+  explicit PPB_Buffer_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Buffer_Proxy();
 
   static PP_Resource CreateProxyResource(PP_Instance instance,
@@ -71,4 +69,4 @@ class PPB_Buffer_Proxy : public InterfaceProxy {
 }  // namespace proxy
 }  // namespace ppapi
 
-#endif  // PPAPI_PPB_BUFFER_PROXY_H_
+#endif  // PPAPI_PROXY_PPB_BUFFER_PROXY_H_

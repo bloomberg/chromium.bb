@@ -5,6 +5,8 @@
 #ifndef PPAPI_PROXY_HOST_VAR_SERIALIZATION_RULES_H_
 #define PPAPI_PROXY_HOST_VAR_SERIALIZATION_RULES_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/proxy/var_serialization_rules.h"
@@ -13,8 +15,6 @@ struct PPB_Var;
 
 namespace ppapi {
 namespace proxy {
-
-class VarTracker;
 
 // Implementation of the VarSerializationRules interface for the host side.
 class HostVarSerializationRules : public VarSerializationRules {

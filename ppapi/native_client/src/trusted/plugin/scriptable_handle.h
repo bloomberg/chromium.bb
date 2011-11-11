@@ -1,9 +1,6 @@
-/*
- * Copyright 2011 (c) The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 // The browser scriptable container class.  The methods on this class
 // are defined in the specific API directories.
@@ -27,8 +24,6 @@
 #include "native_client/src/trusted/plugin/utility.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/private/var_private.h"
-
-struct NaClDesc;
 
 namespace plugin {
 

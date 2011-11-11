@@ -15,12 +15,9 @@
 /// @file
 /// This file defines the API to create a file system associated with a file.
 
-struct PP_FileInfo;
-
 namespace pp {
 
 class CompletionCallback;
-class FileRef;
 
 /// The <code>FileSystem</code> class identifies the file system type
 /// associated with a file.

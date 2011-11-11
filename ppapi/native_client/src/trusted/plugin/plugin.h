@@ -35,7 +35,6 @@
 #include "ppapi/cpp/var.h"
 
 struct NaClSrpcChannel;
-struct NaClDesc;
 
 namespace nacl {
 class DescWrapper;

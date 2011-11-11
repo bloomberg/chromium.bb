@@ -11,7 +11,6 @@
 namespace pp {
 
 class Instance;
-class Module;
 
 // Simple wrapper around the PPB_URLUtil interface.
 class URLUtil_Dev {
@@ -56,4 +55,3 @@ class URLUtil_Dev {
 }  // namespace pp
 
 #endif  // PPAPI_CPP_DEV_URL_UTIL_DEV_H_
-

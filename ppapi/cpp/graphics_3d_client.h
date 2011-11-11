@@ -13,9 +13,6 @@
 namespace pp {
 
 class Instance;
-class Rect;
-class Scrollbar_Dev;
-class Widget_Dev;
 
 // This class provides a C++ interface for callbacks related to 3D. You
 // would normally use multiple inheritance to derive from this class in your
@@ -27,7 +24,7 @@ class Graphics3DClient {
   ///
   /// @param[in] instance The instance that will own the new
   /// <code>Graphics3DClient</code>.
-  Graphics3DClient(Instance* instance);
+  explicit Graphics3DClient(Instance* instance);
 
   /// Destructor.
   virtual ~Graphics3DClient();
@@ -42,4 +39,4 @@ class Graphics3DClient {
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_DEV_GRAPHICS_3D_CLIENT_H_
+#endif  // PPAPI_CPP_GRAPHICS_3D_CLIENT_H_

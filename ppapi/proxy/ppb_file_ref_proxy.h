@@ -15,8 +15,6 @@
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
 
-struct PPB_FileRef_Dev;
-
 namespace ppapi {
 
 class HostResource;
@@ -26,7 +24,7 @@ namespace proxy {
 
 class PPB_FileRef_Proxy : public InterfaceProxy {
  public:
-  PPB_FileRef_Proxy(Dispatcher* dispatcher);
+  explicit PPB_FileRef_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_FileRef_Proxy();
 
   static PP_Resource CreateProxyResource(PP_Resource file_system,

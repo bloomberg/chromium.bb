@@ -27,8 +27,6 @@ class DescWrapper;
 
 namespace plugin {
 
-class Plugin;
-
 // DescBasedHandles are used to convey NaClDesc objects through JavaScript.
 class DescBasedHandle {
  public:

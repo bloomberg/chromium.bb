@@ -16,7 +16,6 @@
 
 namespace ppapi_proxy {
 
-class PluginInstance;
 class PluginResource;
 
 // This class maintains a global list of all live pepper resources. It allows
@@ -88,4 +87,3 @@ class PluginResourceTracker {
 }  // namespace ppapi_proxy
 
 #endif  // WEBKIT_GLUE_PLUGINS_PEPPER_RESOURCE_TRACKER_H_
-

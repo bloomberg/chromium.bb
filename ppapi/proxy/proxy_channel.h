@@ -24,8 +24,6 @@ class TestSink;
 namespace ppapi {
 namespace proxy {
 
-class VarSerializationRules;
-
 class PPAPI_PROXY_EXPORT ProxyChannel
     : public IPC::Channel::Listener,
       public IPC::Message::Sender {
@@ -77,7 +75,7 @@ class PPAPI_PROXY_EXPORT ProxyChannel
 #endif
 
  protected:
-  ProxyChannel(base::ProcessHandle remote_process_handle);
+  explicit ProxyChannel(base::ProcessHandle remote_process_handle);
 
   // You must call this function before anything else. Returns true on success.
   // The delegate pointer must outlive this class, ownership is not

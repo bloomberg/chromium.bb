@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_PPB_VIDEO_CAPTURE_PROXY_H_
-#define PPAPI_PPB_VIDEO_CAPTURE_PROXY_H_
+#ifndef PPAPI_PROXY_PPB_VIDEO_CAPTURE_PROXY_H_
+#define PPAPI_PROXY_PPB_VIDEO_CAPTURE_PROXY_H_
+
+#include <vector>
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/serialized_structs.h"
 
-struct PPB_VideoCapture_Dev;
 struct PPP_VideoCapture_Dev;
 struct PP_VideoCaptureDeviceInfo_Dev;
 
@@ -21,7 +22,7 @@ namespace proxy {
 
 class PPB_VideoCapture_Proxy : public InterfaceProxy {
  public:
-  PPB_VideoCapture_Proxy(Dispatcher* dispatcher);
+  explicit PPB_VideoCapture_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_VideoCapture_Proxy();
 
   static PP_Resource CreateProxyResource(PP_Instance instance);
@@ -46,7 +47,7 @@ class PPB_VideoCapture_Proxy : public InterfaceProxy {
 
 class PPP_VideoCapture_Proxy : public InterfaceProxy {
  public:
-  PPP_VideoCapture_Proxy(Dispatcher* dispatcher);
+  explicit PPP_VideoCapture_Proxy(Dispatcher* dispatcher);
   virtual ~PPP_VideoCapture_Proxy();
 
   static const Info* GetInfo();
@@ -79,4 +80,4 @@ class PPP_VideoCapture_Proxy : public InterfaceProxy {
 }  // namespace proxy
 }  // namespace ppapi
 
-#endif  // PPAPI_PPB_VIDEO_CAPTURE_PROXY_H_
+#endif  // PPAPI_PROXY_PPB_VIDEO_CAPTURE_PROXY_H_

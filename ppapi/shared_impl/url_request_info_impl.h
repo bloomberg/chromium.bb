@@ -14,10 +14,6 @@
 
 namespace ppapi {
 
-namespace thunk {
-class PPB_FileRef_API;
-}
-
 struct PPAPI_SHARED_EXPORT PPB_URLRequestInfo_Data {
   struct PPAPI_SHARED_EXPORT BodyItem {
     BodyItem();

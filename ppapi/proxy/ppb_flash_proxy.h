@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_PPB_FLASH_PROXY_H_
-#define PPAPI_PPB_FLASH_PROXY_H_
+#ifndef PPAPI_PROXY_PPB_FLASH_PROXY_H_
+#define PPAPI_PROXY_PPB_FLASH_PROXY_H_
 
 #include <string>
 #include <vector>
@@ -15,7 +15,6 @@
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/shared_impl/host_resource.h"
 
-struct PP_FileInfo;
 struct PPB_Flash;
 
 namespace ppapi {
@@ -29,7 +28,7 @@ class SerializedVarReturnValue;
 
 class PPB_Flash_Proxy : public InterfaceProxy {
  public:
-  PPB_Flash_Proxy(Dispatcher* dispatcher);
+  explicit PPB_Flash_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_Proxy();
 
   static const PPB_Flash* GetInterface();
@@ -67,4 +66,4 @@ class PPB_Flash_Proxy : public InterfaceProxy {
 }  // namespace proxy
 }  // namespace ppapi
 
-#endif  // PPAPI_PPB_FLASH_PROXY_H_
+#endif  // PPAPI_PROXY_PPB_FLASH_PROXY_H_

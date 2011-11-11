@@ -16,23 +16,12 @@
 #include "ppapi/shared_impl/function_group_base.h"
 
 struct PPB_Proxy_Private;
-struct PPB_Var_Deprecated;
-
-namespace base {
-class WaitableEvent;
-}
-
-namespace IPC {
-class SyncChannel;
-}
 
 namespace ppapi {
 
 struct Preferences;
 
 namespace proxy {
-
-class VarSerialization;
 
 class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
  public:
@@ -124,7 +113,7 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
 // since that's what most callers have.
 class ScopedModuleReference {
  public:
-  ScopedModuleReference(Dispatcher* dispatcher);
+  explicit ScopedModuleReference(Dispatcher* dispatcher);
   ~ScopedModuleReference();
 
  private:

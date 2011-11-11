@@ -23,11 +23,7 @@ namespace pp {
 class Graphics2D;
 class Graphics3D;
 class InputEvent;
-class ImageData;
-class Point;
 class Rect;
-class Rect;
-class Resource;
 class Surface3D_Dev;
 class URLLoader;
 class Var;

@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PAPPI_TESTS_TEST_GRAPHICS_2D_H_
-#define PAPPI_TESTS_TEST_GRAPHICS_2D_H_
+#ifndef PPAPI_TESTS_TEST_GRAPHICS_2D_H_
+#define PPAPI_TESTS_TEST_GRAPHICS_2D_H_
+
+#include <string>
 
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/tests/test_case.h"
 
 struct PPB_Graphics2D;
 struct PPB_ImageData;
-struct PPB_Testing_Dev;
 
 namespace pp {
 class Graphics2D;
@@ -21,7 +22,7 @@ class Rect;
 
 class TestGraphics2D : public TestCase {
  public:
-  TestGraphics2D(TestingInstance* instance) : TestCase(instance) {}
+  explicit TestGraphics2D(TestingInstance* instance) : TestCase(instance) {}
 
   // TestCase implementation.
   virtual bool Init();
@@ -84,4 +85,4 @@ class TestGraphics2D : public TestCase {
   const PPB_ImageData* image_data_interface_;
 };
 
-#endif  // PAPPI_TESTS_TEST_GRAPHICS_2D_H_
+#endif  // PPAPI_TESTS_TEST_GRAPHICS_2D_H_

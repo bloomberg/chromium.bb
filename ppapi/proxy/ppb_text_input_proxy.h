@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_PPB_TEXT_INPUT_PROXY_H_
-#define PPAPI_PPB_TEXT_INPUT_PROXY_H_
+#ifndef PPAPI_PROXY_PPB_TEXT_INPUT_PROXY_H_
+#define PPAPI_PROXY_PPB_TEXT_INPUT_PROXY_H_
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/thunk/ppb_text_input_api.h"
-
-struct PPB_TextInput_Dev;
 
 namespace ppapi {
 namespace proxy {
@@ -19,7 +17,7 @@ class PPB_TextInput_Proxy
     : public InterfaceProxy,
       public ppapi::thunk::PPB_TextInput_FunctionAPI {
  public:
-  PPB_TextInput_Proxy(Dispatcher* dispatcher);
+  explicit PPB_TextInput_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_TextInput_Proxy();
 
   // FunctionGroupBase overrides.
@@ -53,4 +51,4 @@ class PPB_TextInput_Proxy
 }  // namespace proxy
 }  // namespace ppapi
 
-#endif  // PPAPI_PPB_TEXT_INPUT_PROXY_H_
+#endif  // PPAPI_PROXY_PPB_TEXT_INPUT_PROXY_H_

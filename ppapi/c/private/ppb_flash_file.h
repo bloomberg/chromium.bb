@@ -21,8 +21,6 @@ typedef int PP_FileHandle;
 static const PP_FileHandle PP_kInvalidFileHandle = -1;
 #endif
 
-struct PP_CompletionCallback;
-struct PP_FontDescription_Dev;
 struct PP_FileInfo;
 
 struct PP_DirEntry_Dev {

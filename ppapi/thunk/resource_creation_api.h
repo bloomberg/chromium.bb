@@ -22,7 +22,6 @@
 
 struct PP_Flash_Menu;
 struct PP_FontDescription_Dev;
-struct PP_VideoCaptureDeviceInfo_Dev;
 struct PP_Size;
 
 namespace ppapi {

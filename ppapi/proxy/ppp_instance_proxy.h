@@ -21,11 +21,9 @@ struct PP_Rect;
 namespace ppapi {
 namespace proxy {
 
-class SerializedVarReturnValue;
-
 class PPP_Instance_Proxy : public InterfaceProxy {
  public:
-  PPP_Instance_Proxy(Dispatcher* dispatcher);
+  explicit PPP_Instance_Proxy(Dispatcher* dispatcher);
   virtual ~PPP_Instance_Proxy();
 
   // Return the info for the 1.0 (latest, canonical) version of the interface.

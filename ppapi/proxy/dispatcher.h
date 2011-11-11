@@ -22,8 +22,6 @@
 
 namespace ppapi {
 
-class WebKitForwarding;
-
 namespace proxy {
 
 class VarSerializationRules;
