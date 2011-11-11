@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 
 class GURL;
 
@@ -23,7 +24,7 @@ class WebSocketStreamHandleDelegate;
 class WebSocketStreamHandleBridge
     : public base::RefCountedThreadSafe<WebSocketStreamHandleBridge> {
  public:
-  static WebSocketStreamHandleBridge* Create(
+  CONTENT_EXPORT static WebSocketStreamHandleBridge* Create(
       WebKit::WebSocketStreamHandle* handle,
       WebSocketStreamHandleDelegate* delegate);
 

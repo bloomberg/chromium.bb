@@ -17,6 +17,7 @@
 #include "base/file_path.h"
 #include "base/platform_file.h"
 #include "base/string16.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -162,56 +163,61 @@ bool IsInspectorProtocolVersionSupported(const std::string& version);
 
 // Gets a localized string given a message id.  Returns an empty string if the
 // message id is not found.
-string16 GetLocalizedString(int message_id);
+CONTENT_EXPORT string16 GetLocalizedString(int message_id);
 
 // Returns the raw data for a resource.  This resource must have been
 // specified as BINDATA in the relevant .rc file.
-base::StringPiece GetDataResource(int resource_id);
+CONTENT_EXPORT base::StringPiece GetDataResource(int resource_id);
 
 // Glue to access the clipboard.
 
 // Get a clipboard that can be used to construct a ScopedClipboardWriterGlue.
-ui::Clipboard* ClipboardGetClipboard();
+CONTENT_EXPORT ui::Clipboard* ClipboardGetClipboard();
 
 // Get a sequence number which uniquely identifies clipboard state.
-uint64 ClipboardGetSequenceNumber(ui::Clipboard::Buffer buffer);
+CONTENT_EXPORT uint64 ClipboardGetSequenceNumber(ui::Clipboard::Buffer buffer);
 
 // Tests whether the clipboard contains a certain format
-bool ClipboardIsFormatAvailable(const ui::Clipboard::FormatType& format,
-                                ui::Clipboard::Buffer buffer);
+CONTENT_EXPORT bool ClipboardIsFormatAvailable(
+    const ui::Clipboard::FormatType& format,
+    ui::Clipboard::Buffer buffer);
 
 // Reads the available types from the clipboard, if available.
-void ClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,
-                                 std::vector<string16>* types,
-                                 bool* contains_filenames);
+CONTENT_EXPORT void ClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,
+                                                std::vector<string16>* types,
+                                                bool* contains_filenames);
 
 // Reads UNICODE text from the clipboard, if available.
-void ClipboardReadText(ui::Clipboard::Buffer buffer, string16* result);
+CONTENT_EXPORT void ClipboardReadText(ui::Clipboard::Buffer buffer,
+                                      string16* result);
 
 // Reads ASCII text from the clipboard, if available.
-void ClipboardReadAsciiText(ui::Clipboard::Buffer buffer, std::string* result);
+CONTENT_EXPORT void ClipboardReadAsciiText(ui::Clipboard::Buffer buffer,
+                                           std::string* result);
 
 // Reads HTML from the clipboard, if available.
-void ClipboardReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
-                       GURL* url, uint32* fragment_start,
-                       uint32* fragment_end);
+CONTENT_EXPORT void ClipboardReadHTML(ui::Clipboard::Buffer buffer,
+                                      string16* markup,
+                                      GURL* url, uint32* fragment_start,
+                                      uint32* fragment_end);
 
-void ClipboardReadImage(ui::Clipboard::Buffer buffer, std::string* data);
+CONTENT_EXPORT void ClipboardReadImage(ui::Clipboard::Buffer buffer,
+                                       std::string* data);
 
 // Embedders implement this function to return the list of plugins to Webkit.
-void GetPlugins(bool refresh,
-                std::vector<webkit::WebPluginInfo>* plugins);
+CONTENT_EXPORT void GetPlugins(bool refresh,
+                               std::vector<webkit::WebPluginInfo>* plugins);
 
 // Returns true if the protocol implemented to serve |url| supports features
 // required by the media engine.
-bool IsProtocolSupportedForMedia(const GURL& url);
+CONTENT_EXPORT bool IsProtocolSupportedForMedia(const GURL& url);
 
 // Returns the locale that this instance of webkit is running as.  This is of
 // the form language-country (e.g., en-US or pt-BR).
-std::string GetWebKitLocale();
+CONTENT_EXPORT std::string GetWebKitLocale();
 
 // Returns true if the embedder is running in single process mode.
-bool IsSingleProcess();
+CONTENT_EXPORT bool IsSingleProcess();
 
 // ---- END FUNCTIONS IMPLEMENTED BY EMBEDDER ---------------------------------
 

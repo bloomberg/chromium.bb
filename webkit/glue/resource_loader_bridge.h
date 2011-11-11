@@ -30,6 +30,7 @@
 #include "base/platform_file.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 #include "net/url_request/url_request_status.h"
@@ -337,7 +338,8 @@ class ResourceLoaderBridge {
   //
   // For HTTP(S) POST requests, the AppendDataToUpload and AppendFileToUpload
   // methods may be called to construct the body of the request.
-  static ResourceLoaderBridge* Create(const RequestInfo& request_info);
+  CONTENT_EXPORT static ResourceLoaderBridge* Create(
+      const RequestInfo& request_info);
 
   // Call this method before calling Start() to append a chunk of binary data
   // to the request body.  May only be used with HTTP(S) POST requests.
