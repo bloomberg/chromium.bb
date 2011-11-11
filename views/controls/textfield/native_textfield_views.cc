@@ -555,7 +555,7 @@ void NativeTextfieldViews::HandleBlur() {
     touch_selection_controller_->ClientViewLostFocus();
 }
 
-TextInputClient* NativeTextfieldViews::GetTextInputClient() {
+ui::TextInputClient* NativeTextfieldViews::GetTextInputClient() {
   return textfield_->read_only() ? NULL : this;
 }
 
@@ -652,7 +652,7 @@ void NativeTextfieldViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// NativeTextfieldViews, TextInputClient implementation, private:
+// NativeTextfieldViews, ui::TextInputClient implementation, private:
 
 void NativeTextfieldViews::SetCompositionText(
     const ui::CompositionText& composition) {
@@ -811,10 +811,6 @@ bool NativeTextfieldViews::ChangeTextDirectionAndLayoutAlignment(
     base::i18n::TextDirection direction) {
   NOTIMPLEMENTED();
   return false;
-}
-
-View* NativeTextfieldViews::GetOwnerViewOfTextInputClient() {
-  return textfield_;
 }
 
 void NativeTextfieldViews::OnCompositionTextConfirmedOrCleared() {

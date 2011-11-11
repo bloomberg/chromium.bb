@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/base/ime/composition_text.h"
 #include "views/ime/input_method_base.h"
 #include "views/view.h"
 

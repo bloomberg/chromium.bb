@@ -17,6 +17,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/render_text.h"
@@ -27,7 +28,6 @@
 #include "views/events/event.h"
 #include "views/focus/focus_manager.h"
 #include "views/ime/mock_input_method.h"
-#include "views/ime/text_input_client.h"
 #include "views/test/test_views_delegate.h"
 #include "views/test/views_test_base.h"
 #include "views/views_delegate.h"
@@ -91,7 +91,7 @@ class TestTextfield : public views::Textfield {
   DISALLOW_COPY_AND_ASSIGN(TestTextfield);
 };
 
-// A helper class for use with TextInputClient::GetTextFromRange().
+// A helper class for use with ui::TextInputClient::GetTextFromRange().
 class GetTextHelper {
  public:
   GetTextHelper() {
@@ -1019,7 +1019,7 @@ TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {
 
 TEST_F(NativeTextfieldViewsTest, TextInputClientTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
-  TextInputClient* client = textfield_->GetTextInputClient();
+  ui::TextInputClient* client = textfield_->GetTextInputClient();
   EXPECT_TRUE(client);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, client->GetTextInputType());
 
