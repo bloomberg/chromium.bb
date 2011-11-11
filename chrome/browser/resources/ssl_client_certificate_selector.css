@@ -9,6 +9,11 @@ html, body {
   overflow: hidden;
 }
 
+body {
+  padding: 10px;
+  box-sizing: border-box;
+}
+
 .vbox {
   -webkit-box-align: stretch;
   -webkit-box-orient: vertical;
@@ -54,4 +59,8 @@ h2 {
   overflow: auto;
   padding: 3px;
   white-space: pre;
+}
+
+#certificates {
+  width: 100%;
 }

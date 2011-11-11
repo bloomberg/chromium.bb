@@ -29,7 +29,7 @@
 
 namespace {
 
-const int kDialogWidth = 442;
+const int kDialogWidth = 460;
 const int kDialogHeight = 382;
 
 // Formats a certificate into details text.
