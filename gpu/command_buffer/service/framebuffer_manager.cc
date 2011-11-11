@@ -49,6 +49,11 @@ class RenderbufferAttachment
     return false;
   }
 
+  virtual bool IsRenderbuffer(
+       RenderbufferManager::RenderbufferInfo* renderbuffer) const {
+     return renderbuffer_ == renderbuffer;
+  }
+
   virtual bool CanRenderTo() const {
     return true;
   }
@@ -121,6 +126,11 @@ class TextureAttachment
 
   virtual bool IsTexture(TextureManager::TextureInfo* texture) const {
     return texture == texture_.get();
+  }
+
+  virtual bool IsRenderbuffer(
+       RenderbufferManager::RenderbufferInfo* /* renderbuffer */) const {
+    return false;
   }
 
   TextureManager::TextureInfo* texture() const {
@@ -282,6 +292,44 @@ bool FramebufferManager::FramebufferInfo::IsCleared() const {
     }
   }
   return true;
+}
+
+void FramebufferManager::FramebufferInfo::UnbindRenderbuffer(
+    GLenum target, RenderbufferManager::RenderbufferInfo* renderbuffer) {
+  bool done;
+  do {
+    done = true;
+    for (AttachmentMap::const_iterator it = attachments_.begin();
+         it != attachments_.end(); ++it) {
+      Attachment* attachment = it->second;
+      if (attachment->IsRenderbuffer(renderbuffer)) {
+        // TODO(gman): manually detach renderbuffer.
+        // glFramebufferRenderbufferEXT(target, it->first, GL_RENDERBUFFER, 0);
+        AttachRenderbuffer(it->first, NULL);
+        done = false;
+        break;
+      }
+    }
+  } while (!done);
+}
+
+void FramebufferManager::FramebufferInfo::UnbindTexture(
+    GLenum target, TextureManager::TextureInfo* texture) {
+  bool done;
+  do {
+    done = true;
+    for (AttachmentMap::const_iterator it = attachments_.begin();
+         it != attachments_.end(); ++it) {
+      Attachment* attachment = it->second;
+      if (attachment->IsTexture(texture)) {
+        // TODO(gman): manually detach texture.
+        // glFramebufferTexture2DEXT(target, it->first, GL_TEXTURE_2D, 0, 0);
+        AttachTexture(it->first, NULL, GL_TEXTURE_2D, 0);
+        done = false;
+        break;
+      }
+    }
+  } while (!done);
 }
 
 FramebufferManager::FramebufferInfo* FramebufferManager::GetFramebufferInfo(

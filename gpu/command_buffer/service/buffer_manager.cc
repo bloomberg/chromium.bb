@@ -66,7 +66,6 @@ BufferManager::BufferInfo::~BufferInfo() { }
 
 void BufferManager::BufferInfo::SetInfo(
     GLsizeiptr size, GLenum usage, bool shadow) {
-  DCHECK(!IsDeleted());
   usage_ = usage;
   if (size != size_ || shadow != shadowed_) {
     shadowed_ = shadow;
@@ -81,7 +80,6 @@ void BufferManager::BufferInfo::SetInfo(
 
 bool BufferManager::BufferInfo::SetRange(
     GLintptr offset, GLsizeiptr size, const GLvoid * data) {
-  DCHECK(!IsDeleted());
   if (offset < 0 || offset + size < offset || offset + size > size_) {
     return false;
   }
@@ -123,7 +121,6 @@ GLuint GetMaxValue(const void* data, GLuint offset, GLsizei count) {
 
 bool BufferManager::BufferInfo::GetMaxValueForRange(
     GLuint offset, GLsizei count, GLenum type, GLuint* max_value) {
-  DCHECK(!IsDeleted());
   Range range(offset, count, type);
   RangeToMaxValueMap::iterator it = range_set_.find(range);
   if (it != range_set_.end()) {

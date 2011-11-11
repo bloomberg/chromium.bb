@@ -88,7 +88,7 @@ void TextureManager::Destroy(bool have_context) {
 
 bool TextureManager::TextureInfo::CanRender(
     const FeatureInfo* feature_info) const {
-  if (target_ == 0 || IsDeleted()) {
+  if (target_ == 0) {
     return false;
   }
   bool needs_mips = NeedsMips();
@@ -160,7 +160,7 @@ void TextureManager::TextureInfo::SetTarget(GLenum target, GLint max_levels) {
 bool TextureManager::TextureInfo::CanGenerateMipmaps(
     const FeatureInfo* feature_info) const {
   if ((npot() && !feature_info->feature_flags().npot_ok) ||
-      level_infos_.empty() || IsDeleted() ||
+      level_infos_.empty() ||
       target_ == GL_TEXTURE_EXTERNAL_OES) {
     return false;
   }
@@ -272,7 +272,7 @@ bool TextureManager::TextureInfo::ValidForTexture(
     GLenum format,
     GLenum type) const {
   size_t face_index = GLTargetToFaceIndex(face);
-  if (!IsDeleted() && level >= 0 && face_index < level_infos_.size() &&
+  if (level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
     const LevelInfo& info = level_infos_[GLTargetToFaceIndex(face)][level];
     GLint right;
@@ -294,7 +294,7 @@ bool TextureManager::TextureInfo::GetLevelSize(
   DCHECK(width);
   DCHECK(height);
   size_t face_index = GLTargetToFaceIndex(face);
-  if (!IsDeleted() && level >= 0 && face_index < level_infos_.size() &&
+  if (level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
     const LevelInfo& info = level_infos_[GLTargetToFaceIndex(face)][level];
     if (info.target != 0) {
@@ -311,7 +311,7 @@ bool TextureManager::TextureInfo::GetLevelType(
   DCHECK(type);
   DCHECK(internal_format);
   size_t face_index = GLTargetToFaceIndex(face);
-  if (!IsDeleted() && level >= 0 && face_index < level_infos_.size() &&
+  if (level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
     const LevelInfo& info = level_infos_[GLTargetToFaceIndex(face)][level];
     if (info.target != 0) {
@@ -479,8 +479,7 @@ bool TextureManager::TextureInfo::ClearRenderableLevels(GLES2Decoder* decoder) {
 
 bool TextureManager::TextureInfo::IsLevelCleared(GLenum target, GLint level) {
   size_t face_index = GLTargetToFaceIndex(target);
-  if (IsDeleted() ||
-      face_index >= level_infos_.size() ||
+  if (face_index >= level_infos_.size() ||
       level >= static_cast<GLint>(level_infos_[face_index].size())) {
     return true;
   }
@@ -494,8 +493,7 @@ bool TextureManager::TextureInfo::ClearLevel(
     GLES2Decoder* decoder, GLenum target, GLint level) {
   DCHECK(decoder);
   size_t face_index = GLTargetToFaceIndex(target);
-  if (IsDeleted() ||
-      face_index >= level_infos_.size() ||
+  if (face_index >= level_infos_.size() ||
       level >= static_cast<GLint>(level_infos_[face_index].size())) {
     return true;
   }
@@ -650,7 +648,6 @@ void TextureManager::SetInfoTarget(
 void TextureManager::SetLevelCleared(
     TextureManager::TextureInfo* info, GLenum target, GLint level) {
   DCHECK(info);
-  DCHECK(!info->IsDeleted());
   if (!info->SafeToRenderFrom()) {
     DCHECK_NE(0, num_unsafe_textures_);
     --num_unsafe_textures_;
@@ -667,7 +664,6 @@ void TextureManager::SetLevelCleared(
 bool TextureManager::ClearRenderableLevels(
     GLES2Decoder* decoder,TextureManager::TextureInfo* info) {
   DCHECK(info);
-  DCHECK(!info->IsDeleted());
   if (info->SafeToRenderFrom()) {
     return true;
   }
@@ -687,7 +683,6 @@ bool TextureManager::ClearTextureLevel(
     GLES2Decoder* decoder,TextureManager::TextureInfo* info,
     GLenum target, GLint level) {
   DCHECK(info);
-  DCHECK(!info->IsDeleted());
   if (info->num_uncleared_mips() == 0) {
     return true;
   }
@@ -720,7 +715,6 @@ void TextureManager::SetLevelInfo(
     GLenum type,
     bool cleared) {
   DCHECK(info);
-  DCHECK(!info->IsDeleted());
   if (!info->CanRender(feature_info)) {
     DCHECK_NE(0, num_unrenderable_textures_);
     --num_unrenderable_textures_;
@@ -748,7 +742,6 @@ bool TextureManager::SetParameter(
     TextureManager::TextureInfo* info, GLenum pname, GLint param) {
   DCHECK(feature_info);
   DCHECK(info);
-  DCHECK(!info->IsDeleted());
   if (!info->CanRender(feature_info)) {
     DCHECK_NE(0, num_unrenderable_textures_);
     --num_unrenderable_textures_;
@@ -771,7 +764,6 @@ bool TextureManager::MarkMipmapsGenerated(
     const FeatureInfo* feature_info,
     TextureManager::TextureInfo* info) {
   DCHECK(info);
-  DCHECK(!info->IsDeleted());
   if (!info->CanRender(feature_info)) {
     DCHECK_NE(0, num_unrenderable_textures_);
     --num_unrenderable_textures_;

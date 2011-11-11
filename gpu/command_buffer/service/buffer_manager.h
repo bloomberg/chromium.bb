@@ -115,8 +115,6 @@ class BufferManager {
 
     void MarkAsDeleted() {
       service_id_ = 0;
-      shadow_.reset();
-      ClearCache();
     }
 
     void SetInfo(GLsizeiptr size, GLenum usage, bool shadow);

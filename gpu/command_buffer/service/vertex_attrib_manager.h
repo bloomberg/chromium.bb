@@ -111,6 +111,12 @@ class VertexAttribManager {
       offset_ = offset;
     }
 
+    void Unbind(BufferManager::BufferInfo* buffer) {
+      if (buffer_ == buffer) {
+        buffer_ = NULL;
+      }
+    }
+
     // The index of this attrib.
     GLuint index_;
 
@@ -195,6 +201,7 @@ class VertexAttribManager {
     }
   }
 
+  void Unbind(BufferManager::BufferInfo* buffer);
 
  private:
   uint32 max_vertex_attribs_;

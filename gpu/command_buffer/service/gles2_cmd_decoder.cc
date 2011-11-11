@@ -566,6 +566,18 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
           (type == GL_SAMPLER_EXTERNAL_OES ? bound_texture_external_oes :
               bound_texture_cube_map);
     }
+
+    void Unbind(TextureManager::TextureInfo* texture) {
+      if (bound_texture_2d == texture) {
+        bound_texture_2d = NULL;
+      }
+      if (bound_texture_cube_map == texture) {
+        bound_texture_cube_map = NULL;
+      }
+      if (bound_texture_external_oes == texture) {
+        bound_texture_external_oes = NULL;
+      }
+    }
   };
 
   // Initialize or re-initialize the shader translator.
@@ -623,7 +635,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   TextureManager::TextureInfo* GetTextureInfo(GLuint client_id) {
     TextureManager::TextureInfo* info =
         texture_manager()->GetTextureInfo(client_id);
-    return (info && !info->IsDeleted()) ? info : NULL;
+    return info;
   }
 
   // Deletes the texture info for the given texture.
@@ -782,7 +794,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   BufferManager::BufferInfo* GetBufferInfo(GLuint client_id) {
     BufferManager::BufferInfo* info =
         buffer_manager()->GetBufferInfo(client_id);
-    return (info && !info->IsDeleted()) ? info : NULL;
+    return info;
   }
 
   // Removes any buffers in the VertexAtrribInfos and BufferInfos. This is used
@@ -800,7 +812,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
       GLuint client_id) {
     FramebufferManager::FramebufferInfo* info =
         framebuffer_manager()->GetFramebufferInfo(client_id);
-    return (info && !info->IsDeleted()) ? info : NULL;
+    return info;
   }
 
   // Removes the framebuffer info for the given framebuffer.
@@ -819,7 +831,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
       GLuint client_id) {
     RenderbufferManager::RenderbufferInfo* info =
         renderbuffer_manager()->GetRenderbufferInfo(client_id);
-    return (info && !info->IsDeleted()) ? info : NULL;
+    return info;
   }
 
   // Removes the renderbuffer info for the given renderbuffer.
@@ -1145,7 +1157,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     DCHECK(target == GL_ARRAY_BUFFER || target == GL_ELEMENT_ARRAY_BUFFER);
     BufferManager::BufferInfo* info = target == GL_ARRAY_BUFFER ?
         bound_array_buffer_ : bound_element_array_buffer_;
-    return (info && !info->IsDeleted()) ? info : NULL;
+    return info;
   }
 
   // Gets the texture id for a given target.
@@ -1176,7 +1188,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
         NOTREACHED();
         return NULL;
     }
-    return (info && !info->IsDeleted()) ? info : NULL;
+    return info;
   }
 
   GLenum GetBindTargetForSamplerType(GLenum type) {
@@ -1203,7 +1215,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
         NOTREACHED();
         break;
     }
-    return (info && !info->IsDeleted()) ? info : NULL;
+    return info;
   }
 
   RenderbufferManager::RenderbufferInfo* GetRenderbufferInfoForTarget(
@@ -1217,7 +1229,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
         NOTREACHED();
         break;
     }
-    return (info && !info->IsDeleted()) ? info : NULL;
+    return info;
   }
 
   // Validates the program and location for a glGetUniform call and returns
@@ -2186,9 +2198,16 @@ bool GLES2DecoderImpl::GenTexturesHelper(GLsizei n, const GLuint* client_ids) {
 void GLES2DecoderImpl::DeleteBuffersHelper(
     GLsizei n, const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    BufferManager::BufferInfo* info = GetBufferInfo(client_ids[ii]);
-    if (info) {
-      GLuint service_id = info->service_id();
+    BufferManager::BufferInfo* buffer = GetBufferInfo(client_ids[ii]);
+    if (buffer && !buffer->IsDeleted()) {
+      vertex_attrib_manager_.Unbind(buffer);
+      if (bound_array_buffer_ == buffer) {
+        bound_array_buffer_ = NULL;
+      }
+      if (bound_element_array_buffer_ == buffer) {
+        bound_element_array_buffer_ = NULL;
+      }
+      GLuint service_id = buffer->service_id();
       glDeleteBuffersARB(1, &service_id);
       RemoveBufferInfo(client_ids[ii]);
     }
@@ -2201,23 +2220,23 @@ void GLES2DecoderImpl::DeleteFramebuffersHelper(
      feature_info_->feature_flags().chromium_framebuffer_multisample;
 
   for (GLsizei ii = 0; ii < n; ++ii) {
-    FramebufferManager::FramebufferInfo* info =
+    FramebufferManager::FramebufferInfo* framebuffer =
         GetFramebufferInfo(client_ids[ii]);
-    if (info) {
-      if (info == bound_draw_framebuffer_) {
+    if (framebuffer && !framebuffer->IsDeleted()) {
+      if (framebuffer == bound_draw_framebuffer_) {
         bound_draw_framebuffer_ = NULL;
         state_dirty_ = true;
         GLenum target = supports_seperate_framebuffer_binds ?
             GL_DRAW_FRAMEBUFFER : GL_FRAMEBUFFER;
         glBindFramebufferEXT(target, GetBackbufferServiceId());
       }
-      if (info == bound_read_framebuffer_) {
+      if (framebuffer == bound_read_framebuffer_) {
         bound_read_framebuffer_ = NULL;
         GLenum target = supports_seperate_framebuffer_binds ?
             GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
         glBindFramebufferEXT(target, GetBackbufferServiceId());
       }
-      GLuint service_id = info->service_id();
+      GLuint service_id = framebuffer->service_id();
       glDeleteFramebuffersEXT(1, &service_id);
       RemoveFramebufferInfo(client_ids[ii]);
     }
@@ -2226,12 +2245,33 @@ void GLES2DecoderImpl::DeleteFramebuffersHelper(
 
 void GLES2DecoderImpl::DeleteRenderbuffersHelper(
     GLsizei n, const GLuint* client_ids) {
+  bool supports_seperate_framebuffer_binds =
+     feature_info_->feature_flags().chromium_framebuffer_multisample;
   for (GLsizei ii = 0; ii < n; ++ii) {
-    RenderbufferManager::RenderbufferInfo* info =
+    RenderbufferManager::RenderbufferInfo* renderbuffer =
         GetRenderbufferInfo(client_ids[ii]);
-    if (info) {
+    if (renderbuffer && !renderbuffer->IsDeleted()) {
+      if (bound_renderbuffer_ == renderbuffer) {
+        bound_renderbuffer_ = NULL;
+      }
+      // Unbind from current framebuffers.
+      if (supports_seperate_framebuffer_binds) {
+        if (bound_read_framebuffer_) {
+          bound_read_framebuffer_->UnbindRenderbuffer(
+              GL_READ_FRAMEBUFFER, renderbuffer);
+        }
+        if (bound_draw_framebuffer_) {
+          bound_draw_framebuffer_->UnbindRenderbuffer(
+              GL_DRAW_FRAMEBUFFER, renderbuffer);
+        }
+      } else {
+        if (bound_draw_framebuffer_) {
+          bound_draw_framebuffer_->UnbindRenderbuffer(
+              GL_FRAMEBUFFER, renderbuffer);
+        }
+      }
       state_dirty_ = true;
-      GLuint service_id = info->service_id();
+      GLuint service_id = renderbuffer->service_id();
       glDeleteRenderbuffersEXT(1, &service_id);
       RemoveRenderbufferInfo(client_ids[ii]);
     }
@@ -2240,14 +2280,33 @@ void GLES2DecoderImpl::DeleteRenderbuffersHelper(
 
 void GLES2DecoderImpl::DeleteTexturesHelper(
     GLsizei n, const GLuint* client_ids) {
+  bool supports_seperate_framebuffer_binds =
+     feature_info_->feature_flags().chromium_framebuffer_multisample;
   for (GLsizei ii = 0; ii < n; ++ii) {
-    TextureManager::TextureInfo* info = GetTextureInfo(client_ids[ii]);
-    if (info) {
-      if (info->IsAttachedToFramebuffer()) {
+    TextureManager::TextureInfo* texture = GetTextureInfo(client_ids[ii]);
+    if (texture && !texture->IsDeleted()) {
+      if (texture->IsAttachedToFramebuffer()) {
         state_dirty_ = true;
       }
-      GLuint service_id = info->service_id();
-      if (info->IsStreamTexture() && stream_texture_manager_) {
+      // Unbind texture from texture units.
+      for (size_t jj = 0; jj < group_->max_texture_units(); ++jj) {
+        texture_units_[ii].Unbind(texture);
+      }
+      // Unbind from current framebuffers.
+      if (supports_seperate_framebuffer_binds) {
+        if (bound_read_framebuffer_) {
+          bound_read_framebuffer_->UnbindTexture(GL_READ_FRAMEBUFFER, texture);
+        }
+        if (bound_draw_framebuffer_) {
+          bound_draw_framebuffer_->UnbindTexture(GL_DRAW_FRAMEBUFFER, texture);
+        }
+      } else {
+        if (bound_draw_framebuffer_) {
+          bound_draw_framebuffer_->UnbindTexture(GL_FRAMEBUFFER, texture);
+        }
+      }
+      GLuint service_id = texture->service_id();
+      if (texture->IsStreamTexture() && stream_texture_manager_) {
         stream_texture_manager_->DestroyStreamTexture(service_id);
       }
       glDeleteTextures(1, &service_id);
@@ -2329,7 +2388,7 @@ void GLES2DecoderImpl::RestoreCurrentTexture2DBindings() {
 bool GLES2DecoderImpl::CheckFramebufferValid(
     FramebufferManager::FramebufferInfo* framebuffer,
     GLenum target, const char* func_name) {
-  if (!framebuffer || framebuffer->IsDeleted()) {
+  if (!framebuffer) {
     return true;
   }
 
@@ -3798,7 +3857,6 @@ void GLES2DecoderImpl::DoStencilMaskSeparate(GLenum face, GLuint mask) {
 // Assumes framebuffer is complete.
 void GLES2DecoderImpl::ClearUnclearedAttachments(
     GLenum target, FramebufferManager::FramebufferInfo* info) {
-  DCHECK(!info->IsDeleted());
   if (target == GL_READ_FRAMEBUFFER_EXT) {
     // bind this to the DRAW point, clear then bind back to READ
     // TODO(gman): I don't think there is any guarantee that an FBO that
@@ -4564,7 +4622,7 @@ bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
       }
     } else {
       // This attrib is not used in the current program.
-      if (!info->buffer() || info->buffer()->IsDeleted()) {
+      if (!info->buffer()) {
         SetGLError(
             GL_INVALID_OPERATION,
             "glDrawXXX: attempt to render with no buffer attached to enabled "
@@ -4817,8 +4875,7 @@ error::Error GLES2DecoderImpl::HandleDrawArrays(
 
 error::Error GLES2DecoderImpl::HandleDrawElements(
     uint32 immediate_data_size, const gles2::DrawElements& c) {
-  if (!bound_element_array_buffer_ ||
-      bound_element_array_buffer_->IsDeleted()) {
+  if (!bound_element_array_buffer_) {
     SetGLError(GL_INVALID_OPERATION,
                "glDrawElements: No element array buffer bound");
     return error::kNoError;
@@ -5117,37 +5174,39 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
 }
 
 bool GLES2DecoderImpl::DoIsBuffer(GLuint client_id) {
-  const BufferManager::BufferInfo* info = GetBufferInfo(client_id);
-  return info && info->IsValid();
+  const BufferManager::BufferInfo* buffer = GetBufferInfo(client_id);
+  return buffer && buffer->IsValid() && !buffer->IsDeleted();
 }
 
 bool GLES2DecoderImpl::DoIsFramebuffer(GLuint client_id) {
-  const FramebufferManager::FramebufferInfo* info =
+  const FramebufferManager::FramebufferInfo* framebuffer =
       GetFramebufferInfo(client_id);
-  return info && info->IsValid();
+  return framebuffer && framebuffer->IsValid() && !framebuffer->IsDeleted();
 }
 
 bool GLES2DecoderImpl::DoIsProgram(GLuint client_id) {
   // IsProgram is true for programs as soon as they are created, until they are
   // deleted and no longer in use.
-  return GetProgramInfo(client_id) != NULL;
+  const ProgramManager::ProgramInfo* program = GetProgramInfo(client_id);
+  return program != NULL && !program->IsDeleted();
 }
 
 bool GLES2DecoderImpl::DoIsRenderbuffer(GLuint client_id) {
-  const RenderbufferManager::RenderbufferInfo* info =
+  const RenderbufferManager::RenderbufferInfo* renderbuffer =
       GetRenderbufferInfo(client_id);
-  return info && info->IsValid();
+  return renderbuffer && renderbuffer->IsValid() && !renderbuffer->IsDeleted();
 }
 
 bool GLES2DecoderImpl::DoIsShader(GLuint client_id) {
   // IsShader is true for shaders as soon as they are created, until they
   // are deleted and not attached to any programs.
-  return GetShaderInfo(client_id) != NULL;
+  const ShaderManager::ShaderInfo* shader = GetShaderInfo(client_id);
+  return shader != NULL && !shader->IsDeleted();
 }
 
 bool GLES2DecoderImpl::DoIsTexture(GLuint client_id) {
-  const TextureManager::TextureInfo* info = GetTextureInfo(client_id);
-  return info && info->IsValid();
+  const TextureManager::TextureInfo* texture = GetTextureInfo(client_id);
+  return texture && texture->IsValid() && !texture->IsDeleted();
 }
 
 void GLES2DecoderImpl::DoAttachShader(
@@ -5529,10 +5588,6 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     return error::kNoError;
   }
 
-  CopyRealGLErrorsToWrapper();
-
-  ScopedResolvedFrameBufferBinder binder(this, false, true);
-
   // Get the size of the current fbo or backbuffer.
   gfx::Size max_size = GetBoundReadFrameBufferSize();
 
@@ -5546,6 +5601,10 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   if (!CheckBoundFramebuffersValid("glReadPixels")) {
     return error::kNoError;
   }
+
+  CopyRealGLErrorsToWrapper();
+
+  ScopedResolvedFrameBufferBinder binder(this, false, true);
 
   if (x < 0 || y < 0 || max_x > max_size.width() || max_y > max_size.height()) {
     // The user requested an out of range area. Get the results 1 line
@@ -6387,6 +6446,10 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     return;
   }
 
+  if (!CheckBoundFramebuffersValid("glCopyTexImage2D")) {
+    return;
+  }
+
   CopyRealGLErrorsToWrapper();
   ScopedResolvedFrameBufferBinder binder(this, false, true);
   gfx::Size size = GetBoundReadFrameBufferSize();
@@ -6468,6 +6531,10 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
   if ((channels_needed & channels_exist) != channels_needed) {
     SetGLError(
         GL_INVALID_OPERATION, "glCopyTexSubImage2D: incompatible format");
+    return;
+  }
+
+  if (!CheckBoundFramebuffersValid("glCopyTexSubImage2D")) {
     return;
   }
 

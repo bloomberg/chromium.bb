@@ -5392,6 +5392,32 @@ TEST_F(GLES2DecoderWithShaderTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_F(GLES2DecoderWithShaderTest, CopyTexImageWithInCompleteFBOFails) {
+  GLenum target = GL_TEXTURE_2D;
+  GLint level = 0;
+  GLenum internal_format = GL_RGBA;
+  GLsizei width = 2;
+  GLsizei height = 4;
+  GLint border = 0;
+  SetupTexture();
+  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
+                    kServiceRenderbufferId);
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  DoRenderbufferStorage(
+      GL_RENDERBUFFER, GL_RGBA4, GL_RGBA, 0, 0, GL_NO_ERROR);
+  DoFramebufferRenderbuffer(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+      client_renderbuffer_id_, kServiceRenderbufferId, GL_NO_ERROR);
+
+  EXPECT_CALL(*gl_, CopyTexImage2D(_, _, _, _, _, _, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  CopyTexImage2D cmd;
+  cmd.Init(target, level, internal_format, 0, 0, width, height, border);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_FRAMEBUFFER_OPERATION, GetGLError());
+}
 
 
 // TODO(gman): Complete this test.

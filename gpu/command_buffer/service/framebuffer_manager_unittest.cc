@@ -492,6 +492,79 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_TRUE(info_->IsCleared());
 }
 
+TEST_F(FramebufferInfoTest, UnbindRenderbuffer) {
+  const GLuint kRenderbufferClient1Id = 33;
+  const GLuint kRenderbufferService1Id = 333;
+  const GLuint kRenderbufferClient2Id = 34;
+  const GLuint kRenderbufferService2Id = 334;
+
+  renderbuffer_manager_.CreateRenderbufferInfo(
+      kRenderbufferClient1Id, kRenderbufferService1Id);
+  RenderbufferManager::RenderbufferInfo* rb_info1 =
+      renderbuffer_manager_.GetRenderbufferInfo(kRenderbufferClient1Id);
+  ASSERT_TRUE(rb_info1 != NULL);
+  renderbuffer_manager_.CreateRenderbufferInfo(
+      kRenderbufferClient2Id, kRenderbufferService2Id);
+  RenderbufferManager::RenderbufferInfo* rb_info2 =
+      renderbuffer_manager_.GetRenderbufferInfo(kRenderbufferClient2Id);
+  ASSERT_TRUE(rb_info2 != NULL);
+
+  // Attach to 2 attachment points.
+  info_->AttachRenderbuffer(GL_COLOR_ATTACHMENT0, rb_info1);
+  info_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, rb_info1);
+  // Check they were attached.
+  EXPECT_TRUE(info_->GetAttachment(GL_COLOR_ATTACHMENT0) != NULL);
+  EXPECT_TRUE(info_->GetAttachment(GL_DEPTH_ATTACHMENT) != NULL);
+  // Unbind unattached renderbuffer.
+  info_->UnbindRenderbuffer(GL_RENDERBUFFER, rb_info2);
+  // Should be no-op.
+  EXPECT_TRUE(info_->GetAttachment(GL_COLOR_ATTACHMENT0) != NULL);
+  EXPECT_TRUE(info_->GetAttachment(GL_DEPTH_ATTACHMENT) != NULL);
+  // Unbind renderbuffer.
+  info_->UnbindRenderbuffer(GL_RENDERBUFFER, rb_info1);
+  // Check they were detached
+  EXPECT_TRUE(info_->GetAttachment(GL_COLOR_ATTACHMENT0) == NULL);
+  EXPECT_TRUE(info_->GetAttachment(GL_DEPTH_ATTACHMENT) == NULL);
+}
+
+TEST_F(FramebufferInfoTest, UnbindTexture) {
+  const GLuint kTextureClient1Id = 33;
+  const GLuint kTextureService1Id = 333;
+  const GLuint kTextureClient2Id = 34;
+  const GLuint kTextureService2Id = 334;
+  const GLenum kTarget1 = GL_TEXTURE_2D;
+  const GLint kLevel1 = 0;
+
+  FeatureInfo feature_info;
+  texture_manager_.CreateTextureInfo(
+      &feature_info, kTextureClient1Id, kTextureService1Id);
+  TextureManager::TextureInfo* tex_info1 =
+      texture_manager_.GetTextureInfo(kTextureClient1Id);
+  ASSERT_TRUE(tex_info1 != NULL);
+  texture_manager_.CreateTextureInfo(
+      &feature_info, kTextureClient2Id, kTextureService2Id);
+  TextureManager::TextureInfo* tex_info2 =
+      texture_manager_.GetTextureInfo(kTextureClient2Id);
+  ASSERT_TRUE(tex_info2 != NULL);
+
+  // Attach to 2 attachment points.
+  info_->AttachTexture(GL_COLOR_ATTACHMENT0, tex_info1, kTarget1, kLevel1);
+  info_->AttachTexture(GL_DEPTH_ATTACHMENT, tex_info1, kTarget1, kLevel1);
+  // Check they were attached.
+  EXPECT_TRUE(info_->GetAttachment(GL_COLOR_ATTACHMENT0) != NULL);
+  EXPECT_TRUE(info_->GetAttachment(GL_DEPTH_ATTACHMENT) != NULL);
+  // Unbind unattached texture.
+  info_->UnbindTexture(kTarget1, tex_info2);
+  // Should be no-op.
+  EXPECT_TRUE(info_->GetAttachment(GL_COLOR_ATTACHMENT0) != NULL);
+  EXPECT_TRUE(info_->GetAttachment(GL_DEPTH_ATTACHMENT) != NULL);
+  // Unbind texture.
+  info_->UnbindTexture(kTarget1, tex_info1);
+  // Check they were detached
+  EXPECT_TRUE(info_->GetAttachment(GL_COLOR_ATTACHMENT0) == NULL);
+  EXPECT_TRUE(info_->GetAttachment(GL_DEPTH_ATTACHMENT) == NULL);
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

@@ -39,6 +39,8 @@ class FramebufferManager {
           RenderbufferManager* renderbuffer_manager,
           TextureManager* texture_manager) = 0;
       virtual bool IsTexture(TextureManager::TextureInfo* texture) const = 0;
+      virtual bool IsRenderbuffer(
+          RenderbufferManager::RenderbufferInfo* renderbuffer) const = 0;
       virtual bool CanRenderTo() const = 0;
       virtual void DetachFromFramebuffer() = 0;
       virtual bool ValidForAttachmentType(GLenum attachment_type) = 0;
@@ -61,6 +63,14 @@ class FramebufferManager {
     void AttachTexture(
         GLenum attachment, TextureManager::TextureInfo* texture, GLenum target,
         GLint level);
+
+    // Unbinds the given renderbuffer if it is bound.
+    void UnbindRenderbuffer(
+        GLenum target, RenderbufferManager::RenderbufferInfo* renderbuffer);
+
+    // Unbinds the given texture if it is bound.
+    void UnbindTexture(
+        GLenum target, TextureManager::TextureInfo* texture);
 
     void MarkAttachmentsAsCleared(
       RenderbufferManager* renderbuffer_manager,

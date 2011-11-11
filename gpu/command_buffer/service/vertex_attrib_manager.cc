@@ -88,6 +88,11 @@ bool VertexAttribManager::Enable(GLuint index, bool enable) {
   return true;
 }
 
+void VertexAttribManager::Unbind(BufferManager::BufferInfo* buffer) {
+  for (uint32 vv = 0; vv < max_vertex_attribs_; ++vv) {
+    vertex_attrib_infos_[vv].Unbind(buffer);
+  }
+}
 
 }  // namespace gles2
 }  // namespace gpu

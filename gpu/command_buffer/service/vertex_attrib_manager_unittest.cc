@@ -174,6 +174,40 @@ TEST_F(VertexAttribManagerTest, CanAccess) {
   buffer_manager.Destroy(false);
 }
 
+TEST_F(VertexAttribManagerTest, Unbind) {
+  BufferManager buffer_manager;
+  buffer_manager.CreateBufferInfo(1, 2);
+  buffer_manager.CreateBufferInfo(3, 4);
+  BufferManager::BufferInfo* buffer1 = buffer_manager.GetBufferInfo(1);
+  BufferManager::BufferInfo* buffer2 = buffer_manager.GetBufferInfo(3);
+  ASSERT_TRUE(buffer1 != NULL);
+  ASSERT_TRUE(buffer2 != NULL);
+
+  VertexAttribManager::VertexAttribInfo* info1 =
+      manager_.GetVertexAttribInfo(1);
+  VertexAttribManager::VertexAttribInfo* info3 =
+      manager_.GetVertexAttribInfo(3);
+
+  // Attach to 2 buffers.
+  manager_.SetAttribInfo(1, buffer1, 3, GL_SHORT, GL_TRUE, 32, 32, 4);
+  manager_.SetAttribInfo(3, buffer1, 3, GL_SHORT, GL_TRUE, 32, 32, 4);
+  // Check they were attached.
+  EXPECT_EQ(buffer1, info1->buffer());
+  EXPECT_EQ(buffer1, info3->buffer());
+  // Unbind unattached buffer.
+  manager_.Unbind(buffer2);
+  // Should be no-op.
+  EXPECT_EQ(buffer1, info1->buffer());
+  EXPECT_EQ(buffer1, info3->buffer());
+  // Unbind buffer.
+  manager_.Unbind(buffer1);
+  // Check they were detached
+  EXPECT_TRUE(NULL == info1->buffer());
+  EXPECT_TRUE(NULL == info3->buffer());
+
+  buffer_manager.Destroy(false);
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

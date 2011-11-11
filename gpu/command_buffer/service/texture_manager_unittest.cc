@@ -572,7 +572,9 @@ TEST_F(TextureInfoTest, GetLevelSize) {
   EXPECT_EQ(4, width);
   EXPECT_EQ(5, height);
   manager_.RemoveTextureInfo(&feature_info_, kClient1Id);
-  EXPECT_FALSE(info_->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
+  EXPECT_TRUE(info_->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
+  EXPECT_EQ(4, width);
+  EXPECT_EQ(5, height);
 }
 
 TEST_F(TextureInfoTest, GetLevelType) {
@@ -588,7 +590,9 @@ TEST_F(TextureInfoTest, GetLevelType) {
   EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
   EXPECT_EQ(static_cast<GLenum>(GL_RGBA), format);
   manager_.RemoveTextureInfo(&feature_info_, kClient1Id);
-  EXPECT_FALSE(info_->GetLevelType(GL_TEXTURE_2D, 1, &type, &format));
+  EXPECT_TRUE(info_->GetLevelType(GL_TEXTURE_2D, 1, &type, &format));
+  EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
+  EXPECT_EQ(static_cast<GLenum>(GL_RGBA), format);
 }
 
 TEST_F(TextureInfoTest, ValidForTexture) {
@@ -633,7 +637,7 @@ TEST_F(TextureInfoTest, ValidForTexture) {
   EXPECT_TRUE(info_->ValidForTexture(
       GL_TEXTURE_2D, 1, 1, 1, 2, 3, GL_RGBA, GL_UNSIGNED_BYTE));
   manager_.RemoveTextureInfo(&feature_info_, kClient1Id);
-  EXPECT_FALSE(info_->ValidForTexture(
+  EXPECT_TRUE(info_->ValidForTexture(
       GL_TEXTURE_2D, 1, 0, 0, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
 }
 
