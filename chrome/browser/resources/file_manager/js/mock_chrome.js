@@ -53,11 +53,6 @@ chrome.fileBrowserPrivate = {
   /**
    * Disk mount/unmount notification.
    */
-  onDiskChanged: {
-    callbacks: [],
-    addListener: function(cb) { this.callbacks.push(cb) }
-  },
-
   onMountCompleted: {
     callbacks: [],
     addListener: function(cb) { this.callbacks.push(cb) }
@@ -190,6 +185,8 @@ chrome.fileBrowserPrivate = {
     }
   },
 
+  getSizeStats: function() {},
+
   /**
    * Return localized strings.
    */
@@ -235,6 +232,7 @@ chrome.fileBrowserPrivate = {
       UNMOUNT_ARCHIVE: 'Close archive',
       FORMAT_DEVICE: 'Format device',
 
+      ENABLE_PHOTO_EDITOR: 'true',
       GALLERY: 'View and Edit',
       GALLERY_EDIT: 'Edit',
       GALLERY_SHARE: 'Share',
@@ -349,13 +347,6 @@ chrome.fileBrowserPrivate = {
       PLAIN_TEXT_FILE_TYPE: 'Plain text file',
       PDF_DOCUMENT_FILE_TYPE: 'PDF document'
     });
-  }
-};
-
-chrome.fileBrowserHandler = {
-  onExecute: {
-    callbacks: [],
-    addListener: function(cb) { this.callbacks.push(cb) }
   }
 };
 
