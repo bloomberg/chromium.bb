@@ -19,6 +19,7 @@
 #include "base/process_util.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/common/metrics_helpers.h"
+#include "content/common/child_process_info.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -305,6 +306,10 @@ class MetricsService : public content::NotificationObserver,
   // Sets the value of the specified path in prefs and schedules a save.
   void RecordBooleanPrefValue(const char* path, bool value);
 
+  // Returns true if process of type |type| should be counted as a plugin
+  // process, and false otherwise.
+  static bool IsPluginProcess(ChildProcessInfo::ProcessType type);
+
   content::NotificationRegistrar registrar_;
 
   // Indicate whether recording and reporting are currently happening.
@@ -385,9 +390,8 @@ class MetricsService : public content::NotificationObserver,
   // exited-cleanly bit in the prefs.
   static ShutdownCleanliness clean_shutdown_status_;
 
-  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdGeneratesAllZeroes);
-  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdGeneratesCorrectly);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdCorrectlyFormatted);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);
 
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
 };

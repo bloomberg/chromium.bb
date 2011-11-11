@@ -116,7 +116,11 @@ PpapiPluginProcessHost::PpapiPluginProcessHost()
 
 bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
   plugin_path_ = info.path;
-  set_name(UTF8ToUTF16(info.name));
+  if (info.name.empty()) {
+    set_name(plugin_path_.BaseName().LossyDisplayName());
+  } else {
+    set_name(UTF8ToUTF16(info.name));
+  }
   set_version(UTF8ToUTF16(info.version));
 
   if (!CreateChannel())

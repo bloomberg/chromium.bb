@@ -28,3 +28,11 @@ TEST(MetricsServiceTest, ClientIdCorrectlyFormatted) {
   }
 }
 
+TEST(MetricsServiceTest, IsPluginProcess) {
+  EXPECT_TRUE(
+      MetricsService::IsPluginProcess(ChildProcessInfo::PLUGIN_PROCESS));
+  EXPECT_TRUE(
+      MetricsService::IsPluginProcess(ChildProcessInfo::PPAPI_PLUGIN_PROCESS));
+  EXPECT_FALSE(
+      MetricsService::IsPluginProcess(ChildProcessInfo::GPU_PROCESS));
+}

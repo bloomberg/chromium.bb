@@ -179,7 +179,6 @@
 #include "content/browser/load_notification_details.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/common/child_process_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_fetcher.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -1356,7 +1355,7 @@ void MetricsService::LogChildProcessChange(
       stats.process_crashes++;
       // Exclude plugin crashes from the count below because we report them via
       // a separate UMA metric.
-      if (child_details->type() != ChildProcessInfo::PLUGIN_PROCESS) {
+      if (!IsPluginProcess(child_details->type())) {
         IncrementPrefValue(prefs::kStabilityChildProcessCrashCount);
       }
       break;
@@ -1473,7 +1472,7 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
     ChildProcessStats stats = cache_iter->second;
 
     // Insert only plugins information into the plugins list.
-    if (ChildProcessInfo::PLUGIN_PROCESS != stats.process_type)
+    if (!IsPluginProcess(stats.process_type))
       continue;
 
     // TODO(viettrungluu): remove conversion
@@ -1517,6 +1516,12 @@ void MetricsService::RecordCurrentState(PrefService* pref) {
   pref->SetInt64(prefs::kStabilityLastTimestampSec, Time::Now().ToTimeT());
 
   RecordPluginChanges(pref);
+}
+
+// static
+bool MetricsService::IsPluginProcess(ChildProcessInfo::ProcessType type) {
+  return (type == ChildProcessInfo::PLUGIN_PROCESS ||
+          type == ChildProcessInfo::PPAPI_PLUGIN_PROCESS);
 }
 
 static bool IsSingleThreaded() {
