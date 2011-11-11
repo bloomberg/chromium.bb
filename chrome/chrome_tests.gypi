@@ -2341,16 +2341,6 @@
             'browser/printing/print_system_task_proxy_unittest.cc',
           ],
         }],
-        ['component == "shared_library"', {
-          # This is needed for tests that subclass
-          # RendererWebKitPlatformSupportImpl, which subclasses stuff in
-          # glue, which refers to symbols defined in these files.
-          # Hopefully this can be resolved with http://crbug.com/98755.
-          'sources': [
-            '../content/renderer/renderer_glue.cc',
-            '../content/common/socket_stream_dispatcher.cc',
-          ]},
-        ],
       ],
     },
     {
@@ -2955,16 +2945,6 @@
             '../webkit/webkit.gyp:copy_npapi_test_plugin',
           ],
         }],
-        ['component == "shared_library"', {
-          # This is needed for tests that subclass
-          # RendererWebKitPlatformSupportImpl, which subclasses stuff in
-          # glue, which refers to symbols defined in these files.
-          # Hopefully this can be resolved with http://crbug.com/98755.
-          'sources': [
-            '../content/renderer/renderer_glue.cc',
-            '../content/common/socket_stream_dispatcher.cc',
-          ]},
-        ],
       ],  # conditions
     },  # target browser_tests
     {

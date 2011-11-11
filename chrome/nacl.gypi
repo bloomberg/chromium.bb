@@ -178,7 +178,6 @@
               ],
               'defines': [
                 '<@(nacl_win64_defines)',
-                'COMPILE_CONTENT_STATICALLY',
               ],
               'configurations': {
                 'Common_Base': {
