@@ -20,6 +20,7 @@ DecoderVp8::DecoderVp8()
     : state_(kUninitialized),
       codec_(NULL),
       last_image_(NULL),
+      clip_rect_(SkIRect::MakeEmpty()),
       horizontal_scale_ratio_(1.0),
       vertical_scale_ratio_(1.0) {
 }
