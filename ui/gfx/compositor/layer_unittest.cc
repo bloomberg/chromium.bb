@@ -465,37 +465,53 @@ class LayerWithNullDelegateTest : public LayerWithDelegateTest {
     return layer;
   }
 
+  void RunPendingMessages() {
+    MessageLoopForUI::current()->RunAllPending();
+  }
+
  private:
   scoped_ptr<NullLayerDelegate> default_layer_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerWithNullDelegateTest);
 };
 
+// With the webkit compositor, we don't explicitly textures for layers, making
+// tests that check that we do fail.
+#if defined(USE_WEBKIT_COMPOSITOR)
+#define NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(X) DISABLED_ ## X
+#else
+#define NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(X) X
+#endif
+
 // Verifies that a layer which is set never to have a texture does not
 // get a texture when SetFillsBoundsOpaquely is called.
-TEST_F(LayerWithNullDelegateTest, LayerNoTextureSetFillsBoundsOpaquely) {
+TEST_F(LayerWithNullDelegateTest,
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(
+           LayerNoTextureSetFillsBoundsOpaquely)) {
   scoped_ptr<Layer> parent(CreateNoTextureLayer(gfx::Rect(0, 0, 400, 400)));
   scoped_ptr<Layer> child(CreateNoTextureLayer(gfx::Rect(50, 50, 100, 100)));
   parent->Add(child.get());
 
   compositor()->SetRootLayer(parent.get());
+  parent->SetFillsBoundsOpaquely(true);
+  child->SetFillsBoundsOpaquely(true);
   Draw();
+  RunPendingMessages();
+  EXPECT_TRUE(child->texture() == NULL);
+  EXPECT_TRUE(parent->texture() == NULL);
+
+  parent->SetFillsBoundsOpaquely(false);
+  child->SetFillsBoundsOpaquely(false);
+  Draw();
+  RunPendingMessages();
   EXPECT_TRUE(child->texture() == NULL);
   EXPECT_TRUE(parent->texture() == NULL);
 }
 
-// With the webkit compositor, we don't explicitly textures for layers, making
-// tests that check that we do fail.
-#if defined(USE_WEBKIT_COMPOSITOR)
-#define WEBKIT_COMPOSITOR_FAILS(X) FAILS_ ## X
-#else
-#define WEBKIT_COMPOSITOR_FAILS(X) X
-#endif
-
 // Verifies that a layer does not have a texture when the hole is the size
 // of the parent layer.
 TEST_F(LayerWithNullDelegateTest,
-       WEBKIT_COMPOSITOR_FAILS(LayerNoTextureHoleSizeOfLayer)) {
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(LayerNoTextureHoleSizeOfLayer)) {
   scoped_ptr<Layer> parent(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
   scoped_ptr<Layer> child(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
   parent->Add(child.get());
@@ -511,7 +527,7 @@ TEST_F(LayerWithNullDelegateTest,
 
 // Verifies that a layer which has opacity == 0 does not have a texture.
 TEST_F(LayerWithNullDelegateTest,
-       WEBKIT_COMPOSITOR_FAILS(LayerNoTextureTransparent)) {
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(LayerNoTextureTransparent)) {
   scoped_ptr<Layer> parent(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
   scoped_ptr<Layer> child(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
   parent->Add(child.get());
@@ -535,7 +551,7 @@ TEST_F(LayerWithNullDelegateTest,
 
 // Verifies that no texture is created for a layer with empty bounds.
 TEST_F(LayerWithNullDelegateTest,
-       WEBKIT_COMPOSITOR_FAILS(LayerTextureNonEmptySchedulePaint)) {
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(LayerTextureNonEmptySchedulePaint)) {
   scoped_ptr<Layer> layer(CreateTextureRootLayer(gfx::Rect(0, 0, 0, 0)));
   Draw();
   EXPECT_TRUE(layer->texture() == NULL);
@@ -620,7 +636,8 @@ TEST_F(LayerWithNullDelegateTest, HoleWithNinetyDegreeTransforms) {
 //  +- L12 (no texture) (added after L1 is already set as root-layer)
 //    +- L121 (texture)
 //    +- L122 (texture)
-TEST_F(LayerWithNullDelegateTest, WEBKIT_COMPOSITOR_FAILS(NoCompositor)) {
+TEST_F(LayerWithNullDelegateTest,
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(NoCompositor)) {
   scoped_ptr<Layer> l1(CreateLayer(Layer::LAYER_HAS_NO_TEXTURE));
   scoped_ptr<Layer> l11(CreateLayer(Layer::LAYER_HAS_TEXTURE));
   scoped_ptr<Layer> l12(CreateLayer(Layer::LAYER_HAS_NO_TEXTURE));
@@ -726,26 +743,45 @@ TEST_F(LayerWithNullDelegateTest, Visibility) {
 #endif
 }
 
+// Checks that the invalid rect assumes correct values when setting bounds.
+// TODO(vollick): for USE_WEBKIT_COMPOSITOR, use WebKit's dirty rect.
+TEST_F(LayerWithNullDelegateTest,
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(SetBoundsInvalidRect)) {
+  scoped_ptr<Layer> l1(CreateTextureLayer(gfx::Rect(0, 0, 200, 200)));
+  compositor()->SetRootLayer(l1.get());
+
+  // After a draw the invalid rect should be empty.
+  Draw();
+  EXPECT_TRUE(l1->invalid_rect().IsEmpty());
+
+  // After a move the invalid rect should be empty.
+  l1->SetBounds(gfx::Rect(5, 5, 200, 200));
+  EXPECT_TRUE(l1->invalid_rect().IsEmpty());
+
+  // Bounds change should trigger both the invalid rect to update as well as
+  // CompositorDelegate being told to draw.
+  l1->SetBounds(gfx::Rect(5, 5, 100, 100));
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+            l1->invalid_rect().ToString());
+}
+
 // Verifies SetBounds triggers the appropriate painting/drawing.
 TEST_F(LayerWithNullDelegateTest, SetBoundsSchedulesPaint) {
   scoped_ptr<Layer> l1(CreateTextureLayer(gfx::Rect(0, 0, 200, 200)));
   compositor()->SetRootLayer(l1.get());
 
   Draw();
+
   schedule_draw_invoked_ = false;
-  // After a draw the invalid rect should be empty.
-  EXPECT_TRUE(l1->invalid_rect().IsEmpty());
   l1->SetBounds(gfx::Rect(5, 5, 200, 200));
-  // After a move the invalid rect should be empty.
-  EXPECT_TRUE(l1->invalid_rect().IsEmpty());
-  // But the CompositorDelegate (us) should have been told to draw.
+
+  // The CompositorDelegate (us) should have been told to draw for a move.
   EXPECT_TRUE(schedule_draw_invoked_);
 
   schedule_draw_invoked_ = false;
   l1->SetBounds(gfx::Rect(5, 5, 100, 100));
-  // Bounds change should trigger both the invalid rect to update as well as
-  // CompositorDelegate being told to draw.
-  EXPECT_EQ(gfx::Rect(0, 0, 100, 100), l1->invalid_rect());
+
+  // The CompositorDelegate (us) should have been told to draw for a resize.
   EXPECT_TRUE(schedule_draw_invoked_);
 }
 

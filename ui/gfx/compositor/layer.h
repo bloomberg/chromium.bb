@@ -118,7 +118,7 @@ class COMPOSITOR_EXPORT Layer :
   float opacity() const { return opacity_; }
   void SetOpacity(float opacity);
 
-  // Return the target opacity if animator is running, or the current bounds
+  // Return the target opacity if animator is running, or the current opacity
   // otherwise.
   float GetTargetOpacity() const;
 
