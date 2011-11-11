@@ -62,7 +62,7 @@ class TabFinder : public content::NotificationObserver {
   virtual ~TabFinder();
 
   // Forwarded from TabContentsObserverImpl.
-  void DidNavigateAnyFramePostCommit(
+  void DidNavigateAnyFrame(
       TabContents* source,
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);

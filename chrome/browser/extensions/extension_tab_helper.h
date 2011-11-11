@@ -89,7 +89,7 @@ class ExtensionTabHelper
 
  private:
   // TabContentsObserver overrides.
-  virtual void DidNavigateMainFramePostCommit(
+  virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

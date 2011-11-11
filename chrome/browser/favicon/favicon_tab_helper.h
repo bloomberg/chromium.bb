@@ -82,7 +82,7 @@ class FaviconTabHelper : public TabContentsObserver,
   virtual void NavigateToPendingEntry(
       const GURL& url,
       NavigationController::ReloadType reload_type) OVERRIDE;
-  virtual void DidNavigateMainFramePostCommit(
+  virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

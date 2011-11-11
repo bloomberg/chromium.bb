@@ -32,7 +32,7 @@ class TabFinder::TabContentsObserverImpl : public TabContentsObserver {
   TabContents* tab_contents() { return TabContentsObserver::tab_contents(); }
 
   // TabContentsObserver overrides:
-  virtual void DidNavigateAnyFramePostCommit(
+  virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
@@ -53,10 +53,10 @@ TabFinder::TabContentsObserverImpl::TabContentsObserverImpl(
 TabFinder::TabContentsObserverImpl::~TabContentsObserverImpl() {
 }
 
-void TabFinder::TabContentsObserverImpl::DidNavigateAnyFramePostCommit(
+void TabFinder::TabContentsObserverImpl::DidNavigateAnyFrame(
     const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
-  finder_->DidNavigateAnyFramePostCommit(tab_contents(), details, params);
+  finder_->DidNavigateAnyFrame(tab_contents(), details, params);
 }
 
 void TabFinder::TabContentsObserverImpl::TabContentsDestroyed(
@@ -130,7 +130,7 @@ TabFinder::~TabFinder() {
   STLDeleteElements(&tab_contents_observers_);
 }
 
-void TabFinder::DidNavigateAnyFramePostCommit(
+void TabFinder::DidNavigateAnyFrame(
     TabContents* source,
     const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {

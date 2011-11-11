@@ -286,7 +286,7 @@ void AutofillManager::RegisterUserPrefs(PrefService* prefs) {
                             PrefService::UNSYNCABLE_PREF);
 }
 
-void AutofillManager::DidNavigateMainFramePostCommit(
+void AutofillManager::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   Reset();

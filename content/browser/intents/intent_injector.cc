@@ -51,7 +51,7 @@ void IntentInjector::RenderViewCreated(RenderViewHost* host) {
   SendIntent();
 }
 
-void IntentInjector::DidNavigateMainFramePostCommit(
+void IntentInjector::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   SendIntent();

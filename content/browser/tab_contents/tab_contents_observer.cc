@@ -25,12 +25,12 @@ void TabContentsObserver::NavigateToPendingEntry(
     NavigationController::ReloadType reload_type) {
 }
 
-void TabContentsObserver::DidNavigateMainFramePostCommit(
+void TabContentsObserver::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
 }
 
-void TabContentsObserver::DidNavigateAnyFramePostCommit(
+void TabContentsObserver::DidNavigateAnyFrame(
     const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
 }

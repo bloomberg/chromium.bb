@@ -616,8 +616,8 @@ void ExtensionSettingsHandler::Observe(
       MaybeUpdateAfterNotification();
       break;
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED:
-      deleting_rvh_ =
-          content::Details<BackgroundContents>(details)->render_view_host();
+      deleting_rvh_ = content::Details<BackgroundContents>(details)->
+          tab_contents()->render_view_host();
       // Fall through.
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED:
     case chrome::NOTIFICATION_EXTENSION_HOST_CREATED:

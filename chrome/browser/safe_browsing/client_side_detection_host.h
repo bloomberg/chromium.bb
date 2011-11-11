@@ -46,7 +46,7 @@ class ClientSideDetectionHost : public TabContentsObserver,
   // From TabContentsObserver.  If we navigate away we cancel all pending
   // callbacks that could show an interstitial, and check to see whether
   // we should classify the new URL.
-  virtual void DidNavigateMainFramePostCommit(
+  virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
 

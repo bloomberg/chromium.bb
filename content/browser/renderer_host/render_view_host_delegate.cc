@@ -31,10 +31,6 @@ TabContents* RenderViewHostDelegate::GetAsTabContents() {
   return NULL;
 }
 
-BackgroundContents* RenderViewHostDelegate::GetAsBackgroundContents() {
-  return NULL;
-}
-
 WebPreferences RenderViewHostDelegate::GetWebkitPrefs() {
   return WebPreferences();
 }

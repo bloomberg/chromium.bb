@@ -420,7 +420,7 @@ bool TabSpecificContentSettings::OnMessageReceived(
   return handled;
 }
 
-void TabSpecificContentSettings::DidNavigateMainFramePostCommit(
+void TabSpecificContentSettings::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   if (!details.is_in_page) {

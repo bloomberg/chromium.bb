@@ -26,10 +26,10 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
   virtual void NavigateToPendingEntry(
       const GURL& url,
       NavigationController::ReloadType reload_type);
-  virtual void DidNavigateMainFramePostCommit(
+  virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
-  virtual void DidNavigateAnyFramePostCommit(
+  virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
   // |render_view_host| is the RenderViewHost for which the provisional load is

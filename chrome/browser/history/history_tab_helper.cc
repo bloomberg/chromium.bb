@@ -77,14 +77,14 @@ bool HistoryTabHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void HistoryTabHelper::DidNavigateMainFramePostCommit(
+void HistoryTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   // Allow the new page to set the title again.
   received_page_title_ = false;
 }
 
-void HistoryTabHelper::DidNavigateAnyFramePostCommit(
+void HistoryTabHelper::DidNavigateAnyFrame(
     const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   // Update history. Note that this needs to happen after the entry is complete,

@@ -85,7 +85,7 @@ void ConstrainedWindowTabHelper::BlockTabContent(bool blocked) {
     delegate_->SetTabContentBlocked(wrapper_, blocked);
 }
 
-void ConstrainedWindowTabHelper::DidNavigateMainFramePostCommit(
+void ConstrainedWindowTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   // Close constrained windows if necessary.

@@ -157,7 +157,7 @@ void PasswordManager::DidStopLoading() {
   }
 }
 
-void PasswordManager::DidNavigateAnyFramePostCommit(
+void PasswordManager::DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) {
   if (params.password_form.origin.is_valid())

@@ -1286,7 +1286,7 @@ void TabContents::DidNavigateMainFramePostCommit(
 
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(TabContentsObserver, observers_,
-                    DidNavigateMainFramePostCommit(details, params));
+                    DidNavigateMainFrame(details, params));
 }
 
 void TabContents::DidNavigateAnyFramePostCommit(
@@ -1303,7 +1303,7 @@ void TabContents::DidNavigateAnyFramePostCommit(
 
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(TabContentsObserver, observers_,
-                    DidNavigateAnyFramePostCommit(details, params));
+                    DidNavigateAnyFrame(details, params));
 }
 
 void TabContents::UpdateMaxPageIDIfNecessary(SiteInstance* site_instance,

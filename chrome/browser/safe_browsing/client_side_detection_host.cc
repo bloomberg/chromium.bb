@@ -290,7 +290,7 @@ bool ClientSideDetectionHost::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ClientSideDetectionHost::DidNavigateMainFramePostCommit(
+void ClientSideDetectionHost::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   // TODO(noelutz): move this DCHECK to TabContents and fix all the unit tests

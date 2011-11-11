@@ -27,7 +27,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
@@ -454,11 +453,10 @@ void BackgroundContentsService::LoadBackgroundContents(
       frame_name,
       application_id);
 
-  RenderViewHost* render_view_host = contents->render_view_host();
   // TODO(atwilson): Create RenderViews asynchronously to avoid increasing
   // startup latency (http://crbug.com/47236).
-  render_view_host->CreateRenderView(frame_name);
-  render_view_host->NavigateToURL(url);
+  contents->tab_contents()->controller().LoadURL(
+      url, GURL(), content::PAGE_TRANSITION_LINK, std::string());
 }
 
 BackgroundContents* BackgroundContentsService::CreateBackgroundContents(

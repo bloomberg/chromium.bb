@@ -43,10 +43,10 @@ class HistoryTabHelper : public TabContentsObserver,
  private:
   // TabContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void DidNavigateMainFramePostCommit(
+  virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
-  virtual void DidNavigateAnyFramePostCommit(
+  virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
 

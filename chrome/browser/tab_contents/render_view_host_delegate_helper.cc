@@ -152,7 +152,8 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
         opener->GetURL(),
         frame_name);
     if (contents) {
-      pending_contents_[route_id] = contents->render_view_host();
+      pending_contents_[route_id] =
+          contents->tab_contents()->render_view_host();
       return NULL;
     }
   }
@@ -551,8 +552,19 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     extension_webkit_preferences::SetPreferences(&web_prefs, extension);
   }
 
-  if (rvh->delegate()->GetRenderViewType() == chrome::VIEW_TYPE_NOTIFICATION)
+  if (rvh->delegate()->GetRenderViewType() == chrome::VIEW_TYPE_NOTIFICATION) {
     web_prefs.allow_scripts_to_close_windows = true;
+  } else if (rvh->delegate()->GetRenderViewType() ==
+             chrome::VIEW_TYPE_BACKGROUND_CONTENTS) {
+    // Disable all kinds of acceleration for background pages.
+    // See http://crbug.com/96005 and http://crbug.com/96006
+    web_prefs.force_compositing_mode = false;
+    web_prefs.accelerated_compositing_enabled = false;
+    web_prefs.accelerated_2d_canvas_enabled = false;
+    web_prefs.accelerated_video_enabled = false;
+    web_prefs.accelerated_drawing_enabled = false;
+    web_prefs.accelerated_plugins_enabled = false;
+  }
 
   return web_prefs;
 }

@@ -43,7 +43,7 @@ class BookmarkTabHelper : public content::NotificationObserver,
   bool ShouldShowBookmarkBar();
 
   // TabContentsObserver overrides:
-  virtual void DidNavigateMainFramePostCommit(
+  virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
 

@@ -56,7 +56,7 @@ class BlockedContentTabHelper : public TabContentsObserver {
       std::vector<TabContentsWrapper*>* blocked_contents) const;
 
   // TabContentsObserver overrides:
-  virtual void DidNavigateMainFramePostCommit(
+  virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
 

@@ -26,7 +26,7 @@ BlockedContentTabHelper::BlockedContentTabHelper(
 BlockedContentTabHelper::~BlockedContentTabHelper() {
 }
 
-void BlockedContentTabHelper::DidNavigateMainFramePostCommit(
+void BlockedContentTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   // Clear all page actions, blocked content notifications and browser actions

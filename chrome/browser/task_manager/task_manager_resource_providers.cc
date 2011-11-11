@@ -496,8 +496,9 @@ TaskManagerBackgroundContentsResource::TaskManagerBackgroundContentsResource(
     BackgroundContents* background_contents,
     const string16& application_name)
     : TaskManagerRendererResource(
-          background_contents->render_view_host()->process()->GetHandle(),
-          background_contents->render_view_host()),
+          background_contents->tab_contents()->GetRenderProcessHost()->
+              GetHandle(),
+          background_contents->tab_contents()->render_view_host()),
       background_contents_(background_contents),
       application_name_(application_name) {
   // Just use the same icon that other extension resources do.
@@ -558,25 +559,22 @@ TaskManagerBackgroundContentsResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {
-  BackgroundContents* contents = BackgroundContents::GetBackgroundContentsByID(
-      render_process_host_id, routing_id);
-  if (!contents)  // This resource no longer exists.
-    return NULL;
-
   // If an origin PID was specified, the request is from a plugin, not the
   // render view host process
   if (origin_pid)
     return NULL;
 
-  std::map<BackgroundContents*,
-      TaskManagerBackgroundContentsResource*>::iterator res_iter =
-      resources_.find(contents);
-  if (res_iter == resources_.end())
-    // Can happen if the page went away while a network request was being
-    // performed.
-    return NULL;
+  for (Resources::iterator i = resources_.begin(); i != resources_.end(); i++) {
+    TabContents* tab = i->first->tab_contents();
+    if (tab->render_view_host()->process()->id() == render_process_host_id &&
+        tab->render_view_host()->routing_id() == routing_id) {
+      return i->second;
+    }
+  }
 
-  return res_iter->second;
+  // Can happen if the page went away while a network request was being
+  // performed.
+  return NULL;
 }
 
 void TaskManagerBackgroundContentsResourceProvider::StartUpdating() {
@@ -661,7 +659,7 @@ void TaskManagerBackgroundContentsResourceProvider::Add(
     return;
 
   // Don't add contents whose process is dead.
-  if (!contents->render_view_host()->process()->GetHandle())
+  if (!contents->tab_contents()->GetRenderProcessHost()->GetHandle())
     return;
 
   // Should never add the same BackgroundContents twice.
@@ -673,9 +671,7 @@ void TaskManagerBackgroundContentsResourceProvider::Remove(
     BackgroundContents* contents) {
   if (!updating_)
     return;
-  std::map<BackgroundContents*,
-      TaskManagerBackgroundContentsResource*>::iterator iter =
-      resources_.find(contents);
+  Resources::iterator iter = resources_.find(contents);
   DCHECK(iter != resources_.end());
 
   // Remove the resource from the Task Manager.

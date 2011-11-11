@@ -32,7 +32,7 @@ SearchEngineTabHelper::SearchEngineTabHelper(TabContents* tab_contents)
 SearchEngineTabHelper::~SearchEngineTabHelper() {
 }
 
-void SearchEngineTabHelper::DidNavigateMainFramePostCommit(
+void SearchEngineTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& /*details*/,
     const ViewHostMsg_FrameNavigate_Params& params) {
   GenerateKeywordIfNecessary(params);

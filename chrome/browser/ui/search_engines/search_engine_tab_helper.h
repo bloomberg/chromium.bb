@@ -25,7 +25,7 @@ class SearchEngineTabHelper : public TabContentsObserver {
   void set_delegate(SearchEngineTabHelperDelegate* d) { delegate_ = d; }
 
   // TabContentsObserver overrides.
-  virtual void DidNavigateMainFramePostCommit(
+  virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

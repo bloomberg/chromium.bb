@@ -201,11 +201,6 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // jam as reviewers before you use this method. http://crbug.com/82582
   virtual TabContents* GetAsTabContents();
 
-  // Return this object cast to a BackgroundContents, if it is one. If the
-  // object is not a BackgroundContents, returns NULL.
-  // DEPRECATED: http://crbug.com/98934
-  virtual BackgroundContents* GetAsBackgroundContents();
-
   // Return type of RenderView which is attached with this object.
   virtual content::ViewType GetRenderViewType() const = 0;
 

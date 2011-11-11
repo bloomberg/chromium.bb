@@ -221,8 +221,9 @@ class TaskManagerBackgroundContentsResourceProvider
 
   // Maps the actual resources (the BackgroundContents) to the Task Manager
   // resources.
-  std::map<BackgroundContents*, TaskManagerBackgroundContentsResource*>
-      resources_;
+  typedef std::map<BackgroundContents*, TaskManagerBackgroundContentsResource*>
+      Resources;
+  Resources resources_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
