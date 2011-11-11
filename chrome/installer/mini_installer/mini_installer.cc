@@ -31,11 +31,6 @@
 #include "chrome/installer/mini_installer/mini_string.h"
 #include "chrome/installer/mini_installer/pe_resource.h"
 
-// arraysize borrowed from basictypes.h
-template <typename T, size_t N>
-char (&ArraySizeHelper(T (&array)[N]))[N];
-#define arraysize(array) (sizeof(ArraySizeHelper(array)))
-
 namespace mini_installer {
 
 typedef StackString<MAX_PATH> PathString;

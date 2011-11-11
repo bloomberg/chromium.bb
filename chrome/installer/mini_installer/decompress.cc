@@ -179,11 +179,32 @@ FDICopyFn g_FDICopy = NULL;
 
 bool InitializeFdi() {
   if (!g_fdi) {
+    // It has been observed that some users do not have the expected
+    // environment variables set, so we try a couple that *should* always be
+    // present and fallback to the default Windows install path if all else
+    // fails.
+    // The cabinet.dll should be available on all supported versions of Windows.
+    static const wchar_t* const candidate_paths[] = {
+      L"%WINDIR%\\system32\\cabinet.dll",
+      L"%SYSTEMROOT%\\system32\\cabinet.dll",
+      L"C:\\Windows\\system32\\cabinet.dll",
+    };
+
     wchar_t path[MAX_PATH] = {0};
-    ::ExpandEnvironmentStringsW(L"%WINDIR%\\system32\\cabinet.dll", path,
-                                MAX_PATH);
-    // This DLL should be available on all supported versions of Windows.
-    g_fdi = ::LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+    for (int i = 0; i < arraysize(candidate_paths); ++i) {
+      path[0] = L'\0';
+      DWORD result = ::ExpandEnvironmentStringsW(candidate_paths[i],
+                                                 path, arraysize(path));
+
+      if (result > 0 && result <= arraysize(path))
+        g_fdi = ::LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+
+      if (g_fdi)
+        break;
+    }
+  }
+
+  if (g_fdi) {
     g_FDICreate =
         reinterpret_cast<FDICreateFn>(::GetProcAddress(g_fdi, "FDICreate"));
     g_FDIDestroy =

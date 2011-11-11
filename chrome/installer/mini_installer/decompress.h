@@ -6,6 +6,11 @@
 #define CHROME_INSTALLER_MINI_INSTALLER_DECOMPRESS_H_
 #pragma once
 
+// arraysize borrowed from basictypes.h
+template <typename T, size_t N>
+char (&ArraySizeHelper(T (&array)[N]))[N];
+#define arraysize(array) (sizeof(ArraySizeHelper(array)))
+
 namespace mini_installer {
 
 // Same as the tool, expand.exe.  Decompresses a file that was compressed
