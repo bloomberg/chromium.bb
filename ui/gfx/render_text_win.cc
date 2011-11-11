@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/win/scoped_hdc.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
@@ -316,9 +317,8 @@ bool RenderTextWin::IsCursorablePosition(size_t position) {
 void RenderTextWin::UpdateLayout() {
   // TODO(msw): Skip complex processing if ScriptIsComplex returns false.
   ItemizeLogicalText();
-  HDC hdc = CreateCompatibleDC(NULL);
-  LayoutVisualText(hdc);
-  DeleteDC(hdc);
+  if (!runs_.empty())
+    LayoutVisualText();
 }
 
 size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) {
@@ -398,8 +398,9 @@ void RenderTextWin::ItemizeLogicalText() {
   }
 }
 
-void RenderTextWin::LayoutVisualText(HDC hdc) {
+void RenderTextWin::LayoutVisualText() {
   HRESULT hr = E_FAIL;
+  base::win::ScopedCreateDC hdc(CreateCompatibleDC(NULL));
   std::vector<internal::TextRun*>::const_iterator run_iter;
   for (run_iter = runs_.begin(); run_iter < runs_.end(); ++run_iter) {
     internal::TextRun* run = *run_iter;

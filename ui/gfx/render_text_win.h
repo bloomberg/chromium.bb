@@ -79,7 +79,7 @@ class RenderTextWin : public RenderText {
   virtual size_t IndexOfAdjacentGrapheme(size_t index, bool next) OVERRIDE;
 
   void ItemizeLogicalText();
-  void LayoutVisualText(HDC hdc);
+  void LayoutVisualText();
 
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.
