@@ -571,6 +571,22 @@ function logLoadStatus(rpc, load_errors_are_test_errors, loaded, waiting) {
 
   var errored = false;
   for (var j = 0; j < waiting.length; j++) {
+    // Workaround for WebKit layout bug that caused the NaCl plugin to not
+    // load.  If we see that the plugin is not loaded after a timeout, we
+    // forcibly reload the page, thereby triggering layout.  Re-running
+    // layout should make WebKit instantiate the plugin.  NB: this could
+    // make the JavaScript-based code go into an infinite loop if the
+    // WebKit bug becomes deterministic or the NaCl plugin fails after
+    // loading, but the browser_tester.py code will timeout the test.
+    //
+    // http://code.google.com/p/nativeclient/issues/detail?id=2428
+    //
+    if (waiting[j].readyState == undefined) {
+      // alert('Woot');  // -- for manual debugging
+      rpc.log('WARNING: WebKit plugin-not-loading error detected; reloading.');
+      window.location.reload();
+      throw "reload NOW";
+    }
     var name = getCarefully(function(){
         return embed_name(waiting[j]);
       });
