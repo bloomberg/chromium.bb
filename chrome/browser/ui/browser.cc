@@ -4248,24 +4248,28 @@ void Browser::Observe(int type,
       if (window()->GetLocationBar())
         window()->GetLocationBar()->UpdatePageActions();
 
-      // Close any tabs from the unloaded extension.
-      const Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
-      TabStripModel* model = tab_handler_->GetTabStripModel();
-      for (int i = model->count() - 1; i >= 0; --i) {
-        TabContents* tc = model->GetTabContentsAt(i)->tab_contents();
-        bool close_tab_contents =
-            tc->GetURL().SchemeIs(chrome::kExtensionScheme) &&
-            tc->GetURL().host() == extension->id();
-        // We want to close all panels originated by the unloaded extension.
-        close_tab_contents = close_tab_contents || (type_ == TYPE_PANEL &&
-            (web_app::GetExtensionIdFromApplicationName(app_name_) ==
+      // Close any tabs from the unloaded extension, unless it's terminated,
+      // in which case let the sad tabs remain.
+      if (content::Details<UnloadedExtensionInfo>(details)->reason !=
+          extension_misc::UNLOAD_REASON_TERMINATE) {
+        const Extension* extension =
+            content::Details<UnloadedExtensionInfo>(details)->extension;
+        TabStripModel* model = tab_handler_->GetTabStripModel();
+        for (int i = model->count() - 1; i >= 0; --i) {
+          TabContents* tc = model->GetTabContentsAt(i)->tab_contents();
+          bool close_tab_contents =
+              tc->GetURL().SchemeIs(chrome::kExtensionScheme) &&
+              tc->GetURL().host() == extension->id();
+          // We want to close all panels originated by the unloaded extension.
+          close_tab_contents = close_tab_contents ||
+              (type_ == TYPE_PANEL &&
+               (web_app::GetExtensionIdFromApplicationName(app_name_) ==
                 extension->id()));
-        if (close_tab_contents) {
-          CloseTabContents(tc);
+          if (close_tab_contents) {
+            CloseTabContents(tc);
+          }
         }
       }
-
       break;
     }
 

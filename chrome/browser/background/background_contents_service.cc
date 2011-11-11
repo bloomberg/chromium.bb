@@ -97,7 +97,7 @@ class CrashNotificationDelegate : public NotificationDelegate {
 
 void ShowBalloon(const Extension* extension, Profile* profile) {
   string16 message = l10n_util::GetStringFUTF16(
-      extension->is_hosted_app() ?  IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
+      extension->is_app() ?  IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
       IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
       UTF8ToUTF16(extension->name()));
   string16 content_url = DesktopNotificationService::CreateDataUrl(
@@ -298,8 +298,8 @@ void BackgroundContentsService::Observe(
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
       switch (content::Details<UnloadedExtensionInfo>(details)->reason) {
-        // Intentionally fall through.
-        case extension_misc::UNLOAD_REASON_DISABLE:
+        case extension_misc::UNLOAD_REASON_DISABLE:    // Fall through.
+        case extension_misc::UNLOAD_REASON_TERMINATE:  // Fall through.
         case extension_misc::UNLOAD_REASON_UNINSTALL:
           ShutdownAssociatedBackgroundContents(
               ASCIIToUTF16(content::Details<UnloadedExtensionInfo>(details)->

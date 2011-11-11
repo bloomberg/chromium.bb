@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -452,4 +453,43 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, MAYBE_CrashAndUnloadAll) {
   GetExtensionService()->UnloadAllExtensions();
   ASSERT_EQ(crash_size_before,
             GetExtensionService()->terminated_extensions()->size());
+}
+
+// Test that when an extension with a background page that has a tab open
+// crashes, the tab stays open, and reloading it reloads the extension.
+// Regression test for issue 71629.
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
+                       ReloadTabsWithBackgroundPage) {
+  TabStripModel* tab_strip = browser()->tabstrip_model();
+  const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t crash_size_before =
+      GetExtensionService()->terminated_extensions()->size();
+  LoadTestExtension();
+
+  // Open a tab extension.
+  browser()->NewTab();
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("chrome-extension://" + first_extension_id_ + "/background.html"));
+
+  const int tabs_before = tab_strip->count();
+  CrashExtension(size_before);
+
+  // Tab should still be open, and extension should be crashed.
+  EXPECT_EQ(tabs_before, tab_strip->count());
+  EXPECT_EQ(size_before, GetExtensionService()->extensions()->size());
+  EXPECT_EQ(crash_size_before + 1,
+            GetExtensionService()->terminated_extensions()->size());
+
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::Source<NavigationController>(
+            &browser()->GetSelectedTabContentsWrapper()->controller()));
+    browser()->Reload(CURRENT_TAB);
+    observer.Wait();
+  }
+  // Extension should now be loaded.
+  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(0U, CountBalloons());
 }

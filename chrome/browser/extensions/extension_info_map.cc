@@ -64,11 +64,13 @@ void ExtensionInfoMap::RemoveExtension(const std::string& extension_id,
   CheckOnValidThread();
   const Extension* extension = extensions_.GetByID(extension_id);
   extra_data_.erase(extension_id);  // we don't care about disabled extra data
+  bool was_uninstalled = (reason != extension_misc::UNLOAD_REASON_DISABLE &&
+                          reason != extension_misc::UNLOAD_REASON_TERMINATE);
   if (extension) {
-    if (reason == extension_misc::UNLOAD_REASON_DISABLE)
+    if (!was_uninstalled)
       disabled_extensions_.Insert(extension);
     extensions_.Remove(extension_id);
-  } else if (reason != extension_misc::UNLOAD_REASON_DISABLE) {
+  } else if (was_uninstalled) {
     // If the extension was uninstalled, make sure it's removed from the map of
     // disabled extensions.
     disabled_extensions_.Remove(extension_id);

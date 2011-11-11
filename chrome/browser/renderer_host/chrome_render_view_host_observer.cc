@@ -139,7 +139,15 @@ const Extension* ChromeRenderViewHostObserver::GetExtension() {
   if (!service)
     return NULL;
 
-  // May be null if somebody typos a chrome-extension:// URL.
+  // Reload the extension if it has crashed.
+  // TODO(yoz): This reload doesn't happen synchronously for unpacked
+  //            extensions. It seems to be fast enough, but there is a race.
+  //            We should delay loading until the extension has reloaded.
+  if (service->GetTerminatedExtension(site.host()))
+    service->ReloadExtension(site.host());
+
+  // May be null if the extension doesn't exist, for example if somebody typos
+  // a chrome-extension:// URL.
   return service->GetExtensionByURL(site);
 }
 

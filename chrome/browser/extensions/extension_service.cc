@@ -2122,7 +2122,10 @@ void ExtensionService::TrackTerminatedExtension(const Extension* extension) {
   if (terminated_extension_ids_.insert(extension->id()).second)
     terminated_extensions_.push_back(make_scoped_refptr(extension));
 
-  UnloadExtension(extension->id(), extension_misc::UNLOAD_REASON_DISABLE);
+  // TODO(yoz): Listen to navcontrollers for that extension. Is this a todo?
+
+  // TODO(yoz): make sure this is okay in *ALL* the listeners!
+  UnloadExtension(extension->id(), extension_misc::UNLOAD_REASON_TERMINATE);
 }
 
 void ExtensionService::UntrackTerminatedExtension(const std::string& id) {

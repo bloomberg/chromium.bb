@@ -451,6 +451,7 @@ namespace extension_misc {
     UNLOAD_REASON_DISABLE,    // Extension is being disabled.
     UNLOAD_REASON_UPDATE,     // Extension is being updated to a newer version.
     UNLOAD_REASON_UNINSTALL,  // Extension is being uninstalled.
+    UNLOAD_REASON_TERMINATE,  // Extension has terminated.
   };
 
   // User actions on the sync promo (aka "Sign in to Chrome").
