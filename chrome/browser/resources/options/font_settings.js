@@ -7,6 +7,12 @@ cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
 
   /**
+   * This is the absolute difference maintained between standard and
+   * fixed-width font sizes. Refer http://crbug.com/91922.
+   */
+  const SIZE_DIFFERENCE_FIXED_STANDARD = 3;
+
+  /**
    * FontSettings class
    * Encapsulated handling of the 'Fonts and Encoding' page.
    * @class
@@ -34,6 +40,8 @@ cr.define('options', function() {
           22, 24, 26, 28, 30, 32, 34, 36, 40, 44, 48, 56, 64, 72];
       standardFontRange.continuous = false;
       standardFontRange.notifyChange = this.standardRangeChanged_.bind(this);
+      standardFontRange.notifyPrefChange =
+          this.standardFontSizeChanged_.bind(this);
 
       var minimumFontRange = $('minimum-font-size');
       minimumFontRange.valueMap = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
@@ -86,6 +94,23 @@ cr.define('options', function() {
       fontSampleEl = $('sans-serif-font-sample');
       this.setUpFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
                             true);
+
+      fontSampleEl = $('fixed-font-sample');
+      this.setUpFontSample_(fontSampleEl,
+                            value - SIZE_DIFFERENCE_FIXED_STANDARD,
+                            fontSampleEl.style.fontFamily, false);
+    },
+
+    /**
+     * Sets the 'default_fixed_font_size' preference when the standard font
+     * size has been changed by the user.
+     * @param {Element} el The slider input element.
+     * @param {number} value The mapped value that has been saved.
+     * @private
+     */
+    standardFontSizeChanged_: function(el, value) {
+      Preferences.setIntegerPref('webkit.webprefs.default_fixed_font_size',
+                                 value - SIZE_DIFFERENCE_FIXED_STANDARD, '');
     },
 
     /**
