@@ -172,6 +172,11 @@ void FileManagerDialog::AddPending(int32 tab_id) {
   PendingDialog::GetInstance()->Add(tab_id, this);
 }
 
+// static
+bool FileManagerDialog::PendingExists(int32 tab_id) {
+  return PendingDialog::GetInstance()->Find(tab_id) != NULL;
+}
+
 bool FileManagerDialog::HasMultipleFileTypeChoicesImpl() {
   return hasMultipleFileTypeChoices_;
 }
@@ -198,6 +203,14 @@ void FileManagerDialog::SelectFileImpl(
     return;
   }
 
+  TabContentsWrapper* tab = owner_browser->GetSelectedTabContentsWrapper();
+
+  // Check if we have another dialog opened in the tab. It's unlikely, but
+  // possible.
+  int32 tab_id = tab ? tab->restore_tab_helper()->session_id().id() : 0;
+  if (PendingExists(tab_id))
+    return;
+
   FilePath virtual_path;
   if (!FileManagerUtil::ConvertFileToRelativeFileSystemPath(
           owner_browser->profile(), default_path, &virtual_path)) {
@@ -210,7 +223,7 @@ void FileManagerDialog::SelectFileImpl(
   GURL file_browser_url = FileManagerUtil::GetFileBrowserUrlWithParams(
       type, title, virtual_path, file_types, file_type_index,
       default_extension);
-  TabContentsWrapper* tab = owner_browser->GetSelectedTabContentsWrapper();
+
   ExtensionDialog* dialog = ExtensionDialog::Show(file_browser_url,
       owner_browser, tab->tab_contents(),
       kFileManagerWidth, kFileManagerHeight,
@@ -221,7 +234,6 @@ void FileManagerDialog::SelectFileImpl(
   }
 
   // Connect our listener to FileDialogFunction's per-tab callbacks.
-  int32 tab_id = (tab ? tab->restore_tab_helper()->session_id().id() : 0);
   AddPending(tab_id);
 
   extension_dialog_ = dialog;

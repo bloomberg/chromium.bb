@@ -13,7 +13,9 @@ class FileManagerDialogTest : public testing::Test {
                                          int32 tab_id) {
     FileManagerDialog* dialog = new FileManagerDialog(listener);
     // Simulate the dialog opening.
+    EXPECT_FALSE(FileManagerDialog::PendingExists(tab_id));
     dialog->AddPending(tab_id);
+    EXPECT_TRUE(FileManagerDialog::PendingExists(tab_id));
     return dialog;
   }
 };
