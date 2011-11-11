@@ -128,13 +128,21 @@
 
 ############################
 # 1.3 Benign races in SQLLite
-# TODO(timurrr|oshima): following three suppression could be obsolete.
+# TODO(timurrr|oshima): following four suppressions could be obsolete.
 {
   Two writes, same value (SQLLite pthreadMutexAlloc)
   ThreadSanitizer:Race
   ...
   fun:pthreadMutexAlloc
   fun:sqlite3MutexAlloc
+}
+
+{
+  Two writes, same value 2 (SQLLite pthreadMutexAlloc)
+  ThreadSanitizer:Race
+  fun:pthreadMutexAlloc
+  ...
+  fun:openDatabase
 }
 
 {
@@ -644,15 +652,28 @@
   fun:WebRTCAudioDeviceTest_Construct_Test::TestBody
 }
 {
-   bug_103711d
-   ThreadSanitizer:Race
-   ...
-   fun:WebRTCAudioDeviceTest::OnMessageReceived
-   ...
-   fun:IPC::Channel::ChannelImpl::ProcessIncomingMessages
-   fun:IPC::Channel::ChannelImpl::OnFileCanReadWithoutBlocking
-   fun:base::MessagePumpLibevent::FileDescriptorWatcher::OnFileCanReadWithoutBlocking
-   fun:base::MessagePumpLibevent::OnLibeventNotification
-   fun:event_process_active
-   fun:event_base_loop
+  bug_103711d
+  ThreadSanitizer:Race
+  ...
+  fun:WebRTCAudioDeviceTest::OnMessageReceived
+  ...
+  fun:IPC::Channel::ChannelImpl::ProcessIncomingMessages
+  fun:IPC::Channel::ChannelImpl::OnFileCanReadWithoutBlocking
+  fun:base::MessagePumpLibevent::FileDescriptorWatcher::OnFileCanReadWithoutBlocking
+  fun:base::MessagePumpLibevent::OnLibeventNotification
+  fun:event_process_active
+  fun:event_base_loop
+}
+{
+  bug_103711e
+  ThreadSanitizer:Race
+  fun:webrtc::TracePosix::AddTime
+  fun:webrtc::TraceImpl::AddImpl
+  fun:webrtc::Trace::Add
+  fun:webrtc::ThreadPosix::Run
+}
+{
+  bug_103711f
+  ThreadSanitizer:Race
+  fun:WebRTCAudioDeviceTest::SetUp
 }
