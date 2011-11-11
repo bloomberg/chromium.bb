@@ -136,7 +136,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     profile_.reset(new MockProfile(temp_dir_.path()));
-    frontend_.reset(new SettingsFrontend(profile_.get()));
+    frontend_.reset(SettingsFrontend::Create(profile_.get()));
   }
 
   virtual void TearDown() OVERRIDE {

@@ -21,7 +21,7 @@ SettingsStorage* Param(
 
 INSTANTIATE_TEST_CASE_P(
     SettingsStorageCache,
-    SettingsStorageTest,
+    ExtensionSettingsStorageTest,
     testing::Values(&Param));
 
 }  // namespace extensions

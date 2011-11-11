@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/task.h"
+#include "chrome/browser/extensions/settings/settings_leveldb_storage.h"
 #include "chrome/browser/extensions/settings/settings_observer.h"
 #include "chrome/browser/extensions/settings/syncable_settings_storage.h"
 #include "chrome/browser/sync/api/syncable_service.h"
@@ -23,10 +24,13 @@ namespace extensions {
 // Lives entirely on the FILE thread.
 class SettingsBackend : public SyncableService {
  public:
+  // |storage_factory| is use to create leveldb storage areas.
   // |base_path| is the base of the extension settings directory, so the
   // databases will be at base_path/extension_id.
   // |observers| is the list of observers to settings changes.
   explicit SettingsBackend(
+      // Ownership NOT taken.
+      SettingsStorageFactory* storage_factory,
       const FilePath& base_path,
       const scoped_refptr<SettingsObserverList>& observers);
 
@@ -67,6 +71,9 @@ class SettingsBackend : public SyncableService {
   // Gets all extension IDs known to extension settings.  This may not be all
   // installed extensions.
   std::set<std::string> GetKnownExtensionIDs() const;
+
+  // The Factory to use for creating leveldb storage areas.  Not owned.
+  SettingsStorageFactory* const storage_factory_;
 
   // The base file path to create any leveldb databases at.
   const FilePath base_path_;

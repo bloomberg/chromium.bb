@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list_threadsafe.h"
+#include "chrome/browser/extensions/settings/settings_leveldb_storage.h"
 #include "chrome/browser/extensions/settings/settings_observer.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -28,7 +29,15 @@ class SettingsStorage;
 // All public methods must be called on the UI thread.
 class SettingsFrontend {
  public:
-  explicit SettingsFrontend(Profile* profile);
+  // Creates with the default factory.  Ownership of |profile| not taken.
+  static SettingsFrontend* Create(Profile* profile);
+
+  static SettingsFrontend* Create(
+      // Ownership taken.
+      SettingsStorageFactory* storage_factory,
+      // Owership NOT taken.
+      Profile* profile);
+
   virtual ~SettingsFrontend();
 
   typedef base::Callback<void(SyncableService*)> SyncableServiceCallback;
@@ -67,6 +76,12 @@ class SettingsFrontend {
    private:
     Profile* const profile_;
   };
+
+  SettingsFrontend(
+      // Ownership taken.
+      SettingsStorageFactory* storage_factory,
+      // Ownership NOT taken.
+      Profile* profile);
 
   // The (non-incognito) Profile this Frontend belongs to.
   Profile* const profile_;

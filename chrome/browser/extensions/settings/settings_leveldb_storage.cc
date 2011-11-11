@@ -47,10 +47,10 @@ class ScopedSnapshot {
 
 }  // namespace
 
-/* static */
-SettingsLeveldbStorage* SettingsLeveldbStorage::Create(
-      const FilePath& base_path,
-      const std::string& extension_id) {
+// SettingsLeveldbStorage::Factory
+
+SettingsStorage* SettingsLeveldbStorage::Factory::Create(
+    const FilePath& base_path, const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   FilePath path = base_path.AppendASCII(extension_id);
 
@@ -71,6 +71,8 @@ SettingsLeveldbStorage* SettingsLeveldbStorage::Create(
   }
   return new SettingsLeveldbStorage(path, db);
 }
+
+// SettingsLeveldbStorage
 
 SettingsLeveldbStorage::SettingsLeveldbStorage(
     const FilePath& db_path, leveldb::DB* db)

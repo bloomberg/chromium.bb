@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings/settings_backend.h"
+#include "chrome/browser/extensions/settings/settings_leveldb_storage.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -22,17 +23,23 @@ namespace {
 
 struct Backends {
   Backends(
+      // Ownership taken.
+      SettingsStorageFactory* storage_factory,
       const FilePath& profile_path,
       const scoped_refptr<SettingsObserverList>& observers)
-    : extensions_backend_(
+    : storage_factory_(storage_factory),
+      extensions_backend_(
+          storage_factory,
           profile_path.AppendASCII(
               ExtensionService::kExtensionSettingsDirectoryName),
           observers),
       apps_backend_(
+          storage_factory,
           profile_path.AppendASCII(
               ExtensionService::kAppSettingsDirectoryName),
           observers) {}
 
+  scoped_ptr<SettingsStorageFactory> storage_factory_;
   SettingsBackend extensions_backend_;
   SettingsBackend apps_backend_;
 };
@@ -82,7 +89,7 @@ void DeleteStorageOnFileThread(
 
 }  // namespace
 
-// DefaultObserver.
+// DefaultObserver
 
 SettingsFrontend::DefaultObserver::DefaultObserver(Profile* profile)
     : profile_(profile) {}
@@ -101,12 +108,18 @@ void SettingsFrontend::DefaultObserver::OnSettingsChanged(
       GURL());
 }
 
+// Core
+
 class SettingsFrontend::Core
     : public base::RefCountedThreadSafe<Core> {
  public:
   explicit Core(
+      // Ownership taken.
+      SettingsStorageFactory* storage_factory,
       const scoped_refptr<SettingsObserverList>& observers)
-      : observers_(observers), backends_(NULL) {
+      : storage_factory_(storage_factory),
+        observers_(observers),
+        backends_(NULL) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
@@ -118,7 +131,9 @@ class SettingsFrontend::Core
   void InitOnFileThread(const FilePath& profile_path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     DCHECK(!backends_);
-    backends_ = new Backends(profile_path, observers_);
+    backends_ =
+        new Backends(
+            storage_factory_.release(), profile_path, observers_);
   }
 
   // Runs |callback| with both the extensions and apps settings on the FILE
@@ -153,6 +168,9 @@ class SettingsFrontend::Core
 
   friend class base::RefCountedThreadSafe<Core>;
 
+  // Leveldb storage area factory.  Ownership passed to Backends on Init.
+  scoped_ptr<SettingsStorageFactory> storage_factory_;
+
   // Observers to settings changes (thread safe).
   scoped_refptr<SettingsObserverList> observers_;
 
@@ -162,11 +180,25 @@ class SettingsFrontend::Core
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-SettingsFrontend::SettingsFrontend(Profile* profile)
+// SettingsFrontend
+
+/* static */
+SettingsFrontend* SettingsFrontend::Create(Profile* profile) {
+  return new SettingsFrontend(new SettingsLeveldbStorage::Factory(), profile);
+}
+
+/* static */
+SettingsFrontend* SettingsFrontend::Create(
+    SettingsStorageFactory* storage_factory, Profile* profile) {
+  return new SettingsFrontend(storage_factory, profile);
+}
+
+SettingsFrontend::SettingsFrontend(
+    SettingsStorageFactory* storage_factory, Profile* profile)
     : profile_(profile),
       observers_(new SettingsObserverList()),
       default_observer_(profile),
-      core_(new SettingsFrontend::Core(observers_)) {
+      core_(new SettingsFrontend::Core(storage_factory, observers_)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!profile->IsOffTheRecord());
 

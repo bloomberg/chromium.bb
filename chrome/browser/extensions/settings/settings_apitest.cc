@@ -7,6 +7,7 @@
 #include "base/json/json_writer.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"

@@ -14,21 +14,31 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/settings/settings_storage.h"
+#include "chrome/browser/extensions/settings/settings_storage_factory.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
+
+namespace extensions {
 
 // Extension settings storage object, backed by a leveldb database.
 //
-namespace extensions {
-
 // No caching is done; that should be handled by wrapping with an
 // SettingsStorageCache.
 // All methods must be run on the FILE thread.
 class SettingsLeveldbStorage : public SettingsStorage {
  public:
-  // Tries to create a leveldb storage area for an extension at a base path.
-  // Returns NULL if creation fails.
-  static SettingsLeveldbStorage* Create(
-      const FilePath& base_path, const std::string& extension_id);
+  // Factory for creating SettingsLeveldbStorage instances.
+  class Factory : public SettingsStorageFactory {
+   public:
+    Factory() {}
+    virtual ~Factory() {}
+
+    // SettingsStorageFactory implementation.
+    virtual SettingsStorage* Create(
+        const FilePath& base_path, const std::string& extension_id) OVERRIDE;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Factory);
+  };
 
   // Must be deleted on the FILE thread.
   virtual ~SettingsLeveldbStorage();

@@ -21,16 +21,56 @@ using content::BrowserThread;
 
 using namespace settings_test_util;
 
-class SettingsFrontendTest : public testing::Test {
+namespace {
+
+// SettingsStorageFactory which acts as a wrapper for other factories.
+class ScopedSettingsStorageFactory : public SettingsStorageFactory {
  public:
-   SettingsFrontendTest()
+  explicit ScopedSettingsStorageFactory(SettingsStorageFactory* delegate)
+      : delegate_(delegate) {
+    DCHECK(delegate);
+  }
+
+  virtual ~ScopedSettingsStorageFactory() {}
+
+  void Reset(SettingsStorageFactory* delegate) {
+    DCHECK(delegate);
+    delegate_.reset(delegate);
+  }
+
+  virtual SettingsStorage* Create(
+      const FilePath& base_path, const std::string& extension_id) OVERRIDE {
+    return delegate_->Create(base_path, extension_id);
+  }
+
+ private:
+  scoped_ptr<SettingsStorageFactory> delegate_;
+};
+
+// A SettingsStorageFactory which always returns NULL.
+class NullSettingsStorageFactory : public SettingsStorageFactory {
+ public:
+  virtual ~NullSettingsStorageFactory() {}
+
+  // SettingsStorageFactory implementation.
+  virtual SettingsStorage* Create(
+      const FilePath& base_path, const std::string& extension_id) OVERRIDE {
+    return NULL;
+  }
+};
+
+}
+
+class ExtensionSettingsFrontendTest : public testing::Test {
+ public:
+   ExtensionSettingsFrontendTest()
       : ui_thread_(BrowserThread::UI, MessageLoop::current()),
         file_thread_(BrowserThread::FILE, MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     profile_.reset(new MockProfile(temp_dir_.path()));
-    frontend_.reset(new SettingsFrontend(profile_.get()));
+    ResetFrontend();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -39,9 +79,19 @@ class SettingsFrontendTest : public testing::Test {
   }
 
  protected:
+  void ResetFrontend() {
+    storage_factory_ =
+        new ScopedSettingsStorageFactory(
+            new SettingsLeveldbStorage::Factory());
+    frontend_.reset(SettingsFrontend::Create(storage_factory_, profile_.get()));
+  }
+
   ScopedTempDir temp_dir_;
   scoped_ptr<MockProfile> profile_;
   scoped_ptr<SettingsFrontend> frontend_;
+
+  // Owned by |frontend_|.
+  ScopedSettingsStorageFactory* storage_factory_;
 
  private:
   MessageLoop message_loop_;
@@ -53,7 +103,7 @@ class SettingsFrontendTest : public testing::Test {
 // alternating in each test.
 // TODO(kalman): explicitly test the two interact correctly.
 
-TEST_F(SettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
+TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   const std::string id = "ext";
   profile_->GetMockExtensionService()->AddExtension(
       id, Extension::TYPE_EXTENSION);
@@ -74,7 +124,7 @@ TEST_F(SettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
     EXPECT_FALSE(result.settings().empty());
   }
 
-  frontend_.reset(new SettingsFrontend(profile_.get()));
+  ResetFrontend();
   storage = GetStorage(id, frontend_.get());
 
   {
@@ -84,7 +134,7 @@ TEST_F(SettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   }
 }
 
-TEST_F(SettingsFrontendTest, SettingsClearedOnUninstall) {
+TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   const std::string id = "ext";
   profile_->GetMockExtensionService()->AddExtension(
       id, Extension::TYPE_PACKAGED_APP);
@@ -110,7 +160,7 @@ TEST_F(SettingsFrontendTest, SettingsClearedOnUninstall) {
   }
 }
 
-TEST_F(SettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
+TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   const std::string id = "ext";
   profile_->GetMockExtensionService()->AddExtension(
       id, Extension::TYPE_EXTENSION);
@@ -138,6 +188,36 @@ TEST_F(SettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   // Leaving this commented out rather than disabling the whole test so that the
   // deletion code paths are at least exercised.
   //EXPECT_FALSE(file_util::PathExists(temp_dir_.path()));
+}
+
+TEST_F(ExtensionSettingsFrontendTest,
+    LeveldbCreationFailureFailsAllOperations) {
+  const StringValue bar("bar");
+  const std::string id = "ext";
+  profile_->GetMockExtensionService()->AddExtension(
+      id, Extension::TYPE_EXTENSION);
+
+  storage_factory_->Reset(new NullSettingsStorageFactory());
+
+  SettingsStorage* storage = GetStorage(id, frontend_.get());
+  ASSERT_TRUE(storage != NULL);
+
+  EXPECT_TRUE(storage->Get().HasError());
+  EXPECT_TRUE(storage->Clear().HasError());
+  EXPECT_TRUE(storage->Set("foo", bar).HasError());
+  EXPECT_TRUE(storage->Remove("foo").HasError());
+
+  // For simplicity: just always fail those requests, even if the leveldb
+  // storage areas start working.
+  storage_factory_->Reset(new SettingsLeveldbStorage::Factory());
+
+  storage = GetStorage(id, frontend_.get());
+  ASSERT_TRUE(storage != NULL);
+
+  EXPECT_TRUE(storage->Get().HasError());
+  EXPECT_TRUE(storage->Clear().HasError());
+  EXPECT_TRUE(storage->Set("foo", bar).HasError());
+  EXPECT_TRUE(storage->Remove("foo").HasError());
 }
 
 }  // namespace extensions

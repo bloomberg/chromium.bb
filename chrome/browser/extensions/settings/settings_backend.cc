@@ -11,19 +11,17 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/settings/settings_leveldb_storage.h"
+#include "chrome/browser/extensions/settings/failing_settings_storage.h"
 #include "chrome/browser/extensions/settings/settings_storage_cache.h"
+#include "chrome/browser/extensions/settings/settings_storage_factory.h"
 #include "chrome/browser/extensions/settings/settings_storage_quota_enforcer.h"
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
-#include "chrome/browser/extensions/settings/in_memory_settings_storage.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/leveldatabase/src/include/leveldb/iterator.h"
-#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
-
-namespace extensions {
 
 using content::BrowserThread;
+
+namespace extensions {
 
 namespace {
 
@@ -41,9 +39,11 @@ const size_t kMaxSettingKeys = 512;
 }  // namespace
 
 SettingsBackend::SettingsBackend(
+    SettingsStorageFactory* storage_factory,
     const FilePath& base_path,
     const scoped_refptr<SettingsObserverList>& observers)
-    : base_path_(base_path),
+    : storage_factory_(storage_factory),
+      base_path_(base_path),
       observers_(observers),
       sync_type_(syncable::UNSPECIFIED),
       sync_processor_(NULL) {
@@ -66,35 +66,27 @@ SettingsBackend::GetOrCreateStorageWithSyncData(
     const std::string& extension_id, const DictionaryValue& sync_data) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  linked_ptr<SyncableSettingsStorage> syncable_storage =
-      storage_objs_[extension_id];
-  if (syncable_storage.get()) {
-    return syncable_storage.get();
+  StorageObjMap::iterator maybe_storage = storage_objs_.find(extension_id);
+  if (maybe_storage != storage_objs_.end()) {
+    return maybe_storage->second.get();
   }
 
-  SettingsStorage* storage =
-      SettingsLeveldbStorage::Create(base_path_, extension_id);
+  SettingsStorage* storage = storage_factory_->Create(base_path_, extension_id);
   if (storage) {
     storage = new SettingsStorageCache(storage);
+    // It's fine to create the quota enforcer underneath the sync layer, since
+    // sync will only go ahead if each underlying storage operation succeeds.
+    storage = new SettingsStorageQuotaEnforcer(
+        kTotalQuotaBytes, kQuotaPerSettingBytes, kMaxSettingKeys, storage);
   } else {
-    // Failed to create a leveldb storage area, create an in-memory one.
-    // It's ok for these to be synced, it just means that on next starting up
-    // extensions will see the "old" settings, then overwritten (and notified)
-    // when the sync changes come through.
-    storage = new InMemorySettingsStorage();
+    storage = new FailingSettingsStorage();
   }
 
-  // It's fine to create the quota enforcer underneath the sync later, since
-  // sync will only go ahead if each underlying storage operation is successful.
-  storage = new SettingsStorageQuotaEnforcer(
-      kTotalQuotaBytes, kQuotaPerSettingBytes, kMaxSettingKeys, storage);
-
-  syncable_storage =
-      linked_ptr<SyncableSettingsStorage>(
-          new SyncableSettingsStorage(
-              observers_,
-              extension_id,
-              storage));
+  linked_ptr<SyncableSettingsStorage> syncable_storage(
+      new SyncableSettingsStorage(
+          observers_,
+          extension_id,
+          storage));
   if (sync_processor_) {
     // TODO(kalman): do something if StartSyncing fails.
     ignore_result(syncable_storage->StartSyncing(
@@ -154,8 +146,7 @@ static void AddAllSyncData(
     SyncDataList* dst) {
   for (DictionaryValue::Iterator it(src); it.HasNext(); it.Advance()) {
     dst->push_back(
-        settings_sync_util::CreateData(
-            extension_id, it.key(), it.value()));
+        settings_sync_util::CreateData(extension_id, it.key(), it.value()));
   }
 }
 

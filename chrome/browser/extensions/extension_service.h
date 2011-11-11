@@ -26,7 +26,6 @@
 #include "chrome/browser/extensions/extension_permissions_api.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
@@ -74,6 +73,7 @@ class ExtensionInputMethodEventRouter;
 
 namespace extensions {
 class ComponentLoader;
+class SettingsFrontend;
 }
 
 // This is an interface class to encapsulate the dependencies that
@@ -661,7 +661,7 @@ class ExtensionService
   ExtensionPrefs* extension_prefs_;
 
   // Settings for the owning profile.
-  extensions::SettingsFrontend settings_frontend_;
+  scoped_ptr<extensions::SettingsFrontend> settings_frontend_;
 
   // The current list of installed extensions.
   // TODO(aa): This should use chrome/common/extensions/extension_set.h.

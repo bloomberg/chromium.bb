@@ -6,14 +6,14 @@
 
 #include "base/file_path.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/browser/extensions/settings/settings_frontend.h"
 
 namespace extensions {
 
 namespace settings_test_util {
 
 // Intended as a StorageCallback from GetStorage.
-static void AssignStorage(
-    SettingsStorage** dst, SettingsStorage* src) {
+static void AssignStorage(SettingsStorage** dst, SettingsStorage* src) {
   *dst = src;
 }
 

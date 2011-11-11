@@ -28,11 +28,11 @@ typedef SettingsStorage* (*SettingsStorageTestParam)(
 // Test fixture for SettingsStorage tests.  Tests are defined in
 // settings_storage_unittest.cc with configurations for both cached
 // and non-cached leveldb storage, and cached no-op storage.
-class SettingsStorageTest
+class ExtensionSettingsStorageTest
   : public testing::TestWithParam<SettingsStorageTestParam> {
  public:
-  SettingsStorageTest();
-  virtual ~SettingsStorageTest();
+  ExtensionSettingsStorageTest();
+  virtual ~ExtensionSettingsStorageTest();
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;

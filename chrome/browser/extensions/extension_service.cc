@@ -55,6 +55,7 @@
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
+#include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/history/history_extension_api.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -362,7 +363,7 @@ ExtensionService::ExtensionService(Profile* profile,
                                    bool extensions_enabled)
     : profile_(profile),
       extension_prefs_(extension_prefs),
-      settings_frontend_(profile),
+      settings_frontend_(extensions::SettingsFrontend::Create(profile)),
       pending_extension_manager_(*ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       install_directory_(install_directory),
       extensions_enabled_(extensions_enabled),
@@ -1123,7 +1124,7 @@ ExtensionPrefs* ExtensionService::extension_prefs() {
 }
 
 extensions::SettingsFrontend* ExtensionService::settings_frontend() {
-  return &settings_frontend_;
+  return settings_frontend_.get();
 }
 
 ExtensionContentSettingsStore*

@@ -12,14 +12,14 @@ namespace {
 
 SettingsStorage* Param(
     const FilePath& file_path, const std::string& extension_id) {
-  return SettingsLeveldbStorage::Create(file_path, extension_id);
+  return SettingsLeveldbStorage::Factory().Create(file_path, extension_id);
 }
 
 }  // namespace
 
 INSTANTIATE_TEST_CASE_P(
     SettingsLeveldbStorage,
-    SettingsStorageTest,
+    ExtensionSettingsStorageTest,
     testing::Values(&Param));
 
 }  // namespace extensions

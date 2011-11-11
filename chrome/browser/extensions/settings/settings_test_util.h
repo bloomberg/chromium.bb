@@ -8,17 +8,19 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/testing_profile.h"
 
-class SettingsFrontend;
 
 namespace extensions {
+
+class SettingsFrontend;
+class SettingsStorage;
 
 // Utilities for extension settings API tests.
 namespace settings_test_util {

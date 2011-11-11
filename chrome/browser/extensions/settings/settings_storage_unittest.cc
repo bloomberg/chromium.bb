@@ -134,7 +134,7 @@ testing::AssertionResult ChangesEq(
   return testing::AssertionSuccess();
 }
 
-SettingsStorageTest::SettingsStorageTest()
+ExtensionSettingsStorageTest::ExtensionSettingsStorageTest()
     : key1_("foo"),
       key2_("bar"),
       key3_("baz"),
@@ -176,26 +176,26 @@ SettingsStorageTest::SettingsStorageTest()
   dict123_->Set(key3_, val3_->DeepCopy());
 }
 
-SettingsStorageTest::~SettingsStorageTest() {}
+ExtensionSettingsStorageTest::~ExtensionSettingsStorageTest() {}
 
-void SettingsStorageTest::SetUp() {
+void ExtensionSettingsStorageTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   storage_.reset((GetParam())(temp_dir_.path(), "fakeExtension"));
   ASSERT_TRUE(storage_.get());
 }
 
-void SettingsStorageTest::TearDown() {
+void ExtensionSettingsStorageTest::TearDown() {
   storage_.reset();
 }
 
-TEST_P(SettingsStorageTest, GetWhenEmpty) {
+TEST_P(ExtensionSettingsStorageTest, GetWhenEmpty) {
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get(key1_));
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get(empty_list_));
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get(list123_));
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get());
 }
 
-TEST_P(SettingsStorageTest, GetWithSingleValue) {
+TEST_P(ExtensionSettingsStorageTest, GetWithSingleValue) {
   {
     SettingChangeList changes;
     changes.push_back(SettingChange(key1_, NULL, val1_->DeepCopy()));
@@ -210,7 +210,7 @@ TEST_P(SettingsStorageTest, GetWithSingleValue) {
   EXPECT_PRED_FORMAT2(SettingsEq, *dict1_, storage_->Get());
 }
 
-TEST_P(SettingsStorageTest, GetWithMultipleValues) {
+TEST_P(ExtensionSettingsStorageTest, GetWithMultipleValues) {
   {
     SettingChangeList changes;
     changes.push_back(SettingChange(key1_, NULL, val1_->DeepCopy()));
@@ -225,7 +225,7 @@ TEST_P(SettingsStorageTest, GetWithMultipleValues) {
   EXPECT_PRED_FORMAT2(SettingsEq, *dict12_, storage_->Get());
 }
 
-TEST_P(SettingsStorageTest, RemoveWhenEmpty) {
+TEST_P(ExtensionSettingsStorageTest, RemoveWhenEmpty) {
   EXPECT_PRED_FORMAT2(ChangesEq,
       SettingChangeList(), storage_->Remove(key1_));
 
@@ -234,7 +234,7 @@ TEST_P(SettingsStorageTest, RemoveWhenEmpty) {
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get());
 }
 
-TEST_P(SettingsStorageTest, RemoveWithSingleValue) {
+TEST_P(ExtensionSettingsStorageTest, RemoveWithSingleValue) {
   storage_->Set(*dict1_);
   {
     SettingChangeList changes;
@@ -249,7 +249,7 @@ TEST_P(SettingsStorageTest, RemoveWithSingleValue) {
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get());
 }
 
-TEST_P(SettingsStorageTest, RemoveWithMultipleValues) {
+TEST_P(ExtensionSettingsStorageTest, RemoveWithMultipleValues) {
   storage_->Set(*dict123_);
   {
     SettingChangeList changes;
@@ -283,7 +283,7 @@ TEST_P(SettingsStorageTest, RemoveWithMultipleValues) {
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get());
 }
 
-TEST_P(SettingsStorageTest, SetWhenOverwriting) {
+TEST_P(ExtensionSettingsStorageTest, SetWhenOverwriting) {
   storage_->Set(key1_, *val2_);
   {
     SettingChangeList changes;
@@ -303,7 +303,7 @@ TEST_P(SettingsStorageTest, SetWhenOverwriting) {
   EXPECT_PRED_FORMAT2(SettingsEq, *dict12_, storage_->Get());
 }
 
-TEST_P(SettingsStorageTest, ClearWhenEmpty) {
+TEST_P(ExtensionSettingsStorageTest, ClearWhenEmpty) {
   EXPECT_PRED_FORMAT2(ChangesEq,
       SettingChangeList(), storage_->Clear());
 
@@ -313,7 +313,7 @@ TEST_P(SettingsStorageTest, ClearWhenEmpty) {
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get());
 }
 
-TEST_P(SettingsStorageTest, ClearWhenNotEmpty) {
+TEST_P(ExtensionSettingsStorageTest, ClearWhenNotEmpty) {
   storage_->Set(*dict12_);
   {
     SettingChangeList changes;
@@ -330,7 +330,7 @@ TEST_P(SettingsStorageTest, ClearWhenNotEmpty) {
 
 // Dots should be allowed in key names; they shouldn't be interpreted as
 // indexing into a dictionary.
-TEST_P(SettingsStorageTest, DotsInKeyNames) {
+TEST_P(ExtensionSettingsStorageTest, DotsInKeyNames) {
   std::string dot_key("foo.bar");
   StringValue dot_value("baz.qux");
   std::vector<std::string> dot_list;
@@ -380,7 +380,7 @@ TEST_P(SettingsStorageTest, DotsInKeyNames) {
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get());
 }
 
-TEST_P(SettingsStorageTest, DotsInKeyNamesWithDicts) {
+TEST_P(ExtensionSettingsStorageTest, DotsInKeyNamesWithDicts) {
   DictionaryValue outer_dict;
   DictionaryValue* inner_dict = new DictionaryValue();
   outer_dict.Set("foo", inner_dict);
@@ -397,7 +397,7 @@ TEST_P(SettingsStorageTest, DotsInKeyNamesWithDicts) {
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get("foo.bar"));
 }
 
-TEST_P(SettingsStorageTest, ComplexChangedKeysScenarios) {
+TEST_P(ExtensionSettingsStorageTest, ComplexChangedKeysScenarios) {
   // Test:
   //   - Setting over missing/changed/same keys, combinations.
   //   - Removing over missing and present keys, combinations.

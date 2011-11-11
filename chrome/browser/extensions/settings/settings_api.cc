@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/settings/settings_api.h"
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/settings/settings_api.h"
+#include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -35,10 +37,7 @@ void SettingsFunction::RunWithStorageOnFileThread(
     scoped_refptr<SettingsObserverList> observers,
     SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  bool success = false;
-  if (storage) {
-    success = RunWithStorage(observers.get(), storage);
-  }
+  bool success = RunWithStorage(observers.get(), storage);
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
