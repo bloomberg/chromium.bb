@@ -145,14 +145,6 @@
       # -imports.ImportsTest.testFirefoxImportFromPrefs
       # Disabled on vista in the actual test. crbug.com/89767
       # -imports.ImportsTest.testImportFirefoxPasswordsFromPrefs
-      # crbug.com/85598
-      '-ntp.NTPTest.testGetAppsWhenInstallApp',
-      '-ntp.NTPTest.testLaunchAppFullScreen',
-      '-ntp.NTPTest.testLaunchAppNewWindow',
-      '-ntp.NTPTest.testLaunchAppPinnedTab',
-      '-ntp.NTPTest.testLaunchAppRegularTab',
-      '-ntp.NTPTest.testLaunchAppWithDefaultSettings',
-      '-ntp.NTPTest.testUninstallApp',
       # crbug.com/70694, crbug.com/73078
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
@@ -214,14 +206,6 @@
       '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
       # Keychain popups make sync tests difficult on Mac.  crbug.com/49378
       '-sync',
-      # crbug.com/85598
-      '-ntp.NTPTest.testGetAppsWhenInstallApp',
-      '-ntp.NTPTest.testGetAppsWhenInstallNonApps',
-      '-ntp.NTPTest.testLaunchAppFullScreen',
-      '-ntp.NTPTest.testLaunchAppPinnedTab',
-      '-ntp.NTPTest.testLaunchAppRegularTab',
-      '-ntp.NTPTest.testLaunchAppWithDefaultSettings',
-      '-ntp.NTPTest.testUninstallApp',
       # crbug.com/100595
       '-plugins.PluginsTest.testBlockPluginException',
       # crbug.com/98526
