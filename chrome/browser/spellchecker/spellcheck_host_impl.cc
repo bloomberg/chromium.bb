@@ -165,7 +165,12 @@ void SpellCheckHostImpl::UnsetProfile() {
 void SpellCheckHostImpl::InitForRenderer(RenderProcessHost* process) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // Bug 103693: SpellCheckHostImpl and SpellCheckProfile should not
+  // depend on Profile interface.
   Profile* profile = Profile::FromBrowserContext(process->browser_context());
+  if (profile->GetSpellCheckHost() != this)
+    return;
+
   PrefService* prefs = profile->GetPrefs();
   IPC::PlatformFileForTransit file = IPC::InvalidPlatformFileForTransit();
 
