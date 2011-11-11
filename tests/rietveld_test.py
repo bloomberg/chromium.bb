@@ -188,7 +188,23 @@ class RietveldTest(unittest.TestCase):
     ]
     patches = self.rietveld.get_patch(123, 456)
     self.assertEquals(1, len(patches.patches))
-    self._check_patch(patches.patches[0], name, None, is_delete=True)
+    self._check_patch(patches.patches[0], name, RAW.DELETE, is_delete=True)
+
+  def test_delete_empty(self):
+    name = 'tests/__init__.py'
+    self.requests = [
+        ('/api/123/456', _api({name: _file('D')})),
+        ('/download/issue123_456_789.diff', GIT.DELETE_EMPTY),
+    ]
+    patches = self.rietveld.get_patch(123, 456)
+    self.assertEquals(1, len(patches.patches))
+    self._check_patch(
+        patches.patches[0],
+        name,
+        GIT.DELETE_EMPTY,
+        is_delete=True,
+        is_git_diff=True,
+        patchlevel=1)
 
   def test_m_plus(self):
     properties = '\nAdded: svn:eol-style\n   + LF\n'
@@ -348,5 +364,6 @@ class RietveldTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  logging.basicConfig(level=logging.ERROR)
+  logging.basicConfig(level=[
+    logging.ERROR, logging.INFO, logging.DEBUG][min(2, sys.argv.count('-v'))])
   unittest.main()

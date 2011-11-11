@@ -98,6 +98,14 @@ class GIT(object):
       '-Also see\n'
       '\n')
 
+  # http://codereview.chromium.org/download/issue8508015_6001_7001.diff
+  DELETE_EMPTY = (
+      'Index: tests/__init__.py\n'
+      'diff --git a/tests/__init__.py b/tests/__init__.py\n'
+      'deleted file mode 100644\n'
+      'index e69de29bb2d1d6434b8b29ae775ad8c2e48c5391..'
+          '0000000000000000000000000000000000000000\n')
+
   # http://codereview.chromium.org/download/issue6250123_3013_6010.diff
   RENAME_PARTIAL = (
       'Index: chromeos/views/webui_menu_widget.h\n'

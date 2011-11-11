@@ -289,7 +289,13 @@ class FilePatchDiff(FilePatchBase):
                 (match.group(1), line))
       return
 
-    # Ignore "deleted file mode 100644" since it's not needed.
+    match = re.match(r'^deleted file mode (\d{6})$', line)
+    if match:
+      # It is necessary to parse it because there may be no hunk, like when the
+      # file was empty.
+      self.is_delete = True
+      return
+
     match = re.match(r'^new(| file) mode (\d{6})$', line)
     if match:
       mode = match.group(2)
@@ -297,6 +303,7 @@ class FilePatchDiff(FilePatchBase):
       # TODO(maruel): Add support to remove a property.
       if bool(int(mode[4]) & 1):
         self.svn_properties.append(('svn:executable', '*'))
+      return
 
     match = re.match(r'^--- (.*)$', line)
     if match:
