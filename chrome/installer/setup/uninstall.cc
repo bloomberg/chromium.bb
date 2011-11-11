@@ -623,16 +623,9 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
                                      open_command_pred);
   }
 
-  // Delete each filetype association if it references this Chrome.
-  InstallUtil::ValueEquals prog_id_pred(ShellUtil::kChromeHTMLProgId +
-                                        browser_entry_suffix);
-  for (const wchar_t* const* filetype = &ShellUtil::kFileAssociations[0];
-       *filetype != NULL; ++filetype) {
-    parent_key.resize(base_length);
-    file_util::AppendToPath(&parent_key, *filetype);
-    InstallUtil::DeleteRegistryKeyIf(root, parent_key, parent_key, L"",
-                                     prog_id_pred);
-  }
+  // Note that we do not attempt to delete filetype associations since MSDN
+  // says "Windows respects the Default value only if the ProgID found there is
+  // a registered ProgID. If the ProgID is unregistered, it is ignored."
 
   *exit_code = installer::UNINSTALL_SUCCESSFUL;
   return true;
