@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/image_transport_client.h"
 #include "ui/gfx/compositor/compositor_cc.h"
+#include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -21,6 +22,13 @@ class AcceleratedSurfaceContainerLinuxCC
   }
 
   virtual ~AcceleratedSurfaceContainerLinuxCC() {
+    if (texture_id_) {
+      ui::SharedResourcesCC* instance = ui::SharedResourcesCC::GetInstance();
+      DCHECK(instance);
+      instance->MakeSharedContextCurrent();
+      glDeleteTextures(1, &texture_id_);
+    }
+
     if (image_transport_client_.get())
       image_transport_client_->Release();
   }
