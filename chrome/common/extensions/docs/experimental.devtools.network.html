@@ -300,7 +300,7 @@ API</h1>
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#H2-0">Notes</a>
+              <a href="#H2-0">Overview</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
@@ -386,13 +386,14 @@ API</h1>
 API</div>
 <p id="classSummary">
 Use the <code>chrome.experimental.devtools.network</code> module to retrieve
-the information about network requests displayed by DevTools' Network panel.
+the information about network requests displayed by the Developer Tools
+in the Network panel.
 </p><p>
 See <a href="experimental.devtools.html">DevTools APIs summary</a> for
 general introduction to using Developer Tools APIs.
 </p>
 
-<a name="H2-0"></a><h2>Notes</h2>
+<a name="H2-0"></a><h2>Overview</h2>
 
 <p>
 Network requests information is represented in the HTTP Archive format
@@ -409,10 +410,12 @@ provides <em>HAR entry</em> as an argument to the event callback.
 <p>Note that request content is not provided as part of HAR for efficieny
 reasons. You may call request's <code>getContent()</code> method to retrieve
 content.
-</p><p>Some requests may be missing in the array of entries returned by <code>
-getHAR()</code> in case Developer Tools window was opened after the page was
-loaded — reload the page to get all requests. In general, the list of
-requests returned by <code>getHAR()</code> should match that displayed by
+</p><p>If the Developer Tools window is opened after the page is loaded,
+some requests may be missing
+in the array of entries returned by <code>getHAR()</code>.
+Reload the page to get all requests.
+In general, the list of
+requests returned by <code>getHAR()</code> should match that displayed in
 the Network panel.
 </p><h2 id="overview-examples">Examples</h2>
 
