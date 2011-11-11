@@ -11,6 +11,7 @@
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/scoped_make_current.h"
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
@@ -81,9 +82,12 @@ void SharedResourcesCC::Destroy() {
   initialized_ = false;
 }
 
-bool SharedResourcesCC::MakeSharedContextCurrent() {
+gfx::ScopedMakeCurrent* SharedResourcesCC::GetScopedMakeCurrent() {
   DCHECK(initialized_);
-  return context_->MakeCurrent(surface_.get());
+  if (initialized_)
+    return new gfx::ScopedMakeCurrent(context_.get(), surface_.get());
+  else
+    return NULL;
 }
 
 void* SharedResourcesCC::GetDisplay() {

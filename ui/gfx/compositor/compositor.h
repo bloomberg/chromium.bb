@@ -18,6 +18,7 @@ class SkCanvas;
 namespace gfx {
 class Point;
 class Rect;
+class ScopedMakeCurrent;
 }
 
 namespace ui {
@@ -28,7 +29,11 @@ class Layer;
 class SharedResources {
  public:
   virtual ~SharedResources() {}
-  virtual bool MakeSharedContextCurrent() = 0;
+
+  // Creates an instance of ScopedMakeCurrent.
+  // Note: Caller is responsible for managing lifetime of returned pointer.
+  virtual gfx::ScopedMakeCurrent* GetScopedMakeCurrent() = 0;
+
   virtual void* GetDisplay() = 0;
 };
 

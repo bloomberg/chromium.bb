@@ -16,6 +16,7 @@
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface_egl.h"
 #include "ui/gfx/gl/gl_surface_glx.h"
+#include "ui/gfx/gl/scoped_make_current.h"
 #include "ui/gfx/size.h"
 
 namespace {
@@ -47,14 +48,15 @@ class ImageTransportClientEGL : public ImageTransportClient {
 
   virtual ~ImageTransportClientEGL() {
     if (image_) {
-      resources_->MakeSharedContextCurrent();
+      scoped_ptr<gfx::ScopedMakeCurrent> bind(
+          resources_->GetScopedMakeCurrent());
       eglDestroyImageKHR(gfx::GLSurfaceEGL::GetHardwareDisplay(), image_);
       glFlush();
     }
   }
 
   virtual unsigned int Initialize(uint64* surface_id) {
-    resources_->MakeSharedContextCurrent();
+    scoped_ptr<gfx::ScopedMakeCurrent> bind(resources_->GetScopedMakeCurrent());
     image_ = eglCreateImageKHR(
         gfx::GLSurfaceEGL::GetHardwareDisplay(), EGL_NO_CONTEXT,
         EGL_NATIVE_PIXMAP_KHR, reinterpret_cast<void*>(*surface_id), NULL);
@@ -100,7 +102,7 @@ class ImageTransportClientGLX : public ImageTransportClient {
     TRACE_EVENT0("renderer_host", "ImageTransportClientGLX::Initialize");
     Display* dpy = static_cast<Display*>(resources_->GetDisplay());
 
-    resources_->MakeSharedContextCurrent();
+    scoped_ptr<gfx::ScopedMakeCurrent> bind(resources_->GetScopedMakeCurrent());
     if (!InitializeOneOff(dpy))
         return 0;
 
@@ -245,7 +247,7 @@ class ImageTransportClientOSMesa : public ImageTransportClient {
     if (!shared_mem_.get())
       return 0;
 
-    resources_->MakeSharedContextCurrent();
+    scoped_ptr<gfx::ScopedMakeCurrent> bind(resources_->GetScopedMakeCurrent());
     texture_ = CreateTexture();
     return texture_;
   }

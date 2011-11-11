@@ -8,6 +8,7 @@
 #include "content/browser/renderer_host/image_transport_client.h"
 #include "ui/gfx/compositor/compositor_cc.h"
 #include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/scoped_make_current.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -25,7 +26,7 @@ class AcceleratedSurfaceContainerLinuxCC
     if (texture_id_) {
       ui::SharedResourcesCC* instance = ui::SharedResourcesCC::GetInstance();
       DCHECK(instance);
-      instance->MakeSharedContextCurrent();
+      scoped_ptr<gfx::ScopedMakeCurrent> bind(instance->GetScopedMakeCurrent());
       glDeleteTextures(1, &texture_id_);
     }
 
@@ -57,7 +58,7 @@ class AcceleratedSurfaceContainerLinuxCC
   virtual void Update() OVERRIDE {
     ui::SharedResourcesCC* instance = ui::SharedResourcesCC::GetInstance();
     DCHECK(instance);
-    instance->MakeSharedContextCurrent();
+    scoped_ptr<gfx::ScopedMakeCurrent> bind(instance->GetScopedMakeCurrent());
     if (acquired_)
       image_transport_client_->Release();
     else

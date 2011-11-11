@@ -342,15 +342,12 @@ void SharedResourcesGL::Destroy() {
   initialized_ = false;
 }
 
-bool SharedResourcesGL::MakeSharedContextCurrent() {
-  if (!initialized_)
-    return false;
-  else
-    return context_->MakeCurrent(surface_.get());
-}
-
 gfx::ScopedMakeCurrent* SharedResourcesGL::GetScopedMakeCurrent() {
-  return new gfx::ScopedMakeCurrent(context_.get(), surface_.get());
+  DCHECK(initialized_);
+  if (initialized_)
+    return new gfx::ScopedMakeCurrent(context_.get(), surface_.get());
+  else
+    return NULL;
 }
 
 scoped_refptr<gfx::GLContext> SharedResourcesGL::CreateContext(

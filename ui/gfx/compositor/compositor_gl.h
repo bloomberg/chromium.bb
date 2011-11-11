@@ -31,11 +31,7 @@ class COMPOSITOR_EXPORT SharedResourcesGL : public SharedResources {
  public:
   static SharedResourcesGL* GetInstance();
 
-  virtual bool MakeSharedContextCurrent();
-
-  // Creates an instance of ScopedMakeCurrent.
-  // Note: Caller is responsible for managing lifetime of returned pointer.
-  gfx::ScopedMakeCurrent* GetScopedMakeCurrent();
+  virtual gfx::ScopedMakeCurrent* GetScopedMakeCurrent() OVERRIDE;
 
   // Creates a context that shares the resources hosted by this singleton.
   scoped_refptr<gfx::GLContext> CreateContext(gfx::GLSurface* surface);
