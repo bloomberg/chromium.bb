@@ -215,7 +215,6 @@ struct wlsc_compositor {
 
 	/* Repaint state. */
 	struct timespec previous_swap;
-	pixman_region32_t damage;
 	struct wl_array vertices, indices;
 
 	struct wlsc_surface *overlay;

@@ -767,9 +767,14 @@ WL_EXPORT void
 wlsc_output_damage(struct wlsc_output *output)
 {
 	struct wlsc_compositor *compositor = output->compositor;
+	struct wlsc_surface *es;
 
-	pixman_region32_union(&compositor->damage,
-			      &compositor->damage, &output->region);
+	if (wl_list_empty(&compositor->surface_list))
+		return;
+
+	es = container_of(compositor->surface_list.next,
+			  struct wlsc_surface, link);
+	pixman_region32_union(&es->damage, &es->damage, &output->region);
 	wlsc_compositor_schedule_repaint(compositor);
 }
 
@@ -905,7 +910,6 @@ wlsc_output_repaint(struct wlsc_output *output)
 			       ec->fade.spring.current >= 0.001);
 
 	pixman_region32_init(&new_damage);
-	pixman_region32_copy(&new_damage, &ec->damage);
 	pixman_region32_init(&opaque);
 				
 	wl_list_for_each(es, &ec->surface_list, link) {
@@ -913,8 +917,6 @@ wlsc_output_repaint(struct wlsc_output *output)
 		pixman_region32_union(&new_damage, &new_damage, &es->damage);
 		pixman_region32_union(&opaque, &opaque, &es->opaque);
 	}
-
-	pixman_region32_subtract(&ec->damage, &ec->damage, &output->region);
 
 	pixman_region32_init(&total_damage);
 	pixman_region32_union(&total_damage, &new_damage,
@@ -927,13 +929,9 @@ wlsc_output_repaint(struct wlsc_output *output)
 
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
 
-	if (setup_scanout_surface(output, es) == 0) {
-		/* We're drawing nothing now,
-		 * draw the damaged regions later. */
-		pixman_region32_union(&ec->damage, &ec->damage, &total_damage);
-
+	if (setup_scanout_surface(output, es) == 0)
+		/* We're drawing nothing, just let the damage accumulate */
 		return;
-	}
 
 	if (es->fullscreen_output == output) {
 		if (es->width < output->current->width ||
@@ -1918,7 +1916,6 @@ wlsc_output_destroy(struct wlsc_output *output)
 WL_EXPORT void
 wlsc_output_move(struct wlsc_output *output, int x, int y)
 {
-	struct wlsc_compositor *c = output->compositor;
 	int flip;
 
 	output->x = x;
@@ -1939,7 +1936,7 @@ wlsc_output_move(struct wlsc_output *output, int x, int y)
 			  2.0 / output->current->width,
 			  flip * 2.0 / output->current->height, 1);
 
-	pixman_region32_union(&c->damage, &c->damage, &output->region);
+	wlsc_output_damage(output);
 }
 
 WL_EXPORT void
@@ -2090,7 +2087,6 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
 	wl_event_source_timer_update(ec->idle_source, option_idle_time * 1000);
 
-	pixman_region32_init(&ec->damage);
 	wlsc_compositor_schedule_repaint(ec);
 
 	return 0;
