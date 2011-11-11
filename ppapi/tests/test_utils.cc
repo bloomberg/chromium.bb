@@ -5,9 +5,16 @@
 #include "ppapi/tests/test_utils.h"
 
 #include <stdio.h>
+#if defined(_MSC_VER)
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/module.h"
+
+const int kActionTimeoutMs = 10000;
 
 const PPB_Testing_Dev* GetTestingInterface() {
   static const PPB_Testing_Dev* g_testing_interface =
@@ -22,6 +29,14 @@ std::string ReportError(const char* method, int32_t error) {
   std::string result = method + std::string(" failed with error: ") +
       error_as_string;
   return result;
+}
+
+void PlatformSleep(int duration_ms) {
+#if defined(_MSC_VER)
+  ::Sleep(duration_ms);
+#else
+  usleep(duration_ms * 1000);
+#endif
 }
 
 TestCompletionCallback::TestCompletionCallback(PP_Instance instance)

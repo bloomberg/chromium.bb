@@ -274,8 +274,8 @@ TEST_F(OutOfProcessPPAPITest, DISABLED_Fullscreen) {
 }
 #endif
 
-TEST_PPAPI_IN_PROCESS(FLAKY_FlashClipboard)
-TEST_PPAPI_OUT_OF_PROCESS(FLAKY_FlashClipboard)
+TEST_PPAPI_IN_PROCESS(FlashClipboard)
+TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)
 
 #if defined(OS_POSIX)
 #define MAYBE_DirectoryReader FLAKY_DirectoryReader

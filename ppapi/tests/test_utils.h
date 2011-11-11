@@ -12,8 +12,12 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/cpp/completion_callback.h"
 
+// Timeout to wait for some action to complete.
+extern const int kActionTimeoutMs;
+
 const PPB_Testing_Dev* GetTestingInterface();
 std::string ReportError(const char* method, int32_t error);
+void PlatformSleep(int duration_ms);
 
 class TestCompletionCallback {
  public:

@@ -33,17 +33,38 @@ std::string TestFlashClipboard::TestReadWrite() {
                                        PP_FLASH_CLIPBOARD_TYPE_STANDARD,
                                        input_var.pp_var());
 
-  ASSERT_TRUE(clipboard_interface_->IsFormatAvailable(
-      instance_->pp_instance(),
-      PP_FLASH_CLIPBOARD_TYPE_STANDARD,
-      PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT));
+  // WritePlainText() causes an async request sent to the browser process.
+  // As a result, the string written may not be reflected by IsFormatAvailable()
+  // or ReadPlainText() immediately. We need to wait and retry.
+  const int kIntervalMs = 250;
+  const int kMaxIntervals = kActionTimeoutMs / kIntervalMs;
 
-  pp::Var result_var(pp::Var::PassRef(),
-      clipboard_interface_->ReadPlainText(instance_->pp_instance(),
-                                          PP_FLASH_CLIPBOARD_TYPE_STANDARD));
-  ASSERT_TRUE(result_var.is_string());
+  PP_Bool is_available = PP_FALSE;
+  for (int i = 0; i < kMaxIntervals; ++i) {
+    is_available = clipboard_interface_->IsFormatAvailable(
+        instance_->pp_instance(),
+        PP_FLASH_CLIPBOARD_TYPE_STANDARD,
+        PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT);
+    if (is_available)
+      break;
 
-  std::string result_str = result_var.AsString();
+    PlatformSleep(kIntervalMs);
+  }
+  ASSERT_TRUE(is_available);
+
+  std::string result_str;
+  for (int i = 0; i < kMaxIntervals; ++i) {
+    pp::Var result_var(pp::Var::PassRef(),
+        clipboard_interface_->ReadPlainText(instance_->pp_instance(),
+                                            PP_FLASH_CLIPBOARD_TYPE_STANDARD));
+    ASSERT_TRUE(result_var.is_string());
+    result_str = result_var.AsString();
+    if (result_str == input_str)
+      break;
+
+    PlatformSleep(kIntervalMs);
+  }
+
   ASSERT_TRUE(result_str == input_str);
   PASS();
 }
