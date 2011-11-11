@@ -90,7 +90,7 @@ bool URLRequestAbortOnEndJob::ReadRawData(net::IOBuffer* buf,
                                           const int max_bytes,
                                           int* bytes_read) {
   if (!sent_data_) {
-    *bytes_read = std::max(size_t(max_bytes), sizeof(kPageContent));
+    *bytes_read = std::min(size_t(max_bytes), sizeof(kPageContent));
     std::memcpy(buf->data(), kPageContent, *bytes_read);
     sent_data_ = true;
     return true;
