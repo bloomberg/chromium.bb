@@ -11,15 +11,13 @@
 
 #include "base/basictypes.h"
 
-class Task;
-
 namespace remoting {
 namespace protocol {
 
 class HostStub {
  public:
-  HostStub() {};
-  virtual ~HostStub() {};
+  HostStub() {}
+  virtual ~HostStub() {}
 
   // Currently we don't use the control channel for anything. Add new
   // message handlers here when necessary.

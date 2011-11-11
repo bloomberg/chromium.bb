@@ -25,11 +25,6 @@ class MessageLoop;
 
 namespace remoting {
 
-namespace protocol {
-class LocalLoginStatus;
-class NotifyResolutionRequest;
-}  // namespace protocol
-
 class ClientContext;
 class InputHandler;
 class RectangleUpdateDecoder;

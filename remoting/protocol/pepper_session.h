@@ -5,6 +5,7 @@
 #ifndef REMOTING_PROTOCOL_PEPPER_SESSION_H_
 #define REMOTING_PROTOCOL_PEPPER_SESSION_H_
 
+#include <list>
 #include <map>
 #include <string>
 
@@ -17,16 +18,9 @@
 #include "remoting/protocol/session_config.h"
 
 namespace net {
-class CertVerifier;
-class ClientSocketFactory;
 class Socket;
 class StreamSocket;
-class X509Certificate;
 }  // namespace net
-
-namespace pp {
-class Instance;
-}  // namespace pp
 
 namespace remoting {
 
@@ -36,7 +30,6 @@ namespace protocol {
 
 class PepperChannel;
 class PepperSessionManager;
-class SocketWrapper;
 
 // Implements the protocol::Session interface using the Pepper P2P
 // Transport API. Created by PepperSessionManager for incoming and
@@ -75,7 +68,7 @@ class PepperSession : public Session {
 
   typedef std::map<std::string, PepperChannel*> ChannelsMap;
 
-  PepperSession(PepperSessionManager* session_manager);
+  explicit PepperSession(PepperSessionManager* session_manager);
 
   // Start cs connection by sending session-initiate message.
   void StartConnection(const std::string& peer_jid,

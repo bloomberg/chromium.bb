@@ -16,10 +16,6 @@ namespace base {
 class MessageLoopProxy;
 }  // namespace base
 
-namespace buzz {
-class XmppClient;
-}  // namespace buzz
-
 namespace remoting {
 
 class TaskPump : public talk_base::MessageHandler,
@@ -37,7 +33,7 @@ class TaskPump : public talk_base::MessageHandler,
 
 class JingleThreadMessageLoop : public MessageLoop {
  public:
-  JingleThreadMessageLoop(talk_base::Thread* thread);
+  explicit JingleThreadMessageLoop(talk_base::Thread* thread);
   virtual ~JingleThreadMessageLoop();
 
  private:

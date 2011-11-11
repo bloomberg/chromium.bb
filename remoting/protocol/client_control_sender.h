@@ -9,15 +9,13 @@
 //
 // This class can be used on any thread.
 
-#ifndef REMOTING_PROTOCOL_CLIENT_STUB_IMPL_H_
-#define REMOTING_PROTOCOL_CLIENT_STUB_IMPL_H_
+#ifndef REMOTING_PROTOCOL_CLIENT_CONTROL_SENDER_H_
+#define REMOTING_PROTOCOL_CLIENT_CONTROL_SENDER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "remoting/protocol/client_stub.h"
-
-class Task;
 
 namespace base {
 class MessageLoopProxy;
@@ -56,4 +54,4 @@ class ClientControlSender : public ClientStub {
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_CLIENT_STUB_IMPL_H_
+#endif  // REMOTING_PROTOCOL_CLIENT_CONTROL_SENDER_H_

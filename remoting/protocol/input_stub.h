@@ -10,8 +10,6 @@
 
 #include "base/basictypes.h"
 
-class Task;
-
 namespace remoting {
 namespace protocol {
 
@@ -20,8 +18,8 @@ class MouseEvent;
 
 class InputStub {
  public:
-  InputStub() {};
-  virtual ~InputStub() {};
+  InputStub() {}
+  virtual ~InputStub() {}
 
   virtual void InjectKeyEvent(const KeyEvent& event) = 0;
   virtual void InjectMouseEvent(const MouseEvent& event) = 0;

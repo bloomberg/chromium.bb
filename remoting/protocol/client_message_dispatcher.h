@@ -11,8 +11,6 @@
 
 namespace remoting {
 
-class EventMessage;
-
 namespace protocol {
 
 class ClientStub;

@@ -52,8 +52,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "remoting/protocol/session.h"
 
-class Task;
-
 namespace crypto {
 class RSAPrivateKey;
 }  // namespace base

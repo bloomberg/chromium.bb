@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,6 @@ class MessageLoopProxy;
 
 namespace remoting {
 
-class CompoundBuffer;
-
 namespace protocol {
 
 class BufferedDatagramWriter;
@@ -22,7 +20,7 @@ struct RtcpReceiverReport;
 
 class RtcpWriter {
  public:
-  RtcpWriter(base::MessageLoopProxy* message_loop);
+  explicit RtcpWriter(base::MessageLoopProxy* message_loop);
   virtual ~RtcpWriter();
 
   // Initializes the writer. Must be called on the thread the socket

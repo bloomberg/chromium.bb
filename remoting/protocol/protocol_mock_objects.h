@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_PROTOCOL_MOCK_OBJECTS_H_
 #define REMOTING_PROTOCOL_PROTOCOL_MOCK_OBJECTS_H_
 
+#include <string>
+
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/connection_to_client.h"
@@ -16,8 +18,6 @@
 
 namespace remoting {
 namespace protocol {
-
-class ChromotocolConnection;
 
 class MockConnectionToClient : public ConnectionToClient {
  public:

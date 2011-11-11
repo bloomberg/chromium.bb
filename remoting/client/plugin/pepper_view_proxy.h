@@ -26,7 +26,6 @@ class MessageLoopProxy;
 namespace remoting {
 
 class ChromotingInstance;
-class ClientContext;
 
 class PepperViewProxy : public base::RefCountedThreadSafe<PepperViewProxy>,
                         public ChromotingView,

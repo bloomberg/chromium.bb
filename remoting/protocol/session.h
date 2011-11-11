@@ -12,8 +12,6 @@
 #include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/session_config.h"
 
-class Task;
-
 namespace net {
 class Socket;
 class StreamSocket;

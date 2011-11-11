@@ -6,7 +6,6 @@
 
 namespace remoting {
 class ChromotingHost;
-class DisconnectWindowMac;
 }
 
 // Controller for the disconnect window which allows the host user to

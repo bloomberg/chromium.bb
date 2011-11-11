@@ -23,10 +23,6 @@
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
 #include "remoting/protocol/connection_to_host.h"
 
-namespace base {
-class Thread;
-}  // namespace base
-
 namespace pp {
 class InputEvent;
 class Module;
@@ -42,16 +38,11 @@ class ChromotingClient;
 class ChromotingStats;
 class ClientContext;
 class InputHandler;
-class JingleThread;
 class PepperView;
 class PepperViewProxy;
 class RectangleUpdateDecoder;
 
 struct ClientConfig;
-
-namespace protocol {
-class HostConnection;
-}  // namespace protocol
 
 class ChromotingInstance : public pp::InstancePrivate {
  public:
@@ -110,6 +101,7 @@ class ChromotingInstance : public pp::InstancePrivate {
   // base/logging.h.
   static bool LogToUI(int severity, const char* file, int line,
                       size_t message_start, const std::string& str);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingInstanceTest, TestCaseSetup);
 

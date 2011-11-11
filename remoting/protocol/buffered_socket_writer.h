@@ -13,8 +13,6 @@
 #include "net/base/io_buffer.h"
 #include "net/socket/socket.h"
 
-class Task;
-
 namespace base {
 class MessageLoopProxy;
 }  // namespace base
@@ -108,7 +106,7 @@ class BufferedSocketWriterBase
 
 class BufferedSocketWriter : public BufferedSocketWriterBase {
  public:
-  BufferedSocketWriter(base::MessageLoopProxy* message_loop);
+  explicit BufferedSocketWriter(base::MessageLoopProxy* message_loop);
   virtual ~BufferedSocketWriter();
 
  protected:
@@ -122,7 +120,7 @@ class BufferedSocketWriter : public BufferedSocketWriterBase {
 
 class BufferedDatagramWriter : public BufferedSocketWriterBase {
  public:
-  BufferedDatagramWriter(base::MessageLoopProxy* message_loop);
+  explicit BufferedDatagramWriter(base::MessageLoopProxy* message_loop);
   virtual ~BufferedDatagramWriter();
 
  protected:

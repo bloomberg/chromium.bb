@@ -13,8 +13,6 @@
 
 namespace remoting {
 
-class HostConfig;
-
 // SupportAccessVerifier is used in Me2Mom scenario to verify that the
 // client knows the host secret.
 class SupportAccessVerifier : public AccessVerifier {

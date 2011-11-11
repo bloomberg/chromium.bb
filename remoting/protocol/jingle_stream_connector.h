@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_JINGLE_STREAM_CONNECTOR_H_
 #define REMOTING_PROTOCOL_JINGLE_STREAM_CONNECTOR_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "remoting/protocol/channel_authenticator.h"
@@ -14,10 +16,6 @@
 namespace cricket {
 class TransportChannel;
 }  // namespace cricket
-
-namespace jingle_glue {
-class TransportChannelSocketAdapter;
-}  // namespace jingle_glue
 
 namespace net {
 class CertVerifier;

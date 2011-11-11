@@ -16,7 +16,6 @@
 #include "ppapi/cpp/completion_callback.h"
 
 namespace pp {
-class Instance;
 class Transport_Dev;
 }  // namespace pp
 

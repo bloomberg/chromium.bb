@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CHROMOTING_HOST_H_
-#define REMOTING_CHROMOTING_HOST_H_
+#ifndef REMOTING_HOST_CHROMOTING_HOST_H_
+#define REMOTING_HOST_CHROMOTING_HOST_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
@@ -21,12 +22,9 @@
 #include "remoting/protocol/session_manager.h"
 #include "remoting/protocol/connection_to_client.h"
 
-class Task;
-
 namespace remoting {
 
 namespace protocol {
-class HostStub;
 class InputStub;
 class SessionConfig;
 class CandidateSessionConfig;

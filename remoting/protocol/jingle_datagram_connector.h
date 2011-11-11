@@ -5,13 +5,11 @@
 #ifndef REMOTING_PROTOCOL_JINGLE_DATAGRAM_CONNECTOR_H_
 #define REMOTING_PROTOCOL_JINGLE_DATAGRAM_CONNECTOR_H_
 
+#include <string>
+
 #include "net/base/completion_callback.h"
 #include "remoting/protocol/jingle_channel_connector.h"
 #include "remoting/protocol/session.h"
-
-namespace cricket {
-class TransportChannel;
-}  // namespace cricket
 
 namespace jingle_glue {
 class TransportChannelSocketAdapter;

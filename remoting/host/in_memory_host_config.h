@@ -12,8 +12,6 @@
 #include "base/synchronization/lock.h"
 #include "remoting/host/host_config.h"
 
-class Task;
-
 namespace base {
 class DictionaryValue;
 }

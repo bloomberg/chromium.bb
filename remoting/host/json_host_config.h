@@ -12,8 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/in_memory_host_config.h"
 
-class Task;
-
 namespace base {
 class MessageLoopProxy;
 }  // namespace base

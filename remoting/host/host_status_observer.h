@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_STATUS_OBSERVER_H_
-#define REMOTING_HOST_STATUS_OBSERVER_H_
+#ifndef REMOTING_HOST_HOST_STATUS_OBSERVER_H_
+#define REMOTING_HOST_HOST_STATUS_OBSERVER_H_
 
 #include <string>
 
 namespace remoting {
 class SignalStrategy;
-
-namespace protocol {
-class ConnectionToClient;
-}
 
 // Interface for host status observer. All methods are invoked on the
 // network thread.
@@ -41,4 +37,4 @@ class HostStatusObserver {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_STATUS_OBSERVER_H_
+#endif  // REMOTING_HOST_HOST_STATUS_OBSERVER_H_

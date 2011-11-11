@@ -19,8 +19,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 
-class MessageLoop;
-
 namespace remoting {
 
 class XmppProxy : public base::RefCountedThreadSafe<XmppProxy> {
@@ -54,4 +52,4 @@ class XmppProxy : public base::RefCountedThreadSafe<XmppProxy> {
 
 }  // namespace remoting
 
-#endif // REMOTING_JINGLE_GLUE_XMPP_PROXY_H_
+#endif  // REMOTING_JINGLE_GLUE_XMPP_PROXY_H_

@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_PEPPER_STREAM_CHANNEL_H_
 #define REMOTING_PROTOCOL_PEPPER_STREAM_CHANNEL_H_
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
@@ -17,7 +19,6 @@ namespace net {
 class CertVerifier;
 class StreamSocket;
 class SSLClientSocket;
-class SSLServerSocket;
 }  // namespace net
 
 namespace remoting {

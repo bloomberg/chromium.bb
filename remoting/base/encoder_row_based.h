@@ -12,7 +12,6 @@
 namespace remoting {
 
 class Compressor;
-class UpdateStreamPacket;
 
 // EncoderRowBased implements an Encoder using zlib or verbatim
 // compression. Zlib-based encoder must be created using

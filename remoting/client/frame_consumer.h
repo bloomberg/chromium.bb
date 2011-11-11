@@ -7,8 +7,6 @@
 
 #include "remoting/base/decoder.h"  // For UpdatedRects
 
-class Task;
-
 namespace remoting {
 
 class FrameConsumer {

@@ -11,12 +11,6 @@
 #include "media/base/video_frame.h"
 #include "remoting/protocol/connection_to_host.h"
 
-class MessageLoop;
-
-namespace base {
-class WaitableEvent;
-}  // namespace base
-
 namespace remoting {
 
 static const uint32 kCreatedColor = 0xffccccff;

@@ -26,14 +26,12 @@ class Instance;
 
 namespace remoting {
 
-class JingleThread;
 class XmppProxy;
 class VideoPacket;
 
 namespace protocol {
 
 class ClientMessageDispatcher;
-class ClientControlSender;
 class ClientStub;
 class HostControlSender;
 class HostStub;

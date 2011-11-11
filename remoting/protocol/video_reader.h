@@ -17,9 +17,6 @@ class MessageLoopProxy;
 }  // namespace base
 
 namespace remoting {
-
-class ChromotocolConnection;
-
 namespace protocol {
 
 class Session;

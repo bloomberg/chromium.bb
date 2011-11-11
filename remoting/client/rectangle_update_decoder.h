@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_RECTANGLE_UPDATE_DECODER_H
-#define REMOTING_CLIENT_RECTANGLE_UPDATE_DECODER_H
+#ifndef REMOTING_CLIENT_RECTANGLE_UPDATE_DECODER_H_
+#define REMOTING_CLIENT_RECTANGLE_UPDATE_DECODER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
@@ -15,7 +15,6 @@ class MessageLoop;
 namespace remoting {
 
 class FrameConsumer;
-class VideoPacketFormat;
 class VideoPacket;
 
 namespace protocol {
@@ -95,4 +94,4 @@ class RectangleUpdateDecoder :
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_RECTANGLE_UPDATE_DECODER_H
+#endif  // REMOTING_CLIENT_RECTANGLE_UPDATE_DECODER_H_

@@ -26,10 +26,6 @@
 #include "third_party/npapi/bindings/npfunctions.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
-namespace tracked_objects {
-class Location;
-}  // namespace tracked_objects
-
 namespace remoting {
 
 class ChromotingHost;
