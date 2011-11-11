@@ -397,7 +397,12 @@ class ValgrindTool(BaseTool):
                                             text=True)
     f = os.fdopen(fd, "w")
     f.write("#!/bin/sh\n")
-    f.write('echo "Started Valgrind wrapper for this test, PID=$$"\n')
+    f.write('echo "Started Valgrind wrapper for this test, PID=$$"\n\n')
+    f.write('for arg in $@\ndo\n')
+    f.write('  if [[ "$arg" =~ --test-name=(.*) ]]\n then\n')
+    f.write('    TESTCASE=${BASH_REMATCH[1]}\n')
+    f.write('    echo $TESTCASE >`dirname $0`/testcase.$$.name\n')
+    f.write('  fi\ndone\n')
     # Add the PID of the browser wrapper to the logfile names so we can
     # separate log files for different UI tests at the analyze stage.
     f.write(command)
@@ -423,21 +428,31 @@ class ValgrindTool(BaseTool):
     analyzer = self.CreateAnalyzer()
     if len(ppids) == 0:
       # Fast path - no browser wrapper was set.
-      return analyzer.Report(filenames, check_sanity)
+      return analyzer.Report(filenames, None, check_sanity)
 
     ret = 0
     for ppid in ppids:
+      testcase_name = None
+      try:
+        f = open(self.log_dir + ("/testcase.%d.name" % ppid))
+        testcase_name = f.read().strip()
+        f.close()
+      except IOError:
+        pass
       print "====================================================="
       print " Below is the report for valgrind wrapper PID=%d." % ppid
-      print " You can find the corresponding test"
-      print " by searching the above log for 'PID=%d'" % ppid
+      if testcase_name:
+        print " It was used while running the `%s` test." % testcase_name
+      else:
+        print " You can find the corresponding test"
+        print " by searching the above log for 'PID=%d'" % ppid
       sys.stdout.flush()
 
       ppid_filenames = [f for f in filenames \
                         if re.search("\.%d\.[0-9]+$" % ppid, f)]
       # check_sanity won't work with browser wrappers
       assert check_sanity == False
-      ret |= analyzer.Report(ppid_filenames)
+      ret |= analyzer.Report(ppid_filenames, testcase_name)
       print "====================================================="
       sys.stdout.flush()
 
@@ -446,6 +461,7 @@ class ValgrindTool(BaseTool):
       print "The Valgrind reports are grouped by test names."
       print "Each test has its PID printed in the log when the test was run"
       print "and at the beginning of its Valgrind report."
+      print "Hint: you can search for the reports by Ctrl+F -> `=#`"
       sys.stdout.flush()
 
     return ret
@@ -700,7 +716,7 @@ class ThreadSanitizerWindows(ThreadSanitizerBase, PinTool):
   def Analyze(self, check_sanity=False):
     filenames = glob.glob(self.log_dir + "/tsan.*")
     analyzer = tsan_analyze.TsanAnalyzer(self._source_dir)
-    ret = analyzer.Report(filenames, check_sanity)
+    ret = analyzer.Report(filenames, None, check_sanity)
     if ret != 0:
       logging.info(self.INFO_MESSAGE)
     return ret

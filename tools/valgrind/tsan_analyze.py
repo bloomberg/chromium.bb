@@ -121,6 +121,9 @@ class TsanAnalyzer(object):
           self.ReadLine()
           supp += self.line_
         self.ReadLine()
+        if self._cur_testcase:
+          result.append("The report came from the `%s` test.\n" % \
+                        self._cur_testcase)
         result.append("Suppression (error hash=#%016X#):\n" % \
                       (int(hashlib.md5(supp).hexdigest()[:16], 16)))
         result.append("  For more info on using suppressions see "
@@ -213,7 +216,7 @@ class TsanAnalyzer(object):
       reports = map(lambda(x): map(str, x), reports)
     return [''.join(report_lines) for report_lines in reports]
 
-  def Report(self, files, check_sanity=False):
+  def Report(self, files, testcase, check_sanity=False):
     '''Reads in a set of files and prints ThreadSanitizer report.
 
     Args:
@@ -221,7 +224,11 @@ class TsanAnalyzer(object):
       check_sanity: if true, search for SANITY_TEST_SUPPRESSIONS
     '''
 
+    # We set up _cur_testcase class-wide variable to avoid passing it through
+    # about 5 functions.
+    self._cur_testcase = testcase
     reports = self.GetReports(files)
+    self._cur_testcase = None  # just in case, shouldn't be used anymore
 
     is_sane = False
     print "-----------------------------------------------------"
@@ -265,6 +272,6 @@ if __name__ == '__main__':
   filenames = args
 
   analyzer = TsanAnalyzer(options.source_dir, use_gdb=True)
-  retcode = analyzer.Report(filenames)
+  retcode = analyzer.Report(filenames, None)
 
   sys.exit(retcode)

@@ -115,7 +115,7 @@ class ValgrindError:
   ValgrindError is immutable and is hashed on its pretty printed output.
   '''
 
-  def __init__(self, source_dir, error_node, commandline):
+  def __init__(self, source_dir, error_node, commandline, testcase):
     ''' Copies all the relevant information out of the DOM and into object
     properties.
 
@@ -123,6 +123,7 @@ class ValgrindError:
       error_node: The <error></error> DOM node we're extracting from.
       source_dir: Prefix that should be stripped from the <dir> node.
       commandline: The command that was run under valgrind
+      testcase: The test case name, if known.
     '''
 
     # Valgrind errors contain one <what><stack> pair, plus an optional
@@ -194,6 +195,7 @@ class ValgrindError:
     self._backtraces = []
     self._suppression = None
     self._commandline = commandline
+    self._testcase = testcase
 
     # Iterate through the nodes, parsing <what|auxwhat><stack> pairs.
     description = None
@@ -260,6 +262,8 @@ class ValgrindError:
     assert self._suppression != None, "Your Valgrind doesn't generate " \
                                       "suppressions - is it too old?"
 
+    if self._testcase:
+      output += "The report came from the `%s` test.\n" % self._testcase
     output += "Suppression (error hash=#%016X#):\n" % self.ErrorHash()
     output += ("  For more info on using suppressions see "
                "http://dev.chromium.org/developers/how-tos/using-valgrind#TOC-Suppressing-Errors")
@@ -398,7 +402,7 @@ class MemcheckAnalyzer:
     self._analyze_start_time = None
 
 
-  def Report(self, files, check_sanity=False):
+  def Report(self, files, testcase, check_sanity=False):
     '''Reads in a set of files and prints Memcheck report.
 
     Args:
@@ -524,7 +528,8 @@ class MemcheckAnalyzer:
           # Ignore "possible" leaks for now by default.
           if (self._show_all_leaks or
               getTextOf(raw_error, "kind") != "Leak_PossiblyLost"):
-            error = ValgrindError(self._source_dir, raw_error, commandline)
+            error = ValgrindError(self._source_dir,
+                                  raw_error, commandline, testcase)
             if error not in cur_report_errors:
               # We haven't seen such errors doing this report yet...
               if error in self._errors:
@@ -615,7 +620,7 @@ def _main():
   filenames = args
 
   analyzer = MemcheckAnalyzer(options.source_dir, use_gdb=True)
-  retcode = analyzer.Report(filenames)
+  retcode = analyzer.Report(filenames, None)
 
   sys.exit(retcode)
 
