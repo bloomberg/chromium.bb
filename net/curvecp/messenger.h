@@ -23,7 +23,6 @@
 
 namespace net {
 
-class DrainableIOBuffer;
 class IOBufferWithSize;
 class Packetizer;
 

@@ -21,7 +21,6 @@
 
 namespace net {
 
-class AddressesList;
 class ClientSocketFactory;
 
 class NET_EXPORT AsyncHostResolver

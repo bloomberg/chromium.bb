@@ -24,7 +24,6 @@ class NetLogParameter;
 class ProxyConfig;
 class ProxyResolver;
 class ProxyScriptFetcher;
-class URLRequestContext;
 
 // InitProxyResolver is a helper class used by ProxyService to
 // initialize a ProxyResolver with the PAC script data specified

@@ -16,11 +16,6 @@
 #include "net/base/net_export.h"
 #include "net/dns/serial_worker.h"
 
-// Forward declaration
-namespace base {
-class MessageLoopProxy;
-}
-
 namespace net {
 
 // Allows mocking FilePathWatcher
@@ -93,4 +88,3 @@ class NET_EXPORT_PRIVATE WatchingFileReader
 }  // namespace net
 
 #endif  // NET_DNS_WATCHING_FILE_READER_H_
-

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_FLIP_SERVER_SPDY_INTERFACE_
-#define NET_TOOLS_FLIP_SERVER_SPDY_INTERFACE_
+#ifndef NET_TOOLS_FLIP_SERVER_SPDY_INTERFACE_H_
+#define NET_TOOLS_FLIP_SERVER_SPDY_INTERFACE_H_
 
 #include <map>
 #include <string>
@@ -19,7 +19,6 @@
 
 namespace net {
 
-class BalsaFrame;
 class FlipAcceptor;
 class MemoryCache;
 
@@ -57,8 +56,8 @@ class SpdySM : public spdy::SpdyFramerVisitorInterface,
   SMInterface* FindOrMakeNewSMConnectionInterface(std::string server_ip,
                                                   std::string server_port);
   int SpdyHandleNewStream(const spdy::SpdyControlFrame* frame,
-                          std::string &http_data,
-                          bool *is_https_scheme);
+                          std::string& http_data,
+                          bool* is_https_scheme);
 
   // SpdyFramerVisitor interface.
   virtual void OnControl(const spdy::SpdyControlFrame* frame);
@@ -82,7 +81,7 @@ class SpdySM : public spdy::SpdyFramerVisitorInterface,
   // SMInterface's Cleanup is currently only called by SMConnection after a
   // protocol message as been fully read. Spdy's SMInterface does not need
   // to do any cleanup at this time.
-  // TODO (klindsay) This method is probably not being used properly and
+  // TODO(klindsay) This method is probably not being used properly and
   // some logic review and method renaming is probably in order.
   virtual void Cleanup() {}
   // Send a settings frame
@@ -143,5 +142,4 @@ class SpdySM : public spdy::SpdyFramerVisitorInterface,
 
 }  // namespace net
 
-#endif  // NET_TOOLS_FLIP_SERVER_SPDY_INTERFACE_
-
+#endif  // NET_TOOLS_FLIP_SERVER_SPDY_INTERFACE_H_

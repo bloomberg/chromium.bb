@@ -13,7 +13,6 @@ namespace net {
 
 class DrainableIOBuffer;
 class IOBuffer;
-class IOBufferWithSize;
 
 // A ReceivedBlockList manages everything needed to track a set of of incoming
 // blocks.  It can coalesce continuous blocks and locate holes in the received
