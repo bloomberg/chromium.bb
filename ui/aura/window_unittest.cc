@@ -690,11 +690,9 @@ TEST_F(WindowTest, Deactivate) {
   EXPECT_EQ(w2.get(), parent->children()[1]);
 }
 
-#if !defined(OS_WIN)
 // Tests transformation on the desktop.
 TEST_F(WindowTest, Transform) {
   Desktop* desktop = Desktop::GetInstance();
-  desktop->ShowDesktop();
   gfx::Size size = desktop->GetHostSize();
   EXPECT_EQ(gfx::Rect(size),
             gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()));
@@ -712,34 +710,7 @@ TEST_F(WindowTest, Transform) {
             desktop->bounds().ToString());
   EXPECT_EQ(gfx::Rect(transformed_size).ToString(),
             gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()).ToString());
-
-  ActivateWindowDelegate d1;
-  scoped_ptr<Window> w1(
-      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(0, 10, 50, 50), NULL));
-  w1->Show();
-
-  gfx::Point miss_point(5, 5);
-  transform.TransformPoint(miss_point);
-  MouseEvent mouseev1(ui::ET_MOUSE_PRESSED,
-                      miss_point,
-                      ui::EF_LEFT_BUTTON_DOWN);
-  desktop->DispatchMouseEvent(&mouseev1);
-  EXPECT_FALSE(w1->GetFocusManager()->GetFocusedWindow());
-  MouseEvent mouseup(ui::ET_MOUSE_RELEASED,
-                     miss_point,
-                     ui::EF_LEFT_BUTTON_DOWN);
-  desktop->DispatchMouseEvent(&mouseup);
-
-  gfx::Point hit_point(5, 15);
-  transform.TransformPoint(hit_point);
-  MouseEvent mouseev2(ui::ET_MOUSE_PRESSED,
-                      hit_point,
-                      ui::EF_LEFT_BUTTON_DOWN);
-  desktop->DispatchMouseEvent(&mouseev2);
-  EXPECT_EQ(w1.get(), desktop->active_window());
-  EXPECT_EQ(w1.get(), w1->GetFocusManager()->GetFocusedWindow());
 }
-#endif
 
 // Various assertions for transient children.
 TEST_F(WindowTest, TransientChildren) {

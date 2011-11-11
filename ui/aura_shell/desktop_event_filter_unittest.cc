@@ -14,6 +14,7 @@
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/base/hit_test.h"
+#include "ui/gfx/screen.h"
 
 namespace aura_shell {
 namespace test {
@@ -313,6 +314,45 @@ TEST_F(DefaultEventFilterTest, MouseEventCursors) {
   window_delegate.set_hittest_code(HTCLIENT);
   desktop->DispatchMouseEvent(&move1);
   EXPECT_EQ(aura::kCursorNull, desktop->last_cursor());
+}
+
+TEST_F(DefaultEventFilterTest, TransformActivate) {
+  aura::Desktop* desktop = aura::Desktop::GetInstance();
+  gfx::Size size = desktop->GetHostSize();
+  EXPECT_EQ(gfx::Rect(size),
+            gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()));
+
+  // Rotate it clock-wise 90 degrees.
+  ui::Transform transform;
+  transform.SetRotate(90.0f);
+  transform.ConcatTranslate(size.width(), 0);
+  desktop->SetTransform(transform);
+
+  aura::test::ActivateWindowDelegate d1;
+  scoped_ptr<aura::Window> w1(
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(0, 10, 50, 50), NULL));
+  w1->Show();
+
+  gfx::Point miss_point(5, 5);
+  transform.TransformPoint(miss_point);
+  aura::MouseEvent mouseev1(ui::ET_MOUSE_PRESSED,
+                            miss_point,
+                            ui::EF_LEFT_BUTTON_DOWN);
+  desktop->DispatchMouseEvent(&mouseev1);
+  EXPECT_FALSE(w1->GetFocusManager()->GetFocusedWindow());
+  aura::MouseEvent mouseup(ui::ET_MOUSE_RELEASED,
+                           miss_point,
+                           ui::EF_LEFT_BUTTON_DOWN);
+  desktop->DispatchMouseEvent(&mouseup);
+
+  gfx::Point hit_point(5, 15);
+  transform.TransformPoint(hit_point);
+  aura::MouseEvent mouseev2(ui::ET_MOUSE_PRESSED,
+                            hit_point,
+                            ui::EF_LEFT_BUTTON_DOWN);
+  desktop->DispatchMouseEvent(&mouseev2);
+  EXPECT_EQ(w1.get(), desktop->active_window());
+  EXPECT_EQ(w1.get(), w1->GetFocusManager()->GetFocusedWindow());
 }
 
 }  // namespace test
