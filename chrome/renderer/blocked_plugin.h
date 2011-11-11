@@ -12,18 +12,6 @@
 #include "webkit/plugins/npapi/webview_plugin.h"
 #include "webkit/plugins/webplugininfo.h"
 
-class GURL;
-
-namespace webkit {
-namespace npapi {
-class PluginGroup;
-}
-}
-
-namespace webkit_glue {
-struct CustomContextMenuContext;
-}
-
 class BlockedPlugin : public content::RenderViewObserver,
                       public CppBoundClass,
                       public webkit::npapi::WebViewPlugin::Delegate {

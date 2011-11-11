@@ -31,11 +31,6 @@ class DictionaryValue;
 namespace printing {
 struct PageSizeMargins;
 }
-#if defined(USE_SKIA)
-namespace skia {
-class VectorCanvas;
-}
-#endif
 
 // Class that calls the Begin and End print functions on the frame and changes
 // the size of the view temporarily to support full page printing..

@@ -22,11 +22,9 @@ class ContentSettingsObserver;
 class DomAutomationController;
 class ExtensionDispatcher;
 class ExternalHostBindings;
-class FilePath;
 class SkBitmap;
 class TranslateHelper;
 struct ThumbnailScore;
-struct ViewMsg_Navigate_Params;
 
 namespace WebKit {
 class WebView;

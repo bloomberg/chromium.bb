@@ -17,10 +17,6 @@
 
 class ChromeV8Context;
 
-namespace WebKit {
-class WebFrame;
-}
-
 // Implements the chrome.app JavaScript object.
 //
 // TODO(aa): Add unit testing for this class.

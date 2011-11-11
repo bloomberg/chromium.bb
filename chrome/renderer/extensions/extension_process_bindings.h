@@ -12,12 +12,6 @@
 
 class ExtensionDispatcher;
 class ChromeV8ContextSet;
-class GURL;
-class URLPattern;
-
-namespace WebKit {
-class WebView;
-}
 
 namespace v8 {
 class Extension;

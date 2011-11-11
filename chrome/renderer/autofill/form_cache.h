@@ -19,7 +19,6 @@ struct FormDataPredictions;
 
 namespace WebKit {
 class WebDocument;
-class WebFormControlElement;
 class WebFrame;
 class WebInputElement;
 class WebSelectElement;

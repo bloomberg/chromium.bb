@@ -12,7 +12,6 @@
 
 namespace webkit_glue {
 struct FormData;
-struct FormDataPredictions;
 struct FormField;
 }  // namespace webkit_glue
 
@@ -20,7 +19,6 @@ namespace WebKit {
 class WebFormElement;
 class WebFormControlElement;
 class WebInputElement;
-class WebSelectElement;
 }  // namespace WebKit
 
 namespace autofill {

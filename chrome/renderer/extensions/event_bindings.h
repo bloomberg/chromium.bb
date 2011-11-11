@@ -8,10 +8,6 @@
 
 class ExtensionDispatcher;
 
-namespace content {
-class RenderThread;
-}
-
 namespace v8 {
 class Extension;
 }

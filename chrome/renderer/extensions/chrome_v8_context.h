@@ -15,10 +15,6 @@ namespace WebKit {
 class WebFrame;
 }
 
-namespace base {
-class ListValue;
-}
-
 namespace content {
 class RenderView;
 }

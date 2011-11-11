@@ -21,7 +21,6 @@ class GURL;
 class URLPattern;
 class UserScriptSlave;
 struct ExtensionMsg_Loaded_Params;
-struct ExtensionMsg_UpdatePermissions_Params;
 
 namespace WebKit {
 class WebFrame;
