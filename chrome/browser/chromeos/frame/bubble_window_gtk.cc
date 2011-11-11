@@ -20,9 +20,6 @@ BubbleWindow::BubbleWindow(views::Widget* window,
 }
 
 void BubbleWindow::InitNativeWidget(const views::Widget::InitParams& params) {
-#if defined(USE_AURA)
-  // TODO(saintlou): Switch to alicet@chromium.org PureView when landed
-#else
   views::NativeWidgetGtk::InitNativeWidget(params);
 
   // Turn on double buffering so that the hosted GtkWidgets does not
@@ -42,7 +39,6 @@ void BubbleWindow::InitNativeWidget(const views::Widget::InitParams& params) {
   gdk_window_set_back_pixmap(GetNativeView()->window, NULL, FALSE);
   gtk_widget_realize(window_contents());
   gdk_window_set_back_pixmap(window_contents()->window, NULL, FALSE);
-#endif
 }
 
 views::NonClientFrameView* BubbleWindow::CreateNonClientFrameView() {
@@ -54,26 +50,6 @@ views::Widget* BubbleWindow::Create(
     gfx::NativeWindow parent,
     BubbleWindowStyle style,
     views::WidgetDelegate* widget_delegate) {
-#if defined(USE_AURA)
-  // TODO(saintlou):
-  return NULL;
-#else
-  // TODO(saintlou): Ultimately we do not want 2 classes for BubbleWindows.
-  // Furthermore the 2 other styles (STYLE_XBAR & STYLE_THROBBER) are only used
-  // in LoginHtmlDialog::Show() which will be deprecated soon.
-  if (views::Widget::IsPureViews()) {
-    if ((style & STYLE_XBAR) || (style & STYLE_THROBBER))
-      NOTIMPLEMENTED();
-    BubbleWindowViews* window = new BubbleWindowViews(style);
-    views::Widget::InitParams params;
-    params.delegate = widget_delegate;
-    params.parent = GTK_WIDGET(parent);
-    params.bounds = gfx::Rect();
-    window->Init(params);
-    window->SetBackgroundColor();
-    return window;
-  }
-
   views::Widget* window = new views::Widget;
   BubbleWindow* bubble_window = new BubbleWindow(window, style);
   views::Widget::InitParams params;
@@ -84,7 +60,6 @@ views::Widget* BubbleWindow::Create(
   window->Init(params);
 
   return window;
-#endif
 }
 
 }  // namespace chromeos
