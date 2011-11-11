@@ -396,7 +396,7 @@ class ValgrindTool(BaseTool):
                                             prefix="browser_wrapper.",
                                             text=True)
     f = os.fdopen(fd, "w")
-    f.write("#!/bin/sh\n")
+    f.write("#!/bin/bash\n")
     f.write('echo "Started Valgrind wrapper for this test, PID=$$"\n\n')
     f.write('for arg in $@\ndo\n')
     f.write('  if [[ "$arg" =~ --test-name=(.*) ]]\n then\n')
