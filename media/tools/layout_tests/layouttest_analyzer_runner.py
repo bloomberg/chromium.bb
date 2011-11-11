@@ -68,6 +68,13 @@ def ParseOption():
                                  '(default to %default and no text is '
                                  'appended in that case.)'),
                            default=None)
+  option_parser.add_option('-e', '--email-only-change-mode',
+                           dest='email_only_change_mode',
+                           help=('With this mode, email is sent out '
+                                 'only when there is a change in the '
+                                 'analyzer result compared to the previous '
+                                 'result (off by default)'),
+                           action='store_true', default=False)
   return option_parser.parse_args()[0]
 
 
@@ -176,7 +183,7 @@ def main():
     anno_file = os.path.join(options.annotation_directory_location,
                              test_group_name_for_data + '.csv')
     cmd = ('python layouttest_analyzer.py -x %s -d %s -t %s'
-           ' -q %s -a %s -c ') % (
+           ' -q %s -a %s ') % (
                test_group, result_dir, graph_file, dashboard_file_location,
                anno_file)
     if run_config_map[test_group][0]:
@@ -185,6 +192,8 @@ def main():
       cmd += '-r ' + run_config_map[test_group][1] + ' '
     if options.email_appended_text_file_location:
       cmd += ' -b ' + options.email_appended_text_file_location
+    if options.email_only_change_mode:
+      cmd += ' -c '
     print 'Running ' + cmd
     proc = Popen(cmd, shell=True)
     proc.communicate()

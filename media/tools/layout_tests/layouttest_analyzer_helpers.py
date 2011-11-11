@@ -11,6 +11,7 @@ from email.mime.text import MIMEText
 import fileinput
 import os
 import pickle
+import re
 import smtplib
 import socket
 import sys
@@ -132,6 +133,48 @@ class AnalyzerResultMap:
                        'less than that of "skip"')
     return 100 - len(self.result_map['nonskip'].keys()) * 100 / delta
 
+  def ConvertToCSVText(self, current_time):
+   """Convert |self.result_map| into stats and issues text in CSV format.
+
+   Both are used as inputs for Google spreadsheet.
+
+   Args:
+     current_time: a string depicting a time in year-month-day-hour
+        format (e.g., 2011-11-08-16).
+
+   Returns:
+     a tuple of stats and issues_txt
+        stats: analyzer result in CSV format that shows:
+          (current_time, the number of tests, the number of skipped tests,
+           the number of failing tests)
+          For example,
+            "2011-11-10-15,204,22,12"
+        issues_txt: issues listed in CSV format that shows:
+          (BUGWK or BUGCR, bug number, the test expectation entry,
+           the name of the test)
+          For example,
+            "BUGWK,71543,TIMEOUT PASS,media/media-element-play-after-eos.html,
+             BUGCR,97657,IMAGE CPU MAC TIMEOUT PASS,media/audio-repaint.html,"
+   """
+   stats = ','.join([current_time, str(len(self.result_map['whole'].keys())),
+                     str(len(self.result_map['skip'].keys())),
+                     str(len(self.result_map['nonskip'].keys()))])
+   issues_txt = ''
+   for bug_txt, test_info_list in (
+       self.GetListOfBugsForNonSkippedTests().iteritems()):
+     matches = re.match(r'(BUG(CR|WK))(\d+)', bug_txt)
+     bug_suffix = ''
+     bug_no = ''
+     if matches:
+       bug_suffix = matches.group(1)
+       bug_no = matches.group(3)
+     issues_txt += bug_suffix + ',' + bug_no + ','
+     for test_info in test_info_list:
+       test_name, te_info = test_info
+       issues_txt += ' '.join(te_info.keys()) + ',' + test_name + ','
+     issues_txt += '\n'
+   return stats, issues_txt
+
   def ConvertToString(self, prev_time, diff_map, bug_anno_map):
     """Convert this result to HTML display for email.
 
@@ -144,19 +187,21 @@ class AnalyzerResultMap:
     Returns:
       a analyzer result string in HTML format.
     """
-    return_str = ('<b>Statistics (Diff Compared to %s):</b><ul>'
-           '<li>The number of tests: %d (%s)</li>'
-           '<li>The number of failing skipped tests: %d (%s)</li>'
-           '<li>The number of failing non-skipped tests: %d (%s)</li>'
-           '<li>Passing rate: %d %%</li></ul>') % (
-               prev_time, len(self.result_map['whole'].keys()),
-               AnalyzerResultMap.GetDiffString(diff_map['whole'], 'whole'),
-               len(self.result_map['skip'].keys()),
-               AnalyzerResultMap.GetDiffString(diff_map['skip'], 'skip'),
-               len(self.result_map['nonskip'].keys()),
-               AnalyzerResultMap.GetDiffString(diff_map['nonskip'],
-                                               'nonskip'),
-               self.GetPassingRate())
+    return_str = ''
+    if diff_map:
+      return_str += ('<b>Statistics (Diff Compared to %s):</b><ul>'
+             '<li>The number of tests: %d (%s)</li>'
+             '<li>The number of failing skipped tests: %d (%s)</li>'
+             '<li>The number of failing non-skipped tests: %d (%s)</li>'
+             '<li>Passing rate: %d %%</li></ul>') % (
+                 prev_time, len(self.result_map['whole'].keys()),
+                 AnalyzerResultMap.GetDiffString(diff_map['whole'], 'whole'),
+                 len(self.result_map['skip'].keys()),
+                 AnalyzerResultMap.GetDiffString(diff_map['skip'], 'skip'),
+                 len(self.result_map['nonskip'].keys()),
+                 AnalyzerResultMap.GetDiffString(diff_map['nonskip'],
+                                                 'nonskip'),
+                 self.GetPassingRate())
     return_str += '<b>Current issues about failing non-skipped tests:</b>'
     for (bug_txt, test_info_list) in (
         self.GetListOfBugsForNonSkippedTests().iteritems()):
@@ -255,7 +300,8 @@ class AnalyzerResultMap:
 
 def SendStatusEmail(prev_time, analyzer_result_map, diff_map,
                     bug_anno_map, receiver_email_address, test_group_name,
-                    appended_text_to_email, email_content, rev_str):
+                    appended_text_to_email, email_content, rev_str,
+                    email_only_change_mode):
   """Send status email.
 
   Args:
@@ -285,14 +331,19 @@ def SendStatusEmail(prev_time, analyzer_result_map, diff_map,
     rev_str: a revision string that contains revision information that is sent
         out in the status email. It is obtained by calling
         |GetRevisionString()|.
+    email_only_change_mode: please refer to |options|.
   """
   if rev_str:
     email_content += '<br><b>Revision Information:</b>'
     email_content += rev_str
   localtime = time.asctime(time.localtime(time.time()))
+  change_str = ''
+  if email_only_change_mode:
+    change_str = 'Status Change '
+  subject = 'Layout Test Analyzer Result %s(%s): %s' % (change_str,
+                                                        test_group_name,
+                                                        localtime)
   # TODO(imasaki): remove my name from here.
-  subject = 'Layout Test Analyzer Result (%s): %s' % (test_group_name,
-                                                      localtime)
   SendEmail('imasaki@chromium.org', [receiver_email_address],
             subject, email_content + appended_text_to_email)
 

@@ -183,6 +183,28 @@ class TestLayoutTestAnalyzerHelpers(unittest.TestCase):
     self.assertFalse(
         layouttest_analyzer_helpers.FindLatestResult('test_data'))
 
+  def testConvertToCSVText(self):
+    file_path = os.path.join('test_data', 'base')
+    analyzerResultMapBase = (
+        layouttest_analyzer_helpers.AnalyzerResultMap.Load(file_path))
+    data, issues_txt = analyzerResultMapBase.ConvertToCSVText('11-10-10-2011')
+    self.assertEquals(data, '11-10-10-2011,204,36,10')
+    expected_issues_txt = """\
+BUGWK,66310,TEXT PASS,media/media-blocked-by-beforeload.html,DEBUG TEXT PASS,\
+media/video-source-error.html,
+BUGCR,86714,GPU IMAGE CRASH MAC,media/video-zoom.html,GPU IMAGE CRASH MAC,\
+media/video-controls-rendering.html,
+BUGCR,74102,GPU IMAGE PASS LINUX,media/video-controls-rendering.html,
+BUGWK,55718,TEXT IMAGE IMAGE+TEXT,media/media-document-audio-repaint.html,
+BUGCR,78376,TIMEOUT,http/tests/media/video-play-stall-seek.html,
+BUGCR,59415,WIN TEXT TIMEOUT PASS,media/video-loop.html,
+BUGCR,72223,IMAGE PASS,media/video-frame-accurate-seek.html,
+BUGCR,75354,TEXT IMAGE IMAGE+TEXT,media/media-document-audio-repaint.html,
+BUGCR,73609,TEXT,http/tests/media/video-play-stall.html,
+BUGWK,64003,DEBUG TEXT MAC PASS,media/video-delay-load-event.html,
+"""
+    self.assertEquals(issues_txt, expected_issues_txt)
+
 
 if __name__ == '__main__':
   unittest.main()

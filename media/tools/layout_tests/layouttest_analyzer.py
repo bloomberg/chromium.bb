@@ -21,6 +21,8 @@ from trend_graph import TrendGraph
 DEFAULT_RESULT_DIR = 'result'
 DEFAULT_ANNO_FILE = os.path.join('anno', 'anno.csv')
 DEFAULT_GRAPH_FILE = os.path.join('graph', 'graph.html')
+DEFAULT_STATS_CSV_FILENAME = 'stats.csv'
+DEFAULT_ISSUES_CSV_FILENAME = 'issues.csv'
 # Predefined result files for debug.
 CUR_TIME_FOR_DEBUG = '2011-09-11-19'
 CURRENT_RESULT_FILE_FOR_DEBUG = os.path.join(DEFAULT_RESULT_DIR,
@@ -196,7 +198,8 @@ def ReadEmailInformation(bug_annotation_file_location,
   else:
     data = csv.reader(file_object)
     for row in data:
-      anno_map[row[0]] = row[1]
+      if len(row) > 1:
+        anno_map[row[0]] = row[1]
     file_object.close()
 
   appended_text_to_email = ''
@@ -273,7 +276,8 @@ def SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
         layouttest_analyzer_helpers.SendStatusEmail(
             prev_time, analyzer_result_map, diff_map, anno_map,
             receiver_email_address, test_group_name,
-            appended_text_to_email, email_content, rev_str)
+            appended_text_to_email, email_content, rev_str,
+            email_only_change_mode)
     if simple_rev_str:
       simple_rev_str = '\'' + simple_rev_str + '\''
     else:
@@ -284,6 +288,8 @@ def SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
     result_change = True
     diff_map = None
     simple_rev_str = 'undefined'
+    email_content = analyzer_result_map.ConvertToString(None, diff_map,
+                                                        anno_map)
   return (result_change, diff_map, simple_rev_str, rev, rev_date,
           email_content)
 
@@ -454,6 +460,19 @@ def main():
                 anno_map, appended_text_to_email,
                 options.email_only_change_mode, options.debug,
                 options.receiver_email_address, options.test_group_name))
+
+  # Create CSV texts and save them for bug spreadsheet.
+  (stats, issues_txt) = analyzer_result_map.ConvertToCSVText(
+      start_time.strftime('%Y-%m-%d-%H'))
+  file_object = open(os.path.join(options.result_directory_location,
+                                  DEFAULT_STATS_CSV_FILENAME), 'wb')
+  file_object.write(stats)
+  file_object.close()
+  file_object = open(os.path.join(options.result_directory_location,
+                                  DEFAULT_ISSUES_CSV_FILENAME), 'wb')
+  file_object.write(issues_txt)
+  file_object.close()
+
   if not options.debug and (result_change or not prev_analyzer_result_map):
     # Save the current result when result is changed or the script is
     # executed for the first time.
