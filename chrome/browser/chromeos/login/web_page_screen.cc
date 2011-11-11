@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,10 +23,6 @@ WebPageScreen::~WebPageScreen() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // WebPageScreen, TabContentsDelegate implementation:
-
-bool WebPageScreen::IsPopup(TabContents* source) {
-  return false;
-}
 
 bool WebPageScreen::ShouldAddNavigationToHistory(
     const history::HistoryAddPageArgs& add_page_args,

@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WEB_PAGE_SCREEN_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
@@ -25,11 +27,10 @@ class WebPageScreen : public TabContentsDelegate {
 
  protected:
   // TabContentsDelegate implementation:
-  virtual bool IsPopup(TabContents* source);
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
-      content::NavigationType navigation_type);
-  virtual bool HandleContextMenu(const ContextMenuParams& params);
+      content::NavigationType navigation_type) OVERRIDE;
+  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
 
   // Called by |timeout_timer_|. Stops page fetching and closes screen.
   virtual void OnNetworkTimeout();
