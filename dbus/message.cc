@@ -755,6 +755,12 @@ bool MessageReader::PopArrayOfBytes(uint8** bytes, size_t* length) {
   MessageReader array_reader(message_);
   if (!PopArray(&array_reader))
       return false;
+  // An empty array is allowed.
+  if (!array_reader.HasMoreData()) {
+    *length = 0;
+    *bytes = NULL;
+    return true;
+  }
   if (!array_reader.CheckDataType(DBUS_TYPE_BYTE))
     return false;
   int int_length = 0;
@@ -762,7 +768,7 @@ bool MessageReader::PopArrayOfBytes(uint8** bytes, size_t* length) {
                                     bytes,
                                     &int_length);
   *length = static_cast<int>(int_length);
-  return bytes != NULL;
+  return true;
 }
 
 bool MessageReader::PopArrayOfStrings(

@@ -171,6 +171,21 @@ TEST(MessageTest, ArrayOfBytes) {
   EXPECT_EQ(3, output_bytes[2]);
 }
 
+TEST(MessageTest, ArrayOfBytes_Empty) {
+  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(message.get());
+  std::vector<uint8> bytes;
+  writer.AppendArrayOfBytes(bytes.data(), bytes.size());
+
+  dbus::MessageReader reader(message.get());
+  uint8* output_bytes = NULL;
+  size_t length = 0;
+  ASSERT_TRUE(reader.PopArrayOfBytes(&output_bytes, &length));
+  ASSERT_FALSE(reader.HasMoreData());
+  ASSERT_EQ(0U, length);
+  EXPECT_EQ(NULL, output_bytes);
+}
+
 TEST(MessageTest, ArrayOfStrings) {
   scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(message.get());
