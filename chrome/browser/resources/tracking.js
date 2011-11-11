@@ -9,9 +9,6 @@ var g_mainView;
 //               redraw. Rather do it only once when one of its dependencies
 //               change and cache the result.
 
-// TODO(eroman): Add a checkbox to merge similar named threads (like worker
-//               theads/PAC threads).
-
 /**
  * Main entry point called once the page has loaded.
  */
@@ -97,6 +94,10 @@ var MainView = (function() {
 
   // The container node to show/hide when toggling the column checkboxes.
   var EDIT_COLUMNS_ROW = 'edit-columns-row';
+
+  // The checkbox which controls whether things like "Worker Threads" and
+  // "PAC threads" will be merged together.
+  var MERGE_SIMILAR_THREADS_CHECKBOX_ID = 'merge-similar-threads-checkbox';
 
   // --------------------------------------------------------------------------
   // Row keys
@@ -783,8 +784,32 @@ var MainView = (function() {
    * Merges the rows in |origRows|, by collapsing the columns listed in
    * |mergeKeys|. Returns an array with the merged rows (in no particular
    * order).
+   *
+   * If |mergeSimilarThreads| is true, then threads with a similar name will be
+   * considered equivalent. For instance, "WorkerThread-1" and "WorkerThread-2"
+   * will be remapped to "WorkerThread-*".
    */
-  function mergeRows(origRows, mergeKeys) {
+  function mergeRows(origRows, mergeKeys, mergeSimilarThreads) {
+    // Define a translation function for each property. Normally we copy over
+    // properties as-is, but if we have been asked to "merge similar threads" we
+    // we will remap the thread names that end in a numeric suffix.
+    var propertyGetterFunc;
+
+    if (mergeSimilarThreads) {
+      propertyGetterFunc = function(row, key) {
+        var value = row[key];
+        // If the property is a thread name, try to remap it.
+        if (key == KEY_BIRTH_THREAD || key == KEY_DEATH_THREAD) {
+          var m = /^(.*)(\d)+$/.exec(value);
+          if (m)
+            value = m[1] + '*';
+        }
+        return value;
+      }
+    } else {
+      propertyGetterFunc = function(row, key) { return row[key]; };
+    }
+
     // Determine which sets of properties a row needs to match on to be
     // considered identical to another row.
     var identityKeys = IDENTITY_KEYS.slice(0);
@@ -802,7 +827,7 @@ var MainView = (function() {
 
       var rowIdentity = [];
       for (var j = 0; j < identityKeys.length; ++j)
-        rowIdentity.push(e[identityKeys[j]]);
+        rowIdentity.push(propertyGetterFunc(e, identityKeys[j]));
       rowIdentity = rowIdentity.join('\n');
 
       var l = identicalRows[rowIdentity];
@@ -826,7 +851,7 @@ var MainView = (function() {
       // Copy over all the identity columns to the new row (since they
       // were the same for each row matched).
       for (var i = 0; i < identityKeys.length; ++i)
-        newRow[identityKeys[i]] = l[0][identityKeys[i]];
+        newRow[identityKeys[i]] = propertyGetterFunc(l[0], identityKeys[i]);
 
       // Compute aggregates for the other columns.
       var aggregates = initializeAggregates(aggregateKeys);
@@ -1149,7 +1174,8 @@ var MainView = (function() {
     redrawData_: function() {
       // Eliminate columns which we are merging on.
       var mergedKeys = this.getMergeColumns_();
-      var data = mergeRows(this.allData_, mergedKeys);
+      var data = mergeRows(
+          this.allData_, mergedKeys, this.shouldMergeSimilarThreads_());
 
       // Figure out what columns to include, based on the selected checkboxes.
       var columns = this.getSelectionColumns_();
@@ -1209,6 +1235,9 @@ var MainView = (function() {
       this.fillSortingDropdowns_();
 
       $(EDIT_COLUMNS_LINK_ID).onclick = this.toggleEditColumns_.bind(this);
+
+      $(MERGE_SIMILAR_THREADS_CHECKBOX_ID).onchange =
+          this.onMergeSimilarThreadsCheckboxChanged_.bind(this);
     },
 
     toggleEditColumns_: function() {
@@ -1244,6 +1273,10 @@ var MainView = (function() {
 
     getMergeColumns_: function() {
       return getKeysForCheckedBoxes(this.mergeCheckboxes_);
+    },
+
+    shouldMergeSimilarThreads_: function() {
+      return $(MERGE_SIMILAR_THREADS_CHECKBOX_ID).checked;
     },
 
     fillMergeCheckboxes_: function(parent) {
@@ -1317,6 +1350,10 @@ var MainView = (function() {
     },
 
     onMergeCheckboxChanged_: function() {
+      this.redrawData_();
+    },
+
+    onMergeSimilarThreadsCheckboxChanged_: function() {
       this.redrawData_();
     },
 
