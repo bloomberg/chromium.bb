@@ -198,9 +198,10 @@ CloudPrintConnector::HandlePrinterListResponse(
 
   request_ = NULL;
   if (!local_printers.empty()) {
-    // Notify client that we have a list of printers available.
-    // Client will call us back to finish registration
-    client_->OnPrintersAvailable(local_printers);
+    // In the future we might want to notify frontend about available printers
+    // and let user choose which printers to register.
+    // Here is a good place to notify client about available printers.
+    RegisterPrinters(local_printers);
   }
   ContinuePendingTaskProcessing();  // Continue processing background tasks.
   return CloudPrintURLFetcher::STOP_PROCESSING;

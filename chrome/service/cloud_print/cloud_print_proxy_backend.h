@@ -31,9 +31,6 @@ class CloudPrintProxyFrontend {
  public:
   CloudPrintProxyFrontend() {}
 
-  // There is a list of printers available that can be registered.
-  virtual void OnPrinterListAvailable(
-      const printing::PrinterList& printer_list) = 0;
   // We successfully authenticated with the cloud print server. This callback
   // allows the frontend to persist the tokens.
   virtual void OnAuthenticated(const std::string& robot_oauth_refresh_token,

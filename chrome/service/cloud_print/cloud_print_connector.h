@@ -30,7 +30,6 @@ class CloudPrintConnector
  public:
   class Client {
    public:
-    virtual void OnPrintersAvailable(const printing::PrinterList& printers) = 0;
     virtual void OnAuthFailed() = 0;
    protected:
      virtual ~Client() {}

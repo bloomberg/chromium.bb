@@ -52,8 +52,6 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   }
 
   // CloudPrintProxyFrontend implementation. Called on UI thread.
-  virtual void OnPrinterListAvailable(
-      const printing::PrinterList& printer_list);
   virtual void OnAuthenticated(const std::string& robot_oauth_refresh_token,
                                const std::string& robot_email,
                                const std::string& user_email);

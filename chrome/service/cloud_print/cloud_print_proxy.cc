@@ -188,15 +188,6 @@ void CloudPrintProxy::GetProxyInfo(cloud_print::CloudPrintProxyInfo* info) {
     service_prefs_->GetString(prefs::kCloudPrintProxyId, &info->proxy_id);
 }
 
-// Notification methods from the backend. Called on UI thread.
-void CloudPrintProxy::OnPrinterListAvailable(
-    const printing::PrinterList& printer_list) {
-  DCHECK(CalledOnValidThread());
-  // We could potentially show UI here allowing the user to select which
-  // printers to register. For now, we just register all.
-  backend_->RegisterPrinters(printer_list);
-}
-
 void CloudPrintProxy::OnAuthenticated(
     const std::string& robot_oauth_refresh_token,
     const std::string& robot_email,

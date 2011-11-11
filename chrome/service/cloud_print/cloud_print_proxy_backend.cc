@@ -82,7 +82,6 @@ class CloudPrintProxyBackend::Core
   virtual void OnInvalidCredentials();
 
   // CloudPrintConnector::Client implementation.
-  virtual void OnPrintersAvailable(const printing::PrinterList& printers);
   virtual void OnAuthFailed();
 
   // notifier::TalkMediator::Delegate implementation.
@@ -239,15 +238,6 @@ void CloudPrintProxyBackend::Shutdown() {
   core_ = NULL;  // Releases reference to core_.
 }
 
-void CloudPrintProxyBackend::RegisterPrinters(
-    const printing::PrinterList& printer_list) {
-  core_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(
-          core_.get(),
-          &CloudPrintProxyBackend::Core::DoRegisterSelectedPrinters,
-          printer_list));
-}
-
 CloudPrintProxyBackend::Core::Core(
     CloudPrintProxyBackend* backend,
     const std::string& proxy_id,
@@ -351,13 +341,6 @@ void CloudPrintProxyBackend::Core::OnInvalidCredentials() {
       &Core::NotifyAuthenticationFailed));
 }
 
-void CloudPrintProxyBackend::Core::OnPrintersAvailable(
-    const printing::PrinterList& printers) {
-  // Let the frontend know that we have a list of printers available.
-  backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &Core::NotifyPrinterListAvailable, printers));
-}
-
 void CloudPrintProxyBackend::Core::OnAuthFailed() {
   VLOG(1) << "CP_CONNECTOR: Authentication failed in connector.";
   // Let's stop connecter and refresh token. We'll restart connecter once
@@ -406,12 +389,6 @@ void CloudPrintProxyBackend::Core::DoShutdown() {
   token_store_.reset();
 }
 
-void CloudPrintProxyBackend::Core::DoRegisterSelectedPrinters(
-    const printing::PrinterList& printer_list) {
-  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  connector_->RegisterPrinters(printer_list);
-}
-
 void CloudPrintProxyBackend::Core::HandlePrinterNotification(
     const std::string& printer_id) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
@@ -449,12 +426,6 @@ CloudPrintTokenStore* CloudPrintProxyBackend::Core::GetTokenStore() {
   if (!token_store_.get())
     token_store_.reset(new CloudPrintTokenStore);
   return token_store_.get();
-}
-
-void CloudPrintProxyBackend::Core::NotifyPrinterListAvailable(
-    const printing::PrinterList& printer_list) {
-  DCHECK(MessageLoop::current() == backend_->frontend_loop_);
-  backend_->frontend_->OnPrinterListAvailable(printer_list);
 }
 
 void CloudPrintProxyBackend::Core::NotifyAuthenticated(
