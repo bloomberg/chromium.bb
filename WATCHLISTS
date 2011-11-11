@@ -414,7 +414,7 @@
     'tools_emacs': ['fischman+watch@chromium.org'],
     'browser_compositor': ['backer@chromium.org', 'vollick@chromium.org',
                            'piman+watch@chromium.org'],
-    'textinput': ['suzhe@chromium.org'],
+    'textinput': ['penghuang+watch@chromium.org', 'suzhe@chromium.org'],
     'omnibox': ['suzhe@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
     'clipboard': ['dcheng@chromium.org'],
