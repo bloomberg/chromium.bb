@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
-#include "base/stringprintf.h"
 #include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -56,7 +55,6 @@ const char kKeyName[] = "name";
 const char kKeyEmailAddress[] = "emailAddress";
 const char kKeySignedIn[] = "signedIn";
 const char kKeyCanRemove[] = "canRemove";
-const char kKeyImageUrl[] = "imageUrl";
 const char kKeyOauthTokenStatus[] = "oauthTokenStatus";
 
 // Max number of users to show.
@@ -406,6 +404,12 @@ void SigninScreenHandler::OnUserRemoved(const std::string& username) {
   SendUserList(false);
 }
 
+void SigninScreenHandler::OnUserImageChanged(const User& user) {
+  base::StringValue user_email(user.email());
+  web_ui_->CallJavascriptFunction(
+      "login.AccountPickerScreen.updateUserImage", user_email);
+}
+
 void SigninScreenHandler::ShowError(int login_attempts,
                                     const std::string& error_text,
                                     const std::string& help_link_text,
@@ -617,21 +621,6 @@ void SigninScreenHandler::SendUserList(bool animated) {
                             !is_owner &&
                             !signed_in);
 
-      if (!email.empty()) {
-        long long timestamp = base::TimeTicks::Now().ToInternalValue();
-        std::string image_url(
-            StringPrintf("%s%s?id=%lld",
-                         chrome::kChromeUIUserImageURL,
-                         email.c_str(),
-                         timestamp));
-        user_dict->SetString(kKeyImageUrl, image_url);
-      } else {
-        std::string image_url(std::string(chrome::kChromeUIScheme) + "://" +
-            std::string(chrome::kChromeUIThemePath) +
-            "/IDR_LOGIN_DEFAULT_USER");
-        user_dict->SetString(kKeyImageUrl, image_url);
-      }
-
       users_list.Append(user_dict);
       if (!is_owner)
         ++non_owner_count;
@@ -646,9 +635,6 @@ void SigninScreenHandler::SendUserList(bool animated) {
     guest_dict->SetBoolean(kKeyCanRemove, false);
     guest_dict->SetInteger(kKeyOauthTokenStatus,
                            User::OAUTH_TOKEN_STATUS_UNKNOWN);
-    std::string image_url(std::string(chrome::kChromeUIScheme) + "://" +
-        std::string(chrome::kChromeUIThemePath) + "/IDR_LOGIN_GUEST");
-    guest_dict->SetString(kKeyImageUrl, image_url);
     users_list.Append(guest_dict);
   }
 

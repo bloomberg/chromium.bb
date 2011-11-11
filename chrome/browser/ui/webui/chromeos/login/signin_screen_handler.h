@@ -28,6 +28,7 @@ class ListValue;
 namespace chromeos {
 
 class NetworkStateInformer;
+class User;
 
 // An interface for WebUILoginDisplay to call SigninScreenHandler.
 class LoginDisplayWebUIHandler {
@@ -35,6 +36,7 @@ class LoginDisplayWebUIHandler {
   virtual void ClearAndEnablePassword() = 0;
   virtual void OnLoginSuccess(const std::string& username) = 0;
   virtual void OnUserRemoved(const std::string& username) = 0;
+  virtual void OnUserImageChanged(const User& user) = 0;
   virtual void ShowError(int login_attempts,
                          const std::string& error_text,
                          const std::string& help_link_text,
@@ -123,6 +125,7 @@ class SigninScreenHandler : public BaseScreenHandler,
   virtual void ClearAndEnablePassword() OVERRIDE;
   virtual void OnLoginSuccess(const std::string& username) OVERRIDE;
   virtual void OnUserRemoved(const std::string& username) OVERRIDE;
+  virtual void OnUserImageChanged(const User& user) OVERRIDE;
   virtual void ShowError(int login_attempts,
                          const std::string& error_text,
                          const std::string& help_link_text,

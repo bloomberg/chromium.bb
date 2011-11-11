@@ -175,8 +175,9 @@ cr.define('login', function() {
     set user(userDict) {
       this.user_ = userDict;
 
+      this.updateUserImage();
+
       this.nameElement.textContent = userDict.name;
-      this.imageElement.src = userDict.imageUrl;
       this.removeUserButtonElement.hidden = !userDict.canRemove;
       this.signedInIndicatorElement.hidden = !userDict.signedIn;
 
@@ -260,6 +261,16 @@ cr.define('login', function() {
      */
     set passwordEmpty(empty) {
       this.passwordElement.classList[empty ? 'add' : 'remove']('empty');
+    },
+
+    /**
+     * Updates the image element of the user.
+     */
+    updateUserImage: function() {
+      this.imageElement.src = this.isGuest ?
+          'chrome://theme/IDR_LOGIN_GUEST' :
+          'chrome://userimage/' + this.user.emailAddress +
+              '?id=' + (new Date()).getTime();
     },
 
     /**
@@ -597,6 +608,18 @@ cr.define('login', function() {
     showSigninUI: function(email) {
       this.rowEnabled = false;
       Oobe.showSigninUI(email);
+    },
+
+    /**
+     * Updates current image of a user.
+     * @param {string} email Email of the user for which to update the image.
+     * @public
+     */
+    updateUserImage: function(email) {
+      for (var i = 0; i < this.pods.length; ++i) {
+        if (this.pods[i].user.emailAddress == email)
+          this.pods[i].updateUserImage();
+      }
     },
 
     /**

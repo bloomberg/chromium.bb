@@ -56,8 +56,8 @@ void WebUILoginDisplay::OnBeforeUserRemoved(const std::string& username) {
 }
 
 void WebUILoginDisplay::OnUserImageChanged(const User& user) {
-  // TODO(rharrison): Update the user in the user vector
-  // TODO(rharrison): Push the change to WebUI Login screen
+  DCHECK(webui_handler_);
+  webui_handler_->OnUserImageChanged(user);
 }
 
 void WebUILoginDisplay::OnUserRemoved(const std::string& username) {
