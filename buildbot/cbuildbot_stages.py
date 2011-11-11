@@ -593,6 +593,7 @@ class VMTestStage(bs.BuilderStage):
                                   self.GetImageDirSymlink(),
                                   os.path.join(test_results_dir,
                                                'chrome_results'))
+
     except commands.TestException:
       raise bs.NonBacktraceBuildException()  # Suppress redundant output.
     finally:

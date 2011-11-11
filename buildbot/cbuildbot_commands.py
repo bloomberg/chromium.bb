@@ -294,16 +294,17 @@ def RunChromeSuite(buildroot, board, image_dir, results_dir):
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
   # TODO(cmasone): make this look for ALL desktopui_BrowserTest control files.
-  cros_lib.OldRunCommand(['bin/cros_run_parallel_vm_tests',
-                          '--board=%s' % board,
-                          '--quiet',
-                          '--image_path=%s' % image_path,
-                          '--results_dir_root=%s' % results_dir,
-                          'desktopui_BrowserTest.control$',
-                          'desktopui_BrowserTest.control.one',
-                          'desktopui_BrowserTest.control.two',
-                          'desktopui_BrowserTest.control.three',
-                         ], cwd=cwd, error_ok=True, enter_chroot=False)
+  cmd = ['bin/cros_run_parallel_vm_tests',
+         '--board=%s' % board,
+         '--quiet',
+         '--image_path=%s' % image_path,
+         '--results_dir_root=%s' % results_dir,
+         'desktopui_BrowserTest.control$',
+         'desktopui_BrowserTest.control.one',
+         'desktopui_BrowserTest.control.two',
+         'desktopui_BrowserTest.control.three',
+         'desktopui_PyAutoFunctionalTests.control.vm']
+  cros_lib.OldRunCommand(cmd, cwd=cwd, error_ok=True, enter_chroot=False)
 
 
 def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
