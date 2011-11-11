@@ -943,7 +943,7 @@ LogFunctionMap g_log_function_mapping;
 
 #define IPC_MESSAGE_FORWARD(msg_class, obj, member_func)                       \
     case msg_class::ID: {                                                      \
-        /* TRACK_RUN_IN_IPC_HANDLER(member_func);  TODO(jar) */                \
+        TRACK_RUN_IN_IPC_HANDLER(member_func);                                 \
         msg_is_ok__ = msg_class::Dispatch(&ipc_message__, obj, this,           \
                                       &member_func);                           \
       }                                                                        \
