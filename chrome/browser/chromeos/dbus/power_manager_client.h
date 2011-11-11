@@ -63,7 +63,7 @@ class PowerManagerClient {
   // Increases the screen brightness.
   virtual void IncreaseScreenBrightness() = 0;
 
-  // UI initiated request for status update.
+  // UI initiated request for power supply status update.
   virtual void RequestStatusUpdate() = 0;
 
   // Creates the instance.

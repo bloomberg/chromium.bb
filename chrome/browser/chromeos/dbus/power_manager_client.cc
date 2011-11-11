@@ -122,10 +122,15 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
+  // PowerManagerClient override.
   virtual void RequestStatusUpdate() OVERRIDE {
-    // TODO(stevenjb): chromeos::RetrievePowerInformation has been deprecated;
-    // we should add a mechanism to immediately request an update, probably
-    // when we migrate the DBus code from libcros to here.
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kGetAllPropertiesMethod);
+    power_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&PowerManagerClientImpl::OnGetAllPropertiesMethod,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -173,22 +178,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
   }
 
   // Called when a power supply polling signal is received.
-  void PowerSupplyPollReceived(dbus::Signal* signal) {
-    dbus::MessageReader reader(signal);
+  void PowerSupplyPollReceived(dbus::Signal* unused_signal) {
     VLOG(1) << "Received power supply poll signal.";
-    GetPowerSupplyInfo();
-  }
-
-  // Gets the state of the power supply (line power and battery) from power
-  // manager.
-  void GetPowerSupplyInfo() {
-    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
-                                 power_manager::kGetAllPropertiesMethod);
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&PowerManagerClientImpl::OnGetAllPropertiesMethod,
-                   weak_ptr_factory_.GetWeakPtr()));
+    RequestStatusUpdate();
   }
 
   // Called when GetAllPropertiesMethod call is complete.
