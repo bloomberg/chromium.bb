@@ -42,6 +42,7 @@ struct AccessibleViewState;
 class Compositor;
 class Layer;
 class LayerAnimationSequence;
+class TextInputClient;
 class Texture;
 class ThemeProvider;
 class Transform;
@@ -64,7 +65,6 @@ class FocusTraversable;
 class InputMethod;
 class LayoutManager;
 class ScrollView;
-class TextInputClient;
 class Widget;
 
 namespace internal {
@@ -623,7 +623,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Returns the View's TextInputClient instance or NULL if the View doesn't
   // support text input.
-  virtual TextInputClient* GetTextInputClient();
+  virtual ui::TextInputClient* GetTextInputClient();
 
   // Convenience method to retrieve the InputMethod associated with the
   // Widget that contains this view. Returns NULL if this view is not part of a

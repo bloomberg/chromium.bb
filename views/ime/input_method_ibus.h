@@ -15,6 +15,8 @@
 #include "ui/base/glib/glib_integers.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/base/ime/character_composer.h"
+#include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/text_input_client.h"
 #include "views/events/event.h"
 #include "views/ime/input_method_base.h"
 #include "views/view.h"

@@ -793,7 +793,7 @@ bool View::OnMouseWheel(const MouseWheelEvent& event) {
   return false;
 }
 
-TextInputClient* View::GetTextInputClient() {
+ui::TextInputClient* View::GetTextInputClient() {
   return NULL;
 }
 

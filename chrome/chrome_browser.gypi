@@ -49,6 +49,7 @@
         '../third_party/npapi/npapi.gyp:npapi',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/gfx/surface/surface.gyp:surface',
+        '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         '../ui/ui.gyp:ui_resources_large',
         '../ui/ui.gyp:ui_resources_standard',

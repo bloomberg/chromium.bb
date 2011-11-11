@@ -374,7 +374,7 @@ void NativeTextfieldWin::HandleFocus() {
 void NativeTextfieldWin::HandleBlur() {
 }
 
-TextInputClient* NativeTextfieldWin::GetTextInputClient() {
+ui::TextInputClient* NativeTextfieldWin::GetTextInputClient() {
   return NULL;
 }
 

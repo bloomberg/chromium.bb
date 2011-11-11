@@ -684,7 +684,7 @@ bool RenderWidgetHostViewViews::OnMouseWheel(
   return true;
 }
 
-views::TextInputClient* RenderWidgetHostViewViews::GetTextInputClient() {
+ui::TextInputClient* RenderWidgetHostViewViews::GetTextInputClient() {
   return this;
 }
 
@@ -696,7 +696,7 @@ bool RenderWidgetHostViewViews::GetTooltipText(const gfx::Point& p,
   return true;
 }
 
-// TextInputClient implementation ---------------------------------------------
+// ui::TextInputClient implementation -----------------------------------------
 void RenderWidgetHostViewViews::SetCompositionText(
     const ui::CompositionText& composition) {
   if (!host_)
@@ -835,10 +835,6 @@ bool RenderWidgetHostViewViews::ChangeTextDirectionAndLayoutAlignment(
       WebKit::WebTextDirectionLeftToRight);
   host_->NotifyTextDirection();
   return true;
-}
-
-views::View* RenderWidgetHostViewViews::GetOwnerViewOfTextInputClient() {
-  return this;
 }
 
 void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {

@@ -410,7 +410,7 @@ void Textfield::GetAccessibleState(ui::AccessibleViewState* state) {
   state->selection_end = range.end();
 }
 
-TextInputClient* Textfield::GetTextInputClient() {
+ui::TextInputClient* Textfield::GetTextInputClient() {
   return native_wrapper_ ? native_wrapper_->GetTextInputClient() : NULL;
 }
 

@@ -13,6 +13,10 @@
 #include "ui/base/ime/text_input_type.h"
 #include "views/views_export.h"
 
+namespace ui {
+class TextInputClient;
+}  // namespace ui
+
 namespace views {
 
 namespace internal {
@@ -20,7 +24,6 @@ class InputMethodDelegate;
 }  // namespace internal
 
 class KeyEvent;
-class TextInputClient;
 class View;
 class Widget;
 
@@ -96,7 +99,7 @@ class VIEWS_EXPORT InputMethod {
   // Gets the focused text input client. Returns NULL if the Widget is not
   // focused, or there is no focused View or the focused View doesn't support
   // text input.
-  virtual TextInputClient* GetTextInputClient() const = 0;
+  virtual ui::TextInputClient* GetTextInputClient() const = 0;
 
   // Gets the text input type of the focused text input client. Returns
   // ui::TEXT_INPUT_TYPE_NONE if there is no focused text input client.
