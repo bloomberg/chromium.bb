@@ -1972,7 +1972,7 @@ void NativeWidgetGtk::CreateGtkWidget(const Widget::InitParams& params) {
     if (!params.parent && !null_parent_) {
       GtkWidget* popup = gtk_window_new(GTK_WINDOW_POPUP);
       null_parent_ = gtk_fixed_new();
-      gtk_widget_set_name(widget_, "views-gtkwidget-null-parent");
+      gtk_widget_set_name(null_parent_, "views-gtkwidget-null-parent");
       gtk_container_add(GTK_CONTAINER(popup), null_parent_);
       gtk_widget_realize(null_parent_);
     }
@@ -2005,6 +2005,10 @@ void NativeWidgetGtk::CreateGtkWidget(const Widget::InitParams& params) {
       GtkAllocation alloc =
           { 0, 0, params.bounds.width(), params.bounds.height() };
       gtk_widget_size_allocate(widget_, &alloc);
+    }
+    if (params.type == Widget::InitParams::TYPE_CONTROL) {
+      // Controls are initially visible.
+      gtk_widget_show(widget_);
     }
   } else {
     Widget::InitParams::Type type = params.type;
