@@ -3269,7 +3269,7 @@
    fun:_ZN14RunnableMethodI14SessionBackendMS0_FvPSt6vectorIP14SessionCommandSaIS3_EEbE6Tuple2IS6_bEE3RunEv
 }
 {
-   bug_76197
+   bug_76197a
    Memcheck:Addr4
    fun:sqlite3DbFree
    fun:releaseMemArray
@@ -3293,6 +3293,17 @@
    fun:_ZN3sql10ConnectionD2Ev
    fun:_ZN3sql10ConnectionD1Ev
    fun:_ZN7history16InMemoryDatabaseD0Ev
+}
+{
+   bug_76197b
+   Memcheck:Addr4
+   ...
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN3sql10Connection7ExecuteEPKc
+   fun:_ZN7history11URLDatabase31CreateKeywordSearchTermsIndicesEv
+   fun:_ZN7history16InMemoryDatabase12InitFromDiskERK8FilePath
+   fun:_ZN7history22InMemoryHistoryBackend4InitERK8FilePathS3_PNS_11URLDatabaseERKSs
 }
 {
    bug_76354
@@ -5178,6 +5189,13 @@
    fun:_ZNSt3mapIPKN15tracked_objects6BirthsENS0_9DeathDataESt4lessIS3_ESaISt4pairIKS3_S4_EEEixERS8_
    fun:_ZN15tracked_objects10ThreadData11TallyADeathERKNS_6BirthsERKNS_8DurationES6_
    fun:_ZN15tracked_objects10ThreadData3?TallyRunOn*ThreadIfTrackingE*
+}
+{
+   bug_102327c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15tracked_objects10ThreadData11TallyABirthERKNS_8LocationE
+   fun:_ZN15tracked_objects10ThreadData19TallyABirthIfActiveERKNS_8LocationE
 }
 {
    bug_102614
