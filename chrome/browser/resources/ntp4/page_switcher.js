@@ -23,7 +23,7 @@ cr.define('ntp4', function() {
 
       el.direction_ = el.id == 'page-switcher-start' ? -1 : 1;
 
-      el.dragWrapper_ = new DragWrapper(el, el);
+      el.dragWrapper_ = new cr.ui.DragWrapper(el, el);
     },
 
     /**

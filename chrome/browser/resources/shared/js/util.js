@@ -120,6 +120,44 @@ function disableTextSelectAndDrag() {
   }
 }
 
+/**
+ * Check the directionality of the page.
+ * @return {boolean} True if Chrome is running an RTL UI.
+ */
+function isRTL() {
+  return document.documentElement.dir == 'rtl';
+}
+
+/**
+ * Simple common assertion API
+ * @param {*} condition The condition to test.  Note that this may be used to
+ *     test whether a value is defined or not, and we don't want to force a
+ *     cast to Boolean.
+ * @param {string=} opt_message A message to use in any error.
+ */
+function assert(condition, opt_message) {
+  'use strict';
+  if (!condition) {
+    var msg = 'Assertion failed';
+    if (opt_message)
+      msg = msg + ': ' + opt_message;
+    throw new Error(msg);
+  }
+}
+
+/**
+ * Get an element that's known to exist by its ID. We use this instead of just
+ * calling getElementById and not checking the result because this lets us
+ * satisfy the JSCompiler type system.
+ * @param {string} id The identifier name.
+ * @return {!Element} the Element.
+ */
+function getRequiredElement(id) {
+  var element = $(id);
+  assert(element, 'Missing required element: ' + id);
+  return element;
+}
+
 // Handle click on a link. If the link points to a chrome: or file: url, then
 // call into the browser to do the navigation.
 document.addEventListener('click', function(e) {

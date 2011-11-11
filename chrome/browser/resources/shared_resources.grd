@@ -66,6 +66,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/js/cr/ui.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_ARRAY_DATA_MODEL"
                file="shared/js/cr/ui/array_data_model.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_CARD_SLIDER"
+               file="shared/js/cr/ui/card_slider.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_COMMAND"
                file="shared/js/cr/ui/command.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_CONTEXT_MENU_BUTTON"
@@ -74,6 +76,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/js/cr/ui/context_menu_handler.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_DIALOGS"
                file="shared/js/cr/ui/dialogs.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_DRAG_WRAPPER"
+               file="shared/js/cr/ui/drag_wrapper.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_FOCUS_OUTLINE_MANAGER"
                file="shared/js/cr/ui/focus_outline_manager.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_LIST"
@@ -116,6 +120,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/js/cr/ui/tabs.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_TREE"
                file="shared/js/cr/ui/tree.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_TOUCH_HANDLER"
+               file="shared/js/cr/ui/touch_handler.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_EVENT_TRACKER"
                file="shared/js/event_tracker.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_I18N_PROCESS"

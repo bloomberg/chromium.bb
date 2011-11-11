@@ -1,0 +1,90 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
+<head>
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../ntp4/apps_page.css">
+<link rel="stylesheet" href="../../ntp4/nav_dot.css">
+<link rel="stylesheet" href="../../ntp4/tile_page.css">
+<link rel="stylesheet" href="app_list.css">
+
+<!-- It's important that this be the first script loaded. -->
+<script src="../../ntp4/logging.js"></script>
+
+<script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://resources/js/cr/event_target.js"></script>
+<script src="chrome://resources/js/cr/ui.js"></script>
+<script src="chrome://resources/js/cr/ui/card_slider.js"></script>
+<script src="chrome://resources/js/cr/ui/drag_wrapper.js"></script>
+<script src="chrome://resources/js/cr/ui/touch_handler.js"></script>
+<script src="chrome://resources/js/event_tracker.js"></script>
+<script src="chrome://resources/js/local_strings.js"></script>
+<script src="chrome://resources/js/util.js"></script>
+
+<script src="../../ntp4/tile_page.js"></script>
+<script src="../../ntp4/apps_page.js"></script>
+<script src="../../ntp4/dot_list.js"></script>
+<script src="../../ntp4/page_list_view.js"></script>
+<script src="../../ntp4/nav_dot.js"></script>
+<script src="../../ntp4/trash.js"></script>
+
+<script src="app_list.js"></script>
+<script src="apps_view.js"></script>
+</head>
+
+<body>
+  <div id="launcher-search-container">
+    <input id="launcher-search" type="text"
+        i18n-values="placeholder:search-box-hint">
+  </div>
+
+  <div id="card-slider-frame">
+    <div id="page-list"></div>
+  </div>
+
+</body>
+
+<!-- Invisible yet maybe needed in the future elements -->
+<div id="invisible" hidden>
+  <div id="footer">
+    <div id="footer-border"></div>
+    <div id="footer-content">
+      <ul id="dot-list">
+      </ul>
+      <div id="trash">
+        <span i18n-content="appuninstall"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Apps promo. -->
+<div id="apps-promo-extras-template" class="apps-promo-extras" hidden>
+  <h3 class="apps-promo-heading"></h3>
+  <a class="apps-promo-link g-button-basic"><a/>
+</div>
+
+<!-- App Contents w/ Large Icon -->
+<div id="app-large-icon-template" class="app-contents" hidden>
+  <div class="app-img-container">
+    <img class="invisible">
+  </div>
+  <span class="title"></span>
+</div>
+
+<!-- App Contents w/ Small Icon -->
+<div id="app-small-icon-template" class="app-contents" hidden>
+  <div class="app-icon-div">
+    <div class="app-img-container">
+      <img class="invisible">
+    </div>
+    <div class="color-stripe"></div>
+  </div>
+  <span class="title"></span>
+</div>
+
+<script src="chrome://app-list/strings.js"></script>
+<script src="chrome://resources/js/i18n_template.js"></script>
+<script src="chrome://resources/js/i18n_process.js"></script>
+
+</html>

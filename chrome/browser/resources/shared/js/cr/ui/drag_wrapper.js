@@ -7,7 +7,7 @@
  * A class for simplifying HTML5 drag and drop. Classes should use this to
  * handle the nitty gritty of nested drag enters and leaves.
  */
-var DragWrapper = (function() {
+cr.define('cr.ui', function() {
   /**
    * Creates a DragWrapper which listens for drag target events on |target| and
    * delegates event handling to |handler|. The |handler| must implement:
@@ -112,5 +112,7 @@ var DragWrapper = (function() {
     },
   };
 
-  return DragWrapper;
-})();
+  return {
+    DragWrapper: DragWrapper
+  };
+});

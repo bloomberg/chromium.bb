@@ -79,6 +79,9 @@ class ChromeURLContentSecurityPolicyExceptionSet
     insert(chrome::kChromeUIHttpAuthHost);
     insert(chrome::kChromeUIRepostFormWarningHost);
 #endif
+#if defined(USE_AURA)
+    insert(chrome::kChromeUIAppListHost);
+#endif
   }
 };
 

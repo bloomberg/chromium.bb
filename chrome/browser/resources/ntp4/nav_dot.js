@@ -55,7 +55,7 @@ cr.define('ntp4', function() {
       this.addEventListener('keydown', this.onKeyDown_);
       this.addEventListener('click', this.onClick_);
       this.addEventListener('dblclick', this.onDoubleClick_);
-      this.dragWrapper_ = new DragWrapper(this, this);
+      this.dragWrapper_ = new cr.ui.DragWrapper(this, this);
       this.addEventListener('webkitTransitionEnd', this.onTransitionEnd_);
 
       this.input_.addEventListener('blur', this.onInputBlur_.bind(this));

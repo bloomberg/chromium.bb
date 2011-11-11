@@ -21,10 +21,9 @@
  * very good. It should also work well with a mouse.
  */
 
-
 // Use an anonymous function to enable strict mode just for this file (which
 // will be concatenated with other files when embedded in Chrome
-var CardSlider = (function() {
+cr.define('cr.ui', function() {
   'use strict';
 
   /**
@@ -68,11 +67,10 @@ var CardSlider = (function() {
     this.cardWidth_ = cardWidth;
 
     /**
-     * @type {!TouchHandler}
+     * @type {!cr.ui.TouchHandler}
      * @private
      */
-    this.touchHandler_ = new TouchHandler(this.container_);
-
+    this.touchHandler_ = new cr.ui.TouchHandler(this.container_);
   }
 
   /**
@@ -135,6 +133,7 @@ var CardSlider = (function() {
                                    this.onMouseWheel_.bind(this));
 
       if (document.documentElement.getAttribute('touchui')) {
+        var TouchHandler = cr.ui.TouchHandler;
         this.container_.addEventListener(TouchHandler.EventType.TOUCH_START,
                                          this.onTouchStart_.bind(this));
         this.container_.addEventListener(TouchHandler.EventType.DRAG_START,
@@ -253,7 +252,7 @@ var CardSlider = (function() {
         this.mouseWheelScrollAmount_ += e.wheelDeltaX;
         if (Math.abs(this.mouseWheelScrollAmount_) >= 600) {
           var pagesToScroll = this.mouseWheelScrollAmount_ > 0 ? 1 : -1;
-          if (!ntp4.isRTL())
+          if (!isRTL())
             pagesToScroll *= -1;
           var newCardIndex = this.currentCard + pagesToScroll;
           newCardIndex = Math.min(this.cards_.length - 1,
@@ -264,7 +263,7 @@ var CardSlider = (function() {
       } else {
         // For discrete devices, consider each wheel tick a page change.
         var pagesToScroll = e.wheelDeltaX / DISCRETE_DELTA;
-        if (!ntp4.isRTL())
+        if (!isRTL())
           pagesToScroll *= -1;
         var newCardIndex = this.currentCard + pagesToScroll;
         newCardIndex = Math.min(this.cards_.length - 1,
@@ -352,8 +351,8 @@ var CardSlider = (function() {
      */
     transformToCurrentCard_: function(opt_animate) {
       this.currentLeft_ = -this.cardWidth_ *
-          (ntp4.isRTL() ? this.cards_.length - this.currentCard - 1 :
-                          this.currentCard);
+          (isRTL() ? this.cards_.length - this.currentCard - 1 :
+                     this.currentCard);
 
       // Animate to the current card, which will either transition if the
       // current card is new, or reset the existing card if we didn't drag
@@ -385,7 +384,7 @@ var CardSlider = (function() {
     /**
      * Clear any transition that is in progress and enable dragging for the
      * touch.
-     * @param {!TouchHandler.Event} e The TouchHandler event.
+     * @param {!cr.ui.TouchHandler.Event} e The TouchHandler event.
      * @private
      */
     onTouchStart_: function(e) {
@@ -396,7 +395,7 @@ var CardSlider = (function() {
     /**
      * Tell the TouchHandler that dragging is acceptable when the user begins by
      * scrolling horizontally.
-     * @param {!TouchHandler.Event} e The TouchHandler event.
+     * @param {!cr.ui.TouchHandler.Event} e The TouchHandler event.
      * @private
      */
     onDragStart_: function(e) {
@@ -406,7 +405,7 @@ var CardSlider = (function() {
     /**
      * On each drag move event reposition the container appropriately so the
      * cards look like they are sliding.
-     * @param {!TouchHandler.Event} e The TouchHandler event.
+     * @param {!cr.ui.TouchHandler.Event} e The TouchHandler event.
      * @private
      */
     onDragMove_: function(e) {
@@ -423,7 +422,7 @@ var CardSlider = (function() {
     /**
      * On drag end events we may want to transition to another card, depending
      * on the ending position of the drag and the velocity of the drag.
-     * @param {!TouchHandler.Event} e The TouchHandler event.
+     * @param {!cr.ui.TouchHandler.Event} e The TouchHandler event.
      * @private
      */
     onDragEnd_: function(e) {
@@ -455,5 +454,7 @@ var CardSlider = (function() {
     },
   };
 
-  return CardSlider;
-})();
+  return {
+    CardSlider: CardSlider
+  };
+});

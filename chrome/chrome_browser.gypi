@@ -3618,6 +3618,8 @@
         'browser/ui/web_applications/web_app_ui.h',
         'browser/ui/webui/active_downloads_ui.cc',
         'browser/ui/webui/active_downloads_ui.h',
+        'browser/ui/webui/aura/app_list_ui.cc',
+        'browser/ui/webui/aura/app_list_ui.h',
         'browser/ui/webui/bookmarks_ui.cc',
         'browser/ui/webui/bookmarks_ui.h',
         'browser/ui/webui/bug_report_ui.cc',

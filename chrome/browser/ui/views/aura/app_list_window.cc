@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "views/widget/widget.h"
@@ -91,7 +92,7 @@ void AppListWindow::Init() {
 
   contents_ = new DOMView();
   contents_->Init(ProfileManager::GetDefaultProfile(), NULL);
-  contents_->LoadURL(GURL("chrome://newtab#applist"));
+  contents_->LoadURL(GURL(chrome::kChromeUIAppListURL));
 
   // Use a background with transparency to trigger transparent webkit.
   SkBitmap background;

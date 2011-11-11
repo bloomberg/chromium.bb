@@ -31,7 +31,7 @@
 
 // Use an anonymous function to enable strict mode just for this file (which
 // will be concatenated with other files when embedded in Chrome)
-var TouchHandler = (function() {
+cr.define('cr.ui', function() {
   'use strict';
 
   /**
@@ -126,7 +126,7 @@ var TouchHandler = (function() {
   /**
    * The type of event sent by TouchHandler
    * @constructor
-   * @param {string} type The type of event (one of Grabber.EventType).
+   * @param {string} type The type of event (one of cr.ui.Grabber.EventType).
    * @param {boolean} bubbles Whether or not the event should bubble.
    * @param {number} clientX The X location of the touch.
    * @param {number} clientY The Y location of the touch.
@@ -846,5 +846,7 @@ var TouchHandler = (function() {
     }
   };
 
-  return TouchHandler;
-})();
+  return {
+    TouchHandler: TouchHandler
+  };
+});

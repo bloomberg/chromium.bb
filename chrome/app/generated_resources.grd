@@ -14598,6 +14598,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_TRACING_TITLE" desc="Title for the about:tracing page.">
       Tracing
     </message>
+
+    <!-- Aura strings -->
+    <if expr="pp_ifdef('use_aura')">
+      <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
+        Search apps and more
+      </message>
+    </if>
+
     </messages>
     <structures fallback_to_english="true">
       <!-- Make sure these stay in sync with the structures in generated_resources.grd. -->

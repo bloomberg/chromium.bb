@@ -75,6 +75,10 @@
 #include "chrome/browser/ui/webui/certificate_viewer_ui.h"
 #endif
 
+#if defined(USE_AURA)
+#include "chrome/browser/ui/webui/aura/app_list_ui.h"
+#endif
+
 namespace {
 
 // A function for creating a new WebUI. The caller owns the return value, which
@@ -241,6 +245,11 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
       url.host() == chrome::kChromeUIRepostFormWarningHost) {
     return &NewWebUI<ConstrainedHtmlUI>;
   }
+#endif
+
+#if defined(USE_AURA)
+  if (url.host() == chrome::kChromeUIAppListHost)
+    return &NewWebUI<AppListUI>;
 #endif
 
   if (url.host() == chrome::kChromeUIPrintHost &&

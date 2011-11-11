@@ -125,7 +125,7 @@ cr.define('ntp4', function() {
 
       this.classList.add('dragging');
       // offsetLeft is mirrored in RTL. Un-mirror it.
-      var offsetLeft = ntp4.isRTL() ?
+      var offsetLeft = isRTL() ?
           this.parentNode.clientWidth - this.offsetLeft :
           this.offsetLeft;
       this.dragOffsetX = e.x - offsetLeft - this.parentNode.offsetLeft;
@@ -232,7 +232,7 @@ cr.define('ntp4', function() {
       this.appendChild(clone);
       this.doppleganger_ = clone;
 
-      if (ntp4.isRTL())
+      if (isRTL())
         x *= -1;
 
       this.doppleganger_.style.WebkitTransform = 'translate(' + x + 'px, ' +
@@ -446,7 +446,7 @@ cr.define('ntp4', function() {
       this.addEventListener('mousewheel', this.onMouseWheel_);
       this.content_.addEventListener('scroll', this.onScroll_.bind(this));
 
-      this.dragWrapper_ = new DragWrapper(this.tileGrid_, this);
+      this.dragWrapper_ = new cr.ui.DragWrapper(this.tileGrid_, this);
 
       this.addEventListener('cardselected', this.handleCardSelection_);
       this.addEventListener('carddeselected', this.handleCardDeselection_);
@@ -828,7 +828,7 @@ cr.define('ntp4', function() {
       if (col < 0 || col >= layout.numRowTiles)
         return -1;
 
-      if (ntp4.isRTL())
+      if (isRTL())
         col = layout.numRowTiles - 1 - col;
 
       var row = Math.floor((y - gridClientRect.top) / layout.rowHeight);
