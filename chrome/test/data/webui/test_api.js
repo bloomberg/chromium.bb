@@ -13,6 +13,11 @@
 var testing = {};
 (function(exports) {
   /**
+   * Holds the original version of the |chrome| object.
+   */
+  var originalChrome = null;
+
+  /**
    * Hold the currentTestCase across between preLoad and run.
    * @type {TestCase}
    */
@@ -338,8 +343,11 @@ var testing = {};
    * @param {Mock4JS.Mock} mockObject The mock to register callbacks against.
    * @param {function(new:Object)} mockClAss Constructor for the mocked class.
    * @see registerMessageCallback
+   * @see overrideChrome
    */
   function registerMockMessageCallbacks(mockObject, mockClass) {
+    if (!deferGlobalOverrides && !originalChrome)
+      overrideChrome();
     var mockProxy = mockObject.proxy();
     for (var func in mockClass.prototype) {
       if (typeof mockClass.prototype[func] === 'function') {
@@ -556,7 +564,11 @@ var testing = {};
         try {
           currentTestCase.tearDown();
         } catch (e) {
+          // Caught an exception in tearDown; Register the error and recreate
+          // the result if it is passed in.
           errors.push(e);
+          if (result)
+            result = [false, errorsToMessage([e], result[1])];
         }
         currentTestCase = null;
       }
@@ -568,6 +580,26 @@ var testing = {};
   }
 
   /**
+   * Converts each Error in |errors| to a suitable message, adding them to
+   * |message|, and returns the message string.
+   * @param {Array.<Error>} errors Array of errors to add to |message|.
+   * @param {string?} message When supplied, error messages are appended to it.
+   * @return {string} |message| + messages of all |errors|.
+   */
+  function errorsToMessage(errors, message) {
+    for (var i = 0; i < errors.length; ++i) {
+      var errorMessage = errors[i].stack || errors[i].message;
+      if (message)
+        message += '\n';
+
+      message += 'Failed: ' + currentTestFunction + '(' +
+          currentTestArguments.map(JSON.stringify) +
+          ')\n' + errorMessage;
+    }
+    return message;
+  }
+
+  /**
    * Returns [success, message] & clears |errors|.
    * @param {boolean} errorsOk When true, errors are ok.
    * @return {Array.<boolean, string>}
@@ -575,13 +607,7 @@ var testing = {};
   function testResult(errorsOk) {
     var result = [true, ''];
     if (errors.length) {
-      var message = '';
-      for (var i = 0; i < errors.length; ++i) {
-        message += 'Failed: ' + currentTestFunction + '(' +
-                   currentTestArguments.map(JSON.stringify) +
-                   ')\n' + errors[i].stack;
-      }
-      result = [!!errorsOk, message];
+      result = [!!errorsOk, errorsToMessage(errors)];
     }
     return result;
   }
@@ -821,6 +847,23 @@ var testing = {};
   }
 
   /**
+   * Overrides the |chrome| object to enable mocking calls to chrome.send().
+   */
+  function overrideChrome() {
+    if (originalChrome) {
+      console.error('chrome object already overridden');
+      return;
+    }
+
+    originalChrome = chrome;
+    chrome = {
+      __proto__: originalChrome,
+      send: send,
+      originalSend: originalChrome.send.bind(originalChrome),
+    };
+  }
+
+  /**
    * Used by WebUIBrowserTest to preload the javascript libraries at the
    * appropriate time for javascript injection into the current page. This
    * creates a test case and calls its preLoad for any early initialization such
@@ -835,12 +878,8 @@ var testing = {};
   function preloadJavascriptLibraries(testFixture, testName) {
     deferGlobalOverrides = true;
 
-    exports.addEventListener('DOMContentLoaded', function() {
-      var oldChrome = chrome;
-      chrome = {
-        __proto__: oldChrome,
-        send: send,
-      };
+    window.addEventListener('DOMContentLoaded', function() {
+      overrideChrome();
 
       // Override globals at load time so they will be defined.
       assertTrue(deferGlobalOverrides);
