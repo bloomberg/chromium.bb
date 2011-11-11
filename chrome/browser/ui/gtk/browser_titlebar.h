@@ -49,6 +49,9 @@ class BrowserTitlebar : public content::NotificationObserver,
   // Builds the buttons based on the metacity |button_string|.
   void BuildButtons(const std::string& button_string);
 
+  // Updates the theme supplied background color and image.
+  void UpdateButtonBackground(CustomDrawButton* button);
+
   // Update the appearance of the title bar based on whether we're showing a
   // custom frame or not.  If |use_custom_frame| is true, we show an extra
   // tall titlebar and the min/max/close buttons.
@@ -171,7 +174,7 @@ class BrowserTitlebar : public content::NotificationObserver,
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Overriden from ActiveWindowWatcher::Observer.
   virtual void ActiveWindowChanged(GdkWindow* active_window);

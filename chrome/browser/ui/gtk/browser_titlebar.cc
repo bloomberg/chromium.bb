@@ -401,15 +401,14 @@ void BrowserTitlebar::Init() {
     gtk_box_pack_start(GTK_BOX(app_mode_hbox), app_mode_title_, TRUE, TRUE,
                        0);
 
-    // Register with the theme provider to set the |app_mode_title_| label
-    // color.
-    theme_service_ = GtkThemeService::GetFrom(
-        browser_window_->browser()->profile());
-    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                   content::Source<ThemeService>(theme_service_));
-    theme_service_->InitThemesFor(this);
     UpdateTitleAndIcon();
   }
+
+  theme_service_ = GtkThemeService::GetFrom(
+      browser_window_->browser()->profile());
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+                 content::Source<ThemeService>(theme_service_));
+  theme_service_->InitThemesFor(this);
 
   gtk_widget_show_all(container_);
 
@@ -548,6 +547,26 @@ CustomDrawButton* BrowserTitlebar::BuildTitlebarButton(int image,
   else
     gtk_box_pack_end(GTK_BOX(box), button->widget(), FALSE, FALSE, 0);
   return button;
+}
+
+void BrowserTitlebar::UpdateButtonBackground(CustomDrawButton* button) {
+  SkColor color = theme_service_->GetColor(
+      ThemeService::COLOR_BUTTON_BACKGROUND);
+  SkBitmap* background =
+      theme_service_->GetBitmapNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND);
+
+  // TODO(erg): For now, we just use a completely black mask and we can get
+  // away with this in the short term because our buttons are rectangles. We
+  // should get Glen to make properly hinted masks that match our min/max/close
+  // buttons (which have some odd alpha blending around the
+  // edges). http://crbug.com/103661
+  SkBitmap mask;
+  mask.setConfig(SkBitmap::kARGB_8888_Config,
+                 button->SurfaceWidth(), button->SurfaceHeight(), 0);
+  mask.allocPixels();
+  mask.eraseColor(SK_ColorBLACK);
+
+  button->SetBackground(color, background, &mask);
 }
 
 void BrowserTitlebar::UpdateCustomFrame(bool use_custom_frame) {
@@ -994,9 +1013,19 @@ void BrowserTitlebar::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
+    case chrome::NOTIFICATION_BROWSER_THEME_CHANGED: {
       UpdateTextColor();
+
+      if (minimize_button_.get())
+        UpdateButtonBackground(minimize_button_.get());
+      if (maximize_button_.get())
+        UpdateButtonBackground(maximize_button_.get());
+      if (restore_button_.get())
+        UpdateButtonBackground(restore_button_.get());
+      if (close_button_.get())
+        UpdateButtonBackground(close_button_.get());
       break;
+    }
 
     case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
       UpdateAvatar();

@@ -18,6 +18,8 @@
 #include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/rect.h"
@@ -30,6 +32,7 @@ class GtkThemeService;
 class TabStripGtk : public TabStripModelObserver,
                     public TabGtk::TabDelegate,
                     public MessageLoopForUI::Observer,
+                    public content::NotificationObserver,
                     public TabstripOriginProvider,
                     public ViewIDUtil::Delegate {
  public:
@@ -151,8 +154,13 @@ class TabStripGtk : public TabStripModelObserver,
   virtual TabStripMenuController* GetTabStripMenuControllerForTab(TabGtk* tab);
 
   // MessageLoop::Observer implementation:
-  virtual void WillProcessEvent(GdkEvent* event);
-  virtual void DidProcessEvent(GdkEvent* event);
+  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
+  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
+
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Horizontal gap between mini-tabs and normal tabs.
   static const int mini_to_non_mini_gap_;
@@ -276,6 +284,9 @@ class TabStripGtk : public TabStripModelObserver,
 
   // Initializes the new tab button.
   CustomDrawButton* MakeNewTabButton();
+
+  // Sets the theme specific background on the new tab button.
+  void SetNewTabButtonBackground();
 
   // Gets the number of Tabs in the collection.
   int GetTabCount() const;
@@ -477,6 +488,8 @@ class TabStripGtk : public TabStripModelObserver,
 
   // Helper for performing tab selection as a result of dragging over a tab.
   HoverTabSelector hover_tab_selector_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStripGtk);
 };

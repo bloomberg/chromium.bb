@@ -753,8 +753,6 @@ void GtkThemeService::LoadGtkValues() {
   GtkStyle* window_style = gtk_rc_get_style(fake_window_);
   SetThemeColorFromGtk(ThemeService::COLOR_CONTROL_BACKGROUND,
                        &window_style->bg[GTK_STATE_NORMAL]);
-  SetThemeColorFromGtk(ThemeService::COLOR_BUTTON_BACKGROUND,
-                       &window_style->bg[GTK_STATE_NORMAL]);
 
   GdkColor toolbar_color = window_style->bg[GTK_STATE_NORMAL];
   SetThemeColorFromGtk(ThemeService::COLOR_TOOLBAR, &toolbar_color);

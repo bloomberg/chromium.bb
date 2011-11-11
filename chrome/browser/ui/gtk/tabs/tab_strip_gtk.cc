@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/gtk/tabs/dragged_tab_controller_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_menu_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
@@ -778,6 +779,10 @@ void TabStripGtk::Init() {
     drop_indicator_height = gdk_pixbuf_get_height(drop_image);
   }
 
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+                 content::Source<ThemeService>(theme_service_));
+  theme_service_->InitThemesFor(this);
+
   ViewIDUtil::SetDelegateForWidget(widget(), this);
 }
 
@@ -1300,6 +1305,16 @@ void TabStripGtk::DidProcessEvent(GdkEvent* event) {
     default:
       break;
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// TabStripGtk, content::NotificationObserver implementation:
+
+void TabStripGtk::Observe(int type,
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
+  SetNewTabButtonBackground();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2200,4 +2215,13 @@ CustomDrawButton* TabStripGtk::MakeNewTabButton() {
   gtk_fixed_put(GTK_FIXED(tabstrip_.get()), button->widget(), 0, 0);
 
   return button;
+}
+
+void TabStripGtk::SetNewTabButtonBackground() {
+  SkColor color = theme_service_->GetColor(
+      ThemeService::COLOR_BUTTON_BACKGROUND);
+  SkBitmap* background = theme_service_->GetBitmapNamed(
+      IDR_THEME_WINDOW_CONTROL_BACKGROUND);
+  SkBitmap* mask = theme_service_->GetBitmapNamed(IDR_NEWTAB_BUTTON_MASK);
+  newtab_button_->SetBackground(color, background, mask);
 }
