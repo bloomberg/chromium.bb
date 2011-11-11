@@ -119,10 +119,12 @@ html[dir=rtl] .most-visited .close-button {
                                       rgba(255, 255, 255, 0.9));
 }
 
+.most-visited:focus .thumbnail,
 .most-visited:hover .thumbnail {
   opacity: 0.95;
 }
 
+.most-visited:focus .thumbnail-shield,
 .most-visited:hover .thumbnail-shield,
 .most-visited:active .thumbnail-shield {
   background: -webkit-linear-gradient(rgba(255, 255, 255, 0),
