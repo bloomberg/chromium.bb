@@ -1,7 +1,4 @@
 include_rules = [
-  # This is currently required for the shared component build.
-  # TODO(dpranke): Remove when no longer needed (bug: 103896).
-  "+content/common/content_export.h",
   "+gpu",
   "+media",
   "+skia/ext",
