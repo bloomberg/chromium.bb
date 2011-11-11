@@ -1931,6 +1931,7 @@
         'common/time_format_unittest.cc',
         'common/web_apps_unittest.cc',
         'common/worker_thread_ticker_unittest.cc',
+        'common/zip_reader_unittest.cc',
         'common/zip_unittest.cc',
         'renderer/extensions/chrome_v8_context_set_unittest.cc',
         'renderer/extensions/extension_api_json_validity_unittest.cc',

@@ -235,6 +235,8 @@
         'common/zip.h',
         'common/zip_internal.cc',
         'common/zip_internal.h',
+        'common/zip_reader.cc',
+        'common/zip_reader.h',
       ],
       'conditions': [
         ['OS=="win"', {

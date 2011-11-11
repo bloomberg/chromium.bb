@@ -113,10 +113,13 @@ TEST_F(ZipTest, UnzipEvil) {
 TEST_F(ZipTest, UnzipEvil2) {
   FilePath path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
+  // The zip file contains an evil file with invalid UTF-8 in its file
+  // name.
   path = path.AppendASCII("zip").AppendASCII("evil_via_invalid_utf8.zip");
   // See the comment at UnzipEvil() for why we do this.
   FilePath output_dir = test_dir_.AppendASCII("out");
-  ASSERT_TRUE(zip::Unzip(path, output_dir));
+  // This should fail as it contains an evil file.
+  ASSERT_FALSE(zip::Unzip(path, output_dir));
   FilePath evil_file = output_dir;
   evil_file = evil_file.AppendASCII("../evil.txt");
   ASSERT_FALSE(file_util::PathExists(evil_file));

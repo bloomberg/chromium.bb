@@ -10,92 +10,12 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "chrome/common/zip_internal.h"
+#include "chrome/common/zip_reader.h"
 #include "net/base/file_stream.h"
 #include "third_party/zlib/contrib/minizip/unzip.h"
 #include "third_party/zlib/contrib/minizip/zip.h"
 
 namespace {
-
-// Extract the 'current' selected file from the zip into dest_dir.
-// Output filename is stored in out_file.  Returns true on success.
-bool ExtractCurrentFile(unzFile zip_file,
-                        const FilePath& dest_dir) {
-  // We assume that the file names in zip files to be UTF-8. This is true
-  // for zip files created with Zip() and friends in the file.
-  char filename_in_zip_utf8[zip::internal::kZipMaxPath] = {0};
-  unz_file_info file_info;
-  int err = unzGetCurrentFileInfo(
-      zip_file, &file_info, filename_in_zip_utf8,
-      sizeof(filename_in_zip_utf8) - 1, NULL, 0, NULL, 0);
-  if (err != UNZ_OK)
-    return false;
-  if (filename_in_zip_utf8[0] == '\0')
-    return false;
-
-  err = unzOpenCurrentFile(zip_file);
-  if (err != UNZ_OK)
-    return false;
-
-  // Use of "Unsafe" function looks not good, but there is no safe way to
-  // do this on Linux anyway. See file_path.h for details.
-  FilePath file_path_in_zip = FilePath::FromUTF8Unsafe(filename_in_zip_utf8);
-
-  // Check the filename here for directory traversal issues. In the name of
-  // simplicity and security, we might reject a valid filename such as "a..b".
-  if (file_path_in_zip.value().find(FILE_PATH_LITERAL(".."))
-      != FilePath::StringType::npos)
-    return false;
-
-  FilePath dest_file = dest_dir.Append(file_path_in_zip);
-
-  // If this is a directory, just create it and return.
-  if (EndsWith(filename_in_zip_utf8, "/", false)) {
-    if (!file_util::CreateDirectory(dest_file))
-      return false;
-    return true;
-  }
-
-  // We can't rely on parent directory entries being specified in the zip, so we
-  // make sure they are created.
-  FilePath dir = dest_file.DirName();
-  if (!file_util::CreateDirectory(dir))
-    return false;
-
-  net::FileStream stream;
-  int flags = base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE;
-  if (stream.Open(dest_file, flags) != 0)
-    return false;
-
-  bool ret = true;
-  int num_bytes = 0;
-  char buf[zip::internal::kZipBufSize];
-  do {
-    num_bytes = unzReadCurrentFile(zip_file, buf, zip::internal::kZipBufSize);
-    if (num_bytes < 0) {
-      // If num_bytes < 0, then it's a specific UNZ_* error code.
-      // While we're not currently handling these codes specifically, save
-      // it away in case we want to in the future.
-      err = num_bytes;
-      break;
-    }
-    if (num_bytes > 0) {
-      if (num_bytes != stream.Write(buf, num_bytes,
-                                    net::CompletionCallback())) {
-        ret = false;
-        break;
-      }
-    }
-  } while (num_bytes > 0);
-
-  stream.Close();
-  if (err == UNZ_OK)
-    err = unzCloseCurrentFile(zip_file);
-  else
-    unzCloseCurrentFile(zip_file);  // Don't lose the original error code.
-  if (err != UNZ_OK)
-    ret = false;
-  return ret;
-}
 
 bool AddFileToZip(zipFile zip_file, const FilePath& src_dir) {
   net::FileStream stream;
@@ -170,36 +90,32 @@ bool ExcludeHiddenFilesFilter(const FilePath& file_path) {
 namespace zip {
 
 bool Unzip(const FilePath& src_file, const FilePath& dest_dir) {
-  unzFile zip_file = internal::OpenForUnzipping(src_file.AsUTF8Unsafe());
-  if (!zip_file) {
-    DLOG(WARNING) << "couldn't create file " << src_file.value();
+  ZipReader reader;
+  if (!reader.Open(src_file)) {
+    DLOG(WARNING) << "Failed to open " << src_file.value();
     return false;
   }
-  unz_global_info zip_info;
-  int err;
-  err = unzGetGlobalInfo(zip_file, &zip_info);
-  if (err != UNZ_OK) {
-    DLOG(WARNING) << "couldn't open zip " << src_file.value();
-    return false;
-  }
-  bool ret = true;
-  for (unsigned int i = 0; i < zip_info.number_entry; ++i) {
-    if (!ExtractCurrentFile(zip_file, dest_dir)) {
-      ret = false;
-      break;
+  while (reader.HasMore()) {
+    if (!reader.OpenCurrentEntryInZip()) {
+      DLOG(WARNING) << "Failed to open the current file in zip";
+      return false;
     }
-
-    if (i + 1 < zip_info.number_entry) {
-      err = unzGoToNextFile(zip_file);
-      if (err != UNZ_OK) {
-        DLOG(WARNING) << "error %d in unzGoToNextFile";
-        ret = false;
-        break;
-      }
+    if (reader.current_entry_info()->is_unsafe()) {
+      DLOG(WARNING) << "Found an unsafe file in zip "
+                    << reader.current_entry_info()->file_path().value();
+      return false;
+    }
+    if (!reader.ExtractCurrentEntryIntoDirectory(dest_dir)) {
+      DLOG(WARNING) << "Failed to extract "
+                    << reader.current_entry_info()->file_path().value();
+      return false;
+    }
+    if (!reader.AdvanceToNextEntry()) {
+      DLOG(WARNING) << "Failed to advance to the next file";
+      return false;
     }
   }
-  unzClose(zip_file);
-  return ret;
+  return true;
 }
 
 bool ZipWithFilterCallback(const FilePath& src_dir, const FilePath& dest_file,
