@@ -647,15 +647,7 @@ void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
   ProfileSyncService* service = profile->GetProfileSyncService();
   DCHECK(service);
 
-  service->get_wizard().Step(SyncSetupWizard::NONFATAL_ERROR);
-
-  // Show the Sync Setup page.
-  if (service->get_wizard().IsVisible()) {
-    service->get_wizard().Focus();
-  } else {
-    StringValue page("syncSetup");
-    web_ui_->CallJavascriptFunction("OptionsPage.navigateToPage", page);
-  }
+  service->ShowErrorUI();
 }
 
 void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {

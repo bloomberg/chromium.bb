@@ -279,7 +279,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // types to sync.
   void ShowConfigure(bool sync_everything);
 
-  void ShowSyncSetup(const std::string& sub_page);
+  virtual void ShowSyncSetup(const std::string& sub_page);
   void ShowSyncSetupWithWizard(SyncSetupWizard::State state);
 
   // Pretty-printed strings for a given StatusSummary.

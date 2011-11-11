@@ -116,6 +116,8 @@ class SyncSetupFlow {
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, EnterPassphraseRequired);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, NonFatalError);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, CrosAuthSetup);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, ShowErrorUIForPasswordTest);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, ShowErrorUIForPassphraseTest);
 
   // Use static Run method to get an instance.
   SyncSetupFlow(SyncSetupWizard::State start_state,

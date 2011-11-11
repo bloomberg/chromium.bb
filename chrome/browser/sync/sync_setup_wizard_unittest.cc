@@ -146,6 +146,18 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
     cros_user_ = kTestUser;
   }
 
+  virtual void ShowSyncSetup(const std::string& sub_page) {
+    // Do Nothing.
+  }
+
+  void ClearObservers() {
+    observers_.Clear();
+  }
+
+  SyncSetupWizard* GetWizard() {
+    return &wizard_;
+  }
+
   std::string username_;
   std::string password_;
   std::string captcha_;
@@ -155,7 +167,6 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   bool is_using_secondary_passphrase_;
   bool encrypt_everything_;
   syncable::ModelTypeSet chosen_data_types_;
-
   std::string passphrase_;
 
  private:
@@ -195,11 +206,11 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
     BrowserList::SetLastActive(browser());
     service_ = static_cast<ProfileSyncServiceForWizardTest*>(
         profile()->GetProfileSyncService());
-    wizard_.reset(new SyncSetupWizard(service_));
+    wizard_ = service_->GetWizard();
   }
 
   virtual void TearDown() {
-    wizard_.reset();
+    wizard_ = NULL;
     service_ = NULL;
     flow_ = NULL;
   }
@@ -223,7 +234,8 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
     handler_.CloseSetupUI();
   }
 
-  scoped_ptr<SyncSetupWizard> wizard_;
+  // This pointer is owned by the |Service_|.
+  SyncSetupWizard* wizard_;
   ProfileSyncServiceForWizardTest* service_;
   SyncSetupFlow* flow_;
   MockSyncSetupHandler handler_;
@@ -335,6 +347,44 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
   EXPECT_EQ(0U, service_->chosen_data_types_.count(syncable::SEARCH_ENGINES));
   EXPECT_EQ(0U, service_->chosen_data_types_.count(
       syncable::APP_NOTIFICATIONS));
+}
+
+TEST_F(SyncSetupWizardTest, ShowErrorUIForPasswordTest) {
+  service_->ClearObservers();
+  CompleteSetup();
+
+  // Simulate an auth error and make sure the start and end state are set
+  // right.
+  service_->set_last_auth_error(
+      AuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+  service_->ShowErrorUI();
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::GAIA_SUCCESS, flow_->end_state_);
+  ASSERT_TRUE(wizard_->IsVisible());
+
+  // Make sure the wizard is dismissed.
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  ASSERT_FALSE(wizard_->IsVisible());
+}
+
+TEST_F(SyncSetupWizardTest, ShowErrorUIForPassphraseTest) {
+  service_->ClearObservers();
+  CompleteSetup();
+
+  // Simulate a passphrase error and make sure the start and end state are set
+  // right and wizard is shown.
+  service_->set_passphrase_required_reason(sync_api::REASON_ENCRYPTION);
+  service_->set_is_using_secondary_passphrase(true);
+  service_->ShowErrorUI();
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+  ASSERT_TRUE(wizard_->IsVisible());
+
+  // Make sure the wizard is dismissed.
+  wizard_->Step(SyncSetupWizard::DONE);
+  ASSERT_FALSE(wizard_->IsVisible());
 }
 
 TEST_F(SyncSetupWizardTest, EnterPassphraseRequired) {
