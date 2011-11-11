@@ -58,6 +58,8 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
                                const gfx::Rect& bounds);
   Panel* CreatePanel(const std::string& panel_name);
 
+  void WaitForPanelAdded(Panel* panel);
+  void WaitForPanelRemoved(Panel* panel);
   void WaitForPanelActiveState(Panel* panel, ActiveState state);
   void WaitForWindowSizeAvailable(Panel* panel);
   void WaitForBoundsAnimationFinished(Panel* panel);
@@ -69,6 +71,9 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
                                            const DictionaryValue& extra_value);
 
   gfx::Rect testing_work_area() const { return testing_work_area_; }
+  void set_testing_work_area(const gfx::Rect& work_area) {
+    testing_work_area_ = work_area;
+  }
 
   MockAutoHidingDesktopBar* mock_auto_hiding_desktop_bar() const {
     return mock_auto_hiding_desktop_bar_.get();

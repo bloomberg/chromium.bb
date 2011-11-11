@@ -16,6 +16,8 @@
 #include "base/message_loop.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_collection_base.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
@@ -32,7 +34,8 @@
 // shown on the screen.  It positions new notifications according to
 // a layout, and monitors for balloons being closed, which it reports
 // up to its parent, the notification UI manager.
-class BalloonCollectionImpl : public BalloonCollection
+class BalloonCollectionImpl : public BalloonCollection,
+                              public content::NotificationObserver
 #if USE_OFFSETS
                             , public MessageLoopForUI::Observer
 #endif
@@ -53,6 +56,11 @@ class BalloonCollectionImpl : public BalloonCollection
   virtual void DisplayChanged();
   virtual void OnBalloonClosed(Balloon* source);
   virtual const Balloons& GetActiveBalloons();
+
+  // content::NotificationObserver interface.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // MessageLoopForUI::Observer interface.
 #if defined(OS_WIN) || defined(TOUCH_UI) || defined(USE_AURA)
@@ -127,11 +135,18 @@ class BalloonCollectionImpl : public BalloonCollection
     // buttons under the cursor during rapid-close interaction.
     bool RequiresOffsets() const;
 
+    // Returns true if there is change to the offset that requires the balloons
+    // to be repositioned.
+    bool ComputeOffsetToMoveAbovePanels(const gfx::Rect& panel_bounds);
+
    private:
     // Layout parameters
     int VerticalEdgeMargin() const;
     int HorizontalEdgeMargin() const;
     int InterBalloonMargin() const;
+
+    bool NeedToMoveAboveLeftSidePanels() const;
+    bool NeedToMoveAboveRightSidePanels() const;
 
     // Minimum and maximum size of balloon content.
     static const int kBalloonMinWidth = 300;
@@ -141,6 +156,12 @@ class BalloonCollectionImpl : public BalloonCollection
 
     Placement placement_;
     gfx::Rect work_area_;
+
+    // The offset that guarantees that the notificaitions shown in the
+    // lower-right or lower-left corner of the screen will go above currently
+    // shown panels and will not be obscured by them.
+    int offset_to_move_above_panels_;
+
     DISALLOW_COPY_AND_ASSIGN(Layout);
   };
 
@@ -170,6 +191,8 @@ class BalloonCollectionImpl : public BalloonCollection
 
   // The layout parameters for balloons in this collection.
   Layout layout_;
+
+  content::NotificationRegistrar registrar_;
 
 #if USE_OFFSETS
   // Start and stop observing all UI events.

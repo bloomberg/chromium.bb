@@ -148,6 +148,11 @@ void MockAutoHidingDesktopBarImpl::NotifyThicknessChange() {
   observer_->OnAutoHidingDesktopBarThicknessChanged();
 }
 
+bool ExistsPanel(Panel* panel) {
+  const PanelManager::Panels& panels = PanelManager::GetInstance()->panels();
+  return find(panels.begin(), panels.end(), panel) != panels.end();
+}
+
 }  // namespace
 
 BasePanelBrowserTest::BasePanelBrowserTest()
@@ -175,12 +180,35 @@ void BasePanelBrowserTest::SetUpOnMainThread() {
   mock_auto_hiding_desktop_bar_ = new MockAutoHidingDesktopBarImpl(
       panel_manager);
   panel_manager->set_auto_hiding_desktop_bar(mock_auto_hiding_desktop_bar_);
-  panel_manager->SetWorkAreaForTesting(testing_work_area_);
+  // Do not use the testing work area if it is empty since we're going to
+  // use the actual work area in some testing scenarios.
+  if (!testing_work_area_.IsEmpty())
+    panel_manager->SetWorkAreaForTesting(testing_work_area_);
   panel_manager->enable_auto_sizing(false);
   panel_manager->remove_delays_for_testing();
   // This is needed so the subsequently created panels can be activated.
   // On a Mac, it transforms background-only test process into foreground one.
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+}
+
+void BasePanelBrowserTest::WaitForPanelAdded(Panel* panel) {
+  if (ExistsPanel(panel))
+    return;
+  ui_test_utils::WindowedNotificationObserver signal(
+      chrome::NOTIFICATION_PANEL_ADDED,
+      content::Source<Panel>(panel));
+  signal.Wait();
+  EXPECT_TRUE(ExistsPanel(panel));
+}
+
+void BasePanelBrowserTest::WaitForPanelRemoved(Panel* panel) {
+  if (!ExistsPanel(panel))
+    return;
+  ui_test_utils::WindowedNotificationObserver signal(
+      chrome::NOTIFICATION_PANEL_REMOVED,
+      content::Source<Panel>(panel));
+  signal.Wait();
+  EXPECT_FALSE(ExistsPanel(panel));
 }
 
 void BasePanelBrowserTest::WaitForPanelActiveState(

@@ -4,9 +4,16 @@
 
 #include "base/bind.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/net/url_request_mock_util.h"
+#include "chrome/browser/notifications/balloon_collection_impl.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -26,9 +33,11 @@
 #include "content/browser/download/download_manager.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/desktop_notification_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/screen.h"
 
 using content::BrowserThread;
 
@@ -1564,4 +1573,165 @@ IN_PROC_BROWSER_TEST_F(PanelDownloadTest, DownloadNoTabbedBrowser) {
   ASSERT_FALSE(panel_browser->window()->IsDownloadShelfVisible());
 
   panel_browser->CloseWindow();
+}
+
+class PanelAndNotificationTest : public PanelBrowserTest {
+ public:
+  PanelAndNotificationTest() : PanelBrowserTest() {
+    // Do not use our own testing work area since desktop notification code
+    // does not have the hook up for testing work area.
+    set_testing_work_area(gfx::Rect());
+  }
+
+  virtual ~PanelAndNotificationTest() {
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    g_browser_process->local_state()->SetInteger(
+        prefs::kDesktopNotificationPosition, BalloonCollection::LOWER_RIGHT);
+    balloons_ = new BalloonCollectionImpl();
+    ui_manager_.reset(NotificationUIManager::Create(
+        g_browser_process->local_state(), balloons_));
+    service_.reset(new DesktopNotificationService(browser()->profile(),
+                   ui_manager_.get()));
+
+    PanelBrowserTest::SetUpOnMainThread();
+  }
+
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    balloons_->RemoveAll();
+    MessageLoopForUI::current()->RunAllPending();
+
+    service_.reset();
+    ui_manager_.reset();
+
+    PanelBrowserTest::CleanUpOnMainThread();
+  }
+
+  DesktopNotificationHostMsg_Show_Params StandardTestNotification() {
+    DesktopNotificationHostMsg_Show_Params params;
+    params.notification_id = 0;
+    params.origin = GURL("http://www.google.com");
+    params.is_html = false;
+    params.icon_url = GURL("/icon.png");
+    params.title = ASCIIToUTF16("Title");
+    params.body = ASCIIToUTF16("Text");
+    params.direction = WebKit::WebTextDirectionDefault;
+    return params;
+  }
+
+  int GetBalloonBottomPosition(Balloon* balloon) const {
+#if defined(OS_MACOSX)
+    // The position returned by the notification balloon is based on Mac's
+    // vertically inverted orientation. We need to flip it so that it can
+    // be compared against the position returned by the panel.
+    gfx::Size screen_size = gfx::Screen::GetPrimaryMonitorSize();
+    return screen_size.height() - balloon->GetPosition().y();
+#else
+    return balloon->GetPosition().y() + balloon->GetViewSize().height();
+#endif
+  }
+
+  DesktopNotificationService* service() const { return service_.get(); }
+  const BalloonCollection::Balloons& balloons() const {
+    return balloons_->GetActiveBalloons();
+  }
+
+ private:
+  BalloonCollectionImpl* balloons_;  // Owned by NotificationUIManager.
+  scoped_ptr<NotificationUIManager> ui_manager_;
+  scoped_ptr<DesktopNotificationService> service_;
+};
+
+IN_PROC_BROWSER_TEST_F(PanelAndNotificationTest, NoOverlapping) {
+  const int kPanelWidth = 200;
+  const int kShortPanelHeight = 150;
+  const int kTallPanelHeight = 200;
+
+  DesktopNotificationHostMsg_Show_Params params = StandardTestNotification();
+  EXPECT_TRUE(service()->ShowDesktopNotification(
+        params, 0, 0, DesktopNotificationService::PageNotification));
+  MessageLoopForUI::current()->RunAllPending();
+  Balloon* balloon = balloons().front();
+  int original_balloon_bottom = GetBalloonBottomPosition(balloon);
+  // Ensure that balloon width is greater than the panel width.
+  EXPECT_GT(balloon->GetViewSize().width(), kPanelWidth);
+
+  // Creating a short panel should move the notification balloon up.
+  Panel* panel1 = CreatePanelWithBounds(
+      "Panel1", gfx::Rect(0, 0, kPanelWidth, kShortPanelHeight));
+  WaitForPanelAdded(panel1);
+  int balloon_bottom_after_short_panel_created =
+      GetBalloonBottomPosition(balloon);
+  EXPECT_LT(balloon_bottom_after_short_panel_created, panel1->GetBounds().y());
+  EXPECT_LT(balloon_bottom_after_short_panel_created, original_balloon_bottom);
+
+  // Creating another tall panel should move the notification balloon further
+  // up.
+  Panel* panel2 = CreatePanelWithBounds(
+      "Panel2", gfx::Rect(0, 0, kPanelWidth, kTallPanelHeight));
+  WaitForPanelAdded(panel2);
+  int balloon_bottom_after_tall_panel_created =
+      GetBalloonBottomPosition(balloon);
+  EXPECT_LT(balloon_bottom_after_tall_panel_created, panel2->GetBounds().y());
+  EXPECT_LT(balloon_bottom_after_tall_panel_created,
+            balloon_bottom_after_short_panel_created);
+
+  // Minimizing tall panel should move the notification balloon down to the same
+  // position when short panel is first created.
+  panel2->SetExpansionState(Panel::MINIMIZED);
+  WaitForBoundsAnimationFinished(panel2);
+  int balloon_bottom_after_tall_panel_minimized =
+      GetBalloonBottomPosition(balloon);
+  EXPECT_EQ(balloon_bottom_after_short_panel_created,
+            balloon_bottom_after_tall_panel_minimized);
+
+  // Minimizing short panel should move the notification balloon further down.
+  panel1->SetExpansionState(Panel::MINIMIZED);
+  WaitForBoundsAnimationFinished(panel1);
+  int balloon_bottom_after_both_panels_minimized =
+      GetBalloonBottomPosition(balloon);
+  EXPECT_LT(balloon_bottom_after_both_panels_minimized,
+            panel1->GetBounds().y());
+  EXPECT_LT(balloon_bottom_after_both_panels_minimized,
+            panel2->GetBounds().y());
+  EXPECT_LT(balloon_bottom_after_short_panel_created,
+            balloon_bottom_after_both_panels_minimized);
+  EXPECT_LT(balloon_bottom_after_both_panels_minimized,
+            original_balloon_bottom);
+
+  // Bringing up the titlebar for tall panel should move the notification
+  // balloon up a little bit.
+  panel2->SetExpansionState(Panel::TITLE_ONLY);
+  WaitForBoundsAnimationFinished(panel2);
+  int balloon_bottom_after_tall_panel_titlebar_up =
+      GetBalloonBottomPosition(balloon);
+  EXPECT_LT(balloon_bottom_after_tall_panel_titlebar_up,
+            panel2->GetBounds().y());
+  EXPECT_LT(balloon_bottom_after_tall_panel_titlebar_up,
+            balloon_bottom_after_both_panels_minimized);
+  EXPECT_LT(balloon_bottom_after_short_panel_created,
+            balloon_bottom_after_tall_panel_titlebar_up);
+
+  // Expanding short panel should move the notification balloon further up to
+  // the same position when short panel is first created.
+  panel1->SetExpansionState(Panel::EXPANDED);
+  WaitForBoundsAnimationFinished(panel1);
+  int balloon_bottom_after_short_panel_expanded =
+      GetBalloonBottomPosition(balloon);
+  EXPECT_EQ(balloon_bottom_after_short_panel_created,
+            balloon_bottom_after_short_panel_expanded);
+
+  // Closing short panel should move the notification balloon down to the same
+  // position when tall panel brings up its titlebar.
+  panel1->Close();
+  WaitForBoundsAnimationFinished(panel1);
+  EXPECT_EQ(balloon_bottom_after_tall_panel_titlebar_up,
+            GetBalloonBottomPosition(balloon));
+
+  // Closing the remaining tall panel should move the notification balloon back
+  // to its original position.
+  panel2->Close();
+  WaitForBoundsAnimationFinished(panel2);
+  EXPECT_EQ(original_balloon_bottom, GetBalloonBottomPosition(balloon));
 }

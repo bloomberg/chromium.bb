@@ -73,6 +73,7 @@ class PanelManager : public PanelMouseWatcher::Observer,
 
   int num_panels() const { return panels_.size(); }
   bool is_dragging_panel() const;
+  const Panels& panels() const { return panels_; }
 
   int GetMaxPanelWidth() const;
   int GetMaxPanelHeight() const;
@@ -82,7 +83,6 @@ class PanelManager : public PanelMouseWatcher::Observer,
   virtual void OnMouseMove(const gfx::Point& mouse_position) OVERRIDE;
 
 #ifdef UNIT_TEST
-  const Panels& panels() const { return panels_; }
   static int horizontal_spacing() { return kPanelsHorizontalSpacing; }
 
   const gfx::Rect& work_area() const {

@@ -63,6 +63,11 @@ void Panel::SetPanelBounds(const gfx::Rect& bounds) {
     restored_height_ = bounds.height();
 
   native_panel_->SetPanelBounds(bounds);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_CHANGED_BOUNDS,
+      content::Source<Panel>(this),
+      content::NotificationService::NoDetails());
 }
 
 void Panel::SetMaxSize(const gfx::Size& max_size) {

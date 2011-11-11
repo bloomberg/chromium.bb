@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,14 @@ int BalloonCollectionImpl::Layout::VerticalEdgeMargin() const {
   return 0;
 }
 
+bool BalloonCollectionImpl::Layout::NeedToMoveAboveLeftSidePanels() const {
+  return placement_ == VERTICALLY_FROM_TOP_LEFT;
+}
+
+bool BalloonCollectionImpl::Layout::NeedToMoveAboveRightSidePanels() const {
+  return placement_ == VERTICALLY_FROM_TOP_RIGHT;
+}
+
 void BalloonCollectionImpl::PositionBalloons(bool reposition) {
   // Use an animation context so that all the balloons animate together.
   [NSAnimationContext beginGrouping];
@@ -61,6 +69,7 @@ void BalloonCollectionImpl::SetPositionPreference(
   else
     NOTREACHED();
 
+  layout_.ComputeOffsetToMoveAbovePanels(gfx::Rect());
   PositionBalloons(true);
 }
 

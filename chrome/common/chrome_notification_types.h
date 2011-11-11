@@ -947,6 +947,21 @@ enum NotificationType {
   // Used only in unit testing.
   NOTIFICATION_PANEL_WINDOW_SIZE_KNOWN,
 
+  // Sent when panel's bounds get changed.
+  // The source is the Panel, no details.
+  // Used only in coordination with notification balloons.
+  NOTIFICATION_PANEL_CHANGED_BOUNDS,
+
+  // Sent when panel is added into the panel manager.
+  // The source is the Panel, no details.
+  // Used only in coordination with notification balloons.
+  NOTIFICATION_PANEL_ADDED,
+
+  // Sent when panel is removed from the panel manager.
+  // The source is the Panel, no details.
+  // Used only in coordination with notification balloons.
+  NOTIFICATION_PANEL_REMOVED,
+
   // Sent when a global error has changed and the error UI should update it
   // self. The source is a Source<Profile> containing the profile for the
   // error. The detail is a GlobalError object that has changed or NULL if

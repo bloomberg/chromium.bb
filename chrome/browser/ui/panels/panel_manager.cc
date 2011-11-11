@@ -13,6 +13,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/window_sizer.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 
 namespace {
 // Invalid panel index.
@@ -120,6 +123,12 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
   Panel* panel = new Panel(browser, gfx::Rect(x, y, width, height));
   panel->SetMaxSize(gfx::Size(max_panel_width, max_panel_height));
   panels_.push_back(panel);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_ADDED,
+      content::Source<Panel>(panel),
+      content::NotificationService::NoDetails());
+
   return panel;
 }
 
@@ -166,6 +175,11 @@ void PanelManager::DoRemove(Panel* panel) {
 
   gfx::Rect bounds = (*iter)->GetBounds();
   Rearrange(panels_.erase(iter), bounds.right());
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_REMOVED,
+      content::Source<Panel>(panel),
+      content::NotificationService::NoDetails());
 }
 
 void PanelManager::StartDragging(Panel* panel) {

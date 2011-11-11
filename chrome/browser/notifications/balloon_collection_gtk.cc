@@ -35,6 +35,14 @@ int BalloonCollectionImpl::Layout::VerticalEdgeMargin() const {
   return 5;
 }
 
+bool BalloonCollectionImpl::Layout::NeedToMoveAboveLeftSidePanels() const {
+  return placement_ == VERTICALLY_FROM_BOTTOM_LEFT;
+}
+
+bool BalloonCollectionImpl::Layout::NeedToMoveAboveRightSidePanels() const {
+  return placement_ == VERTICALLY_FROM_BOTTOM_RIGHT;
+}
+
 void BalloonCollectionImpl::PositionBalloons(bool reposition) {
   PositionBalloonsInternal(reposition);
 }
@@ -92,6 +100,7 @@ void BalloonCollectionImpl::SetPositionPreference(
   else
     NOTREACHED();
 
+  layout_.ComputeOffsetToMoveAbovePanels(gfx::Rect());
   PositionBalloons(true);
 }
 
