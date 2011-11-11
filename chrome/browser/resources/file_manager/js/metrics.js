@@ -37,3 +37,24 @@ metrics.recordTime = function(name) {
 metrics.recordAction = function(name) {
   chrome.experimental.metrics.recordUserAction(metrics.convertName_(name));
 };
+
+metrics.reportCount = function(name, value) {
+  chrome.experimental.metrics.
+      recordMediumCount(metrics.convertName_(name), value);
+};
+
+metrics.recordEnum = function(name, value, validValues) {
+  var index = validValues.indexOf(value);
+
+  // Collect invalid values in the extra bucket at the end.
+  if (index < 0) index = validValues.length;
+
+  chrome.experimental.metrics.recordValue({
+      'metricName': metrics.convertName_(name),
+      'type': 'histogram-linear',
+      'min': 0,
+      'max': validValues.length,
+      'buckets': validValues.length + 1
+    },
+    index);
+};

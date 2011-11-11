@@ -56,7 +56,12 @@ function FileManager(dialogDom, filesystem, rootEntries) {
   this.document_ = dialogDom.ownerDocument;
   this.dialogType_ = this.params_.type || FileManager.DialogType.FULL_PAGE;
 
-  metrics.recordAction('Create.' + this.dialogType_);
+  metrics.recordEnum('Create', this.dialogType_,
+      [FileManager.DialogType.SELECT_FOLDER,
+      FileManager.DialogType.SELECT_SAVEAS_FILE,
+      FileManager.DialogType.SELECT_OPEN_FILE,
+      FileManager.DialogType.SELECT_OPEN_MULTI_FILE,
+      FileManager.DialogType.FULL_PAGE]);
 
   this.initDialogs_();
 
@@ -2927,13 +2932,19 @@ FileManager.prototype = {
     var self = this;
     var reader;
 
+    function rescanDone() {
+      metrics.recordTime('ScanDirectory');
+      if (self.currentDirEntry_.fullPath == DOWNLOADS_DIRECTORY)
+        metrics.reportCount("DownloadsCount", self.dataModel_.length);
+      if (opt_callback)
+        opt_callback();
+    }
+
     metrics.startInterval('ScanDirectory');
 
     function onReadSome(entries) {
       if (entries.length == 0) {
-        metrics.recordTime('ScanDirectory');
-        if (opt_callback)
-          opt_callback();
+        rescanDone();
         return;
       }
 
@@ -2982,9 +2993,7 @@ FileManager.prototype = {
     spliceArgs.unshift(0, 0);  // index, deleteCount
     self.dataModel_.splice.apply(self.dataModel_, spliceArgs);
 
-    metrics.recordTime('ScanDirectory');
-    if (opt_callback)
-      opt_callback();
+    rescanDone();
   };
 
   FileManager.prototype.findListItem_ = function(event) {

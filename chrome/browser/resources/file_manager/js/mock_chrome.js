@@ -391,6 +391,8 @@ chrome.tabs = {
 
 chrome.experimental = {
   metrics: {
+    recordValue: function() {},
+    recordMediumCount: function() {},
     recordTime: function() {},
     recordUserAction: function() {}
   }
