@@ -1476,11 +1476,15 @@ void ExtensionService::SetIsIncognitoEnabled(
 
   bool extension_is_enabled = std::find(extensions_.begin(), extensions_.end(),
                                         extension) != extensions_.end();
+
+  // When we reload the extension the ID may be invalidated if we've passed it
+  // by const ref everywhere. Make a copy to be safe.
+  std::string id = extension_id;
   if (extension_is_enabled)
     ReloadExtension(extension->id());
 
   // Reloading the extension invalidates the |extension| pointer.
-  extension = GetInstalledExtension(extension_id);
+  extension = GetInstalledExtension(id);
   if (extension)
     SyncExtensionChangeIfNeeded(*extension);
 }
