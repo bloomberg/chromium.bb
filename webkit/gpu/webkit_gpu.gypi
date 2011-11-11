@@ -7,6 +7,7 @@
     {
       'target_name': 'webkit_gpu',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
 	'<(DEPTH)/gpu/gpu.gyp:command_buffer_service',

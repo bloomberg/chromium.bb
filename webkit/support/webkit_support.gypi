@@ -10,6 +10,7 @@
     {
       'target_name': 'webkit_support',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/media/media.gyp:media',
@@ -78,6 +79,7 @@
     {
       'target_name': 'webkit_support_common',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/crypto/crypto.gyp:crypto',
@@ -129,6 +131,7 @@
     {
       'target_name': 'webkit_support_gfx',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
       ],

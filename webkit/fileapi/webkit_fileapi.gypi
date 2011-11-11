@@ -7,6 +7,7 @@
     {
       'target_name': 'fileapi',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/net/net.gyp:net',

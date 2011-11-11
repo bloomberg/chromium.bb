@@ -52,7 +52,7 @@ base::StringPiece GetDataResource(int resource_id) {
   resources_path = resources_path.Append("DumpRenderTree_resources");
   switch (resource_id) {
     case IDR_BROKENIMAGE: {
-      static std::string broken_image_data;
+      CR_DEFINE_STATIC_LOCAL(std::string, broken_image_data, ());
       if (broken_image_data.empty()) {
         FilePath path = resources_path.Append("missingImage.gif");
         bool success = file_util::ReadFileToString(path, &broken_image_data);
@@ -62,7 +62,7 @@ base::StringPiece GetDataResource(int resource_id) {
       return broken_image_data;
     }
     case IDR_TEXTAREA_RESIZER: {
-      static std::string resize_corner_data;
+      CR_DEFINE_STATIC_LOCAL(std::string, resize_corner_data, ());
       if (resize_corner_data.empty()) {
         FilePath path = resources_path.Append("textAreaResizeCorner.png");
         bool success = file_util::ReadFileToString(path, &resize_corner_data);

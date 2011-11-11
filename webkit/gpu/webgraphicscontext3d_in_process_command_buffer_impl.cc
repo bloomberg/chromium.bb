@@ -408,7 +408,8 @@ bool GLInProcessContext::Initialize(bool onscreen,
                                     const GURL& active_url,
                                     gfx::GpuPreference gpu_preference) {
   // Use one share group for all contexts.
-  static scoped_refptr<gfx::GLShareGroup> share_group(new gfx::GLShareGroup);
+  CR_DEFINE_STATIC_LOCAL(scoped_refptr<gfx::GLShareGroup>, share_group,
+                         (new gfx::GLShareGroup));
 
   DCHECK(size.width() >= 0 && size.height() >= 0);
 

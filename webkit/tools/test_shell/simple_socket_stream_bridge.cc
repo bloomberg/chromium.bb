@@ -20,12 +20,12 @@
 
 using webkit_glue::WebSocketStreamHandleBridge;
 
-static const int kNoSocketId = 0;
+const int kNoSocketId = 0;
 
 namespace {
 
 MessageLoop* g_io_thread;
-scoped_refptr<net::URLRequestContext> g_request_context;
+net::URLRequestContext* g_request_context;
 
 class WebSocketStreamHandleBridgeImpl
     : public WebSocketStreamHandleBridge,
@@ -223,11 +223,14 @@ void WebSocketStreamHandleBridgeImpl::DoOnClose() {
 void SimpleSocketStreamBridge::InitializeOnIOThread(
     net::URLRequestContext* request_context) {
   g_io_thread = MessageLoop::current();
-  g_request_context = request_context;
+  if ((g_request_context = request_context))
+    g_request_context->AddRef();
 }
 
 void SimpleSocketStreamBridge::Cleanup() {
   g_io_thread = NULL;
+  if (g_request_context)
+    g_request_context->Release();
   g_request_context = NULL;
 }
 

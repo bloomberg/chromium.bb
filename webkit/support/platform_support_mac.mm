@@ -198,7 +198,7 @@ base::StringPiece GetDataResource(int resource_id) {
   switch (resource_id) {
   case IDR_BROKENIMAGE: {
     // Use webkit's broken image icon (16x16)
-    static std::string broken_image_data;
+    CR_DEFINE_STATIC_LOCAL(std::string, broken_image_data, ());
     if (broken_image_data.empty()) {
       FilePath path = GetResourcesFilePath();
       // In order to match WebKit's colors for the missing image, we have to
@@ -214,7 +214,7 @@ base::StringPiece GetDataResource(int resource_id) {
   }
   case IDR_TEXTAREA_RESIZER: {
     // Use webkit's text area resizer image.
-    static std::string resize_corner_data;
+    CR_DEFINE_STATIC_LOCAL(std::string, resize_corner_data, ());
     if (resize_corner_data.empty()) {
       FilePath path = GetResourcesFilePath();
       path = path.AppendASCII("textAreaResizeCorner.png");

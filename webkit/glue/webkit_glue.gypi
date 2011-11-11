@@ -107,6 +107,7 @@
     {
       'target_name': 'glue',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/base/base.gyp:base_static',
