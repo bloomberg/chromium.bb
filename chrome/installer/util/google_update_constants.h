@@ -34,7 +34,7 @@ extern const wchar_t kRegCFOptOutCmdField[];
 extern const wchar_t kRegCFTempOptOutCmdField[];
 extern const wchar_t kRegClientField[];
 extern const wchar_t kRegCommandLineField[];
-extern const wchar_t kRegCriticalUpdateField[];
+extern const wchar_t kRegCriticalVersionField[];
 extern const wchar_t kRegDidRunField[];
 extern const wchar_t kRegEULAAceptedField[];
 extern const wchar_t kRegLangField[];

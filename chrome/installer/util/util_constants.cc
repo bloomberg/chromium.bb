@@ -42,6 +42,10 @@ const char kChromeSxS[] = "chrome-sxs";
 // Create Desktop and QuickLaunch shortcuts
 const char kCreateAllShortcuts[] = "create-all-shortcuts";
 
+// The version number of an update containing critical fixes, for which an
+// in-use Chrome should be restarted ASAP.
+const char kCriticalUpdateVersion[] = "critical-update-version";
+
 // Delete user profile data. This param is useful only when specified with
 // kUninstall, otherwise it is silently ignored.
 const char kDeleteProfile[] = "delete-profile";

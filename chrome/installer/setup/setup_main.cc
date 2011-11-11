@@ -230,17 +230,18 @@ installer::InstallStatus RenameChromeExecutables(
     dists[num_dists++] = products[i]->distribution();
   }
 
-  // Add work items to delete the "opv" and "cmd" values from all distributions.
+  // Add work items to delete the "opv", "cpv", and "cmd" values from all
+  // distributions.
   HKEY reg_root = installer_state->root_key();
   std::wstring version_key;
   for (int i = 0; i < num_dists; ++i) {
     version_key = dists[i]->GetVersionKey();
-    install_list->AddDeleteRegValueWorkItem(reg_root,
-                                            version_key,
-                                            google_update::kRegOldVersionField);
-    install_list->AddDeleteRegValueWorkItem(reg_root,
-                                            version_key,
-                                            google_update::kRegRenameCmdField);
+    install_list->AddDeleteRegValueWorkItem(
+        reg_root, version_key, google_update::kRegOldVersionField);
+    install_list->AddDeleteRegValueWorkItem(
+        reg_root, version_key, google_update::kRegCriticalVersionField);
+    install_list->AddDeleteRegValueWorkItem(
+        reg_root, version_key, google_update::kRegRenameCmdField);
   }
   installer::InstallStatus ret = installer::RENAME_SUCCESSFUL;
   if (!install_list->Do()) {

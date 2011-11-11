@@ -199,11 +199,11 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                          true);
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
                                          L"Version",
-                                         UTF8ToWide(new_version.GetString()),
+                                         ASCIIToWide(new_version.GetString()),
                                          true);
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
                                          L"DisplayVersion",
-                                         UTF8ToWide(new_version.GetString()),
+                                         ASCIIToWide(new_version.GetString()),
                                          true);
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
                                          L"InstallDate",
@@ -254,7 +254,7 @@ void AddVersionKeyWorkItems(HKEY root,
                                false);  // set during first install
   list->AddSetRegValueWorkItem(root, version_key,
                                google_update::kRegVersionField,
-                               UTF8ToWide(new_version.GetString()),
+                               ASCIIToWide(new_version.GetString()),
                                true);  // overwrite version
 }
 
@@ -547,14 +547,19 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
   const Products& products = installer_state.products();
 
   // Append work items that will only be executed if this was an update.
-  // We update the 'opv' key with the current version that is active and 'cmd'
-  // key with the rename command to run.
+  // We update the 'opv' value with the current version that is active,
+  // the 'cpv' value with the critical update version (if present), and the
+  // 'cmd' value with the rename command to run.
   {
     scoped_ptr<WorkItemList> in_use_update_work_items(
         WorkItem::CreateConditionalWorkItemList(
             new ConditionRunIfFileExists(new_chrome_exe)));
     in_use_update_work_items->set_log_message("InUseUpdateWorkItemList");
 
+    // |critical_version| will be valid only if this in-use update includes a
+    // version considered critical relative to the version being updated.
+    Version critical_version(installer_state.DetermineCriticalVersion(
+        current_version, new_version));
     FilePath installer_path(installer_state.GetInstallerDirectory(new_version)
         .Append(setup_path.BaseName()));
 
@@ -574,7 +579,15 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
       if (current_version != NULL) {
         in_use_update_work_items->AddSetRegValueWorkItem(root, version_key,
             google_update::kRegOldVersionField,
-            UTF8ToWide(current_version->GetString()), true);
+            ASCIIToWide(current_version->GetString()), true);
+      }
+      if (critical_version.IsValid()) {
+        in_use_update_work_items->AddSetRegValueWorkItem(root, version_key,
+            google_update::kRegCriticalVersionField,
+            ASCIIToWide(critical_version.GetString()), true);
+      } else {
+        in_use_update_work_items->AddDeleteRegValueWorkItem(root, version_key,
+            google_update::kRegCriticalVersionField);
       }
 
       // Adding this registry entry for all products is overkill.
@@ -585,22 +598,25 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
       CommandLine product_rename_cmd(rename);
       products[i]->AppendRenameFlags(&product_rename_cmd);
       in_use_update_work_items->AddSetRegValueWorkItem(
-          root,
-          version_key,
-          google_update::kRegRenameCmdField,
-          product_rename_cmd.GetCommandLineString(),
-          true);
+          root, version_key, google_update::kRegRenameCmdField,
+          product_rename_cmd.GetCommandLineString(), true);
     }
 
     if (current_version != NULL && installer_state.is_multi_install()) {
       BrowserDistribution* dist =
           installer_state.multi_package_binaries_distribution();
+      version_key = dist->GetVersionKey();
       in_use_update_work_items->AddSetRegValueWorkItem(
-          root,
-          dist->GetVersionKey(),
-          google_update::kRegOldVersionField,
-          UTF8ToWide(current_version->GetString()),
-          true);
+          root, version_key, google_update::kRegOldVersionField,
+          ASCIIToWide(current_version->GetString()), true);
+      if (critical_version.IsValid()) {
+        in_use_update_work_items->AddSetRegValueWorkItem(
+            root, version_key, google_update::kRegCriticalVersionField,
+            ASCIIToWide(critical_version.GetString()), true);
+      } else {
+        in_use_update_work_items->AddDeleteRegValueWorkItem(
+            root, version_key, google_update::kRegCriticalVersionField);
+      }
       // TODO(tommi): We should move the rename command here. We also need to
       // update upgrade_utils::SwapNewChromeExeIfPresent.
     }
@@ -620,14 +636,16 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
             new Not(new ConditionRunIfFileExists(new_chrome_exe))));
     regular_update_work_items->set_log_message("RegularUpdateWorkItemList");
 
-    // Since this was not an in-use-update, delete 'opv' and 'cmd' keys.
+    // Since this was not an in-use-update, delete 'opv', 'cpv', and 'cmd' keys.
     for (size_t i = 0; i < products.size(); ++i) {
       BrowserDistribution* dist = products[i]->distribution();
       std::wstring version_key(dist->GetVersionKey());
       regular_update_work_items->AddDeleteRegValueWorkItem(root, version_key,
-                                            google_update::kRegOldVersionField);
+          google_update::kRegOldVersionField);
       regular_update_work_items->AddDeleteRegValueWorkItem(root, version_key,
-                                            google_update::kRegRenameCmdField);
+          google_update::kRegCriticalVersionField);
+      regular_update_work_items->AddDeleteRegValueWorkItem(root, version_key,
+          google_update::kRegRenameCmdField);
     }
 
     if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME)) {

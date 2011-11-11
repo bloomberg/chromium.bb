@@ -203,7 +203,7 @@ Version* InstallUtil::GetCriticalUpdateVersion(BrowserDistribution* dist,
 
   string16 version_str;
   if (result == ERROR_SUCCESS)
-    result = key.ReadValue(google_update::kRegCriticalUpdateField,
+    result = key.ReadValue(google_update::kRegCriticalVersionField,
                            &version_str);
 
   Version* ret = NULL;

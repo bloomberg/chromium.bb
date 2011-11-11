@@ -156,6 +156,11 @@ void InstallerState::Initialize(const CommandLine& command_line,
 
   state_key_ = operand->GetStateKey();
   state_type_ = operand->GetType();
+
+  // Parse --critical-update-version=W.X.Y.Z
+  std::string critical_version_value(
+      command_line.GetSwitchValueASCII(switches::kCriticalUpdateVersion));
+  critical_update_version_ = Version(critical_version_value);
 }
 
 void InstallerState::set_level(Level level) {
@@ -411,6 +416,20 @@ Version* InstallerState::GetCurrentVersion(
   }
 
   return current_version.release();
+}
+
+Version InstallerState::DetermineCriticalVersion(
+    const Version* current_version,
+    const Version& new_version) const {
+  DCHECK(current_version == NULL || current_version->IsValid());
+  DCHECK(new_version.IsValid());
+  if (critical_update_version_.IsValid() &&
+      (current_version == NULL ||
+       (current_version->CompareTo(critical_update_version_) < 0)) &&
+      new_version.CompareTo(critical_update_version_) >= 0) {
+    return critical_update_version_;
+  }
+  return Version();
 }
 
 bool InstallerState::IsChromeFrameRunning(
