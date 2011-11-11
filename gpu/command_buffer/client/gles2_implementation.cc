@@ -2649,5 +2649,21 @@ void GLES2Implementation::DestroyStreamTextureCHROMIUM(GLuint texture) {
   helper_->DestroyStreamTextureCHROMIUM(texture);
 }
 
+void GLES2Implementation::PostSubBufferCHROMIUM(
+    GLint x, GLint y, GLint width, GLint height) {
+  GPU_CLIENT_LOG("[" << this << "] PostSubBufferCHROMIUM("
+      << x << ", " << y << ", " << width << ", " << height << ")");
+  TRACE_EVENT0("gpu", "GLES2::PostSubBufferCHROMIUM");
+
+  // Same flow control as GLES2Implementation::SwapBuffers (see comments there).
+  swap_buffers_tokens_.push(helper_->InsertToken());
+  helper_->PostSubBufferCHROMIUM(x, y, width, height);
+  helper_->CommandBufferHelper::Flush();
+  if (swap_buffers_tokens_.size() > kMaxSwapBuffers + 1) {
+    helper_->WaitForToken(swap_buffers_tokens_.front());
+    swap_buffers_tokens_.pop();
+  }
+}
+
 }  // namespace gles2
 }  // namespace gpu

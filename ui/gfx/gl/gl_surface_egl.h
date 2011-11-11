@@ -43,7 +43,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static EGLDisplay GetSoftwareDisplay();
   static EGLNativeDisplayType GetNativeDisplay();
 
-protected:
+ protected:
   bool software_;
 
  private:
@@ -63,10 +63,13 @@ class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual EGLSurface GetHandle();
+  virtual bool SupportsPostSubBuffer();
+  virtual bool PostSubBuffer(int x, int y, int width, int height);
 
  private:
   gfx::PluginWindowHandle window_;
   EGLSurface surface_;
+  bool supports_post_sub_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceEGL);
 };

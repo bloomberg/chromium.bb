@@ -203,6 +203,17 @@ void* NativeViewGLSurfaceGLX::GetConfig() {
   return config_;
 }
 
+bool NativeViewGLSurfaceGLX::SupportsPostSubBuffer() {
+  return g_GLX_MESA_copy_sub_buffer;
+}
+
+bool NativeViewGLSurfaceGLX::PostSubBuffer(
+    int x, int y, int width, int height) {
+  DCHECK(SupportsPostSubBuffer());
+  glXCopySubBufferMESA(g_display, window_, x, y, width, height);
+  return true;
+}
+
 PbufferGLSurfaceGLX::PbufferGLSurfaceGLX(const gfx::Size& size)
   : size_(size),
     config_(NULL),

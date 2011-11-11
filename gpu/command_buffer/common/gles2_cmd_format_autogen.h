@@ -9165,6 +9165,52 @@ COMPILE_ASSERT(offsetof(GetTranslatedShaderSourceANGLE, shader) == 4,
 COMPILE_ASSERT(offsetof(GetTranslatedShaderSourceANGLE, bucket_id) == 8,
                OffsetOf_GetTranslatedShaderSourceANGLE_bucket_id_not_8);
 
+struct PostSubBufferCHROMIUM {
+  typedef PostSubBufferCHROMIUM ValueType;
+  static const CommandId kCmdId = kPostSubBufferCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLint _x, GLint _y, GLint _width, GLint _height) {
+    SetHeader();
+    x = _x;
+    y = _y;
+    width = _width;
+    height = _height;
+  }
+
+  void* Set(void* cmd, GLint _x, GLint _y, GLint _width, GLint _height) {
+    static_cast<ValueType*>(cmd)->Init(_x, _y, _width, _height);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32 x;
+  int32 y;
+  int32 width;
+  int32 height;
+};
+
+COMPILE_ASSERT(sizeof(PostSubBufferCHROMIUM) == 20,
+               Sizeof_PostSubBufferCHROMIUM_is_not_20);
+COMPILE_ASSERT(offsetof(PostSubBufferCHROMIUM, header) == 0,
+               OffsetOf_PostSubBufferCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(PostSubBufferCHROMIUM, x) == 4,
+               OffsetOf_PostSubBufferCHROMIUM_x_not_4);
+COMPILE_ASSERT(offsetof(PostSubBufferCHROMIUM, y) == 8,
+               OffsetOf_PostSubBufferCHROMIUM_y_not_8);
+COMPILE_ASSERT(offsetof(PostSubBufferCHROMIUM, width) == 12,
+               OffsetOf_PostSubBufferCHROMIUM_width_not_12);
+COMPILE_ASSERT(offsetof(PostSubBufferCHROMIUM, height) == 16,
+               OffsetOf_PostSubBufferCHROMIUM_height_not_16);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

@@ -333,6 +333,12 @@ void WebGraphicsContext3DInProcessImpl::prepareTexture() {
   }
 }
 
+void WebGraphicsContext3DInProcessImpl::postSubBufferCHROMIUM(
+    int x, int y, int width, int height) {
+  DCHECK(gl_surface_->SupportsPostSubBuffer());
+  gl_surface_->PostSubBuffer(x, y, width, height);
+}
+
 namespace {
 
 int CreateTextureObject(GLenum target) {

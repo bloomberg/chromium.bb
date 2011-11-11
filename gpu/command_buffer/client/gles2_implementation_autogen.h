@@ -1303,5 +1303,7 @@ void GetTranslatedShaderSourceANGLE(
     *length = max_size;
   }
 }
+void PostSubBufferCHROMIUM(GLint x, GLint y, GLint width, GLint height);
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

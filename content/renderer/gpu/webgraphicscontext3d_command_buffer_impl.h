@@ -79,6 +79,7 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual WebGLId getPlatformTextureId();
   virtual void prepareTexture();
+  virtual void postSubBufferCHROMIUM(int x, int y, int width, int height);
 
   virtual void activeTexture(WGC3Denum texture);
   virtual void attachShader(WebGLId program, WebGLId shader);

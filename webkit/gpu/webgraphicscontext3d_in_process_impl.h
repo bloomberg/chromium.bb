@@ -82,6 +82,7 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
 
   virtual WebGLId getPlatformTextureId();
   virtual void prepareTexture();
+  virtual void postSubBufferCHROMIUM(int x, int y, int width, int height);
 
   virtual void synthesizeGLError(WGC3Denum error);
   virtual void* mapBufferSubDataCHROMIUM(WGC3Denum target, WGC3Dintptr offset,

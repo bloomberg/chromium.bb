@@ -292,6 +292,20 @@ void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
 #endif
 }
 
+void WebGraphicsContext3DCommandBufferImpl::postSubBufferCHROMIUM(
+    int x, int y, int width, int height) {
+  // Same flow control as WebGraphicsContext3DCommandBufferImpl::prepareTexture
+  // (see above).
+  RenderViewImpl* renderview =
+      web_view_ ? RenderViewImpl::FromWebView(web_view_) : NULL;
+  if (renderview)
+    renderview->OnViewContextSwapBuffersPosted();
+  gl_->PostSubBufferCHROMIUM(x, y, width, height);
+  context_->Echo(base::Bind(
+      &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete,
+      weak_ptr_factory_.GetWeakPtr()));
+}
+
 void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
   cached_width_ = width;
   cached_height_ = height;

@@ -1247,5 +1247,11 @@
     c.Init(shader, bucket_id);
   }
 
+  void PostSubBufferCHROMIUM(GLint x, GLint y, GLint width, GLint height) {
+    gles2::PostSubBufferCHROMIUM& c =
+        GetCmdSpace<gles2::PostSubBufferCHROMIUM>();
+    c.Init(x, y, width, height);
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

@@ -758,6 +758,11 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::prepareTexture() {
   context_->SwapBuffers();
 }
 
+void WebGraphicsContext3DInProcessCommandBufferImpl::postSubBufferCHROMIUM(
+    int x, int y, int width, int height) {
+  gl_->PostSubBufferCHROMIUM(x, y, width, height);
+}
+
 void WebGraphicsContext3DInProcessCommandBufferImpl::reshape(
     int width, int height) {
   cached_width_ = width;

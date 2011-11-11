@@ -5740,6 +5740,20 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
+    uint32 immediate_data_size, const gles2::PostSubBufferCHROMIUM& c) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandlePostSubBufferCHROMIUM");
+  if (!surface_->SupportsPostSubBuffer()) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glPostSubBufferCHROMIUM: command not supported by surface");
+    return error::kNoError;
+  }
+  if (surface_->PostSubBuffer(c.x, c.y, c.width, c.height))
+    return error::kNoError;
+  else
+    return error::kLostContext;
+}
+
 error::Error GLES2DecoderImpl::GetAttribLocationHelper(
     GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
     const std::string& name_str) {

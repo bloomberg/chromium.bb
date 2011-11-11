@@ -50,6 +50,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // FBO. Otherwise returns 0.
   virtual unsigned int GetBackingFrameBufferObject();
 
+  // Copy part of the backbuffer to the frontbuffer.
+  virtual bool SupportsPostSubBuffer();
+  virtual bool PostSubBuffer(int x, int y, int width, int height);
+
   static bool InitializeOneOff();
 
   // Called after a context is made current with this surface. Returns false

@@ -94,6 +94,14 @@ unsigned int GLSurface::GetBackingFrameBufferObject() {
   return 0;
 }
 
+bool GLSurface::SupportsPostSubBuffer() {
+  return false;
+}
+
+bool GLSurface::PostSubBuffer(int x, int y, int width, int height) {
+  return false;
+}
+
 bool GLSurface::OnMakeCurrent(GLContext* context) {
   return true;
 }

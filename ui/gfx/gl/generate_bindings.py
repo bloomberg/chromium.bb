@@ -363,6 +363,9 @@ EGL_FUNCTIONS = [
     'EGLDisplay dpy, EGLSurface surface, EGLNativePixmapType target'],
 ['__eglMustCastToProperFunctionPointerType', ['eglGetProcAddress'],
     'const char* procname'],
+['EGLBoolean', ['eglPostSubBufferNV'],
+    'EGLDisplay dpy, EGLSurface surface, '
+    'EGLint x, EGLint y, EGLint width, EGLint height'],
 ['EGLBoolean', ['eglQuerySurfacePointerANGLE'],
     'EGLDisplay dpy, EGLSurface surface, EGLint attribute, void** value'],
 ]
@@ -396,6 +399,9 @@ WGL_FUNCTIONS = [
 GLX_FUNCTIONS = [
 ['XVisualInfo*', ['glXChooseVisual'],
     'Display* dpy, int screen, int* attribList'],
+['void', ['glXCopySubBufferMESA'],
+    'Display* dpy, GLXDrawable drawable, '
+    'int x, int y, int width, int height'],
 ['GLXContext', ['glXCreateContext'],
     'Display* dpy, XVisualInfo* vis, GLXContext shareList, int direct'],
 ['void', ['glXBindTexImageEXT'],

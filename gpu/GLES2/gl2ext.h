@@ -1349,6 +1349,19 @@ typedef void (GL_APIENTRYP PFNGLENABLEFEATURECHROMIUM) (const GLchar *feature);
 #endif
 #endif
 
+/* GL_CHROMIUM_post_sub_buffer */
+#ifndef GL_CHROMIUM_post_sub_buffer
+#define GL_CHROMIUM_post_sub_buffer 1
+#ifdef GL_GLEXT_PROTOTYPES
+#define glPostSubBufferCHROMIUM GLES2_GET_FUN(PostSubBufferCHROMIUM)
+#if !defined(GLES2_USE_CPP_BINDINGS)
+GL_APICALL void GL_APIENTRY glPostSubBufferCHROMIUM (GLint x, GLint y, GLint width, GLint height);
+#endif
+#else
+typedef void (GL_APIENTRYP PFNGLPOSTSUBBUFFERCHROMIUM) (GLint x, GLint y, GLint width, GLint height);
+#endif
+#endif
+
 /* GL_ARB_robustness */
 /* This extension is subsetted for the moment, incorporating only the
  * enums necessary to describe the reasons that we might encounter for

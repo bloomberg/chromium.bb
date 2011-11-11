@@ -173,7 +173,8 @@ EGLNativeDisplayType GLSurfaceEGL::GetNativeDisplay() {
 NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(bool software,
                                                gfx::PluginWindowHandle window)
     : window_(window),
-      surface_(NULL)
+      surface_(NULL),
+      supports_post_sub_buffer_(false)
 {
   software_ = software;
 }
@@ -190,11 +191,18 @@ bool NativeViewGLSurfaceEGL::Initialize() {
     return false;
   }
 
+  static const EGLint egl_window_attributes_sub_buffer[] = {
+    EGL_POST_SUB_BUFFER_SUPPORTED_NV, EGL_TRUE,
+    EGL_NONE
+  };
+
   // Create a surface for the native window.
   surface_ = eglCreateWindowSurface(GetDisplay(),
                                     GetConfig(),
                                     window_,
-                                    NULL);
+                                    gfx::g_EGL_NV_post_sub_buffer ?
+                                        egl_window_attributes_sub_buffer :
+                                        NULL);
 
   if (!surface_) {
     LOG(ERROR) << "eglCreateWindowSurface failed with error "
@@ -202,6 +210,13 @@ bool NativeViewGLSurfaceEGL::Initialize() {
     Destroy();
     return false;
   }
+
+  EGLint surfaceVal;
+  EGLBoolean retVal = eglQuerySurface(GetDisplay(),
+                                      surface_,
+                                      EGL_POST_SUB_BUFFER_SUPPORTED_NV,
+                                      &surfaceVal);
+  supports_post_sub_buffer_ = (surfaceVal && retVal) == EGL_TRUE;
 
   return true;
 }
@@ -245,6 +260,21 @@ gfx::Size NativeViewGLSurfaceEGL::GetSize() {
 
 EGLSurface NativeViewGLSurfaceEGL::GetHandle() {
   return surface_;
+}
+
+bool NativeViewGLSurfaceEGL::SupportsPostSubBuffer() {
+  return supports_post_sub_buffer_;
+}
+
+bool NativeViewGLSurfaceEGL::PostSubBuffer(
+    int x, int y, int width, int height) {
+  DCHECK(supports_post_sub_buffer_);
+  if (!eglPostSubBufferNV(GetDisplay(), surface_, x, y, width, height)) {
+    VLOG(1) << "eglPostSubBufferNV failed with error "
+            << GetLastEGLErrorString();
+    return false;
+  }
+  return true;
 }
 
 PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(bool software, const gfx::Size& size)

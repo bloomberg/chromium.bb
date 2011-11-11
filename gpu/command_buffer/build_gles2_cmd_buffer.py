@@ -224,6 +224,7 @@ GL_APICALL GLuint       GL_APIENTRY glCreateStreamTextureCHROMIUM (GLuint textur
 GL_APICALL void         GL_APIENTRY glDestroyStreamTextureCHROMIUM (GLuint texture);
 GL_APICALL void         GL_APIENTRY glPlaceholder453CHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glGetTranslatedShaderSourceANGLE (GLidShader shader, GLsizeiNotNegative bufsize, GLsizei* length, char* source);
+GL_APICALL void         GL_APIENTRY glPostSubBufferCHROMIUM (GLint x, GLint y, GLint width, GLint height);
 """
 
 # This is the list of all commmands that will be generated and their Id.
@@ -433,6 +434,7 @@ _CMD_ID_TABLE = {
   'GetMultipleIntegervCHROMIUM':                               454,
   'GetProgramInfoCHROMIUM':                                    455,
   'GetTranslatedShaderSourceANGLE':                            456,
+  'PostSubBufferCHROMIUM':                                     457,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -1517,6 +1519,13 @@ _FUNCTION_INFO = {
     'chromium': True,
   },
   'PixelStorei': {'type': 'Manual'},
+  'PostSubBufferCHROMIUM': {
+      'type': 'Custom',
+      'impl_func': False,
+      'unit_test': False,
+      'extension': True,
+      'chromium': True,
+  },
   'RenderbufferStorage': {
     'decoder_func': 'DoRenderbufferStorage',
     'gl_test_func': 'glRenderbufferStorageEXT',

@@ -586,6 +586,9 @@ void GLES2GetTranslatedShaderSourceANGLE(
   gles2::GetGLContext()->GetTranslatedShaderSourceANGLE(
       shader, bufsize, length, source);
 }
+void GLES2PostSubBufferCHROMIUM(GLint x, GLint y, GLint width, GLint height) {
+  gles2::GetGLContext()->PostSubBufferCHROMIUM(x, y, width, height);
+}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 

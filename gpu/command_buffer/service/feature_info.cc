@@ -7,6 +7,7 @@
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_surface.h"
 
 namespace gpu {
 namespace gles2 {
@@ -357,6 +358,12 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   feature_flags_.enable_texture_half_float_linear =
       enable_texture_half_float_linear;
   feature_flags_.npot_ok = npot_ok;
+
+  if (ext.Desire("GL_CHROMIUM_post_sub_buffer") &&
+      gfx::GLSurface::GetCurrent() &&
+      gfx::GLSurface::GetCurrent()->SupportsPostSubBuffer()) {
+    AddExtensionString("GL_CHROMIUM_post_sub_buffer");
+  }
 }
 
 void FeatureInfo::AddExtensionString(const std::string& str) {
