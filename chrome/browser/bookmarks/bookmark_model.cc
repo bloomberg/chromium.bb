@@ -579,7 +579,7 @@ void BookmarkModel::DoneLoading(
 
   next_node_id_ = details->max_id();
   if (details->computed_checksum() != details->stored_checksum())
-    SetFileChanged();
+    file_changed_ = true;
   if (details->computed_checksum() != details->stored_checksum() ||
       details->ids_reassigned()) {
     // If bookmarks file changed externally, the IDs may have changed
@@ -827,10 +827,6 @@ void BookmarkModel::PopulateNodesByURL(BookmarkNode* node) {
 
 int64 BookmarkModel::generate_next_node_id() {
   return next_node_id_++;
-}
-
-void BookmarkModel::SetFileChanged() {
-  file_changed_ = true;
 }
 
 BookmarkLoadDetails* BookmarkModel::CreateLoadDetails() {

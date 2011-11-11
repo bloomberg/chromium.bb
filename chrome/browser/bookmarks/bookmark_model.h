@@ -430,9 +430,6 @@ class BookmarkModel : public content::NotificationObserver,
   // decoding since during decoding codec assigns node IDs.
   void set_next_node_id(int64 id) { next_node_id_ = id; }
 
-  // Records that the bookmarks file was changed externally.
-  void SetFileChanged();
-
   // Creates and returns a new BookmarkLoadDetails. It's up to the caller to
   // delete the returned object.
   BookmarkLoadDetails* CreateLoadDetails();
