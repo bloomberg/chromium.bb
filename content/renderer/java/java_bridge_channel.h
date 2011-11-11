@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_JAVA_BRIDGE_CHANNEL_H_
-#define CONTENT_RENDERER_JAVA_BRIDGE_CHANNEL_H_
+#ifndef CONTENT_RENDERER_JAVA_JAVA_BRIDGE_CHANNEL_H_
+#define CONTENT_RENDERER_JAVA_JAVA_BRIDGE_CHANNEL_H_
 #pragma once
 
 #include "content/common/np_channel_base.h"
@@ -30,4 +30,4 @@ class JavaBridgeChannel : public NPChannelBase {
   DISALLOW_COPY_AND_ASSIGN(JavaBridgeChannel);
 };
 
-#endif  // CONTENT_RENDERER_JAVA_BRIDGE_CHANNEL_H_
+#endif  // CONTENT_RENDERER_JAVA_JAVA_BRIDGE_CHANNEL_H_

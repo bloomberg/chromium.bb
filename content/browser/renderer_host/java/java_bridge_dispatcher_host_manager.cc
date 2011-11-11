@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/java_bridge_dispatcher_host_manager.h"
+#include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 
 #include "base/utf_string_conversions.h"
-#include "content/browser/renderer_host/java_bridge_dispatcher_host.h"
+#include "content/browser/renderer_host/java/java_bridge_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 

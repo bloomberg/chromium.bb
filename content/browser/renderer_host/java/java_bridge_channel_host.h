@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_JAVA_BRIDGE_CHANNEL_HOST_H_
-#define CONTENT_BROWSER_RENDERER_HOST_JAVA_BRIDGE_CHANNEL_HOST_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_BRIDGE_CHANNEL_HOST_H_
+#define CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_BRIDGE_CHANNEL_HOST_H_
 #pragma once
 
 #include "content/common/np_channel_base.h"
@@ -34,4 +34,4 @@ class JavaBridgeChannelHost : public NPChannelBase {
   DISALLOW_COPY_AND_ASSIGN(JavaBridgeChannelHost);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_JAVA_BRIDGE_CHANNEL_HOST_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_BRIDGE_CHANNEL_HOST_H_

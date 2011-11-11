@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/java_bridge_dispatcher_host.h"
+#include "content/browser/renderer_host/java/java_bridge_dispatcher_host.h"
 
 #include "content/browser/renderer_host/browser_render_process_host.h"
-#include "content/browser/renderer_host/java_bridge_channel_host.h"
+#include "content/browser/renderer_host/java/java_bridge_channel_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/child_process.h"
 #include "content/common/java_bridge_messages.h"

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/java_bridge_dispatcher.h"
+#include "content/renderer/java/java_bridge_dispatcher.h"
 
 #include "content/common/child_process.h"
 #include "content/common/java_bridge_messages.h"
 #include "content/common/npobject_util.h"  // For CreateNPVariant()
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "content/renderer/java_bridge_channel.h"
+#include "content/renderer/java/java_bridge_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"

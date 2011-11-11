@@ -17,7 +17,7 @@
 #include "base/string16.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/javascript_dialogs.h"
-#include "content/browser/renderer_host/java_bridge_dispatcher_host_manager.h"
+#include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"

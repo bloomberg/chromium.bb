@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_JAVA_BRIDGE_DISPATCHER_H_
-#define CONTENT_RENDERER_JAVA_BRIDGE_DISPATCHER_H_
+#ifndef CONTENT_RENDERER_JAVA_JAVA_BRIDGE_DISPATCHER_H_
+#define CONTENT_RENDERER_JAVA_JAVA_BRIDGE_DISPATCHER_H_
 
 #include "content/public/common/webkit_param_traits.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -40,4 +40,4 @@ class JavaBridgeDispatcher : public content::RenderViewObserver {
   scoped_ptr<JavaBridgeChannel> channel_;
 };
 
-#endif  // CONTENT_RENDERER_JAVA_BRIDGE_DISPATCHER_H_
+#endif  // CONTENT_RENDERER_JAVA_JAVA_BRIDGE_DISPATCHER_H_
