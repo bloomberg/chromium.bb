@@ -294,7 +294,7 @@ TEST_F(WorkerTest, FLAKY_WorkerConstructor) {
   RunWorkerFastLayoutTest("worker-constructor.html");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/101996
 #define WorkerContextGc FLAKY_WorkerContextGc
 #endif
@@ -310,7 +310,7 @@ TEST_F(WorkerTest, WorkerContextMultiPort) {
   RunWorkerFastLayoutTest("worker-context-multi-port.html");
 }
 
-#if defined(OS_MAC) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/101996
 #define WorkerEventListener FLAKY_WorkerEventListener
 #endif
@@ -378,7 +378,7 @@ TEST_F(WorkerTest, FLAKY_WorkerNavigator) {
   RunWorkerFastLayoutTest("worker-navigator.html");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
 #define WorkerReplaceGlobalConstructor FLAKY_WorkerReplaceGlobalConstructor
 #endif
@@ -394,7 +394,7 @@ TEST_F(WorkerTest, WorkerReplaceSelf) {
   RunWorkerFastLayoutTest("worker-replace-self.html");
 }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
 // Mac: http://crbug.com/44457
 // Windows: http://crbug.com/101996
 #define WorkerScriptError FLAKY_WorkerScriptError
@@ -403,7 +403,7 @@ TEST_F(WorkerTest, WorkerScriptError) {
   RunWorkerFastLayoutTest("worker-script-error.html");
 }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
 #define WorkerTerminate FLAKY_WorkerTerminate
 #endif
@@ -411,7 +411,7 @@ TEST_F(WorkerTest, WorkerTerminate) {
   RunWorkerFastLayoutTest("worker-terminate.html");
 }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
 #define WorkerTimeout FLAKY_WorkerTimeout
 #endif
