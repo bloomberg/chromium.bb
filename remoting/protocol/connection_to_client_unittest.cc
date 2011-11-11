@@ -25,13 +25,12 @@ class ConnectionToClientTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     session_ = new protocol::FakeSession();
     session_->set_message_loop(&message_loop_);
 
     // Allocate a ClientConnection object with the mock objects.
-    viewer_ = new ConnectionToClient(
-        base::MessageLoopProxy::current(), session_);
+    viewer_.reset(new ConnectionToClient(session_));
     viewer_->set_host_stub(&host_stub_);
     viewer_->set_input_stub(&input_stub_);
     viewer_->SetEventHandler(&handler_);
@@ -44,7 +43,7 @@ class ConnectionToClientTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    viewer_ = NULL;
+    viewer_.reset();
     message_loop_.RunAllPending();
   }
 
@@ -52,7 +51,7 @@ class ConnectionToClientTest : public testing::Test {
   MockConnectionToClientEventHandler handler_;
   MockHostStub host_stub_;
   MockInputStub input_stub_;
-  scoped_refptr<ConnectionToClient> viewer_;
+  scoped_ptr<ConnectionToClient> viewer_;
 
   // Owned by |viewer_|.
   protocol::FakeSession* session_;

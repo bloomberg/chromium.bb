@@ -145,7 +145,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   friend class ChromotingHostTest;
 
   typedef std::vector<HostStatusObserver*> StatusObserverList;
-  typedef std::vector<scoped_refptr<ClientSession> > ClientList;
+  typedef std::vector<ClientSession*> ClientList;
 
   enum State {
     kInitial,

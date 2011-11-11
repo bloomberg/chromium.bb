@@ -33,6 +33,7 @@ using testing::CreateFunctor;
 using testing::DeleteArg;
 using testing::DoAll;
 using testing::InSequence;
+using testing::InvokeArgument;
 using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::ReturnRef;
@@ -105,8 +106,8 @@ class ChromotingHostTest : public testing::Test {
     session2_ = new MockSession();
     session_config_ = SessionConfig::GetDefault();
     session_jid_ = "user@domain/rest-of-jid";
-    session2_jid_ = "user2@domain/rest-of-jid";
     session_config2_ = SessionConfig::GetDefault();
+    session2_jid_ = "user2@domain/rest-of-jid";
     EXPECT_CALL(*session_, jid())
         .WillRepeatedly(ReturnRef(session_jid_));
     EXPECT_CALL(*session2_, jid())
@@ -119,61 +120,65 @@ class ChromotingHostTest : public testing::Test {
         .WillRepeatedly(ReturnRef(session_config_));
     EXPECT_CALL(*session2_, config())
         .WillRepeatedly(ReturnRef(session_config2_));
+    EXPECT_CALL(*session_, Close())
+        .Times(AnyNumber());
+    EXPECT_CALL(*session2_, Close())
+        .Times(AnyNumber());
 
-    connection_ = new MockConnectionToClient(
-        session_, &host_stub_, event_executor_);
-    connection2_ = new MockConnectionToClient(
-        session2_, &host_stub2_, &event_executor2_);
+    owned_connection_.reset(new MockConnectionToClient(
+        session_, &host_stub_, event_executor_));
+    connection_ = owned_connection_.get();
+    owned_connection2_.reset(new MockConnectionToClient(
+        session2_, &host_stub2_, &event_executor2_));
+    connection2_ = owned_connection2_.get();
 
     ON_CALL(video_stub_, ProcessVideoPacket(_, _))
         .WillByDefault(DeleteArg<0>());
     ON_CALL(video_stub2_, ProcessVideoPacket(_, _))
         .WillByDefault(DeleteArg<0>());
-    ON_CALL(*connection_.get(), video_stub())
+    ON_CALL(*connection_, video_stub())
         .WillByDefault(Return(&video_stub_));
-    ON_CALL(*connection_.get(), client_stub())
+    ON_CALL(*connection_, client_stub())
         .WillByDefault(Return(&client_stub_));
-    ON_CALL(*connection_.get(), session())
+    ON_CALL(*connection_, session())
         .WillByDefault(Return(session_));
-    ON_CALL(*connection2_.get(), video_stub())
+    ON_CALL(*connection2_, video_stub())
         .WillByDefault(Return(&video_stub2_));
-    ON_CALL(*connection2_.get(), client_stub())
+    ON_CALL(*connection2_, client_stub())
         .WillByDefault(Return(&client_stub2_));
-    ON_CALL(*connection2_.get(), session())
+    ON_CALL(*connection2_, session())
         .WillByDefault(Return(session2_));
-    EXPECT_CALL(*connection_.get(), video_stub())
+    EXPECT_CALL(*connection_, video_stub())
         .Times(AnyNumber());
-    EXPECT_CALL(*connection_.get(), client_stub())
+    EXPECT_CALL(*connection_, client_stub())
         .Times(AnyNumber());
-    EXPECT_CALL(*connection_.get(), session())
+    EXPECT_CALL(*connection_, session())
         .Times(AnyNumber());
-    EXPECT_CALL(*connection2_.get(), video_stub())
+    EXPECT_CALL(*connection2_, video_stub())
         .Times(AnyNumber());
-    EXPECT_CALL(*connection2_.get(), client_stub())
+    EXPECT_CALL(*connection2_, client_stub())
         .Times(AnyNumber());
-    EXPECT_CALL(*connection2_.get(), session())
+    EXPECT_CALL(*connection2_, session())
         .Times(AnyNumber());
   }
 
   virtual void TearDown() OVERRIDE {
-    connection_ = NULL;
-    client_ = NULL;
-    connection2_ = NULL;
-    client2_ = NULL;
+    owned_connection_.reset();
+    owned_connection2_.reset();
     host_ = NULL;
+    // Run message loop before destroying because protocol::Session is
+    // destroyed asynchronously.
     message_loop_.RunAllPending();
   }
 
   // Helper method to pretend a client is connected to ChromotingHost.
   void SimulateClientConnection(int connection_index, bool authenticate) {
-    scoped_refptr<protocol::ConnectionToClient> connection =
-        (connection_index == 0) ? connection_ : connection2_;
-    scoped_refptr<ClientSession> client = new ClientSession(
-        host_.get(),
-        connection,
-        event_executor_,
+    protocol::ConnectionToClient* connection = (connection_index == 0) ?
+        owned_connection_.release() : owned_connection2_.release();
+    ClientSession* client = new ClientSession(
+        host_.get(), connection, event_executor_,
         desktop_environment_->capturer());
-    connection->set_host_stub(client.get());
+    connection->set_host_stub(client);
 
     context_.network_message_loop()->PostTask(
         FROM_HERE, base::Bind(&ChromotingHostTest::AddClientToHost,
@@ -181,7 +186,7 @@ class ChromotingHostTest : public testing::Test {
     if (authenticate) {
       context_.network_message_loop()->PostTask(
           FROM_HERE, base::Bind(&ClientSession::OnConnectionOpened,
-                                client.get(), connection));
+                                base::Unretained(client), connection));
     }
 
     if (connection_index == 0) {
@@ -197,7 +202,7 @@ class ChromotingHostTest : public testing::Test {
   }
 
   static void AddClientToHost(scoped_refptr<ChromotingHost> host,
-                              scoped_refptr<ClientSession> session) {
+                              ClientSession* session) {
     host->clients_.push_back(session);
   }
 
@@ -215,16 +220,18 @@ class ChromotingHostTest : public testing::Test {
   scoped_refptr<ChromotingHost> host_;
   scoped_refptr<InMemoryHostConfig> config_;
   MockChromotingHostContext context_;
-  scoped_refptr<MockConnectionToClient> connection_;
-  scoped_refptr<ClientSession> client_;
+  MockConnectionToClient* connection_;
+  scoped_ptr<MockConnectionToClient> owned_connection_;
+  ClientSession* client_;
   std::string session_jid_;
   MockSession* session_;  // Owned by |connection_|.
   SessionConfig session_config_;
   MockVideoStub video_stub_;
   MockClientStub client_stub_;
   MockHostStub host_stub_;
-  scoped_refptr<MockConnectionToClient> connection2_;
-  scoped_refptr<ClientSession> client2_;
+  MockConnectionToClient* connection2_;
+  scoped_ptr<MockConnectionToClient> owned_connection2_;
+  ClientSession* client2_;
   std::string session2_jid_;
   MockSession* session2_;  // Owned by |connection2_|.
   SessionConfig session_config2_;
@@ -269,7 +276,7 @@ TEST_F(ChromotingHostTest, DISABLED_Connect) {
         .RetiresOnSaturation();
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .Times(AnyNumber());
-    EXPECT_CALL(*connection_.get(), Disconnect())
+    EXPECT_CALL(*connection_, Disconnect())
         .RetiresOnSaturation();
   }
   SimulateClientConnection(0, true);
@@ -302,7 +309,7 @@ TEST_F(ChromotingHostTest, DISABLED_Reconnect) {
   }
 
   // If Disconnect() is called we can break the main message loop.
-  EXPECT_CALL(*connection_.get(), Disconnect())
+  EXPECT_CALL(*connection_, Disconnect())
       .WillOnce(QuitMainMessageLoop(&message_loop_))
       .RetiresOnSaturation();
 
@@ -325,7 +332,7 @@ TEST_F(ChromotingHostTest, DISABLED_Reconnect) {
         .Times(AnyNumber());
   }
 
-  EXPECT_CALL(*connection_.get(), Disconnect())
+  EXPECT_CALL(*connection_, Disconnect())
       .RetiresOnSaturation();
 
   SimulateClientConnection(0, true);
@@ -368,9 +375,9 @@ TEST_F(ChromotingHostTest, DISABLED_ConnectTwice) {
         .Times(AnyNumber());
   }
 
-  EXPECT_CALL(*connection_.get(), Disconnect())
+  EXPECT_CALL(*connection_, Disconnect())
       .RetiresOnSaturation();
-  EXPECT_CALL(*connection2_.get(), Disconnect())
+  EXPECT_CALL(*connection2_, Disconnect())
       .RetiresOnSaturation();
 
   SimulateClientConnection(0, true);
@@ -432,6 +439,20 @@ TEST_F(ChromotingHostTest, CurtainModeFailSecond) {
 
   SimulateClientConnection(0, true);
   message_loop_.Run();
+
+  // Curtain is removed when there are no clients connected.
+  EXPECT_CALL(*curtain_, EnableCurtainMode(false))
+      .Times(AtLeast(1));
+  EXPECT_CALL(*continue_window_, Hide())
+      .Times(AtLeast(1));
+  EXPECT_CALL(*disconnect_window_, Hide())
+      .Times(AtLeast(1));
+  EXPECT_CALL(*local_input_monitor_, Stop())
+      .Times(AtLeast(1));
+
+  // Close connections before destroying the host.
+  client_->OnConnectionClosed(connection_);
+  client2_->OnConnectionClosed(connection2_);
 }
 
 ACTION_P(SetBool, var) { *var = true; }
@@ -462,7 +483,7 @@ TEST_F(ChromotingHostTest, CurtainModeIT2Me) {
             InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
             RunDoneTask()))
         .RetiresOnSaturation();
-    EXPECT_CALL(*connection_.get(), Disconnect())
+    EXPECT_CALL(*connection_, Disconnect())
         .InSequence(s1, s2)
         .WillOnce(InvokeWithoutArgs(
             this, &ChromotingHostTest::RemoveClientSession))

@@ -64,6 +64,7 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
 }
 
 ChromotingHost::~ChromotingHost() {
+  DCHECK(clients_.empty());
 }
 
 void ChromotingHost::Start() {
@@ -210,7 +211,7 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
 void ChromotingHost::OnSessionClosed(ClientSession* client) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
-  scoped_refptr<ClientSession> client_ref = client;
+  scoped_ptr<ClientSession> client_destroyer(client);
 
   ClientList::iterator it = std::find(clients_.begin(), clients_.end(), client);
   CHECK(it != clients_.end());
@@ -353,9 +354,8 @@ void ChromotingHost::OnIncomingSession(
   LOG(INFO) << "Client connected: " << session->jid();
 
   // Create a client object.
-  scoped_refptr<protocol::ConnectionToClient> connection =
-      new protocol::ConnectionToClient(context_->network_message_loop(),
-                                       session);
+  protocol::ConnectionToClient* connection =
+      new protocol::ConnectionToClient(session);
   ClientSession* client = new ClientSession(
       this, connection, desktop_environment_->event_executor(),
       desktop_environment_->capturer());
@@ -378,7 +378,7 @@ void ChromotingHost::LocalMouseMoved(const SkIPoint& new_pos) {
 
   ClientList::iterator client;
   for (client = clients_.begin(); client != clients_.end(); ++client) {
-    client->get()->LocalMouseMoved(new_pos);
+    (*client)->LocalMouseMoved(new_pos);
   }
 }
 
@@ -391,7 +391,7 @@ void ChromotingHost::PauseSession(bool pause) {
 
   ClientList::iterator client;
   for (client = clients_.begin(); client != clients_.end(); ++client) {
-    client->get()->set_awaiting_continue_approval(pause);
+    (*client)->set_awaiting_continue_approval(pause);
   }
   desktop_environment_->OnPause(pause);
 }
@@ -430,7 +430,7 @@ int ChromotingHost::AuthenticatedClientsCount() const {
   int authenticated_clients = 0;
   for (ClientList::const_iterator it = clients_.begin(); it != clients_.end();
        ++it) {
-    if (it->get()->authenticated())
+    if ((*it)->authenticated())
       ++authenticated_clients;
   }
   return authenticated_clients;

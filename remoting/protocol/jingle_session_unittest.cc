@@ -230,7 +230,7 @@ class JingleSessionTest : public testing::Test {
         // Expect that the connection will be closed eventually.
         EXPECT_CALL(host_connection_callback_,
                     OnStateChange(Session::CLOSED))
-            .Times(1);
+            .Times(AtMost(1));
       } else {
         // Might pass through the CONNECTED state.
         EXPECT_CALL(host_connection_callback_,
@@ -272,7 +272,7 @@ class JingleSessionTest : public testing::Test {
       // Expect that the connection will be closed eventually.
       EXPECT_CALL(client_connection_callback_,
                   OnStateChange(Session::CLOSED))
-          .Times(1);
+          .Times(AtMost(1));
     }
 
     client_session_.reset(client_server_->Connect(

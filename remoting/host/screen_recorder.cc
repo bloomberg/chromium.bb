@@ -79,8 +79,7 @@ void ScreenRecorder::Stop(const base::Closure& done_task) {
       &ScreenRecorder::DoStopOnNetworkThread, this, done_task));
 }
 
-void ScreenRecorder::AddConnection(
-    scoped_refptr<ConnectionToClient> connection) {
+void ScreenRecorder::AddConnection(ConnectionToClient* connection) {
   DCHECK(network_loop_->BelongsToCurrentThread());
   connections_.push_back(connection);
 
@@ -88,8 +87,7 @@ void ScreenRecorder::AddConnection(
       FROM_HERE, base::Bind(&ScreenRecorder::DoInvalidateFullScreen, this));
 }
 
-void ScreenRecorder::RemoveConnection(
-    scoped_refptr<ConnectionToClient> connection) {
+void ScreenRecorder::RemoveConnection(ConnectionToClient* connection) {
   DCHECK(network_loop_->BelongsToCurrentThread());
 
   ConnectionToClientList::iterator it =

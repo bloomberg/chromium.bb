@@ -17,38 +17,38 @@
 namespace remoting {
 namespace protocol {
 
-ConnectionToClient::ConnectionToClient(base::MessageLoopProxy* message_loop,
-                                       protocol::Session* session)
-    : message_loop_(message_loop),
-      handler_(NULL),
+ConnectionToClient::ConnectionToClient(protocol::Session* session)
+    : handler_(NULL),
       host_stub_(NULL),
       input_stub_(NULL),
       session_(session),
       control_connected_(false),
       input_connected_(false),
       video_connected_(false) {
-  DCHECK(message_loop_);
   session_->SetStateChangeCallback(
       base::Bind(&ConnectionToClient::OnSessionStateChange,
                  base::Unretained(this)));
 }
 
 ConnectionToClient::~ConnectionToClient() {
-  if (session_.get())
-    message_loop_->DeleteSoon(FROM_HERE, session_.release());
+  if (session_.get()) {
+    base::MessageLoopProxy::current()->DeleteSoon(
+        FROM_HERE, session_.release());
+  }
 }
 
 void ConnectionToClient::SetEventHandler(EventHandler* event_handler) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
   handler_ = event_handler;
 }
 
 protocol::Session* ConnectionToClient::session() {
+  DCHECK(CalledOnValidThread());
   return session_.get();
 }
 
 void ConnectionToClient::Disconnect() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
 
   CloseChannels();
 
@@ -58,7 +58,7 @@ void ConnectionToClient::Disconnect() {
   // It may not be safe to delete |session_| here becase this method
   // may be invoked in resonse to a libjingle event and libjingle's
   // sigslot doesn't handle it properly, so postpone the deletion.
-  message_loop_->DeleteSoon(FROM_HERE, session);
+  base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, session);
 
   // This should trigger OnConnectionClosed() event and this object
   // may be destroyed as the result.
@@ -66,28 +66,33 @@ void ConnectionToClient::Disconnect() {
 }
 
 void ConnectionToClient::UpdateSequenceNumber(int64 sequence_number) {
+  DCHECK(CalledOnValidThread());
   handler_->OnSequenceNumberUpdated(this, sequence_number);
 }
 
 VideoStub* ConnectionToClient::video_stub() {
+  DCHECK(CalledOnValidThread());
   return video_writer_.get();
 }
 
 // Return pointer to ClientStub.
 ClientStub* ConnectionToClient::client_stub() {
+  DCHECK(CalledOnValidThread());
   return client_control_sender_.get();
 }
 
 void ConnectionToClient::set_host_stub(protocol::HostStub* host_stub) {
+  DCHECK(CalledOnValidThread());
   host_stub_ = host_stub;
 }
 
 void ConnectionToClient::set_input_stub(protocol::InputStub* input_stub) {
+  DCHECK(CalledOnValidThread());
   input_stub_ = input_stub;
 }
 
 void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
 
   DCHECK(handler_);
   switch(state) {
@@ -97,7 +102,8 @@ void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
 
     case protocol::Session::CONNECTED:
       video_writer_.reset(
-          VideoWriter::Create(message_loop_, session_->config()));
+          VideoWriter::Create(base::MessageLoopProxy::current(),
+                              session_->config()));
       video_writer_->Init(
           session_.get(), base::Bind(&ConnectionToClient::OnVideoInitialized,
                                      base::Unretained(this)));
@@ -105,7 +111,8 @@ void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
 
     case protocol::Session::CONNECTED_CHANNELS:
       client_control_sender_.reset(
-          new ClientControlSender(message_loop_, session_->control_channel()));
+          new ClientControlSender(base::MessageLoopProxy::current(),
+                                  session_->control_channel()));
       dispatcher_.reset(new HostMessageDispatcher());
       dispatcher_->Initialize(this, host_stub_, input_stub_);
 
@@ -130,6 +137,8 @@ void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
 }
 
 void ConnectionToClient::OnVideoInitialized(bool successful) {
+  DCHECK(CalledOnValidThread());
+
   if (!successful) {
     LOG(ERROR) << "Failed to connect video channel";
     CloseOnError();
@@ -141,6 +150,8 @@ void ConnectionToClient::OnVideoInitialized(bool successful) {
 }
 
 void ConnectionToClient::NotifyIfChannelsReady() {
+  DCHECK(CalledOnValidThread());
+
   if (control_connected_ && input_connected_ && video_connected_)
     handler_->OnConnectionOpened(this);
 }

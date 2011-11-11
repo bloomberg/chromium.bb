@@ -8,9 +8,9 @@
 #include <deque>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/non_thread_safe.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/video_writer.h"
 
@@ -27,13 +27,10 @@ class HostStub;
 class InputStub;
 class HostMessageDispatcher;
 
-// This class represents a remote viewer connected to the chromoting host
-// through a libjingle connection. A viewer object is responsible for sending
-// screen updates and other messages to the remote viewer. It is also
-// responsible for receiving and parsing data from the remote viewer and
-// delegating events to the event handler.
-class ConnectionToClient :
-    public base::RefCountedThreadSafe<ConnectionToClient> {
+// This class represents a remote viewer connection to the chromoting
+// host. It sets up all protocol channels and connects them to the
+// stubs.
+class ConnectionToClient : public base::NonThreadSafe {
  public:
   class EventHandler {
    public:
@@ -53,10 +50,10 @@ class ConnectionToClient :
                                          int64 sequence_number) = 0;
   };
 
-  // Constructs a ConnectionToClient object for the
-  // |session|. |message_loop| is the message loop that this object
-  // runs on.
-  ConnectionToClient(base::MessageLoopProxy* message_loop, Session* session);
+  // Constructs a ConnectionToClient object for the |session|. Takes
+  // ownership of |session|.
+  ConnectionToClient(Session* session);
+  virtual ~ConnectionToClient();
 
   // Set |event_handler| for connection events. |event_handler| is
   // guaranteed to be used only on the network thread. Must be called
@@ -83,10 +80,6 @@ class ConnectionToClient :
   virtual void set_host_stub(HostStub* host_stub);
   virtual void set_input_stub(InputStub* input_stub);
 
- protected:
-  friend class base::RefCountedThreadSafe<ConnectionToClient>;
-  virtual ~ConnectionToClient();
-
  private:
   // Callback for protocol Session.
   void OnSessionStateChange(Session::State state);
@@ -100,9 +93,6 @@ class ConnectionToClient :
 
   // Stops writing in the channels.
   void CloseChannels();
-
-  // The message loop that this object runs on.
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
 
   // Event handler for handling events sent from this object.
   EventHandler* handler_;

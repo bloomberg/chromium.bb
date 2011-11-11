@@ -22,6 +22,7 @@ using ::remoting::protocol::MockVideoStub;
 
 using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::AnyNumber;
 using ::testing::DeleteArg;
 using ::testing::DoAll;
 using ::testing::InSequence;
@@ -71,14 +72,16 @@ class ScreenRecorderTest : public testing::Test {
   ScreenRecorderTest() {
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     // Capturer and Encoder are owned by ScreenRecorder.
     encoder_ = new MockEncoder();
 
     session_ = new MockSession();
     EXPECT_CALL(*session_, SetStateChangeCallback(_));
-    connection_ = new MockConnectionToClient(
-        session_, &host_stub_, &event_executor_);
+    EXPECT_CALL(*session_, Close())
+        .Times(AnyNumber());
+    connection_.reset(new MockConnectionToClient(
+        session_, &host_stub_, &event_executor_));
     connection_->SetEventHandler(&handler_);
 
     record_ = new ScreenRecorder(
@@ -88,8 +91,7 @@ class ScreenRecorderTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    record_ = NULL;
-    connection_ = NULL;
+    connection_.reset();
     // Run message loop before destroying because protocol::Session is
     // destroyed asynchronously.
     message_loop_.RunAllPending();
@@ -103,7 +105,7 @@ class ScreenRecorderTest : public testing::Test {
   MockHostStub host_stub_;
   MockEventExecutor event_executor_;
   MockSession* session_;  // Owned by |connection_|.
-  scoped_refptr<MockConnectionToClient> connection_;
+  scoped_ptr<MockConnectionToClient> connection_;
 
   // The following mock objects are owned by ScreenRecorder.
   MockCapturer capturer_;
@@ -155,7 +157,7 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
       .RetiresOnSaturation();
 
   // Add the mock client connection to the session.
-  record_->AddConnection(connection_);
+  record_->AddConnection(connection_.get());
 
   // Start the recording.
   record_->Start();

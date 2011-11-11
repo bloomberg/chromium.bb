@@ -37,15 +37,14 @@ class ClientSessionTest : public testing::Test {
     EXPECT_CALL(*session, jid()).WillRepeatedly(ReturnRef(client_jid_));
     EXPECT_CALL(*session, SetStateChangeCallback(_));
 
-    client_session_ = new ClientSession(
+    client_session_.reset(new ClientSession(
         &session_event_handler_,
-        new protocol::ConnectionToClient(
-            base::MessageLoopProxy::current(), session),
-        &input_stub_, &capturer_);
+        new protocol::ConnectionToClient(session),
+        &input_stub_, &capturer_));
   }
 
   virtual void TearDown() OVERRIDE {
-    client_session_ = NULL;
+    client_session_.reset();
     // Run message loop before destroying because protocol::Session is
     // destroyed asynchronously.
     message_loop_.RunAllPending();
@@ -59,7 +58,7 @@ class ClientSessionTest : public testing::Test {
   MockInputStub input_stub_;
   MockCapturer capturer_;
   MockClientSessionEventHandler session_event_handler_;
-  scoped_refptr<ClientSession> client_session_;
+  scoped_ptr<ClientSession> client_session_;
 };
 
 MATCHER_P2(EqualsKeyEvent, keycode, pressed, "") {

@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/time.h"
+#include "base/threading/non_thread_safe.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
@@ -23,7 +24,7 @@ class Capturer;
 class ClientSession : public protocol::HostStub,
                       public protocol::InputStub,
                       public protocol::ConnectionToClient::EventHandler,
-                      public base::RefCountedThreadSafe<ClientSession> {
+                      public base::NonThreadSafe {
  public:
   // Callback interface for passing events to the ChromotingHost.
   class EventHandler {
@@ -36,12 +37,13 @@ class ClientSession : public protocol::HostStub,
                                          int64 sequence_number) = 0;
   };
 
-  // Takes ownership of |user_authenticator|. Does not take ownership of
+  // Takes ownership of |connection|. Does not take ownership of
   // |event_handler|, |input_stub| or |capturer|.
   ClientSession(EventHandler* event_handler,
-                scoped_refptr<protocol::ConnectionToClient> connection,
+                protocol::ConnectionToClient* connection,
                 protocol::InputStub* input_stub,
                 Capturer* capturer);
+  virtual ~ClientSession();
 
   // protocol::InputStub interface.
   virtual void InjectKeyEvent(const protocol::KeyEvent& event);
@@ -86,9 +88,7 @@ class ClientSession : public protocol::HostStub,
   bool ShouldIgnoreRemoteKeyboardInput(const protocol::KeyEvent& event) const;
 
  private:
-  friend class base::RefCountedThreadSafe<ClientSession>;
   friend class ClientSessionTest_RestoreEventState_Test;
-  virtual ~ClientSession();
 
   // Keep track of input state so that we can clean up the event queue when
   // the user disconnects.
@@ -102,7 +102,7 @@ class ClientSession : public protocol::HostStub,
   EventHandler* event_handler_;
 
   // The connection to the client.
-  scoped_refptr<protocol::ConnectionToClient> connection_;
+  scoped_ptr<protocol::ConnectionToClient> connection_;
 
   std::string client_jid_;
 

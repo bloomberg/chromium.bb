@@ -94,10 +94,10 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   void Stop(const base::Closure& done_task);
 
   // Add a connection to this recording session.
-  void AddConnection(scoped_refptr<protocol::ConnectionToClient> connection);
+  void AddConnection(protocol::ConnectionToClient* connection);
 
   // Remove a connection from receiving screen updates.
-  void RemoveConnection(scoped_refptr<protocol::ConnectionToClient> connection);
+  void RemoveConnection(protocol::ConnectionToClient* connection);
 
   // Remove all connections.
   void RemoveAllConnections();
@@ -165,8 +165,7 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
 
   // A list of clients connected to this hosts.
   // This member is always accessed on the network thread.
-  typedef std::vector<scoped_refptr<protocol::ConnectionToClient> >
-      ConnectionToClientList;
+  typedef std::vector<protocol::ConnectionToClient*> ConnectionToClientList;
   ConnectionToClientList connections_;
 
   // Flag that indicates recording has been started. This variable should only
