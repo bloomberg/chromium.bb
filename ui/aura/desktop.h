@@ -122,6 +122,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   void AddObserver(DesktopObserver* observer);
   void RemoveObserver(DesktopObserver* observer);
 
+  // Are any mouse buttons currently down?
+  bool IsMouseButtonDown() const;
+
   // Capture -------------------------------------------------------------------
 
   // Sets capture to the specified window.
@@ -191,6 +194,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
 
   // Last location seen in a mouse event.
   gfx::Point last_mouse_location_;
+
+  // ui::EventFlags containing the current state of the mouse buttons.
+  int mouse_button_flags_;
 
   // Last cursor set.  Used for testing.
   gfx::NativeCursor last_cursor_;

@@ -151,6 +151,7 @@ Desktop::Desktop()
           stacking_client_(new DefaultStackingClient(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
       active_window_(NULL),
+      mouse_button_flags_(0),
       last_cursor_(kCursorNull),
       in_destructor_(false),
       screen_(new ScreenAura),
@@ -231,6 +232,11 @@ void Desktop::Draw() {
 }
 
 bool Desktop::DispatchMouseEvent(MouseEvent* event) {
+  static const int kMouseButtonFlagMask =
+      ui::EF_LEFT_BUTTON_DOWN |
+      ui::EF_MIDDLE_BUTTON_DOWN |
+      ui::EF_RIGHT_BUTTON_DOWN;
+
   event->UpdateForTransform(layer()->transform());
 
   last_mouse_location_ = event->location();
@@ -246,9 +252,11 @@ bool Desktop::DispatchMouseEvent(MouseEvent* event) {
     case ui::ET_MOUSE_PRESSED:
       if (!mouse_pressed_handler_)
         mouse_pressed_handler_ = target;
+      mouse_button_flags_ = event->flags() & kMouseButtonFlagMask;
       break;
     case ui::ET_MOUSE_RELEASED:
       mouse_pressed_handler_ = NULL;
+      mouse_button_flags_ = event->flags() & kMouseButtonFlagMask;
       break;
     default:
       break;
@@ -397,6 +405,10 @@ void Desktop::AddObserver(DesktopObserver* observer) {
 
 void Desktop::RemoveObserver(DesktopObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+bool Desktop::IsMouseButtonDown() const {
+  return mouse_button_flags_ != 0;
 }
 
 void Desktop::SetCapture(Window* window) {

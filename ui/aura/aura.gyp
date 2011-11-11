@@ -26,7 +26,7 @@
         'aura_switches.cc',
         'aura_switches.h',
         'client/aura_constants.cc',
-        'client/aura_constants.h',        
+        'client/aura_constants.h',
         'client/stacking_client.h',
         'cursor.h',
         'desktop_host.h',

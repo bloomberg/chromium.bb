@@ -57,8 +57,7 @@ class NonClientDelegate : public TestWindowDelegate {
 
 }  // namespace
 
-class DesktopTest : public AuraTestBase {
-};
+typedef AuraTestBase DesktopTest;
 
 TEST_F(DesktopTest, DispatchMouseEvent) {
   // Create two non-overlapping windows so we don't have to worry about which
@@ -91,6 +90,56 @@ TEST_F(DesktopTest, DispatchMouseEvent) {
   EXPECT_EQ(gfx::Point(1, 1), delegate1->mouse_event_location());
   // Non-client flag was set.
   EXPECT_TRUE(delegate1->mouse_event_flags() & ui::EF_IS_NON_CLIENT);
+}
+
+// Check that we correctly track the state of the mouse buttons in response to
+// button press and release events.
+TEST_F(DesktopTest, MouseButtonState) {
+  Desktop* desktop = Desktop::GetInstance();
+  EXPECT_FALSE(desktop->IsMouseButtonDown());
+
+  gfx::Point location;
+  scoped_ptr<MouseEvent> event;
+
+  // Press the left button.
+  event.reset(new MouseEvent(
+      ui::ET_MOUSE_PRESSED,
+      location,
+      ui::EF_LEFT_BUTTON_DOWN));
+  desktop->DispatchMouseEvent(event.get());
+  EXPECT_TRUE(desktop->IsMouseButtonDown());
+
+  // Additionally press the right.
+  event.reset(new MouseEvent(
+      ui::ET_MOUSE_PRESSED,
+      location,
+      ui::EF_LEFT_BUTTON_DOWN | ui::EF_RIGHT_BUTTON_DOWN));
+  desktop->DispatchMouseEvent(event.get());
+  EXPECT_TRUE(desktop->IsMouseButtonDown());
+
+  // Release the left button.
+  event.reset(new MouseEvent(
+      ui::ET_MOUSE_RELEASED,
+      location,
+      ui::EF_RIGHT_BUTTON_DOWN));
+  desktop->DispatchMouseEvent(event.get());
+  EXPECT_TRUE(desktop->IsMouseButtonDown());
+
+  // Release the right button.  We should ignore the Shift-is-down flag.
+  event.reset(new MouseEvent(
+      ui::ET_MOUSE_RELEASED,
+      location,
+      ui::EF_SHIFT_DOWN));
+  desktop->DispatchMouseEvent(event.get());
+  EXPECT_FALSE(desktop->IsMouseButtonDown());
+
+  // Press the middle button.
+  event.reset(new MouseEvent(
+      ui::ET_MOUSE_PRESSED,
+      location,
+      ui::EF_MIDDLE_BUTTON_DOWN));
+  desktop->DispatchMouseEvent(event.get());
+  EXPECT_TRUE(desktop->IsMouseButtonDown());
 }
 
 }  // namespace test

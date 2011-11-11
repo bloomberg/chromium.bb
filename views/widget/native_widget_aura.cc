@@ -723,9 +723,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
 
 // static
 bool NativeWidgetPrivate::IsMouseButtonDown() {
-  // http://crbug.com/102577
-  NOTIMPLEMENTED();
-  return false;
+  return aura::Desktop::GetInstance()->IsMouseButtonDown();
 }
 
 }  // namespace internal

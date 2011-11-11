@@ -857,8 +857,8 @@ class WindowObserverTest : public WindowTest,
     std::string result(
         base::StringPrintf("name=%s old=%ld new=%ld",
                            property_name_.c_str(),
-                           old_property_value_,
-                           new_property_value_));
+                           static_cast<long>(old_property_value_),
+                           static_cast<long>(new_property_value_)));
     property_name_.clear();
     old_property_value_ = 0;
     new_property_value_ = 0;
