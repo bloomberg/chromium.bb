@@ -193,7 +193,7 @@ void GpuCommandBufferStub::OnInitialize(
         renderer_id_,
         route_id_,
         handle_);
-#elif defined(OS_WIN) || defined(OS_LINUX)
+#elif defined(OS_WIN) || defined(OS_LINUX) || defined(OS_OPENBSD)
     surface_ = gfx::GLSurface::CreateViewGLSurface(software_, handle_);
 #endif
   } else {

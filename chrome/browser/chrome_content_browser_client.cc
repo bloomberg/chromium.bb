@@ -84,7 +84,7 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_OPENBSD)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
@@ -102,7 +102,7 @@
 #include "chrome/browser/chrome_browser_parts_aura.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
 #include "base/linux_util.h"
 #include "chrome/browser/crash_handler_host_linux.h"
 #endif
@@ -226,7 +226,7 @@ void ChromeContentBrowserClient::CreateBrowserMainParts(
   parts_list->push_back(new ChromeBrowserMainPartsMac(parameters));
 #elif defined(OS_CHROMEOS)
   parts_list->push_back(new ChromeBrowserMainPartsChromeos(parameters));
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_OPENBSD)
   parts_list->push_back(new ChromeBrowserMainPartsLinux(parameters));
 #elif defined(OS_POSIX)
   parts_list->push_back(new ChromeBrowserMainPartsPosix(parameters));
@@ -1024,7 +1024,7 @@ std::string ChromeContentBrowserClient::GetDefaultDownloadName() {
   return l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME);
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 int ChromeContentBrowserClient::GetCrashSignalFD(
     const CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kExtensionProcess)) {
@@ -1050,7 +1050,7 @@ int ChromeContentBrowserClient::GetCrashSignalFD(
 
   return -1;
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
 #if defined(OS_WIN)
 const wchar_t* ChromeContentBrowserClient::GetResourceDllName() {

@@ -77,13 +77,27 @@ TEST_F(MultiProcessLockTest, BasicCreationTest) {
 }
 
 TEST_F(MultiProcessLockTest, LongNameTest) {
-  // Linux has a max path name of 108 characters.
-  // http://lxr.linux.no/linux+v2.6.36/include/linux/un.h
-  // This is enforced on all platforms.
+  // Every platform has has it's own max path name size,
+  // so different checks are needed for them.
+  // POSIX: sizeof(address.sun_path) - 2
+  // Mac OS X: BOOTSTRAP_MAX_NAME_LEN
+  // Windows: MAX_PATH
   LOG(INFO) << "Following error log due to long name is expected";
+#if defined(OS_MACOSX)
+  std::string name("This is a name that is longer than one hundred and "
+      "twenty-eight characters to make sure that we fail appropriately on "
+      "Mac OS X when we have a path that is too long for Mac OS X to handle");
+#elif defined(OS_POSIX)
   std::string name("This is a name that is longer than one hundred and eight "
-      "characters to make sure that we fail appropriately on linux when we "
-      "have a path that is to long for linux to handle");
+      "characters to make sure that we fail appropriately on POSIX systems "
+      "when we have a path that is too long for the system to handle");
+#elif defined(OS_WIN)
+  std::string name("This is a name that is longer than two hundred and sixty "
+      "characters to make sure that we fail appropriately on Windows when we "
+      "have a path that is too long for Windows to handle "
+      "This limitation comes from the MAX_PATH definition which is obviously "
+      "defined to be a maximum of two hundred and sixty characters ");
+#endif
   scoped_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
   EXPECT_FALSE(test_lock->TryLock());
 }

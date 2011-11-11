@@ -32,7 +32,7 @@
 #include "base/win/registry.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
 #include "base/files/file_path_watcher.h"
 #endif
 
@@ -241,7 +241,7 @@ class CONTENT_EXPORT PluginService
       const FilePath& plugin_path,
       PluginProcessHost::Client* client);
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
   // Registers a new FilePathWatcher for a given path.
   static void RegisterFilePathWatcher(
       base::files::FilePathWatcher* watcher,
@@ -267,7 +267,7 @@ class CONTENT_EXPORT PluginService
   base::WaitableEventWatcher hklm_watcher_;
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
   ScopedVector<base::files::FilePathWatcher> file_watchers_;
   scoped_refptr<PluginDirWatcherDelegate> file_watcher_delegate_;
 #endif

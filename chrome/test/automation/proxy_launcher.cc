@@ -29,6 +29,10 @@
 #include "ipc/ipc_descriptors.h"
 #include "sql/connection.h"
 
+#if defined(OS_POSIX)
+#include <signal.h>
+#endif
+
 namespace {
 
 // Passed as value of kTestType.

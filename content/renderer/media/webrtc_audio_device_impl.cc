@@ -366,7 +366,7 @@ int32_t WebRtcAudioDeviceImpl::Init() {
     input_buffer_size = 440;
     output_buffer_size = 440;
   }
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_OPENBSD)
   if (output_sample_rate != 48000) {
     DLOG(ERROR) << "Only 48kHz sample rate is supported on Linux.";
     return -1;

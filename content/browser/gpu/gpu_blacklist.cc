@@ -851,7 +851,7 @@ GpuBlacklist::OsType GpuBlacklist::GetOsType() {
   return kOsChromeOS;
 #elif defined(OS_WIN)
   return kOsWin;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_OPENBSD)
   return kOsLinux;
 #elif defined(OS_MACOSX)
   return kOsMacosx;

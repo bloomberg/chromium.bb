@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,6 @@
 // the exit is due to a crash. Locks are not recursive.
 class MultiProcessLock {
  public:
-
-  // The length of a multi-process lock name is limited on Linux, so
-  // it is limited it on all platforms for consistency. This length does
-  // not include a terminator.
-  static const size_t MULTI_PROCESS_LOCK_NAME_MAX_LEN = 106;
 
   // Factory method for creating a multi-process lock.
   // |name| is the name of the lock. The name has special meaning on Windows

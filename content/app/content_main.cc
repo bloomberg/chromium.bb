@@ -315,7 +315,7 @@ int ContentMain(int argc,
   base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
   g_fds->Set(kPrimaryIPCChannel,
              kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
   g_fds->Set(kCrashDumpSignal,
              kCrashDumpSignal + base::GlobalDescriptors::kBaseDescriptor);
 #endif

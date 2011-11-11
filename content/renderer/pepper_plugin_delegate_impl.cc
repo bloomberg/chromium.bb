@@ -145,7 +145,7 @@ class PlatformImage2DImpl
     return reinterpret_cast<intptr_t>(dib_->handle());
 #elif defined(OS_MACOSX)
     return static_cast<intptr_t>(dib_->handle().fd);
-#elif defined(OS_LINUX)
+#elif defined(OS_POSIX)
     return static_cast<intptr_t>(dib_->handle());
 #endif
   }

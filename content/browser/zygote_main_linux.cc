@@ -758,6 +758,7 @@ static bool EnterSandbox() {
     SkiaFontConfigSetImplementation(
         new FontConfigIPC(kMagicSandboxIPCDescriptor));
 
+#if !defined(OS_OPENBSD)
     // Previously, we required that the binary be non-readable. This causes the
     // kernel to mark the process as non-dumpable at startup. The thinking was
     // that, although we were putting the renderers into a PID namespace (with
@@ -783,6 +784,7 @@ static bool EnterSandbox() {
         return false;
       }
     }
+#endif
 #if defined(SECCOMP_SANDBOX)
   } else if (SeccompSandboxEnabled()) {
     PreSandboxInit();

@@ -24,33 +24,30 @@ class MultiProcessLockLinux : public MultiProcessLock {
   }
 
   virtual bool TryLock() {
+    struct sockaddr_un address;
+
+    // +1 for terminator, +1 for 0 in position 0 that makes it an
+    // abstract named socket.
+    const size_t max_len = sizeof(address.sun_path) - 2;
+
     if (fd_ != -1) {
       DLOG(ERROR) << "MultiProcessLock is already locked - " << name_;
       return true;
     }
 
-    if (name_.length() > MULTI_PROCESS_LOCK_NAME_MAX_LEN) {
+    if (name_.length() > max_len) {
       LOG(ERROR) << "Socket name too long (" << name_.length()
-                 << " > " << MULTI_PROCESS_LOCK_NAME_MAX_LEN << ") - " << name_;
+                 << " > " << max_len << ") - " << name_;
       return false;
     }
 
-    struct sockaddr_un address;
-
-    // +1 for terminator, +1 for 0 in position 0 that makes it an
-    // abstract named socket.
-    // If this assert fails it is because sockaddr_un.sun_path size has been
-    // redefined and MULTI_PROCESS_LOCK_NAME_MAX_LEN can change accordingly.
-    COMPILE_ASSERT(sizeof(address.sun_path)
-        == MULTI_PROCESS_LOCK_NAME_MAX_LEN + 2, sun_path_size_changed);
-
     memset(&address, 0, sizeof(address));
     int print_length = snprintf(&address.sun_path[1],
-                                MULTI_PROCESS_LOCK_NAME_MAX_LEN + 1,
+                                max_len + 1,
                                 "%s", name_.c_str());
 
     if (print_length < 0 ||
-        print_length > static_cast<int>(MULTI_PROCESS_LOCK_NAME_MAX_LEN)) {
+        print_length > static_cast<int>(max_len)) {
       PLOG(ERROR) << "Couldn't create sun_path - " << name_;
       return false;
     }

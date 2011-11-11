@@ -189,7 +189,8 @@ TEST_F(GpuBlacklistTest, VendorOnAllOsEntry) {
       GpuBlacklist::kOsLinux, os_version.get(), gpu_info());
   EXPECT_EQ(flags.flags(),
             static_cast<uint32>(GpuFeatureFlags::kGpuFeatureWebgl));
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX) || \
+    defined(OS_OPENBSD)
   // Blacklist entries will be filtered to the current OS only upon loading.
   EXPECT_TRUE(
       blacklist.LoadGpuBlacklist(vendor_json, GpuBlacklist::kCurrentOsOnly));

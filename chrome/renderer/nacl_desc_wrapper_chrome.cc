@@ -14,7 +14,7 @@ namespace nacl {
 DescWrapper* DescWrapperFactory::ImportPepperSharedMemory(intptr_t shm_int,
                                                           size_t size) {
   base::SharedMemory* shm = reinterpret_cast<base::SharedMemory*>(shm_int);
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_OPENBSD)
   return ImportShmHandle(shm->handle().fd, size);
 #elif defined(OS_WIN)
   return ImportShmHandle(shm->handle(), size);
@@ -25,7 +25,7 @@ DescWrapper* DescWrapperFactory::ImportPepperSharedMemory(intptr_t shm_int,
 
 DescWrapper* DescWrapperFactory::ImportPepper2DSharedMemory(intptr_t shm_int) {
   TransportDIB* dib = reinterpret_cast<TransportDIB*>(shm_int);
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
   // TransportDIBs use SysV (X) shared memory on Linux.
   return ImportSysvShm(dib->handle(), dib->size());
 #elif defined(OS_MACOSX)

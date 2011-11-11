@@ -18,7 +18,8 @@
 #include "content/public/common/content_switches.h"
 
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(CHROMIUM_SELINUX) && \
-  !defined(__clang__) && !defined(OS_CHROMEOS) && !defined(TOOLKIT_VIEWS)
+  !defined(__clang__) && !defined(OS_CHROMEOS) && !defined(TOOLKIT_VIEWS) && \
+  !defined(OS_OPENBSD)
 #define SECCOMP_SANDBOX
 #include "seccompsandbox/sandbox.h"
 #endif

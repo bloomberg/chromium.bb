@@ -33,7 +33,7 @@ static const size_t kMaxSwitches = 15;
 
 namespace child_process_logging {
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
 // These are declared here so the crash reporter can access them directly in
 // compromised context without going through the standard library.
 extern char g_active_url[];

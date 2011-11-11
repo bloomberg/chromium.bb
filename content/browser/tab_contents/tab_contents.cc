@@ -1972,7 +1972,7 @@ bool TabContents::CreateRenderViewForRenderManager(
   if (!render_view_host->CreateRenderView(string16()))
     return false;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
   // Force a ViewMsg_Resize to be sent, needed to make plugins show up on
   // linux. See crbug.com/83941.
   if (RenderWidgetHost* render_widget_host = rwh_view->GetRenderWidgetHost())
