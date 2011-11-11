@@ -128,7 +128,7 @@ LocationBarView::LocationBarView(Browser* browser,
       ev_bubble_view_(NULL),
       location_entry_view_(NULL),
       selected_keyword_view_(NULL),
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
       suggested_text_view_(NULL),
 #endif
       keyword_hint_view_(NULL),
