@@ -76,7 +76,7 @@ class ResourceContext;
 class AudioManager;
 struct AudioParameters;
 
-class AudioInputRendererHost
+class CONTENT_EXPORT AudioInputRendererHost
     : public BrowserMessageFilter,
       public media::AudioInputController::EventHandler,
       public media_stream::AudioInputDeviceManagerEventHandler {

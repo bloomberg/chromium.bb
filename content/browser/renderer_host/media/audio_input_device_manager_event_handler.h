@@ -8,9 +8,11 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_DEVICE_MANAGER_EVENT_HANDLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_DEVICE_MANAGER_EVENT_HANDLER_H_
 
+#include "content/common/content_export.h"
+
 namespace media_stream {
 
-class AudioInputDeviceManagerEventHandler {
+class CONTENT_EXPORT AudioInputDeviceManagerEventHandler {
  public:
   // Called by AudioInputDeviceManager to create an audio stream using the
   // device index when the device has been started.
