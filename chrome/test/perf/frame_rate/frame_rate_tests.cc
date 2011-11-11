@@ -99,6 +99,7 @@ class FrameRateTest
     if (!HasFlag(kUseGpu)) {
       launch_arguments_.AppendSwitch(switches::kDisableAcceleratedCompositing);
       launch_arguments_.AppendSwitch(switches::kDisableExperimentalWebGL);
+      launch_arguments_.AppendSwitch(switches::kDisableAccelerated2dCanvas);
     } else {
       // This switch is required for enabling the accelerated 2d canvas on
       // Chrome versions prior to Chrome 15, which may be the case for the
@@ -120,7 +121,7 @@ class FrameRateTest
 
     gfx::GLImplementation gl_impl = gfx::kGLImplementationNone;
     const TraceEvent* gpu_event = analyzer->FindOneEvent(
-        Query(EVENT_NAME) == Query::String("GLES2DecoderImpl::Initialize") &&
+        Query(EVENT_NAME) == Query::String("SwapBuffers") &&
         Query(EVENT_HAS_NUMBER_ARG, "GLImpl"));
     if (gpu_event)
       gl_impl = static_cast<gfx::GLImplementation>(

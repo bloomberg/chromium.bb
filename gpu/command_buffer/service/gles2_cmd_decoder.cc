@@ -2062,10 +2062,6 @@ bool GLES2DecoderImpl::Initialize(
     return false;
   }
 
-  // TRACE_EVENT for gpu tests:
-  TRACE_EVENT_INSTANT1("test_gpu", "GLES2DecoderImpl::Initialize", "GLImpl",
-                       static_cast<int>(gfx::GetGLImplementation()));
-
   return true;
 }
 
@@ -7088,6 +7084,9 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
     uint32 immediate_data_size, const gles2::SwapBuffers& c) {
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
   int this_frame_number = frame_number_++;
+  // TRACE_EVENT for gpu tests:
+  TRACE_EVENT_INSTANT1("test_gpu", "SwapBuffers",
+                       "GLImpl", static_cast<int>(gfx::GetGLImplementation()));
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleSwapBuffers",
                "offscreen", is_offscreen,
                "frame", this_frame_number);
