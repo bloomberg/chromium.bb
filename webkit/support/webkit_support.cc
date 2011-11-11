@@ -645,4 +645,9 @@ double GetForegroundTabTimerInterval() {
   return webkit_glue::kForegroundTabTimerInterval;
 }
 
+// Logging
+void EnableWebCoreLogChannels(const std::string& channels) {
+  webkit_glue::EnableWebCoreLogChannels(channels);
+}
+
 }  // namespace webkit_support

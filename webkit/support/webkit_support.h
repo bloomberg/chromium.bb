@@ -220,6 +220,10 @@ int NativeKeyCodeForWindowsKeyCode(int keycode, bool shift);
 
 double GetForegroundTabTimerInterval();
 
+// - Logging
+
+void EnableWebCoreLogChannels(const std::string& channels);
+
 }  // namespace webkit_support
 
 #endif  // WEBKIT_SUPPORT_WEBIT_CLIENT_IMPL_H_
