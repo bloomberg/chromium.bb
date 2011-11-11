@@ -73,17 +73,15 @@ void PluginPrefs::SetPluginListForTesting(
 }
 
 void PluginPrefs::EnablePluginGroup(bool enabled, const string16& group_name) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&PluginPrefs::EnablePluginGroup, this, enabled, group_name));
-    return;
-  }
+  PluginService::GetInstance()->GetPluginGroups(
+        base::Bind(&PluginPrefs::EnablePluginGroupInternal,
+                   this, enabled, group_name));
+}
 
-  webkit::npapi::PluginList* plugin_list = GetPluginList();
-  std::vector<webkit::npapi::PluginGroup> groups;
-  plugin_list->GetPluginGroups(true, &groups);
-
+void PluginPrefs::EnablePluginGroupInternal(
+    bool enabled,
+    const string16& group_name,
+    const std::vector<webkit::npapi::PluginGroup>& groups) {
   base::AutoLock auto_lock(lock_);
 
   // Set the desired state for the group.
@@ -124,26 +122,20 @@ bool PluginPrefs::EnablePlugin(bool enabled, const FilePath& path) {
     }
   }
 
-  if (BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    EnablePluginInternal(enabled, path);
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&PluginPrefs::EnablePluginInternal, this, enabled, path));
-  }
+  PluginService::GetInstance()->GetPluginGroups(
+      base::Bind(&PluginPrefs::EnablePluginInternal, this, enabled, path));
   return true;
 }
 
-void PluginPrefs::EnablePluginInternal(bool enabled, const FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+void PluginPrefs::EnablePluginInternal(
+    bool enabled,
+    const FilePath& path,
+    const std::vector<webkit::npapi::PluginGroup>& groups) {
   {
     // Set the desired state for the plug-in.
     base::AutoLock auto_lock(lock_);
     plugin_state_[path] = enabled;
   }
-
-  std::vector<webkit::npapi::PluginGroup> groups;
-  GetPluginList()->GetPluginGroups(true, &groups);
 
   bool found_group = false;
   for (size_t i = 0; i < groups.size(); ++i) {

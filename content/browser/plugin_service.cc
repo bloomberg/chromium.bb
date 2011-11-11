@@ -643,10 +643,6 @@ void PluginService::UnregisterInternalPlugin(const FilePath& path) {
   plugin_list()->UnregisterInternalPlugin(path);
 }
 
-webkit::npapi::PluginList* PluginService::plugin_list() {
-  return webkit::npapi::PluginList::Singleton();
-}
-
 void PluginService::SetPluginListForTesting(
     webkit::npapi::PluginList* plugin_list) {
   plugin_list_ = plugin_list;

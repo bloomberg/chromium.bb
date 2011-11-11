@@ -4,10 +4,14 @@
 
 #include "chrome/browser/plugin_prefs.h"
 
+#include "base/at_exit.h"
+#include "base/bind.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "content/browser/plugin_service.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/plugins/npapi/mock_plugin_list.cc"
@@ -134,9 +138,15 @@ TEST_F(PluginPrefsTest, EnabledAndDisabledByPolicy) {
 }
 
 TEST_F(PluginPrefsTest, DisableGlobally) {
+  base::ShadowingAtExitManager at_exit_manager_;  // Destroys the PluginService.
+
   MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
+
+  webkit::npapi::MockPluginList plugin_list(NULL, 0);
+  PluginService::GetInstance()->SetPluginListForTesting(&plugin_list);
+  PluginService::GetInstance()->Init();
 
   TestingBrowserProcess* browser_process =
       static_cast<TestingBrowserProcess*>(g_browser_process);
@@ -147,15 +157,16 @@ TEST_F(PluginPrefsTest, DisableGlobally) {
       profile_manager.CreateTestingProfile("Profile 1");
   PluginPrefs* plugin_prefs = PluginPrefs::GetForTestingProfile(profile_1);
   ASSERT_TRUE(plugin_prefs);
+  plugin_prefs->SetPluginListForTesting(&plugin_list);
 
   webkit::WebPluginInfo plugin(ASCIIToUTF16("Foo"),
                                FilePath(FILE_PATH_LITERAL("/path/too/foo")),
                                ASCIIToUTF16("1.0.0"),
                                ASCIIToUTF16("Foo plug-in"));
-  webkit::npapi::MockPluginList plugin_list(NULL, 0);
   plugin_list.AddPluginToLoad(plugin);
-  plugin_prefs->SetPluginListForTesting(&plugin_list);
   EXPECT_TRUE(PluginPrefs::EnablePluginGlobally(false, plugin.path));
+
+  message_loop.RunAllPending();
 
   EXPECT_FALSE(plugin_prefs->IsPluginEnabled(plugin));
 
@@ -165,4 +176,7 @@ TEST_F(PluginPrefsTest, DisableGlobally) {
   ASSERT_TRUE(plugin_prefs);
   plugin_prefs_2->SetPluginListForTesting(&plugin_list);
   EXPECT_FALSE(plugin_prefs_2->IsPluginEnabled(plugin));
+
+  profile_manager.DeleteTestingProfile("Profile 1");
+  profile_manager.DeleteTestingProfile("Profile 2");
 }

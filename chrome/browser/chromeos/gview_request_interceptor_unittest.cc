@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
@@ -115,6 +116,7 @@ class GViewRequestInterceptorTest : public testing::Test {
 
     handler_ = new content::DummyResourceHandler();
 
+    PluginService::GetInstance()->Init();
     PluginService::GetInstance()->RefreshPlugins();
     PluginService::GetInstance()->GetPlugins(base::Bind(&QuitMessageLoop));
     MessageLoop::current()->RunAllPending();
@@ -200,6 +202,7 @@ class GViewRequestInterceptorTest : public testing::Test {
   }
 
  protected:
+  base::ShadowingAtExitManager at_exit_manager_;  // Deletes PluginService.
   MessageLoopForIO message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;

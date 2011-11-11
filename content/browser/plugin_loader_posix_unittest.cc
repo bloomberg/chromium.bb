@@ -4,6 +4,7 @@
 
 #include "content/browser/plugin_loader_posix.h"
 
+#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -72,6 +73,10 @@ class PluginLoaderPosixTest : public testing::Test {
         plugin_loader_(new MockPluginLoaderPosix) {
   }
 
+  virtual void SetUp() OVERRIDE {
+    PluginService::GetInstance()->Init();
+  }
+
   MessageLoop* message_loop() { return &message_loop_; }
   MockPluginLoaderPosix* plugin_loader() { return plugin_loader_.get(); }
 
@@ -88,6 +93,8 @@ class PluginLoaderPosixTest : public testing::Test {
   webkit::WebPluginInfo plugin3_;
 
  private:
+  base::ShadowingAtExitManager at_exit_manager_;  // Destroys PluginService.
+
   MessageLoopForIO message_loop_;
   BrowserThreadImpl file_thread_;
   BrowserThreadImpl io_thread_;

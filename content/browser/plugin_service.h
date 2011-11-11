@@ -189,7 +189,7 @@ class CONTENT_EXPORT PluginService
   string16 GetPluginGroupName(const std::string& plugin_name);
 
   // TODO(dpranke): This should be private.
-  webkit::npapi::PluginList* plugin_list();
+  webkit::npapi::PluginList* plugin_list() { return plugin_list_; }
 
   void SetPluginListForTesting(webkit::npapi::PluginList* plugin_list);
 

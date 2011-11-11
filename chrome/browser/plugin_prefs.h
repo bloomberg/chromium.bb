@@ -117,8 +117,15 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
   // Returns the plugin list to use, either the singleton or the override.
   webkit::npapi::PluginList* GetPluginList();
 
-  // Called on the file thread to update the plug-in state.
-  void EnablePluginInternal(bool enabled, const FilePath& path);
+  // Callback for after the plugin groups have been loaded.
+  void EnablePluginGroupInternal(
+      bool enabled,
+      const string16& group_name,
+      const std::vector<webkit::npapi::PluginGroup>& groups);
+  void EnablePluginInternal(
+      bool enabled,
+      const FilePath& path,
+      const std::vector<webkit::npapi::PluginGroup>& groups);
 
   // Called on the file thread to get the data necessary to update the saved
   // preferences.
