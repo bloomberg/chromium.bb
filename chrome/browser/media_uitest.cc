@@ -132,11 +132,11 @@ TEST_F(MediaTest, MAYBE_VideoBearWavPcm) {
   PlayVideo("bear_pcm.wav");
 }
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-// http://crbug.com/95274 - MediaUILayoutTest is flaky on Mac.
-// http://crbug.com/103832 - MediaUILayoutTest is flaky on Linux.
+#if defined(OS_MACOSX)
+// http://crbug.com/95274
 #define MAYBE_MediaUILayoutTest FLAKY_MediaUILayoutTest
-#elif defined(OS_POSIX) && defined(TOOLKIT_VIEWS)
+#elif defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+// http://crbug.com/103832
 #define MAYBE_MediaUILayoutTest FAILS_MediaUILayoutTest
 #else
 #define MAYBE_MediaUILayoutTest MediaUILayoutTest
