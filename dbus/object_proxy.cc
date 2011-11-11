@@ -29,6 +29,10 @@ std::string GetAbsoluteSignalName(
   return interface_name + "." + signal_name;
 }
 
+// An empty function used for ObjectProxy::EmptyResponseCallback().
+void EmptyResponseCallbackBody(dbus::Response* unused_response) {
+}
+
 }  // namespace
 
 namespace dbus {
@@ -140,6 +144,11 @@ void ObjectProxy::Detach() {
   }
 }
 
+// static
+ObjectProxy::ResponseCallback ObjectProxy::EmptyResponseCallback() {
+  return base::Bind(&EmptyResponseCallbackBody);
+}
+
 ObjectProxy::OnPendingCallIsCompleteData::OnPendingCallIsCompleteData(
     ObjectProxy* in_object_proxy,
     ResponseCallback in_response_callback,
@@ -212,7 +221,7 @@ void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
                                       DBusMessage* response_message) {
   bus_->AssertOnOriginThread();
 
-  bool response_callback_called = false;
+  bool method_call_successful = false;
   if (!response_message) {
     // The response is not received.
     response_callback.Run(NULL);
@@ -235,14 +244,14 @@ void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
         dbus::Response::FromRawMessage(response_message));
     // The response is successfully received.
     response_callback.Run(response.get());
-    response_callback_called = true;
+    method_call_successful = true;
     // Record time spent for the method call. Don't include failures.
     UMA_HISTOGRAM_TIMES("DBus.AsyncMethodCallTime",
                         base::TimeTicks::Now() - start_time);
   }
   // Record if the method call is successful, or not. 1 if successful.
   UMA_HISTOGRAM_ENUMERATION("DBus.AsyncMethodCallSuccess",
-                            response_callback_called,
+                            method_call_successful,
                             kSuccessRatioHistogramMaxValue);
 }
 

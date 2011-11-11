@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "dbus/bus.h"
@@ -223,6 +224,28 @@ TEST_F(EndToEndAsyncTest, BrokenMethod) {
 
   // Should fail because the method is broken.
   ASSERT_EQ("", response_strings_[0]);
+}
+
+TEST_F(EndToEndAsyncTest, EmptyResponseCallback) {
+  const char* kHello = "hello";
+
+  // Create the method call.
+  dbus::MethodCall method_call("org.chromium.TestInterface", "Echo");
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendString(kHello);
+
+  // Call the method with an empty callback.
+  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
+  object_proxy_->CallMethod(&method_call,
+                            timeout_ms,
+                            dbus::ObjectProxy::EmptyResponseCallback());
+  // Post a delayed task to quit the message loop.
+  message_loop_.PostDelayedTask(FROM_HERE,
+                                MessageLoop::QuitClosure(),
+                                TestTimeouts::tiny_timeout_ms());
+  message_loop_.Run();
+  // We cannot tell if the empty callback is called, but at least we can
+  // check if the test does not crash.
 }
 
 TEST_F(EndToEndAsyncTest, TestSignal) {

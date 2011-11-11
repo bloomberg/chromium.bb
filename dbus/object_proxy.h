@@ -73,7 +73,9 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
   // |callback| will be called in the origin thread, once the method call
   // is complete. As it's called in the origin thread, |callback| can
   // safely reference objects in the origin thread (i.e. UI thread in most
-  // cases).
+  // cases). If the caller is not interested in the response from the
+  // method (i.e. calling a method that does not return a value),
+  // EmptyResponseCallback() can be passed to the |callback| parameter.
   //
   // If the method call is successful, a pointer to Response object will
   // be passed to the callback. If unsuccessful, NULL will be passed to
@@ -105,6 +107,10 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
   //
   // BLOCKING CALL.
   virtual void Detach();
+
+  // Returns an empty callback that does nothing. Can be used for
+  // CallMethod().
+  static ResponseCallback EmptyResponseCallback();
 
  protected:
   // This is protected, so we can define sub classes.
