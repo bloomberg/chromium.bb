@@ -259,7 +259,7 @@ TEST_F(WorkerTest, StressJSExecution) {
   RunWorkerFastLayoutTest("stress-js-execution.html");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/101996
 #define UseMachineStack FLAKY_UseMachineStack
 #endif
@@ -318,7 +318,7 @@ TEST_F(WorkerTest, WorkerEventListener) {
   RunWorkerFastLayoutTest("worker-event-listener.html");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
 #define WorkerGC FLAKY_WorkerGC
 #endif
@@ -326,7 +326,7 @@ TEST_F(WorkerTest, WorkerGC) {
   RunWorkerFastLayoutTest("worker-gc.html");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
 #define WorkerInit FLAKY_WorkerInit
 #endif
@@ -340,7 +340,7 @@ TEST_F(WorkerTest, DISABLED_WorkerLifecycle) {
   RunWorkerFastLayoutTest("worker-lifecycle.html");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
 #define WorkerLocation FLAKY_WorkerLocation
 #endif
@@ -353,7 +353,7 @@ TEST_F(WorkerTest, FLAKY_WorkerMapGc) {
   RunWorkerFastLayoutTest("wrapper-map-gc.html");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
 #define WorkerMessagePort FLAKY_WorkerMessagePort
 #endif
