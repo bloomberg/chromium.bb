@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/fullscreen_exit_bubble_controller.h"
 
+#include "base/mac/mac_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -70,6 +71,9 @@ class FullscreenExitBubbleControllerTest : public CocoaProfileTest {
 };
 
 TEST_F(FullscreenExitBubbleControllerTest, DenyExitsFullscreen) {
+  if (base::mac::IsOSLionOrLater())
+    FAIL() << "This test crashes on Lion; http://crbug.com/103906";
+
   CreateBrowserWindow();
   AppendTabToStrip();
   TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
