@@ -8,6 +8,7 @@
 
 #if defined(ENABLE_GPU)
 
+#include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -25,7 +26,6 @@
 #endif
 
 class GpuChannelHost;
-class CommandBufferProxy;
 
 namespace gpu {
 namespace gles2 {
@@ -50,7 +50,6 @@ using WebKit::WGC3Dsizeiptr;
 class WebGraphicsContext3DCommandBufferImpl
     : public WebKit::WebGraphicsContext3D {
  public:
-
   WebGraphicsContext3DCommandBufferImpl();
   virtual ~WebGraphicsContext3DCommandBufferImpl();
 

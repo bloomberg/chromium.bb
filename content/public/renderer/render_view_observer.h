@@ -18,7 +18,6 @@ class WebFormElement;
 class WebMediaPlayerClient;
 class WebMouseEvent;
 class WebNode;
-class WebString;
 class WebTouchEvent;
 class WebURL;
 struct WebURLError;

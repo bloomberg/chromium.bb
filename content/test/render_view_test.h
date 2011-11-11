@@ -22,7 +22,6 @@
 
 class MockRenderProcess;
 class RendererMainPlatformDelegate;
-struct ViewMsg_Navigate_Params;
 
 namespace WebKit {
 class WebWidget;

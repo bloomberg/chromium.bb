@@ -20,8 +20,6 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "media/audio/audio_buffers_state.h"
 
-class MessageLoop;
-
 class AudioInputMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
   class Delegate {

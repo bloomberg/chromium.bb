@@ -26,7 +26,6 @@
 #include "ui/gfx/size.h"
 
 class CommandBufferProxy;
-class GpuSurfaceProxy;
 class GURL;
 class TransportTextureService;
 
@@ -150,7 +149,7 @@ class GpuChannelHost : public IPC::Message::Sender,
   // to the correct message loop.
   class MessageFilter : public IPC::ChannelProxy::MessageFilter {
    public:
-    MessageFilter(GpuChannelHost* parent);
+    explicit MessageFilter(GpuChannelHost* parent);
     virtual ~MessageFilter();
 
     void AddRoute(int route_id,

@@ -54,7 +54,6 @@
 #pragma warning(disable: 4250)
 #endif
 
-class AudioMessageFilter;
 class DeviceOrientationDispatcher;
 class DevToolsAgent;
 class ExternalPopupMenu;
@@ -66,31 +65,24 @@ class LoadProgressTracker;
 class MediaStreamImpl;
 class NotificationProvider;
 class PepperDeviceTest;
-class PrintWebViewHelper;
+struct PP_NetAddress_Private;
 class RenderWidgetFullscreenPepper;
 class RendererAccessibility;
 class SkBitmap;
 class SpeechInputDispatcher;
-class WebPluginDelegateProxy;
-class WebUIBindings;
-struct ContextMenuMediaParams;
-struct PP_NetAddress_Private;
 struct ViewHostMsg_RunFileChooser_Params;
-struct ViewMsg_SwapOut_Params;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_StopFinding_Params;
+struct ViewMsg_SwapOut_Params;
 struct WebDropData;
-
-namespace base {
-class WaitableEvent;
-}  // namespace base
+class WebPluginDelegateProxy;
+class WebUIBindings;
 
 namespace content {
 class RenderViewTest;
 class NavigationState;
 class P2PSocketDispatcher;
 class RenderViewObserver;
-class RenderViewVisitor;
 }  // namespace content
 
 namespace gfx {
@@ -102,7 +94,6 @@ namespace webkit {
 
 namespace ppapi {
 class PluginInstance;
-class PluginModule;
 }  // namespace ppapi
 
 }  // namespace webkit
@@ -110,9 +101,6 @@ class PluginModule;
 namespace webkit_glue {
 struct CustomContextMenuContext;
 class ImageResourceFetcher;
-struct FileUploadData;
-struct FormData;
-struct PasswordFormFillData;
 class ResourceFetcher;
 }
 
@@ -120,14 +108,10 @@ namespace WebKit {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebDataSource;
-class WebDocument;
 class WebDragData;
 class WebGeolocationClient;
-class WebGeolocationServiceInterface;
 class WebIconURL;
 class WebImage;
-class WebInputElement;
-class WebKeyboardEvent;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMouseEvent;

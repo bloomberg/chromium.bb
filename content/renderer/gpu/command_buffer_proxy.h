@@ -21,16 +21,11 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 
+class GpuChannelHost;
+
 namespace base {
 class SharedMemory;
 }
-
-namespace gfx {
-class Size;
-}
-
-class GpuChannelHost;
-class PluginChannelHost;
 
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
@@ -97,7 +92,6 @@ class CommandBufferProxy : public gpu::CommandBuffer,
       media::VideoDecodeAccelerator::Client* client);
 
  private:
-
   // Send an IPC message over the GPU channel. This is private to fully
   // encapsulate the channel; all callers of this function must explicitly
   // verify that the context has not been lost.

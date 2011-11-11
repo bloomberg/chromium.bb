@@ -53,7 +53,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MockRenderProcess;
-class RendererMainPlatformDelegate;
 class RenderThreadImpl;
 class RenderView;
 struct ResourceHostMsg_Request;

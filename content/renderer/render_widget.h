@@ -34,11 +34,9 @@ class SyncMessage;
 }
 
 namespace WebKit {
-class WebInputEvent;
 class WebMouseEvent;
 class WebTouchEvent;
 class WebWidget;
-struct WebPopupMenuInfo;
 }
 
 namespace gfx {

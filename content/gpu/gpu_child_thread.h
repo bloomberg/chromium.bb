@@ -22,10 +22,6 @@
 #include "content/public/common/gpu_info.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace IPC {
-struct ChannelHandle;
-}
-
 namespace sandbox {
 class TargetServices;
 }

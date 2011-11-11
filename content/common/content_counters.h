@@ -13,7 +13,6 @@
 namespace base {
 class StatsCounter;
 class StatsCounterTimer;
-class StatsRate;
 }
 
 namespace content {

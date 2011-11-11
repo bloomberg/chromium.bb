@@ -17,7 +17,6 @@
 #include "content/common/npobject_stub.h"
 
 class GURL;
-class NPObjectProxy;
 class NPChannelBase;
 
 struct _NPVariant;

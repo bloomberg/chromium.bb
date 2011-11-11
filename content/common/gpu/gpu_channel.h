@@ -6,10 +6,8 @@
 #define CONTENT_COMMON_GPU_GPU_CHANNEL_H_
 #pragma once
 
-#include <queue>
-#include <set>
+#include <deque>
 #include <string>
-#include <vector>
 
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
@@ -32,10 +30,6 @@ class TransportTexture;
 namespace base {
 class MessageLoopProxy;
 class WaitableEvent;
-}
-
-namespace gfx {
-class GLSurface;
 }
 
 // Encapsulates an IPC channel between the GPU process and one renderer

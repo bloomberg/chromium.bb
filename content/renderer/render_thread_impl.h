@@ -28,26 +28,15 @@ class AudioMessageFilter;
 class CompositorThread;
 class DBMessageFilter;
 class DevToolsAgentFilter;
-class FilePath;
+struct DOMStorageMsg_Event_Params;
 class GpuChannelHost;
 class IndexedDBDispatcher;
 class RendererHistogram;
-class RendererHistogramSnapshots;
-class RendererNetPredictor;
 class RendererWebKitPlatformSupportImpl;
 class SkBitmap;
 class VideoCaptureImplManager;
-class WebDatabaseObserverImpl;
-
-struct RendererPreferences;
-struct DOMStorageMsg_Event_Params;
-struct GPUInfo;
 struct ViewMsg_New_Params;
-struct WebPreferences;
-
-namespace IPC {
-struct ChannelHandle;
-}
+class WebDatabaseObserverImpl;
 
 namespace WebKit {
 class WebStorageEventDispatcher;

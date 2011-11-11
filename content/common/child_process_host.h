@@ -24,7 +24,6 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 
-class CommandLine;
 class FilePath;
 
 namespace IPC {
@@ -37,7 +36,6 @@ class Message;
 class CONTENT_EXPORT ChildProcessHost : public IPC::Channel::Listener,
                                         public IPC::Message::Sender {
  public:
-
   // These flags may be passed to GetChildPath in order to alter its behavior,
   // causing it to return a child path more suited to a specific task.
   enum {

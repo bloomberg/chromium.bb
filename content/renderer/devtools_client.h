@@ -13,15 +13,12 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsFrontendClient.h"
 
-class MessageLoop;
 class RenderViewImpl;
 
 namespace WebKit {
 class WebDevToolsFrontend;
 class WebString;
 }
-
-struct DevToolsMessageData;
 
 // Developer tools UI end of communication channel between the render process of
 // the page being inspected and tools UI renderer process. All messages will

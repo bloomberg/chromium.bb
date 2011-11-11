@@ -20,8 +20,6 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "media/audio/audio_buffers_state.h"
 
-class MessageLoop;
-
 namespace base {
 class Time;
 }

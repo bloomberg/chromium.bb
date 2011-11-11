@@ -13,7 +13,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgentClient.h"
 
 class RenderViewImpl;
-struct DevToolsMessageData;
 
 namespace WebKit {
 class WebDevToolsAgent;

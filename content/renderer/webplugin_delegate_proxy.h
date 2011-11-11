@@ -26,17 +26,14 @@
 #include "base/memory/linked_ptr.h"
 #endif
 
+struct NPObject;
 class NPObjectStub;
 class PluginChannelHost;
+struct PluginHostMsg_URLRequest_Params;
 class RenderViewImpl;
 class SkBitmap;
 
-struct NPObject;
-struct NPVariant_Param;
-struct PluginHostMsg_URLRequest_Params;
-
 namespace base {
-class SharedMemory;
 class WaitableEvent;
 }
 

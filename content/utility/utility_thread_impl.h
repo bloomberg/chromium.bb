@@ -23,10 +23,6 @@ namespace content {
 class SerializedScriptValue;
 }
 
-namespace webkit {
-struct WebPluginInfo;
-}
-
 namespace webkit_glue {
 class WebKitPlatformSupportImpl;
 }

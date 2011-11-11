@@ -19,7 +19,6 @@ class WebGeolocationController;
 class WebGeolocationPermissionRequest;
 class WebGeolocationPermissionRequestManager;
 class WebGeolocationPosition;
-class WebSecurityOrigin;
 }
 
 // GeolocationDispatcher is a delegate for Geolocation messages used by

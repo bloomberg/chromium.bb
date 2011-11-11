@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
 #include "base/id_map.h"
 #include "base/nullable_string16.h"
@@ -21,7 +22,6 @@ class IndexedDBKey;
 class RendererWebIDBCursorImpl;
 
 namespace WebKit {
-class WebDOMStringList;
 class WebFrame;
 class WebIDBKeyRange;
 class WebIDBTransaction;

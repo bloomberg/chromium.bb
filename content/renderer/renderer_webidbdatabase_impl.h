@@ -10,7 +10,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
 
 namespace WebKit {
-class WebFrame;
 class WebIDBCallbacks;
 class WebIDBDatabaseCallbacks;
 class WebString;

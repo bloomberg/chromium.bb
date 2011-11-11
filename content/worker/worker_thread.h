@@ -10,13 +10,12 @@
 
 #include "content/common/child_thread.h"
 
-class GURL;
 class AppCacheDispatcher;
 class DBMessageFilter;
 class WebDatabaseObserverImpl;
 class WebSharedWorkerStub;
-class WorkerWebKitPlatformSupportImpl;
 struct WorkerProcessMsg_CreateWorker_Params;
+class WorkerWebKitPlatformSupportImpl;
 
 class WorkerThread : public ChildThread {
  public:

@@ -35,7 +35,6 @@ class PacketSocketFactory;
 
 namespace content {
 
-class P2PPortAllocator;
 class P2PSocketDispatcher;
 
 class CONTENT_EXPORT P2PTransportImpl

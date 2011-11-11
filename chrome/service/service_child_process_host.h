@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "content/common/child_process_host.h"
 #include "content/common/child_process_info.h"
 
+class CommandLine;
 
 // Plugins/workers and other child processes that live on the IO thread should
 // derive from this class.
@@ -31,4 +32,3 @@ class ServiceChildProcessHost : public ChildProcessHost,
 };
 
 #endif  // CHROME_SERVICE_SERVICE_CHILD_PROCESS_HOST_H_
-

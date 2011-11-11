@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include <string>
+
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,7 +20,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/common_types.h"
 
-class AudioInputRendererHost;
 class AudioRendererHost;
 class RenderThreadImpl;
 class WebRTCMockRenderProcess;

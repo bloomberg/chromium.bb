@@ -10,12 +10,11 @@
 #include "base/file_path.h"
 #include "content/test/render_view_test.h"
 
+class SkBitmap;
+
 namespace gfx {
 class Size;
 }
-
-class SkBitmap;
-class TransportDIB;
 
 class RenderWidgetTest : public content::RenderViewTest {
  public:

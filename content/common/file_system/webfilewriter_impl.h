@@ -9,8 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "webkit/fileapi/webfilewriter_base.h"
 
-class FileSystemDispatcher;
-
 // An implementation of WebFileWriter for use in chrome renderers and workers.
 class WebFileWriterImpl : public fileapi::WebFileWriterBase,
                           public base::SupportsWeakPtr<WebFileWriterImpl> {

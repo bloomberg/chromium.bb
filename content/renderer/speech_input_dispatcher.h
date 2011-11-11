@@ -10,7 +10,6 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechInputController.h"
 
-class GURL;
 class RenderViewImpl;
 
 namespace WebKit {

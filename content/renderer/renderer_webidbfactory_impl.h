@@ -11,9 +11,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 
 namespace WebKit {
-class WebDOMStringList;
 class WebFrame;
-class WebIDBDatabase;
 class WebSecurityOrigin;
 class WebString;
 }
