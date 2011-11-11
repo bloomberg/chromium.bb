@@ -100,7 +100,7 @@ class UI_EXPORT ThemeProvider {
 
   // Gets the NSGradient with the specified |id|.
   virtual NSGradient* GetNSGradient(int id) const = 0;
-#elif defined(OS_POSIX) && !defined(TOOLKIT_VIEWS)
+#elif defined(OS_POSIX) && !defined(TOOLKIT_VIEWS) && !defined(OS_ANDROID)
   // Gets the GdkPixbuf with the specified |id|.  Returns a pointer to a shared
   // instance of the GdkPixbuf.  This shared GdkPixbuf is owned by the theme
   // provider and should not be freed.
