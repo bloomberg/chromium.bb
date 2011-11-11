@@ -20,7 +20,7 @@
 //
 // The XXXMsgStart value is an enumeration that ensures uniqueness for
 // each different message file.  Later, you will use this inside your
-// XXX_messages.h file before invoking message declatation macros:
+// XXX_messages.h file before invoking message declaration macros:
 //     #define IPC_MESSAGE_START XXXMsgStart
 //       ( ... your macro invocations go here ... )
 //
@@ -176,6 +176,7 @@
 #ifndef IPC_IPC_MESSAGE_MACROS_H_
 #define IPC_IPC_MESSAGE_MACROS_H_
 
+#include "base/profiler/scoped_profile.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/param_traits_macros.h"
 
@@ -940,40 +941,50 @@ LogFunctionMap g_log_function_mapping;
     bool msg_is_ok__ = true; \
     switch (ipc_message__.type()) { \
 
-#define IPC_MESSAGE_FORWARD(msg_class, obj, member_func) \
-  case msg_class::ID: \
-    msg_is_ok__ = msg_class::Dispatch(&ipc_message__, obj, this, \
-                                      &member_func); \
-    break;
+#define IPC_MESSAGE_FORWARD(msg_class, obj, member_func)                       \
+    case msg_class::ID: {                                                      \
+        /* TRACK_RUN_IN_IPC_HANDLER(member_func);  TODO(jar) */                \
+        msg_is_ok__ = msg_class::Dispatch(&ipc_message__, obj, this,           \
+                                      &member_func);                           \
+      }                                                                        \
+      break;
 
 #define IPC_MESSAGE_HANDLER(msg_class, member_func) \
   IPC_MESSAGE_FORWARD(msg_class, this, _IpcMessageHandlerClass::member_func)
 
-#define IPC_MESSAGE_FORWARD_DELAY_REPLY(msg_class, obj, member_func) \
-    case msg_class::ID: \
-    msg_is_ok__ = msg_class::DispatchDelayReply(&ipc_message__, obj, \
-                                                &member_func); \
-    break;
+#define IPC_MESSAGE_FORWARD_DELAY_REPLY(msg_class, obj, member_func)           \
+    case msg_class::ID: {                                                      \
+        /* TRACK_RUN_IN_IPC_HANDLER(member_func);  TODO(jar) */                \
+        msg_is_ok__ = msg_class::DispatchDelayReply(&ipc_message__, obj,       \
+                                                  &member_func);               \
+      }                                                                        \
+      break;
 
-#define IPC_MESSAGE_HANDLER_DELAY_REPLY(msg_class, member_func) \
-  IPC_MESSAGE_FORWARD_DELAY_REPLY(msg_class, this, \
-                                  _IpcMessageHandlerClass::member_func)
+#define IPC_MESSAGE_HANDLER_DELAY_REPLY(msg_class, member_func)                \
+    IPC_MESSAGE_FORWARD_DELAY_REPLY(msg_class, this,                           \
+                                    _IpcMessageHandlerClass::member_func)
 
-#define IPC_MESSAGE_HANDLER_GENERIC(msg_class, code) \
-  case msg_class::ID: \
-    code; \
-    break;
+#define IPC_MESSAGE_HANDLER_GENERIC(msg_class, code)                           \
+    case msg_class::ID: {                                                      \
+        /* TRACK_RUN_IN_IPC_HANDLER(code);  TODO(jar) */                       \
+        code;                                                                  \
+      }                                                                        \
+      break;
 
-#define IPC_REPLY_HANDLER(func) \
-   case IPC_REPLY_ID: \
-     func(ipc_message__); \
-     break;
+#define IPC_REPLY_HANDLER(func)                                                \
+    case IPC_REPLY_ID: {                                                       \
+        /* TRACK_RUN_IN_IPC_HANDLER(func);   TODO(jar) */                      \
+        func(ipc_message__);                                                   \
+      }                                                                        \
+      break;
 
 
-#define IPC_MESSAGE_UNHANDLED(code) \
-  default: \
-    code; \
-    break;
+#define IPC_MESSAGE_UNHANDLED(code)                                            \
+    default: {                                                                 \
+        /* TRACK_RUN_IN_IPC_HANDLER(code);  TODO(jar) */                       \
+        code;                                                                  \
+      }                                                                        \
+      break;
 
 #define IPC_MESSAGE_UNHANDLED_ERROR() \
   IPC_MESSAGE_UNHANDLED(NOTREACHED() << \
