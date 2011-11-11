@@ -1048,10 +1048,10 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return source_tab_contents_->controller().CanViewSource();
 
     case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
-    // Viewing page info is not a developer command but is meaningful for the
-    // same set of pages which developer commands are meaningful for.
-    case IDC_CONTENT_CONTEXT_VIEWPAGEINFO:
       return IsDevCommandEnabled(id);
+
+    case IDC_CONTENT_CONTEXT_VIEWPAGEINFO:
+      return source_tab_contents_->controller().GetActiveEntry() != NULL;
 
     case IDC_CONTENT_CONTEXT_TRANSLATE: {
       TabContentsWrapper* tab_contents_wrapper =
