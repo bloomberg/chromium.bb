@@ -22,7 +22,6 @@ class Extension;
 class ExtensionHost;
 class GURL;
 class Profile;
-class RenderProcessHost;
 class RenderViewHost;
 class SiteInstance;
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_H_
 #pragma once
 
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -53,7 +54,6 @@ class ExtensionCookiesEventRouter;
 class ExtensionDownloadsEventRouter;
 class ExtensionFileBrowserEventRouter;
 class ExtensionGlobalError;
-class ExtensionInstallUI;
 class ExtensionManagementEventRouter;
 class ExtensionPreferenceEventRouter;
 class ExtensionSyncData;

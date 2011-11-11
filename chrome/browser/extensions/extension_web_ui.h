@@ -17,7 +17,6 @@
 class GURL;
 class PrefService;
 class Profile;
-class RenderViewHost;
 class TabContents;
 
 namespace base {

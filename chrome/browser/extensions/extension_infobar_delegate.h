@@ -15,7 +15,6 @@ class Browser;
 class Extension;
 class ExtensionHost;
 class GURL;
-class Profile;
 
 // The InfobarDelegate for creating and managing state for the ExtensionInfobar
 // plus monitor when the extension goes away.

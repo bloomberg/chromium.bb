@@ -9,10 +9,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 
-namespace views {
-class Widget;
-}  // namespace views
-
 // Note that this experimental API is currently only available for
 // TOOLKIT_VIEWS (see chrome/chrome_browser.gypi).
 //

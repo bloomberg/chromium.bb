@@ -13,7 +13,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class MockExternalPolicyExtensionProviderVisitor;
 class Profile;
 
 // A specialization of the ExternalExtensionProvider that uses

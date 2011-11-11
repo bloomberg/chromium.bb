@@ -28,7 +28,6 @@
 
 class Browser;
 class Extension;
-class FileSelectHelper;
 class RenderProcessHost;
 class RenderWidgetHostView;
 class TabContents;

@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_PERMISSIONS_API_H__
 #pragma once
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -13,13 +15,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_process_host.h"
 
-namespace base {
-class DictionaryValue;
-}
 class Extension;
 class ExtensionPermissionSet;
 class ExtensionService;
-class Profile;
 
 class ExtensionPermissionsManager {
  public:

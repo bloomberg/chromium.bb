@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBREQUEST_API_H_
 #pragma once
 
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -30,17 +31,11 @@ class RenderProcessHost;
 namespace base {
 class DictionaryValue;
 class ListValue;
-class StringValue;
-}
-
-namespace extension_webrequest_api_helpers {
-struct EventResponseDelta;
 }
 
 namespace net {
 class AuthCredentials;
 class AuthChallengeInfo;
-class HostPortPair;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
 class URLRequest;

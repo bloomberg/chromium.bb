@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTERNAL_EXTENSION_PROVIDER_IMPL_H_
 #pragma once
 
+#include <string>
+
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 
 #include "base/memory/ref_counted.h"
@@ -17,7 +19,6 @@ class Version;
 
 namespace base {
 class DictionaryValue;
-class ValueSerializer;
 }
 
 // A specialization of the ExternalExtensionProvider that uses an instance

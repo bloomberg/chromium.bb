@@ -16,10 +16,6 @@
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/extensions/extension_function.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 class PluginPrefs;
 
 // This serves as a base class from which the browsing data API functions will

@@ -14,7 +14,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "googleurl/src/gurl.h"
 
-class ExtensionService;
 class SyncData;
 namespace sync_pb {
 class AppSpecifics;

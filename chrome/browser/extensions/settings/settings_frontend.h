@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTINGS_FRONTEND_H_
 #pragma once
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -17,7 +19,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class FilePath;
 class Profile;
 
 namespace extensions {

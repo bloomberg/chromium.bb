@@ -16,7 +16,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_message.h"
 
-class GURL;
 class Profile;
 class TabContents;
 

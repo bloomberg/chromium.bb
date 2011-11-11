@@ -6,10 +6,9 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_MESSAGE_HANDLER_H_
 #pragma once
 
-#include "content/browser/renderer_host/render_view_host_observer.h"
+#include <string>
 
-class Profile;
-struct ExtensionHostMsg_DomMessage_Params;
+#include "content/browser/renderer_host/render_view_host_observer.h"
 
 // Filters and dispatches extension-related IPC messages that arrive from
 // renderers. There is one of these objects for each RenderViewHost in Chrome.

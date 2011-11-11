@@ -18,7 +18,6 @@ class ExtensionTtsPlatformImpl;
 class Profile;
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 class Value;
 }

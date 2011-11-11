@@ -9,7 +9,6 @@
 #include "net/url_request/url_request_job_factory.h"
 
 class ExtensionInfoMap;
-class FilePath;
 
 // Creates the handlers for the chrome-extension:// scheme.
 net::URLRequestJobFactory::ProtocolHandler* CreateExtensionProtocolHandler(

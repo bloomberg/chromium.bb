@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_THEME_INSTALLED_INFOBAR_DELEGATE_H_
 #pragma once
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "content/public/browser/notification_observer.h"
@@ -13,7 +15,6 @@
 
 class Extension;
 class ExtensionService;
-class SkBitmap;
 class ThemeService;
 
 // When a user installs a theme, we display it immediately, but provide an
