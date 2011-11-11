@@ -4,8 +4,6 @@
 
 #include "base/mime_util.h"
 
-#include <sys/time.h>
-#include <time.h>
 
 #include <cstdlib>
 #include <list>
@@ -25,6 +23,7 @@
 #include "base/synchronization/lock.h"
 #include "base/third_party/xdg_mime/xdgmime.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
@@ -43,11 +42,11 @@ class IconTheme;
 class MimeUtilConstants {
  public:
   typedef std::map<std::string, IconTheme*> IconThemeMap;
-  typedef std::map<FilePath, int> IconDirMtimeMap;
+  typedef std::map<FilePath, base::Time> IconDirMtimeMap;
   typedef std::vector<std::string> IconFormats;
 
-  // In seconds, specified by icon theme specs.
-  static const int kUpdateInterval = 5;
+  // Specified by XDG icon theme specs.
+  static const int kUpdateIntervalInSeconds = 5;
 
   static const size_t kDefaultThemeNum = 4;
 
@@ -67,7 +66,7 @@ class MimeUtilConstants {
   // The default theme.
   IconTheme* default_themes_[kDefaultThemeNum];
 
-  time_t last_check_time_;
+  base::TimeTicks last_check_time_;
 
 #if defined(TOOLKIT_USES_GTK)
   // This is set by DetectGtkTheme(). We cache it so that we can access the
@@ -77,8 +76,7 @@ class MimeUtilConstants {
 #endif
 
  private:
-  MimeUtilConstants()
-      : last_check_time_(0) {
+  MimeUtilConstants() {
     icon_formats_.push_back(".png");
     icon_formats_.push_back(".svg");
     icon_formats_.push_back(".xpm");
@@ -396,11 +394,23 @@ bool IconTheme::SetDirectories(const std::string& dirs) {
   return true;
 }
 
+bool CheckDirExistsAndGetMtime(const FilePath& dir,
+                               base::Time* last_modified) {
+  if (!file_util::DirectoryExists(dir))
+    return false;
+  base::PlatformFileInfo file_info;
+  if (!file_util::GetFileInfo(dir, &file_info))
+    return false;
+  *last_modified = file_info.last_modified;
+  return true;
+}
+
 // Make sure |dir| exists and add it to the list of icon directories.
 void TryAddIconDir(const FilePath& dir) {
-  if (!file_util::DirectoryExists(dir))
+  base::Time last_modified;
+  if (!CheckDirExistsAndGetMtime(dir, &last_modified))
     return;
-  MimeUtilConstants::GetInstance()->icon_dirs_[dir] = 0;
+  MimeUtilConstants::GetInstance()->icon_dirs_[dir] = last_modified;
 }
 
 // For a xdg directory |dir|, add the appropriate icon sub-directories.
@@ -413,7 +423,6 @@ void AddXDGDataDir(const FilePath& dir) {
 
 // Add all the xdg icon directories.
 void InitIconDir() {
-  MimeUtilConstants::GetInstance()->icon_dirs_.clear();
   FilePath home = file_util::GetHomeDir();
   if (!home.empty()) {
       FilePath legacy_data_dir(home);
@@ -446,21 +455,37 @@ void InitIconDir() {
   }
 }
 
-// Per xdg theme spec, we should check the icon directories every so often for
-// newly added icons. This isn't quite right.
 void EnsureUpdated() {
-  struct timeval t;
-  gettimeofday(&t, NULL);
-  time_t now = t.tv_sec;
   MimeUtilConstants* constants = MimeUtilConstants::GetInstance();
-
-  if (constants->last_check_time_ == 0) {
+  if (constants->last_check_time_.is_null()) {
+    constants->last_check_time_ = base::TimeTicks::Now();
     InitIconDir();
-    constants->last_check_time_ = now;
-  } else {
-    // TODO(thestig): something changed. start over. Upstream fix to Google
-    // Gadgets for Linux.
-    if (now > constants->last_check_time_ + constants->kUpdateInterval) {
+    return;
+  }
+
+  // Per xdg theme spec, we should check the icon directories every so often
+  // for newly added icons.
+  base::TimeDelta time_since_last_check =
+      base::TimeTicks::Now() - constants->last_check_time_;
+  if (time_since_last_check.InSeconds() > constants->kUpdateIntervalInSeconds) {
+    constants->last_check_time_ += time_since_last_check;
+
+    bool rescan_icon_dirs = false;
+    MimeUtilConstants::IconDirMtimeMap* icon_dirs = &constants->icon_dirs_;
+    MimeUtilConstants::IconDirMtimeMap::iterator iter;
+    for (iter = icon_dirs->begin(); iter != icon_dirs->end(); ++iter) {
+      base::Time last_modified;
+      if (!CheckDirExistsAndGetMtime(iter->first, &last_modified) ||
+          last_modified != iter->second) {
+        rescan_icon_dirs = true;
+        break;
+      }
+    }
+
+    if (rescan_icon_dirs) {
+      constants->icon_dirs_.clear();
+      constants->icon_themes_.clear();
+      InitIconDir();
     }
   }
 }
