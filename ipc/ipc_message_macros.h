@@ -973,7 +973,7 @@ LogFunctionMap g_log_function_mapping;
 
 #define IPC_REPLY_HANDLER(func)                                                \
     case IPC_REPLY_ID: {                                                       \
-        /* TRACK_RUN_IN_IPC_HANDLER(func);   TODO(jar) */                      \
+        TRACK_RUN_IN_IPC_HANDLER(func);                                        \
         func(ipc_message__);                                                   \
       }                                                                        \
       break;
