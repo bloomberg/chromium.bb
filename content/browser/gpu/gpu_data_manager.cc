@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -195,7 +196,8 @@ void GpuDataManager::UserFlags::ApplyPolicies() {
 
 GpuDataManager::GpuDataManager()
     : complete_gpu_info_already_requested_(false),
-      observer_list_(new GpuDataManagerObserverList) {
+      observer_list_(new GpuDataManagerObserverList),
+      software_rendering_(false) {
   Initialize();
 }
 
@@ -326,7 +328,10 @@ Value* GpuDataManager::GetFeatureStatus() {
           status += "_software";
         else
           status += "_off";
-      } else if (kGpuFeatureInfo[i].blocked || gpu_access_blocked) {
+      } else if (software_rendering()) {
+        status = "unavailable_software";
+      } else if (kGpuFeatureInfo[i].blocked ||
+                 gpu_access_blocked) {
         status = "unavailable";
         if (kGpuFeatureInfo[i].fallback_to_software)
           status += "_software";
@@ -406,10 +411,22 @@ const ListValue& GpuDataManager::log_messages() const {
 }
 
 GpuFeatureFlags GpuDataManager::GetGpuFeatureFlags() {
+  if (software_rendering_) {
+    GpuFeatureFlags flags;
+
+    // Skia's software rendering is probably more efficient than going through
+    // software emulation of the GPU, so use that.
+    flags.set_flags(GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas);
+    return flags;
+  }
+
   return gpu_feature_flags_;
 }
 
 bool GpuDataManager::GpuAccessAllowed() {
+  if (software_rendering())
+    return true;
+
   // We only need to block GPU process if more features are disallowed other
   // than those in the preliminary gpu feature flags because the latter work
   // through renderer commandline switches.
@@ -430,7 +447,7 @@ void GpuDataManager::AppendRendererCommandLine(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(command_line);
 
-  uint32 flags = gpu_feature_flags_.flags();
+  uint32 flags = GpuFeatureFlags().flags();
   if ((flags & GpuFeatureFlags::kGpuFeatureWebgl)) {
     if (!command_line->HasSwitch(switches::kDisableExperimentalWebGL))
       command_line->AppendSwitch(switches::kDisableExperimentalWebGL);
@@ -453,12 +470,16 @@ void GpuDataManager::AppendGpuCommandLine(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(command_line);
 
-  uint32 flags = gpu_feature_flags_.flags();
+  uint32 flags = GpuFeatureFlags().flags();
   if ((flags & GpuFeatureFlags::kGpuFeatureMultisampling) &&
       !command_line->HasSwitch(switches::kDisableGLMultisampling))
     command_line->AppendSwitch(switches::kDisableGLMultisampling);
 
-  if ((flags & (GpuFeatureFlags::kGpuFeatureWebgl |
+  if (software_rendering_) {
+    command_line->AppendSwitchASCII(switches::kUseGL, "swiftshader");
+    command_line->AppendSwitchPath(switches::kSwiftShaderPath,
+                                   swiftshader_path_);
+  } else if ((flags & (GpuFeatureFlags::kGpuFeatureWebgl |
                 GpuFeatureFlags::kGpuFeatureAcceleratedCompositing |
                 GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas)) &&
       (user_flags_.use_gl() == "any")) {
@@ -673,6 +694,27 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
     histogram_pointer->Add(GetGpuBlacklistHistogramValueWin(value));
 #endif
   }
+
+  EnableSoftwareRenderingIfNecessary();
+}
+
+void GpuDataManager::RegisterSwiftShaderPath(FilePath path) {
+  swiftshader_path_ = path;
+  EnableSoftwareRenderingIfNecessary();
+}
+
+void GpuDataManager::EnableSoftwareRenderingIfNecessary() {
+  if (!GpuAccessAllowed() ||
+      (gpu_feature_flags_.flags() & GpuFeatureFlags::kGpuFeatureWebgl)) {
+#if defined(ENABLE_SWIFTSHADER)
+    if (!swiftshader_path_.empty())
+      software_rendering_ = true;
+#endif
+  }
+}
+
+bool GpuDataManager::software_rendering() {
+  return software_rendering_;
 }
 
 GpuBlacklist* GpuDataManager::GetGpuBlacklist() const {

@@ -80,6 +80,9 @@ class GpuProcessHost : public BrowserChildProcessHost,
       const GPUCreateCommandBufferConfig& init_params,
       CreateCommandBufferCallback* callback);
 
+  // Whether this GPU process is set up to use software rendering.
+  bool software_rendering();
+
  private:
   GpuProcessHost(int host_id);
   virtual ~GpuProcessHost();
@@ -148,6 +151,8 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // Whether we are running a GPU thread inside the browser process instead
   // of a separate GPU process.
   bool in_process_;
+
+  bool software_rendering_;
 
   scoped_ptr<GpuMainThread> in_process_gpu_thread_;
 

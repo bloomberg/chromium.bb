@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list_threadsafe.h"
@@ -127,6 +128,12 @@ class CONTENT_EXPORT GpuDataManager {
   // Returns the Gpu Info as a DictionaryValue.
   DictionaryValue* GpuInfoAsDictionaryValue() const;
 
+  // Returns true if the software rendering should currently be used.
+  bool software_rendering();
+
+  // Register a path to the SwiftShader software renderer.
+  void RegisterSwiftShaderPath(FilePath path);
+
  private:
   class UserFlags {
    public:
@@ -211,6 +218,9 @@ class CONTENT_EXPORT GpuDataManager {
   // lose_context could happen and whether skia is the backend.
   bool supportsAccelerated2dCanvas() const;
 
+  // Try to switch to software rendering, if possible and necessary.
+  void EnableSoftwareRenderingIfNecessary();
+
   bool complete_gpu_info_already_requested_;
 
   GpuFeatureFlags gpu_feature_flags_;
@@ -227,6 +237,9 @@ class CONTENT_EXPORT GpuDataManager {
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;
 
   ListValue log_messages_;
+  bool software_rendering_;
+
+  FilePath swiftshader_path_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManager);
 };

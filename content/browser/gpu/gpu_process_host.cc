@@ -169,6 +169,24 @@ class GpuMainThread : public base::Thread {
   DISALLOW_COPY_AND_ASSIGN(GpuMainThread);
 };
 
+static bool HostIsValid(int host_id, GpuProcessHost* host) {
+  if (!host)
+    return false;
+
+  // The Gpu process is invalid if it's not using software, the card is
+  // blacklisted, and we can kill it and start over.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU) ||
+      host->software_rendering() ||
+      !GpuDataManager::GetInstance()->software_rendering()) {
+    return true;
+  }
+
+  host->Send(new GpuMsg_Crash());
+  g_hosts_by_id.Pointer()->Remove(host_id);
+  return false;
+}
+
 // static
 GpuProcessHost* GpuProcessHost::GetForRenderer(
     int renderer_id, content::CauseForGpuLaunch cause) {
@@ -184,7 +202,10 @@ GpuProcessHost* GpuProcessHost::GetForRenderer(
   // use of multiple GPU processes.
   if (!g_hosts_by_id.Pointer()->IsEmpty()) {
     IDMap<GpuProcessHost>::iterator it(g_hosts_by_id.Pointer());
-    return it.GetCurrentValue();
+    GpuProcessHost *host = it.GetCurrentValue();
+
+    if (HostIsValid(it.GetCurrentKey(), host))
+      return host;
   }
 
   if (cause == content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH)
@@ -222,14 +243,19 @@ GpuProcessHost* GpuProcessHost::FromID(int host_id) {
   if (host_id == 0)
     return NULL;
 
-  return g_hosts_by_id.Pointer()->Lookup(host_id);
+  GpuProcessHost *host = g_hosts_by_id.Pointer()->Lookup(host_id);
+  if (HostIsValid(host_id, host))
+    return host;
+
+  return NULL;
 }
 
 GpuProcessHost::GpuProcessHost(int host_id)
     : BrowserChildProcessHost(GPU_PROCESS),
       host_id_(host_id),
       gpu_process_(base::kNullProcessHandle),
-      in_process_(false) {
+      in_process_(false),
+      software_rendering_(false) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU))
     in_process_ = true;
@@ -516,6 +542,10 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
   BrowserChildProcessHost::OnProcessCrashed(exit_code);
 }
 
+bool GpuProcessHost::software_rendering() {
+  return software_rendering_;
+}
+
 bool GpuProcessHost::LaunchGpuProcess() {
   if (!gpu_enabled_ || g_gpu_crash_count >= kGpuMaxCrashCount) {
     SendOutstandingReplies();
@@ -573,6 +603,10 @@ bool GpuProcessHost::LaunchGpuProcess() {
     cmd_line->AppendSwitch(switches::kDisableBreakpad);
 
   GpuDataManager::GetInstance()->AppendGpuCommandLine(cmd_line);
+
+  if (cmd_line->HasSwitch(switches::kUseGL))
+    software_rendering_ =
+        (cmd_line->GetSwitchValueASCII(switches::kUseGL) == "swiftshader");
 
   // If specified, prepend a launcher program to the command line.
   if (!gpu_launcher.empty())
