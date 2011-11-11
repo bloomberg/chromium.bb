@@ -267,7 +267,7 @@ TEST_F(WorkerTest, UseMachineStack) {
   RunWorkerFastLayoutTest("use-machine-stack.html");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/101996
 #define WorkerCall FLAKY_WorkerCall
 #endif
@@ -281,7 +281,7 @@ TEST_F(WorkerTest, DISABLED_WorkerClonePort) {
   RunWorkerFastLayoutTest("worker-cloneport.html");
 }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/101996
 #define WorkerCloseFast FLAKY_WorkerCloseFast
 #endif
@@ -361,7 +361,7 @@ TEST_F(WorkerTest, WorkerMessagePort) {
   RunWorkerFastLayoutTest("worker-messageport.html");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
 #define WorkerMessagePortGC FLAKY_WorkerMessagePortGC
 #endif
@@ -386,7 +386,7 @@ TEST_F(WorkerTest, WorkerReplaceGlobalConstructor) {
   RunWorkerFastLayoutTest("worker-replace-global-constructor.html");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
 #define WorkerReplaceSelf FLAKY_WorkerReplaceSelf
 #endif
