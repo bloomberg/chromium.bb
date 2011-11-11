@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/json/json_value_serializer.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
@@ -856,3 +857,348 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnAuthRequiredDelta) {
   EXPECT_EQ(password, delta->auth_credentials->password());
 }
 
+TEST(ExtensionWebRequestHelpersTest, TestMergeCancelOfResponses) {
+  using namespace extension_webrequest_api_helpers;
+  EventResponseDeltas deltas;
+  EventLogEntries event_log;
+  bool canceled = false;
+
+  // Single event that does not cancel.
+  linked_ptr<EventResponseDelta> d1(
+      new EventResponseDelta("extid1", base::Time::FromInternalValue(1000)));
+  d1->cancel = false;
+  deltas.push_back(d1);
+  MergeCancelOfResponses(deltas, &canceled, &event_log);
+  EXPECT_FALSE(canceled);
+  EXPECT_TRUE(event_log.empty());
+
+  // Second event that cancels the request
+  linked_ptr<EventResponseDelta> d2(
+      new EventResponseDelta("extid2", base::Time::FromInternalValue(500)));
+  d2->cancel = true;
+  deltas.push_back(d2);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  MergeCancelOfResponses(deltas, &canceled, &event_log);
+  EXPECT_TRUE(canceled);
+  EXPECT_EQ(1u, event_log.size());
+}
+
+TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses) {
+  using namespace extension_webrequest_api_helpers;
+  EventResponseDeltas deltas;
+  EventLogEntries event_log;
+  std::set<std::string> conflicting_extensions;
+  GURL effective_new_url;
+
+  // No redirect
+  linked_ptr<EventResponseDelta> d0(
+      new EventResponseDelta("extid0", base::Time::FromInternalValue(0)));
+  deltas.push_back(d0);
+  MergeOnBeforeRequestResponses(
+      deltas, &effective_new_url, &conflicting_extensions, &event_log);
+  EXPECT_TRUE(effective_new_url.is_empty());
+
+  // Single redirect.
+  GURL new_url_1("http://foo.com");
+  linked_ptr<EventResponseDelta> d1(
+      new EventResponseDelta("extid1", base::Time::FromInternalValue(1000)));
+  d1->new_url = GURL(new_url_1);
+  deltas.push_back(d1);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  event_log.clear();
+  MergeOnBeforeRequestResponses(
+      deltas, &effective_new_url, &conflicting_extensions, &event_log);
+  EXPECT_EQ(new_url_1, effective_new_url);
+  EXPECT_TRUE(conflicting_extensions.empty());
+  EXPECT_EQ(1u, event_log.size());
+
+  // Ignored redirect (due to precedence).
+  GURL new_url_2("http://bar.com");
+  linked_ptr<EventResponseDelta> d2(
+      new EventResponseDelta("extid2", base::Time::FromInternalValue(500)));
+  d2->new_url = GURL(new_url_2);
+  deltas.push_back(d2);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  event_log.clear();
+  MergeOnBeforeRequestResponses(
+      deltas, &effective_new_url, &conflicting_extensions, &event_log);
+  EXPECT_EQ(new_url_1, effective_new_url);
+  EXPECT_EQ(1u, conflicting_extensions.size());
+  EXPECT_TRUE(ContainsKey(conflicting_extensions, "extid2"));
+  EXPECT_EQ(2u, event_log.size());
+
+  // Overriding redirect.
+  GURL new_url_3("http://baz.com");
+  linked_ptr<EventResponseDelta> d3(
+      new EventResponseDelta("extid3", base::Time::FromInternalValue(1500)));
+  d3->new_url = GURL(new_url_3);
+  deltas.push_back(d3);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  conflicting_extensions.clear();
+  event_log.clear();
+  MergeOnBeforeRequestResponses(
+      deltas, &effective_new_url, &conflicting_extensions, &event_log);
+  EXPECT_EQ(new_url_3, effective_new_url);
+  EXPECT_EQ(2u, conflicting_extensions.size());
+  EXPECT_TRUE(ContainsKey(conflicting_extensions, "extid1"));
+  EXPECT_TRUE(ContainsKey(conflicting_extensions, "extid2"));
+  EXPECT_EQ(3u, event_log.size());
+
+  // Check that identical redirects don't cause a conflict.
+  linked_ptr<EventResponseDelta> d4(
+      new EventResponseDelta("extid4", base::Time::FromInternalValue(2000)));
+  d4->new_url = GURL(new_url_3);
+  deltas.push_back(d4);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  conflicting_extensions.clear();
+  event_log.clear();
+  MergeOnBeforeRequestResponses(
+      deltas, &effective_new_url, &conflicting_extensions, &event_log);
+  EXPECT_EQ(new_url_3, effective_new_url);
+  EXPECT_EQ(2u, conflicting_extensions.size());
+  EXPECT_TRUE(ContainsKey(conflicting_extensions, "extid1"));
+  EXPECT_TRUE(ContainsKey(conflicting_extensions, "extid2"));
+  EXPECT_EQ(4u, event_log.size());
+}
+
+TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
+  using namespace extension_webrequest_api_helpers;
+  net::HttpRequestHeaders base_headers;
+  base_headers.AddHeaderFromString("key1: value 1");
+  base_headers.AddHeaderFromString("key2: value 2");
+  EventLogEntries event_log;
+  std::set<std::string> conflicting_extensions;
+  std::string header_value;
+  EventResponseDeltas deltas;
+
+  // Check that we can handle not changing the headers.
+  linked_ptr<EventResponseDelta> d0(
+      new EventResponseDelta("extid0", base::Time::FromInternalValue(2500)));
+  deltas.push_back(d0);
+  net::HttpRequestHeaders headers0;
+  headers0.MergeFrom(base_headers);
+  MergeOnBeforeSendHeadersResponses(
+      deltas, &headers0, &conflicting_extensions, &event_log);
+  ASSERT_TRUE(headers0.GetHeader("key1", &header_value));
+  EXPECT_EQ("value 1", header_value);
+  ASSERT_TRUE(headers0.GetHeader("key2", &header_value));
+  EXPECT_EQ("value 2", header_value);
+  EXPECT_EQ(0u, conflicting_extensions.size());
+  EXPECT_EQ(0u, event_log.size());
+
+  // Delete, modify and add a header.
+  linked_ptr<EventResponseDelta> d1(
+      new EventResponseDelta("extid1", base::Time::FromInternalValue(2000)));
+  d1->deleted_request_headers.push_back("key1");
+  d1->modified_request_headers.AddHeaderFromString("key2: value 3");
+  d1->modified_request_headers.AddHeaderFromString("key3: value 3");
+  deltas.push_back(d1);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  net::HttpRequestHeaders headers1;
+  headers1.MergeFrom(base_headers);
+  MergeOnBeforeSendHeadersResponses(
+      deltas, &headers1, &conflicting_extensions, &event_log);
+  EXPECT_FALSE(headers1.HasHeader("key1"));
+  ASSERT_TRUE(headers1.GetHeader("key2", &header_value));
+  EXPECT_EQ("value 3", header_value);
+  ASSERT_TRUE(headers1.GetHeader("key3", &header_value));
+  EXPECT_EQ("value 3", header_value);
+  EXPECT_EQ(0u, conflicting_extensions.size());
+  EXPECT_EQ(1u, event_log.size());
+
+  // Check that conflicts are atomic, i.e. if one header modification
+  // collides all other conflicts of the same extension are declined as well.
+  linked_ptr<EventResponseDelta> d2(
+      new EventResponseDelta("extid2", base::Time::FromInternalValue(1500)));
+  // This one conflicts:
+  d2->modified_request_headers.AddHeaderFromString("key3: value 0");
+  d2->modified_request_headers.AddHeaderFromString("key4: value 4");
+  deltas.push_back(d2);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  conflicting_extensions.clear();
+  event_log.clear();
+  net::HttpRequestHeaders headers2;
+  headers2.MergeFrom(base_headers);
+  MergeOnBeforeSendHeadersResponses(
+      deltas, &headers2, &conflicting_extensions, &event_log);
+  EXPECT_FALSE(headers2.HasHeader("key1"));
+  ASSERT_TRUE(headers2.GetHeader("key2", &header_value));
+  EXPECT_EQ("value 3", header_value);
+  ASSERT_TRUE(headers2.GetHeader("key3", &header_value));
+  EXPECT_EQ("value 3", header_value);
+  EXPECT_FALSE(headers2.HasHeader("key4"));
+  EXPECT_EQ(1u, conflicting_extensions.size());
+  EXPECT_TRUE(ContainsKey(conflicting_extensions, "extid2"));
+  EXPECT_EQ(2u, event_log.size());
+
+  // Check that identical modifications don't conflict and operations
+  // can be merged.
+  linked_ptr<EventResponseDelta> d3(
+      new EventResponseDelta("extid3", base::Time::FromInternalValue(1000)));
+  d3->deleted_request_headers.push_back("key1");
+  d3->modified_request_headers.AddHeaderFromString("key2: value 3");
+  d3->modified_request_headers.AddHeaderFromString("key5: value 5");
+  deltas.push_back(d3);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  conflicting_extensions.clear();
+  event_log.clear();
+  net::HttpRequestHeaders headers3;
+  headers3.MergeFrom(base_headers);
+  MergeOnBeforeSendHeadersResponses(
+      deltas, &headers3, &conflicting_extensions, &event_log);
+  EXPECT_FALSE(headers3.HasHeader("key1"));
+  ASSERT_TRUE(headers3.GetHeader("key2", &header_value));
+  EXPECT_EQ("value 3", header_value);
+  ASSERT_TRUE(headers3.GetHeader("key3", &header_value));
+  EXPECT_EQ("value 3", header_value);
+  ASSERT_TRUE(headers3.GetHeader("key5", &header_value));
+  EXPECT_EQ("value 5", header_value);
+  EXPECT_EQ(1u, conflicting_extensions.size());
+  EXPECT_TRUE(ContainsKey(conflicting_extensions, "extid2"));
+  EXPECT_EQ(3u, event_log.size());
+}
+
+TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
+  using namespace extension_webrequest_api_helpers;
+  EventLogEntries event_log;
+  std::set<std::string> conflicting_extensions;
+  std::string header_value;
+  EventResponseDeltas deltas;
+
+  // Check that we can handle if not touching the response headers.
+  linked_ptr<EventResponseDelta> d0(
+      new EventResponseDelta("extid0", base::Time::FromInternalValue(3000)));
+  deltas.push_back(d0);
+  scoped_refptr<net::HttpResponseHeaders> new_headers0;
+  MergeOnHeadersReceivedResponses(
+        deltas, &new_headers0, &conflicting_extensions, &event_log);
+  EXPECT_FALSE(new_headers0.get());
+  EXPECT_EQ(0u, conflicting_extensions.size());
+  EXPECT_EQ(0u, event_log.size());
+
+  // Check that we can replace response headers.
+  char headers1_string[] =
+      "HTTP/1.0 200 OK\r\n"
+      "Foo: bar\r\n"
+      "\r\n";
+  scoped_refptr<net::HttpResponseHeaders> headers1(
+      new net::HttpResponseHeaders(
+        net::HttpUtil::AssembleRawHeaders(
+            headers1_string, sizeof(headers1_string))));
+  linked_ptr<EventResponseDelta> d1(
+      new EventResponseDelta("extid1", base::Time::FromInternalValue(2000)));
+  d1->new_response_headers = headers1;
+  deltas.push_back(d1);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  scoped_refptr<net::HttpResponseHeaders> new_headers1;
+  conflicting_extensions.clear();
+  event_log.clear();
+  MergeOnHeadersReceivedResponses(
+        deltas, &new_headers1, &conflicting_extensions, &event_log);
+  EXPECT_EQ(headers1.get(), new_headers1.get());
+  EXPECT_EQ(0u, conflicting_extensions.size());
+  EXPECT_EQ(1u, event_log.size());
+
+  // Check that we replace response headers only once.
+  char headers2_string[] =
+      "HTTP/1.0 200 OK\r\n"
+      "Foo: baz\r\n"
+      "\r\n";
+  scoped_refptr<net::HttpResponseHeaders> headers2(
+      new net::HttpResponseHeaders(
+        net::HttpUtil::AssembleRawHeaders(
+            headers2_string, sizeof(headers2_string))));
+  linked_ptr<EventResponseDelta> d2(
+      new EventResponseDelta("extid2", base::Time::FromInternalValue(1500)));
+  d2->new_response_headers = headers2;
+  deltas.push_back(d2);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  scoped_refptr<net::HttpResponseHeaders> new_headers2;
+  conflicting_extensions.clear();
+  event_log.clear();
+  MergeOnHeadersReceivedResponses(
+        deltas, &new_headers2, &conflicting_extensions, &event_log);
+  EXPECT_EQ(headers1.get(), new_headers1.get());
+  EXPECT_EQ(1u, conflicting_extensions.size());
+  EXPECT_TRUE(ContainsKey(conflicting_extensions, "extid2"));
+  EXPECT_EQ(2u, event_log.size());
+}
+
+TEST(ExtensionWebRequestHelpersTest, TestMergeOnAuthRequiredResponses) {
+  using namespace extension_webrequest_api_helpers;
+  EventLogEntries event_log;
+  std::set<std::string> conflicting_extensions;
+  EventResponseDeltas deltas;
+  string16 username = ASCIIToUTF16("foo");
+  string16 password = ASCIIToUTF16("bar");
+  string16 password2 = ASCIIToUTF16("baz");
+
+  // Check that we can handle if not returning credentials.
+  linked_ptr<EventResponseDelta> d0(
+      new EventResponseDelta("extid0", base::Time::FromInternalValue(3000)));
+  deltas.push_back(d0);
+  net::AuthCredentials auth0;
+  bool credentials_set = MergeOnAuthRequiredResponses(
+        deltas, &auth0, &conflicting_extensions, &event_log);
+  EXPECT_FALSE(credentials_set);
+  EXPECT_TRUE(auth0.Empty());
+  EXPECT_EQ(0u, conflicting_extensions.size());
+  EXPECT_EQ(0u, event_log.size());
+
+  // Check that we can set AuthCredentials.
+  linked_ptr<EventResponseDelta> d1(
+      new EventResponseDelta("extid1", base::Time::FromInternalValue(2000)));
+  d1->auth_credentials.reset(new net::AuthCredentials(username, password));
+  deltas.push_back(d1);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  conflicting_extensions.clear();
+  event_log.clear();
+  net::AuthCredentials auth1;
+  credentials_set = MergeOnAuthRequiredResponses(
+        deltas, &auth1, &conflicting_extensions, &event_log);
+  EXPECT_TRUE(credentials_set);
+  EXPECT_FALSE(auth1.Empty());
+  EXPECT_EQ(username, auth1.username());
+  EXPECT_EQ(password, auth1.password());
+  EXPECT_EQ(0u, conflicting_extensions.size());
+  EXPECT_EQ(1u, event_log.size());
+
+  // Check that we set AuthCredentials only once.
+  linked_ptr<EventResponseDelta> d2(
+      new EventResponseDelta("extid2", base::Time::FromInternalValue(1500)));
+  d2->auth_credentials.reset(new net::AuthCredentials(username, password2));
+  deltas.push_back(d2);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  conflicting_extensions.clear();
+  event_log.clear();
+  net::AuthCredentials auth2;
+  credentials_set = MergeOnAuthRequiredResponses(
+        deltas, &auth2, &conflicting_extensions, &event_log);
+  EXPECT_TRUE(credentials_set);
+  EXPECT_FALSE(auth2.Empty());
+  EXPECT_EQ(username, auth1.username());
+  EXPECT_EQ(password, auth1.password());
+  EXPECT_EQ(1u, conflicting_extensions.size());
+  EXPECT_TRUE(ContainsKey(conflicting_extensions, "extid2"));
+  EXPECT_EQ(2u, event_log.size());
+
+  // Check that we can set identical AuthCredentials twice without causing
+  // a conflict.
+  linked_ptr<EventResponseDelta> d3(
+      new EventResponseDelta("extid3", base::Time::FromInternalValue(1000)));
+  d3->auth_credentials.reset(new net::AuthCredentials(username, password));
+  deltas.push_back(d3);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  conflicting_extensions.clear();
+  event_log.clear();
+  net::AuthCredentials auth3;
+  credentials_set = MergeOnAuthRequiredResponses(
+        deltas, &auth3, &conflicting_extensions, &event_log);
+  EXPECT_TRUE(credentials_set);
+  EXPECT_FALSE(auth3.Empty());
+  EXPECT_EQ(username, auth1.username());
+  EXPECT_EQ(password, auth1.password());
+  EXPECT_EQ(1u, conflicting_extensions.size());
+  EXPECT_TRUE(ContainsKey(conflicting_extensions, "extid2"));
+  EXPECT_EQ(3u, event_log.size());
+}

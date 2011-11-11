@@ -223,7 +223,7 @@ void MergeOnBeforeRequestResponses(
   bool redirected = false;
   for (delta = deltas.begin(); delta != deltas.end(); ++delta) {
     if (!(*delta)->new_url.is_empty()) {
-      if (!redirected) {
+      if (!redirected || *new_url == (*delta)->new_url) {
         *new_url = (*delta)->new_url;
         redirected = true;
         EventLogEntry log_entry(
@@ -398,7 +398,11 @@ bool MergeOnAuthRequiredResponses(
        ++delta) {
     if (!(*delta)->auth_credentials.get())
       continue;
-    if (credentials_set) {
+    bool different =
+        auth_credentials->username() !=
+            (*delta)->auth_credentials->username() ||
+        auth_credentials->password() != (*delta)->auth_credentials->password();
+    if (credentials_set && different) {
       conflicting_extensions->insert((*delta)->extension_id);
       EventLogEntry log_entry(
           net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
