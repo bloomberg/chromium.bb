@@ -126,6 +126,7 @@
         'test/run_all_unittests.cc',
         'test/test_suite.cc',
         'test/test_suite.h',
+        'desktop_unittest.cc',
         'event_filter_unittest.cc',
         'window_unittest.cc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',

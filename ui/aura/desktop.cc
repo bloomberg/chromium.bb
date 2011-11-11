@@ -44,6 +44,8 @@ static const int kDefaultHostWindowY = 200;
 static const int kDefaultHostWindowWidth = 1280;
 static const int kDefaultHostWindowHeight = 1024;
 
+// Returns true if |target| has a non-client (frame) component at |location|,
+// in window coordinates.
 bool IsNonClientLocation(Window* target, const gfx::Point& location) {
   if (!target->delegate())
     return false;
@@ -253,7 +255,9 @@ bool Desktop::DispatchMouseEvent(MouseEvent* event) {
   }
   if (target && target->delegate()) {
     int flags = event->flags();
-    if (IsNonClientLocation(target, event->location()))
+    gfx::Point location_in_window = event->location();
+    Window::ConvertPointToWindow(this, target, &location_in_window);
+    if (IsNonClientLocation(target, location_in_window))
       flags |= ui::EF_IS_NON_CLIENT;
     MouseEvent translated_event(*event, this, target, event->type(), flags);
     return ProcessMouseEvent(target, &translated_event);
