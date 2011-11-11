@@ -111,7 +111,7 @@ class XSyncHandler {
   };
 
   XSyncHandler();
-  virtual ~XSyncHandler();
+  ~XSyncHandler();
 
   // An event filter notified about all XEvents. We then filter out XSync
   // events that are on counters that we made.

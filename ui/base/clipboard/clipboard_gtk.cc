@@ -40,7 +40,7 @@ class SelectionChangeObserver {
   friend struct DefaultSingletonTraits<SelectionChangeObserver>;
 
   SelectionChangeObserver();
-  virtual ~SelectionChangeObserver();
+  ~SelectionChangeObserver();
 
   CHROMEG_CALLBACK_1(SelectionChangeObserver, GdkFilterReturn, OnXEvent,
                      GdkXEvent*, GdkEvent*);

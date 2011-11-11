@@ -43,7 +43,7 @@ class UI_EXPORT ActiveWindowWatcherX {
   friend struct DefaultSingletonTraits<ActiveWindowWatcherX>;
 
   ActiveWindowWatcherX();
-  virtual ~ActiveWindowWatcherX();
+  ~ActiveWindowWatcherX();
 
   void Init();
 
