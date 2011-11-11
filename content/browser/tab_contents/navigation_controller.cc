@@ -674,17 +674,23 @@ content::NavigationType NavigationController::ClassifyNavigation(
     LOG(ERROR) << "terminating renderer for bad navigation: " << params.url;
     UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_NC"));
 
-    // Temporary code so we can get more information:
+    // Temporary code so we can get more information.  Format:
+    //  http://url/foo.html#page1#max3#frame1#ids:2,x,3
     std::string temp = params.url.spec();;
-    temp.append("#");
-    temp.append(params.referrer.spec());
-    temp.append("#");
+    temp.append("#page");
     temp.append(base::IntToString(params.page_id));
-    for (int i = static_cast<int>(entries_.size()) - 1; i >= 0; --i) {
-      if (entries_[i]->site_instance() == tab_contents_->GetSiteInstance()) {
-        temp.append("#");
+    temp.append("#max");
+    temp.append(base::IntToString(tab_contents_->GetMaxPageID()));
+    temp.append("#frame");
+    temp.append(base::IntToString(params.frame_id));
+    temp.append("#ids");
+    for (int i = 0; i < static_cast<int>(entries_.size()); ++i) {
+      // Append all same-process page_ids (with placeholders for out of process)
+      if (entries_[i]->site_instance() == tab_contents_->GetSiteInstance())
         temp.append(base::IntToString(entries_[i]->page_id()));
-      }
+      else
+        temp.append("x");
+      temp.append(",");
     }
     GURL url(temp);
     tab_contents_->render_view_host()->Send(new ViewMsg_TempCrashWithData(url));
