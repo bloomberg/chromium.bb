@@ -178,6 +178,10 @@ class Builder(object):
       filename = os.path.split(src)[1]
       return os.path.join(self.outdir, os.path.splitext(filename)[0] + '.o')
 
+  def CleanOutput(self, out):
+    if os.path.isfile(out):
+      os.remove(out)
+
   def Compile(self, src):
     """Compile the source with pre-determined options."""
 
@@ -198,6 +202,7 @@ class Builder(object):
 
     out = self.GetObjectName(src)
     MakeDir(os.path.dirname(out))
+    self.CleanOutput(out)
     cmd_line = [bin_name, '-c', src, '-o', out] + extra + self.compile_options
     err = self.Run(cmd_line, out)
     if sys.platform.startswith('win') and err == 5:
@@ -214,6 +219,7 @@ class Builder(object):
       print '\nLink %s' % out
     bin_name = self.GetBinName('g++')
     MakeDir(os.path.dirname(out))
+    self.CleanOutput(out)
 
     cmd_line = [bin_name, '-o', out, '-Wl,--as-needed']
     if not self.empty:
@@ -249,6 +255,7 @@ class Builder(object):
         cmd_line += srcs
 
     MakeDir(os.path.dirname(out))
+    self.CleanOutput(out)
     err = self.Run(cmd_line, out)
     if sys.platform.startswith('win') and err == 5:
       # Try again on mystery windows failure.
