@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
@@ -18,7 +19,7 @@ namespace ui {
 //
 // TODO(hashimoto): support unicode character composition starting with
 // Ctrl-Shift-U. http://crosbug.com/15925
-class CharacterComposer {
+class UI_EXPORT CharacterComposer {
  public:
   CharacterComposer();
   ~CharacterComposer();
