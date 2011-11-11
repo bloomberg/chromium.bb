@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_FILE_MANAGER_UTIL_H_
 #pragma once
 
+#include <string>
+
 #include "base/file_path.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "googleurl/src/gurl.h"
@@ -45,8 +47,7 @@ class FileManagerUtil {
 
   // Opens file browser UI in its own tab on file system location defined with
   // |dir|.
-  static void ShowFullTabUrl(Profile* profile,
-                             const FilePath& dir);
+  static void ViewFolder(const FilePath& dir);
 
   static void ViewItem(const FilePath& full_path, bool enqueue);
 

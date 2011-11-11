@@ -343,7 +343,7 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
       mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
       !mount_info.mount_condition &&
       event == chromeos::MountLibrary::MOUNTING) {
-    FileManagerUtil::ShowFullTabUrl(profile_, FilePath(mount_info.mount_path));
+    FileManagerUtil::ViewFolder(FilePath(mount_info.mount_path));
   }
 }
 

@@ -17,9 +17,11 @@ class GURL;
 namespace platform_util {
 
 // Show the given file in a file manager. If possible, select the file.
+// Must be called from the UI thread.
 void ShowItemInFolder(const FilePath& full_path);
 
 // Open the given file in the desktop's default manner.
+// Must be called from the UI thread.
 void OpenItem(const FilePath& full_path);
 
 // Open the given external protocol URL in the desktop's default manner.

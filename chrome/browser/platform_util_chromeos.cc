@@ -4,6 +4,7 @@
 
 #include "chrome/browser/platform_util.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/process_util.h"
 #include "base/task.h"
@@ -20,13 +21,11 @@ using content::BrowserThread;
 
 class Profile;
 
-namespace platform_util {
+namespace {
 
-static const std::string kGmailComposeUrl =
+const char kGmailComposeUrl[] =
     "https://mail.google.com/mail/?extsrc=mailto&url=";
 
-// Opens file browser on UI thread.
-static
 void OpenFileBrowserOnUIThread(const FilePath& dir) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -47,35 +46,53 @@ void OpenFileBrowserOnUIThread(const FilePath& dir) {
   browser->ShowSingletonTab(url);
 }
 
-void ShowItemInFolder(const FilePath& full_path) {
+// file_util::DirectoryExists must be called on the FILE thread.
+void ShowItemInFolderOnFileThread(const FilePath& full_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   FilePath dir = full_path.DirName();
-  if (!file_util::DirectoryExists(dir))
-    return;
-
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    OpenFileBrowserOnUIThread(dir);
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&OpenFileBrowserOnUIThread, dir));
+  if (file_util::DirectoryExists(dir)) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&OpenFileBrowserOnUIThread, dir));
   }
 }
 
-void OpenItem(const FilePath& full_path) {
-  FileManagerUtil::ViewItem(full_path, false);
+void OpenItemOnFileThread(const FilePath& full_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::Closure callback;
+  if (file_util::DirectoryExists(full_path))
+    callback = base::Bind(&FileManagerUtil::ViewFolder, full_path);
+  else
+    callback = base::Bind(&FileManagerUtil::ViewItem, full_path, false);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
 
-static void OpenURL(const std::string& url) {
+void OpenURL(const std::string& url) {
   Browser* browser = BrowserList::GetLastActive();
   browser->AddSelectedTabWithURL(GURL(url), content::PAGE_TRANSITION_LINK);
+}
+
+}  // namespace
+
+namespace platform_util {
+
+void ShowItemInFolder(const FilePath& full_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&ShowItemInFolderOnFileThread, full_path));
+}
+
+void OpenItem(const FilePath& full_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&OpenItemOnFileThread, full_path));
 }
 
 void OpenExternal(const GURL& url) {
   if (url.SchemeIs("mailto")) {
     std::string string_url = kGmailComposeUrl;
     string_url.append(url.spec());
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, NewRunnableFunction(OpenURL, string_url));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(OpenURL, string_url));
   }
 }
 

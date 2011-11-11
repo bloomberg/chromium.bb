@@ -9,6 +9,8 @@
 #include <shellapi.h>
 #include <shlobj.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -17,13 +19,17 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
+#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace platform_util {
+using content::BrowserThread;
 
-void ShowItemInFolder(const FilePath& full_path) {
+namespace {
+
+void ShowItemInFolderOnFileThread(const FilePath& full_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   FilePath dir = full_path.DirName();
   // ParseDisplayName will fail if the directory is "C:", it must be "C:\\".
   if (dir.value() == L"" || !file_util::EnsureEndsWithSeparator(&dir))
@@ -107,8 +113,21 @@ void ShowItemInFolder(const FilePath& full_path) {
   }
 }
 
+}  // namespace
+
+namespace platform_util {
+
+void ShowItemInFolder(const FilePath& full_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&ShowItemInFolderOnFileThread, full_path));
+}
+
 void OpenItem(const FilePath& full_path) {
-  ui::win::OpenItemViaShell(full_path);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      base::IgnoreReturn<bool>(base::Bind(&ui::win::OpenItemViaShell,
+                                          full_path)));
 }
 
 void OpenExternal(const GURL& url) {

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chrome_content_browser_client.h"
 
+#include <set>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/app/breakpad_mac.h"
@@ -644,7 +647,7 @@ std::string ChromeContentBrowserClient::GetAcceptLangs(const TabContents* tab) {
 }
 
 SkBitmap* ChromeContentBrowserClient::GetDefaultFavicon() {
-  ResourceBundle &rb = ResourceBundle::GetSharedInstance();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 #if defined(TOUCH_UI)
   // In touch builds, we want large default favicons for the tabstrip, but in
   // other places (such as bookmark, manage search engines, homepage) we assume
@@ -738,26 +741,11 @@ ChromeContentBrowserClient::CreateQuotaPermissionContext() {
 }
 
 void ChromeContentBrowserClient::OpenItem(const FilePath& path) {
-  // On Mac, this call needs to be done on the UI thread.  On other platforms,
-  // do it on the FILE thread so we don't slow down UI.
-#if defined(OS_MACOSX)
   platform_util::OpenItem(path);
-#else
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&platform_util::OpenItem, path));
-#endif
 }
 
 void ChromeContentBrowserClient::ShowItemInFolder(const FilePath& path) {
-#if defined(OS_MACOSX)
-  // Mac needs to run this operation on the UI thread.
   platform_util::ShowItemInFolder(path);
-#else
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&platform_util::ShowItemInFolder, path));
-#endif
 }
 
 void ChromeContentBrowserClient::AllowCertificateError(

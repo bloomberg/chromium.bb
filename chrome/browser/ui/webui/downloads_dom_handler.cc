@@ -357,21 +357,8 @@ void DownloadsDOMHandler::HandleClearAll(const ListValue* args) {
 
 void DownloadsDOMHandler::HandleOpenDownloadsFolder(const ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_OPEN_FOLDER);
-  FilePath path = DownloadPrefs::FromDownloadManager(download_manager_)->
-      download_path();
-
-#if defined(OS_MACOSX)
-  // Must be called from the UI thread on Mac.
-  platform_util::OpenItem(path);
-#elif defined(OS_CHROMEOS)
-  FileManagerUtil::ShowFullTabUrl(
-      Profile::FromBrowserContext(download_manager_->browser_context()),
-      path);
-#else
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&platform_util::OpenItem, path));
-#endif
+  platform_util::OpenItem(
+      DownloadPrefs::FromDownloadManager(download_manager_)->download_path());
 }
 
 // DownloadsDOMHandler, private: ----------------------------------------------

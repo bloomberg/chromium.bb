@@ -50,6 +50,7 @@ const char kBaseFileBrowserUrl[] = FILEBROWSER_URL("main.html");
 const char kMediaPlayerUrl[] = FILEBROWSER_URL("mediaplayer.html");
 const char kMediaPlayerPlaylistUrl[] = FILEBROWSER_URL("playlist.html");
 #undef FILEBROWSER_URL
+#undef FILEBROWSER_DOMAIN
 
 const char kPdfExtension[] = ".pdf";
 // List of file extension we can open in tab.
@@ -236,12 +237,10 @@ GURL FileManagerUtil::GetFileBrowserUrlWithParams(
   std::string url = FileManagerUtil::GetFileBrowserUrl().spec() +
                     '?' + net::EscapeUrlEncodedData(json_args, false);
   return GURL(url);
-
 }
 
 // static
-void FileManagerUtil::ShowFullTabUrl(Profile*,
-                                     const FilePath& dir) {
+void FileManagerUtil::ViewFolder(const FilePath& dir) {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
     return;

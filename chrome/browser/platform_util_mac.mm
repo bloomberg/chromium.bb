@@ -20,7 +20,7 @@
 namespace platform_util {
 
 void ShowItemInFolder(const FilePath& full_path) {
-  DCHECK_EQ([NSThread currentThread], [NSThread mainThread]);
+  DCHECK([NSThread isMainThread]);
   NSString* path_string = base::SysUTF8ToNSString(full_path.value());
   if (!path_string || ![[NSWorkspace sharedWorkspace] selectFile:path_string
                                         inFileViewerRootedAtPath:nil])
@@ -35,7 +35,7 @@ void ShowItemInFolder(const FilePath& full_path) {
 // Instead, an AppleEvent is constructed to tell the Finder to open the
 // document.
 void OpenItem(const FilePath& full_path) {
-  DCHECK_EQ([NSThread currentThread], [NSThread mainThread]);
+  DCHECK([NSThread isMainThread]);
   NSString* path_string = base::SysUTF8ToNSString(full_path.value());
   if (!path_string)
     return;
@@ -121,7 +121,7 @@ void OpenItem(const FilePath& full_path) {
 }
 
 void OpenExternal(const GURL& url) {
-  DCHECK_EQ([NSThread currentThread], [NSThread mainThread]);
+  DCHECK([NSThread isMainThread]);
   NSString* url_string = base::SysUTF8ToNSString(url.spec());
   NSURL* ns_url = [NSURL URLWithString:url_string];
   if (!ns_url || ![[NSWorkspace sharedWorkspace] openURL:ns_url])
