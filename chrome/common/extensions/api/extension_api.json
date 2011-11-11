@@ -528,7 +528,7 @@
           },
           "grammar": {
             "type": "string",
-            "description": "Name of the grammar to use. Defaults to 'builtin:search'.",
+            "description": "Name of the grammar to use. Defaults to 'builtin:dictation'.",
             "optional": true
           },
           "filterProfanities": {

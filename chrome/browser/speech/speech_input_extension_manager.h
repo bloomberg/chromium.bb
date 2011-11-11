@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_SPEECH_INPUT_EXTENSION_SPEECH_INPUT_MANAGER_H_
-#define CHROME_BROWSER_EXTENSIONS_SPEECH_INPUT_EXTENSION_SPEECH_INPUT_MANAGER_H_
+#ifndef CHROME_BROWSER_SPEECH_SPEECH_INPUT_EXTENSION_MANAGER_H_
+#define CHROME_BROWSER_SPEECH_SPEECH_INPUT_EXTENSION_MANAGER_H_
 #pragma once
 
-#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/speech/speech_recognizer.h"
 #include "content/common/speech_input_result.h"
@@ -16,16 +15,17 @@
 
 class Extension;
 class Profile;
+class SpeechInputExtensionNotification;
 
 namespace net {
 class URLRequestContextGetter;
 }
 
 // Used for API tests.
-class ExtensionSpeechInterface {
+class SpeechInputExtensionInterface {
  public:
-  ExtensionSpeechInterface();
-  virtual ~ExtensionSpeechInterface();
+  SpeechInputExtensionInterface();
+  virtual ~SpeechInputExtensionInterface();
 
   // Called from the IO thread.
   virtual void StartRecording(
@@ -51,11 +51,11 @@ class ExtensionSpeechInterface {
 
 // Manages the speech input requests and responses from the extensions
 // associated to the given profile.
-class ExtensionSpeechInputManager
-    : public base::RefCountedThreadSafe<ExtensionSpeechInputManager>,
+class SpeechInputExtensionManager
+    : public base::RefCountedThreadSafe<SpeechInputExtensionManager>,
       public speech_input::SpeechRecognizerDelegate,
       public content::NotificationObserver,
-      private ExtensionSpeechInterface {
+      private SpeechInputExtensionInterface {
  public:
   enum State {
     kIdle = 0,
@@ -75,11 +75,11 @@ class ExtensionSpeechInputManager
   };
 
   // Should not be used directly. Managed by a ProfileKeyedServiceFactory.
-  explicit ExtensionSpeechInputManager(Profile* profile);
+  explicit SpeechInputExtensionManager(Profile* profile);
 
   // Returns the corresponding manager for the given profile, creating
   // a new one if required.
-  static ExtensionSpeechInputManager* GetForProfile(Profile* profile);
+  static SpeechInputExtensionManager* GetForProfile(Profile* profile);
 
   // Initialize the ProfileKeyedServiceFactory.
   static void InitializeFactory();
@@ -123,14 +123,15 @@ class ExtensionSpeechInputManager
                                  OVERRIDE;
   virtual void DidCompleteEnvironmentEstimation(int caller_id) OVERRIDE;
   virtual void SetInputVolume(int caller_id, float volume,
-                              float noise_volume) OVERRIDE {}
+                              float noise_volume) OVERRIDE;
 
   // Methods for API testing.
-  void SetExtensionSpeechInterface(ExtensionSpeechInterface* interface);
-  ExtensionSpeechInterface* GetExtensionSpeechInterface();
+  void SetSpeechInputExtensionInterface(
+      SpeechInputExtensionInterface* interface);
+  SpeechInputExtensionInterface* GetSpeechInputExtensionInterface();
 
  private:
-  // ExtensionSpeechInterface methods:
+  // SpeechInputExtensionInterface methods:
   virtual bool IsRecordingInProcess() OVERRIDE;
   virtual bool HasAudioInputDevices() OVERRIDE;
   virtual bool HasValidRecognizer() OVERRIDE;
@@ -165,11 +166,12 @@ class ExtensionSpeechInputManager
                                 const std::string& json_args);
   void ExtensionUnloaded(const std::string& extension_id);
 
+  void SetInputVolumeOnUIThread(float volume);
   void ResetToIdleState();
 
-  virtual ~ExtensionSpeechInputManager();
+  virtual ~SpeechInputExtensionManager();
 
-  friend class base::RefCountedThreadSafe<ExtensionSpeechInputManager>;
+  friend class base::RefCountedThreadSafe<SpeechInputExtensionManager>;
   class Factory;
 
   // Lock used to allow exclusive access to the state variable and methods that
@@ -187,7 +189,8 @@ class ExtensionSpeechInputManager
 
   // Used in the UI thread.
   content::NotificationRegistrar registrar_;
-  ExtensionSpeechInterface* speech_interface_;
+  SpeechInputExtensionInterface* speech_interface_;
+  scoped_ptr<SpeechInputExtensionNotification> notification_;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_SPEECH_INPUT_EXTENSION_SPEECH_INPUT_MANAGER_H_
+#endif  // CHROME_BROWSER_SPEECH_SPEECH_INPUT_EXTENSION_MANAGER_H_

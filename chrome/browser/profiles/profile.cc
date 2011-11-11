@@ -141,6 +141,9 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kSpeechInputFilterProfanities,
                              true,
                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kSpeechInputTrayNotificationShown,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
 #if defined(TOOLKIT_USES_GTK)
   prefs->RegisterBooleanPref(prefs::kUsesSystemTheme,
                              GtkThemeService::DefaultUsesSystemTheme(),

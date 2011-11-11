@@ -14314,6 +14314,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_SPEECH_INPUT_MIC_SETTINGS" desc="Text displayed on a button or link to open the microphone settings window.">
       Microphone settings
     </message>
+    <message name="IDS_SPEECH_INPUT_TRAY_TOOLTIP" desc="Tool tip for the recording notification icon shown by the speech input extension API">
+      <ph name="PRODUCT_NAME">$2<ex>Google Chrome</ex></ph> extension "<ph name="EXTENSION_NAME">$1<ex>Speech Recognizer</ex></ph>" is currently recording audio for speech recognition.
+    </message>
+    <message name="IDS_SPEECH_INPUT_TRAY_BALLOON_TITLE" desc="Title of the balloon shown by the tray notification icon the first time a extension starts recording using the speech input extension API">
+      Audio recording started.
+    </message>
+    <message name="IDS_SPEECH_INPUT_TRAY_BALLOON_BODY" desc="Contents of the balloon shown by the tray notification icon the first time a extension starts recording using the speech input extension API">
+      <ph name="PRODUCT_NAME">$2<ex>Google Chrome</ex></ph> extension "<ph name="EXTENSION_NAME">$1<ex>Speech Recognizer</ex></ph>" has started recording audio for speech recognition. Look for the microphone notification icon to know when this happens again.
+    </message>
 
     <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
       Image Files

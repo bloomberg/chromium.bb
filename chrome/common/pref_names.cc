@@ -628,6 +628,11 @@ const char kEnableAutoSpellCorrect[] = "browser.enable_autospellcorrect";
 const char kSpeechInputFilterProfanities[] =
     "browser.speechinput_censor_results";
 
+// Boolean pref to determine if the tray notification balloon for speech input
+// extension API has been already shown once to the user.
+const char kSpeechInputTrayNotificationShown[] =
+    "browser.speechinput_tray_notification_shown";
+
 // Boolean controlling whether history saving is disabled.
 const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 
