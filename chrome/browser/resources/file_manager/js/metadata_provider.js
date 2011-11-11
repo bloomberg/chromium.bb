@@ -11,7 +11,8 @@ function MetadataProvider(opt_workerPath) {
   // Pass all URLs to the metadata reader until we have a correct filter.
   this.urlFilter = /.*/;
 
-  this.dispatcher_ = new Worker(opt_workerPath || 'js/metadata_dispatcher.js');
+  this.dispatcher_ = new Worker(opt_workerPath ||
+      document.location.origin + '/js/metadata_dispatcher.js');
   this.dispatcher_.onmessage = this.onMessage_.bind(this);
   this.dispatcher_.postMessage({verb: 'init'});
   // Initialization is not complete until the Worker sends back the

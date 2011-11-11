@@ -9,7 +9,36 @@
     <!-- metrics.js initiates load performance tracking
          so we want to parse it as early as possible -->
     <script src="js/metrics.js"></script>
+    <if expr="0">
+    <!-- <if ... /if> is removed while flattening HTML. -->
+    <script>
+      // Instruction for enabling loading file manager files remotely (speeds up
+      // development cycle):
+      //
+      // 1. Find the IDR_FILE_MANAGER_MAIN resource in 
+      //    chrome/browser/resources/component_extension_resources.grd.
+      //    Change the "flattenhtml" attribute to false.
+      //
+      // 2. Build and run the Chromium OS.
+      //
+      // 3. Make source files available via the HTTP protocol:
+      //    twistd web --path chrome/browser/resources/file_manager --port 1080
+      //
+      // 4. Open the File Manager. Execute the following JS code in its context
+      //    using DevTools:
+      //    localStorage['base'] = 'http://youmachine:1080/'
+      //
+      // This will make the File Manager use fresh JS and CSS files from the
+      // development machine. HTML files and JS files for WebWorkers would still
+      // need a rebuild to update.
 
+      if (localStorage['base']) {
+        var base = document.createElement('base');
+        base.setAttribute('href', localStorage['base']);
+        document.head.appendChild(base);
+      }
+    </script>
+    </if>
     <script>
       // Resources from shared locations are loaded dynamically, so we can
       // get them from file:// when running as a normal web page, and from
