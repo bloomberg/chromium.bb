@@ -521,6 +521,8 @@ void NativeWidgetAura::DispatchKeyEventPostIME(const KeyEvent& key) {
 
 void NativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                        const gfx::Rect& new_bounds) {
+  if (old_bounds.origin() != new_bounds.origin())
+    GetWidget()->widget_delegate()->OnWidgetMove();
   if (old_bounds.size() != new_bounds.size())
     delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
 }
