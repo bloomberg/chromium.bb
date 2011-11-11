@@ -380,6 +380,22 @@ void URLFetcherImpl::Core::TempFileWriter::ContinueWrite(
     int bytes_written) {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
 
+  if (temp_file_handle_ == base::kInvalidPlatformFileValue) {
+    // While a write was being done on the file thread, a request
+    // to close or disown the file occured on the IO thread.  At
+    // this point a request to close the file is pending on the
+    // file thread.
+    return;
+  }
+
+  // Every code path that resets |core_->request_| should reset
+  // |core->temp_file_writer_| or cause the temp file writer to
+  // disown the temp file.  In the former case, this callback can
+  // not be called, because the weak pointer to |this| will be NULL.
+  // In the latter case, the check of |temp_file_handle_| at the start
+  // of this method ensures that we can not reach this point.
+  CHECK(core_->request_.get());
+
   if (base::PLATFORM_FILE_OK != error_code) {
     error_code_ = error_code;
     RemoveTempFile();
