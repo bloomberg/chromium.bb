@@ -9,7 +9,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "base/mime_util.h"
+#include "base/nix/mime_util_xdg.h"
 #endif
 
 using content::BrowserThread;
@@ -31,7 +31,7 @@ void IconLoader::Start() {
 
 #if defined(TOOLKIT_USES_GTK)
   // This call must happen on the UI thread before we can start loading icons.
-  mime_util::DetectGtkTheme();
+  base::nix::DetectGtkTheme();
 #endif
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,

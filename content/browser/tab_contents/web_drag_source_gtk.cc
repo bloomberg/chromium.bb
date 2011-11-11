@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "base/mime_util.h"
+#include "base/nix/mime_util_xdg.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/download/drag_download_file.h"
@@ -114,7 +114,7 @@ void WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
     // Looking up the mime type can hit the disk.  http://crbug.com/84896
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     drag_file_mime_type_ = gdk_atom_intern(
-        mime_util::GetDataMimeType(drop_data.file_contents).c_str(), FALSE);
+        base::nix::GetDataMimeType(drop_data.file_contents).c_str(), FALSE);
     gtk_target_list_add(list, drag_file_mime_type_,
                         0, ui::CHROME_WEBDROP_FILE_CONTENTS);
   }

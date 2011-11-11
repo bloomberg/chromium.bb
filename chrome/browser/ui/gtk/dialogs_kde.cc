@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/mime_util.h"
+#include "base/nix/mime_util_xdg.h"
 #include "base/nix/xdg_util.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
@@ -194,7 +194,7 @@ std::string SelectFileDialogImplKDE::GetMimeTypeFilterString() {
   for (size_t i = 0; i < file_types_.extensions.size(); ++i) {
     for (size_t j = 0; j < file_types_.extensions[i].size(); ++j) {
       if (!file_types_.extensions[i][j].empty()) {
-        std::string mime_type = mime_util::GetFileMimeType(
+        std::string mime_type = base::nix::GetFileMimeType(
             FilePath("name").ReplaceExtension(file_types_.extensions[i][j]));
         filter_set.insert(mime_type);
       }

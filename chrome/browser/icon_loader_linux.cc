@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/mime_util.h"
+#include "base/nix/mime_util_xdg.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
 
@@ -31,7 +31,7 @@ void IconLoader::ReadIcon() {
       NOTREACHED();
   }
 
-  FilePath filename = mime_util::GetMimeIcon(group_, size_pixels);
+  FilePath filename = base::nix::GetMimeIcon(group_, size_pixels);
   string icon_data;
   file_util::ReadFileToString(filename, &icon_data);
 

@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/mime_util.h"
+#include "base/nix/mime_util_xdg.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -228,7 +228,7 @@ void SelectFileDialogImplGTK::AddFilters(GtkFileChooser* chooser) {
 
         // Allow IO in the file dialog. http://crbug.com/72637
         base::ThreadRestrictions::ScopedAllowIO allow_io;
-        std::string mime_type = mime_util::GetFileMimeType(
+        std::string mime_type = base::nix::GetFileMimeType(
             FilePath("name").ReplaceExtension(file_types_.extensions[i][j]));
         gtk_file_filter_add_mime_type(filter, mime_type.c_str());
       }
@@ -247,7 +247,7 @@ void SelectFileDialogImplGTK::AddFilters(GtkFileChooser* chooser) {
       base::ThreadRestrictions::ScopedAllowIO allow_io;
       // There is no system default filter description so we use
       // the MIME type itself if the description is blank.
-      std::string mime_type = mime_util::GetFileMimeType(
+      std::string mime_type = base::nix::GetFileMimeType(
           FilePath("name").ReplaceExtension(file_types_.extensions[i][0]));
       gtk_file_filter_set_name(filter, mime_type.c_str());
     }

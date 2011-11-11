@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MIME_UTIL_H_
-#define BASE_MIME_UTIL_H_
+#ifndef BASE_NIX_MIME_UTIL_XDG_H_
+#define BASE_NIX_MIME_UTIL_XDG_H_
 #pragma once
 
 #include <string>
@@ -13,7 +13,8 @@
 
 class FilePath;
 
-namespace mime_util {
+namespace base {
+namespace nix {
 
 // Gets the mime type for a file based on its filename. The file path does not
 // have to exist. Please note because it doesn't touch the disk, this does not
@@ -37,6 +38,7 @@ BASE_EXPORT void DetectGtkTheme();
 // then a generic icon, and finally an empty FilePath if all else fails.
 BASE_EXPORT FilePath GetMimeIcon(const std::string& mime_type, size_t size);
 
-}  // namespace mime_util
+}  // namespace nix
+}  // namespace base
 
-#endif  // BASE_MIME_UTIL_H_
+#endif  // BASE_NIX_MIME_UTIL_XDG_H_

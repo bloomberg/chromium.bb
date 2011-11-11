@@ -4378,7 +4378,7 @@
    ...
    fun:xdg_mime_init
    fun:xdg_mime_get_mime_type_from_file_name
-   fun:_ZN9mime_util15GetFileMimeTypeERK8FilePath
+   fun:*GetFileMimeTypeERK8FilePath
    fun:_ZNK3net16PlatformMimeUtil32GetPlatformMimeTypeFromExtensionERKSsPSs
    fun:_ZNK3net8MimeUtil30GetMimeTypeFromExtensionHelperERKSsbPSs
    fun:_ZNK3net8MimeUtil24GetMimeTypeFromExtensionERKSsPSs

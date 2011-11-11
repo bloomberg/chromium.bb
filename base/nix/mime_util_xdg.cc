@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/mime_util.h"
-
+#include "base/nix/mime_util_xdg.h"
 
 #include <cstdlib>
 #include <list>
@@ -16,7 +15,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop.h"
 #include "base/nix/xdg_util.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -26,7 +24,9 @@
 #include "base/time.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include <gtk/gtk.h>
+#include <gtk/gtk.h>  // NOLINT
+
+#include "base/message_loop.h"
 #endif
 
 namespace {
@@ -585,7 +585,8 @@ MimeUtilConstants::~MimeUtilConstants() {
 
 }  // namespace
 
-namespace mime_util {
+namespace base {
+namespace nix {
 
 std::string GetFileMimeType(const FilePath& filepath) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -672,4 +673,5 @@ FilePath GetMimeIcon(const std::string& mime_type, size_t size) {
   return FilePath();
 }
 
-}  // namespace mime_util
+}  // namespace nix
+}  // namespace base
