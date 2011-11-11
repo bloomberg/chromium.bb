@@ -136,6 +136,8 @@ TEST_F(MediaTest, MAYBE_VideoBearWavPcm) {
 // http://crbug.com/95274 - MediaUILayoutTest is flaky on Mac.
 // http://crbug.com/103832 - MediaUILayoutTest is flaky on Linux.
 #define MAYBE_MediaUILayoutTest FLAKY_MediaUILayoutTest
+#elif defined(OS_POSIX) && defined(TOOLKIT_VIEWS)
+#define MAYBE_MediaUILayoutTest FAILS_MediaUILayoutTest
 #else
 #define MAYBE_MediaUILayoutTest MediaUILayoutTest
 #endif
