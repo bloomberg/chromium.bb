@@ -465,12 +465,20 @@ void ProfileManager::OnBrowserSetLastActive(const Browser* browser) {
 }
 
 void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
+  DoFinalInitForServices(profile, go_off_the_record);
+  AddProfileToCache(profile);
+  DoFinalInitLogging(profile);
+}
+
+void ProfileManager::DoFinalInitForServices(Profile* profile,
+                                         bool go_off_the_record) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   profile->InitExtensions(!go_off_the_record);
   if (!command_line.HasSwitch(switches::kDisableWebResources))
     profile->InitPromoResources();
-  AddProfileToCache(profile);
+}
 
+void ProfileManager::DoFinalInitLogging(Profile* profile) {
   // Log the profile size after a reasonable startup delay.
   BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
                                  new ProfileSizeTask(profile), 112000);

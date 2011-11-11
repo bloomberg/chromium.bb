@@ -195,6 +195,8 @@ class ProfileManager : public base::NonThreadSafe,
  protected:
   // Does final initial actions.
   virtual void DoFinalInit(Profile* profile, bool go_off_the_record);
+  virtual void DoFinalInitForServices(Profile* profile, bool go_off_the_record);
+  virtual void DoFinalInitLogging(Profile* profile);
 
   // Creates a new profile. Virtual so that unittests can return TestingProfile.
   virtual Profile* CreateProfile(const FilePath& path);
@@ -285,7 +287,8 @@ class ProfileManagerWithoutInit : public ProfileManager {
   explicit ProfileManagerWithoutInit(const FilePath& user_data_dir);
 
  protected:
-  virtual void DoFinalInit(Profile*, bool) {}
+  virtual void DoFinalInitForServices(Profile*, bool) OVERRIDE {}
+  virtual void DoFinalInitLogging(Profile*) OVERRIDE {}
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_MANAGER_H_
