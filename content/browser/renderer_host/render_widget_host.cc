@@ -506,19 +506,26 @@ void RenderWidgetHost::StartHangMonitorTimeout(TimeDelta delay) {
     return;
   }
 
-  // If we already have a timer that will expire at or before the given delay,
-  // then we have nothing more to do now.  If we have set our end time to null
-  // by calling StopHangMonitorTimeout, though, we will need to restart the
-  // timer.
+  // Set time_when_considered_hung_ if it's null.
+  Time requested_end_time = Time::Now() + delay;
+  if (time_when_considered_hung_.is_null())
+    time_when_considered_hung_ = requested_end_time;
+
+  // If we already have a timer with the same or shorter duration, then we can
+  // wait for it to finish.
   if (hung_renderer_timer_.IsRunning() &&
-      hung_renderer_timer_.GetCurrentDelay() <= delay &&
-      !time_when_considered_hung_.is_null()) {
+      hung_renderer_timer_.GetCurrentDelay() <= delay) {
+    // If time_when_considered_hung_ was null, this timer may fire early.
+    // CheckRendererIsUnresponsive handles that by calling
+    // StartHangMonitorTimeout with the remaining time.
+    // If time_when_considered_hung_ was non-null, it means we still haven't
+    // heard from the renderer so we leave time_when_considered_hung_ as is.
     return;
   }
 
   // Either the timer is not yet running, or we need to adjust the timer to
   // fire sooner.
-  time_when_considered_hung_ = Time::Now() + delay;
+  time_when_considered_hung_ = requested_end_time;
   hung_renderer_timer_.Stop();
   hung_renderer_timer_.Start(FROM_HERE, delay, this,
       &RenderWidgetHost::CheckRendererIsUnresponsive);
