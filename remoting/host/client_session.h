@@ -26,8 +26,6 @@ class ClientSession : public protocol::HostStub,
                       public base::RefCountedThreadSafe<ClientSession> {
  public:
   // Callback interface for passing events to the ChromotingHost.
-  // Called only for external events, i.e. OnSessionClosed() is not
-  // called when Disconnect() is called.
   class EventHandler {
    public:
     virtual ~EventHandler() {}

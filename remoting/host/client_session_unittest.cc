@@ -25,7 +25,7 @@ class ClientSessionTest : public testing::Test {
  public:
   ClientSessionTest() {}
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     client_jid_ = "user@domain/rest-of-jid";
 
     // Set up a large default screen size that won't affect most tests.
@@ -42,6 +42,13 @@ class ClientSessionTest : public testing::Test {
         new protocol::ConnectionToClient(
             base::MessageLoopProxy::current(), session),
         &input_stub_, &capturer_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    client_session_ = NULL;
+    // Run message loop before destroying because protocol::Session is
+    // destroyed asynchronously.
+    message_loop_.RunAllPending();
   }
 
  protected:

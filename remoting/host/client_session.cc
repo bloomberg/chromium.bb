@@ -101,7 +101,6 @@ void ClientSession::OnConnectionClosed(
   DCHECK_EQ(connection_.get(), connection);
   scoped_refptr<ClientSession> self = this;
   event_handler_->OnSessionClosed(this);
-  Disconnect();
 }
 
 void ClientSession::OnConnectionFailed(
@@ -110,7 +109,6 @@ void ClientSession::OnConnectionFailed(
   // TODO(sergeyu): Log failure reason?
   scoped_refptr<ClientSession> self = this;
   event_handler_->OnSessionClosed(this);
-  Disconnect();
 }
 
 void ClientSession::OnSequenceNumberUpdated(
@@ -120,9 +118,13 @@ void ClientSession::OnSequenceNumberUpdated(
 }
 
 void ClientSession::Disconnect() {
-  connection_->Disconnect();
+  DCHECK(connection_);
   authenticated_ = false;
   RestoreEventState();
+
+  // This triggers OnSessionClosed() and the session may be destroyed
+  // as the result, so this call must be the last in this method.
+  connection_->Disconnect();
 }
 
 void ClientSession::LocalMouseMoved(const SkIPoint& mouse_pos) {

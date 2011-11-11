@@ -34,8 +34,8 @@ ConnectionToClient::ConnectionToClient(base::MessageLoopProxy* message_loop,
 }
 
 ConnectionToClient::~ConnectionToClient() {
-  // TODO(hclam): When we shut down the viewer we may have to close the
-  // connection.
+  if (session_.get())
+    message_loop_->DeleteSoon(FROM_HERE, session_.release());
 }
 
 void ConnectionToClient::SetEventHandler(EventHandler* event_handler) {
@@ -48,18 +48,21 @@ protocol::Session* ConnectionToClient::session() {
 }
 
 void ConnectionToClient::Disconnect() {
-  // This method can be called from main thread so perform threading switching.
-  if (!message_loop_->BelongsToCurrentThread()) {
-    message_loop_->PostTask(
-        FROM_HERE, base::Bind(&ConnectionToClient::Disconnect, this));
-    return;
-  }
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   CloseChannels();
 
-  // If there is a session then release it, causing it to close.
-  if (session_.get())
-    session_.reset();
+  DCHECK(session_.get());
+  Session* session = session_.release();
+
+  // It may not be safe to delete |session_| here becase this method
+  // may be invoked in resonse to a libjingle event and libjingle's
+  // sigslot doesn't handle it properly, so postpone the deletion.
+  message_loop_->DeleteSoon(FROM_HERE, session);
+
+  // This should trigger OnConnectionClosed() event and this object
+  // may be destroyed as the result.
+  session->Close();
 }
 
 void ConnectionToClient::UpdateSequenceNumber(int64 sequence_number) {

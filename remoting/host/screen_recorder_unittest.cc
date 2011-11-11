@@ -87,7 +87,16 @@ class ScreenRecorderTest : public testing::Test {
         &capturer_, encoder_);
   }
 
+  virtual void TearDown() OVERRIDE {
+    record_ = NULL;
+    connection_ = NULL;
+    // Run message loop before destroying because protocol::Session is
+    // destroyed asynchronously.
+    message_loop_.RunAllPending();
+  }
+
  protected:
+  MessageLoop message_loop_;
   scoped_refptr<ScreenRecorder> record_;
 
   MockConnectionToClientEventHandler handler_;
@@ -99,7 +108,7 @@ class ScreenRecorderTest : public testing::Test {
   // The following mock objects are owned by ScreenRecorder.
   MockCapturer capturer_;
   MockEncoder* encoder_;
-  MessageLoop message_loop_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenRecorderTest);
 };

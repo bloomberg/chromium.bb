@@ -43,6 +43,11 @@ class ConnectionToClientTest : public testing::Test {
     message_loop_.RunAllPending();
   }
 
+  virtual void TearDown() OVERRIDE {
+    viewer_ = NULL;
+    message_loop_.RunAllPending();
+  }
+
   MessageLoop message_loop_;
   MockConnectionToClientEventHandler handler_;
   MockHostStub host_stub_;
@@ -98,14 +103,6 @@ TEST_F(ConnectionToClientTest, StateChange) {
 
   EXPECT_CALL(handler_, OnConnectionFailed(viewer_.get()));
   session_->state_change_callback().Run(protocol::Session::FAILED);
-  message_loop_.RunAllPending();
-}
-
-// Test that we can close client connection more than once.
-TEST_F(ConnectionToClientTest, Close) {
-  viewer_->Disconnect();
-  message_loop_.RunAllPending();
-  viewer_->Disconnect();
   message_loop_.RunAllPending();
 }
 

@@ -66,10 +66,7 @@ class ConnectionToClient :
   // Returns the connection in use.
   virtual Session* session();
 
-  // Disconnect the client connection. This method is allowed to be called
-  // more than once and calls after the first one will be ignored.
-  //
-  // After this method is called all the send method calls will be ignored.
+  // Disconnect the client connection.
   virtual void Disconnect();
 
   // Update the sequence number when received from the client. EventHandler

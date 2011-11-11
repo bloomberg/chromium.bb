@@ -81,24 +81,27 @@ void ScreenRecorder::Stop(const base::Closure& done_task) {
 
 void ScreenRecorder::AddConnection(
     scoped_refptr<ConnectionToClient> connection) {
+  DCHECK(network_loop_->BelongsToCurrentThread());
+  connections_.push_back(connection);
+
   capture_loop_->PostTask(
       FROM_HERE, base::Bind(&ScreenRecorder::DoInvalidateFullScreen, this));
-
-  // Add the client to the list so it can receive update stream.
-  network_loop_->PostTask(
-      FROM_HERE, base::Bind(&ScreenRecorder::DoAddConnection,
-                            this, connection));
 }
 
 void ScreenRecorder::RemoveConnection(
     scoped_refptr<ConnectionToClient> connection) {
-  network_loop_->PostTask(
-      FROM_HERE, base::Bind(&ScreenRecorder::DoRemoveClient, this, connection));
+  DCHECK(network_loop_->BelongsToCurrentThread());
+
+  ConnectionToClientList::iterator it =
+      std::find(connections_.begin(), connections_.end(), connection);
+  if (it != connections_.end()) {
+    connections_.erase(it);
+  }
 }
 
 void ScreenRecorder::RemoveAllConnections() {
-  network_loop_->PostTask(
-      FROM_HERE, base::Bind(&ScreenRecorder::DoRemoveAllClients, this));
+  DCHECK(network_loop_->BelongsToCurrentThread());
+  connections_.clear();
 }
 
 void ScreenRecorder::UpdateSequenceNumber(int64 sequence_number) {
@@ -269,31 +272,6 @@ void ScreenRecorder::FrameSentCallback(VideoPacket* packet) {
 
   capture_loop_->PostTask(
       FROM_HERE, base::Bind(&ScreenRecorder::DoFinishOneRecording, this));
-}
-
-void ScreenRecorder::DoAddConnection(
-    scoped_refptr<ConnectionToClient> connection) {
-  DCHECK(network_loop_->BelongsToCurrentThread());
-
-  connections_.push_back(connection);
-}
-
-void ScreenRecorder::DoRemoveClient(
-    scoped_refptr<ConnectionToClient> connection) {
-  DCHECK(network_loop_->BelongsToCurrentThread());
-
-  ConnectionToClientList::iterator it =
-      std::find(connections_.begin(), connections_.end(), connection);
-  if (it != connections_.end()) {
-    connections_.erase(it);
-  }
-}
-
-void ScreenRecorder::DoRemoveAllClients() {
-  DCHECK(network_loop_->BelongsToCurrentThread());
-
-  // Clear the list of connections.
-  connections_.clear();
 }
 
 void ScreenRecorder::DoStopOnNetworkThread(const base::Closure& done_task) {

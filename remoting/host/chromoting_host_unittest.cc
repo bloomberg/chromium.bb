@@ -156,6 +156,11 @@ class ChromotingHostTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
+    connection_ = NULL;
+    client_ = NULL;
+    connection2_ = NULL;
+    client2_ = NULL;
+    host_ = NULL;
     message_loop_.RunAllPending();
   }
 
@@ -188,9 +193,7 @@ class ChromotingHostTest : public testing::Test {
 
   // Helper method to remove a client connection from ChromotingHost.
   void RemoveClientSession() {
-    context_.network_message_loop()->PostTask(
-        FROM_HERE, base::Bind(
-            &ClientSession::OnConnectionClosed, client_, connection_));
+    client_->OnConnectionClosed(connection_);
   }
 
   static void AddClientToHost(scoped_refptr<ChromotingHost> host,
@@ -199,7 +202,9 @@ class ChromotingHostTest : public testing::Test {
   }
 
   void ShutdownHost() {
-    host_->Shutdown(base::Bind(&PostQuitTask, &message_loop_));
+    message_loop_.PostTask(
+        FROM_HERE, base::Bind(&ChromotingHost::Shutdown, host_,
+                              base::Bind(&PostQuitTask, &message_loop_)));
   }
 
  protected:
@@ -381,10 +386,15 @@ TEST_F(ChromotingHostTest, CurtainModeFail) {
       .Times(0);
   EXPECT_CALL(*disconnect_window_, Show(_, _))
       .Times(0);
-  EXPECT_CALL(*connection_.get(), Disconnect())
-      .WillOnce(QuitMainMessageLoop(&message_loop_));
+  EXPECT_CALL(*continue_window_, Hide())
+      .Times(AnyNumber());
+  EXPECT_CALL(*disconnect_window_, Hide())
+      .Times(AnyNumber());
   SimulateClientConnection(0, false);
-  RemoveClientSession();
+  context_.network_message_loop()->PostTask(
+      FROM_HERE, base::Bind(&ChromotingHostTest::RemoveClientSession,
+                            base::Unretained(this)));
+  PostQuitTask(&message_loop_);
   message_loop_.Run();
 }
 
@@ -397,8 +407,10 @@ TEST_F(ChromotingHostTest, CurtainModeFailSecond) {
     InSequence s;
     EXPECT_CALL(*curtain_, EnableCurtainMode(true))
         .WillOnce(QuitMainMessageLoop(&message_loop_));
-    EXPECT_CALL(*disconnect_window_, Show(_, _))
-        .Times(0);
+    EXPECT_CALL(*local_input_monitor_, Start(_))
+        .Times(1);
+    EXPECT_CALL(*disconnect_window_, Show(_, "user@domain"))
+        .Times(1);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .WillOnce(DoAll(
             InvokeWithoutArgs(
@@ -452,6 +464,8 @@ TEST_F(ChromotingHostTest, CurtainModeIT2Me) {
         .RetiresOnSaturation();
     EXPECT_CALL(*connection_.get(), Disconnect())
         .InSequence(s1, s2)
+        .WillOnce(InvokeWithoutArgs(
+            this, &ChromotingHostTest::RemoveClientSession))
         .RetiresOnSaturation();
     EXPECT_CALL(*local_input_monitor_, Stop())
         .Times(1)

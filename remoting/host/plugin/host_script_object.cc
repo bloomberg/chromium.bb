@@ -351,7 +351,12 @@ void HostNPScriptObject::OnAccessDenied() {
 }
 
 void HostNPScriptObject::OnClientAuthenticated(const std::string& jid) {
-  DCHECK_EQ(MessageLoop::current(), host_context_.main_message_loop());
+  if (MessageLoop::current() != host_context_.main_message_loop()) {
+    host_context_.main_message_loop()->PostTask(FROM_HERE, base::Bind(
+        &HostNPScriptObject::OnClientAuthenticated,
+        base::Unretained(this), jid));
+    return;
+  }
 
   if (state_ == kDisconnecting) {
     // Ignore the new connection if we are disconnecting.
@@ -367,7 +372,12 @@ void HostNPScriptObject::OnClientAuthenticated(const std::string& jid) {
 }
 
 void HostNPScriptObject::OnClientDisconnected(const std::string& jid) {
-  DCHECK_EQ(MessageLoop::current(), host_context_.main_message_loop());
+  if (MessageLoop::current() != host_context_.main_message_loop()) {
+    host_context_.main_message_loop()->PostTask(FROM_HERE, base::Bind(
+        &HostNPScriptObject::OnClientDisconnected,
+        base::Unretained(this), jid));
+    return;
+  }
 
   client_username_.clear();
 
@@ -376,7 +386,11 @@ void HostNPScriptObject::OnClientDisconnected(const std::string& jid) {
 }
 
 void HostNPScriptObject::OnShutdown() {
-  DCHECK_EQ(MessageLoop::current(), host_context_.main_message_loop());
+  if (MessageLoop::current() != host_context_.main_message_loop()) {
+    host_context_.main_message_loop()->PostTask(FROM_HERE, base::Bind(
+        &HostNPScriptObject::OnShutdown, base::Unretained(this)));
+    return;
+  }
 
   host_ = NULL;
   if (state_ != kDisconnected) {
@@ -584,7 +598,11 @@ void HostNPScriptObject::DisconnectInternal() {
 }
 
 void HostNPScriptObject::OnShutdownFinished() {
-  DCHECK_EQ(MessageLoop::current(), host_context_.main_message_loop());
+  if (MessageLoop::current() != host_context_.main_message_loop()) {
+    host_context_.main_message_loop()->PostTask(FROM_HERE, base::Bind(
+        &HostNPScriptObject::OnShutdownFinished, base::Unretained(this)));
+    return;
+  }
 
   disconnected_event_.Signal();
 }

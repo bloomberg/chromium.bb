@@ -38,6 +38,8 @@ JingleSessionManager::JingleSessionManager(
 }
 
 JingleSessionManager::~JingleSessionManager() {
+  // Session manager can be destroyed only after all sessions are destroyed.
+  DCHECK(sessions_.empty());
   Close();
 }
 
@@ -111,13 +113,9 @@ void JingleSessionManager::Init(
 void JingleSessionManager::Close() {
   DCHECK(CalledOnValidThread());
 
-  // Close() can be called only after all sessions are destroyed.
-  DCHECK(sessions_.empty());
-
   if (!closed_) {
     cricket_session_manager_->RemoveClient(kChromotingXmlNamespace);
     jingle_signaling_connector_.reset();
-    cricket_session_manager_.reset();
     closed_ = true;
   }
 }

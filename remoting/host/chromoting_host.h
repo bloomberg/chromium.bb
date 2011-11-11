@@ -163,9 +163,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                  bool allow_nat_traversal);
   virtual ~ChromotingHost();
 
-  // This method is called if a client is disconnected from the host.
-  void OnClientDisconnected(ClientSession* client);
-
   // Creates encoder for the specified configuration.
   Encoder* CreateEncoder(const protocol::SessionConfig& config);
 
@@ -182,10 +179,11 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void StopScreenRecorder();
   void OnScreenRecorderStopped();
 
-  // The following methods are called during shutdown.
-  void ShutdownNetwork();
-  void ShutdownRecorder();
+  // Called from Shutdown() or OnScreenRecorderStopped() to finish shutdown.
   void ShutdownFinish();
+
+  // Unless specified otherwise all members of this class must be
+  // used on the network thread only.
 
   // Parameters specified when the host was created.
   ChromotingHostContext* context_;
@@ -199,6 +197,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   std::string local_jid_;
   scoped_ptr<protocol::SessionManager> session_manager_;
 
+  // StatusObserverList is thread-safe and can be used on any thread.
   StatusObserverList status_observers_;
 
   // The connections to remote clients.
@@ -207,35 +206,27 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Session manager for the host process.
   scoped_refptr<ScreenRecorder> recorder_;
 
-  // Tracks the internal state of the host.
-  // This variable is written on the main thread of ChromotingHostContext
-  // and read by jingle thread.
-  State state_;
-
   // Number of screen recorders that are currently being
   // stopped. Normally set to 0 or 1, but in some cases it may be
   // greater than 1, particularly if when second client can connect
-  // immidiately after previous one disconnected.
+  // immediately after previous one disconnected.
   int stopping_recorders_;
 
-  // Lock is to lock the access to |state_|.
-  base::Lock lock_;
+  // Tracks the internal state of the host.
+  State state_;
 
   // Configuration of the protocol.
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config_;
 
-  bool is_curtained_;
-
-  // Whether or not the host is running in "IT2Me" mode, in which connections
-  // are pre-authenticated, and hence the local login challenge can be bypassed.
-  bool is_it2me_;
-
-  std::string access_code_;
-
-  // Stores list of closures that should be executed when we finish
+  // Stores list of tasks that should be executed when we finish
   // shutdown. Used only while |state_| is set to kStopping.
   std::vector<base::Closure> shutdown_tasks_;
 
+  // TODO(sergeyu): The following members do not belong to
+  // ChromotingHost and should be moved elsewhere.
+  bool is_curtained_;
+  bool is_it2me_;
+  std::string access_code_;
   UiStrings ui_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHost);

@@ -25,6 +25,11 @@ namespace protocol {
 // Generic interface for Chromotocol connection used by both client and host.
 // Provides access to the connection channels, but doesn't depend on the
 // protocol used for each channel.
+//
+// Because libjingle's sigslot class doesn't handle deletion properly
+// while it is being invoked all Session instances must be deleted
+// with a clean stack, i.e. not from event handlers, when sigslot may
+// be present in the stack.
 class Session : public base::NonThreadSafe {
  public:
   enum State {

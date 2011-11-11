@@ -132,10 +132,6 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   void DoSendInit(scoped_refptr<protocol::ConnectionToClient> connection,
                   int width, int height);
 
-  void DoAddConnection(scoped_refptr<protocol::ConnectionToClient> connection);
-  void DoRemoveClient(scoped_refptr<protocol::ConnectionToClient> connection);
-  void DoRemoveAllClients();
-
   // Signal network thread to cease activities.
   void DoStopOnNetworkThread(const base::Closure& done_task);
 
