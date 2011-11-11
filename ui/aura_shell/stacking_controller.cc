@@ -45,7 +45,7 @@ aura::Window* StackingController::GetActivatableWindow(aura::Window* window) {
     parent = parent->parent();
     child = child->parent();
   }
-  return false;
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
