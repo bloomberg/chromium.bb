@@ -42,6 +42,10 @@ aura::Window* StackingController::GetActivatableWindow(aura::Window* window) {
   while (parent) {
     if (SupportsChildActivation(parent))
       return child;
+    // If |child| isn't activatable, but has transient parent, trace
+    // that path instead.
+    if (child->transient_parent())
+      return GetActivatableWindow(child->transient_parent());
     parent = parent->parent();
     child = child->parent();
   }
