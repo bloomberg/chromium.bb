@@ -253,6 +253,9 @@ const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
 // SYN packet.
 const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
 
+// Enable support for JavaScript touch events.
+const char kEnableTouchEvents[]             = "enable-touch-events";
+
 // Enables support for fullscreen video. Current implementation is
 // incomplete and this flag is used for development and testing.
 const char kEnableVideoFullscreen[]         = "enable-video-fullscreen";
