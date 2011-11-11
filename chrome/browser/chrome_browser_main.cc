@@ -1574,11 +1574,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 #endif
 
-  // Tests should be able to tune login manager before showing it.
-  // Thus only show login manager in normal (non-testing) mode.
-  if (!parameters().ui_task)
-    OptionallyRunChromeOSLoginManager(parsed_command_line(), profile_);
-
 #if !defined(OS_MACOSX)
   // Importing other browser settings is done in a browser-like process
   // that exits when this task has finished.
@@ -1859,6 +1854,11 @@ void ChromeBrowserMainParts::StartBrowserOrUITask() {
   // PreMainMessageLoopRun() is complete, and before starting the browser.
   DesktopNotificationServiceFactory::GetForProfile(profile_)->SetUIManager(
       g_browser_process->notification_ui_manager());
+
+  // Tests should be able to tune login manager before showing it.
+  // Thus only show login manager in normal (non-testing) mode.
+  if (!parameters().ui_task)
+    OptionallyRunChromeOSLoginManager(parsed_command_line(), profile_);
 
   if (parameters().ui_task) {
     // We are in test mode. Run one task and enter the main message loop.
