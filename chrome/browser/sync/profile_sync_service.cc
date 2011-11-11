@@ -1326,7 +1326,8 @@ void ProfileSyncService::EnableEncryptEverything() {
   // must check that instead of |backend_initialized_|.
   // TODO(akalin): Fix the above. :/
   DCHECK(sync_initialized());
-  encryption_pending_ = true;
+  if (!encrypt_everything_)
+    encryption_pending_ = true;
 }
 
 bool ProfileSyncService::encryption_pending() const {
