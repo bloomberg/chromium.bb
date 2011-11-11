@@ -71,12 +71,12 @@ class TreeNode : public TreeModelNode {
 
   virtual ~TreeNode() {}
 
-  // Adds |node| as a child of this one, at |index|.
+  // Adds |node| as a child of this node, at |index|.
   virtual void Add(NodeType* node, int index) {
     DCHECK(node);
     DCHECK_GE(index, 0);
     DCHECK_LE(index, child_count());
-    // If the node has a parent, remove it from its parent.
+    // If |node| has a parent, remove it from its parent.
     NodeType* parent = node->parent_;
     if (parent)
       parent->Remove(node);
@@ -89,7 +89,7 @@ class TreeNode : public TreeModelNode {
   virtual NodeType* Remove(NodeType* node) {
     typename std::vector<NodeType*>::iterator i =
         std::find(children_->begin(), children_->end(), node);
-    DCHECK(i != children_.end());
+    DCHECK(i != children_->end());
     node->parent_ = NULL;
     children_->erase(i);
     return node;
@@ -113,7 +113,7 @@ class TreeNode : public TreeModelNode {
   int child_count() const { return static_cast<int>(children_->size()); }
 
   // Returns true if this node has no children.
-  bool empty() const { return children_.empty(); }
+  bool empty() const { return children_->empty(); }
 
   // Returns the number of all nodes in the subtree rooted at this node,
   // including this node.
