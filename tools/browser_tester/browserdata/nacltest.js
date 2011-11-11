@@ -458,6 +458,23 @@ function embed_name(embed) {
 }
 
 
+// Webkit Bug Workaround
+// THIS SHOULD BE REMOVED WHEN Webkit IS FIXED
+// http://code.google.com/p/nativeclient/issues/detail?id=2428
+// http://code.google.com/p/chromium/issues/detail?id=103588
+
+function ForcePluginLoadOnTimeout(elem, tester, timeout) {
+  tester.log('Registering ForcePluginLoadOnTimeout (Bugs: NaCl 2428, Chrome 103588)');
+  setTimeout(function(){ ForceNaClPluginReload(elem, tester); }, timeout);
+}
+
+function ForceNaClPluginReload(elem, tester) {
+  if (elem.readyState === undefined) {
+    tester.log('WARNING: WebKit plugin-not-loading error detected; reloading.');
+    window.location.reload();
+  }
+}
+
 function NaClWaiter(body_element) {
   // Work around how JS binds 'this'
   var this_ = this;
