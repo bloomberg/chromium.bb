@@ -341,10 +341,11 @@ void PowerMenuButton::UpdateIconAndLabelInfo() {
   } else {
     SetIcon(GetImageWithPercentage(
         SMALL, line_power_on_ ? CHARGING : DISCHARGING, battery_percentage_));
-
+    const int message_id = line_power_on_ ?
+        IDS_STATUSBAR_BATTERY_CHARGING_PERCENTAGE :
+        IDS_STATUSBAR_BATTERY_USING_PERCENTAGE;
     tooltip_text =  l10n_util::GetStringFUTF16(
-        IDS_STATUSBAR_BATTERY_PERCENTAGE,
-        base::IntToString16(static_cast<int>(battery_percentage_)));
+        message_id, base::IntToString16(static_cast<int>(battery_percentage_)));
   }
   SetTooltipText(tooltip_text);
   SetAccessibleName(tooltip_text);
