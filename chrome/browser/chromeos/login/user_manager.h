@@ -85,23 +85,23 @@ class UserManager : public ProfileImageDownloader::Delegate,
   // Gets user's oauth token status in local state preferences.
   User::OAuthTokenStatus GetUserOAuthStatus(const std::string& username) const;
 
-  // Sets user image to the default image with index |image_index|, updates
-  // local state preferences and sends LOGIN_USER_IMAGE_CHANGED notification.
+  // Sets user image to the default image with index |image_index|, sends
+  // LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
   void SaveUserDefaultImageIndex(const std::string& username, int image_index);
 
-  // Saves image to file, updates local state preferences and sends
-  // LOGIN_USER_IMAGE_CHANGED notification.
+  // Saves image to file, sends LOGIN_USER_IMAGE_CHANGED notification and
+  // updates Local State.
   void SaveUserImage(const std::string& username, const SkBitmap& image);
 
-  // Tries to load user image from disk and sets it for the user; updates local
-  // state preferences and sends LOGIN_USER_IMAGE_CHANGED notification.
+  // Tries to load user image from disk; if successful, sets it for the user,
+  // sends LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
   void SaveUserImageFromFile(const std::string& username, const FilePath& path);
 
-  // Sets profile image as user image for |username|, updates local state
-  // preferences and sends LOGIN_USER_IMAGE_CHANGED notification.
-  // If the user is not logged-in or the last |DownloadProfileImage| call
-  // has failed, a default grey avatar will be used until the user logs in
-  // and profile image is downloaded successfuly.
+  // Sets profile image as user image for |username|, sends
+  // LOGIN_USER_IMAGE_CHANGED notification and updates Local State. If the user
+  // is not logged-in or the last |DownloadProfileImage| call has failed, a
+  // default grey avatar will be used until the user logs in and profile image
+  // is downloaded successfuly.
   void SaveUserImageFromProfileImage(const std::string& username);
 
   // Starts downloading the profile image for the logged-in user.
@@ -173,9 +173,11 @@ class UserManager : public ProfileImageDownloader::Delegate,
 
   // Sets one of the default images for the specified user and saves this
   // setting in local state.
+  // Does not send LOGIN_USER_IMAGE_CHANGED notification.
   void SetInitialUserImage(const std::string& username);
 
-  // Sets image for user |username|.
+  // Sets image for user |username| and sends LOGIN_USER_IMAGE_CHANGED
+  // notification unless this is a new user and image is set for the first time.
   void SetUserImage(const std::string& username,
                     int image_index,
                     const SkBitmap& image);
@@ -186,8 +188,9 @@ class UserManager : public ProfileImageDownloader::Delegate,
                              int image_index,
                              const SkBitmap& image);
 
-  // Saves image to file with specified path. Runs on FILE thread.
-  // Posts task for saving image info to local state on UI thread.
+  // Saves image to file with specified path and sends LOGIN_USER_IMAGE_CHANGED
+  // notification. Runs on FILE thread. Posts task for saving image info to
+  // Local State on UI thread.
   void SaveImageToFile(const std::string& username,
                        const SkBitmap& image,
                        const FilePath& image_path,

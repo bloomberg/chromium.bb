@@ -70,7 +70,7 @@ cr.define('options', function() {
      */
     didShowPage: function() {
       $('images-grid').updateAndFocus();
-      chrome.send('getSelectedImage');
+      chrome.send('onPageShown');
     },
 
     /**

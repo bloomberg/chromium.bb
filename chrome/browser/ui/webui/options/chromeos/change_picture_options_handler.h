@@ -42,6 +42,14 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
   // Sends current selection to the page.
   void SendSelectedImage();
 
+  // Sends the profile image to the page. If |should_select| is true then
+  // the profile image element is selected.
+  void SendProfileImage(const SkBitmap& image, bool should_select);
+
+  // Starts profile image update and shows the last downloaded profile image,
+  // if any, on the page. Shouldn't be called before |SendProfileImage|.
+  void UpdateProfileImage();
+
   // Starts camera presence check.
   void CheckCameraPresence();
 
@@ -57,8 +65,8 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
   // Gets the list of available user images and sends it to the page.
   void HandleGetAvailableImages(const base::ListValue* args);
 
-  // Gets URL of the currently selected image.
-  void HandleGetSelectedImage(const base::ListValue* args);
+  // Handles page shown event.
+  void HandleOnPageShown(const base::ListValue* args);
 
   // Selects one of the available images as user's.
   void HandleSelectImage(const base::ListValue* args);

@@ -76,6 +76,10 @@ const char kStubUser[] = "stub-user@example.com";
 const char kImagePathNodeName[] = "path";
 const char kImageIndexNodeName[] = "index";
 
+// Index of the default image used as stub while the real user image is loading
+// from file and for the |kStubUser| user.
+const int kStubDefaultImageIndex = 0;
+
 // Delay betweeen user login and attempt to update user's profile image.
 const long kProfileImageDownloadDelayMs = 10000;
 
@@ -417,9 +421,7 @@ User::OAuthTokenStatus UserManager::GetUserOAuthStatus(
 void UserManager::SaveUserDefaultImageIndex(const std::string& username,
                                             int image_index) {
   DCHECK(image_index >= 0 && image_index < kDefaultImagesCount);
-  SetUserImage(username, image_index,
-               *ResourceBundle::GetSharedInstance().
-                   GetBitmapNamed(kDefaultImageResources[image_index]));
+  SetUserImage(username, image_index, GetDefaultImage(image_index));
   SaveImageToLocalState(username, "", image_index, false);
 }
 
@@ -451,8 +453,11 @@ void UserManager::SaveUserImageFromProfileImage(const std::string& username) {
 }
 
 void UserManager::DownloadProfileImage() {
-  if (!profile_image_downloader_.get())
-    profile_image_downloader_.reset(new ProfileImageDownloader(this));
+  if (profile_image_downloader_.get()) {
+    // Another download is already in progress
+    return;
+  }
+  profile_image_downloader_.reset(new ProfileImageDownloader(this));
   profile_image_downloader_->Start();
   profile_image_load_start_time_ = base::Time::Now();
 }
@@ -553,13 +558,13 @@ void UserManager::EnsureUsersLoaded() {
           if (prefs_images->GetStringWithoutPathExpansion(email, &image_path)) {
             int image_id = User::kInvalidImageIndex;
             if (IsDefaultImagePath(image_path, &image_id)) {
-              DCHECK(image_id >= 0 && image_id < kDefaultImagesCount);
-              int resource_id = kDefaultImageResources[image_id];
-              user->SetImage(*ResourceBundle::GetSharedInstance().
-                                 GetBitmapNamed(resource_id),
-                             image_id);
+              user->SetImage(GetDefaultImage(image_id), image_id);
             } else {
               int image_index = User::kExternalImageIndex;
+              // Until image has been loaded, use a stub.
+              user->SetImage(GetDefaultImage(kStubDefaultImageIndex),
+                             image_index);
+              DCHECK(!image_path.empty());
               // Load user image asynchronously.
               image_loader_->Start(
                   image_path, 0,
@@ -572,24 +577,25 @@ void UserManager::EnsureUsersLoaded() {
             image_properties->GetString(kImagePathNodeName, &image_path);
             image_properties->GetInteger(kImageIndexNodeName, &image_index);
             if (image_index >= 0 && image_index < kDefaultImagesCount) {
-              int resource_id = kDefaultImageResources[image_index];
-              user->SetImage(*ResourceBundle::GetSharedInstance().
-                                 GetBitmapNamed(resource_id),
-                             image_index);
-            } else if (image_index == User::kProfileImageIndex &&
-                       image_path.empty()) {
-              // User has profile image as his picture but no profile image
-              // has been downloaded yet, so use a grey avatar for now.
-              user->SetImage(*ResourceBundle::GetSharedInstance().
-                                 GetBitmapNamed(IDR_PROFILE_PICTURE_LOADING),
-                             User::kProfileImageIndex);
+              user->SetImage(GetDefaultImage(image_index), image_index);
             } else if (image_index == User::kExternalImageIndex ||
                        image_index == User::kProfileImageIndex) {
-              // Load user image asynchronously.
-              image_loader_->Start(
-                  image_path, 0,
-                  base::Bind(&UserManager::SetUserImage,
-                             base::Unretained(this), email, image_index));
+              // Path may be empty for profile images (meaning that the image
+              // hasn't been downloaded for the first time yet, in which case a
+              // download will be scheduled for |kProfileImageDownloadDelayMs|
+              // after user logs in).
+              DCHECK(!image_path.empty() ||
+                     image_index == User::kProfileImageIndex);
+              // Until image has been loaded, use a stub.
+              user->SetImage(GetDefaultImage(kStubDefaultImageIndex),
+                             image_index);
+              if (!image_path.empty()) {
+                // Load user image asynchronously.
+                image_loader_->Start(
+                    image_path, 0,
+                    base::Bind(&UserManager::SetUserImage,
+                               base::Unretained(this), email, image_index));
+              }
             } else {
               NOTREACHED();
             }
@@ -602,9 +608,8 @@ void UserManager::EnsureUsersLoaded() {
 
 void UserManager::StubUserLoggedIn() {
   logged_in_user_ = &stub_user_;
-  SetUserImage(stub_user_.email(), 0,
-               *ResourceBundle::GetSharedInstance().
-                   GetBitmapNamed(kDefaultImageResources[0]));
+  stub_user_.SetImage(GetDefaultImage(kStubDefaultImageIndex),
+                      kStubDefaultImageIndex);
 }
 
 void UserManager::NotifyOnLogin() {
@@ -655,8 +660,22 @@ void UserManager::SetUserImage(const std::string& username,
                                const SkBitmap& image) {
   User* user = const_cast<User*>(FindUser(username));
   // User may have been removed by now.
-  if (user)
+  if (user) {
+    // For existing users, a valid image index should have been set upon loading
+    // them from Local State.
+    DCHECK(user->image_index() != User::kInvalidImageIndex ||
+           current_user_is_new_);
+    bool image_changed = user->image_index() != User::kInvalidImageIndex;
     user->SetImage(image, image_index);
+    if (image_changed) {
+      // Unless this is first-time setting with |SetInitialUserImage|,
+      // send a notification about image change.
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
+          content::Source<UserManager>(this),
+          content::Details<const User>(user));
+    }
+  }
 }
 
 void UserManager::SaveUserImageInternal(const std::string& username,
@@ -734,10 +753,6 @@ void UserManager::SaveImageToLocalState(const std::string& username,
   local_state->ScheduleSavePersistentPrefs();
 
   NotifyLocalStateChanged();
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-      content::Source<UserManager>(this),
-      content::Details<const User>(logged_in_user_));
 }
 
 void UserManager::DeleteUserImage(const FilePath& image_path) {
@@ -812,6 +827,8 @@ void UserManager::OnDownloadSuccess(const SkBitmap& image) {
       chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
       content::Source<UserManager>(this),
       content::Details<const SkBitmap>(&image));
+
+  profile_image_downloader_.reset();
 }
 
 void UserManager::OnDownloadFailure() {
@@ -823,6 +840,7 @@ void UserManager::OnDownloadFailure() {
       chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
       content::Source<UserManager>(this),
       content::NotificationService::NoDetails());
+  profile_image_downloader_.reset();
 }
 
 void UserManager::OnDownloadDefaultImage() {
@@ -834,6 +852,7 @@ void UserManager::OnDownloadDefaultImage() {
       chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
       content::Source<UserManager>(this),
       content::NotificationService::NoDetails());
+  profile_image_downloader_.reset();
 }
 
 User* UserManager::CreateUser(const std::string& email) const {

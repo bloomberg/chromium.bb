@@ -34,7 +34,8 @@ class ProfileImageDownloader : public content::URLFetcherDelegate,
     kDownloadResultsCount
   };
 
-  // Reports on success or failure of Profile image download.
+  // Reports on success or failure of Profile image download. It is OK to
+  // delete the |ProfileImageDownloader| instance in any of these handlers.
   class Delegate {
    public:
     virtual ~Delegate() {}
@@ -55,7 +56,7 @@ class ProfileImageDownloader : public content::URLFetcherDelegate,
 
   // Starts downloading the picture if the necessary authorization token is
   // ready. If not, subscribes to token service and starts fetching if the
-  // token is available.
+  // token is available. Should not be called more than once.
   void Start();
 
  private:

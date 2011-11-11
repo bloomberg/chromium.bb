@@ -167,8 +167,6 @@ void ProfileImageDownloader::Start() {
   VLOG(1) << "Starting profile image downloader...";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // TODO(ivankr): ignore further Start() calls.
-
   TokenService* service =
       ProfileManager::GetDefaultProfile()->GetTokenService();
   if (!service) {
@@ -182,7 +180,7 @@ void ProfileImageDownloader::Start() {
     auth_token_ =
         service->GetTokenForService(GaiaConstants::kPicasaService);
     StartFetchingImage();
-  } else if (registrar_.IsEmpty()) {
+  } else {
     registrar_.Add(this,
                    chrome::NOTIFICATION_TOKEN_AVAILABLE,
                    content::Source<TokenService>(service));

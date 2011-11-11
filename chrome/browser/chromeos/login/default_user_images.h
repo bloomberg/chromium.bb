@@ -9,22 +9,29 @@
 #include <cstddef>  // for size_t
 #include <string>
 
+class SkBitmap;
+
 namespace chromeos {
 
 // Returns path to default user image with specified index.
 // The path is used in Local State to distinguish default images.
+// This function is obsolete and is preserved only for compatibility with older
+// profiles which don't user separate image index and path.
 std::string GetDefaultImagePath(int index);
 
 // Checks if given path is one of the default ones. If it is, returns true
 // and its index through |image_id|. If not, returns false.
 bool IsDefaultImagePath(const std::string& path, int* image_id);
 
-// Returns URL to default user image with specifided index.
+// Returns URL to default user image with specified index.
 std::string GetDefaultImageUrl(int index);
 
 // Checks if the given URL points to one of the default images. If it is,
 // returns true and its index through |image_id|. If not, returns false.
 bool IsDefaultImageUrl(const std::string url, int* image_id);
+
+// Returns bitmap of default user image with specified index.
+const SkBitmap& GetDefaultImage(int index);
 
 // Resource IDs of default user images.
 extern const int kDefaultImageResources[];
