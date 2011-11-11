@@ -734,6 +734,16 @@ const char kGetDeviceProperties[] = "GetDeviceProperties";
 const char kMount[] = "Mount";
 const char kUnmount[] = "Unmount";
 
+// Signals.
+const char kDeviceAdded[] = "DeviceAdded";
+const char kDeviceScanned[] = "DeviceScanned";
+const char kDeviceRemoved[] = "DeviceRemoved";
+const char kDiskAdded[] = "DiskAdded";
+const char kDiskChanged[] = "DiskChanged";
+const char kDiskRemoved[] = "DiskRemoved";
+const char kFormattingFinished[] = "FormattingFinished";
+const char kMountCompleted[] = "MountCompleted";
+
 // Properties.
 const char kDeviceFile[] = "DeviceFile";
 const char kDeviceIsDrive[] = "DeviceIsDrive";
