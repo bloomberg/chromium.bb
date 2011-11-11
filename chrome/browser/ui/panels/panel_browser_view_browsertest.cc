@@ -424,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanelBasic) {
   Panel* panel = CreatePanelWithParams(params);
 
   // Validate basic window properties.
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   HWND native_window = GetNativeWindow(panel);
 
   RECT window_rect;
@@ -448,7 +448,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanelActive) {
 
   // Validate window styles. We want to ensure that the window is created
   // with expected styles regardless of its active state.
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   HWND native_window = GetNativeWindow(panel);
 
   LONG styles = ::GetWindowLong(native_window, GWL_STYLE);
@@ -473,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanelInactive) {
 
   // Validate window styles. We want to ensure that the window is created
   // with expected styles regardless of its active state.
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   HWND native_window = GetNativeWindow(panel);
 
   LONG styles = ::GetWindowLong(native_window, GWL_STYLE);

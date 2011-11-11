@@ -78,8 +78,7 @@ gfx::NativeWindow NativeTabContentsViewAura::GetTopLevelNativeWindow() const {
 }
 
 void NativeTabContentsViewAura::SetPageTitle(const string16& title) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
+  GetNativeView()->set_title(title);
 }
 
 void NativeTabContentsViewAura::StartDragging(const WebDropData& drop_data,

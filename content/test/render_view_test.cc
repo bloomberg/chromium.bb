@@ -158,7 +158,10 @@ int RenderViewTest::SendKeyEvent(MockKeyboard::Layout layout,
                                  int key_code,
                                  MockKeyboard::Modifiers modifiers,
                                  std::wstring* output) {
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  NOTIMPLEMENTED();
+  return L'\0';
+#elif defined(OS_WIN)
   // Retrieve the Unicode character for the given tuple (keyboard-layout,
   // key-code, and modifiers).
   // Exit when a keyboard-layout driver cannot assign a Unicode character to
@@ -189,7 +192,7 @@ int RenderViewTest::SendKeyEvent(MockKeyboard::Layout layout,
   SendNativeKeyEvent(keyup_event);
 
   return length;
-#elif defined(OS_LINUX) && !defined(USE_AURA)
+#elif defined(OS_LINUX)
   // We ignore |layout|, which means we are only testing the layout of the
   // current locale. TODO(estade): fix this to respect |layout|.
   std::vector<GdkEvent*> events;

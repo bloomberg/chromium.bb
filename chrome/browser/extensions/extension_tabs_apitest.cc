@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   ASSERT_FALSE(browser()->window()->IsFullscreen());
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FocusWindowDoesNotUnmaximize) {
   gfx::NativeWindow window = browser()->window()->GetNativeHandle();
   ::SendMessage(window, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
