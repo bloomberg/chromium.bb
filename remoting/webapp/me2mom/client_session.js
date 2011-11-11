@@ -39,7 +39,7 @@ remoting.ClientSession = function(hostJid, hostPublicKey, accessCode, email,
   this.clientJid = '';
   this.sessionId = '';
   /** @type {remoting.ViewerPlugin} */ this.plugin = null;
-
+  this.logToServer = new remoting.LogToServer();
   this.onStateChange = onStateChange;
 };
 
@@ -326,6 +326,7 @@ remoting.ClientSession.prototype.setState_ = function(state) {
   if (this.onStateChange) {
     this.onStateChange(oldState);
   }
+  this.logToServer.logClientSessionStateChange(this.state, this.error);
 };
 
 /**
