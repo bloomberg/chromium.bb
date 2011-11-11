@@ -51,15 +51,6 @@ class Manifest {
                      ErrorInfo* error_info,
                      bool* is_portable);
 
-  // TODO(jvoung): Get rid of these when we find a better way to
-  // store / install these.
-  // Gets the full nexe URL for the LLC nexe from the manifest file.
-  bool GetLLCURL(nacl::string* full_url, ErrorInfo* error_info);
-
-  // Gets the full nexe URL for the LD nexe from the manifest file.
-  bool GetLDURL(nacl::string* full_url, ErrorInfo* error_info);
-  // end TODO(jvoung)
-
   // Resolves a URL relative to the manifest base URL
   bool ResolveURL(const nacl::string& relative_url,
                   nacl::string* full_url,

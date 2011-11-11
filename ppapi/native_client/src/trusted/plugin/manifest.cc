@@ -60,10 +60,6 @@ const char* const kUrlKey =         "url";
 //   }
 // }
 
-// TODO(jvoung): Remove these when we find a better way to store/install them.
-const char* const kPnaclLlcKey = "pnacl-llc";
-const char* const kPnaclLdKey = "pnacl-ld";
-
 // Looks up |property_name| in the vector |valid_names| with length
 // |valid_name_count|.  Returns true if |property_name| is found.
 bool FindMatchingProperty(nacl::string property_name,
@@ -432,69 +428,6 @@ bool Manifest::ResolveKey(const nacl::string& key,
   }
   return GetKeyUrl(files, rest, sandbox_isa_,
                    full_url, error_info, is_portable, this);
-}
-
-// TODO(jvoung): We won't need these if we figure out how to install llc and ld.
-bool Manifest::GetLLCURL(nacl::string* full_url, ErrorInfo* error_info) {
-  if (full_url == NULL || error_info == NULL)
-    return false;
-
-  Json::Value pnacl_llc = dictionary_[kPnaclLlcKey];
-
-  nacl::string nexe_url;
-  nacl::string error_string;
-  bool is_portable;
-  if (!GetURLFromISADictionary(pnacl_llc,
-                               sandbox_isa_,
-                               &nexe_url,
-                               &error_string,
-                               &is_portable)) {
-    error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
-                          nacl::string(kPnaclLlcKey) + ":" + sandbox_isa_ +
-                          error_string);
-    return false;
-  }
-
-  if (is_portable) {
-    // Bootstrap problem -- we need this to translate portable programs!
-    error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
-                          nacl::string(kPnaclLlcKey) +
-                          " must be pre-translated for " + sandbox_isa_ + "!");
-    return false;
-  }
-
-  return ResolveURL(nexe_url, full_url, error_info);
-}
-
-bool Manifest::GetLDURL(nacl::string* full_url, ErrorInfo* error_info) {
-  if (full_url == NULL || error_info == NULL)
-    return false;
-
-  Json::Value pnacl_ld = dictionary_[kPnaclLdKey];
-
-  nacl::string nexe_url;
-  nacl::string error_string;
-  bool is_portable;
-  if (!GetURLFromISADictionary(pnacl_ld,
-                               sandbox_isa_,
-                               &nexe_url,
-                               &error_string,
-                               &is_portable)) {
-    error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
-                          nacl::string(kPnaclLdKey) + ":" + sandbox_isa_ +
-                          error_string);
-    return false;
-  }
-
-  if (is_portable) {
-    // Bootstrap problem -- we need this to translate portable programs!
-    error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
-                          nacl::string(kPnaclLdKey) +
-                          " must be pre-translated for " + sandbox_isa_ + "!");
-    return false;
-  }
-
-  return ResolveURL(nexe_url, full_url, error_info);
 }
 
 }  // namespace plugin

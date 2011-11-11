@@ -1607,20 +1607,11 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
     // Inform JavaScript that we found a nexe URL to load.
     EnqueueProgressEvent(kProgressEventProgress);
     if (is_portable) {
-      // TODO(jvoung): Do we want to check an ENV var if pnacl is enabled first?
-      nacl::string llc_url;
-      nacl::string ld_url;
-      if (SelectLLCURLFromManifest(&llc_url, &error_info) &&
-          SelectLDURLFromManifest(&ld_url, &error_info)) {
-        pp::CompletionCallback translate_callback =
-            callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
-        // Will always call the callback on success or failure.
-        pnacl_.BitcodeToNative(program_url,
-                               llc_url,
-                               ld_url,
-                               translate_callback);
-        return;
-      }
+      pp::CompletionCallback translate_callback =
+          callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
+      // Will always call the callback on success or failure.
+      pnacl_.BitcodeToNative(program_url, translate_callback);
+      return;
     } else {
       pp::CompletionCallback open_callback =
           callback_factory_.NewRequiredCallback(&Plugin::NexeFileDidOpen);
@@ -1707,26 +1698,6 @@ bool Plugin::SelectProgramURLFromManifest(nacl::string* result,
     return false;
   return manifest_->GetProgramURL(result, error_info, is_portable);
 }
-
-// TODO(jvoung): get rid of these when we have a better hosting solution
-// for PNaCl's nexes.
-bool Plugin::SelectLLCURLFromManifest(nacl::string* result,
-                                      ErrorInfo* error_info) {
-  PLUGIN_PRINTF(("Plugin::SelectLLCURLFromManifest()\n"));
-  if (result == NULL || error_info == NULL || manifest_ == NULL)
-    return false;
-  return manifest_->GetLLCURL(result, error_info);
-}
-
-bool Plugin::SelectLDURLFromManifest(nacl::string* result,
-                                     ErrorInfo* error_info) {
-  PLUGIN_PRINTF(("Plugin::SelectLDURLFromManifest()\n"));
-  if (result == NULL || error_info == NULL || manifest_ == NULL)
-    return false;
-  return manifest_->GetLDURL(result, error_info);
-}
-// end TODO(jvoung)
-
 
 void Plugin::UrlDidOpenForStreamAsFile(int32_t pp_error,
                                        FileDownloader*& url_downloader,

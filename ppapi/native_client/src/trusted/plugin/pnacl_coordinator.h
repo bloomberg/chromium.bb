@@ -90,8 +90,6 @@ class PnaclCoordinator {
   void Initialize(Plugin* instance);
 
   void BitcodeToNative(const nacl::string& pexe_url,
-                       const nacl::string& llc_url,
-                       const nacl::string& ld_url,
                        const pp::CompletionCallback& finish_callback);
 
   // Call this to take ownership of the FD of the translated nexe after
@@ -115,9 +113,8 @@ class PnaclCoordinator {
   // Wrapper for Plugin ReportLoadError.
   void ReportLoadError(const ErrorInfo& error);
 
-
-
   // Accessors for use by helper threads.
+  nacl::string resource_base_url() const { return resource_base_url_; }
   Plugin* plugin() const { return plugin_; }
   nacl::string llc_url() const { return llc_url_; }
   NaClSubprocess* llc_subprocess() const { return llc_subprocess_; }
@@ -153,6 +150,7 @@ class PnaclCoordinator {
   pp::CompletionCallbackFactory<PnaclCoordinator> callback_factory_;
 
   // URLs used to lookup downloaded resources.
+  nacl::string resource_base_url_;
   nacl::string llc_url_;
   nacl::string ld_url_;
 

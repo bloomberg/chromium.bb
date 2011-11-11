@@ -442,13 +442,6 @@ class Plugin : public pp::InstancePrivate {
                                     ErrorInfo* error_info,
                                     bool* is_portable);
 
-  // TODO(jvoung): get rid of these once we find a better way to store / install
-  // the pnacl translator nexes.
-  bool SelectLLCURLFromManifest(nacl::string* result,
-                                ErrorInfo* error_info);
-  bool SelectLDURLFromManifest(nacl::string* result,
-                               ErrorInfo* error_info);
-
   // Logs timing information to a UMA histogram, and also logs the same timing
   // information divided by the size of the nexe to another histogram.
   void HistogramStartupTimeSmall(const std::string& name, float dt);

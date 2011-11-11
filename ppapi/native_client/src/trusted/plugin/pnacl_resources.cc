@@ -60,17 +60,23 @@ void PnaclResources::StartDownloads() {
   delayed_callback_.reset(
       new DelayedCallback(all_loaded_callback, resource_count));
 
+  // All resource URLs are relative to the coordinator's resource_base_url().
+  nacl::string resource_base_url = coordinator_->resource_base_url();
+
   // Schedule the downloads.
   CHECK(resource_urls_.size() > 0);
   for (size_t i = 0; i < resource_urls_.size(); ++i) {
-    const nacl::string& url = resource_urls_[i];
+    const nacl::string& full_url = resource_base_url + resource_urls_[i];
     pp::CompletionCallback ready_callback =
-        callback_factory_.NewCallback(&PnaclResources::ResourceReady, url);
-    if (!plugin_->StreamAsFile(url, ready_callback.pp_completion_callback())) {
+        callback_factory_.NewCallback(&PnaclResources::ResourceReady,
+                                      resource_urls_[i],
+                                      full_url);
+    if (!plugin_->StreamAsFile(full_url,
+                               ready_callback.pp_completion_callback())) {
       ErrorInfo error_info;
       error_info.SetReport(ERROR_UNKNOWN,
                            "PnaclCoordinator: Failed to download file: " +
-                           url + "\n");
+                           resource_urls_[i] + "\n");
       coordinator_->ReportLoadError(error_info);
       coordinator_->PnaclNonPpapiError();
       break;
@@ -80,12 +86,13 @@ void PnaclResources::StartDownloads() {
 }
 
 void PnaclResources::ResourceReady(int32_t pp_error,
-                                   const nacl::string& url) {
+                                   const nacl::string& url,
+                                   const nacl::string& full_url) {
   PLUGIN_PRINTF(("PnaclResources::ResourceReady (pp_error=%"
                  NACL_PRId32", url=%s)\n", pp_error, url.c_str()));
   // pp_error is checked by GetLoadedFileDesc.
   int32_t fd = coordinator_->GetLoadedFileDesc(pp_error,
-                                               url,
+                                               full_url,
                                                "resource " + url);
   if (fd < 0) {
     coordinator_->PnaclPpapiError(pp_error);

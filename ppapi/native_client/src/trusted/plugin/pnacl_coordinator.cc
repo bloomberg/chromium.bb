@@ -348,20 +348,23 @@ nacl::string GeneratedObjectFileName() {
   return nacl::string("___PNACL_GENERATED");
 }
 
-string_vector LinkResources(const nacl::string& sandbox_isa,
-                            bool withGenerated) {
-  string_vector results;
-  nacl::string base_dir = "pnacl_support/" + sandbox_isa;
+nacl::string ResourceBaseUrl() {
+  nacl::string sandbox_isa = GetSandboxISA();
+  nacl::string base_url = "pnacl_support/" + sandbox_isa + "/";
+  return base_url;
+}
 
+string_vector LinkResources(bool withGenerated) {
+  string_vector results;
   // NOTE: order of items == link order.
-  results.push_back(base_dir + "/crtbegin.o");
+  results.push_back("crtbegin.o");
   if (withGenerated) {
     results.push_back(GeneratedObjectFileName());
   }
-  results.push_back(base_dir + "/libcrt_platform.a");
-  results.push_back(base_dir + "/libgcc.a");
-  results.push_back(base_dir + "/libgcc_eh.a");
-  results.push_back(base_dir + "/crtend.o");
+  results.push_back("libcrt_platform.a");
+  results.push_back("libgcc.a");
+  results.push_back("libgcc_eh.a");
+  results.push_back("crtend.o");
   return results;
 }
 
@@ -429,7 +432,7 @@ void WINAPI DoLinkThread(void* arg) {
   }
 
   //// Files.
-  string_vector files = LinkResources(sandbox_isa, true);
+  string_vector files = LinkResources(true);
   PnaclResources* resources = coordinator->resources();
   for (string_vector::iterator i = files.begin(), e = files.end();
        i != e; ++i) {
@@ -585,15 +588,16 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error,
 
 void PnaclCoordinator::BitcodeToNative(
     const nacl::string& pexe_url,
-    const nacl::string& llc_url,
-    const nacl::string& ld_url,
     const pp::CompletionCallback& finish_callback) {
-  PLUGIN_PRINTF(("PnaclCoordinator::BitcodeToNative (pexe=%s, llc=%s, ld=%s)\n",
-                 pexe_url.c_str(),
-                 llc_url.c_str(),
-                 ld_url.c_str()));
-  llc_url_ = llc_url;
-  ld_url_ = ld_url;
+  PLUGIN_PRINTF(("PnaclCoordinator::BitcodeToNative (pexe=%s)\n",
+                 pexe_url.c_str()));
+  // The base URL for finding all the resources will be obtained from the
+  // PNaCl manifest file.
+  // Also, the llc and ld pathnames should be read from the manifest.
+  // TODO(sehr): change to use the manifest file when ready.
+  resource_base_url_ = ResourceBaseUrl();
+  llc_url_ = "llc";
+  ld_url_ = "ld";
   translate_notify_callback_ = finish_callback;
 
   // Steps:
@@ -613,9 +617,9 @@ void PnaclCoordinator::BitcodeToNative(
       callback_factory_.NewCallback(&PnaclCoordinator::ResourcesDidLoad,
                                     pexe_url,
                                     translation_unit_.get());
-  resources_->AddResourceUrl(llc_url);
-  resources_->AddResourceUrl(ld_url);
-  string_vector link_resources = LinkResources(GetSandboxISA(), false);
+  resources_->AddResourceUrl(llc_url_);
+  resources_->AddResourceUrl(ld_url_);
+  string_vector link_resources = LinkResources(false);
   for (string_vector::iterator
            i = link_resources.begin(), e = link_resources.end();
        i != e;

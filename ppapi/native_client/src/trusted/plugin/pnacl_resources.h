@@ -35,6 +35,9 @@ class PnaclResources {
 
   void Initialize();
 
+  // URLs are all relative to the coordinator's resource_base_url().
+
+  // Get the wrapper for the downloaded resource.
   nacl::DescWrapper* WrapperForUrl(const nacl::string& url) {
     return resource_wrappers_[url];
   }
@@ -50,7 +53,9 @@ class PnaclResources {
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclResources);
 
   // Callback invoked each time one resource has been loaded.
-  void ResourceReady(int32_t pp_error, const nacl::string& url);
+  void ResourceReady(int32_t pp_error,
+                     const nacl::string& url,
+                     const nacl::string& full_url);
   // Callback invoked when all resources have been loaded.
   void AllLoaded(int32_t pp_error);
 
