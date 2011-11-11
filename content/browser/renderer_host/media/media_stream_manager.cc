@@ -49,6 +49,37 @@ static bool Requested(const StreamOptions& options,
   return false;
 }
 
+struct MediaStreamManager::DeviceRequest {
+  DeviceRequest()
+      : requester(NULL),
+        state(kNumMediaStreamTypes, kNotRequested) {
+    options.audio = false;
+    options.video_option = StreamOptions::kNoCamera;
+  }
+  DeviceRequest(MediaStreamRequester* requester,
+                const StreamOptions& request_options)
+      : requester(requester),
+        options(request_options),
+        state(kNumMediaStreamTypes, kNotRequested) {
+    DCHECK(requester);
+  }
+  ~DeviceRequest() {}
+
+  enum RequestState {
+    kNotRequested = 0,
+    kRequested,
+    kOpening,
+    kDone,
+    kError
+  };
+
+  MediaStreamRequester* requester;
+  StreamOptions options;
+  std::vector<RequestState> state;
+  StreamDeviceInfoArray audio_devices;
+  StreamDeviceInfoArray video_devices;
+};
+
 MediaStreamManager::MediaStreamManager()
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           device_settings_(new MediaStreamDeviceSettings(this))),
@@ -412,22 +443,5 @@ MediaStreamProvider* MediaStreamManager::GetDeviceManager(
   NOTREACHED();
   return NULL;
 }
-
-MediaStreamManager::DeviceRequest::DeviceRequest()
-    : requester(NULL),
-      state(kNumMediaStreamTypes, kNotRequested) {
-  options.audio = false;
-  options.video_option = StreamOptions::kNoCamera;
-}
-
-MediaStreamManager::DeviceRequest::DeviceRequest(
-    MediaStreamRequester* requester, const StreamOptions& request_options)
-    : requester(requester),
-      options(request_options),
-      state(kNumMediaStreamTypes, kNotRequested) {
-  DCHECK(requester);
-}
-
-MediaStreamManager::DeviceRequest::~DeviceRequest() {}
 
 }  // namespace media_stream

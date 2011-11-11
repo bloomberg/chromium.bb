@@ -52,28 +52,11 @@ class CONTENT_EXPORT MediaStreamDispatcher
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, Basic);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, TestFailure);
 
-  struct Request {
-    Request(MediaStreamDispatcherEventHandler* handler,
-            int request_id,
-            int ipc_request)
-        : handler(handler),
-          request_id(request_id),
-          ipc_request(ipc_request) {
-    }
-    MediaStreamDispatcherEventHandler* handler;
-    int request_id;
-    int ipc_request;
-  };
+  struct Request;
 
   // Private class for keeping track of opened devices and who have
   // opened it.
-  struct Stream {
-    Stream();
-    ~Stream();
-    MediaStreamDispatcherEventHandler* handler;
-    media_stream::StreamDeviceInfoArray audio_array;
-    media_stream::StreamDeviceInfoArray video_array;
-  };
+  struct Stream;
 
   // Messages from the browser.
   virtual bool OnMessageReceived(const IPC::Message& message);

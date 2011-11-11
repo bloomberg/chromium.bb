@@ -9,6 +9,27 @@
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/render_view_impl.h"
 
+struct MediaStreamDispatcher::Request {
+  Request(MediaStreamDispatcherEventHandler* handler,
+          int request_id,
+          int ipc_request)
+      : handler(handler),
+        request_id(request_id),
+        ipc_request(ipc_request) {
+  }
+  MediaStreamDispatcherEventHandler* handler;
+  int request_id;
+  int ipc_request;
+};
+
+struct MediaStreamDispatcher::Stream {
+  Stream() : handler(NULL) {}
+  ~Stream() {}
+  MediaStreamDispatcherEventHandler* handler;
+  media_stream::StreamDeviceInfoArray audio_array;
+  media_stream::StreamDeviceInfoArray video_array;
+};
+
 MediaStreamDispatcherEventHandler::~MediaStreamDispatcherEventHandler() {}
 
 MediaStreamDispatcher::MediaStreamDispatcher(RenderViewImpl* render_view)
@@ -23,7 +44,7 @@ void MediaStreamDispatcher::GenerateStream(
     MediaStreamDispatcherEventHandler* event_handler,
     media_stream::StreamOptions components,
     const std::string& security_origin) {
-  VLOG(1) << "MediaStreamDispatcher::GenerateStream(" << request_id << ")";
+  DVLOG(1) << "MediaStreamDispatcher::GenerateStream(" << request_id << ")";
 
   requests_.push_back(Request(event_handler, request_id, next_ipc_id_));
   Send(new MediaStreamHostMsg_GenerateStream(routing_id(),
@@ -33,8 +54,8 @@ void MediaStreamDispatcher::GenerateStream(
 }
 
 void MediaStreamDispatcher::StopStream(const std::string& label) {
-  VLOG(1) << "MediaStreamDispatcher::StopStream"
-          << ", {label = " << label << "}";
+  DVLOG(1) << "MediaStreamDispatcher::StopStream"
+           << ", {label = " << label << "}";
 
   LabelStreamMap::iterator it = label_stream_map_.find(label);
   if (it == label_stream_map_.end())
@@ -77,8 +98,8 @@ void MediaStreamDispatcher::OnStreamGenerated(
       label_stream_map_[label] = new_stream;
       request.handler->OnStreamGenerated(request.request_id, label,
                                          audio_array, video_array);
-      VLOG(1) << "MediaStreamDispatcher::OnStreamGenerated("
-              << request.request_id << ", " << label << ")";
+      DVLOG(1) << "MediaStreamDispatcher::OnStreamGenerated("
+               << request.request_id << ", " << label << ")";
       requests_.erase(it);
       break;
     }
@@ -91,8 +112,8 @@ void MediaStreamDispatcher::OnStreamGenerationFailed(int request_id) {
     Request& request = *it;
     if (request.ipc_request == request_id) {
       request.handler->OnStreamGenerationFailed(request.request_id);
-      VLOG(1) << "MediaStreamDispatcher::OnStreamGenerationFailed("
-              << request.request_id << ")\n";
+      DVLOG(1) << "MediaStreamDispatcher::OnStreamGenerationFailed("
+               << request.request_id << ")\n";
       requests_.erase(it);
       break;
     }
@@ -150,9 +171,3 @@ int MediaStreamDispatcher::video_session_id(const std::string& label,
   DCHECK_GT(it->second.video_array.size(), static_cast<size_t>(index));
   return it->second.video_array[index].session_id;
 }
-
-MediaStreamDispatcher::Stream::Stream()
-    : handler(NULL) {}
-
-MediaStreamDispatcher::Stream::~Stream() {}
-

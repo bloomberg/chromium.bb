@@ -89,25 +89,7 @@ class CONTENT_EXPORT MediaStreamManager
 
  private:
   // Contains all data needed to keep track of requests.
-  struct DeviceRequest {
-    DeviceRequest();
-    DeviceRequest(MediaStreamRequester* requester,
-                  const StreamOptions& request_options);
-    ~DeviceRequest();
-    enum RequestState {
-      kNotRequested = 0,
-      kRequested,
-      kOpening,
-      kDone,
-      kError
-    };
-
-    MediaStreamRequester* requester;
-    StreamOptions options;
-    std::vector<RequestState> state;
-    StreamDeviceInfoArray audio_devices;
-    StreamDeviceInfoArray video_devices;
-  };
+  struct DeviceRequest;
 
   // Helpers.
   bool RequestDone(const MediaStreamManager::DeviceRequest& request) const;

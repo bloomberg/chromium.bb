@@ -37,7 +37,7 @@ bool VideoCaptureMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void VideoCaptureMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  VLOG(1) << "VideoCaptureMessageFilter::OnFilterAdded()";
+  DVLOG(1) << "VideoCaptureMessageFilter::OnFilterAdded()";
   // Captures the message loop proxy for IPC.
   message_loop_proxy_ = base::MessageLoopProxy::current();
   channel_ = channel;
