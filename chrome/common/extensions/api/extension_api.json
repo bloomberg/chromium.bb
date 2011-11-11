@@ -3360,9 +3360,14 @@
         "description": "Clear the current composition. If this extension does not own the active IME, this fails.",
         "parameters": [
           {
-            "name": "contextID",
-            "description": "ID of the context with the composition text. This is the value provided in the InputContext from onFocus.",
-            "type": "integer"
+            "name": "parameters",
+            "type": "object",
+            "properties": {
+              "contextID": {
+                "description": "ID of the context where the composition will be cleared",
+                "type": "integer"
+              }
+            }
           },
           {
             "type": "function",
