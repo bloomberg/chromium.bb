@@ -188,7 +188,7 @@ class TestLayoutTestAnalyzerHelpers(unittest.TestCase):
     analyzerResultMapBase = (
         layouttest_analyzer_helpers.AnalyzerResultMap.Load(file_path))
     data, issues_txt = analyzerResultMapBase.ConvertToCSVText('11-10-10-2011')
-    self.assertEquals(data, '11-10-10-2011,204,36,10')
+    self.assertEquals(data, '11-10-10-2011,204,36,10,95')
     expected_issues_txt = """\
 BUGWK,66310,TEXT PASS,media/media-blocked-by-beforeload.html,DEBUG TEXT PASS,\
 media/video-source-error.html,

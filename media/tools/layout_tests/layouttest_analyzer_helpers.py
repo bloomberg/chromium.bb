@@ -146,9 +146,9 @@ class AnalyzerResultMap:
      a tuple of stats and issues_txt
         stats: analyzer result in CSV format that shows:
           (current_time, the number of tests, the number of skipped tests,
-           the number of failing tests)
+           the number of failing tests, passing rate)
           For example,
-            "2011-11-10-15,204,22,12"
+            "2011-11-10-15,204,22,12,94"
         issues_txt: issues listed in CSV format that shows:
           (BUGWK or BUGCR, bug number, the test expectation entry,
            the name of the test)
@@ -158,7 +158,8 @@ class AnalyzerResultMap:
    """
    stats = ','.join([current_time, str(len(self.result_map['whole'].keys())),
                      str(len(self.result_map['skip'].keys())),
-                     str(len(self.result_map['nonskip'].keys()))])
+                     str(len(self.result_map['nonskip'].keys())),
+                     str(self.GetPassingRate())])
    issues_txt = ''
    for bug_txt, test_info_list in (
        self.GetListOfBugsForNonSkippedTests().iteritems()):
