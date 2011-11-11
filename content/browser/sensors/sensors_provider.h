@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 #include "content/common/sensors_listener.h"
 
 // The sensors API will unify various types of sensor data into a set of
@@ -22,7 +23,7 @@ namespace sensors {
 // TODO(cwolfe): Finish defining the initial set of channels and replace this
 // with the generic sensor provider.
 //
-class Provider {
+class CONTENT_EXPORT Provider {
  public:
   static Provider* GetInstance();
 

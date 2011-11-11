@@ -9,6 +9,7 @@
 #include <map>
 
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/common/content_export.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "webkit/glue/webcursor.h"
@@ -21,11 +22,11 @@ class WebTouchEvent;
 class AcceleratedSurfaceContainerLinux;
 #endif
 
-class RenderWidgetHostViewAura : public RenderWidgetHostView,
+class CONTENT_EXPORT RenderWidgetHostViewAura : public RenderWidgetHostView,
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-                                 public ui::CompositorObserver,
+                                                public ui::CompositorObserver,
 #endif
-                                 public aura::WindowDelegate {
+                                                public aura::WindowDelegate {
  public:
   explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
   virtual ~RenderWidgetHostViewAura();
