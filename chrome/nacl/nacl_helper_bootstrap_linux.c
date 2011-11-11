@@ -19,22 +19,13 @@
 
 #include <elf.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <link.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/mman.h>
 
 #define MAX_PHNUM               12
-
-#if defined(__i386__)
-# define DYNAMIC_LINKER "/lib/ld-linux.so.2"
-#elif defined(__x86_64__)
-# define DYNAMIC_LINKER "/lib64/ld-linux-x86-64.so.2"
-#elif defined(__ARM_EABI__)
-# define DYNAMIC_LINKER "/lib/ld-linux.so.3"
-#else
-# error "Don't know the dynamic linker file name for this architecture!"
-#endif
 
 
 /*
@@ -85,14 +76,15 @@ static void iov_int_string(int value, struct kernel_iovec *iov,
 #define STRING_IOV(string_constant, cond) \
   { (void *) string_constant, cond ? (sizeof(string_constant) - 1) : 0 }
 
-__attribute__((noreturn)) static void fail(const char *message,
+__attribute__((noreturn)) static void fail(const char *filename,
+                                           const char *message,
                                            const char *item1, int value1,
                                            const char *item2, int value2) {
   char valbuf1[32];
   char valbuf2[32];
   struct kernel_iovec iov[] = {
-    STRING_IOV("bootstrap_helper", 1),
-    STRING_IOV(DYNAMIC_LINKER, 1),
+    STRING_IOV("bootstrap_helper: ", 1),
+    { (void *) filename, my_strlen(filename) },
     STRING_IOV(": ", 1),
     { (void *) message, my_strlen(message) },
     { (void *) item1, item1 == NULL ? 0 : my_strlen(item1) },
@@ -120,20 +112,21 @@ __attribute__((noreturn)) static void fail(const char *message,
 static int my_open(const char *file, int oflag) {
   int result = sys_open(file, oflag, 0);
   if (result < 0)
-    fail("Cannot open dynamic linker!  ", "errno", my_errno, NULL, 0);
+    fail(file, "Cannot open ELF file!  ", "errno", my_errno, NULL, 0);
   return result;
 }
 
-static void my_pread(const char *fail_message,
+static void my_pread(const char *file, const char *fail_message,
                      int fd, void *buf, size_t bufsz, uintptr_t pos) {
   ssize_t result = sys_pread64(fd, buf, bufsz, pos);
   if (result < 0)
-    fail(fail_message, "errno", my_errno, NULL, 0);
+    fail(file, fail_message, "errno", my_errno, NULL, 0);
   if ((size_t) result != bufsz)
-    fail(fail_message, "read count", result, NULL, 0);
+    fail(file, fail_message, "read count", result, NULL, 0);
 }
 
-static uintptr_t my_mmap(const char *segment_type, unsigned int segnum,
+static uintptr_t my_mmap(const char *file,
+                         const char *segment_type, unsigned int segnum,
                          uintptr_t address, size_t size,
                          int prot, int flags, int fd, uintptr_t pos) {
 #if defined(__NR_mmap2)
@@ -142,15 +135,15 @@ static uintptr_t my_mmap(const char *segment_type, unsigned int segnum,
   void *result = sys_mmap((void *) address, size, prot, flags, fd, pos);
 #endif
   if (result == MAP_FAILED)
-    fail("Failed to map from dynamic linker!  ",
+    fail(file, "Failed to map segment!  ",
          segment_type, segnum, "errno", my_errno);
   return (uintptr_t) result;
 }
 
-static void my_mprotect(unsigned int segnum,
+static void my_mprotect(const char *file, unsigned int segnum,
                         uintptr_t address, size_t size, int prot) {
   if (sys_mprotect((void *) address, size, prot) < 0)
-    fail("Failed to mprotect hole in dynamic linker!  ",
+    fail(file, "Failed to mprotect segment hole!  ",
          "segment", segnum, "errno", my_errno);
 }
 
@@ -180,7 +173,8 @@ static uintptr_t round_down(uintptr_t value, uintptr_t size) {
  * whole pages in this region, we over-map anonymous pages.  For the
  * sub-page remainder, we zero-fill bytes directly.
  */
-static void handle_bss(unsigned int segnum, const ElfW(Phdr) *ph,
+static void handle_bss(const char *file,
+                       unsigned int segnum, const ElfW(Phdr) *ph,
                        ElfW(Addr) load_bias, size_t pagesize) {
   if (ph->p_memsz > ph->p_filesz) {
     ElfW(Addr) file_end = ph->p_vaddr + load_bias + ph->p_filesz;
@@ -188,7 +182,7 @@ static void handle_bss(unsigned int segnum, const ElfW(Phdr) *ph,
     ElfW(Addr) page_end = round_up(ph->p_vaddr + load_bias +
                                    ph->p_memsz, pagesize);
     if (page_end > file_page_end)
-      my_mmap("bss segment", segnum,
+      my_mmap(file, "bss segment", segnum,
               file_page_end, page_end - file_page_end,
               prot_from_phdr(ph), MAP_ANON | MAP_PRIVATE | MAP_FIXED, -1, 0);
     if (file_page_end > file_end && (ph->p_flags & PF_W))
@@ -197,14 +191,216 @@ static void handle_bss(unsigned int segnum, const ElfW(Phdr) *ph,
 }
 
 /*
- * This is the main loading code.  It's called with the address of the
- * auxiliary vector on the stack, which we need to examine and modify.
+ * Open an ELF file and load it into memory.
+ */
+static ElfW(Addr) load_elf_file(const char *filename,
+                                size_t pagesize,
+                                ElfW(Addr) *out_phdr,
+                                ElfW(Addr) *out_phnum,
+                                const char **out_interp) {
+  int fd = my_open(filename, O_RDONLY);
+
+  ElfW(Ehdr) ehdr;
+  my_pread(filename, "Failed to read ELF header from file!  ",
+           fd, &ehdr, sizeof(ehdr), 0);
+
+  if (ehdr.e_ident[EI_MAG0] != ELFMAG0 ||
+      ehdr.e_ident[EI_MAG1] != ELFMAG1 ||
+      ehdr.e_ident[EI_MAG2] != ELFMAG2 ||
+      ehdr.e_ident[EI_MAG3] != ELFMAG3 ||
+      ehdr.e_version != EV_CURRENT ||
+      ehdr.e_ehsize != sizeof(ehdr) ||
+      ehdr.e_phentsize != sizeof(ElfW(Phdr)))
+    fail(filename, "File has no valid ELF header!", NULL, 0, NULL, 0);
+
+  switch (ehdr.e_machine) {
+#if defined(__i386__)
+    case EM_386:
+#elif defined(__x86_64__)
+    case EM_X86_64:
+#elif defined(__arm__)
+    case EM_ARM:
+#else
+# error "Don't know the e_machine value for this architecture!"
+#endif
+      break;
+    default:
+      fail(filename, "ELF file has wrong architecture!  ",
+           "e_machine", ehdr.e_machine, NULL, 0);
+      break;
+  }
+
+  ElfW(Phdr) phdr[MAX_PHNUM];
+  if (ehdr.e_phnum > sizeof(phdr) / sizeof(phdr[0]) || ehdr.e_phnum < 1)
+    fail(filename, "ELF file has unreasonable ",
+         "e_phnum", ehdr.e_phnum, NULL, 0);
+
+  if (ehdr.e_type != ET_DYN)
+    fail(filename, "ELF file not ET_DYN!  ",
+         "e_type", ehdr.e_type, NULL, 0);
+
+  my_pread(filename, "Failed to read program headers from ELF file!  ",
+           fd, phdr, sizeof(phdr[0]) * ehdr.e_phnum, ehdr.e_phoff);
+
+  size_t i = 0;
+  while (i < ehdr.e_phnum && phdr[i].p_type != PT_LOAD)
+    ++i;
+  if (i == ehdr.e_phnum)
+    fail(filename, "ELF file has no PT_LOAD header!",
+         NULL, 0, NULL, 0);
+
+  /*
+   * ELF requires that PT_LOAD segments be in ascending order of p_vaddr.
+   * Find the last one to calculate the whole address span of the image.
+   */
+  const ElfW(Phdr) *first_load = &phdr[i];
+  const ElfW(Phdr) *last_load = &phdr[ehdr.e_phnum - 1];
+  while (last_load > first_load && last_load->p_type != PT_LOAD)
+    --last_load;
+
+  size_t span = last_load->p_vaddr + last_load->p_memsz - first_load->p_vaddr;
+
+  /*
+   * Map the first segment and reserve the space used for the rest and
+   * for holes between segments.
+   */
+  const uintptr_t mapping = my_mmap(filename, "segment", first_load - phdr,
+                                    round_down(first_load->p_vaddr, pagesize),
+                                    span, prot_from_phdr(first_load),
+                                    MAP_PRIVATE, fd,
+                                    round_down(first_load->p_offset, pagesize));
+
+  const ElfW(Addr) load_bias = mapping - round_down(first_load->p_vaddr,
+                                                    pagesize);
+
+  if (first_load->p_offset > ehdr.e_phoff ||
+      first_load->p_filesz < ehdr.e_phoff + (ehdr.e_phnum * sizeof(ElfW(Phdr))))
+    fail(filename, "First load segment of ELF file does not contain phdrs!",
+         NULL, 0, NULL, 0);
+
+  handle_bss(filename, first_load - phdr, first_load, load_bias, pagesize);
+
+  ElfW(Addr) last_end = first_load->p_vaddr + load_bias + first_load->p_memsz;
+
+  /*
+   * Map the remaining segments, and protect any holes between them.
+   */
+  const ElfW(Phdr) *ph;
+  for (ph = first_load + 1; ph <= last_load; ++ph) {
+    if (ph->p_type == PT_LOAD) {
+      ElfW(Addr) last_page_end = round_up(last_end, pagesize);
+
+      last_end = ph->p_vaddr + load_bias + ph->p_memsz;
+      ElfW(Addr) start = round_down(ph->p_vaddr + load_bias, pagesize);
+      ElfW(Addr) end = round_up(last_end, pagesize);
+
+      if (start > last_page_end)
+        my_mprotect(filename,
+                    ph - phdr, last_page_end, start - last_page_end, PROT_NONE);
+
+      my_mmap(filename, "segment", ph - phdr,
+              start, end - start,
+              prot_from_phdr(ph), MAP_PRIVATE | MAP_FIXED, fd,
+              round_down(ph->p_offset, pagesize));
+
+      handle_bss(filename, ph - phdr, ph, load_bias, pagesize);
+    }
+  }
+
+  if (out_interp != NULL) {
+    /*
+     * Find the PT_INTERP header, if there is one.
+     */
+    for (i = 0; i < ehdr.e_phnum; ++i) {
+      if (phdr[i].p_type == PT_INTERP) {
+        /*
+         * The PT_INTERP isn't really required to sit inside the first
+         * (or any) load segment, though it normally does.  So we can
+         * easily avoid an extra read in that case.
+         */
+        if (phdr[i].p_offset >= first_load->p_offset &&
+            phdr[i].p_filesz <= first_load->p_filesz) {
+          *out_interp = (const char *) (phdr[i].p_vaddr + load_bias);
+        } else {
+          static char interp_buffer[PATH_MAX + 1];
+          if (phdr[i].p_filesz >= sizeof(interp_buffer)) {
+            fail(filename, "ELF file has unreasonable PT_INTERP size!  ",
+                 "segment", i, "p_filesz", phdr[i].p_filesz);
+          }
+          my_pread(filename, "Cannot read PT_INTERP segment contents!",
+                   fd, interp_buffer, phdr[i].p_filesz, phdr[i].p_offset);
+          *out_interp = interp_buffer;
+        }
+        break;
+      }
+    }
+  }
+
+  sys_close(fd);
+
+  if (out_phdr != NULL)
+    *out_phdr = (ehdr.e_phoff - first_load->p_offset +
+                 first_load->p_vaddr + load_bias);
+  if (out_phnum != NULL)
+    *out_phnum = ehdr.e_phnum;
+
+  return ehdr.e_entry + load_bias;
+}
+
+/*
+ * This is the main loading code.  It's called with the starting stack pointer.
+ * This points to a sequence of pointer-size words:
+ *      [0]             argc
+ *      [1..argc]       argv[0..argc-1]
+ *      [1+argc]        NULL
+ *      [2+argc..]      envp[0..]
+ *                      NULL
+ *                      auxv[0].a_type
+ *                      auxv[1].a_un.a_val
+ *                      ...
  * It returns the dynamic linker's runtime entry point address, where
  * we should jump to.  This is called by the machine-dependent _start
  * code (below).  On return, it restores the original stack pointer
  * and jumps to this entry point.
+ *
+ * argv[0] is the uninteresting name of this bootstrap program.  argv[1] is
+ * the real program file name we'll open, and also the argv[0] for that
+ * program.  We need to modify argc, move argv[1..] back to the argv[0..]
+ * position, and also examine and modify the auxiliary vector on the stack.
  */
-ElfW(Addr) do_load(ElfW(auxv_t) *auxv) {
+ElfW(Addr) do_load(uintptr_t *stack) {
+  size_t i;
+
+  /*
+   * First find the end of the auxiliary vector.
+   */
+  int argc = stack[0];
+  char **argv = (char **) &stack[1];
+  const char *program = argv[1];
+  char **envp = &argv[argc + 1];
+  char **ep = envp;
+  while (*ep != NULL)
+    ++ep;
+  ElfW(auxv_t) *auxv = (ElfW(auxv_t) *) (ep + 1);
+  ElfW(auxv_t) *av = auxv;
+  while (av->a_type != AT_NULL)
+    ++av;
+  size_t stack_words = (uintptr_t *) (av + 1) - &stack[1];
+
+  if (argc < 2)
+    fail("Usage", "PROGRAM ARGS...", NULL, 0, NULL, 0);
+
+  /*
+   * Now move everything back to eat our original argv[0].  When we've done
+   * that, envp and auxv will start one word back from where they were.
+   */
+  --argc;
+  --envp;
+  auxv = (ElfW(auxv_t) *) ep;
+  stack[0] = argc;
+  for (i = 1; i < stack_words; ++i)
+    stack[i] = stack[i + 1];
+
   /*
    * Record the auxv entries that are specific to the file loaded.
    * The incoming entries point to our own static executable.
@@ -214,13 +410,13 @@ ElfW(Addr) do_load(ElfW(auxv_t) *auxv) {
   ElfW(auxv_t) *av_phnum = NULL;
   size_t pagesize = 0;
 
-  ElfW(auxv_t) *av;
   for (av = auxv;
        av_entry == NULL || av_phdr == NULL || av_phnum == NULL || pagesize == 0;
        ++av) {
     switch (av->a_type) {
       case AT_NULL:
-        fail("Failed to find AT_ENTRY, AT_PHDR, AT_PHNUM, or AT_PAGESZ!",
+        fail("startup",
+             "Failed to find AT_ENTRY, AT_PHDR, AT_PHNUM, or AT_PAGESZ!",
              NULL, 0, NULL, 0);
         /*NOTREACHED*/
         break;
@@ -239,171 +435,65 @@ ElfW(Addr) do_load(ElfW(auxv_t) *auxv) {
     }
   }
 
-  int fd = my_open(DYNAMIC_LINKER, O_RDONLY);
+  /* Load the program and point the auxv elements at its phdrs and entry.  */
+  const char *interp = NULL;
+  av_entry->a_un.a_val = load_elf_file(program,
+                                       pagesize,
+                                       &av_phdr->a_un.a_val,
+                                       &av_phnum->a_un.a_val,
+                                       &interp);
 
-  ElfW(Ehdr) ehdr;
-  my_pread("Failed to read ELF header from dynamic linker!  ",
-           fd, &ehdr, sizeof(ehdr), 0);
+  ElfW(Addr) entry = av_entry->a_un.a_val;
 
-  if (ehdr.e_ident[EI_MAG0] != ELFMAG0 ||
-      ehdr.e_ident[EI_MAG1] != ELFMAG1 ||
-      ehdr.e_ident[EI_MAG2] != ELFMAG2 ||
-      ehdr.e_ident[EI_MAG3] != ELFMAG3 ||
-      ehdr.e_version != EV_CURRENT ||
-      ehdr.e_ehsize != sizeof(ehdr) ||
-      ehdr.e_phentsize != sizeof(ElfW(Phdr)))
-    fail("Dynamic linker has no valid ELF header!", NULL, 0, NULL, 0);
-
-  switch (ehdr.e_machine) {
-#if defined(__i386__)
-    case EM_386:
-#elif defined(__x86_64__)
-    case EM_X86_64:
-#elif defined(__arm__)
-    case EM_ARM:
-#else
-# error "Don't know the e_machine value for this architecture!"
-#endif
-      break;
-    default:
-      fail("Dynamic linker has wrong architecture!  ",
-           "e_machine", ehdr.e_machine, NULL, 0);
-      break;
+  if (interp != NULL) {
+    /*
+     * There was a PT_INTERP, so we have a dynamic linker to load.
+     */
+    entry = load_elf_file(interp, pagesize, NULL, NULL, NULL);
   }
 
-  ElfW(Phdr) phdr[MAX_PHNUM];
-  if (ehdr.e_phnum > sizeof(phdr) / sizeof(phdr[0]) || ehdr.e_phnum < 1)
-    fail("Dynamic linker has unreasonable ",
-         "e_phnum", ehdr.e_phnum, NULL, 0);
-
-  if (ehdr.e_type != ET_DYN)
-    fail("Dynamic linker not ET_DYN!  ",
-         "e_type", ehdr.e_type, NULL, 0);
-
-  my_pread("Failed to read program headers from dynamic linker!  ",
-           fd, phdr, sizeof(phdr[0]) * ehdr.e_phnum, ehdr.e_phoff);
-
-  size_t i = 0;
-  while (i < ehdr.e_phnum && phdr[i].p_type != PT_LOAD)
-    ++i;
-  if (i == ehdr.e_phnum)
-    fail("Dynamic linker has no PT_LOAD header!",
-         NULL, 0, NULL, 0);
-
-  /*
-   * ELF requires that PT_LOAD segments be in ascending order of p_vaddr.
-   * Find the last one to calculate the whole address span of the image.
-   */
-  const ElfW(Phdr) *first_load = &phdr[i];
-  const ElfW(Phdr) *last_load = &phdr[ehdr.e_phnum - 1];
-  while (last_load > first_load && last_load->p_type != PT_LOAD)
-    --last_load;
-
-  size_t span = last_load->p_vaddr + last_load->p_memsz - first_load->p_vaddr;
-
-  /*
-   * Map the first segment and reserve the space used for the rest and
-   * for holes between segments.
-   */
-  const uintptr_t mapping = my_mmap("segment", first_load - phdr,
-                                    round_down(first_load->p_vaddr, pagesize),
-                                    span, prot_from_phdr(first_load),
-                                    MAP_PRIVATE, fd,
-                                    round_down(first_load->p_offset, pagesize));
-
-  const ElfW(Addr) load_bias = mapping - round_down(first_load->p_vaddr,
-                                                    pagesize);
-
-  if (first_load->p_offset > ehdr.e_phoff ||
-      first_load->p_filesz < ehdr.e_phoff + (ehdr.e_phnum * sizeof(ElfW(Phdr))))
-    fail("First load segment of dynamic linker does not contain phdrs!",
-         NULL, 0, NULL, 0);
-
-  /* Point the auxv elements at the dynamic linker's phdrs and entry.  */
-  av_phdr->a_un.a_val = (ehdr.e_phoff - first_load->p_offset +
-                         first_load->p_vaddr + load_bias);
-  av_phnum->a_un.a_val = ehdr.e_phnum;
-  av_entry->a_un.a_val = ehdr.e_entry + load_bias;
-
-  handle_bss(first_load - phdr, first_load, load_bias, pagesize);
-
-  ElfW(Addr) last_end = first_load->p_vaddr + load_bias + first_load->p_memsz;
-
-  /*
-   * Map the remaining segments, and protect any holes between them.
-   */
-  const ElfW(Phdr) *ph;
-  for (ph = first_load + 1; ph <= last_load; ++ph) {
-    if (ph->p_type == PT_LOAD) {
-      ElfW(Addr) last_page_end = round_up(last_end, pagesize);
-
-      last_end = ph->p_vaddr + load_bias + ph->p_memsz;
-      ElfW(Addr) start = round_down(ph->p_vaddr + load_bias, pagesize);
-      ElfW(Addr) end = round_up(last_end, pagesize);
-
-      if (start > last_page_end)
-        my_mprotect(ph - phdr, last_page_end, start - last_page_end, PROT_NONE);
-
-      my_mmap("segment", ph - phdr,
-              start, end - start,
-              prot_from_phdr(ph), MAP_PRIVATE | MAP_FIXED, fd,
-              round_down(ph->p_offset, pagesize));
-
-      handle_bss(ph - phdr, ph, load_bias, pagesize);
-    }
-  }
-
-  sys_close(fd);
-
-  return ehdr.e_entry + load_bias;
+  return entry;
 }
 
 /*
- * We have to define the actual entry point code (_start) in assembly
- * for each machine.  The kernel startup protocol is not compatible
- * with the normal C function calling convention.  Here, we calculate
- * the address of the auxiliary vector on the stack; call do_load
- * (above) using the normal C convention as per the ABI; restore the
- * original starting stack; and finally, jump to the dynamic linker's
- * entry point address.
+ * We have to define the actual entry point code (_start) in assembly for
+ * each machine.  The kernel startup protocol is not compatible with the
+ * normal C function calling convention.  Here, we call do_load (above)
+ * using the normal C convention as per the ABI, with the starting stack
+ * pointer as its argument; restore the original starting stack; and
+ * finally, jump to the dynamic linker's entry point address.
  */
 #if defined(__i386__)
-asm(".globl _start\n"
+asm(".pushsection \".text\",\"ax\",@progbits\n"
+    ".globl _start\n"
     ".type _start,@function\n"
     "_start:\n"
     "xorl %ebp, %ebp\n"
     "movl %esp, %ebx\n"         /* Save starting SP in %ebx.  */
     "andl $-16, %esp\n"         /* Align the stack as per ABI.  */
-    "movl (%ebx), %eax\n"       /* argc */
-    "leal 8(%ebx,%eax,4), %ecx\n" /* envp */
-    /* Find the envp element that is NULL, and auxv is past there.  */
-    "0: addl $4, %ecx\n"
-    "cmpl $0, -4(%ecx)\n"
-    "jne 0b\n"
-    "pushl %ecx\n"              /* Argument: auxv.  */
+    "pushl %ebx\n"              /* Argument: stack block.  */
     "call do_load\n"
     "movl %ebx, %esp\n"         /* Restore the saved SP.  */
     "jmp *%eax\n"               /* Jump to the entry point.  */
+    ".popsection"
     );
 #elif defined(__x86_64__)
-asm(".globl _start\n"
+asm(".pushsection \".text\",\"ax\",@progbits\n"
+    ".globl _start\n"
     ".type _start,@function\n"
     "_start:\n"
     "xorq %rbp, %rbp\n"
     "movq %rsp, %rbx\n"         /* Save starting SP in %rbx.  */
     "andq $-16, %rsp\n"         /* Align the stack as per ABI.  */
-    "movq (%rbx), %rax\n"       /* argc */
-    "leaq 16(%rbx,%rax,8), %rdi\n"  /* envp */
-    /* Find the envp element that is NULL, and auxv is past there.  */
-    "0: addq $8, %rdi\n"
-    "cmpq $0, -8(%rdi)\n"
-    "jne 0b\n"
-    "call do_load\n"            /* Argument already in %rdi: auxv */
+    "movq %rbx, %rdi\n"         /* Argument: stack block.  */
+    "call do_load\n"
     "movq %rbx, %rsp\n"         /* Restore the saved SP.  */
     "jmp *%rax\n"               /* Jump to the entry point.  */
+    ".popsection"
     );
 #elif defined(__arm__)
-asm(".globl _start\n"
+asm(".pushsection \".text\",\"ax\",%progbits\n"
+    ".globl _start\n"
     ".type _start,#function\n"
     "_start:\n"
 #if defined(__thumb2__)
@@ -413,16 +503,11 @@ asm(".globl _start\n"
     "mov fp, #0\n"
     "mov lr, #0\n"
     "mov r4, sp\n"              /* Save starting SP in r4.  */
-    "ldr r1, [r4]\n"            /* argc */
-    "add r1, r1, #2\n"
-    "add r0, r4, r1, asl #2\n"  /* envp */
-    /* Find the envp element that is NULL, and auxv is past there.  */
-    "0: ldr r1, [r0], #4\n"
-    "cmp r1, #0\n"
-    "bne 0b\n"
+    "mov r0, sp\n"              /* Argument: stack block.  */
     "bl do_load\n"
     "mov sp, r4\n"              /* Restore the saved SP.  */
     "blx r0\n"                  /* Jump to the entry point.  */
+    ".popsection"
     );
 #else
 # error "Need stack-preserving _start code for this architecture!"
