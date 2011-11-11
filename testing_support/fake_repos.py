@@ -18,7 +18,7 @@ import tempfile
 import time
 
 # trial_dir must be first for non-system libraries.
-from tests import trial_dir
+from testing_support import trial_dir
 import gclient_utils
 import scm
 import subprocess2

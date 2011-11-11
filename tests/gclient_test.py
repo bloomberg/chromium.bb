@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import gclient
 import gclient_utils
-from tests import trial_dir
+from testing_support import trial_dir
 
 
 def write(filename, content):

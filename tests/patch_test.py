@@ -13,8 +13,9 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from testing_support.patches_data import GIT, RAW
+
 import patch
-from tests.patches_data import GIT, RAW
 
 
 class PatchTest(unittest.TestCase):

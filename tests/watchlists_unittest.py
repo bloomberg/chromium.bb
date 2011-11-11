@@ -12,7 +12,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import super_mox
+from testing_support import super_mox
+
 import watchlists
 
 

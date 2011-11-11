@@ -29,7 +29,7 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
       r'^cpplint_chromium\.py$',
       r'^python_bin[\/\\].+',
       r'^svn_bin[\/\\].+',
-      r'^tests[\/\\]\w+?[\/\\].+']
+      r'^testing_support[\/\\]_rietveld[\/\\].+']
   results.extend(input_api.canned_checks.RunPylint(
       input_api,
       output_api,
@@ -59,7 +59,7 @@ def RunGitClTests(input_api, output_api):
   old_sys_path = sys.path
   try:
     sys.path = [input_api.PresubmitLocalPath()] + sys.path
-    from tests import local_rietveld  # pylint: disable=W0403
+    from testing_support import local_rietveld
     server = local_rietveld.LocalRietveld()
   finally:
     sys.path = old_sys_path

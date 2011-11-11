@@ -6,7 +6,7 @@
 /svn.bat
 /svn_bin
 /svnversion.bat
-/tests/_rietveld
+/depot_tools_testing_lib/_rietveld
 /tests/subversion_config/README.txt
 /tests/subversion_config/auth
 /tests/subversion_config/servers

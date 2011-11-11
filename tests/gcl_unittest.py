@@ -12,7 +12,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from super_mox import mox, SuperMoxTestBase
+from testing_support.super_mox import mox, SuperMoxTestBase
 
 import gcl
 import presubmit_support

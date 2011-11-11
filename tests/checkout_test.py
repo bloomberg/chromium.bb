@@ -16,11 +16,12 @@ from xml.etree import ElementTree
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(ROOT_DIR))
 
+from testing_support import fake_repos
+from testing_support.patches_data import GIT, RAW
+
 import checkout
 import patch
 import subprocess2
-from tests import fake_repos
-from tests.patches_data import GIT, RAW
 
 
 # pass -v to enable it.

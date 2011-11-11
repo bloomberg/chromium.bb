@@ -21,8 +21,8 @@ import __builtin__
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from super_mox import mox, StdoutCheck, SuperMoxTestBase
-from super_mox import TestCaseUtils
+from testing_support.super_mox import mox, StdoutCheck, SuperMoxTestBase
+from testing_support.super_mox import TestCaseUtils
 
 import gclient_scm
 import subprocess2

@@ -57,14 +57,13 @@ load-plugins=
 # W0141: Used builtin function ''
 # W0142: Used * or ** magic
 # W0402: Uses of a deprecated module 'string'
-# W0403: Relative import 'X', should be 'Y.X'
 # W0404: 41: Reimport 'XX' (imported line NN)
 # W0511: TODO
 # W0603: Using the global statement
 # W0613: Unused argument ''
 # W0703: Catch "Exception"
 # W1201: Specify string format arguments as logging function parameters
-disable=C0103,C0111,C0302,I0010,I0011,R0401,R0801,R0901,R0902,R0903,R0904,R0911,R0912,R0913,R0914,R0915,R0921,R0922,W0122,W0141,W0142,W0402,W0403,W0404,W0511,W0603,W0613,W0703,W1201
+disable=C0103,C0111,C0302,I0010,I0011,R0401,R0801,R0901,R0902,R0903,R0904,R0911,R0912,R0913,R0914,R0915,R0921,R0922,W0122,W0141,W0142,W0402,W0404,W0511,W0603,W0613,W0703,W1201
 
 
 [REPORTS]

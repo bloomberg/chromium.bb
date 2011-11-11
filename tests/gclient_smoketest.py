@@ -20,7 +20,7 @@ import unittest
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-from fake_repos import join, write, FakeReposTestBase
+from testing_support.fake_repos import join, write, FakeReposTestBase
 
 import subprocess2
 

@@ -11,8 +11,9 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from testing_support import filesystem_mock
+
 import owners
-from tests import filesystem_mock
 
 ben = 'ben@example.com'
 brett = 'brett@example.com'

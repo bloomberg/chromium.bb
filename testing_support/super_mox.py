@@ -90,8 +90,9 @@ class StdoutCheck(object):
   def setUp(self):
     # Override the mock with a StringIO, it's much less painful to test.
     self._old_stdout = sys.stdout
-    sys.stdout = StringIO.StringIO()
-    sys.stdout.flush = lambda: None
+    stdout = StringIO.StringIO()
+    stdout.flush = lambda: None
+    sys.stdout = stdout
 
   def tearDown(self):
     try:

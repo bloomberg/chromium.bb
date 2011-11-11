@@ -9,8 +9,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from super_mox import SuperMoxTestBase
-import trial_dir
+from testing_support.super_mox import SuperMoxTestBase
+from testing_support import trial_dir
 
 import gclient_utils
 import subprocess2

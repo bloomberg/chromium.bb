@@ -13,9 +13,9 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from super_mox import SuperMoxTestBase
+from testing_support import fake_repos
+from testing_support.super_mox import SuperMoxTestBase
 
-import fake_repos
 import scm
 import subprocess2
 
