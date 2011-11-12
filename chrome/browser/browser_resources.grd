@@ -61,9 +61,9 @@
       <include name="IDR_FLAGS_HTML_WARNING" file="resources\flags_warning.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FLAGS_JS" file="resources\flags.js" type="BINDATA" />
       <include name="IDR_GAIA_LOGIN_HTML" file="sync\resources\gaia_login.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_GPU_BLACKLIST" file="resources\software_rendering_list.json" type="BINDATA" />
-      <include name="IDR_GPU_INTERNALS_HTML" file="resources\gpu_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_GPU_INTERNALS_JS" file="resources\gpu_internals.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_GPU_BLACKLIST" file="resources\software_rendering_list\software_rendering_list.json" type="BINDATA" />
+      <include name="IDR_GPU_INTERNALS_HTML" file="resources\gpu_internals\gpu_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_GPU_INTERNALS_JS" file="resources\gpu_internals\gpu_internals.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_HISTORY2_HTML" file="resources\history2.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_HISTORY2_JS" file="resources\history2.js" type="BINDATA" />
       <include name="IDR_HISTORY_HTML" file="resources\history.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
