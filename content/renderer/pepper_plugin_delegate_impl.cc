@@ -363,13 +363,22 @@ class HostDispatcherWrapper
             PP_Module pp_module,
             ppapi::proxy::Dispatcher::GetInterfaceFunc local_get_interface,
             const ppapi::Preferences& preferences) {
+    if (channel_handle.name.empty())
+      return false;
+
+#if defined(OS_POSIX)
+    if (channel_handle.socket.fd == -1)
+      return false;
+#endif
+
     dispatcher_delegate_.reset(new DispatcherDelegate);
     dispatcher_.reset(new ppapi::proxy::HostDispatcher(
         plugin_process_handle, pp_module, local_get_interface));
 
-    if (!dispatcher_->InitHostWithChannel(
-            dispatcher_delegate_.get(),
-            channel_handle, true, preferences)) {
+    if (!dispatcher_->InitHostWithChannel(dispatcher_delegate_.get(),
+                                          channel_handle,
+                                          true,  // Client.
+                                          preferences)) {
       dispatcher_.reset();
       dispatcher_delegate_.reset();
       return false;
@@ -480,13 +489,21 @@ BrokerDispatcherWrapper::~BrokerDispatcherWrapper() {
 bool BrokerDispatcherWrapper::Init(
     base::ProcessHandle broker_process_handle,
     const IPC::ChannelHandle& channel_handle) {
+  if (channel_handle.name.empty())
+    return false;
+
+#if defined(OS_POSIX)
+  if (channel_handle.socket.fd == -1)
+    return false;
+#endif
+
   dispatcher_delegate_.reset(new DispatcherDelegate);
   dispatcher_.reset(
       new ppapi::proxy::BrokerHostDispatcher(broker_process_handle));
 
   if (!dispatcher_->InitBrokerWithChannel(dispatcher_delegate_.get(),
                                           channel_handle,
-                                          true)) {
+                                          true)) {  // Client.
     dispatcher_.reset();
     dispatcher_delegate_.reset();
     return false;
@@ -609,7 +626,7 @@ void PpapiBrokerImpl::OnBrokerChannelConnected(
   if (dispatcher->Init(broker_process_handle, channel_handle)) {
     dispatcher_.reset(dispatcher.release());
 
-    // Process all pending channel requests from the renderers.
+    // Process all pending channel requests from the plugins.
     for (ClientMap::iterator i = pending_connects_.begin();
          i != pending_connects_.end(); ++i) {
       base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>& weak_ptr = i->second;

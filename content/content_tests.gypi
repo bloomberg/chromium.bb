@@ -229,6 +229,7 @@
         'renderer/media/video_capture_message_filter_unittest.cc',
         'renderer/media/webrtc_audio_device_unittest.cc',
         'renderer/paint_aggregator_unittest.cc',
+        'renderer/pepper_plugin_delegate_impl_unittest.cc',
         'renderer/v8_value_converter_impl_unittest.cc',
         'test/run_all_unittests.cc',
       ],

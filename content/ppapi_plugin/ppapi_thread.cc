@@ -301,6 +301,8 @@ bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
   // This ensures this process will be notified when it is closed even if a
   // connection is not established.
   handle->socket = base::FileDescriptor(dispatcher->TakeRendererFD(), true);
+  if (handle->socket.fd == -1)
+    return false;
 #endif
 
   // From here, the dispatcher will manage its own lifetime according to the
