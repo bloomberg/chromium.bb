@@ -152,6 +152,10 @@ deps = {
   "src/third_party/webgl_conformance":
     "/trunk/deps/third_party/webgl/sdk/tests@106432",
 
+  # We should use the same software_renderling_list.json for all branches.
+  "src/chrome/browser/resources/software_rendering_list":
+    "/trunk/deps/gpu/software_rendering_list@109652",
+
   # We run these layout tests as UI tests. Since many of the buildbots that
   # run layout tests do NOT have access to the LayoutTest directory, we need
   # to map them here. In practice, these do not take up much space.

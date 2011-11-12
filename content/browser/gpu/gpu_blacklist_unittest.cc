@@ -49,6 +49,7 @@ TEST_F(GpuBlacklistTest, CurrentBlacklistValidation) {
       data_file.Append(FILE_PATH_LITERAL("chrome"))
                .Append(FILE_PATH_LITERAL("browser"))
                .Append(FILE_PATH_LITERAL("resources"))
+               .Append(FILE_PATH_LITERAL("software_rendering_list"))
                .Append(FILE_PATH_LITERAL("software_rendering_list.json"));
   ASSERT_TRUE(file_util::PathExists(data_file));
   int64 data_file_size64 = 0;
