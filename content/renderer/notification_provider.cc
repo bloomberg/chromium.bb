@@ -100,7 +100,7 @@ bool NotificationProvider::OnMessageReceived(const IPC::Message& message) {
 bool NotificationProvider::ShowHTML(const WebNotification& notification,
                                     int id) {
   DCHECK(notification.isHTML());
-  DesktopNotificationHostMsg_Show_Params params;
+  content::ShowDesktopNotificationHostMsgParams params;
   WebDocument document = render_view()->GetWebView()->mainFrame()->document();
   params.origin = GURL(document.securityOrigin().toString());
   params.is_html = true;
@@ -113,7 +113,7 @@ bool NotificationProvider::ShowHTML(const WebNotification& notification,
 bool NotificationProvider::ShowText(const WebNotification& notification,
                                     int id) {
   DCHECK(!notification.isHTML());
-  DesktopNotificationHostMsg_Show_Params params;
+  content::ShowDesktopNotificationHostMsgParams params;
   params.is_html = false;
   WebDocument document = render_view()->GetWebView()->mainFrame()->document();
   params.origin = GURL(document.securityOrigin().toString());

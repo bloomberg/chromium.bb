@@ -55,6 +55,8 @@
     'public/common/security_style.h',
     'public/common/serialized_script_value.cc',
     'public/common/serialized_script_value.h',
+    'public/common/show_desktop_notification_params.cc',
+    'public/common/show_desktop_notification_params.h',
     'public/common/url_constants.cc',
     'public/common/url_constants.h',
     'public/common/url_fetcher.h',

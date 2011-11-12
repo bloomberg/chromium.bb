@@ -24,7 +24,9 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-struct DesktopNotificationHostMsg_Show_Params;
+namespace content {
+struct ShowDesktopNotificationHostMsgParams;
+}
 
 namespace chromeos {
 
@@ -86,7 +88,7 @@ class DesktopNotificationsTest : public testing::Test {
   }
 
   // Constructs a notification parameter structure for use in tests.
-  DesktopNotificationHostMsg_Show_Params StandardTestNotification();
+  content::ShowDesktopNotificationHostMsgParams StandardTestNotification();
 
   // Create a message loop to allow notifications code to post tasks,
   // and a thread so that notifications code runs on the expected thread.

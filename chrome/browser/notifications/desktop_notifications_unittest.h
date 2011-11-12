@@ -91,7 +91,7 @@ class DesktopNotificationsTest : public testing::Test {
   }
 
   // Constructs a notification parameter structure for use in tests.
-  DesktopNotificationHostMsg_Show_Params StandardTestNotification();
+  content::ShowDesktopNotificationHostMsgParams StandardTestNotification();
 
   // Create a message loop to allow notifications code to post tasks,
   // and a thread so that notifications code runs on the expected thread.

@@ -71,7 +71,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/worker_host/worker_process_host.h"
-#include "content/common/desktop_notification_messages.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
@@ -911,7 +910,7 @@ WebKit::WebNotificationPresenter::Permission
 }
 
 void ChromeContentBrowserClient::ShowDesktopNotification(
-    const DesktopNotificationHostMsg_Show_Params& params,
+    const content::ShowDesktopNotificationHostMsgParams& params,
     int render_process_id,
     int render_view_id,
     bool worker) {

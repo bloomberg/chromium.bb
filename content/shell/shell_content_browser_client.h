@@ -124,7 +124,7 @@ class ShellContentBrowserClient : public ContentBrowserClient
           const content::ResourceContext& context,
           int render_process_id) OVERRIDE;
   virtual void ShowDesktopNotification(
-      const DesktopNotificationHostMsg_Show_Params& params,
+      const content::ShowDesktopNotificationHostMsgParams& params,
       int render_process_id,
       int render_view_id,
       bool worker) OVERRIDE;

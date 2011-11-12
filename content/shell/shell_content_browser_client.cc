@@ -226,7 +226,7 @@ WebKit::WebNotificationPresenter::Permission
 }
 
 void ShellContentBrowserClient::ShowDesktopNotification(
-    const DesktopNotificationHostMsg_Show_Params& params,
+    const content::ShowDesktopNotificationHostMsgParams& params,
     int render_process_id,
     int render_view_id,
     bool worker) {

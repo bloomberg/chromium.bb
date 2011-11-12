@@ -1608,8 +1608,8 @@ class PanelAndNotificationTest : public PanelBrowserTest {
     PanelBrowserTest::CleanUpOnMainThread();
   }
 
-  DesktopNotificationHostMsg_Show_Params StandardTestNotification() {
-    DesktopNotificationHostMsg_Show_Params params;
+  content::ShowDesktopNotificationHostMsgParams StandardTestNotification() {
+    content::ShowDesktopNotificationHostMsgParams params;
     params.notification_id = 0;
     params.origin = GURL("http://www.google.com");
     params.is_html = false;
@@ -1648,7 +1648,8 @@ IN_PROC_BROWSER_TEST_F(PanelAndNotificationTest, NoOverlapping) {
   const int kShortPanelHeight = 150;
   const int kTallPanelHeight = 200;
 
-  DesktopNotificationHostMsg_Show_Params params = StandardTestNotification();
+  content::ShowDesktopNotificationHostMsgParams params =
+      StandardTestNotification();
   EXPECT_TRUE(service()->ShowDesktopNotification(
         params, 0, 0, DesktopNotificationService::PageNotification));
   MessageLoopForUI::current()->RunAllPending();

@@ -36,12 +36,12 @@ class SkBitmap;
 class TabContents;
 class TabContentsView;
 class WorkerProcessHost;
-struct DesktopNotificationHostMsg_Show_Params;
 struct WebPreferences;
 
 namespace content {
 class BrowserMainParts;
 struct MainFunctionParams;
+struct ShowDesktopNotificationHostMsgParams;
 }
 
 namespace crypto {
@@ -278,7 +278,7 @@ class ContentBrowserClient {
   // Show a desktop notification.  If |worker| is true, the request came from an
   // HTML5 web worker, otherwise, it came from a renderer.
   virtual void ShowDesktopNotification(
-      const DesktopNotificationHostMsg_Show_Params& params,
+      const content::ShowDesktopNotificationHostMsgParams& params,
       int render_process_id,
       int render_view_id,
       bool worker) = 0;

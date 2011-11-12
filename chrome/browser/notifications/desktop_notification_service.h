@@ -30,7 +30,10 @@ class NotificationUIManager;
 class PrefService;
 class Profile;
 class TabContents;
-struct DesktopNotificationHostMsg_Show_Params;
+
+namespace content {
+struct ShowDesktopNotificationHostMsgParams;
+}
 
 // The DesktopNotificationService is an object, owned by the Profile,
 // which provides the creation of desktop "toasts" to web pages and workers.
@@ -65,7 +68,7 @@ class DesktopNotificationService : public content::NotificationObserver,
   // whether the script is in a worker or page. |params| contains all the
   // other parameters supplied by the worker or page.
   bool ShowDesktopNotification(
-      const DesktopNotificationHostMsg_Show_Params& params,
+      const content::ShowDesktopNotificationHostMsgParams& params,
       int process_id, int route_id, DesktopNotificationSource source);
 
   // Cancels a notification.  If it has already been shown, it will be

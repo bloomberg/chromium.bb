@@ -1457,7 +1457,7 @@ void RenderViewHost::OnRequestDesktopNotificationPermission(
 }
 
 void RenderViewHost::OnShowDesktopNotification(
-    const DesktopNotificationHostMsg_Show_Params& params) {
+    const content::ShowDesktopNotificationHostMsgParams& params) {
   // Disallow HTML notifications from javascript: and file: schemes as this
   // allows unwanted cross-domain access.
   GURL url = params.contents_url;

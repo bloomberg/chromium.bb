@@ -28,22 +28,21 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class ChildProcessSecurityPolicy;
-struct ContextMenuParams;
-struct DesktopNotificationHostMsg_Show_Params;
 class FilePath;
 class GURL;
-struct MediaPlayerAction;
 class PowerSaveBlocker;
 class RenderViewHostDelegate;
 class RenderViewHostObserver;
 class SessionStorageNamespace;
 class SiteInstance;
 class SkBitmap;
+class ViewMsg_Navigate;
+struct ContextMenuParams;
+struct MediaPlayerAction;
 struct ViewHostMsg_AccessibilityNotification_Params;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_RunFileChooser_Params;
 struct ViewHostMsg_ShowPopup_Params;
-class ViewMsg_Navigate;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_StopFinding_Params;
 struct WebDropData;
@@ -51,6 +50,10 @@ struct WebPreferences;
 
 namespace base {
 class ListValue;
+}
+
+namespace content {
+struct ShowDesktopNotificationHostMsgParams;
 }
 
 namespace gfx {
@@ -573,7 +576,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   void OnRequestDesktopNotificationPermission(const GURL& origin,
                                               int callback_id);
   void OnShowDesktopNotification(
-      const DesktopNotificationHostMsg_Show_Params& params);
+      const content::ShowDesktopNotificationHostMsgParams& params);
   void OnCancelDesktopNotification(int notification_id);
   void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
 

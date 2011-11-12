@@ -5,37 +5,22 @@
 // IPC messages for desktop notification.
 // Multiply-included message file, hence no include guard.
 
+#include "content/public/common/show_desktop_notification_params.h"
 #include "ipc/ipc_message_macros.h"
-#include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 
 #define IPC_MESSAGE_START DesktopNotificationMsgStart
 
-IPC_STRUCT_BEGIN(DesktopNotificationHostMsg_Show_Params)
-  // URL which is the origin that created this notification.
-  IPC_STRUCT_MEMBER(GURL, origin)
-
-  // True if this is HTML
-  IPC_STRUCT_MEMBER(bool, is_html)
-
-  // URL which contains the HTML contents (if is_html is true), otherwise empty.
-  IPC_STRUCT_MEMBER(GURL, contents_url)
-
-  // Contents of the notification if is_html is false.
-  IPC_STRUCT_MEMBER(GURL, icon_url)
-  IPC_STRUCT_MEMBER(string16, title)
-  IPC_STRUCT_MEMBER(string16, body)
-
-  // Directionality of the notification.
-  IPC_STRUCT_MEMBER(WebKit::WebTextDirection, direction)
-
-  // ReplaceID if this notification should replace an existing one) may be
-  // empty if no replacement is called for.
-  IPC_STRUCT_MEMBER(string16, replace_id)
-
-  // Notification ID for sending events back for this notification.
-  IPC_STRUCT_MEMBER(int, notification_id)
-IPC_STRUCT_END()
+IPC_STRUCT_TRAITS_BEGIN(content::ShowDesktopNotificationHostMsgParams)
+  IPC_STRUCT_TRAITS_MEMBER(origin)
+  IPC_STRUCT_TRAITS_MEMBER(is_html)
+  IPC_STRUCT_TRAITS_MEMBER(contents_url)
+  IPC_STRUCT_TRAITS_MEMBER(icon_url)
+  IPC_STRUCT_TRAITS_MEMBER(title)
+  IPC_STRUCT_TRAITS_MEMBER(body)
+  IPC_STRUCT_TRAITS_MEMBER(direction)
+  IPC_STRUCT_TRAITS_MEMBER(replace_id)
+  IPC_STRUCT_TRAITS_MEMBER(notification_id)
+IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.
 
@@ -66,7 +51,7 @@ IPC_MESSAGE_ROUTED1(DesktopNotificationMsg_PermissionRequestDone,
 // Messages sent from the renderer to the browser.
 
 IPC_MESSAGE_ROUTED1(DesktopNotificationHostMsg_Show,
-                    DesktopNotificationHostMsg_Show_Params)
+                    content::ShowDesktopNotificationHostMsgParams)
 
 IPC_MESSAGE_ROUTED1(DesktopNotificationHostMsg_Cancel,
                     int /* notification_id */)
