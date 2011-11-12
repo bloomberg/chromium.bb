@@ -8,8 +8,6 @@
 #define CHROME_INSTALLER_SETUP_CHROME_FRAME_READY_MODE_H_
 #pragma once
 
-class CommandLine;
-
 namespace installer {
 
 enum InstallStatus;

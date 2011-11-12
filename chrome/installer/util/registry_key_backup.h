@@ -8,16 +8,8 @@
 
 #include <windows.h>
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-
-namespace base {
-namespace win {
-class RegKey;
-}  // namespace win
-}  // namespace base
 
 // A container for a registry key, its values, and its subkeys.  We don't use
 // more obvious methods for various reasons:

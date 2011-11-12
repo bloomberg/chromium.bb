@@ -17,7 +17,6 @@
 class BrowserDistribution;
 class CommandLine;
 class FilePath;
-class InstallUtil;
 
 namespace installer {
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,6 @@
 #include "chrome/installer/util/google_chrome_distribution.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/util_constants.h"
-
-namespace installer {
-class MasterPreferences;
-}
 
 // GoogleChromeSxSDistribution encapsulates properties of Google Chrome Sxs
 // distribution which can co-exist with other Google Chrome distributions.

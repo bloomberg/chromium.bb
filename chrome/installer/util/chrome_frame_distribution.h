@@ -15,10 +15,6 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/util_constants.h"
 
-namespace installer {
-class MasterPreferences;
-}
-
 class ChromeFrameDistribution : public BrowserDistribution {
  public:
   virtual std::wstring GetAppGuid() OVERRIDE;

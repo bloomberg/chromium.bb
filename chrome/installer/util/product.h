@@ -17,6 +17,7 @@ class CommandLine;
 
 namespace installer {
 
+class ChannelInfo;
 class MasterPreferences;
 class Product;
 class ProductOperations;

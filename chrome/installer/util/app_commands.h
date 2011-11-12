@@ -15,8 +15,6 @@
 #include "base/basictypes.h"
 #include "chrome/installer/util/app_command.h"
 
-class WorkItemList;
-
 namespace base {
 namespace win {
 class RegKey;

@@ -16,7 +16,6 @@
 #include "chrome/installer/util/util_constants.h"
 
 class FilePath;
-class WorkItemList;
 
 namespace installer {
 

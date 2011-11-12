@@ -11,7 +11,6 @@
 #include <string>
 
 class BrowserDistribution;
-class CommandLine;
 class FilePath;
 
 namespace installer {

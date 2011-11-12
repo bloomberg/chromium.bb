@@ -27,7 +27,6 @@ class RegKey;
 namespace installer {
 
 class InstallationState;
-class MasterPreferences;
 
 // A representation of a product's state on the machine based on the contents
 // of the Windows registry.

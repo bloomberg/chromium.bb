@@ -20,11 +20,7 @@
 #include <windows.h>  // NOLINT
 #endif
 
-class CommandLine;
-
 namespace installer {
-class ChannelInfo;
-class MasterPreferences;
 class Product;
 }
 

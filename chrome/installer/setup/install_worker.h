@@ -25,7 +25,6 @@ namespace installer {
 
 class InstallationState;
 class InstallerState;
-class Package;
 class Product;
 
 // Helper function for AddGoogleUpdateWorkItems that mirrors oeminstall.
