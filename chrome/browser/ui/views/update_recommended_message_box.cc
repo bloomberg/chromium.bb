@@ -17,7 +17,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@ void UpdateRecommendedMessageBox::ShowMessageBox(
 
 bool UpdateRecommendedMessageBox::Accept() {
 #if defined(OS_CHROMEOS)
-  chromeos::CrosLibrary::Get()->GetPowerLibrary()->RequestRestart();
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
   // If running the Chrome OS build, but we're not on the device, fall through
 #endif
   BrowserList::AttemptRestart();

@@ -66,6 +66,12 @@ class PowerManagerClient {
   // UI initiated request for power supply status update.
   virtual void RequestStatusUpdate() = 0;
 
+  // Requests restart of the system.
+  virtual void RequestRestart() = 0;
+
+  // Requests shutdown of the system.
+  virtual void RequestShutdown() = 0;
+
   // Creates the instance.
   static PowerManagerClient* Create(dbus::Bus* bus);
 

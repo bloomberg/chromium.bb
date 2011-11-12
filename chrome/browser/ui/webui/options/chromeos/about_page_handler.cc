@@ -17,8 +17,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
@@ -299,7 +300,7 @@ void AboutPageHandler::CheckNow(const ListValue* args) {
 }
 
 void AboutPageHandler::RestartNow(const ListValue* args) {
-  CrosLibrary::Get()->GetPowerLibrary()->RequestRestart();
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 
 void AboutPageHandler::UpdateStatus(

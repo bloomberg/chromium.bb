@@ -6,7 +6,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "grit/generated_resources.h"
@@ -114,8 +115,7 @@ void ShutdownButton::OnLocaleChanged() {
 
 void ShutdownButton::ButtonPressed(views::Button* sender,
                                    const views::Event& event) {
-  DCHECK(CrosLibrary::Get()->EnsureLoaded());
-  CrosLibrary::Get()->GetPowerLibrary()->RequestShutdown();
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown();
 }
 
 }  // namespace chromeos

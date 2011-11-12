@@ -45,12 +45,6 @@ class PowerLibrary {
   // Enable/disable screen lock for current session.
   virtual void EnableScreenLock(bool enable) = 0;
 
-  // Requests restart of the system.
-  virtual void RequestRestart() = 0;
-
-  // Requests shutdown of the system.
-  virtual void RequestShutdown() = 0;
-
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().
   static PowerLibrary* GetImpl(bool stub);

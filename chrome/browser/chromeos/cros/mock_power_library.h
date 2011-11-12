@@ -25,8 +25,6 @@ class MockPowerLibrary : public PowerLibrary {
   MOCK_METHOD1(CalculateIdleTime, void(CalculateIdleTimeCallback*));
 
   MOCK_METHOD1(EnableScreenLock, void(bool));
-  MOCK_METHOD0(RequestRestart, void(void));
-  MOCK_METHOD0(RequestShutdown, void(void));
 };
 
 }  // namespace chromeos

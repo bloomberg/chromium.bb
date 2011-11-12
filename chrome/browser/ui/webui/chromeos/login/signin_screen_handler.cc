@@ -15,7 +15,8 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -542,8 +543,7 @@ void SigninScreenHandler::HandleFixCaptivePortal(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleShutdownSystem(const base::ListValue* args) {
-  DCHECK(CrosLibrary::Get()->EnsureLoaded());
-  CrosLibrary::Get()->GetPowerLibrary()->RequestShutdown();
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown();
 }
 
 void SigninScreenHandler::HandleRemoveUser(const base::ListValue* args) {

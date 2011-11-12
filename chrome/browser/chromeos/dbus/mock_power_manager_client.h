@@ -22,6 +22,8 @@ class MockPowerManagerClient : public PowerManagerClient {
   MOCK_METHOD1(DecreaseScreenBrightness, void(bool));
   MOCK_METHOD0(IncreaseScreenBrightness, void(void));
   MOCK_METHOD0(RequestStatusUpdate, void(void));
+  MOCK_METHOD0(RequestRestart, void(void));
+  MOCK_METHOD0(RequestShutdown, void(void));
 };
 
 }  // namespace chromeos

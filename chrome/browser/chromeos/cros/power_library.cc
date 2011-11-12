@@ -65,14 +65,6 @@ class PowerLibraryImpl : public PowerLibrary {
         base::Bind(&PowerLibraryImpl::DoEnableScreenLock, enable));
   }
 
-  virtual void RequestRestart() OVERRIDE {
-    chromeos::RequestRestart();
-  }
-
-  virtual void RequestShutdown() OVERRIDE {
-    chromeos::RequestShutdown();
-  }
-
   // End PowerLibrary implementation.
 
  private:
@@ -140,10 +132,6 @@ class PowerLibraryStubImpl : public PowerLibrary {
   }
 
   virtual void EnableScreenLock(bool enable) OVERRIDE {}
-
-  virtual void RequestRestart() OVERRIDE {}
-
-  virtual void RequestShutdown() OVERRIDE {}
 
   // End PowerLibrary implementation.
  private:

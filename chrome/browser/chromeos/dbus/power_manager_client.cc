@@ -133,6 +133,27 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
+  // Requests restart of the system.
+  virtual void RequestRestart() OVERRIDE {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kRequestRestartMethod);
+    power_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  };
+
+  // Requests shutdown of the system.
+  virtual void RequestShutdown() OVERRIDE {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kRequestShutdownMethod);
+    power_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
+
  private:
   // Called when a dbus signal is initially connected.
   void SignalConnected(const std::string& interface_name,
@@ -262,6 +283,10 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       timer_.Stop();
     }
   }
+
+  virtual void RequestRestart() OVERRIDE {}
+
+  virtual void RequestShutdown() OVERRIDE {}
 
  private:
   void Update() {
