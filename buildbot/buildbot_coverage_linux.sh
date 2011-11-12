@@ -44,7 +44,7 @@ $XVFB_PREFIX \
 python tools/coverage_linux.py ${BITS}
 
 echo @@@BUILD_STEP archive_coverage@@@
-export GSUTIL="/b/build/scripts/slave/gsutil -h Cache-Control:no-cache"
+export GSUTIL=/b/build/scripts/slave/gsutil
 GSD_URL=http://gsdview.appspot.com/nativeclient-coverage2/revs
 VARIANT_NAME=coverage-linux-x86-${BITS}
 COVERAGE_PATH=${VARIANT_NAME}/html/index.html

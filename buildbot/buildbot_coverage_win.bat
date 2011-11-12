@@ -56,7 +56,7 @@ call scons.bat ^
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
 echo @@@BUILD_STEP archive_coverage@@@
-set GSUTIL="\b\build\scripts\slave\gsutil.bat -h Cache-Control:no-cache"
+set GSUTIL="\b\build\scripts\slave\gsutil.bat"
 set GSD_URL="http://gsdview.appspot.com/nativeclient-coverage2/revs"
 set VARIANT_NAME="coverage-win-x86-%BITS%"
 set COVERAGE_PATH="%VARIANT_NAME%/html/index.html"

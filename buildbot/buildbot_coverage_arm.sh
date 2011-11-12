@@ -39,7 +39,7 @@ echo @@@BUILD_STEP coverage@@@
     bitcode=1 sdl=none
 
 echo @@@BUILD_STEP archive_coverage@@@
-export GSUTIL="/b/build/scripts/slave/gsutil -h Cache-Control:no-cache"
+export GSUTIL=/b/build/scripts/slave/gsutil
 GSD_URL=http://gsdview.appspot.com/nativeclient-coverage2/revs
 VARIANT_NAME=coverage-linux-arm
 COVERAGE_PATH=${VARIANT_NAME}/html/index.html

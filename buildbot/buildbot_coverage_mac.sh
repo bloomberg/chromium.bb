@@ -36,7 +36,7 @@ echo @@@BUILD_STEP coverage@@@
 ./scons -k --verbose --mode=coverage-mac,nacl coverage platform=x86-32
 
 echo @@@BUILD_STEP archive_coverage@@@
-export GSUTIL="/b/build/scripts/slave/gsutil -h Cache-Control:no-cache"
+export GSUTIL=/b/build/scripts/slave/gsutil
 GSD_URL=http://gsdview.appspot.com/nativeclient-coverage2/revs
 VARIANT_NAME=coverage-mac-x86-32
 COVERAGE_PATH=${VARIANT_NAME}/html/index.html
