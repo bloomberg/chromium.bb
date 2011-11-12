@@ -9,6 +9,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
+#include "base/stringprintf.h"
 #include "build/build_config.h"
 #include "net/base/net_util.h"
 #include "net/base/sys_addrinfo.h"
@@ -92,12 +94,39 @@ PP_Var Describe(PP_Module module,
   if (!NetAddressPrivateImpl::ValidateNetAddress(*addr))
     return PP_MakeUndefined();
 
+#if defined(OS_WIN)
+  // On Windows, |NetAddressToString()| doesn't work in the sandbox.
+  // TODO(viettrungluu): Consider switching to this everywhere once it's fully
+  // implemented.
+  switch (GetFamily(*addr)) {
+    case AF_INET: {
+      const sockaddr_in* a = reinterpret_cast<const sockaddr_in*>(addr->data);
+      unsigned ip = ntohl(a->sin_addr.s_addr);
+      unsigned port = ntohs(a->sin_port);
+      std::string description = base::StringPrintf(
+          "%u.%u.%u.%u",
+          (ip >> 24) & 0xff, (ip >> 16) & 0xff, (ip >> 8) & 0xff, ip & 0xff);
+      if (include_port)
+        description.append(base::StringPrintf(":%u", port));
+      return StringVar::StringToPPVar(module, description);
+    }
+    case AF_INET6:
+      // TODO(viettrungluu): crbug.com/103969
+      NOTIMPLEMENTED();
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return PP_MakeUndefined();
+#else
   const sockaddr* a = reinterpret_cast<const sockaddr*>(addr->data);
   socklen_t l = addr->size;
   std::string description =
       include_port ? net::NetAddressToStringWithPort(a, l) :
                      net::NetAddressToString(a, l);
   return StringVar::StringToPPVar(module, description);
+#endif
 }
 
 PP_Bool ReplacePort(const struct PP_NetAddress_Private* src_addr,
