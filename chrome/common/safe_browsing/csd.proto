@@ -124,10 +124,24 @@ message ClientDownloadRequest {
   // triggered the download) as well as for the download URL itself.
   repeated Resource resources = 4;
 
+  // A trust chain of certificates.  Each chain begins with the signing
+  // certificate of the binary, and ends with a self-signed certificate,
+  // typically from a trusted root CA.  This structure is analogous to
+  // CERT_CHAIN_CONTEXT on Windows.
+  message CertificateChain {
+    // A single link in the chain.
+    message Element {
+      // DER-encoded X.509 representation of the certificate.
+      optional bytes certificate = 1;
+    }
+    repeated Element element = 1;
+  }
+
   message SignatureInfo {
-    // The full DER-encoded X.509 certificate extracted from the binary.
-    // If this field is not present, it means the binary was unsigned.
-    optional bytes certificate_contents = 1;
+    // All of the certificate chains for the binary's signing certificate.
+    // If no chains are present, the binary is not signed.  Multiple chains
+    // may be present if any certificate has multiple signers.
+    repeated CertificateChain certificate_chain = 1;
 
     // True if the signature was trusted on the client.
     optional bool trusted = 2;

@@ -63,7 +63,7 @@ class MockSignatureUtil : public SignatureUtil {
 }  // namespace
 
 ACTION_P(SetCertificateContents, contents) {
-  arg1->set_certificate_contents(contents);
+  arg1->add_certificate_chain()->add_element()->set_certificate(contents);
 }
 
 // We can't call OnSafeBrowsingResult directly because SafeBrowsingCheck does
@@ -384,8 +384,11 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
                                       "http://www.google.com/bla.exe",
                                       info.referrer_url.spec()));
   EXPECT_TRUE(request.has_signature());
-  EXPECT_TRUE(request.signature().has_certificate_contents());
-  EXPECT_EQ("dummy cert data", request.signature().certificate_contents());
+  ASSERT_EQ(1, request.signature().certificate_chain_size());
+  const ClientDownloadRequest_CertificateChain& chain =
+      request.signature().certificate_chain(0);
+  ASSERT_EQ(1, chain.element_size());
+  EXPECT_EQ("dummy cert data", chain.element(0).certificate());
 
   // Simulate the request finishing.
   MessageLoop::current()->PostTask(
@@ -437,7 +440,7 @@ TEST_F(DownloadProtectionServiceTest,
                                       "http://www.google.com/bla.exe",
                                       info.referrer_url.spec()));
   EXPECT_TRUE(request.has_signature());
-  EXPECT_FALSE(request.signature().has_certificate_contents());
+  EXPECT_EQ(0, request.signature().certificate_chain_size());
 
   // Simulate the request finishing.
   MessageLoop::current()->PostTask(

@@ -24,11 +24,22 @@ using crypto::ScopedCAPIHandle;
 using crypto::CAPIDestroyer;
 using crypto::CAPIDestroyerWithFlags;
 
-// Free functor for scoped_ptr_malloc.
+// Free functors for scoped_ptr_malloc.
 class FreeConstCertContext {
  public:
   void operator()(const CERT_CONTEXT* cert_context) const {
-    CertFreeCertificateContext(cert_context);
+    if (cert_context) {
+      CertFreeCertificateContext(cert_context);
+    }
+  }
+};
+
+class FreeConstCertChainContext {
+ public:
+  void operator()(const CERT_CHAIN_CONTEXT* cert_chain_context) const {
+    if (cert_chain_context) {
+      CertFreeCertificateChain(cert_chain_context);
+    }
   }
 };
 
@@ -104,9 +115,40 @@ void GetCertificateContents(
     return;
   }
 
-  signature_info->set_certificate_contents(cert_context->pbCertEncoded,
-                                           cert_context->cbCertEncoded);
-  VLOG(2) << "Successfully extracted cert";
+  // Follow the chain of certificates to a trusted root.
+  CERT_CHAIN_PARA cert_chain_params;
+  memset(&cert_chain_params, 0, sizeof(cert_chain_params));
+  cert_chain_params.cbSize = sizeof(cert_chain_params);
+
+  const CERT_CHAIN_CONTEXT* cert_chain_context = NULL;
+  if (!CertGetCertificateChain(NULL,  // default chain engine
+                               cert_context.get(),
+                               // TODO(bryner): should this verify at the
+                               // executable's embedded timestamp?
+                               NULL,  // verify at the current time
+                               NULL,  // no additional store
+                               &cert_chain_params,
+                               0,     // default flags
+                               NULL,  // reserved parameter
+                               &cert_chain_context)) {
+    VLOG(2) << "Failed to get certificate chain.";
+    return;
+  }
+
+  typedef scoped_ptr_malloc<const CERT_CHAIN_CONTEXT,
+                            FreeConstCertChainContext> ScopedCertChainContext;
+  ScopedCertChainContext scoped_cert_chain_context(cert_chain_context);
+  for (size_t i = 0; i < cert_chain_context->cChain; ++i) {
+    CERT_SIMPLE_CHAIN* simple_chain = cert_chain_context->rgpChain[i];
+    ClientDownloadRequest_CertificateChain* chain =
+        signature_info->add_certificate_chain();
+    for (size_t j = 0; j < simple_chain->cElement; ++j) {
+      CERT_CHAIN_ELEMENT* element = simple_chain->rgpElement[j];
+      chain->add_element()->set_certificate(
+          element->pCertContext->pbCertEncoded,
+          element->pCertContext->cbCertEncoded);
+    }
+  }
 }
 
 bool CheckTrust(const FilePath& file_path) {

@@ -405,7 +405,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   void ExtractFileFeatures() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     signature_util_->CheckSignature(info_.local_file, &signature_info_);
-    bool is_signed = signature_info_.has_certificate_contents();
+    bool is_signed = (signature_info_.certificate_chain_size() > 0);
     if (is_signed) {
       VLOG(2) << "Downloaded a signed binary: " << info_.local_file.value();
     } else {
@@ -454,7 +454,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
           sb_service_->MatchDownloadWhitelistUrl(info_.referrer_url)) {
         reason = REASON_WHITELISTED_REFERRER;
       }
-      if (reason != REASON_MAX || signature_info_.has_certificate_contents()) {
+      if (reason != REASON_MAX ||
+          signature_info_.certificate_chain_size() > 0) {
         UMA_HISTOGRAM_COUNTS("SBClientDownload.SignedOrWhitelistedDownload", 1);
       }
     }
