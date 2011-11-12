@@ -148,16 +148,6 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
 
   SyncerUtil::UpdateServerFieldsFromUpdate(&target_entry, update, name);
 
-  if (target_entry.Get(syncable::SERVER_VERSION) ==
-         target_entry.Get(syncable::BASE_VERSION) &&
-      !target_entry.Get(syncable::IS_UNSYNCED) &&
-      !target_entry.Get(syncable::IS_UNAPPLIED_UPDATE)) {
-    // If these don't match, it means that we have a different view of the
-    // truth from other clients.  That's a sync bug, though we may be able
-    // to recover the next time this item commits.
-    LOG_IF(ERROR, !SyncerUtil::ServerAndLocalEntriesMatch(&target_entry))
-        << target_entry;
-  }
   return SUCCESS_PROCESSED;
 }
 

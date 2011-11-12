@@ -474,68 +474,6 @@ void SyncerUtil::CreateNewEntry(syncable::WriteTransaction *trans,
 }
 
 // static
-bool SyncerUtil::ServerAndLocalOrdersMatch(syncable::Entry* entry) {
-  // Find the closest up-to-date local sibling by walking the linked list.
-  syncable::Id local_up_to_date_predecessor = entry->Get(PREV_ID);
-  while (!local_up_to_date_predecessor.IsRoot()) {
-    Entry local_prev(entry->trans(), GET_BY_ID, local_up_to_date_predecessor);
-    if (!local_prev.good() || local_prev.Get(IS_DEL))
-      return false;
-    if (!local_prev.Get(IS_UNAPPLIED_UPDATE) && !local_prev.Get(IS_UNSYNCED))
-      break;
-    local_up_to_date_predecessor = local_prev.Get(PREV_ID);
-  }
-
-  // Now find the closest up-to-date sibling in the server order.
-  syncable::Id server_up_to_date_predecessor =
-      entry->ComputePrevIdFromServerPosition(entry->Get(SERVER_PARENT_ID));
-  return server_up_to_date_predecessor == local_up_to_date_predecessor;
-}
-
-// static
-bool SyncerUtil::ServerAndLocalEntriesMatch(syncable::Entry* entry) {
-  if (entry->Get(CTIME) != entry->Get(SERVER_CTIME)) {
-    LOG(WARNING) << "Client and server time mismatch";
-    return false;
-  }
-  if (entry->Get(IS_DEL) && entry->Get(SERVER_IS_DEL))
-    return true;
-  // Name should exactly match here.
-  if (!(entry->Get(NON_UNIQUE_NAME) == entry->Get(SERVER_NON_UNIQUE_NAME))) {
-    LOG(WARNING) << "Unsanitized name mismatch";
-    return false;
-  }
-
-  if (entry->Get(PARENT_ID) != entry->Get(SERVER_PARENT_ID) ||
-      entry->Get(IS_DIR) != entry->Get(SERVER_IS_DIR) ||
-      entry->Get(IS_DEL) != entry->Get(SERVER_IS_DEL)) {
-    LOG(WARNING) << "Metabit mismatch";
-    return false;
-  }
-
-  if (!ServerAndLocalOrdersMatch(entry)) {
-    LOG(WARNING) << "Server/local ordering mismatch";
-    return false;
-  }
-
-  // TODO(ncarter): This is unfortunately heavyweight.  Can we do better?
-  if (entry->Get(SPECIFICS).SerializeAsString() !=
-      entry->Get(SERVER_SPECIFICS).SerializeAsString()) {
-    LOG(WARNING) << "Specifics mismatch";
-    return false;
-  }
-  if (entry->Get(IS_DIR))
-    return true;
-  // For historical reasons, a folder's MTIME changes when its contents change.
-  // TODO(ncarter): Remove the special casing of MTIME.
-  if (entry->Get(MTIME) != entry->Get(SERVER_MTIME)) {
-    LOG(WARNING) << "Time mismatch";
-    return false;
-  }
-  return true;
-}
-
-// static
 void SyncerUtil::SplitServerInformationIntoNewEntry(
     syncable::WriteTransaction* trans,
     syncable::MutableEntry* entry) {
@@ -772,17 +710,6 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
       return VERIFY_FAIL;
     }
     if (target->Get(ID) == update.id()) {
-      // Checks that are only valid if we're not changing the ID.
-      if (target->Get(BASE_VERSION) == update.version() &&
-          !target->Get(IS_UNSYNCED) &&
-          !SyncerProtoUtil::Compare(*target, update)) {
-        // TODO(sync): This constraint needs to be relaxed. For now it's OK to
-        // fail the verification and deal with it when we ApplyUpdates.
-        LOG(ERROR) << "Server update doesn't match local data with same "
-            "version. A bug should be filed. Entry: " << *target <<
-            "Update: " << SyncerProtoUtil::SyncEntityDebugString(update);
-        return VERIFY_FAIL;
-      }
       if (target->Get(SERVER_VERSION) > update.version()) {
         LOG(WARNING) << "We've already seen a more recent version.";
         LOG(WARNING) << " Entry: " << *target;

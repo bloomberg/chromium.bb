@@ -68,8 +68,6 @@ class SyncerUtil {
   static void CreateNewEntry(syncable::WriteTransaction *trans,
                              const syncable::Id& id);
 
-  static bool ServerAndLocalEntriesMatch(syncable::Entry* entry);
-
   static void SplitServerInformationIntoNewEntry(
       syncable::WriteTransaction* trans,
       syncable::MutableEntry* entry);
@@ -129,11 +127,6 @@ class SyncerUtil {
   static void MarkDeletedChildrenSynced(
       const syncable::ScopedDirLookup &dir,
       std::set<syncable::Id>* deleted_folders);
-
-  // Examine the up-to-date predecessors of this item according to the server
-  // position, and then again according to the local position.  Return true
-  // if they match.  For an up-to-date item, this should be the case.
-  static bool ServerAndLocalOrdersMatch(syncable::Entry* entry);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SyncerUtil);

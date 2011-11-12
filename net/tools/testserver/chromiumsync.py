@@ -16,6 +16,7 @@ import pickle
 import random
 import sys
 import threading
+import time
 import urlparse
 
 import app_notification_specifics_pb2
@@ -82,6 +83,9 @@ SYNC_TYPE_TO_EXTENSION = {
 # The parent ID used to indicate a top-level node.
 ROOT_ID = '0'
 
+# Unix time epoch in struct_time format. The tuple corresponds to UTC Wednesday
+# Jan 1 1970, 00:00:00, non-dst.
+UNIX_TIME_EPOCH = (1970, 1, 1, 0, 0, 0, 3, 1, 0)
 
 class Error(Exception):
   """Error class for this module."""
@@ -462,6 +466,9 @@ class SyncDataModel(object):
       entry.originator_client_item_id = base_entry.originator_client_item_id
 
     self._entries[entry.id_string] = copy.deepcopy(entry)
+    # Store the current time since the Unix epoch in milliseconds.
+    self._entries[entry.id_string].mtime = (int((time.mktime(time.gmtime()) -
+        time.mktime(UNIX_TIME_EPOCH))*1000))
 
   def _ServerTagToId(self, tag):
     """Determine the server ID from a server-unique tag.
