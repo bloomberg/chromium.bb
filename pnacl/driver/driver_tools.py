@@ -43,7 +43,6 @@ INITIAL_ENV = {
   'BASE_PKG'        : '${BASE}/pkg',
   'BASE_SDK'        : '${BASE}/sdk',
   'BASE_LLVM'       : '${BASE_PKG}/llvm',
-  'BASE_LLVM_GCC'   : '${BASE_PKG}/llvm-gcc',
   'BASE_NEWLIB'     : '${BASE_PKG}/newlib',
   'BASE_GLIBC'      : '${BASE_PKG}/glibc',
   'BASE_BINUTILS'   : '${BASE_PKG}/binutils',
@@ -167,10 +166,6 @@ INITIAL_ENV = {
 
   'LLC_SRPC'      : '${BASE_SB}/srpc/bin/llc',
   'LD_SRPC'       : '${BASE_SB}/srpc/bin/ld',
-
-  'LLVM_GCC_PREFIX': '${BASE_LLVM_GCC}/bin/arm-none-linux-gnueabi-',
-  'LLVM_GCC'      : '${LLVM_GCC_PREFIX}gcc${EXEC_EXT}',
-  'LLVM_GXX'      : '${LLVM_GCC_PREFIX}g++${EXEC_EXT}',
 
   'CLANG'         : '${BASE_LLVM_BIN}/clang${EXEC_EXT}',
   'CLANGXX'       : '${BASE_LLVM_BIN}/clang++${EXEC_EXT}',

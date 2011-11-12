@@ -220,7 +220,7 @@ LDPatterns = [
 
   # This controls LTO optimization.
   # opt does not support -Os but internally it is identical to -O2
-  # opt also does not support -O4 but -O4 is how you ask llvm-gcc for LTO, so we
+  # opt also does not support -O4 but -O4 is how you ask clang for LTO, so we
   # can support it as well
   ( '-Os',                 "env.set('OPT_LEVEL', '2')"),
   ( '-O4',                 "env.set('OPT_LEVEL', '3')"),

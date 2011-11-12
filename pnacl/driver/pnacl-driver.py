@@ -23,13 +23,13 @@ EXTRA_ENV = {
   'BIAS'        : 'NONE', # This can be 'NONE', 'ARM', 'X8632', or 'X8664'.
                           # When not set to none, this causes the front-end to
                           # act like a target-specific compiler. This bias is
-                          # currently needed while compiling llvm-gcc, newlib,
+                          # currently needed while compiling newlib,
                           # and some scons tests.
                           # TODO(pdox): Can this be removed?
   'MC_DIRECT'   : '1',    # Use MC direct object emission instead of
                           # producing an intermediate .s file
   'LANGUAGE'    : 'C',    # C or CXX
-  'FRONTEND'    : '',     # CLANG, LLVMGCC, or DRAGONEGG
+  'FRONTEND'    : '',     # CLANG, or DRAGONEGG
 
   # Command-line options
   'GCC_MODE'    : '',     # '' (default), '-E', '-c', or '-S'
@@ -44,30 +44,15 @@ EXTRA_ENV = {
   'OUTPUT'      : '',    # Output file
   'UNMATCHED'   : '',    # Unrecognized parameters
 
-  # We need to remove the pre-existing ARM defines which appear
-  # because we are using the ARM llvm-gcc frontend.
-  # TODO(pdox): Prevent these from being defined by llvm-gcc in
-  #             the first place by creating a custom target for PNaCl.
-  'REMOVE_BIAS' : '-U__arm__ -U__APCS_32__ -U__thumb__ -U__thumb2__ ' +
-                  '-U__ARMEB__ -U__THUMBEB__ -U__ARMWEL__ ' +
-                  '-U__ARMEL__ -U__THUMBEL__ -U__SOFTFP__ ' +
-                  '-U__VFP_FP__ -U__ARM_NEON__ -U__ARM_FP16 ' +
-                  '-U__ARM_FP16__ -U__MAVERICK__ -U__XSCALE__ -U__IWMMXT__ ' +
-                  '-U__ARM_EABI__ -U__ARM_ARCH_7A__',
-
-  'BIAS_NONE'   : '${FRONTEND==LLVMGCC ? ${REMOVE_BIAS}}',
+  'BIAS_NONE'   : '',
   'BIAS_ARM'    : '-D__arm__ -D__ARM_ARCH_7A__ -D__ARMEL__',
-  'BIAS_X8632'  : '${REMOVE_BIAS} ' +
-                  '-D__i386__ -D__i386 -D__i686 -D__i686__ -D__pentium4__',
-  'BIAS_X8664'  : '${REMOVE_BIAS} ' +
-                  '-D__amd64__ -D__amd64 -D__x86_64__ -D__x86_64 -D__core2__',
+  'BIAS_X8632'  : '-D__i386__ -D__i386 -D__i686 -D__i686__ -D__pentium4__',
+  'BIAS_X8664'  : '-D__amd64__ -D__amd64 -D__x86_64__ -D__x86_64 -D__core2__',
 
   'OPT_LEVEL'   : '0',
   'CC_FLAGS'    : '-O${OPT_LEVEL} ' +
                   '-nostdinc -DNACL_LINUX=1 ${BIAS_%BIAS%} ' +
                   '${CC_FLAGS_%FRONTEND%}',
-  'CC_FLAGS_LLVMGCC': '-D__native_client__=1 -D__pnacl__=1 ' +
-                      '-fuse-llvm-va-arg -Werror-portable-llvm',
   'CC_FLAGS_CLANG': '-ccc-host-triple le32-unknown-nacl',
   'CC_FLAGS_DRAGONEGG': '-D__native_client__=1 -D__pnacl__=1 ' +
                         '-flto -fplugin=${DRAGONEGG_PLUGIN}',
@@ -81,6 +66,7 @@ EXTRA_ENV = {
   'ISYSTEM_CLANG':
       '${BASE_LLVM}/lib/clang/3.1/include',
 
+  # TODO(pdox): reference dragonegg instead of llvm-gcc here.
   'ISYSTEM_DRAGONEGG':
       '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
       '${BASE_LLVM_GCC}/' +
@@ -147,8 +133,6 @@ EXTRA_ENV = {
   'LIBSTDCPP'   : '${LANGUAGE==CXX ? -lstdc++ -lm }',
 
   'CC'              : '${CC_%FRONTEND%_%LANGUAGE%}',
-  'CC_LLVMGCC_C'    : '${LLVM_GCC}',
-  'CC_LLVMGCC_CXX'  : '${LLVM_GXX}',
   'CC_CLANG_C'      : '${CLANG}',
   'CC_CLANG_CXX'    : '${CLANGXX}',
   'CC_DRAGONEGG_C'  : '${DRAGONEGG_GCC}',

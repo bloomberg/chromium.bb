@@ -118,8 +118,6 @@
  * These are compiler intrinsics in NaCl's variant of LLVM.
  *
  * See:
- *      hg/llvm-gcc/llvm-gcc-4.2/gcc/builtins.def
- *      hg/llvm-gcc/llvm-gcc-4.2/gcc/builtin-types.def
  *      hg/llvm/llvm-trunk/include/llvm/CodeGen/ISDOpcodes.h
  *      hg/llvm/llvm-trunk/include/llvm/Intrinsics.td
  *      hg/llvm/llvm-trunk/lib/CodeGen/SelectionDAG/SelectionDAG.cpp
