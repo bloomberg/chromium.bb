@@ -26,6 +26,9 @@
             'sources': [
               'tests/hello_world/hello_world.c',
             ],
+            'extra_args': [
+              '--strip-debug',
+            ],
           },
         },
         {

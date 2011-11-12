@@ -114,6 +114,7 @@ class Builder(object):
     self.suffix = options.suffix
     self.strip = options.strip
     self.empty = options.empty
+    self.strip_debug = options.strip_debug
 
     if self.verbose:
       print 'Compile options: %s' % self.compile_options
@@ -264,13 +265,33 @@ class Builder(object):
       ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
     return out
 
+  def Strip(self, out):
+    """Strip the NEXE"""
+    if self.verbose:
+      print '\nStrip %s' % out
+
+    tmp = out + '.tmp'
+    self.CleanOutput(tmp)
+    os.rename(out, tmp)
+    bin_name = self.GetBinName('strip')
+    cmd_line = [bin_name, '--strip-debug', tmp, '-o', out]
+    err = self.Run(cmd_line, out)
+    if sys.platform.startswith('win') and err == 5:
+      # Try again on mystery windows failure.
+      err = self.Run(cmd_line, out)
+    if err:
+      ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+    return out
+
   def Generate(self, srcs):
     """Generate final output file.
 
     Link or Archive the final output file, from the compiled sources.
     """
     if self.outtype == 'nexe':
-      self.Link(srcs)
+      out = self.Link(srcs)
+      if self.strip_debug:
+        self.Strip(out)
     elif self.outtype == 'nlib':
       self.Archive(srcs)
 
@@ -283,6 +304,8 @@ def Main(argv):
                     help='Do not append arch suffix.', action='store_false')
   parser.add_option('--sufix', dest='suffix',
                     help='Do append arch suffix.', action='store_true')
+  parser.add_option('--strip-debug', dest='strip_debug', default=False,
+                    help='Strip the NEXE', action='store_true')
   parser.add_option('--strip', dest='strip', default='',
                     help='Strip the filename')
   parser.add_option('-a', '--arch', dest='arch',
