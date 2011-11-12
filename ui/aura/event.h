@@ -29,6 +29,13 @@ class AURA_EXPORT Event {
   const base::Time& time_stamp() const { return time_stamp_; }
   int flags() const { return flags_; }
 
+  // The following methods return true if the respective keys were pressed at
+  // the time the event was created.
+  bool IsShiftDown() const { return (flags_ & ui::EF_SHIFT_DOWN) != 0; }
+  bool IsControlDown() const { return (flags_ & ui::EF_CONTROL_DOWN) != 0; }
+  bool IsCapsLockDown() const { return (flags_ & ui::EF_CAPS_LOCK_DOWN) != 0; }
+  bool IsAltDown() const { return (flags_ & ui::EF_ALT_DOWN) != 0; }
+
  protected:
   Event(ui::EventType type, int flags);
   Event(const base::NativeEvent& native_event, ui::EventType type, int flags);
