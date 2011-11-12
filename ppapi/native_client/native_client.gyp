@@ -58,6 +58,9 @@
             ],
             'sources': [
             ],
+            'extra_args': [
+              '--strip-debug',
+            ],
             'extra_deps64': [
               '<(PRODUCT_DIR)/obj/gen/tc_newlib/lib64/libppruntime.a',
               '<(PRODUCT_DIR)/obj/gen/tc_newlib/lib64/libirt_browser.a',
