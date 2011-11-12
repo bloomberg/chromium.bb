@@ -393,6 +393,10 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   void set_controller(MenuController* controller) { controller_ = controller; }
 
+  // Returns true if this MenuItemView contains a single child
+  // that is responsible for rendering the content.
+  bool IsContainer() const;
+
   // The delegate. This is only valid for the root menu item. You shouldn't
   // use this directly, instead use GetDelegate() which walks the tree as
   // as necessary.
@@ -422,9 +426,6 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Title.
   string16 title_;
-
-  // Accessible name (doesn't include accelerators, etc.).
-  string16 accessible_name_;
 
   // Icon.
   SkBitmap icon_;

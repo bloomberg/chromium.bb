@@ -139,7 +139,20 @@ bool MenuItemView::GetTooltipText(const gfx::Point& p,
 
 void MenuItemView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_MENUITEM;
-  state->name = accessible_name_;
+
+  string16 item_text;
+  if (IsContainer()) {
+    // The first child is taking over, just use its accessible name instead of
+    // |title_|.
+    View* child = child_at(0);
+    ui::AccessibleViewState state;
+    child->GetAccessibleState(&state);
+    item_text = state.name;
+  } else {
+    item_text = title_;
+  }
+  state->name = GetAccessibleNameForMenuItem(item_text, GetAcceleratorText());
+
   switch (GetType()) {
     case SUBMENU:
       state->state |= ui::AccessibilityTypes::STATE_HASPOPUP;
@@ -330,7 +343,6 @@ SubmenuView* MenuItemView::GetSubmenu() const {
 
 void MenuItemView::SetTitle(const string16& title) {
   title_ = title;
-  accessible_name_ = GetAccessibleNameForMenuItem(title_, GetAcceleratorText());
   pref_size_.SetSize(0, 0);  // Triggers preferred size recalculation.
 }
 
@@ -461,9 +473,7 @@ void MenuItemView::Layout() {
   if (!has_children())
     return;
 
-  if (child_count() == 1 && title_.empty()) {
-    // We only have one child and no title so let the view take over all the
-    // space.
+  if (IsContainer()) {
     View* child = child_at(0);
     gfx::Size size = child->GetPreferredSize();
     child->SetBounds(0, GetTopMargin(), size.width(), size.height());
@@ -715,7 +725,7 @@ gfx::Size MenuItemView::GetChildPreferredSize() {
   if (!has_children())
     return gfx::Size();
 
-  if (title_.empty() && child_count() == 1) {
+  if (IsContainer()) {
     View* child = child_at(0);
     return child->GetPreferredSize();
   }
@@ -733,7 +743,7 @@ gfx::Size MenuItemView::GetChildPreferredSize() {
 
 gfx::Size MenuItemView::CalculatePreferredSize() {
   gfx::Size child_size = GetChildPreferredSize();
-  if (child_count() == 1 && title_.empty()) {
+  if (IsContainer()) {
     return gfx::Size(
         child_size.width(),
         child_size.height() + GetBottomMargin() + GetTopMargin());
@@ -765,6 +775,13 @@ string16 MenuItemView::GetAcceleratorText() {
   return (GetDelegate() &&
           GetDelegate()->GetAccelerator(GetCommand(), &accelerator)) ?
       accelerator.GetShortcutText() : string16();
+}
+
+bool MenuItemView::IsContainer() const {
+  // Let the first child take over |this| when we only have one child and no
+  // title.  Note that what child_count() returns is the number of children,
+  // not the number of menu items.
+  return child_count() == 1 && title_.empty();
 }
 
 }  // namespace views
