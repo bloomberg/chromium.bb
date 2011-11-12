@@ -40,16 +40,14 @@ def StripIRT(platform, src, dst):
   }.get(sys.platform, 'linux')
   if platform in ['arm', 'arm-thumb2']:
     cmd = [
-        os.path.join(SRC_DIR, 'native_client', 'toolchain',
-                    'pnacl_linux_x86_64_newlib', 'bin',
-                    platform2 + '-strip'),
+        '../native_client/toolchain/pnacl_linux_x86_64_newlib/bin/' +
+        platform2 + '-strip',
         '--strip-debug', src, '-o', dst
         ]
   else:
     cmd = [
-        os.path.join(SRC_DIR, 'native_client', 'toolchain',
-                     cplatform + '_x86_newlib', 'bin',
-                     platform2 + '-nacl-strip'),
+        '../native_client/toolchain/' + cplatform + '_x86_newlib/bin/' +
+        platform2 + '-nacl-strip',
         '--strip-debug', src, '-o', dst
         ]
   print 'Running: ' + ' '.join(cmd)
