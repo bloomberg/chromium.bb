@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_NTP_FAVICON_WEBUI_HANDLER_H_
 #pragma once
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -14,12 +15,9 @@
 #include "content/browser/webui/web_ui.h"
 
 class ExtensionIconColorManager;
-class GURL;
-class Profile;
 
 namespace base {
 class ListValue;
-class StringValue;
 }
 
 class FaviconWebUIHandler : public WebUIMessageHandler {

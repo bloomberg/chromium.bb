@@ -9,8 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 
-class RefCountedMemory;
-
 class WorkersUI : public ChromeWebUI {
  public:
   explicit WorkersUI(TabContents* contents);

@@ -11,7 +11,6 @@
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 
-class GURL;
 class RefCountedBytes;
 
 namespace gfx {

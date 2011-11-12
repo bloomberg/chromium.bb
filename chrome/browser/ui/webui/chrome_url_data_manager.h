@@ -15,9 +15,7 @@
 #include "base/task.h"
 
 class ChromeURLDataManagerBackend;
-class FilePath;
 class MessageLoop;
-class Profile;
 class RefCountedMemory;
 
 namespace base {

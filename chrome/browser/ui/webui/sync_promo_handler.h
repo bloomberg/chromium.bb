@@ -8,6 +8,8 @@
 
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
 
+class PrefService;
+
 // The handler for Javascript messages related to the "sync promo" page.
 class SyncPromoHandler : public SyncSetupHandler {
  public:

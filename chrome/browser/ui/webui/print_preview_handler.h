@@ -23,7 +23,6 @@ class TabContentsWrapper;
 
 namespace base {
 class DictionaryValue;
-class FundamentalValue;
 class StringValue;
 }
 

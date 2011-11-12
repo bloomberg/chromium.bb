@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 
-class GURL;
 class RefCountedMemory;
 
 // This class provides the source for chrome://bookmarks/

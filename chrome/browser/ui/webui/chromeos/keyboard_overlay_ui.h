@@ -6,12 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_KEYBOARD_OVERLAY_UI_H_
 #pragma once
 
-#include <string>
-
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-
-class Browser;
-class Profile;
 
 class KeyboardOverlayUI : public HtmlDialogUI {
  public:

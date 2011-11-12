@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 
-class Browser;
 class Profile;
 
 // This class implements (and mostly ignores) most of TabContentsDelegate for

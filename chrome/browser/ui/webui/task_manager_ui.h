@@ -6,10 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_TASK_MANAGER_UI_H_
 #pragma once
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
-
-class RefCountedMemory;
 
 class TaskManagerUI : public ChromeWebUI {
  public:

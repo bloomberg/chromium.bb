@@ -7,15 +7,9 @@
 #pragma once
 
 #include <string>
+
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-
-namespace net {
-class URLRequest;
-class URLRequestJob;
-}  // namespace net
-
-class GURL;
 
 // A DataSource for chrome://fileicon/ URLs, but reads from
 // resources instead of disk. Allows for parameterization
@@ -37,4 +31,3 @@ class FileIconSourceCros : public ChromeURLDataManager::DataSource {
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_FILEICON_SOURCE_CHROMEOS_H_
-

@@ -15,10 +15,6 @@ namespace base {
 class ListValue;
 }
 
-namespace views {
-class Widget;
-}
-
 namespace chromeos {
 
 // WebUI implementation of NetworkScreenActor. It is used to interact with

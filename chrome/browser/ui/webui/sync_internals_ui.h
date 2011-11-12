@@ -15,8 +15,6 @@
 #include "chrome/browser/sync/js/js_reply_handler.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 
-class ProfileSyncService;
-
 namespace browser_sync {
 class JsController;
 }  // namespace browser_sync

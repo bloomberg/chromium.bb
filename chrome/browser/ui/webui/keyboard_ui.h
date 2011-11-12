@@ -11,8 +11,6 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 
-class Profile;
-
 // The TabContents used for the keyboard page.
 class KeyboardUI : public ChromeWebUI {
  public:

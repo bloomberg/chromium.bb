@@ -18,11 +18,6 @@
 
 class ExtensionIconSet;
 class Profile;
-class RefCountedMemory;
-
-namespace gfx {
-class Size;
-}
 
 // ExtensionIconSource serves extension icons through network level chrome:
 // requests. Icons can be retrieved for any installed extension or app.

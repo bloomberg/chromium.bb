@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_FAVICON_SOURCE_H_
 #pragma once
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 
-class GURL;
 class Profile;
 
 // FaviconSource is the gateway between network-level chrome:

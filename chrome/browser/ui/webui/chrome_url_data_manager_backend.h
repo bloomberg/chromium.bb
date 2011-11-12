@@ -6,21 +6,20 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROME_URL_DATA_MANAGER_BACKEND_H_
 #pragma once
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
-#include "base/task.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "net/url_request/url_request_job_factory.h"
-
 #include <map>
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/task.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "net/url_request/url_request_job_factory.h"
+
 class ChromeAppCacheService;
 class ChromeURLDataManagerBackend;
-class FilePath;
 class GURL;
+class RefCountedMemory;
 class URLRequestChromeJob;
 
 namespace net {

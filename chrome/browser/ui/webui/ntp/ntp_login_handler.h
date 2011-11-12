@@ -11,7 +11,6 @@
 #include "content/public/browser/notification_observer.h"
 
 class Profile;
-class Browser;
 
 // The NTP login handler currently simply displays the current logged in
 // username at the top of the NTP (and update itself when that changes).

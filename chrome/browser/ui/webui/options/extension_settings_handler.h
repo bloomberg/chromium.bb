@@ -25,7 +25,6 @@ class Extension;
 class ExtensionService;
 class FilePath;
 class PrefService;
-class RenderProcessHost;
 class UserScript;
 
 namespace base {

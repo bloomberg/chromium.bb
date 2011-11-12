@@ -10,7 +10,6 @@
 #include "content/browser/webui/web_ui.h"
 
 class PrefService;
-class Profile;
 
 // The handler for Javascript messages related to the "bookmarks" view.
 class BookmarksHandler : public WebUIMessageHandler,

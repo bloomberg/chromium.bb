@@ -6,14 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_SHARED_RESOURCES_DATA_SOURCE_H_
 #pragma once
 
+#include <string>
+
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-
-namespace net {
-class URLRequest;
-class URLRequestJob;
-}  // namespace net
-
-class GURL;
 
 // A DataSource for chrome://resources/ URLs.
 class SharedResourcesDataSource : public ChromeURLDataManager::DataSource {

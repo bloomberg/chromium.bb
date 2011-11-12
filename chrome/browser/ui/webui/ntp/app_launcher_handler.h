@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_WEBUI_NTP_APP_LAUNCHER_HANDLER_H_
 #pragma once
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
@@ -19,16 +21,9 @@
 #include "content/public/browser/notification_registrar.h"
 
 class AppNotification;
-class ExtensionPrefs;
 class ExtensionService;
 class PrefChangeRegistrar;
-class PrefsService;
 class Profile;
-struct WebApplicationInfo;
-
-namespace gfx {
-class Rect;
-}
 
 // The handler for Javascript messages related to the "apps" view.
 class AppLauncherHandler : public WebUIMessageHandler,

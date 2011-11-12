@@ -16,10 +16,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 
-class GURL;
-class PrefService;
-struct UserMetricsAction;
-
 // The base class handler of Javascript messages of options pages.
 class OptionsPageUIHandler : public WebUIMessageHandler,
                              public content::NotificationObserver {
