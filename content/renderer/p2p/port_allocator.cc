@@ -189,7 +189,7 @@ void P2PPortAllocatorSession::AllocateRelaySession() {
   WebURLRequest request;
   request.initialize();
   request.setURL(WebURL(GURL(
-      "http://" + allocator_->config_.relay_server + kCreateRelaySessionURL)));
+      "https://" + allocator_->config_.relay_server + kCreateRelaySessionURL)));
   request.setAllowStoredCredentials(false);
   request.setCachePolicy(WebURLRequest::ReloadIgnoringCacheData);
   request.setHTTPMethod("GET");
