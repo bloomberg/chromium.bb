@@ -32,6 +32,10 @@ gfx::Rect GetPreferredBounds(bool show) {
   return widget_bounds;
 }
 
+ui::Layer* GetWidgetLayer(views::Widget* widget) {
+  return widget->GetNativeView()->layer();
+}
+
 }  // namespace
 
 // static
@@ -40,22 +44,23 @@ AppListWindow* AppListWindow::instance_ = NULL;
 // static
 void AppListWindow::SetVisible(bool visible) {
   if (!instance_) {
-    // TODO(xiyuan): Fix first time animation jankiness.
     instance_ = new AppListWindow;
     instance_->Init();
   }
 
-  instance_->SetVisible(visible, true);
+  instance_->DoSetVisible(visible);
 }
 
+// static
 bool AppListWindow::IsVisible() {
-  return instance_ && instance_->is_visible();
+  return instance_ && instance_->is_visible_;
 }
 
 AppListWindow::AppListWindow()
     : widget_(NULL),
       contents_(NULL),
-      is_visible_(false) {
+      is_visible_(false),
+      content_rendered_(false) {
 }
 
 AppListWindow::~AppListWindow() {
@@ -84,7 +89,37 @@ const views::Widget* AppListWindow::GetWidget() const {
 
 void AppListWindow::OnActiveWindowChanged(aura::Window* active) {
   if (widget_ && !widget_->IsActive() && is_visible_)
-    SetVisible(false, true);
+    DoSetVisible(false);
+}
+
+void AppListWindow::OnLayerAnimationEnded(
+    const ui::LayerAnimationSequence* sequence) {
+  if (!is_visible_ )
+    widget_->Close();
+}
+
+void AppListWindow::OnLayerAnimationAborted(
+    const ui::LayerAnimationSequence* sequence) {
+}
+
+void AppListWindow::OnLayerAnimationScheduled(
+    const ui::LayerAnimationSequence* sequence) {
+}
+
+void AppListWindow::OnRenderHostCreated(RenderViewHost* host) {
+}
+
+void AppListWindow::OnTabMainFrameLoaded() {
+}
+
+void AppListWindow::OnTabMainFrameFirstRender() {
+  content_rendered_ = true;
+
+  // Do deferred show animation if necessary.
+  if (is_visible_ && GetWidgetLayer(widget_)->opacity() == 0) {
+    is_visible_ = false;
+    DoSetVisible(true);
+  }
 }
 
 void AppListWindow::Init() {
@@ -92,6 +127,11 @@ void AppListWindow::Init() {
 
   contents_ = new DOMView();
   contents_->Init(ProfileManager::GetDefaultProfile(), NULL);
+
+  TabContents* tab = contents_->dom_contents()->tab_contents();
+  tab_watcher_.reset(new TabFirstRenderWatcher(tab, this));
+  content_rendered_ = false;
+
   contents_->LoadURL(GURL(chrome::kChromeUIAppListURL));
 
   // Use a background with transparency to trigger transparent webkit.
@@ -100,7 +140,6 @@ void AppListWindow::Init() {
   background.allocPixels();
   background.eraseARGB(0x00, 0x00, 0x00, 0x00);
 
-  TabContents* tab = contents_->dom_contents()->tab_contents();
   RenderViewHost* host = tab->render_view_host();
   host->view()->SetBackground(background);
 
@@ -108,45 +147,38 @@ void AppListWindow::Init() {
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   widget_params.bounds = GetPreferredBounds(false);
   widget_params.delegate = this;
+  widget_params.keep_on_top = true;
+  widget_params.transparent = true;
 
   widget_ = new views::Widget;
   widget_->Init(widget_params);
   widget_->SetContentsView(contents_);
   widget_->SetOpacity(0);
 
+  GetWidgetLayer(widget_)->GetAnimator()->AddObserver(this);
   aura::Desktop::GetInstance()->AddObserver(this);
 }
 
-void AppListWindow::SetVisible(bool visible, bool animate) {
+void AppListWindow::DoSetVisible(bool visible) {
   if (visible == is_visible_)
     return;
 
   is_visible_ = visible;
 
-  if (animate) {
-    gfx::Point dummy;
-    ui::Layer* layer;
-    widget_->CalculateOffsetToAncestorWithLayer(&dummy, &layer);
+  // Skip show animation if contents is not rendered.
+  // TODO(xiyuan): Should we show a loading UI if it takes too long?
+  if (visible && !content_rendered_)
+    return;
 
-    ui::LayerAnimator::ScopedSettings settings(layer->GetAnimator());
-    layer->SetBounds(GetPreferredBounds(visible));
-    layer->SetOpacity(visible ? 1.0 : 0.0);
-  }
+  ui::Layer* layer = GetWidgetLayer(widget_);
+  ui::LayerAnimator::ScopedSettings settings(layer->GetAnimator());
+  layer->SetBounds(GetPreferredBounds(visible));
+  layer->SetOpacity(visible ? 1.0 : 0.0);
 
   if (visible) {
-    widget_->Activate();
     widget_->Show();
+    widget_->Activate();
   } else {
     instance_ = NULL;  // Closing and don't reuse this instance_.
-
-    if (animate) {
-      // TODO(xiyuan): Properly close widget after animation finishes.
-      MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&views::Widget::Close, base::Unretained(widget_)),
-          1000);
-    } else {
-      widget_->Close();
-    }
   }
 }

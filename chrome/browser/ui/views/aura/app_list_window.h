@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_UI_VIEWS_AURA_APP_LIST_WINDOW_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/tab_first_render_watcher.h"
 #include "ui/aura/desktop_observer.h"
+#include "ui/gfx/compositor/layer_animation_observer.h"
 #include "views/widget/widget_delegate.h"
 
 class DOMView;
@@ -16,7 +19,9 @@ class Widget;
 }
 
 class AppListWindow : public views::WidgetDelegate,
-                      public aura::DesktopObserver {
+                      public aura::DesktopObserver,
+                      public ui::LayerAnimationObserver,
+                      public TabFirstRenderWatcher::Delegate {
  public:
   // Show/hide app list window.
   static void SetVisible(bool visible);
@@ -28,7 +33,7 @@ class AppListWindow : public views::WidgetDelegate,
   AppListWindow();
   virtual ~AppListWindow();
 
-  // Overridden from views::WidgetDelegate:
+  // views::WidgetDelegate overrides:
   virtual void DeleteDelegate() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
@@ -38,15 +43,24 @@ class AppListWindow : public views::WidgetDelegate,
   // aura::DesktopObserver overrides:
   virtual void OnActiveWindowChanged(aura::Window* active) OVERRIDE;
 
+  // ui::LayerAnimationObserver overrides:
+  virtual void OnLayerAnimationEnded(
+      const ui::LayerAnimationSequence* sequence) OVERRIDE;
+  virtual void OnLayerAnimationAborted(
+      const ui::LayerAnimationSequence* sequence) OVERRIDE;
+  virtual void OnLayerAnimationScheduled(
+      const ui::LayerAnimationSequence* sequence) OVERRIDE;
+
+  // TabFirstRenderWatcher::Delegate implementation:
+  virtual void OnRenderHostCreated(RenderViewHost* host) OVERRIDE;
+  virtual void OnTabMainFrameLoaded() OVERRIDE;
+  virtual void OnTabMainFrameFirstRender() OVERRIDE;
+
   // Initializes the window.
   void Init();
 
   // Shows/hides the window.
-  void SetVisible(bool visible, bool animate);
-
-  bool is_visible() const {
-    return is_visible_;
-  }
+  void DoSetVisible(bool visible);
 
   // Current visible app list window.
   static AppListWindow* instance_;
@@ -54,6 +68,13 @@ class AppListWindow : public views::WidgetDelegate,
   views::Widget* widget_;
   DOMView* contents_;
   bool is_visible_;
+
+  // Monitors TabContents and set |content_rendered_| flag when it's rendered.
+  scoped_ptr<TabFirstRenderWatcher> tab_watcher_;
+
+  // Flag of whether the web contents is rendered. Showing animation is
+  // deferred until this flag is set to true.
+  bool content_rendered_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListWindow);
 };
