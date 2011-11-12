@@ -82,6 +82,7 @@ class HelperMethodsTest(unittest.TestCase):
     if not os.path.exists(GIT_DIR): os.makedirs(GIT_DIR)
     cros_lib.RunCommand(
         ('repo init -u http://git.chromium.org/chromiumos/manifest.git '
+         '--repo-url http://git.chromium.org/external/repo.git '
          '-m minilayout.xml').split(), cwd=GIT_DIR, input='\n\ny\n')
     cros_lib.RunCommand(('repo sync --jobs 8').split(), cwd=GIT_DIR)
     git_dir = os.path.join(GIT_DIR, GIT_TEST_PATH)
