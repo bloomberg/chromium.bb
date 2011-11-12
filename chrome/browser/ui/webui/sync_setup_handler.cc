@@ -116,8 +116,10 @@ bool GetConfiguration(const std::string& json, SyncConfiguration* config) {
   bool sync_extensions;
   if (!result->GetBoolean("syncExtensions", &sync_extensions))
     return false;
-  if (sync_extensions)
+  if (sync_extensions) {
     config->data_types.insert(syncable::EXTENSIONS);
+    config->data_types.insert(syncable::EXTENSION_SETTINGS);
+  }
 
   bool sync_typed_urls;
   if (!result->GetBoolean("syncTypedUrls", &sync_typed_urls))
@@ -140,8 +142,10 @@ bool GetConfiguration(const std::string& json, SyncConfiguration* config) {
   bool sync_apps;
   if (!result->GetBoolean("syncApps", &sync_apps))
     return false;
-  if (sync_apps)
+  if (sync_apps) {
     config->data_types.insert(syncable::APPS);
+    config->data_types.insert(syncable::APP_SETTINGS);
+  }
 
   // Encryption settings.
   if (!result->GetBoolean("encryptAllData", &config->encrypt_all))
@@ -208,6 +212,8 @@ bool HasConfigurationChanged(const SyncConfiguration& config,
        pref_service->GetBoolean(prefs::kSyncAutofill)) ||
       ((types.find(syncable::EXTENSIONS) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncExtensions)) ||
+      ((types.find(syncable::EXTENSION_SETTINGS) != types.end()) !=
+       pref_service->GetBoolean(prefs::kSyncExtensionSettings)) ||
       ((types.find(syncable::TYPED_URLS) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncTypedUrls)) ||
       ((types.find(syncable::SEARCH_ENGINES) != types.end()) !=
@@ -215,7 +221,9 @@ bool HasConfigurationChanged(const SyncConfiguration& config,
       ((types.find(syncable::SESSIONS) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncSessions)) ||
       ((types.find(syncable::APPS) != types.end()) !=
-       pref_service->GetBoolean(prefs::kSyncApps)))
+       pref_service->GetBoolean(prefs::kSyncApps)) ||
+      ((types.find(syncable::APP_SETTINGS) != types.end()) !=
+       pref_service->GetBoolean(prefs::kSyncAppSettings)))
     return true;
 
   return false;
@@ -592,6 +600,8 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
           types.find(syncable::AUTOFILL) != types.end());
       UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncExtensions",
           types.find(syncable::EXTENSIONS) != types.end());
+      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncExtensionSettings",
+          types.find(syncable::EXTENSION_SETTINGS) != types.end());
       UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncTypedUrls",
           types.find(syncable::TYPED_URLS) != types.end());
       UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncSearchEngines",
@@ -600,6 +610,8 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
           types.find(syncable::SESSIONS) != types.end());
       UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncApps",
           types.find(syncable::APPS) != types.end());
+      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncAppSettings",
+          types.find(syncable::APP_SETTINGS) != types.end());
       COMPILE_ASSERT(17 == syncable::MODEL_TYPE_COUNT,
                      UpdateCustomConfigHistogram);
     }
