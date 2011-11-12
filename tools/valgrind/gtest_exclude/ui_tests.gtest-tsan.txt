@@ -29,7 +29,10 @@ DOMStorageTest.SessionStorageLayoutTests
 
 # Flaky under TSan and natively, see http://crbug.com/103707
 NPAPITesterBase.GetJavaScriptURL
+NPAPITesterBase.NPObjectIdentity
 NPAPITesterBase.NPObjectProxy
 NPAPITesterBase.PluginThreadAsyncCall
 NPAPITesterBase.ScheduleTimer
 NPAPIVisiblePluginTester.DeletePluginInDeallocate
+NPAPIVisiblePluginTester.GetURLRequestFailWrite
+NPAPIVisiblePluginTester.PluginReferrerTest

@@ -5225,6 +5225,28 @@
    fun:_ZNK7WebCore16CSSStyleSelector24canShareStyleWithElementEPNS_4NodeE
    fun:_ZNK7WebCore16CSSStyleSelector26findSiblingForStyleSharingEPNS_4NodeERj
 }
+{
+   bug_104029a
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN11BalloonHost*
+   fun:_ZN15BalloonViewHost*
+}
+{
+   bug_104029b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN8chromeos15BalloonView*
+   ...
+   fun:_ZN8chromeos21BalloonCollectionImpl*
+}
+{
+   bug_104029c
+   Memcheck:Addr4
+   fun:_ZN8chromeos26PowerManagerClientStubImpl6UpdateEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
