@@ -2414,7 +2414,7 @@ binutils-sb() {
     binutils-sb-clean
     binutils-sb-configure
   else
-    SkipBanner "BINUTILS-SB" "configure ${BINUTILS_SB_ARCH} ${BINUTILS_SB_MODE}"
+    SkipBanner "BINUTILS-SB" "configure ${BINUTILS_SB_ARCH}"
   fi
 
   if binutils-sb-needs-make; then
