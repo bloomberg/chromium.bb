@@ -5,6 +5,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
+#include "base/bind.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
@@ -67,7 +68,7 @@ class RunTestServer : public base::Thread {
     bool ret = StartWithOptions(Options(MessageLoop::TYPE_UI, 0));
     if (ret) {
       message_loop()->PostTask(FROM_HERE,
-          NewRunnableFunction(&RunTestServer::StartServer, this));
+                               base::Bind(&RunTestServer::StartServer, this));
       wait_until_ready();
     }
     return ret;

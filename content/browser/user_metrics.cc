@@ -4,6 +4,7 @@
 
 #include "content/browser/user_metrics.h"
 
+#include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -20,9 +21,8 @@ void UserMetrics::RecordComputedAction(const std::string& action) {
 
 void UserMetrics::Record(const char *action) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&UserMetrics::CallRecordOnUI, action));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&UserMetrics::CallRecordOnUI, action));
     return;
   }
 

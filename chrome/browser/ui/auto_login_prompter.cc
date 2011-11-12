@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/auto_login_prompter.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -271,9 +272,10 @@ void AutoLoginPrompter::ShowInfoBarIfPossible(net::URLRequest* request,
   if (realm != "com.google")
     return;
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&AutoLoginPrompter::ShowInfoBarUIThread, account,
-                          args, child_id, route_id));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&AutoLoginPrompter::ShowInfoBarUIThread, account, args,
+                 child_id, route_id));
 }
 
 // static

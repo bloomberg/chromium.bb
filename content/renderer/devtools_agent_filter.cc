@@ -1,9 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/renderer/devtools_agent_filter.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "content/common/devtools_messages.h"
 #include "content/renderer/devtools_agent.h"
@@ -93,6 +94,5 @@ void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
       new MessageImpl(message, current_routing_id_));
 
   render_thread_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableFunction(&WebDevToolsAgent::processPendingMessages));
+      FROM_HERE, base::Bind(&WebDevToolsAgent::processPendingMessages));
 }

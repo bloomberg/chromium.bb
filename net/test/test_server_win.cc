@@ -8,6 +8,7 @@
 #include <wincrypt.h>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -50,8 +51,7 @@ bool ReadData(HANDLE read_fd, HANDLE write_fd,
   // Prepare a timeout in case the server fails to start.
   bool unblocked = false;
   thread.message_loop()->PostDelayedTask(
-      FROM_HERE,
-      NewRunnableFunction(UnblockPipe, write_fd, bytes_max, &unblocked),
+      FROM_HERE, base::Bind(UnblockPipe, write_fd, bytes_max, &unblocked),
       TestTimeouts::action_timeout_ms());
 
   DWORD bytes_read = 0;

@@ -92,7 +92,7 @@ class BrowserThreadTest : public testing::Test {
 TEST_F(BrowserThreadTest, PostTask) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&BasicFunction, MessageLoop::current()));
+      base::Bind(&BasicFunction, MessageLoop::current()));
   MessageLoop::current()->Run();
 }
 
@@ -124,9 +124,8 @@ TEST_F(BrowserThreadTest, NotReleasedIfTargetThreadNonExistent) {
 TEST_F(BrowserThreadTest, PostTaskViaMessageLoopProxy) {
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
-  message_loop_proxy->PostTask(FROM_HERE,
-                               NewRunnableFunction(&BasicFunction,
-                                                   MessageLoop::current()));
+  message_loop_proxy->PostTask(
+      FROM_HERE, base::Bind(&BasicFunction, MessageLoop::current()));
   MessageLoop::current()->Run();
 }
 

@@ -8,6 +8,7 @@
 #include <atlcom.h>
 #include <exdisp.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/file_util.h"
@@ -416,7 +417,7 @@ DWORD CFUrlRequestUnittestRunner::RunAllUnittests(void* param) {
       reinterpret_cast<CFUrlRequestUnittestRunner*>(param);
   me->test_result_ = me->Run();
   me->fake_chrome_.ui_loop()->PostTask(FROM_HERE,
-      NewRunnableFunction(TakeDownBrowser, me));
+      base::Bind(TakeDownBrowser, me));
   return 0;
 }
 

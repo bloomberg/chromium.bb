@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/threading/worker_pool.h"
 #include "base/win/scoped_com_initializer.h"
@@ -175,8 +176,7 @@ void GpuChildThread::OnCollectGraphicsInfo() {
     // Asynchronously collect the DirectX diagnostics because this can take a
     // couple of seconds.
     if (!base::WorkerPool::PostTask(
-        FROM_HERE,
-        NewRunnableFunction(&GpuChildThread::CollectDxDiagnostics, this),
+        FROM_HERE, base::Bind(&GpuChildThread::CollectDxDiagnostics, this),
         true)) {
       // Flag GPU info as complete if the DirectX diagnostics cannot be
       // collected.
@@ -223,8 +223,7 @@ void GpuChildThread::CollectDxDiagnostics(GpuChildThread* thread) {
   gpu_info_collector::GetDxDiagnostics(&node);
 
   thread->message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableFunction(&GpuChildThread::SetDxDiagnostics, thread, node));
+      FROM_HERE, base::Bind(&GpuChildThread::SetDxDiagnostics, thread, node));
 }
 
 // Runs on the main thread.

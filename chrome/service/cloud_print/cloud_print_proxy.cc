@@ -4,6 +4,7 @@
 
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -221,7 +222,7 @@ void CloudPrintProxy::OnAuthenticationFailed() {
   // expired (unless error dialogs are disabled).
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoErrorDialogs))
     g_service_process->io_thread()->message_loop_proxy()->PostTask(
-        FROM_HERE, NewRunnableFunction(&ShowTokenExpiredNotificationInBrowser));
+        FROM_HERE, base::Bind(&ShowTokenExpiredNotificationInBrowser));
 }
 
 void CloudPrintProxy::OnPrintSystemUnavailable() {

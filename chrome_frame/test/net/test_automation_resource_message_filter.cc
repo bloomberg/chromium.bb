@@ -1,8 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome_frame/test/net/test_automation_resource_message_filter.h"
+
+#include "base/bind.h"
 
 TestAutomationResourceMessageFilter::TestAutomationResourceMessageFilter(
     AutomationProvider* automation) : automation_(automation) {
@@ -32,8 +34,8 @@ bool TestAutomationResourceMessageFilter::OnMessageReceived(
       handled = true;
       IPC::Message* msg = new IPC::Message(message);
       RequestJob& job = it->second;
-      job.loop_->PostTask(FROM_HERE, NewRunnableFunction(OnRequestMessage,
-                                                         job.job_, msg));
+      job.loop_->PostTask(FROM_HERE,
+                          base::Bind(OnRequestMessage, job.job_, msg));
     }
   } else {
     handled = AutomationResourceMessageFilter::OnMessageReceived(message);

@@ -63,9 +63,10 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
 
   static void SetTempQuota(int64 bytes, scoped_refptr<QuotaManager> qm) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-          NewRunnableFunction(&FileSystemBrowserTestWithLowQuota::SetTempQuota,
-                              bytes, qm));
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&FileSystemBrowserTestWithLowQuota::SetTempQuota, bytes,
+                     qm));
       return;
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

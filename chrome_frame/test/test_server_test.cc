@@ -6,6 +6,7 @@
 #include <wininet.h>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/path_service.h"
 #include "base/win/scoped_handle.h"
 #include "chrome_frame/test/test_server.h"
@@ -145,8 +146,7 @@ TEST_F(TestServerTest, TestServer) {
   // We should never hit this, but it's our way to break out of the test if
   // things start hanging.
   QuitMessageHit quit_msg(&loop);
-  loop.PostDelayedTask(FROM_HERE,
-                       NewRunnableFunction(QuitMessageLoop, &quit_msg),
+  loop.PostDelayedTask(FROM_HERE, base::Bind(QuitMessageLoop, &quit_msg),
                        10 * 1000);
 
   UrlTaskChain quit_task("http://localhost:1337/quit", NULL);

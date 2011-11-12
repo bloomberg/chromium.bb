@@ -4,6 +4,7 @@
 
 #include "content/shell/shell_browser_main.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -31,8 +32,8 @@ ShellBrowserMainParts::ShellBrowserMainParts(
 ShellBrowserMainParts::~ShellBrowserMainParts() {
   base::ThreadRestrictions::SetIOAllowed(true);
     io_thread()->message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableFunction(&base::ThreadRestrictions::SetIOAllowed, true));
+        FROM_HERE, base::IgnoreReturn<bool>(
+            base::Bind(&base::ThreadRestrictions::SetIOAllowed, true)));
 
   browser_context_.reset();
 

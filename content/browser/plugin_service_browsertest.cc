@@ -168,9 +168,8 @@ void OpenChannelAndThenCancel(PluginProcessHost::Client* client) {
 IN_PROC_BROWSER_TEST_F(PluginServiceTest, CancelOpenChannelToPluginService) {
   ::testing::StrictMock<MockCanceledPluginServiceClient> mock_client(
       browser()->profile()->GetResourceContext());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(OpenChannelAndThenCancel, &mock_client));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(OpenChannelAndThenCancel, &mock_client));
   ui_test_utils::RunMessageLoop();
   EXPECT_TRUE(mock_client.get_resource_context_called());
 }

@@ -12,6 +12,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
@@ -543,7 +544,7 @@ void WebKitPlatformSupportImpl::stopSharedTimer() {
 
 void WebKitPlatformSupportImpl::callOnMainThread(
     void (*func)(void*), void* context) {
-  main_loop_->PostTask(FROM_HERE, NewRunnableFunction(func, context));
+  main_loop_->PostTask(FROM_HERE, base::Bind(func, context));
 }
 
 WebKit::WebThread* WebKitPlatformSupportImpl::createThread(const char* name) {

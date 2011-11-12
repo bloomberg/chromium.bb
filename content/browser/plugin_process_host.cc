@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -95,7 +96,7 @@ void PluginProcessHost::OnReparentPluginWindow(HWND window, HWND parent) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(ReparentPluginWindowHelper, window, parent));
+      base::Bind(ReparentPluginWindowHelper, window, parent));
 }
 #endif  // defined(OS_WIN)
 
@@ -141,10 +142,9 @@ PluginProcessHost::~PluginProcessHost() {
     if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       base::mac::ReleaseFullScreen(base::mac::kFullScreenModeHideAll);
     } else {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableFunction(base::mac::ReleaseFullScreen,
-                              base::mac::kFullScreenModeHideAll));
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                              base::Bind(base::mac::ReleaseFullScreen,
+                                         base::mac::kFullScreenModeHideAll));
     }
   }
   // If the plugin hid the cursor, reset that.
@@ -152,10 +152,8 @@ PluginProcessHost::~PluginProcessHost() {
     if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       base::mac::SetCursorVisibility(true);
     } else {
-      BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(base::mac::SetCursorVisibility,
-                            true));
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                              base::Bind(base::mac::SetCursorVisibility, true));
     }
   }
 #endif

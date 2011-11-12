@@ -8,6 +8,8 @@
 #include <winnt.h>
 
 #include "base/at_exit.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -81,11 +83,11 @@ TEST(NtLoader, OwnsCriticalSection) {
   base::Thread other("Other threads");
   ASSERT_TRUE(other.Start());
   other.message_loop()->PostTask(
-      FROM_HERE, NewRunnableFunction(::EnterCriticalSection, &cs));
+      FROM_HERE, base::Bind(::EnterCriticalSection, &cs));
 
   base::win::ScopedHandle event(::CreateEvent(NULL, FALSE, FALSE, NULL));
   other.message_loop()->PostTask(
-      FROM_HERE, NewRunnableFunction(::SetEvent, event.Get()));
+      FROM_HERE, base::IgnoreReturn<BOOL>(base::Bind(::SetEvent, event.Get())));
 
   ASSERT_EQ(WAIT_OBJECT_0, ::WaitForSingleObject(event.Get(), INFINITE));
 
@@ -96,7 +98,7 @@ TEST(NtLoader, OwnsCriticalSection) {
 
   // Make the other thread release it.
   other.message_loop()->PostTask(
-      FROM_HERE, NewRunnableFunction(::LeaveCriticalSection, &cs));
+      FROM_HERE, base::Bind(::LeaveCriticalSection, &cs));
 
   other.Stop();
 

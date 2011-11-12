@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task.h"
@@ -187,9 +188,9 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
 
   void FlushLastDBTask() {
     base::WaitableEvent done(false, false);
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-       NewRunnableFunction(&ProfileSyncServicePasswordTest::SignalEvent,
-                           &done));
+    BrowserThread::PostTask(
+        BrowserThread::DB, FROM_HERE,
+        base::Bind(&ProfileSyncServicePasswordTest::SignalEvent, &done));
     done.TimedWait(base::TimeDelta::FromMilliseconds(
         TestTimeouts::action_timeout_ms()));
   }

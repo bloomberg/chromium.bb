@@ -6,6 +6,8 @@
 
 #include <unknwn.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_handle.h"
@@ -217,15 +219,16 @@ TEST_F(VtablePatchManagerTest, ThreadSafePatching) {
   vtable_patch::patch_lock_.Acquire();
 
   // Instruct the background thread to patch factory_.
-  background.message_loop()->PostTask(FROM_HERE,
-      NewRunnableFunction(&vtable_patch::PatchInterfaceMethods,
-                          &factory_,
-                          &IClassFactory_PatchInfo[0]));
+  background.message_loop()->PostTask(
+      FROM_HERE,
+      base::IgnoreReturn<HRESULT>(
+          base::Bind(&vtable_patch::PatchInterfaceMethods, &factory_,
+                     &IClassFactory_PatchInfo[0])));
 
   // And subsequently to signal the event. Neither of these actions should
   // occur until we've released the patch lock.
-  background.message_loop()->PostTask(FROM_HERE,
-      NewRunnableFunction(::SetEvent, event.Get()));
+  background.message_loop()->PostTask(
+      FROM_HERE, base::IgnoreReturn<BOOL>(base::Bind(::SetEvent, event.Get())));
 
   // Wait for a little while, to give the background thread time to process.
   // We expect this wait to time out, as the background thread should end up
@@ -258,14 +261,16 @@ TEST_F(VtablePatchManagerTest, ThreadSafePatching) {
   vtable_patch::patch_lock_.Acquire();
 
   // Instruct the background thread to unpatch.
-  background.message_loop()->PostTask(FROM_HERE,
-      NewRunnableFunction(&vtable_patch::UnpatchInterfaceMethods,
-                          &IClassFactory_PatchInfo[0]));
+  background.message_loop()->PostTask(
+      FROM_HERE,
+      base::IgnoreReturn<HRESULT>(
+          base::Bind(&vtable_patch::UnpatchInterfaceMethods,
+                     &IClassFactory_PatchInfo[0])));
 
   // And subsequently to signal the event. Neither of these actions should
   // occur until we've released the patch lock.
-  background.message_loop()->PostTask(FROM_HERE,
-      NewRunnableFunction(::SetEvent, event.Get()));
+  background.message_loop()->PostTask(
+      FROM_HERE, base::IgnoreReturn<BOOL>(base::Bind(::SetEvent, event.Get())));
 
   // Wait for a little while, to give the background thread time to process.
   // We expect this wait to time out, as the background thread should end up
