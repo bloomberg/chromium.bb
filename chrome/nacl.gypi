@@ -298,6 +298,8 @@
                     # Prevent llvm-opt from replacing my_bzero with a call
                     # to memset
                     '-ffreestanding',
+                    # But make its <limits.h> still work!
+                    '-U__STDC_HOSTED__', '-D__STDC_HOSTED__=1',
                   ],
                 }],
               ],
