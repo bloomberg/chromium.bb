@@ -4,15 +4,15 @@
 
 #include "base/logging.h"
 
-#include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/first_run/first_run_import_observer.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
-#include "chrome/browser/ui/views/first_run_bubble.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if !defined(OS_WIN)
+#if defined(OS_WIN)
+#include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/first_run/first_run_import_observer.h"
+#include "chrome/browser/ui/views/first_run_bubble.h"
+#else
 #include "chrome/browser/ui/gtk/certificate_dialogs.h"
 #endif
 
@@ -23,9 +23,7 @@
 class SSLClientAuthHandler;
 class TabContents;
 class TabContentsWrapper;
-namespace crypto {
-class CryptoModuleBlockingPasswordDelegate;
-}
+
 namespace net {
 class SSLCertRequestInfo;
 class X509Certificate;
@@ -60,9 +58,7 @@ crypto::CryptoModuleBlockingPasswordDelegate*
   NOTIMPLEMENTED();
   return NULL;
 }
-#endif
 
-#if !defined(OS_WIN)
 void ShowCryptoModulePasswordDialog(
     const std::string& module_name,
     bool retry,
@@ -81,7 +77,6 @@ void ShowCertificateViewer(gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
   // No certificate viewer on Windows.
 }
-#endif
 
 // static
 FirstRunBubble* FirstRunBubble::Show(
@@ -94,8 +89,7 @@ FirstRunBubble* FirstRunBubble::Show(
   NOTIMPLEMENTED();
   return NULL;
 }
-
-#if !defined(OS_WIN)
+#else
 void ShowCertSelectFileDialog(SelectFileDialog* select_file_dialog,
                               SelectFileDialog::Type type,
                               const FilePath& suggested_path,
@@ -112,7 +106,7 @@ void ShowCertExportDialog(TabContents* tab_contents,
   // TODO(saintlou);
   NOTIMPLEMENTED();
 }
-#endif
+#endif // OS_WIN
 
 namespace importer {
 
