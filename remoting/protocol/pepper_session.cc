@@ -284,6 +284,15 @@ void PepperSession::OnTerminate(const JingleMessage& message,
     return;
   }
 
+  // TODO(sergeyu): We should return CHANNEL_CONNECTION_ERROR only in
+  // case when |message.reason| is set GENERAL_ERROR, but some legacy
+  // hosts may sent terminate messages with reason set to SUCCESS.
+  if (state_ == CONNECTED) {
+    // Session was connected, but we failed to connect channels.
+    OnError(CHANNEL_CONNECTION_ERROR);
+    return;
+  }
+
   CloseInternal(false);
 }
 
