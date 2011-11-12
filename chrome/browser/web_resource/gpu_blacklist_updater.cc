@@ -64,7 +64,7 @@ std::string GetChromeVersionString() {
 }  // namespace anonymous
 
 const char* GpuBlacklistUpdater::kDefaultGpuBlacklistURL =
-    "https://dl.google.com/dl/edgedl/chrome/gpu/software_rendering_list.json";
+    "https://ssl.gstatic.com/chrome/config/software_rendering_list.json";
 
 GpuBlacklistUpdater::GpuBlacklistUpdater()
     : WebResourceService(g_browser_process->local_state(),

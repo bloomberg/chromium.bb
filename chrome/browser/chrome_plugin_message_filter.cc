@@ -24,7 +24,7 @@
 using content::BrowserThread;
 
 static const char kDefaultPluginFinderURL[] =
-    "https://dl-ssl.google.com/edgedl/chrome/plugins/plugins2.xml";
+    "https://ssl.gstatic.com/chrome/config/plugins2.xml";
 
 ChromePluginMessageFilter::ChromePluginMessageFilter(PluginProcessHost* process)
     : process_(process) {
