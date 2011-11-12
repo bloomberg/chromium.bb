@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,11 +10,32 @@
 
 #import "content/common/chrome_application_mac.h"
 
-@interface BrowserCrApplication : CrApplication
+// Event hooks must implement this protocol.
+@protocol CrApplicationEventHookProtocol
+- (void)hookForEvent:(NSEvent*)theEvent;
+@end
+
+@interface BrowserCrApplication : CrApplication {
+ @private
+  // Array of objects implementing CrApplicationEventHookProtocol.
+  scoped_nsobject<NSMutableArray> eventHooks_;
+}
+
 // Our implementation of |-terminate:| only attempts to terminate the
 // application, i.e., begins a process which may lead to termination. This
 // method cancels that process.
 - (void)cancelTerminate:(id)sender;
+
+// Add or remove an event hook to be called for every sendEvent:
+// that the application receives.  These handlers are called before
+// the normal [NSApplication sendEvent:] call is made.
+
+// This is not a good alternative to a nested event loop.  It should
+// be used only when normal event logic and notification breaks down
+// (e.g. when clicking outside a canBecomeKey:NO window to "switch
+// context" out of it).
+- (void)addEventHook:(id<CrApplicationEventHookProtocol>)hook;
+- (void)removeEventHook:(id<CrApplicationEventHookProtocol>)hook;
 @end
 
 namespace chrome_browser_application_mac {

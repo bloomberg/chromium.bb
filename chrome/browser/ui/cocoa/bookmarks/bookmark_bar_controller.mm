@@ -919,9 +919,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // "click outside" these windows to detect when they logically lose
 // focus.
 - (void)watchForExitEvent:(BOOL)watch {
-  CrApplication* app = static_cast<CrApplication*>([NSApplication
-                                                    sharedApplication]);
-  DCHECK([app isKindOfClass:[CrApplication class]]);
+  BrowserCrApplication* app = static_cast<BrowserCrApplication*>(
+      [BrowserCrApplication sharedApplication]);
   if (watch) {
     if (!watchingForExitEvent_) {
       [app addEventHook:self];

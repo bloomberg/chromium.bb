@@ -24,13 +24,6 @@
   return app;
 }
 
-- (id)init {
-  if ((self = [super init])) {
-    eventHooks_.reset([[NSMutableArray alloc] init]);
-  }
-  return self;
-}
-
 - (BOOL)isHandlingSendEvent {
   return handlingSendEvent_;
 }
@@ -45,18 +38,7 @@
 
 - (void)sendEvent:(NSEvent*)event {
   content::mac::ScopedSendingEvent sendingEventScoper;
-  for (id<CrApplicationEventHookProtocol> handler in eventHooks_.get()) {
-    [handler hookForEvent:event];
-  }
   [super sendEvent:event];
-}
-
-- (void)addEventHook:(id<CrApplicationEventHookProtocol>)handler {
-  [eventHooks_ addObject:handler];
-}
-
-- (void)removeEventHook:(id<CrApplicationEventHookProtocol>)handler {
-  [eventHooks_ removeObject:handler];
 }
 
 @end

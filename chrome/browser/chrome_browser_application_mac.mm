@@ -215,7 +215,10 @@ void SwizzleInit() {
 
 - (id)init {
   SwizzleInit();
-  return [super init];
+  if ((self = [super init])) {
+    eventHooks_.reset([[NSMutableArray alloc] init]);
+  }
+  return self;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -355,6 +358,22 @@ void SwizzleInit() {
   if (enableNSExceptions)
     enabler.reset(new base::mac::ScopedNSExceptionEnabler());
   return [super sendAction:anAction to:aTarget from:sender];
+}
+
+- (void)addEventHook:(id<CrApplicationEventHookProtocol>)handler {
+  [eventHooks_ addObject:handler];
+}
+
+- (void)removeEventHook:(id<CrApplicationEventHookProtocol>)handler {
+  [eventHooks_ removeObject:handler];
+}
+
+- (void)sendEvent:(NSEvent*)event {
+  content::mac::ScopedSendingEvent sendingEventScoper;
+  for (id<CrApplicationEventHookProtocol> handler in eventHooks_.get()) {
+    [handler hookForEvent:event];
+  }
+  [super sendEvent:event];
 }
 
 // NSExceptions which are caught by the event loop are logged here.
