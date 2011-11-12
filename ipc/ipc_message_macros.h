@@ -966,7 +966,7 @@ LogFunctionMap g_log_function_mapping;
 
 #define IPC_MESSAGE_HANDLER_GENERIC(msg_class, code)                           \
     case msg_class::ID: {                                                      \
-        TRACK_RUN_IN_IPC_HANDLER(code);                                        \
+        /* TRACK_RUN_IN_IPC_HANDLER(code);  TODO(jar) */                       \
         code;                                                                  \
       }                                                                        \
       break;
