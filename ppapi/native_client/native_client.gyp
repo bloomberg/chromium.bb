@@ -32,12 +32,12 @@
           ],
         },
         {
-          'target_name': 'nacl_irt_unstripped',
+          'target_name': 'nacl_irt',
           'type': 'none',
           'variables': {
             'nexe_target': 'nacl_irt',
-            'out64': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/nacl_irt_x86_64.nexe',
-            'out32': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/nacl_irt_x86_32.nexe',
+            'out64': '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
+            'out32': '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
             'build_glibc': 0,
             'build_newlib': 1,
             'include_dirs': [
@@ -82,67 +82,6 @@
             '../../native_client/src/shared/platform/platform.gyp:platform_lib',
             '../../native_client/src/untrusted/nacl/nacl.gyp:imc_syscalls_lib',
             '../../native_client/src/shared/gio/gio.gyp:gio_lib',
-          ],
-        },
-        {
-          'target_name': 'nacl_irt',
-          'type': 'none',
-          'dependencies': [
-            'nacl_irt_unstripped',
-          ],
-          'conditions': [
-            ['target_arch=="ia32"', {
-              'actions': [
-                {
-                  'action_name': 'strip x86-32 irt',
-                  'msvs_cygwin_shell': 0,
-                  'description': 'Strip x86-32 nacl_irt)',
-                  'inputs': [
-                     '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/nacl_irt_x86_32.nexe',
-                     '../../chrome/strip_nacl_irt.py',
-                  ],
-                  'outputs': [
-                    '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
-                  ],
-                  'action': [
-                     '>(python_exe)',
-                     '../../chrome/strip_nacl_irt.py',
-                     '--platform',
-                     'x86-32'
-                     '--src',
-                     '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/nacl_irt_x86_32.nexe',
-                     '--dst',
-                     '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe'
-                  ],
-                },
-              ],
-            }],
-            ['target_arch=="x64" or OS=="win"', {
-              'actions': [
-                {
-                  'action_name': 'strip x86-64 irt',
-                  'msvs_cygwin_shell': 0,
-                  'description': 'Strip x86-64 nacl_irt)',
-                  'inputs': [
-                     '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/nacl_irt_x86_64.nexe',
-                     '../../chrome/strip_nacl_irt.py',
-                  ],
-                  'outputs': [
-                    '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
-                  ],
-                  'action': [
-                     '>(python_exe)',
-                     '../../chrome/strip_nacl_irt.py',
-                     '--platform',
-                     'x86-64',
-                     '--src',
-                     '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/nacl_irt_x86_64.nexe',
-                     '--dst',
-                     '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe'
-                  ],
-                },
-              ],
-            }],
           ],
         },
       ],
