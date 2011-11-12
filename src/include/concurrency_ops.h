@@ -1,7 +1,7 @@
 /*
- * Copyright 2010  The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -26,15 +26,8 @@ static INLINE void NaClWriteMemoryBarrier() {
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 
 static INLINE void NaClWriteMemoryBarrier() {
-  /*
-   * This depends on ARMv7.  Ideally we should pass "-march=armv7-a"
-   * to gcc instead of using ".arch", but that breaks the linking of
-   * the plugin .so, which fails to build all its required libraries
-   * with -fPIC.  TODO(mseaborn): Fix build to use -fPIC when needed.
-   * See http://code.google.com/p/nativeclient/issues/detail?id=121
-   */
-  __asm__ __volatile__(".arch armv7-a\n"
-                       "dsb");
+  /* Note that this depends on ARMv7. */
+  __asm__ __volatile__("dsb");
 
   /*
    * We could support ARMv6 by instead using:
