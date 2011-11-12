@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/i18n/rtl.h"
@@ -210,7 +211,7 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
   // ready.
   if (!service_process_state_->SignalReady(
       io_thread_->message_loop_proxy(),
-      NewRunnableMethod(this, &ServiceProcess::Terminate))) {
+      base::Bind(&ServiceProcess::Terminate, base::Unretained(this)))) {
     return false;
   }
 
@@ -345,7 +346,7 @@ void ServiceProcess::OnServiceDisabled() {
 void ServiceProcess::ScheduleShutdownCheck() {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      NewRunnableMethod(this, &ServiceProcess::ShutdownIfNeeded),
+      base::Bind(&ServiceProcess::ShutdownIfNeeded, base::Unretained(this)),
       kShutdownDelay);
 }
 

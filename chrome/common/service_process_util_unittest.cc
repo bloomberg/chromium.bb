@@ -5,6 +5,7 @@
 #include "chrome/common/service_process_util.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/process_util.h"
@@ -110,7 +111,7 @@ TEST_F(ServiceProcessStateTest, ReadyState) {
   ASSERT_FALSE(CheckServiceProcessReady());
   ServiceProcessState state;
   ASSERT_TRUE(state.Initialize());
-  ASSERT_TRUE(state.SignalReady(IOMessageLoopProxy(), NULL));
+  ASSERT_TRUE(state.SignalReady(IOMessageLoopProxy(), base::Closure()));
   LaunchAndWait("ServiceProcessStateTestReadyTrue");
   state.SignalStopped();
   LaunchAndWait("ServiceProcessStateTestReadyFalse");
@@ -223,8 +224,8 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
   ServiceProcessState state;
   EXPECT_TRUE(state.Initialize());
   EXPECT_TRUE(state.SignalReady(io_thread_.message_loop_proxy(),
-                                NewRunnableFunction(&ShutdownTask,
-                                                    MessageLoop::current())));
+                                base::Bind(&ShutdownTask,
+                                           MessageLoop::current())));
   message_loop.PostDelayedTask(FROM_HERE,
                                new MessageLoop::QuitTask(),
                                TestTimeouts::action_max_timeout_ms());
@@ -379,7 +380,7 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
     ASSERT_TRUE(service_process_state_.Initialize());
     ASSERT_TRUE(service_process_state_.SignalReady(
         io_thread_.message_loop_proxy(),
-        NULL));
+        base::Closure()));
     loop_.PostDelayedTask(FROM_HERE,
                           new MessageLoop::QuitTask,
                           TestTimeouts::action_max_timeout_ms());
@@ -521,7 +522,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, VerifyLaunchD) {
 TEST_F(ServiceProcessStateFileManipulationTest, DeleteFile) {
   GetIOMessageLoopProxy()->PostTask(
       FROM_HERE,
-      NewRunnableFunction(&DeleteFunc, executable_path()));
+      base::Bind(&DeleteFunc, executable_path()));
   Run();
   ASSERT_TRUE(mock_launchd()->remove_called());
   ASSERT_TRUE(mock_launchd()->delete_called());
@@ -530,7 +531,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, DeleteFile) {
 TEST_F(ServiceProcessStateFileManipulationTest, DeleteBundle) {
   GetIOMessageLoopProxy()->PostTask(
       FROM_HERE,
-      NewRunnableFunction(&DeleteFunc, bundle_path()));
+      base::Bind(&DeleteFunc, bundle_path()));
   Run();
   ASSERT_TRUE(mock_launchd()->remove_called());
   ASSERT_TRUE(mock_launchd()->delete_called());
@@ -540,7 +541,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, MoveBundle) {
   FilePath new_loc = GetTempDirPath().AppendASCII("MoveBundle");
   GetIOMessageLoopProxy()->PostTask(
       FROM_HERE,
-      NewRunnableFunction(&MoveFunc, bundle_path(), new_loc));
+      base::Bind(&MoveFunc, bundle_path(), new_loc));
   Run();
   ASSERT_TRUE(mock_launchd()->restart_called());
   ASSERT_TRUE(mock_launchd()->write_called());
@@ -550,7 +551,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, MoveFile) {
   FilePath new_loc = GetTempDirPath().AppendASCII("MoveFile");
   GetIOMessageLoopProxy()->PostTask(
       FROM_HERE,
-      NewRunnableFunction(&MoveFunc, executable_path(), new_loc));
+      base::Bind(&MoveFunc, executable_path(), new_loc));
   Run();
   ASSERT_TRUE(mock_launchd()->remove_called());
   ASSERT_TRUE(mock_launchd()->delete_called());
@@ -561,7 +562,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, TrashBundle) {
   ASSERT_TRUE(base::mac::FSRefFromPath(bundle_path().value(), &bundle_ref));
   GetIOMessageLoopProxy()->PostTask(
       FROM_HERE,
-      NewRunnableFunction(&TrashFunc, bundle_path()));
+      base::Bind(&TrashFunc, bundle_path()));
   Run();
   ASSERT_TRUE(mock_launchd()->remove_called());
   ASSERT_TRUE(mock_launchd()->delete_called());
@@ -574,7 +575,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, ChangeAttr) {
   ScopedAttributesRestorer restorer(bundle_path(), 0777);
   GetIOMessageLoopProxy()->PostTask(
       FROM_HERE,
-      NewRunnableFunction(&ChangeAttr, bundle_path(), 0222));
+      base::Bind(&ChangeAttr, bundle_path(), 0222));
   Run();
   ASSERT_TRUE(mock_launchd()->remove_called());
   ASSERT_TRUE(mock_launchd()->delete_called());

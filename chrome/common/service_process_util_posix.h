@@ -10,6 +10,7 @@
 #include <signal.h>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 
@@ -42,7 +43,7 @@ class ServiceProcessTerminateMonitor
     kTerminateMessage = 0xdecea5e
   };
 
-  explicit ServiceProcessTerminateMonitor(Task* terminate_task);
+  explicit ServiceProcessTerminateMonitor(const base::Closure& terminate_task);
   virtual ~ServiceProcessTerminateMonitor();
 
   // MessageLoopForIO::Watcher overrides
@@ -50,7 +51,7 @@ class ServiceProcessTerminateMonitor
   virtual void OnFileCanWriteWithoutBlocking(int fd);
 
  private:
-  scoped_ptr<Task> terminate_task_;
+  base::Closure terminate_task_;
 };
 
 struct ServiceProcessState::StateData

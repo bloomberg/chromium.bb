@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
@@ -72,7 +73,8 @@ class ServiceProcessState {
   // |message_loop_proxy| must be of type IO and is the loop that POSIX uses
   // to monitor the service process.
   bool SignalReady(
-      base::MessageLoopProxy* message_loop_proxy, Task* terminate_task);
+      base::MessageLoopProxy* message_loop_proxy,
+      const base::Closure& terminate_task);
 
   // Signal that the service process is stopped.
   void SignalStopped();
