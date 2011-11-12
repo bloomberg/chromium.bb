@@ -4,31 +4,8 @@
 <meta charset="utf-8">
 <title i18n-content="title"></title>
 <link rel="icon" href="../../app/theme/downloads_favicon.png">
+<link rel="stylesheet" href="old_webui.css">
 <style>
-body {
-  background-color: white;
-  color: black;
-  margin: 10px;
-}
-
-.header {
-  overflow: auto;
-  clear: both;
-}
-
-.header .logo {
-  float: left;
-}
-
-.header .form {
-  float: left;
-  margin-top: 22px;
-  -webkit-margin-start: 12px;
-}
-
-html[dir=rtl] .logo, html[dir=rtl] .form {
-  float: right;
-}
 
 #downloads-summary {
   margin-top: 12px;
@@ -175,16 +152,6 @@ html[dir=rtl] .progress {
   margin-left: 18px;
 }
 
-.page-navigation {
-  padding: 8px;
-  background-color: #ebeff9;
-  margin-right: 4px;
-}
-
-.footer {
-  height: 24px;
-}
-
 </style>
 <script src="chrome://resources/js/local_strings.js"></script>
 </head>
@@ -209,8 +176,6 @@ html[dir=rtl] .progress {
     </span>
   </div>
   <div id="downloads-display"></div>
-</div>
-<div class="footer">
 </div>
 <script src="chrome://downloads/downloads.js"></script>
 <script src="chrome://downloads/strings.js"></script>

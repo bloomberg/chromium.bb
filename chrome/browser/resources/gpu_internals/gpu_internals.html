@@ -6,7 +6,6 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 <head i18n-values="dir:textdirection;">
-<link rel="stylesheet" href="webui.css">
 <style>
 * {
   box-sizing: border-box;
@@ -37,8 +36,9 @@ tabbox tabpanels {
 }
 
 </style>
-<link rel="stylesheet" href="gpu_internals/info_view.css">
+<link rel="stylesheet" href="info_view.css">
 <link rel="stylesheet" href="chrome://resources/css/tabs.css">
+<link rel="stylesheet" href="chrome://resources/css/button.css">
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/cr/event_target.js"></script>
 <script src="chrome://resources/js/cr/ui.js"></script>
@@ -58,7 +58,7 @@ tabbox tabpanels {
       <tab>Profiling</tab>
     </tabs>
     <tabpanels>
-      <include src="gpu_internals/info_view.html">
+      <include src="info_view.html">
       <tabpanel id="profiling-view-link">
         <div>
           Profiling view has moved to <a

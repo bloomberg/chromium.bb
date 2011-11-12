@@ -1,0 +1,40 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ *
+ * This file contains CSS shared by history and downloads. NOTE: These pages are
+ * overdue for a revamp so it's more or less deprecated to use or edit this
+ * file, or copy its contents.
+ */
+
+body {
+  background-color: white;
+  color: black;
+  margin: 10px 10px 34px 10px;
+}
+
+.header {
+  clear: both;
+  overflow: auto;
+}
+
+.header .logo {
+  float: left;
+}
+
+html[dir='rtl'] .logo,
+html[dir='rtl'] .form {
+  float: right;
+}
+
+.header .form {
+  -webkit-margin-start: 12px;
+  float: left;
+  margin-top: 22px;
+}
+
+.page-navigation {
+  -webkit-margin-end: 4px;
+  background-color: #ebeff9;
+  padding: 8px;
+}

@@ -63,14 +63,20 @@ html[os='mac'] input[type='submit']:not(.custom-appearance):focus {
   outline-offset: -2px;
 }
 
-.link-button {
-  margin: 0;
-}
-
+/* TODO(jhawkins): Refactor button styling and remove !important here. This is
+ * currently necessary because individual page button element selectors have
+ * higher specificity.
+ */
 .link-button,
-.link-button:hover,
-.link-button:focus {
+.link-button:focus,
+.link-button:hover {
+  -webkit-box-shadow: none !important;
+  background: transparent none !important;
+  border: none !important;
   color: rgb(63, 110, 194);
+  cursor: pointer;
+  margin: 0;
+  text-decoration: underline;
 }
 
 .link-button:active {

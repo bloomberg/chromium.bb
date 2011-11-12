@@ -577,10 +577,10 @@ html[flashPluginSupportsClearSiteData] .clear-plugin-lso-data-disabled {
 
 
 /* Display a collection of sections as a table in order to display nicely
- * in multiple locales. This is a further refinement of the displaytable class
- * in webui.css.
+ * in multiple locales.
  */
 .displaytable {
+  display: table;
   width: 100%;
 }
 
