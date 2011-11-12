@@ -7,11 +7,10 @@
 #include "content/browser/geolocation/libgps_wrapper_linux.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/bind.h"
+
 using content::BrowserThread;
 using content::BrowserThreadImpl;
-
-struct gps_data_t {
-};
 
 namespace {
 class MockLibGps : public LibGps {
@@ -19,31 +18,36 @@ class MockLibGps : public LibGps {
   MockLibGps();
   ~MockLibGps();
 
-  virtual bool StartStreaming() {
-    ++start_streaming_calls_;
-    return start_streaming_ret_;
-  }
-  virtual bool DataWaiting() {
-    EXPECT_GT(start_streaming_calls_, 0);
-    ++data_waiting_calls_;
-    // Toggle the return value, so the poll loop will exit once per test step.
-    return (data_waiting_calls_ & 1) != 0;
-  }
   virtual bool GetPositionIfFixed(Geoposition* position) {
     CHECK(position);
-    EXPECT_GT(start_streaming_calls_, 0);
-    EXPECT_GT(data_waiting_calls_, 0);
     ++get_position_calls_;
     *position = get_position_;
     return get_position_ret_;
-
   }
-  int start_streaming_calls_;
-  bool start_streaming_ret_;
-  int data_waiting_calls_;
+
+  static int gps_open_stub(const char*, const char*, struct gps_data_t*) {
+    CHECK(g_instance_);
+    g_instance_->gps_open_calls_++;
+    return g_instance_->gps_open_ret_;
+  }
+
+  static int gps_close_stub(struct gps_data_t*) {
+    return 0;
+  }
+
+  static int gps_read_stub(struct gps_data_t*) {
+    CHECK(g_instance_);
+    g_instance_->gps_read_calls_++;
+    return g_instance_->gps_read_ret_;
+  }
+
   int get_position_calls_;
-  Geoposition get_position_;
   bool get_position_ret_;
+  int gps_open_calls_;
+  int gps_open_ret_;
+  int gps_read_calls_;
+  int gps_read_ret_;
+  Geoposition get_position_;
   static MockLibGps* g_instance_;
 };
 
@@ -61,7 +65,7 @@ class GeolocationGpsProviderLinuxTests : public testing::Test {
   ~GeolocationGpsProviderLinuxTests();
 
   static LibGps* NewMockLibGps() {
-    return new MockLibGps;
+    return new MockLibGps();
   }
   static LibGps* NoLibGpsFactory() {
     return NULL;
@@ -74,25 +78,6 @@ class GeolocationGpsProviderLinuxTests : public testing::Test {
   scoped_ptr<GpsLocationProviderLinux> provider_;
 };
 
-gps_data_t* gps_open_stub(const char*, const char*) {
-  // Need to return a non-NULL value here to indicate success, however we don't
-  // need (or want) a valid pointer as it should never be dereferenced.
-  return static_cast<gps_data_t*>(NULL) + 1;
-}
-int gps_close_stub(gps_data_t*) {
-  return 0;
-}
-int gps_poll_stub(gps_data_t*) {
-  return 0;
-}
-// v2.90+
-int gps_stream_stub(gps_data_t*, unsigned int, void*) {
-  return 0;
-}
-bool gps_waiting_stub(gps_data_t*) {
-  return 0;
-}
-
 void CheckValidPosition(const Geoposition& expected,
                         const Geoposition& actual) {
   EXPECT_TRUE(actual.IsValidFix());
@@ -104,17 +89,13 @@ void CheckValidPosition(const Geoposition& expected,
 MockLibGps* MockLibGps::g_instance_ = NULL;
 
 MockLibGps::MockLibGps()
-    : LibGps(new LibGpsLibraryWrapper(NULL,
-                                     gps_open_stub,
-                                     gps_close_stub,
-                                     gps_poll_stub,
-                                     gps_stream_stub,
-                                     gps_waiting_stub)),
-      start_streaming_calls_(0),
-      start_streaming_ret_(true),
-      data_waiting_calls_(0),
+    : LibGps(NULL, gps_open_stub, gps_close_stub, gps_read_stub),
       get_position_calls_(0),
-      get_position_ret_(true) {
+      get_position_ret_(true),
+      gps_open_calls_(0),
+      gps_open_ret_(0),
+      gps_read_calls_(0),
+      gps_read_ret_(0) {
   get_position_.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   EXPECT_FALSE(g_instance_);
   g_instance_ = this;
@@ -147,14 +128,16 @@ TEST_F(GeolocationGpsProviderLinuxTests, NoLibGpsInstalled) {
   EXPECT_EQ(Geoposition::ERROR_CODE_POSITION_UNAVAILABLE, position.error_code);
 }
 
+#if defined(OS_CHROMEOS)
+
 TEST_F(GeolocationGpsProviderLinuxTests, GetPosition) {
   ASSERT_TRUE(provider_.get());
   const bool ok = provider_->StartProvider(true);
   EXPECT_TRUE(ok);
   ASSERT_TRUE(MockLibGps::g_instance_);
-  EXPECT_EQ(0, MockLibGps::g_instance_->start_streaming_calls_);
-  EXPECT_EQ(0, MockLibGps::g_instance_->data_waiting_calls_);
   EXPECT_EQ(0, MockLibGps::g_instance_->get_position_calls_);
+  EXPECT_EQ(0, MockLibGps::g_instance_->gps_open_calls_);
+  EXPECT_EQ(0, MockLibGps::g_instance_->gps_read_calls_);
   Geoposition position;
   provider_->GetPosition(&position);
   EXPECT_TRUE(position.IsInitialized());
@@ -168,11 +151,10 @@ TEST_F(GeolocationGpsProviderLinuxTests, GetPosition) {
   MockLibGps::g_instance_->get_position_.timestamp =
       base::Time::FromDoubleT(200);
   EXPECT_TRUE(MockLibGps::g_instance_->get_position_.IsValidFix());
-
   MessageLoop::current()->Run();
-  EXPECT_GT(MockLibGps::g_instance_->start_streaming_calls_, 0);
-  EXPECT_GT(MockLibGps::g_instance_->data_waiting_calls_, 0);
   EXPECT_EQ(1, MockLibGps::g_instance_->get_position_calls_);
+  EXPECT_EQ(1, MockLibGps::g_instance_->gps_open_calls_);
+  EXPECT_EQ(1, MockLibGps::g_instance_->gps_read_calls_);
   provider_->GetPosition(&position);
   CheckValidPosition(MockLibGps::g_instance_->get_position_, position);
 
@@ -181,12 +163,52 @@ TEST_F(GeolocationGpsProviderLinuxTests, GetPosition) {
   MessageLoop::current()->Run();
   provider_->GetPosition(&position);
   EXPECT_EQ(2, MockLibGps::g_instance_->get_position_calls_);
+  EXPECT_EQ(1, MockLibGps::g_instance_->gps_open_calls_);
+  EXPECT_EQ(2, MockLibGps::g_instance_->gps_read_calls_);
   CheckValidPosition(MockLibGps::g_instance_->get_position_, position);
 }
 
-// TODO(joth): Add a test for LibGps::Start() returning false (i.e. gpsd not
-// running).  Need to work around the 10s reconnect delay (either by injecting
-// a shorter retry interval, or adapt MessageLoop / Time::Now to be more test
-// friendly).
+class EnableGpsOpenTask : public Task {
+ public:
+  virtual void Run() {
+    CHECK(MockLibGps::g_instance_);
+    MockLibGps::g_instance_->gps_open_ret_ = 0;
+  }
+};
+
+TEST_F(GeolocationGpsProviderLinuxTests, LibGpsReconnect) {
+  // Setup gpsd reconnect interval to be 1000ms to speed up test.
+  provider_->SetGpsdReconnectIntervalMillis(1000);
+  provider_->SetPollPeriodMovingMillis(200);
+  const bool ok = provider_->StartProvider(true);
+  EXPECT_TRUE(ok);
+  ASSERT_TRUE(MockLibGps::g_instance_);
+  // Let gps_open() fails, and so will LibGps::Start().
+  // Reconnect will happen in 1000ms.
+  MockLibGps::g_instance_->gps_open_ret_ = 1;
+  Geoposition position;
+  MockLibGps::g_instance_->get_position_.error_code =
+      Geoposition::ERROR_CODE_NONE;
+  MockLibGps::g_instance_->get_position_.latitude = 4.5;
+  MockLibGps::g_instance_->get_position_.longitude = -34.1;
+  MockLibGps::g_instance_->get_position_.accuracy = 345;
+  MockLibGps::g_instance_->get_position_.timestamp =
+      base::Time::FromDoubleT(200);
+  EXPECT_TRUE(MockLibGps::g_instance_->get_position_.IsValidFix());
+  // This task makes gps_open() and LibGps::Start() to succeed after
+  // 1500ms.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, new EnableGpsOpenTask(), 1500);
+  MessageLoop::current()->Run();
+  provider_->GetPosition(&position);
+  EXPECT_TRUE(position.IsInitialized());
+  EXPECT_TRUE(position.IsValidFix());
+  // 3 gps_open() calls are expected (2 failures and 1 success)
+  EXPECT_EQ(1, MockLibGps::g_instance_->get_position_calls_);
+  EXPECT_EQ(3, MockLibGps::g_instance_->gps_open_calls_);
+  EXPECT_EQ(1, MockLibGps::g_instance_->gps_read_calls_);
+}
+
+#endif  // #if defined(OS_CHROMEOS)
 
 }  // namespace

@@ -3,105 +3,53 @@
 // found in the LICENSE file.
 
 // Defines a wrapper around the C libgps API (gps.h). Similar to the libgpsmm.h
-// API provided by that package, but adds:
-// - shared object dynamic loading
-// - support for (and abstraction from) different libgps.so versions
-// - configurable for testing
-// - more convenient error handling.
+// API provided by that package.
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_LIBGPS_WRAPPER_LINUX_H_
 #define CONTENT_BROWSER_GEOLOCATION_LIBGPS_WRAPPER_LINUX_H_
 #pragma once
 
-#include <string>
-
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
 #include "content/common/content_export.h"
 
+struct gps_data_t;
 struct Geoposition;
-class LibGpsLibraryWrapper;
 
 class CONTENT_EXPORT LibGps {
  public:
   virtual ~LibGps();
-  // Attempts to dynamically load the libgps.so library, and creates and
-  // appropriate LibGps instance for the version loaded. Returns NULL on
+  // Attempts to dynamically load the libgps.so library and returns NULL on
   // failure.
   static LibGps* New();
 
   bool Start();
   void Stop();
-  bool Poll();
-  bool GetPosition(Geoposition* position);
+  bool Read(Geoposition* position);
 
  protected:
-  // Takes ownership of |dl_wrapper|.
-  explicit LibGps(LibGpsLibraryWrapper* dl_wrapper);
+  typedef int (*gps_open_fn)(const char*, const char*, struct gps_data_t*);
+  typedef int (*gps_close_fn)(struct gps_data_t*);
+  typedef int (*gps_read_fn)(struct gps_data_t*);
 
-  LibGpsLibraryWrapper& library() {
-    return *library_;
-  }
-  // Called be start Start after successful |gps_open| to setup streaming.
-  virtual bool StartStreaming() = 0;
-  virtual bool DataWaiting() = 0;
+  explicit LibGps(void* dl_handle,
+                  gps_open_fn gps_open,
+                  gps_close_fn gps_close,
+                  gps_read_fn gps_read);
+
   // Returns false if there is not fix available.
-  virtual bool GetPositionIfFixed(Geoposition* position) = 0;
-
- private:
-  // Factory functions to create instances of LibGps using the corresponding
-  // libgps API versions (v2.38 => libgps.so.17, v2.94 => libgps.so.19).
-  // See LibGps::New() for the public API to this.
-  // Takes ownership of |dl_wrapper|.
-  static LibGps* NewV294(LibGpsLibraryWrapper* dl_wrapper);
-
-  scoped_ptr<LibGpsLibraryWrapper> library_;
-  std::string last_error_;
-
-  DISALLOW_COPY_AND_ASSIGN(LibGps);
-};
-
-struct gps_data_t;
-
-// Wraps the low-level shared object, binding C++ member functions onto the
-// underlying C functions obtained from the library.
-class CONTENT_EXPORT LibGpsLibraryWrapper {
- public:
-  typedef gps_data_t* (*gps_open_fn)(const char*, const char*);
-  typedef int (*gps_close_fn)(gps_data_t*);
-  typedef int (*gps_poll_fn)(gps_data_t*);
-  // v2.90+
-  typedef int (*gps_stream_fn)(gps_data_t*, unsigned int, void*);
-  typedef bool (*gps_waiting_fn)(gps_data_t*);
-
-  LibGpsLibraryWrapper(void* dl_handle,
-                       gps_open_fn gps_open,
-                       gps_close_fn gps_close,
-                       gps_poll_fn gps_poll,
-                       gps_stream_fn gps_stream,
-                       gps_waiting_fn gps_waiting);
-  ~LibGpsLibraryWrapper();
-
-  // Analogs of gps_xxx methods in gps.h
-  bool open(const char* host, const char* port);
-  void close();
-  int poll();
-  int stream(int flags);
-  bool waiting();
-  const gps_data_t& data() const;
-  bool is_open() const;
+  virtual bool GetPositionIfFixed(Geoposition* position);
 
  private:
   void* dl_handle_;
   gps_open_fn gps_open_;
   gps_close_fn gps_close_;
-  gps_poll_fn gps_poll_;
-  gps_stream_fn gps_stream_;
-  gps_waiting_fn gps_waiting_;
+  gps_read_fn gps_read_;
 
-  gps_data_t* gps_data_;
+  scoped_ptr<gps_data_t> gps_data_;
+  bool is_open_;
 
-  DISALLOW_COPY_AND_ASSIGN(LibGpsLibraryWrapper);
+  DISALLOW_COPY_AND_ASSIGN(LibGps);
 };
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_LIBGPS_WRAPPER_LINUX_H_

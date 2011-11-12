@@ -1,19 +1,20 @@
 Name: gpsd
-URL: http://git.berlios.de/cgi-bin/gitweb.cgi?p=gpsd;a=summary
-InfoURL: http://gpsd.berlios.de/
-Version: 2.94
+URL: http://download-mirror.savannah.gnu.org/releases/gpsd/
+InfoURL: http://catb.org/gpsd/
+Version: 3.1
 License: BSD
 
 Description:
-versions 2.94
+versions 3.1
 gpsd is a service daemon that monitors one or more GPSes or AIS receivers
 attached to a host computer through serial or USB ports, making all data on the
 location/course/velocity of the sensors available to be queried on TCP port
-2947 of the host computer. 
+2947 of the host computer. From version 3.1 on, shared memory export is also
+availble for gps data communication between gpsd and clients.
 
 Local Modifications:
 No modifications.
-Only the gps.h file is imported, as the client library (libgps.so) is
+Only the gps.h file is imported, as the client library (libgps.so.20) is
 dynamically loaded (where present).
 
 Security Critical: yes

@@ -33,6 +33,16 @@ class CONTENT_EXPORT GpsLocationProviderLinux : public LocationProviderBase {
   explicit GpsLocationProviderLinux(LibGpsFactory libgps_factory);
   virtual ~GpsLocationProviderLinux();
 
+  void SetGpsdReconnectIntervalMillis(int value) {
+    gpsd_reconnect_interval_millis_ = value;
+  }
+  void SetPollPeriodMovingMillis(int value) {
+    poll_period_moving_millis_ = value;
+  }
+  void SetPollPeriodStationaryMillis(int value) {
+    poll_period_stationary_millis_ = value;
+  }
+
   // LocationProvider
   virtual bool StartProvider(bool high_accuracy);
   virtual void StopProvider();
@@ -46,6 +56,10 @@ class CONTENT_EXPORT GpsLocationProviderLinux : public LocationProviderBase {
 
   // Will schedule a poll; i.e. enqueue DoGpsPollTask deferred task.
   void ScheduleNextGpsPoll(int interval);
+
+  int gpsd_reconnect_interval_millis_;
+  int poll_period_moving_millis_;
+  int poll_period_stationary_millis_;
 
   const LibGpsFactory libgps_factory_;
   scoped_ptr<LibGps> gps_;

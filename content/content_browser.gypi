@@ -190,7 +190,6 @@
     'browser/geolocation/geolocation_provider.h',
     'browser/geolocation/gps_location_provider_linux.cc',
     'browser/geolocation/gps_location_provider_linux.h',
-    'browser/geolocation/libgps_2_94_wrapper_linux.cc',
     'browser/geolocation/libgps_wrapper_linux.cc',
     'browser/geolocation/libgps_wrapper_linux.h',
     'browser/geolocation/location_arbitrator.cc',

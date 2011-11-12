@@ -4,121 +4,119 @@
 
 #include "content/browser/geolocation/libgps_wrapper_linux.h"
 
+#include <math.h>
 #include <dlfcn.h>
 #include <errno.h>
 
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "content/common/geoposition.h"
+#include "third_party/gpsd/release-3.1/gps.h"
+
+COMPILE_ASSERT(GPSD_API_MAJOR_VERSION == 5, GPSD_API_version_is_not_5);
 
 namespace {
-// Attempts to load dynamic library named |lib| and initialize the required
-// function pointers according to |mode|. Returns ownership a new instance
-// of the library loader class, or NULL on failure.
-// TODO(joth): This is a hang-over from when we dynamically two different
-// versions of libgps and chose between them. Now we could remove at least one
-// layer of wrapper class and directly #include gps.h in this cc file.
-// See http://crbug.com/98132 and http://crbug.com/99177
-LibGpsLibraryWrapper* TryToOpen(const char* lib) {
-  void* dl_handle = dlopen(lib, RTLD_LAZY);
+const char kLibGpsName[] = "libgps.so.20";
+}  // namespace
+
+LibGps::LibGps(void* dl_handle,
+               gps_open_fn gps_open,
+               gps_close_fn gps_close,
+               gps_read_fn gps_read)
+    : dl_handle_(dl_handle),
+      gps_open_(gps_open),
+      gps_close_(gps_close),
+      gps_read_(gps_read),
+      gps_data_(new gps_data_t),
+      is_open_(false) {
+  DCHECK(gps_open_);
+  DCHECK(gps_close_);
+  DCHECK(gps_read_);
+}
+
+LibGps::~LibGps() {
+  Stop();
+  if (dl_handle_) {
+    const int err = dlclose(dl_handle_);
+    DCHECK_EQ(0, err) << "Error closing dl handle: " << err;
+  }
+}
+
+LibGps* LibGps::New() {
+  void* dl_handle = dlopen(kLibGpsName, RTLD_LAZY);
   if (!dl_handle) {
-    VLOG(1) << "Could not open " << lib << ": " << dlerror();
+    DLOG(WARNING) << "Could not open " << kLibGpsName << ": " << dlerror();
     return NULL;
   }
-  VLOG(1) << "Loaded " << lib;
+
+  DLOG(INFO) << "Loaded " << kLibGpsName;
 
   #define DECLARE_FN_POINTER(function)                                   \
-    LibGpsLibraryWrapper::function##_fn function;                        \
-    function = reinterpret_cast<LibGpsLibraryWrapper::function##_fn>(    \
+    function##_fn function = reinterpret_cast<function##_fn>(            \
         dlsym(dl_handle, #function));                                    \
     if (!function) {                                                     \
-      LOG(WARNING) << "libgps " << #function << " error: " << dlerror(); \
+      DLOG(WARNING) << "libgps " << #function << " error: " << dlerror(); \
       dlclose(dl_handle);                                                \
       return NULL;                                                       \
     }
   DECLARE_FN_POINTER(gps_open);
   DECLARE_FN_POINTER(gps_close);
-  DECLARE_FN_POINTER(gps_poll);
-  DECLARE_FN_POINTER(gps_stream);
-  DECLARE_FN_POINTER(gps_waiting);
+  DECLARE_FN_POINTER(gps_read);
+  // We don't use gps_shm_read() directly, just to make sure that libgps has
+  // the shared memory support.
+  typedef int (*gps_shm_read_fn)(struct gps_data_t*);
+  DECLARE_FN_POINTER(gps_shm_read);
   #undef DECLARE_FN_POINTER
 
-  return new LibGpsLibraryWrapper(dl_handle,
-                                  gps_open,
-                                  gps_close,
-                                  gps_poll,
-                                  gps_stream,
-                                  gps_waiting);
-}
-} // namespace
-
-LibGps::LibGps(LibGpsLibraryWrapper* dl_wrapper)
-    : library_(dl_wrapper) {
-  DCHECK(dl_wrapper != NULL);
-}
-
-LibGps::~LibGps() {
-}
-
-LibGps* LibGps::New() {
-  LibGpsLibraryWrapper* wrapper;
-  wrapper = TryToOpen("libgps.so.19");
-  if (wrapper)
-    return NewV294(wrapper);
-  wrapper = TryToOpen("libgps.so");
-  if (wrapper)
-    return NewV294(wrapper);
-  return NULL;
+  return new LibGps(dl_handle, gps_open, gps_close, gps_read);
 }
 
 bool LibGps::Start() {
-  if (library().is_open())
+  if (is_open_)
     return true;
+
+#if defined(OS_CHROMEOS)
   errno = 0;
-  static int fail_count = 0;
-  if (!library().open(NULL, NULL)) {
+  if (gps_open_(GPSD_SHARED_MEMORY, 0, gps_data_.get()) != 0) {
     // See gps.h NL_NOxxx for definition of gps_open() error numbers.
-    LOG_IF(WARNING, 0 == fail_count++) << "gps_open() failed: " << errno;
+    DLOG(WARNING) << "gps_open() failed " << errno;
     return false;
   }
-  fail_count = 0;
-  if (!StartStreaming()) {
-    VLOG(1) << "StartStreaming failed";
-    library().close();
-    return false;
-  }
+#else  // drop the support for desktop linux for now
+  DLOG(WARNING) << "LibGps is only supported on ChromeOS";
+  return false;
+#endif
+
+  is_open_ = true;
   return true;
 }
-
 void LibGps::Stop() {
-  library().close();
+  if (is_open_)
+    gps_close_(gps_data_.get());
+  is_open_ = false;
 }
 
-bool LibGps::Poll() {
-  last_error_ = "no data received from gpsd";
-  while (DataWaiting()) {
-    int error = library().poll();
-    if (error) {
-      last_error_ = base::StringPrintf("poll() returned %d", error);
-      Stop();
-      return false;
-    }
-    last_error_.clear();
-  }
-  return last_error_.empty();
-}
-
-bool LibGps::GetPosition(Geoposition* position) {
+bool LibGps::Read(Geoposition* position) {
   DCHECK(position);
   position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
-  if (!library().is_open()) {
-    position->error_message = "No gpsd connection";
-    return false;
+  if (!is_open_) {
+      DLOG(WARNING) << "No gpsd connection";
+      position->error_message = "No gpsd connection";
+      return false;
   }
+
+  if (gps_read_(gps_data_.get()) < 0) {
+      DLOG(WARNING) << "gps_read() fails";
+      position->error_message = "gps_read() fails";
+      return false;
+  }
+
   if (!GetPositionIfFixed(position)) {
-    position->error_message = last_error_;
-    return false;
+      DLOG(WARNING) << "No fixed position";
+      position->error_message = "No fixed position";
+      return false;
   }
+
   position->error_code = Geoposition::ERROR_CODE_NONE;
   position->timestamp = base::Time::Now();
   if (!position->IsValidFix()) {
@@ -135,67 +133,42 @@ bool LibGps::GetPosition(Geoposition* position) {
   return true;
 }
 
-LibGpsLibraryWrapper::LibGpsLibraryWrapper(void* dl_handle,
-                                           gps_open_fn gps_open,
-                                           gps_close_fn gps_close,
-                                           gps_poll_fn gps_poll,
-                                           gps_stream_fn gps_stream,
-                                           gps_waiting_fn gps_waiting)
-    : dl_handle_(dl_handle),
-      gps_open_(gps_open),
-      gps_close_(gps_close),
-      gps_poll_(gps_poll),
-      gps_stream_(gps_stream),
-      gps_waiting_(gps_waiting),
-      gps_data_(NULL) {
-}
-
-LibGpsLibraryWrapper::~LibGpsLibraryWrapper() {
-  close();
-  if (dl_handle_) {
-    const int err = dlclose(dl_handle_);
-    CHECK_EQ(0, err) << "Error closing dl handle: " << err;
+bool LibGps::GetPositionIfFixed(Geoposition* position) {
+  DCHECK(position);
+  if (gps_data_->status == STATUS_NO_FIX) {
+    DVLOG(2) << "Status_NO_FIX";
+    return false;
   }
-}
 
-bool LibGpsLibraryWrapper::open(const char* host, const char* port) {
-  DCHECK(!gps_data_) << "libgps already opened";
-  DCHECK(gps_open_);
-  gps_data_ = gps_open_(host, port);
-  return is_open();
-}
-
-void LibGpsLibraryWrapper::close() {
-  if (is_open()) {
-    DCHECK(gps_close_);
-    gps_close_(gps_data_);
-    gps_data_ = NULL;
+  if (isnan(gps_data_->fix.latitude) || isnan(gps_data_->fix.longitude)) {
+    DVLOG(2) << "No valid lat/lon value";
+    return false;
   }
-}
 
-int LibGpsLibraryWrapper::poll() {
-  DCHECK(is_open());
-  DCHECK(gps_poll_);
-  return gps_poll_(gps_data_);
-}
+  position->latitude = gps_data_->fix.latitude;
+  position->longitude = gps_data_->fix.longitude;
 
-int LibGpsLibraryWrapper::stream(int flags) {
-  DCHECK(is_open());
-  DCHECK(gps_stream_);
-  return gps_stream_(gps_data_, flags, NULL);
-}
+  if (!isnan(gps_data_->fix.epx) && !isnan(gps_data_->fix.epy)) {
+    position->accuracy = std::max(gps_data_->fix.epx, gps_data_->fix.epy);
+  } else if (isnan(gps_data_->fix.epx) && !isnan(gps_data_->fix.epy)) {
+    position->accuracy = gps_data_->fix.epy;
+  } else if (!isnan(gps_data_->fix.epx) && isnan(gps_data_->fix.epy)) {
+    position->accuracy = gps_data_->fix.epx;
+  } else {
+    // TODO(joth): Fixme. This is a workaround for http://crbug.com/99326
+    DVLOG(2) << "libgps reported accuracy NaN, forcing to zero";
+    position->accuracy = 0;
+  }
 
-bool LibGpsLibraryWrapper::waiting() {
-  DCHECK(is_open());
-  DCHECK(gps_waiting_);
-  return gps_waiting_(gps_data_);
-}
+  if (gps_data_->fix.mode == MODE_3D && !isnan(gps_data_->fix.altitude)) {
+    position->altitude = gps_data_->fix.altitude;
+    if (!isnan(gps_data_->fix.epv))
+      position->altitude_accuracy = gps_data_->fix.epv;
+  }
 
-const gps_data_t& LibGpsLibraryWrapper::data() const {
-  DCHECK(is_open());
-  return *gps_data_;
-}
-
-bool LibGpsLibraryWrapper::is_open() const {
-  return gps_data_ != NULL;
+  if (!isnan(gps_data_->fix.track))
+    position->heading = gps_data_->fix.track;
+  if (!isnan(gps_data_->fix.speed))
+    position->speed = gps_data_->fix.speed;
+  return true;
 }
