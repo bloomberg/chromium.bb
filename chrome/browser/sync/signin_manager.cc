@@ -80,12 +80,6 @@ void SigninManager::SetUsername(const std::string& username) {
 void SigninManager::PrepareForSignin() {
   DCHECK(!browser_sync::IsUsingOAuth());
   DCHECK(username_.empty());
-#if !defined(OS_CHROMEOS)
-  // The Sign out should clear the token service credentials.
-  // Note: In CHROMEOS we might have valid credentials but still need to
-  // set up 2-factor authentication.
-  DCHECK(!profile_->GetTokenService()->AreCredentialsValid());
-#endif
 }
 
 // static
@@ -160,18 +154,24 @@ void SigninManager::ProvideSecondFactorAccessCode(
                                   GaiaAuthFetcher::HostedAccountsNotAllowed);
 }
 
-void SigninManager::SignOut() {
+void SigninManager::ClearInMemoryData() {
   if (!profile_)
     return;
 
   CleanupNotificationRegistration();
-
   client_login_.reset();
   last_result_ = ClientLoginResult();
   username_.clear();
   oauth_username_.clear();
   password_.clear();
   had_two_factor_error_ = false;
+}
+
+void SigninManager::SignOut() {
+  if (!profile_)
+    return;
+
+  ClearInMemoryData();
   profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
   profile_->GetPrefs()->ClearPref(prefs::kSyncUsingOAuth);
   profile_->GetPrefs()->ScheduleSavePersistentPrefs();
@@ -251,7 +251,7 @@ void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
     return;
   }
 
-  SignOut();
+  ClearInMemoryData();
 }
 
 void SigninManager::OnOAuthGetAccessTokenSuccess(const std::string& token,

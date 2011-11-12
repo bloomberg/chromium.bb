@@ -81,6 +81,11 @@ class SigninManager : public GaiaAuthConsumer,
   // associated with the user, and canceling all auth in progress.
   void SignOut();
 
+  // Called when a new request to re-authenticate a user is in progress.
+  // Will clear in memory data but leaves the db as such so when the browser
+  // restarts we can use the old token(which might throw a password error).
+  void ClearInMemoryData();
+
   // GaiaAuthConsumer
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
   virtual void OnClientLoginFailure(const GoogleServiceAuthError& error)
