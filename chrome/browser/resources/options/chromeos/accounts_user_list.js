@@ -191,9 +191,8 @@ cr.define('options.accounts', function() {
 
       if (!this.user.owner) {
         var removeButton = this.ownerDocument.createElement('button');
-        removeButton.classList.add('raw-button');
-        removeButton.classList.add('remove-user-button');
-        removeButton.classList.add('custom-appearance');
+        removeButton.className =
+            'raw-button remove-user-button custom-appearance';
         this.appendChild(removeButton);
       }
     },

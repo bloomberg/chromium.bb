@@ -122,7 +122,7 @@ cr.define('options.search_engines', function() {
       // is implemented. When this is removed, remove the extra div above.
       if (engine['canBeDefault']) {
         var makeDefaultButtonEl = this.ownerDocument.createElement('button');
-        makeDefaultButtonEl.className = "raw-button";
+        makeDefaultButtonEl.className = 'raw-button custom-appearance';
         makeDefaultButtonEl.textContent =
             templateData.makeDefaultSearchEngineButton;
         makeDefaultButtonEl.onclick = function(e) {

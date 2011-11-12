@@ -46,8 +46,8 @@ cr.define('options', function() {
       this.appendChild(this.contentElement_);
 
       this.closeButtonElement_ = this.ownerDocument.createElement('button');
-      this.closeButtonElement_.classList.add('raw-button');
-      this.closeButtonElement_.classList.add('close-button');
+      this.closeButtonElement_.className =
+          'raw-button close-button custom-appearance';
       this.closeButtonElement_.addEventListener('mousedown',
                                                 this.handleMouseDownUpOnClose_);
       this.closeButtonElement_.addEventListener('mouseup',
