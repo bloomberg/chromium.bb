@@ -22,7 +22,6 @@
 #include "content/browser/worker_host/worker_service.h"
 #include "content/browser/worker_host/worker_service_observer.h"
 #include "content/common/devtools_messages.h"
-#include "content/common/worker_messages.h"
 #include "grit/generated_resources.h"
 #include "grit/workers_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -153,7 +152,8 @@ static void TerminateWorker(int worker_process_id, int worker_route_id) {
   for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     if (iter->id() == worker_process_id) {
-      (*iter)->Send(new WorkerMsg_TerminateWorkerContext(worker_route_id));
+      WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
+      worker->TerminateWorker(worker_route_id);
       return;
     }
   }

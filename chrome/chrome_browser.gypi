@@ -370,8 +370,6 @@
         'browser/chrome_plugin_service_filter.h',
         'browser/chrome_quota_permission_context.cc',
         'browser/chrome_quota_permission_context.h',
-        'browser/chrome_worker_message_filter.cc',
-        'browser/chrome_worker_message_filter.h',
         'browser/chromeos/accessibility_util.cc',
         'browser/chromeos/accessibility_util.h',
         'browser/chromeos/audio_handler.cc',

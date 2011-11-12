@@ -131,6 +131,9 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   void DocumentDetached(WorkerMessageFilter* filter,
                         unsigned long long document_id);
 
+  // Terminates the given worker, i.e. based on a UI action.
+  void TerminateWorker(int worker_route_id);
+
   typedef std::list<WorkerInstance> Instances;
   const Instances& instances() const { return instances_; }
 

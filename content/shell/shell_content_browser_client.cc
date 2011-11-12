@@ -64,10 +64,6 @@ void ShellContentBrowserClient::PluginProcessHostCreated(
     PluginProcessHost* host) {
 }
 
-void ShellContentBrowserClient::WorkerProcessHostCreated(
-    WorkerProcessHost* host) {
-}
-
 WebUIFactory* ShellContentBrowserClient::GetWebUIFactory() {
   // Return an empty factory so callsites don't have to check for NULL.
   return EmptyWebUIFactory::GetInstance();
@@ -159,6 +155,23 @@ bool ShellContentBrowserClient::AllowSetCookie(
 
 bool ShellContentBrowserClient::AllowSaveLocalState(
     const content::ResourceContext& context) {
+  return true;
+}
+
+bool ShellContentBrowserClient::AllowWorkerDatabase(
+    int worker_route_id,
+    const GURL& url,
+    const string16& name,
+    const string16& display_name,
+    unsigned long estimated_size,
+    WorkerProcessHost* worker_process_host) {
+  return true;
+}
+
+bool ShellContentBrowserClient::AllowWorkerFileSystem(
+    int worker_route_id,
+    const GURL& url,
+    WorkerProcessHost* worker_process_host) {
   return true;
 }
 

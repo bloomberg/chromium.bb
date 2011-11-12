@@ -234,8 +234,6 @@ bool WorkerProcessHost::Init(int render_process_id) {
             base::PLATFORM_FILE_WRITE);
   }
 
-  // Call the embedder first so that their IPC filters have priority.
-  content::GetContentClient()->browser()->WorkerProcessHostCreated(this);
   CreateMessageFilters(render_process_id);
 
   return true;
@@ -373,13 +371,15 @@ void WorkerProcessHost::OnAllowDatabase(int worker_route_id,
                                         const string16& display_name,
                                         unsigned long estimated_size,
                                         bool* result) {
-  *result = true;
+  *result = content::GetContentClient()->browser()->AllowWorkerDatabase(
+      worker_route_id, url, name, display_name, estimated_size, this);
 }
 
 void WorkerProcessHost::OnAllowFileSystem(int worker_route_id,
                                           const GURL& url,
                                           bool* result) {
-  *result = true;
+  *result = content::GetContentClient()->browser()->AllowWorkerFileSystem(
+      worker_route_id, url, this);
 }
 
 void WorkerProcessHost::RelayMessage(
@@ -512,6 +512,10 @@ void WorkerProcessHost::DocumentDetached(WorkerMessageFilter* filter,
       ++i;
     }
   }
+}
+
+void WorkerProcessHost::TerminateWorker(int worker_route_id) {
+  Send(new WorkerMsg_TerminateWorkerContext(worker_route_id));
 }
 
 WorkerProcessHost::WorkerInstance::WorkerInstance(

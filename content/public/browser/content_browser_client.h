@@ -119,11 +119,6 @@ class ContentBrowserClient {
   // embedder's IPC filters have priority.
   virtual void PluginProcessHostCreated(PluginProcessHost* host) = 0;
 
-  // Notifies that a WorkerProcessHost has been created. This is called
-  // before the content layer adds its own message filters, so that the
-  // embedder's IPC filters have priority.
-  virtual void WorkerProcessHostCreated(WorkerProcessHost* host) = 0;
-
   // Gets the WebUIFactory which will be responsible for generating WebUIs.
   virtual WebUIFactory* GetWebUIFactory() = 0;
 
@@ -205,6 +200,24 @@ class ContentBrowserClient {
   // This is called on the IO thread.
   virtual bool AllowSaveLocalState(
       const content::ResourceContext& context) = 0;
+
+  // Allow the embedder to control if access to web database by a worker is
+  // allowed.
+  // This is called on the IO thread.
+  virtual bool AllowWorkerDatabase(int worker_route_id,
+                                   const GURL& url,
+                                   const string16& name,
+                                   const string16& display_name,
+                                   unsigned long estimated_size,
+                                   WorkerProcessHost* worker_process_host) = 0;
+
+  // Allow the embedder to control if access to file system by a worker is
+  // allowed.
+  // This is called on the IO thread.
+  virtual bool AllowWorkerFileSystem(
+      int worker_route_id,
+      const GURL& url,
+      WorkerProcessHost* worker_process_host) = 0;
 
   // Allows the embedder to override the request context based on the URL for
   // certain operations, like cookie access. Returns NULL to indicate the

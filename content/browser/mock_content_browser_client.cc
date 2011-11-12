@@ -50,10 +50,6 @@ void MockContentBrowserClient::PluginProcessHostCreated(
     PluginProcessHost* host) {
 }
 
-void MockContentBrowserClient::WorkerProcessHostCreated(
-    WorkerProcessHost* host) {
-}
-
 WebUIFactory* MockContentBrowserClient::GetWebUIFactory() {
   // Return an empty factory so callsites don't have to check for NULL.
   return EmptyWebUIFactory::GetInstance();
@@ -144,6 +140,23 @@ bool MockContentBrowserClient::AllowSetCookie(
 
 bool MockContentBrowserClient::AllowSaveLocalState(
     const content::ResourceContext& context) {
+  return true;
+}
+
+bool MockContentBrowserClient::AllowWorkerDatabase(
+    int worker_route_id,
+    const GURL& url,
+    const string16& name,
+    const string16& display_name,
+    unsigned long estimated_size,
+    WorkerProcessHost* worker_process_host) {
+  return true;
+}
+
+bool MockContentBrowserClient::AllowWorkerFileSystem(
+    int worker_route_id,
+    const GURL& url,
+    WorkerProcessHost* worker_process_host) {
   return true;
 }
 

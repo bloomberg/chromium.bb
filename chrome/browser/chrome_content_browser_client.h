@@ -26,7 +26,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void BrowserRenderProcessHostCreated(
       BrowserRenderProcessHost* host) OVERRIDE;
   virtual void PluginProcessHostCreated(PluginProcessHost* host) OVERRIDE;
-  virtual void WorkerProcessHostCreated(WorkerProcessHost* host) OVERRIDE;
   virtual content::WebUIFactory* GetWebUIFactory() OVERRIDE;
   virtual bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
                                        const GURL& effective_url) OVERRIDE;
@@ -64,6 +63,17 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                               net::CookieOptions* options) OVERRIDE;
   virtual bool AllowSaveLocalState(
       const content::ResourceContext& context) OVERRIDE;
+  virtual bool AllowWorkerDatabase(
+      int worker_route_id,
+      const GURL& url,
+      const string16& name,
+      const string16& display_name,
+      unsigned long estimated_size,
+      WorkerProcessHost* worker_process_host) OVERRIDE;
+  virtual bool AllowWorkerFileSystem(
+      int worker_route_id,
+      const GURL& url,
+      WorkerProcessHost* worker_process_host) OVERRIDE;
   virtual net::URLRequestContext* OverrideRequestContextForURL(
       const GURL& url, const content::ResourceContext& context) OVERRIDE;
   virtual QuotaPermissionContext* CreateQuotaPermissionContext() OVERRIDE;
