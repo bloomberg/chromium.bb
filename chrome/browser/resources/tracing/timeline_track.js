@@ -93,6 +93,22 @@ cr.define('tracing', function() {
       this.updateChildTracks_();
     },
 
+    /**
+     * @return {string} A human-readable name for the track.
+     */
+    get heading() {
+      if (!this.thread_)
+        return '';
+      var tname = this.thread_.name || this.thread_.tid;
+      return this.thread_.parent.pid + ': ' +
+          tname + ':';
+    },
+
+    set headingWidth(width) {
+      for (var i = 0; i < this.tracks_.length; i++)
+        this.tracks_[i].headingWidth = width;
+    },
+
     set viewport(v) {
       this.viewport_ = v;
       for (var i = 0; i < this.tracks_.length; i++)
@@ -132,9 +148,7 @@ cr.define('tracing', function() {
           addTrack(this, this.thread_.subRows[srI]);
         }
         if (this.tracks_.length > 0) {
-          var tname = this.thread_.name || this.thread_.tid;
-          this.tracks_[0].heading = this.thread_.parent.pid + ': ' +
-              tname + ':';
+          this.tracks_[0].heading = this.heading;
           this.tracks_[0].tooltip = 'pid: ' + this.thread_.parent.pid +
               ', tid: ' + this.thread_.tid +
               (this.thread_.name ? ', name: ' + this.thread_.name : '');
@@ -210,6 +224,14 @@ cr.define('tracing', function() {
       this.canvasContainer_.appendChild(this.canvas_);
 
       this.ctx_ = this.canvas_.getContext('2d');
+    },
+
+    set headingWidth(width) {
+      this.headingDiv_.style.width = width;
+    },
+
+    get heading() {
+      return this.headingDiv_.textContent;
     },
 
     set heading(text) {
@@ -335,21 +357,13 @@ cr.define('tracing', function() {
           if (slice.didNotFinish) {
             title += ' (Did Not Finish)';
           }
-          function labelWidth() {
-            return quickMeasureText(ctx, title) + 2;
+          var labelWidth = quickMeasureText(ctx, title) + 2;
+          var labelWidthWorld = pixWidth * labelWidth;
+
+          if (labelWidthWorld < slice.duration) {
+            var cX = vp.xWorldToView(slice.start + 0.5 * slice.duration);
+            ctx.fillText(title, cX, 2.5, labelWidthWorld);
           }
-          function labelWidthWorld() {
-            return pixWidth * labelWidth();
-          }
-          var elided = false;
-          while (labelWidthWorld() > slice.duration) {
-            title = title.substring(0, title.length * 0.75);
-            elided = true;
-          }
-          if (elided && title.length > 3)
-            title = title.substring(0, title.length - 3) + '...';
-          var cX = vp.xWorldToView(slice.start + 0.5 * slice.duration);
-          ctx.fillText(title, cX, 2.5, labelWidthWorld());
         }
       }
     },
@@ -443,7 +457,7 @@ cr.define('tracing', function() {
       return index != undefined ? this.slices_[index] : undefined;
     },
 
-   /**
+    /**
      * Return the previous slice, if any, before the given slice.
      * @param {slice} A slice.
      * @return {slice} The previous slice, or undefined.
@@ -455,7 +469,7 @@ cr.define('tracing', function() {
       else if ((index != undefined) && (index > 0))
         index--;
       return index != undefined ? this.slices_[index] : undefined;
-    },
+    }
 
   };
 

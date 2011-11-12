@@ -167,13 +167,17 @@ cr.define('tracing', function() {
       this.dragBox_ = this.ownerDocument.createElement('div');
       this.dragBox_.className = 'timeline-drag-box';
       this.appendChild(this.dragBox_);
+      this.hideDragBox_();
 
       // The following code uses a setInterval to monitor the timeline control
       // for size changes. This is so that we can keep the canvas' bitmap size
       // correctly synchronized with its presentation size.
       // TODO(nduca): detect this in a more efficient way, e.g. iframe hack.
       this.lastSize_ = this.clientWidth + 'x' + this.clientHeight;
-      this.ownerDocument.defaultView.setInterval(function() {
+      this.checkForResizeInterval_ =
+          this.ownerDocument.defaultView.setInterval(function() {
+        if (!this.isAttachedToDocument_)
+          return;
         var curSize = this.clientWidth + 'x' + this.clientHeight;
         if (this.clientWidth && curSize != this.lastSize_) {
           this.lastSize_ = curSize;
@@ -181,16 +185,41 @@ cr.define('tracing', function() {
         }
       }.bind(this), 250);
 
-      document.addEventListener('keypress', this.onKeypress_.bind(this));
-      document.addEventListener('keydown', this.onKeydown_.bind(this));
-      document.addEventListener('mousedown', this.onMouseDown_.bind(this));
-      document.addEventListener('mousemove', this.onMouseMove_.bind(this));
-      document.addEventListener('mouseup', this.onMouseUp_.bind(this));
-      document.addEventListener('dblclick', this.onDblClick_.bind(this));
+      this.bindEventListener_(document, 'keypress', this.onKeypress_, this);
+      this.bindEventListener_(document, 'keydown', this.onKeydown_, this);
+      this.bindEventListener_(document, 'mousedown', this.onMouseDown_, this);
+      this.bindEventListener_(document, 'mousemove', this.onMouseMove_, this);
+      this.bindEventListener_(document, 'mouseup', this.onMouseUp_, this);
+      this.bindEventListener_(document, 'dblclick', this.onDblClick_, this);
 
       this.lastMouseViewPos_ = {x: 0, y: 0};
 
       this.selection_ = [];
+    },
+
+    /**
+     * Wraps the standard addEventListener but automatically binds the provided
+     * func to the provided target, tracking the resulting closure. When detach
+     * is called, these listeners will be automatically removed.
+     */
+    bindEventListener_: function(object, event, func, target) {
+      if (!this.boundListeners_)
+        this.boundListeners_ = [];
+      var boundFunc = func.bind(target);
+      this.boundListeners_.push({object: object,
+        event: event,
+        boundFunc: boundFunc});
+      object.addEventListener(event, boundFunc);
+    },
+
+    detach: function() {
+      for (var i = 0; i < this.boundListeners_.length; i++) {
+        var binding = this.boundListeners_[i];
+        binding.object.removeEventListener(binding.event, binding.boundFunc);
+      }
+      this.boundListeners_ = undefined;
+      window.clearInterval(this.checkForResizeInterval_);
+      this.checkForResizeInterval_ = undefined;
     },
 
     get model() {
@@ -205,20 +234,44 @@ cr.define('tracing', function() {
       }
       this.model_ = model;
 
-      // Create tracks.
-      this.tracks_.textContent = '';
+      // Create tracks and measure their heading size.
       var threads = model.getAllThreads();
-      threads.sort(tracing.TimelineThread.compare);
+      var maxHeadingWidth = 0;
+      var tracks = [];
+      var measuringStick = new tracing.MeasuringStick();
+      var headingEl = document.createElement('div');
+      headingEl.style.position = 'fixed';
+      headingEl.className = 'timeline-slice-track-title';
       for (var tI = 0; tI < threads.length; tI++) {
         var thread = threads[tI];
         var track = new TimelineThreadTrack();
         track.thread = thread;
         track.viewport = this.viewport_;
-        this.tracks_.appendChild(track);
+        tracks.push(track);
+        headingEl.textContent = track.heading;
+        var w = measuringStick.measure(headingEl).width;
+        // Limit heading width to 300px.
+        if (w > 300)
+          w = 300;
+        if (w > maxHeadingWidth)
+          maxHeadingWidth = w;
+      }
+      var extraHeadingPadding = 4;
+      maxHeadingWidth += maxHeadingWidth + extraHeadingPadding;
 
+      // Attach tracks and set width.
+      this.tracks_.textContent = '';
+      threads.sort(tracing.TimelineThread.compare);
+      for (var tI = 0; tI < tracks.length; tI++) {
+        var track = tracks[tI];
+        track.headingWidth = maxHeadingWidth + 'px';
+        this.tracks_.appendChild(track);
       }
 
-      this.needsViewportReset_ = true;
+      if (this.isAttachedToDocument_)
+        this.onResize();
+      else
+        this.needsViewportReset_ = true;
     },
 
     viewportChange_: function() {
@@ -229,46 +282,73 @@ cr.define('tracing', function() {
       if (this.invalidatePending_)
         return;
       this.invalidatePending_ = true;
-      window.setTimeout(function() {
-        this.invalidatePending_ = false;
-        this.redrawAllTracks_();
-      }.bind(this), 0);
+      if (this.isAttachedToDocument_)
+        window.setTimeout(function() {
+          this.invalidatePending_ = false;
+          this.redrawAllTracks_();
+        }.bind(this), 0);
+    },
+
+    /**
+     * @return {boolean} Whether the current timeline is attached to the
+     * document.
+     */
+    get isAttachedToDocument_() {
+      var cur = this;
+      while (cur.parentNode)
+        cur = cur.parentNode;
+      return cur == this.ownerDocument;
     },
 
     onResize: function() {
-      for (var i = 0; i < this.tracks_.children.length; ++i) {
+      if (!this.isAttachedToDocument_)
+        throw 'Not attached to document!';
+      for (var i = 0; i < this.tracks_.children.length; i++) {
         var track = this.tracks_.children[i];
         track.onResize();
+      }
+      if (this.invalidatePending_) {
+        this.invalidatePending_ = false;
+        this.redrawAllTracks_();
       }
     },
 
     redrawAllTracks_: function() {
       if (this.needsViewportReset_ && this.clientWidth != 0) {
+        if (!this.isAttachedToDocument_)
+          throw 'Not attached to document!';
         this.needsViewportReset_ = false;
         /* update viewport */
         var rangeTimestamp = this.model_.maxTimestamp -
             this.model_.minTimestamp;
         var w = this.firstCanvas.width;
-        console.log('viewport was reset with w=', w);
         var scaleX = w / rangeTimestamp;
         var panX = -this.model_.minTimestamp;
         this.viewport_.setPanAndScale(panX, scaleX);
       }
-      for (var i = 0; i < this.tracks_.children.length; ++i) {
+      for (var i = 0; i < this.tracks_.children.length; i++) {
         this.tracks_.children[i].redraw();
       }
     },
 
     updateChildViewports_: function() {
-      for (var cI = 0; cI < this.tracks_.children.length; ++cI) {
+      for (var cI = 0; cI < this.tracks_.children.length; cI++) {
         var child = this.tracks_.children[cI];
         child.setViewport(this.panX, this.scaleX);
       }
     },
 
+    get listenToKeys_() {
+      if (this.parentElement.parentElement.tabIndex >= 0)
+        return document.activeElement == this.parentElement.parentElement;
+      return true;
+    },
+
     onKeypress_: function(e) {
       var vp = this.viewport_;
       if (!this.firstCanvas)
+        return;
+      if (!this.listenToKeys_)
         return;
       var viewWidth = this.firstCanvas.clientWidth;
       var curMouseV, curCenterW;
@@ -316,6 +396,8 @@ cr.define('tracing', function() {
 
     // Not all keys send a keypress.
     onKeydown_: function(e) {
+      if (!this.listenToKeys_)
+        return;
       switch (e.keyCode) {
         case 37:   // left arrow
           this.selectPrevious_(e);
@@ -326,11 +408,13 @@ cr.define('tracing', function() {
           e.preventDefault();
           break;
         case 9:    // TAB
-          if (e.shiftKey)
-            this.selectPrevious_(e);
-          else
-            this.selectNext_(e);
-          e.preventDefault();
+          if (this.parentElement.parentElement.tabIndex == -1) {
+            if (e.shiftKey)
+              this.selectPrevious_(e);
+            else
+              this.selectNext_(e);
+            e.preventDefault();
+          }
           break;
       }
     },
@@ -370,11 +454,11 @@ cr.define('tracing', function() {
       var i, track, slice, adjoining;
       var selection = [];
       // Clear old selection; try and select next.
-      for (i = 0; i < this.selection_.length; ++i) {
+      for (i = 0; i < this.selection_.length; i++) {
         adjoining = undefined;
         this.selection_[i].slice.selected = false;
-        var track = this.selection_[i].track;
-        var slice = this.selection_[i].slice;
+        track = this.selection_[i].track;
+        slice = this.selection_[i].slice;
         if (slice) {
           if (forwardp)
             adjoining = track.pickNext(slice);
@@ -386,7 +470,7 @@ cr.define('tracing', function() {
       }
       // Activate the new selection.
       this.selection_ = selection;
-      for (i = 0; i < this.selection_.length; ++i)
+      for (i = 0; i < this.selection_.length; i++)
         this.selection_[i].slice.selected = true;
       cr.dispatchSimpleEvent(this, 'selectionChange');
       this.invalidate();  // Cause tracks to redraw.
@@ -394,21 +478,41 @@ cr.define('tracing', function() {
     },
 
     get keyHelp() {
-      return 'Keyboard shortcuts:\n' +
+      var help = 'Keyboard shortcuts:\n' +
           ' w/s     : Zoom in/out    (with shift: go faster)\n' +
           ' a/d     : Pan left/right\n' +
           ' e       : Center on mouse\n' +
-          ' g/G     : Shows grid at the start/end of the selected task\n' +
-          ' <-,^TAB : Select previous event on current timeline\n' +
-          ' ->, TAB : Select next event on current timeline\n' +
-        '\n' +
-        'Dbl-click to zoom in; Shift dbl-click to zoom out\n';
+          ' g/G     : Shows grid at the start/end of the selected task\n';
 
+      if (this.parentElement.parentElement.tabIndex) {
+        help += ' <-      : Select previous event on current timeline\n' +
+            ' ->      : Select next event on current timeline\n';
+      } else {
+        help += ' <-,^TAB : Select previous event on current timeline\n' +
+            ' ->, TAB : Select next event on current timeline\n';
+      }
 
+      help +=
+          '\n' +
+          'Dbl-click to zoom in; Shift dbl-click to zoom out\n';
+      return help;
     },
 
     get selection() {
       return this.selection_;
+    },
+
+    set selection(selection) {
+      // Clear old selection.
+      for (i = 0; i < this.selection_.length; i++)
+        this.selection_[i].slice.selected = false;
+
+      this.selection_ = selection;
+
+      cr.dispatchSimpleEvent(this, 'selectionChange');
+      for (i = 0; i < this.selection_.length; i++)
+        this.selection_[i].slice.selected = true;
+      this.invalidate();  // Cause tracks to redraw.
     },
 
     get firstCanvas() {
@@ -416,20 +520,11 @@ cr.define('tracing', function() {
           this.tracks_.firstChild.firstCanvas : undefined;
     },
 
-    showDragBox_: function() {
-      this.dragBox_.hidden = false;
-    },
-
     hideDragBox_: function() {
       this.dragBox_.style.left = '-1000px';
       this.dragBox_.style.top = '-1000px';
       this.dragBox_.style.width = 0;
       this.dragBox_.style.height = 0;
-      this.dragBox_.hidden = true;
-    },
-
-    get dragBoxVisible_() {
-      return this.dragBox_.hidden == false;
     },
 
     setDragBoxPosition_: function(eDown, eCur) {
@@ -490,6 +585,8 @@ cr.define('tracing', function() {
 
       this.dragBeginEvent_ = e;
       e.preventDefault();
+      if (this.parentElement.parentElement.tabIndex)
+        this.parentElement.parentElement.focus();
     },
 
     onMouseMove_: function(e) {
@@ -503,12 +600,6 @@ cr.define('tracing', function() {
 
       // Remember position. Used during keyboard zooming.
       this.lastMouseViewPos_ = pos;
-
-      // Initiate the drag box if needed.
-      if (this.dragBeginEvent_ && !this.dragBoxVisible_) {
-        this.showDragBox_();
-        this.setDragBoxPosition_(e, e);
-      }
 
       // Update the drag box
       if (this.dragBeginEvent_) {
@@ -535,17 +626,12 @@ cr.define('tracing', function() {
         var loWX = this.viewport_.xViewToWorld(loX - canv.offsetLeft);
         var hiWX = this.viewport_.xViewToWorld(hiX - canv.offsetLeft);
 
-        // Clear old selection.
-        for (i = 0; i < this.selection_.length; ++i) {
-          this.selection_[i].slice.selected = false;
-        }
-
         // Figure out what has been hit.
         var selection = [];
         function addHit(type, track, slice) {
           selection.push({track: track, slice: slice});
         }
-        for (i = 0; i < this.tracks_.children.length; ++i) {
+        for (i = 0; i < this.tracks_.children.length; i++) {
           var track = this.tracks_.children[i];
 
           // Only check tracks that insersect the rect.
@@ -557,12 +643,7 @@ cr.define('tracing', function() {
           }
         }
         // Activate the new selection.
-        this.selection_ = selection;
-        cr.dispatchSimpleEvent(this, 'selectionChange');
-        for (i = 0; i < this.selection_.length; ++i) {
-          this.selection_[i].slice.selected = true;
-        }
-        this.invalidate();  // Cause tracks to redraw.
+        this.selection = selection;
       }
     },
 

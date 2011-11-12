@@ -282,8 +282,8 @@ cr.define('tracing', function() {
             slice.durationInUserTime = event.uts - slice.slice.startInUserTime;
 
           // Store the slice in a non-nested subrow.
-          var thread = self.getOrCreateProcess(event.pid).
-                            getOrCreateThread(event.tid);
+          var thread =
+              self.getOrCreateProcess(event.pid).getOrCreateThread(event.tid);
           thread.addNonNestedSlice(slice.slice);
           delete state.openNonNestedSlices[name];
         } else {
@@ -298,7 +298,7 @@ cr.define('tracing', function() {
 
           // Store the slice on the correct subrow.
           var thread = self.getOrCreateProcess(event.pid)
-                           .getOrCreateThread(event.tid);
+              .getOrCreateThread(event.tid);
           var subRowIndex = state.openSlices.length;
           thread.getSubrow(subRowIndex).push(slice);
 
@@ -338,7 +338,7 @@ cr.define('tracing', function() {
           }
         } else {
           this.importErrors.push('Unrecognized event phase: ' + event.ph +
-                                 '(' + event.name + ')');
+              '(' + event.name + ')');
         }
       }
       this.pruneEmptyThreads();

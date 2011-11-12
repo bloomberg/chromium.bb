@@ -5,17 +5,16 @@ found in the LICENSE file.
 */
 
 .timeline-drag-box {
-  position: fixed;
   background-color: rgba(0, 0, 255, 0.25);
-  border: 1px solid rgb(0, 0, 96);
+  border: 1px solid #000060
   font-size: 75%;
+  position: fixed;
 }
 
 .timeline-thread-track {
-  display: -webkit-box;
   -webkit-box-orient: vertical;
-  padding-top: 1px;
-  padding-bottom: 1px;
+  display: -webkit-box;
+  padding: 1px 0;
 }
 
 .timeline-thread-track:not(:first-child) {
@@ -23,21 +22,22 @@ found in the LICENSE file.
 }
 
 .timeline-slice-track {
-  display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-align: stretch;
   background-color: white;
-  padding-right: 5px;
+  display: -webkit-box;
+  height: 18px;
   margin: 0;
   padding: 0;
-  height: 18px;
+  padding-right: 5px;
 }
 
 .timeline-slice-track-title {
-  text-align: right;
-  overflow: visible;
-  width: 300px;
+  overflow: hidden;
   padding-right: 5px;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .timeline-slice-track-canvas-container {
@@ -47,6 +47,6 @@ found in the LICENSE file.
 
 .timeline-slice-track-canvas {
   -webkit-box-flex: 1;
-  width: 100%;
   height: 100%;
+  width: 100%;
 }

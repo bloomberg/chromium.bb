@@ -275,9 +275,9 @@ function testUserTime() {
   ];
   var m = new tracing.TimelineModel(events);
   var subRow = m.processes[1].threads[1].subRows[0];
-  assertEquals(subRow[0].startInUserTime, 70);
-  assertEquals(subRow[0].durationInUserTime, 7);
-  assertEquals(subRow[1].startInUserTime, 80);
+  assertEquals(subRow[0].startInUserTime, 0.07);
+  assertEquals(subRow[0].durationInUserTime, 0.007);
+  assertEquals(subRow[1].startInUserTime, 0.08);
   assertEquals(subRow[1].durationInUserTime, 0);
 }
 
