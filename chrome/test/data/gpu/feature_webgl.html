@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>GPU Feature Testing: WebGL</title>
+<script>
+function init() {
+  var canvas = document.createElement("canvas");
+  if (!canvas)
+    return null;
+  var context = null;
+  try {
+    context = canvas.getContext("webgl");
+  } catch(e) {}
+  if (!context) {
+    try {
+      context = canvas.getContext("experimental-webgl");
+    } catch(e) {}
+  }
+  return context;
+}
+
+function runTest() {
+  var gl = init();
+  domAutomationController.setAutomationId(1);
+  domAutomationController.send("FINISHED");
+}
+</script>
+</head>
+<body onload="runTest()">
+WebGL should trigger GPU process launch if it is allowed.
+</body>
+</html>

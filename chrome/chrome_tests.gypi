@@ -2675,6 +2675,7 @@
         'test/data/webui/mock4js_browsertest.js',
         'test/data/webui/ntp4.js',
         'test/data/webui/print_preview.js',
+        'test/gpu/gpu_feature_browsertest.cc',
         # TODO(craig): Rename this and run from base_unittests when the test
         # is safe to run there. See http://crbug.com/78722 for details.
         '../base/files/file_path_watcher_browsertest.cc',
