@@ -350,8 +350,11 @@ class ChromeTests:
       os.makedirs(out_dir)
     script = os.path.join(self._source_dir, "webkit", "tools", "layout_tests",
                           "run_webkit_tests.py")
-    script_cmd = ["python", script, "--run-singly", "-v",
-                  "--noshow-results", "--time-out-ms=200000",
+    script_cmd = ["python", script, "-v",
+                  "--run-singly",  # run a separate DumpRenderTree for each test
+                  "--experimental-fully-parallel",
+                  "--time-out-ms=200000",
+                  "--noshow-results",
                   "--nocheck-sys-deps"]
     # Pass build mode to run_webkit_tests.py.  We aren't passed it directly,
     # so parse it out of build_dir.  run_webkit_tests.py can only handle
@@ -482,11 +485,7 @@ def _main(_):
                          "instead of /tmp.\nThis can be useful for tool "
                          "developers/maintainers.\nPlease note that the <tool>"
                          ".logs directory will be clobbered on tool startup.")
-  # My machine can do about 120 layout tests/hour in release mode.
-  # Let's do 30 minutes worth per run.
-  # The CPU is mostly idle, so perhaps we can raise this when
-  # we figure out how to run them more efficiently.
-  parser.add_option("-n", "--num_tests", default=60, type="int",
+  parser.add_option("-n", "--num_tests", default=200, type="int",
                     help="for layout tests: # of subtests per run.  0 for all.")
 
   options, args = parser.parse_args()
