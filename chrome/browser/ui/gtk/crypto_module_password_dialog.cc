@@ -94,7 +94,7 @@ class CryptoModulePasswordDialog {
       const std::string& server,
       const browser::CryptoModulePasswordCallback& callback);
 
-  virtual ~CryptoModulePasswordDialog() {}
+  ~CryptoModulePasswordDialog() {}
 
   void Show();
 

@@ -27,7 +27,7 @@ class WebDragDestDelegate;
 class CONTENT_EXPORT WebDragDestGtk {
  public:
   WebDragDestGtk(TabContents* tab_contents, GtkWidget* widget);
-  virtual ~WebDragDestGtk();
+  ~WebDragDestGtk();
 
   // This is called when the renderer responds to a drag motion event. We must
   // update the system drag cursor.

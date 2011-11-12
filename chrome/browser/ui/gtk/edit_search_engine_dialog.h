@@ -25,7 +25,7 @@ class EditSearchEngineDialog {
                          const TemplateURL* template_url,
                          EditSearchEngineControllerDelegate* delegate,
                          Profile* profile);
-  virtual ~EditSearchEngineDialog();
+  ~EditSearchEngineDialog();
 
  private:
   // Create and show the window.

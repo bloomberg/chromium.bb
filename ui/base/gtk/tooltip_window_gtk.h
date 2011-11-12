@@ -26,7 +26,7 @@ namespace ui {
 class UI_EXPORT TooltipWindowGtk {
  public:
   explicit TooltipWindowGtk(GtkWidget* widget);
-  virtual ~TooltipWindowGtk();
+  ~TooltipWindowGtk();
 
   // Sets tooltip text to display.
   void SetTooltipText(const string16& text);

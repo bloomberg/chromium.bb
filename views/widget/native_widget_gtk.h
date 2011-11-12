@@ -238,51 +238,61 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   }
 
   // Event handlers:
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnButtonPress,
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, gboolean, OnButtonPress,
                        GdkEventButton*);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, void, OnSizeRequest, GtkRequisition*);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, void, OnSizeAllocate, GtkAllocation*);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnPaint, GdkEventExpose*);
-  CHROMEGTK_CALLBACK_4(NativeWidgetGtk, void, OnDragDataGet,
-                       GdkDragContext*, GtkSelectionData*, guint, guint);
-  CHROMEGTK_CALLBACK_6(NativeWidgetGtk, void, OnDragDataReceived,
-                       GdkDragContext*, gint, gint, GtkSelectionData*,
-                       guint, guint);
-  CHROMEGTK_CALLBACK_4(NativeWidgetGtk, gboolean, OnDragDrop,
-                       GdkDragContext*, gint, gint, guint);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, void, OnDragEnd, GdkDragContext*);
-  CHROMEGTK_CALLBACK_2(NativeWidgetGtk, gboolean, OnDragFailed,
-                       GdkDragContext*, GtkDragResult);
-  CHROMEGTK_CALLBACK_2(NativeWidgetGtk, void, OnDragLeave,
-                       GdkDragContext*, guint);
-  CHROMEGTK_CALLBACK_4(NativeWidgetGtk, gboolean, OnDragMotion,
-                       GdkDragContext*, gint, gint, guint);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnEnterNotify,
-                       GdkEventCrossing*);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnLeaveNotify,
-                       GdkEventCrossing*);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnMotionNotify,
-                       GdkEventMotion*);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnButtonRelease,
-                       GdkEventButton*);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnFocusIn, GdkEventFocus*);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnFocusOut, GdkEventFocus*);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnEventKey, GdkEventKey*);
-  CHROMEGTK_CALLBACK_4(NativeWidgetGtk, gboolean, OnQueryTooltip,
-                       gint, gint, gboolean, GtkTooltip*);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnScroll, GdkEventScroll*);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnVisibilityNotify,
-                       GdkEventVisibility*);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnGrabBrokeEvent, GdkEvent*);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, void, OnGrabNotify, gboolean);
-  CHROMEGTK_CALLBACK_0(NativeWidgetGtk, void, OnDestroy);
-  CHROMEGTK_CALLBACK_0(NativeWidgetGtk, void, OnShow);
-  CHROMEGTK_CALLBACK_0(NativeWidgetGtk, void, OnMap);
-  CHROMEGTK_CALLBACK_0(NativeWidgetGtk, void, OnHide);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnWindowStateEvent,
-                       GdkEventWindowState*);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnConfigureEvent,
-                       GdkEventConfigure*);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, void, OnSizeRequest,
+                               GtkRequisition*);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, void, OnSizeAllocate,
+                               GtkAllocation*);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, gboolean, OnPaint,
+                               GdkEventExpose*);
+  CHROMEGTK_VIRTUAL_CALLBACK_4(NativeWidgetGtk, void, OnDragDataGet,
+                               GdkDragContext*, GtkSelectionData*, guint,
+                               guint);
+  CHROMEGTK_VIRTUAL_CALLBACK_6(NativeWidgetGtk, void, OnDragDataReceived,
+                               GdkDragContext*, gint, gint, GtkSelectionData*,
+                               guint, guint);
+  CHROMEGTK_VIRTUAL_CALLBACK_4(NativeWidgetGtk, gboolean, OnDragDrop,
+                               GdkDragContext*, gint, gint, guint);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, void, OnDragEnd,
+                               GdkDragContext*);
+  CHROMEGTK_VIRTUAL_CALLBACK_2(NativeWidgetGtk, gboolean, OnDragFailed,
+                               GdkDragContext*, GtkDragResult);
+  CHROMEGTK_VIRTUAL_CALLBACK_2(NativeWidgetGtk, void, OnDragLeave,
+                               GdkDragContext*, guint);
+  CHROMEGTK_VIRTUAL_CALLBACK_4(NativeWidgetGtk, gboolean, OnDragMotion,
+                               GdkDragContext*, gint, gint, guint);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, gboolean, OnEnterNotify,
+                               GdkEventCrossing*);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, gboolean, OnLeaveNotify,
+                               GdkEventCrossing*);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, gboolean, OnMotionNotify,
+                               GdkEventMotion*);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, gboolean, OnButtonRelease,
+                               GdkEventButton*);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, gboolean, OnFocusIn,
+                               GdkEventFocus*);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, gboolean, OnFocusOut,
+                               GdkEventFocus*);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, gboolean, OnEventKey,
+                               GdkEventKey*);
+  CHROMEGTK_VIRTUAL_CALLBACK_4(NativeWidgetGtk, gboolean, OnQueryTooltip, gint,
+                               gint, gboolean, GtkTooltip*);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, gboolean, OnScroll,
+                               GdkEventScroll*);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, gboolean, OnVisibilityNotify,
+                               GdkEventVisibility*);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, gboolean, OnGrabBrokeEvent,
+                               GdkEvent*);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, void, OnGrabNotify, gboolean);
+  CHROMEGTK_VIRTUAL_CALLBACK_0(NativeWidgetGtk, void, OnDestroy);
+  CHROMEGTK_VIRTUAL_CALLBACK_0(NativeWidgetGtk, void, OnShow);
+  CHROMEGTK_VIRTUAL_CALLBACK_0(NativeWidgetGtk, void, OnMap);
+  CHROMEGTK_VIRTUAL_CALLBACK_0(NativeWidgetGtk, void, OnHide);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, gboolean, OnWindowStateEvent,
+                               GdkEventWindowState*);
+  CHROMEGTK_VIRTUAL_CALLBACK_1(NativeWidgetGtk, gboolean, OnConfigureEvent,
+                               GdkEventConfigure*);
 
   // Invoked when the widget is destroyed and right before the object
   // destruction. Useful for overriding.

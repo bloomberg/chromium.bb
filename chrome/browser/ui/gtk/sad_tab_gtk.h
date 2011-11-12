@@ -21,7 +21,7 @@ class SadTabGtk {
   };
 
   SadTabGtk(TabContents* tab_contents, Kind kind);
-  virtual ~SadTabGtk();
+  ~SadTabGtk();
 
   GtkWidget* widget() const { return event_box_.get(); }
 

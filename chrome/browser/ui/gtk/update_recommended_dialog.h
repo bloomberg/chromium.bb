@@ -19,7 +19,7 @@ class UpdateRecommendedDialog {
 
  private:
   explicit UpdateRecommendedDialog(GtkWindow* parent);
-  virtual ~UpdateRecommendedDialog();
+  ~UpdateRecommendedDialog();
 
   CHROMEGTK_CALLBACK_1(UpdateRecommendedDialog, void, OnResponse, int);
 

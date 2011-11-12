@@ -52,7 +52,7 @@ class ExtensionInstallDialog {
                          SkBitmap* skia_icon,
                          const ExtensionInstallUI::Prompt& prompt);
  private:
-  virtual ~ExtensionInstallDialog();
+  ~ExtensionInstallDialog();
 
   CHROMEGTK_CALLBACK_1(ExtensionInstallDialog, void, OnResponse, int);
   CHROMEGTK_CALLBACK_0(ExtensionInstallDialog, void, OnStoreLinkClick);

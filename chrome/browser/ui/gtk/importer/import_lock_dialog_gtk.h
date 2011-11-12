@@ -23,7 +23,7 @@ class ImportLockDialogGtk {
 
  private:
   ImportLockDialogGtk(GtkWindow* parent, ImporterHost* importer_host);
-  virtual ~ImportLockDialogGtk();
+  ~ImportLockDialogGtk();
 
   CHROMEGTK_CALLBACK_1(ImportLockDialogGtk, void, OnResponse, int);
 

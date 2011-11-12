@@ -16,7 +16,7 @@ typedef struct _GtkWidget GtkWidget;
 class ExternalProtocolDialogGtk {
  public:
   explicit ExternalProtocolDialogGtk(const GURL& url);
-  virtual ~ExternalProtocolDialogGtk();
+  ~ExternalProtocolDialogGtk();
 
  private:
   CHROMEGTK_CALLBACK_1(ExternalProtocolDialogGtk, void, OnResponse, int);

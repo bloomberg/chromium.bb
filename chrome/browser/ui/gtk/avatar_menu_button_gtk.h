@@ -21,7 +21,7 @@ class AvatarMenuButtonGtk {
  public:
   explicit AvatarMenuButtonGtk(Browser* browser);
 
-  virtual ~AvatarMenuButtonGtk();
+  ~AvatarMenuButtonGtk();
 
   // Returns the button widget.
   GtkWidget* widget() const { return widget_.get(); }
