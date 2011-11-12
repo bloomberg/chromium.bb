@@ -18,9 +18,9 @@
 #include "chrome/renderer/extensions/chrome_webstore_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
-#include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/file_browser_private_bindings.h"
-#include "chrome/renderer/extensions/renderer_extension_bindings.h"
+#include "chrome/renderer/extensions/miscellaneous_bindings.h"
+#include "chrome/renderer/extensions/schema_generated_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_thread.h"
 #include "grit/renderer_resources.h"
@@ -36,6 +36,8 @@ static const double kInitialExtensionIdleHandlerDelayS = 5.0 /* seconds */;
 static const int64 kMaxExtensionIdleHandlerDelayS = 5*60 /* seconds */;
 }
 
+using extensions::MiscellaneousBindings;
+using extensions::SchemaGeneratedBindings;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
 using WebKit::WebSecurityPolicy;
@@ -102,8 +104,8 @@ void ExtensionDispatcher::WebKitInitialized() {
       "extensions/json_schema.js", IDR_JSON_SCHEMA_JS, NULL), true);
   RegisterExtension(EventBindings::Get(this), true);
   RegisterExtension(new FileBrowserPrivateBindings(), true);
-  RegisterExtension(RendererExtensionBindings::Get(this), true);
-  RegisterExtension(ExtensionProcessBindings::Get(this), true);
+  RegisterExtension(MiscellaneousBindings::Get(this), true);
+  RegisterExtension(SchemaGeneratedBindings::Get(this), true);
   RegisterExtension(new ChromeV8Extension(
       "extensions/apitest.js", IDR_EXTENSION_APITEST_JS, NULL), true);
 
@@ -165,13 +167,13 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
 }
 
 void ExtensionDispatcher::CheckIdleStatus(const std::string& extension_id) {
-  if (!ExtensionProcessBindings::HasPendingRequests(extension_id))
+  if (!SchemaGeneratedBindings::HasPendingRequests(extension_id))
     RenderThread::Get()->Send(new ExtensionHostMsg_ExtensionIdle(extension_id));
 }
 
 void ExtensionDispatcher::OnDeliverMessage(int target_port_id,
                                            const std::string& message) {
-  RendererExtensionBindings::DeliverMessage(
+  MiscellaneousBindings::DeliverMessage(
       v8_context_set_.GetAll(),
       target_port_id,
       message,

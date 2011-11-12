@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_RENDERER_EXTENSION_BINDINGS_H_
-#define CHROME_RENDERER_EXTENSIONS_RENDERER_EXTENSION_BINDINGS_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_MISCELLANEOUS_BINDINGS_H_
+#define CHROME_RENDERER_EXTENSIONS_MISCELLANEOUS_BINDINGS_H_
 #pragma once
 
 #include <string>
@@ -20,9 +20,14 @@ namespace v8 {
 class Extension;
 }
 
-// This class adds extension-related javascript bindings to a renderer.  It is
-// used by both web renderers and extension processes.
-class RendererExtensionBindings {
+namespace extensions {
+
+// Manually implements some random JavaScript bindings for the extension system.
+//
+// TODO(aa): This should all get re-implemented using SchemaGeneratedBindings.
+// If anything needs to be manual for some reason, it should be implemented in
+// its own class.
+class MiscellaneousBindings {
  public:
   // Creates an instance of the extension.
   static v8::Extension* Get(ExtensionDispatcher* dispatcher);
@@ -37,4 +42,6 @@ class RendererExtensionBindings {
       content::RenderView* restrict_to_render_view);
 };
 
-#endif  // CHROME_RENDERER_EXTENSIONS_RENDERER_EXTENSION_BINDINGS_H_
+}  // namespace
+
+#endif  // CHROME_RENDERER_EXTENSIONS_MISCELLANEOUS_BINDINGS_H_

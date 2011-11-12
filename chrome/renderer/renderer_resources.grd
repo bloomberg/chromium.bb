@@ -18,11 +18,11 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_EXTENSION_APITEST_JS" file="resources\extensions\apitest.js" type="BINDATA" />
       <include name="IDR_APP_BINDINGS_JS" file="resources\extensions\app.js" type="BINDATA" />
       <include name="IDR_EVENT_BINDINGS_JS" file="resources\extensions\event.js" type="BINDATA" />
-      <include name="IDR_EXTENSION_PROCESS_BINDINGS_JS" file="resources\extensions\extension_process_bindings.js" type="BINDATA" />
       <include name="IDR_FILE_BROWSER_PRIVATE_BINDINGS_JS" file="resources\extensions\file_browser_private.js" type="BINDATA" />
       <include name="IDR_GREASEMONKEY_API_JS" file="resources\extensions\greasemonkey_api.js" type="BINDATA" />
       <include name="IDR_JSON_SCHEMA_JS" file="resources\extensions\json_schema.js" type="BINDATA" />
-      <include name="IDR_RENDERER_EXTENSION_BINDINGS_JS" file="resources\extensions\renderer_process_bindings.js" type="BINDATA" />
+      <include name="IDR_MISCELLANEOUS_BINDINGS_JS" file="resources\extensions\miscellaneous_bindings.js" type="BINDATA" />
+      <include name="IDR_SCHEMA_GENERATED_BINDINGS_JS" file="resources\extensions\schema_generated_bindings.js" type="BINDATA" />
       <include name="IDR_NET_ERROR_HTML" file="resources\neterror.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SAD_PLUGIN" file="resources\sadplugin.png" type="BINDATA" />
       <include name="IDR_ERROR_APP_HTML" file="resources\error_app.html" flattenhtml="true" type="BINDATA" />

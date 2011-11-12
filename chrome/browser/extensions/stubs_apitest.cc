@@ -10,11 +10,6 @@
 
 // Tests that we throw errors when you try using extension APIs that aren't
 // supported in content scripts.
-//
-// If you have added a new API to extension_api.json and this test starts
-// failing, most likely you need to either mark it as "unprivileged" (if it
-// should be available in content scripts) or update the list of privileged APIs
-// in renderer_extension_bindings.js.
 // Timey-outy on mac. http://crbug.com/89116
 #if defined(OS_MACOSX)
 #define MAYBE_Stubs DISABLED_Stubs

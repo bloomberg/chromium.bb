@@ -13,6 +13,10 @@ var chrome = chrome || {};
 
   // Local implementation of JSON.parse & JSON.stringify that protect us
   // from being clobbered by an extension.
+  //
+  // TODO(aa): This makes me so sad. We shouldn't need it, as we can just pass
+  // Values directly over IPC without serializing to strings and use
+  // JSONValueConverter.
   chromeHidden.JSON = new (function() {
     var $Object = Object;
     var $Array = Array;

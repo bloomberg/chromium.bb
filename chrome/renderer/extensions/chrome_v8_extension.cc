@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "content/public/renderer/render_view.h"
@@ -18,6 +19,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using extensions::ExtensionAPI;
 using WebKit::WebFrame;
 using WebKit::WebView;
 
@@ -124,21 +126,42 @@ const Extension* ChromeV8Extension::GetExtensionForCurrentRenderView() const {
   return extensions->GetByURL(url);
 }
 
-bool ChromeV8Extension::CheckPermissionForCurrentRenderView(
+bool ChromeV8Extension::CheckCurrentContextAccessToExtensionAPI(
     const std::string& function_name) const {
-  const ::Extension* extension = GetExtensionForCurrentRenderView();
-  if (extension &&
-      extension_dispatcher_->IsExtensionActive(extension->id()) &&
-      extension->HasAPIPermission(function_name))
-    return true;
+  ChromeV8Context* context =
+      extension_dispatcher_->v8_context_set().GetCurrent();
+  if (!context) {
+    DLOG(ERROR) << "Not in a v8::Context";
+    return false;
+  }
 
-  static const char kMessage[] =
-      "You do not have permission to use '%s'. Be sure to declare"
-      " in your manifest what permissions you need.";
-  std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());
+  const ::Extension* extension = NULL;
+  if (!context->extension_id().empty()) {
+    extension =
+        extension_dispatcher_->extensions()->GetByID(context->extension_id());
+  }
 
-  v8::ThrowException(v8::Exception::Error(v8::String::New(error_msg.c_str())));
-  return false;
+  if (!extension || !extension->HasAPIPermission(function_name)) {
+    static const char kMessage[] =
+        "You do not have permission to use '%s'. Be sure to declare"
+        " in your manifest what permissions you need.";
+    std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());
+    v8::ThrowException(
+        v8::Exception::Error(v8::String::New(error_msg.c_str())));
+    return false;
+  }
+
+  if (!extension_dispatcher_->IsExtensionActive(extension->id()) &&
+      ExtensionAPI::GetInstance()->IsPrivileged(function_name)) {
+    static const char kMessage[] =
+        "%s can only be used in an extension process.";
+    std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());
+    v8::ThrowException(
+        v8::Exception::Error(v8::String::New(error_msg.c_str())));
+    return false;
+  }
+
+  return true;
 }
 
 v8::Handle<v8::FunctionTemplate>
@@ -198,7 +221,7 @@ v8::Handle<v8::Value> ChromeV8Extension::GetChromeHidden(
     global->SetHiddenValue(v8::String::New(kChromeHidden), hidden);
 
 #ifndef NDEBUG
-    // Tell extension_process_bindings.js to validate callbacks and events
+    // Tell schema_generated_bindings.js to validate callbacks and events
     // against their schema definitions in api/extension_api.json.
     v8::Local<v8::Object>::Cast(hidden)
         ->Set(v8::String::New(kValidateCallbacks), v8::True());

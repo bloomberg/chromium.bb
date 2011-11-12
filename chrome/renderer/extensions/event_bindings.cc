@@ -17,7 +17,7 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
-#include "chrome/renderer/extensions/extension_process_bindings.h"
+#include "chrome/renderer/extensions/schema_generated_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
@@ -88,7 +88,7 @@ class ExtensionImpl : public ChromeV8Extension {
           GetListenerCounts(context->extension_id());
       std::string event_name(*v8::String::AsciiValue(args[0]));
 
-      if (!v8_extension->CheckPermissionForCurrentRenderView(event_name))
+      if (!v8_extension->CheckCurrentContextAccessToExtensionAPI(event_name))
         return v8::Undefined();
 
       if (++listener_counts[event_name] == 1) {

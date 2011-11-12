@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/renderer_extension_bindings.h"
+#include "chrome/renderer/extensions/miscellaneous_bindings.h"
 
 #include <map>
 #include <string>
@@ -67,8 +67,8 @@ const char* kExtensionDeps[] = { "extensions/event.js" };
 class ExtensionImpl : public ChromeV8Extension {
  public:
   explicit ExtensionImpl(ExtensionDispatcher* dispatcher)
-      : ChromeV8Extension("extensions/renderer_extension_bindings.js",
-                          IDR_RENDERER_EXTENSION_BINDINGS_JS,
+      : ChromeV8Extension("extensions/miscellaneous_bindings.js",
+                          IDR_MISCELLANEOUS_BINDINGS_JS,
                           arraysize(kExtensionDeps), kExtensionDeps,
                           dispatcher) {
   }
@@ -250,12 +250,14 @@ class ExtensionImpl : public ChromeV8Extension {
 
 }  // namespace
 
-v8::Extension* RendererExtensionBindings::Get(ExtensionDispatcher* dispatcher) {
+namespace extensions {
+
+v8::Extension* MiscellaneousBindings::Get(ExtensionDispatcher* dispatcher) {
   static v8::Extension* extension = new ExtensionImpl(dispatcher);
   return extension;
 }
 
-void RendererExtensionBindings::DeliverMessage(
+void MiscellaneousBindings::DeliverMessage(
     const ChromeV8ContextSet::ContextSet& contexts,
     int target_port_id,
     const std::string& message,
@@ -292,3 +294,5 @@ void RendererExtensionBindings::DeliverMessage(
                                         NULL));
   }
 }
+
+}  // namespace extension

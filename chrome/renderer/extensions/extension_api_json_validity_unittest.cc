@@ -125,9 +125,9 @@ TEST_F(ExtensionApiJsonValidityTest, Basic) {
 #define MAYBE_WithV8 WithV8
 #endif
 
-// Use V8 to load the string resource version of extension_api.json .
+// Use V8 to load the string resource version of extension_api.json.
 // This test mimics the method extension_api.json is loaded in
-// chrome/renderer/resources/extension_process_bindings.js .
+// chrome/renderer/resources/extensions/schema_generated_bindings.js.
 TEST_F(ExtensionApiJsonValidityTest, MAYBE_WithV8) {
   std::string ext_api_string =
       ResourceBundle::GetSharedInstance().GetRawDataResource(

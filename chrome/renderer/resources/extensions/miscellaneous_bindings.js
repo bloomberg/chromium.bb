@@ -207,9 +207,12 @@ var chrome = chrome || {};
 
     // Events for when a message channel is opened to our extension.
     chrome.extension.onConnect = new chrome.Event();
-    chrome.extension.onConnectExternal = new chrome.Event();
     chrome.extension.onRequest = new chrome.Event();
-    chrome.extension.onRequestExternal = new chrome.Event();
+
+    if (isExtensionProcess) {
+      chrome.extension.onConnectExternal = new chrome.Event();
+      chrome.extension.onRequestExternal = new chrome.Event();
+    }
 
     // Opens a message channel to the given target extension, or the current one
     // if unspecified.  Returns a Port for message passing.
@@ -279,108 +282,6 @@ var chrome = chrome || {};
     chrome.i18n.getMessage = function(message_name, placeholders) {
       return GetL10nMessage(message_name, placeholders, extensionId);
     };
-
-    if (!isExtensionProcess)
-      setupApiStubs();
   });
-
-  var notSupportedSuffix = " can only be used in extension processes. " +
-      "See the content scripts documentation for more details.";
-
-  // Setup to throw an error message when trying to access |name| on the chrome
-  // object. The |name| can be a dot-separated path.
-  function createStub(name) {
-    var module = chrome;
-    var parts = name.split(".");
-    for (var i = 0; i < parts.length - 1; i++) {
-      var nextPart = parts[i];
-      // Make sure an object at the path so far is defined.
-      module[nextPart] = module[nextPart] || {};
-      module = module[nextPart];
-    }
-    var finalPart = parts[parts.length-1];
-    module.__defineGetter__(finalPart, function() {
-      throw new Error("chrome." + name + notSupportedSuffix);
-    });
-  }
-
-  // Sets up stubs to throw a better error message for the common case of
-  // developers trying to call extension API's that aren't allowed to be
-  // called from content scripts.
-  function setupApiStubs() {
-    // TODO(asargent) It would be nice to eventually generate this
-    // programmatically from extension_api.json (there is already a browser test
-    // that should prevent it from getting stale).
-    var privileged = [
-      // Entire namespaces.
-      "bookmarks",
-      "browserAction",
-      "chromeAuthPrivate",
-      "chromePrivate",
-      "chromeosInfoPrivate",
-      "contentSettings",
-      "contextMenus",
-      "cookies",
-      "devtools",
-      "experimental.accessibility",
-      "experimental.app",
-      "experimental.bookmarkManager",
-      "experimental.clear",
-      "experimental.clipboard",
-      "experimental.debugger",
-      "experimental.downloads",
-      "experimental.extension",
-      "experimental.infobars",
-      "experimental.input",
-      "experimental.inputUI",
-      "experimental.metrics",
-      "experimental.settings",
-      "experimental.popup",
-      "experimental.processes",
-      "experimental.privacy",
-      "experimental.rlz",
-      "experimental.savePage",
-      "experimental.sidebar",
-      "experimental.speechInput",
-      "experimental.topSites",
-      "experimental.webRequest",
-      "fileBrowserHandler",
-      "fileBrowserPrivate",
-      "fileSystem",
-      "history",
-      "idle",
-      "inputMethodPrivate",
-      "management",
-      "mediaPlayerPrivate",
-      "omnibox",
-      "pageAction",
-      "pageActions",
-      "permissions",
-      "proxy",
-      "tabs",
-      "test",
-      "tts",
-      "ttsEngine",
-      "types",
-      "webNavigation",
-      "webSocketProxyPrivate",
-      "webstorePrivate",
-      "windows",
-
-      // Functions/events/properties within the extension namespace.
-      "extension.getBackgroundPage",
-      "extension.getExtensionTabs",
-      "extension.getViews",
-      "extension.isAllowedIncognitoAccess",
-      "extension.isAllowedFileSchemeAccess",
-      "extension.onConnectExternal",
-      "extension.onRequestExternal",
-      "extension.setUpdateUrlData",
-      "i18n.getAcceptLanguages"
-    ];
-    for (var i = 0; i < privileged.length; i++) {
-      createStub(privileged[i]);
-    }
-  }
 
 })();

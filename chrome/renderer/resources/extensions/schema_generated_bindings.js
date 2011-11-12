@@ -574,9 +574,6 @@ var chrome = chrome || {};
 
   chromeHidden.onLoad.addListener(function(extensionId, isExtensionProcess,
                                            isIncognitoProcess) {
-    if (!isExtensionProcess)
-      return;
-
     // Setup the ChromeSetting class so we can use it to construct
     // ChromeSetting objects from the API definition.
     setupChromeSetting();
@@ -596,7 +593,7 @@ var chrome = chrome || {};
     // TODO(rafaelw): Handle synchronous functions.
     // TOOD(rafaelw): Consider providing some convenient override points
     //   for api functions that wish to insert themselves into the call.
-    var apiDefinitions = chromeHidden.JSON.parse(GetExtensionAPIDefinition());
+    var apiDefinitions = GetExtensionAPIDefinition();
     var platform = getPlatform();
 
     apiDefinitions.forEach(function(apiDef) {
@@ -622,13 +619,31 @@ var chrome = chrome || {};
         });
       }
 
+      // Adds a getter that throws an access denied error to object |module|
+      // for property |name| described by |schemaNode| if necessary.
+      //
+      // Returns true if the getter was necessary (access is disallowed), or
+      // false otherwise.
+      function addUnprivilegedAccessGetter(module, name, allowUnprivileged) {
+        if (allowUnprivileged || isExtensionProcess)
+          return false;
+
+        module.__defineGetter__(name, function() {
+          throw new Error(
+              '"' + name + '" can only be used in extension processes. See ' +
+              'the content scripts documentation for more details.');
+        });
+        return true;
+      }
+
       // Setup Functions.
       if (apiDef.functions) {
         apiDef.functions.forEach(function(functionDef) {
-          // Module functions may have been defined earlier by hand. Don't
-          // clobber them.
-          if (module[functionDef.name])
+          if (functionDef.name in module ||
+              addUnprivilegedAccessGetter(module, functionDef.name,
+                                          functionDef.unprivileged)) {
             return;
+          }
 
           var apiFunction = {};
           apiFunction.definition = functionDef;
@@ -666,10 +681,11 @@ var chrome = chrome || {};
       // Setup Events
       if (apiDef.events) {
         apiDef.events.forEach(function(eventDef) {
-          // Module events may have been defined earlier by hand. Don't clobber
-          // them.
-          if (module[eventDef.name])
+          if (eventDef.name in module ||
+              addUnprivilegedAccessGetter(module, eventDef.name,
+                                          eventDef.unprivileged)) {
             return;
+          }
 
           var eventName = apiDef.namespace + "." + eventDef.name;
           if (apiDef.namespace == "experimental.webRequest") {
@@ -686,6 +702,11 @@ var chrome = chrome || {};
         // Parse any values defined for properties.
         if (def.properties) {
           forEach(def.properties, function(prop, property) {
+            if (prop in m ||
+                addUnprivilegedAccessGetter(m, prop, property.unprivileged)) {
+              return;
+            }
+
             var value = property.value;
             if (value) {
               if (property.type === 'integer') {
@@ -718,6 +739,14 @@ var chrome = chrome || {};
 
       addProperties(module, apiDef);
     });
+
+    // TODO(aa): The rest of the crap below this really needs to be factored out
+    // with a clean API boundary. Right now it is too soupy for me to feel
+    // comfortable running in content scripts. What if people are just
+    // overwriting random APIs? That would bypass our content script access
+    // checks.
+    if (!isExtensionProcess)
+      return;
 
     // getTabContentses is retained for backwards compatibility
     // See http://crbug.com/21433

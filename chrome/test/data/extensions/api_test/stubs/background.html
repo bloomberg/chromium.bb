@@ -2,7 +2,7 @@
 
 chrome.extension.onRequest.addListener(function(msg, sender, responseFunc) {
   if (msg == "getApi") {
-    responseFunc(JSON.parse(chrome.test.getApiDefinitions()));
+    responseFunc(chrome.test.getApiDefinitions());
   } else if (msg == "pass") {
     chrome.test.notifyPass();
   } else if (msg.substr(0, 3) == "log") {

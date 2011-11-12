@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,8 @@
 #include "base/stringprintf.h"
 
 // These string constants and the formats used in this file must stay
-// in sync with chrome/renderer/resources/extension_process_bindings.js
+// in sync with chrome/renderer/resources/extensions/
+// schema_generated_bindings.js.
 static const char kDevToolsEventPrefix[] = "devtools.";
 static const char kOnPageEventName[] = "onPageEvent";
 static const char kOnTabCloseEventName[] = "onTabClose";
@@ -52,4 +53,3 @@ std::string ExtensionDevToolsEvents::OnTabCloseEventNameForTab(int tab_id) {
                             tab_id,
                             kOnTabCloseEventName);
 }
-

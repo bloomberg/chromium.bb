@@ -1,3 +1,6 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 // Helper function to log message to both the local console and to the
 // background page, so that the latter can output the message via the
@@ -16,10 +19,6 @@ chrome.extension.sendRequest("getApi", function(apis) {
   var unprivilegedPaths = [];
   apis.forEach(function(module) {
     var namespace = module.namespace;
-    if (!module.unprivileged) {
-      privilegedPaths.push(namespace);
-      return;
-    }
 
     ["functions", "events"].forEach(function(section) {
       if (typeof(module[section]) == "undefined")
@@ -53,16 +52,13 @@ chrome.extension.sendRequest("getApi", function(apis) {
 // error on access. The path is a namespace or function/property/event etc.
 // within a namespace, and is dot-separated.
 function testPath(path, expectError) {
-  console.log("trying " + path);
   var parts = path.split('.');
 
-  // Iterate over each component of the path, making sure all but the last part
-  // is defined. The last part should either be defined or throw an error on
-  // attempted access.
   var module = chrome;
   for (var i = 0; i < parts.length; i++) {
     if (i < parts.length - 1) {
-      // Not the last component, so expect non-null / no exception.
+      // Not the last component. Should not throw an exception, but allowed to
+      // be undefined (because some paths are only defined on some platforms).
       try {
         module = module[parts[i]];
       } catch (err) {
@@ -70,6 +66,8 @@ function testPath(path, expectError) {
                               parts.slice(0, i+1).join('.') + '(' + err + ')');
         return false;
       }
+      if (typeof(module) == "undefined")
+        return true;
     } else {
       // This is the last component - we expect it to either be defined or
       // to throw an error on access.
@@ -80,7 +78,6 @@ function testPath(path, expectError) {
                                 path);
           return false;
         } else if (!expectError) {
-          console.log(" ok (defined): " + path);
           return true;
         }
       } catch (err) {
@@ -90,10 +87,10 @@ function testPath(path, expectError) {
         }
         var str = err.toString();
         if (str.search("can only be used in extension processes.") != -1) {
-          console.log(" ok (correct error thrown): " + path);
           return true;
         } else {
-          logToConsoleAndStdout(" fail (wrong error: '" + str + "')");
+          logToConsoleAndStdout(
+              "fail: " + path + " (wrong error: '" + str + "')");
           return false;
         }
       }
@@ -130,7 +127,7 @@ function doTest(privilegedPaths, unprivilegedPaths) {
 
   if (!privilegedPaths || privilegedPaths.length < 1 || !unprivilegedPaths ||
       unprivilegedPaths.length < 1) {
-    port.postMessage("fail");
+    reportFailure();
     return;
   }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/extension_process_bindings.h"
+#include "chrome/renderer/extensions/schema_generated_bindings.h"
 
 #include <map>
 #include <set>
@@ -23,6 +23,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/url_pattern.h"
+#include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_view_types.h"
@@ -35,10 +36,10 @@
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
-#include "chrome/renderer/extensions/renderer_extension_bindings.h"
+#include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
-#include "chrome/renderer/static_v8_external_string_resource.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlob.h"
@@ -51,6 +52,8 @@
 #include "v8/include/v8.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::V8ValueConverter;
+using extensions::ExtensionAPI;
 using WebKit::WebFrame;
 using WebKit::WebView;
 
@@ -59,7 +62,7 @@ namespace {
 const char* kExtensionDeps[] = {
   "extensions/event.js",
   "extensions/json_schema.js",
-  "extensions/renderer_extension_bindings.js",
+  "extensions/miscellaneous_bindings.js",
   "extensions/apitest.js"
 };
 
@@ -161,18 +164,25 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
 class ExtensionImpl : public ChromeV8Extension {
  public:
   explicit ExtensionImpl(ExtensionDispatcher* extension_dispatcher)
-      : ChromeV8Extension("extensions/extension_process_bindings.js",
-                          IDR_EXTENSION_PROCESS_BINDINGS_JS,
+      : ChromeV8Extension("extensions/schema_generated_bindings.js",
+                          IDR_SCHEMA_GENERATED_BINDINGS_JS,
                           arraysize(kExtensionDeps),
                           kExtensionDeps,
                           extension_dispatcher) {
   }
-  ~ExtensionImpl() {}
+
+  ~ExtensionImpl() {
+    // TODO(aa): It seems that v8 never deletes us, so this doesn't get called.
+    // Leaving this in here in case v8's implementation ever changes.
+    if (!extension_api_.IsEmpty())
+      extension_api_.Dispose();
+  }
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
-      v8::Handle<v8::String> name) {
+      v8::Handle<v8::String> name) OVERRIDE {
     if (name->Equals(v8::String::New("GetExtensionAPIDefinition"))) {
-      return v8::FunctionTemplate::New(GetExtensionAPIDefinition);
+      return v8::FunctionTemplate::New(GetExtensionAPIDefinition,
+                                       v8::External::New(this));
     } else if (name->Equals(v8::String::New("GetExtensionViews"))) {
       return v8::FunctionTemplate::New(GetExtensionViews,
                                        v8::External::New(this));
@@ -211,10 +221,24 @@ class ExtensionImpl : public ChromeV8Extension {
  private:
   static v8::Handle<v8::Value> GetExtensionAPIDefinition(
       const v8::Arguments& args) {
-    return v8::String::NewExternal(
-        new StaticV8ExternalAsciiStringResource(
-            ResourceBundle::GetSharedInstance().GetRawDataResource(
-                IDR_EXTENSION_API_JSON)));
+    ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
+    if (!self->extension_api_.IsEmpty())
+      return self->extension_api_;
+
+    v8::Persistent<v8::Context> context(v8::Context::New());
+    v8::Context::Scope context_scope(context);
+
+    scoped_ptr<V8ValueConverter> v8_value_converter(V8ValueConverter::create());
+    self->extension_api_ = v8::Persistent<v8::Array>::New(
+        v8::Handle<v8::Array>::Cast(
+            v8_value_converter->ToV8Value(
+                ExtensionAPI::GetInstance()->value(), context)));
+    CHECK(!self->extension_api_.IsEmpty());
+
+    // The persistent extension_api_ will keep the context alive.
+    context.Dispose();
+
+    return self->extension_api_;
   }
 
   static v8::Handle<v8::Value> GetExtensionViews(const v8::Arguments& args) {
@@ -458,8 +482,7 @@ class ExtensionImpl : public ChromeV8Extension {
       return v8::Undefined();
     }
 
-    // TODO(aa): add this to ChromeV8Context.
-    if (!v8_extension->CheckPermissionForCurrentRenderView(name))
+    if (!v8_extension->CheckCurrentContextAccessToExtensionAPI(name))
       return v8::Undefined();
 
     GURL source_url;
@@ -480,6 +503,7 @@ class ExtensionImpl : public ChromeV8Extension {
     ExtensionHostMsg_Request_Params params;
     params.name = name;
     params.arguments.Swap(value_args);
+    params.extension_id = current_context->extension_id();
     params.source_url = source_url;
     params.request_id = request_id;
     params.has_callback = has_callback;
@@ -589,11 +613,18 @@ class ExtensionImpl : public ChromeV8Extension {
       return v8::Undefined();
     return v8::Integer::New(renderview->GetRoutingId());
   }
+
+  // Cached JS Array representation of extension_api.json. We store this so that
+  // we don't have to parse it over and over again for every context that uses
+  // it.
+  v8::Persistent<v8::Array> extension_api_;
 };
 
 }  // namespace
 
-v8::Extension* ExtensionProcessBindings::Get(
+namespace extensions {
+
+v8::Extension* SchemaGeneratedBindings::Get(
     ExtensionDispatcher* extension_dispatcher) {
   static v8::Extension* extension = new ExtensionImpl(extension_dispatcher);
   CHECK_EQ(extension_dispatcher,
@@ -602,13 +633,12 @@ v8::Extension* ExtensionProcessBindings::Get(
 }
 
 // static
-void ExtensionProcessBindings::HandleResponse(
-    const ChromeV8ContextSet& contexts,
-    int request_id,
-    bool success,
-    const std::string& response,
-    const std::string& error,
-    std::string* extension_id) {
+void SchemaGeneratedBindings::HandleResponse(const ChromeV8ContextSet& contexts,
+                                             int request_id,
+                                             bool success,
+                                             const std::string& response,
+                                             const std::string& error,
+                                             std::string* extension_id) {
   PendingRequestMap::iterator request =
       g_pending_requests.Get().find(request_id);
   if (request == g_pending_requests.Get().end()) {
@@ -654,7 +684,7 @@ void ExtensionProcessBindings::HandleResponse(
 }
 
 // static
-bool ExtensionProcessBindings::HasPendingRequests(
+bool SchemaGeneratedBindings::HasPendingRequests(
     const std::string& extension_id) {
   for (PendingRequestMap::const_iterator it = g_pending_requests.Get().begin();
        it != g_pending_requests.Get().end(); ++it) {
@@ -663,3 +693,5 @@ bool ExtensionProcessBindings::HasPendingRequests(
   }
   return false;
 }
+
+}  // namespace

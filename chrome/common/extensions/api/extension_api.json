@@ -1,7 +1,6 @@
 [
   {
     "namespace": "extension",
-    "unprivileged": true,
     "types": [
       {
         "id": "MessageSender",
@@ -1027,6 +1026,7 @@
     "functions": [
       {
         "name": "get",
+        "unprivileged": true,
         "type": "function",
         "description": "Gets one or more values from settings.",
         "parameters": [
@@ -1063,6 +1063,7 @@
       },
       {
         "name": "set",
+        "unprivileged": true,
         "type": "function",
         "description": "Sets multiple settings values.",
         "parameters": [
@@ -1084,6 +1085,7 @@
       },
       {
         "name": "remove",
+        "unprivileged": true,
         "type": "function",
         "description": "Removes one or more values from settings.",
         "parameters": [
@@ -1106,6 +1108,7 @@
       },
       {
         "name": "clear",
+        "unprivileged": true,
         "type": "function",
         "description": "Removes all values from settings.",
         "parameters": [
@@ -1122,6 +1125,7 @@
     "events": [
       {
         "name": "onChanged",
+        "unprivileged": true,
         "type": "function",
         "description": "Fired when one or more settings change.",
         "parameters": [
@@ -1383,7 +1387,6 @@
       {
         "name": "onAdded",
         "type": "function",
-        "unprivileged": true,
         "description": "Fired when the extension acquires new permissions.",
         "parameters": [
           {
@@ -1396,7 +1399,6 @@
       {
         "name": "onRemoved",
         "type": "function",
-        "unprivileged": true,
         "description": "Fired when access to permissions has been removed from the extension.",
         "parameters": [
           {
@@ -1411,7 +1413,6 @@
       {
         "name": "getAll",
         "type": "function",
-        "unprivileged": true,
         "description": "Gets the extension's current set of permissions.",
         "parameters": [
           {
@@ -1430,7 +1431,6 @@
       {
         "name": "contains",
         "type": "function",
-        "unprivileged": true,
         "description": "Checks if the extension has the specified permissions.",
         "parameters": [
           {
@@ -1453,7 +1453,6 @@
       {
         "name": "request",
         "type": "function",
-        "unprivileged": true,
         "description": "Requests access to the specified permissions. These permissions must be defined in the optional_permissions field of the manifest. If there are any problems requesting the permissions, <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set.",
         "parameters": [
           {
@@ -1477,7 +1476,6 @@
       {
         "name": "remove",
         "type": "function",
-        "unprivileged": true,
         "description": "Removes access to the specified permissions. If there are any problems removing the permissions, <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set.",
         "parameters": [
           {
@@ -3135,7 +3133,6 @@
   },
   {
     "namespace": "i18n",
-    "unprivileged": true,
     "types": [],
     "functions": [
       {
@@ -4267,7 +4264,6 @@
       {
         "name": "onCreated",
         "type": "function",
-        "unprivileged": true,
         "description": "This event fires with the DownloadItem object when a download begins.",
         "parameters": [
           {"$ref": "DownloadItem"}
@@ -4276,7 +4272,6 @@
       {
         "name": "onChanged",
         "type": "function",
-        "unprivileged": true,
         "description": "When any of a DownloadItem's properties except |bytesReceived| changes, this event fires with the download id and an object containing the properties that changed.",
         "parameters": [
           {"$ref": "DownloadDelta"}
@@ -4285,7 +4280,6 @@
       {
         "name": "onErased",
         "type": "function",
-        "unprivileged": true,
         "description": "Fires with the download id when a download is erased from history.",
         "parameters": [
           {"type": "integer", "name": "downloadId"}
@@ -5253,7 +5247,6 @@
       {
         "name": "recordValue",
         "type": "function",
-        "unprivileged": true,
         "description": "Adds a value to the given metric.",
         "parameters": [
           {"name": "metric", "$ref": "MetricType"},
@@ -6345,6 +6338,7 @@
       },
       {
         "name": "notifyFail",
+        "unprivileged": true,
         "type": "function",
         "description": "Notifies the browser process that test code running in the extension failed.  This is only used for internal unit testing.",
         "parameters": [
@@ -6353,6 +6347,7 @@
       },
       {
         "name": "notifyPass",
+        "unprivileged": true,
         "type": "function",
         "description": "Notifies the browser process that test code running in the extension passed.  This is only used for internal unit testing.",
         "parameters": [
@@ -6728,7 +6723,6 @@
     "events": [
       {
         "name": "onStateChanged",
-        "unprivileged": true,
         "type": "function",
         "description": "Notifies about sidebar state changes.",
         "parameters": [

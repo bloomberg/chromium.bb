@@ -1904,6 +1904,7 @@
         'common/extensions/url_pattern_set_unittest.cc',
         'common/extensions/url_pattern_unittest.cc',
         'common/extensions/user_script_unittest.cc',
+        'common/extensions/api/extension_api_unittest.cc',
         'common/guid_unittest.cc',
         'common/important_file_writer_unittest.cc',
         'common/json_pref_store_unittest.cc',

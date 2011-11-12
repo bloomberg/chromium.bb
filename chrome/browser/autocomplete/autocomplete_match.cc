@@ -168,7 +168,7 @@ void AutocompleteMatch::ClassifyLocationInString(
 // static
 string16 AutocompleteMatch::SanitizeString(const string16& text) {
   // NOTE: This logic is mirrored by |sanitizeString()| in
-  // extension_process_bindings.js.
+  // schema_generated_bindings.js.
   string16 result;
   TrimWhitespace(text, TRIM_LEADING, &result);
   RemoveChars(result, kInvalidChars, &result);

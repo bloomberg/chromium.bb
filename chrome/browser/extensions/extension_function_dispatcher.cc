@@ -51,6 +51,7 @@
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
+#include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/history/history_extension_api.h"
 #include "chrome/browser/history/top_sites_extension_api.h"
@@ -61,6 +62,7 @@
 #include "chrome/browser/speech/speech_input_extension_api.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -83,6 +85,8 @@
 #include "chrome/browser/extensions/extension_input_method_api.h"
 #include "chrome/browser/extensions/extension_mediaplayer_private_api.h"
 #endif
+
+using extensions::ExtensionAPI;
 
 // FactoryRegistry -------------------------------------------------------------
 
@@ -525,7 +529,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
     int routing_id,
     const ExtensionHostMsg_Request_Params& params) {
   const Extension* extension =
-      extension_info_map->extensions().GetByURL(params.source_url);
+      extension_info_map->extensions().GetByID(params.extension_id);
 
   scoped_refptr<ExtensionFunction> function(
       CreateExtensionFunction(params, extension, render_process_id,
@@ -597,9 +601,8 @@ void ExtensionFunctionDispatcher::Dispatch(
   if (!service || !process_map)
     return;
 
-  // TODO(aa): When we allow content scripts to call extension APIs, we will
-  // have to pass the extension ID explicitly here, not use the source URL.
-  const Extension* extension = service->GetExtensionByURL(params.source_url);
+  const Extension* extension = service->GetExtensionById(
+      params.extension_id, false);
   if (!extension)
     extension = service->GetExtensionByWebExtent(params.source_url);
 
@@ -650,7 +653,8 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     return NULL;
   }
 
-  if (!process_map.Contains(extension->id(), requesting_process_id)) {
+  if (ExtensionAPI::GetInstance()->IsPrivileged(params.name) &&
+      !process_map.Contains(extension->id(), requesting_process_id)) {
     LOG(ERROR) << "Extension API called from incorrect process "
                << requesting_process_id
                << " from URL " << params.source_url.spec();

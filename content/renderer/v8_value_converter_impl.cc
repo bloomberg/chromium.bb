@@ -26,7 +26,7 @@ V8ValueConverterImpl::V8ValueConverterImpl()
 }
 
 v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Value(
-    Value* value, v8::Handle<v8::Context> context) const {
+    const Value* value, v8::Handle<v8::Context> context) const {
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope;
   return handle_scope.Close(ToV8ValueImpl(value));
@@ -40,7 +40,8 @@ Value* V8ValueConverterImpl::FromV8Value(
   return FromV8ValueImpl(val);
 }
 
-v8::Handle<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(Value* value) const {
+v8::Handle<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(
+     const Value* value) const {
   CHECK(value);
   switch (value->GetType()) {
     case Value::TYPE_NULL:
@@ -71,10 +72,10 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(Value* value) const {
     }
 
     case Value::TYPE_LIST:
-      return ToV8Array(static_cast<ListValue*>(value));
+      return ToV8Array(static_cast<const ListValue*>(value));
 
     case Value::TYPE_DICTIONARY:
-      return ToV8Object(static_cast<DictionaryValue*>(value));
+      return ToV8Object(static_cast<const DictionaryValue*>(value));
 
     default:
       LOG(ERROR) << "Unexpected value type: " << value->GetType();
@@ -82,7 +83,8 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(Value* value) const {
   }
 }
 
-v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Array(ListValue* val) const {
+v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Array(
+    const ListValue* val) const {
   v8::Handle<v8::Array> result(v8::Array::New(val->GetSize()));
 
   for (size_t i = 0; i < val->GetSize(); ++i) {
@@ -102,7 +104,7 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Array(ListValue* val) const {
 }
 
 v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Object(
-    DictionaryValue* val) const {
+    const DictionaryValue* val) const {
   v8::Handle<v8::Object> result(v8::Object::New());
 
   for (DictionaryValue::key_iterator iter = val->begin_keys();

@@ -19,8 +19,8 @@
 #include "chrome/renderer/extensions/chrome_webstore_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
-#include "chrome/renderer/extensions/extension_process_bindings.h"
-#include "chrome/renderer/extensions/renderer_extension_bindings.h"
+#include "chrome/renderer/extensions/miscellaneous_bindings.h"
+#include "chrome/renderer/extensions/schema_generated_bindings.h"
 #include "chrome/renderer/extensions/user_script_idle_scheduler.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_view.h"
@@ -31,6 +31,8 @@
 #include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/resource_fetcher.h"
 
+using extensions::MiscellaneousBindings;
+using extensions::SchemaGeneratedBindings;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
@@ -198,7 +200,7 @@ void ExtensionHelper::OnExtensionResponse(int request_id,
                                           const std::string& response,
                                           const std::string& error) {
   std::string extension_id;
-  ExtensionProcessBindings::HandleResponse(
+  SchemaGeneratedBindings::HandleResponse(
       extension_dispatcher_->v8_context_set(), request_id, success,
       response, error, &extension_id);
 
@@ -217,7 +219,7 @@ void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
 
 void ExtensionHelper::OnExtensionDeliverMessage(int target_id,
                                                 const std::string& message) {
-  RendererExtensionBindings::DeliverMessage(
+  MiscellaneousBindings::DeliverMessage(
       extension_dispatcher_->v8_context_set().GetAll(),
       target_id,
       message,

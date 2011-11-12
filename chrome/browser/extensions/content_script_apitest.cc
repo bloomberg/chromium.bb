@@ -111,3 +111,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptCSSLocalization) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/css_l10n")) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptExtensionAPIs) {
+  ASSERT_TRUE(StartTestServer());
+  LoadExtension(test_data_dir_.AppendASCII("content_scripts/extension_api"));
+  ResultCatcher catcher;
+  ui_test_utils::NavigateToURL(
+      browser(), test_server()->GetURL("functions.html"));
+  EXPECT_TRUE(catcher.GetNextResult());
+}

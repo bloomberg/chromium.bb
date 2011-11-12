@@ -32,16 +32,17 @@ class CONTENT_EXPORT V8ValueConverterImpl : public content::V8ValueConverter {
 
   // V8ValueConverter implementation.
   virtual v8::Handle<v8::Value> ToV8Value(
-      base::Value* value,
+      const base::Value* value,
       v8::Handle<v8::Context> context) const OVERRIDE;
   virtual base::Value* FromV8Value(
       v8::Handle<v8::Value> value,
       v8::Handle<v8::Context> context) const OVERRIDE;
 
  private:
-  v8::Handle<v8::Value> ToV8ValueImpl(base::Value* value) const;
-  v8::Handle<v8::Value> ToV8Array(base::ListValue* list) const;
-  v8::Handle<v8::Value> ToV8Object(base::DictionaryValue* dictionary) const;
+  v8::Handle<v8::Value> ToV8ValueImpl(const base::Value* value) const;
+  v8::Handle<v8::Value> ToV8Array(const base::ListValue* list) const;
+  v8::Handle<v8::Value> ToV8Object(
+      const base::DictionaryValue* dictionary) const;
 
   base::Value* FromV8ValueImpl(v8::Handle<v8::Value> value) const;
   base::ListValue* FromV8Array(v8::Handle<v8::Array> array) const;

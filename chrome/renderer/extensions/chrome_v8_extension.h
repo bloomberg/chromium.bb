@@ -80,7 +80,7 @@ class ChromeV8Extension : public v8::Extension {
   // Checks that the current context contains an extension that has permission
   // to execute the specified function. If it does not, a v8 exception is thrown
   // and the method returns false. Otherwise returns true.
-  bool CheckPermissionForCurrentRenderView(
+  bool CheckCurrentContextAccessToExtensionAPI(
       const std::string& function_name) const;
 
   // Create a handler for |context|. If a subclass of ChromeV8Extension wishes

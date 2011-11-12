@@ -1,0 +1,11 @@
+{
+  "name": "Content Script API Tests",
+  "version": "1",
+  "permission": ["tabs"],
+  "content_scripts": [
+    {
+      "matches": ["*://*/functions.html"],
+      "js": ["functions.js"]
+    }
+  ]
+}

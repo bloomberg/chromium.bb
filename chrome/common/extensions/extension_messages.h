@@ -25,7 +25,15 @@ IPC_STRUCT_BEGIN(ExtensionHostMsg_Request_Params)
   // List of message arguments.
   IPC_STRUCT_MEMBER(ListValue, arguments)
 
-  // URL of the frame request was sent from.
+  // Extension ID this request was sent from. This can be empty, in the case
+  // where we expose APIs to normal web pages using the extension function
+  // system.
+  IPC_STRUCT_MEMBER(std::string, extension_id)
+
+  // URL of the frame the request was sent from. This isn't necessarily an
+  // extension url. Extension requests can also originate from content scripts,
+  // in which case extension_id will indicate the ID of the associated
+  // extension. Or, they can origiante from hosted apps or normal web pages.
   IPC_STRUCT_MEMBER(GURL, source_url)
 
   // Unique request id to match requests and responses.

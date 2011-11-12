@@ -4,7 +4,7 @@
 var success = false;
 
 try {
-  var foo = chrome.tabs;
+  var foo = chrome.tabs.create;
 } catch (e) {
   success = e.message.indexOf(
       " can only be used in extension processes.") > -1;
