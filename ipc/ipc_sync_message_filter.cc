@@ -4,6 +4,7 @@
 
 #include "ipc/ipc_sync_message_filter.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
@@ -34,8 +35,7 @@ bool SyncMessageFilter::Send(Message* message) {
 
   if (!message->is_sync()) {
     io_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &SyncMessageFilter::SendOnIOThread, message));
+      FROM_HERE, base::Bind(&SyncMessageFilter::SendOnIOThread, this, message));
     return true;
   }
 
@@ -55,8 +55,7 @@ bool SyncMessageFilter::Send(Message* message) {
   }
 
   io_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &SyncMessageFilter::SendOnIOThread, message));
+      FROM_HERE, base::Bind(&SyncMessageFilter::SendOnIOThread, this, message));
 
   base::WaitableEvent* events[2] = { shutdown_event_, &done_event };
   base::WaitableEvent::WaitMany(events, 2);

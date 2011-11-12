@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 
 namespace base {
@@ -79,7 +80,7 @@ class Channel::ChannelImpl : public MessageLoopForIO::IOHandler {
   // problems.  TODO(darin): make this unnecessary
   bool processing_incoming_;
 
-  ScopedRunnableMethodFactory<ChannelImpl> factory_;
+  base::WeakPtrFactory<ChannelImpl> weak_factory_;
 
   scoped_ptr<base::NonThreadSafe> thread_check_;
 

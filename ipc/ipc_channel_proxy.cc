@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -111,8 +112,8 @@ bool ChannelProxy::Context::OnMessageReceivedNoFilter(const Message& message) {
   // this thread is active.  That should be a reasonable assumption, but it
   // feels risky.  We may want to invent some more indirect way of referring to
   // a MessageLoop if this becomes a problem.
-  listener_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &Context::OnDispatchMessage, message));
+  listener_message_loop_->PostTask(
+      FROM_HERE, base::Bind(&Context::OnDispatchMessage, this, message));
   return true;
 }
 
@@ -129,8 +130,8 @@ void ChannelProxy::Context::OnChannelConnected(int32 peer_pid) {
     filters_[i]->OnChannelConnected(peer_pid);
 
   // See above comment about using listener_message_loop_ here.
-  listener_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &Context::OnDispatchConnected));
+  listener_message_loop_->PostTask(
+      FROM_HERE, base::Bind(&Context::OnDispatchConnected, this));
 }
 
 // Called on the IPC::Channel thread
@@ -139,8 +140,8 @@ void ChannelProxy::Context::OnChannelError() {
     filters_[i]->OnChannelError();
 
   // See above comment about using listener_message_loop_ here.
-  listener_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &Context::OnDispatchError));
+  listener_message_loop_->PostTask(
+      FROM_HERE, base::Bind(&Context::OnDispatchError, this));
 }
 
 // Called on the IPC::Channel thread
@@ -232,8 +233,7 @@ void ChannelProxy::Context::AddFilter(MessageFilter* filter) {
   base::AutoLock auto_lock(pending_filters_lock_);
   pending_filters_.push_back(make_scoped_refptr(filter));
   ipc_message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &Context::OnAddFilter));
+      FROM_HERE, base::Bind(&Context::OnAddFilter, this));
 }
 
 // Called on the listener's thread
@@ -324,13 +324,14 @@ void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
     // to connect and get an error since the pipe doesn't exist yet.
     context_->CreateChannel(channel_handle, mode);
   } else {
-    context_->ipc_message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        context_.get(), &Context::CreateChannel, channel_handle, mode));
+    context_->ipc_message_loop()->PostTask(
+        FROM_HERE, base::Bind(&Context::CreateChannel, context_.get(),
+                              channel_handle, mode));
   }
 
   // complete initialization on the background thread
-  context_->ipc_message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      context_.get(), &Context::OnChannelOpened));
+  context_->ipc_message_loop()->PostTask(
+      FROM_HERE, base::Bind(&Context::OnChannelOpened, context_.get()));
 }
 
 void ChannelProxy::Close() {
@@ -340,8 +341,8 @@ void ChannelProxy::Close() {
   context_->Clear();
 
   if (context_->ipc_message_loop()) {
-    context_->ipc_message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        context_.get(), &Context::OnChannelClosed));
+    context_->ipc_message_loop()->PostTask(
+        FROM_HERE, base::Bind(&Context::OnChannelClosed, context_.get()));
   }
 }
 
@@ -364,10 +365,8 @@ void ChannelProxy::AddFilter(MessageFilter* filter) {
 
 void ChannelProxy::RemoveFilter(MessageFilter* filter) {
   context_->ipc_message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(
-          context_.get(),
-          &Context::OnRemoveFilter,
-          make_scoped_refptr(filter)));
+      FROM_HERE, base::Bind(&Context::OnRemoveFilter, context_.get(),
+                            make_scoped_refptr(filter)));
 }
 
 void ChannelProxy::ClearIPCMessageLoop() {

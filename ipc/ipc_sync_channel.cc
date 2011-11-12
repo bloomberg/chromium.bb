@@ -4,6 +4,7 @@
 
 #include "ipc/ipc_sync_channel.h"
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -67,10 +68,9 @@ class SyncChannel::ReceivedSyncMsgQueue :
 
     dispatch_event_.Signal();
     if (!was_task_pending) {
-      listener_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-          this,
-          &ReceivedSyncMsgQueue::DispatchMessagesTask,
-          scoped_refptr<SyncContext>(context)));
+      listener_message_loop_->PostTask(
+          FROM_HERE, base::Bind(&ReceivedSyncMsgQueue::DispatchMessagesTask,
+                                this, scoped_refptr<SyncContext>(context)));
     }
   }
 
@@ -259,8 +259,9 @@ bool SyncChannel::SyncContext::Pop() {
   // blocking Send() call, whose reply we received after we made this last
   // Send() call.  So check if we have any queued replies available that
   // can now unblock the listener thread.
-  ipc_message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      received_sync_msgs_.get(), &ReceivedSyncMsgQueue::DispatchReplies));
+  ipc_message_loop()->PostTask(
+      FROM_HERE, base::Bind(&ReceivedSyncMsgQueue::DispatchReplies,
+                            received_sync_msgs_.get()));
 
   return result;
 }
@@ -427,9 +428,10 @@ bool SyncChannel::SendWithTimeout(Message* message, int timeout_ms) {
     // We use the sync message id so that when a message times out, we don't
     // confuse it with another send that is either above/below this Send in
     // the call stack.
-    context->ipc_message_loop()->PostDelayedTask(FROM_HERE,
-        NewRunnableMethod(context.get(),
-            &SyncContext::OnSendTimeout, message_id), timeout_ms);
+    context->ipc_message_loop()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&SyncContext::OnSendTimeout, context.get(), message_id),
+        timeout_ms);
   }
 
   // Wait for reply, or for any other incoming synchronous messages.

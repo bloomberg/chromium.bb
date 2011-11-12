@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/threading/non_thread_safe.h"
@@ -35,7 +36,7 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle &channel_handle,
       listener_(listener),
       waiting_connect_(mode & MODE_SERVER_FLAG),
       processing_incoming_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   CreatePipe(channel_handle, mode);
 }
 
@@ -177,8 +178,10 @@ bool Channel::ChannelImpl::Connect() {
     // Complete setup asynchronously. By not setting input_state_.is_pending
     // to true, we indicate to OnIOCompleted that this is the special
     // initialization signal.
-    MessageLoopForIO::current()->PostTask(FROM_HERE, factory_.NewRunnableMethod(
-        &Channel::ChannelImpl::OnIOCompleted, &input_state_.context, 0, 0));
+    MessageLoopForIO::current()->PostTask(
+        FROM_HERE, base::Bind(&Channel::ChannelImpl::OnIOCompleted,
+                              weak_factory_.GetWeakPtr(), &input_state_.context,
+                              0, 0));
   }
 
   if (!waiting_connect_)

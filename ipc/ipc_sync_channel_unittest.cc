@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -70,9 +71,9 @@ class Worker : public Channel::Listener, public Message::Sender {
   // destruction.
   virtual ~Worker() {
     WaitableEvent listener_done(false, false), ipc_done(false, false);
-    ListenerThread()->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &Worker::OnListenerThreadShutdown1, &listener_done,
-        &ipc_done));
+    ListenerThread()->message_loop()->PostTask(
+        FROM_HERE, base::Bind(&Worker::OnListenerThreadShutdown1, this,
+                              &listener_done, &ipc_done));
     listener_done.Wait();
     ipc_done.Wait();
     ipc_thread_.Stop();
@@ -92,8 +93,8 @@ class Worker : public Channel::Listener, public Message::Sender {
   }
   void Start() {
     StartThread(&listener_thread_, MessageLoop::TYPE_DEFAULT);
-    ListenerThread()->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &Worker::OnStart));
+    ListenerThread()->message_loop()->PostTask(
+        FROM_HERE, base::Bind(&Worker::OnStart, this));
   }
   void OverrideThread(base::Thread* overrided_thread) {
     DCHECK(overrided_thread_ == NULL);
@@ -180,8 +181,9 @@ class Worker : public Channel::Listener, public Message::Sender {
 
     MessageLoop::current()->RunAllPending();
 
-    ipc_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &Worker::OnIPCThreadShutdown, listener_event, ipc_event));
+    ipc_thread_.message_loop()->PostTask(
+        FROM_HERE, base::Bind(&Worker::OnIPCThreadShutdown, this,
+                              listener_event, ipc_event));
   }
 
   void OnIPCThreadShutdown(WaitableEvent* listener_event,
@@ -189,8 +191,9 @@ class Worker : public Channel::Listener, public Message::Sender {
     MessageLoop::current()->RunAllPending();
     ipc_event->Signal();
 
-    listener_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &Worker::OnListenerThreadShutdown2, listener_event));
+    listener_thread_.message_loop()->PostTask(
+        FROM_HERE, base::Bind(&Worker::OnListenerThreadShutdown2, this,
+                              listener_event));
   }
 
   void OnListenerThreadShutdown2(WaitableEvent* listener_event) {
@@ -1024,8 +1027,9 @@ class TestSyncMessageFilter : public SyncMessageFilter {
 
   virtual void OnFilterAdded(Channel* channel) {
     SyncMessageFilter::OnFilterAdded(channel);
-    thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &TestSyncMessageFilter::SendMessageOnHelperThread));
+    thread_.message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&TestSyncMessageFilter::SendMessageOnHelperThread, this));
   }
 
   void SendMessageOnHelperThread() {
@@ -1065,8 +1069,10 @@ class ServerSendAfterClose : public Worker {
   }
 
   bool SendDummy() {
-    ListenerThread()->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &ServerSendAfterClose::Send, new SyncChannelTestMsg_NoArgs));
+    ListenerThread()->message_loop()->PostTask(
+        FROM_HERE, base::IgnoreReturn<bool>(
+            base::Bind(&ServerSendAfterClose::Send, this,
+                       new SyncChannelTestMsg_NoArgs)));
     return true;
   }
 
@@ -1130,8 +1136,8 @@ class RestrictedDispatchServer : public Worker {
     Send(msg);
     // Signal the event after the message has been sent on the channel, on the
     // IPC thread.
-    ipc_thread().message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &RestrictedDispatchServer::OnPingSent));
+    ipc_thread().message_loop()->PostTask(
+        FROM_HERE, base::Bind(&RestrictedDispatchServer::OnPingSent, this));
   }
 
   base::Thread* ListenerThread() { return Worker::ListenerThread(); }
@@ -1186,8 +1192,8 @@ class RestrictedDispatchClient : public Worker {
     // send a message on that same channel.
     channel()->SetRestrictDispatchToSameChannel(true);
 
-    server_->ListenerThread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(server_, &RestrictedDispatchServer::OnDoPing, 1));
+    server_->ListenerThread()->message_loop()->PostTask(
+        FROM_HERE, base::Bind(&RestrictedDispatchServer::OnDoPing, server_, 1));
     sent_ping_event_->Wait();
     Send(new SyncChannelTestMsg_NoArgs);
     if (ping_ == 1)
@@ -1199,8 +1205,8 @@ class RestrictedDispatchClient : public Worker {
         "non_restricted_channel", Channel::MODE_CLIENT, this,
         ipc_thread().message_loop_proxy(), true, shutdown_event()));
 
-    server_->ListenerThread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(server_, &RestrictedDispatchServer::OnDoPing, 2));
+    server_->ListenerThread()->message_loop()->PostTask(
+        FROM_HERE, base::Bind(&RestrictedDispatchServer::OnDoPing, server_, 2));
     sent_ping_event_->Wait();
     // Check that the incoming message is *not* dispatched when sending on the
     // non restricted channel.

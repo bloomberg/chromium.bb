@@ -8,6 +8,8 @@
 #define IPC_MESSAGE_MACROS_LOG_ENABLED
 #endif
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -28,10 +30,6 @@
 #ifdef IPC_MESSAGE_LOG_ENABLED
 
 using base::Time;
-
-// IPC::Logging is allocated as a singleton, so we don't need any kind of
-// special retention program.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(IPC::Logging);
 
 namespace IPC {
 
@@ -163,8 +161,8 @@ void Logging::OnPostDispatchMessage(const Message& message,
   if (MessageLoop::current() == main_thread_) {
     Log(data);
   } else {
-    main_thread_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &Logging::Log, data));
+    main_thread_->PostTask(
+        FROM_HERE, base::Bind(&Logging::Log, base::Unretained(this), data));
   }
 }
 
@@ -233,8 +231,9 @@ void Logging::Log(const LogData& data) {
       queued_logs_.push_back(data);
       if (!queue_invoke_later_pending_) {
         queue_invoke_later_pending_ = true;
-        MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
-            this, &Logging::OnSendLogs), kLogSendDelayMs);
+        MessageLoop::current()->PostDelayedTask(
+            FROM_HERE, base::Bind(&Logging::OnSendLogs, base::Unretained(this)),
+            kLogSendDelayMs);
       }
     }
   }
