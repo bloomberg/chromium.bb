@@ -97,7 +97,6 @@
             '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
-            '<(DEPTH)/native_client/src/third_party_mod/jsoncpp/jsoncpp.gyp:jsoncpp',
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
             '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
             '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
@@ -107,6 +106,7 @@
             '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.gyp:weak_ref',
             '<(DEPTH)/ppapi/native_client/src/shared/ppapi_proxy/ppapi_proxy.gyp:nacl_ppapi_browser',
             '<(DEPTH)/ppapi/ppapi.gyp:ppapi_cpp',
+            '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
           ],
           'conditions': [
             ['OS=="mac"', {

@@ -17,9 +17,9 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/utility.h"
-#include "native_client/src/third_party_mod/jsoncpp/include/json/reader.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/var.h"
+#include "third_party/jsoncpp/source/include/json/reader.h"
 
 namespace plugin {
 
