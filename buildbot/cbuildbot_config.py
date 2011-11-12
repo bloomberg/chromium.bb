@@ -501,6 +501,8 @@ add_config('amd64-generic-full', [full, {
 add_config('amd64-corei7-full', [full, {
   'board' : 'amd64-corei7',
   'prebuilts' : True,
+  'unittests' : False,
+  'vm_tests' : None,
 }])
 
 add_config('x86-generic-asan', [{
