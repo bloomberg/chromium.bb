@@ -390,23 +390,43 @@ class ValgrindTool(BaseTool):
     appropriately.
     """
     command = " ".join(proc)
+    # Add the PID of the browser wrapper to the logfile names so we can
+    # separate log files for different UI tests at the analyze stage.
     command = command.replace("%p", "$$.%p")
 
     (fd, indirect_fname) = tempfile.mkstemp(dir=self.log_dir,
                                             prefix="browser_wrapper.",
                                             text=True)
     f = os.fdopen(fd, "w")
-    f.write("#!/bin/bash\n")
-    f.write('echo "Started Valgrind wrapper for this test, PID=$$"\n\n')
-    f.write('for arg in $@\ndo\n')
-    f.write('  if [[ "$arg" =~ --test-name=(.*) ]]\n then\n')
-    f.write('    TESTCASE=${BASH_REMATCH[1]}\n')
-    f.write('    echo $TESTCASE >`dirname $0`/testcase.$$.name\n')
-    f.write('  fi\ndone\n')
-    # Add the PID of the browser wrapper to the logfile names so we can
-    # separate log files for different UI tests at the analyze stage.
-    f.write(command)
-    f.write(' "$@"\n')
+    f.write('#!/bin/bash\n'
+            'echo "Started Valgrind wrapper for this test, PID=$$"\n')
+
+    # Try to get the test case name by looking at the program arguments.
+    # i.e. Chromium ui_tests and friends pass --test-name arg.
+    f.write('DIR=`dirname $0`\n'
+            'FOUND_TESTNAME=0\n'
+            'TESTNAME_FILE=$DIR/testcase.$$.name\n'
+            'for arg in $@; do\n'
+            '  # TODO(timurrrr): this doesn\'t handle "--test-name Test.Name"\n'
+            '  if [[ "$arg" =~ --test-name=(.*) ]]; then\n'
+            '    echo ${BASH_REMATCH[1]} >$TESTNAME_FILE\n'
+            '    FOUND_TESTNAME=1\n'
+            '  fi\n'
+            'done\n\n')
+
+    f.write('if [ "$FOUND_TESTNAME" = "1" ]; then\n'
+            '    %s "$@"\n'
+            'else\n' % command)
+    # Webkit layout_tests print out the test URL as the first line of stdout.
+    f.write('    %s "$@" | tee $DIR/test.$$.stdout\n'
+            '    EXITCODE=$PIPESTATUS\n'  # $? holds the tee's exit code
+            '    head -n 1 $DIR/test.$$.stdout |\n'
+            '      grep URL |\n'
+            '      sed "s/^.*third_party\/WebKit\/LayoutTests\///" '
+                       '>$TESTNAME_FILE\n'
+            '    exit $EXITCODE\n'
+            'fi\n' % command)
+
     f.close()
     os.chmod(indirect_fname, stat.S_IRUSR|stat.S_IXUSR)
     return indirect_fname
