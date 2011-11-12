@@ -7,10 +7,6 @@
 
 Import('env')
 
-# Pull in the ppapi_test_example as a "barebones" PPAPI startup example.
-# Hope it does not change to do more than just the barebones.
-# We must make a separate build though, to get a different nexe "key"
-# for the env.Publish() / env.ExtractPublishedFiles() magic.
 nexe_name = 'browser_startup_time_${TARGET_FULLARCH}'
 stripped_nexe = ('browser_startup_time_stripped_%s.nexe' %
                  env.get('TARGET_FULLARCH'))
@@ -25,19 +21,25 @@ env.Publish(nexe_name, 'run',
              'browser_startup_time.js'])
 
 test_name = 'browser_startup_time.out'
-output_processor = ['${PYTHON}',
-                    str(env.File(
-                        '${SCONSTRUCT_DIR}/tools/process_perf_output.py')),
-                    test_name,
-                    env.GetPerfEnvDescription()]
+output_processor_1 = ['${PYTHON}',
+                      str(env.File(
+                          '${SCONSTRUCT_DIR}/tools/process_perf_output.py')),
+                      test_name,
+                      env.GetPerfEnvDescription()]
+output_processor_c = ['${PYTHON}',
+                      str(env.File(
+                          '${SCONSTRUCT_DIR}/tools/process_perf_combined.py'))]
+
 
 node = env.PPAPIBrowserTester(
     test_name,
     url='browser_startup_time.html',
     nmfs=['browser_startup_time.nmf'],
     files=env.ExtractPublishedFiles(nexe_name),
-    args=['--enable_experimental_js'],
-    process_output=output_processor,
+    # Smooth out the timing data.
+    num_runs=5,
+    process_output_single=output_processor_1,
+    process_output_combined=output_processor_c,
     # Assume verbosity level of 1 will give us NaClLogs for sel_ldr times.
     log_verbosity=1)
 

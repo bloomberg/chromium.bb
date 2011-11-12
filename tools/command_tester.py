@@ -105,8 +105,16 @@ def ResetGlobalSettings():
       'filter_inverse': False,
       'filter_group_only': False,
 
-      # Script for processing output along with its arguments.
-      'process_output': '',
+      # Number of times a test is run.
+      # This is useful for getting multiple samples for time perf tests.
+      'num_runs': 1,
+
+      # Scripts for processing output along with its arguments.
+      # This script is given the output of a single run.
+      'process_output_single': None,
+      # This script is given the concatenated output of all |num_runs|, after
+      # having been filtered by |process_output_single| for individual runs.
+      'process_output_combined': None,
 
       'time_warning': 0,
       'time_error': 0,
@@ -310,6 +318,13 @@ def FormatExitStatus(number):
   # statuses (STATUS_*) more recognisable.
   return '%i (0x%x)' % (number, number & 0xffffffff)
 
+def PrintStdStreams(stdout, stderr):
+  if stderr is not None:
+    Banner('Stdout for %s:' % os.path.basename(GlobalSettings['name']))
+    Print(stdout)
+    Banner('Stderr for %s:' % os.path.basename(GlobalSettings['name']))
+    Print(stderr)
+
 def CheckExitStatus(failed, req_status, using_nacl_signal_handler,
                     exit_status, stdout, stderr):
   expected_sigtype = 'normal'
@@ -368,11 +383,7 @@ def CheckExitStatus(failed, req_status, using_nacl_signal_handler,
       failed = True
 
   if failed:
-    if stderr is not None:
-      Banner('Stdout')
-      Print(stdout)
-      Banner('Stderr')
-      Print(stderr)
+    PrintStdStreams(stdout, stderr)
   return not failed
 
 def CheckTimeBounds(total_time):
@@ -407,60 +418,55 @@ def CheckGoldenOutput(stdout, stderr):
         return False
   return True
 
-def ProcessLogOutput(stdout, stderr):
-  output_processor = GlobalSettings['process_output']
-  if output_processor:
+def ProcessLogOutputSingle(stdout, stderr):
+  output_processor = GlobalSettings['process_output_single']
+  if output_processor is None:
+    return (True, stdout, stderr)
+  else:
     output_processor_cmd = DestringifyList(output_processor)
-    # Also, get the output from logout (to get NaClLog output in Windows).
+    # Also, get the output from log_file to get NaClLog output in Windows.
     log_output = open(GlobalSettings['log_file']).read()
     # Assume the log processor does not care about the order of the lines.
     all_output = log_output + stdout + stderr
-    if not test_lib.RunCmdWithInput(output_processor_cmd, all_output):
-      return False
-  return True
+    _, retcode, failed, new_stdout, new_stderr = \
+        test_lib.RunTestWithInputOutput(output_processor_cmd, all_output)
+    # Print the result, since we have done some processing and we need
+    # to have the processed data. However, if we intend to process it some
+    # more later via process_output_combined, do not duplicate the data here.
+    # Only print out the final result!
+    if not GlobalSettings['process_output_combined']:
+      PrintStdStreams(new_stdout, new_stderr)
+    if retcode != 0 or failed:
+      return (False, new_stdout, new_stderr)
+    else:
+      return (True, new_stdout, new_stderr)
 
-def main(argv):
-  global GlobalPlatform
-  global GlobalReportStream
-  command = ProcessOptions(argv)
-
-  if GlobalSettings['report']:
-    GlobalReportStream.append(open(GlobalSettings['report'], 'w'))
-
-  if not GlobalSettings['name']:
-    GlobalSettings['name'] = command[0]
-  GlobalSettings['name'] = os.path.basename(GlobalSettings['name'])
-
-  Print(RunMessage())
-
-  if GlobalSettings['osenv']:
-    Banner('setting environment')
-    env_vars = DestringifyList(GlobalSettings['osenv'])
+def ProcessLogOutputCombined(stdout, stderr):
+  output_processor = GlobalSettings['process_output_combined']
+  if output_processor is None:
+    return True
   else:
-    env_vars = []
-  for env_var in env_vars:
-    key, val = env_var.split('=', 1)
-    Print('[%s] = [%s]' % (key, val))
-    os.putenv(key, val)
+    output_processor_cmd = DestringifyList(output_processor)
+    all_output = stdout + stderr
+    _, retcode, failed, new_stdout, new_stderr = \
+        test_lib.RunTestWithInputOutput(output_processor_cmd, all_output)
+    # Print the result, since we have done some processing.
+    PrintStdStreams(new_stdout, new_stderr)
+    if retcode != 0 or failed:
+      return False
+    else:
+      return True
 
-  stdin_data = ''
-  if GlobalSettings['stdin']:
-    stdin_data = open(GlobalSettings['stdin'])
-
-  if GlobalSettings['log_file']:
-    try:
-      os.unlink(GlobalSettings['log_file'])  # might not pre-exist
-    except OSError:
-      pass
-
-  run_under = GlobalSettings['run_under']
-  if run_under:
-    command = run_under.split(',') + command
-
-  Banner('running %s' % str(command))
-  # print the command in copy-and-pastable fashion
-  print " ".join(env_vars + command)
-
+def DoRun(command, stdin_data):
+  """
+  Run the command, given stdin_data. Returns a return code (0 is good)
+  and optionally a captured version of stdout, stderr from the run
+  (if the global setting capture_output is true).
+  """
+  # Initialize stdout, stderr to indicate we have not captured
+  # any of stdout or stderr.
+  stdout = ''
+  stderr = ''
   if not int(GlobalSettings['capture_output']):
     # We are only blurting out the stdout and stderr, not capturing it
     # for comparison, etc.
@@ -470,7 +476,8 @@ def main(argv):
             and not GlobalSettings['filter_regex']
             and not GlobalSettings['filter_inverse']
             and not GlobalSettings['filter_group_only']
-            and not GlobalSettings['process_output']
+            and not GlobalSettings['process_output_single']
+            and not GlobalSettings['process_output_combined']
             )
     # If python ever changes popen.stdout.read() to not risk deadlock,
     # we could stream and capture, and use RunTestWithInputOutput instead.
@@ -482,36 +489,101 @@ def main(argv):
                            GlobalSettings['using_nacl_signal_handler'],
                            exit_status, None, None):
       Print(FailureMessage(total_time))
-      return -1
+      return (-1, stdout, stderr)
   else:
     (total_time, exit_status,
      failed, stdout, stderr) = test_lib.RunTestWithInputOutput(
          command, stdin_data)
     PrintTotalTime(total_time)
+    # CheckExitStatus may spew stdout/stderr when there is an error.
+    # Otherwise, we do not spew stdout/stderr in this case (capture_output).
     if not CheckExitStatus(failed,
                            GlobalSettings['exit_status'],
                            GlobalSettings['using_nacl_signal_handler'],
                            exit_status, stdout, stderr):
       Print(FailureMessage(total_time))
-      return -1
+      return (-1, stdout, stderr)
     if not CheckGoldenOutput(stdout, stderr):
       Print(FailureMessage(total_time))
-      return -1
-    if not ProcessLogOutput(stdout, stderr):
-      Print(FailureMessage(total_time))
-      return -1
+      return (-1, stdout, stderr)
+    success, stdout, stderr = ProcessLogOutputSingle(stdout, stderr)
+    if not success:
+      Print(FailureMessage(total_time) + ' ProcessLogOutputSingle failed!')
+      return (-1, stdout, stderr)
 
   if not CheckTimeBounds(total_time):
     Print(FailureMessage(total_time))
-    return -1
+    return (-1, stdout, stderr)
 
   Print(SuccessMessage(total_time))
+  return (0, stdout, stderr)
+
+
+def Main(argv):
+  command = ProcessOptions(argv)
+
+  if GlobalSettings['report']:
+    GlobalReportStream.append(open(GlobalSettings['report'], 'w'))
+
+  if not GlobalSettings['name']:
+    GlobalSettings['name'] = command[0]
+  GlobalSettings['name'] = os.path.basename(GlobalSettings['name'])
+
+  Print(RunMessage())
+  num_runs = GlobalSettings['num_runs']
+  if num_runs > 1:
+    Print(' (running %d times)' % num_runs)
+
+  if GlobalSettings['osenv']:
+    Banner('setting environment')
+    env_vars = DestringifyList(GlobalSettings['osenv'])
+  else:
+    env_vars = []
+  for env_var in env_vars:
+    key, val = env_var.split('=', 1)
+    Print('[%s] = [%s]' % (key, val))
+    os.environ[key] = val
+
+  stdin_data = ''
+  if GlobalSettings['stdin']:
+    stdin_data = open(GlobalSettings['stdin'])
+
+  run_under = GlobalSettings['run_under']
+  if run_under:
+    command = run_under.split(',') + command
+
+  Banner('running %s' % str(command))
+  # print the command in copy-and-pastable fashion
+  print ' '.join(env_vars + command)
+
+  # Concatenate output when running multiple times (e.g., for timing).
+  combined_stdout = ''
+  combined_stderr = ''
+  cur_runs = 0
+  num_runs = GlobalSettings['num_runs']
+  while cur_runs < num_runs:
+    cur_runs += 1
+    # Clear out previous log_file.
+    if GlobalSettings['log_file']:
+      try:
+        os.unlink(GlobalSettings['log_file'])  # might not pre-exist
+      except OSError:
+        pass
+    ret_code, stdout, stderr = DoRun(command, stdin_data)
+    if ret_code != 0:
+      return ret_code
+    combined_stdout += stdout
+    combined_stderr += stderr
+  # Process the log output after all the runs.
+  success = ProcessLogOutputCombined(combined_stdout, combined_stderr)
+  if not success:
+    # Bogus time, since only ProcessLogOutputCombined failed.
+    Print(FailureMessage(0.0) + ' ProcessLogOutputCombined failed!')
+    return -1
   return 0
 
-
 if __name__ == '__main__':
-  retval = main(sys.argv[1:])
+  retval = Main(sys.argv[1:])
   # Add some whitepsace to make the logs easier to read.
   sys.stdout.write('\n\n')
   sys.exit(retval)
-

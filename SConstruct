@@ -1546,7 +1546,7 @@ def PPAPIBrowserTester(env,
     env.MakeVerboseExtraOptions(target, log_verbosity, extra)
   # Heuristic for when to capture output...
   capture_output = (extra.pop('capture_output', False)
-                    or 'process_output' in extra)
+                    or 'process_output_single' in extra)
   node = env.CommandTest(target,
                          command,
                          # Set to 'huge' so that the browser tester's timeout
@@ -1818,7 +1818,7 @@ pre_base_env.AddMethod(MakeVerboseExtraOptions)
 
 def ShouldUseVerboseOptions(extra):
   """ Heuristic for setting up Verbose NACLLOG options. """
-  return ('process_output' in extra or
+  return ('process_output_single' in extra or
           'log_golden' in extra)
 
 # ----------------------------------------------------------
@@ -1898,7 +1898,8 @@ TEST_EXTRA_ARGS = ['stdin', 'log_file',
                    'stdout_golden', 'stderr_golden', 'log_golden',
                    'filter_regex', 'filter_inverse', 'filter_group_only',
                    'osenv', 'arch', 'subarch', 'exit_status', 'track_cmdtime',
-                   'process_output', 'using_nacl_signal_handler']
+                   'num_runs', 'process_output_single',
+                   'process_output_combined', 'using_nacl_signal_handler']
 
 TEST_TIME_THRESHOLD = {
     'small':   2,
@@ -2010,6 +2011,10 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
     # |flag_value| is false (empty).
     if flag_value:
       script_flags.append('--' + flag_name)
+      # Make sure flag values are strings (or SCons objects) when building
+      # up the command. Right now, this only means convert ints to strings.
+      if isinstance(flag_value, int):
+        flag_value = str(flag_value)
       script_flags.append(flag_value)
 
   # Other extra flags
