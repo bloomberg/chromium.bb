@@ -217,7 +217,6 @@ PowerMenuButton::PowerMenuButton(StatusAreaButton::Delegate* delegate)
   set_id(VIEW_ID_STATUS_BUTTON_POWER);
   UpdateIconAndLabelInfo();
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate();
 }
 
 PowerMenuButton::~PowerMenuButton() {
