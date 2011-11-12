@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -90,8 +91,7 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   net::HostPortPair dest_host_port_pair_;
   bool tried_direct_connect_fallback_;
   net::BoundNetLog bound_net_log_;
-  ScopedRunnableMethodFactory<ProxyResolvingClientSocket>
-      scoped_runnable_method_factory_;
+  base::WeakPtrFactory<ProxyResolvingClientSocket> weak_factory_;
 
   // The callback passed to Connect().
   net::OldCompletionCallback* user_connect_callback_;

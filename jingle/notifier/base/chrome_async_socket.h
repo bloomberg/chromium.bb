@@ -17,7 +17,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "talk/xmpp/asyncsocket.h"
@@ -189,8 +189,7 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   net::Error net_error_;
 
   // Used by read/write loops.
-  ScopedRunnableMethodFactory<ChromeAsyncSocket>
-      scoped_runnable_method_factory_;
+  base::WeakPtrFactory<ChromeAsyncSocket> weak_factory_;
 
   // NULL iff state() == STATE_CLOSED.
   //

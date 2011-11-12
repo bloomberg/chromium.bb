@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "net/base/net_util.h"
 #include "third_party/libjingle/source/talk/base/network.h"
 
@@ -33,7 +33,7 @@ class FakeNetworkManager : public talk_base::NetworkManager {
   bool started_;
   scoped_ptr<talk_base::Network> network_;
 
-  ScopedRunnableMethodFactory<FakeNetworkManager> task_factory_;
+  base::WeakPtrFactory<FakeNetworkManager> weak_factory_;
 };
 
 }  // namespace jingle_glue

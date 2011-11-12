@@ -4,6 +4,7 @@
 
 #include "jingle/notifier/listener/mediator_thread_impl.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -242,9 +243,7 @@ void MediatorThreadImpl::Login(const buzz::XmppClientSettings& settings) {
     DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(core_.get(),
-                        &MediatorThreadImpl::Core::Login,
-                        settings));
+      base::Bind(&MediatorThreadImpl::Core::Login, core_.get(), settings));
 }
 
 void MediatorThreadImpl::Logout() {
@@ -256,8 +255,8 @@ void MediatorThreadImpl::ListenForUpdates() {
     DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(core_.get(),
-                        &MediatorThreadImpl::Core::ListenForPushNotifications));
+      base::Bind(&MediatorThreadImpl::Core::ListenForPushNotifications,
+                 core_.get()));
 }
 
 void MediatorThreadImpl::SubscribeForUpdates(
@@ -265,10 +264,8 @@ void MediatorThreadImpl::SubscribeForUpdates(
     DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(
-          core_.get(),
-          &MediatorThreadImpl::Core::SubscribeForPushNotifications,
-          subscriptions));
+      base::Bind(&MediatorThreadImpl::Core::SubscribeForPushNotifications,
+                 core_.get(), subscriptions));
 }
 
 void MediatorThreadImpl::SendNotification(
@@ -276,9 +273,8 @@ void MediatorThreadImpl::SendNotification(
     DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(core_.get(),
-                        &MediatorThreadImpl::Core::SendNotification,
-                        data));
+      base::Bind(&MediatorThreadImpl::Core::SendNotification, core_.get(),
+                 data));
 }
 
 void MediatorThreadImpl::UpdateXmppSettings(
@@ -286,9 +282,8 @@ void MediatorThreadImpl::UpdateXmppSettings(
     DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(core_.get(),
-                        &MediatorThreadImpl::Core::UpdateXmppSettings,
-                        settings));
+      base::Bind(&MediatorThreadImpl::Core::UpdateXmppSettings, core_.get(),
+                 settings));
 }
 
 void MediatorThreadImpl::TriggerOnConnectForTest(
@@ -296,16 +291,13 @@ void MediatorThreadImpl::TriggerOnConnectForTest(
     DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(core_.get(),
-                        &MediatorThreadImpl::Core::OnConnect,
-                        base_task));
+      base::Bind(&MediatorThreadImpl::Core::OnConnect, core_.get(), base_task));
 }
 
 void MediatorThreadImpl::LogoutImpl() {
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(core_.get(),
-                        &MediatorThreadImpl::Core::Disconnect));
+      base::Bind(&MediatorThreadImpl::Core::Disconnect, core_.get()));
 }
 
 }  // namespace notifier

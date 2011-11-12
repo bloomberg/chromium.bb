@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "jingle/notifier/base/task_pump.h"
 
 namespace notifier {
 
 TaskPump::TaskPump()
-    : scoped_runnable_method_factory_(
-        ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       posted_wake_(false),
       stopped_(false) {}
 
@@ -25,8 +25,7 @@ void TaskPump::WakeTasks() {
     // Do the requested wake up.
     current_message_loop->PostTask(
         FROM_HERE,
-        scoped_runnable_method_factory_.NewRunnableMethod(
-            &TaskPump::CheckAndRunTasks));
+        base::Bind(&TaskPump::CheckAndRunTasks, weak_factory_.GetWeakPtr()));
     posted_wake_ = true;
   }
 }

@@ -5,6 +5,7 @@
 #ifndef JINGLE_NOTIFIER_BASE_TASK_PUMP_H_
 #define JINGLE_NOTIFIER_BASE_TASK_PUMP_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "base/threading/non_thread_safe.h"
 #include "talk/base/taskrunner.h"
@@ -29,7 +30,7 @@ class TaskPump : public talk_base::TaskRunner {
   void CheckAndRunTasks();
 
   base::NonThreadSafe non_thread_safe_;
-  ScopedRunnableMethodFactory<TaskPump> scoped_runnable_method_factory_;
+  base::WeakPtrFactory<TaskPump> weak_factory_;
   bool posted_wake_;
   bool stopped_;
 

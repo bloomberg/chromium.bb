@@ -9,6 +9,7 @@
 #include <cstdlib>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -43,8 +44,7 @@ ChromeAsyncSocket::ChromeAsyncSocket(
       state_(STATE_CLOSED),
       error_(ERROR_NONE),
       net_error_(net::OK),
-      scoped_runnable_method_factory_(
-          ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       read_state_(IDLE),
       read_buf_(new net::IOBufferWithSize(read_buf_size)),
       read_start_(0U),
@@ -112,8 +112,7 @@ bool ChromeAsyncSocket::Connect(const talk_base::SocketAddress& address) {
 
   state_ = STATE_CONNECTING;
 
-  DCHECK(scoped_runnable_method_factory_.empty());
-  scoped_runnable_method_factory_.RevokeAll();
+  DCHECK_EQ(false, weak_factory_.HasWeakPtrs());
 
   net::HostPortPair dest_host_port_pair(address.IPAsString(), address.port());
 
@@ -128,10 +127,9 @@ bool ChromeAsyncSocket::Connect(const talk_base::SocketAddress& address) {
     // the connect always happens asynchronously.
     MessageLoop* message_loop = MessageLoop::current();
     CHECK(message_loop);
-    message_loop->PostTask(
-        FROM_HERE,
-        scoped_runnable_method_factory_.NewRunnableMethod(
-            &ChromeAsyncSocket::ProcessConnectDone, status));
+    message_loop->PostTask(FROM_HERE,
+                           base::Bind(&ChromeAsyncSocket::ProcessConnectDone,
+                                      weak_factory_.GetWeakPtr(), status));
   }
   return true;
 }
@@ -167,8 +165,7 @@ void ChromeAsyncSocket::PostDoRead() {
   CHECK(message_loop);
   message_loop->PostTask(
       FROM_HERE,
-      scoped_runnable_method_factory_.NewRunnableMethod(
-          &ChromeAsyncSocket::DoRead));
+      base::Bind(&ChromeAsyncSocket::DoRead, weak_factory_.GetWeakPtr()));
   read_state_ = POSTED;
 }
 
@@ -299,8 +296,7 @@ void ChromeAsyncSocket::PostDoWrite() {
   CHECK(message_loop);
   message_loop->PostTask(
       FROM_HERE,
-      scoped_runnable_method_factory_.NewRunnableMethod(
-          &ChromeAsyncSocket::DoWrite));
+      base::Bind(&ChromeAsyncSocket::DoWrite, weak_factory_.GetWeakPtr()));
   write_state_ = POSTED;
 }
 
@@ -367,7 +363,7 @@ bool ChromeAsyncSocket::Close() {
 // (not STATE_CLOSED) -> STATE_CLOSED
 
 void ChromeAsyncSocket::DoClose() {
-  scoped_runnable_method_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   if (transport_socket_.get()) {
     transport_socket_->Disconnect();
   }
@@ -404,7 +400,7 @@ bool ChromeAsyncSocket::StartTls(const std::string& domain_name) {
   DCHECK_EQ(write_end_, 0U);
 
   // Clear out any posted DoRead() tasks.
-  scoped_runnable_method_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 
   DCHECK(transport_socket_.get());
   net::ClientSocketHandle* socket_handle = new net::ClientSocketHandle();
@@ -416,10 +412,9 @@ bool ChromeAsyncSocket::StartTls(const std::string& domain_name) {
   if (status != net::ERR_IO_PENDING) {
     MessageLoop* message_loop = MessageLoop::current();
     CHECK(message_loop);
-    message_loop->PostTask(
-        FROM_HERE,
-        scoped_runnable_method_factory_.NewRunnableMethod(
-            &ChromeAsyncSocket::ProcessSSLConnectDone, status));
+    message_loop->PostTask(FROM_HERE,
+                           base::Bind(&ChromeAsyncSocket::ProcessSSLConnectDone,
+                                      weak_factory_.GetWeakPtr(), status));
   }
   return true;
 }

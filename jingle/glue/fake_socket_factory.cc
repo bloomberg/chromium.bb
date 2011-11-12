@@ -4,6 +4,7 @@
 
 #include "jingle/glue/fake_socket_factory.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "jingle/glue/utils.h"
 #include "third_party/libjingle/source/talk/base/asyncsocket.h"
@@ -125,8 +126,8 @@ void FakeSocketManager::SendPacket(const net::IPEndPoint& from,
   DCHECK_EQ(MessageLoop::current(), message_loop_);
 
   message_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &FakeSocketManager::DeliverPacket,
-                                   from, to, data));
+      FROM_HERE,
+      base::Bind(&FakeSocketManager::DeliverPacket, this, from, to, data));
 }
 
 void FakeSocketManager::DeliverPacket(const net::IPEndPoint& from,

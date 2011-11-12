@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -20,8 +22,6 @@ namespace {
 class FakeSocket;
 }  // namespace
 }  // namespace jingle_glue
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(jingle_glue::FakeSocket);
 
 namespace jingle_glue {
 
@@ -136,9 +136,12 @@ class FakeSocket : public net::Socket {
                     net::OldCompletionCallback* callback) OVERRIDE {
     DCHECK(buf);
     if (peer_socket_) {
-      MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
-          peer_socket_, &FakeSocket::AppendInputPacket,
-          std::vector<char>(buf->data(), buf->data() + buf_len)), latency_ms_);
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&FakeSocket::AppendInputPacket,
+                     base::Unretained(peer_socket_),
+                     std::vector<char>(buf->data(), buf->data() + buf_len)),
+          latency_ms_);
     }
 
     return buf_len;
@@ -186,7 +189,7 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
 
   void Start() {
     message_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &TCPChannelTester::DoStart));
+        FROM_HERE, base::Bind(&TCPChannelTester::DoStart, this));
   }
 
   void CheckResults() {

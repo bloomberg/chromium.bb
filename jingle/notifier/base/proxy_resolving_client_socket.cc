@@ -5,6 +5,7 @@
 #include "jingle/notifier/base/proxy_resolving_client_socket.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "googleurl/src/gurl.h"
@@ -35,8 +36,7 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
               net::BoundNetLog::Make(
                   request_context_getter->GetURLRequestContext()->net_log(),
                   net::NetLog::SOURCE_SOCKET)),
-          scoped_runnable_method_factory_(
-              ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+          ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
           user_connect_callback_(NULL) {
   DCHECK(request_context_getter);
   net::URLRequestContext* request_context =
@@ -117,8 +117,8 @@ int ProxyResolvingClientSocket::Connect(net::OldCompletionCallback* callback) {
     CHECK(message_loop);
     message_loop->PostTask(
         FROM_HERE,
-        scoped_runnable_method_factory_.NewRunnableMethod(
-            &ProxyResolvingClientSocket::ProcessProxyResolveDone, status));
+        base::Bind(&ProxyResolvingClientSocket::ProcessProxyResolveDone,
+                   weak_factory_.GetWeakPtr(), status));
   }
   user_connect_callback_ = callback;
   return net::ERR_IO_PENDING;
@@ -270,8 +270,8 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
     CHECK(message_loop);
     message_loop->PostTask(
         FROM_HERE,
-        scoped_runnable_method_factory_.NewRunnableMethod(
-            &ProxyResolvingClientSocket::ProcessProxyResolveDone, rv));
+        base::Bind(&ProxyResolvingClientSocket::ProcessProxyResolveDone,
+                   weak_factory_.GetWeakPtr(), rv));
     // Since we potentially have another try to go (trying the direct connect)
     // set the return code code to ERR_IO_PENDING.
     rv = net::ERR_IO_PENDING;
