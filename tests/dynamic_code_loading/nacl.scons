@@ -97,57 +97,58 @@ dyncode_demand_alloc_test_nexe = env.ComponentProgram(
     ['dyncode_demand_alloc_test.c'],
     EXTRA_LIBS=['${DYNCODE_LIBS}', '${NONIRT_LIBS}'])
 
-tests = [
-    env.CommandSelLdrTestNacl(
-        'dynamic_load_test.out',
-        dynamic_load_test_nexe,
-        # We need to set this because the test needs to behave
-        # differently in the plugin, but the plugin does not provide a
-        # way to distinguish itself.  TODO(mseaborn): Fix that.
-        # See http://code.google.com/p/nativeclient/issues/detail?id=889
-        sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1'],
-        ),
-    env.CommandSelLdrTestNacl(
-        'write_to_dyncode.out',
-        write_to_dyncode_nexe,
-        exit_status='untrusted_segfault',
-        stdout_golden=env.File('write_to_dyncode.stdout'),
-        ),
-    env.CommandSelLdrTestNacl(
-        'debug_mode_test.out',
-        debug_mode_test_nexe,
-        # NOTE: the data we are loading does not pass the validator
-        sel_ldr_flags=["-c"],
-        ),
-    # This tests, from untrusted code, that dyncode pages are
-    # inaccessible before they are allocated.
-    env.CommandSelLdrTestNacl(
-        'dyncode_demand_alloc_test.out',
-        dyncode_demand_alloc_test_nexe,
-        exit_status='untrusted_segfault',
-        stdout_golden=env.File('dyncode_demand_alloc_test.stdout'),
-        ),
-  ]
+test_suites = ['small_tests', 'sel_ldr_tests', 'dynamic_load_tests']
+
+node = env.CommandSelLdrTestNacl(
+    'dynamic_load_test.out',
+    dynamic_load_test_nexe,
+    # We need to set this because the test needs to behave
+    # differently in the plugin, but the plugin does not provide a
+    # way to distinguish itself.  TODO(mseaborn): Fix that.
+    # See http://code.google.com/p/nativeclient/issues/detail?id=889
+    sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1'])
+env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_load_test')
+
+node = env.CommandSelLdrTestNacl(
+    'write_to_dyncode.out',
+    write_to_dyncode_nexe,
+    exit_status='untrusted_segfault',
+    stdout_golden=env.File('write_to_dyncode.stdout'))
+env.AddNodeToTestSuite(node, test_suites, 'run_write_to_dyncode_test')
+
+node = env.CommandSelLdrTestNacl(
+    'debug_mode_test.out',
+    debug_mode_test_nexe,
+    # NOTE: the data we are loading does not pass the validator
+    sel_ldr_flags=["-c"])
+env.AddNodeToTestSuite(node, test_suites, 'run_dyncode_debug_mode_test')
+
+# This tests, from untrusted code, that dyncode pages are inaccessible
+# before they are allocated.
+node = env.CommandSelLdrTestNacl(
+    'dyncode_demand_alloc_test.out',
+    dyncode_demand_alloc_test_nexe,
+    exit_status='untrusted_segfault',
+    stdout_golden=env.File('dyncode_demand_alloc_test.stdout'))
+env.AddNodeToTestSuite(node, test_suites, 'run_dyncode_demand_alloc_test')
 
 # The IRT itself counts as dynamic code loading, so we cannot disable
 # dynamic loading when using the IRT.
 if not env.Bit('tests_use_irt'):
-  tests.append(env.CommandSelLdrTestNacl(
+  node = env.CommandSelLdrTestNacl(
       'dyncode_disabled_test.out',
       dyncode_disabled_test_nexe,
-      osenv='NACL_DISABLE_DYNAMIC_LOADING=1',
-      ))
+      osenv='NACL_DISABLE_DYNAMIC_LOADING=1')
+  env.AddNodeToTestSuite(node, test_suites, 'run_dyncode_disabled_test')
 
 if not env.Bit('target_arm'):
-  tests.append(env.CommandSelLdrTestNacl(
+  node = env.CommandSelLdrTestNacl(
        'dynamic_modify_test.out',
        dynamic_modify_test_nexe,
-       sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1']))
-
-# TODO(kcc): non-standard linking options confuse Valgrind debug info reader.
-# See http://code.google.com/p/nativeclient/issues/detail?id=1606
-is_broken = env.IsRunningUnderValgrind()
-env.AddNodeToTestSuite(tests,
-                       ['small_tests', 'sel_ldr_tests'],
-                       'run_dynamic_load_test',
-                       is_broken=is_broken)
+       sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1'])
+  # This test fails under Valgrind presumably because Valgrind cannot
+  # handle dynamic code modifications that occur via our doubly-mapped
+  # shared memory segment.  It does not know to flush its code
+  # translation cache.
+  env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_modify_test',
+                         is_broken=env.IsRunningUnderValgrind())
