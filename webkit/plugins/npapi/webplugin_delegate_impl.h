@@ -20,6 +20,10 @@
 #include "webkit/plugins/npapi/webplugin_delegate.h"
 #include "webkit/glue/webcursor.h"
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+#include "base/memory/weak_ptr.h"
+#endif
+
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
 
@@ -519,7 +523,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
 
   // Runnable Method Factory used to invoke the OnUserGestureEnd method
   // asynchronously.
-  ScopedRunnableMethodFactory<WebPluginDelegateImpl> user_gesture_msg_factory_;
+  base::WeakPtrFactory<WebPluginDelegateImpl> user_gesture_msg_factory_;
 
   // Handle to the mouse hook installed for certain windowed plugins like
   // flash.

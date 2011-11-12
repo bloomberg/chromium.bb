@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
@@ -297,7 +296,7 @@ class WebPluginImpl : public WebPlugin,
   std::vector<std::string> arg_names_;
   std::vector<std::string> arg_values_;
 
-  ScopedRunnableMethodFactory<WebPluginImpl> method_factory_;
+  base::WeakPtrFactory<WebPluginImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginImpl);
 };

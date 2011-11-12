@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/npapi/webplugin_impl.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop.h"
@@ -347,9 +348,9 @@ void WebPluginImpl::updateGeometry(
       // geometry received by a call to setFrameRect in the Webkit
       // layout code path. To workaround this issue we download the
       // plugin source url on a timer.
-      MessageLoop::current()->PostDelayedTask(
-          FROM_HERE, method_factory_.NewRunnableMethod(
-              &WebPluginImpl::OnDownloadPluginSrcUrl), 0);
+      MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(&WebPluginImpl::OnDownloadPluginSrcUrl,
+                                weak_factory_.GetWeakPtr()));
     }
   }
 
@@ -474,7 +475,7 @@ WebPluginImpl::WebPluginImpl(
       ignore_response_error_(false),
       file_path_(file_path),
       mime_type_(UTF16ToASCII(params.mimeType)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
   StringToLowerASCII(&mime_type_);
 
@@ -1350,7 +1351,7 @@ void WebPluginImpl::TearDownPluginInstance(
   // This needs to be called now and not in the destructor since the
   // webframe_ might not be valid anymore.
   webframe_ = NULL;
-  method_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void WebPluginImpl::SetReferrer(WebKit::WebURLRequest* request,

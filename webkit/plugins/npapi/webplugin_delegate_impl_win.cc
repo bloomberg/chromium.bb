@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -324,8 +326,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       handle_event_message_filter_hook_(NULL),
       handle_event_pump_messages_event_(NULL),
       user_gesture_message_posted_(false),
-#pragma warning(suppress: 4355)  // can use this
-      user_gesture_msg_factory_(this),
+      ALLOW_THIS_IN_INITIALIZER_LIST(user_gesture_msg_factory_(this)),
       handle_event_depth_(0),
       mouse_hook_(NULL),
       first_set_window_call_(true),
@@ -698,8 +699,8 @@ void WebPluginDelegateImpl::OnThrottleMessage() {
   }
 
   if (!throttle_queue_was_empty) {
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        NewRunnableFunction(&WebPluginDelegateImpl::OnThrottleMessage),
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(&WebPluginDelegateImpl::OnThrottleMessage),
         kFlashWMUSERMessageThrottleDelayMs);
   }
 }
@@ -721,8 +722,8 @@ void WebPluginDelegateImpl::ThrottleMessage(WNDPROC proc, HWND hwnd,
   throttle_queue->push_back(msg);
 
   if (throttle_queue->size() == 1) {
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        NewRunnableFunction(&WebPluginDelegateImpl::OnThrottleMessage),
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(&WebPluginDelegateImpl::OnThrottleMessage),
         kFlashWMUSERMessageThrottleDelayMs);
   }
 }
@@ -1080,9 +1081,10 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
 
       delegate->instance()->PushPopupsEnabledState(true);
 
-      MessageLoop::current()->PostDelayedTask(FROM_HERE,
-          delegate->user_gesture_msg_factory_.NewRunnableMethod(
-              &WebPluginDelegateImpl::OnUserGestureEnd),
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&WebPluginDelegateImpl::OnUserGestureEnd,
+                     delegate->user_gesture_msg_factory_.GetWeakPtr()),
           kWindowedPluginPopupTimerMs);
     }
 

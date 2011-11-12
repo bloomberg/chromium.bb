@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "webkit/plugins/npapi/plugin_stream.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -145,8 +146,8 @@ bool PluginStream::WriteToPlugin(const char *buf, const int length,
     delivery_data_.resize(previous_size + remaining);
     data_offset_ = data_offset;
     memcpy(&delivery_data_[previous_size], buf + written, remaining);
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &PluginStream::OnDelayDelivery));
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&PluginStream::OnDelayDelivery, this));
   }
 
   return true;

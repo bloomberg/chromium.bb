@@ -170,8 +170,8 @@ void PPB_Surface3D_Impl::OnContextLost() {
 
   // Send context lost to plugin. This may have been caused by a PPAPI call, so
   // avoid re-entering.
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &PPB_Surface3D_Impl::SendContextLost));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&PPB_Surface3D_Impl::SendContextLost, this));
 }
 
 void PPB_Surface3D_Impl::SendContextLost() {
