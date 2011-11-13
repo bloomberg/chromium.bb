@@ -69,7 +69,7 @@ class TabbedPaneTest : public testing::Test,
 #if defined(OS_WIN)
 // These test are failing and crash on Win7. See http://crbug.com/104067
 #define MAYBE_SizeAndLayout DISABLED_SizeAndLayout
-#define MAYBE_AddRemove DISBLED_AddRemove
+#define MAYBE_AddRemove DISABLED_AddRemove
 #else
 #define MAYBE_SizeAndLayout SizeAndLayout
 #define MAYBE_AddRemove AddRemove
