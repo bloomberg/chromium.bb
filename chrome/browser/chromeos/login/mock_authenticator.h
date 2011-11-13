@@ -107,6 +107,9 @@ class MockLoginUtils : public LoginUtils {
 
   virtual void PrewarmAuthentication() {}
 
+  virtual void RestoreAuthenticationSession(const std::string& user_name,
+                                            Profile* profile) {}
+
   virtual void FetchCookies(
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) {}

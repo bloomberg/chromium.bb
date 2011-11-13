@@ -550,8 +550,8 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
   } else {
     // We did not log in (we crashed or are debugging), so we need to
     // set the user name for sync.
-    profile->GetProfileSyncService(
-        chromeos::UserManager::Get()->logged_in_user().email());
+    chromeos::LoginUtils::Get()->RestoreAuthenticationSession(
+        chromeos::UserManager::Get()->logged_in_user().email(), profile);
   }
 }
 
