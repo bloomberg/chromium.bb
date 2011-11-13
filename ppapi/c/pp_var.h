@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_var.idl modified Tue Jul 12 15:26:30 2011. */
+/* From pp_var.idl modified Fri Nov 11 19:57:17 2011. */
 
 #ifndef PPAPI_C_PP_VAR_H_
 #define PPAPI_C_PP_VAR_H_
@@ -31,44 +31,44 @@ typedef enum {
   /**
    * An undefined value.
    */
-  PP_VARTYPE_UNDEFINED,
+  PP_VARTYPE_UNDEFINED = 0,
   /**
    * A NULL value. This is similar to undefined, but JavaScript differentiates
    * the two so it is exposed here as well.
    */
-  PP_VARTYPE_NULL,
+  PP_VARTYPE_NULL = 1,
   /**
    * A boolean value, use the <code>as_bool</code> member of the var.
    */
-  PP_VARTYPE_BOOL,
+  PP_VARTYPE_BOOL = 2,
   /**
    * A 32-bit integer value. Use the <code>as_int</code> member of the var.
    */
-  PP_VARTYPE_INT32,
+  PP_VARTYPE_INT32 = 3,
   /**
    * A double-precision floating point value. Use the <code>as_double</code>
    * member of the var.
    */
-  PP_VARTYPE_DOUBLE,
+  PP_VARTYPE_DOUBLE = 4,
   /**
    * The Var represents a string. The <code>as_id</code> field is used to
    * identify the string, which may be created and retrieved from the
    * <code>PPB_Var</code> interface.
    */
-  PP_VARTYPE_STRING,
+  PP_VARTYPE_STRING = 5,
   /**
    * Represents a JavaScript object. This vartype is not currently usable
    * from modules, although it is used internally for some tasks.
    */
-  PP_VARTYPE_OBJECT,
+  PP_VARTYPE_OBJECT = 6,
   /**
    * Arrays and dictionaries are not currently supported but will be added
    * in future revisions. These objects are reference counted so be sure
    * to properly AddRef/Release them as you would with strings to ensure your
    * module will continue to work with future versions of the API.
    */
-  PP_VARTYPE_ARRAY,
-  PP_VARTYPE_DICTIONARY
+  PP_VARTYPE_ARRAY = 7,
+  PP_VARTYPE_DICTIONARY = 8
 } PP_VarType;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VarType, 4);
 /**

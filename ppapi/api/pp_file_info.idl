@@ -13,11 +13,11 @@
 [assert_size(4)]
 enum PP_FileType {
   /** A regular file type */
-  PP_FILETYPE_REGULAR,
+  PP_FILETYPE_REGULAR = 0,
   /** A directory */
-  PP_FILETYPE_DIRECTORY,
+  PP_FILETYPE_DIRECTORY = 1,
   /** A catch-all for unidentified types */
-  PP_FILETYPE_OTHER
+  PP_FILETYPE_OTHER = 2
 };
 
 /**
@@ -28,11 +28,11 @@ enum PP_FileSystemType {
   /** For identified invalid return values */
   PP_FILESYSTEMTYPE_INVALID = 0,
   /** For external file system types */
-  PP_FILESYSTEMTYPE_EXTERNAL,
+  PP_FILESYSTEMTYPE_EXTERNAL = 1,
   /** For local persistant file system types */
-  PP_FILESYSTEMTYPE_LOCALPERSISTENT,
+  PP_FILESYSTEMTYPE_LOCALPERSISTENT = 2,
   /** For local temporary file system types */
-  PP_FILESYSTEMTYPE_LOCALTEMPORARY
+  PP_FILESYSTEMTYPE_LOCALTEMPORARY = 3
 };
 
 /**

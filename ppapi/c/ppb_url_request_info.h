@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_url_request_info.idl modified Mon Aug 29 10:11:34 2011. */
+/* From ppb_url_request_info.idl modified Fri Nov 11 19:53:07 2011. */
 
 #ifndef PPAPI_C_PPB_URL_REQUEST_INFO_H_
 #define PPAPI_C_PPB_URL_REQUEST_INFO_H_
@@ -35,7 +35,7 @@
  */
 typedef enum {
   /** This corresponds to a string (<code>PP_VARTYPE_STRING</code>). */
-  PP_URLREQUESTPROPERTY_URL,
+  PP_URLREQUESTPROPERTY_URL = 0,
   /**
    * This corresponds to a string (<code>PP_VARTYPE_STRING</code>); either
    * POST or GET. Refer to the
@@ -43,14 +43,14 @@ typedef enum {
    * Methods</a> documentation for further information.
    *
    */
-  PP_URLREQUESTPROPERTY_METHOD,
+  PP_URLREQUESTPROPERTY_METHOD = 1,
   /**
    * This corresponds to a string (<code>PP_VARTYPE_STRING</code>); \n
    * delimited. Refer to the
    * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html"Header
    * Field Definitions</a> documentaiton for further information.
    */
-  PP_URLREQUESTPROPERTY_HEADERS,
+  PP_URLREQUESTPROPERTY_HEADERS = 2,
   /**
    * This corresponds to a <code>PP_Bool</code> (<code>PP_VARTYPE_BOOL</code>;
    * default=<code>PP_FALSE</code>).
@@ -58,7 +58,7 @@ typedef enum {
    * to a file. Use PPB_URLLoader.FinishStreamingToFile() to complete the
    * download.
    */
-  PP_URLREQUESTPROPERTY_STREAMTOFILE,
+  PP_URLREQUESTPROPERTY_STREAMTOFILE = 3,
   /**
    * This corresponds to a <code>PP_Bool</code> (<code>PP_VARTYPE_BOOL</code>;
    * default=<code>PP_TRUE</code>).
@@ -66,21 +66,21 @@ typedef enum {
    * PPB_URLLoader.FollowRedirects() to follow the redirects only after
    * examining redirect headers.
    */
-  PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS,
+  PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS = 4,
   /**
    * This corresponds to a <code>PP_Bool</code> (<code>PP_VARTYPE_BOOL</code>;
    * default=<code>PP_FALSE</code>).
    * Set this value to <code>PP_TRUE</code> if you want to be able to poll the
    * download progress using PPB_URLLoader.GetDownloadProgress().
    */
-  PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS,
+  PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS = 5,
   /**
    * This corresponds to a <code>PP_Bool</code>
    * (default=<code>PP_FALSE</code>). Set this value to <code>PP_TRUE</code> if
    * you want to be able to poll the upload progress using
    * PPB_URLLoader.GetUplaodProgress().
    */
-  PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS,
+  PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS = 6,
   /**
    * This corresponds to a string (<code>PP_VARTYPE_STRING)</code> or may be
    * undefined (<code>PP_VARTYPE_UNDEFINED</code>; default).
@@ -91,7 +91,7 @@ typedef enum {
    * referrer; if given to a loader without universal access,
    * <code>PP_ERROR_NOACCESS</code> will result.
    */
-  PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL,
+  PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL = 7,
   /**
    * This corresponds to a <code>PP_Bool</code> (<code>PP_VARTYPE_BOOL</code>;
    * default=<code>PP_FALSE</code>). Whether cross-origin requests are allowed.
@@ -101,7 +101,7 @@ typedef enum {
    * the <a href="http://www.w3.org/TR/access-control">Cross-Origin Resource
    * Sharing</a> documentation.
    */
-  PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS,
+  PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS = 8,
   /**
    * This corresponds to a <code>PP_Bool</code> (<code>PP_VARTYPE_BOOL</code>;
    * default=<code>PP_FALSE</code>).
@@ -109,7 +109,7 @@ typedef enum {
    * no credentials are sent with the request and cookies are ignored in the
    * response. If the request is not cross-origin, this property is ignored.
    */
-  PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS,
+  PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS = 9,
   /**
    * This corresponds to a string (<code>PP_VARTYPE_STRING</code>) or may be
    * undefined (<code>PP_VARTYPE_UNDEFINED</code>; default).
@@ -120,7 +120,7 @@ typedef enum {
    * to set a custom content transfer encoding; if given to a loader without
    * universal access, <code>PP_ERROR_NOACCESS</code> will result.
    */
-  PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING,
+  PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING = 10,
   /**
    * This corresponds to an integer (<code>PP_VARTYPE_INT32</code>); default
    * is not defined and is set by the browser, possibly depending on system
@@ -132,7 +132,7 @@ typedef enum {
    * <code>PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERERTHRESHOLD</code> must also
    * be set. Behavior is undefined if the former is <= the latter.
    */
-  PP_URLREQUESTPROPERTY_PREFETCHBUFFERUPPERTHRESHOLD,
+  PP_URLREQUESTPROPERTY_PREFETCHBUFFERUPPERTHRESHOLD = 11,
   /**
    * This corresponds to an integer (<code>PP_VARTYPE_INT32</code>); default is
    * not defined and is set by the browser to a value appropriate for the
@@ -145,7 +145,7 @@ typedef enum {
    * <code>PP_URLREQUESTPROPERTY_PREFETCHBUFFERUPPERTHRESHOLD</code> must also
    * be set. Behavior is undefined if the former is >= the latter.
    */
-  PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERTHRESHOLD
+  PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERTHRESHOLD = 12
 } PP_URLRequestProperty;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLRequestProperty, 4);
 /**
