@@ -6,20 +6,7 @@
 #define VIEWS_WINDOW_WINDOW_SHAPE_H_
 #pragma once
 
-#include "views/views_export.h"
-
-namespace gfx {
-class Size;
-class Path;
-}
-
-namespace views {
-
-// Sets the window mask to a style that most likely matches
-// ui/resources/window_*
-VIEWS_EXPORT void GetDefaultWindowMask(const gfx::Size& size,
-                                       gfx::Path* window_mask);
-
-} // namespace views
+#include "ui/views/window/window_shape.h"
+// TODO(tfarina): remove this file once all includes have been updated.
 
 #endif  // VIEWS_WINDOW_WINDOW_SHAPE_H_
