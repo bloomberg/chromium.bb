@@ -66,8 +66,15 @@ class TabbedPaneTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(TabbedPaneTest);
 };
 
+#if defined(OS_WIN)
+// This test is failing and crashes on Win7. See http://crbug.com/104067
+#define MAYBE_SizeAndLayout DISABLED_SizeAndLayout
+#else
+#define MAYBE_SizeAndLayout SizeAndLayout
+#endif
+
 // Tests that TabbedPane::GetPreferredSize() and TabbedPane::Layout().
-TEST_F(TabbedPaneTest, SizeAndLayout) {
+TEST_F(TabbedPaneTest, MAYBE_SizeAndLayout) {
   View* child1 = new FixedSizeView(gfx::Size(20, 10));
   tabbed_pane_->AddTab(ASCIIToUTF16("tab1"), child1);
   View* child2 = new FixedSizeView(gfx::Size(5, 5));
