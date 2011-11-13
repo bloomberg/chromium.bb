@@ -25,7 +25,7 @@ enum PP_FileChooserMode_Dev {
   /**
    * Mode for choosing multiple existing files.
    */
-  PP_FILECHOOSERMODE_OPENMULTIPLE
+  PP_FILECHOOSERMODE_OPENMULTIPLE = 1
 };
 
 interface PPB_FileChooser_Dev {

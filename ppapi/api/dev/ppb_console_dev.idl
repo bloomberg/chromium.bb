@@ -14,9 +14,9 @@ label Chrome {
 [assert_size(4)]
 enum PP_LogLevel_Dev {
   PP_LOGLEVEL_TIP = 0,
-  PP_LOGLEVEL_LOG,
-  PP_LOGLEVEL_WARNING,
-  PP_LOGLEVEL_ERROR
+  PP_LOGLEVEL_LOG = 1,
+  PP_LOGLEVEL_WARNING = 2,
+  PP_LOGLEVEL_ERROR = 3
 };
 
 interface PPB_Console_Dev {

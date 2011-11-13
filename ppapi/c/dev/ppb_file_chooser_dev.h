@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_file_chooser_dev.idl modified Tue Oct 11 11:17:39 2011. */
+/* From dev/ppb_file_chooser_dev.idl modified Fri Nov 11 20:18:10 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_FILE_CHOOSER_DEV_H_
 #define PPAPI_C_DEV_PPB_FILE_CHOOSER_DEV_H_
@@ -41,7 +41,7 @@ typedef enum {
   /**
    * Mode for choosing multiple existing files.
    */
-  PP_FILECHOOSERMODE_OPENMULTIPLE
+  PP_FILECHOOSERMODE_OPENMULTIPLE = 1
 } PP_FileChooserMode_Dev;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileChooserMode_Dev, 4);
 /**

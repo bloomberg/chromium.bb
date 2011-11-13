@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/pp_video_capture_dev.idl modified Wed Oct  5 15:55:11 2011. */
+/* From dev/pp_video_capture_dev.idl modified Fri Nov 11 20:19:26 2011. */
 
 #ifndef PPAPI_C_DEV_PP_VIDEO_CAPTURE_DEV_H_
 #define PPAPI_C_DEV_PP_VIDEO_CAPTURE_DEV_H_
@@ -47,23 +47,23 @@ typedef enum {
   /**
    * Initial state, capture is stopped.
    */
-  PP_VIDEO_CAPTURE_STATUS_STOPPED,
+  PP_VIDEO_CAPTURE_STATUS_STOPPED = 0,
   /**
    * StartCapture has been called, but capture hasn't started yet.
    */
-  PP_VIDEO_CAPTURE_STATUS_STARTING,
+  PP_VIDEO_CAPTURE_STATUS_STARTING = 1,
   /**
-   * Capture is started.
+   * Capture has been started.
    */
-  PP_VIDEO_CAPTURE_STATUS_STARTED,
+  PP_VIDEO_CAPTURE_STATUS_STARTED = 2,
   /**
    * Capture has been started, but is paused because no buffer is available.
    */
-  PP_VIDEO_CAPTURE_STATUS_PAUSED,
+  PP_VIDEO_CAPTURE_STATUS_PAUSED = 3,
   /**
    * StopCapture has been called, but capture hasn't stopped yet.
    */
-  PP_VIDEO_CAPTURE_STATUS_STOPPING
+  PP_VIDEO_CAPTURE_STATUS_STOPPING = 4
 } PP_VideoCaptureStatus_Dev;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VideoCaptureStatus_Dev, 4);
 /**

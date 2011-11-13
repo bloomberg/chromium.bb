@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_console_dev.idl modified Fri Aug 26 13:53:19 2011. */
+/* From dev/ppb_console_dev.idl modified Fri Nov 11 20:17:52 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_CONSOLE_DEV_H_
 #define PPAPI_C_DEV_PPB_CONSOLE_DEV_H_
@@ -29,9 +29,9 @@
  */
 typedef enum {
   PP_LOGLEVEL_TIP = 0,
-  PP_LOGLEVEL_LOG,
-  PP_LOGLEVEL_WARNING,
-  PP_LOGLEVEL_ERROR
+  PP_LOGLEVEL_LOG = 1,
+  PP_LOGLEVEL_WARNING = 2,
+  PP_LOGLEVEL_ERROR = 3
 } PP_LogLevel_Dev;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_LogLevel_Dev, 4);
 /**
