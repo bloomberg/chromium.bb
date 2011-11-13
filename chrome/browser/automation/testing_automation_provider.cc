@@ -202,6 +202,10 @@ TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
 }
 
 TestingAutomationProvider::~TestingAutomationProvider() {
+#if defined(OS_CHROMEOS)
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      RemoveObserver(this);
+#endif
   BrowserList::RemoveObserver(this);
 }
 
