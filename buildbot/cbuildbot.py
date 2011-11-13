@@ -436,8 +436,10 @@ def _RunBuildStagesWrapper(bot_id, options, build_config):
     elif build_config['build_type'] in _DISTRIBUTED_TYPES:
       chrome_rev = build_config['chrome_rev']
       if options.chrome_rev: chrome_rev = options.chrome_rev
-      # We don't do distributed logic to TOT Chrome PFQ's.
+      # We don't do distributed logic to TOT Chrome PFQ's, nor local
+      # chrome roots (e.g. chrome try bots)
       if chrome_rev not in [constants.CHROME_REV_TOT,
+                            constants.CHROME_REV_LOCAL,
                             constants.CHROME_REV_SPEC]:
         return True
 
