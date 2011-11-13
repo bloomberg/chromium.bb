@@ -7,14 +7,14 @@
 <html i18n-values="dir:textdirection;">
   <head>
     <meta charset="utf-8">
-    <title i18n-content="TITLE"></title>
+    <title i18n-content="title"></title>
     <script src="chrome://tasks/includes.js"></script>
     <script src="chrome://tasks/main.js"></script>
     <script src="chrome://tasks/strings.js"></script>
     <link rel="stylesheet" href="task_manager.css">
   </head>
   <body>
-    <div class="dialog-title" i18n-content="TITLE"
+    <div class="dialog-title" i18n-content="title"
          visibleif='this.opt_.isShowTitle'></div>
     <div class="dialog-body">
       <div class="list-container">
@@ -23,12 +23,12 @@
     </div>
     <div class="dialog-footer">
       <div class="footer-left-container">
-        <a href="#" id="about-memory-link" i18n-content="ABOUT_MEMORY_LINK"></a>
+        <a href="#" id="about-memory-link" i18n-content="aboutMemoryLink"></a>
       </div>
       <div class="footer-right-container">
         <button id="kill-process"
-            i18n-content="KILL_CHROMEOS" disabled></button>
-        <button id="close-window" i18n-content="CLOSE_WINDOW"
+            i18n-content="killChromeOS" disabled></button>
+        <button id="close-window" i18n-content="closeWindow"
                 visibleif='this.opt_.isShowCloseButton'></button>
       </div>
     </div>

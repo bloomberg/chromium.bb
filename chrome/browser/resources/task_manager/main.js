@@ -12,21 +12,21 @@ cr.addSingletonGetter(TaskManager);
  * @const
  */
 var DEFAULT_COLUMNS = [
-    ['title', 'PAGE_COLUMN', 300, true],
-    ['profileName', 'PROFILE_NAME_COLUMN', 120, false],
-    ['physicalMemory', 'PHYSICAL_MEM_COLUMN', 80, true],
-    ['sharedMemory', 'SHARED_MEM_COLUMN', 80, false],
-    ['privateMemory', 'PRIVATE_MEM_COLUMN', 80, false],
-    ['cpuUsage', 'CPU_COLUMN', 80, true],
-    ['networkUsage', 'NET_COLUMN', 85, true],
-    ['processId', 'PROCESS_ID_COLUMN', 100, false],
-    ['webCoreImageCacheSize', 'WEBCORE_IMAGE_CACHE_COLUMN', 120, false],
-    ['webCoreScriptsCacheSize', 'WEBCORE_SCRIPTS_CACHE_COLUMN', 120, false],
-    ['webCoreCSSCacheSize', 'WEBCORE_CSS_CACHE_COLUMN', 120, false],
-    ['fps', 'FPS_COLUMN', 50, true],
-    ['sqliteMemoryUsed', 'SQLITE_MEMORY_USED_COLUMN', 80, false],
-    ['goatsTeleported', 'GOATS_TELEPORTED_COLUMN', 80, false],
-    ['v8MemoryAllocatedSize', 'JAVASCRIPT_MEMORY_ALLOCATED_COLUMN', 120, false],
+    ['title', 'pageColumn', 300, true],
+    ['profileName', 'profileNameColumn', 120, false],
+    ['physicalMemory', 'physicalMemColumn', 80, true],
+    ['sharedMemory', 'sharedMemColumn', 80, false],
+    ['privateMemory', 'privateMemColumn', 80, false],
+    ['cpuUsage', 'cpuColumn', 80, true],
+    ['networkUsage', 'netColumn', 85, true],
+    ['processId', 'processIDColumn', 100, false],
+    ['webCoreImageCacheSize', 'webcoreImageCacheColumn', 120, false],
+    ['webCoreScriptsCacheSize', 'webcoreScriptsCacheColumn', 120, false],
+    ['webCoreCSSCacheSize', 'webcoreCSSCacheColumn', 120, false],
+    ['fps', 'fpsColumn', 50, true],
+    ['sqliteMemoryUsed', 'sqliteMemoryUsedColumn', 80, false],
+    ['goatsTeleported', 'goatsTeleportedColumn', 80, false],
+    ['v8MemoryAllocatedSize', 'javascriptMemoryAllocatedColumn', 120, false],
 ];
 
 var COMMAND_CONTEXTMENU_COLUMN_PREFIX = 'columnContextMenu';
@@ -292,8 +292,8 @@ TaskManager.prototype = {
       tm.tableContextMenu_.appendChild(item);
     };
 
-    addMenuItem(this, 'inspect', 'INSPECT', "Inspect");
-    addMenuItem(this, 'activate', 'ACTIVATE', "Activate");
+    addMenuItem(this, 'inspect', 'inspect', "Inspect");
+    addMenuItem(this, 'activate', 'activate', "Activate");
 
     this.document_.body.appendChild(this.tableContextMenu_);
     cr.ui.Menu.decorate(this.tableContextMenu_);

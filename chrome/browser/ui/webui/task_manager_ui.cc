@@ -21,35 +21,44 @@
 
 namespace {
 
-// Convenience macro for AddLocalizedString() method.
-#define SET_LOCALIZED_STRING(ID) \
-  source->AddLocalizedString(#ID, IDS_TASK_MANAGER_##ID)
-
 ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUITaskManagerHost);
 
-  source->AddLocalizedString("CLOSE_WINDOW", IDS_CLOSE);
-  SET_LOCALIZED_STRING(TITLE);
-  SET_LOCALIZED_STRING(ABOUT_MEMORY_LINK);
-  SET_LOCALIZED_STRING(KILL_CHROMEOS);
-  SET_LOCALIZED_STRING(PROCESS_ID_COLUMN);
-  SET_LOCALIZED_STRING(PAGE_COLUMN);
-  SET_LOCALIZED_STRING(PROFILE_NAME_COLUMN);
-  SET_LOCALIZED_STRING(NET_COLUMN);
-  SET_LOCALIZED_STRING(CPU_COLUMN);
-  SET_LOCALIZED_STRING(PHYSICAL_MEM_COLUMN);
-  SET_LOCALIZED_STRING(SHARED_MEM_COLUMN);
-  SET_LOCALIZED_STRING(PRIVATE_MEM_COLUMN);
-  SET_LOCALIZED_STRING(GOATS_TELEPORTED_COLUMN);
-  SET_LOCALIZED_STRING(WEBCORE_IMAGE_CACHE_COLUMN);
-  SET_LOCALIZED_STRING(WEBCORE_SCRIPTS_CACHE_COLUMN);
-  SET_LOCALIZED_STRING(WEBCORE_CSS_CACHE_COLUMN);
-  SET_LOCALIZED_STRING(FPS_COLUMN);
-  SET_LOCALIZED_STRING(SQLITE_MEMORY_USED_COLUMN);
-  SET_LOCALIZED_STRING(JAVASCRIPT_MEMORY_ALLOCATED_COLUMN);
-  SET_LOCALIZED_STRING(INSPECT);
-  SET_LOCALIZED_STRING(ACTIVATE);
+  source->AddLocalizedString("closeWindow", IDS_CLOSE);
+  source->AddLocalizedString("title",IDS_TASK_MANAGER_TITLE);
+  source->AddLocalizedString("aboutMemoryLink",
+                             IDS_TASK_MANAGER_ABOUT_MEMORY_LINK);
+  source->AddLocalizedString("killChromeOS", IDS_TASK_MANAGER_KILL_CHROMEOS);
+  source->AddLocalizedString("processIDColumn",
+                             IDS_TASK_MANAGER_PROCESS_ID_COLUMN);
+  source->AddLocalizedString("pageColumn", IDS_TASK_MANAGER_PAGE_COLUMN);
+  source->AddLocalizedString("profileNameColumn",
+                             IDS_TASK_MANAGER_PROFILE_NAME_COLUMN);
+  source->AddLocalizedString("netColumn", IDS_TASK_MANAGER_NET_COLUMN);
+  source->AddLocalizedString("cpuColumn", IDS_TASK_MANAGER_CPU_COLUMN);
+  source->AddLocalizedString("physicalMemColumn",
+                             IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN);
+  source->AddLocalizedString("sharedMemColumn",
+                             IDS_TASK_MANAGER_SHARED_MEM_COLUMN);
+  source->AddLocalizedString("privateMemColumn",
+                             IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN);
+  source->AddLocalizedString("goatsTeleportedColumn",
+                             IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN);
+  source->AddLocalizedString("webcoreImageCacheColumn",
+                             IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN);
+  source->AddLocalizedString("webcoreScriptsCacheColumn",
+                             IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN);
+  source->AddLocalizedString("webcoreCSSCacheColumn",
+                             IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN);
+  source->AddLocalizedString("fpsColumn",IDS_TASK_MANAGER_FPS_COLUMN);
+  source->AddLocalizedString("sqliteMemoryUsedColumn",
+                             IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN);
+  source->AddLocalizedString(
+      "javascriptMemoryAllocatedColumn",
+      IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN);
+  source->AddLocalizedString("inspect", IDS_TASK_MANAGER_INSPECT);
+  source->AddLocalizedString("activate", IDS_TASK_MANAGER_ACTIVATE);
   source->set_json_path("strings.js");
   source->add_resource_path("main.js", IDR_TASK_MANAGER_JS);
   source->add_resource_path("includes.js", IDR_TASK_MANAGER_INCLUDES_JS);
