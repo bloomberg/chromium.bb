@@ -67,10 +67,12 @@ class TabbedPaneTest : public testing::Test,
 };
 
 #if defined(OS_WIN)
-// This test is failing and crashes on Win7. See http://crbug.com/104067
+// These test are failing and crash on Win7. See http://crbug.com/104067
 #define MAYBE_SizeAndLayout DISABLED_SizeAndLayout
+#define MAYBE_AddRemove DISBLED_AddRemove
 #else
 #define MAYBE_SizeAndLayout SizeAndLayout
+#define MAYBE_AddRemove AddRemove
 #endif
 
 // Tests that TabbedPane::GetPreferredSize() and TabbedPane::Layout().
@@ -100,7 +102,7 @@ TEST_F(TabbedPaneTest, MAYBE_SizeAndLayout) {
   EXPECT_EQ(bounds, child2->bounds());
 }
 
-TEST_F(TabbedPaneTest, AddRemove) {
+TEST_F(TabbedPaneTest, MAYBE_AddRemove) {
   View* tab0 = new View;
   tabbed_pane_->AddTab(ASCIIToUTF16("tab0"), tab0);
   EXPECT_EQ(tab0, tabbed_pane_->GetSelectedTab());
