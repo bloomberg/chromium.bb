@@ -17,21 +17,21 @@ label Chrome {
  */
 [assert_size(4)]
 enum PP_InputEvent_Type {
-  PP_INPUTEVENT_TYPE_UNDEFINED   = -1,
+  PP_INPUTEVENT_TYPE_UNDEFINED = -1,
 
   /**
    * Notification that a mouse button was pressed.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_MOUSE class.
    */
-  PP_INPUTEVENT_TYPE_MOUSEDOWN   = 0,
+  PP_INPUTEVENT_TYPE_MOUSEDOWN = 0,
 
   /**
    * Notification that a mouse button was released.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_MOUSE class.
    */
-  PP_INPUTEVENT_TYPE_MOUSEUP     = 1,
+  PP_INPUTEVENT_TYPE_MOUSEUP = 1,
 
   /**
    * Notification that a mouse button was moved when it is over the instance
@@ -39,28 +39,28 @@ enum PP_InputEvent_Type {
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_MOUSE class.
    */
-  PP_INPUTEVENT_TYPE_MOUSEMOVE   = 2,
+  PP_INPUTEVENT_TYPE_MOUSEMOVE = 2,
 
   /**
    * Notification that the mouse entered the instance's bounds.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_MOUSE class.
    */
-  PP_INPUTEVENT_TYPE_MOUSEENTER  = 3,
+  PP_INPUTEVENT_TYPE_MOUSEENTER = 3,
 
   /**
    * Notification that a mouse left the instance's bounds.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_MOUSE class.
    */
-  PP_INPUTEVENT_TYPE_MOUSELEAVE  = 4,
+  PP_INPUTEVENT_TYPE_MOUSELEAVE = 4,
 
   /**
    * Notification that the scroll wheel was used.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_WHEEL class.
    */
-  PP_INPUTEVENT_TYPE_WHEEL  = 5,
+  PP_INPUTEVENT_TYPE_WHEEL = 5,
 
   /**
    * Notification that a key transitioned from "up" to "down".
@@ -68,7 +68,7 @@ enum PP_InputEvent_Type {
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_KEYBOARD class.
    */
-  PP_INPUTEVENT_TYPE_RAWKEYDOWN  = 6,
+  PP_INPUTEVENT_TYPE_RAWKEYDOWN = 6,
 
   /**
    * Notification that a key was pressed. This does not necessarily correspond
@@ -77,14 +77,14 @@ enum PP_InputEvent_Type {
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_KEYBOARD class.
    */
-  PP_INPUTEVENT_TYPE_KEYDOWN     = 7,
+  PP_INPUTEVENT_TYPE_KEYDOWN = 7,
 
   /**
    * Notification that a key was released.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_KEYBOARD class.
    */
-  PP_INPUTEVENT_TYPE_KEYUP       = 8,
+  PP_INPUTEVENT_TYPE_KEYUP = 8,
 
   /**
    * Notification that a character was typed. Use this for text input. Key
@@ -93,7 +93,7 @@ enum PP_InputEvent_Type {
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_KEYBOARD class.
    */
-  PP_INPUTEVENT_TYPE_CHAR        = 9,
+  PP_INPUTEVENT_TYPE_CHAR = 9,
 
   /**
    * TODO(brettw) when is this used?
