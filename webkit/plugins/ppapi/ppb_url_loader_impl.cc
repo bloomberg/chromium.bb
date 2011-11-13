@@ -130,13 +130,14 @@ int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
   request_data_ = request->GetData();
 
   WebURLLoaderOptions options;
-  options.allowCredentials = request_data_.allow_credentials;
   if (has_universal_access_) {
+    options.allowCredentials = true;
     options.crossOriginRequestPolicy =
         WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
   } else {
     // All other HTTP requests are untrusted.
     options.untrustedHTTP = true;
+    options.allowCredentials = request_data_.allow_credentials;
     if (request_data_.allow_cross_origin_requests) {
       // Allow cross-origin requests with access control.
       options.crossOriginRequestPolicy =
