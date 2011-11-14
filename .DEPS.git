@@ -1,0 +1,96 @@
+# DO NOT EDIT. THIS IS A GENERATED FILE.
+# ALL MANUAL CHANGES WILL BE OVERWRITTEN.
+vars = {
+    'webkit_url':
+         'http://git.chromium.org/external/WebKit_trimmed.git',
+    'git_url':
+         'http://git.chromium.org'
+}
+
+deps = {
+    'base':
+        Var('git_url') + '/chromium/src/base.git@6b522c03251c49eace3a814a1732c1de0ca54376',
+    'build':
+        Var('git_url') + '/chromium/src/build.git@be9160188a538f641b3bcdb0e002d8f799eed42e',
+    'chrome/test/pyautolib':
+        Var('git_url') + '/chromium/src/chrome/test/pyautolib.git@4c343da596f74fcbb863af46b4c3c3875c4d98cf',
+    'gpu':
+        Var('git_url') + '/chromium/src/gpu.git@7c90e76686ff922683d3656e03349285b96ef0b4',
+    'native_client/tools/perf_expectations':
+        Var('git_url') + '/chromium/src/tools/perf_expectations.git@9b4381cffa03ab7ac6f40b97cc007983e11fc45e',
+    'net/tools/testserver':
+        Var('git_url') + '/chromium/src/net/tools/testserver.git@d4479e10b67911dbc122576173b410d9499de225',
+    'ppapi':
+        Var('git_url') + '/chromium/src/ppapi.git@ea1e0a222977c24a879bcbe363dc77e53bb86a6f',
+    'testing/gtest':
+        Var('git_url') + '/external/googletest.git@a2965825b1953c7b8ad292f726eb5c3f2659d5d3',
+    'third_party':
+        Var('git_url') + '/native_client/src/third_party.git@dee9b8ce860cd997aba3072fd15a7d5d6d8ed633',
+    'third_party/asan':
+        Var('git_url') + '/chromium/deps/asan.git@e60dea71909e102540fbfc4fa1829c01808420b8',
+    'third_party/gles2_book':
+        Var('git_url') + '/chromium/src/third_party/gles2_book.git@b91648d289f982ce27fda1d1a3f53eb8c8715ebc',
+    'third_party/lcov':
+        Var('git_url') + '/chromium/src/third_party/lcov.git@ba4a791b2b525fc13d169b4cc671dede09bbfb64',
+    'third_party/pyftpdlib':
+        Var('git_url') + '/chromium/src/third_party/pyftpdlib.git@69a5604ca34948831339ac985216a0fdbfb9f575',
+    'third_party/pyftpdlib/src':
+        Var('git_url') + '/external/pyftpdlib.git@3647f3cafa367c9576f29bde2f7b6d1b7d2983b3',
+    'third_party/simplejson':
+        Var('git_url') + '/chromium/tools/build/third_party/simplejson.git@d090d5fdd5957d4c1790eb9c4a8c4a3c64c61858',
+    'third_party/tlslite':
+        Var('git_url') + '/chromium/src/third_party/tlslite.git@43d97b2c5a7b640e0909bfa83124055180fde4cd',
+    'tools/clang':
+        Var('git_url') + '/chromium/src/tools/clang.git@dee7cf73be559d78ff00953848bc4bfb3dccaf33',
+    'tools/gyp':
+        Var('git_url') + '/external/gyp.git@044ec99926ee71a0c0ab31335664f501c15e13a9',
+    'tools/valgrind':
+        Var('git_url') + '/chromium/src/tools/valgrind.git@face09a10fba0a8c672cde90a87a6f0bf973a578',
+}
+
+deps_os = {
+    'win':
+    {
+        'third_party/NSIS':
+            Var('git_url') + '/native_client/deps/third_party/NSIS.git@21b6ad22daa7bfc04b9f1c1805a34622e2607a93',
+        'third_party/mingw-w64/mingw/bin':
+            Var('git_url') + '/native_client/deps/third_party/mingw-w64/mingw/bin.git@3cc8b140b883a9fe4986d12cfd46c16a093d3527',
+        'third_party/python_26':
+            Var('git_url') + '/chromium/deps/python_26.git@0f769a0323d9a5a301bb9c50e48f43166939a923',
+    },
+}
+
+include_rules = [
+    
+]
+
+skip_child_includes = [
+    
+]
+
+hooks = [
+    {
+    'action':
+         [
+    'python',
+    'native_client/build/download_toolchains.py',
+    '--x86-version',
+    '7098',
+    '--arm-trusted-version',
+    '6645',
+    '--pnacl-version',
+    '7107'
+],
+    'pattern':
+         '.'
+},
+    {
+    'action':
+         [
+    'python',
+    'native_client/build/gyp_nacl'
+],
+    'pattern':
+         '.'
+}
+]
