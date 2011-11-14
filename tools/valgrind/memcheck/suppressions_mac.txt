@@ -208,8 +208,6 @@
    fun:_FSOperateOnObjectSync
    fun:FSMoveObjectToTrashSync
    fun:_Z9TrashFuncRK8FilePath
-   fun:_Z18DispatchToFunctionIPFvRK8FilePathES0_EvT_RK6Tuple1IT0_E
-   fun:_ZN16RunnableFunctionIPFvRK8FilePathE6Tuple1IS0_EE3RunEv
 }
 {
    # See also http://openradar.appspot.com/radar?id=1169404
