@@ -178,7 +178,7 @@
             'backend/print_backend_chromeos.cc',
           ],
         }],
-        ['OS=="linux" and chromeos==0', {
+        ['toolkit_uses_gtk==1 and chromeos==0', {
           'sources': [
             'printing_context_gtk.cc',
             'printing_context_gtk.h',
