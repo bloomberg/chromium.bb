@@ -112,7 +112,9 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
   FaviconService* favicon_service_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
+// http://crbug.com/104140
+IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
+                       FLAKY_ChooseService) {
   web_data_service_ =
       browser()->profile()->GetWebDataService(Profile::EXPLICIT_ACCESS);
   AddWebIntentService(kAction1, kServiceURL1);
