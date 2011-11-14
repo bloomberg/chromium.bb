@@ -5211,14 +5211,6 @@
    fun:_ZN8chromeos12_GLOBAL__N_127GViewRequestInterceptorTest5SetUpEv
 }
 {
-   bug_103433
-   Memcheck:Leak
-   fun:malloc
-   ...
-   fun:XGetAtomName
-   fun:_ZN8chromeos12input_method9XKeyboard14GetNumLockMaskEv
-}
-{
    bug_103467
    Memcheck:Cond
    fun:_ZNK7WebCore12NamedNodeMap20mappedMapsEquivalentEPKS0_

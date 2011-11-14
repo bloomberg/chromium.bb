@@ -159,7 +159,7 @@ unsigned int XKeyboard::GetNumLockMask() {
     const std::string string_to_find(kNumLockVirtualModifierString);
     for (size_t i = 0; i < XkbNumVirtualMods; ++i) {
       const unsigned int virtual_mod_mask = 1U << i;
-      const char* virtual_mod_str =
+      char* virtual_mod_str =
           XGetAtomName(xkb_desc->dpy, xkb_desc->names->vmods[i]);
       if (!virtual_mod_str) {
         continue;
@@ -169,8 +169,10 @@ unsigned int XKeyboard::GetNumLockMask() {
           LOG(ERROR) << "XkbVirtualModsToReal failed";
           real_mask = kBadMask;  // reset the return value, just in case.
         }
+        XFree(virtual_mod_str);
         break;
       }
+      XFree(virtual_mod_str);
     }
   }
   XkbFreeKeyboard(xkb_desc, 0, True /* free all components */);
