@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define SANDBOX_SRC_SANDBOX_POLICY_BASE_H_
 
 #include <windows.h>
+
 #include <list>
 #include <vector>
 
@@ -21,9 +22,8 @@
 
 namespace sandbox {
 
-class TargetProcess;
-class PolicyRule;
 class LowLevelPolicy;
+class TargetProcess;
 struct PolicyGlobal;
 
 // We act as a policy dispatcher, implementing the handler for the "ping" IPC,

@@ -6,6 +6,7 @@
 #define PRINTING_EMF_WIN_H_
 
 #include <windows.h>
+
 #include <vector>
 
 #include "base/basictypes.h"
@@ -15,7 +16,6 @@
 class FilePath;
 
 namespace gfx {
-class Point;
 class Rect;
 class Size;
 }

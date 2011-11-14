@@ -15,8 +15,6 @@ class DictionaryValue;
 
 namespace printing {
 
-class Metafile;
-
 class PRINTING_EXPORT PrintingContextNoSystemDialog : public PrintingContext {
  public:
   explicit PrintingContextNoSystemDialog(const std::string& app_locale);
@@ -47,4 +45,3 @@ class PRINTING_EXPORT PrintingContextNoSystemDialog : public PrintingContext {
 }  // namespace printing
 
 #endif  // PRINTING_PRINTING_CONTEXT_NO_SYSTEM_DIALOG_H_
-

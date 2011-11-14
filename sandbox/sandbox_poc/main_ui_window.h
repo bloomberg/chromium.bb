@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,11 @@
 #define SANDBOX_SANDBOX_POC_MAIN_UI_WINDOW_H__
 
 #include <string>
+
 #include "base/basictypes.h"
 
 namespace sandbox {
 class BrokerServices;
-class SandboxFactory;
-class TargetProcess;
 enum ResultCode;
 }
 
@@ -57,6 +56,7 @@ class MainUIWindow {
                                        wchar_t* command_line,
                                        int show_command,
                                        sandbox::BrokerServices* broker);
+
  private:
   // The default value DLL name to add to the edit box.
   static const wchar_t kDefaultDll_[];

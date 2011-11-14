@@ -19,7 +19,6 @@ class FilePath;
 namespace gfx {
 class Rect;
 class Size;
-class Point;
 }
 
 namespace printing {

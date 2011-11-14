@@ -9,8 +9,6 @@
 
 namespace printing {
 
-class PrintedDocument;
-
 // Source of printed pages.
 class PrintedPagesSource {
  public:

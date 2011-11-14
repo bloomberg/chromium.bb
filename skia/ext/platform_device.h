@@ -13,16 +13,14 @@
 #include <vector>
 #endif
 
-#include "third_party/skia/include/core/SkPreConfig.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkPreConfig.h"
 
 class SkMatrix;
 class SkMetaData;
 class SkPath;
 class SkRegion;
-
-struct SkIRect;
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_FREEBSD) \
     || defined(OS_SUN)
@@ -73,7 +71,7 @@ SK_API PlatformDevice* GetPlatformDevice(SkDevice* device);
 #if defined(OS_WIN)
 // Initializes the default settings and colors in a device context.
 SK_API void InitializeDC(HDC context);
-#elif defined (OS_MACOSX)
+#elif defined(OS_MACOSX)
 // Returns the CGContext that backing the SkDevice.  Forwards to the bound
 // PlatformDevice.  Returns NULL if no PlatformDevice is bound.
 SK_API CGContextRef GetBitmapContext(SkDevice* device);
@@ -179,4 +177,4 @@ class SK_API PlatformDevice {
 
 }  // namespace skia
 
-#endif
+#endif  // SKIA_EXT_PLATFORM_DEVICE_H_

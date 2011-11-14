@@ -13,10 +13,7 @@
 #include "third_party/skia/include/core/SkTScopedPtr.h"
 #include "third_party/skia/include/pdf/SkPDFDevice.h"
 
-class SkClipStack;
 class SkMatrix;
-struct SkIRect;
-struct SkRect;
 
 namespace skia {
 

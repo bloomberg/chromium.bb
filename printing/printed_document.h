@@ -17,10 +17,6 @@
 class FilePath;
 class MessageLoop;
 
-namespace gfx {
-class Font;
-}
-
 namespace printing {
 
 class Metafile;
