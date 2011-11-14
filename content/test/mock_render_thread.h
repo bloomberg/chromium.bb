@@ -56,11 +56,11 @@ class MockRenderThread : public content::RenderThread {
   virtual void RegisterExtension(v8::Extension* extension) OVERRIDE;
   virtual bool IsRegisteredExtension(
       const std::string& v8_extension_name) const OVERRIDE;
-  virtual void ScheduleIdleHandler(double initial_delay_s) OVERRIDE;
+  virtual void ScheduleIdleHandler(int64 initial_delay_ms) OVERRIDE;
   virtual void IdleHandler() OVERRIDE;
-  virtual double GetIdleNotificationDelayInS() const OVERRIDE;
-  virtual void SetIdleNotificationDelayInS(
-      double idle_notification_delay_in_s) OVERRIDE;
+  virtual int64 GetIdleNotificationDelayInMs() const OVERRIDE;
+  virtual void SetIdleNotificationDelayInMs(
+      int64 idle_notification_delay_in_ms) OVERRIDE;
 #if defined(OS_WIN)
   virtual void PreCacheFont(const LOGFONT& log_font) OVERRIDE;
   virtual void ReleaseCachedFonts() OVERRIDE;

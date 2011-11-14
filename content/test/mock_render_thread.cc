@@ -127,18 +127,18 @@ bool MockRenderThread::IsRegisteredExtension(
   return false;
 }
 
-void MockRenderThread::ScheduleIdleHandler(double initial_delay_s) {
+void MockRenderThread::ScheduleIdleHandler(int64 initial_delay_ms) {
 }
 
 void MockRenderThread::IdleHandler() {
 }
 
-double MockRenderThread::GetIdleNotificationDelayInS() const {
-  return 0.0;
+int64 MockRenderThread::GetIdleNotificationDelayInMs() const {
+  return 0;
 }
 
-void MockRenderThread::SetIdleNotificationDelayInS(
-    double idle_notification_delay_in_s) {
+void MockRenderThread::SetIdleNotificationDelayInMs(
+    int64 idle_notification_delay_in_ms) {
 }
 
 #if defined(OS_WIN)

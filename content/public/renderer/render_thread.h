@@ -86,15 +86,15 @@ class CONTENT_EXPORT RenderThread : public IPC::Message::Sender {
       const std::string& v8_extension_name) const = 0;
 
   // Schedule a call to IdleHandler with the given initial delay.
-  virtual void ScheduleIdleHandler(double initial_delay_s) = 0;
+  virtual void ScheduleIdleHandler(int64 initial_delay_ms) = 0;
 
   // A task we invoke periodically to assist with idle cleanup.
   virtual void IdleHandler() = 0;
 
   // Get/Set the delay for how often the idle handler is called.
-  virtual double GetIdleNotificationDelayInS() const = 0;
-  virtual void SetIdleNotificationDelayInS(
-      double idle_notification_delay_in_s) = 0;
+  virtual int64 GetIdleNotificationDelayInMs() const = 0;
+  virtual void SetIdleNotificationDelayInMs(
+      int64 idle_notification_delay_in_ms) = 0;
 
 #if defined(OS_WIN)
   // Request that the given font be loaded by the browser so it's cached by the

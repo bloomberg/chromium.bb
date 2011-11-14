@@ -100,7 +100,7 @@ using WebKit::WebView;
 using content::RenderProcessObserver;
 
 namespace {
-static const double kInitialIdleHandlerDelayS = 1.0 /* seconds */;
+static const int64 kInitialIdleHandlerDelayMs = 1000;
 
 #if defined(TOUCH_UI)
 static const int kPopupListBoxMinimumRowHeight = 60;
@@ -192,7 +192,7 @@ void RenderThreadImpl::Init() {
   plugin_refresh_allowed_ = true;
   widget_count_ = 0;
   hidden_widget_count_ = 0;
-  idle_notification_delay_in_s_ = kInitialIdleHandlerDelayS;
+  idle_notification_delay_in_ms_ = kInitialIdleHandlerDelayMs;
   task_factory_.reset(new ScopedRunnableMethodFactory<RenderThreadImpl>(this));
 
   appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
@@ -404,7 +404,7 @@ void RenderThreadImpl::WidgetHidden() {
   }
 
   if (widget_count_ && hidden_widget_count_ == widget_count_)
-    ScheduleIdleHandler(kInitialIdleHandlerDelayS);
+    ScheduleIdleHandler(kInitialIdleHandlerDelayMs);
 }
 
 void RenderThreadImpl::WidgetRestored() {
@@ -548,11 +548,11 @@ bool RenderThreadImpl::IsRegisteredExtension(
   return v8_extensions_.find(v8_extension_name) != v8_extensions_.end();
 }
 
-void RenderThreadImpl::ScheduleIdleHandler(double initial_delay_s) {
-  idle_notification_delay_in_s_ = initial_delay_s;
+void RenderThreadImpl::ScheduleIdleHandler(int64 initial_delay_ms) {
+  idle_notification_delay_in_ms_ = initial_delay_ms;
   idle_timer_.Stop();
   idle_timer_.Start(FROM_HERE,
-      base::TimeDelta::FromSeconds(static_cast<int64>(initial_delay_s)),
+      base::TimeDelta::FromMilliseconds(initial_delay_ms),
       this, &RenderThreadImpl::IdleHandler);
 }
 
@@ -564,25 +564,29 @@ void RenderThreadImpl::IdleHandler() {
   v8::V8::IdleNotification();
 
   // Schedule next invocation.
-  // Dampen the delay using the algorithm:
+  // Dampen the delay using the algorithm (if delay is in seconds):
   //    delay = delay + 1 / (delay + 2)
   // Using floor(delay) has a dampening effect such as:
   //    1s, 1, 1, 2, 2, 2, 2, 3, 3, ...
-  // Note that idle_notification_delay_in_s_ would be reset to
-  // kInitialIdleHandlerDelayS in RenderThreadImpl::WidgetHidden.
-  ScheduleIdleHandler(idle_notification_delay_in_s_ +
-                      1.0 / (idle_notification_delay_in_s_ + 2.0));
+  // If the delay is in milliseconds, the above formula is equivalent to:
+  //    delay_ms / 1000 = delay_ms / 1000 + 1 / (delay_ms / 1000 + 2)
+  // which is equivalent to
+  //    delay_ms = delay_ms + 1000*1000 / (delay_ms + 2000).
+  // Note that idle_notification_delay_in_ms_ would be reset to
+  // kInitialIdleHandlerDelayMs in RenderThreadImpl::WidgetHidden.
+  ScheduleIdleHandler(idle_notification_delay_in_ms_ +
+                      1000000 / (idle_notification_delay_in_ms_ + 2000));
 
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, IdleNotification());
 }
 
-double RenderThreadImpl::GetIdleNotificationDelayInS() const {
-  return idle_notification_delay_in_s_;
+int64 RenderThreadImpl::GetIdleNotificationDelayInMs() const {
+  return idle_notification_delay_in_ms_;
 }
 
-void RenderThreadImpl::SetIdleNotificationDelayInS(
-    double idle_notification_delay_in_s) {
-  idle_notification_delay_in_s_ = idle_notification_delay_in_s;
+void RenderThreadImpl::SetIdleNotificationDelayInMs(
+    int64 idle_notification_delay_in_ms) {
+  idle_notification_delay_in_ms_ = idle_notification_delay_in_ms;
 }
 
 #if defined(OS_WIN)

@@ -32,8 +32,8 @@
 #include "v8/include/v8.h"
 
 namespace {
-static const double kInitialExtensionIdleHandlerDelayS = 5.0 /* seconds */;
-static const int64 kMaxExtensionIdleHandlerDelayS = 5*60 /* seconds */;
+static const int64 kInitialExtensionIdleHandlerDelayMs = 5*1000;
+static const int64 kMaxExtensionIdleHandlerDelayMs = 5*60*1000;
 }
 
 using extensions::MiscellaneousBindings;
@@ -55,8 +55,8 @@ ExtensionDispatcher::ExtensionDispatcher()
       command_line.HasSwitch(switches::kSingleProcess);
 
   if (is_extension_process_) {
-    RenderThread::Get()->SetIdleNotificationDelayInS(
-        kInitialExtensionIdleHandlerDelayS);
+    RenderThread::Get()->SetIdleNotificationDelayInMs(
+        kInitialExtensionIdleHandlerDelayMs);
   }
 
   user_script_slave_.reset(new UserScriptSlave(&extensions_));
@@ -92,7 +92,7 @@ void ExtensionDispatcher::WebKitInitialized() {
   // even if the extension keeps up activity.
   if (is_extension_process_) {
     forced_idle_timer_.Start(FROM_HERE,
-        base::TimeDelta::FromSeconds(kMaxExtensionIdleHandlerDelayS),
+        base::TimeDelta::FromMilliseconds(kMaxExtensionIdleHandlerDelayMs),
         RenderThread::Get(), &RenderThread::IdleHandler);
   }
 
@@ -125,12 +125,12 @@ void ExtensionDispatcher::IdleNotification() {
   if (is_extension_process_) {
     // Dampen the forced delay as well if the extension stays idle for long
     // periods of time.
-    int64 forced_delay_s = std::max(static_cast<int64>(
-        RenderThread::Get()->GetIdleNotificationDelayInS()),
-        kMaxExtensionIdleHandlerDelayS);
+    int64 forced_delay_ms = std::max(
+        RenderThread::Get()->GetIdleNotificationDelayInMs(),
+        kMaxExtensionIdleHandlerDelayMs);
     forced_idle_timer_.Stop();
     forced_idle_timer_.Start(FROM_HERE,
-        base::TimeDelta::FromSeconds(forced_delay_s),
+        base::TimeDelta::FromMilliseconds(forced_delay_ms),
         RenderThread::Get(), &RenderThread::IdleHandler);
   }
 }
@@ -153,7 +153,7 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
   // dispatch, for which Invoke is the chokepoint.
   if (is_extension_process_) {
     RenderThread::Get()->ScheduleIdleHandler(
-        kInitialExtensionIdleHandlerDelayS);
+        kInitialExtensionIdleHandlerDelayMs);
   }
 
   // Tell the browser process that the event is dispatched and we're idle.
@@ -301,7 +301,7 @@ void ExtensionDispatcher::OnActivateExtension(
 
   // This is called when starting a new extension page, so start the idle
   // handler ticking.
-  RenderThread::Get()->ScheduleIdleHandler(kInitialExtensionIdleHandlerDelayS);
+  RenderThread::Get()->ScheduleIdleHandler(kInitialExtensionIdleHandlerDelayMs);
 
   UpdateActiveExtensions();
 
