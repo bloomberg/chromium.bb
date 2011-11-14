@@ -6,6 +6,7 @@
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
+#include "views/test/views_test_base.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
 
@@ -27,19 +28,16 @@ class FixedSizeView : public View {
   DISALLOW_COPY_AND_ASSIGN(FixedSizeView);
 };
 
-class TabbedPaneTest : public testing::Test,
+class TabbedPaneTest : public ViewsTestBase,
                        public WidgetDelegate {
  public:
   TabbedPaneTest() {}
 
   TabbedPane* tabbed_pane_;
 
-  void RunAllPending() {
-    message_loop_.RunAllPending();
-  }
-
  private:
   virtual void SetUp() OVERRIDE {
+    ViewsTestBase::SetUp();
     tabbed_pane_ = new TabbedPane();
     window_ = Widget::CreateWindowWithBounds(this, gfx::Rect(0, 0, 100, 100));
     window_->Show();
@@ -47,7 +45,7 @@ class TabbedPaneTest : public testing::Test,
 
   virtual void TearDown() OVERRIDE {
     window_->Close();
-    message_loop_.RunAllPending();
+    ViewsTestBase::TearDown();
   }
 
   virtual views::View* GetContentsView() OVERRIDE {
@@ -60,23 +58,13 @@ class TabbedPaneTest : public testing::Test,
     return tabbed_pane_->GetWidget();
   }
 
-  MessageLoopForUI message_loop_;
   Widget* window_;
 
   DISALLOW_COPY_AND_ASSIGN(TabbedPaneTest);
 };
 
-#if defined(OS_WIN)
-// These test are failing and crash on Win7. See http://crbug.com/104067
-#define MAYBE_SizeAndLayout DISABLED_SizeAndLayout
-#define MAYBE_AddRemove DISABLED_AddRemove
-#else
-#define MAYBE_SizeAndLayout SizeAndLayout
-#define MAYBE_AddRemove AddRemove
-#endif
-
 // Tests that TabbedPane::GetPreferredSize() and TabbedPane::Layout().
-TEST_F(TabbedPaneTest, MAYBE_SizeAndLayout) {
+TEST_F(TabbedPaneTest, SizeAndLayout) {
   View* child1 = new FixedSizeView(gfx::Size(20, 10));
   tabbed_pane_->AddTab(ASCIIToUTF16("tab1"), child1);
   View* child2 = new FixedSizeView(gfx::Size(5, 5));
@@ -90,7 +78,7 @@ TEST_F(TabbedPaneTest, MAYBE_SizeAndLayout) {
 
   // The bounds of our children should be smaller than the tabbed pane's bounds.
   tabbed_pane_->SetBounds(0, 0, 100, 200);
-  RunAllPending();
+  RunPendingMessages();
   gfx::Rect bounds(child1->bounds());
   EXPECT_GT(bounds.width(), 0);
   EXPECT_LT(bounds.width(), 100);
@@ -102,7 +90,7 @@ TEST_F(TabbedPaneTest, MAYBE_SizeAndLayout) {
   EXPECT_EQ(bounds, child2->bounds());
 }
 
-TEST_F(TabbedPaneTest, MAYBE_AddRemove) {
+TEST_F(TabbedPaneTest, AddRemove) {
   View* tab0 = new View;
   tabbed_pane_->AddTab(ASCIIToUTF16("tab0"), tab0);
   EXPECT_EQ(tab0, tabbed_pane_->GetSelectedTab());
