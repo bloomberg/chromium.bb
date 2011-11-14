@@ -489,6 +489,9 @@ cmd_mac_tool = ./gyp-mac-tool $(4) $< "$@"
 
 quiet_cmd_mac_package_framework = PACKAGE FRAMEWORK $@
 cmd_mac_package_framework = ./gyp-mac-tool package-framework "$@" $(4)
+
+quiet_cmd_infoplist = INFOPLIST $@
+cmd_infoplist = $(CC.$(TOOLSET)) -E -P -Wno-trigraphs -x c $(INFOPLIST_DEFINES) "$<" -o "$@"
 """
 
 SHARED_HEADER_SUN_COMMANDS = """
@@ -901,8 +904,6 @@ class XcodeSettings(object):
     self._WarnUnimplemented('GCC_DEBUGGING_SYMBOLS')
     self._WarnUnimplemented('GCC_ENABLE_OBJC_EXCEPTIONS')
     self._WarnUnimplemented('GCC_ENABLE_OBJC_GC')
-    self._WarnUnimplemented('INFOPLIST_PREPROCESS')
-    self._WarnUnimplemented('INFOPLIST_PREPROCESSOR_DEFINITIONS')
 
     # TODO: This is exported correctly, but assigning to it is not supported.
     self._WarnUnimplemented('MACH_O_TYPE')
@@ -1731,10 +1732,28 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     assert ' ' not in info_plist, (
       "Spaces in resource filenames not supported (%s)"  % info_plist)
     info_plist = self.Absolutify(info_plist)
+    settings = self.xcode_settings
+
+    # If explicilty set to preprocess the plist, invoke the C preprocessor and
+    # specify any defines as -D flags.
+    if settings.GetPerTargetSetting('INFOPLIST_PREPROCESS', 'NO') == 'YES':
+      # Create an intermediate file based on the path.
+      intermediate_plist = ('$(obj).$(TOOLSET)/$(TARGET)/' +
+          os.path.basename(info_plist))
+      defines = settings.GetPerTargetSetting(
+          'INFOPLIST_PREPROCESSOR_DEFINITIONS', '').split(' ')
+      self.WriteList(defines, intermediate_plist + ': INFOPLIST_DEFINES', '-D')
+      self.WriteMakeRule([intermediate_plist], [info_plist],
+          ['$(call do_cmd,infoplist)',
+           # "Convert" the plist so that any weird whitespace changes from the
+           # preprocessor do not affect the XML parser in mac_tool.
+           '@plutil -convert xml1 $@ $@'])
+      info_plist = intermediate_plist
+
     path = generator_default_variables['PRODUCT_DIR']
-    dest_plist = os.path.join(path, self.xcode_settings.GetBundlePlistPath())
+    dest_plist = os.path.join(path, settings.GetBundlePlistPath())
     dest_plist = QuoteSpaces(dest_plist)
-    extra_settings = self.xcode_settings.GetPerTargetSettings()
+    extra_settings = settings.GetPerTargetSettings()
     # plists can contain envvars and substitute them into the file..
     self.WriteXcodeEnv(dest_plist, spec, additional_settings=extra_settings)
     self.WriteDoCmd([dest_plist], [info_plist], 'mac_tool,,,copy-info-plist',
