@@ -1827,6 +1827,8 @@
         'browser/prefs/incognito_mode_prefs.h',
         'browser/prefs/incognito_user_pref_store.cc',
         'browser/prefs/incognito_user_pref_store.h',
+        'browser/prefs/overlay_user_pref_store.cc',
+        'browser/prefs/overlay_user_pref_store.h',
         'browser/prefs/pref_change_registrar.cc',
         'browser/prefs/pref_change_registrar.h',
         'browser/prefs/pref_member.cc',

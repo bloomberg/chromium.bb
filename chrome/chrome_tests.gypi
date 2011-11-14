@@ -1503,7 +1503,7 @@
         'browser/preferences_mock_mac.h',
         'browser/prefs/command_line_pref_store_unittest.cc',
         'browser/prefs/incognito_mode_prefs_unittest.cc',
-        'browser/prefs/incognito_user_pref_store_unittest.cc',
+        'browser/prefs/overlay_user_pref_store_unittest.cc',
         'browser/prefs/pref_change_registrar_unittest.cc',
         'browser/prefs/pref_member_unittest.cc',
         'browser/prefs/pref_model_associator_unittest.cc',
