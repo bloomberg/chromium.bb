@@ -58,7 +58,7 @@ def Comment(node, prefix=None, tabs=0):
       lines = prefix_lines + lines;
   return CommentLines(lines, tabs)
 
-def GetNodeComments(node, prefix=None, tabs=0):
+def GetNodeComments(node, tabs=0):
   # Generate a comment block joining all comment nodes which are children of
   # the provided node.
   comment_txt = ''
@@ -158,8 +158,7 @@ class CGen(object):
   #
   def Log(self, txt):
     if not GetOption('cgen_debug'): return
-    tabs = ''
-    for tab in range(self.dbg_depth): tabs += '  '
+    tabs = '  ' * self.dbg_depth
     print '%s%s' % (tabs, txt)
 
   def LogEnter(self, txt):
@@ -170,12 +169,48 @@ class CGen(object):
     self.dbg_depth -= 1
     if txt: self.Log(txt)
 
+
+  def GetDefine(self, name, value):
+    out = '#define %s %s' % (name, value)
+    if len(out) > 80:
+      out = '#define %s \\\n    %s' % (name, value)
+    return '%s\n' % out
+
+  #
+  # Interface strings
+  #
+  def GetMacroHelper(self, node):
+    macro = node.GetProperty('macro')
+    if macro: return macro
+    name = node.GetName()
+    name = name.upper()
+    return "%s_INTERFACE" % name
+
+  def GetInterfaceMacro(self, node, version = None):
+    name = self.GetMacroHelper(node)
+    if version is None:
+      return name
+    return '%s_%s' % (name, str(version).replace('.', '_'))
+
+  def GetInterfaceString(self, node, version = None):
+    # If an interface name is specified, use that
+    name = node.GetProperty('iname')
+    if not name:
+      # Otherwise, the interface name is the object's name
+      # With '_Dev' replaced by '(Dev)' if it's a Dev interface.
+      name = node.GetName()
+      if name.endswith('_Dev'):
+        name = '%s(Dev)' % name[:-4]
+    if version is None:
+      return name
+    return "%s;%s" % (name, version)
+
+
   #
   # Return the array specification of the object.
   #
   def GetArraySpec(self, node):
     assert(node.cls == 'Array')
-    out = ''
     fixed = node.GetProperty('FIXED')
     if fixed:
       return '[%s]' % fixed
@@ -367,6 +402,7 @@ class CGen(object):
 
   # Define a Typedef.
   def DefineTypedef(self, node, releases, prefix='', comment=False):
+    __pychecker__ = 'unusednames=comment'
     release = releases[0]
     out = 'typedef %s;\n' % self.GetSignature(node, release, 'return',
                                               prefix, True)
@@ -375,6 +411,7 @@ class CGen(object):
 
   # Define an Enum.
   def DefineEnum(self, node, releases, prefix='', comment=False):
+    __pychecker__ = 'unusednames=comment,releases'
     self.LogEnter('DefineEnum %s' % node)
     unnamed =  node.GetProperty('unnamed')
     if unnamed:
@@ -400,6 +437,7 @@ class CGen(object):
     return out
 
   def DefineMember(self, node, releases, prefix='', comment=False):
+    __pychecker__ = 'unusednames=prefix,comment'
     release = releases[0]
     self.LogEnter('DefineMember %s' % node)
     out = '%s;' % self.GetSignature(node, release, 'store', '', True)
@@ -425,6 +463,7 @@ class CGen(object):
 
 
   def DefineStruct(self, node, releases, prefix='', comment=False):
+    __pychecker__ = 'unusednames=comment,prefix'
     self.LogEnter('DefineStruct %s' % node)
     out = ''
     build_list = node.GetUniqueReleases(releases)
@@ -459,17 +498,17 @@ class CGen(object):
       return ''
 
     self.LogEnter('Define %s tab=%d prefix="%s"' % (node,tabs,prefix))
-    declmap = {
-      'Enum' : CGen.DefineEnum,
-      'Function' : CGen.DefineMember,
-      'Interface' : CGen.DefineStruct,
-      'Member' : CGen.DefineMember,
-      'Struct' : CGen.DefineStruct,
-      'Typedef' : CGen.DefineTypedef,
-    }
+    declmap = dict({
+      'Enum': CGen.DefineEnum,
+      'Function': CGen.DefineMember,
+      'Interface': CGen.DefineStruct,
+      'Member': CGen.DefineMember,
+      'Struct': CGen.DefineStruct,
+      'Typedef': CGen.DefineTypedef
+    })
 
     out = ''
-    func = declmap.get(node.cls)
+    func = declmap.get(node.cls, None)
     if not func:
       ErrOut.Log('Failed to define %s named %s' % (node.cls, node.GetName()))
     define_txt = func(self, node, releases, prefix=prefix, comment=comment)

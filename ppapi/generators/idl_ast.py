@@ -105,16 +105,7 @@ class IDLFileTypeResolver(IDLVisitor):
 #
 class IDLAst(IDLNode):
   def __init__(self, children):
-    objs = []
-
-    builtin = None
-    extranodes = []
-    for filenode in children:
-      if filenode.GetProperty('NAME') == 'pp_stdint.idl':
-        builtin = filenode
-        break
-
-    IDLNode.__init__(self, 'AST', 'BuiltIn', 1, 0, extranodes + children)
+    IDLNode.__init__(self, 'AST', 'BuiltIn', 1, 0, children)
     self.Resolve()
 
   def Resolve(self):

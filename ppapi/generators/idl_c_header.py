@@ -9,7 +9,6 @@
 import glob
 import os
 import sys
-import subprocess
 
 from idl_log import ErrOut, InfoOut, WarnOut
 from idl_node import IDLAttribute, IDLNode
@@ -24,6 +23,7 @@ Option('dstroot', 'Base directory of output', default=os.path.join('..', 'c'))
 Option('guard', 'Include guard prefix', default=os.path.join('ppapi', 'c'))
 Option('out', 'List of output files', default='')
 
+
 def GetOutFileName(filenode, relpath=None, prefix=None):
   path, name = os.path.split(filenode.GetProperty('NAME'))
   name = os.path.splitext(name)[0] + '.h'
@@ -31,6 +31,7 @@ def GetOutFileName(filenode, relpath=None, prefix=None):
   if path: name = os.path.join(path, name)
   if relpath: name = os.path.join(relpath, name)
   return name
+
 
 def WriteGroupMarker(out, node, last_group):
   # If we are part of a group comment marker...
@@ -50,7 +51,6 @@ def WriteGroupMarker(out, node, last_group):
 
 
 def GenerateHeader(out, filenode, releases):
-  gpath = GetOption('guard')
   cgen = CGen()
   pref = ''
   do_comments = True
@@ -103,34 +103,16 @@ class HGen(GeneratorByFile):
   def __init__(self):
     Generator.__init__(self, 'C Header', 'cgen', 'Generate the C headers.')
 
-  def GetMacro(self, node):
-    name = node.GetName()
-    name = name.upper()
-    return "%s_INTERFACE" % name
-
-  def GetDefine(self, name, value):
-    out = '#define %s %s' % (name, value)
-    if len(out) > 80:
-      out = '#define %s \\\n    %s' % (name, value)
-    return '%s\n' % out
-
-  def GetVersionString(self, node):
-    # If an interface name is specified, use that
-    iname = node.GetProperty('iname')
-    if iname: return iname
-
-    # Otherwise, the interface name is the object's name
-    # With '_Dev' replaced by '(Dev)' if it's a Dev interface.
-    name = node.GetName()
-    if len(name) > 4 and name[-4:] == '_Dev':
-      name = '%s(Dev)' % name[:-4]
-    return name
-
-  def GetOutFile(self, filenode, options):
+  def GenerateFile(self, filenode, releases, options):
     savename = GetOutFileName(filenode, GetOption('dstroot'))
-    return IDLOutFile(savename)
+    out = IDLOutFile(savename)
+    self.GenerateHead(out, filenode, releases, options)
+    self.GenerateBody(out, filenode, releases, options)
+    self.GenerateTail(out, filenode, releases, options)
+    return out.Close()
 
   def GenerateHead(self, out, filenode, releases, options):
+    __pychecker__ = 'unusednames=options'
     cgen = CGen()
     gpath = GetOption('guard')
     release = releases[0]
@@ -176,27 +158,24 @@ class HGen(GeneratorByFile):
     out.Write('\n')
     for node in filenode.GetListOf('Interface'):
       idefs = ''
-      name = self.GetVersionString(node)
-      macro = node.GetProperty('macro')
-      if not macro:
-        macro = self.GetMacro(node)
-
-      unique = node.GetUniqueReleases(releases)
-      for rel in unique:
+      macro = cgen.GetInterfaceMacro(node)
+      for rel in node.GetUniqueReleases(releases):
         version = node.GetVersion(rel)
+        name = cgen.GetInterfaceString(node, version)
         strver = str(version).replace('.', '_')
-        idefs += self.GetDefine('%s_%s' % (macro, strver),
-                                '"%s;%s"' % (name, version))
-      idefs += self.GetDefine(macro, '%s_%s' % (macro, strver)) + '\n'
+        idefs += cgen.GetDefine('%s_%s' % (macro, strver), '"%s"' % name)
+      idefs += cgen.GetDefine(macro, '%s_%s' % (macro, strver)) + '\n'
       out.Write(idefs)
 
     # Generate the @file comment
     out.Write('%s\n' % Comment(fileinfo, prefix='*\n @file'))
 
   def GenerateBody(self, out, filenode, releases, options):
+    __pychecker__ = 'unusednames=options'
     GenerateHeader(out, filenode, releases)
 
   def GenerateTail(self, out, filenode, releases, options):
+    __pychecker__ = 'unusednames=options,releases'
     gpath = GetOption('guard')
     def_guard = GetOutFileName(filenode, relpath=gpath)
     def_guard = def_guard.replace(os.sep,'_').replace('.','_').upper() + '_'

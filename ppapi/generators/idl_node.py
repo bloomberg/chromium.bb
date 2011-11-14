@@ -244,6 +244,12 @@ class IDLNode(IDLRelease):
       return None
     return filenode.release_map.GetVersion(release)
 
+  def GetRelease(self, version):
+    filenode = self.GetProperty('FILE')
+    if not filenode:
+      return None
+    return filenode.release_map.GetRelease(version)
+
   def GetUniqueReleases(self, releases):
     # Given a list of global release, return a subset of releases
     # for this object that change.

@@ -1005,13 +1005,12 @@ default_dirs = ['.', 'trusted', 'dev']
 def ParseFiles(filenames):
   parser = IDLParser()
   filenodes = []
-  errors = 0
 
   if not filenames:
     filenames = []
     srcroot = GetOption('srcroot')
-    for dir in default_dirs:
-      srcdir = os.path.join(srcroot, dir, '*.idl')
+    for dirname in default_dirs:
+      srcdir = os.path.join(srcroot, dirname, '*.idl')
       srcdir = os.path.normpath(srcdir)
       filenames += sorted(glob.glob(srcdir))
 

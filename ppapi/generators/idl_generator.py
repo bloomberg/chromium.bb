@@ -8,6 +8,7 @@ import sys
 
 from idl_log import ErrOut, InfoOut, WarnOut
 from idl_option import GetOption, Option, ParseOptions
+from idl_parser import ParseFiles
 
 GeneratorList = []
 
@@ -39,6 +40,7 @@ class Generator(object):
                              default='')
     GeneratorList.append(self)
     self.errors = 0
+    self.skip_list = []
 
   def Error(self, msg):
     ErrOut.Log('Error %s : %s' % (self.name, msg))
@@ -68,6 +70,13 @@ class Generator(object):
 
     print "Found releases: %s" % ast.releases
 
+    # Generate list of files to ignore due to errors
+    for filenode in ast.GetListOf('File'):
+      # If this file has errors, skip it
+      if filenode.GetProperty('ERRORS') > 0:
+        self.skip_list.append(filenode)
+        continue
+
     # Check for a range option which over-rides a release option
     if not releasestr and rangestr:
       range_list = rangestr.split(',')
@@ -86,9 +95,9 @@ class Generator(object):
 
         vmin = ast.releases.index(vmin)
         vmax = ast.releases.index(vmax) + 1
-        range = ast.releases[vmin:vmax]
+        releases = ast.releases[vmin:vmax]
         InfoOut.Log('Generate range %s of %s.' % (range, self.name))
-        ret = self.GenerateRange(ast, range, options)
+        ret = self.GenerateRange(ast, releases, options)
         if ret < 0:
           self.Error('Failed to generate range %s : %s.' %(vmin, vmax))
         else:
@@ -112,8 +121,8 @@ class Generator(object):
     self.Error("Undefined release generator.")
     return 0
 
-  def GenerateRange(self, ast, vmin, vmax, options):
-    __pychecker__ = 'unusednames=ast,vmin,vmax,options'
+  def GenerateRange(self, ast, releases, options):
+    __pychecker__ = 'unusednames=ast,releases,options'
     self.Error("Undefined range generator.")
     return 0
 
@@ -143,6 +152,11 @@ class Generator(object):
 #  GenerateTail - Writes the end of the file (closing include guard, etc...)
 #
 class GeneratorByFile(Generator):
+  def GenerateFile(self, filenode, releases, options):
+    __pychecker__ = 'unusednames=filenode,releases,options'
+    self.Error("Undefined release generator.")
+    return 0
+
   def GenerateRelease(self, ast, release, options):
     return self.GenerateRange(ast, [release], options)
 
@@ -154,22 +168,17 @@ class GeneratorByFile(Generator):
     skipList = []
     cnt = 0
     for filenode in ast.GetListOf('File'):
+      # Ignore files with errors
+      if filenode in self.skip_list:
+        continue
+
       # Skip this file if not required
       if outlist and filenode.GetName() not in outlist:
         continue
 
-      # If this file has errors, skip it
-      if filenode.GetProperty('ERRORS') > 0:
-        skipList.append(filenode)
-        continue
-
-      # Create output file
-      out = self.GetOutFile(filenode, options)
-      self.GenerateHead(out, filenode, releases, options)
-      self.GenerateBody(out, filenode, releases, options)
-      self.GenerateTail(out, filenode, releases, options)
-
-      if out.Close(): cnt = cnt + 1
+      # Create the output file and increment out count if there was a delta
+      if self.GenerateFile(filenode, releases, options):
+        cnt = cnt + 1
 
     for filenode in skipList:
       errcnt = filenode.GetProperty('ERRORS')
@@ -208,8 +217,8 @@ class GeneratorReleaseTest(Generator):
       check_release = 0
     return check_release == 1
 
-  def GenerateRange(self, ast, vmin, vmax, options = {}):
-    __pychecker__ = 'unusednames=ast,vmin,vmax,options'
+  def GenerateRange(self, ast, releases, options):
+    __pychecker__ = 'unusednames=ast,releases,options'
     global check_range
     check_range = 1
     return True
@@ -244,7 +253,6 @@ def Test():
 
 def Main(args):
   if not args: return Test()
-
   filenames = ParseOptions(args)
   ast = ParseFiles(filenames)
 
