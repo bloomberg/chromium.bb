@@ -30,6 +30,9 @@ readonly BUILD_OS=$1
 readonly BUILD_ARCH=$2
 readonly BUILD_LIBMODE=$3
 
+## Ignore this variable - used for testing only
+readonly TEST_UPLOAD=${TEST_UPLOAD:-false}
+
 echo "***            STARTING PNACL BUILD           ***"
 if [ "${BUILDBOT_BUILDERNAME:+isset}" == "isset" ]; then
   echo "*** BUILDBOT_BUILDERNAME: ${BUILDBOT_BUILDERNAME}"
@@ -103,6 +106,29 @@ set -x
 
 RETCODE=0
 
+upload-cros-tarballs(){
+  ## Runs only if completely successful on real buildbots only
+  ## CrOS only cares about 64bit x86-64 as host platform
+  ## so we only upload if we are botting for x86-64-newlib
+  ${PNACL_BUILD} cros-tarball-all pnacl-src
+  local gsutil=${GSUTIL:-buildbot/gsutil.sh}
+  local GS_BASE="gs://pnacl-source/${BUILDBOT_GOT_REVISION}"
+
+  for archive in pnacl-src/*.tbz2; do
+    local dst="$(basename $archive)"
+    echo Uploading ${archive}
+    ${gsutil} -h Cache-Control:no-cache cp -a public-read \
+      "${archive}" \
+      "${GS_BASE}/${dst}";
+  done
+}
+
+## Ignore this condition - for testing only
+if ${TEST_UPLOAD}; then
+  upload-cros-tarballs
+  exit $?
+fi
+
 echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out compiler ../xcodebuild ../sconsbuild ../out \
     src/third_party/nacl_sdk/arm-newlib
@@ -153,9 +179,14 @@ for arch in ${RUN_TESTS} ; do
       { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 done
 
-
 if [[ ${RETCODE} != 0 ]]; then
   echo @@@BUILD_STEP summary@@@
   echo There were failed stages.
   exit ${RETCODE}
+fi
+
+if [ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" -a \
+     "${TOOLCHAIN_LABEL}" == "pnacl_linux_x86_64_newlib" ]; then
+  echo @@@BUILD_STEP cros_tarball@@@
+  upload-cros-tarballs
 fi
