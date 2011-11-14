@@ -243,10 +243,6 @@ ResourceDispatcherTest.SniffHTMLWithNoContentType
 WorkerFileSystemTest.Persistent
 WorkerFileSystemTest.SyncTemporary
 
-# Fails, see http://crbug.com/75250
-NewTabUITest.AboutHangInNTP
-NewTabUIProcessPerTabTest.NavBeforeNTPCommits
-
 # Fails with valgrind assertion, see http://crbug.com/75396
 ViewSourceTest.ViewSourceInMenuEnabledOnANormalPage
 
@@ -311,3 +307,9 @@ CustomHandlerWebcalStartupTest.CustomHandlerWebcalStartup
 # http://crbug.com/99828
 OutOfProcessPPAPITest.Crypto
 PPAPITest.Crypto
+
+# PPAPITests fail with Valgrind WARNING, http://crbug.com/104022
+PPAPITest.NetAddressPrivate
+PPAPITest.FlashClipboard
+OutOfProcessPPAPITest.NetAddressPrivate
+OutOfProcessPPAPITest.FlashClipboard

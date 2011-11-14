@@ -74,6 +74,11 @@ BrowserTest.SessionEnd
 # Fails flakily, http://crbug.com/70323
 AutomatedUITestBase.ShowBookmarkBar
 
+# Fail, see http://crbug.com/75250
+NewTabUITest.AboutHangInNTP
+NewTabUITest.ChromeHangInNTP
+NewTabUIProcessPerTabTest.NavBeforeNTPCommits
+
 # Video decoding under valgrind is really slow, see http://crbug.com/53825
 MediaTest.VideoBear*
 
