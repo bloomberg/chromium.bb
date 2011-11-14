@@ -80,7 +80,7 @@ int JSModalDialogViews::GetDefaultDialogButton() const {
 }
 
 int JSModalDialogViews::GetDialogButtons() const {
-  int dialog_buttons = 0;
+  int dialog_buttons = ui::DIALOG_BUTTON_NONE;
   if (parent_->dialog_flags() & ui::MessageBoxFlags::kFlagHasOKButton)
     dialog_buttons = ui::DIALOG_BUTTON_OK;
 

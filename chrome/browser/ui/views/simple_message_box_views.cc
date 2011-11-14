@@ -86,10 +86,14 @@ bool SimpleMessageBoxViews::Accept() {
 int SimpleMessageBoxViews::GetDialogButtons() const {
   // NOTE: It seems unsafe to assume that the flags for OK/cancel will always
   // have the same value as the button ids.
-  return (dialog_flags_ & ui::MessageBoxFlags::kFlagHasOKButton
-      ? ui::DIALOG_BUTTON_OK : 0) |
-      (dialog_flags_ & ui::MessageBoxFlags::kFlagHasCancelButton
-          ? ui::DIALOG_BUTTON_CANCEL : 0);
+  int dialog_buttons = ui::DIALOG_BUTTON_NONE;
+  if (dialog_flags_ & ui::MessageBoxFlags::kFlagHasOKButton)
+    dialog_buttons = ui::DIALOG_BUTTON_OK;
+
+  if (dialog_flags_ & ui::MessageBoxFlags::kFlagHasCancelButton)
+    dialog_buttons |= ui::DIALOG_BUTTON_CANCEL;
+
+  return dialog_buttons;
 }
 
 string16 SimpleMessageBoxViews::GetDialogButtonLabel(
