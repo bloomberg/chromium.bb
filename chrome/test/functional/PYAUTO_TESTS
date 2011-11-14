@@ -132,6 +132,10 @@
     ],
 
     'win': [
+      # Enable sync.SyncIntegrationTest only for windows CONTINUIOUS,
+      # which contains the sync protobufs.
+      'sync.SyncIntegrationTest',
+
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
@@ -154,7 +158,7 @@
       # causes browser crash?  crbug.com/99865
       '-prefs.PrefsTest.testGeolocationPref',
       # crbug.com/88679
-      '-sync',
+      '-sync.SyncTest',
       # crbug.com/86949
       '-sync.SyncTest.testRestartBrowser',
       # crbug.com/87642
@@ -403,7 +407,6 @@
     ],
 
     'win': [
-      'sync.SyncIntegrationTest',
     ],
 
     'mac': [
