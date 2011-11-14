@@ -77,6 +77,24 @@ const char* const kValidHttpMethods[] = {
 // Length of prerender history, for display in chrome://net-internals
 const int kHistoryLength = 100;
 
+// Indicates whether a Prerender has been cancelled such that we need
+// a dummy replacement for the purpose of recording the correct PPLT for
+// the Match Complete case.
+
+bool NeedMatchCompleteDummyForFinalStatus(FinalStatus final_status) {
+  return final_status != FINAL_STATUS_USED &&
+      final_status != FINAL_STATUS_TIMED_OUT &&
+      final_status != FINAL_STATUS_EVICTED &&
+      final_status != FINAL_STATUS_MANAGER_SHUTDOWN &&
+      final_status != FINAL_STATUS_APP_TERMINATING &&
+      final_status != FINAL_STATUS_RENDERER_CRASHED &&
+      final_status != FINAL_STATUS_WINDOW_OPENER &&
+      final_status != FINAL_STATUS_FRAGMENT_MISMATCH &&
+      final_status != FINAL_STATUS_CACHE_OR_HISTORY_CLEARED &&
+      final_status != FINAL_STATUS_CANCELLED &&
+      final_status != FINAL_STATUS_MATCH_COMPLETE_DUMMY;
+}
+
 }  // namespace
 
 class PrerenderManager::OnCloseTabContentsDeleter : public TabContentsDelegate {
@@ -127,6 +145,11 @@ bool PrerenderManager::IsPrerenderingPossible() {
          GetMode() == PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP ||
          GetMode() == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP ||
          GetMode() == PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP;
+}
+
+// static
+bool PrerenderManager::ActuallyPrerendering() {
+  return IsPrerenderingPossible() && !IsControlGroup();
 }
 
 // static
@@ -655,14 +678,46 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
   return true;
 }
 
-void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry) {
+void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
+                                                FinalStatus final_status) {
   DCHECK(CalledOnValidThread());
+  DCHECK(entry);
   DCHECK(!IsPendingDelete(entry));
+
   for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
        it != prerender_list_.end();
        ++it) {
     if (it->contents_ == entry) {
-      prerender_list_.erase(it);
+      bool swapped_in_dummy_replacement = false;
+
+      // If this PrerenderContents is being deleted due to a cancellation,
+      // we need to create a dummy replacement for PPLT accounting purposes
+      // for the Match Complete group.
+      // This is the case if the cancellation is for any reason that would not
+      // occur in the control group case.
+      if (NeedMatchCompleteDummyForFinalStatus(final_status)) {
+        // TODO(tburkard): I'd like to DCHECK that we are actually prerendering.
+        // However, what if new conditions are added and
+        // NeedMatchCompleteDummyForFinalStatus, is not being updated.  Not sure
+        // what's the best thing to do here.  For now, I will just check whether
+        // we are actually prerendering.
+        if (ActuallyPrerendering()) {
+          PrerenderContents* dummy_replacement_prerender_contents =
+              CreatePrerenderContents(
+                  entry->prerender_url(),
+                  entry->referrer(),
+                  entry->origin(),
+                  entry->experiment_id());
+          if (dummy_replacement_prerender_contents &&
+              dummy_replacement_prerender_contents->Init()) {
+            it->contents_ = dummy_replacement_prerender_contents;
+            it->contents_->set_final_status(FINAL_STATUS_MATCH_COMPLETE_DUMMY);
+            swapped_in_dummy_replacement = true;
+          }
+        }
+      }
+      if (!swapped_in_dummy_replacement)
+        prerender_list_.erase(it);
       break;
     }
   }
@@ -734,12 +789,11 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
   if (!prerender_manager->is_enabled())
     return;
   bool was_prerender =
-      ((mode_ == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP &&
-        prerender_manager->WouldTabContentsBePrerendered(tab_contents)) ||
-       (mode_ == PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP &&
-        prerender_manager->IsTabContentsPrerendered(tab_contents)));
+      prerender_manager->IsTabContentsPrerendered(tab_contents);
+  bool was_complete_prerender = was_prerender ||
+      prerender_manager->WouldTabContentsBePrerendered(tab_contents);
   prerender_manager->histograms_->RecordPerceivedPageLoadTime(
-      perceived_page_load_time, was_prerender, url);
+      perceived_page_load_time, was_prerender, was_complete_prerender, url);
 }
 
 bool PrerenderManager::is_enabled() const {

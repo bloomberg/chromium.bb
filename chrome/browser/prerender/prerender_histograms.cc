@@ -165,7 +165,7 @@ base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
 
 void PrerenderHistograms::RecordPerceivedPageLoadTime(
     base::TimeDelta perceived_page_load_time, bool was_prerender,
-    const GURL& url) {
+    bool was_complete_prerender, const GURL& url) {
   if (!IsWebURL(url))
     return;
   bool within_window = WithinWindow();
@@ -173,8 +173,11 @@ void PrerenderHistograms::RecordPerceivedPageLoadTime(
   RECORD_PLT("PerceivedPLT", perceived_page_load_time);
   if (within_window)
     RECORD_PLT("PerceivedPLTWindowed", perceived_page_load_time);
-  if (was_prerender) {
-    RECORD_PLT("PerceivedPLTMatched", perceived_page_load_time);
+  if (was_prerender || was_complete_prerender) {
+    if (was_prerender)
+      RECORD_PLT("PerceivedPLTMatched", perceived_page_load_time);
+    if (was_complete_prerender)
+      RECORD_PLT("PerceivedPLTMatchedComplete", perceived_page_load_time);
     seen_any_pageload_ = true;
     seen_pageload_started_after_prerender_ = true;
   } else if (within_window) {

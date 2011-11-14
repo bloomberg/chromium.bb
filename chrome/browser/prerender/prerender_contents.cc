@@ -349,11 +349,14 @@ bool PrerenderContents::GetRouteId(int* route_id) const {
 void PrerenderContents::set_final_status(FinalStatus final_status) {
   DCHECK(final_status >= FINAL_STATUS_USED && final_status < FINAL_STATUS_MAX);
   DCHECK(final_status_ == FINAL_STATUS_MAX ||
-         final_status_ == FINAL_STATUS_CONTROL_GROUP);
+         final_status_ == FINAL_STATUS_CONTROL_GROUP ||
+         final_status_ == FINAL_STATUS_MATCH_COMPLETE_DUMMY);
 
-  // Don't override final_status_ if it's FINAL_STATUS_CONTROL_GROUP,
-  // otherwise data will be collected in the Prerender.FinalStatus histogram.
-  if (final_status_ == FINAL_STATUS_CONTROL_GROUP)
+  // Don't override final_status_ if it's FINAL_STATUS_CONTROL_GROUP or
+  // FINAL_STATUS_MATCH_COMPLETE_DUMMY, otherwise data will be collected
+  // in the Prerender.FinalStatus histogram.
+  if (final_status_ == FINAL_STATUS_CONTROL_GROUP ||
+      final_status_ == FINAL_STATUS_MATCH_COMPLETE_DUMMY)
     return;
 
   final_status_ = final_status;
@@ -363,11 +366,13 @@ PrerenderContents::~PrerenderContents() {
   DCHECK(final_status_ != FINAL_STATUS_MAX);
   DCHECK(prerendering_has_been_cancelled_ ||
          final_status_ == FINAL_STATUS_USED ||
-         final_status_ == FINAL_STATUS_CONTROL_GROUP);
+         final_status_ == FINAL_STATUS_CONTROL_GROUP ||
+         final_status_ == FINAL_STATUS_MATCH_COMPLETE_DUMMY);
   DCHECK(origin_ != ORIGIN_MAX);
 
   // If we haven't even started prerendering, we were just in the control
-  // group, which means we do not want to record the status.
+  // group (or a match complete dummy), which means we do not want to record
+  // the status.
   if (prerendering_has_started())
     prerender_manager_->RecordFinalStatus(origin_, experiment_id_,
                                           final_status_);
@@ -579,7 +584,7 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
   prerendering_has_been_cancelled_ = true;
   // This has to be done after setting the final status, as it adds the
   // prerender to the history.
-  prerender_manager_->MoveEntryToPendingDelete(this);
+  prerender_manager_->MoveEntryToPendingDelete(this, final_status);
 
   // We may destroy the PrerenderContents before we have initialized the
   // RenderViewHost. Otherwise set the Observer's PrerenderContents to NULL to
