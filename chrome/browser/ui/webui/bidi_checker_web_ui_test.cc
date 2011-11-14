@@ -135,6 +135,10 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
                                                     true);
 }
 
+#if defined(OS_WIN) || defined(OS_LINUX)
+// http://crbug.com/104129
+#define TestDownloadsPageLTR FLAKY_TestDownloadsPageLTR
+#endif
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestDownloadsPageLTR) {
   RunBidiCheckerOnPage(chrome::kChromeUIDownloadsURL, false);
 }
