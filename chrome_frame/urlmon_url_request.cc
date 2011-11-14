@@ -1034,7 +1034,6 @@ void UrlmonUrlRequestManager::StartRequestHelper(
     RequestMap* request_map,
     base::Lock* request_map_lock) {
   DCHECK(request_map);
-  DCHECK(!stopping_);
   scoped_refptr<UrlmonUrlRequest> new_request;
   bool is_started = false;
   if (pending_request_) {
