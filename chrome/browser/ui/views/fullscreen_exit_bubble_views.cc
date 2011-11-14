@@ -55,13 +55,12 @@ class FullscreenExitBubbleViews::FullscreenExitView
 
   FullscreenExitBubbleViews* bubble_;
 
-  // Clickable hint text for exiting browser fullscreen mode.
+  // Clickable hint text for exiting fullscreen mode.
   views::Link link_;
-  // Instruction for exiting tab fullscreen mode.
-  views::Label instruction_label_;
   views::Label message_label_;
   views::NativeTextButton* accept_button_;
   views::NativeTextButton* deny_button_;
+  string16 browser_fullscreen_exit_text_;
 };
 
 FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
@@ -72,6 +71,14 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
     : bubble_(bubble),
       accept_button_(NULL),
       deny_button_(NULL) {
+#if !defined(OS_CHROMEOS)
+  browser_fullscreen_exit_text_ =
+      l10n_util::GetStringFUTF16(IDS_EXIT_FULLSCREEN_MODE, accelerator);
+#else
+  browser_fullscreen_exit_text_ =
+      l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE);
+#endif
+
   views::BubbleBorder* bubble_border =
       new views::BubbleBorder(views::BubbleBorder::NONE);
   bubble_border->set_background_color(Bubble::kBackgroundColor);
@@ -83,21 +90,9 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
   message_label_.SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::MediumFont));
 
-  instruction_label_.set_parent_owned(false);
-  instruction_label_.SetText(bubble_->GetInstructionText());
-  instruction_label_.SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::MediumFont));
-
   link_.set_parent_owned(false);
   link_.set_collapse_when_hidden(false);
   link_.set_focusable(false);
-#if !defined(OS_CHROMEOS)
-  link_.SetText(
-      l10n_util::GetStringFUTF16(IDS_EXIT_FULLSCREEN_MODE,
-                                 accelerator));
-#else
-  link_.SetText(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE));
-#endif
   link_.set_listener(bubble);
   link_.SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::MediumFont));
@@ -107,9 +102,7 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
 
   link_.SetBackgroundColor(background()->get_color());
   message_label_.SetBackgroundColor(background()->get_color());
-  instruction_label_.SetBackgroundColor(background()->get_color());
   AddChildView(&message_label_);
-  AddChildView(&instruction_label_);
   AddChildView(&link_);
 
   accept_button_ = new views::NativeTextButton(
@@ -139,9 +132,7 @@ gfx::Size FullscreenExitBubbleViews::FullscreenExitView::GetPreferredSize() {
   gfx::Size message_size(message_label_.GetPreferredSize());
 
   gfx::Size button_instruction_area;
-  if (instruction_label_.IsVisible()) {
-    button_instruction_area = instruction_label_.GetPreferredSize();
-  } else if (link_.IsVisible()) {
+  if (link_.IsVisible()) {
     button_instruction_area = link_.GetPreferredSize();
   } else {
     gfx::Size accept_size(accept_button_->GetPreferredSize());
@@ -168,16 +159,16 @@ void FullscreenExitBubbleViews::FullscreenExitView::UpdateContent(
   message_label_.SetText(bubble_->GetCurrentMessageText());
   if (fullscreen_bubble::ShowButtonsForType(bubble_type)) {
     link_.SetVisible(false);
-    instruction_label_.SetVisible(false);
     accept_button_->SetVisible(true);
     deny_button_->SetText(bubble_->GetCurrentDenyButtonText());
     deny_button_->SetVisible(true);
     deny_button_->ClearMaxTextSize();
   } else {
-    bool link_visible =
-        bubble_type == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION;
-    link_.SetVisible(link_visible);
-    instruction_label_.SetVisible(!link_visible);
+    if (bubble_type == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION)
+      link_.SetText(browser_fullscreen_exit_text_);
+    else
+      link_.SetText(bubble_->GetInstructionText());
+    link_.SetVisible(true);
     accept_button_->SetVisible(false);
     deny_button_->SetVisible(false);
   }
@@ -195,12 +186,7 @@ void FullscreenExitBubbleViews::FullscreenExitView::Layout() {
       message_size.width(), message_size.height());
   x += message_size.width() + kMiddlePaddingPx;
 
-  if (instruction_label_.IsVisible()) {
-    gfx::Size instruction_size(instruction_label_.GetPreferredSize());
-    instruction_label_.SetBounds(
-        x, insets.top() + (inner_height - instruction_size.height()) / 2,
-        instruction_size.width(), instruction_size.height());
-  } else if (link_.IsVisible()) {
+  if (link_.IsVisible()) {
     gfx::Size link_size(link_.GetPreferredSize());
     link_.SetBounds(x, insets.top() + (inner_height - link_size.height()) / 2,
                     link_size.width(), link_size.height());

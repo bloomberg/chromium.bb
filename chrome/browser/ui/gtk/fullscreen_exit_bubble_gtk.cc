@@ -107,8 +107,11 @@ void FullscreenExitBubbleGtk::InitWidgets() {
                                            FALSE);
   gtk_box_pack_start(GTK_BOX(hbox_), link_, FALSE, FALSE, 0);
 
-  instruction_label_ = gtk_label_new(UTF16ToUTF8(GetInstructionText()).c_str());
+  instruction_label_ = gtk_chrome_link_button_new(
+      UTF16ToUTF8(GetInstructionText()).c_str());
   gtk_widget_set_no_show_all(instruction_label_, FALSE);
+  gtk_chrome_link_button_set_use_gtk_theme(
+      GTK_CHROME_LINK_BUTTON(instruction_label_), FALSE);
   gtk_box_pack_start(GTK_BOX(hbox_), instruction_label_, FALSE, FALSE, 0);
 
   GtkWidget* bubble = gtk_util::CreateGtkBorderBin(
@@ -134,6 +137,8 @@ void FullscreenExitBubbleGtk::InitWidgets() {
   signals_.Connect(container_, "set-floating-position",
                    G_CALLBACK(OnSetFloatingPositionThunk), this);
   signals_.Connect(link_, "clicked", G_CALLBACK(OnLinkClickedThunk), this);
+  signals_.Connect(instruction_label_, "clicked",
+                   G_CALLBACK(OnLinkClickedThunk), this);
   signals_.Connect(allow_button_, "clicked",
                    G_CALLBACK(&OnAllowClickedThunk), this);
   signals_.Connect(deny_button_, "clicked",
