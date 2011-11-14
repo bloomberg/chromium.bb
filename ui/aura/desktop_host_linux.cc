@@ -195,6 +195,7 @@ bool ShouldSendCharEventForKeyboardCode(ui::KeyboardCode keycode) {
     case ui::VKEY_BACK:
     case ui::VKEY_RETURN:
     case ui::VKEY_ESCAPE:
+    case ui::VKEY_SPACE:
     case ui::VKEY_TAB:
     // In addition to the keys listed at MSDN, we include other
     // graphic-character and numpad keys.
