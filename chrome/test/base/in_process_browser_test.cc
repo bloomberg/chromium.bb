@@ -44,6 +44,10 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/desktop.h"
+#endif
+
 // Passed as value of kTestType.
 static const char kBrowserTestType[] = "browser";
 
@@ -269,7 +273,12 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 #endif
 
   // Pump startup related events.
+#if defined(USE_AURA)
+  MessageLoopForUI::current()->RunAllPendingWithDispatcher(
+      aura::Desktop::GetInstance()->GetDispatcher());
+#else
   MessageLoopForUI::current()->RunAllPending();
+#endif
 #if defined(OS_MACOSX)
   pool.Recycle();
 #endif
