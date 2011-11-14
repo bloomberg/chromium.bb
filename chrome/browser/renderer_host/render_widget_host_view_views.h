@@ -118,7 +118,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   virtual void WillWmDestroy() OVERRIDE;
 #endif
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;

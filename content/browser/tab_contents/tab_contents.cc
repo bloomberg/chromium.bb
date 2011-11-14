@@ -233,7 +233,7 @@ TabContents::~TabContents() {
       content::NotificationService::NoDetails());
 
   // TODO(brettw) this should be moved to the view.
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // If we still have a window handle, destroy it. GetNativeView can return
   // NULL if this contents was part of a window that closed.
   if (GetNativeView()) {

@@ -10,9 +10,11 @@
 void RenderWidgetHostViewViews::UpdateCursor(const WebCursor& cursor) {
 }
 
+#if !defined(USE_AURA)
 void RenderWidgetHostViewViews::WillWmDestroy() {
   NOTIMPLEMENTED();
 }
+#endif
 
 gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
   NOTIMPLEMENTED();

@@ -83,7 +83,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura : public RenderWidgetHostView,
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE;
 #endif
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
-  virtual void GetDefaultScreenInfo(WebKit::WebScreenInfo* results);
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
   virtual void SetVisuallyDeemphasized(const SkColor* color,
@@ -94,9 +93,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura : public RenderWidgetHostView,
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
-#if defined(OS_WIN)
-  virtual void WillWmDestroy() OVERRIDE;
-#endif
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;

@@ -4,9 +4,14 @@
 
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 
+#include <gdk/gdkx.h>
+#include <gtk/gtk.h>
+
 #include "base/logging.h"
+#include "content/browser/renderer_host/gtk_window_utils.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "views/widget/widget.h"
 
 static const char kRenderWidgetHostViewKey[] = "__RENDER_WIDGET_HOST_VIEW__";

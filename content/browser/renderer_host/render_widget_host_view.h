@@ -271,7 +271,7 @@ class RenderWidgetHostView {
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) = 0;
 #endif
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   virtual void WillWmDestroy() = 0;
 #endif
 

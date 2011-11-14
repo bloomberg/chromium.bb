@@ -100,7 +100,7 @@ void BrowserMessageFilter::BadMessageReceived() {
 
 bool BrowserMessageFilter::CheckCanDispatchOnUI(const IPC::Message& message,
                                                 IPC::Message::Sender* sender) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // On Windows there's a potential deadlock with sync messsages going in
   // a circle from browser -> plugin -> renderer -> browser.
   // On Linux we can avoid this by avoiding sync messages from browser->plugin.

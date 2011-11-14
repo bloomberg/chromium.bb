@@ -545,7 +545,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   void OnMsgLockMouse();
   void OnMsgUnlockMouse();
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(USE_AURA)
   void OnMsgGetScreenInfo(gfx::NativeViewId view,
                           WebKit::WebScreenInfo* results);
   void OnMsgGetWindowRect(gfx::NativeViewId window_id, gfx::Rect* results);

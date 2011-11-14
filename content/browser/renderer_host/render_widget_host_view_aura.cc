@@ -332,18 +332,8 @@ void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
 #endif
 }
 
-void RenderWidgetHostViewAura::GetDefaultScreenInfo(
-    WebKit::WebScreenInfo* results) {
-  GetScreenInfo(results);
-}
-
 void RenderWidgetHostViewAura::GetScreenInfo(WebKit::WebScreenInfo* results) {
-  const gfx::Size size = gfx::Screen::GetPrimaryMonitorSize();
-  results->rect = WebKit::WebRect(0, 0, size.width(), size.height());
-  results->availableRect = results->rect;
-  // TODO(derat): Don't hardcode this?
-  results->depth = 24;
-  results->depthPerComponent = 8;
+  GetDefaultScreenInfo(results);
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetRootWindowBounds() {
@@ -374,12 +364,6 @@ void RenderWidgetHostViewAura::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
   // Not needed. Mac-only.
 }
-
-#if defined(OS_WIN)
-void RenderWidgetHostViewAura::WillWmDestroy() {
-  // Nothing to do.
-}
-#endif
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 gfx::PluginWindowHandle RenderWidgetHostViewAura::GetCompositingSurface() {
@@ -542,4 +526,18 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
     cursor = aura::kCursorProgress;
 
   aura::Desktop::GetInstance()->SetCursor(cursor);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostView, public:
+
+// static
+void RenderWidgetHostView::GetDefaultScreenInfo(
+    WebKit::WebScreenInfo* results) {
+  const gfx::Size size = gfx::Screen::GetPrimaryMonitorSize();
+  results->rect = WebKit::WebRect(0, 0, size.width(), size.height());
+  results->availableRect = results->rect;
+  // TODO(derat): Don't hardcode this?
+  results->depth = 24;
+  results->depthPerComponent = 8;
 }

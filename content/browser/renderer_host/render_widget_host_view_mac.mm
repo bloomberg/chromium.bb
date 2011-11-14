@@ -210,6 +210,15 @@ NSWindow* ApparentWindowForView(NSView* view) {
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostView, public:
+
+// static
+void RenderWidgetHostView::GetDefaultScreenInfo(
+    WebKit::WebScreenInfo* results) {
+  *results = WebKit::WebScreenInfoFactory::screenInfo(NULL);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac, public:
 
 RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
