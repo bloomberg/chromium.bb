@@ -15,10 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 
-namespace content {
-class ResourceContextGetter;
-}
-
 namespace history {
 class TopSites;
 }
@@ -35,7 +31,6 @@ class AutocompleteClassifier;
 class BookmarkModel;
 class CommandLine;
 class ExtensionPrefs;
-class ExtensionPrefStore;
 class ExtensionPrefValueMap;
 class ExtensionSpecialStoragePolicy;
 class FaviconService;
@@ -49,7 +44,6 @@ class ProfileSyncService;
 class SpeechInputPreferences;
 class TemplateURLService;
 class TestingPrefService;
-class ThemeService;
 class WebKitContext;
 
 namespace net {

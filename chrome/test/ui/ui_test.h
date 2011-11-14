@@ -33,7 +33,6 @@ class AutomationProxy;
 class BrowserProxy;
 class FilePath;
 class GURL;
-class ScopedTempDir;
 class TabProxy;
 
 namespace base {

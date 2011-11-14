@@ -16,7 +16,6 @@ class DictionaryValue;
 
 namespace webdriver {
 
-class Error;
 class Response;
 class Session;
 

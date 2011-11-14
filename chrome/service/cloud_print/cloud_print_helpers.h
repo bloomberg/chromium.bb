@@ -8,12 +8,10 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "chrome/service/cloud_print/print_system.h"
 #include "googleurl/src/gurl.h"
-
-class Task;
-class URLFetcher;
 
 namespace base {
 class DictionaryValue;
@@ -72,9 +70,9 @@ class CloudPrintHelpers {
   static bool IsDryRunJob(const std::vector<std::string>& tags);
 
   static std::string GetCloudPrintAuthHeader();
+
  private:
-  CloudPrintHelpers() {
-  }
+  CloudPrintHelpers() {}
 };
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_

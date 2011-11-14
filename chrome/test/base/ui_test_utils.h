@@ -29,15 +29,12 @@
 
 class AppModalDialog;
 class BookmarkModel;
-class BookmarkNode;
 class Browser;
 class CommandLine;
-class DownloadManager;
 class ExtensionAction;
 class FilePath;
 class GURL;
 class MessageLoop;
-class NavigationController;
 class Profile;
 class RenderViewHost;
 class RenderWidgetHost;

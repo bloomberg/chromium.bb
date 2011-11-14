@@ -19,7 +19,6 @@
 #include "chrome/common/extensions/url_pattern_set.h"
 
 class Extension;
-class ExtensionPrefs;
 
 // When prompting the user to install or approve permissions, we display
 // messages describing the effects of the permissions rather than listing the

@@ -27,10 +27,6 @@ class NotificationUIManager;
 class PrefService;
 class WatchDogThread;
 
-namespace base {
-class WaitableEvent;
-}
-
 namespace policy {
 class BrowserPolicyConnector;
 }

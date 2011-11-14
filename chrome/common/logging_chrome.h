@@ -14,10 +14,6 @@
 class CommandLine;
 class FilePath;
 
-namespace base {
-class Time;
-}
-
 namespace logging {
 
 // Call to initialize logging for Chrome. This sets up the chrome-specific
@@ -69,6 +65,6 @@ size_t GetFatalAssertions(AssertionList* assertions);
 // Handler to silently dump the current process without crashing.
 void DumpWithoutCrashing();
 
-} // namespace logging
+}  // namespace logging
 
 #endif  // CHROME_COMMON_LOGGING_CHROME_H_

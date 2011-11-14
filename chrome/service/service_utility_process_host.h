@@ -23,16 +23,11 @@
 #include "chrome/service/service_child_process_host.h"
 #include "printing/pdf_render_settings.h"
 
-class CommandLine;
 class ScopedTempDir;
 
 namespace base {
 class MessageLoopProxy;
 }  // namespace base
-
-namespace gfx {
-class Rect;
-}  // namespace gfx
 
 namespace printing {
 class Emf;

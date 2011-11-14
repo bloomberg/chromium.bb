@@ -15,13 +15,8 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace gfx {
-class Point;
-}
-
 namespace webdriver {
 
-class Error;
 class Response;
 
 // Click an element. See:

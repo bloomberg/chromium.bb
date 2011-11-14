@@ -22,7 +22,6 @@ class DictionaryValue;
 }
 
 namespace printing {
-class PrintBackend;
 struct PrinterBasicInfo;
 struct PrinterCapsAndDefaults;
 }
@@ -179,7 +178,7 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
   // Get details for already spooled job.
   virtual bool GetJobDetails(const std::string& printer_name,
                              PlatformJobId job_id,
-                             PrintJobDetails *job_details) = 0;
+                             PrintJobDetails* job_details) = 0;
 
   // Factory methods to create corresponding watcher. Callee is responsible
   // for deleting objects. Return NULL if failed.

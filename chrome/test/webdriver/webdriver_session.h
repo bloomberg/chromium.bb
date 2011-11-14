@@ -19,7 +19,6 @@
 #include "chrome/test/webdriver/webdriver_basic_types.h"
 #include "chrome/test/webdriver/webdriver_element_id.h"
 
-class CommandLine;
 class FilePath;
 
 namespace base {
