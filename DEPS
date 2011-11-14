@@ -152,7 +152,7 @@ deps = {
   "src/third_party/webgl_conformance":
     "/trunk/deps/third_party/webgl/sdk/tests@106432",
 
-  # We should use the same software_renderling_list.json for all branches.
+  # We should use the same software_rendering_list.json for all branches.
   "src/chrome/browser/resources/software_rendering_list":
     "/trunk/deps/gpu/software_rendering_list@109652",
 
