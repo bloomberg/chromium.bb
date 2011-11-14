@@ -125,7 +125,7 @@
             },
           ],
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" and coverage==0', {
           'targets': [
             {
               'target_name': 'nacl_helper',
