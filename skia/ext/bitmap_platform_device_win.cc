@@ -7,63 +7,11 @@
 
 #include "skia/ext/bitmap_platform_device_win.h"
 
-#include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/process_util.h"
 #include "skia/ext/bitmap_platform_device_data.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkUtils.h"
-
-namespace {
-// Crashes the process. This is called when a bitmap allocation fails, and this
-// function tries to determine why it might have failed, and crash on different
-// lines. This allows us to see in crash dumps the most likely reason for the
-// failure. It takes the size of the bitmap we were trying to allocate as its
-// arguments so we can check that as well.
-// Bitmap allocation failures are occuring under conditions outside of GDI and
-// address space pressure, so we only crash when resources are not low.
-void CrashForBitmapAllocationFailure(int w, int h) {
-
-  DWORD last_error = GetLastError();
-
-  // The maximum number of GDI objects per process is 10K. If we're very close
-  // to that, it's probably the problem.
-  const int kLotsOfGDIObjs = 9990;
-  if (GetGuiResources(GetCurrentProcess(), GR_GDIOBJECTS) > kLotsOfGDIObjs)
-    return;
-
-  // If the bitmap is ginormous, then we probably can't allocate it.
-  // We use 64M pixels.
-  const int64 kGinormousBitmapPxl = 64000000;
-  if (static_cast<int64>(w) * static_cast<int64>(h) > kGinormousBitmapPxl)
-    return;
-
-  // If we're using a crazy amount of virtual address space, then maybe there
-  // isn't enough for our bitmap.
-  const int64 kLotsOfMem = 1500000000;  // 1.5GB.
-  scoped_ptr<base::ProcessMetrics> process_metrics(
-      base::ProcessMetrics::CreateProcessMetrics(GetCurrentProcess()));
-  if (process_metrics->GetPagefileUsage() > kLotsOfMem)
-    return;
-
-  LPVOID lpMsgBuf = NULL;
-  FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                FORMAT_MESSAGE_FROM_SYSTEM |
-                FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL,
-                last_error,
-                0,
-                reinterpret_cast<LPTSTR>(&lpMsgBuf),
-                0,
-                NULL);
-
-  CHECK(NO_ERROR == last_error);
-  LocalFree(lpMsgBuf);
-}
- 
-}
 
 namespace skia {
 
@@ -169,16 +117,11 @@ BitmapPlatformDevice* BitmapPlatformDevice::create(
   hdr.biClrImportant = 0;
 
   void* data = NULL;
-
-  // Force the last error to success so that we can accurately track failures
-  // in CrashForBitmapAllocationFailure.
-  SetLastError(ERROR_SUCCESS);
   HBITMAP hbitmap = CreateDIBSection(screen_dc,
                                      reinterpret_cast<BITMAPINFO*>(&hdr), 0,
                                      &data,
                                      shared_section, 0);
   if (!hbitmap) {
-    CrashForBitmapAllocationFailure(width, height);
     return NULL;
   }
 
