@@ -895,10 +895,10 @@ TEST_F(QuotaManagerTest, GetAndSetPerststentHostQuota) {
   GetPersistentHostQuota("foo.com");
   SetPersistentHostQuota("foo.com", 200);
   GetPersistentHostQuota("foo.com");
-  SetPersistentHostQuota("foo.com", 300);
+  SetPersistentHostQuota("foo.com", 300000000000);
   GetPersistentHostQuota("foo.com");
   MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(300, quota());
+  EXPECT_EQ(300000000000, quota());
 }
 
 TEST_F(QuotaManagerTest, GetAndSetPersistentUsageAndQuota) {
