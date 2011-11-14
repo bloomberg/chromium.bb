@@ -177,8 +177,13 @@ void P2PPortAllocatorSession::AllocateRelaySession() {
 
   WebURLLoaderOptions options;
   options.allowCredentials = false;
+
+  // TODO(sergeyu): Set to CrossOriginRequestPolicyUseAccessControl
+  // when this code can be used by untrusted plugins.
+  // See http://crbug.com/104195 .
   options.crossOriginRequestPolicy =
-      WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
+      WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
+
   relay_session_request_.reset(
       allocator_->web_frame_->createAssociatedURLLoader(options));
   if (!relay_session_request_.get()) {
