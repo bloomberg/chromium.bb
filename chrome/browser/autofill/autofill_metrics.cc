@@ -28,6 +28,10 @@ enum ServerExperiment {
   ACCEPTANCE_RATIO_04_WINNER_LEAD_RATIO_3_MIN_FORM_SCORE_4,
   NO_SERVER_RESPONSE,
   PROBABILITY_PICKER_05,
+  PROBABILITY_PICKER_025,
+  PROBABILITY_PICKER_025_CC_THRESHOLD_03,
+  PROBABILITY_PICKER_025_CONTEXTUAL_CC_THRESHOLD_03,
+  PROBABILITY_PICKER_025_CONTEXTUAL_CC_THRESHOLD_03_WITH_FALLBACK,
   NUM_SERVER_EXPERIMENTS
 };
 
@@ -223,6 +227,14 @@ void LogServerExperimentId(const std::string& histogram_name,
     metric = NO_SERVER_RESPONSE;
   else if (experiment_id == "fp05")
     metric = PROBABILITY_PICKER_05;
+  else if (experiment_id == "fp025")
+    metric = PROBABILITY_PICKER_025;
+  else if (experiment_id == "fp05cc03")
+    metric = PROBABILITY_PICKER_025_CC_THRESHOLD_03;
+  else if (experiment_id == "fp05cco03")
+    metric = PROBABILITY_PICKER_025_CONTEXTUAL_CC_THRESHOLD_03;
+  else if (experiment_id == "fp05cco03cstd")
+    metric = PROBABILITY_PICKER_025_CONTEXTUAL_CC_THRESHOLD_03_WITH_FALLBACK;
 
   DCHECK(metric < NUM_SERVER_EXPERIMENTS);
   LogUMAHistogramEnumeration(histogram_name, metric, NUM_SERVER_EXPERIMENTS);
