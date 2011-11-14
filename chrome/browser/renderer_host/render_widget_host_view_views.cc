@@ -1078,7 +1078,7 @@ void RenderWidgetHostViewViews::DestroyPluginContainer(
 
 #endif  // TOOLKIT_USES_GTK
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(USE_AURA)
 void RenderWidgetHostViewViews::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
   NOTIMPLEMENTED();

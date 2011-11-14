@@ -271,6 +271,11 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
         }],
+        ['OS=="win" and use_aura==1', {
+          'sources/': [
+            ['exclude', 'test/base/ui_test_utils_win.cc'],
+          ],
+        }],
       ],
     },
     {

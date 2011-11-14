@@ -134,12 +134,14 @@ class RenderMessageFilter : public BrowserMessageFilter {
 #endif
 
 #if defined(OS_WIN)
+#if !defined(USE_AURA)
   // On Windows, we handle these on the IO thread to avoid a deadlock with
   // plugins.  On non-Windows systems, we need to handle them on the UI thread.
   void OnGetScreenInfo(gfx::NativeViewId window,
                        WebKit::WebScreenInfo* results);
   void OnGetWindowRect(gfx::NativeViewId window, gfx::Rect* rect);
   void OnGetRootWindowRect(gfx::NativeViewId window, gfx::Rect* rect);
+#endif
 
   // This hack is Windows-specific.
   // Cache fonts for the renderer. See RenderMessageFilter::OnPreCacheFont

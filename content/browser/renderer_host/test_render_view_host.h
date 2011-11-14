@@ -121,7 +121,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
 #elif defined(OS_WIN)
   virtual void WillWmDestroy() OVERRIDE;
 #endif
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(USE_AURA)
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE {}
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
 #endif

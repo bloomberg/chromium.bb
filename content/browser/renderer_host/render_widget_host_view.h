@@ -44,7 +44,7 @@ struct WebPluginGeometry;
 }
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(USE_AURA)
 namespace WebKit {
 struct WebScreenInfo;
 }
@@ -275,7 +275,7 @@ class RenderWidgetHostView {
   virtual void WillWmDestroy() = 0;
 #endif
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(USE_AURA)
   static void GetDefaultScreenInfo(WebKit::WebScreenInfo* results);
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) = 0;
   virtual gfx::Rect GetRootWindowBounds() = 0;

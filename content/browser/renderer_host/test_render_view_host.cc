@@ -240,7 +240,7 @@ void TestRenderWidgetHostView::WillWmDestroy() {
 
 #endif
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(USE_AURA)
 gfx::Rect TestRenderWidgetHostView::GetRootWindowBounds() {
   return gfx::Rect();
 }

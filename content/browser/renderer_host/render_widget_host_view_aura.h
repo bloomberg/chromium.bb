@@ -83,11 +83,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura : public RenderWidgetHostView,
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE;
 #endif
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
-#if defined(OS_POSIX)
   virtual void GetDefaultScreenInfo(WebKit::WebScreenInfo* results);
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
-#endif
   virtual void SetVisuallyDeemphasized(const SkColor* color,
                                        bool animate) OVERRIDE;
   virtual void UnhandledWheelEvent(

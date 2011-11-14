@@ -214,7 +214,7 @@ bool RenderWidgetHostViewAura::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
-  return window_->bounds();
+  return window_->GetScreenBounds();
 }
 
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
@@ -332,7 +332,6 @@ void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
 #endif
 }
 
-#if defined(OS_POSIX)
 void RenderWidgetHostViewAura::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
   GetScreenInfo(results);
@@ -348,9 +347,12 @@ void RenderWidgetHostViewAura::GetScreenInfo(WebKit::WebScreenInfo* results) {
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetRootWindowBounds() {
-  return aura::Desktop::GetInstance()->bounds();
+  // TODO(beng): this is actually wrong, we are supposed to return the bounds
+  //             of the container "top level" window, but we don't have a firm
+  //             concept of what constitutes a toplevel right now, so just do
+  //             this.
+  return window_->GetScreenBounds();
 }
-#endif
 
 void RenderWidgetHostViewAura::SetVisuallyDeemphasized(const SkColor* color,
                                                        bool animate) {
