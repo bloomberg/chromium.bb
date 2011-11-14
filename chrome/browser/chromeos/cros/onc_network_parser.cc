@@ -72,11 +72,10 @@ OncNetworkParser::OncNetworkParser(const std::string& onc_blob)
       certificates_(NULL) {
   JSONStringValueSerializer deserializer(onc_blob);
   deserializer.set_allow_trailing_comma(true);
-  std::string error_msg;
-  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, &error_msg));
+  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, &parse_error_));
 
   if (!root.get() || root->GetType() != base::Value::TYPE_DICTIONARY) {
-    LOG(WARNING) << "OncNetworkParser received bad ONC file: " << error_msg;
+    LOG(WARNING) << "OncNetworkParser received bad ONC file: " << parse_error_;
   } else {
     root_dict_.reset(static_cast<DictionaryValue*>(root.release()));
     // At least one of NetworkConfigurations or Certificates is required.

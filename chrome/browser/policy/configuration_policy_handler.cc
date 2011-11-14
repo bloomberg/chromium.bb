@@ -166,8 +166,15 @@ ConfigurationPolicyType TypeCheckingPolicyHandler::policy_type() const {
 
 bool TypeCheckingPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                                                     PolicyErrorMap* errors) {
-  const Value* value = policies.Get(policy_type_);
-  if (value && value_type_ != value->GetType()) {
+  const Value* value = NULL;
+  return CheckAndGetValue(policies, errors, &value);
+}
+
+bool TypeCheckingPolicyHandler::CheckAndGetValue(const PolicyMap& policies,
+                                                 PolicyErrorMap* errors,
+                                                 const Value** value) {
+  *value = policies.Get(policy_type_);
+  if (*value && !(*value)->IsType(value_type_)) {
     errors->AddError(policy_type_,
                      IDS_POLICY_TYPE_ERROR,
                      ValueTypeToString(value_type_));
@@ -175,7 +182,6 @@ bool TypeCheckingPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
   }
   return true;
 }
-
 
 // SimplePolicyHandler implementation ------------------------------------------
 

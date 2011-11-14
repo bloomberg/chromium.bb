@@ -14,6 +14,10 @@
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/policy/configuration_policy_handler_chromeos.h"
+#endif
+
 namespace policy {
 
 namespace {
@@ -211,6 +215,15 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
 #if !defined(OS_CHROMEOS)
   handlers_.push_back(new DownloadDirPolicyHandler());
 #endif  // !defined(OS_CHROME0S)
+
+#if defined(OS_CHROMEOS)
+  handlers_.push_back(
+      new NetworkConfigurationPolicyHandler(
+          kPolicyDeviceOpenNetworkConfiguration));
+  handlers_.push_back(
+      new NetworkConfigurationPolicyHandler(
+          kPolicyOpenNetworkConfiguration));
+#endif
 }
 
 ConfigurationPolicyHandlerList::~ConfigurationPolicyHandlerList() {

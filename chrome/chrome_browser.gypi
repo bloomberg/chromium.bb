@@ -1749,6 +1749,8 @@
         'browser/policy/config_dir_policy_provider.h',
         'browser/policy/configuration_policy_handler.cc',
         'browser/policy/configuration_policy_handler.h',
+        'browser/policy/configuration_policy_handler_chromeos.cc',
+        'browser/policy/configuration_policy_handler_chromeos.h',
         'browser/policy/configuration_policy_handler_list.cc',
         'browser/policy/configuration_policy_handler_list.h',
         'browser/policy/configuration_policy_loader_win.cc',

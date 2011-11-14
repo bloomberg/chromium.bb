@@ -60,6 +60,11 @@ class TypeCheckingPolicyHandler : public ConfigurationPolicyHandler {
  protected:
   virtual ~TypeCheckingPolicyHandler();
 
+  // Runs policy checks and returns the policy value if successful.
+  bool CheckAndGetValue(const PolicyMap& policies,
+                        PolicyErrorMap* errors,
+                        const Value** value);
+
   ConfigurationPolicyType policy_type() const;
 
  private:

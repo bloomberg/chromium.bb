@@ -49,6 +49,8 @@ class OncNetworkParser : public NetworkParser {
   virtual Network* CreateNetworkFromInfo(const std::string& service_path,
       const base::DictionaryValue& info) OVERRIDE;
 
+  const std::string& parse_error() const { return parse_error_; }
+
  protected:
   OncNetworkParser();
 
@@ -69,6 +71,9 @@ class OncNetworkParser : public NetworkParser {
   bool ParseClientCertificate(
     int cert_index,
     base::DictionaryValue* certificate);
+
+  // Error message from the JSON parser, if applicable.
+  std::string parse_error_;
 
   scoped_ptr<base::DictionaryValue> root_dict_;
   base::ListValue* network_configs_;

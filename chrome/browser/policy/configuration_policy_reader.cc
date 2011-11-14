@@ -79,6 +79,7 @@ void ConfigurationPolicyStatusKeeper::GetPoliciesFromProvider(
   const ConfigurationPolicyHandlerList* handler_list =
       g_browser_process->browser_policy_connector()->GetHandlerList();
   handler_list->ApplyPolicySettings(policies, NULL, &errors);
+  handler_list->PrepareForDisplaying(&policies);
 
   PolicyMap::const_iterator policy = policies.begin();
   for ( ; policy != policies.end(); ++policy) {
