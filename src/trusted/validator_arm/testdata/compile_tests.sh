@@ -12,7 +12,6 @@ topdir=$(pwd)
 tools="$topdir/toolchain/pnacl_linux_x86_64_newlib/pkg/binutils/bin"
 cd $dir
 
-ldscript=$topdir/tools/llvm/ld_script_arm_untrusted
 readonly ARM_LD="$tools/arm-pc-nacl-ld"
 readonly ARM_AS="$tools/arm-pc-nacl-as"
 
@@ -25,7 +24,7 @@ for test_file in *.S ; do
   cpp $test_file -o $pre_file
   ${ARM_AS} -march=armv7-a -mcpu=cortex-a8 -mfpu=neon -c $pre_file \
     -o $object_file
-  ${ARM_LD} -static -nodefaultlibs -nostdlib -T $ldscript \
+  ${ARM_LD} -static -nodefaultlibs -nostdlib \
       $object_file -o $nexe_file
   rm $pre_file $object_file
 done
