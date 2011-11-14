@@ -9,7 +9,7 @@ Import('env')
 # NOTE: the default setting of 10k rounds is too slow on ARM
 EXTRA_ARGS = ['100']
 
-# TODO(robertm): research why the bitcode clause is necessary
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2437
 # NOTE(jasonwkim): [2010/08/31 13:49:46 PDT (Tuesday)]
 # small_thread_test has problem with arm/qemu (also fails on x86-32-pnacl)
 is_broken = env.Bit('target_arm') and env.UsingEmulator()

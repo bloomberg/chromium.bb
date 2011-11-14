@@ -23,5 +23,6 @@ node = env.CommandTest(
 
 # NOTE: This actually works on arm but the signal does not make it through the
 #       emulator. This code could be rewritten to catch the signal internally
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2437
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_tool_tests',
                        is_broken=env.Bit('target_arm') and env.UsingEmulator())

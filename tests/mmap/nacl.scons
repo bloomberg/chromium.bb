@@ -16,9 +16,11 @@ node = env.CommandSelLdrTestNacl(
     stdout_golden=env.File('mmap_test.stdout'),
     sel_ldr_flags=['-a'])
 
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2437
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
-                       'run_mmap_test')
+                       'run_mmap_test',
+                       is_broken=env.Bit('target_arm') and env.UsingEmulator())
 
 mmap_atomicity_nexe = env.ComponentProgram(
     'mmap_atomicity.nexe', 'mmap_atomicity.c',
@@ -31,6 +33,7 @@ node = env.CommandSelLdrTestNacl(
 #   times out, so it is disabled there.  This may be a consequence of
 #   running under a VM, since running the test on memcheck locally is
 #   fast enough.
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2437
 is_broken = ((env.Bit('target_arm') and env.UsingEmulator())
              or env.Bit('running_on_valgrind'))
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_mmap_atomicity_test',

@@ -121,6 +121,7 @@ def ThreadTestNode(name, args):
 
 nodes = [ ThreadTestNode(name, args) for name, args in tests ]
 
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2437
 is_broken = env.Bit('target_arm') and env.UsingEmulator()
 for p, n in zip(tests, nodes):
   env.AddNodeToTestSuite(n, ['medium_tests', 'sel_ldr_tests'], 'run_' + p[0],
