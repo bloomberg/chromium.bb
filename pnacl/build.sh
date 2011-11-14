@@ -776,7 +776,7 @@ libc() {
 #@ libs            - install native libs and build bitcode libs
 libs() {
   libs-clean
-  libs-platform
+  libs-support
   if ${LIBMODE_NEWLIB} ; then
     # TODO(pdox): Why is this step needed?
     sysroot
@@ -2816,48 +2816,77 @@ newlib-install() {
   sdk-headers
 }
 
-# TODO(pdox): Organize these objects better, so that this code is simpler.
-libs-platform() {
-  # There are currently no platform libs in the glibc build.
+libs-support() {
+  # TODO(pdox): Merge newlib/glibc native support libraries.
   if ${LIBMODE_GLIBC}; then
     return 0
   fi
+  libs-support-bitcode
+  for arch in arm x86-32 x86-64; do
+    libs-support-native ${arch}
+  done
+}
 
-  local pnacl_cc="${PNACL_CC} --pnacl-allow-native"
-  local src="${PNACL_SUPPORT}"
-  local tmpdir="${TC_BUILD}/libs-platform"
-  rm -rf "${tmpdir}"
-  mkdir -p "${tmpdir}"
+libs-support-bitcode() {
+  StepBanner "LIBS-SUPPORT-BITCODE"
+  local flags="-no-save-temps"
+  mkdir -p "${INSTALL_LIB}"
+
+  spushd "${PNACL_SUPPORT}"
+
+  # Install crti.o (_init/_fini for newlib)
+  StepBanner "LIBS-SUPPORT" "Install crti.bc"
+  ${PNACL_CC} ${flags} -c crti.c -o "${INSTALL_LIB}"/crti.bc
+
+  # Install crtbegin bitcode (__dso_handle/__cxa_finalize for C++)
+  StepBanner "LIBS-SUPPORT" "Install crtbegin.bc / crtbeginS.bc"
+  ${PNACL_CC} ${flags} -c bitcode/crtbegin.c -o "${INSTALL_LIB}"/crtbegin.bc
+  ${PNACL_CC} ${flags} -c bitcode/crtbegin.c -o "${INSTALL_LIB}"/crtbeginS.bc \
+                       -DSHARED
 
   # Install crt1.o (linker script)
-  StepBanner "LIBS-PLATFORM" "Install crt1.o"
-  mkdir -p "${INSTALL_LIB}"
-  cp "${src}"/crt1.x ${INSTALL_LIB}/crt1.o
+  StepBanner "LIBS-SUPPORT" "Install crt1.o (linker script)"
+  cp crt1.x "${INSTALL_LIB}"/crt1.o
 
-  # Install nacl_startup.bc
-  StepBanner "LIBS-PLATFORM" "Install nacl_startup.bc"
-  ${pnacl_cc} -c "${src}"/nacl_startup.c -o "${tmpdir}"/nacl_startup.bc
-  cp "${tmpdir}"/nacl_startup.bc "${INSTALL_LIB}"
+  spopd
+}
 
-  for platform in arm x86-32 x86-64; do
-    StepBanner "LIBS-PLATFORM" "libcrt_platform.a for ${platform}"
-    local dest="${INSTALL_LIB}-${platform}"
-    local sources="setjmp_${platform/-/_}"
-    mkdir -p "${dest}"
+libs-support-native() {
+  StepBanner "LIBS-SUPPORT-NATIVE (${arch})"
+  local arch=$1
+  local destdir="${INSTALL_LIB}"-${arch}
+  mkdir -p "${destdir}"
 
-    # For ARM, also compile aeabi_read_tp.S
-    if  [ ${platform} == arm ] ; then
-      sources+=" aeabi_read_tp"
-    fi
+  local flags="-arch ${arch} --pnacl-allow-native --pnacl-allow-translate \
+               -no-save-temps"
 
-    local objs=""
-    for name in ${sources}; do
-      ${pnacl_cc} -arch ${platform} -c "${src}"/${name}.S -o ${tmpdir}/${name}.o
-      objs+=" ${tmpdir}/${name}.o"
-    done
+  spushd "${PNACL_SUPPORT}"
 
-    ${PNACL_AR} rc "${dest}"/libcrt_platform.a ${objs}
-  done
+  # Compile crtbegin.o / crtend.o
+  StepBanner "LIBS-SUPPORT" "Install crtbegin.o / crtend.o"
+  ${PNACL_CC} ${flags} -c crtbegin.c -o "${destdir}"/crtbegin.o
+  ${PNACL_CC} ${flags} -c crtend.c -o "${destdir}"/crtend.o
+
+  # TODO(pdox): Use this for shared objects when we build libgcc_s.so ourselves
+  # Compile crtbeginS.o / crtendS.o
+  StepBanner "LIBS-SUPPORT" "Install crtbeginS.o / crtendS.o"
+  ${PNACL_CC} ${flags} -c crtbegin.c -fPIC -DSHARED -o "${destdir}"/crtbeginS.o
+  ${PNACL_CC} ${flags} -c crtend.c -fPIC -DSHARED -o "${destdir}"/crtendS.o
+
+  # Make libcrt_platform.a
+  StepBanner "LIBS-SUPPORT" "Install libcrt_platform.a"
+  local tmpdir="${TC_BUILD}/libs-support-native"
+  rm -rf "${tmpdir}"
+  mkdir -p "${tmpdir}"
+  ${PNACL_CC} ${flags} -c setjmp_${arch/-/_}.S -o "${tmpdir}"/setjmp.o
+
+  # For ARM, also compile aeabi_read_tp.S
+  if  [ ${arch} == arm ] ; then
+    ${PNACL_CC} ${flags} -c aeabi_read_tp.S -o "${tmpdir}"/aeabi_read_tp.o
+  fi
+  spopd
+
+  ${PNACL_AR} rc "${destdir}"/libcrt_platform.a "${tmpdir}"/*.o
 }
 
 #########################################################################

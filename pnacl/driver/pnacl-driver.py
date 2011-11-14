@@ -104,10 +104,16 @@ EXTRA_ENV = {
   # provided on the command-line.
   'LD_ARGS_nostdlib': '-nostdlib ${ld_inputs}',
 
+  # TODO(pdox): Pull all native objects out of here
+  #             and into pnacl-translate.
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
   'LD_ARGS_newlib_static':
-    '-l:crt1.o -l:nacl_startup.bc ${ld_inputs} ' +
-    '--start-group -lgcc_eh -lgcc -lc -lnacl ' +
-    '${LIBSTDCPP} -l:libcrt_platform.a --end-group',
+    '-l:crtbegin.o ' +
+    # <bitcode>
+    '-l:crt1.o -l:crti.bc -l:crtbegin.bc ${ld_inputs} ' +
+    '--start-group ${LIBSTDCPP} -lc -lnacl --end-group ' +
+    # </bitcode>
+    '-lgcc_eh -lgcc -l:libcrt_platform.a -l:crtend.o',
 
   # The next three are copied verbatim from nacl-gcc
   'LD_ARGS_glibc_static':
