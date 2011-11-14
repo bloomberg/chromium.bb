@@ -1,6 +1,6 @@
-<protocol name="meego_tablet">
+<protocol name="tablet">
 
-  <interface name="meego_tablet_shell" version="1">
+  <interface name="tablet_shell" version="1">
     <request name="set_lockscreen">
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
@@ -22,7 +22,7 @@
     </request>
 
     <request name="create_client">
-      <arg name="id" type="new_id" interface="meego_tablet_client"/>
+      <arg name="id" type="new_id" interface="tablet_client"/>
       <arg name="name" type="string"/>
       <arg name="fd" type="fd"/>
     </request>
@@ -32,7 +32,7 @@
     <event name="hide_switcher"/>
   </interface>
 
-  <interface name="meego_tablet_client" version="1">
+  <interface name="tablet_client" version="1">
     <request name="destroy" type="destructor"/>
     <request name="activate"/>
   </interface>

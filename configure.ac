@@ -127,10 +127,10 @@ AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")
 
 AM_CONDITIONAL(ENABLE_DESKTOP_SHELL, true)
 
-AC_ARG_ENABLE(meego-tablet-shell, [  --enable-meego-tablet-shell],,
-	      enable_meego_tablet_shell=yes)
-AM_CONDITIONAL(ENABLE_MEEGO_TABLET_SHELL,
-	       test x$enable_meego_tablet_shell == xyes)
+AC_ARG_ENABLE(tablet-shell, [  --enable-tablet-shell],,
+	      enable_tablet_shell=yes)
+AM_CONDITIONAL(ENABLE_TABLET_SHELL,
+	       test x$enable_tablet_shell == xyes)
 
 if test "x$GCC" = "xyes"; then
 	GCC_CFLAGS="-Wall -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden"

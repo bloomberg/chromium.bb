@@ -31,7 +31,7 @@ endif
 moduledir = @libdir@/wayland
 module_LTLIBRARIES =				\
 	$(desktop_shell)			\
-	$(meego_tablet_shell)			\
+	$(tablet_shell)			\
 	$(x11_backend)				\
 	$(drm_backend)				\
 	$(wayland_backend)			\
@@ -81,23 +81,23 @@ desktop_shell_la_SOURCES =			\
 	desktop-shell-server-protocol.h
 endif
 
-if ENABLE_MEEGO_TABLET_SHELL
-meego_tablet_shell = meego-tablet-shell.la
-meego_tablet_shell_la_LDFLAGS = -module -avoid-version
-meego_tablet_shell_la_LIBADD = $(COMPOSITOR_LIBS)
-meego_tablet_shell_la_CFLAGS = $(GCC_CFLAGS)
-meego_tablet_shell_la_SOURCES =			\
-	meego-tablet-shell.c			\
-	meego-tablet-shell.h			\
-	meego-tablet-protocol.c			\
-	meego-tablet-server-protocol.h
+if ENABLE_TABLET_SHELL
+tablet_shell = tablet-shell.la
+tablet_shell_la_LDFLAGS = -module -avoid-version
+tablet_shell_la_LIBADD = $(COMPOSITOR_LIBS)
+tablet_shell_la_CFLAGS = $(GCC_CFLAGS)
+tablet_shell_la_SOURCES =			\
+	tablet-shell.c				\
+	tablet-shell.h				\
+	tablet-shell-protocol.c			\
+	tablet-shell-server-protocol.h
 endif
 
 BUILT_SOURCES =					\
 	screenshooter-server-protocol.h		\
 	screenshooter-protocol.c		\
-	meego-tablet-protocol.c			\
-	meego-tablet-server-protocol.h		\
+	tablet-shell-protocol.c			\
+	tablet-shell-server-protocol.h		\
 	xserver-protocol.c			\
 	xserver-server-protocol.h		\
 	desktop-shell-protocol.c		\

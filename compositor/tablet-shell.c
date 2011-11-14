@@ -31,7 +31,7 @@
 #include <linux/input.h>
 
 #include "compositor.h"
-#include "meego-tablet-server-protocol.h"
+#include "tablet-shell-server-protocol.h"
 
 /*
  * TODO: Don't fade back from black until we've received a lockscreen
@@ -46,7 +46,7 @@ enum {
 	STATE_TASK
 };
 
-struct meego_tablet_shell {
+struct tablet_shell {
 	struct wl_resource resource;
 
 	struct wlsc_shell shell;
@@ -66,37 +66,37 @@ struct meego_tablet_shell {
 	struct wlsc_surface *switcher_surface;
 	struct wl_listener switcher_listener;
 
-	struct meego_tablet_client *current_client;
+	struct tablet_client *current_client;
 
 	int state, previous_state;
 	int long_press_active;
 	struct wl_event_source *long_press_source;
 };
 
-struct meego_tablet_client {
+struct tablet_client {
 	struct wl_resource resource;
-	struct meego_tablet_shell *shell;
+	struct tablet_shell *shell;
 	struct wl_client *client;
 	struct wlsc_surface *surface;
 	char *name;
 };
 
-struct meego_tablet_zoom {
+struct tablet_zoom {
 	struct wlsc_surface *surface;
 	struct wlsc_animation animation;
 	struct wlsc_spring spring;
 	struct wlsc_transform transform;
 	struct wl_listener listener;
-	struct meego_tablet_shell *shell;
-	void (*done)(struct meego_tablet_zoom *zoom);
+	struct tablet_shell *shell;
+	void (*done)(struct tablet_zoom *zoom);
 };
 
 
 static void
-meego_tablet_shell_sigchld(struct wlsc_process *process, int status)
+tablet_shell_sigchld(struct wlsc_process *process, int status)
 {
-	struct meego_tablet_shell *shell =
-		container_of(process, struct meego_tablet_shell, process);
+	struct tablet_shell *shell =
+		container_of(process, struct tablet_shell, process);
 
 	shell->process.pid = 0;
 
@@ -104,7 +104,7 @@ meego_tablet_shell_sigchld(struct wlsc_process *process, int status)
 }
 
 static void
-meego_tablet_shell_set_state(struct meego_tablet_shell *shell, int state)
+tablet_shell_set_state(struct tablet_shell *shell, int state)
 {
 	static const char *states[] = {
 		"STARTING", "LOCKED", "HOME", "SWITCHER", "TASK"
@@ -117,7 +117,7 @@ meego_tablet_shell_set_state(struct meego_tablet_shell *shell, int state)
 }
 
 static void
-meego_tablet_zoom_destroy(struct meego_tablet_zoom *zoom)
+tablet_zoom_destroy(struct tablet_zoom *zoom)
 {
 	wl_list_remove(&zoom->animation.link);
 	zoom->surface->transform = NULL;
@@ -130,19 +130,19 @@ static void
 handle_zoom_surface_destroy(struct wl_listener *listener,
 			    struct wl_resource *resource, uint32_t time)
 {
-	struct meego_tablet_zoom *zoom =
-		container_of(listener, struct meego_tablet_zoom, listener);
+	struct tablet_zoom *zoom =
+		container_of(listener, struct tablet_zoom, listener);
 
 	fprintf(stderr, "animation surface gone\n");
-	meego_tablet_zoom_destroy(zoom);
+	tablet_zoom_destroy(zoom);
 }
 
 static void
-meego_tablet_zoom_frame(struct wlsc_animation *animation,
+tablet_zoom_frame(struct wlsc_animation *animation,
 			struct wlsc_output *output, uint32_t msecs)
 {
-	struct meego_tablet_zoom *zoom =
-		container_of(animation, struct meego_tablet_zoom, animation);
+	struct tablet_zoom *zoom =
+		container_of(animation, struct tablet_zoom, animation);
 	struct wlsc_surface *es = zoom->surface;
 	GLfloat scale;
 
@@ -150,7 +150,7 @@ meego_tablet_zoom_frame(struct wlsc_animation *animation,
 
 	if (wlsc_spring_done(&zoom->spring)) {
 		fprintf(stderr, "animation done\n");
-		meego_tablet_zoom_destroy(zoom);
+		tablet_zoom_destroy(zoom);
 	}
 
 	scale = zoom->spring.current;
@@ -168,12 +168,12 @@ meego_tablet_zoom_frame(struct wlsc_animation *animation,
 	wlsc_surface_damage(es);
 }
 
-static struct meego_tablet_zoom *
-meego_tablet_zoom_run(struct meego_tablet_shell *shell,
+static struct tablet_zoom *
+tablet_zoom_run(struct tablet_shell *shell,
 		      struct wlsc_surface *surface,
 		      GLfloat start, GLfloat stop)
 {
-	struct meego_tablet_zoom *zoom;
+	struct tablet_zoom *zoom;
 
 	fprintf(stderr, "starting animation for surface %p\n", surface);
 
@@ -187,8 +187,8 @@ meego_tablet_zoom_run(struct meego_tablet_shell *shell,
 	surface->transform = &zoom->transform;
 	wlsc_spring_init(&zoom->spring, 200.0, start, stop);
 	zoom->spring.timestamp = wlsc_compositor_get_time();
-	zoom->animation.frame = meego_tablet_zoom_frame;
-	meego_tablet_zoom_frame(&zoom->animation, NULL,
+	zoom->animation.frame = tablet_zoom_frame;
+	tablet_zoom_frame(&zoom->animation, NULL,
 				zoom->spring.timestamp);
 
 	zoom->listener.func = handle_zoom_surface_destroy;
@@ -202,11 +202,11 @@ meego_tablet_zoom_run(struct meego_tablet_shell *shell,
 }
 
 static void
-meego_tablet_shell_map(struct wlsc_shell *base, struct wlsc_surface *surface,
+tablet_shell_map(struct wlsc_shell *base, struct wlsc_surface *surface,
 		       int32_t width, int32_t height)
 {
-	struct meego_tablet_shell *shell =
-		container_of(base, struct meego_tablet_shell, shell);
+	struct tablet_shell *shell =
+		container_of(base, struct tablet_shell, shell);
 
 	surface->x = 0;
 	surface->y = 0;
@@ -218,17 +218,17 @@ meego_tablet_shell_map(struct wlsc_shell *base, struct wlsc_surface *surface,
 		/* */
 	} else if (surface == shell->home_surface) {
 		if (shell->state == STATE_STARTING) {
-			meego_tablet_shell_set_state(shell, STATE_LOCKED);
+			tablet_shell_set_state(shell, STATE_LOCKED);
 			shell->previous_state = STATE_HOME;
 			wl_resource_post_event(&shell->resource,
-					       MEEGO_TABLET_SHELL_SHOW_LOCKSCREEN);
+					       TABLET_SHELL_SHOW_LOCKSCREEN);
 		}
 	} else if (shell->current_client &&
 		   shell->current_client->surface != surface &&
 		   shell->current_client->client == surface->surface.resource.client) {
-		meego_tablet_shell_set_state(shell, STATE_TASK);
+		tablet_shell_set_state(shell, STATE_TASK);
 		shell->current_client->surface = surface;
-		meego_tablet_zoom_run(shell, surface, 0.3, 1.0);
+		tablet_zoom_run(shell, surface, 0.3, 1.0);
 	}
 
 	wl_list_insert(&shell->compositor->surface_list, &surface->link);
@@ -236,7 +236,7 @@ meego_tablet_shell_map(struct wlsc_shell *base, struct wlsc_surface *surface,
 }
 
 static void
-meego_tablet_shell_configure(struct wlsc_shell *base,
+tablet_shell_configure(struct wlsc_shell *base,
 			     struct wlsc_surface *surface,
 			     int32_t x, int32_t y,
 			     int32_t width, int32_t height)
@@ -248,12 +248,12 @@ static void
 handle_lockscreen_surface_destroy(struct wl_listener *listener,
 				  struct wl_resource *resource, uint32_t time)
 {
-	struct meego_tablet_shell *shell =
+	struct tablet_shell *shell =
 		container_of(listener,
-			     struct meego_tablet_shell, lockscreen_listener);
+			     struct tablet_shell, lockscreen_listener);
 
 	shell->lockscreen_surface = NULL;
-	meego_tablet_shell_set_state(shell, shell->previous_state);
+	tablet_shell_set_state(shell, shell->previous_state);
 }
 
 static void
@@ -261,7 +261,7 @@ tablet_shell_set_lockscreen(struct wl_client *client,
 			    struct wl_resource *resource,
 			    struct wl_resource *surface_resource)
 {
-	struct meego_tablet_shell *shell = resource->data;
+	struct tablet_shell *shell = resource->data;
 	struct wlsc_surface *es = surface_resource->data;
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) shell->compositor->input_device;
@@ -280,13 +280,13 @@ static void
 handle_switcher_surface_destroy(struct wl_listener *listener,
 				struct wl_resource *resource, uint32_t time)
 {
-	struct meego_tablet_shell *shell =
+	struct tablet_shell *shell =
 		container_of(listener,
-			     struct meego_tablet_shell, switcher_listener);
+			     struct tablet_shell, switcher_listener);
 
 	shell->switcher_surface = NULL;
 	if (shell->state != STATE_LOCKED)
-		meego_tablet_shell_set_state(shell, shell->previous_state);
+		tablet_shell_set_state(shell, shell->previous_state);
 }
 
 static void
@@ -294,7 +294,7 @@ tablet_shell_set_switcher(struct wl_client *client,
 			  struct wl_resource *resource,
 			  struct wl_resource *surface_resource)
 {
-	struct meego_tablet_shell *shell = resource->data;
+	struct tablet_shell *shell = resource->data;
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) shell->compositor->input_device;
 	struct wlsc_surface *es = surface_resource->data;
@@ -319,7 +319,7 @@ tablet_shell_set_homescreen(struct wl_client *client,
 			    struct wl_resource *resource,
 			    struct wl_resource *surface_resource)
 {
-	struct meego_tablet_shell *shell = resource->data;
+	struct tablet_shell *shell = resource->data;
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) shell->compositor->input_device;
 
@@ -332,9 +332,9 @@ tablet_shell_set_homescreen(struct wl_client *client,
 }
 
 static void
-minimize_zoom_done(struct meego_tablet_zoom *zoom)
+minimize_zoom_done(struct tablet_zoom *zoom)
 {
-	struct meego_tablet_shell *shell = zoom->shell;
+	struct tablet_shell *shell = zoom->shell;
 	struct wlsc_compositor *compositor = shell->compositor;
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) compositor->input_device;
@@ -344,14 +344,14 @@ minimize_zoom_done(struct meego_tablet_zoom *zoom)
 }
 
 static void
-meego_tablet_shell_switch_to(struct meego_tablet_shell *shell,
+tablet_shell_switch_to(struct tablet_shell *shell,
 			     struct wlsc_surface *surface)
 {
 	struct wlsc_compositor *compositor = shell->compositor;
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) compositor->input_device;
 	struct wlsc_surface *current;
-	struct meego_tablet_zoom *zoom;
+	struct tablet_zoom *zoom;
 
 	if (shell->state == STATE_SWITCHER) {
 		wl_list_remove(&shell->switcher_listener.link);
@@ -359,19 +359,19 @@ meego_tablet_shell_switch_to(struct meego_tablet_shell *shell,
 	};
 
 	if (surface == shell->home_surface) {
-		meego_tablet_shell_set_state(shell, STATE_HOME);
+		tablet_shell_set_state(shell, STATE_HOME);
 
 		if (shell->current_client && shell->current_client->surface) {
 			current = shell->current_client->surface;
-			zoom = meego_tablet_zoom_run(shell, current, 1.0, 0.3);
+			zoom = tablet_zoom_run(shell, current, 1.0, 0.3);
 			zoom->done = minimize_zoom_done;
 		}
 	} else {
 		fprintf(stderr, "switch to %p\n", surface);
 		wlsc_surface_activate(surface, device,
 				      wlsc_compositor_get_time());
-		meego_tablet_shell_set_state(shell, STATE_TASK);
-		meego_tablet_zoom_run(shell, surface, 0.3, 1.0);
+		tablet_shell_set_state(shell, STATE_TASK);
+		tablet_zoom_run(shell, surface, 0.3, 1.0);
 	}
 }
 
@@ -380,10 +380,10 @@ tablet_shell_show_grid(struct wl_client *client,
 		       struct wl_resource *resource,
 		       struct wl_resource *surface_resource)
 {
-	struct meego_tablet_shell *shell = resource->data;
+	struct tablet_shell *shell = resource->data;
 	struct wlsc_surface *es = surface_resource->data;
 
-	meego_tablet_shell_switch_to(shell, es);
+	tablet_shell_switch_to(shell, es);
 }
 
 static void
@@ -391,17 +391,17 @@ tablet_shell_show_panels(struct wl_client *client,
 			 struct wl_resource *resource,
 			 struct wl_resource *surface_resource)
 {
-	struct meego_tablet_shell *shell = resource->data;
+	struct tablet_shell *shell = resource->data;
 	struct wlsc_surface *es = surface_resource->data;
 
-	meego_tablet_shell_switch_to(shell, es);
+	tablet_shell_switch_to(shell, es);
 }
 
 static void
 destroy_tablet_client(struct wl_resource *resource)
 {
-	struct meego_tablet_client *tablet_client =
-		container_of(resource, struct meego_tablet_client, resource);
+	struct tablet_client *tablet_client =
+		container_of(resource, struct tablet_client, resource);
 
 	free(tablet_client->name);
 	free(tablet_client);
@@ -417,17 +417,17 @@ tablet_client_destroy(struct wl_client *client,
 static void
 tablet_client_activate(struct wl_client *client, struct wl_resource *resource)
 {
-	struct meego_tablet_client *tablet_client = resource->data;
-	struct meego_tablet_shell *shell = tablet_client->shell;
+	struct tablet_client *tablet_client = resource->data;
+	struct tablet_shell *shell = tablet_client->shell;
 
 	shell->current_client = tablet_client;
 	if (!tablet_client->surface)
 		return;
 
-	meego_tablet_shell_switch_to(shell, tablet_client->surface);
+	tablet_shell_switch_to(shell, tablet_client->surface);
 }
 
-static const struct meego_tablet_client_interface tablet_client_interface = {
+static const struct tablet_client_interface tablet_client_implementation = {
 	tablet_client_destroy,
 	tablet_client_activate
 };
@@ -437,9 +437,9 @@ tablet_shell_create_client(struct wl_client *client,
 			   struct wl_resource *resource,
 			   uint32_t id, const char *name, int fd)
 {
-	struct meego_tablet_shell *shell = resource->data;
+	struct tablet_shell *shell = resource->data;
 	struct wlsc_compositor *compositor = shell->compositor;
-	struct meego_tablet_client *tablet_client;
+	struct tablet_client *tablet_client;
 
 	tablet_client = malloc(sizeof *tablet_client);
 	if (tablet_client == NULL) {
@@ -454,9 +454,9 @@ tablet_shell_create_client(struct wl_client *client,
 	tablet_client->resource.destroy = destroy_tablet_client;
 	tablet_client->resource.object.id = id;
 	tablet_client->resource.object.interface =
-		&meego_tablet_client_interface;
+		&tablet_client_interface;
 	tablet_client->resource.object.implementation =
-		(void (**)(void)) &tablet_client_interface;
+		(void (**)(void)) &tablet_client_implementation;
 
 	wl_client_add_resource(client, &tablet_client->resource);
 	tablet_client->surface = NULL;
@@ -466,7 +466,7 @@ tablet_shell_create_client(struct wl_client *client,
 		tablet_client->client, id, name, fd);
 }
 
-static const struct meego_tablet_shell_interface tablet_shell_interface = {
+static const struct tablet_shell_interface tablet_shell_implementation = {
 	tablet_shell_set_lockscreen,
 	tablet_shell_set_switcher,
 	tablet_shell_set_homescreen,
@@ -476,7 +476,7 @@ static const struct meego_tablet_shell_interface tablet_shell_interface = {
 };
 
 static void
-launch_ux_daemon(struct meego_tablet_shell *shell)
+launch_ux_daemon(struct tablet_shell *shell)
 {
 	struct wlsc_compositor *compositor = shell->compositor;
 	char s[32];
@@ -488,7 +488,7 @@ launch_ux_daemon(struct meego_tablet_shell *shell)
 	}
 
 	shell->process.pid = fork();
-	shell->process.cleanup = meego_tablet_shell_sigchld;
+	shell->process.cleanup = tablet_shell_sigchld;
 
 	switch (shell->process.pid) {
 	case 0:
@@ -520,59 +520,59 @@ launch_ux_daemon(struct meego_tablet_shell *shell)
 }
 
 static void
-toggle_switcher(struct meego_tablet_shell *shell)
+toggle_switcher(struct tablet_shell *shell)
 {
 	switch (shell->state) {
 	case STATE_SWITCHER:
 		wl_resource_post_event(&shell->resource,
-				     MEEGO_TABLET_SHELL_HIDE_SWITCHER);
+				     TABLET_SHELL_HIDE_SWITCHER);
 		break;
 	default:
 		wl_resource_post_event(&shell->resource,
-				       MEEGO_TABLET_SHELL_SHOW_SWITCHER);
-		meego_tablet_shell_set_state(shell, STATE_SWITCHER);
+				       TABLET_SHELL_SHOW_SWITCHER);
+		tablet_shell_set_state(shell, STATE_SWITCHER);
 		break;
 	}
 }
 
 static void
-meego_tablet_shell_lock(struct wlsc_shell *base)
+tablet_shell_lock(struct wlsc_shell *base)
 {
-	struct meego_tablet_shell *shell =
-		container_of(base, struct meego_tablet_shell, shell);
+	struct tablet_shell *shell =
+		container_of(base, struct tablet_shell, shell);
 
 	if (shell->state == STATE_LOCKED)
 		return;
 	if (shell->state == STATE_SWITCHER)
 		wl_resource_post_event(&shell->resource,
-				       MEEGO_TABLET_SHELL_HIDE_SWITCHER);
+				       TABLET_SHELL_HIDE_SWITCHER);
 
 	wl_resource_post_event(&shell->resource,
-			       MEEGO_TABLET_SHELL_SHOW_LOCKSCREEN);
+			       TABLET_SHELL_SHOW_LOCKSCREEN);
 	
-	meego_tablet_shell_set_state(shell, STATE_LOCKED);
+	tablet_shell_set_state(shell, STATE_LOCKED);
 }
 
 static void
-go_home(struct meego_tablet_shell *shell)
+go_home(struct tablet_shell *shell)
 {
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) shell->compositor->input_device;
 
 	if (shell->state == STATE_SWITCHER)
 		wl_resource_post_event(&shell->resource,
-				       MEEGO_TABLET_SHELL_HIDE_SWITCHER);
+				       TABLET_SHELL_HIDE_SWITCHER);
 
 	wlsc_surface_activate(shell->home_surface, device,
 			      wlsc_compositor_get_time());
 
-	meego_tablet_shell_set_state(shell, STATE_HOME);
+	tablet_shell_set_state(shell, STATE_HOME);
 }
 
 static int
 long_press_handler(void *data)
 {
-	struct meego_tablet_shell *shell = data;
+	struct tablet_shell *shell = data;
 
 	shell->long_press_active = 0;
 	toggle_switcher(shell);
@@ -584,7 +584,7 @@ static void
 menu_key_binding(struct wl_input_device *device, uint32_t time,
 		 uint32_t key, uint32_t button, uint32_t state, void *data)
 {
-	struct meego_tablet_shell *shell = data;
+	struct tablet_shell *shell = data;
 
 	if (shell->state == STATE_LOCKED)
 		return;
@@ -597,7 +597,7 @@ static void
 home_key_binding(struct wl_input_device *device, uint32_t time,
 		 uint32_t key, uint32_t button, uint32_t state, void *data)
 {
-	struct meego_tablet_shell *shell = data;
+	struct tablet_shell *shell = data;
 
 	if (shell->state == STATE_LOCKED)
 		return;
@@ -624,7 +624,7 @@ home_key_binding(struct wl_input_device *device, uint32_t time,
 }
 
 static void
-meego_tablet_shell_set_selection_focus(struct wlsc_shell *shell,
+tablet_shell_set_selection_focus(struct wlsc_shell *shell,
 				       struct wl_selection *selection,
 				       struct wl_surface *surface,
 				       uint32_t time)
@@ -634,7 +634,7 @@ meego_tablet_shell_set_selection_focus(struct wlsc_shell *shell,
 static void
 bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 {
-	struct meego_tablet_shell *shell = data;
+	struct tablet_shell *shell = data;
 
 	if (shell->client != client)
 		/* Throw an error or just let the client fail when it
@@ -651,7 +651,7 @@ shell_init(struct wlsc_compositor *compositor);
 WL_EXPORT void
 shell_init(struct wlsc_compositor *compositor)
 {
-	struct meego_tablet_shell *shell;
+	struct tablet_shell *shell;
 	struct wl_event_loop *loop;
 
 	shell = malloc(sizeof *shell);
@@ -661,9 +661,9 @@ shell_init(struct wlsc_compositor *compositor)
 	memset(shell, 0, sizeof *shell);
 	shell->compositor = compositor;
 
-	shell->resource.object.interface = &meego_tablet_shell_interface;
+	shell->resource.object.interface = &tablet_shell_interface;
 	shell->resource.object.implementation =
-		(void (**)(void)) &tablet_shell_interface;
+		(void (**)(void)) &tablet_shell_implementation;
 
 	/* FIXME: This will make the object available to all clients. */
 	wl_display_add_global(compositor->wl_display,
@@ -686,12 +686,12 @@ shell_init(struct wlsc_compositor *compositor)
 
 	compositor->shell = &shell->shell;
 
-	shell->shell.lock = meego_tablet_shell_lock;
-	shell->shell.map = meego_tablet_shell_map;
-	shell->shell.configure = meego_tablet_shell_configure;
+	shell->shell.lock = tablet_shell_lock;
+	shell->shell.map = tablet_shell_map;
+	shell->shell.configure = tablet_shell_configure;
 	shell->shell.set_selection_focus =
-		meego_tablet_shell_set_selection_focus;
+		tablet_shell_set_selection_focus;
 	launch_ux_daemon(shell);
 
-	meego_tablet_shell_set_state(shell, STATE_STARTING);
+	tablet_shell_set_state(shell, STATE_STARTING);
 }
