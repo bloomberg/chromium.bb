@@ -16,15 +16,13 @@ class ExtensionClipboardApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionClipboardApiTest, WriteAndReadTest) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
   ASSERT_TRUE(RunExtensionTest("clipboard_api/extension_win")) << message_;
-#else  // !defined(OS_WIN)
-#if defined(OS_MACOSX)
+#elif defined(OS_MACOSX)
   ASSERT_TRUE(RunExtensionTest("clipboard_api/extension_mac")) << message_;
-#else  // !defined(OS_WIN) && !defined(OS_MACOSX)
+#else  // !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(USE_AURA)
   ASSERT_TRUE(RunExtensionTest("clipboard_api/extension"))  << message_;
-#endif  // defined(OS_MACOSX)
-#endif  // defiend(OS_WIN)
+#endif
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionClipboardApiTest, NoPermission) {

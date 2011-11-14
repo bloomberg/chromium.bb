@@ -41,8 +41,9 @@ const char kBufferNotSupportedError[] = "Buffer is not supported.";
 
 // Converts data MIME type to data format known to ui::Clipboard. MIME type is
 // given as a string. Returns false iff the string could not be converted.
-bool ConvertMimeTypeStringToClipboardType(const std::string& mime_type,
-                           ui::Clipboard::FormatType* format_type) {
+bool ConvertMimeTypeStringToClipboardType(
+    const std::string& mime_type,
+    ui::Clipboard::FormatType* format_type) {
   if (mime_type == kMimeTypePlainText) {
     *format_type = ui::Clipboard::GetPlainTextFormatType();
     return true;
@@ -57,8 +58,9 @@ bool ConvertMimeTypeStringToClipboardType(const std::string& mime_type,
 // Converts data MIME type to data format known to ui::Clipboard. MIME type is
 // given as a enum value. Returns false iff the enum value could not be
 // converted.
-bool ConvertMimeTypeEnumToClipboardType(SupportedMimeType mime_type,
-                         ui::Clipboard::FormatType* format_type) {
+bool ConvertMimeTypeEnumToClipboardType(
+    SupportedMimeType mime_type,
+    ui::Clipboard::FormatType* format_type) {
   switch (mime_type) {
     case MIME_TYPE_TEXT:
       *format_type = ui::Clipboard::GetPlainTextFormatType();
@@ -90,7 +92,7 @@ bool MimeTypeEnumToString(SupportedMimeType mime_type_enum,
 // Converts a buffer type given as a string to buffer type known to
 // ui::Clipboard. Returns false iff the conversion is not possible.
 bool ConvertBufferTypeToClipboardType(const std::string& buffer,
-                       ui::Clipboard::Buffer* buffer_type) {
+                                      ui::Clipboard::Buffer* buffer_type) {
   if (buffer == kBufferStandard) {
     *buffer_type = ui::Clipboard::BUFFER_STANDARD;
     return true;
@@ -169,8 +171,8 @@ bool ReadDataClipboardFunction::RunImpl() {
   std::string buffer;
   args_->GetString(1, &buffer);
 
-// Windows and Mac don't support selection clipboard buffer.
-#if (defined(OS_WIN) || defined(OS_MACOSX))
+// Windows, Mac and Aura don't support selection clipboard buffer.
+#if (defined(OS_WIN) || defined(OS_MACOSX) || defined(USE_AURA))
   if (buffer != kBufferStandard) {
     error_ = kBufferReadNotSupportedError;
     return false;

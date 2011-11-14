@@ -95,7 +95,7 @@ class UI_EXPORT Clipboard {
     switch (buffer) {
       case BUFFER_STANDARD:
         return true;
-#if defined(USE_X11)
+#if defined(USE_X11) && !defined(USE_AURA)
       case BUFFER_SELECTION:
         return true;
 #endif
