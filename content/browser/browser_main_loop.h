@@ -14,7 +14,6 @@
 class CommandLine;
 class HighResolutionTimerManager;
 class MessageLoop;
-class SystemMessageWindowWin;
 
 namespace base {
 class SystemMonitor;
@@ -65,9 +64,6 @@ class BrowserMainLoop {
   scoped_ptr<base::SystemMonitor> system_monitor_;
   scoped_ptr<HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-#if defined(OS_WIN)
-  scoped_ptr<SystemMessageWindowWin> system_message_window_;
-#endif
   scoped_ptr<BrowserThreadImpl> main_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainLoop);
