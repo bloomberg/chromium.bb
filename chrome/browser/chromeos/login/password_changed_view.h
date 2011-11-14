@@ -8,10 +8,10 @@
 
 #include <string>
 
+#include "ui/views/window/dialog_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
-#include "views/window/dialog_delegate.h"
 
 namespace views {
 class Button;

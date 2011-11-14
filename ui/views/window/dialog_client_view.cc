@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/window/dialog_client_view.h"
+#include "ui/views/window/dialog_client_view.h"
 
 #include "build/build_config.h"
 
@@ -24,11 +24,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "views/controls/button/text_button.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-#include "views/window/dialog_delegate.h"
 
 #if defined(OS_WIN)
 #include "ui/gfx/native_theme.h"

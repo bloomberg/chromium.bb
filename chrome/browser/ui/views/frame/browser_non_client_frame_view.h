@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
-#include "views/window/non_client_view.h"
+#include "ui/views/window/non_client_view.h"
 
 class AvatarMenuButton;
 class BrowserFrame;

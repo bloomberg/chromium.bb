@@ -31,14 +31,14 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/window/client_view.h"
+#include "ui/views/window/non_client_view.h"
+#include "ui/views/window/window_resources.h"
+#include "ui/views/window/window_shape.h"
 #include "views/controls/button/image_button.h"
 #include "views/focus/focus_manager.h"
 #include "views/views_delegate.h"
 #include "views/widget/widget.h"
-#include "views/window/client_view.h"
-#include "views/window/non_client_view.h"
-#include "views/window/window_resources.h"
-#include "views/window/window_shape.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "views/widget/native_widget_win.h"

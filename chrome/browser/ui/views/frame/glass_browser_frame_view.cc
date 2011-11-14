@@ -28,7 +28,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
-#include "views/window/client_view.h"
+#include "ui/views/window/client_view.h"
 
 HICON GlassBrowserFrameView::throbber_icons_[
     GlassBrowserFrameView::kThrobberIconCount];

@@ -8,9 +8,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "views/controls/link_listener.h"
 #include "views/view.h"
-#include "views/window/dialog_delegate.h"
 
 class Profile;
 

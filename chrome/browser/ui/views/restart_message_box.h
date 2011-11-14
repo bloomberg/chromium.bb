@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "ui/gfx/native_widget_types.h"
-#include "views/window/dialog_delegate.h"
+#include "ui/views/window/dialog_delegate.h"
 
 namespace views {
 class MessageBoxView;

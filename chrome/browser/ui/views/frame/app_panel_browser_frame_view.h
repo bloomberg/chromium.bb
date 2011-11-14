@@ -9,8 +9,8 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
+#include "ui/views/window/non_client_view.h"
 #include "views/controls/button/button.h"
-#include "views/window/non_client_view.h"
 
 class BrowserView;
 class TabContents;

@@ -26,7 +26,7 @@
 #include "ipc/ipc_descriptors.h"
 #if defined(OS_WIN)
 // TODO(port): Enable when dialog_delegate is ported.
-#include "views/window/dialog_delegate.h"
+#include "ui/views/window/dialog_delegate.h"
 #endif
 
 using base::TimeDelta;

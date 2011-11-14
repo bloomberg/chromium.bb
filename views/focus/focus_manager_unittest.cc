@@ -11,6 +11,7 @@
 #include "ui/base/models/accelerator.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/window/non_client_view.h"
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/button/checkbox.h"
@@ -30,7 +31,6 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
-#include "views/window/non_client_view.h"
 
 #if defined(OS_LINUX)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"

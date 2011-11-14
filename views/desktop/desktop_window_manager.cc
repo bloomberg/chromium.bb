@@ -7,12 +7,12 @@
 #include "ui/base/hit_test.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/window/non_client_view.h"
 #include "views/events/event.h"
 #include "views/widget/native_widget_private.h"
 #include "views/widget/native_widget_view.h"
 #include "views/widget/native_widget_views.h"
 #include "views/widget/widget_delegate.h"
-#include "views/window/non_client_view.h"
 
 namespace {
 

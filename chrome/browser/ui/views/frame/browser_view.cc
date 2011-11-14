@@ -96,6 +96,7 @@
 #include "ui/base/models/accelerator.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "views/controls/single_split_view.h"
 #include "views/events/event.h"
 #include "views/focus/external_focus_tracker.h"
@@ -104,7 +105,6 @@
 #include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-#include "views/window/dialog_delegate.h"
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/accelerator_table.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/window/client_view.h"
+#include "ui/views/window/client_view.h"
 
 #include "base/logging.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -14,7 +14,7 @@ namespace views {
 
 // static
 const char ClientView::kViewClassName[] =
-    "views/window/ClientView";
+    "ui/views/window/ClientView";
 
 ///////////////////////////////////////////////////////////////////////////////
 // ClientView, public:

@@ -32,6 +32,7 @@
 #include "ui/gfx/native_theme_win.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/window/native_frame_view.h"
 #include "views/accessibility/native_view_accessibility_win.h"
 #include "views/controls/native_control_win.h"
 #include "views/controls/textfield/native_textfield_views.h"
@@ -47,7 +48,6 @@
 #include "views/widget/native_widget_views.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_delegate.h"
-#include "views/window/native_frame_view.h"
 
 #pragma comment(lib, "dwmapi.lib")
 

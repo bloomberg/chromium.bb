@@ -21,6 +21,7 @@
 #include "ui/gfx/compositor/test_texture.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "views/background.h"
 #include "views/controls/button/button_dropdown.h"
 #include "views/controls/button/checkbox.h"
@@ -36,7 +37,6 @@
 #include "views/views_delegate.h"
 #include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
-#include "views/window/dialog_delegate.h"
 
 #if defined(OS_WIN)
 #include "views/test/test_views_delegate.h"

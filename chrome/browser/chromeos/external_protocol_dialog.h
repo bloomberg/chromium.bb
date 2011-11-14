@@ -10,7 +10,7 @@
 
 #include "base/string16.h"
 #include "base/time.h"
-#include "views/window/dialog_delegate.h"
+#include "ui/views/window/dialog_delegate.h"
 
 class GURL;
 class TabContents;

@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/login/take_photo_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "views/window/dialog_delegate.h"
+#include "ui/views/window/dialog_delegate.h"
 
 namespace views {
 class View;

@@ -6,7 +6,7 @@
 #define UI_VIEWS_WINDOW_NATIVE_FRAME_VIEW_H_
 #pragma once
 
-#include "views/window/non_client_view.h"
+#include "ui/views/window/non_client_view.h"
 
 namespace views {
 

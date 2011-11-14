@@ -8,7 +8,7 @@
 
 #include "chrome/browser/chromeos/frame/bubble_frame_view.h"
 #include "ui/gfx/skia_utils_gtk.h"
-#include "views/window/non_client_view.h"
+#include "ui/views/window/non_client_view.h"
 
 namespace chromeos {
 

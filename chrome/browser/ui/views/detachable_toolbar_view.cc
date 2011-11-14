@@ -12,7 +12,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/skia_util.h"
-#include "views/window/non_client_view.h"
+#include "ui/views/window/non_client_view.h"
 
 // How round the 'new tab' style bookmarks bar is.
 static const int kNewtabBarRoundness = 5;

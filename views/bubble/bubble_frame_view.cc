@@ -6,11 +6,11 @@
 
 #include <algorithm>
 
-#include "views/bubble/bubble_border.h"
+#include "ui/views/window/client_view.h"
 #include "views/bubble/border_contents_view.h"
+#include "views/bubble/bubble_border.h"
 #include "views/layout/fill_layout.h"
 #include "views/widget/widget.h"
-#include "views/window/client_view.h"
 
 namespace views {
 

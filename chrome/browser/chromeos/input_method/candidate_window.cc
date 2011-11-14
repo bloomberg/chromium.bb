@@ -22,13 +22,13 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/window/non_client_view.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/events/event.h"
 #include "views/layout/fill_layout.h"
 #include "views/layout/grid_layout.h"
 #include "views/widget/widget.h"
-#include "views/window/non_client_view.h"
 
 namespace chromeos {
 namespace input_method {

@@ -10,11 +10,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link_listener.h"
 #include "views/view.h"
-#include "views/window/dialog_delegate.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "chrome/browser/google/google_update.h"

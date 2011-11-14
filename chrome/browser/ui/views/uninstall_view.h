@@ -10,8 +10,8 @@
 
 #include "base/string16.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "views/controls/combobox/combobox.h"
-#include "views/window/dialog_delegate.h"
 
 namespace views {
 class Checkbox;

@@ -10,7 +10,7 @@
 
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
-#include "views/window/dialog_delegate.h"
+#include "ui/views/window/dialog_delegate.h"
 
 namespace views {
 class MessageBoxView;

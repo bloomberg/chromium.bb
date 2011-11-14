@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/window/custom_frame_view.h"
+#include "ui/views/window/custom_frame_view.h"
 
 #include <algorithm>
 
@@ -15,10 +15,10 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
+#include "ui/views/window/client_view.h"
+#include "ui/views/window/window_resources.h"
+#include "ui/views/window/window_shape.h"
 #include "views/widget/widget_delegate.h"
-#include "views/window/client_view.h"
-#include "views/window/window_resources.h"
-#include "views/window/window_shape.h"
 
 #if defined(USE_AURA)
 #include "views/widget/native_widget_aura.h"

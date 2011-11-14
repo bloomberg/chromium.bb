@@ -13,6 +13,7 @@
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/window/custom_frame_view.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/focus/focus_manager.h"
 #include "views/focus/focus_manager_factory.h"
@@ -25,7 +26,6 @@
 #include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget_delegate.h"
-#include "views/window/custom_frame_view.h"
 
 namespace {
 

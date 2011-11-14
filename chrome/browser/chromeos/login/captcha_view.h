@@ -10,9 +10,9 @@
 
 #include "chrome/browser/chromeos/login/image_decoder.h"
 #include "googleurl/src/gurl.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield_controller.h"
-#include "views/window/dialog_delegate.h"
 
 namespace views {
 class ImageView;

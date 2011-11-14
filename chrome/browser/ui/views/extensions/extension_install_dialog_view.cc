@@ -15,6 +15,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "views/border.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
@@ -26,7 +27,6 @@
 #include "views/layout/layout_constants.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
-#include "views/window/dialog_delegate.h"
 
 namespace {
 

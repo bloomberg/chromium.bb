@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/window/dialog_delegate.h"
+#include "ui/views/window/dialog_delegate.h"
 
 #include "base/logging.h"
 #include "views/controls/button/text_button.h"

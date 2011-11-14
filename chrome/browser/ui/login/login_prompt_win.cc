@@ -18,7 +18,7 @@
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "views/window/dialog_delegate.h"
+#include "ui/views/window/dialog_delegate.h"
 
 using content::BrowserThread;
 using webkit_glue::PasswordForm;

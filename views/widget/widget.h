@@ -15,10 +15,10 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/window/client_view.h"
+#include "ui/views/window/non_client_view.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/native_widget_delegate.h"
-#include "views/window/client_view.h"
-#include "views/window/non_client_view.h"
 
 #if defined(OS_WIN)
 // Windows headers define macros for these function names which screw with us.

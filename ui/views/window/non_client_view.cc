@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/window/non_client_view.h"
+#include "ui/views/window/non_client_view.h"
 
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/hit_test.h"
+#include "ui/views/window/client_view.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-#include "views/window/client_view.h"
 
 namespace views {
 
@@ -16,10 +16,10 @@ namespace views {
 const int NonClientFrameView::kFrameShadowThickness = 1;
 const int NonClientFrameView::kClientEdgeThickness = 1;
 const char NonClientFrameView::kViewClassName[] =
-    "views/window/NonClientFrameView";
+    "ui/views/window/NonClientFrameView";
 
 const char NonClientView::kViewClassName[] =
-    "views/window/NonClientView";
+    "ui/views/window/NonClientView";
 
 // The frame view and the client view are always at these specific indices,
 // because the RootView message dispatch sends messages to items higher in the

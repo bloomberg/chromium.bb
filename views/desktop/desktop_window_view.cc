@@ -6,15 +6,15 @@
 
 #include "base/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/transform.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/transform.h"
+#include "ui/views/window/native_frame_view.h"
 #include "views/desktop/desktop_background.h"
 #include "views/desktop/desktop_window_manager.h"
 #include "views/widget/native_widget_view.h"
 #include "views/widget/native_widget_views.h"
 #include "views/widget/widget.h"
-#include "views/window/native_frame_view.h"
 
 #if defined(USE_AURA)
 #include "views/widget/native_widget_aura.h"
