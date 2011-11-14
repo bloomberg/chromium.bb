@@ -325,13 +325,31 @@ TEST_F(XKeyboardTest, TestSetCapsLockAndNumLockAtTheSameTime) {
   EXPECT_EQ(initial_caps_lock_state, c);
   EXPECT_EQ(!initial_num_lock_state, n);
 
-  // Flip Num Lock to restore the initial state.
+  // Flip both.
+  xkey_->SetLockedModifiers(
+      initial_caps_lock_state ? kDisableLock : kEnableLock,
+      initial_num_lock_state ? kEnableLock : kDisableLock);
+  EXPECT_EQ(!initial_caps_lock_state,
+            TestableXKeyboard::CapsLockIsEnabled());
+  EXPECT_EQ(initial_num_lock_state,
+            TestableXKeyboard::NumLockIsEnabled(num_lock_mask));
+
+  // Flip Num Lock.
   xkey_->SetLockedModifiers(
       kDontChange,
-      initial_caps_lock_state ? kEnableLock : kDisableLock);
+      initial_num_lock_state ? kDisableLock : kEnableLock);
   TestableXKeyboard::GetLockedModifiers(num_lock_mask, &c, &n);
-  EXPECT_EQ(initial_caps_lock_state, c);
-  EXPECT_EQ(initial_num_lock_state, n);
+  EXPECT_EQ(!initial_caps_lock_state, c);
+  EXPECT_EQ(!initial_num_lock_state, n);
+
+  // Flip both to restore the initial state.
+  xkey_->SetLockedModifiers(
+      initial_caps_lock_state ? kEnableLock : kDisableLock,
+      initial_num_lock_state ? kEnableLock : kDisableLock);
+  EXPECT_EQ(initial_caps_lock_state,
+            TestableXKeyboard::CapsLockIsEnabled());
+  EXPECT_EQ(initial_num_lock_state,
+            TestableXKeyboard::NumLockIsEnabled(num_lock_mask));
 
   // No-op SetLockedModifiers call.
   xkey_->SetLockedModifiers(kDontChange, kDontChange);
