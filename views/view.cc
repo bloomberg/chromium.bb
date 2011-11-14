@@ -36,7 +36,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
-#include "views/accessibility/native_view_accessibility_win.h"
+#include "ui/views/accessibility/native_view_accessibility_win.h"
 #endif
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/base/gtk/scoped_handle_gtk.h"

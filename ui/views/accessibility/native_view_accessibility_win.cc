@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/accessibility/native_view_accessibility_win.h"
+
 #include <atlbase.h>
 #include <atlcom.h>
 
 #include <vector>
-
-#include "views/accessibility/native_view_accessibility_win.h"
 
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/accessibility/accessible_text_utils.h"

@@ -19,7 +19,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "views/accessibility/native_view_accessibility_win.h"
+#include "ui/views/accessibility/native_view_accessibility_win.h"
 #include "views/widget/widget.h"
 
 namespace {
