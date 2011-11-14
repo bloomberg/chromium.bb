@@ -21,6 +21,12 @@
 typedef struct _cairo_device cairo_device_t;
 typedef struct _cairo_surface cairo_surface_t;
 
+namespace base {
+namespace wayland {
+union WaylandEvent;
+}
+}
+
 namespace gfx {
 class Rect;
 }
@@ -127,13 +133,13 @@ class NativeWidgetWayland : public internal::NativeWidgetPrivate,
   virtual bool ConvertPointFromAncestor(
       const Widget* ancestor, gfx::Point* point) const OVERRIDE;
 
-  virtual void OnMotionNotify(ui::WaylandEvent event) OVERRIDE;
-  virtual void OnButtonNotify(ui::WaylandEvent event) OVERRIDE;
-  virtual void OnKeyNotify(ui::WaylandEvent event) OVERRIDE;
-  virtual void OnPointerFocus(ui::WaylandEvent event) OVERRIDE;
-  virtual void OnKeyboardFocus(ui::WaylandEvent event) OVERRIDE;
+  virtual void OnMotionNotify(WaylandEvent event) OVERRIDE;
+  virtual void OnButtonNotify(WaylandEvent event) OVERRIDE;
+  virtual void OnKeyNotify(WaylandEvent event) OVERRIDE;
+  virtual void OnPointerFocus(WaylandEvent event) OVERRIDE;
+  virtual void OnKeyboardFocus(WaylandEvent event) OVERRIDE;
 
-  virtual void OnGeometryChange(ui::WaylandEvent event) OVERRIDE;
+  virtual void OnGeometryChange(WaylandEvent event) OVERRIDE;
 
  private:
   typedef ScopedVector<ui::ViewProp> ViewProps;

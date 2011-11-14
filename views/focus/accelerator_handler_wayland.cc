@@ -11,7 +11,7 @@ namespace views {
 AcceleratorHandler::AcceleratorHandler() {}
 
 base::MessagePumpDispatcher::DispatchStatus
-    AcceleratorHandler::Dispatch(ui::WaylandEvent* ev) {
+    AcceleratorHandler::Dispatch(base::wayland::WaylandEvent* ev) {
   return base::MessagePumpDispatcher::EVENT_IGNORED;
 }
 

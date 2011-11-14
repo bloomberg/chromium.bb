@@ -40,7 +40,7 @@ class VIEWS_EXPORT AcceleratorHandler : public MessageLoop::Dispatcher {
   virtual bool Dispatch(const MSG& msg);
 #elif defined(USE_WAYLAND)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
-      ui::WaylandEvent* ev);
+      base::wayland::WaylandEvent* ev);
 #elif defined(TOUCH_UI) || defined(USE_AURA)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(XEvent* xev);
 #else

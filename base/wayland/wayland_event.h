@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_WAYLAND_EVENTS_WAYLAND_EVENT_H_
-#define UI_WAYLAND_EVENTS_WAYLAND_EVENT_H_
+#ifndef BASE_WAYLAND_WAYLAND_EVENT_H_
+#define BASE_WAYLAND_WAYLAND_EVENT_H_
 
-#include <linux/input.h>
 #include <stdint.h>
 
 // Wayland event information is being passed in as arguments to the callbacks.
@@ -26,7 +25,8 @@
 //    Stores all the keyboard modifiers (Ctrl, Alt, Shift, ...) currently
 //    active. The modifiers are values as defined by xkbcommon.
 
-namespace ui {
+namespace base {
+namespace wayland {
 
 // Types of events Wayland will send
 enum WaylandEventType {
@@ -36,17 +36,6 @@ enum WaylandEventType {
   WAYLAND_POINTER_FOCUS,
   WAYLAND_KEYBOARD_FOCUS,
   WAYLAND_GEOMETRY_CHANGE,
-};
-
-// These are the mouse events expected. The event type Wayland sends is an
-// evdev event. The following is the correct mapping from evdev to expected
-// events type.
-enum WaylandEventButtonType {
-  LEFT_BUTTON     = BTN_LEFT,
-  MIDDLE_BUTTON   = BTN_RIGHT,
-  RIGHT_BUTTON    = BTN_MIDDLE,
-  SCROLL_UP       = BTN_SIDE,
-  SCROLL_DOWN     = BTN_EXTRA,
 };
 
 struct WaylandEventButton {
@@ -122,6 +111,7 @@ union WaylandEvent {
   WaylandEventGeometryChange  geometry_change;
 };
 
-}  // namespace ui
+}  // namespace wayland
+}  // namespace base
 
-#endif  // UI_WAYLAND_EVENTS_WAYLAND_EVENT_H_
+#endif  // BASE_WAYLAND_WAYLAND_EVENT_H_

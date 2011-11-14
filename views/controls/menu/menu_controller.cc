@@ -880,7 +880,7 @@ bool MenuController::Dispatch(const MSG& msg) {
 }
 #elif defined(USE_WAYLAND)
 base::MessagePumpDispatcher::DispatchStatus
-    MenuController::Dispatch(ui::WaylandEvent* ev) {
+    MenuController::Dispatch(base::wayland::WaylandEvent* ev) {
   return exit_type_ != EXIT_NONE ?
       base::MessagePumpDispatcher::EVENT_QUIT :
       base::MessagePumpDispatcher::EVENT_PROCESSED;

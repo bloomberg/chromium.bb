@@ -13,6 +13,7 @@
 #include <windowsx.h>
 #endif
 
+#include "base/event_types.h"
 #include "base/logging.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -31,10 +32,6 @@
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
 #include "views/widget/native_widget.h"
-
-#if defined(USE_WAYLAND)
-#include "ui/wayland/events/wayland_event.h"
-#endif
 
 namespace {
 SkColor kTooltipBackground = 0xFF7F7F00;

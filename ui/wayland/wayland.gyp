@@ -18,7 +18,6 @@
         'events',
       ],
       'sources': [
-        'events/wayland_event.h',
         'wayland_buffer.cc',
         'wayland_buffer.h',
         'wayland_cursor.cc',

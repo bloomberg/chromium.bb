@@ -13,11 +13,11 @@ typedef struct _GMainContext GMainContext;
 typedef struct _GPollFD GPollFD;
 typedef struct _GSource GSource;
 
-namespace ui {
-union WaylandEvent;
-}  // namespace ui
-
 namespace base {
+
+namespace wayland {
+union WaylandEvent;
+}
 
 // The documentation for this class is in message_pump_glib.h
 class BASE_EXPORT MessagePumpObserver {
@@ -31,7 +31,7 @@ class BASE_EXPORT MessagePumpObserver {
   // EVENT_HANDLED, it indicates the event has already been handled, so the
   // event is not processed any farther. If the method returns EVENT_CONTINUE,
   // the event dispatching proceeds as normal.
-  virtual EventStatus WillProcessEvent(ui::WaylandEvent* event);
+  virtual EventStatus WillProcessEvent(wayland::WaylandEvent* event);
 
  protected:
   virtual ~MessagePumpObserver() {}
@@ -52,7 +52,7 @@ class MessagePumpDispatcher {
 
   // Dispatches the event. If true is returned processing continues as
   // normal. If false is returned, the nested loop exits immediately.
-  virtual DispatchStatus Dispatch(ui::WaylandEvent* event) = 0;
+  virtual DispatchStatus Dispatch(wayland::WaylandEvent* event) = 0;
 
  protected:
   virtual ~MessagePumpDispatcher() {}

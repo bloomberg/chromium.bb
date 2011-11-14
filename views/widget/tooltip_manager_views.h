@@ -16,9 +16,6 @@
 
 #if defined(USE_X11)
 typedef union _XEvent XEvent;
-namespace ui {
-union WaylandEvent;
-}
 #endif
 
 namespace views {

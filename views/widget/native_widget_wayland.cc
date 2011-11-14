@@ -15,12 +15,12 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/wayland/wayland_event.h"
 #include "ui/base/view_prop.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/gl/gl_surface_egl.h"
-#include "ui/wayland/events/wayland_event.h"
 #include "ui/wayland/wayland_display.h"
 #include "ui/wayland/wayland_input_device.h"
 #include "ui/wayland/wayland_screen.h"
@@ -32,6 +32,8 @@
 #include "views/widget/tooltip_manager_views.h"
 
 using ui::ViewProp;
+
+using base::wayland::WaylandEvent;
 
 namespace views {
 
@@ -549,12 +551,12 @@ void NativeWidgetWayland::OnPaint(gfx::Rect damage_area) {
   }
 }
 
-void NativeWidgetWayland::OnMotionNotify(ui::WaylandEvent event) {
+void NativeWidgetWayland::OnMotionNotify(WaylandEvent event) {
   MouseEvent mouse_event(&event);
   delegate_->OnMouseEvent(mouse_event);
 }
 
-void NativeWidgetWayland::OnButtonNotify(ui::WaylandEvent event) {
+void NativeWidgetWayland::OnButtonNotify(WaylandEvent event) {
   if (event.button.button == ui::SCROLL_UP ||
       event.button.button == ui::SCROLL_DOWN) {
     MouseWheelEvent mouse_event(&event);
@@ -565,7 +567,7 @@ void NativeWidgetWayland::OnButtonNotify(ui::WaylandEvent event) {
   }
 }
 
-void NativeWidgetWayland::OnKeyNotify(ui::WaylandEvent event) {
+void NativeWidgetWayland::OnKeyNotify(WaylandEvent event) {
   KeyEvent key_event(&event);
   InputMethod* input_method = GetWidget()->GetInputMethodDirect();
   if (input_method)
@@ -574,12 +576,12 @@ void NativeWidgetWayland::OnKeyNotify(ui::WaylandEvent event) {
     DispatchKeyEventPostIME(key_event);
 }
 
-void NativeWidgetWayland::OnPointerFocus(ui::WaylandEvent event) {
+void NativeWidgetWayland::OnPointerFocus(WaylandEvent event) {
   MouseEvent mouse_event(&event);
   delegate_->OnMouseEvent(mouse_event);
 }
 
-void NativeWidgetWayland::OnKeyboardFocus(ui::WaylandEvent event) {
+void NativeWidgetWayland::OnKeyboardFocus(WaylandEvent event) {
   InputMethod* input_method = GetWidget()->GetInputMethodDirect();
   if (input_method) {
     if (event.keyboard_focus.state)
@@ -589,7 +591,7 @@ void NativeWidgetWayland::OnKeyboardFocus(ui::WaylandEvent event) {
   }
 }
 
-void NativeWidgetWayland::OnGeometryChange(ui::WaylandEvent event) {
+void NativeWidgetWayland::OnGeometryChange(WaylandEvent event) {
   SetSize(gfx::Size(event.geometry_change.width,
                     event.geometry_change.height));
 }

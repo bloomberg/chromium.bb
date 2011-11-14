@@ -7,9 +7,11 @@
 #include <X11/extensions/XKBcommon.h>
 #include <wayland-client.h>
 
-#include "ui/wayland/events/wayland_event.h"
+#include "base/wayland/wayland_event.h"
 #include "ui/wayland/wayland_widget.h"
 #include "ui/wayland/wayland_window.h"
+
+using namespace base::wayland;
 
 namespace ui {
 

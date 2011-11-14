@@ -22,7 +22,7 @@ bool MessagePumpWayland::RunOnce(GMainContext* context, bool block) {
 }
 
 MessagePumpObserver::EventStatus
-    MessagePumpObserver::WillProcessEvent(ui::WaylandEvent* event) {
+    MessagePumpObserver::WillProcessEvent(wayland::WaylandEvent* event) {
   return EVENT_CONTINUE;
 }
 

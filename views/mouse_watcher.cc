@@ -6,16 +6,13 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/event_types.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "ui/base/events.h"
 #include "ui/gfx/screen.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
-
-#if defined(USE_WAYLAND)
-#include "ui/wayland/events/wayland_event.h"
-#endif
 
 namespace views {
 
@@ -66,12 +63,12 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
   }
 #elif defined(USE_WAYLAND)
   virtual MessageLoopForUI::Observer::EventStatus WillProcessEvent(
-      ui::WaylandEvent* event) OVERRIDE {
+      base::wayland::WaylandEvent* event) OVERRIDE {
     switch (event->type) {
-      case ui::WAYLAND_MOTION:
+      case base::wayland::WAYLAND_MOTION:
         HandleGlobalMouseMoveEvent(false);
         break;
-      case ui::WAYLAND_POINTER_FOCUS:
+      case base::wayland::WAYLAND_POINTER_FOCUS:
         if (!event->pointer_focus.state)
           HandleGlobalMouseMoveEvent(true);
         break;

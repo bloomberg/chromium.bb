@@ -4,12 +4,30 @@
 
 #include "ui/base/events.h"
 
+#include <linux/input.h>
 #include <X11/extensions/XInput2.h>
 
+#include "base/event_types.h"
 #include "base/logging.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
-#include "ui/wayland/events/wayland_event.h"
 #include "ui/gfx/point.h"
+
+using namespace base::wayland;
+
+namespace ui {
+
+// These are the mouse events expected. The event type Wayland sends is an
+// evdev event. The following is the correct mapping from evdev to expected
+// events type.
+enum WaylandEventButtonType {
+  LEFT_BUTTON     = BTN_LEFT,
+  MIDDLE_BUTTON   = BTN_RIGHT,
+  RIGHT_BUTTON    = BTN_MIDDLE,
+  SCROLL_UP       = BTN_SIDE,
+  SCROLL_DOWN     = BTN_EXTRA,
+};
+
+} // namespace ui
 
 namespace {
 
@@ -126,7 +144,7 @@ bool IsMouseEvent(const base::NativeEvent& native_event) {
 }
 
 int GetMouseWheelOffset(const base::NativeEvent& native_event) {
-  return native_event->button.button == ui::SCROLL_UP ?
+  return native_event->button.button == SCROLL_UP ?
       kWheelScrollAmount : -kWheelScrollAmount;
 }
 
