@@ -167,7 +167,9 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestBrowserViewAccObj) {
 }
 
 // Retrieve accessibility object for toolbar view and verify accessibility info.
-IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestToolbarViewAccObj) {
+// Crashing occasionally: http://crbug.com/104132
+IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
+                       FLAKY_TestToolbarViewAccObj) {
   // Verify toolbar MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView(),
