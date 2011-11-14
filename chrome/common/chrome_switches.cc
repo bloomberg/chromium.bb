@@ -336,6 +336,9 @@ const char kDisableSyncPasswords[]          = "disable-sync-passwords";
 // Disables syncing of preferences.
 const char kDisableSyncPreferences[]        = "disable-sync-preferences";
 
+// Disable syncing custom search engines.
+const char kDisableSyncSearchEngines[]      = "disable-sync-search-engines";
+
 // Disables syncing of themes.
 const char kDisableSyncThemes[]             = "disable-sync-themes";
 
@@ -545,9 +548,6 @@ const char kEnableSyncExtensionSettings[]   = "enable-sync-extension-settings";
 
 // Enables OAuth sign-in for sync.
 const char kEnableSyncOAuth[]               = "enable-sync-oauth";
-
-// Enables syncing custom search engines.
-const char kEnableSyncSearchEngines[]       = "enable-sync-search-engines";
 
 // Enables syncing browser sessions.
 const char kEnableSyncTabs[]                = "enable-sync-tabs";

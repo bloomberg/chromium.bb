@@ -153,6 +153,13 @@ void ProfileSyncFactoryImpl::RegisterDataTypes(ProfileSyncService* pss) {
         new TypedUrlDataTypeController(this, profile_));
   }
 
+  // Search Engine sync is enabled by default.  Register only if explicitly
+  // disabled.
+  if (!command_line_->HasSwitch(switches::kDisableSyncSearchEngines)) {
+    pss->RegisterDataTypeController(
+        new SearchEngineDataTypeController(this, profile_, pss));
+  }
+
   // Session sync is disabled by default.  Register only if explicitly
   // enabled.
   if (command_line_->HasSwitch(switches::kEnableSyncTabs)) {
@@ -174,13 +181,6 @@ void ProfileSyncFactoryImpl::RegisterDataTypes(ProfileSyncService* pss) {
   if (!command_line_->HasSwitch(switches::kDisableSyncAutofillProfile)) {
     pss->RegisterDataTypeController(
         new AutofillProfileDataTypeController(this, profile_));
-  }
-
-  // Search Engine sync is disabled by default.  Register only if explicitly
-  // enabled.
-  if (command_line_->HasSwitch(switches::kEnableSyncSearchEngines)) {
-    pss->RegisterDataTypeController(
-        new SearchEngineDataTypeController(this, profile_, pss));
   }
 
   // App notifications sync is disabled by default.  Register only if

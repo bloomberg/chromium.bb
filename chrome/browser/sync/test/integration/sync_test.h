@@ -181,6 +181,9 @@ class SyncTest : public InProcessBrowserTest {
   // Triggers setting the sync_tabs field of the nigori node.
   void TriggerSetSyncTabs();
 
+  // Returns the number of default items that every client syncs.
+  int NumberOfDefaultSyncItems() const;
+
  protected:
   // Add custom switches needed for running the test.
   virtual void AddTestSwitches(CommandLine* cl);

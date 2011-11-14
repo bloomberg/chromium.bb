@@ -65,6 +65,7 @@ PrefSetObserver* PrefSetObserver::CreateDefaultSearchPrefSetObserver(
   pref_set->AddPref(prefs::kDefaultSearchProviderIconURL);
   pref_set->AddPref(prefs::kDefaultSearchProviderInstantURL);
   pref_set->AddPref(prefs::kDefaultSearchProviderEncodings);
+  pref_set->AddPref(prefs::kSyncedDefaultSearchProviderGUID);
 
   return pref_set;
 }

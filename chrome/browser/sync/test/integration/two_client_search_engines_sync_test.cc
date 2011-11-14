@@ -11,8 +11,10 @@
 
 using search_engines_helper::AddSearchEngine;
 using search_engines_helper::AllServicesMatch;
+using search_engines_helper::ChangeDefaultSearchProvider;
 using search_engines_helper::CreateTestTemplateURL;
-using search_engines_helper::DeleteSearchEngine;
+using search_engines_helper::DeleteSearchEngineByKeyword;
+using search_engines_helper::DeleteSearchEngineBySeed;
 using search_engines_helper::EditSearchEngine;
 using search_engines_helper::GetServiceForProfile;
 using search_engines_helper::GetVerifierService;
@@ -97,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, Delete) {
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllServicesMatch());
 
-  DeleteSearchEngine(0, "test0");
+  DeleteSearchEngineBySeed(0, 0);
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllServicesMatch());
@@ -117,5 +119,44 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, DisableSync) {
 
   ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());
   ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllServicesMatch());
+}
+
+// TCM ID - 8891809.
+IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, SyncDefault) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllServicesMatch());
+
+  AddSearchEngine(0, 0);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  // Change the default to the new search engine, sync, and ensure that it
+  // changed in the second client. AllServicesMatch does a default search
+  // provider check.
+  ChangeDefaultSearchProvider(0, 0);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  ASSERT_TRUE(AllServicesMatch());
+}
+
+// Ensure that we can change the search engine and immediately delete it
+// without putting the clients out of sync.
+IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, DeleteSyncedDefault) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllServicesMatch());
+
+  AddSearchEngine(0, 0);
+  AddSearchEngine(0, 1);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  ChangeDefaultSearchProvider(0, 0);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllServicesMatch());
+
+  // Change the default on the first client and delete the old default.
+  ChangeDefaultSearchProvider(0, 1);
+  DeleteSearchEngineBySeed(0, 0);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
   ASSERT_TRUE(AllServicesMatch());
 }

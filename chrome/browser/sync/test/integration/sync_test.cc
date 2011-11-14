@@ -224,10 +224,6 @@ void SyncTest::AddOptionalTypesToCommandLine(CommandLine* cl) {
   // TODO(sync): Remove this once sessions sync is enabled by default.
   if (!cl->HasSwitch(switches::kEnableSyncTabs))
     cl->AppendSwitch(switches::kEnableSyncTabs);
-
-  // TODO(stevet): Remove this once search engines sync is enabled by default.
-  if (!cl->HasSwitch(switches::kEnableSyncSearchEngines))
-    cl->AppendSwitch(switches::kEnableSyncSearchEngines);
 }
 
 // static
@@ -701,6 +697,15 @@ void SyncTest::TriggerSetSyncTabs() {
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
   ASSERT_EQ("Sync Tabs",
             UTF16ToASCII(browser()->GetSelectedTabContents()->GetTitle()));
+}
+
+int SyncTest::NumberOfDefaultSyncItems() const {
+  // Just return the current number of basic sync items that are synced,
+  // including preferences, themes, and search engines.
+  // TODO(stevet): It would be nice if there was some mechanism for retrieving
+  // this sum from each data type without having to manually count and update
+  // this value.
+  return 7;
 }
 
 void SyncTest::SetProxyConfig(net::URLRequestContextGetter* context_getter,

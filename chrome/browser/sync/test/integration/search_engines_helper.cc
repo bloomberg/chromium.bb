@@ -137,6 +137,20 @@ bool ServicesMatch(int profile_a, int profile_b) {
       return false;
   }
 
+  const TemplateURL* default_a = service_a->GetDefaultSearchProvider();
+  const TemplateURL* default_b = service_b->GetDefaultSearchProvider();
+  CHECK(default_a);
+  CHECK(default_b);
+  if (!TURLsMatch(default_a, default_b)) {
+    LOG(ERROR) << "Default search providers do not match: A's default: "
+               << default_a->keyword() << " B's default: "
+               << default_b->keyword();
+    return false;
+  } else {
+    LOG(INFO) << "A had default with URL: " << default_a->url()->url()
+              << " and keyword: " << default_a->keyword();
+  }
+
   return true;
 }
 
@@ -155,10 +169,16 @@ bool AllServicesMatch() {
   return true;
 }
 
+// Convenience helper for consistently generating the same keyword for a given
+// seed.
+string16 CreateKeyword(int seed) {
+  return ASCIIToUTF16(base::StringPrintf("test%d", seed));
+}
+
 TemplateURL* CreateTestTemplateURL(int seed) {
   TemplateURL* turl = new TemplateURL();
   turl->SetURL(base::StringPrintf("http://www.test%d.com/", seed), 0, 0);
-  turl->set_keyword(ASCIIToUTF16(base::StringPrintf("test%d", seed)));
+  turl->set_keyword(CreateKeyword(seed));
   turl->set_short_name(ASCIIToUTF16(base::StringPrintf("test%d", seed)));
   turl->set_safe_for_autoreplace(true);
   GURL favicon_url("http://favicon.url");
@@ -200,17 +220,36 @@ void EditSearchEngine(int profile,
   }
 }
 
-void DeleteSearchEngine(int profile, const std::string& keyword) {
+void DeleteSearchEngineByKeyword(int profile, const string16 keyword) {
   const TemplateURL* turl = GetServiceForProfile(profile)->
-      GetTemplateURLForKeyword(ASCIIToUTF16(keyword));
+      GetTemplateURLForKeyword(keyword);
   EXPECT_TRUE(turl);
   GetServiceForProfile(profile)->Remove(turl);
   // Make sure we do the same on the verifier.
   if (test()->use_verifier()) {
     const TemplateURL* verifier_turl =
-        GetVerifierService()->GetTemplateURLForKeyword(ASCIIToUTF16(keyword));
+        GetVerifierService()->GetTemplateURLForKeyword(keyword);
     EXPECT_TRUE(verifier_turl);
     GetVerifierService()->Remove(verifier_turl);
+  }
+}
+
+void DeleteSearchEngineBySeed(int profile, int seed) {
+  DeleteSearchEngineByKeyword(profile, CreateKeyword(seed));
+}
+
+void ChangeDefaultSearchProvider(int profile, int seed) {
+  TemplateURLService* service = GetServiceForProfile(profile);
+  ASSERT_TRUE(service);
+  const TemplateURL* new_default = service->GetTemplateURLForKeyword(
+      CreateKeyword(seed));
+  ASSERT_TRUE(new_default);
+  service->SetDefaultSearchProvider(new_default);
+  if (test()->use_verifier()) {
+    new_default = GetVerifierService()->GetTemplateURLForKeyword(
+        CreateKeyword(seed));
+    ASSERT_TRUE(new_default);
+    GetVerifierService()->SetDefaultSearchProvider(new_default);
   }
 }
 

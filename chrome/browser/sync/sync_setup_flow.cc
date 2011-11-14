@@ -140,8 +140,6 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
       registered_types.count(syncable::TYPED_URLS) > 0);
   args->SetBoolean("appsRegistered",
       registered_types.count(syncable::APPS) > 0);
-  args->SetBoolean("searchEnginesRegistered",
-      registered_types.count(syncable::SEARCH_ENGINES) > 0);
   args->SetBoolean("sessionsRegistered",
       registered_types.count(syncable::SESSIONS) > 0);
   args->SetBoolean("syncBookmarks",
@@ -156,8 +154,6 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
                    preferred_types.count(syncable::AUTOFILL) > 0);
   args->SetBoolean("syncExtensions",
                    preferred_types.count(syncable::EXTENSIONS) > 0);
-  args->SetBoolean("syncSearchEngines",
-                   preferred_types.count(syncable::SEARCH_ENGINES) > 0);
   args->SetBoolean("syncSessions",
                    preferred_types.count(syncable::SESSIONS) > 0);
   args->SetBoolean("syncTypedUrls",

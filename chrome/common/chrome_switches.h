@@ -102,6 +102,7 @@ extern const char kDisableSyncEncryption[];
 extern const char kDisableSyncExtensions[];
 extern const char kDisableSyncPasswords[];
 extern const char kDisableSyncPreferences[];
+extern const char kDisableSyncSearchEngines[];
 extern const char kDisableSyncThemes[];
 extern const char kDisableSyncTypedUrls[];
 extern const char kDisableTabCloseableStateWatcher[];
@@ -157,7 +158,6 @@ extern const char kEnableSmoothScrolling[];
 // been figured out.
 extern const char kEnableSyncExtensionSettings[];
 extern const char kEnableSyncOAuth[];
-extern const char kEnableSyncSearchEngines[];
 extern const char kEnableSyncTabs[];
 extern const char kEnableSyncTabsForOtherClients[];
 extern const char kEnableSyncAppNotifications[];

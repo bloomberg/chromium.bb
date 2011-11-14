@@ -110,6 +110,7 @@ extern const char kIncognitoModeAvailability[];
 extern const char kSearchSuggestEnabled[];
 extern const char kConfirmToQuitEnabled[];
 extern const char kCookieBehavior[];  // OBSOLETE
+extern const char kSyncedDefaultSearchProviderGUID[];
 extern const char kDefaultSearchProviderEnabled[];
 extern const char kDefaultSearchProviderSearchURL[];
 extern const char kDefaultSearchProviderSuggestURL[];

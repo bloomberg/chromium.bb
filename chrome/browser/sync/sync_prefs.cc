@@ -134,11 +134,12 @@ syncable::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
     return registered_types;
   }
 
-  // Remove autofill_profile since it's controlled by autofill (see
-  // code below).
+  // Remove autofill_profile since it's controlled by autofill, and
+  // search_engines since it's controlled by preferences (see code below).
   syncable::ModelTypeSet user_selectable_types(registered_types);
   DCHECK_EQ(user_selectable_types.count(syncable::NIGORI), 0u);
   user_selectable_types.erase(syncable::AUTOFILL_PROFILE);
+  user_selectable_types.erase(syncable::SEARCH_ENGINES);
 
   // Remove app_notifications since it's controlled by apps (see
   // code below).
@@ -155,12 +156,18 @@ syncable::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
     }
   }
 
-  // Set autofill_profile to the same enabled/disabled state as
-  // autofill (since only autofill is shown on the UI).
+  // Group the enabled/disabled state of autofill_profile with autofill, and
+  // search_engines with preferences (since only autofill and preferences are
+  // shown on the UI).
   if (registered_types.count(syncable::AUTOFILL) &&
       registered_types.count(syncable::AUTOFILL_PROFILE) &&
       GetDataTypePreferred(syncable::AUTOFILL)) {
     preferred_types.insert(syncable::AUTOFILL_PROFILE);
+  }
+  if (registered_types.count(syncable::PREFERENCES) &&
+      registered_types.count(syncable::SEARCH_ENGINES) &&
+      GetDataTypePreferred(syncable::PREFERENCES)) {
+    preferred_types.insert(syncable::SEARCH_ENGINES);
   }
 
   // Set app_notifications to the same enabled/disabled state as
@@ -200,6 +207,16 @@ void SyncPrefs::SetPreferredDataTypes(
       preferred_types_with_dependents.insert(syncable::APP_NOTIFICATIONS);
     } else {
       preferred_types_with_dependents.erase(syncable::APP_NOTIFICATIONS);
+    }
+  }
+  // Set search_engines to the same enabled/disabled state as
+  // preferences (since only preferences is shown in the UI).
+  if (registered_types.count(syncable::PREFERENCES) &&
+      registered_types.count(syncable::SEARCH_ENGINES)) {
+    if (preferred_types_with_dependents.count(syncable::PREFERENCES)) {
+      preferred_types_with_dependents.insert(syncable::SEARCH_ENGINES);
+    } else {
+      preferred_types_with_dependents.erase(syncable::SEARCH_ENGINES);
     }
   }
 

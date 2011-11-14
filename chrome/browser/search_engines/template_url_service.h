@@ -336,8 +336,6 @@ class TemplateURLService : public WebDataServiceConsumer,
                            FindDuplicateOfSyncTemplateURL);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
                            MergeSyncAndLocalURLDuplicates);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           CreateGUIDToSyncDataMap);
 
   friend class TemplateURLServiceTestUtil;
 
@@ -496,6 +494,14 @@ class TemplateURLService : public WebDataServiceConsumer,
                                       TemplateURL* local_url,
                                       SyncChangeList* change_list);
 
+  // Checks a newly added TemplateURL from Sync by its sync_guid and sets it as
+  // the default search provider if we were waiting for it.
+  void SetDefaultSearchProviderIfNewlySynced(const std::string& guid);
+
+  // Retrieve the pending default search provider according to Sync. Returns
+  // NULL if there was no pending search provider from Sync.
+  const TemplateURL* GetPendingSyncedDefaultSearchProvider();
+
   // Goes through a vector of TemplateURLs and ensure that both the in-memory
   // and database copies have valid sync_guids. This is to fix crbug.com/102038,
   // where old entries were being pushed to Sync without a sync_guid.
@@ -578,6 +584,13 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Sync's SyncChange handler. We push all our changes through this.
   SyncChangeProcessor* sync_processor_;
+
+  // Whether or not we are waiting on the default search provider to come in
+  // from Sync. This is to facilitate the fact that changes to the value of
+  // prefs::kSyncedDefaultSearchProviderGUID do not always come before the
+  // TemplateURL entry it refers to, and to handle the case when we want to use
+  // the Synced default when the default search provider becomes unmanaged.
+  bool pending_synced_default_search_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLService);
 };

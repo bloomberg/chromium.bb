@@ -41,6 +41,7 @@ syncable::ModelTypeSet GetNonPassiveTypes() {
 syncable::ModelTypeSet GetUserVisibleTypes() {
   syncable::ModelTypeSet user_visible_types(GetNonPassiveTypes());
   user_visible_types.erase(syncable::AUTOFILL_PROFILE);
+  user_visible_types.erase(syncable::SEARCH_ENGINES);
   user_visible_types.erase(syncable::APP_NOTIFICATIONS);
   return user_visible_types;
 }
@@ -109,6 +110,9 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
     syncable::ModelTypeSet expected_preferred_types(preferred_types);
     if (*it == syncable::AUTOFILL) {
       expected_preferred_types.insert(syncable::AUTOFILL_PROFILE);
+    }
+    if (*it == syncable::PREFERENCES) {
+      expected_preferred_types.insert(syncable::SEARCH_ENGINES);
     }
     if (*it == syncable::APPS) {
       expected_preferred_types.insert(syncable::APP_NOTIFICATIONS);

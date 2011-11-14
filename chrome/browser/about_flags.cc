@@ -290,13 +290,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSyncTabs)
   },
   {
-    "sync-search-engines",
-    IDS_FLAGS_SYNC_SEARCH_ENGINES_NAME,
-    IDS_FLAGS_SYNC_SEARCH_ENGINES_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableSyncSearchEngines)
-  },
-  {
     "sync-app-notifications",
     IDS_FLAGS_SYNC_APP_NOTIFICATIONS_NAME,
     IDS_FLAGS_SYNC_APP_NOTIFICATIONS_DESCRIPTION,

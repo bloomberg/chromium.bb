@@ -360,13 +360,6 @@ html[os='mac'] input[type='submit'] {
     } else {
       document.getElementById("appsItem").className = "sync-item-hide";
     }
-    if (args.searchEnginesRegistered) {
-      document.getElementById("searchEnginesCheckbox").checked =
-          args.syncSearchEngines;
-      document.getElementById("searchEnginesItem").className = "sync-item-show";
-    } else {
-      document.getElementById("searchEnginesItem").className = "sync-item-hide";
-    }
     if (args.sessionsRegistered) {
       document.getElementById("sessionsCheckbox").checked = args.syncSessions;
       document.getElementById("sessionsItem").className = "sync-item-show";
@@ -463,7 +456,6 @@ html[os='mac'] input[type='submit'] {
         "syncExtensions": syncAll || f.extensionsCheckbox.checked,
         "syncTypedUrls": syncAll || f.typedUrlsCheckbox.checked,
         "syncApps": syncAll || f.appsCheckbox.checked,
-        "syncSearchEngines": syncAll || f.searchEnginesCheckbox.checked,
         "syncSessions": syncAll || f.sessionsCheckbox.checked,
         "usePassphrase": (getRadioCheckedValue() == 'explicit'),
         "passphrase": f.passphrase.value
@@ -618,13 +610,6 @@ html[os='mac'] input[type='submit'] {
               <label id="sessionsCheckboxLabel" name="dataTypeLabel"
                      for="sessionsCheckbox" i18n-content="foreignsessions"
                      il8n-values="title:sessions"></label>
-            </div>
-            <!-- Search Engines -->
-            <div class="sync-item-show" id="searchEnginesItem">
-              <input id="searchEnginesCheckbox" name="dataTypeCheckbox" type="checkbox">
-              <label id="searchEnginesCheckboxLabel" name="dataTypeLabel"
-                     for="searchEnginesCheckbox" i18n-content="searchengines"
-                     il8n-values="title:searchengines"></label>
             </div>
           </div>
         </div>

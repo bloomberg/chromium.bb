@@ -249,7 +249,6 @@ cr.define('options', function() {
           "syncExtensions": syncAll || $('extensions-checkbox').checked,
           "syncTypedUrls": syncAll || $('typed-urls-checkbox').checked,
           "syncApps": syncAll || $('apps-checkbox').checked,
-          "syncSearchEngines": syncAll || $('search-engines-checkbox').checked,
           "syncSessions": syncAll || $('sessions-checkbox').checked,
           "encryptAllData": encryptAllData,
           "usePassphrase": usePassphrase,
@@ -343,12 +342,6 @@ cr.define('options', function() {
         $('apps-item').className = "sync-item-show";
       } else {
         $('apps-item').className = "sync-item-hide";
-      }
-      if (args.searchEnginesRegistered) {
-        $('search-engines-checkbox').checked = args.syncSearchEngines;
-        $('search-engines-item').className = "sync-item-show";
-      } else {
-        $('search-engines-item').className = "sync-item-hide";
       }
       if (args.sessionsRegistered) {
         $('sessions-checkbox').checked = args.syncSessions;

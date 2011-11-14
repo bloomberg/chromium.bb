@@ -35,6 +35,9 @@ ProfileKeyedService* TemplateURLServiceFactory::BuildServiceInstanceFor(
 }
 
 void TemplateURLServiceFactory::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterStringPref(prefs::kSyncedDefaultSearchProviderGUID,
+                            std::string(),
+                            PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDefaultSearchProviderEnabled,
                              true,
                              PrefService::UNSYNCABLE_PREF);
