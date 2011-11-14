@@ -66,7 +66,12 @@ class AutocompleteBrowserTest : public ExtensionBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_Basic FLAKY_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Basic) {
   LocationBar* location_bar = GetLocationBar();
 
   EXPECT_TRUE(location_bar->GetInputString().empty());
