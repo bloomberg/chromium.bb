@@ -50,11 +50,11 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
         is_official_build ?
             VersionLoader::VERSION_SHORT_WITH_DATE :
             VersionLoader::VERSION_FULL);
-    if (!is_official_build) {
-      boot_times_loader_.GetBootTimes(
-          &boot_times_consumer_,
-          NewCallback(this, &VersionInfoUpdater::OnBootTimes));
-    }
+    boot_times_loader_.GetBootTimes(
+        &boot_times_consumer_,
+        NewCallback(this, is_official_build ?
+            &VersionInfoUpdater::OnBootTimesNoop :
+            &VersionInfoUpdater::OnBootTimes));
   } else {
     UpdateVersionLabel();
   }
@@ -164,6 +164,10 @@ void VersionInfoUpdater::OnVersion(
     VersionLoader::Handle handle, std::string version) {
   version_text_.swap(version);
   UpdateVersionLabel();
+}
+
+void VersionInfoUpdater::OnBootTimesNoop(
+    BootTimesLoader::Handle handle, BootTimesLoader::BootTimes boot_times) {
 }
 
 void VersionInfoUpdater::OnBootTimes(

@@ -62,6 +62,9 @@ class VersionInfoUpdater : policy::CloudPolicySubsystem::Observer {
   // Callback from chromeos::InfoLoader giving the boot times.
   void OnBootTimes(
       BootTimesLoader::Handle handle, BootTimesLoader::BootTimes boot_times);
+  // Null callback from chromeos::InfoLoader.
+  void OnBootTimesNoop(
+      BootTimesLoader::Handle handle, BootTimesLoader::BootTimes boot_times);
 
   // Handles asynchronously loading the version.
   VersionLoader version_loader_;
@@ -93,4 +96,3 @@ class VersionInfoUpdater : policy::CloudPolicySubsystem::Observer {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_VERSION_INFO_UPDATER_H_
-
