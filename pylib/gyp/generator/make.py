@@ -28,6 +28,7 @@ import gyp.common
 import gyp.system_test
 import os.path
 import os
+import shlex
 import sys
 
 # Debugging-related imports -- remove me once we're solid.
@@ -1740,9 +1741,10 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # Create an intermediate file based on the path.
       intermediate_plist = ('$(obj).$(TOOLSET)/$(TARGET)/' +
           os.path.basename(info_plist))
-      defines = settings.GetPerTargetSetting(
-          'INFOPLIST_PREPROCESSOR_DEFINITIONS', '').split(' ')
-      self.WriteList(defines, intermediate_plist + ': INFOPLIST_DEFINES', '-D')
+      defines = shlex.split(settings.GetPerTargetSetting(
+          'INFOPLIST_PREPROCESSOR_DEFINITIONS', ''))
+      self.WriteList(defines, intermediate_plist + ': INFOPLIST_DEFINES', '-D',
+          quoter=EscapeCppDefine)
       self.WriteMakeRule([intermediate_plist], [info_plist],
           ['$(call do_cmd,infoplist)',
            # "Convert" the plist so that any weird whitespace changes from the

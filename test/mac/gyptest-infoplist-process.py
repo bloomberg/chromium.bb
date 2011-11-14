@@ -34,7 +34,7 @@ if sys.platform == 'darwin':
   info_plist = test.built_file_path(INFO_PLIST_PATH, chdir=CHDIR)
   test.must_exist(info_plist)
   test.must_contain(info_plist, 'com.google.Test')  # Normal expansion works.
-  test.must_contain(info_plist, 'Foo')
+  test.must_contain(info_plist, 'Foo (Bar)')
   test.must_contain(info_plist, 'PROCESSED_KEY2')
 
   # Then turn off the processor.

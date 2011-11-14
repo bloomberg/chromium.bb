@@ -18,7 +18,7 @@
       'xcode_settings': {
         'INFOPLIST_FILE': 'Info.plist',
         'INFOPLIST_PREPROCESS': 'YES',
-        'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'PROCESSED_KEY1=Foo',
+        'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'PROCESSED_KEY1="Foo (Bar)"',
       },
     },
   ],
