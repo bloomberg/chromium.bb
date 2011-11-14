@@ -420,6 +420,10 @@ bool PanelManager::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
 }
 
 void PanelManager::BringUpOrDownTitlebars(bool bring_up) {
+  if (are_titlebars_up_ == bring_up)
+    return;
+  are_titlebars_up_ = bring_up;
+
   int task_delay_milliseconds = 0;
 
   // If the auto-hiding bottom bar exists, delay the action until the bottom
@@ -557,9 +561,6 @@ BrowserWindow* PanelManager::GetNextBrowserWindowToActivate(
 void PanelManager::OnMouseMove(const gfx::Point& mouse_position) {
   bool bring_up_titlebars = ShouldBringUpTitlebars(mouse_position.x(),
                                                    mouse_position.y());
-  if (are_titlebars_up_ == bring_up_titlebars)
-    return;
-  are_titlebars_up_ = bring_up_titlebars;
   BringUpOrDownTitlebars(bring_up_titlebars);
 }
 

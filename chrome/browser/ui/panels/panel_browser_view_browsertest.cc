@@ -242,11 +242,6 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_EQ(Panel::MINIMIZED, panel3->expansion_state());
     EXPECT_EQ(2, panel_manager->minimized_panel_count());
 
-    // TODO(dimich): Either remove this test in favor of platform-independent
-    // one, or fix it. It is broken because are_titlebars_up_ in PanelManager
-    // is not in sync with requested state of titlebars.
-    // http://crbug.com/102733
-/*
     mock_auto_hiding_desktop_bar()->SetVisibility(
         AutoHidingDesktopBar::ALIGN_BOTTOM, AutoHidingDesktopBar::VISIBLE);
     panel_manager->BringUpOrDownTitlebars(true);
@@ -264,7 +259,6 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_EQ(Panel::EXPANDED, panel2->expansion_state());
     EXPECT_EQ(Panel::MINIMIZED, panel3->expansion_state());
     EXPECT_EQ(2, panel_manager->minimized_panel_count());
-*/
 
     // Test if it is OK to bring up title-bar given the mouse position.
     EXPECT_TRUE(panel_manager->ShouldBringUpTitlebars(
