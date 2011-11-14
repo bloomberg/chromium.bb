@@ -3723,9 +3723,7 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
     return;
 
   if (DisplayOldDownloadsUI()) {
-#if defined(USE_AURA)
-  // TODO(saintlou): There is no implementation for Aura.
-#elif defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
     // Don't show content browser for extension/theme downloads from gallery.
     ExtensionService* service = profile_->GetExtensionService();
     if (!ChromeDownloadManagerDelegate::IsExtensionDownload(download) ||
@@ -3735,7 +3733,7 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
       // Open the Active Downloads ui for chromeos.
       ActiveDownloadsUI::OpenPopup(profile_);
     }
-#else
+#elif !defined(USE_AURA)
     // GetDownloadShelf creates the download shelf if it was not yet created.
     DownloadShelf* shelf = window()->GetDownloadShelf();
     shelf->AddDownload(new DownloadItemModel(download));
@@ -4436,7 +4434,7 @@ gfx::Rect Browser::GetInstantBounds() {
 // Browser, protected:
 
 BrowserWindow* Browser::CreateBrowserWindow() {
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) || defined(USE_AURA)
   if (type_ == TYPE_PANEL) {
     DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisablePanels));
