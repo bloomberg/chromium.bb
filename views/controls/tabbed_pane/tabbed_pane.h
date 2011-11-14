@@ -85,8 +85,7 @@ class VIEWS_EXPORT TabbedPane : public View {
                                     View* parent,
                                     View* child) OVERRIDE;
   // Handles Ctrl+Tab and Ctrl+Shift+Tab navigation of pages.
-  virtual bool AcceleratorPressed(
-      const views::Accelerator& accelerator) OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;

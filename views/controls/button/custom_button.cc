@@ -197,7 +197,7 @@ bool CustomButton::OnKeyReleased(const KeyEvent& event) {
   return true;
 }
 
-bool CustomButton::AcceleratorPressed(const Accelerator& accelerator) {
+bool CustomButton::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (!View::IsEnabled())
     return false;
 

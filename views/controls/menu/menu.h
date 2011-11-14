@@ -19,9 +19,11 @@ namespace gfx {
 class Point;
 }
 
-namespace views {
-
+namespace ui {
 class Accelerator;
+}
+
+namespace views {
 
 class VIEWS_EXPORT Menu {
  public:
@@ -56,7 +58,7 @@ class VIEWS_EXPORT Menu {
     // The delegate needs to implement this function if it wants to display
     // the shortcut text next to each menu item. If there is an accelerator
     // for a given item id, the implementor must return it.
-    virtual bool GetAcceleratorInfo(int id, views::Accelerator* accel) {
+    virtual bool GetAcceleratorInfo(int id, ui::Accelerator* accel) {
       return false;
     }
 

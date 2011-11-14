@@ -65,8 +65,7 @@ class VIEWS_EXPORT MessageBoxView : public View {
                                     views::View* parent,
                                     views::View* child) OVERRIDE;
   // Handles Ctrl-C and writes the message in the system clipboard.
-  virtual bool AcceleratorPressed(
-      const views::Accelerator& accelerator) OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
  private:
   // Sets up the layout manager and initializes the prompt field. This should

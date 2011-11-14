@@ -33,7 +33,7 @@ void UnhandledKeyboardEventHandler::HandleKeyboardEvent(
   ignore_next_char_event_ = false;
 
   if (event.type == WebKit::WebInputEvent::RawKeyDown) {
-    views::Accelerator accelerator(
+    ui::Accelerator accelerator(
         static_cast<ui::KeyboardCode>(event.windowsKeyCode),
         (event.modifiers & NativeWebKeyboardEvent::ShiftKey) ==
             NativeWebKeyboardEvent::ShiftKey,
@@ -64,4 +64,3 @@ void UnhandledKeyboardEventHandler::HandleKeyboardEvent(
                 event.os_event.wParam, event.os_event.lParam);
 #endif
 }
-

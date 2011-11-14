@@ -13,7 +13,7 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "views/accelerator.h"
+#include "ui/base/models/accelerator.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
 #include "views/controls/menu/menu_runner.h"
@@ -69,32 +69,32 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
   // that Ctrl+C, Ctrl+V, Ctrl+X, Ctrl-A, etc do what they normally do.
   switch (command_id) {
     case IDC_CONTENT_CONTEXT_UNDO:
-      *accel = views::Accelerator(ui::VKEY_Z, false, true, false);
+      *accel = ui::Accelerator(ui::VKEY_Z, false, true, false);
       return true;
 
     case IDC_CONTENT_CONTEXT_REDO:
       // TODO(jcampan): should it be Ctrl-Y?
-      *accel = views::Accelerator(ui::VKEY_Z, true, true, false);
+      *accel = ui::Accelerator(ui::VKEY_Z, true, true, false);
       return true;
 
     case IDC_CONTENT_CONTEXT_CUT:
-      *accel = views::Accelerator(ui::VKEY_X, false, true, false);
+      *accel = ui::Accelerator(ui::VKEY_X, false, true, false);
       return true;
 
     case IDC_CONTENT_CONTEXT_COPY:
-      *accel = views::Accelerator(ui::VKEY_C, false, true, false);
+      *accel = ui::Accelerator(ui::VKEY_C, false, true, false);
       return true;
 
     case IDC_CONTENT_CONTEXT_PASTE:
-      *accel = views::Accelerator(ui::VKEY_V, false, true, false);
+      *accel = ui::Accelerator(ui::VKEY_V, false, true, false);
       return true;
 
     case IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE:
-      *accel = views::Accelerator(ui::VKEY_V, true, true, false);
+      *accel = ui::Accelerator(ui::VKEY_V, true, true, false);
       return true;
 
     case IDC_CONTENT_CONTEXT_SELECTALL:
-      *accel = views::Accelerator(ui::VKEY_A, false, true, false);
+      *accel = ui::Accelerator(ui::VKEY_A, false, true, false);
       return true;
 
     default:

@@ -614,7 +614,7 @@ bool NativeWidgetGtk::HandleKeyboardEvent(const KeyEvent& key) {
              (key.flags() & ~ui::EF_ALT_DOWN) == 0) {
     // Trigger VKEY_MENU when only this key is pressed and released, and both
     // press and release events are not handled by others.
-    Accelerator accelerator(ui::VKEY_MENU, false, false, false);
+    ui::Accelerator accelerator(ui::VKEY_MENU, false, false, false);
     handled = GetWidget()->GetFocusManager()->ProcessAccelerator(accelerator);
   }
 

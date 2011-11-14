@@ -24,7 +24,7 @@
 #include "content/public/browser/navigation_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "views/accelerator.h"
+#include "ui/base/models/accelerator.h"
 #include "views/widget/native_widget_win.h"
 
 class AutomationProvider;
@@ -48,7 +48,7 @@ class ExternalTabContainer : public TabContentsDelegate,
                              public content::NotificationObserver,
                              public views::NativeWidgetWin,
                              public base::RefCounted<ExternalTabContainer>,
-                             public views::AcceleratorTarget,
+                             public ui::AcceleratorTarget,
                              public InfoBarContainer::Delegate,
                              public BrowserBubbleHost,
                              public BlockedContentTabHelperDelegate {
@@ -209,7 +209,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   static scoped_refptr<ExternalTabContainer> RemovePendingTab(uintptr_t cookie);
 
   // Handles the specified |accelerator| being pressed.
-  bool AcceleratorPressed(const views::Accelerator& accelerator);
+  bool AcceleratorPressed(const ui::Accelerator& accelerator);
 
   bool pending() const {
     return pending_;
@@ -311,7 +311,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
   // A mapping between accelerators and commands.
-  std::map<views::Accelerator, int> accelerator_table_;
+  std::map<ui::Accelerator, int> accelerator_table_;
 
   // Top level navigations received for a tab while it is waiting for an ack
   // from the external host go here. Scenario is a window.open executes on a

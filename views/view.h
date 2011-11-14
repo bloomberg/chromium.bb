@@ -18,12 +18,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/models/accelerator.h"
 #include "ui/gfx/compositor/layer_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
-#include "views/accelerator.h"
 #include "views/background.h"
 #include "views/border.h"
+#include "views/events/event.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_comptr.h"
@@ -98,7 +99,7 @@ class RootView;
 //
 /////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT View : public ui::LayerDelegate,
-                          public AcceleratorTarget {
+                          public ui::AcceleratorTarget {
  public:
   typedef std::vector<View*> Views;
 
@@ -636,16 +637,16 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // accelerator key combination, the AcceleratorPressed method is invoked.
   // Note that you can set multiple accelerators for a view by invoking this
   // method several times.
-  virtual void AddAccelerator(const Accelerator& accelerator);
+  virtual void AddAccelerator(const ui::Accelerator& accelerator);
 
   // Removes the specified accelerator for this view.
-  virtual void RemoveAccelerator(const Accelerator& accelerator);
+  virtual void RemoveAccelerator(const ui::Accelerator& accelerator);
 
   // Removes all the keyboard accelerators for this view.
   virtual void ResetAccelerators();
 
   // Overridden from AcceleratorTarget:
-  virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // Focus ---------------------------------------------------------------------
 
@@ -1410,7 +1411,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // The list of accelerators. List elements in the range
   // [0, registered_accelerator_count_) are already registered to FocusManager,
   // and the rest are not yet.
-  scoped_ptr<std::vector<Accelerator> > accelerators_;
+  scoped_ptr<std::vector<ui::Accelerator> > accelerators_;
   size_t registered_accelerator_count_;
 
   // Focus ---------------------------------------------------------------------

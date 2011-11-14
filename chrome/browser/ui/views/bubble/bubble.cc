@@ -324,14 +324,14 @@ void Bubble::InitBubble(views::Widget* parent,
 
 void Bubble::RegisterEscapeAccelerator() {
   GetWidget()->GetFocusManager()->RegisterAccelerator(
-      views::Accelerator(ui::VKEY_ESCAPE, false, false, false), this);
+      ui::Accelerator(ui::VKEY_ESCAPE, false, false, false), this);
   accelerator_registered_ = true;
 }
 
 void Bubble::UnregisterEscapeAccelerator() {
   DCHECK(accelerator_registered_);
   GetWidget()->GetFocusManager()->UnregisterAccelerator(
-      views::Accelerator(ui::VKEY_ESCAPE, false, false, false), this);
+      ui::Accelerator(ui::VKEY_ESCAPE, false, false, false), this);
   accelerator_registered_ = false;
 }
 
@@ -443,7 +443,7 @@ void Bubble::Fade(bool fade_in) {
     animation_->Hide();
 }
 
-bool Bubble::AcceleratorPressed(const views::Accelerator& accelerator) {
+bool Bubble::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (!delegate_ || delegate_->CloseOnEscape()) {
     DoClose(true);
     return true;

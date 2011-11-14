@@ -102,8 +102,7 @@ void MessageBoxView::ViewHierarchyChanged(bool is_add,
   }
 }
 
-bool MessageBoxView::AcceleratorPressed(
-    const Accelerator& accelerator) {
+bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   // We only accepts Ctrl-C.
   DCHECK(accelerator.key_code() == 'C' && accelerator.IsCtrlDown());
 

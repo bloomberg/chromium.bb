@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_types.h"
 #include "net/test/test_server.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/models/accelerator.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/find_bar_host.h"
@@ -763,15 +764,15 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, AcceleratorRestoring) {
   views::FocusManager* focus_manager = widget->GetFocusManager();
 
   // See where Escape is registered.
-  views::Accelerator escape(ui::VKEY_ESCAPE, false, false, false);
-  views::AcceleratorTarget* old_target =
+  ui::Accelerator escape(ui::VKEY_ESCAPE, false, false, false);
+  ui::AcceleratorTarget* old_target =
       focus_manager->GetCurrentTargetForAccelerator(escape);
   EXPECT_TRUE(old_target != NULL);
 
   browser()->ShowFindBar();
 
   // Our Find bar should be the new target.
-  views::AcceleratorTarget* new_target =
+  ui::AcceleratorTarget* new_target =
       focus_manager->GetCurrentTargetForAccelerator(escape);
 
   EXPECT_TRUE(new_target != NULL);

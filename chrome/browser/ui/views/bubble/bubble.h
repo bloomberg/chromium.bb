@@ -9,7 +9,7 @@
 #include "base/observer_list.h"
 #include "views/bubble/bubble_border.h"
 #include "ui/base/animation/animation_delegate.h"
-#include "views/accelerator.h"
+#include "ui/base/models/accelerator.h"
 #include "views/view.h"
 
 #if defined(USE_AURA)
@@ -87,7 +87,7 @@ class Bubble
 #elif defined(TOOLKIT_USES_GTK)
     : public views::NativeWidgetGtk,
 #endif
-      public views::AcceleratorTarget,
+      public ui::AcceleratorTarget,
       public ui::AnimationDelegate {
  public:
   class Observer {
@@ -236,7 +236,7 @@ class Bubble
   void UnregisterEscapeAccelerator();
 
   // Overridden from AcceleratorTarget:
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator);
 
   // The delegate, if any.
   BubbleDelegate* delegate_;

@@ -262,7 +262,7 @@ void NativeComboboxViews::ExecuteCommand(int id) {
   SchedulePaint();
 }
 
-bool NativeComboboxViews::GetAccelerator(int id, views::Accelerator* accel) {
+bool NativeComboboxViews::GetAccelerator(int id, ui::Accelerator* accel) {
   return false;
 }
 

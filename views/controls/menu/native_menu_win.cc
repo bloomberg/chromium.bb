@@ -16,12 +16,12 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/models/accelerator.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/native_theme.h"
 #include "ui/gfx/rect.h"
-#include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/menu_listener.h"
@@ -684,7 +684,7 @@ void NativeMenuWin::UpdateMenuItemInfoForString(MENUITEMINFO* mii,
   ReplaceSubstringsAfterOffset(&formatted, 0, L"\t", L" ");
   if (type != ui::MenuModel::TYPE_SUBMENU) {
     // Add accelerator details to the label if provided.
-    views::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
+    ui::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
     if (model_->GetAcceleratorAt(model_index, &accelerator)) {
       formatted += L"\t";
       formatted += accelerator.GetShortcutText();

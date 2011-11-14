@@ -12,11 +12,11 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/models/accelerator.h"
 #include "ui/base/win/window_impl.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
-#include "views/accelerator.h"
 
 namespace views {
 
@@ -442,7 +442,7 @@ void MenuWin::AddMenuItemInternal(int index,
   string16 actual_label(label.empty() ? delegate()->GetLabel(item_id) : label);
 
   // Find out if there is a shortcut we need to append to the label.
-  views::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
+  ui::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
   if (delegate() && delegate()->GetAcceleratorInfo(item_id, &accelerator)) {
     actual_label += L'\t';
     actual_label += accelerator.GetShortcutText();

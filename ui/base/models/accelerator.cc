@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/accelerator.h"
+#include "ui/base/models/accelerator.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -17,7 +17,7 @@
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace views {
+namespace ui {
 
 string16 Accelerator::GetShortcutText() const {
   int string_id = 0;
@@ -160,4 +160,4 @@ string16 Accelerator::GetShortcutText() const {
   return shortcut;
 }
 
-}  // namespace views
+}  // namespace ui

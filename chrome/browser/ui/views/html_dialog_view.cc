@@ -69,7 +69,7 @@ gfx::Size HtmlDialogView::GetPreferredSize() {
   return out;
 }
 
-bool HtmlDialogView::AcceleratorPressed(const views::Accelerator& accelerator) {
+bool HtmlDialogView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   // Pressing ESC closes the dialog.
   DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.key_code());
   OnDialogClosed(std::string());
@@ -257,7 +257,7 @@ void HtmlDialogView::InitDialog() {
 
 void HtmlDialogView::RegisterDialogAccelerators() {
   // Pressing the ESC key will close the dialog.
-  AddAccelerator(views::Accelerator(ui::VKEY_ESCAPE, false, false, false));
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, false, false, false));
 }
 
 void HtmlDialogView::OnRenderHostCreated(RenderViewHost* host) {

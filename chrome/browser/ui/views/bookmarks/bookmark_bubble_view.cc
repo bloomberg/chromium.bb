@@ -136,7 +136,7 @@ void BookmarkBubbleView::WindowClosing() {
  }
 
 bool BookmarkBubbleView::AcceleratorPressed(
-    const views::Accelerator& accelerator) {
+    const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_RETURN) {
      if (edit_button_->HasFocus())
        HandleButtonPressed(edit_button_);
@@ -235,7 +235,7 @@ void BookmarkBubbleView::Init() {
   layout->AddView(edit_button_);
   layout->AddView(close_button_);
 
-  AddAccelerator(views::Accelerator(ui::VKEY_RETURN, 0));
+  AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, 0));
 }
 
 BookmarkBubbleView::BookmarkBubbleView(views::View* anchor_view,

@@ -88,7 +88,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
  protected:
   // View overrides:
-  virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // Perform view initialization on the contents for bubble sizing.
   virtual void Init();

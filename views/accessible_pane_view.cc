@@ -115,7 +115,7 @@ views::FocusTraversable* AccessiblePaneView::GetPaneFocusTraversable() {
 }
 
 bool AccessiblePaneView::AcceleratorPressed(
-    const views::Accelerator& accelerator) {
+    const ui::Accelerator& accelerator) {
 
   const views::View* focused_view = focus_manager_->GetFocusedView();
   if (!Contains(focused_view))

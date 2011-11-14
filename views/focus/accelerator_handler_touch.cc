@@ -9,7 +9,6 @@
 #include <X11/extensions/XInput2.h>
 
 #include "ui/base/touch/touch_factory.h"
-#include "views/accelerator.h"
 #include "views/events/event.h"
 #include "views/focus/focus_manager.h"
 #include "views/ime/input_method.h"

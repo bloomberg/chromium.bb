@@ -39,7 +39,7 @@ class Widget;
 // obscuring the selection results in FindBar.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class DropdownBarHost : public views::AcceleratorTarget,
+class DropdownBarHost : public ui::AcceleratorTarget,
                         public views::FocusChangeListener,
                         public ui::AnimationDelegate {
  public:
@@ -76,8 +76,8 @@ class DropdownBarHost : public views::AcceleratorTarget,
   virtual void OnDidChangeFocus(views::View* focused_before,
                                 views::View* focused_now) OVERRIDE;
 
-  // Overridden from views::AcceleratorTarget:
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator) = 0;
+  // Overridden from ui::AcceleratorTarget:
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) = 0;
 
   // ui::AnimationDelegate implementation:
   virtual void AnimationProgressed(const ui::Animation* animation);

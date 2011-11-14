@@ -17,6 +17,7 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/accelerator.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
@@ -121,7 +122,7 @@ void CriticalNotificationBubbleView::WindowClosing() {
 }
 
 bool CriticalNotificationBubbleView::AcceleratorPressed(
-    const views::Accelerator& accelerator) {
+    const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_ESCAPE)
     UpgradeDetector::GetInstance()->acknowledge_critical_update();
   return BubbleDelegateView::AcceleratorPressed(accelerator);

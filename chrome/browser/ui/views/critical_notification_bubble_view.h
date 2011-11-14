@@ -10,6 +10,10 @@
 #include "views/controls/button/button.h"
 #include "views/bubble/bubble_delegate.h"
 
+namespace ui {
+class Accelerator;
+}
+
 namespace views {
 class Label;
 class NativeTextButton;
@@ -31,7 +35,7 @@ class CriticalNotificationBubbleView : public views::BubbleDelegateView,
  protected:
   // views::BubbleDelegateView overrides:
   virtual bool AcceleratorPressed(
-      const views::Accelerator& accelerator) OVERRIDE;
+      const ui::Accelerator& accelerator) OVERRIDE;
   virtual void Init() OVERRIDE;
 
  private:

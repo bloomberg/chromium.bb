@@ -11,10 +11,10 @@
 #include "chrome/browser/chromeos/login/wizard_accessibility_handler.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/models/accelerator.h"
 
 class Profile;
 namespace views {
-class Accelerator;
 class View;
 }
 
@@ -28,7 +28,7 @@ class WizardAccessibilityHelper {
   static WizardAccessibilityHelper* GetInstance();
 
   // Get accelerator for enabling accessibility.
-  static views::Accelerator GetAccelerator();
+  static ui::Accelerator GetAccelerator();
 
   // Speak the given text if the accessibility pref is already set. |queue|
   // specifies whether this utterance will be queued or spoken immediately.
@@ -59,7 +59,7 @@ class WizardAccessibilityHelper {
 
   void SetAccessibilityEnabled(bool);
 
-  static scoped_ptr<views::Accelerator> accelerator_;
+  static scoped_ptr<ui::Accelerator> accelerator_;
 
   scoped_ptr<WizardAccessibilityHandler> accessibility_handler_;
 

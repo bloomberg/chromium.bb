@@ -83,7 +83,7 @@ BubbleDelegateView::BubbleDelegateView()
       border_widget_(NULL),
       use_focusless_(false) {
   set_background(views::Background::CreateSolidBackground(color_));
-  AddAccelerator(Accelerator(ui::VKEY_ESCAPE, 0));
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, 0));
 }
 
 BubbleDelegateView::BubbleDelegateView(
@@ -100,7 +100,7 @@ BubbleDelegateView::BubbleDelegateView(
       border_widget_(NULL),
       use_focusless_(false) {
   set_background(views::Background::CreateSolidBackground(color_));
-  AddAccelerator(Accelerator(ui::VKEY_ESCAPE, 0));
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, 0));
 }
 
 BubbleDelegateView::~BubbleDelegateView() {
@@ -215,7 +215,8 @@ void BubbleDelegateView::ResetFade() {
   GetWidget()->SetOpacity(original_opacity_);
 }
 
-bool BubbleDelegateView::AcceleratorPressed(const Accelerator& accelerator) {
+bool BubbleDelegateView::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
   if (!close_on_esc() || accelerator.key_code() != ui::VKEY_ESCAPE)
     return false;
   if (fade_animation_.get())

@@ -18,18 +18,18 @@
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "views/accelerator.h"
+#include "ui/base/models/accelerator.h"
 #include "views/view.h"
 
 namespace chromeos {
 
-scoped_ptr<views::Accelerator> WizardAccessibilityHelper::accelerator_;
+scoped_ptr<ui::Accelerator> WizardAccessibilityHelper::accelerator_;
 
 // static
-views::Accelerator WizardAccessibilityHelper::GetAccelerator() {
+ui::Accelerator WizardAccessibilityHelper::GetAccelerator() {
   if (!WizardAccessibilityHelper::accelerator_.get())
     WizardAccessibilityHelper::accelerator_.reset(
-        new views::Accelerator(ui::VKEY_Z, false, true, true));
+        new ui::Accelerator(ui::VKEY_Z, false, true, true));
   return *(WizardAccessibilityHelper::accelerator_.get());
 }
 

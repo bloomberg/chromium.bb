@@ -4,6 +4,7 @@
 
 #include "views/accessible_pane_view.h"
 
+#include "ui/base/models/accelerator.h"
 #include "views/controls/button/text_button.h"
 #include "views/layout/fill_layout.h"
 #include "views/test/views_test_base.h"
@@ -29,11 +30,11 @@ class TestBarView : public AccessiblePaneView,
   TextButton* third_child_button() const { return third_child_button_.get(); }
   TextButton* not_child_button() const { return not_child_button_.get(); }
 
-  const Accelerator& home_key() const { return home_key_; }
-  const Accelerator& end_key() const { return end_key_; }
-  const Accelerator& escape_key() const { return escape_key_; }
-  const Accelerator& left_key() const { return left_key_; }
-  const Accelerator& right_key() const { return right_key_; }
+  const ui::Accelerator& home_key() const { return home_key_; }
+  const ui::Accelerator& end_key() const { return end_key_; }
+  const ui::Accelerator& escape_key() const { return escape_key_; }
+  const ui::Accelerator& left_key() const { return left_key_; }
+  const ui::Accelerator& right_key() const { return right_key_; }
 
   virtual View* GetDefaultFocusableChild() OVERRIDE;
 

@@ -9,6 +9,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/base/models/accelerator.h"
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
 
@@ -41,7 +42,7 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
 
   // Overridden from View:
   virtual FocusTraversable* GetPaneFocusTraversable() OVERRIDE;
-  virtual bool AcceleratorPressed(const Accelerator& accelerator)
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator)
       OVERRIDE;
   virtual void SetVisible(bool flag) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
@@ -84,11 +85,11 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
   scoped_ptr<FocusSearch> focus_search_;
 
   // Registered accelerators
-  Accelerator home_key_;
-  Accelerator end_key_;
-  Accelerator escape_key_;
-  Accelerator left_key_;
-  Accelerator right_key_;
+  ui::Accelerator home_key_;
+  ui::Accelerator end_key_;
+  ui::Accelerator escape_key_;
+  ui::Accelerator left_key_;
+  ui::Accelerator right_key_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessiblePaneView);
 };

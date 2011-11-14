@@ -22,8 +22,8 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/accelerator.h"
 #include "ui/base/models/table_model_observer.h"
-#include "views/accelerator.h"
 #include "views/background.h"
 #include "views/context_menu_controller.h"
 #include "views/controls/button/text_button.h"
@@ -463,8 +463,8 @@ void TaskManagerView::Init() {
   }
   kill_button_ = new views::NativeTextButton(
       this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL)));
-  kill_button_->AddAccelerator(views::Accelerator(ui::VKEY_E,
-                                                  false, false, false));
+  kill_button_->AddAccelerator(ui::Accelerator(ui::VKEY_E, false, false,
+                                               false));
   kill_button_->SetAccessibleKeyboardShortcut(L"E");
   kill_button_->set_prefix_type(views::TextButtonBase::PREFIX_SHOW);
   about_memory_link_ = new views::Link(

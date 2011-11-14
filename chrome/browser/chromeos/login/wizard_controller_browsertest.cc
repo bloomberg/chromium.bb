@@ -21,8 +21,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/accelerator.h"
 #include "unicode/locid.h"
-#include "views/accelerator.h"
 
 namespace chromeos {
 

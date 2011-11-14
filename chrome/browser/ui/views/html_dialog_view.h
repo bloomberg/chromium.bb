@@ -48,7 +48,7 @@ class HtmlDialogView
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator)
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator)
       OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child)
       OVERRIDE;

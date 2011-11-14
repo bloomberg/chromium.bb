@@ -387,7 +387,7 @@ void AvatarMenuBubbleView::Layout() {
 }
 
 bool AvatarMenuBubbleView::AcceleratorPressed(
-    const views::Accelerator& accelerator) {
+    const ui::Accelerator& accelerator) {
   if (accelerator.key_code() != ui::VKEY_DOWN &&
       accelerator.key_code() != ui::VKEY_UP) {
     return false;
@@ -446,9 +446,9 @@ void AvatarMenuBubbleView::LinkClicked(views::Link* source, int event_flags) {
 
 void AvatarMenuBubbleView::BubbleShown() {
   GetFocusManager()->RegisterAccelerator(
-      views::Accelerator(ui::VKEY_DOWN, false, false, false), this);
+      ui::Accelerator(ui::VKEY_DOWN, false, false, false), this);
   GetFocusManager()->RegisterAccelerator(
-      views::Accelerator(ui::VKEY_UP, false, false, false), this);
+      ui::Accelerator(ui::VKEY_UP, false, false, false), this);
 }
 
 void AvatarMenuBubbleView::BubbleClosing(Bubble* bubble,

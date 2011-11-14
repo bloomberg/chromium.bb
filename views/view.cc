@@ -804,9 +804,9 @@ InputMethod* View::GetInputMethod() {
 
 // Accelerators ----------------------------------------------------------------
 
-void View::AddAccelerator(const Accelerator& accelerator) {
+void View::AddAccelerator(const ui::Accelerator& accelerator) {
   if (!accelerators_.get())
-    accelerators_.reset(new std::vector<Accelerator>());
+    accelerators_.reset(new std::vector<ui::Accelerator>());
 
   DCHECK(std::find(accelerators_->begin(), accelerators_->end(), accelerator) ==
       accelerators_->end())
@@ -816,13 +816,13 @@ void View::AddAccelerator(const Accelerator& accelerator) {
   RegisterPendingAccelerators();
 }
 
-void View::RemoveAccelerator(const Accelerator& accelerator) {
+void View::RemoveAccelerator(const ui::Accelerator& accelerator) {
   if (!accelerators_.get()) {
     NOTREACHED() << "Removing non-existing accelerator";
     return;
   }
 
-  std::vector<Accelerator>::iterator i(
+  std::vector<ui::Accelerator>::iterator i(
       std::find(accelerators_->begin(), accelerators_->end(), accelerator));
   if (i == accelerators_->end()) {
     NOTREACHED() << "Removing non-existing accelerator";
@@ -848,7 +848,7 @@ void View::ResetAccelerators() {
     UnregisterAccelerators(false);
 }
 
-bool View::AcceleratorPressed(const Accelerator& accelerator) {
+bool View::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return false;
 }
 
@@ -1961,7 +1961,7 @@ void View::RegisterPendingAccelerators() {
   // Only register accelerators if we are visible.
   if (!IsVisibleInRootView() || !GetWidget()->IsVisible())
     return;
-  for (std::vector<Accelerator>::const_iterator i(
+  for (std::vector<ui::Accelerator>::const_iterator i(
            accelerators_->begin() + registered_accelerator_count_);
        i != accelerators_->end(); ++i) {
     accelerator_focus_manager_->RegisterAccelerator(*i, this);

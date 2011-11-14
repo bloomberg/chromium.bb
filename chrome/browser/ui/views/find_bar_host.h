@@ -64,8 +64,8 @@ class FindBarHost : public DropdownBarHost,
   virtual void RestoreSavedFocus();
   virtual FindBarTesting* GetFindBarTesting();
 
-  // Overridden from views::AcceleratorTarget in DropdownBarHost class:
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
+  // Overridden from ui::AcceleratorTarget in DropdownBarHost class:
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator);
 
   // FindBarTesting implementation:
   virtual bool GetFindBarWindowInfo(gfx::Point* position,

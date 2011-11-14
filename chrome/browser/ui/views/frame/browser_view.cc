@@ -93,6 +93,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/accelerator.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/single_split_view.h"
@@ -457,7 +458,7 @@ bool BrowserView::ShouldShowAvatar() const {
   return AvatarMenuModel::ShouldShowAvatarMenu();
 }
 
-bool BrowserView::AcceleratorPressed(const views::Accelerator& accelerator) {
+bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 #if defined(OS_CHROMEOS)
   // If accessibility is enabled, stop speech and return false so that key
   // combinations involving Search can be used for extra accessibility
@@ -470,7 +471,7 @@ bool BrowserView::AcceleratorPressed(const views::Accelerator& accelerator) {
   }
 #endif
 
-  std::map<views::Accelerator, int>::const_iterator iter =
+  std::map<ui::Accelerator, int>::const_iterator iter =
       accelerator_table_.find(accelerator);
   DCHECK(iter != accelerator_table_.end());
   int command_id = iter->second;
@@ -485,18 +486,17 @@ bool BrowserView::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
   // anywhere so we need to check for them explicitly here.
   switch (cmd_id) {
     case IDC_CUT:
-      *accelerator = views::Accelerator(ui::VKEY_X, false, true, false);
+      *accelerator = ui::Accelerator(ui::VKEY_X, false, true, false);
       return true;
     case IDC_COPY:
-      *accelerator = views::Accelerator(ui::VKEY_C, false, true, false);
+      *accelerator = ui::Accelerator(ui::VKEY_C, false, true, false);
       return true;
     case IDC_PASTE:
-      *accelerator = views::Accelerator(ui::VKEY_V, false, true, false);
+      *accelerator = ui::Accelerator(ui::VKEY_V, false, true, false);
       return true;
   }
   // Else, we retrieve the accelerator information from the accelerator table.
-  std::map<views::Accelerator, int>::iterator it =
-      accelerator_table_.begin();
+  std::map<ui::Accelerator, int>::iterator it = accelerator_table_.begin();
   for (; it != accelerator_table_.end(); ++it) {
     if (it->second == cmd_id) {
       *accelerator = it->first;
@@ -1176,12 +1176,12 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   // it'll be best if we can unify these conversion tables.
   // See http://crbug.com/54315
   views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
-  views::Accelerator accelerator(views_event.key_code(),
-                                 views_event.IsShiftDown(),
-                                 views_event.IsControlDown(),
-                                 views_event.IsAltDown());
+  ui::Accelerator accelerator(views_event.key_code(),
+                              views_event.IsShiftDown(),
+                              views_event.IsControlDown(),
+                              views_event.IsAltDown());
 #else
-  views::Accelerator accelerator(
+  ui::Accelerator accelerator(
       static_cast<ui::KeyboardCode>(event.windowsKeyCode),
       (event.modifiers & NativeWebKeyboardEvent::ShiftKey) ==
           NativeWebKeyboardEvent::ShiftKey,
@@ -2300,7 +2300,7 @@ void BrowserView::LoadAccelerators() {
     bool alt_down = (accelerators[i].fVirt & FALT) == FALT;
     bool ctrl_down = (accelerators[i].fVirt & FCONTROL) == FCONTROL;
     bool shift_down = (accelerators[i].fVirt & FSHIFT) == FSHIFT;
-    views::Accelerator accelerator(
+    ui::Accelerator accelerator(
         static_cast<ui::KeyboardCode>(accelerators[i].key),
         shift_down, ctrl_down, alt_down);
     accelerator_table_[accelerator] = accelerators[i].cmd;
@@ -2316,10 +2316,10 @@ void BrowserView::LoadAccelerators() {
   DCHECK(focus_manager);
   // Let's fill our own accelerator table.
   for (size_t i = 0; i < browser::kAcceleratorMapLength; ++i) {
-    views::Accelerator accelerator(browser::kAcceleratorMap[i].keycode,
-                                   browser::kAcceleratorMap[i].shift_pressed,
-                                   browser::kAcceleratorMap[i].ctrl_pressed,
-                                   browser::kAcceleratorMap[i].alt_pressed);
+    ui::Accelerator accelerator(browser::kAcceleratorMap[i].keycode,
+                                browser::kAcceleratorMap[i].shift_pressed,
+                                browser::kAcceleratorMap[i].ctrl_pressed,
+                                browser::kAcceleratorMap[i].alt_pressed);
     accelerator_table_[accelerator] = browser::kAcceleratorMap[i].command_id;
 
     // Also register with the focus manager.
@@ -2449,7 +2449,7 @@ void BrowserView::InitHangMonitor() {
 }
 
 void BrowserView::UpdateAcceleratorMetrics(
-    const views::Accelerator& accelerator, int command_id) {
+    const ui::Accelerator& accelerator, int command_id) {
   const ui::KeyboardCode key_code = accelerator.key_code();
   if (command_id == IDC_HELP_PAGE && key_code == ui::VKEY_F1)
     UserMetrics::RecordAction(UserMetricsAction("ShowHelpTabViaF1"));

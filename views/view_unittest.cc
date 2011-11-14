@@ -12,6 +12,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/models/accelerator.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
@@ -215,7 +216,7 @@ class TestView : public View {
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
-  virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // OnBoundsChanged.
   bool did_change_bounds_;
@@ -237,7 +238,7 @@ class TestView : public View {
   SkRect last_clip_;
 
   // Accelerators.
-  std::map<Accelerator, int> accelerator_count_map_;
+  std::map<ui::Accelerator, int> accelerator_count_map_;
 };
 
 // Mock instance of the GestureManager for testing.
@@ -963,7 +964,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
 ////////////////////////////////////////////////////////////////////////////////
 // Accelerators
 ////////////////////////////////////////////////////////////////////////////////
-bool TestView::AcceleratorPressed(const Accelerator& accelerator) {
+bool TestView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   accelerator_count_map_[accelerator]++;
   return true;
 }
@@ -971,7 +972,7 @@ bool TestView::AcceleratorPressed(const Accelerator& accelerator) {
 #if defined(OS_WIN) && !defined(USE_AURA)
 TEST_F(ViewTest, ActivateAccelerator) {
   // Register a keyboard accelerator before the view is added to a window.
-  Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
   TestView* view = new TestView();
   view->Reset();
   view->AddAccelerator(return_accelerator);
@@ -996,7 +997,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 1);
 
   // Hit the escape key. Nothing should happen.
-  Accelerator escape_accelerator(ui::VKEY_ESCAPE, false, false, false);
+  ui::Accelerator escape_accelerator(ui::VKEY_ESCAPE, false, false, false);
   EXPECT_FALSE(focus_manager->ProcessAccelerator(escape_accelerator));
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 1);
   EXPECT_EQ(view->accelerator_count_map_[escape_accelerator], 0);
@@ -1037,7 +1038,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 TEST_F(ViewTest, HiddenViewWithAccelerator) {
-  Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
   TestView* view = new TestView();
   view->Reset();
   view->AddAccelerator(return_accelerator);
@@ -1069,7 +1070,7 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 TEST_F(ViewTest, ViewInHiddenWidgetWithAccelerator) {
-  Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
   TestView* view = new TestView();
   view->Reset();
   view->AddAccelerator(return_accelerator);

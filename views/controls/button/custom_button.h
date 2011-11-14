@@ -87,7 +87,7 @@ class VIEWS_EXPORT CustomButton : public Button,
   virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const KeyEvent& event) OVERRIDE;
-  virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual void ShowContextMenu(const gfx::Point& p,
                                bool is_mouse_gesture) OVERRIDE;
   virtual void OnDragDone() OVERRIDE;

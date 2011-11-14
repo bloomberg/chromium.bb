@@ -49,8 +49,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   virtual void WindowClosing() OVERRIDE;
 
   // views::View method.
-  virtual bool AcceleratorPressed(
-      const views::Accelerator& accelerator) OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
  protected:
   // views::BubbleDelegateView method.

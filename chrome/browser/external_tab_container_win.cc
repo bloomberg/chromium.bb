@@ -1036,8 +1036,8 @@ bool ExternalTabContainer::DrawInfoBarArrows(int* x) const {
 }
 
 bool ExternalTabContainer::AcceleratorPressed(
-    const views::Accelerator& accelerator) {
-  std::map<views::Accelerator, int>::const_iterator iter =
+    const ui::Accelerator& accelerator) {
+  std::map<ui::Accelerator, int>::const_iterator iter =
       accelerator_table_.find(accelerator);
   DCHECK(iter != accelerator_table_.end());
 
@@ -1127,7 +1127,7 @@ void ExternalTabContainer::LoadAccelerators() {
     bool alt_down = (accelerators[i].fVirt & FALT) == FALT;
     bool ctrl_down = (accelerators[i].fVirt & FCONTROL) == FCONTROL;
     bool shift_down = (accelerators[i].fVirt & FSHIFT) == FSHIFT;
-    views::Accelerator accelerator(
+    ui::Accelerator accelerator(
         static_cast<ui::KeyboardCode>(accelerators[i].key),
         shift_down, ctrl_down, alt_down);
     accelerator_table_[accelerator] = accelerators[i].cmd;

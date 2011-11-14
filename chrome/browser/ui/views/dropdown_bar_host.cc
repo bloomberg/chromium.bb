@@ -335,14 +335,14 @@ void DropdownBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
 
 void DropdownBarHost::RegisterAccelerators() {
   DCHECK(!esc_accel_target_registered_);
-  views::Accelerator escape(ui::VKEY_ESCAPE, false, false, false);
+  ui::Accelerator escape(ui::VKEY_ESCAPE, false, false, false);
   focus_manager_->RegisterAccelerator(escape, this);
   esc_accel_target_registered_ = true;
 }
 
 void DropdownBarHost::UnregisterAccelerators() {
   DCHECK(esc_accel_target_registered_);
-  views::Accelerator escape(ui::VKEY_ESCAPE, false, false, false);
+  ui::Accelerator escape(ui::VKEY_ESCAPE, false, false, false);
   focus_manager_->UnregisterAccelerator(escape, this);
   esc_accel_target_registered_ = false;
 }

@@ -179,7 +179,7 @@ void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
 }
 
 bool PanelBrowserView::AcceleratorPressed(
-    const views::Accelerator& accelerator) {
+    const ui::Accelerator& accelerator) {
   if (mouse_pressed_ && accelerator.key_code() == ui::VKEY_ESCAPE) {
     OnTitlebarMouseCaptureLost();
     return true;

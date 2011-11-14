@@ -747,7 +747,7 @@ void ScreenLockerViews::ScreenLockReady() {
 
   if (background_view_->ScreenSaverEnabled()) {
     lock_widget_->GetFocusManager()->RegisterAccelerator(
-        views::Accelerator(ui::VKEY_ESCAPE, false, false, false), this);
+        ui::Accelerator(ui::VKEY_ESCAPE, false, false, false), this);
     locker_input_event_observer_.reset(new LockerInputEventObserver(this));
     MessageLoopForUI::current()->AddObserver(
         locker_input_event_observer_.get());
@@ -861,7 +861,7 @@ ScreenLockerViews::~ScreenLockerViews() {
     MessageLoopForUI::current()->RemoveObserver(input_event_observer_.get());
   if (locker_input_event_observer_.get()) {
     lock_widget_->GetFocusManager()->UnregisterAccelerator(
-        views::Accelerator(ui::VKEY_ESCAPE, false, false, false), this);
+        ui::Accelerator(ui::VKEY_ESCAPE, false, false, false), this);
     MessageLoopForUI::current()->RemoveObserver(
         locker_input_event_observer_.get());
   }
@@ -913,7 +913,7 @@ void ScreenLockerViews::ShowErrorBubble(
 }
 
 bool ScreenLockerViews::AcceleratorPressed(
-    const views::Accelerator& accelerator) {
+    const ui::Accelerator& accelerator) {
   if (!background_view_->IsScreenSaverVisible()) {
     screen_locker_view_->StartScreenSaver();
     return true;

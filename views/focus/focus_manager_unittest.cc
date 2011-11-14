@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/models/accelerator.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/gfx/rect.h"
 #include "views/background.h"
@@ -1291,12 +1292,12 @@ TEST_F(FocusTraversalTest, PaneTraversal) {
 }
 
 // Counts accelerator calls.
-class TestAcceleratorTarget : public AcceleratorTarget {
+class TestAcceleratorTarget : public ui::AcceleratorTarget {
  public:
   explicit TestAcceleratorTarget(bool process_accelerator)
       : accelerator_count_(0), process_accelerator_(process_accelerator) {}
 
-  virtual bool AcceleratorPressed(const Accelerator& accelerator) {
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) {
     ++accelerator_count_;
     return process_accelerator_;
   }
@@ -1312,8 +1313,8 @@ class TestAcceleratorTarget : public AcceleratorTarget {
 
 TEST_F(FocusManagerTest, CallsNormalAcceleratorTarget) {
   FocusManager* focus_manager = GetFocusManager();
-  Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
-  Accelerator escape_accelerator(ui::VKEY_ESCAPE, false, false, false);
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
+  ui::Accelerator escape_accelerator(ui::VKEY_ESCAPE, false, false, false);
 
   TestAcceleratorTarget return_target(true);
   TestAcceleratorTarget escape_target(true);
@@ -1403,16 +1404,16 @@ TEST_F(FocusManagerTest, CallsNormalAcceleratorTarget) {
 }
 
 // Unregisters itself when its accelerator is invoked.
-class SelfUnregisteringAcceleratorTarget : public AcceleratorTarget {
+class SelfUnregisteringAcceleratorTarget : public ui::AcceleratorTarget {
  public:
-  SelfUnregisteringAcceleratorTarget(Accelerator accelerator,
+  SelfUnregisteringAcceleratorTarget(ui::Accelerator accelerator,
                                      FocusManager* focus_manager)
       : accelerator_(accelerator),
         focus_manager_(focus_manager),
         accelerator_count_(0) {
   }
 
-  virtual bool AcceleratorPressed(const Accelerator& accelerator) {
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) {
     ++accelerator_count_;
     focus_manager_->UnregisterAccelerator(accelerator, this);
     return true;
@@ -1421,7 +1422,7 @@ class SelfUnregisteringAcceleratorTarget : public AcceleratorTarget {
   int accelerator_count() const { return accelerator_count_; }
 
  private:
-  Accelerator accelerator_;
+  ui::Accelerator accelerator_;
   FocusManager* focus_manager_;
   int accelerator_count_;
 
@@ -1430,7 +1431,7 @@ class SelfUnregisteringAcceleratorTarget : public AcceleratorTarget {
 
 TEST_F(FocusManagerTest, CallsSelfDeletingAcceleratorTarget) {
   FocusManager* focus_manager = GetFocusManager();
-  Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
   SelfUnregisteringAcceleratorTarget target(return_accelerator, focus_manager);
   EXPECT_EQ(target.accelerator_count(), 0);
   EXPECT_EQ(NULL,
@@ -1467,7 +1468,7 @@ class MessageTrackingView : public View {
     return true;
   }
 
-  virtual bool AcceleratorPressed(const Accelerator& accelerator) {
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) {
     accelerator_pressed_ = true;
     return true;
   }
@@ -1506,8 +1507,8 @@ class MessageTrackingView : public View {
 TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   FocusManager* focus_manager = GetFocusManager();
   MessageTrackingView* mtv = new MessageTrackingView();
-  mtv->AddAccelerator(Accelerator(ui::VKEY_0, false, false, false));
-  mtv->AddAccelerator(Accelerator(ui::VKEY_1, false, false, false));
+  mtv->AddAccelerator(ui::Accelerator(ui::VKEY_0, false, false, false));
+  mtv->AddAccelerator(ui::Accelerator(ui::VKEY_1, false, false, false));
   content_view_->AddChildView(mtv);
   focus_manager->SetFocusedView(mtv);
 

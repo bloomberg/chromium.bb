@@ -63,8 +63,7 @@ class PanelBrowserView : public BrowserView,
   virtual bool GetSavedWindowPlacement(
       gfx::Rect* bounds,
       ui::WindowShowState* show_state) const OVERRIDE;
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator)
-      OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
   virtual void OnDisplayChanged() OVERRIDE;

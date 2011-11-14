@@ -46,7 +46,7 @@ class WebUILoginView : public views::WidgetDelegateView,
 
   // Overridden from views::Views:
   virtual bool AcceleratorPressed(
-      const views::Accelerator& accelerator) OVERRIDE;
+      const ui::Accelerator& accelerator) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
 
   // Called when WebUI window is created.
@@ -104,7 +104,7 @@ class WebUILoginView : public views::WidgetDelegateView,
 
  private:
   // Map type for the accelerator-to-identifier map.
-  typedef std::map<views::Accelerator, std::string> AccelMap;
+  typedef std::map<ui::Accelerator, std::string> AccelMap;
 
   // Overridden from TabContentsDelegate.
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;

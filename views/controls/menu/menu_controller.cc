@@ -1066,7 +1066,7 @@ bool MenuController::SendAcceleratorToHotTrackedView() {
   if (!hot_view)
     return false;
 
-  Accelerator accelerator(ui::VKEY_RETURN, false, false, false);
+  ui::Accelerator accelerator(ui::VKEY_RETURN, false, false, false);
   hot_view->AcceleratorPressed(accelerator);
   hot_view->SetHotTracked(true);
   return true;

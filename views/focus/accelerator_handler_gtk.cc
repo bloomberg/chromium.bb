@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "views/accelerator.h"
 #include "views/focus/focus_manager.h"
 
 namespace views {

@@ -257,8 +257,8 @@ string16 GetAccessibleNameForWrenchMenuItem(
   ui::Accelerator menu_accelerator;
   if (model->GetAcceleratorAt(item_index, &menu_accelerator)) {
     accelerator_text =
-        views::Accelerator(menu_accelerator.key_code(),
-                           menu_accelerator.modifiers()).GetShortcutText();
+        ui::Accelerator(menu_accelerator.key_code(),
+                        menu_accelerator.modifiers()).GetShortcutText();
   }
 
   return MenuItemView::GetAccessibleNameForMenuItem(
@@ -747,7 +747,7 @@ void WrenchMenu::ExecuteCommand(int id, int mouse_event_flags) {
   return entry.first->ActivatedAt(entry.second);
 }
 
-bool WrenchMenu::GetAccelerator(int id, views::Accelerator* accelerator) {
+bool WrenchMenu::GetAccelerator(int id, ui::Accelerator* accelerator) {
   if (is_bookmark_command(id))
     return false;
 
@@ -762,8 +762,8 @@ bool WrenchMenu::GetAccelerator(int id, views::Accelerator* accelerator) {
   if (!entry.first->GetAcceleratorAt(entry.second, &menu_accelerator))
     return false;
 
-  *accelerator = views::Accelerator(menu_accelerator.key_code(),
-                                    menu_accelerator.modifiers());
+  *accelerator = ui::Accelerator(menu_accelerator.key_code(),
+                                 menu_accelerator.modifiers());
   return true;
 }
 

@@ -118,11 +118,11 @@ WebUILoginView::WebUILoginView()
   // Make sure the singleton VirtualKeyboardManager object is created.
   VirtualKeyboardManager::GetInstance();
 #endif
-  accel_map_[views::Accelerator(ui::VKEY_Z, false, true, true)] =
+  accel_map_[ui::Accelerator(ui::VKEY_Z, false, true, true)] =
       kAccelNameAccessibility;
-  accel_map_[views::Accelerator(ui::VKEY_ESCAPE, false, false, false)] =
+  accel_map_[ui::Accelerator(ui::VKEY_ESCAPE, false, false, false)] =
       kAccelNameCancel;
-  accel_map_[views::Accelerator(ui::VKEY_E, false, true, true)] =
+  accel_map_[ui::Accelerator(ui::VKEY_E, false, true, true)] =
       kAccelNameEnrollment;
 
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i)
@@ -153,7 +153,7 @@ std::string WebUILoginView::GetClassName() const {
 }
 
 bool WebUILoginView::AcceleratorPressed(
-    const views::Accelerator& accelerator) {
+    const ui::Accelerator& accelerator) {
   AccelMap::const_iterator entry = accel_map_.find(accelerator);
   if (entry == accel_map_.end())
     return false;

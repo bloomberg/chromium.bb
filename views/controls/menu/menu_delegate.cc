@@ -26,7 +26,7 @@ string16 MenuDelegate::GetTooltipText(int id,
   return string16();
 }
 
-bool MenuDelegate::GetAccelerator(int id, Accelerator* accelerator) {
+bool MenuDelegate::GetAccelerator(int id, ui::Accelerator* accelerator) {
   return false;
 }
 

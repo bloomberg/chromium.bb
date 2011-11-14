@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
+#include "ui/base/models/accelerator.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
@@ -17,7 +18,7 @@ namespace views {
 class AcceleratorHandlerGtkTest
     : public testing::Test,
       public WidgetDelegate,
-      public AcceleratorTarget {
+      public ui::AcceleratorTarget {
  public:
   AcceleratorHandlerGtkTest()
       : kMenuAccelerator(ui::VKEY_MENU, false, false, false),
@@ -58,7 +59,7 @@ class AcceleratorHandlerGtkTest
   }
 
   // AcceleratorTarget implementation.
-  virtual bool AcceleratorPressed(const Accelerator& accelerator) {
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) {
     if (accelerator == kMenuAccelerator)
       menu_pressed_ = true;
     else if (accelerator == kHomepageAccelerator)
@@ -87,8 +88,8 @@ class AcceleratorHandlerGtkTest
   bool home_pressed_;
 
  private:
-  Accelerator kMenuAccelerator;
-  Accelerator kHomepageAccelerator;
+  ui::Accelerator kMenuAccelerator;
+  ui::Accelerator kHomepageAccelerator;
   Widget* window_;
   View* content_view_;
   MessageLoopForUI message_loop_;

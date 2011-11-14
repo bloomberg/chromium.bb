@@ -11,8 +11,10 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
+#include "ui/base/models/accelerator.h"
 #include "ui/gfx/native_widget_types.h"
-#include "views/accelerator.h"
+#include "views/views_export.h"
+#include "views/events/event.h"
 
 // The FocusManager class is used to handle focus traversal, store/restore
 // focused views and handle keyboard accelerators.
@@ -187,15 +189,15 @@ class VIEWS_EXPORT FocusManager {
   // - the enter key
   // - any F key (F1, F2, F3 ...)
   // - any browser specific keys (as available on special keyboards)
-  void RegisterAccelerator(const Accelerator& accelerator,
-                           AcceleratorTarget* target);
+  void RegisterAccelerator(const ui::Accelerator& accelerator,
+                           ui::AcceleratorTarget* target);
 
   // Unregister the specified keyboard accelerator for the specified target.
-  void UnregisterAccelerator(const Accelerator& accelerator,
-                             AcceleratorTarget* target);
+  void UnregisterAccelerator(const ui::Accelerator& accelerator,
+                             ui::AcceleratorTarget* target);
 
   // Unregister all keyboard accelerator for the specified target.
-  void UnregisterAccelerators(AcceleratorTarget* target);
+  void UnregisterAccelerators(ui::AcceleratorTarget* target);
 
   // Activate the target associated with the specified accelerator.
   // First, AcceleratorPressed handler of the most recently registered target
@@ -203,7 +205,7 @@ class VIEWS_EXPORT FocusManager {
   // this method immediately returns. If not, we do the same thing on the next
   // target, and so on.
   // Returns true if an accelerator was activated.
-  bool ProcessAccelerator(const Accelerator& accelerator);
+  bool ProcessAccelerator(const ui::Accelerator& accelerator);
 
   // Called by a RootView when a view within its hierarchy is removed
   // from its parent. This will only be called by a RootView in a
@@ -219,8 +221,8 @@ class VIEWS_EXPORT FocusManager {
   // Returns the AcceleratorTarget that should be activated for the specified
   // keyboard accelerator, or NULL if no view is registered for that keyboard
   // accelerator.
-  AcceleratorTarget* GetCurrentTargetForAccelerator(
-      const Accelerator& accelertor) const;
+  ui::AcceleratorTarget* GetCurrentTargetForAccelerator(
+      const ui::Accelerator& accelertor) const;
 
   // Sets the focus to the specified native view.
   virtual void FocusNativeView(gfx::NativeView native_view);
@@ -259,8 +261,8 @@ class VIEWS_EXPORT FocusManager {
   FocusChangeReason focus_change_reason_;
 
   // The accelerators and associated targets.
-  typedef std::list<AcceleratorTarget*> AcceleratorTargetList;
-  typedef std::map<Accelerator, AcceleratorTargetList> AcceleratorMap;
+  typedef std::list<ui::AcceleratorTarget*> AcceleratorTargetList;
+  typedef std::map<ui::Accelerator, AcceleratorTargetList> AcceleratorMap;
   AcceleratorMap accelerators_;
 
   // The list of registered FocusChange listeners.

@@ -30,7 +30,7 @@ class ScreenLockerTester;
 class ScreenLockerViews : public ScreenLockerDelegate,
                           public MessageBubbleDelegate,
                           public CaptchaView::Delegate,
-                          public views::AcceleratorTarget {
+                          public ui::AcceleratorTarget {
  public:
   // Interface that helps switching from ScreenLockView to CaptchaView.
   class ScreenLockViewContainer {
@@ -90,9 +90,8 @@ class ScreenLockerViews : public ScreenLockerDelegate,
   void ShowErrorBubble(const string16& message,
                        views::BubbleBorder::ArrowLocation arrow_location);
 
-  // Overridden from AcceleratorTarget:
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator)
-      OVERRIDE;
+  // Overridden from ui::AcceleratorTarget:
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // Event handler for client-event.
   CHROMEGTK_CALLBACK_1(ScreenLockerViews, void, OnClientEvent, GdkEventClient*);

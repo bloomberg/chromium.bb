@@ -71,9 +71,9 @@ gfx::Size TabbedPane::GetPreferredSize() {
 
 void TabbedPane::LoadAccelerators() {
   // Ctrl+Shift+Tab
-  AddAccelerator(views::Accelerator(ui::VKEY_TAB, true, true, false));
+  AddAccelerator(ui::Accelerator(ui::VKEY_TAB, true, true, false));
   // Ctrl+Tab
-  AddAccelerator(views::Accelerator(ui::VKEY_TAB, false, true, false));
+  AddAccelerator(ui::Accelerator(ui::VKEY_TAB, false, true, false));
 }
 
 void TabbedPane::Layout() {
@@ -91,7 +91,7 @@ void TabbedPane::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   }
 }
 
-bool TabbedPane::AcceleratorPressed(const views::Accelerator& accelerator) {
+bool TabbedPane::AcceleratorPressed(const ui::Accelerator& accelerator) {
   // We only accept Ctrl+Tab keyboard events.
   DCHECK(accelerator.key_code() == ui::VKEY_TAB && accelerator.IsCtrlDown());
 

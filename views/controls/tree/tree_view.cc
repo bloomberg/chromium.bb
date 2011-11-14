@@ -15,6 +15,7 @@
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/models/accelerator.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/canvas_skia.h"
@@ -474,10 +475,10 @@ bool TreeView::OnKeyDown(ui::KeyboardCode virtual_key_code) {
   } else if (virtual_key_code == ui::VKEY_RETURN && !process_enter_) {
     Widget* widget = GetWidget();
     DCHECK(widget);
-    Accelerator accelerator(Accelerator(virtual_key_code,
-                                        base::win::IsShiftPressed(),
-                                        base::win::IsCtrlPressed(),
-                                        base::win::IsAltPressed()));
+    ui::Accelerator accelerator(ui::Accelerator(virtual_key_code,
+                                                base::win::IsShiftPressed(),
+                                                base::win::IsCtrlPressed(),
+                                                base::win::IsAltPressed()));
     GetFocusManager()->ProcessAccelerator(accelerator);
     return true;
   }

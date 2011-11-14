@@ -43,7 +43,7 @@ class NativeMenuViews : public MenuWrapper,
   virtual bool IsItemChecked(int id) const OVERRIDE;
   virtual bool IsCommandEnabled(int id) const OVERRIDE;
   virtual void ExecuteCommand(int id) OVERRIDE;
-  virtual bool GetAccelerator(int id, views::Accelerator* accelerator) OVERRIDE;
+  virtual bool GetAccelerator(int id, ui::Accelerator* accelerator) OVERRIDE;
 
  private:
   void AddMenuItemsFromModel(MenuItemView* parent, ui::MenuModel* model);

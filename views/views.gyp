@@ -55,8 +55,6 @@
       ],
       'sources': [
         # All .cc, .h under views, except unittests
-        'accelerator.cc',
-        'accelerator.h',
         'accessibility/native_view_accessibility_win.cc',
         'accessibility/native_view_accessibility_win.h',
         'accessible_pane_view.cc',

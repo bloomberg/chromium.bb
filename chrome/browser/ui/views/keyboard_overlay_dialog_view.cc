@@ -47,21 +47,21 @@ KeyboardOverlayDialogView::~KeyboardOverlayDialogView() {
 
 void KeyboardOverlayDialogView::RegisterDialogAccelerators() {
   for (size_t i = 0; i < arraysize(kCloseAccelerators); ++i) {
-    views::Accelerator accelerator(kCloseAccelerators[i].keycode,
-                                   kCloseAccelerators[i].shift_pressed,
-                                   kCloseAccelerators[i].ctrl_pressed,
-                                   kCloseAccelerators[i].alt_pressed);
+    ui::Accelerator accelerator(kCloseAccelerators[i].keycode,
+                                kCloseAccelerators[i].shift_pressed,
+                                kCloseAccelerators[i].ctrl_pressed,
+                                kCloseAccelerators[i].alt_pressed);
     close_accelerators_.insert(accelerator);
     AddAccelerator(accelerator);
   }
 
   for (size_t i = 0; i < browser::kAcceleratorMapLength; ++i) {
-    views::Accelerator accelerator(browser::kAcceleratorMap[i].keycode,
-                                   browser::kAcceleratorMap[i].shift_pressed,
-                                   browser::kAcceleratorMap[i].ctrl_pressed,
-                                   browser::kAcceleratorMap[i].alt_pressed);
+    ui::Accelerator accelerator(browser::kAcceleratorMap[i].keycode,
+                                browser::kAcceleratorMap[i].shift_pressed,
+                                browser::kAcceleratorMap[i].ctrl_pressed,
+                                browser::kAcceleratorMap[i].alt_pressed);
     // Skip a sole ALT key since it's handled on the keyboard overlay.
-    if (views::Accelerator(ui::VKEY_MENU, false, false, false) == accelerator) {
+    if (ui::Accelerator(ui::VKEY_MENU, false, false, false) == accelerator) {
       continue;
     }
     // Skip accelerators for closing the dialog since they are already added.
@@ -73,7 +73,7 @@ void KeyboardOverlayDialogView::RegisterDialogAccelerators() {
 }
 
 bool KeyboardOverlayDialogView::AcceleratorPressed(
-    const views::Accelerator& accelerator) {
+    const ui::Accelerator& accelerator) {
   if (!IsCloseAccelerator(accelerator)) {
     parent_view_->AcceleratorPressed(accelerator);
   }
@@ -101,6 +101,6 @@ void KeyboardOverlayDialogView::ShowDialog(
 }
 
 bool KeyboardOverlayDialogView::IsCloseAccelerator(
-    const views::Accelerator& accelerator) {
+    const ui::Accelerator& accelerator) {
   return close_accelerators_.find(accelerator) != close_accelerators_.end();
 }

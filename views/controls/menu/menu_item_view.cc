@@ -771,7 +771,7 @@ string16 MenuItemView::GetAcceleratorText() {
   if(!MenuConfig::instance().show_accelerators)
     return string16();
 
-  Accelerator accelerator;
+  ui::Accelerator accelerator;
   return (GetDelegate() &&
           GetDelegate()->GetAccelerator(GetCommand(), &accelerator)) ?
       accelerator.GetShortcutText() : string16();

@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "views/accelerator.h"
+#include "ui/base/models/accelerator.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
 #include "views/layout/fill_layout.h"
@@ -120,9 +120,9 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   ASSERT_TRUE(focus_manager);
 
   // old_target should be the OK button for test_dialog1.
-  views::AcceleratorTarget* old_target =
+  ui::AcceleratorTarget* old_target =
       focus_manager->GetCurrentTargetForAccelerator(
-          views::Accelerator(ui::VKEY_RETURN, false, false, false));
+          ui::Accelerator(ui::VKEY_RETURN, false, false, false));
   ASSERT_TRUE(old_target != NULL);
   // test_dialog1's text field should be focused.
   EXPECT_EQ(test_dialog1->GetInitiallyFocusedView(),
@@ -139,9 +139,9 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
 
   // new_target should be the same as old_target since test_dialog2 is still
   // hidden.
-  views::AcceleratorTarget* new_target =
+  ui::AcceleratorTarget* new_target =
       focus_manager->GetCurrentTargetForAccelerator(
-          views::Accelerator(ui::VKEY_RETURN, false, false, false));
+          ui::Accelerator(ui::VKEY_RETURN, false, false, false));
   ASSERT_TRUE(new_target != NULL);
   EXPECT_EQ(old_target, new_target);
 
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   // Now send a VKEY_RETURN to the browser.  This should result in closing
   // test_dialog1.
   EXPECT_TRUE(focus_manager->ProcessAccelerator(
-      views::Accelerator(ui::VKEY_RETURN, false, false, false)));
+      ui::Accelerator(ui::VKEY_RETURN, false, false, false)));
   ui_test_utils::RunAllPendingInMessageLoop();
 
   EXPECT_TRUE(test_dialog1->done());
@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
 
   // Send another VKEY_RETURN, closing test_dialog2
   EXPECT_TRUE(focus_manager->ProcessAccelerator(
-      views::Accelerator(ui::VKEY_RETURN, false, false, false)));
+      ui::Accelerator(ui::VKEY_RETURN, false, false, false)));
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(test_dialog2->done());
   EXPECT_EQ(0u, constrained_window_helper->constrained_window_count());

@@ -12,6 +12,10 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
 
+namespace ui {
+class Accelerator;
+}
+
 class BrowserView;
 
 // A customized dialog view for the keyboard overlay.
@@ -23,7 +27,7 @@ class KeyboardOverlayDialogView : public HtmlDialogView {
   virtual ~KeyboardOverlayDialogView();
 
   // Overridden from views::View:
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator);
 
   // Shows the keyboard overlay.
   static void ShowDialog(gfx::NativeWindow owning_window, BrowserView* parent);
@@ -32,13 +36,13 @@ class KeyboardOverlayDialogView : public HtmlDialogView {
   virtual void RegisterDialogAccelerators() OVERRIDE;
 
   // Returns true if |accelerator| is an accelerator for closing the dialog.
-  bool IsCloseAccelerator(const views::Accelerator& accelerator);
+  bool IsCloseAccelerator(const ui::Accelerator& accelerator);
 
   // Points to the view from which this dialog is created.
   BrowserView* parent_view_;
 
   // Contains accelerators for closing this dialog.
-  std::set<views::Accelerator> close_accelerators_;
+  std::set<ui::Accelerator> close_accelerators_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardOverlayDialogView);
 };

@@ -66,6 +66,10 @@ class JumpList;
 class LauncherIconUpdater;
 #endif
 
+namespace ui {
+class Accelerator;
+}
+
 namespace views {
 class AccessiblePaneView;
 class ExternalFocusTracker;
@@ -162,7 +166,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool ShouldShowAvatar() const;
 
   // Handle the specified |accelerator| being pressed.
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator);
 
   // Provides the containing frame with the accelerator for the specified
   // command id. This can be used to provide menu item shortcut hints etc.
@@ -548,7 +552,7 @@ class BrowserView : public BrowserBubbleHost,
   // Possibly records a user metrics action corresponding to the passed-in
   // accelerator.  Only implemented for Chrome OS, where we're interested in
   // learning about how frequently the top-row keys are used.
-  void UpdateAcceleratorMetrics(const views::Accelerator& accelerator,
+  void UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
                                 int command_id);
 
   // Invoked from ActiveTabChanged or when instant is made active.
@@ -666,7 +670,7 @@ class BrowserView : public BrowserBubbleHost,
   scoped_ptr<StatusBubbleViews> status_bubble_;
 
   // A mapping between accelerators and commands.
-  std::map<views::Accelerator, int> accelerator_table_;
+  std::map<ui::Accelerator, int> accelerator_table_;
 
   // True if we have already been initialized.
   bool initialized_;

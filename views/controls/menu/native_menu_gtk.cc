@@ -16,10 +16,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/models/accelerator.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/gtk_util.h"
-#include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/menu_listener.h"
 #include "views/controls/menu/nested_dispatcher_gtk.h"
@@ -420,7 +420,7 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
                      G_CALLBACK(OnMenuMoveCurrentThunk), this);
   }
 
-  views::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
+  ui::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
   if (accel_group && model_->GetAcceleratorAt(index, &accelerator)) {
     int gdk_modifiers = 0;
     if (accelerator.IsShiftDown())

@@ -100,7 +100,7 @@ void NativeMenuViews::ExecuteCommand(int cmd) {
   model->ActivatedAt(index);
 }
 
-bool NativeMenuViews::GetAccelerator(int id, views::Accelerator* accelerator) {
+bool NativeMenuViews::GetAccelerator(int id, ui::Accelerator* accelerator) {
   int index;
   ui::MenuModel* model = model_;
   if (!ui::MenuModel::GetModelAndIndexForCommandId(id, &model, &index))
@@ -110,8 +110,8 @@ bool NativeMenuViews::GetAccelerator(int id, views::Accelerator* accelerator) {
   if (!model->GetAcceleratorAt(index, &menu_accelerator))
     return false;
 
-  *accelerator = views::Accelerator(menu_accelerator.key_code(),
-                                    menu_accelerator.modifiers());
+  *accelerator = ui::Accelerator(menu_accelerator.key_code(),
+                                 menu_accelerator.modifiers());
   return true;
 }
 

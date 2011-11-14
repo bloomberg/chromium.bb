@@ -80,7 +80,7 @@ bool MenuModelAdapter::IsTriggerableEvent(MenuItemView* source,
 }
 
 bool MenuModelAdapter::GetAccelerator(int id,
-                                      views::Accelerator* accelerator) {
+                                      ui::Accelerator* accelerator) {
   ui::MenuModel* model = menu_model_;
   int index = 0;
   if (ui::MenuModel::GetModelAndIndexForCommandId(id, &model, &index))

@@ -1879,10 +1879,10 @@ void NativeWidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
   if ((notification_code & sc_mask) == SC_KEYMENU && click.x == 0) {
     // Retrieve the status of shift and control keys to prevent consuming
     // shift+alt keys, which are used by Windows to change input languages.
-    Accelerator accelerator(ui::KeyboardCodeForWindowsKeyCode(VK_MENU),
-                            !!(GetKeyState(VK_SHIFT) & 0x8000),
-                            !!(GetKeyState(VK_CONTROL) & 0x8000),
-                            false);
+    ui::Accelerator accelerator(ui::KeyboardCodeForWindowsKeyCode(VK_MENU),
+                                !!(GetKeyState(VK_SHIFT) & 0x8000),
+                                !!(GetKeyState(VK_CONTROL) & 0x8000),
+                                false);
     GetWidget()->GetFocusManager()->ProcessAccelerator(accelerator);
     return;
   }

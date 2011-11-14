@@ -77,7 +77,7 @@ class DialogButton : public NativeTextButton {
   }
 
   // Overridden to forward to the delegate.
-  virtual bool AcceleratorPressed(const Accelerator& accelerator) {
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) {
     if (!owner_->widget_delegate()->AsDialogDelegate()->
         AreAcceleratorsEnabled(type_)) {
       return false;
@@ -142,8 +142,8 @@ void DialogClientView::ShowDialogButtons() {
     if (is_default_button)
       default_button_ = ok_button_;
     if (!(buttons & ui::DIALOG_BUTTON_CANCEL))
-      ok_button_->AddAccelerator(Accelerator(ui::VKEY_ESCAPE,
-                                             false, false, false));
+      ok_button_->AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE,
+                                                 false, false, false));
     AddChildView(ok_button_);
   }
   if (buttons & ui::DIALOG_BUTTON_CANCEL && !cancel_button_) {
@@ -165,8 +165,8 @@ void DialogClientView::ShowDialogButtons() {
                                       label,
                                       is_default_button);
     cancel_button_->SetGroup(kButtonGroup);
-    cancel_button_->AddAccelerator(Accelerator(ui::VKEY_ESCAPE,
-                                               false, false, false));
+    cancel_button_->AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE,
+                                                   false, false, false));
     if (is_default_button)
       default_button_ = ok_button_;
     AddChildView(cancel_button_);
@@ -174,7 +174,7 @@ void DialogClientView::ShowDialogButtons() {
   if (!buttons) {
     // Register the escape key as an accelerator which will close the window
     // if there are no dialog buttons.
-    AddAccelerator(Accelerator(ui::VKEY_ESCAPE, false, false, false));
+    AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, false, false, false));
   }
 }
 
@@ -406,7 +406,7 @@ gfx::Size DialogClientView::GetPreferredSize() {
   return prefsize;
 }
 
-bool DialogClientView::AcceleratorPressed(const Accelerator& accelerator) {
+bool DialogClientView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   // We only expect Escape key.
   DCHECK(accelerator.key_code() == ui::VKEY_ESCAPE);
   Close();

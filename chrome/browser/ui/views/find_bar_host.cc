@@ -168,9 +168,9 @@ FindBarTesting* FindBarHost::GetFindBarTesting() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// FindBarWin, views::AcceleratorTarget implementation:
+// FindBarWin, ui::AcceleratorTarget implementation:
 
-bool FindBarHost::AcceleratorPressed(const views::Accelerator& accelerator) {
+bool FindBarHost::AcceleratorPressed(const ui::Accelerator& accelerator) {
   ui::KeyboardCode key = accelerator.key_code();
   if (key == ui::VKEY_RETURN && accelerator.IsCtrlDown()) {
     // Ctrl+Enter closes the Find session and navigates any link that is active.
@@ -302,13 +302,13 @@ void FindBarHost::RegisterAccelerators() {
   DropdownBarHost::RegisterAccelerators();
 
   // Register for Ctrl+Return.
-  views::Accelerator escape(ui::VKEY_RETURN, false, true, false);
+  ui::Accelerator escape(ui::VKEY_RETURN, false, true, false);
   focus_manager()->RegisterAccelerator(escape, this);
 }
 
 void FindBarHost::UnregisterAccelerators() {
   // Unregister Ctrl+Return.
-  views::Accelerator escape(ui::VKEY_RETURN, false, true, false);
+  ui::Accelerator escape(ui::VKEY_RETURN, false, true, false);
   focus_manager()->UnregisterAccelerator(escape, this);
 
   DropdownBarHost::UnregisterAccelerators();

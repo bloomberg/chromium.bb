@@ -445,13 +445,13 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
   // TODO(cpu) Bug 1109102. Query WebKit land for the actual bindings.
   switch (command_id) {
     case IDC_CUT:
-      *accelerator = views::Accelerator(ui::VKEY_X, false, true, false);
+      *accelerator = ui::Accelerator(ui::VKEY_X, false, true, false);
       return true;
     case IDC_COPY:
-      *accelerator = views::Accelerator(ui::VKEY_C, false, true, false);
+      *accelerator = ui::Accelerator(ui::VKEY_C, false, true, false);
       return true;
     case IDC_PASTE:
-      *accelerator = views::Accelerator(ui::VKEY_V, false, true, false);
+      *accelerator = ui::Accelerator(ui::VKEY_V, false, true, false);
       return true;
   }
   // Else, we retrieve the accelerator information from the frame.
@@ -632,7 +632,7 @@ std::string ToolbarView::GetClassName() const {
   return kViewClassName;
 }
 
-bool ToolbarView::AcceleratorPressed(const views::Accelerator& accelerator) {
+bool ToolbarView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   const views::View* focused_view = focus_manager_->GetFocusedView();
   if (focused_view == location_bar_)
     return false;  // Let location bar handle all accelerator events.
