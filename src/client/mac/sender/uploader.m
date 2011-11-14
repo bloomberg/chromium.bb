@@ -475,6 +475,7 @@ NSString *const kDefaultServerType = @"google";
   NSMutableDictionary *uploadParameters = [NSMutableDictionary dictionary];
 
   if (![self populateServerDictionary:uploadParameters]) {
+    [upload release];
     return;
   }
 

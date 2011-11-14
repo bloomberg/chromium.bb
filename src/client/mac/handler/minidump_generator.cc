@@ -135,14 +135,19 @@ void MinidumpGenerator::GatherSystemInformation() {
   CFURLCreateDataAndPropertiesFromResource(NULL, sys_vers, &data, NULL, NULL,
                                            &error);
 
-  if (!data)
+  if (!data) {
+    CFRelease(sys_vers);
     return;
+  }
 
   CFDictionaryRef list = static_cast<CFDictionaryRef>
     (CFPropertyListCreateFromXMLData(NULL, data, kCFPropertyListImmutable,
                                      NULL));
-  if (!list)
+  if (!list) {
+    CFRelease(sys_vers);
+    CFRelease(data);
     return;
+  }
 
   CFStringRef build_version = static_cast<CFStringRef>
     (CFDictionaryGetValue(list, CFSTR("ProductBuildVersion")));
