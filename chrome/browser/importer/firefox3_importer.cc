@@ -205,8 +205,6 @@ void Firefox3Importer::ImportBookmarks() {
     return;
   }
 
-  string16 firefox_folder =
-      bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_FIREFOX);
   for (size_t i = 0; i < list.size(); ++i) {
     BookmarkItem* item = list[i];
 
