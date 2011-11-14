@@ -1253,7 +1253,6 @@ void BrowserWindowGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
 
   // Update all the UI bits.
   UpdateTitleBar();
-  UpdateToolbar(new_contents, true);
   MaybeShowBookmarkBar(false);
 }
 
@@ -2353,21 +2352,25 @@ bool BrowserWindowGtk::BoundsMatchMonitorSize() {
 }
 
 void BrowserWindowGtk::PlaceBookmarkBar(bool is_floating) {
-  GtkWidget* parent = gtk_widget_get_parent(bookmark_bar_->widget());
-  if (parent)
-    gtk_container_remove(GTK_CONTAINER(parent), bookmark_bar_->widget());
-
+  GtkWidget* target_parent = NULL;
   if (!is_floating) {
     // Place the bookmark bar at the end of |window_vbox_|; this happens after
     // we have placed the render area at the end of |window_vbox_| so we will
     // be above the render area.
-    gtk_box_pack_end(GTK_BOX(window_vbox_), bookmark_bar_->widget(),
-                     FALSE, FALSE, 0);
+    target_parent = window_vbox_;
   } else {
     // Place the bookmark bar at the end of the render area; this happens after
     // the tab contents container has been placed there so we will be
     // above the webpage (in terms of y).
-    gtk_box_pack_end(GTK_BOX(render_area_vbox_), bookmark_bar_->widget(),
+    target_parent = render_area_vbox_;
+  }
+
+  GtkWidget* parent = gtk_widget_get_parent(bookmark_bar_->widget());
+  if (parent != target_parent) {
+    if (parent)
+      gtk_container_remove(GTK_CONTAINER(parent), bookmark_bar_->widget());
+
+    gtk_box_pack_end(GTK_BOX(target_parent), bookmark_bar_->widget(),
                      FALSE, FALSE, 0);
   }
 }
