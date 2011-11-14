@@ -265,8 +265,7 @@ void InputMethodIBus::PendingKeyEvent::ProcessPostIME(bool handled) {
 class InputMethodIBus::PendingCreateICRequest {
  public:
   PendingCreateICRequest(InputMethodIBus* input_method,
-                         PendingCreateICRequest** request_ptr,
-                         bool fake);
+                         PendingCreateICRequest** request_ptr);
   ~PendingCreateICRequest();
 
   // Abandon this pending key event. Its result will just be discarded.
@@ -282,16 +281,13 @@ class InputMethodIBus::PendingCreateICRequest {
  private:
   InputMethodIBus* input_method_;
   PendingCreateICRequest** request_ptr_;
-  bool fake_;
 };
 
 InputMethodIBus::PendingCreateICRequest::PendingCreateICRequest(
     InputMethodIBus* input_method,
-    PendingCreateICRequest** request_ptr,
-    bool fake)
+    PendingCreateICRequest** request_ptr)
     : input_method_(input_method),
-      request_ptr_(request_ptr),
-      fake_(fake) {
+      request_ptr_(request_ptr) {
 }
 
 InputMethodIBus::PendingCreateICRequest::~PendingCreateICRequest() {
@@ -304,7 +300,7 @@ InputMethodIBus::PendingCreateICRequest::~PendingCreateICRequest() {
 void InputMethodIBus::PendingCreateICRequest::StoreOrAbandonInputContext(
     IBusInputContext* ic) {
   if (input_method_) {
-    input_method_->SetContext(ic, fake_);
+    input_method_->SetContext(ic);
   } else {
     // ibus_proxy_destroy() will not really release the object, we still need
     // to call g_object_unref() explicitly.
@@ -316,9 +312,7 @@ void InputMethodIBus::PendingCreateICRequest::StoreOrAbandonInputContext(
 // InputMethodIBus implementation ---------------------------------------------
 InputMethodIBus::InputMethodIBus(internal::InputMethodDelegate* delegate)
     : context_(NULL),
-      fake_context_(NULL),
       pending_create_ic_request_(NULL),
-      pending_create_fake_ic_request_(NULL),
       context_focused_(false),
       composing_text_(false),
       composition_changed_(false),
@@ -379,13 +373,12 @@ void InputMethodIBus::DispatchKeyEvent(const KeyEvent& key) {
   guint32 ibus_state = 0;
   IBusKeyEventFromViewsKeyEvent(key, &ibus_keyval, &ibus_keycode, &ibus_state);
 
-  // If |context_| is not usable and |fake_context_| is not created yet, then we
-  // can only dispatch the key event as is. We also dispatch the key event
-  // directly if the current text input type is ui::TEXT_INPUT_TYPE_PASSWORD,
-  // to bypass the input method.
+  // If |context_| is not usable, then we can only dispatch the key event as is.
+  // We also dispatch the key event directly if the current text input type is
+  // ui::TEXT_INPUT_TYPE_PASSWORD, to bypass the input method.
   // Note: We need to send the key event to ibus even if the |context_| is not
   // enabled, so that ibus can have a chance to enable the |context_|.
-  if (!(context_focused_ || fake_context_) ||
+  if (!context_focused_ ||
       GetTextInputType() == ui::TEXT_INPUT_TYPE_PASSWORD) {
     if (key.type() == ui::ET_KEY_PRESSED)
       ProcessUnfilteredKeyPressEvent(key, ibus_keyval);
@@ -415,7 +408,7 @@ void InputMethodIBus::DispatchKeyEvent(const KeyEvent& key) {
   // Thus it's very complicated, if not impossible, to implement a client that
   // fully utilize asynchronous communication without potential problem.
   ibus_input_context_process_key_event_async(
-      context_focused_ ? context_ : fake_context_,
+      context_,
       ibus_keyval, ibus_keycode, ibus_state, -1, NULL,
       reinterpret_cast<GAsyncReadyCallback>(ProcessKeyEventDone),
       pending_key);
@@ -505,45 +498,21 @@ void InputMethodIBus::OnDidChangeFocus(View* focused_before, View* focused) {
 
 void InputMethodIBus::CreateContext() {
   DCHECK(!context_);
-  DCHECK(!fake_context_);
   DCHECK(GetIBus());
   DCHECK(ibus_bus_is_connected(GetIBus()));
   DCHECK(!pending_create_ic_request_);
-  DCHECK(!pending_create_fake_ic_request_);
 
   // Creates the input context asynchronously.
   pending_create_ic_request_ = new PendingCreateICRequest(
-      this, &pending_create_ic_request_, false /* fake */);
+      this, &pending_create_ic_request_);
   ibus_bus_create_input_context_async(
       GetIBus(), "chrome", -1, NULL,
       reinterpret_cast<GAsyncReadyCallback>(CreateInputContextDone),
       pending_create_ic_request_);
-
-  // Creates the fake input context asynchronously. ibus will match the "fake"
-  // prefix in the application name to do magic thing.
-  pending_create_fake_ic_request_ = new PendingCreateICRequest(
-      this, &pending_create_fake_ic_request_, true /* fake */);
-  ibus_bus_create_input_context_async(
-      GetIBus(), "fake-chrome", -1, NULL,
-      reinterpret_cast<GAsyncReadyCallback>(CreateInputContextDone),
-      pending_create_fake_ic_request_);
 }
 
-void InputMethodIBus::SetContext(IBusInputContext* ic, bool fake) {
+void InputMethodIBus::SetContext(IBusInputContext* ic) {
   DCHECK(ic);
-  if (fake) {
-    DCHECK(!fake_context_);
-    fake_context_ = ic;
-
-    // We only need to care about "destroy" signal of the fake context,
-    // as it will not generate any input method result.
-    g_signal_connect(ic, "destroy", G_CALLBACK(OnFakeDestroyThunk), this);
-
-    ibus_input_context_set_capabilities(ic, IBUS_CAP_FOCUS);
-    UpdateFakeContextFocusState();
-    return;
-  }
-
   DCHECK(!context_);
   context_ = ic;
 
@@ -581,17 +550,6 @@ void InputMethodIBus::DestroyContext() {
     // g_object_unref() there.
     ibus_proxy_destroy(reinterpret_cast<IBusProxy *>(context_));
     DCHECK(!context_);
-  }
-
-  if (pending_create_fake_ic_request_) {
-    DCHECK(!fake_context_);
-    // |pending_create_fake_ic_request_| will be deleted in
-    // CreateInputContextDone().
-    pending_create_fake_ic_request_->abandon();
-    pending_create_fake_ic_request_ = NULL;
-  } else if (fake_context_) {
-    ibus_proxy_destroy(reinterpret_cast<IBusProxy *>(fake_context_));
-    DCHECK(!fake_context_);
   }
 }
 
@@ -636,15 +594,12 @@ void InputMethodIBus::ResetContext() {
   // make sure that all of the engines we are using support it correctly.
   ibus_input_context_reset(context_);
 
-  // We don't need to reset |fake_context_|.
-
   character_composer_.Reset();
 }
 
 void InputMethodIBus::UpdateContextFocusState() {
   if (!context_) {
     context_focused_ = false;
-    UpdateFakeContextFocusState();
     return;
   }
 
@@ -666,22 +621,6 @@ void InputMethodIBus::UpdateContextFocusState() {
     ibus_input_context_focus_out(context_);
   else if (!old_context_focused && context_focused_)
     ibus_input_context_focus_in(context_);
-
-  UpdateFakeContextFocusState();
-}
-
-void InputMethodIBus::UpdateFakeContextFocusState() {
-  if (!fake_context_)
-    return;
-
-  if (widget_focused() && !context_focused_ &&
-      GetTextInputType() != ui::TEXT_INPUT_TYPE_PASSWORD) {
-    // We disable input method in password fields, so it makes no sense to allow
-    // switching input method.
-    ibus_input_context_focus_in(fake_context_);
-  } else {
-    ibus_input_context_focus_out(fake_context_);
-  }
 }
 
 void InputMethodIBus::ProcessKeyEventPostIME(const KeyEvent& key,
@@ -960,12 +899,6 @@ void InputMethodIBus::OnDestroy(IBusInputContext* context) {
   OnInputMethodChanged();
 }
 
-void InputMethodIBus::OnFakeDestroy(IBusInputContext* context) {
-  DCHECK_EQ(fake_context_, context);
-  g_object_unref(fake_context_);
-  fake_context_ = NULL;
-}
-
 void InputMethodIBus::OnIBusConnected(IBusBus* bus) {
   DCHECK_EQ(GetIBus(), bus);
   DCHECK(ibus_bus_is_connected(bus));
@@ -1002,8 +935,7 @@ void InputMethodIBus::ProcessKeyEventDone(IBusInputContext* context,
                                           PendingKeyEvent* data) {
   DCHECK(data);
   DCHECK(!data->input_method() ||
-         data->input_method()->context_ == context ||
-         data->input_method()->fake_context_ == context);
+         data->input_method()->context_ == context);
 
   gboolean handled = ibus_input_context_process_key_event_async_finish(
       context, res, NULL);
