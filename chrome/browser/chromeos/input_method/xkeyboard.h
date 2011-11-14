@@ -141,6 +141,16 @@ class XKeyboard {
   static bool ContainsModifierKeyAsReplacement(const ModifierMap& modifier_map,
                                                ModifierKey key);
 
+  // THIS FUNCTION IS ONLY FOR UNIT TESTS.
+  // Returns true if auto repeat is enabled. This function is protected: for
+  // testability.
+  static bool GetAutoRepeatEnabled();
+
+  // THIS FUNCTION IS ONLY FOR UNIT TESTS.
+  // On success, set current auto repeat rate on |out_rate| and returns true.
+  // Returns false otherwise. This function is protected: for testability.
+  static bool GetAutoRepeatRate(AutoRepeatRate* out_rate);
+
  private:
   // This function is used by SetLayout() and RemapModifierKeys(). Calls
   // setxkbmap command if needed, and updates the last_full_layout_name_ cache.

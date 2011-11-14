@@ -355,7 +355,6 @@ bool XKeyboard::SetAutoRepeatEnabled(bool enabled) {
 
 // static
 bool XKeyboard::SetAutoRepeatRate(const AutoRepeatRate& rate) {
-  // TODO(yusukes): write auto tests for the function.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DLOG(INFO) << "Set auto-repeat rate to: "
              << rate.initial_delay_in_ms << " ms delay, "
@@ -367,6 +366,20 @@ bool XKeyboard::SetAutoRepeatRate(const AutoRepeatRate& rate) {
     return false;
   }
   return true;
+}
+
+// static
+bool XKeyboard::GetAutoRepeatEnabled() {
+  XKeyboardState state = {};
+  XGetKeyboardControl(ui::GetXDisplay(), &state);
+  return state.global_auto_repeat != AutoRepeatModeOff;
+}
+
+// static
+bool XKeyboard::GetAutoRepeatRate(AutoRepeatRate* out_rate) {
+  return XkbGetAutoRepeatRate(ui::GetXDisplay(), XkbUseCoreKbd,
+                              &(out_rate->initial_delay_in_ms),
+                              &(out_rate->repeat_interval_in_ms)) == True;
 }
 
 void XKeyboard::SetLockedModifiers(ModifierLockStatus new_caps_lock_status,

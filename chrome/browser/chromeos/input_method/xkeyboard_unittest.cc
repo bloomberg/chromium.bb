@@ -42,6 +42,8 @@ class TestableXKeyboard : public XKeyboard {
   // Change access rights.
   using XKeyboard::CreateFullXkbLayoutName;
   using XKeyboard::ContainsModifierKeyAsReplacement;
+  using XKeyboard::GetAutoRepeatEnabled;
+  using XKeyboard::GetAutoRepeatRate;
 };
 
 class XKeyboardTest : public testing::Test {
@@ -255,6 +257,10 @@ TEST_F(XKeyboardTest, TestCreateFullXkbLayoutNameModifierKeys) {
 
 TEST_F(XKeyboardTest, TestSetCapsLockEnabled) {
   if (!DisplayAvailable()) {
+    // Do not fail the test to allow developers to run unit_tests without an X
+    // server (e.g. via ssh). Note that both try bots and waterfall always have
+    // an X server for running browser_tests.
+    LOG(INFO) << "X server is not available. Skip the test.";
     return;
   }
   const bool initial_lock_state = xkey_->CapsLockIsEnabled();
@@ -271,6 +277,7 @@ TEST_F(XKeyboardTest, TestSetCapsLockEnabled) {
 
 TEST_F(XKeyboardTest, TestSetNumLockEnabled) {
   if (!DisplayAvailable()) {
+    LOG(INFO) << "X server is not available. Skip the test.";
     return;
   }
   const unsigned int num_lock_mask = TestableXKeyboard::GetNumLockMask();
@@ -290,6 +297,7 @@ TEST_F(XKeyboardTest, TestSetNumLockEnabled) {
 
 TEST_F(XKeyboardTest, TestSetCapsLockAndNumLockAtTheSameTime) {
   if (!DisplayAvailable()) {
+    LOG(INFO) << "X server is not available. Skip the test.";
     return;
   }
   const unsigned int num_lock_mask = TestableXKeyboard::GetNumLockMask();
@@ -351,6 +359,42 @@ TEST_F(XKeyboardTest, TestContainsModifierKeyAsReplacement) {
       GetMap(kCapsLockKey, kCapsLockKey, kCapsLockKey), kCapsLockKey));
   EXPECT_TRUE(TestableXKeyboard::ContainsModifierKeyAsReplacement(
       GetMap(kSearchKey, kVoidKey, kVoidKey), kSearchKey));
+}
+
+TEST_F(XKeyboardTest, TestSetAutoRepeatEnabled) {
+  if (!DisplayAvailable()) {
+    LOG(INFO) << "X server is not available. Skip the test.";
+    return;
+  }
+  const bool state = TestableXKeyboard::GetAutoRepeatEnabled();
+  TestableXKeyboard::SetAutoRepeatEnabled(!state);
+  EXPECT_EQ(!state, TestableXKeyboard::GetAutoRepeatEnabled());
+  // Restore the initial state.
+  TestableXKeyboard::SetAutoRepeatEnabled(state);
+  EXPECT_EQ(state, TestableXKeyboard::GetAutoRepeatEnabled());
+}
+
+TEST_F(XKeyboardTest, TestSetAutoRepeatRate) {
+  if (!DisplayAvailable()) {
+    LOG(INFO) << "X server is not available. Skip the test.";
+    return;
+  }
+  AutoRepeatRate rate;
+  EXPECT_TRUE(TestableXKeyboard::GetAutoRepeatRate(&rate));
+
+  AutoRepeatRate tmp(rate);
+  ++tmp.initial_delay_in_ms;
+  ++tmp.repeat_interval_in_ms;
+  EXPECT_TRUE(TestableXKeyboard::SetAutoRepeatRate(tmp));
+  EXPECT_TRUE(TestableXKeyboard::GetAutoRepeatRate(&tmp));
+  EXPECT_EQ(rate.initial_delay_in_ms + 1, tmp.initial_delay_in_ms);
+  EXPECT_EQ(rate.repeat_interval_in_ms + 1, tmp.repeat_interval_in_ms);
+
+  // Restore the initial state.
+  EXPECT_TRUE(TestableXKeyboard::SetAutoRepeatRate(rate));
+  EXPECT_TRUE(TestableXKeyboard::GetAutoRepeatRate(&tmp));
+  EXPECT_EQ(rate.initial_delay_in_ms, tmp.initial_delay_in_ms);
+  EXPECT_EQ(rate.repeat_interval_in_ms, tmp.repeat_interval_in_ms);
 }
 
 }  // namespace input_method
