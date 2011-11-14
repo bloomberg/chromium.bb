@@ -6,12 +6,6 @@
 
 namespace browser_defaults {
 
-#if defined(USE_AURA) || defined(OS_CHROMEOS)
-const bool kOSSupportsOtherBrowsers = false;
-#else
-const bool kOSSupportsOtherBrowsers = true;
-#endif
-
 #if defined(OS_CHROMEOS)
 
 // Make the regular omnibox text two points larger than the nine-point font
@@ -27,6 +21,7 @@ const bool kCanToggleSystemTitleBar = false;
 const bool kRestorePopups = false;
 const bool kShowImportOnBookmarkBar = false;
 const bool kShowExitMenuItem = true;
+const bool kOSSupportsOtherBrowsers = false;
 const bool kDownloadPageHasShowInFolder = true;
 const bool kSizeTabButtonToTopOfTabStrip = true;
 const bool kBootstrapSyncAuthentication = true;
@@ -65,6 +60,7 @@ const bool kShowExitMenuItem = false;
 #else
 const bool kShowExitMenuItem = true;
 #endif
+const bool kOSSupportsOtherBrowsers = true;
 const bool kSizeTabButtonToTopOfTabStrip = false;
 const bool kBootstrapSyncAuthentication = false;
 const bool kShowOtherBrowsersInAboutMemory = true;

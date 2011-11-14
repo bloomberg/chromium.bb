@@ -96,8 +96,8 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   void OnHostResized(const gfx::Size& size);
 
   // Sets the active window to |window| and the focused window to |to_focus|.
-  // If |to_focus| is NULL, |window| is focused. Does nothing if |window| is
-  // NULL.
+  // If |to_focus| is NULL, |window| is focused.
+  // |window| can be NULL.
   void SetActiveWindow(Window* window, Window* to_focus);
 
   // Activates the topmost window. Does nothing if the topmost window is already
