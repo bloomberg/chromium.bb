@@ -459,6 +459,11 @@ void ExistingUserController::OnOffTheRecordLoginSuccess() {
     LoginUtils::Get()->CompleteOffTheRecordLogin(guest_mode_url_);
   } else {
     // Postpone CompleteOffTheRecordLogin until registration completion.
+    // TODO(nkostylev): Kind of hack. We have to instruct UserManager here
+    // that we're actually logged in as Guest user as we'll ask UserManager
+    // later in the code path whether we've signed in as Guest and depending
+    // on that would either show image screen or call CompleteOffTheRecordLogin.
+    UserManager::Get()->GuestUserLoggedIn();
     ActivateWizard(WizardController::kRegistrationScreenName);
   }
 
