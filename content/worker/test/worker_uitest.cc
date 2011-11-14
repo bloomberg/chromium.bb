@@ -849,6 +849,9 @@ TEST_F(WorkerFileSystemTest, FLAKY_ResolveURLHttpTests) {
 // Fails on Linux due to an assert in WebKit's RNG.
 // See http://webkit.org/b/55728.
 #define FileFromFileEntry DISABLED_FileFromFileEntry
+#else
+// http://crbug.com/101996
+#define FileFromFileEntry FLAKY_FileFromFileEntry
 #endif
 TEST_F(WorkerFileSystemTest, FileFromFileEntry) {
   RunWorkerFileSystemLayoutTest("file-from-file-entry.html");
