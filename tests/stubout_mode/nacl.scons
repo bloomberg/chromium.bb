@@ -39,32 +39,43 @@ node = env.Command(
 # idea, but apparently true for all other cases so far).
 env.Alias('all_test_programs', node)
 
-nodes = []
+# For speed, SConstruct disables the validator (using '-cc') for
+# Valgrind+nacl-glibc tests, which breaks one test below.
+is_validation_disabled = env.IsRunningUnderValgrind() and env.Bit('nacl_glibc')
 
 # Without any debug flags, the executable fails validation.
-nodes.append(env.CommandSelLdrTestNacl(
-        'partly_invalid_1.out', partly_invalid_nexe,
-        exit_status='1'))
+if env.Bit('nacl_static_link'):
+  # The exit status produced by sel_ldr.
+  validation_failure_status = '1'
+else:
+  # The exit status produced by the dynamic linker.
+  validation_failure_status = '127'
+node = env.CommandSelLdrTestNacl(
+    'partly_invalid_1.out', partly_invalid_nexe,
+    exit_status=validation_failure_status)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_without_stubout_1_test',
+                       is_broken=is_validation_disabled)
 
 # With "-c", the executable runs to completion but is not safe.
-nodes.append(env.CommandSelLdrTestNacl(
-        'partly_invalid_2.out', partly_invalid_nexe,
-        stdout_golden=env.File('without_stubout.stdout'),
-        sel_ldr_flags=['-c']))
+node = env.CommandSelLdrTestNacl(
+    'partly_invalid_2.out', partly_invalid_nexe,
+    stdout_golden=env.File('without_stubout.stdout'),
+    sel_ldr_flags=['-c'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_without_stubout_2_test')
 
 # With "-s", the executable runs part way but then faults.
-nodes.append(env.CommandSelLdrTestNacl(
-        'partly_invalid_3.out', partly_invalid_nexe,
-        stdout_golden=env.File('with_stubout.stdout'),
-        sel_ldr_flags=['-s'],
-        exit_status='untrusted_sigill'))
+node = env.CommandSelLdrTestNacl(
+    'partly_invalid_3.out', partly_invalid_nexe,
+    stdout_golden=env.File('with_stubout.stdout'),
+    sel_ldr_flags=['-s'],
+    exit_status='untrusted_sigill')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_stubout_mode_test')
 
 # Using the standalone ncval_stubout tool to rewrite the executable
 # offline should be equivalent to using sel_ldr's "-s" option.
-nodes.append(env.CommandSelLdrTestNacl(
-        'partly_invalid_stubout.out',
-        partly_invalid_stubout_nexe,
-        stdout_golden=env.File('with_stubout.stdout'),
-        exit_status='untrusted_sigill'))
-
-env.AddNodeToTestSuite(nodes, ['small_tests'], 'run_stubout_mode_test')
+node = env.CommandSelLdrTestNacl(
+    'partly_invalid_stubout.out',
+    partly_invalid_stubout_nexe,
+    stdout_golden=env.File('with_stubout.stdout'),
+    exit_status='untrusted_sigill')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_offline_stubout_test')

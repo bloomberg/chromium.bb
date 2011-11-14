@@ -579,9 +579,6 @@ nacl_glibc_skiplist = set([
     # This uses a canned binary that is compiled w/ newlib.  A
     # glibc version might be useful.
     'run_fuzz_nullptr_test',
-    # This tests the absence of "-s" but that is no good because
-    # we currently force that option on.
-    'run_stubout_mode_test',
     # Struct layouts differ.
     'run_abi_test',
     # Syscall wrappers not implemented yet.
