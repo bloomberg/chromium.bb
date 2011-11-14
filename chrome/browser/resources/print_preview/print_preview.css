@@ -132,36 +132,6 @@ button.default:not(:focus):not(:disabled) {
   border-color: #808080;
 }
 
-#increment,
-#decrement {
-  -webkit-padding-end: 8px;
-  -webkit-padding-start: 8px;
-  font-weight: 600;
-  min-width: 0;
-  position: relative;
-  width: 25px;
-}
-
-#increment {
-  -webkit-margin-start: -11px !important;
-  border-radius: 0;
-}
-
-#decrement {
-  -webkit-margin-start: -5px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 3px;
-  border-top-left-radius: 0;
-  border-top-right-radius: 3px;
-}
-
-html[dir='rtl'] #decrement {
-  border-bottom-left-radius: 3px;
-  border-bottom-right-radius: 0;
-  border-top-left-radius: 3px;
-  border-top-right-radius: 0;
-}
-
 span.hint {
   -webkit-transition: color 200ms;
   background: white;
@@ -293,12 +263,49 @@ label {
 }
 
 #copies {
-  width: 2em;
+  position: relative;
+  width: 1.5em;
 }
 
 #copies.invalid {
   background: #fff0f0;
   color: #8c1414;
+}
+
+#increment,
+#decrement {
+  -webkit-padding-end: 8px;
+  -webkit-padding-start: 8px;
+  font-weight: 600;
+  min-width: 0;
+  position: relative;
+  width: 25px;
+}
+
+#increment:focus,
+#decrement:focus,
+#copies:focus {
+  z-index: 1;
+}
+
+#increment {
+  -webkit-margin-start: -5px;
+  border-radius: 0;
+}
+
+#decrement {
+  -webkit-margin-start: -5px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 3px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 3px;
+}
+
+html[dir='rtl'] #decrement {
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 0;
 }
 
 /* PDF view */
