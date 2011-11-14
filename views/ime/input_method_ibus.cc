@@ -23,6 +23,8 @@
 #include "base/third_party/icu/icu_utf.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 #include "views/events/event.h"
 #include "views/widget/widget.h"
 
@@ -37,8 +39,8 @@ namespace {
 // A global flag to switch the InputMethod implementation to InputMethodIBus
 bool inputmethod_ibus_enabled = false;
 
-// Converts ibus key state flags to Views event flags.
-int ViewsFlagsFromIBusState(guint32 state) {
+// Converts ibus key state flags to event flags.
+int EventFlagsFromIBusState(guint32 state) {
   return (state & IBUS_LOCK_MASK ? ui::EF_CAPS_LOCK_DOWN : 0) |
          (state & IBUS_CONTROL_MASK ? ui::EF_CONTROL_DOWN : 0) |
          (state & IBUS_SHIFT_MASK ? ui::EF_SHIFT_DOWN : 0) |
@@ -48,8 +50,8 @@ int ViewsFlagsFromIBusState(guint32 state) {
          (state & IBUS_BUTTON3_MASK ? ui::EF_RIGHT_BUTTON_DOWN : 0);
 }
 
-// Converts Views event flags to ibus key state flags.
-guint32 IBusStateFromViewsFlags(int flags) {
+// Converts event flags to ibus key state flags.
+guint32 IBusStateFromEventFlags(int flags) {
   return (flags & ui::EF_CAPS_LOCK_DOWN ? IBUS_LOCK_MASK : 0) |
          (flags & ui::EF_CONTROL_DOWN ? IBUS_CONTROL_MASK : 0) |
          (flags & ui::EF_SHIFT_DOWN ? IBUS_SHIFT_MASK : 0) |
@@ -94,7 +96,7 @@ void IBusKeyEventFromViewsKeyEvent(const views::KeyEvent& key,
   }
 #endif
 
-  *ibus_state = IBusStateFromViewsFlags(key.flags());
+  *ibus_state = IBusStateFromEventFlags(key.flags());
   if (key.type() == ui::ET_KEY_RELEASED)
     *ibus_state |= IBUS_RELEASE_MASK;
 }
@@ -700,12 +702,12 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(const KeyEvent& key,
 }
 
 void InputMethodIBus::ProcessInputMethodResult(const KeyEvent& key,
-                                              bool filtered) {
+                                               bool handled) {
   ui::TextInputClient* client = GetTextInputClient();
   DCHECK(client);
 
   if (result_text_.length()) {
-    if (filtered && NeedInsertChar()) {
+    if (handled && NeedInsertChar()) {
       for (string16::const_iterator i = result_text_.begin();
            i != result_text_.end(); ++i) {
         client->InsertChar(*i, key.flags());
@@ -808,7 +810,7 @@ void InputMethodIBus::OnForwardKeyEvent(IBusInputContext* context,
 
   KeyEvent key(state & IBUS_RELEASE_MASK ?
                ui::ET_KEY_RELEASED : ui::ET_KEY_PRESSED,
-               key_code, ViewsFlagsFromIBusState(state));
+               key_code, EventFlagsFromIBusState(state));
 
   // It is not clear when the input method will forward us a fake key event.
   // If there is a pending key event, then we may already received some input
