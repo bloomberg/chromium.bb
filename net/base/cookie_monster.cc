@@ -1497,7 +1497,7 @@ void CookieMonster::InitStore() {
 void CookieMonster::OnLoaded(TimeTicks beginning_time,
                              const std::vector<CanonicalCookie*>& cookies) {
   StoreLoadedCookies(cookies);
-  histogram_time_load_->AddTime(TimeTicks::Now() - beginning_time);
+  histogram_time_blocked_on_load_->AddTime(TimeTicks::Now() - beginning_time);
 
   // Invoke the task queue of cookie request.
   InvokeQueue();
@@ -2298,7 +2298,8 @@ void CookieMonster::InitializeHistograms() {
   histogram_time_mac_ = base::Histogram::FactoryTimeGet("Cookie.TimeGetMac",
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
       50, base::Histogram::kUmaTargetedHistogramFlag);
-  histogram_time_load_ = base::Histogram::FactoryTimeGet("Cookie.TimeLoad",
+  histogram_time_blocked_on_load_ = base::Histogram::FactoryTimeGet(
+      "Cookie.TimeBlockedOnLoad",
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
       50, base::Histogram::kUmaTargetedHistogramFlag);
 }

@@ -462,7 +462,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // Stores cookies loaded from the backing store and invokes any deferred
   // calls. |beginning_time| should be the moment PersistentCookieStore::Load
-  // was invoked and is used for reporting histogram_time_load_.
+  // was invoked and is used for reporting histogram_time_blocked_on_load_.
   // See PersistentCookieStore::Load for details on the contents of cookies.
   void OnLoaded(base::TimeTicks beginning_time,
                 const std::vector<CanonicalCookie*>& cookies);
@@ -613,7 +613,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::Histogram* histogram_cookie_deletion_cause_;
   base::Histogram* histogram_time_get_;
   base::Histogram* histogram_time_mac_;
-  base::Histogram* histogram_time_load_;
+  base::Histogram* histogram_time_blocked_on_load_;
 
   CookieMap cookies_;
 
