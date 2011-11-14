@@ -79,6 +79,11 @@ Elf32_auxv_t *nacl_startup_auxv(const uint32_t info[]) {
   return (Elf32_auxv_t *) envend;
 }
 
+/*
+ * The main entry point.
+ */
+extern void _start(uint32_t info[]);
+
 #ifdef __cplusplus
 }
 #endif
