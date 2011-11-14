@@ -14,7 +14,7 @@ typedef ViewsTestBase BubbleDelegateTest;
 TEST_F(BubbleDelegateTest, CreateDelegate) {
   BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
       NULL, BubbleBorder::NONE, SK_ColorGREEN);
-  scoped_ptr<Widget> bubble_widget(
+  Widget* bubble_widget(
       BubbleDelegateView::CreateBubble(bubble_delegate));
   EXPECT_EQ(bubble_delegate, bubble_widget->widget_delegate());
   EXPECT_EQ(bubble_widget, bubble_delegate->GetWidget());
@@ -25,7 +25,6 @@ TEST_F(BubbleDelegateTest, CreateDelegate) {
   EXPECT_EQ(bubble_delegate->GetColor(), border->background_color());
 
   bubble_widget->CloseNow();
-  bubble_widget.reset();
   RunPendingMessages();
 }
 

@@ -54,7 +54,7 @@ gfx::Size SizedBubbleDelegateView::GetPreferredSize() { return kRect.size(); }
 
 TEST_F(BubbleFrameViewBasicTest, NonClientHitTest) {
   BubbleDelegateView* delegate = new SizedBubbleDelegateView();
-  scoped_ptr<Widget> widget(BubbleDelegateView::CreateBubble(delegate));
+  Widget* widget(BubbleDelegateView::CreateBubble(delegate));
   delegate->Show();
   gfx::Point kPtInBound(100, 100);
   gfx::Point kPtOutsideBound(1000, 1000);
@@ -62,7 +62,6 @@ TEST_F(BubbleFrameViewBasicTest, NonClientHitTest) {
   EXPECT_EQ(HTCLIENT, bubble_frame_view->NonClientHitTest(kPtInBound));
   EXPECT_EQ(HTNOWHERE, bubble_frame_view->NonClientHitTest(kPtOutsideBound));
   widget->CloseNow();
-  widget.reset();
   RunPendingMessages();
 }
 

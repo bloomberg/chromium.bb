@@ -22,8 +22,6 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble, Widget* parent) {
   bubble_params.delegate = bubble;
   bubble_params.transparent = true;
   bubble_params.parent_widget = parent;
-  if (!bubble_params.parent_widget)
-    bubble_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
 #if defined(OS_WIN) && !defined(USE_AURA)
   bubble_params.type = Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   bubble_params.transparent = false;
