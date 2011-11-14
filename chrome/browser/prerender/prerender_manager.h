@@ -153,6 +153,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   static void SetMode(PrerenderManagerMode mode);
   static bool IsPrerenderingPossible();
   static bool IsControlGroup();
+  static bool IsNoUseGroup();
 
   // Query the list of current prerender pages to see if the given tab contents
   // is prerendering a page.

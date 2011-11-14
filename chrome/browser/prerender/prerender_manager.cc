@@ -135,6 +135,11 @@ bool PrerenderManager::IsControlGroup() {
 }
 
 // static
+bool PrerenderManager::IsNoUseGroup() {
+  return GetMode() == PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP;
+}
+
+// static
 bool PrerenderManager::IsValidHttpMethod(const std::string& method) {
   // method has been canonicalized to upper case at this point so we can just
   // compare them.
@@ -990,6 +995,8 @@ DictionaryValue* PrerenderManager::GetAsValue() const {
   // If prerender is disabled via a flag this method is not even called.
   if (IsControlGroup())
     dict_value->SetString("disabled_reason", "(Disabled for testing)");
+  if (IsNoUseGroup())
+    dict_value->SetString("disabled_reason", "(Not using prerendered pages)");
   return dict_value;
 }
 
