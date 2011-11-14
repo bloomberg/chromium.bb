@@ -146,7 +146,7 @@ TEST_F(SessionHistoryTest, MAYBE_BasicBackForward) {
   EXPECT_EQ(L"bot3", GetTabTitle());
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MAC)
 // See http://crbug.com/61619
 #define MAYBE_FrameBackForward FLAKY_FrameBackForward
 #else
