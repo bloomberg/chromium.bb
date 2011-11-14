@@ -9,6 +9,7 @@
 
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
@@ -113,6 +114,8 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
           addrsp_size);
 
   CHECK(addrsp_size == FOURGIG);
+
+  NaClAddrSpaceBeforeAlloc(mem_sz);
 
   errno = 0;
   mem_ptr = NaClAllocatePow2AlignedMemory(mem_sz, log_align);

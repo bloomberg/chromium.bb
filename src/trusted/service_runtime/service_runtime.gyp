@@ -153,11 +153,13 @@
             ['OS=="linux" or OS=="mac" or OS=="FreeBSD"', {
               'sources': [
                 'posix/nacl_signal.c',
+                'posix/sel_addrspace_posix.c',
                ],
             }],
             ['OS=="win"', {
               'sources': [
                 'win/nacl_signal.c',
+                'win/sel_addrspace_win.c',
                 'win/thread_suspension.c',
               ],
             }],

@@ -1,12 +1,13 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
+#include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 
@@ -29,6 +30,9 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
   CHECK(NULL != mem);
 
   addrsp_size += POST_ADDR_SPACE_GUARD_SIZE;
+
+  NaClAddrSpaceBeforeAlloc(addrsp_size);
+
 #if NACL_LINUX
   /*
    * When creating a zero-based sandbox, we do not allocate the first 64K of

@@ -185,6 +185,7 @@ elif env.Bit('linux'):
 if env.Bit('windows'):
   ldr_inputs += [
     'win/nacl_signal.c',
+    'win/sel_addrspace_win.c',
     'win/thread_suspension.c',
   ]
   if env.Bit('target_x86_32'):
@@ -200,7 +201,10 @@ if env.Bit('windows'):
     raise Exception("Unsupported target")
 
 if env.Bit('linux'):
-  ldr_inputs += ['posix/nacl_signal.c']
+  ldr_inputs += [
+      'posix/nacl_signal.c',
+      'posix/sel_addrspace_posix.c'
+      ]
   if env.Bit('target_arm'):
     ldr_inputs += ['linux/nacl_signal_arm.c']
   elif env.Bit('target_x86_32'):
@@ -212,7 +216,10 @@ if env.Bit('linux'):
   env.Append(LIBS=['dl'])
 
 if env.Bit('mac'):
-  ldr_inputs += ['posix/nacl_signal.c']
+  ldr_inputs += [
+      'posix/nacl_signal.c',
+      'posix/sel_addrspace_posix.c'
+      ]
   if env.Bit('target_x86_32'):
     ldr_inputs += ['osx/nacl_signal_32.c']
   elif env.Bit('target_x86_64'):

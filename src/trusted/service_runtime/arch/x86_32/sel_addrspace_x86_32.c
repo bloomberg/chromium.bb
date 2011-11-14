@@ -12,6 +12,7 @@
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+#include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
@@ -23,6 +24,8 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
   int result;
 
   CHECK(NULL != mem);
+
+  NaClAddrSpaceBeforeAlloc(addrsp_size);
 
 #if NACL_LINUX
   /*
