@@ -11487,6 +11487,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       Show all downloads
     </message>
 
+    <!-- Status Area Strings (not ChromeOS specifc) -->
+    <message name="IDS_STATUSBAR_CLOCK_OPEN_OPTIONS_DIALOG" desc="The menu item in the clock menu button for opening the options dialog">
+      Open date and time options...
+    </message>
+    <message name="IDS_STATUSBAR_CLOCK_TOOLTIP" desc="Tooltip for the clock in the status bar.">
+      <ph name="DATE">$1<ex>Aug 16, 2010</ex></ph>
+    </message>
+
     <!-- Imageburn Strings -->
     <if expr="pp_ifdef('chromeos')">
       <message name="IDS_CHECKING_FOR_UPDATES" desc="Notification for checking for update">
@@ -13210,9 +13218,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SEARCH" desc="The tooltip for the caps lock indicator button.">
         CAPS LOCK is on.\nPress Search key to cancel
       </message>
-      <message name="IDS_STATUSBAR_CLOCK_OPEN_OPTIONS_DIALOG" desc="The menu item in the clock menu button for opening the options dialog">
-        Open date and time options...
-      </message>
       <message name="IDS_STATUSBAR_BATTERY_CHARGING_PERCENTAGE" desc="In the power menu button, this shows what percentage of battery is left when power supply is connected.">
         Charging battery: <ph name="PRECENTAGE">$1<ex>100</ex></ph>%
       </message>
@@ -13251,9 +13256,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP" desc="Tooltip for the network menu status bar icon when connected to a network.">
         Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
-      </message>
-      <message name="IDS_STATUSBAR_CLOCK_TOOLTIP" desc="Tooltip for the clock in the status bar.">
-        <ph name="DATE">$1<ex>Aug 16, 2010</ex></ph>
       </message>
       <message name="IDS_STATUSBAR_WINDOW_MAXIMIZE_TOOLTIP" desc="Tooltip for the layout mode button in the status bar when the window is unmaximized.">
         Maximize

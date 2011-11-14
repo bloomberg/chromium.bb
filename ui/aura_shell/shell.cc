@@ -82,8 +82,9 @@ Shell* Shell::instance_ = NULL;
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, public:
 
-Shell::Shell()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+Shell::Shell(ShellDelegate* delegate)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      delegate_(delegate) {
   aura::Desktop::GetInstance()->SetEventFilter(
       new internal::DesktopEventFilter);
   aura::Desktop::GetInstance()->SetStackingClient(
@@ -97,11 +98,16 @@ Shell::~Shell() {
 }
 
 // static
+Shell* Shell::CreateInstance(ShellDelegate* delegate) {
+  CHECK(!instance_);
+  instance_ = new Shell(delegate);
+  instance_->Init();
+  return instance_;
+}
+
+// static
 Shell* Shell::GetInstance() {
-  if (!instance_) {
-    instance_ = new Shell;
-    instance_->Init();
-  }
+  DCHECK(instance_);
   return instance_;
 }
 
@@ -133,8 +139,15 @@ void Shell::Init() {
       GetContainer(internal::kShellWindowId_DefaultContainer);
   launcher_.reset(new Launcher(default_container));
 
+  views::Widget* status_widget = NULL;
+  if (delegate_.get())
+    status_widget = delegate_->CreateStatusArea();
+  if (!status_widget)
+    status_widget = internal::CreateStatusArea();
+
   shelf_layout_controller_.reset(new internal::ShelfLayoutController(
-      launcher_->widget(), internal::CreateStatusArea()));
+      launcher_->widget(), status_widget));
+
   desktop_layout->set_shelf(shelf_layout_controller_.get());
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraWindows)) {
@@ -148,10 +161,6 @@ void Shell::Init() {
 
   // Force a layout.
   desktop_layout->OnWindowResized();
-}
-
-void Shell::SetDelegate(ShellDelegate* delegate) {
-  delegate_.reset(delegate);
 }
 
 aura::Window* Shell::GetContainer(int container_id) {

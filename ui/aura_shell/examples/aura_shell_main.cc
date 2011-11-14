@@ -31,6 +31,10 @@ class ShellDelegateImpl : public aura_shell::ShellDelegate {
     aura_shell::examples::ToplevelWindow::CreateToplevelWindow(create_params);
   }
 
+  virtual views::Widget* CreateStatusArea() OVERRIDE {
+    return aura_shell::internal::CreateStatusArea();
+  }
+
   virtual void ShowApps() OVERRIDE {
     NOTIMPLEMENTED();
   }
@@ -72,7 +76,7 @@ int main(int argc, char** argv) {
   MessageLoop message_loop(MessageLoop::TYPE_UI);
   ui::CompositorTestSupport::Initialize();
 
-  aura_shell::Shell::GetInstance()->SetDelegate(new ShellDelegateImpl);;
+  aura_shell::Shell::CreateInstance(new ShellDelegateImpl);
 
   aura_shell::examples::InitWindowTypeLauncher();
 
@@ -84,4 +88,3 @@ int main(int argc, char** argv) {
 
   return 0;
 }
-

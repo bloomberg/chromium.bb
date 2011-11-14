@@ -8,6 +8,10 @@
 
 #include "ui/aura_shell/aura_shell_export.h"
 
+namespace views {
+class Widget;
+}
+
 namespace aura_shell {
 
 struct LauncherItem;
@@ -21,6 +25,9 @@ class AURA_SHELL_EXPORT ShellDelegate {
   // Invoked when the user clicks on button in the launcher to create a new
   // window.
   virtual void CreateNewWindow() = 0;
+
+  // Invoked to create a new status area. Can return NULL.
+  virtual views::Widget* CreateStatusArea() = 0;
 
   // Invoked when the user clicks the app list button on the launcher.
   virtual void ShowApps() = 0;

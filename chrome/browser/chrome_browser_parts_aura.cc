@@ -37,7 +37,7 @@ void ChromeBrowserPartsAura::PreMainMessageLoopRun() {
 #endif
 
   // Shell takes ownership of ChromeShellDelegate.
-  aura_shell::Shell::GetInstance()->SetDelegate(new ChromeShellDelegate);
+  aura_shell::Shell::CreateInstance(new ChromeShellDelegate);
 }
 
 bool ChromeBrowserPartsAura::MainMessageLoopRun(int* result_code) {

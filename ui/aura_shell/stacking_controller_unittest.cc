@@ -16,7 +16,7 @@ namespace test {
 typedef aura::test::AuraTestBase StackingControllerTest;
 
 TEST_F(StackingControllerTest, GetTopmostWindowToActivate) {
-  Shell::GetInstance();
+  Shell::CreateInstance(NULL);
   aura::test::ActivateWindowDelegate activate;
   aura::test::ActivateWindowDelegate non_activate(false);
 

@@ -299,6 +299,7 @@ extern const char kMaxSpdyConcurrentStreams[];
 extern const char kUserDataDir[];
 extern const char kVersion[];
 extern const char kWinHttpProxyResolver[];
+extern const char kMemoryWidget[];
 
 #if defined(OS_CHROMEOS)
 extern const char kWebUILockScreen[];
@@ -316,7 +317,6 @@ extern const char kLoginManager[];
 // purposes.
 extern const char kLoginScreen[];
 extern const char kLoginScreenSize[];
-extern const char kMemoryWidget[];
 extern const char kTestLoadLibcros[];
 extern const char kLoginProfile[];
 extern const char kLoginUser[];

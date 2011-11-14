@@ -203,12 +203,12 @@ gfx::NativeWindow NetworkMenuButton::GetNativeWindow() const {
 
 void NetworkMenuButton::OpenButtonOptions() {
   delegate()->ExecuteStatusAreaCommand(
-      this, StatusAreaViewChromeos::SHOW_NETWORK_OPTIONS);
+      this, StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS);
 }
 
 bool NetworkMenuButton::ShouldOpenButtonOptions() const {
   return delegate()->ShouldExecuteStatusAreaCommand(
-      this, StatusAreaViewChromeos::SHOW_NETWORK_OPTIONS);
+      this, StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

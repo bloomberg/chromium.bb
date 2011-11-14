@@ -1103,6 +1103,9 @@ const char kVersion[]                       = "version";
 // use Chromium's network stack to fetch, and V8 to evaluate.
 const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 
+// Shows a memory consumption status area widget for OOM debugging.
+const char kMemoryWidget[]                  = "memory-widget";
+
 #if defined(OS_CHROMEOS)
 // Enables WebUI based lock screen.
 const char kWebUILockScreen[]               = "webui-lock-screen";
@@ -1149,9 +1152,6 @@ const char kLoginScreen[]                   = "login-screen";
 
 // Controls the initial login screen size. Pass width,height.
 const char kLoginScreenSize[]               = "login-screen-size";
-
-// Shows a memory consumption status area widget for OOM debugging.
-const char kMemoryWidget[]                  = "memory-widget";
 
 // Attempts to load libcros and validate it, then exits. A nonzero return code
 // means the library could not be loaded correctly.

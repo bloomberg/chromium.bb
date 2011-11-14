@@ -3256,6 +3256,8 @@
         'browser/ui/views/aura/chrome_shell_delegate.h',
         'browser/ui/views/aura/launcher_icon_updater.cc',
         'browser/ui/views/aura/launcher_icon_updater.h',
+        'browser/ui/views/aura/status_area_host_aura.cc',
+        'browser/ui/views/aura/status_area_host_aura.h',
         'browser/ui/views/autocomplete/autocomplete_popup_contents_view.cc',
         'browser/ui/views/autocomplete/autocomplete_popup_contents_view.h',
         'browser/ui/views/autocomplete/autocomplete_result_view.cc',
@@ -4139,6 +4141,26 @@
             ['exclude', '^browser/ui/views/tab_contents/native_tab_contents_view_gtk.*'],
             ['exclude', '^browser/chromeos/input_method/candidate_window.cc'],
             ['exclude', '^browser/chromeos/input_method/candidate_window.h'],
+          ],
+        }],
+        # For now, always include status area code for aura builds, even
+        # though the code is under browser/chromeos.
+        # TODO: (stevenjb/beng): Find a home for these.
+        ['use_aura==1', {
+          'sources/': [
+            ['include', '^browser/chromeos/status/clock_menu_button.cc'],
+            ['include', '^browser/chromeos/status/clock_menu_button.h'],
+            ['include', '^browser/chromeos/status/status_area_button.cc'],
+            ['include', '^browser/chromeos/status/status_area_button.h'],
+            ['include', '^browser/chromeos/status/status_area_view.cc'],
+            ['include', '^browser/chromeos/status/status_area_view.h'],
+          ],
+        }],
+        # linux/chromeos only status area button.
+        ['OS=="linux" and use_aura==1', {
+          'sources/': [
+            ['include', '^browser/chromeos/status/memory_menu_button.cc'],
+            ['include', '^browser/chromeos/status/memory_menu_button.h'],
           ],
         }],
         ['use_aura==1', {

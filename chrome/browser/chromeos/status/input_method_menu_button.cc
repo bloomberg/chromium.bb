@@ -142,12 +142,12 @@ void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
 void InputMethodMenuButton::OpenConfigUI() {
   // Ask browser to open the WebUI page.
   delegate()->ExecuteStatusAreaCommand(
-      this, StatusAreaViewChromeos::SHOW_LANGUAGE_OPTIONS);
+      this, StatusAreaButton::Delegate::SHOW_LANGUAGE_OPTIONS);
 }
 
 bool InputMethodMenuButton::ShouldSupportConfigUI() {
   return delegate()->ShouldExecuteStatusAreaCommand(
-      this, StatusAreaViewChromeos::SHOW_LANGUAGE_OPTIONS);
+      this, StatusAreaButton::Delegate::SHOW_LANGUAGE_OPTIONS);
 }
 
 void InputMethodMenuButton::UpdateUIFromCurrentInputMethod() {

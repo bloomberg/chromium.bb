@@ -8,19 +8,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "chrome/browser/chromeos/status/accessibility_menu_button.h"
-#include "chrome/browser/chromeos/status/caps_lock_menu_button.h"
-#include "chrome/browser/chromeos/status/clock_menu_button.h"
-#include "chrome/browser/chromeos/status/input_method_menu_button.h"
-#include "chrome/browser/chromeos/status/memory_menu_button.h"
-#include "chrome/browser/chromeos/status/network_menu_button.h"
-#include "chrome/browser/chromeos/status/power_menu_button.h"
-#include "chrome/common/chrome_switches.h"
-#include "grit/theme_resources.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "base/message_loop.h"
 #include "ui/gfx/canvas.h"
 #include "views/border.h"
-#include "views/controls/image_view.h"
 
 // Number of pixels to separate each icon.
 #if defined(TOUCH_UI)

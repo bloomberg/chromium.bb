@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Note: this file is used by Aura on all platforms, even though it is currently
+// in a chromeos specific location.
+
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 
 #include "base/i18n/time_formatting.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -35,8 +37,6 @@ enum ClockMenuItem {
 
 }  // namespace
 
-namespace chromeos {
-
 // Amount of slop to add into the timer to make sure we're into the next minute
 // when the timer goes off.
 const int kTimerSlopSeconds = 1;
@@ -45,13 +45,15 @@ ClockMenuButton::ClockMenuButton(StatusAreaButton::Delegate* delegate)
     : StatusAreaButton(delegate, this),
       default_use_24hour_clock_(false) {
   set_id(VIEW_ID_STATUS_BUTTON_CLOCK);
+
+#if defined(OS_CHROMEOS)  // See note at top of file
   // Start monitoring the kUse24HourClock preference.
   Profile* profile = ProfileManager::GetDefaultProfile();
   if (profile) {  // This can be NULL in the login screen.
     registrar_.Init(profile->GetPrefs());
     registrar_.Add(prefs::kUse24HourClock, this);
   }
-
+#endif
   UpdateTextAndSetNextTimer();
 }
 
@@ -86,7 +88,7 @@ void ClockMenuButton::UpdateTextAndSetNextTimer() {
 void ClockMenuButton::UpdateText() {
   base::Time time(base::Time::Now());
   bool use_24hour_clock = default_use_24hour_clock_;
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)  // See note at top of file
   // If the profie is present, check the use 24-hour clock preference.
   Profile* profile = ProfileManager::GetDefaultProfile();
   if (profile)
@@ -114,12 +116,14 @@ void ClockMenuButton::SetDefaultUse24HourClock(bool use_24hour_clock) {
 void ClockMenuButton::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
+#if defined(OS_CHROMEOS)  // See note at top of file
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* pref_name = content::Details<std::string>(details).ptr();
     if (*pref_name == prefs::kUse24HourClock) {
       UpdateText();
     }
   }
+#endif
 }
 
 // ClockMenuButton, views::MenuDelegate implementation:
@@ -136,7 +140,7 @@ bool ClockMenuButton::IsCommandEnabled(int id) const {
 void ClockMenuButton::ExecuteCommand(int id) {
   DCHECK_EQ(CLOCK_OPEN_OPTIONS_ITEM, id);
   delegate()->ExecuteStatusAreaCommand(
-      this, StatusAreaViewChromeos::SHOW_SYSTEM_OPTIONS);
+      this, StatusAreaButton::Delegate::SHOW_SYSTEM_OPTIONS);
 }
 
 int ClockMenuButton::horizontal_padding() {
@@ -180,7 +184,7 @@ void ClockMenuButton::EnsureMenu() {
 
   // If options UI is available, show a separator and configure menu item.
   if (delegate()->ShouldExecuteStatusAreaCommand(
-          this, StatusAreaViewChromeos::SHOW_SYSTEM_OPTIONS)) {
+          this, StatusAreaButton::Delegate::SHOW_SYSTEM_OPTIONS)) {
     menu->AppendSeparator();
 
     const string16 clock_open_options_label =
@@ -189,5 +193,3 @@ void ClockMenuButton::EnsureMenu() {
                                   clock_open_options_label);
   }
 }
-
-}  // namespace chromeos

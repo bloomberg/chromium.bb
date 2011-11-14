@@ -8,9 +8,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura_shell/launcher/launcher_types.h"
 #include "ui/aura_shell/shell_delegate.h"
 
+class StatusAreaHostAura;
 class Browser;
 
 class ChromeShellDelegate : public aura_shell::ShellDelegate {
@@ -26,12 +28,15 @@ class ChromeShellDelegate : public aura_shell::ShellDelegate {
 
   // aura_shell::ShellDelegate overrides;
   virtual void CreateNewWindow() OVERRIDE;
+  virtual views::Widget* CreateStatusArea() OVERRIDE;
   virtual void ShowApps() OVERRIDE;
   virtual void LauncherItemClicked(
       const aura_shell::LauncherItem& item) OVERRIDE;
   virtual bool ConfigureLauncherItem(aura_shell::LauncherItem* item) OVERRIDE;
 
  private:
+  scoped_ptr<StatusAreaHostAura> status_area_host_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);
 };
 

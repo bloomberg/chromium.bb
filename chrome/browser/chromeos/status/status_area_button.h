@@ -28,6 +28,13 @@ class StatusAreaButton : public views::MenuButton {
 
   class Delegate {
    public:
+    // Commands to be passed to ExecuteCommand().
+    enum Command {
+      SHOW_LANGUAGE_OPTIONS,
+      SHOW_NETWORK_OPTIONS,
+      SHOW_SYSTEM_OPTIONS
+    };
+
     // |command_id| can be any int, passed from the button to the delegate.
     virtual bool ShouldExecuteStatusAreaCommand(
         const views::View* button_view, int command_id) const = 0;

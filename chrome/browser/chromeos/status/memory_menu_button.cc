@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Note: this file is used by Aura on all linux platforms, even though it
+// is currently in a chromeos specific location.
+
 #include "chrome/browser/chromeos/status/memory_menu_button.h"
 
 #include "base/utf_string_conversions.h"
@@ -45,8 +48,6 @@ enum {
 };
 
 }  // namespace
-
-namespace chromeos {
 
 // Delay between updates, in seconds.
 const int kUpdateIntervalSeconds = 5;
@@ -277,5 +278,3 @@ void MemoryMenuButton::Observe(int type,
       break;
   }
 }
-
-}  // namespace chromeos

@@ -26,13 +26,6 @@ class StatusAreaViewChromeos : public StatusAreaView,
     SCREEN_LOCKER_MODE,  // The host is for screen locker.
   };
 
-  // Commands to be passed to StatusAreaButton::Delegate:ExecuteCommand().
-  enum Command {
-    SHOW_LANGUAGE_OPTIONS,
-    SHOW_NETWORK_OPTIONS,
-    SHOW_SYSTEM_OPTIONS
-  };
-
   explicit StatusAreaViewChromeos();
   virtual ~StatusAreaViewChromeos();
 

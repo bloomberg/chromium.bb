@@ -992,8 +992,10 @@ NetworkMenu::NetworkMenu(Delegate* delegate, bool is_browser_mode)
       new views::MenuModelAdapter(main_menu_model_.get()));
   menu_item_view_ = new views::MenuItemView(menu_model_adapter_.get());
   menu_item_view_->set_has_icons(true);
+#if !defined(USE_AURA)
   menu_item_view_->set_menu_position(
       views::MenuItemView::POSITION_BELOW_BOUNDS);
+#endif
   menu_runner_.reset(new views::MenuRunner(menu_item_view_));
 }
 

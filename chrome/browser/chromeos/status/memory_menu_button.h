@@ -23,8 +23,6 @@ class MenuItemView;
 class MenuRunner;
 }
 
-namespace chromeos {
-
 // Memory debugging display that lives in the status area.
 class MemoryMenuButton : public StatusAreaButton,
                          public views::MenuDelegate,
@@ -77,7 +75,5 @@ class MemoryMenuButton : public StatusAreaButton,
 
   DISALLOW_COPY_AND_ASSIGN(MemoryMenuButton);
 };
-
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_STATUS_MEMORY_MENU_BUTTON_H_

@@ -39,17 +39,15 @@ class AURA_SHELL_EXPORT Shell {
  public:
   // Upon creation, the Shell sets itself as the Desktop's delegate, which takes
   // ownership of the Shell.
-  Shell();
-  virtual ~Shell();
 
+  // A shell must be explicitly created so that it can call |Init()| with the
+  // delegate set. |delegate| can be NULL (if not required for initialization).
+  static Shell* CreateInstance(ShellDelegate* delegate);
+
+  // Should never be called before |CreateInstance()|.
   static Shell* GetInstance();
+
   static void DeleteInstanceForTesting();
-
-  void Init();
-
-  // Sets the delegate. Shell owns its delegate.
-  void SetDelegate(ShellDelegate* delegate);
-  ShellDelegate* delegate() { return delegate_.get(); }
 
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
@@ -57,10 +55,16 @@ class AURA_SHELL_EXPORT Shell {
   // Toggles between overview mode and normal mode.
   void ToggleOverview();
 
+  ShellDelegate* delegate() { return delegate_.get(); }
   Launcher* launcher() { return launcher_.get(); }
 
  private:
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
+
+  explicit Shell(ShellDelegate* delegate);
+  virtual ~Shell();
+
+  void Init();
 
   // Enables WorkspaceManager.
   void EnableWorkspaceManager();

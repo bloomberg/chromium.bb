@@ -242,14 +242,14 @@ void BackgroundView::ChildPreferredSizeChanged(View* child) {
 
 bool BackgroundView::ShouldExecuteStatusAreaCommand(
     const views::View* button_view, int command_id) const {
-  if (command_id == StatusAreaViewChromeos::SHOW_NETWORK_OPTIONS)
+  if (command_id == StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS)
     return true;
   return false;
 }
 
 void BackgroundView::ExecuteStatusAreaCommand(
     const views::View* button_view, int command_id) {
-  if (command_id == StatusAreaViewChromeos::SHOW_NETWORK_OPTIONS) {
+  if (command_id == StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS) {
     if (proxy_settings_dialog_.get() == NULL) {
       proxy_settings_dialog_.reset(new ProxySettingsDialog(
           this, GetNativeWindow()));

@@ -155,8 +155,10 @@ class BrowserViewLayout : public ::BrowserViewLayout {
   // area. See Layout
   virtual int LayoutTabStripRegion() OVERRIDE {
     if (browser_view_->IsFullscreen() || !browser_view_->IsTabStripVisible()) {
-      status_area_->SetVisible(false);
-      UpdateStatusAreaBoundsProperty();
+      if (status_area_) {
+        status_area_->SetVisible(false);
+        UpdateStatusAreaBoundsProperty();
+      }
       tabstrip_->SetVisible(false);
       tabstrip_->SetBounds(0, 0, 0, 0);
       layout_mode_button_->SetVisible(false);
@@ -196,12 +198,13 @@ class BrowserViewLayout : public ::BrowserViewLayout {
   // considered title bar area of client view.
   bool IsPointInViewsInTitleArea(const gfx::Point& point)
       const {
-    gfx::Point point_in_status_area_coords(point);
-    views::View::ConvertPointToView(browser_view_, status_area_,
-                                    &point_in_status_area_coords);
-    if (status_area_->HitTest(point_in_status_area_coords))
-      return true;
-
+    if (status_area_) {
+      gfx::Point point_in_status_area_coords(point);
+      views::View::ConvertPointToView(browser_view_, status_area_,
+                                      &point_in_status_area_coords);
+      if (status_area_->HitTest(point_in_status_area_coords))
+        return true;
+    }
     gfx::Point point_in_layout_mode_button_coords(point);
     views::View::ConvertPointToView(browser_view_, layout_mode_button_,
                                     &point_in_layout_mode_button_coords);
@@ -221,8 +224,10 @@ class BrowserViewLayout : public ::BrowserViewLayout {
         chromeos_browser_view()->should_show_layout_mode_button();
 
     tabstrip_->SetVisible(true);
-    status_area_->SetVisible(
-        !chromeos_browser_view()->has_hide_status_area_property());
+    if (status_area_) {
+      status_area_->SetVisible(
+          !chromeos_browser_view()->has_hide_status_area_property());
+    }
     layout_mode_button_->SetVisible(show_layout_mode_button);
 
     const gfx::Size layout_mode_button_size =
@@ -233,28 +238,32 @@ class BrowserViewLayout : public ::BrowserViewLayout {
         layout_mode_button_size.width(),
         layout_mode_button_size.height());
 
-    // Lay out status area after tab strip and before layout mode button (if
-    // shown).
-    gfx::Size status_size = status_area_->GetPreferredSize();
-    const int status_right =
-        show_layout_mode_button ?
-        layout_mode_button_->bounds().x() :
-        bounds.right();
-    status_area_->SetBounds(
-        status_right - status_size.width(),
-        bounds.y() + kStatusAreaVerticalAdjustment,
-        status_size.width(),
-        status_size.height());
-    UpdateStatusAreaBoundsProperty();
+    if (status_area_) {
+      // Lay out status area after tab strip and before layout mode button (if
+      // shown).
+      gfx::Size status_size = status_area_->GetPreferredSize();
+      const int status_right =
+          show_layout_mode_button ?
+          layout_mode_button_->bounds().x() :
+          bounds.right();
+      status_area_->SetBounds(
+          status_right - status_size.width(),
+          bounds.y() + kStatusAreaVerticalAdjustment,
+          status_size.width(),
+          status_size.height());
+      UpdateStatusAreaBoundsProperty();
+    }
     tabstrip_->SetBounds(bounds.x(), bounds.y(),
-        std::max(0, status_area_->bounds().x() - bounds.x()),
-        bounds.height());
+                         std::max(0, status_area_->bounds().x() - bounds.x()),
+                         bounds.height());
     return bounds.bottom();
   }
 
   // Updates |status_area_bounds_for_property_| based on the current bounds and
   // calls WmIpc::SetStatusBoundsProperty() if it changed.
   void UpdateStatusAreaBoundsProperty() {
+    if (!status_area_)
+      return;
     gfx::Rect current_bounds;
     if (status_area_->IsVisible()) {
       gfx::Rect translated_bounds =
@@ -388,7 +397,8 @@ void BrowserView::ShowInternal(bool is_active) {
 }
 
 void BrowserView::FocusChromeOSStatus() {
-  status_area_->SetPaneFocus(NULL);
+  if (status_area_)
+    status_area_->SetPaneFocus(NULL);
 }
 
 views::LayoutManager* BrowserView::CreateLayoutManager() const {
@@ -505,14 +515,14 @@ bool BrowserView::ShouldExecuteStatusAreaCommand(
 void BrowserView::ExecuteStatusAreaCommand(
     const views::View* button_view, int command_id) {
   switch (command_id) {
-    case StatusAreaViewChromeos::SHOW_NETWORK_OPTIONS:
+    case StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS:
       browser()->OpenInternetOptionsDialog();
       break;
-    case StatusAreaViewChromeos::SHOW_LANGUAGE_OPTIONS:
+    case StatusAreaButton::Delegate::SHOW_LANGUAGE_OPTIONS:
       browser()->OpenLanguageOptionsDialog();
       break;
-    case StatusAreaViewChromeos::SHOW_SYSTEM_OPTIONS:
-      browser()->OpenLanguageOptionsDialog();
+    case StatusAreaButton::Delegate::SHOW_SYSTEM_OPTIONS:
+      browser()->OpenSystemOptionsDialog();
       break;
     default:
       NOTREACHED();
@@ -535,7 +545,8 @@ StatusAreaButton::TextStyle BrowserView::GetStatusAreaTextStyle() const {
 }
 
 void BrowserView::ButtonVisibilityChanged(views::View* button_view) {
-  status_area_->UpdateButtonVisibility();
+  if (status_area_)
+    status_area_->UpdateButtonVisibility();
 }
 
 // BrowserView, MessageLoopForUI::Observer implementation.
@@ -575,7 +586,8 @@ void BrowserView::DidProcessEvent(GdkEvent* event) {
 void BrowserView::GetAccessiblePanes(
     std::vector<views::AccessiblePaneView*>* panes) {
   ::BrowserView::GetAccessiblePanes(panes);
-  panes->push_back(status_area_);
+  if (status_area_)
+    panes->push_back(status_area_);
 }
 
 // BrowserView private.
