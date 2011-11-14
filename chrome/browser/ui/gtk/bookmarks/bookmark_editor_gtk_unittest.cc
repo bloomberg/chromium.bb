@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -28,12 +29,12 @@ using content::BrowserThread;
 class BookmarkEditorGtkTest : public testing::Test {
  public:
   BookmarkEditorGtkTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
-        model_(NULL) {
+      : model_(NULL),
+        ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_) {
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
     profile_->BlockUntilBookmarkModelLoaded();
@@ -43,21 +44,18 @@ class BookmarkEditorGtkTest : public testing::Test {
     AddTestData();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
   }
 
  protected:
-  MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-  BookmarkModel* model_;
-  scoped_ptr<TestingProfile> profile_;
-
   std::string base_path() const { return "file:///c:/tmp/"; }
 
   const BookmarkNode* GetNode(const std::string& name) {
     return model_->GetMostRecentlyAddedNodeForURL(GURL(base_path() + name));
   }
+
+  BookmarkModel* model_;
+  scoped_ptr<TestingProfile> profile_;
 
  private:
   // Creates the following structure:
@@ -97,6 +95,10 @@ class BookmarkEditorGtkTest : public testing::Test {
     model_->AddURL(model_->synced_node(), 0, ASCIIToUTF16("sa"),
                    GURL(test_base + "sa"));
   }
+
+  MessageLoopForUI message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 };
 
 // Makes sure the tree model matches that of the bookmark bar model.
@@ -161,8 +163,7 @@ TEST_F(BookmarkEditorGtkTest, EditTitleKeepsPosition) {
   ASSERT_TRUE(gtk_tree_model_get_iter_first(store, &bookmark_bar_node));
   editor.ApplyEdits(&bookmark_bar_node);
 
-  const BookmarkNode* bb_node =
-      profile_->GetBookmarkModel()->bookmark_bar_node();
+  const BookmarkNode* bb_node = model_->bookmark_bar_node();
   ASSERT_EQ(ASCIIToUTF16("new_a"), bb_node->GetChild(0)->GetTitle());
   // The URL shouldn't have changed.
   ASSERT_TRUE(GURL(base_path() + "a") == bb_node->GetChild(0)->url());
@@ -182,8 +183,7 @@ TEST_F(BookmarkEditorGtkTest, EditURLKeepsPosition) {
   ASSERT_TRUE(gtk_tree_model_get_iter_first(store, &bookmark_bar_node));
   editor.ApplyEdits(&bookmark_bar_node);
 
-  const BookmarkNode* bb_node =
-      profile_->GetBookmarkModel()->bookmark_bar_node();
+  const BookmarkNode* bb_node = model_->bookmark_bar_node();
   ASSERT_EQ(ASCIIToUTF16("a"), bb_node->GetChild(0)->GetTitle());
   // The URL should have changed.
   ASSERT_TRUE(GURL(base_path() + "new_a") == bb_node->GetChild(0)->url());
@@ -202,7 +202,7 @@ TEST_F(BookmarkEditorGtkTest, ChangeParent) {
   ASSERT_TRUE(gtk_tree_model_iter_next(store, &gtk_other_node));
   editor.ApplyEdits(&gtk_other_node);
 
-  const BookmarkNode* other_node = profile_->GetBookmarkModel()->other_node();
+  const BookmarkNode* other_node = model_->other_node();
   ASSERT_EQ(ASCIIToUTF16("a"), other_node->GetChild(2)->GetTitle());
   ASSERT_TRUE(GURL(base_path() + "a") == other_node->GetChild(2)->url());
 }
@@ -224,7 +224,7 @@ TEST_F(BookmarkEditorGtkTest, ChangeParentAndURL) {
   ASSERT_TRUE(gtk_tree_model_iter_next(store, &gtk_other_node));
   editor.ApplyEdits(&gtk_other_node);
 
-  const BookmarkNode* other_node = profile_->GetBookmarkModel()->other_node();
+  const BookmarkNode* other_node = model_->other_node();
   ASSERT_EQ(ASCIIToUTF16("a"), other_node->GetChild(2)->GetTitle());
   ASSERT_TRUE(GURL(base_path() + "new_a") == other_node->GetChild(2)->url());
   ASSERT_TRUE(node_time == other_node->GetChild(2)->date_added());
@@ -261,8 +261,7 @@ TEST_F(BookmarkEditorGtkTest, MoveToNewParent) {
 
   editor.ApplyEdits(&f2_iter);
 
-  const BookmarkNode* bb_node =
-      profile_->GetBookmarkModel()->bookmark_bar_node();
+  const BookmarkNode* bb_node = model_->bookmark_bar_node();
   const BookmarkNode* mf2 = bb_node->GetChild(1);
 
   // F2 in the model should have two children now: F21 and the node edited.
@@ -296,8 +295,7 @@ TEST_F(BookmarkEditorGtkTest, NewURL) {
   ASSERT_TRUE(gtk_tree_model_get_iter_first(store, &bookmark_bar_node));
   editor.ApplyEdits(&bookmark_bar_node);
 
-  const BookmarkNode* bb_node =
-      profile_->GetBookmarkModel()->bookmark_bar_node();
+  const BookmarkNode* bb_node = model_->bookmark_bar_node();
   ASSERT_EQ(4, bb_node->child_count());
 
   const BookmarkNode* new_node = bb_node->GetChild(3);
@@ -318,7 +316,7 @@ TEST_F(BookmarkEditorGtkTest, ChangeURLNoTree) {
 
   editor.ApplyEdits(NULL);
 
-  const BookmarkNode* other_node = profile_->GetBookmarkModel()->other_node();
+  const BookmarkNode* other_node = model_->other_node();
   ASSERT_EQ(2, other_node->child_count());
 
   const BookmarkNode* new_node = other_node->GetChild(0);
@@ -337,7 +335,7 @@ TEST_F(BookmarkEditorGtkTest, ChangeTitleNoTree) {
 
   editor.ApplyEdits();
 
-  const BookmarkNode* other_node = profile_->GetBookmarkModel()->other_node();
+  const BookmarkNode* other_node = model_->other_node();
   ASSERT_EQ(2, other_node->child_count());
 
   const BookmarkNode* new_node = other_node->GetChild(0);
