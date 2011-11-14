@@ -162,13 +162,13 @@ void CoreOptionsHandler::HandleInitialize(const ListValue* args) {
   handlers_host_->InitializeHandlers();
 }
 
-Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
+base::Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
   PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
 
   const PrefService::Preference* pref =
       pref_service->FindPreference(pref_name.c_str());
   if (!pref)
-    return Value::CreateNullValue();
+    return base::Value::CreateNullValue();
 
   return CreateValueForPref(pref, NULL);
 }
@@ -178,15 +178,15 @@ void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
 }
 
 void CoreOptionsHandler::SetPref(const std::string& pref_name,
-                                 const Value* value,
+                                 const base::Value* value,
                                  const std::string& metric) {
   PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
 
   switch (value->GetType()) {
-    case Value::TYPE_BOOLEAN:
-    case Value::TYPE_INTEGER:
-    case Value::TYPE_DOUBLE:
-    case Value::TYPE_STRING:
+    case base::Value::TYPE_BOOLEAN:
+    case base::Value::TYPE_INTEGER:
+    case base::Value::TYPE_DOUBLE:
+    case base::Value::TYPE_STRING:
       pref_service->Set(pref_name.c_str(), *value);
       break;
 
@@ -210,13 +210,13 @@ void CoreOptionsHandler::ClearPref(const std::string& pref_name,
     UserMetrics::RecordComputedAction(metric);
 }
 
-void CoreOptionsHandler::ProcessUserMetric(const Value* value,
+void CoreOptionsHandler::ProcessUserMetric(const base::Value* value,
                                            const std::string& metric) {
   if (metric.empty())
     return;
 
   std::string metric_string = metric;
-  if (value->IsType(Value::TYPE_BOOLEAN)) {
+  if (value->IsType(base::Value::TYPE_BOOLEAN)) {
     bool bool_value;
     CHECK(value->GetAsBoolean(&bool_value));
     metric_string += bool_value ? "_Enable" : "_Disable";
@@ -243,7 +243,7 @@ void CoreOptionsHandler::NotifyPrefChanged(
        iter != range.second; ++iter) {
     const std::wstring& callback_function = iter->second;
     ListValue result_value;
-    result_value.Append(Value::CreateStringValue(pref_name.c_str()));
+    result_value.Append(base::Value::CreateStringValue(pref_name.c_str()));
     result_value.Append(CreateValueForPref(pref, controlling_pref));
     web_ui_->CallJavascriptFunction(WideToASCII(callback_function),
                                     result_value);
@@ -276,8 +276,8 @@ void CoreOptionsHandler::HandleFetchPrefs(const ListValue* args) {
   DCHECK_GE(static_cast<int>(args->GetSize()), 2);
 
   // Get callback JS function name.
-  Value* callback;
-  if (!args->Get(0, &callback) || !callback->IsType(Value::TYPE_STRING))
+  base::Value* callback;
+  if (!args->Get(0, &callback) || !callback->IsType(base::Value::TYPE_STRING))
     return;
 
   string16 callback_function;
@@ -286,13 +286,13 @@ void CoreOptionsHandler::HandleFetchPrefs(const ListValue* args) {
 
   // Get the list of name for prefs to build the response dictionary.
   DictionaryValue result_value;
-  Value* list_member;
+  base::Value* list_member;
 
   for (size_t i = 1; i < args->GetSize(); i++) {
     if (!args->Get(i, &list_member))
       break;
 
-    if (!list_member->IsType(Value::TYPE_STRING))
+    if (!list_member->IsType(base::Value::TYPE_STRING))
       continue;
 
     std::string pref_name;
@@ -317,13 +317,13 @@ void CoreOptionsHandler::HandleObservePrefs(const ListValue* args) {
 
   // Get all other parameters - pref identifiers.
   for (size_t i = 1; i < args->GetSize(); i++) {
-    Value* list_member;
+    base::Value* list_member;
     if (!args->Get(i, &list_member))
       break;
 
     // Just ignore bad pref identifiers for now.
     std::string pref_name;
-    if (!list_member->IsType(Value::TYPE_STRING) ||
+    if (!list_member->IsType(base::Value::TYPE_STRING) ||
         !list_member->GetAsString(&pref_name))
       continue;
 
@@ -367,11 +367,11 @@ void CoreOptionsHandler::HandleSetPref(const ListValue* args, PrefType type) {
   if (!args->GetString(0, &pref_name))
     return;
 
-  Value* value;
+  base::Value* value;
   if (!args->Get(1, &value))
     return;
 
-  scoped_ptr<Value> temp_value;
+  scoped_ptr<base::Value> temp_value;
 
   switch (type) {
     case TYPE_BOOLEAN:
@@ -382,7 +382,7 @@ void CoreOptionsHandler::HandleSetPref(const ListValue* args, PrefType type) {
       double double_value;
       CHECK(value->GetAsDouble(&double_value));
       int int_value = static_cast<int>(double_value);
-      temp_value.reset(Value::CreateIntegerValue(int_value));
+      temp_value.reset(base::Value::CreateIntegerValue(int_value));
       value = temp_value.get();
       break;
     }
@@ -396,7 +396,7 @@ void CoreOptionsHandler::HandleSetPref(const ListValue* args, PrefType type) {
       std::string original;
       CHECK(value->GetAsString(&original));
       GURL fixed = URLFixerUpper::FixupURL(original, std::string());
-      temp_value.reset(Value::CreateStringValue(fixed.spec()));
+      temp_value.reset(base::Value::CreateStringValue(fixed.spec()));
       value = temp_value.get();
       break;
     }
@@ -443,8 +443,9 @@ void CoreOptionsHandler::HandleUserMetricsAction(const ListValue* args) {
 }
 
 void CoreOptionsHandler::UpdateClearPluginLSOData() {
-  scoped_ptr<Value> enabled(
-      Value::CreateBooleanValue(clear_plugin_lso_data_enabled_.GetValue()));
+  scoped_ptr<base::Value> enabled(
+      base::Value::CreateBooleanValue(
+          clear_plugin_lso_data_enabled_.GetValue()));
   web_ui_->CallJavascriptFunction(
       "OptionsPage.setClearPluginLSODataEnabled", *enabled);
 }

@@ -47,14 +47,14 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
  protected:
   // Fetches a pref value of given |pref_name|.
   // Note that caller owns the returned Value.
-  virtual Value* FetchPref(const std::string& pref_name);
+  virtual base::Value* FetchPref(const std::string& pref_name);
 
   // Observes a pref of given |pref_name|.
   virtual void ObservePref(const std::string& pref_name);
 
   // Sets a pref |value| to given |pref_name|.
   virtual void SetPref(const std::string& pref_name,
-                       const Value* value,
+                       const base::Value* value,
                        const std::string& metric);
 
   // Clears pref value for given |pref_name|.
@@ -64,7 +64,7 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   virtual void StopObservingPref(const std::string& path);
 
   // Records a user metric action for the given value.
-  void ProcessUserMetric(const Value* value,
+  void ProcessUserMetric(const base::Value* value,
                          const std::string& metric);
 
   // Notifies registered JS callbacks on change in |pref_name| preference.

@@ -5,14 +5,14 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_PROXY_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_PROXY_HANDLER_H_
 
-#include "chrome/browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h"
+#include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace chromeos {
 
 // ChromeOS proxy options page UI handler.
-class ProxyHandler : public CrosOptionsPageUIHandler {
+class ProxyHandler : public OptionsPageUIHandler {
  public:
-  explicit ProxyHandler(Profile* profile);
+  explicit ProxyHandler();
   virtual ~ProxyHandler();
 
   // OptionsPageUIHandler implementation.

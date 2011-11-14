@@ -26,7 +26,7 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
-#include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
+#include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
@@ -67,20 +67,23 @@ DictionaryValue* GetNetworkInfoDict(const chromeos::Network* network) {
   return item;
 }
 
-Value* GetProxySetting(Browser* browser, const std::string& setting_name) {
-  chromeos::ProxyCrosSettingsProvider settings_provider(browser->profile());
+base::Value* GetProxySetting(Browser* browser,
+                             const std::string& setting_name) {
   std::string setting_path = "cros.session.proxy.";
   setting_path.append(setting_name);
 
   if (setting_name == "ignorelist") {
-    Value* value;
-    if (settings_provider.Get(setting_path, &value))
-      return value;
+    base::Value* value;
+    if (chromeos::proxy_cros_settings_parser::GetProxyPrefValue(
+            browser->profile(), setting_path, &value)) {
+       return value;
+    }
   } else {
-    Value* setting;
-    if (settings_provider.Get(setting_path, &setting)) {
+    base::Value* setting;
+    if (chromeos::proxy_cros_settings_parser::GetProxyPrefValue(
+            browser->profile(), setting_path, &setting)) {
       DictionaryValue* setting_dict = static_cast<DictionaryValue*>(setting);
-      Value* value;
+      base::Value* value;
       bool found = setting_dict->Remove("value", &value);
       delete setting;
       if (found)
@@ -457,7 +460,7 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
        remembered_wifi.begin(); iter != remembered_wifi.end();
        ++iter) {
       const chromeos::WifiNetwork* wifi = *iter;
-      items->Append(Value::CreateStringValue(wifi->service_path()));
+      items->Append(base::Value::CreateStringValue(wifi->service_path()));
   }
   return_value->Set("remembered_wifi", items);
 
@@ -516,10 +519,9 @@ void TestingAutomationProvider::GetProxySettings(Browser* browser,
                              "socks", "socksport", "ignorelist" };
 
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  chromeos::ProxyCrosSettingsProvider settings_provider(browser->profile());
 
   for (size_t i = 0; i < arraysize(settings); ++i) {
-    Value* setting = GetProxySetting(browser, settings[i]);
+    base::Value* setting = GetProxySetting(browser, settings[i]);
     if (setting)
       return_value->Set(settings[i], setting);
   }
@@ -532,7 +534,7 @@ void TestingAutomationProvider::SetProxySettings(Browser* browser,
                                                  IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   std::string key;
-  Value* value;
+  base::Value* value;
   if (!args->GetString("key", &key) || !args->Get("value", &value)) {
     reply.SendError("Invalid or missing args.");
     return;
@@ -542,8 +544,8 @@ void TestingAutomationProvider::SetProxySettings(Browser* browser,
   setting_path.append(key);
 
   // ProxyCrosSettingsProvider will own the Value* passed to Set().
-  chromeos::ProxyCrosSettingsProvider(browser->profile()).Set(setting_path,
-      value->DeepCopy());
+  chromeos::proxy_cros_settings_parser::SetProxyPrefValue(
+      browser->profile(), setting_path, value);
   reply.SendSuccess(NULL);
 }
 

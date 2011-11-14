@@ -28,9 +28,11 @@
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
+#include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -53,8 +55,7 @@
 static const char kOtherNetworksFakePath[] = "?";
 
 InternetOptionsHandler::InternetOptionsHandler()
-    : chromeos::CrosOptionsPageUIHandler(NULL),
-      proxy_settings_(NULL) {
+    : chromeos::CrosOptionsPageUIHandler(NULL) {
   registrar_.Add(this, chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED,
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_ENTER_PIN_ENDED,
@@ -689,8 +690,12 @@ void InternetOptionsHandler::SetIPConfigCallback(const ListValue* args) {
 void InternetOptionsHandler::PopulateDictionaryDetails(
     const chromeos::Network* network) {
   DCHECK(network);
-  if (proxy_settings())
-    proxy_settings()->SetCurrentNetwork(network->service_path());
+
+  if (web_ui_) {
+    Profile::FromWebUI(web_ui_)->GetProxyConfigTracker()->UISetCurrentNetwork(
+        network->service_path());
+  }
+
   DictionaryValue dictionary;
   std::string hardware_address;
   chromeos::NetworkIPConfigVector ipconfigs = cros_->GetIPConfigs(
@@ -772,16 +777,6 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
 
   web_ui_->CallJavascriptFunction(
       "options.InternetOptions.showDetailedInfo", dictionary);
-}
-
-chromeos::ProxyCrosSettingsProvider* InternetOptionsHandler::proxy_settings() {
-  if (!proxy_settings_) {
-    proxy_settings_ = static_cast<chromeos::ProxyCrosSettingsProvider*>(
-      chromeos::CrosSettings::Get()->GetProvider("cros.session.proxy"));
-    if (!proxy_settings_)
-      NOTREACHED() << "Error getting access to proxy cros settings provider";
-  }
-  return proxy_settings_;
 }
 
 void InternetOptionsHandler::PopulateWifiDetails(

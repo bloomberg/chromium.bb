@@ -29,6 +29,28 @@ namespace chromeos {
 
 namespace {
 
+// Shoud we try to push this to base?
+// Helper comparator functor for the find_if call in |findIfEqual|
+template <class T>
+class EqualsComparator{
+ public:
+  explicit EqualsComparator(const T& key) : key_(key) { }
+  bool operator() (const T& element) {
+    return element.Equals(key_);
+  }
+ private:
+  const T& key_;
+};
+
+// Tiny STL helper function to allow using the find_if syntax on objects that
+// doesn't use the operator== but implement the Equals function which is the
+// quasi standard with the coding style we have.
+template<class InputIterator, class T>
+InputIterator findIfEqual(InputIterator first, InputIterator last,
+                          const T& key) {
+  return std::find_if(first, last, EqualsComparator<T>(key));
+}
+
 const char* ModeToString(ProxyConfigServiceImpl::ProxyConfig::Mode mode) {
   switch (mode) {
     case ProxyConfigServiceImpl::ProxyConfig::MODE_DIRECT:
@@ -471,6 +493,22 @@ bool ProxyConfigServiceImpl::UISetProxyConfigBypassRules(
   return true;
 }
 
+void ProxyConfigServiceImpl::AddNotificationCallback(base::Closure callback) {
+
+  std::vector<base::Closure>::iterator iter =
+      findIfEqual(callbacks_.begin(), callbacks_.end(), callback);
+  if (iter == callbacks_.end())
+    callbacks_.push_back(callback);
+}
+
+void ProxyConfigServiceImpl::RemoveNotificationCallback(
+    base::Closure callback) {
+  std::vector<base::Closure>::iterator iter =
+      findIfEqual(callbacks_.begin(), callbacks_.end(), callback);
+  if (iter != callbacks_.end())
+    callbacks_.erase(iter);
+}
+
 void ProxyConfigServiceImpl::OnProxyConfigChanged(
     ProxyPrefs::ConfigState config_state,
     const net::ProxyConfig& config) {
@@ -762,6 +800,16 @@ void ProxyConfigServiceImpl::OnUISetCurrentNetwork(const Network* network) {
                   << ", " << ModeToString(current_ui_config_.mode)
                   << ", " << ConfigStateToString(current_ui_config_.state)
                   << ", modifiable:" << current_ui_config_.user_modifiable;
+  // Notify whoever is interested in this change.
+  std::vector<base::Closure>::iterator iter = callbacks_.begin();
+  while (iter != callbacks_.end()) {
+    if (iter->is_null()) {
+      iter = callbacks_.erase(iter);
+    } else {
+      iter->Run();
+      ++iter;
+    }
+  }
 }
 
 void ProxyConfigServiceImpl::ResetUICache() {

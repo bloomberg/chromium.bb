@@ -8,7 +8,6 @@
 #include <string>
 
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
@@ -139,14 +138,10 @@ class InternetOptionsHandler
   // case of cellular networks, network technology and roaming status.
   void MonitorNetworks();
 
-  chromeos::ProxyCrosSettingsProvider* proxy_settings();
-
   // Convenience pointer to netwrok library (will not change).
   chromeos::NetworkLibrary* cros_;
 
   content::NotificationRegistrar registrar_;
-
-  chromeos::ProxyCrosSettingsProvider* proxy_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(InternetOptionsHandler);
 };

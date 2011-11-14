@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CORE_CHROMEOS_OPTIONS_HANDLER_H_
 #pragma once
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 
 class PrefSetObserver;
@@ -21,10 +22,10 @@ class CoreChromeOSOptionsHandler : public CoreOptionsHandler {
  protected:
   // ::CoreOptionsHandler overrides
   virtual void Initialize();
-  virtual Value* FetchPref(const std::string& pref_name);
+  virtual base::Value* FetchPref(const std::string& pref_name);
   virtual void ObservePref(const std::string& pref_name);
   virtual void SetPref(const std::string& pref_name,
-                       const Value* value,
+                       const base::Value* value,
                        const std::string& metric);
   virtual void StopObservingPref(const std::string& path);
 
@@ -36,12 +37,14 @@ class CoreChromeOSOptionsHandler : public CoreOptionsHandler {
  private:
   // Notifies registered JS callbacks on ChromeOS setting change.
   void NotifySettingsChanged(const std::string* setting_name);
+  void NotifyProxyPrefsChanged();
 
   // Keeps the track of change caused by the handler to make sure
   // it does not signal itself again.
   bool handling_change_;
 
   scoped_ptr<PrefSetObserver> proxy_prefs_;
+  base::WeakPtrFactory<CoreChromeOSOptionsHandler> pointer_factory_;
 };
 
 }  // namespace chromeos

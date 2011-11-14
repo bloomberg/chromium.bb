@@ -182,6 +182,15 @@ class ProxyConfigServiceImpl
   // Only valid for MODE_SINGLE_PROXY or MODE_PROXY_PER_SCHEME.
   bool UISetProxyConfigBypassRules(const net::ProxyBypassRules& bypass_rules);
 
+  // Add/Remove callback functions for notification when network to be viewed is
+  // changed by the UI.
+  void AddNotificationCallback(base::Closure callback);
+  void RemoveNotificationCallback(base::Closure callback);
+
+  // PrefProxyConfigTrackerImpl implementation.
+  virtual void OnProxyConfigChanged(ProxyPrefs::ConfigState config_state,
+                                    const net::ProxyConfig& config) OVERRIDE;
+
   // Implementation for SignedSettings::Delegate
   virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
                                      std::string value) OVERRIDE;
@@ -192,10 +201,6 @@ class ProxyConfigServiceImpl
   // NetworkLibrary::NetworkObserver implementation.
   virtual void OnNetworkChanged(NetworkLibrary* cros,
                                 const Network* network) OVERRIDE;
-
-  // PrefProxyConfigTrackerImpl implementation.
-  virtual void OnProxyConfigChanged(ProxyPrefs::ConfigState config_state,
-                                    const net::ProxyConfig& config) OVERRIDE;
 
   // Register UseShardProxies preference.
   static void RegisterPrefs(PrefService* pref_service);
@@ -292,6 +297,10 @@ class ProxyConfigServiceImpl
 
   // Operation to retrieve proxy setting from device.
   scoped_refptr<SignedSettings> retrieve_property_op_;
+
+  // Callbacks for notification when network to be viewed has been changed from
+  // the UI.
+  std::vector<base::Closure> callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyConfigServiceImpl);
 };

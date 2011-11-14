@@ -2,32 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
+#include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
 
 #include "base/string_util.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros_settings.h"
+#include "base/values.h"
+#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_list.h"
 
 namespace chromeos {
 
-static const char kProxyPacUrl[]         = "cros.session.proxy.pacurl";
-static const char kProxySingleHttp[]     = "cros.session.proxy.singlehttp";
-static const char kProxySingleHttpPort[] = "cros.session.proxy.singlehttpport";
-static const char kProxyHttpUrl[]        = "cros.session.proxy.httpurl";
-static const char kProxyHttpPort[]       = "cros.session.proxy.httpport";
-static const char kProxyHttpsUrl[]       = "cros.session.proxy.httpsurl";
-static const char kProxyHttpsPort[]      = "cros.session.proxy.httpsport";
-static const char kProxyType[]           = "cros.session.proxy.type";
-static const char kProxySingle[]         = "cros.session.proxy.single";
-static const char kProxyFtpUrl[]         = "cros.session.proxy.ftpurl";
-static const char kProxyFtpPort[]        = "cros.session.proxy.ftpport";
-static const char kProxySocks[]          = "cros.session.proxy.socks";
-static const char kProxySocksPort[]      = "cros.session.proxy.socksport";
-static const char kProxyIgnoreList[]     = "cros.session.proxy.ignorelist";
+// Common prefix of all proxy prefs.
+const char kProxyPrefsPrefix[] = "cros.session.proxy";
 
-static const char* const kProxySettings[] = {
+// Names of proxy preferences.
+const char kProxyPacUrl[]         = "cros.session.proxy.pacurl";
+const char kProxySingleHttp[]     = "cros.session.proxy.singlehttp";
+const char kProxySingleHttpPort[] = "cros.session.proxy.singlehttpport";
+const char kProxyHttpUrl[]        = "cros.session.proxy.httpurl";
+const char kProxyHttpPort[]       = "cros.session.proxy.httpport";
+const char kProxyHttpsUrl[]       = "cros.session.proxy.httpsurl";
+const char kProxyHttpsPort[]      = "cros.session.proxy.httpsport";
+const char kProxyType[]           = "cros.session.proxy.type";
+const char kProxySingle[]         = "cros.session.proxy.single";
+const char kProxyFtpUrl[]         = "cros.session.proxy.ftpurl";
+const char kProxyFtpPort[]        = "cros.session.proxy.ftpport";
+const char kProxySocks[]          = "cros.session.proxy.socks";
+const char kProxySocksPort[]      = "cros.session.proxy.socksport";
+const char kProxyIgnoreList[]     = "cros.session.proxy.ignorelist";
+
+const char* const kProxySettings[] = {
   kProxyPacUrl,
   kProxySingleHttp,
   kProxySingleHttpPort,
@@ -44,31 +47,75 @@ static const char* const kProxySettings[] = {
   kProxyIgnoreList,
 };
 
-//------------------ ProxyCrosSettingsProvider: public methods -----------------
+// We have to explicitly export this because the arraysize macro doesn't like
+// extern arrays as their size is not known on compile time.
+const size_t kProxySettingsCount = arraysize(kProxySettings);
 
-ProxyCrosSettingsProvider::ProxyCrosSettingsProvider(Profile* profile)
-    : profile_(profile) {
+namespace {
+
+base::Value* CreateServerHostValue(
+    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) {
+  return proxy.server.is_valid() ?
+         base::Value::CreateStringValue(proxy.server.host_port_pair().host()) :
+         NULL;
 }
 
-void ProxyCrosSettingsProvider::SetCurrentNetwork(const std::string& network) {
-  GetConfigService()->UISetCurrentNetwork(network);
-  for (size_t i = 0; i < arraysize(kProxySettings); ++i)
-    CrosSettings::Get()->FireObservers(kProxySettings[i]);
+base::Value* CreateServerPortValue(
+    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) {
+  return proxy.server.is_valid() ?
+         base::Value::CreateIntegerValue(proxy.server.host_port_pair().port()) :
+         NULL;
 }
 
-void ProxyCrosSettingsProvider::MakeActiveNetworkCurrent() {
-  GetConfigService()->UIMakeActiveNetworkCurrent();
-  for (size_t i = 0; i < arraysize(kProxySettings); ++i)
-    CrosSettings::Get()->FireObservers(kProxySettings[i]);
+net::ProxyServer CreateProxyServer(std::string host,
+                                   uint16 port,
+                                   net::ProxyServer::Scheme scheme) {
+  if (host.length() == 0 && port == 0)
+    return net::ProxyServer();
+  if (port == 0)
+    port = net::ProxyServer::GetDefaultPortForScheme(scheme);
+  net::HostPortPair host_port_pair(host, port);
+  return net::ProxyServer(scheme, host_port_pair);
 }
 
-void ProxyCrosSettingsProvider::DoSet(const std::string& path,
-                                      Value* in_value) {
+net::ProxyServer CreateProxyServerFromHost(
+    const std::string& host,
+    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
+    net::ProxyServer::Scheme scheme) {
+  uint16 port = 0;
+  if (proxy.server.is_valid())
+    port = proxy.server.host_port_pair().port();
+  return CreateProxyServer(host, port, scheme);
+}
+
+net::ProxyServer CreateProxyServerFromPort(
+    uint16 port,
+    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
+    net::ProxyServer::Scheme scheme) {
+  std::string host;
+  if (proxy.server.is_valid())
+    host = proxy.server.host_port_pair().host();
+  return CreateProxyServer(host, port, scheme);
+}
+
+}  // namespace
+
+namespace proxy_cros_settings_parser {
+
+bool IsProxyPref(const std::string& path) {
+  return StartsWithASCII(path, kProxyPrefsPrefix, true);
+}
+
+void SetProxyPrefValue(Profile* profile,
+                       const std::string& path,
+                       const base::Value* in_value) {
   if (!in_value) {
+    NOTREACHED();
     return;
   }
 
-  chromeos::ProxyConfigServiceImpl* config_service = GetConfigService();
+  chromeos::ProxyConfigServiceImpl* config_service =
+      profile->GetProxyConfigTracker();
   // Retrieve proxy config.
   chromeos::ProxyConfigServiceImpl::ProxyConfig config;
   config_service->UIGetProxyConfig(&config);
@@ -211,7 +258,7 @@ void ProxyCrosSettingsProvider::DoSet(const std::string& path,
     }
   } else if (path == kProxyIgnoreList) {
     net::ProxyBypassRules bypass_rules;
-    if (in_value->GetType() == Value::TYPE_LIST) {
+    if (in_value->GetType() == base::Value::TYPE_LIST) {
       const ListValue* list_value = static_cast<const ListValue*>(in_value);
       for (size_t x = 0; x < list_value->GetSize(); x++) {
         std::string val;
@@ -224,13 +271,15 @@ void ProxyCrosSettingsProvider::DoSet(const std::string& path,
   }
 }
 
-bool ProxyCrosSettingsProvider::Get(const std::string& path,
-                                    Value** out_value) const {
+bool GetProxyPrefValue(Profile* profile,
+                       const std::string& path,
+                       base::Value** out_value) {
   bool found = false;
   bool managed = false;
   std::string controlled_by;
-  Value* data = NULL;
-  chromeos::ProxyConfigServiceImpl* config_service = GetConfigService();
+  base::Value* data = NULL;
+  chromeos::ProxyConfigServiceImpl* config_service =
+      profile->GetProxyConfigTracker();
   chromeos::ProxyConfigServiceImpl::ProxyConfig config;
   config_service->UIGetProxyConfig(&config);
 
@@ -239,7 +288,8 @@ bool ProxyCrosSettingsProvider::Get(const std::string& path,
     if (config.mode ==
             chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_PAC_SCRIPT &&
         config.automatic_proxy.pac_url.is_valid()) {
-      data = Value::CreateStringValue(config.automatic_proxy.pac_url.spec());
+      data =
+          base::Value::CreateStringValue(config.automatic_proxy.pac_url.spec());
     }
     found = true;
   } else if (path == kProxySingleHttp) {
@@ -259,14 +309,14 @@ bool ProxyCrosSettingsProvider::Get(const std::string& path,
         chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_AUTO_DETECT ||
         config.mode ==
         chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_PAC_SCRIPT) {
-      data = Value::CreateIntegerValue(3);
+      data = base::Value::CreateIntegerValue(3);
     } else if (config.mode ==
         chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_SINGLE_PROXY ||
         config.mode ==
         chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_PROXY_PER_SCHEME) {
-      data = Value::CreateIntegerValue(2);
+      data = base::Value::CreateIntegerValue(2);
     } else {
-      data = Value::CreateIntegerValue(1);
+      data = base::Value::CreateIntegerValue(1);
     }
     switch (config.state) {
        case ProxyPrefs::CONFIG_POLICY:
@@ -285,7 +335,7 @@ bool ProxyCrosSettingsProvider::Get(const std::string& path,
     }
     found = true;
   } else if (path == kProxySingle) {
-    data = Value::CreateBooleanValue(config.mode ==
+    data = base::Value::CreateBooleanValue(config.mode ==
         chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_SINGLE_PROXY);
     found = true;
   } else if (path == kProxyFtpUrl) {
@@ -310,7 +360,7 @@ bool ProxyCrosSettingsProvider::Get(const std::string& path,
     ListValue* list =  new ListValue();
     net::ProxyBypassRules::RuleList bypass_rules = config.bypass_rules.rules();
     for (size_t x = 0; x < bypass_rules.size(); x++) {
-      list->Append(Value::CreateStringValue(bypass_rules[x]->ToString()));
+      list->Append(base::Value::CreateStringValue(bypass_rules[x]->ToString()));
     }
     *out_value = list;
     return true;
@@ -318,7 +368,7 @@ bool ProxyCrosSettingsProvider::Get(const std::string& path,
   if (found) {
     DictionaryValue* dict = new DictionaryValue;
     if (!data)
-      data = Value::CreateStringValue("");
+      data = base::Value::CreateStringValue("");
     dict->Set("value", data);
     dict->SetBoolean("managed", managed);
     if (path == kProxyType) {
@@ -333,61 +383,6 @@ bool ProxyCrosSettingsProvider::Get(const std::string& path,
   }
 }
 
-bool ProxyCrosSettingsProvider::HandlesSetting(const std::string& path) const {
-  return ::StartsWithASCII(path, "cros.session.proxy", true);
-}
-
-//----------------- ProxyCrosSettingsProvider: private methods -----------------
-
-chromeos::ProxyConfigServiceImpl*
-    ProxyCrosSettingsProvider::GetConfigService() const {
-  return profile_->GetProxyConfigTracker();
-}
-
-net::ProxyServer ProxyCrosSettingsProvider::CreateProxyServerFromHost(
-    const std::string& host,
-    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
-    net::ProxyServer::Scheme scheme) const {
-  uint16 port = 0;
-  if (proxy.server.is_valid())
-    port = proxy.server.host_port_pair().port();
-  return CreateProxyServer(host, port, scheme);
-}
-
-net::ProxyServer ProxyCrosSettingsProvider::CreateProxyServerFromPort(
-    uint16 port,
-    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
-    net::ProxyServer::Scheme scheme) const {
-  std::string host;
-  if (proxy.server.is_valid())
-    host = proxy.server.host_port_pair().host();
-  return CreateProxyServer(host, port, scheme);
-}
-
-net::ProxyServer ProxyCrosSettingsProvider::CreateProxyServer(
-    std::string host,
-    uint16 port,
-    net::ProxyServer::Scheme scheme) const {
-  if (host.length() == 0 && port == 0)
-    return net::ProxyServer();
-  if (port == 0)
-    port = net::ProxyServer::GetDefaultPortForScheme(scheme);
-  net::HostPortPair host_port_pair(host, port);
-  return net::ProxyServer(scheme, host_port_pair);
-}
-
-Value* ProxyCrosSettingsProvider::CreateServerHostValue(
-    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) const {
-  return proxy.server.is_valid() ?
-         Value::CreateStringValue(proxy.server.host_port_pair().host()) :
-         NULL;
-}
-
-Value* ProxyCrosSettingsProvider::CreateServerPortValue(
-    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) const {
-  return proxy.server.is_valid() ?
-         Value::CreateIntegerValue(proxy.server.host_port_pair().port()) :
-         NULL;
-}
+}  // namespace proxy_cros_settings_parser
 
 }  // namespace chromeos

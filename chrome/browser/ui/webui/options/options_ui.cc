@@ -253,7 +253,7 @@ OptionsUI::OptionsUI(TabContents* contents)
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::VirtualKeyboardManagerHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::ProxyHandler(GetProfile()));
+                          new chromeos::ProxyHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::ChangePictureOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
