@@ -55,8 +55,6 @@
       ],
       'sources': [
         # All .cc, .h under views, except unittests
-        'accessibility/native_view_accessibility_win.cc',
-        'accessibility/native_view_accessibility_win.h',
         'accessible_pane_view.cc',
         'accessible_pane_view.h',
         'animation/bounds_animator.cc',
@@ -396,6 +394,8 @@
         'widget/widget_delegate.h',
         'widget/window_manager.cc',
         'widget/window_manager.h',
+        '../ui/views/accessibility/native_view_accessibility_win.cc',
+        '../ui/views/accessibility/native_view_accessibility_win.h',
         '../ui/views/window/client_view.cc',
         '../ui/views/window/client_view.h',
         '../ui/views/window/custom_frame_view.cc',
