@@ -21,6 +21,7 @@
 #if defined(OS_WIN)
 #include <atlbase.h>
 #include <atlcom.h>
+#include "ui/base/win/atl_module.h"
 #endif
 
 using webkit_glue::WebAccessibility;
@@ -71,13 +72,7 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
 
 void RendererAccessibilityBrowserTest::SetUpInProcessBrowserTestFixture() {
 #if defined(OS_WIN)
-  // ATL might need a pointer to a COM module, depending on the build config.
-  if (!_pAtlModule) {
-    static CComModule module;
-    _pAtlModule = &module;
-  }
-
-  // Make sure COM is initialized for this thread; it's safe to call twice.
+  ui::win::CreateATLModuleIfNeeded();
   ::CoInitialize(NULL);
 #endif
 }

@@ -19,6 +19,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/win/atl_module.h"
 #include "ui/views/accessibility/native_view_accessibility_win.h"
 #include "views/widget/widget.h"
 
@@ -26,16 +27,12 @@ namespace {
 
 VARIANT id_self = {VT_I4, CHILDID_SELF};
 
-// Dummy class to force creation of ATL module, needed by COM to instantiate
-// NativeViewAccessibilityWin.
-class TestAtlModule : public CAtlDllModuleT<TestAtlModule> {};
-TestAtlModule test_atl_module_;
-
 }  // namespace
 
 class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
  public:
   BrowserViewsAccessibilityTest() {
+    ui::win::CreateATLModuleIfNeeded();
     ::CoInitialize(NULL);
   }
 

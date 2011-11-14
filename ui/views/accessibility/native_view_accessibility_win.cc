@@ -13,6 +13,7 @@
 #include "ui/base/accessibility/accessible_text_utils.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/view_prop.h"
+#include "ui/base/win/atl_module.h"
 #include "views/widget/native_widget_win.h"
 #include "views/widget/widget.h"
 
@@ -24,6 +25,9 @@ long NativeViewAccessibilityWin::next_unique_id_ = 1;
 // static
 scoped_refptr<NativeViewAccessibilityWin> NativeViewAccessibilityWin::Create(
     views::View* view) {
+  // Make sure ATL is initialized in this module.
+  ui::win::CreateATLModuleIfNeeded();
+
   CComObject<NativeViewAccessibilityWin>* instance = NULL;
   HRESULT hr = CComObject<NativeViewAccessibilityWin>::CreateInstance(
       &instance);

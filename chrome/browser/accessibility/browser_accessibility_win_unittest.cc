@@ -8,6 +8,7 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/win/atl_module.h"
 
 using webkit_glue::WebAccessibility;
 
@@ -52,11 +53,7 @@ VARIANT CreateI4Variant(LONG value) {
 class BrowserAccessibilityTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    // ATL needs a pointer to a COM module.
-    static CComModule module;
-    _pAtlModule = &module;
-
-    // Make sure COM is initialized for this thread; it's safe to call twice.
+    ui::win::CreateATLModuleIfNeeded();
     ::CoInitialize(NULL);
   }
 
