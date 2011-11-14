@@ -755,7 +755,7 @@ class QuotaManager::UpdatePersistentHostQuotaTask
   UpdatePersistentHostQuotaTask(
       QuotaManager* manager,
       const std::string& host,
-      int64 new_quota,
+      int new_quota,
       const HostQuotaCallback& callback)
       : DatabaseTaskBase(manager),
         host_(host),
