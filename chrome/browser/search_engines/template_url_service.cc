@@ -531,11 +531,11 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   // managed.
   const TemplateURL* backup_default_search_provider = NULL;
   if (!is_default_search_managed_ &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kProtector) &&
       DidDefaultSearchProviderChange(
           *result,
           template_urls,
           &backup_default_search_provider) &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kProtector) &&
       default_search_provider) {
     // TODO: need to handle no default_search_provider better. Likely need to
     // make sure the default search engine is there, and if not assume it was
