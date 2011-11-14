@@ -143,8 +143,10 @@ class SigninScreenHandler : public BaseScreenHandler,
   void ShowSigninScreenIfReady();
 
   // Tells webui to load authentication extension. |force| is used to force the
-  // extension reloading, if it has already been loaded.
-  void LoadAuthExtension(bool force);
+  // extension reloading, if it has already been loaded. |silent_load| is true
+  // for cases when extension should be loaded in the background and it
+  // shouldn't grab the focus.
+  void LoadAuthExtension(bool force, bool silent_load);
 
   // Handles confirmation message of user authentication that was performed by
   // the authentication extension.

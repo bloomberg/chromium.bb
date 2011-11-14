@@ -452,7 +452,7 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
   if (!dns_cleared_ || !cookies_cleared_)
     return;
 
-  LoadAuthExtension(!is_first_attempt_);
+  LoadAuthExtension(!is_first_attempt_, false);
   ShowScreen(kGaiaSigninScreen, NULL);
 
   if (is_first_attempt_) {
@@ -462,10 +462,11 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
   }
 }
 
-void SigninScreenHandler::LoadAuthExtension(bool force) {
+void SigninScreenHandler::LoadAuthExtension(bool force, bool silent_load) {
   DictionaryValue params;
 
   params.SetBoolean("forceReload", force);
+  params.SetBoolean("silentLoad", silent_load);
   params.SetString("startUrl", kGaiaExtStartPage);
   params.SetString("email", email_);
   email_.clear();
@@ -493,7 +494,7 @@ void SigninScreenHandler::LoadAuthExtension(bool force) {
       test_pass_.clear();
     }
   }
-  web_ui_->CallJavascriptFunction("login.GaiaSigninScreen.setExtensionUrl",
+  web_ui_->CallJavascriptFunction("login.GaiaSigninScreen.loadAuthExtension",
                                   params);
 }
 
@@ -649,7 +650,7 @@ void SigninScreenHandler::HandleAccountPickerReady(
   // Fetching of the extension is not started before account picker page is
   // loaded because it can affect the loading speed.
   if (is_first_attempt_ && !cookie_remover_ && !dns_clear_task_running_)
-    LoadAuthExtension(true);
+    LoadAuthExtension(true, true);
 }
 
 void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
