@@ -1350,6 +1350,10 @@ typedef void (GL_APIENTRYP PFNGLENABLEFEATURECHROMIUM) (const GLchar *feature);
 #endif
 
 /* GL_CHROMIUM_post_sub_buffer */
+/* This extension is modeled after EGL_NV_post_sub_buffer and
+ * GLX_MESA_copy_sub_buffer. It's like a SwapBuffers, but it pushes a region
+ * of the back buffer to the front buffer.
+ */
 #ifndef GL_CHROMIUM_post_sub_buffer
 #define GL_CHROMIUM_post_sub_buffer 1
 #ifdef GL_GLEXT_PROTOTYPES
