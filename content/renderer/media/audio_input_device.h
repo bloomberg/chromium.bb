@@ -75,6 +75,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/threading/simple_thread.h"
+#include "content/common/content_export.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "media/audio/audio_parameters.h"
 
@@ -83,7 +84,7 @@
 // TODO(henrika): Add support for event handling (e.g. OnStateChanged,
 // OnCaptureStopped etc.) and ensure that we can deliver these notifications
 // to any clients using this class.
-class AudioInputDevice
+class CONTENT_EXPORT AudioInputDevice
     : public AudioInputMessageFilter::Delegate,
       public base::DelegateSimpleThread::Delegate,
       public base::RefCountedThreadSafe<AudioInputDevice> {

@@ -59,11 +59,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/threading/simple_thread.h"
+#include "content/common/content_export.h"
 #include "content/renderer/media/audio_message_filter.h"
 
 struct AudioParameters;
 
-class AudioDevice
+class CONTENT_EXPORT AudioDevice
     : public AudioMessageFilter::Delegate,
       public base::DelegateSimpleThread::Delegate,
       public base::RefCountedThreadSafe<AudioDevice> {

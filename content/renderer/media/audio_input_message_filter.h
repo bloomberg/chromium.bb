@@ -16,13 +16,15 @@
 #include "base/id_map.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
+#include "content/common/content_export.h"
 #include "content/common/media/audio_stream_state.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/audio/audio_buffers_state.h"
 
-class AudioInputMessageFilter : public IPC::ChannelProxy::MessageFilter {
+class CONTENT_EXPORT AudioInputMessageFilter
+  : public IPC::ChannelProxy::MessageFilter {
  public:
-  class Delegate {
+  class CONTENT_EXPORT Delegate {
    public:
     // Called when a low-latency audio input stream has been created in the
     // browser process.
