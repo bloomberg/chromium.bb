@@ -18,8 +18,8 @@ class AcceleratedSurfaceContainerLinuxCC
     : public AcceleratedSurfaceContainerLinux, public ui::TextureCC {
  public:
   explicit AcceleratedSurfaceContainerLinuxCC(const gfx::Size& size)
-      : size_(size),
-        acquired_(false) {
+      : acquired_(false) {
+    size_ = size;
   }
 
   virtual ~AcceleratedSurfaceContainerLinuxCC() {
@@ -74,7 +74,6 @@ class AcceleratedSurfaceContainerLinuxCC
 
  private:
   scoped_ptr<ImageTransportClient> image_transport_client_;
-  gfx::Size size_;
   bool acquired_;
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerLinuxCC);
 };

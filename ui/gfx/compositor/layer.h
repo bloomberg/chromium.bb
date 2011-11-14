@@ -271,7 +271,7 @@ class COMPOSITOR_EXPORT Layer :
 #if defined(USE_WEBKIT_COMPOSITOR)
   void CreateWebLayer();
   void RecomputeTransform();
-  void RecomputeDrawsContent();
+  void RecomputeDrawsContentAndUVRect();
 #endif
 
   const LayerType type_;

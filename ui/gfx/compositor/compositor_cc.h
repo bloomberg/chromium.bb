@@ -68,10 +68,12 @@ class COMPOSITOR_EXPORT TextureCC : public Texture {
   virtual void Update() = 0;
   unsigned int texture_id() const { return texture_id_; }
   bool flipped() const { return flipped_; }
+  const gfx::Size& size() const { return size_; }
 
  protected:
   unsigned int texture_id_;
   bool flipped_;
+  gfx::Size size_;
   DISALLOW_COPY_AND_ASSIGN(TextureCC);
 };
 

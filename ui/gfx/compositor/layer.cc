@@ -279,9 +279,10 @@ void Layer::SetExternalTexture(ui::Texture* texture) {
   }
   TextureCC* texture_cc = static_cast<TextureCC*>(texture);
   texture_cc->Update();
-  web_layer_.to<WebKit::WebExternalTextureLayer>().setFlipped(
-      texture_cc->flipped());
-  RecomputeDrawsContent();
+  WebKit::WebExternalTextureLayer texture_layer =
+      web_layer_.to<WebKit::WebExternalTextureLayer>();
+  texture_layer.setFlipped(texture_cc->flipped());
+  RecomputeDrawsContentAndUVRect();
 #endif
 }
 
@@ -477,7 +478,7 @@ void Layer::RecomputeHole() {
     texture_ = NULL;
 
 #if defined(USE_WEBKIT_COMPOSITOR)
-  RecomputeDrawsContent();
+  RecomputeDrawsContentAndUVRect();
 #endif
 }
 
@@ -578,7 +579,7 @@ void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
 #if defined(USE_WEBKIT_COMPOSITOR)
   web_layer_.setBounds(bounds.size());
   RecomputeTransform();
-  RecomputeDrawsContent();
+  RecomputeDrawsContentAndUVRect();
 #endif
 }
 
@@ -655,7 +656,7 @@ void Layer::CreateWebLayer() {
   web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
   web_layer_.setOpaque(true);
   web_layer_is_accelerated_ = false;
-  RecomputeDrawsContent();
+  RecomputeDrawsContentAndUVRect();
 }
 
 void Layer::RecomputeTransform() {
@@ -664,7 +665,7 @@ void Layer::RecomputeTransform() {
   web_layer_.setTransform(transform.matrix());
 }
 
-void Layer::RecomputeDrawsContent() {
+void Layer::RecomputeDrawsContentAndUVRect() {
   DCHECK(!web_layer_.isNull());
   bool should_draw = type_ == LAYER_HAS_TEXTURE &&
       !hole_rect_.Contains(gfx::Rect(gfx::Point(0, 0), bounds_.size()));
@@ -672,14 +673,17 @@ void Layer::RecomputeDrawsContent() {
     web_layer_.to<WebKit::WebContentLayer>().setDrawsContent(should_draw);
   } else {
     DCHECK(texture_);
-#if defined(USE_WEBKIT_COMPOSITOR)
-    unsigned int texture_id =
-        static_cast<TextureCC*>(texture_.get())->texture_id();
-#else
-    unsigned int texture_id = 0;
-#endif
-    web_layer_.to<WebKit::WebExternalTextureLayer>().setTextureId(
-        should_draw ? texture_id : 0);
+    TextureCC* texture_cc = static_cast<TextureCC*>(texture_.get());
+    unsigned int texture_id = texture_cc->texture_id();
+    WebKit::WebExternalTextureLayer texture_layer =
+        web_layer_.to<WebKit::WebExternalTextureLayer>();
+    texture_layer.setTextureId(should_draw ? texture_id : 0);
+    WebKit::WebFloatRect rect(
+        0,
+        0,
+        static_cast<float>(bounds_.width())/texture_cc->size().width(),
+        static_cast<float>(bounds_.height())/texture_cc->size().height());
+    texture_layer.setUVRect(rect);
   }
 }
 #endif
