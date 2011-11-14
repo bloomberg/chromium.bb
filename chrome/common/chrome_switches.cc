@@ -520,6 +520,13 @@ const char kEnableResourceContentSettings[] =
 // Enables speculative TCP/IP preconnection.
 const char kEnablePreconnect[]              = "enable-preconnect";
 
+// Enables tracking of tasks in profiler for viewing via about:profiler.
+// To predominantly disable tracking (profiling), use the command line switch:
+// --enable-profiling=0
+// Some tracking will still take place at startup, but it will be turned off
+// during chrome_browser_main.
+const char kEnableProfiling[]               = "enable-profiling";
+
 // Controls the support for SDCH filtering (dictionary based expansion of
 // content). By default SDCH filtering is enabled. To disable SDCH filtering,
 // use "--enable-sdch=0" as command line argument. SDCH is currently only
@@ -557,13 +564,6 @@ const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
 
 // Enables the "synced bookmarks" folder.
 const char kEnableSyncedBookmarksFolder[]   = "enable-synced-bookmarks-folder";
-
-// Enables tracking of tasks in profiler for viewing via about:tracking.
-// To predominantly disable tracking (profiling), use the command line switch:
-// --enable-tracking=0
-// Some tracking will still take place at startup, but it will be turned off
-// during chrome_browser_main.
-const char kEnableTracking[]                = "enable-tracking";
 
 // Spawns threads to watch for excessive delays in specified message loops.
 // User should set breakpoints on Alarm() to examine problematic thread.

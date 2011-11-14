@@ -1218,10 +1218,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     browser_process_.reset(new BrowserProcessImpl(parsed_command_line()));
   }
 
-  if (parsed_command_line().HasSwitch(switches::kEnableTracking)) {
+  if (parsed_command_line().HasSwitch(switches::kEnableProfiling)) {
     // User wants to override default tracking status.
     std::string flag =
-      parsed_command_line().GetSwitchValueASCII(switches::kEnableTracking);
+      parsed_command_line().GetSwitchValueASCII(switches::kEnableProfiling);
     bool enabled = flag.compare("0") != 0;
     tracked_objects::ThreadData::InitializeAndSetTrackingStatus(enabled);
   }
