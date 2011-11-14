@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_RENDERER_HOST_GTK_WINDOW_UTILS_H_
 #pragma once
 
+#include "content/common/content_export.h"
+
 typedef struct _GdkDrawable GdkWindow;
 
 namespace WebKit {
@@ -14,7 +16,7 @@ struct WebScreenInfo;
 
 namespace content {
 
-void GetScreenInfoFromNativeWindow(
+CONTENT_EXPORT void GetScreenInfoFromNativeWindow(
     GdkWindow* gdk_window, WebKit::WebScreenInfo* results);
 
 }  // namespace content

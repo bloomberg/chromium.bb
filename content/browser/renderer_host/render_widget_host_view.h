@@ -276,7 +276,8 @@ class RenderWidgetHostView {
 #endif
 
 #if defined(OS_POSIX) || defined(USE_AURA)
-  static void GetDefaultScreenInfo(WebKit::WebScreenInfo* results);
+  CONTENT_EXPORT static void GetDefaultScreenInfo(
+      WebKit::WebScreenInfo* results);
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) = 0;
   virtual gfx::Rect GetRootWindowBounds() = 0;
 #endif

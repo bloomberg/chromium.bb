@@ -28,7 +28,7 @@ class WorkerDevToolsManager : private WorkerServiceObserver {
   static WorkerDevToolsManager* GetInstance();
 
   // Called on the UI thread.
-  static CONTENT_EXPORT DevToolsAgentHost* GetDevToolsAgentHostForWorker(
+  CONTENT_EXPORT static DevToolsAgentHost* GetDevToolsAgentHostForWorker(
       int worker_process_id,
       int worker_route_id);
 

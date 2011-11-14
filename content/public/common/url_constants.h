@@ -50,7 +50,7 @@ extern const char kUnreachableWebDataURL[];
 // URLs that should be parsed as "standard" with the googleurl library. The
 // embedder can pass a 0-terminated list of additional schemes that should be
 // savable, or NULL if the standard list is sufficient.
-void CONTENT_EXPORT RegisterContentSchemes(
+CONTENT_EXPORT void RegisterContentSchemes(
     const char** additional_savable_schemes);
 
 }  // namespace chrome

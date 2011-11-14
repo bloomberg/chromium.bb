@@ -347,7 +347,7 @@ class DeviceDataProvider : public base::NonThreadSafe {
     impl_->StopDataProvider();
   }
 
-  static CONTENT_EXPORT DeviceDataProviderImplBase<DataType>*
+  CONTENT_EXPORT static DeviceDataProviderImplBase<DataType>*
       DefaultFactoryFunction();
 
   // The singleton-like instance of this class. (Not 'true' singleton, as it

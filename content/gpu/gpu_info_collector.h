@@ -30,13 +30,13 @@ bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info);
 // The selection between the two methods is done in the cc file.
 
 // A D3D argument is passed in for testing purposes
-bool CONTENT_EXPORT CollectGraphicsInfoD3D(IDirect3D9* d3d,
+CONTENT_EXPORT bool CollectGraphicsInfoD3D(IDirect3D9* d3d,
                                            content::GPUInfo* gpu_info);
 
 // Collects D3D driver version/date through registry lookup.
 // Note that this does not require a D3D context.
 // device_id here is the raw data in DISPLAY_DEVICE.
-bool CONTENT_EXPORT CollectDriverInfoD3D(const std::wstring& device_id,
+CONTENT_EXPORT bool CollectDriverInfoD3D(const std::wstring& device_id,
                                          content::GPUInfo* gpu_info);
 
 // Collect the DirectX Disagnostics information about the attached displays.
@@ -44,7 +44,7 @@ bool GetDxDiagnostics(content::DxDiagNode* output);
 #endif
 
 // All platforms have a GL version for collecting information
-bool CONTENT_EXPORT CollectGraphicsInfoGL(content::GPUInfo* gpu_info);
+CONTENT_EXPORT bool CollectGraphicsInfoGL(content::GPUInfo* gpu_info);
 
 // Collect GL and Shading language version information
 bool CollectGLVersionInfo(content::GPUInfo* gpu_info);
