@@ -1,0 +1,11 @@
+LIBRARY    "gcapi_dll.dll"
+
+EXPORTS
+  ; Note that we keep the assigned ordinals for a couple of the exports
+  ; to maintain parity with the old gcapi code. LaunchGoogleChrome was
+  ; originally tagged as having an export ordinal of 0 which afaict is not
+  ; legal.
+  GoogleChromeCompatibilityCheck    @8     PRIVATE
+  LaunchGoogleChrome                       PRIVATE
+  LaunchGoogleChromeWithDimensions  @16    PRIVATE
+  GoogleChromeDaysSinceLastRun             PRIVATE

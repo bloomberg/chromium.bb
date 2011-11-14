@@ -2,19 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// NOTE: This code is a legacy utility API for partners to check whether
+//       Chrome can be installed and launched. Recent updates are being made
+//       to add new functionality. These updates use code from Chromium, the old
+//       coded against the win32 api directly. If you have an itch to shave a
+//       yak, feel free to re-write the old code too.
+
 #include "chrome/installer/gcapi/gcapi.h"
 
 #include <atlbase.h>
 #include <atlcom.h>
-#include <windows.h>
 #include <sddl.h>
 #define STRSAFE_NO_DEPRECATE
 #include <strsafe.h>
 #include <tlhelp32.h>
+#include <windows.h>
 
 #include <cstdlib>
+#include <limits>
+#include <string>
 
-#include "google_update_idl.h"
+#include "base/basictypes.h"
+#include "base/string_number_conversions.h"
+#include "base/time.h"
+#include "base/win/registry.h"
+#include "chrome/installer/util/google_update_constants.h"
+
+#include "google_update_idl.h"  // NOLINT
 
 namespace {
 
@@ -24,6 +38,10 @@ const wchar_t kChromeRegClientsKey[] =
 const wchar_t kChromeRegClientStateKey[] =
     L"Software\\Google\\Update\\ClientState\\"
     L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
+const wchar_t kChromeRegClientStateMediumKey[] =
+    L"Software\\Google\\Update\\ClientStateMedium\\"
+    L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
+
 const wchar_t kChromeRegLaunchCmd[] = L"InstallerSuccessLaunchCmdLine";
 const wchar_t kChromeRegLastLaunchCmd[] = L"LastInstallerSuccessLaunchCmdLine";
 const wchar_t kChromeRegVersion[] = L"pv";
@@ -70,11 +88,14 @@ bool GetCompanyName(const wchar_t* filename, wchar_t* buffer, DWORD out_len) {
   if (!::VerQueryValue(file_version_info, info_name,
       reinterpret_cast<LPVOID *>(&data), reinterpret_cast<UINT *>(&data_len)))
     return false;
-  if (data_len <= 0 || data_len >= out_len)
+  if (data_len <= 0 || data_len >= (out_len / sizeof(wchar_t)))
     return false;
 
   memset(buffer, 0, out_len);
-  ::StringCchCopyN(buffer, out_len, (const wchar_t*)data, data_len);
+  ::StringCchCopyN(buffer,
+                   (out_len / sizeof(wchar_t)),
+                   reinterpret_cast<const wchar_t*>(data),
+                   data_len);
   return true;
 }
 
@@ -140,9 +161,9 @@ bool CanReOfferChrome(BOOL set_flag) {
 
 // Helper function to read a value from registry. Returns true if value
 // is read successfully and stored in parameter value. Returns false otherwise.
-bool ReadValueFromRegistry(HKEY root_key, const wchar_t *sub_key,
-                           const wchar_t *value_name, wchar_t *value,
-                           size_t *size) {
+bool ReadValueFromRegistry(HKEY root_key, const wchar_t* sub_key,
+                           const wchar_t* value_name, wchar_t* value,
+                           size_t* size) {
   HKEY key;
   if ((::RegOpenKeyEx(root_key, sub_key, NULL,
                       KEY_READ, &key) == ERROR_SUCCESS) &&
@@ -164,7 +185,7 @@ bool IsChromeInstalled(HKEY root_key) {
 
 enum WindowsVersion {
   VERSION_BELOW_XP_SP2,
-  VERSION_XP_SP2_UP_TO_VISTA, // "but not including"
+  VERSION_XP_SP2_UP_TO_VISTA,  // "but not including"
   VERSION_VISTA_OR_HIGHER,
 };
 WindowsVersion GetWindowsVersion() {
@@ -283,9 +304,7 @@ bool GetUserIdForProcess(size_t pid, wchar_t** user_sid) {
 }
 }  // namespace
 
-#pragma comment(linker, "/EXPORT:GoogleChromeCompatibilityCheck=_GoogleChromeCompatibilityCheck@8,PRIVATE")
-DLLEXPORT BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag,
-                                                        DWORD *reasons) {
+BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag, DWORD* reasons) {
   DWORD local_reasons = 0;
 
   WindowsVersion windows_version = GetWindowsVersion();
@@ -319,8 +338,7 @@ DLLEXPORT BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag,
   return (local_reasons == 0);
 }
 
-#pragma comment(linker, "/EXPORT:LaunchGoogleChrome=_LaunchGoogleChrome@0,PRIVATE")
-DLLEXPORT BOOL __stdcall LaunchGoogleChrome() {
+BOOL __stdcall LaunchGoogleChrome() {
   wchar_t launch_cmd[MAX_PATH];
   size_t size = _countof(launch_cmd);
   if (!ReadValueFromRegistry(HKEY_LOCAL_MACHINE, kChromeRegClientStateKey,
@@ -413,11 +431,10 @@ DLLEXPORT BOOL __stdcall LaunchGoogleChrome() {
   return ret;
 }
 
-#pragma comment(linker, "/EXPORT:LaunchGoogleChromeWithDimensions=_LaunchGoogleChromeWithDimensions@16,PRIVATE")
-DLLEXPORT BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
-                                                          int y,
-                                                          int width,
-                                                          int height) {
+BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
+                                                int y,
+                                                int width,
+                                                int height) {
   if (!LaunchGoogleChrome())
     return false;
 
@@ -450,4 +467,50 @@ DLLEXPORT BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
 
   return (handle &&
           SetWindowPos(handle, 0, x, y, width, height, SWP_NOZORDER));
+}
+
+int __stdcall GoogleChromeDaysSinceLastRun() {
+  using base::win::RegKey;
+  using base::Time;
+  using base::TimeDelta;
+
+  int days_since_last_run = std::numeric_limits<int>::max();
+
+  struct {
+    HKEY hive;
+    const wchar_t* path;
+  } reg_data[] = {
+    { HKEY_LOCAL_MACHINE, kChromeRegClientStateMediumKey },
+    { HKEY_CURRENT_USER, kChromeRegClientStateKey }
+  };
+
+  for (int i = 0; i < arraysize(reg_data); ++i) {
+    if (IsChromeInstalled(reg_data[i].hive)) {
+      RegKey client_state(reg_data[i].hive, reg_data[i].path, KEY_QUERY_VALUE);
+      if (client_state.Valid()) {
+        std::wstring last_run;
+        int64 last_run_value = 0;
+        if (client_state.ReadValue(google_update::kRegLastRunTimeField,
+                                   &last_run) == ERROR_SUCCESS &&
+            base::StringToInt64(last_run, &last_run_value)) {
+          Time last_run_time = Time::FromInternalValue(last_run_value);
+          TimeDelta difference = Time::NowFromSystemTime() - last_run_time;
+
+          // We can end up with negative numbers here, given changes in system
+          // clock time or due to TimeDelta's int64 -> int truncation.
+          int new_days_since_last_run = difference.InDays();
+          if (new_days_since_last_run >= 0 &&
+              new_days_since_last_run < days_since_last_run) {
+            days_since_last_run = new_days_since_last_run;
+          }
+        }
+      }
+    }
+  }
+
+  if (days_since_last_run == std::numeric_limits<int>::max()) {
+    days_since_last_run = -1;
+  }
+
+  return days_since_last_run;
 }

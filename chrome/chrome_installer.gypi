@@ -14,6 +14,8 @@
           'target_name': 'gcapi_dll',
           'type': 'loadable_module',
           'dependencies': [
+            'installer_util',
+            '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/google_update/google_update.gyp:google_update',
           ],
           'include_dirs': [
@@ -21,6 +23,7 @@
           ],
           'sources': [
             'installer/gcapi/gcapi.cc',
+            'installer/gcapi/gcapi.def',
             'installer/gcapi/gcapi.h',
           ],
         },
@@ -28,6 +31,8 @@
           'target_name': 'gcapi_lib',
           'type': 'static_library',
           'dependencies': [
+            'installer_util',
+            '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/google_update/google_update.gyp:google_update',
           ],
           'include_dirs': [
@@ -41,14 +46,20 @@
         {
           'target_name': 'gcapi_test',
           'type': 'executable',
-          'dependencies': [
+          'dependencies': [   
+            'common',
             'gcapi_dll',
             'gcapi_lib',
+            'installer_util',
+            '<(DEPTH)/base/base.gyp:base',
+            '<(DEPTH)/base/base.gyp:test_support_base',
+            '<(DEPTH)/testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
             '<(DEPTH)',
           ],
           'sources': [
+            'installer/gcapi/gcapi_last_run_test.cc',
             'installer/gcapi/gcapi_test.cc',
             'installer/gcapi/gcapi_test.rc',
             'installer/gcapi/resource.h',
