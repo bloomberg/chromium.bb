@@ -119,8 +119,8 @@
     "message": "See and control a shared computer.",
     "description": "Description of the 'access' or 'client' functionality, displayed next to a button that instigates an access operation."
   },
-  "HOME_ANYTIME_REMOTE_ACCESS_TITLE": {
-    "message": "Anytime Remote Access",
+  "HOME_MY_COMPUTERS_TITLE": {
+    "message": "My Computers",
     "description": "Title for the portion of the home page showing the list of hosts the user has previously registered for remote access at any time."
   },
   "HOME_SHARE_BUTTON": {

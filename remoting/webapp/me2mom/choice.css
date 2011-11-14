@@ -56,7 +56,6 @@ button[disabled], .button[disabled]:hover {
 h1 {
   font-size: 24px;
   font-weight: normal;
-  margin-__MSG_@@bidi_start_edge__: 10px;
 }
 
 label {
@@ -89,6 +88,11 @@ label {
     conforming correctly to the standard, remove this comment.
   */
   text-align: center;
+}
+
+.collapsed {
+  opacity: 0;
+  height: 0 !important;
 }
 
 .choice-header {
@@ -133,6 +137,7 @@ label {
 .icon-label {
   display: inline-block;
   vertical-align: top;
+  margin-__MSG_@@bidi_start_edge__: 10px;
 }
 
 .information-box {
@@ -178,6 +183,56 @@ label {
 
 .hide-scrollbars {
   overflow-y: hidden;
+}
+
+.host-list-container {
+  -webkit-transition: all 0.5s;
+  overflow: hidden;
+}
+
+.host-list-table {
+  margin-__MSG_@@bidi_start_edge__: 30px;
+  width: 610px;  /* width + margin = body width */
+  border-spacing: 0;
+}
+
+.host-list-row {
+  height: 50px;
+  color: black;
+}
+
+.host-list-row, .host-list-row td {
+  -webkit-transition: all 0.5s;
+}
+
+.host-list-row td {
+  border-bottom: 1px solid transparent;
+  border-top: 1px solid transparent;
+}
+
+.host-list-row:hover {
+  background-color: #e7eef2;
+}
+
+.host-list-row:hover td {
+  border-bottom: 1px solid #c6c6c6;
+  border-top: 1px solid #c6c6c6;
+}
+
+.host-list-row-end {
+  padding-__MSG_@@bidi_end_edge__: 10px;
+}
+
+.host-list-row-start {
+  padding-__MSG_@@bidi_start_edge__: 10px;
+}
+
+.host-offline {
+  color: #a9a9a9;
+}
+
+.host-offline img {
+  opacity: 0.5;
 }
 
 .small-print {

@@ -466,11 +466,8 @@ function parseHostListResponse_(xhr) {
         showConnectError_(remoting.Error.GENERIC);
       }
     }
-  } catch(er) {
-    // Error parsing response...
-    remoting.debug.log('Error: Error processing response: "' +
-                xhr.status + ' ' + xhr.statusText);
-    remoting.debug.log(xhr.responseText);
+  } catch (er) {
+    console.error('Error processing response: ', xhr);
   }
 }
 
@@ -500,15 +497,20 @@ function replaceHostList_(hostList) {
   // Clear the table before adding the host info.
   hostListTable.innerHTML = '';
 
-  // Show/hide the div depending on whether there are hosts to list.
-  hostListDiv.hidden = (hostList.length == 0);
-
   for (var i = 0; i < hostList.length; ++i) {
     var host = hostList[i];
     if (!host.hostName || !host.hostId || !host.status || !host.jabberId ||
         !host.publicKey)
       continue;
     var hostEntry = document.createElement('tr');
+    addClass(hostEntry, 'host-list-row');
+
+    var hostIcon = document.createElement('td');
+    var hostIconImage = document.createElement('img');
+    hostIconImage.src = 'icon_host.png';
+    hostIcon.className = 'host-list-row-start';
+    hostIcon.appendChild(hostIconImage);
+    hostEntry.appendChild(hostIcon);
 
     var hostName = document.createElement('td');
     hostName.setAttribute('class', 'mode-select-label');
@@ -526,12 +528,24 @@ function replaceHostList_(hostList) {
           chrome.i18n.getMessage(/*i18n-content*/'CONNECT_BUTTON');
       hostStatus.appendChild(connectButton);
     } else {
+      addClass(hostEntry, 'host-offline');
       hostStatus.innerHTML = chrome.i18n.getMessage(/*i18n-content*/'OFFLINE');
     }
+    hostStatus.className = 'host-list-row-end';
     hostEntry.appendChild(hostStatus);
 
     hostListTable.appendChild(hostEntry);
   }
+
+  // Show/hide the div depending on whether there are hosts to list.
+  hostListDiv.hidden = (hostList.length == 0);
+  if (hostList.length == 0) {
+    addClass(hostListDiv, 'collapsed');
+  } else {
+    hostListDiv.style.height = hostListDiv.scrollHeight + 'px';
+    removeClass(hostListDiv, 'collapsed');
+  }
+
 }
 
 /**
@@ -592,5 +606,4 @@ remoting.connectHostWithWcs = function() {
   remoting.oauth2.callWithToken(createPluginAndConnect);
 }
 
-// Don't delete this!
 }());
