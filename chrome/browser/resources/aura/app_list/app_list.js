@@ -49,7 +49,7 @@ cr.define('appList', function() {
   }
 
   function getAppsPageIndex(page) {
-    appsView.getAppsPageIndex(page);
+    return appsView.getAppsPageIndex(page);
   }
 
   function getCardSlider() {
