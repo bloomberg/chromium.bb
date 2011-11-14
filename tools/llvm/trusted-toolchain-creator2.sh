@@ -127,7 +127,7 @@ readonly ARMEL_REPO=http://ports.ubuntu.com/ubuntu-ports/pool
 #
 readonly PACKAGE_LIST=http://ports.ubuntu.com/ubuntu-ports/dists/natty/main/binary-armel/Packages.bz2
 # this where we create the ARMEL "jail"
-readonly INSTALL_ROOT=$(pwd)/toolchain/linux_arm_natty_jail
+readonly INSTALL_ROOT=$(pwd)/toolchain/linux_arm-trusted
 
 readonly TMP=/tmp/arm-crosstool-natty
 
@@ -259,6 +259,8 @@ InstallCrossArmBasePackagesManual() {
   SubBanner "Possibly install additional standard packages"
   # these are needed for the TC packages we are about to install
   sudo apt-get install libelfg0 libgmpxx4ldbl libmpc2 libppl7 libppl-c2
+  # This is needed for qemu
+  sudo apt-get install ia32-libs libc6-i386
 
   SubBanner "Install cross arm TC packages"
   sudo dpkg -i ${dest}/*.deb
@@ -289,36 +291,37 @@ InstallTrustedLinkerScript() {
 # we probably should. For now, remove the .so and let the linker
 # use the .a instead.
 HacksAndPatches() {
+  rel_path=toolchain/linux_arm-trusted
   Banner "Misc Hacks & Patches"
   # these are linker scripts with absolute pathnames in them
   # which we rewrite here
   SubBanner "Rewriting Linker Scripts"
   sed -i -e 's|/usr/lib/arm-linux-gnueabi/||g' \
-    toolchain/linux_arm_natty_jail/usr/lib/arm-linux-gnueabi/libpthread.so \
-    toolchain/linux_arm_natty_jail/usr/lib/arm-linux-gnueabi/libc.so
+    ${rel_path}/usr/lib/arm-linux-gnueabi/libpthread.so \
+    ${rel_path}/usr/lib/arm-linux-gnueabi/libc.so
   sed -i -e 's|/lib/arm-linux-gnueabi/||g' \
-    toolchain/linux_arm_natty_jail/usr/lib/arm-linux-gnueabi/libpthread.so \
-    toolchain/linux_arm_natty_jail/usr/lib/arm-linux-gnueabi/libc.so
+    ${rel_path}/usr/lib/arm-linux-gnueabi/libpthread.so \
+    ${rel_path}/usr/lib/arm-linux-gnueabi/libc.so
 
   # libssl.so and libcrypto.so cannot be used because they have
   # a dependency on libz.so. We don't download libz, although
   # we probably should. For now, remove the .so and let the linker
   # use the .a instead.
   SubBanner "Deleting some .sos"
-  rm -fv toolchain/linux_arm_natty_jail/usr/lib/libcrypto.so
-  rm -fv toolchain/linux_arm_natty_jail/usr/lib/libssl.so.0.9.8
-  rm -fv toolchain/linux_arm_natty_jail/usr/lib/libssl.so
-  rm -fv toolchain/linux_arm_natty_jail/lib/libssl.so.0.9.8
+  rm -fv ${rel_path}/usr/lib/libcrypto.so
+  rm -fv ${rel_path}/usr/lib/libssl.so.0.9.8
+  rm -fv ${rel_path}/usr/lib/libssl.so
+  rm -fv ${rel_path}/lib/libssl.so.0.9.8
 }
 
 
 InstallMissingArmLibrariesAndHeadersIntoJail() {
   Banner "Install Libs And Headers Into Jail"
 
-  mkdir -p ${TMP}
+  mkdir -p ${TMP}/armel-packages
   mkdir -p ${INSTALL_ROOT}
   for file in $@ ; do
-    local package="${TMP}/${file##*/}"
+    local package="${TMP}/armel-packages/${file##*/}"
     Banner "installing ${file}"
     DownloadOrCopy ${ARMEL_REPO}/${file} ${package}
     SubBanner "extracting to ${INSTALL_ROOT}"
@@ -360,6 +363,16 @@ CleanupJailSymlinks() {
 
 #@
 #@ BuildAndInstallQemu
+#
+# Historic Notes:
+# Traditionally we were builidng static 32 bit images of qemu on a
+# 64bit system which would run then on both x86-32 and x86-64 systems.
+# The latest version of qemu contains new dependencies which
+# currently make it impossible to build such images on 64bit systems
+# We can build a static 64bit qemu but it does not work with
+# the sandboxed translators for unknown reason.
+# So instead we chose to build 32bit shared images.
+#
 BuildAndInstallQemu() {
   local saved_dir=$(pwd)
   local tmpdir="${TMP}/qemu.nacl"
@@ -380,18 +393,22 @@ BuildAndInstallQemu() {
   SubBanner "Configuring"
   env -i PATH=/usr/bin/:/bin \
     ./configure \
+    --extra-cflags="-m32" \
+    --extra-ldflags="-Wl,-rpath=/lib32" \
     --disable-system \
     --enable-linux-user \
     --disable-darwin-user \
     --disable-bsd-user \
     --target-list=arm-linux-user \
     --disable-smartcard-nss \
-    --disable-sdl\
-    --static
+    --disable-sdl
+
+# see above for why we can no longer use -static
+#    --static
 
   SubBanner "Make"
   env -i PATH=/usr/bin/:/bin \
-      make MAKE_OPTS=${MAKE_OPTS}
+      V=99 make MAKE_OPTS=${MAKE_OPTS}
 
   SubBanner "Install"
   cp arm-linux-user/qemu-arm ${INSTALL_ROOT}
