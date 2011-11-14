@@ -31,7 +31,7 @@ const char kSelfExe[] = "/proc/self/exe";
 
 // The name of this file relative to the source root. This is used for checking
 // that the source checkout is in the correct place.
-static const char kThisSourceFile[] = "base/base_paths_linux.cc";
+static const char kThisSourceFile[] = "base/base_paths_posix.cc";
 
 bool PathProviderPosix(int key, FilePath* result) {
   FilePath path;
