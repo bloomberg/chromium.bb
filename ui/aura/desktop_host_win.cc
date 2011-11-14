@@ -258,7 +258,10 @@ void DesktopHostWin::OnPaint(HDC dc) {
 }
 
 void DesktopHostWin::OnSize(UINT param, const CSize& size) {
-  desktop_->OnHostResized(gfx::Size(size.cx, size.cy));
+  // Minimizing resizes the window to 0x0 which causes our layout to go all
+  // screwy, so we just ignore it.
+  if (param != SIZE_MINIMIZED)
+    desktop_->OnHostResized(gfx::Size(size.cx, size.cy));
 }
 
 }  // namespace aura
