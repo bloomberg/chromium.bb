@@ -2,6 +2,8 @@ noinst_PROGRAMS = $(clients_programs) 		\
 	$(poppler_programs) 			\
 	$(simple_clients_programs)
 
+libexec_PROGRAMS = $(desktop_shell)
+
 if BUILD_SIMPLE_CLIENTS
 simple_clients_programs = simple-egl simple-shm
 simple_egl_SOURCES = simple-egl.c
@@ -21,8 +23,9 @@ clients_programs =				\
 	dnd					\
 	smoke					\
 	resizor					\
-	eventdemo				\
-	desktop-shell
+	eventdemo
+
+desktop_shell = wayland-desktop-shell
 
 noinst_LIBRARIES = libtoytoolkit.a
 
@@ -68,11 +71,11 @@ resizor_LDADD = $(toolkit_libs)
 eventdemo_SOURCES = eventdemo.c
 eventdemo_LDADD = $(toolkit_libs)
 
-desktop_shell_SOURCES =				\
+wayland_desktop_shell_SOURCES =			\
 	desktop-shell.c				\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c
-desktop_shell_LDADD = $(toolkit_libs)
+wayland_desktop_shell_LDADD = $(toolkit_libs)
 
 BUILT_SOURCES =					\
 	screenshooter-client-protocol.h		\

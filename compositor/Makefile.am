@@ -3,6 +3,7 @@ bin_PROGRAMS = wayland-compositor
 AM_CPPFLAGS =					\
 	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
+	-DLIBEXECDIR='"$(libexecdir)"'		\
 	-DXSERVER_PATH='"@XSERVER_PATH@"'	\
 	$(COMPOSITOR_CFLAGS)
 

@@ -963,7 +963,7 @@ desktop_shell_sigchld(struct wlsc_process *process, int status)
 static int
 launch_desktop_shell_process(struct wl_shell *shell)
 {
-	const char *shell_exe = "./clients/desktop-shell";
+	const char *shell_exe = LIBEXECDIR "/wayland-desktop-shell";
 	struct wlsc_compositor *compositor = shell->compositor;
 	char s[32];
 	int sv[2], flags;
