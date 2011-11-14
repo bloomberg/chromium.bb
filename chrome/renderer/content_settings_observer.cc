@@ -36,6 +36,9 @@ static bool IsWhitelistedForContentSettings(WebFrame* frame) {
   if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
     return true;  // Browser UI elements should still work.
 
+  if (EqualsASCII(origin.protocol(), chrome::kChromeDevToolsScheme))
+    return true;  // DevTools UI elements should still work.
+
   // If the scheme is ftp: or file:, an empty file name indicates a directory
   // listing, which requires JavaScript to function properly.
   GURL document_url = frame->document().url();
