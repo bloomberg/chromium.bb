@@ -400,7 +400,7 @@ cr.define('ntp4', function() {
   }
 
   function getAppsPageIndex(page) {
-    newTabView.getAppsPageIndex(page);
+    return newTabView.getAppsPageIndex(page);
   }
 
   function getCardSlider() {
