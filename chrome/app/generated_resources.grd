@@ -11863,14 +11863,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_MORE_DESCRIPTION" desc="In the settings tab, the text under the right (more sensitive) side of the slider for the touchpad touch sensitivity.">
         Fast
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISABLE">
+        Disable bluetooth
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENABLE">
         Enable bluetooth
       </message>
       <message name="IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES">
-        Find devices
+        Search for devices
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_NO_BLUETOOTH_DEVICES_FOUND">
+        No devices found.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING">
-        Scanning
+        Searching...
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTED">
         Connected

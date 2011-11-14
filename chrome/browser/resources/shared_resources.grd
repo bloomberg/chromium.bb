@@ -28,6 +28,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/css/chrome_shared.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_SELECT"
                file="shared/css/select.css" type="BINDATA" />
+      <include name="IDR_SHARED_CSS_SPINNER"
+               file="shared/css/spinner.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_TABLE"
                file="shared/css/table.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_TABS"
@@ -50,6 +52,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/images/google-transparent.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_SELECT"
                file="shared/images/select.png" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_SPINNER"
+               file="shared/images/spinner.svg" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_THROBBER"
                file="shared/images/throbber.svg" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR"

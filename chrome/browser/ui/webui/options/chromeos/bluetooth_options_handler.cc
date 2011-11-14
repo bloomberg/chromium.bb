@@ -50,8 +50,13 @@ void BluetoothOptionsHandler::GetLocalizedValues(
 
   localized_strings->SetString("bluetooth",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH));
+  localized_strings->SetString("disableBluetooth",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_DISABLE));
   localized_strings->SetString("enableBluetooth",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_ENABLE));
+  localized_strings->SetString("noBluetoothDevicesFound",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_NO_BLUETOOTH_DEVICES_FOUND));
   localized_strings->SetString("findBluetoothDevices",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES));
   localized_strings->SetString("bluetoothScanning",
@@ -101,10 +106,10 @@ void BluetoothOptionsHandler::Initialize() {
       "options.SystemOptions.showBluetoothSettings");
 
   // TODO(kevers): Determine whether bluetooth adapter is powered.
-  bool bluetooth_on = true;
+  bool bluetooth_on = false;
   base::FundamentalValue checked(bluetooth_on);
   web_ui_->CallJavascriptFunction(
-      "options.SystemOptions.setBluetoothCheckboxState", checked);
+      "options.SystemOptions.setBluetoothState", checked);
 
   chromeos::BluetoothManager* bluetooth_manager =
       chromeos::BluetoothManager::GetInstance();
@@ -136,7 +141,7 @@ void BluetoothOptionsHandler::EnableChangeCallback(
   // TODO(kevers): Call Bluetooth API to enable or disable.
   base::FundamentalValue checked(bluetooth_enabled);
   web_ui_->CallJavascriptFunction(
-      "options.SystemOptions.setBluetoothCheckboxState", checked);
+      "options.SystemOptions.setBluetoothState", checked);
 }
 
 void BluetoothOptionsHandler::FindDevicesCallback(
@@ -301,7 +306,6 @@ void BluetoothOptionsHandler::ValidateDefaultAdapter(
 
 void BluetoothOptionsHandler::GenerateFakeDeviceList() {
   GenerateFakeDevice(
-
     "Fake Wireless Keyboard",
     "01-02-03-04-05-06",
     "input-keyboard",
@@ -343,7 +347,6 @@ void BluetoothOptionsHandler::GenerateFakeDeviceList() {
     false,
     false,
     "bluetoothEnterPasskey");
-
   web_ui_->CallJavascriptFunction(
       "options.SystemOptions.notifyBluetoothSearchComplete");
 }

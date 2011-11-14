@@ -83,17 +83,18 @@ cr.define('options.system.bluetooth', function() {
      * existing device is updated.
      * @param {Object.<string,string>} device Description of the bluetooth
      *     device.
+     * @return {boolean} True if the devies was successfully added or updated.
      */
     appendDevice: function(device) {
       if (!this.isSupported_(device))
-        return;
+        return false;
       var item = new BluetoothItem(device);
       var existing = this.findDevice(device.address);
-      if (existing) {
+      if (existing)
         this.replaceChild(item, existing);
-        return;
-      }
-      this.appendChild(item);
+      else
+        this.appendChild(item);
+      return true;
     },
 
     /**
@@ -142,22 +143,16 @@ cr.define('options.system.bluetooth', function() {
    * @constructor
    */
   function BluetoothItem(device) {
-    var el = cr.doc.createElement('div');
+    var el = $('bluetooth-item-template').cloneNode(true);
+    el.__proto__ = BluetoothItem.prototype;
+    el.removeAttribute('id');
+    el.hidden = false;
     el.data = {};
     for (var key in device)
       el.data[key] = device[key];
-    BluetoothItem.decorate(el);
+    el.decorate();
     return el;
   }
-
-  /**
-   * Decorates an element as a bluetooth item.
-   * @param {!HTMLElement} el The element to decorate.
-   */
-  BluetoothItem.decorate = function(el) {
-    el.__proto__ = BluetoothItem.prototype;
-    el.decorate();
-  };
 
   BluetoothItem.prototype = {
     __proto__: HTMLDivElement.prototype,
@@ -170,20 +165,32 @@ cr.define('options.system.bluetooth', function() {
       // we are interested in tracking paired devices that are not connected.
       this.paired = this.data.paired && !this.data.connected;
       this.connecting = !!this.data.pairing;
-      this.addIcon_();
       this.addLabels_();
       this.addButtons_();
     },
 
     /**
-     * Adds an icon corresponding to the device category.
+     * Retrieves the descendent element with the matching class name.
+     * @param {string} className The class name for the target element.
+     * @return {Element|undefined}  Returns the matching element if
+     *    found and unique.
      * @private
      */
-    addIcon_: function() {
-      var iconElement = this.ownerDocument.createElement('div');
-      iconElement.className = 'bluetooth-' + this.data.icon;
-      iconElement.classList.add('bluetooth-icon');
-      this.appendChild(iconElement);
+    getNodeByClass_:function(className) {
+      var elements = this.getElementsByClassName(className);
+      if (elements && elements.length == 1)
+        return elements[0];
+    },
+
+    /**
+     * Sets the text content for an element.
+     * @param {string} className The class name of the target element.
+     * @param {string} label Text content for the element.
+     * @private
+     */
+    setLabel_: function(className, label) {
+      var el = this.getNodeByClass_(className);
+      el.textContent = label;
     },
 
     /**
@@ -192,46 +199,23 @@ cr.define('options.system.bluetooth', function() {
      * @private
      */
     addLabels_: function() {
-      var textDiv = this.ownerDocument.createElement('div');
-      textDiv.className = 'bluetooth-item-text';
-      var nameEl = this.ownerDocument.createElement('div');
-      nameEl.className = 'network-name-label';
-      nameEl.textContent = this.data.name;
-      textDiv.appendChild(nameEl);
-      this.appendChild(textDiv);
-      this.setDeviceStatus_(textDiv);
-      if (this.data.pairing) {
-        this.addPairingInstructions_(textDiv);
-      }
-    },
-
-    /**
-     * Adds a label showing the status of the device.
-     * @param {!Element} textDiv Target element for inserting the status label.
-     * @private
-     */
-    setDeviceStatus_: function(textDiv) {
+      this.setLabel_('network-name-label', this.data.name);
       var status;
       if (this.data.connected)
         status = Constants.DEVICE_STATUS.CONNECTED;
-      else if (this.data.paired)
-        status = Constants.DEVICE_STATUS.PAIRED;
       else if (this.data.pairing)
         status = Constants.DEVICE_STATUS.CONNECTING;
-      else
-        status = Constants.DEVICE_STATUS.NOT_PAIRED;
-      var statusMessage = templateData[status];
-      if (statusMessage) {
-        var statusEl = this.ownerDocument.createElement('div');
-        statusEl.className = 'network-status-label';
-        statusEl.textContent = statusMessage;
+      if (status) {
+        var statusMessage = templateData[status];
+        if (statusMessage)
+          this.setLabel_('network-status-label', statusMessage);
         if (this.connecting) {
-          var throbber = this.ownerDocument.createElement('div');
-          throbber.className = 'throbber';
-          statusEl.appendChild(throbber);
+          var spinner = this.getNodeByClass_('inline-spinner');
+          spinner.hidden = false;
         }
-        textDiv.appendChild(statusEl);
       }
+      if (this.data.pairing)
+        this.addPairingInstructions_();
     },
 
     /**
@@ -239,9 +223,8 @@ cr.define('options.system.bluetooth', function() {
      * @param {!Element} textDiv Target element for inserting the instructions.
      * @private
      */
-    addPairingInstructions_: function(textDiv) {
-      var instructionsEl = this.ownerDocument.createElement('div');
-      instructionsEl.className = 'bluetooth-instructions';
+    addPairingInstructions_: function() {
+      var instructionsEl = this.getNodeByClass_('bluetooth-instructions');
       var message = templateData[this.data.pairing];
       var array = this.formatInstructions_(message);
       for (var i = 0; i < array.length; i++) {
@@ -253,7 +236,6 @@ cr.define('options.system.bluetooth', function() {
         input.className = 'bluetooth-passkey-field';
         instructionsEl.appendChild(input);
       }
-      textDiv.appendChild(instructionsEl);
     },
 
     /**
@@ -336,8 +318,7 @@ cr.define('options.system.bluetooth', function() {
      * @private.
      */
     addButtons_: function() {
-      var buttonsDiv = this.ownerDocument.createElement('div');
-      buttonsDiv.className = 'bluetooth-button-group';
+      var buttonsDiv = this.getNodeByClass_('bluetooth-button-group');
       var buttonLabelKey = null;
       var callbackType = null;
       if (this.connected) {

@@ -26,6 +26,12 @@ html[dir=rtl] .touchpad-sensitivity-more {
   display: -webkit-box;
 }
 
+#no-bluetooth-devices-label {
+  -webkit-margin-after: 5px;
+  -webkit-margin-before: 5px;
+  color: gray;
+}
+
 #bluetooth-finder-container,
 #bluetooth-scanning-status {
   -webkit-box-orient: horizontal;
@@ -67,6 +73,10 @@ html[dir=rtl] .touchpad-sensitivity-more {
   width: 100%;
 }
 
+.bluetooth-item:first-child > * {
+  border-top: 4px solid rgba(255,255,255,1);
+}
+
 .bluetooth-item:hover > * > button,
 .bluetooth-item[connected] > * > button,
 .bluetooth-item[connecting] > * > button {
@@ -81,7 +91,7 @@ html[dir=rtl] .touchpad-sensitivity-more {
 }
 
 .bluetooth-item[paired] {
-  background-color: hsl(214, 0%, 95%);
+  color: gray;
 }
 
 .bluetooth-item:hover,
@@ -94,10 +104,11 @@ html[dir=rtl] .touchpad-sensitivity-more {
   -webkit-padding-after: 3px;
   -webkit-padding-before: 3px;
   -webkit-padding-end: 5px;
+  -webkit-padding-start: 5px;
   width: 100%;
 }
 
-.bluetooth-item-text > * > .throbber {
+.bluetooth-item-text > * > .inline-spinner {
   -webkit-margin-start: 5px;
   -webkit-transform: translateY(3px);
 }
@@ -154,19 +165,3 @@ html[dir=rtl] .touchpad-sensitivity-more {
   vertical-align: middle;
 }
 
-.bluetooth-icon {
-  background: center center no-repeat;
-  min-width: 45px;
-}
-
-.bluetooth-headset {
-  background-image: url("headset.png");
-}
-
-.bluetooth-input-keyboard {
-  background-image: url("keyboard.png");
-}
-
-.bluetooth-input-mouse {
-  background-image: url("mouse.png");
-}

@@ -1,0 +1,16 @@
+.inline-spinner,
+.spinner {
+  background-image: url('chrome://resources/images/spinner.svg');
+  background-size: 100%;
+}
+
+.inline-spinner {
+  display: inline-block;
+  height: 16px;
+  width: 16px;
+}
+
+.spinner {
+  height: 32px;
+  width: 32px;
+}

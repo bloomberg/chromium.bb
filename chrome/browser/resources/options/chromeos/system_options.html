@@ -61,25 +61,37 @@
     <section id="bluetooth-devices" hidden>
       <h3 i18n-content="bluetooth"></h3>
       <div id="bluetooth-options-div">
-        <div id="enable-bluetooth" class="checkbox">
-          <label>
-            <input id="enable-bluetooth-check" type="checkbox"
-                checked="checked" pref="settings.enable_bluetooth">
-            <span i18n-content="enableBluetooth"></span>
-          </label>
+        <div id="bluetooth-buttons">
+          <button id="enable-bluetooth" i18n-content="enableBluetooth" hidden>
+          <button id="disable-bluetooth" i18n-content="disableBluetooth">
+        </div>
+        <div id="no-bluetooth-devices-label" 
+            i18n-content="noBluetoothDevicesFound">
         </div>
         <div id="bluetooth-device-list">
           <!-- A list of connected devices is inserted here on page load. -->
           <!-- The list of devices is updated asynchronously on clicking
-              'Find Devices' -->
+               'Find Devices'. -->
+        </div>
+        <!-- Template for items in list of Bluetooth devices -->
+        <div id="bluetooth-item-template" class="bluetooth-item" hidden>
+          <div class="bluetooth-item-text">
+            <div class="network-name-label"></div>
+            <div class="bluetooth-status">
+              <span class="network-status-label"></span>
+              <div class="inline-spinner" hidden></div>
+            </div>
+            <div class="bluetooth-instructions"></div>
+          </div>
+          <div class="bluetooth-button-group"></div>
         </div>
         <div id = "bluetooth-finder-container">
           <button id="bluetooth-find-devices" 
               i18n-content="findBluetoothDevices"></button>
+          <div id="bluetooth-scanning-icon" 
+              class="inline-spinner transparent"></div>
           <span id="bluetooth-scanning-label" class="transparent"
               i18n-content="bluetoothScanning"></span>
-          <div id="bluetooth-scanning-icon" 
-              class="throbber transparent"></div>
         </div>
       </div>
     </section>
