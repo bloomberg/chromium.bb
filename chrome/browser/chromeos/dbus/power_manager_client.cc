@@ -156,6 +156,16 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
+  virtual void CalculateIdleTime(const CalculateIdleTimeCallback& callback)
+      OVERRIDE {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kGetIdleTime);
+    power_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&PowerManagerClientImpl::OnGetIdleTime,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
 
  private:
   // Called when a dbus signal is initially connected.
@@ -236,6 +246,24 @@ class PowerManagerClientImpl : public PowerManagerClient {
     FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status));
   }
 
+  void OnGetIdleTime(const CalculateIdleTimeCallback& callback,
+                     dbus::Response* response) {
+    dbus::MessageReader reader(response);
+    int64 idle_time_ms = 0;
+    if (!reader.PopInt64(&idle_time_ms)) {
+      LOG(ERROR) << "Error reading response from powerd: "
+                 << response->ToString();
+      callback.Run(-1);
+      return;
+    }
+    if (idle_time_ms < 0) {
+      LOG(ERROR) << "Power manager failed to calculate idle time.";
+      callback.Run(-1);
+      return;
+    }
+    callback.Run(idle_time_ms/1000);
+  }
+
   dbus::ObjectProxy* power_manager_proxy_;
   ObserverList<Observer> observers_;
   base::WeakPtrFactory<PowerManagerClientImpl> weak_ptr_factory_;
@@ -290,6 +318,11 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   virtual void RequestRestart() OVERRIDE {}
 
   virtual void RequestShutdown() OVERRIDE {}
+
+  virtual void CalculateIdleTime(const CalculateIdleTimeCallback& callback)
+      OVERRIDE {
+    callback.Run(0);
+  }
 
  private:
   void Update() {

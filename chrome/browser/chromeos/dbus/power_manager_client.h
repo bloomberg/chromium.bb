@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 
 namespace dbus {
 class Bus;
@@ -31,6 +32,10 @@ struct PowerSupplyStatus {
   PowerSupplyStatus();
   const std::string& ToString() const;
 };
+
+// Callback used for processing the idle time.  The int64 param is the number of
+// seconds the user has been idle.
+typedef base::Callback<void(int64)> CalculateIdleTimeCallback;
 
 // PowerManagerClient is used to communicate with the power manager.
 class PowerManagerClient {
@@ -67,6 +72,11 @@ class PowerManagerClient {
 
   // Requests shutdown of the system.
   virtual void RequestShutdown() = 0;
+
+  // Calculates idle time asynchronously, after the idle time request has
+  // replied.  It passes the idle time in seconds to |callback|.  If it
+  // encounters some error, it passes -1 to |callback|.
+  virtual void CalculateIdleTime(const CalculateIdleTimeCallback& callback) = 0;
 
   // Creates the instance.
   static PowerManagerClient* Create(dbus::Bus* bus);

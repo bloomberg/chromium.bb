@@ -48,12 +48,6 @@ class PowerLibraryImpl : public PowerLibrary {
     observers_.RemoveObserver(observer);
   }
 
-  virtual void CalculateIdleTime(CalculateIdleTimeCallback* callback) OVERRIDE {
-    // TODO(sidor): Examine if it's really a good idea to use void* as a second
-    // argument.
-    chromeos::GetIdleTime(&GetIdleTimeCallback, callback);
-  }
-
   virtual void EnableScreenLock(bool enable) OVERRIDE {
     // Called when the screen preference is changed, which should always
     // run on UI thread.
@@ -70,21 +64,6 @@ class PowerLibraryImpl : public PowerLibrary {
  private:
   static void DoEnableScreenLock(bool enable) {
     chromeos::EnableScreenLock(enable);
-  }
-
-  static void GetIdleTimeCallback(void* object,
-                                 int64_t time_idle_ms,
-                                 bool success) {
-    DCHECK(object);
-    CalculateIdleTimeCallback* notify =
-        static_cast<CalculateIdleTimeCallback*>(object);
-    if (success) {
-      notify->Run(time_idle_ms/1000);
-    } else {
-      LOG(ERROR) << "Power manager failed to calculate idle time.";
-      notify->Run(-1);
-    }
-    delete notify;
   }
 
   static void SystemResumedHandler(void* object) {
@@ -124,11 +103,6 @@ class PowerLibraryStubImpl : public PowerLibrary {
 
   virtual void RemoveObserver(Observer* observer) OVERRIDE {
     observers_.RemoveObserver(observer);
-  }
-
-  virtual void CalculateIdleTime(CalculateIdleTimeCallback* callback) OVERRIDE {
-    callback->Run(0);
-    delete callback;
   }
 
   virtual void EnableScreenLock(bool enable) OVERRIDE {}

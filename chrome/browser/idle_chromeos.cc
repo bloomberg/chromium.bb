@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #if !defined(USE_AURA)
 #include "chrome/browser/screensaver_window_finder_gtk.h"
 #endif
@@ -29,11 +29,9 @@ void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
     notify.Run(IDLE_STATE_LOCKED);
     return;
   }
-  chromeos::CalculateIdleTimeCallback* callback =
-      new base::Callback<void(int64_t)>(base::Bind(&CalculateIdleStateNotifier,
-                                        idle_threshold,
-                                        notify));
-  chromeos::CrosLibrary::Get()->GetPowerLibrary()->CalculateIdleTime(callback);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      CalculateIdleTime(base::Bind(&CalculateIdleStateNotifier, idle_threshold,
+                                   notify));
 }
 
 bool CheckIdleStateIsLocked() {
