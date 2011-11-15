@@ -317,6 +317,8 @@ wlsc_output_finish_frame(struct wlsc_output *output, int msecs);
 void
 wlsc_output_damage(struct wlsc_output *output);
 void
+wlsc_compositor_repick(struct wlsc_compositor *compositor);
+void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor);
 void
 wlsc_compositor_fade(struct wlsc_compositor *compositor, float tint);

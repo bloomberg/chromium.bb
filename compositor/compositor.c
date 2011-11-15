@@ -361,7 +361,7 @@ wlsc_compositor_get_time(void)
 	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
-static void
+WL_EXPORT void
 wlsc_compositor_repick(struct wlsc_compositor *compositor)
 {
 	struct wlsc_input_device *device;

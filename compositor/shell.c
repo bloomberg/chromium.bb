@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <fcntl.h>
+#include <assert.h>
 
 #include "wayland-server.h"
 #include "compositor.h"
@@ -51,7 +52,25 @@ struct wl_shell {
 
 	bool locked;
 	bool prepare_event_sent;
+
+	struct wl_list hidden_surface_list;
 };
+
+struct hidden_surface {
+	struct wlsc_surface *surface;
+	struct wl_listener destroy_listener;
+	struct wl_shell *shell;
+
+	struct wl_list link;
+};
+
+static void
+hidden_surface_destroy(struct hidden_surface *hidden)
+{
+	wl_list_remove(&hidden->link);
+	wl_list_remove(&hidden->destroy_listener.link);
+	free(hidden);
+}
 
 struct wlsc_move_grab {
 	struct wl_grab grab;
@@ -830,9 +849,53 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 			       struct wl_resource *surface_resource)
 {
 	struct wl_shell *shell = resource->data;
+	struct wlsc_surface *es = surface_resource->data;
 
-	/* TODO: put the lock surface always on top modal until unlocked */
+	shell->prepare_event_sent = false;
 
+	if (!shell->locked)
+		return;
+
+	wl_list_remove(&es->link);
+	wl_list_insert(&shell->compositor->surface_list, &es->link);
+
+	wlsc_compositor_repick(shell->compositor);
+	wlsc_compositor_wake(shell->compositor);
+}
+
+static void
+resume_desktop(struct wl_shell *shell)
+{
+	struct hidden_surface *hidden;
+	struct hidden_surface *tmp;
+	struct wl_list *elem;
+	struct wl_list *put = &shell->compositor->surface_list;
+
+	wl_list_for_each_safe(hidden, tmp, &shell->hidden_surface_list, link) {
+		elem = &hidden->surface->link;
+		wl_list_remove(elem);
+
+		if (hidden->surface == shell->panel) {
+			wl_list_insert(&shell->compositor->surface_list, elem);
+			if (put == &shell->compositor->surface_list)
+				put = elem;
+		} else {
+			wl_list_insert(put, elem);
+			put = elem;
+		}
+
+		hidden_surface_destroy(hidden);
+	}
+
+	if (!wl_list_empty(&shell->hidden_surface_list)) {
+		fprintf(stderr,
+		"%s: Assertion failed: hidden_surface_list is not empty.\n",
+								__func__);
+	}
+
+	shell->locked = false;
+	wlsc_compositor_repick(shell->compositor);
+	wlsc_compositor_damage_all(shell->compositor);
 	wlsc_compositor_wake(shell->compositor);
 }
 
@@ -842,9 +905,10 @@ desktop_shell_unlock(struct wl_client *client,
 {
 	struct wl_shell *shell = resource->data;
 
-	shell->locked = false;
 	shell->prepare_event_sent = false;
-	wlsc_compositor_wake(shell->compositor);
+
+	if (shell->locked)
+		resume_desktop(shell);
 }
 
 static const struct desktop_shell_interface desktop_shell_implementation = {
@@ -917,6 +981,34 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 }
 
 static void
+handle_hidden_surface_destroy(struct wl_listener *listener,
+			      struct wl_resource *resource, uint32_t time)
+{
+	struct hidden_surface *hidden =
+		container_of(listener, struct hidden_surface, destroy_listener);
+
+	hidden_surface_destroy(hidden);
+}
+
+static struct hidden_surface *
+hidden_surface_create(struct wl_shell *shell, struct wlsc_surface *surface)
+{
+	struct hidden_surface *hidden;
+
+	hidden = malloc(sizeof *hidden);
+	if (!hidden)
+		return NULL;
+
+	hidden->surface = surface;
+	hidden->shell = shell;
+	hidden->destroy_listener.func = handle_hidden_surface_destroy;
+	wl_list_insert(surface->surface.resource.destroy_listener_list.prev,
+		       &hidden->destroy_listener.link);
+
+	return hidden;
+}
+
+static void
 activate(struct wlsc_shell *base, struct wlsc_surface *es,
 	 struct wlsc_input_device *device, uint32_t time)
 {
@@ -931,7 +1023,7 @@ activate(struct wlsc_shell *base, struct wlsc_surface *es,
 	if (es == shell->background) {
 		wl_list_remove(&es->link);
 		wl_list_insert(compositor->surface_list.prev, &es->link);
-	} else if (shell->panel) {
+	} else if (shell->panel && !shell->locked) {
 		wl_list_remove(&shell->panel->link);
 		wl_list_insert(&compositor->surface_list, &shell->panel->link);
 	}
@@ -941,8 +1033,58 @@ static void
 lock(struct wlsc_shell *base)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
+	struct wl_list *surface_list = &shell->compositor->surface_list;
+	struct wlsc_surface *cur;
+	struct wlsc_surface *tmp;
+	struct hidden_surface *hidden;
+	struct wlsc_input_device *device;
+	uint32_t time;
+
+	if (shell->locked)
+		return;
 
 	shell->locked = true;
+
+	/* Move all surfaces from compositor's list to our hidden list,
+	 * except the background. This way nothing else can show or
+	 * receive input events while we are locked. */
+
+	if (!wl_list_empty(&shell->hidden_surface_list)) {
+		fprintf(stderr,
+		"%s: Assertion failed: hidden_surface_list is not empty.\n",
+								__func__);
+	}
+
+	wl_list_for_each_safe(cur, tmp, surface_list, link) {
+		/* skip input device sprites, cur->surface is uninitialised */
+		if (cur->surface.resource.client == NULL)
+			continue;
+
+		if (cur == shell->background)
+			continue;
+
+		hidden = hidden_surface_create(shell, cur);
+		if (!hidden)
+			continue;
+
+		wl_list_insert(shell->hidden_surface_list.prev, &hidden->link);
+		wl_list_remove(&cur->link);
+		wl_list_init(&cur->link);
+	}
+
+	/* reset pointer foci */
+	wlsc_compositor_repick(shell->compositor);
+
+	/* reset keyboard foci */
+	time = wlsc_compositor_get_time();
+	wl_list_for_each(device, &shell->compositor->input_device_list, link) {
+		wl_input_device_set_keyboard_focus(&device->input_device,
+						   NULL, time);
+	}
+
+	/* TODO: disable bindings that should not work while locked. */
+
+	/* All this must be undone in resume_desktop(). */
 }
 
 static void
@@ -957,8 +1099,7 @@ unlock(struct wlsc_shell *base)
 
 	/* If desktop-shell client has gone away, unlock immediately. */
 	if (!shell->child.desktop_shell) {
-		shell->locked = false;
-		wlsc_compositor_wake(shell->compositor);
+		resume_desktop(shell);
 		return;
 	}
 
@@ -976,16 +1117,31 @@ map(struct wlsc_shell *base,
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	struct wlsc_compositor *compositor = shell->compositor;
+	struct hidden_surface *hidden;
 
 	/* Map background at the bottom of the stack, panel on top,
 	   everything else just below panel. */
-	if (surface == shell->background)
+	if (surface == shell->background) {
 		wl_list_insert(compositor->surface_list.prev, &surface->link);
-	else if (surface == shell->panel)
-		wl_list_insert(&compositor->surface_list, &surface->link);
-	else
-		wl_list_insert(&shell->panel->link, &surface->link);
 
+	} else if (shell->locked) {
+		wl_list_init(&surface->link);
+
+		hidden = hidden_surface_create(shell, surface);
+		if (!hidden)
+			goto out;
+
+		/* panel positioning is fixed on resume */
+		wl_list_insert(&shell->hidden_surface_list, &hidden->link);
+	} else {
+		if (surface == shell->panel)
+			wl_list_insert(&compositor->surface_list,
+				       &surface->link);
+		else
+			wl_list_insert(&shell->panel->link, &surface->link);
+	}
+
+out:
 	if (surface->map_type == WLSC_SURFACE_MAP_TOPLEVEL) {
 		surface->x = 10 + random() % 400;
 		surface->y = 10 + random() % 400;
@@ -1124,6 +1280,8 @@ shell_init(struct wlsc_compositor *ec)
 	shell->shell.map = map;
 	shell->shell.configure = configure;
 	shell->shell.set_selection_focus = wlsc_selection_set_focus;
+
+	wl_list_init(&shell->hidden_surface_list);
 
 	if (wl_display_add_global(ec->wl_display, &wl_shell_interface,
 				  shell, bind_shell) == NULL)
