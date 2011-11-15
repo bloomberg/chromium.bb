@@ -72,8 +72,8 @@ class MessageLoopObserver : public MessageLoopForUI::Observer {
 #endif
 };
 
-static base::LazyInstance<MessageLoopObserver> g_message_loop_observer(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<MessageLoopObserver> g_message_loop_observer =
+    LAZY_INSTANCE_INITIALIZER;
 
 ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
     const content::MainFunctionParams& parameters)

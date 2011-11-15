@@ -11,8 +11,8 @@ namespace content {
 
 // Keep the global RenderThread in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
-static base::LazyInstance<base::ThreadLocalPointer<RenderThread> > lazy_tls(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<base::ThreadLocalPointer<RenderThread> > lazy_tls =
+    LAZY_INSTANCE_INITIALIZER;
 
 RenderThread* RenderThread::Get() {
   return lazy_tls.Pointer()->Get();

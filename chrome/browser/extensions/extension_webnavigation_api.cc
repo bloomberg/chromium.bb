@@ -29,8 +29,8 @@ namespace {
 
 typedef std::map<TabContents*, ExtensionWebNavigationTabObserver*>
     TabObserverMap;
-static base::LazyInstance<TabObserverMap> g_tab_observer(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<TabObserverMap> g_tab_observer =
+    LAZY_INSTANCE_INITIALIZER;
 
 // URL schemes for which we'll send events.
 const char* kValidSchemes[] = {

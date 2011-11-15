@@ -108,8 +108,8 @@ static const int kPopupListBoxMinimumRowHeight = 60;
 
 // Keep the global RenderThreadImpl in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
-static base::LazyInstance<base::ThreadLocalPointer<RenderThreadImpl> > lazy_tls(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<base::ThreadLocalPointer<RenderThreadImpl> >
+    lazy_tls = LAZY_INSTANCE_INITIALIZER;
 
 class RenderViewZoomer : public content::RenderViewVisitor {
  public:

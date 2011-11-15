@@ -35,8 +35,8 @@ namespace {
 #undef DestroyAll
 #endif
 
-base::LazyInstance<IDMap<GpuProcessHostUIShim> > g_hosts_by_id(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<IDMap<GpuProcessHostUIShim> > g_hosts_by_id =
+    LAZY_INSTANCE_INITIALIZER;
 
 class SendOnIOThreadTask : public Task {
  public:

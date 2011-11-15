@@ -121,7 +121,7 @@ class ExternalTabPageInfoBubbleView : public PageInfoBubbleView {
 };
 
 base::LazyInstance<ExternalTabContainer::PendingTabs>
-    ExternalTabContainer::pending_tabs_(base::LINKER_INITIALIZED);
+    ExternalTabContainer::pending_tabs_ = LAZY_INSTANCE_INITIALIZER;
 
 ExternalTabContainer::ExternalTabContainer(
     AutomationProvider* automation, AutomationResourceMessageFilter* filter)

@@ -86,7 +86,7 @@ class ChromeURLContentSecurityPolicyExceptionSet
 };
 
 base::LazyInstance<ChromeURLContentSecurityPolicyExceptionSet>
-    g_chrome_url_content_security_policy_exceptions(base::LINKER_INITIALIZED);
+    g_chrome_url_content_security_policy_exceptions = LAZY_INSTANCE_INITIALIZER;
 
 // Parse a URL into the components used to resolve its request. |source_name|
 // is the hostname and |path| is the remaining portion of the URL.

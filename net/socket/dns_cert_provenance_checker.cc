@@ -81,8 +81,8 @@ class DnsCertLimits {
   DISALLOW_COPY_AND_ASSIGN(DnsCertLimits);
 };
 
-static base::LazyInstance<DnsCertLimits> g_dns_cert_limits(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<DnsCertLimits> g_dns_cert_limits =
+    LAZY_INSTANCE_INITIALIZER;
 
 // DnsCertProvenanceCheck performs the DNS lookup of the certificate. This
 // class is self-deleting.

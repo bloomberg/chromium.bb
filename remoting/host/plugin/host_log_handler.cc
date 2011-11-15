@@ -18,7 +18,7 @@ static bool g_has_logging_scriptable_object = false;
 // The lock that protects the logging globals.
 static base::LazyInstance<base::Lock,
                           base::LeakyLazyInstanceTraits<base::Lock> >
-    g_logging_lock(base::LINKER_INITIALIZED);
+    g_logging_lock = LAZY_INSTANCE_INITIALIZER;
 
 // The scriptable object that will display the log information to the user.
 static HostNPScriptObject* g_logging_scriptable_object = NULL;

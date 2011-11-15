@@ -12,7 +12,7 @@ namespace webkit {
 namespace ppapi {
 
 base::LazyInstance<PpapiInterfaceFactoryManager>
-    g_ppapi_interface_factory_manager(base::LINKER_INITIALIZED);
+    g_ppapi_interface_factory_manager = LAZY_INSTANCE_INITIALIZER;
 
 PpapiInterfaceFactoryManager::PpapiInterfaceFactoryManager() {
 }

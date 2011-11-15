@@ -17,7 +17,8 @@
 base::LazyInstance<
     BrowsingInstance::ContextSiteInstanceMap,
     base::LeakyLazyInstanceTraits<BrowsingInstance::ContextSiteInstanceMap> >
-        BrowsingInstance::context_site_instance_map_(base::LINKER_INITIALIZED);
+        BrowsingInstance::context_site_instance_map_ =
+            LAZY_INSTANCE_INITIALIZER;
 
 BrowsingInstance::BrowsingInstance(content::BrowserContext* browser_context)
     : browser_context_(browser_context) {

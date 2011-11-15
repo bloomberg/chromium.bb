@@ -79,8 +79,8 @@ struct PendingRequest {
 };
 typedef std::map<int, linked_ptr<PendingRequest> > PendingRequestMap;
 
-base::LazyInstance<PendingRequestMap> g_pending_requests(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<PendingRequestMap> g_pending_requests =
+    LAZY_INSTANCE_INITIALIZER;
 
 // A RenderViewVisitor class that iterates through the set of available
 // views, looking for a view of the given type, in the given browser window

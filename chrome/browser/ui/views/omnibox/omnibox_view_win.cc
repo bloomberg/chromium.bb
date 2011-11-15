@@ -416,7 +416,7 @@ void PaintPatcher::DerefPatch() {
   }
 }
 
-base::LazyInstance<PaintPatcher> g_paint_patcher(base::LINKER_INITIALIZED);
+base::LazyInstance<PaintPatcher> g_paint_patcher = LAZY_INSTANCE_INITIALIZER;
 
 // twips are a unit of type measurement, and RichEdit controls use them
 // to set offsets.

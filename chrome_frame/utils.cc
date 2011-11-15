@@ -110,7 +110,7 @@ namespace {
 // pointer so it should not be dereferenced and used for comparison against a
 // living instance only.
 base::LazyInstance<base::ThreadLocalPointer<IBrowserService> >
-    g_tls_browser_for_cf_navigation(base::LINKER_INITIALIZED);
+    g_tls_browser_for_cf_navigation = LAZY_INSTANCE_INITIALIZER;
 
 }  // end anonymous namespace
 

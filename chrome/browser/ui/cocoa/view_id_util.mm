@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ namespace {
 // rather than using a separated map.
 typedef std::map<NSView*, ViewID> ViewIDMap;
 
-static base::LazyInstance<ViewIDMap> g_view_id_map(base::LINKER_INITIALIZED);
+static base::LazyInstance<ViewIDMap> g_view_id_map = LAZY_INSTANCE_INITIALIZER;
 
 // Returns the view's nearest descendant (including itself) with a specific
 // ViewID, or nil if no subview has that ViewID.

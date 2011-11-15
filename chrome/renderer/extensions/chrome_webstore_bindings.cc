@@ -50,10 +50,10 @@ const char kInvalidWebstoreItemUrlError[] =
 // (successful or not) via HandleInstallResponse.
 int g_next_install_id = 0;
 
-base::LazyInstance<WeakV8FunctionMap> g_success_callbacks(
-    base::LINKER_INITIALIZED);
-base::LazyInstance<WeakV8FunctionMap> g_failure_callbacks(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<WeakV8FunctionMap> g_success_callbacks =
+    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<WeakV8FunctionMap> g_failure_callbacks =
+    LAZY_INSTANCE_INITIALIZER;
 
 } // anonymous namespace
 

@@ -48,7 +48,7 @@ const char ChromotingInstance::kMimeType[] = "pepper-application/x-chromoting";
 
 static base::LazyInstance<base::Lock,
                           base::LeakyLazyInstanceTraits<base::Lock> >
-    g_logging_lock(base::LINKER_INITIALIZED);
+    g_logging_lock = LAZY_INSTANCE_INITIALIZER;
 
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::InstancePrivate(pp_instance),

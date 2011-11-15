@@ -141,7 +141,7 @@ const char* const TranslateManager::kTargetLanguagesKey = "tl";
 
 // static
 base::LazyInstance<std::set<std::string> >
-    TranslateManager::supported_languages_(base::LINKER_INITIALIZED);
+    TranslateManager::supported_languages_ = LAZY_INSTANCE_INITIALIZER;
 
 TranslateManager::~TranslateManager() {
   weak_method_factory_.InvalidateWeakPtrs();

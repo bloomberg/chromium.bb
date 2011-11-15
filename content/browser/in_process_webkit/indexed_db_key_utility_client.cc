@@ -108,8 +108,8 @@ class KeyUtilityClientImpl
 
 // IndexedDBKeyUtilityClient definitions.
 
-static base::LazyInstance<IndexedDBKeyUtilityClient> client_instance(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<IndexedDBKeyUtilityClient> client_instance =
+    LAZY_INSTANCE_INITIALIZER;
 
 IndexedDBKeyUtilityClient::IndexedDBKeyUtilityClient()
     : is_shutdown_(false) {

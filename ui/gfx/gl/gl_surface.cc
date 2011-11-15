@@ -20,7 +20,7 @@ namespace {
 base::LazyInstance<
     base::ThreadLocalPointer<GLSurface>,
     base::LeakyLazyInstanceTraits<base::ThreadLocalPointer<GLSurface> > >
-        current_surface_(base::LINKER_INITIALIZED);
+        current_surface_ = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 // static

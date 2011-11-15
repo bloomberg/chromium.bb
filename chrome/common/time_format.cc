@@ -181,8 +181,8 @@ class TimeFormatter {
     DISALLOW_COPY_AND_ASSIGN(TimeFormatter);
 };
 
-static base::LazyInstance<TimeFormatter> g_time_formatter(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<TimeFormatter> g_time_formatter =
+    LAZY_INSTANCE_INITIALIZER;
 
 void TimeFormatter::BuildFormats(
     FormatType format_type, std::vector<icu::PluralFormat*>* time_formats) {

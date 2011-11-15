@@ -316,7 +316,7 @@ void URLFetcherImpl::Core::Registry::CancelAll() {
 
 // static
 base::LazyInstance<URLFetcherImpl::Core::Registry>
-    URLFetcherImpl::Core::g_registry(base::LINKER_INITIALIZED);
+    URLFetcherImpl::Core::g_registry = LAZY_INSTANCE_INITIALIZER;
 
 URLFetcherImpl::Core::TempFileWriter::TempFileWriter(
     URLFetcherImpl::Core* core,

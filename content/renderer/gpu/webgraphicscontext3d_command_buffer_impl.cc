@@ -37,9 +37,9 @@
 
 static base::LazyInstance<base::Lock,
                           base::LeakyLazyInstanceTraits<base::Lock> >
-    g_all_shared_contexts_lock(base::LINKER_INITIALIZED);
+    g_all_shared_contexts_lock = LAZY_INSTANCE_INITIALIZER;
 static base::LazyInstance<std::set<WebGraphicsContext3DCommandBufferImpl*> >
-    g_all_shared_contexts(base::LINKER_INITIALIZED);
+    g_all_shared_contexts = LAZY_INSTANCE_INITIALIZER;
 
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
     : initialize_failed_(false),

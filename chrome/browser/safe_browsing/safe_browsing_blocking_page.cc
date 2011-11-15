@@ -102,7 +102,7 @@ static const char* const kBoxChecked = "boxchecked";
 SafeBrowsingBlockingPageFactory* SafeBrowsingBlockingPage::factory_ = NULL;
 
 static base::LazyInstance<SafeBrowsingBlockingPage::UnsafeResourceMap>
-    g_unsafe_resource_map(base::LINKER_INITIALIZED);
+    g_unsafe_resource_map = LAZY_INSTANCE_INITIALIZER;
 
 // The default SafeBrowsingBlockingPageFactory.  Global, made a singleton so we
 // don't leak it.
@@ -127,7 +127,7 @@ class SafeBrowsingBlockingPageFactoryImpl
 };
 
 static base::LazyInstance<SafeBrowsingBlockingPageFactoryImpl>
-    g_safe_browsing_blocking_page_factory_impl(base::LINKER_INITIALIZED);
+    g_safe_browsing_blocking_page_factory_impl = LAZY_INSTANCE_INITIALIZER;
 
 SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     SafeBrowsingService* sb_service,

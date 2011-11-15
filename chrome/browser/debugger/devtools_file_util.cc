@@ -19,7 +19,7 @@ namespace {
 
 base::LazyInstance<FilePath,
                    base::LeakyLazyInstanceTraits<FilePath> >
-    g_last_save_path(base::LINKER_INITIALIZED);
+    g_last_save_path = LAZY_INSTANCE_INITIALIZER;
 
 class SaveAsDialog : public SelectFileDialog::Listener,
                      public base::RefCounted<SaveAsDialog> {

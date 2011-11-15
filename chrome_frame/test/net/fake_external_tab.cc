@@ -136,15 +136,15 @@ class FakeBrowserProcessImpl : public BrowserProcessImpl {
 };
 
 base::LazyInstance<chrome::ChromeContentClient>
-    g_chrome_content_client(base::LINKER_INITIALIZED);
+    g_chrome_content_client = LAZY_INSTANCE_INITIALIZER;
 
 // Override the default ContentBrowserClient to let Chrome participate in
 // content logic.  Must be done before any tabs are created.
 base::LazyInstance<chrome::ChromeContentBrowserClient>
-    g_browser_client(base::LINKER_INITIALIZED);
+    g_browser_client = LAZY_INSTANCE_INITIALIZER;
 
 base::LazyInstance<chrome::ChromeContentRendererClient>
-    g_renderer_client(base::LINKER_INITIALIZED);
+    g_renderer_client = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

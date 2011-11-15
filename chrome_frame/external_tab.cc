@@ -15,8 +15,8 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(ExternalTabProxy);
 DISABLE_RUNNABLE_METHOD_REFCOUNT(UIDelegate);
 
 namespace {
-  static base::LazyInstance<ChromeProxyFactory> g_proxy_factory(
-      base::LINKER_INITIALIZED);
+  static base::LazyInstance<ChromeProxyFactory> g_proxy_factory =
+      LAZY_INSTANCE_INITIALIZER;
 
   struct UserDataHolder : public SyncMessageContext {
     explicit UserDataHolder(void* p) : data(p) {}

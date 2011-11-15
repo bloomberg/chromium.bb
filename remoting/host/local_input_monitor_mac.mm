@@ -155,7 +155,7 @@ class LocalInputMonitorMac : public remoting::LocalInputMonitor {
 
 base::LazyInstance<base::Lock,
                    base::LeakyLazyInstanceTraits<base::Lock> >
-    monitor_lock(base::LINKER_INITIALIZED);
+    monitor_lock = LAZY_INSTANCE_INITIALIZER;
 LocalInputMonitorImpl* local_input_monitor = NULL;
 
 }  // namespace

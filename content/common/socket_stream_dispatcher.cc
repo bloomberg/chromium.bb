@@ -67,7 +67,7 @@ class IPCWebSocketStreamHandleBridge
 base::LazyInstance<
     IDMap<IPCWebSocketStreamHandleBridge>,
     base::LeakyLazyInstanceTraits<IDMap<IPCWebSocketStreamHandleBridge> > >
-        IPCWebSocketStreamHandleBridge::all_bridges(base::LINKER_INITIALIZED);
+        IPCWebSocketStreamHandleBridge::all_bridges = LAZY_INSTANCE_INITIALIZER;
 
 /* static */
 IPCWebSocketStreamHandleBridge* IPCWebSocketStreamHandleBridge::FromSocketId(

@@ -19,12 +19,12 @@
 typedef base::hash_map<std::string, scoped_refptr<NPChannelBase> > ChannelMap;
 static base::LazyInstance<ChannelMap,
                           base::LeakyLazyInstanceTraits<ChannelMap> >
-     g_channels(base::LINKER_INITIALIZED);
+     g_channels = LAZY_INSTANCE_INITIALIZER;
 
 typedef std::stack<scoped_refptr<NPChannelBase> > NPChannelRefStack;
 static base::LazyInstance<NPChannelRefStack,
                           base::LeakyLazyInstanceTraits<NPChannelRefStack> >
-    g_lazy_channel_stack(base::LINKER_INITIALIZED);
+    g_lazy_channel_stack = LAZY_INSTANCE_INITIALIZER;
 
 static int next_pipe_id = 0;
 

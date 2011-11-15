@@ -23,7 +23,7 @@ static const int kMonikerBindToObject = 8;
 static const int kMonikerBindToStorage = kMonikerBindToObject + 1;
 
 base::LazyInstance<base::ThreadLocalPointer<NavigationManager> >
-    NavigationManager::thread_singleton_(base::LINKER_INITIALIZED);
+    NavigationManager::thread_singleton_ = LAZY_INSTANCE_INITIALIZER;
 
 BEGIN_VTABLE_PATCHES(IMoniker)
   VTABLE_PATCH_ENTRY(kMonikerBindToObject, MonikerPatch::BindToObject)

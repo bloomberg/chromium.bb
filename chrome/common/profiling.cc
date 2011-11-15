@@ -91,7 +91,7 @@ class ProfilingThreadControl {
 
 base::LazyInstance<ProfilingThreadControl,
                    base::LeakyLazyInstanceTraits<ProfilingThreadControl> >
-    g_flush_thread_control(base::LINKER_INITIALIZED);
+    g_flush_thread_control = LAZY_INSTANCE_INITIALIZER;
 
 } // namespace
 

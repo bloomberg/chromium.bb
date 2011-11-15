@@ -22,7 +22,7 @@ typedef std::map<RenderViewHost*, RenderViewDevToolsAgentHost*> Instances;
 namespace {
 base::LazyInstance<Instances,
                    base::LeakyLazyInstanceTraits<Instances> >
-    g_instances(base::LINKER_INITIALIZED);
+    g_instances = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 DevToolsAgentHost* RenderViewDevToolsAgentHost::FindFor(

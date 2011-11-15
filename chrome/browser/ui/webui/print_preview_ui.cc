@@ -62,7 +62,7 @@ class PrintPreviewRequestIdMapWithLock {
 
 // Written to on the UI thread, read from any thread.
 base::LazyInstance<PrintPreviewRequestIdMapWithLock>
-    g_print_preview_request_id_map(base::LINKER_INITIALIZED);
+    g_print_preview_request_id_map = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

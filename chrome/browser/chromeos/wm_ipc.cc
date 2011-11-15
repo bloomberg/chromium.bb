@@ -74,7 +74,7 @@ bool SetIntArrayProperty(XID xid,
 
 }  // namespace
 
-static base::LazyInstance<WmIpc> g_wm_ipc(base::LINKER_INITIALIZED);
+static base::LazyInstance<WmIpc> g_wm_ipc = LAZY_INSTANCE_INITIALIZER;
 
 // static
 WmIpc* WmIpc::instance() {

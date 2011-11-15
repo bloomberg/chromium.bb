@@ -331,7 +331,7 @@ class SignedSettingsHelperImpl : public SignedSettingsHelper,
 };
 
 static base::LazyInstance<SignedSettingsHelperImpl>
-    g_signed_settings_helper_impl(base::LINKER_INITIALIZED);
+    g_signed_settings_helper_impl = LAZY_INSTANCE_INITIALIZER;
 
 SignedSettingsHelperImpl::SignedSettingsHelperImpl() {
 }

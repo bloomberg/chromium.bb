@@ -49,8 +49,8 @@ enum GPUProcessLifetimeEvent {
 };
 
 // A global map from GPU process host ID to GpuProcessHost.
-static base::LazyInstance<IDMap<GpuProcessHost> > g_hosts_by_id(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<IDMap<GpuProcessHost> > g_hosts_by_id =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Number of times the gpu process has crashed in the current browser session.
 static int g_gpu_crash_count = 0;
@@ -593,7 +593,6 @@ bool GpuProcessHost::LaunchGpuProcess() {
     switches::kGpuStartupDialog,
     switches::kLoggingLevel,
     switches::kNoSandbox,
-    switches::kTraceStartup,
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));

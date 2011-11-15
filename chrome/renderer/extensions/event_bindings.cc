@@ -46,8 +46,8 @@ struct SingletonData {
   std::map<std::string, EventListenerCounts> listener_counts_;
 };
 
-static base::LazyInstance<SingletonData> g_singleton_data(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<SingletonData> g_singleton_data =
+    LAZY_INSTANCE_INITIALIZER;
 
 static EventListenerCounts& GetListenerCounts(const std::string& extension_id) {
   return g_singleton_data.Get().listener_counts_[extension_id];

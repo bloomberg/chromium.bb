@@ -15,7 +15,7 @@
 #include "content/public/common/bindings_policy.h"
 
 static base::LazyInstance<PropertyAccessor<HtmlDialogUIDelegate*> >
-    g_html_dialog_ui_property_accessor(base::LINKER_INITIALIZED);
+    g_html_dialog_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
 HtmlDialogUI::HtmlDialogUI(TabContents* tab_contents)
     : ChromeWebUI(tab_contents) {

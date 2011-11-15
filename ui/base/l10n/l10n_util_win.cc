@@ -67,8 +67,8 @@ class OverrideLocaleHolder {
   DISALLOW_COPY_AND_ASSIGN(OverrideLocaleHolder);
 };
 
-base::LazyInstance<OverrideLocaleHolder>
-    override_locale_holder(base::LINKER_INITIALIZED);
+base::LazyInstance<OverrideLocaleHolder> override_locale_holder =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

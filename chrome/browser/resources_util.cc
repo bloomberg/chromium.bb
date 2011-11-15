@@ -41,7 +41,7 @@ class ThemeMap {
   StringIntMap id_map_;
 };
 
-static base::LazyInstance<ThemeMap> g_theme_ids(base::LINKER_INITIALIZED);
+static base::LazyInstance<ThemeMap> g_theme_ids = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

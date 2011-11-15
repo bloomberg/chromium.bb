@@ -136,11 +136,11 @@ class TabContentsIDHelper : public TabContentsObserver {
 base::LazyInstance<
     TabContentsIDHelper::IdToTabContentsMap,
     base::LeakyLazyInstanceTraits<TabContentsIDHelper::IdToTabContentsMap> >
-        TabContentsIDHelper::id_to_tabcontents_(base::LINKER_INITIALIZED);
+        TabContentsIDHelper::id_to_tabcontents_ = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<
     TabContentsIDHelper::TabContentsToIdMap,
     base::LeakyLazyInstanceTraits<TabContentsIDHelper::TabContentsToIdMap> >
-        TabContentsIDHelper::tabcontents_to_id_(base::LINKER_INITIALIZED);
+        TabContentsIDHelper::tabcontents_to_id_ = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

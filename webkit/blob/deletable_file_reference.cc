@@ -15,8 +15,8 @@ namespace webkit_blob {
 namespace {
 
 typedef std::map<FilePath, DeletableFileReference*> DeleteableFileMap;
-static base::LazyInstance<DeleteableFileMap> g_deletable_file_map(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<DeleteableFileMap> g_deletable_file_map =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

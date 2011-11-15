@@ -35,8 +35,8 @@ using content::BrowserThread;
 namespace {
 
 typedef std::list<BrowserChildProcessHost*> ChildProcessList;
-static base::LazyInstance<ChildProcessList> g_child_process_list(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<ChildProcessList> g_child_process_list =
+    LAZY_INSTANCE_INITIALIZER;
 
 // The NotificationTask is used to notify about plugin process connection/
 // disconnection. It is needed because the notifications in the

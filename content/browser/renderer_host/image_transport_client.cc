@@ -216,8 +216,8 @@ class ImageTransportClientGLX : public ImageTransportClient {
   static base::LazyInstance<GLXFBConfig> fbconfig_;
 };
 
-base::LazyInstance<GLXFBConfig> ImageTransportClientGLX::fbconfig_(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<GLXFBConfig> ImageTransportClientGLX::fbconfig_ =
+    LAZY_INSTANCE_INITIALIZER;
 
 class ImageTransportClientOSMesa : public ImageTransportClient {
  public:

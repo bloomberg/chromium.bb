@@ -32,10 +32,10 @@ const char kValidateCallbacks[] = "validateCallbacks";
 #endif
 
 typedef std::map<int, std::string> StringMap;
-static base::LazyInstance<StringMap> g_string_map(base::LINKER_INITIALIZED);
+static base::LazyInstance<StringMap> g_string_map = LAZY_INSTANCE_INITIALIZER;
 
-static base::LazyInstance<ChromeV8Extension::InstanceSet> g_instances(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<ChromeV8Extension::InstanceSet> g_instances =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

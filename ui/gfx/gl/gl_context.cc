@@ -20,7 +20,7 @@ namespace {
 base::LazyInstance<
     base::ThreadLocalPointer<GLContext>,
     base::LeakyLazyInstanceTraits<base::ThreadLocalPointer<GLContext> > >
-        current_context_(base::LINKER_INITIALIZED);
+        current_context_ = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 GLContext::GLContext(GLShareGroup* share_group) : share_group_(share_group) {

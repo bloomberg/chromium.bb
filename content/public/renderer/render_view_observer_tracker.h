@@ -61,7 +61,7 @@ class RenderViewObserverTracker {
 
 template <class T>
 base::LazyInstance<std::map<const RenderView*, T*> >
-    RenderViewObserverTracker<T>::render_view_map_(base::LINKER_INITIALIZED);
+    RenderViewObserverTracker<T>::render_view_map_ = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace content
 

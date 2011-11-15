@@ -27,7 +27,7 @@ namespace npapi {
 // WebPluginIMEWin instance through our patch function.
 base::LazyInstance<base::Lock,
                    base::LeakyLazyInstanceTraits<base::Lock> >
-    g_webplugin_ime_lock(base::LINKER_INITIALIZED);
+    g_webplugin_ime_lock = LAZY_INSTANCE_INITIALIZER;
 
 WebPluginIMEWin* WebPluginIMEWin::instance_ = NULL;
 

@@ -17,8 +17,8 @@
 
 namespace chromeos {
 
-static base::LazyInstance<CrosSettings> g_cros_settings(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<CrosSettings> g_cros_settings =
+    LAZY_INSTANCE_INITIALIZER;
 
 CrosSettings* CrosSettings::Get() {
   // TODO(xiyaun): Use real stuff when underlying libcros is ready.

@@ -23,7 +23,7 @@ class OverrideLocaleHolder {
 };
 
 base::LazyInstance<OverrideLocaleHolder>
-    override_locale_holder(base::LINKER_INITIALIZED);
+    override_locale_holder = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

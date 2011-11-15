@@ -53,7 +53,7 @@ struct Whitelist {
 };
 
 static base::LazyInstance<Whitelist>
-    g_whitelisted_install_data(base::LINKER_INITIALIZED);
+    g_whitelisted_install_data = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

@@ -72,30 +72,30 @@ const int kWindowedPluginPopupTimerMs = 50;
 WebPluginDelegateImpl* g_current_plugin_instance = NULL;
 
 typedef std::deque<MSG> ThrottleQueue;
-base::LazyInstance<ThrottleQueue> g_throttle_queue(base::LINKER_INITIALIZED);
-base::LazyInstance<std::map<HWND, WNDPROC> > g_window_handle_proc_map(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<ThrottleQueue> g_throttle_queue = LAZY_INSTANCE_INITIALIZER;
 
+base::LazyInstance<std::map<HWND, WNDPROC> > g_window_handle_proc_map =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Helper object for patching the TrackPopupMenu API.
-base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_track_popup_menu(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_track_popup_menu =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Helper object for patching the SetCursor API.
-base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_set_cursor(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_set_cursor =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Helper object for patching the RegEnumKeyExW API.
-base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_reg_enum_key_ex_w(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_reg_enum_key_ex_w =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Helper object for patching the GetProcAddress API.
-base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_get_proc_address(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_get_proc_address =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Helper object for patching the GetKeyState API.
-base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_get_key_state(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_get_key_state =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Saved key state globals and helper access functions.
 SHORT (WINAPI *g_iat_orig_get_key_state)(int vkey);

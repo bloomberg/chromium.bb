@@ -23,8 +23,8 @@
 
 using WebKit::WebRuntimeFeatures;
 
-static base::LazyInstance<base::ThreadLocalPointer<WorkerThread> > lazy_tls(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<base::ThreadLocalPointer<WorkerThread> > lazy_tls =
+    LAZY_INSTANCE_INITIALIZER;
 
 
 WorkerThread::WorkerThread() {

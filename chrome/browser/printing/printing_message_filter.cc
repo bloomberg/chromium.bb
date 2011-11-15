@@ -40,7 +40,7 @@ struct PrintingSequencePathMap {
 
 // No locking, only access on the FILE thread.
 static base::LazyInstance<PrintingSequencePathMap>
-    g_printing_file_descriptor_map(base::LINKER_INITIALIZED);
+    g_printing_file_descriptor_map = LAZY_INSTANCE_INITIALIZER;
 #endif
 
 void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,

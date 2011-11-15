@@ -12,7 +12,7 @@ static const wchar_t kChromeFrameMetricsKey[] =
     L"Software\\Google\\ChromeFrameMetrics";
 
 base::LazyInstance<CrashMetricsReporter>
-    g_crash_metrics_instance_(base::LINKER_INITIALIZED);
+    g_crash_metrics_instance_ = LAZY_INSTANCE_INITIALIZER;
 
 wchar_t* CrashMetricsReporter::g_metric_names[LAST_METRIC] = {
   L"navigationcount",

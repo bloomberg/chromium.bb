@@ -101,7 +101,7 @@ class SafeBrowsingServiceFactoryImpl : public SafeBrowsingServiceFactory {
 };
 
 static base::LazyInstance<SafeBrowsingServiceFactoryImpl>
-    g_safe_browsing_service_factory_impl(base::LINKER_INITIALIZED);
+    g_safe_browsing_service_factory_impl = LAZY_INSTANCE_INITIALIZER;
 
 struct SafeBrowsingService::WhiteListedEntry {
   int render_process_host_id;

@@ -80,7 +80,7 @@ class DefaultSQLErrorHandlerFactory : public SQLErrorHandlerFactory {
 };
 
 static base::LazyInstance<DefaultSQLErrorHandlerFactory>
-    g_default_sql_error_handler_factory(base::LINKER_INITIALIZED);
+    g_default_sql_error_handler_factory = LAZY_INSTANCE_INITIALIZER;
 
 SQLErrorHandlerFactory* GetErrorHandlerFactory() {
   // TODO(cpu): Testing needs to override the error handler.

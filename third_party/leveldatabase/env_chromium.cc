@@ -546,7 +546,7 @@ void ChromiumEnv::StartThread(void (*function)(void* arg), void* arg) {
 }
 
 ::base::LazyInstance<ChromiumEnv, ::base::LeakyLazyInstanceTraits<ChromiumEnv> >
-    default_env(::base::LINKER_INITIALIZED);
+    default_env = LAZY_INSTANCE_INITIALIZER;
 
 }
 

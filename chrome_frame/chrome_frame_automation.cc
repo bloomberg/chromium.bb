@@ -505,7 +505,7 @@ bool ProxyFactory::ReleaseAutomationServer(void* server_id,
 
 static base::LazyInstance<ProxyFactory,
                           base::LeakyLazyInstanceTraits<ProxyFactory> >
-    g_proxy_factory(base::LINKER_INITIALIZED);
+    g_proxy_factory = LAZY_INSTANCE_INITIALIZER;
 
 template <> struct RunnableMethodTraits<ChromeFrameAutomationClient> {
   static void RetainCallee(ChromeFrameAutomationClient* obj) {}

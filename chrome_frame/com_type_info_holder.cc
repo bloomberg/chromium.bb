@@ -11,7 +11,7 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 namespace com_util {
 
-base::LazyInstance<TypeInfoCache> type_info_cache(base::LINKER_INITIALIZED);
+base::LazyInstance<TypeInfoCache> type_info_cache = LAZY_INSTANCE_INITIALIZER;
 
 // TypeInfoCache
 

@@ -38,7 +38,7 @@ namespace {
 base::LazyInstance<
     base::ThreadLocalPointer<struct __CFSet>,
     base::LeakyLazyInstanceTraits<base::ThreadLocalPointer<struct __CFSet> > >
-        thread_pdf_docs(base::LINKER_INITIALIZED);
+        thread_pdf_docs = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

@@ -91,7 +91,7 @@ class PresentThreadPool {
 };
 
 base::LazyInstance<PresentThreadPool>
-    g_present_thread_pool(base::LINKER_INITIALIZED);
+    g_present_thread_pool = LAZY_INSTANCE_INITIALIZER;
 
 QuerySyncThread::QuerySyncThread(const char* name)
     : base::Thread(name),

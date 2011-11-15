@@ -251,7 +251,7 @@ using webkit_glue::ResourceFetcher;
 //-----------------------------------------------------------------------------
 
 typedef std::map<WebKit::WebView*, RenderViewImpl*> ViewMap;
-static base::LazyInstance<ViewMap> g_view_map(base::LINKER_INITIALIZED);
+static base::LazyInstance<ViewMap> g_view_map = LAZY_INSTANCE_INITIALIZER;
 
 // Time, in seconds, we delay before sending content state changes (such as form
 // state and scroll position) to the browser. We delay sending changes to avoid

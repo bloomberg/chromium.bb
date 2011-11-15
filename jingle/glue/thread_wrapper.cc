@@ -25,7 +25,7 @@ struct JingleThreadWrapper::PendingSend {
 };
 
 base::LazyInstance<base::ThreadLocalPointer<JingleThreadWrapper> >
-    g_jingle_thread_wrapper(base::LINKER_INITIALIZED);
+    g_jingle_thread_wrapper = LAZY_INSTANCE_INITIALIZER;
 
 // static
 void JingleThreadWrapper::EnsureForCurrentThread() {

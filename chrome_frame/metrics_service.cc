@@ -78,13 +78,13 @@ static const int kInitialUMAUploadTimeoutMilliSeconds = 30000;
 static const int kMinMilliSecondsPerUMAUpload = 600000;
 
 base::LazyInstance<base::ThreadLocalPointer<MetricsService> >
-    MetricsService::g_metrics_instance_(base::LINKER_INITIALIZED);
+    MetricsService::g_metrics_instance_ = LAZY_INSTANCE_INITIALIZER;
 
 base::Lock MetricsService::metrics_service_lock_;
 
 // Initialize histogram statistics gathering system.
 base::LazyInstance<base::StatisticsRecorder>
-    g_statistics_recorder_(base::LINKER_INITIALIZED);
+    g_statistics_recorder_ = LAZY_INSTANCE_INITIALIZER;
 
 // This class provides functionality to upload the ChromeFrame UMA data to the
 // server. An instance of this class is created whenever we have data to be

@@ -97,13 +97,13 @@
 #endif
 
 base::LazyInstance<chrome::ChromeContentBrowserClient>
-    g_chrome_content_browser_client(base::LINKER_INITIALIZED);
+    g_chrome_content_browser_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<chrome::ChromeContentRendererClient>
-    g_chrome_content_renderer_client(base::LINKER_INITIALIZED);
+    g_chrome_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<chrome::ChromeContentUtilityClient>
-    g_chrome_content_utility_client(base::LINKER_INITIALIZED);
+    g_chrome_content_utility_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<chrome::ChromeContentPluginClient>
-    g_chrome_content_plugin_client(base::LINKER_INITIALIZED);
+    g_chrome_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
 
 extern int NaClMain(const content::MainFunctionParams&);
 extern int ServiceProcessMain(const content::MainFunctionParams&);

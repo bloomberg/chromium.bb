@@ -49,7 +49,7 @@ class SpeechInputDispatcherHost::SpeechInputCallers {
 };
 
 static base::LazyInstance<SpeechInputDispatcherHost::SpeechInputCallers>
-    g_speech_input_callers(base::LINKER_INITIALIZED);
+    g_speech_input_callers = LAZY_INSTANCE_INITIALIZER;
 
 SpeechInputDispatcherHost::SpeechInputCallers::SpeechInputCallers()
     : next_id_(1) {

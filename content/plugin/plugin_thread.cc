@@ -65,8 +65,8 @@ class EnsureTerminateMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
 }  // namespace
 
-static base::LazyInstance<base::ThreadLocalPointer<PluginThread> > lazy_tls(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<base::ThreadLocalPointer<PluginThread> > lazy_tls =
+    LAZY_INSTANCE_INITIALIZER;
 
 PluginThread::PluginThread()
     : preloaded_plugin_module_(NULL) {

@@ -41,7 +41,8 @@ const char kDescriptionStylesOffset[] = "offset";
 const char kDescriptionStylesLength[] = "length";
 
 static base::LazyInstance<PropertyAccessor<ExtensionOmniboxSuggestion> >
-    g_extension_omnibox_suggestion_property_accessor(base::LINKER_INITIALIZED);
+    g_extension_omnibox_suggestion_property_accessor =
+        LAZY_INSTANCE_INITIALIZER;
 
 PropertyAccessor<ExtensionOmniboxSuggestion>& GetPropertyAccessor() {
   return g_extension_omnibox_suggestion_property_accessor.Get();

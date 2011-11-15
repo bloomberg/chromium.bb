@@ -65,7 +65,7 @@
 namespace {
 
 static base::LazyInstance<PropertyAccessor<TabContentsWrapper*> >
-    g_tab_contents_wrapper_property_accessor(base::LINKER_INITIALIZED);
+    g_tab_contents_wrapper_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
 // The list of prefs we want to observe.
 const char* kPrefsToObserve[] = {

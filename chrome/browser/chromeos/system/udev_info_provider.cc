@@ -44,8 +44,8 @@ class UdevInfoProviderImpl : public UdevInfoProvider {
   DISALLOW_COPY_AND_ASSIGN(UdevInfoProviderImpl);
 };
 
-base::LazyInstance<UdevInfoProviderImpl> g_udev_info_provider(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<UdevInfoProviderImpl> g_udev_info_provider =
+    LAZY_INSTANCE_INITIALIZER;
 
 bool UdevInfoProviderImpl::QueryDeviceProperty(const std::string& sys_path,
                                                const std::string& property_name,

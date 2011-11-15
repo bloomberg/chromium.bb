@@ -52,8 +52,8 @@ class GLES2Initializer {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static base::LazyInstance<GLES2Initializer> g_gles2_initializer(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<GLES2Initializer> g_gles2_initializer =
+    LAZY_INSTANCE_INITIALIZER;
 
 ////////////////////////////////////////////////////////////////////////////////
 

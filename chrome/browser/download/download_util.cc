@@ -109,7 +109,7 @@ class DefaultDownloadDirectory {
 };
 
 static base::LazyInstance<DefaultDownloadDirectory>
-    g_default_download_directory(base::LINKER_INITIALIZED);
+    g_default_download_directory = LAZY_INSTANCE_INITIALIZER;
 
 const FilePath& GetDefaultDownloadDirectory() {
   return g_default_download_directory.Get().path();

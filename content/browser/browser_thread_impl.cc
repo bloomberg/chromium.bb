@@ -36,7 +36,7 @@ namespace {
 // without holding this lock.  Do not block while holding this lock.
 base::LazyInstance<base::Lock,
                    base::LeakyLazyInstanceTraits<base::Lock> >
-    g_lock(base::LINKER_INITIALIZED);
+    g_lock = LAZY_INSTANCE_INITIALIZER;
 
 
 // An array of the BrowserThread objects.  This array is protected by |g_lock|.

@@ -325,10 +325,10 @@ class InternalAuthVerificationService {
 namespace {
 
 static base::LazyInstance<browser::InternalAuthVerificationService>
-    g_verification_service(base::LINKER_INITIALIZED);
+    g_verification_service = LAZY_INSTANCE_INITIALIZER;
 static base::LazyInstance<base::Lock,
                           base::LeakyLazyInstanceTraits<base::Lock> >
-    g_verification_service_lock(base::LINKER_INITIALIZED);
+    g_verification_service_lock = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -433,7 +433,7 @@ class InternalAuthGenerationService : public base::ThreadChecker {
 namespace {
 
 static base::LazyInstance<browser::InternalAuthGenerationService>
-    g_generation_service(base::LINKER_INITIALIZED);
+    g_generation_service = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

@@ -47,7 +47,8 @@ namespace {
 // document to another with adoptNode, and so having the object be a
 // RenderViewObserver means it might miss some notifications after it moves.
 typedef std::map<WebFrame*, UserScriptIdleScheduler*> SchedulerMap;
-static base::LazyInstance<SchedulerMap> g_schedulers(base::LINKER_INITIALIZED);
+static base::LazyInstance<SchedulerMap> g_schedulers =
+    LAZY_INSTANCE_INITIALIZER;
 }
 
 ExtensionHelper::ExtensionHelper(content::RenderView* render_view,

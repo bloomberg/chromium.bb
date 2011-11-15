@@ -18,7 +18,7 @@
 #include "content/public/browser/notification_service.h"
 
 static base::LazyInstance<PropertyAccessor<ConstrainedHtmlUIDelegate*> >
-    g_constrained_html_ui_property_accessor(base::LINKER_INITIALIZED);
+    g_constrained_html_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
 ConstrainedHtmlUI::ConstrainedHtmlUI(TabContents* contents)
     : ChromeWebUI(contents) {

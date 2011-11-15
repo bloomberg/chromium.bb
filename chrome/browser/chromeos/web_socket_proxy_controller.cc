@@ -96,7 +96,7 @@ class OriginValidator {
   std::vector<std::string> allowed_origins_;
 };
 
-base::LazyInstance<OriginValidator> g_validator(base::LINKER_INITIALIZED);
+base::LazyInstance<OriginValidator> g_validator = LAZY_INSTANCE_INITIALIZER;
 
 class ProxyTask : public Task {
   virtual void Run() OVERRIDE;
@@ -154,7 +154,7 @@ class ProxyLifetime
   friend class chromeos::WebSocketProxyController;
 };
 
-base::LazyInstance<ProxyLifetime> g_proxy_lifetime(base::LINKER_INITIALIZED);
+base::LazyInstance<ProxyLifetime> g_proxy_lifetime = LAZY_INSTANCE_INITIALIZER;
 
 void ProxyTask::Run() {
   LOG(INFO) << "Attempt to run web socket proxy task";

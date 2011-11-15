@@ -52,7 +52,7 @@ NotificationTrayImages::NotificationTrayImages() {
       IDR_SPEECH_INPUT_TRAY_BALLOON_ICON);
 }
 
-base::LazyInstance<NotificationTrayImages> g_images(base::LINKER_INITIALIZED);
+base::LazyInstance<NotificationTrayImages> g_images = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

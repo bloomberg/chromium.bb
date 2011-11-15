@@ -54,7 +54,7 @@ class WebKitClientMessageLoopImpl
 
 typedef std::map<int, DevToolsAgent*> IdToAgentMap;
 base::LazyInstance<IdToAgentMap, base::LeakyLazyInstanceTraits<IdToAgentMap> >
-    g_agent_for_routing_id(base::LINKER_INITIALIZED);
+    g_agent_for_routing_id = LAZY_INSTANCE_INITIALIZER;
 
 } //  namespace
 

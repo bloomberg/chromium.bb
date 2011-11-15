@@ -24,8 +24,8 @@ namespace {
 
 static const char kApplicationOctetStream[] = "application/octet-stream";
 
-base::LazyInstance<webkit::npapi::PluginList> g_singleton(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<webkit::npapi::PluginList> g_singleton =
+    LAZY_INSTANCE_INITIALIZER;
 
 bool AllowMimeTypeMismatch(const std::string& orig_mime_type,
                            const std::string& actual_mime_type) {

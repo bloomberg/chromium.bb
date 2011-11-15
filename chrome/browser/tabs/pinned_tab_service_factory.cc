@@ -9,8 +9,8 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
 namespace {
-base::LazyInstance<PinnedTabServiceFactory> g_pinned_tab_service_factory(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<PinnedTabServiceFactory> g_pinned_tab_service_factory =
+    LAZY_INSTANCE_INITIALIZER;
 }
 
 // static

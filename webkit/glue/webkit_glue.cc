@@ -411,7 +411,7 @@ const std::string& UserAgentState::Get(const GURL& url) const {
   return user_agent_;
 }
 
-base::LazyInstance<UserAgentState> g_user_agent(base::LINKER_INITIALIZED);
+base::LazyInstance<UserAgentState> g_user_agent = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

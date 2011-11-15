@@ -87,8 +87,8 @@ class OncNetworkParserTest : public testing::Test {
 };
 
 // static
-base::LazyInstance<ScopedTempDir> OncNetworkParserTest::temp_db_dir_(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<ScopedTempDir> OncNetworkParserTest::temp_db_dir_ =
+    LAZY_INSTANCE_INITIALIZER;
 
 TEST_F(OncNetworkParserTest, TestCreateNetworkWifi1) {
   std::string test_blob(

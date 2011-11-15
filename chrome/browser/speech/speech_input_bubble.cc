@@ -98,7 +98,8 @@ SpeechInputBubbleImages::SpeechInputBubbleImages() {
   }
 }
 
-base::LazyInstance<SpeechInputBubbleImages> g_images(base::LINKER_INITIALIZED);
+base::LazyInstance<SpeechInputBubbleImages> g_images =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

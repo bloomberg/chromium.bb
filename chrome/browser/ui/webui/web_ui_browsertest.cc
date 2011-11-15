@@ -31,8 +31,8 @@ namespace {
 const FilePath::CharType kMockJS[] = FILE_PATH_LITERAL("mock4js.js");
 const FilePath::CharType kWebUILibraryJS[] = FILE_PATH_LITERAL("test_api.js");
 const FilePath::CharType kWebUITestFolder[] = FILE_PATH_LITERAL("webui");
-base::LazyInstance<std::vector<std::string> > error_messages_(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<std::vector<std::string> > error_messages_ =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Intercepts all log messages.
 bool LogHandler(int severity,
@@ -227,8 +227,8 @@ class MockWebUIProvider : public TestChromeWebUIFactory::WebUIProvider {
   }
 };
 
-base::LazyInstance<MockWebUIProvider> mock_provider_(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<MockWebUIProvider> mock_provider_ =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

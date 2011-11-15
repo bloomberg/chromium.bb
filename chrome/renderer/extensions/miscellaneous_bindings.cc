@@ -45,8 +45,8 @@ struct ExtensionData {
   std::map<int, PortData> ports;  // port ID -> data
 };
 
-static base::LazyInstance<ExtensionData> g_extension_data(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<ExtensionData> g_extension_data =
+    LAZY_INSTANCE_INITIALIZER;
 
 static bool HasPortData(int port_id) {
   return g_extension_data.Get().ports.find(port_id) !=

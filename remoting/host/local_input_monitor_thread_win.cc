@@ -15,7 +15,7 @@ namespace {
 LocalInputMonitorThread* g_local_input_monitor_thread = NULL;
 base::LazyInstance<base::Lock,
                    base::LeakyLazyInstanceTraits<base::Lock> >
-    g_thread_lock(base::LINKER_INITIALIZED);
+    g_thread_lock = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 

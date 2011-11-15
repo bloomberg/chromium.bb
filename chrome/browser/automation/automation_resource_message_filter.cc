@@ -24,12 +24,12 @@
 using content::BrowserThread;
 
 base::LazyInstance<AutomationResourceMessageFilter::RenderViewMap>
-    AutomationResourceMessageFilter::filtered_render_views_(
-        base::LINKER_INITIALIZED);
+    AutomationResourceMessageFilter::filtered_render_views_ =
+        LAZY_INSTANCE_INITIALIZER;
 
 base::LazyInstance<AutomationResourceMessageFilter::CompletionCallbackMap>
-    AutomationResourceMessageFilter::completion_callback_map_(
-        base::LINKER_INITIALIZED);
+    AutomationResourceMessageFilter::completion_callback_map_ =
+        LAZY_INSTANCE_INITIALIZER;
 
 int AutomationResourceMessageFilter::unique_request_id_ = 1;
 int AutomationResourceMessageFilter::next_completion_callback_id_ = 0;

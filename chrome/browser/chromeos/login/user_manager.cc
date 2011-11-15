@@ -83,7 +83,7 @@ const int kStubDefaultImageIndex = 0;
 // Delay betweeen user login and attempt to update user's profile image.
 const long kProfileImageDownloadDelayMs = 10000;
 
-base::LazyInstance<UserManager> g_user_manager(base::LINKER_INITIALIZED);
+base::LazyInstance<UserManager> g_user_manager = LAZY_INSTANCE_INITIALIZER;
 
 // Used to handle the asynchronous response of deleting a cryptohome directory.
 class RemoveAttempt : public CryptohomeLibrary::Delegate {

@@ -18,8 +18,8 @@
 using content::BrowserThread;
 
 namespace {
-base::LazyInstance<SpellCheckProfile::CustomWordList> g_empty_list(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<SpellCheckProfile::CustomWordList> g_empty_list =
+    LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 SpellCheckProfile::SpellCheckProfile(const FilePath& profile_dir)

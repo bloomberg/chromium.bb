@@ -19,8 +19,8 @@ using content::BrowserThread;
 
 namespace chromeos {
 
-static base::LazyInstance<OwnershipService> g_ownership_service(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<OwnershipService> g_ownership_service =
+    LAZY_INSTANCE_INITIALIZER;
 
 //  static
 OwnershipService* OwnershipService::GetSharedInstance() {

@@ -85,7 +85,7 @@ static bool IsSuitableHost(RenderProcessHost* host,
 // the global list of all renderer processes
 base::LazyInstance<IDMap<RenderProcessHost>,
                    base::LeakyLazyInstanceTraits<IDMap<RenderProcessHost> > >
-    g_all_hosts(base::LINKER_INITIALIZED);
+    g_all_hosts = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

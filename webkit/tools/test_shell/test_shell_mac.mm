@@ -74,7 +74,7 @@ static ui::DataPack* g_resource_data_pack = NULL;
 
 // Define static member variables
 base::LazyInstance <std::map<gfx::NativeWindow, TestShell *> >
-    TestShell::window_map_(base::LINKER_INITIALIZED);
+    TestShell::window_map_ = LAZY_INSTANCE_INITIALIZER;
 
 // Helper method for getting the path to the test shell resources directory.
 FilePath GetResourcesFilePath() {

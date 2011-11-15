@@ -51,7 +51,7 @@ const int kMillisecondsBeforeCollapsingFromTitleOnlyState = 0;
 
 // static
 PanelManager* PanelManager::GetInstance() {
-  static base::LazyInstance<PanelManager> instance(base::LINKER_INITIALIZED);
+  static base::LazyInstance<PanelManager> instance = LAZY_INSTANCE_INITIALIZER;
   return instance.Pointer();
 }
 

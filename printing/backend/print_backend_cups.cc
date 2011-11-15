@@ -79,8 +79,8 @@ class GcryptInitializer {
   }
 };
 
-static base::LazyInstance<GcryptInitializer> g_gcrypt_initializer(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<GcryptInitializer> g_gcrypt_initializer =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 #endif  // !defined(OS_MACOSX)

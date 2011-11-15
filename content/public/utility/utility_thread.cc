@@ -11,8 +11,8 @@ namespace content {
 
 // Keep the global UtilityThread in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
-static base::LazyInstance<base::ThreadLocalPointer<UtilityThread> > lazy_tls(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<base::ThreadLocalPointer<UtilityThread> > lazy_tls =
+    LAZY_INSTANCE_INITIALIZER;
 
 UtilityThread* UtilityThread::Get() {
   return lazy_tls.Pointer()->Get();

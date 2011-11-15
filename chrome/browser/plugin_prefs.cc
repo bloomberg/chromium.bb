@@ -41,8 +41,8 @@ namespace {
 
 // Default state for a plug-in (not state of the default plug-in!).
 // Accessed only on the UI thread.
-base::LazyInstance<std::map<FilePath, bool> > g_default_plugin_state(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<std::map<FilePath, bool> > g_default_plugin_state =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

@@ -208,10 +208,10 @@ const int32 kTransferBufferSize = 1024 * 1024;
 
 static base::LazyInstance<
     std::set<WebGraphicsContext3DInProcessCommandBufferImpl*> >
-        g_all_shared_contexts(base::LINKER_INITIALIZED);
+        g_all_shared_contexts = LAZY_INSTANCE_INITIALIZER;
 static base::LazyInstance<base::Lock,
                           base::LeakyLazyInstanceTraits<base::Lock> >
-    g_all_shared_contexts_lock(base::LINKER_INITIALIZED);
+    g_all_shared_contexts_lock = LAZY_INSTANCE_INITIALIZER;
 
 // Singleton used to initialize and terminate the gles2 library.
 class GLES2Initializer {
@@ -230,8 +230,8 @@ class GLES2Initializer {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static base::LazyInstance<GLES2Initializer> g_gles2_initializer(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<GLES2Initializer> g_gles2_initializer =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace anonymous
 
@@ -297,8 +297,8 @@ GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
 // thread. In layout tests, any thread could call this function. GLES2Decoder,
 // and in particular the GL implementations behind it, are not generally
 // threadsafe, so we guard entry points with a mutex.
-static base::LazyInstance<base::Lock>
-    g_decoder_lock(base::LINKER_INITIALIZED);
+static base::LazyInstance<base::Lock> g_decoder_lock =
+    LAZY_INSTANCE_INITIALIZER;
 
 void GLInProcessContext::PumpCommands() {
   base::AutoLock lock(g_decoder_lock.Get());

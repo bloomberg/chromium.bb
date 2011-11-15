@@ -14,7 +14,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 typedef base::hash_map<const std::wstring, PluginInstallDialog*> DialogMap;
-base::LazyInstance<DialogMap> s_dialogs(base::LINKER_INITIALIZED);
+base::LazyInstance<DialogMap> s_dialogs = LAZY_INSTANCE_INITIALIZER;
 
 PluginInstallDialog* PluginInstallDialog::AddInstaller(
     PluginInstallerImpl* plugin_impl, const std::wstring& plugin_name) {

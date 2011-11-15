@@ -49,7 +49,7 @@ class Driver {
   int clients_;
 };
 
-static base::LazyInstance<Driver> g_driver(base::LINKER_INITIALIZED);
+static base::LazyInstance<Driver> g_driver = LAZY_INSTANCE_INITIALIZER;
 
 // A network client
 class Client {

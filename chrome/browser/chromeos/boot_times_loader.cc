@@ -101,8 +101,8 @@ static const FilePath::CharType kLoginTimes[] = FPL("login-times");
 // Name of file collecting logout times.
 static const char kLogoutTimes[] = "logout-times";
 
-static base::LazyInstance<BootTimesLoader> g_boot_times_loader(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<BootTimesLoader> g_boot_times_loader =
+    LAZY_INSTANCE_INITIALIZER;
 
 BootTimesLoader::BootTimesLoader()
     : backend_(new Backend()),

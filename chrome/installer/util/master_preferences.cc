@@ -20,8 +20,8 @@ namespace {
 const char kDistroDict[] = "distribution";
 const char kFirstRunTabs[] = "first_run_tabs";
 
-base::LazyInstance<installer::MasterPreferences> g_master_preferences(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<installer::MasterPreferences> g_master_preferences =
+    LAZY_INSTANCE_INITIALIZER;
 
 bool GetGURLFromValue(const Value* in_value, GURL* out_value) {
   if (!in_value || !out_value)

@@ -19,8 +19,8 @@ struct WaitableEventLazyInstanceTraits
     return new (instance) WaitableEvent(false, false);
   }
 };
-base::LazyInstance<WaitableEvent, WaitableEventLazyInstanceTraits> dummy_event(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<WaitableEvent, WaitableEventLazyInstanceTraits> dummy_event =
+    LAZY_INSTANCE_INITIALIZER;
 }
 
 JavaBridgeChannelHost* JavaBridgeChannelHost::GetJavaBridgeChannelHost(

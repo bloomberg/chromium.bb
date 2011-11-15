@@ -175,8 +175,8 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
   DISALLOW_COPY_AND_ASSIGN(ScreenLockObserver);
 };
 
-static base::LazyInstance<ScreenLockObserver> g_screen_lock_observer(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<ScreenLockObserver> g_screen_lock_observer =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

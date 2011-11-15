@@ -32,7 +32,8 @@ const int URLRequestSlowDownloadJob::kSecondDownloadSize = 1024 * 10;
 base::LazyInstance<
     URLRequestSlowDownloadJob::SlowJobsSet,
     base::LeakyLazyInstanceTraits<URLRequestSlowDownloadJob::SlowJobsSet> >
-        URLRequestSlowDownloadJob::pending_requests_(base::LINKER_INITIALIZED);
+        URLRequestSlowDownloadJob::pending_requests_ =
+            LAZY_INSTANCE_INITIALIZER;
 
 void URLRequestSlowDownloadJob::Start() {
   MessageLoop::current()->PostTask(

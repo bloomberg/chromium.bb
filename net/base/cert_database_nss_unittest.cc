@@ -133,8 +133,8 @@ class CertDatabaseNSSTest : public testing::Test {
 };
 
 // static
-base::LazyInstance<ScopedTempDir> CertDatabaseNSSTest::temp_db_dir_(
-    base::LINKER_INITIALIZED);
+base::LazyInstance<ScopedTempDir> CertDatabaseNSSTest::temp_db_dir_ =
+    LAZY_INSTANCE_INITIALIZER;
 
 TEST_F(CertDatabaseNSSTest, ListCerts) {
   // This test isn't terribly useful, though it will at least let valgrind test

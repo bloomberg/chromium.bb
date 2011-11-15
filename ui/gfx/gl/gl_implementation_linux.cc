@@ -51,7 +51,7 @@ base::NativeLibrary LoadLibrary(const char* filename) {
 #if (defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)) || defined(TOUCH_UI)
 base::LazyInstance<base::Lock,
                    base::LeakyLazyInstanceTraits<base::Lock> >
-    g_lock(base::LINKER_INITIALIZED);
+    g_lock = LAZY_INSTANCE_INITIALIZER;
 #endif
 
 }  // namespace anonymous

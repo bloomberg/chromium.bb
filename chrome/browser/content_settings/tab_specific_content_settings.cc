@@ -34,8 +34,8 @@ using content::BrowserThread;
 
 namespace {
 typedef std::list<TabSpecificContentSettings*> TabSpecificList;
-static base::LazyInstance<TabSpecificList> g_tab_specific(
-    base::LINKER_INITIALIZED);
+static base::LazyInstance<TabSpecificList> g_tab_specific =
+    LAZY_INSTANCE_INITIALIZER;
 }
 
 bool TabSpecificContentSettings::LocalSharedObjectsContainer::empty() const {

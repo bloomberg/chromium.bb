@@ -13,7 +13,7 @@ typedef std::vector<DevToolsClientHost*> DevToolsClientHostList;
 namespace {
 base::LazyInstance<DevToolsClientHostList,
                    base::LeakyLazyInstanceTraits<DevToolsClientHostList> >
-     g_instances(base::LINKER_INITIALIZED);
+     g_instances = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 // static

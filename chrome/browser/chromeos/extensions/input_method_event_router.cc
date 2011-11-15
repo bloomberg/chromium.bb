@@ -42,7 +42,7 @@ class InputMethodPrivateExtensionsWhitelist {
 };
 
 base::LazyInstance<InputMethodPrivateExtensionsWhitelist>
-    g_input_method_private_extensions_whitelist(base::LINKER_INITIALIZED);
+    g_input_method_private_extensions_whitelist = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
