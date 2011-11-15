@@ -51,7 +51,7 @@ _BOARD_PATH = 'chroot/build/%(board)s'
 # board/board-target/version/'
 _REL_BOARD_PATH = 'board/%(board)s/%(version)s'
 # host/host-target/version/'
-_REL_HOST_PATH = 'host/%(target)s/%(version)s'
+_REL_HOST_PATH = 'host/%(target)s/%(board)s/%(version)s'
 # Private overlays to look at for builds to filter
 # relative to build path
 _PRIVATE_OVERLAY_DIR = 'src/private-overlays'
@@ -103,7 +103,7 @@ def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
     file_var, file_val = line.split('=')
     if file_var == key:
       found = True
-      print 'Updating %s=%s to %s="%s"' % (file_var, file_val, key, value)
+      print 'Updating %s=%s to %s=%s' % (file_var, file_val, key, value)
       value = '"%s"' % value
       file_lines.append(keyval_str % {'key': key, 'value': value})
     else:
@@ -376,7 +376,7 @@ class PrebuiltUploader(object):
 
   def __init__(self, upload_location, acl, binhost_base_url,
                pkg_indexes, build_path, packages, skip_upload,
-               binhost_conf_dir, debug):
+               binhost_conf_dir, debug, board, slave_boards):
     """Constructor for prebuilt uploader object.
 
     This object can upload host or prebuilt files to Google Storage.
@@ -395,6 +395,8 @@ class PrebuiltUploader(object):
       skip_upload: Don't actually upload the tarballs.
       binhost_conf_dir: Directory where to store binhost.conf files.
       debug: Don't push or upload prebuilts.
+      board: Boards managed by this builder.
+      slave_boards: Boards managed by slave builders.
     """
     self._upload_location = upload_location
     self._acl = acl
@@ -405,6 +407,8 @@ class PrebuiltUploader(object):
     self._skip_upload = skip_upload
     self._binhost_conf_dir = binhost_conf_dir
     self._debug = debug
+    self._board = board
+    self._slave_boards = slave_boards
 
   def _ShouldFilterPackage(self, pkg):
     if not self._packages:
@@ -514,28 +518,36 @@ class PrebuiltUploader(object):
       sync_binhost_conf: If set, update binhost config file in
           chromiumos-overlay for the host.
     """
-    # Upload prebuilts.
-    package_path = os.path.join(self._build_path, _HOST_PACKAGES_PATH)
-    url_suffix = _REL_HOST_PATH % {'version': version, 'target': _HOST_TARGET}
-    packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
+    # Slave boards are listed before the master board so that the master board
+    # takes priority (i.e. x86-generic preflight host prebuilts takes priority
+    # over preflight host prebuilts from other builders.)
+    binhost_urls = []
+    for board in self._slave_boards + [self._board]:
+      url_suffix = _REL_HOST_PATH % {'version': version, 'target': _HOST_TARGET,
+                                     'board': board}
+      packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
 
-    if not self._skip_upload and not self._debug:
-      self._UploadPrebuilt(package_path, packages_url_suffix)
+      if board == self._board and not self._skip_upload and not self._debug:
+        # Upload prebuilts.
+        package_path = os.path.join(self._build_path, _HOST_PACKAGES_PATH)
+        self._UploadPrebuilt(package_path, packages_url_suffix)
 
-    # Record URL where prebuilts were uploaded.
-    url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
-                            packages_url_suffix.rstrip('/'))
+      # Record URL where prebuilts were uploaded.
+      binhost_urls.append('%s/%s/' % (self._binhost_base_url.rstrip('/'),
+                                      packages_url_suffix.rstrip('/')))
+
+    binhost = '"%s"' % ' '.join(binhost_urls)
     if git_sync:
       git_file = os.path.join(self._build_path,
           _PREBUILT_MAKE_CONF[_HOST_TARGET])
-      RevGitFile(git_file, url_value, key=key, dryrun=self._debug)
+      RevGitFile(git_file, binhost, key=key, dryrun=self._debug)
     if sync_binhost_conf:
       binhost_conf = os.path.join(self._build_path, self._binhost_conf_dir,
           'host', '%s-%s.conf' % (_HOST_TARGET, key))
-      UpdateBinhostConfFile(binhost_conf, key, url_value)
+      UpdateBinhostConfFile(binhost_conf, key, binhost)
 
-  def _SyncBoardPrebuilts(self, board, version, key, git_sync,
-                          sync_binhost_conf, upload_board_tarball):
+  def _SyncBoardPrebuilts(self, version, key, git_sync, sync_binhost_conf,
+                          upload_board_tarball):
     """Synchronize board prebuilt files.
 
     Args:
@@ -549,43 +561,46 @@ class PrebuiltUploader(object):
           chromiumos-overlay for the current board.
       upload_board_tarball: Include a tarball of the board in our upload.
     """
-    board_path = os.path.join(self._build_path, _BOARD_PATH % {'board': board})
-    package_path = os.path.join(board_path, 'packages')
-    url_suffix = _REL_BOARD_PATH % {'board': board, 'version': version}
-    packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
+    for board in self._slave_boards + [self._board]:
+      board_path = os.path.join(self._build_path,
+                                _BOARD_PATH % {'board': board})
+      package_path = os.path.join(board_path, 'packages')
+      url_suffix = _REL_BOARD_PATH % {'board': board, 'version': version}
+      packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
 
-    if not self._skip_upload and not self._debug:
-      # Upload board tarballs in the background.
-      if upload_board_tarball:
-        tar_process = multiprocessing.Process(target=self._UploadBoardTarball,
-                                              args=(board_path, url_suffix,
-                                                    version))
-        tar_process.start()
+      if board == self._board and not self._skip_upload and not self._debug:
+        # Upload board tarballs in the background.
+        if upload_board_tarball:
+          tar_process = multiprocessing.Process(target=self._UploadBoardTarball,
+                                                args=(board_path, url_suffix,
+                                                      version))
+          tar_process.start()
 
-      # Upload prebuilts.
-      self._UploadPrebuilt(package_path, packages_url_suffix)
+        # Upload prebuilts.
+        self._UploadPrebuilt(package_path, packages_url_suffix)
 
-      # Make sure we finished uploading the board tarballs.
-      if upload_board_tarball:
-        tar_process.join()
-        assert tar_process.exitcode == 0
-        # TODO(zbehan): This should be done cleaner.
-        if board == 'amd64-host':
-          sdk_conf = os.path.join(self._build_path, self._binhost_conf_dir,
+        # Make sure we finished uploading the board tarballs.
+        if upload_board_tarball:
+          tar_process.join()
+          assert tar_process.exitcode == 0
+          # TODO(zbehan): This should be done cleaner.
+          if board == 'amd64-host':
+            sdk_conf = os.path.join(self._build_path, self._binhost_conf_dir,
                                   'host/sdk_version.conf')
-          RevGitFile(sdk_conf, version.strip('chroot-'),
-                     key='SDK_LATEST_VERSION', dryrun=self._debug)
+            RevGitFile(sdk_conf, version.strip('chroot-'),
+                       key='SDK_LATEST_VERSION', dryrun=self._debug)
 
-    # Record URL where prebuilts were uploaded.
-    url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
-                            packages_url_suffix.rstrip('/'))
-    if git_sync:
-      git_file = DeterminePrebuiltConfFile(self._build_path, board)
-      RevGitFile(git_file, url_value, key=key, dryrun=self._debug)
-    if sync_binhost_conf:
-      binhost_conf = os.path.join(self._build_path, self._binhost_conf_dir,
-          'target', '%s-%s.conf' % (board, key))
-      UpdateBinhostConfFile(binhost_conf, key, url_value)
+      # Record URL where prebuilts were uploaded.
+      url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
+                              packages_url_suffix.rstrip('/'))
+
+      if git_sync:
+        git_file = DeterminePrebuiltConfFile(self._build_path, board)
+        RevGitFile(git_file, url_value, key=key, dryrun=self._debug)
+      if sync_binhost_conf:
+        binhost_conf = os.path.join(self._build_path, self._binhost_conf_dir,
+            'target', '%s-%s.conf' % (board, key))
+        UpdateBinhostConfFile(binhost_conf, key, url_value)
 
 
 def usage(parser, msg):
@@ -604,6 +619,9 @@ def ParseOptions():
                     help='Previous binhost URL')
   parser.add_option('-b', '--board', dest='board', default=None,
                     help='Board type that was built on this machine')
+  parser.add_option('', '--slave-board', action='append', default=[],
+                    dest='slave_boards',
+                    help='Board type that was built on a slave machine')
   parser.add_option('-p', '--build-path', dest='build_path',
                     help='Path to the directory containing the chroot')
   parser.add_option('', '--packages', action='append',
@@ -615,7 +633,9 @@ def ParseOptions():
                     help='Sync host prebuilts')
   parser.add_option('-g', '--git-sync', dest='git_sync',
                     default=False, action='store_true',
-                    help='Enable git version sync (This commits to a repo)')
+                    help='Enable git version sync (This commits to a repo.) '
+                         'This is used by full builders to commit directly '
+                         'to board overlays.')
   parser.add_option('-u', '--upload', dest='upload',
                     default=None,
                     help='Upload location')
@@ -633,7 +653,9 @@ def ParseOptions():
                     help='Specify the version string')
   parser.add_option('', '--sync-binhost-conf', dest='sync_binhost_conf',
                     default=False, action='store_true',
-                    help='Update binhost.conf')
+                    help='Update binhost.conf in chromiumos-overlay or '
+                         'chromeos-overlay. Commit the changes, but don\'t '
+                         'push them. This is used for preflight binhosts.')
   parser.add_option('', '--binhost-conf-dir', dest='binhost_conf_dir',
                     default=_BINHOST_CONF_DIR,
                     help='Directory to commit binhost config with '
@@ -661,6 +683,15 @@ def ParseOptions():
   if args:
     usage(parser, 'Error: invalid arguments passed to prebuilt.py: %r' % args)
 
+  if options.board in options.slave_boards:
+    usage(parser, 'Error: --board must not also be a slave board.')
+
+  if len(set(options.slave_boards)) != len(options.slave_boards):
+    usage(parser, 'Error: --slave-boards must not have duplicates.')
+
+  if options.slave_boards and options.git_sync:
+    usage(parser, 'Error: --slave-boards is not compatible with --git-sync')
+
   if (options.upload_board_tarball and options.skip_upload and
       options.board == 'amd64-host'):
     usage(parser, 'Error: --skip-upload is not compatible with '
@@ -681,8 +712,8 @@ def ParseOptions():
                     '--upload must be a gs:// URL.')
 
     if options.binhost_base_url != _BINHOST_BASE_URL:
-        usage(parser, 'Error: when using --private the --binhost-base-url '
-                      'is automatically derived.')
+      usage(parser, 'Error: when using --private the --binhost-base-url '
+                    'is automatically derived.')
 
   return options
 
@@ -717,15 +748,15 @@ def main():
   uploader = PrebuiltUploader(options.upload, acl, binhost_base_url,
                               pkg_indexes, options.build_path,
                               options.packages, options.skip_upload,
-                              options.binhost_conf_dir, options.debug)
+                              options.binhost_conf_dir, options.debug,
+                              options.board, options.slave_boards)
 
   if options.sync_host:
     uploader._SyncHostPrebuilts(version, options.key, options.git_sync,
                                 options.sync_binhost_conf)
 
   if options.board:
-    uploader._SyncBoardPrebuilts(options.board, version,
-                                 options.key, options.git_sync,
+    uploader._SyncBoardPrebuilts(version, options.key, options.git_sync,
                                  options.sync_binhost_conf,
                                  options.upload_board_tarball)
 

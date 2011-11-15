@@ -359,7 +359,7 @@ class TestUploadPrebuilt(unittest.TestCase):
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
     uploader = prebuilt.PrebuiltUploader('chromeos-prebuilt:/dir',
-        'public-read', uri, [], '/', [], False, 'foo', False)
+        'public-read', uri, [], '/', [], False, 'foo', False, 'x86-foo', [])
     uploader._UploadPrebuilt('/packages', suffix)
 
   def testSuccessfulGsUpload(self):
@@ -374,7 +374,7 @@ class TestUploadPrebuilt(unittest.TestCase):
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
     uploader = prebuilt.PrebuiltUploader('gs://foo', acl, uri, [], '/', [],
-                                         False, 'foo', False)
+                                         False, 'foo', False, 'x86-foo', [])
     uploader._UploadPrebuilt('/packages', 'suffix')
 
   def testSuccessfulRsyncUploadWithNoTrailingSlash(self):
@@ -403,25 +403,30 @@ class TestSyncPrebuilts(unittest.TestCase):
     self.mox.VerifyAll()
 
   def testSyncHostPrebuilts(self):
+    board = 'x86-foo'
+    slave_boards = ['x86-bar']
     package_path = os.path.join(self.build_path,
                                 prebuilt._HOST_PACKAGES_PATH)
     url_suffix = prebuilt._REL_HOST_PATH % {'version': self.version,
-        'target': prebuilt._HOST_TARGET }
+        'target': prebuilt._HOST_TARGET, 'board': board}
     packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
     prebuilt.PrebuiltUploader._UploadPrebuilt(package_path,
         packages_url_suffix).AndReturn(True)
     url_value = '%s/%s/' % (self.binhost.rstrip('/'),
                             packages_url_suffix.rstrip('/'))
-    prebuilt.RevGitFile(mox.IgnoreArg(), url_value, key=self.key, dryrun=False)
-    prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, url_value)
+    urls = [url_value.replace('foo', 'bar'), url_value]
+    binhost = '"%s"' % ' '.join(urls)
+    prebuilt.RevGitFile(mox.IgnoreArg(), binhost, key=self.key, dryrun=False)
+    prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, binhost)
     self.mox.ReplayAll()
     uploader = prebuilt.PrebuiltUploader(
         self.upload_location, 'public-read', self.binhost, [],
-        self.build_path, [], False, 'foo', False)
+        self.build_path, [], False, 'foo', False, board, slave_boards)
     uploader._SyncHostPrebuilts(self.version, self.key, True, True)
 
   def testSyncBoardPrebuilts(self):
-    board = 'x86-generic'
+    board = 'x86-foo'
+    slave_boards = ['x86-bar']
     board_path = os.path.join(self.build_path,
         prebuilt._BOARD_PATH % {'board': board})
     package_path = os.path.join(board_path, 'packages')
@@ -441,15 +446,19 @@ class TestSyncPrebuilts(unittest.TestCase):
     multiprocessing.Process.exitcode = 0
     url_value = '%s/%s/' % (self.binhost.rstrip('/'),
                             packages_url_suffix.rstrip('/'))
+    bar_binhost = url_value.replace('foo', 'bar')
+    prebuilt.DeterminePrebuiltConfFile(self.build_path, slave_boards[0]).\
+      AndReturn('bar')
+    prebuilt.RevGitFile('bar', bar_binhost, key=self.key, dryrun=False)
+    prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, bar_binhost)
     prebuilt.DeterminePrebuiltConfFile(self.build_path, board).AndReturn('foo')
     prebuilt.RevGitFile('foo', url_value, key=self.key, dryrun=False)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, url_value)
     self.mox.ReplayAll()
     uploader = prebuilt.PrebuiltUploader(
         self.upload_location, 'public-read', self.binhost, [],
-        self.build_path, [], False, 'foo', False)
-    uploader._SyncBoardPrebuilts(board, self.version, self.key, True,
-        True, True)
+        self.build_path, [], False, 'foo', False, board, slave_boards)
+    uploader._SyncBoardPrebuilts(self.version, self.key, True, True, True)
 
 
 class TestMain(unittest.TestCase):
@@ -466,7 +475,7 @@ class TestMain(unittest.TestCase):
     options = mox.MockObject(object)
     old_binhost = 'http://prebuilt/1'
     options.previous_binhost_url = [old_binhost]
-    options.board = 'x86-generic'
+    options.board = 'x86-foo'
     options.build_path = '/trunk'
     options.debug = False
     options.private = True
@@ -483,6 +492,7 @@ class TestMain(unittest.TestCase):
     options.key = 'PORTAGE_BINHOST'
     options.binhost_conf_dir = 'foo'
     options.sync_binhost_conf = True
+    options.slave_boards = ['x86-bar']
     self.mox.StubOutWithMock(prebuilt, 'ParseOptions')
     prebuilt.ParseOptions().AndReturn(options)
     self.mox.StubOutWithMock(prebuilt, 'GrabRemotePackageIndex')
@@ -497,12 +507,13 @@ class TestMain(unittest.TestCase):
     prebuilt.PrebuiltUploader.__init__(options.upload, expected_gs_acl_path,
                                        options.upload, mox.IgnoreArg(),
                                        options.build_path, options.packages,
-                                       False, options.binhost_conf_dir, False)
+                                       False, options.binhost_conf_dir, False,
+                                       options.board, options.slave_boards)
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_SyncHostPrebuilts')
     prebuilt.PrebuiltUploader._SyncHostPrebuilts(mox.IgnoreArg(), options.key,
         options.git_sync, options.sync_binhost_conf)
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_SyncBoardPrebuilts')
-    prebuilt.PrebuiltUploader._SyncBoardPrebuilts(options.board,
+    prebuilt.PrebuiltUploader._SyncBoardPrebuilts(
         mox.IgnoreArg(), options.key, options.git_sync,
         options.sync_binhost_conf, options.upload_board_tarball)
     self.mox.ReplayAll()

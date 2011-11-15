@@ -1034,18 +1034,13 @@ class UploadPrebuiltsStage(bs.BuilderStage):
           builders = self._GetImportantBuildersForMaster(config)
           for builder in builders:
             builder_config = config[builder]
-            builder_board = builder_config['board']
             if not builder_config['master']:
-              commands.UploadPrebuilts(
-                  self._build_root, builder_board, overlay_config,
-                  self._prebuilt_type, self._chrome_rev,
-                  self._options.buildnumber, binhost_bucket, binhost_key,
-                  binhost_base_url, use_binhost_package_file, git_sync,
-                  extra_args + ['--skip-upload'])
+              slave_board = builder_config['board']
+              extra_args.extend(['--slave-board', slave_board])
 
-        # Master pfq should upload host preflight prebuilts.
-        if prebuilt_type == constants.PFQ_TYPE and push_overlays == 'public':
-          extra_args.append('--sync-host')
+      # Pre-flight queues should upload host preflight prebuilts.
+      if prebuilt_type == constants.PFQ_TYPE and push_overlays == 'public':
+        extra_args.append('--sync-host')
 
       # Deduplicate against previous binhosts.
       binhosts = []
