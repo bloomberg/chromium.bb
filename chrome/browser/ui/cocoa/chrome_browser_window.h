@@ -8,11 +8,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/ui/cocoa/themed_browser_window.h"
+#import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 
 // Common base class for chrome browser windows.  Contains methods relating to
 // hole punching that are shared between framed and fullscreen windows.
-@interface ChromeBrowserWindow : ThemedBrowserWindow {
+@interface ChromeBrowserWindow : ChromeEventProcessingWindow {
  @private
   int underlaySurfaceCount_;
 }

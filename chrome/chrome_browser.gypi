@@ -2826,8 +2826,6 @@
         'browser/ui/cocoa/tabs/throbber_view.mm',
         'browser/ui/cocoa/task_manager_mac.h',
         'browser/ui/cocoa/task_manager_mac.mm',
-        'browser/ui/cocoa/themed_browser_window.h',
-        'browser/ui/cocoa/themed_browser_window.mm',
         'browser/ui/cocoa/themed_window.h',
         'browser/ui/cocoa/themed_window.mm',
         'browser/ui/cocoa/toolbar/back_forward_menu_controller.h',

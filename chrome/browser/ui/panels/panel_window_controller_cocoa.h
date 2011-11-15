@@ -16,8 +16,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
+#import "chrome/browser/ui/cocoa/chrome_browser_window.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
-#import "chrome/browser/ui/cocoa/themed_browser_window.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 
@@ -25,7 +25,7 @@
 class PanelBrowserWindowCocoa;
 @class PanelTitlebarViewCocoa;
 
-@interface PanelWindowCocoaImpl : ThemedBrowserWindow {
+@interface PanelWindowCocoaImpl : ChromeBrowserWindow {
 }
 // The panels cannot be reduced to 3-px windows on the edge of the screen
 // active area (above Dock). Default constraining logic makes at least a height
