@@ -15,10 +15,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "views/widget/widget.h"
 
-namespace gfx {
-class Rect;
-}  // namespace gfx
-
 namespace chromeos {
 // WebUI-based login UI implementation.
 class WebUILoginDisplay : public LoginDisplay,

@@ -10,10 +10,6 @@
 
 #include "base/callback.h"
 
-namespace base {
-class TimeDelta;
-}
-
 namespace chromeos {
 
 typedef base::Callback<void(int64_t)> CalculateIdleTimeCallback;

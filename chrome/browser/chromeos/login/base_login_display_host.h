@@ -15,10 +15,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
-namespace views {
-class Widget;
-}
-
 namespace chromeos {
 
 class ExistingUserController;

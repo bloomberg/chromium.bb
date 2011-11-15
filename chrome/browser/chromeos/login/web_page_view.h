@@ -14,7 +14,6 @@
 #include "views/view.h"
 
 class Profile;
-class SiteContents;
 class TabContentsDelegate;
 
 namespace views {

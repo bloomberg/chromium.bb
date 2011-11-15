@@ -13,9 +13,6 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 
-class Browser;
-class BrowserView;
-
 namespace chromeos {
 
 // WmMessageListener listens for messages from the window manager that need to

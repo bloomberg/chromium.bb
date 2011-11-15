@@ -15,14 +15,13 @@
 #include "chrome/browser/chromeos/login/web_page_screen.h"
 #include "chrome/browser/chromeos/login/web_page_view.h"
 
+class GURL;
+class Profile;
+
 namespace net {
 class URLRequest;
 class URLRequestJob;
 }  // namespace net
-
-class GURL;
-class Profile;
-class SiteContents;
 
 namespace chromeos {
 

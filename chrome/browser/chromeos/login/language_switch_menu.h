@@ -24,7 +24,6 @@ class MenuRunner;
 namespace chromeos {
 
 class LanguageList;
-class ScreenObserver;
 
 class LanguageSwitchMenu : public views::ViewMenuDelegate,
                            public views::MenuDelegate {

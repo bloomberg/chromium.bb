@@ -5,16 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DBUS_POWER_MANAGER_CLIENT_H_
 #define CHROME_BROWSER_CHROMEOS_DBUS_POWER_MANAGER_CLIENT_H_
 
-#include "base/memory/ref_counted.h"
-#include "base/observer_list.h"
-
 #include <string>
+
+#include "base/basictypes.h"
 
 namespace dbus {
 class Bus;
-class ObjectProxy;
-class Response;
-class Signal;
 }  // namespace
 
 namespace chromeos {

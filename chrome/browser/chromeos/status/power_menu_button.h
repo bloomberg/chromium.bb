@@ -19,8 +19,6 @@ namespace views {
 class MenuRunner;
 }
 
-class SkBitmap;
-
 namespace chromeos {
 
 class StatusAreaBubbleContentView;

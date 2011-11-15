@@ -21,7 +21,6 @@ class PrefService;
 
 namespace base {
 class DictionaryValue;
-class ListValue;
 }
 
 namespace chromeos {

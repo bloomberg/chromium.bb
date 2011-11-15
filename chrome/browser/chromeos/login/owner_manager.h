@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_OWNER_MANAGER_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -13,8 +14,6 @@
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/rsa_private_key.h"
-
-class FilePath;
 
 namespace content {
 class NotificationDetails;

@@ -10,8 +10,6 @@
 
 #include "base/basictypes.h"
 
-struct sockaddr;
-
 namespace chromeos {
 
 class WebSocketProxy {

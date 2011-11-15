@@ -6,22 +6,22 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_BACKGROUND_VIEW_H_
 #pragma once
 
+#include <string>
+
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "chrome/browser/chromeos/login/version_info_updater.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "views/view.h"
 
+class DOMView;
+class GURL;
+
 namespace views {
 class Label;
-class TextButton;
 class Widget;
 class WidgetDelegate;
 }
-
-class DOMView;
-class GURL;
-class Profile;
 
 namespace chromeos {
 

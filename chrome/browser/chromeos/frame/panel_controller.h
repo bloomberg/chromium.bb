@@ -12,7 +12,6 @@
 #include "ui/base/x/x11_util.h"
 #include "views/controls/button/button.h"
 
-class BrowserView;
 class SkBitmap;
 typedef unsigned long XID;
 

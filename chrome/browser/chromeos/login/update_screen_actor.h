@@ -8,9 +8,6 @@
 
 namespace chromeos {
 
-class WizardScreen;
-class ScreenObserver;
-
 class UpdateScreenActor {
  public:
   class Delegate {

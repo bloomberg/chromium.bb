@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 
-class InProcessBrowserTest;
 template <typename T> struct DefaultSingletonTraits;
 
 namespace chromeos {

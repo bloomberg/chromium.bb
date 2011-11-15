@@ -7,14 +7,14 @@
 #pragma once
 
 #include <string>
-#include <base/basictypes.h>
+
+#include "base/basictypes.h"
 
 namespace chromeos {
 
 class EnterpriseEnrollmentScreenActor;
 class EulaScreenActor;
 class NetworkScreenActor;
-class ScreenObserver;
 class UpdateScreenActor;
 class UserImageScreenActor;
 // TODO(altimofeev): use real actors instead

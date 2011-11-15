@@ -4,10 +4,13 @@
 
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/timer.h"

@@ -12,8 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "content/browser/cancelable_request.h"
 
-class FilePath;
-
 namespace chromeos {
 
 // ChromeOSVersionLoader loads the version of Chrome OS from the file system.

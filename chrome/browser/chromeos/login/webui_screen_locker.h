@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WEBUI_SCREEN_LOCKER_H_
 #pragma once
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/login_display.h"
@@ -23,10 +25,6 @@ namespace chromeos {
 
 class ScreenLocker;
 class WebUILoginDisplay;
-
-namespace test {
-class ScreenLockerTester;
-}
 
 // This version of ScreenLockerDelegate displays a WebUI lock screen based on
 // the Oobe account picker screen.

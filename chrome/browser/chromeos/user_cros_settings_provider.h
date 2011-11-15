@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 
 class PrefService;
-class Task;
 
 namespace base {
 class ListValue;

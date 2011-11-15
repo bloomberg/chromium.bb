@@ -24,8 +24,6 @@ class ToggleImageButton;
 class Label;
 }
 
-class FilePath;
-
 namespace chromeos {
 
 // A dialog box for showing a password textfield.

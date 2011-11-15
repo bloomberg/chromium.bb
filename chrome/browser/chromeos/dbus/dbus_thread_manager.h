@@ -22,7 +22,6 @@ namespace chromeos {
 class BluetoothAdapterClient;
 class BluetoothManagerClient;
 class CrosDisksClient;
-class CrosDBusService;
 class PowerManagerClient;
 class SessionManagerClient;
 class SensorsClient;

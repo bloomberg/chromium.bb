@@ -16,21 +16,11 @@
 #include "views/context_menu_controller.h"
 #include "views/controls/menu/menu_listener.h"
 
-class AccessibleToolbarView;
-class Profile;
 class StatusAreaButton;
-class TabStripModel;
-
-namespace ui {
-class SimpleMenuModel;
-}  // namespace ui
 
 namespace views {
 class AccessiblePaneView;
-class ImageButton;
-class ImageView;
 class MenuDelegate;
-class MenuItemView;
 class MenuRunner;
 }  // namespace views
 

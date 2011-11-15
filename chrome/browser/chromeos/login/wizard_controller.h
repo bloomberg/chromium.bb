@@ -19,20 +19,10 @@
 
 class PrefService;
 
-namespace gfx {
-class Rect;
-}
-
-namespace views {
-class Views;
-class Widget;
-}
-
 namespace chromeos {
 
 class EnterpriseEnrollmentScreen;
 class EulaScreen;
-class ExistingUserController;
 class HTMLPageScreen;
 class LoginDisplayHost;
 class NetworkScreen;

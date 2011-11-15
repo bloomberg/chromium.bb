@@ -20,7 +20,6 @@ class FilePath;
 
 namespace base {
 class DictionaryValue;
-class ListValue;
 }
 
 namespace chromeos {

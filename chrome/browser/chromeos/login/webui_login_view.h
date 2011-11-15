@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WEBUI_LOGIN_VIEW_H_
 #pragma once
 
+#include <map>
+#include <string>
+
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/tab_first_render_watcher.h"
@@ -15,7 +18,6 @@
 
 class DOMView;
 class GURL;
-class Profile;
 class WebUI;
 
 namespace views {

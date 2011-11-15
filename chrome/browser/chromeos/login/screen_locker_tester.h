@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 
 namespace views {
-class Button;
 class Textfield;
 class Widget;
 }  // namespace views

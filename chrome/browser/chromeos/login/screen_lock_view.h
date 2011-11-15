@@ -13,10 +13,6 @@
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
 
-namespace views {
-class ImageView;
-}  // namespace views
-
 namespace chromeos {
 
 class ScreenLocker;

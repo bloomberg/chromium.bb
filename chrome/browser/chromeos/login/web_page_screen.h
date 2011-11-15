@@ -12,8 +12,6 @@
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 
-class GURL;
-
 namespace chromeos {
 
 // Base class for wizard screen that holds web page.

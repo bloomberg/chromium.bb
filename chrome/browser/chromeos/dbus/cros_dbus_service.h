@@ -30,8 +30,6 @@ namespace chromeos {
 //
 // CrosDBusService exports D-Bus methods through service provider classes
 // that implement CrosDBusService::ServiceProviderInterface.
-//
-class ProxyResolutionService;
 
 class CrosDBusService {
  public:

@@ -19,13 +19,8 @@
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 
-class CancelableTask;
 class GaiaAuthFetcher;
 class Profile;
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 namespace chromeos {
 class AuthAttemptState;

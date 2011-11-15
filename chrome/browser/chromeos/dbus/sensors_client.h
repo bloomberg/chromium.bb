@@ -9,8 +9,6 @@
 
 namespace dbus {
 class Bus;
-class ObjectProxy;
-class Signal;
 }  // namespace
 
 namespace chromeos {

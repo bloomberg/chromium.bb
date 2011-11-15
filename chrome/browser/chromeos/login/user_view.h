@@ -17,7 +17,6 @@ class SkBitmap;
 namespace views {
 class ImageView;
 class TextButton;
-class Throbber;
 }  // namespace views
 
 namespace chromeos {
@@ -93,6 +92,6 @@ class UserView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(UserView);
 };
 
-}  // chromeos
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USER_VIEW_H_

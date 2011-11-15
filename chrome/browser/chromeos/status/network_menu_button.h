@@ -20,10 +20,6 @@
 
 class PrefService;
 
-namespace gfx {
-class Canvas;
-}
-
 namespace chromeos {
 
 // The network menu button in the status area.

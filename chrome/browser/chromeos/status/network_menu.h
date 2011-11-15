@@ -14,20 +14,6 @@
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 #include "views/controls/menu/view_menu_delegate.h"
 
-namespace {
-
-const int kMainCommandIndexOffset = 1000;
-const int kVPNCommandIndexOffset  = 2000;
-const int kMoreCommandIndexOffset = 3000;
-
-}  // namespace
-
-class SkBitmap;
-
-namespace gfx {
-class Canvas;
-}
-
 namespace ui {
 class MenuModel;
 }

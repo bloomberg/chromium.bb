@@ -15,14 +15,6 @@
 #include "chrome/browser/chromeos/login/screen_locker_delegate.h"
 #include "ui/base/models/accelerator.h"
 
-namespace gfx {
-class Rect;
-}  // namespace gfx
-
-namespace views {
-class View;
-}  // namespace views
-
 namespace chromeos {
 
 class Authenticator;
