@@ -493,38 +493,41 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
     const ProductState* other_state =
         original_state.GetProductState(!system_level, browser_dist->GetType());
     if (other_state != NULL && !system_level) {
-      LOG(ERROR) << "Already installed version "
-                 << other_state->version().GetString()
-                 << " conflicts with the current install mode.";
-      if (is_first_install && product->is_chrome()) {
-        // This is user-level install and there is a system-level chrome
-        // installation. Instruct Google Update to launch the existing one.
-        // There should be no error dialog.
-        FilePath chrome_exe(installer::GetChromeInstallPath(!system_level,
-                                                            browser_dist));
-        if (chrome_exe.empty()) {
-          // If we failed to construct install path. Give up.
-          *status = installer::OS_ERROR;
-          installer_state->WriteInstallerResult(*status,
-              IDS_INSTALL_OS_ERROR_BASE, NULL);
+      if (is_first_install) {
+        // This is a user-level install and there is a system-level install of
+        // the product.
+        LOG(ERROR) << "Already installed version "
+                   << other_state->version().GetString()
+                   << " at system-level conflicts with this one at user-level.";
+        if (product->is_chrome()) {
+          // Instruct Google Update to launch the existing system-level Chrome.
+          // There should be no error dialog.
+          FilePath chrome_exe(installer::GetChromeInstallPath(!system_level,
+                                                              browser_dist));
+          if (chrome_exe.empty()) {
+            // If we failed to construct install path. Give up.
+            *status = installer::OS_ERROR;
+            installer_state->WriteInstallerResult(*status,
+                IDS_INSTALL_OS_ERROR_BASE, NULL);
+          } else {
+            *status = installer::EXISTING_VERSION_LAUNCHED;
+            chrome_exe = chrome_exe.Append(installer::kChromeExe);
+            CommandLine cmd(chrome_exe);
+            cmd.AppendSwitch(switches::kFirstRun);
+            installer_state->WriteInstallerResult(*status, 0, NULL);
+            VLOG(1) << "Launching existing system-level chrome instead.";
+            base::LaunchProcess(cmd, base::LaunchOptions(), NULL);
+          }
         } else {
-          *status = installer::EXISTING_VERSION_LAUNCHED;
-          chrome_exe = chrome_exe.Append(installer::kChromeExe);
-          CommandLine cmd(chrome_exe);
-          cmd.AppendSwitch(switches::kFirstRun);
-          installer_state->WriteInstallerResult(*status, 0, NULL);
-          VLOG(1) << "Launching existing system-level chrome instead.";
-          base::LaunchProcess(cmd, base::LaunchOptions(), NULL);
+          // Display an error message for Chrome Frame.
+          *status = installer::SYSTEM_LEVEL_INSTALL_EXISTS;
+          installer_state->WriteInstallerResult(*status,
+              IDS_INSTALL_SYSTEM_LEVEL_EXISTS_BASE, NULL);
         }
         return false;
       }
-
-      // This is an update, not an install. Omaha should know the difference
-      // and not show a dialog.
-      *status = installer::SYSTEM_LEVEL_INSTALL_EXISTS;
-      installer_state->WriteInstallerResult(*status,
-          IDS_INSTALL_SYSTEM_LEVEL_EXISTS_BASE, NULL);
-      return false;
+      // This is an update, not a new install. Allow it to take place so that
+      // out-of-date versions are not left around.
     }
   }
 

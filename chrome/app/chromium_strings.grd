@@ -375,8 +375,8 @@ be available for now. -->
       <message name="IDS_INSTALL_HIGHER_VERSION_CB_CF" desc="Error displayed when higher version of Chromium and Chromium Frame already exists">
         This computer already has a more recent version of Chromium and Chromium Frame. If the software is not working, please uninstall both Chromium and Chromium Frame and try again.
       </message>
-      <message name="IDS_INSTALL_SYSTEM_LEVEL_EXISTS" desc="Error displayed during user level install if system level Chromium is already installed.">
-        Chromium is already installed and available to all users of this computer. If you want to install Chromium at the user level, you must first uninstall the system-level version installed by an administrator.
+      <message name="IDS_INSTALL_SYSTEM_LEVEL_EXISTS" desc="Error displayed during user level install if system level Chromium Frame is already installed.">
+        Chromium Frame is already installed and available to all users of this computer. If you want to install Chromium Frame at the user level, you must first uninstall the system-level version installed by an administrator.
       </message>
       <message name="IDS_INSTALL_FAILED" desc="Error displayed if installation fails due to some unknown error.">
         Installation failed due to unspecified error. If Chromium is currently running, please close it and try again.
