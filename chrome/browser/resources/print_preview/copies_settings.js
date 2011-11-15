@@ -22,7 +22,7 @@ cr.define('print_preview', function() {
     this.collateCheckbox_ = $('collate');
     this.hint_ = $('copies-hint');
     this.twoSidedCheckbox_ = $('two-sided');
-    this.twoSidedOption_ = $('two-sided-div');
+    this.twoSidedOption_ = $('two-sided-option');
 
     // Constant values matches printing::DuplexMode enum. Not using const
     // keyword because it is not allowed by JS strict mode.
@@ -190,11 +190,6 @@ cr.define('print_preview', function() {
      */
     showHideCollateOption_: function() {
       this.collateOption_.hidden = this.numberOfCopies <= 1;
-      // TODO(aayushkumar): Remove aria-hidden attribute once elements within
-      // the hidden attribute are no longer read out by a screen-reader.
-      // (Currently a bug in webkit).
-      this.collateOption_.setAttribute('aria-hidden',
-                                       this.collateOption_.hidden);
     },
 
     /*
@@ -210,8 +205,7 @@ cr.define('print_preview', function() {
       // Ref bug: http://crbug.com/89204
       this.twoSidedOption_.hidden =
           (defaultDuplexValue == this.UNKNOWN_DUPLEX_MODE);
-      this.twoSidedOption_.setAttribute('aria-hidden',
-                                        this.twoSidedOption_.hidden);
+
       if (!this.twoSidedOption_.hidden)
         this.twoSidedCheckbox_.checked = !!defaultDuplexValue;
      },

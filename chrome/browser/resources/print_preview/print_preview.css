@@ -54,7 +54,7 @@ header {
   padding-top: 2px;
 }
 
-input[disabled] + label,
+label input[disabled] + span,
 input[type=text][disabled] {
   color: gray;
 }
@@ -188,10 +188,7 @@ select {
 }
 
 label {
-  -webkit-margin-start: -5px;
-  -webkit-padding-start: 5px;
   -webkit-user-select: none;
-  cursor: default;
 }
 
 .hidden-section {
@@ -238,11 +235,6 @@ label {
   display: -webkit-box;
 }
 
-#print-pages-div > label {
-  -webkit-box-flex: 1;
-  display: -webkit-box;
-}
-
 #individual-pages {
   -webkit-box-flex: 1;
   -webkit-margin-start: 5px;
@@ -251,7 +243,7 @@ label {
 
 #collate-option {
  -webkit-transition: opacity 200ms, -webkit-transform 200ms;
- -webkit-padding-start: 5px;
+ -webkit-padding-start: 16px;
  display: inline-block;
  opacity: 1;
 }
@@ -406,7 +398,8 @@ html[dir='rtl'] #decrement {
   -webkit-animation-delay: 300ms;
 }
 
-#two-sided-div {
+#two-sided-option {
+  display: inline-block;
   margin-top: 10px;
 }
 
