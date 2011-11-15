@@ -11,7 +11,7 @@
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
-#include "chrome/browser/ui/shell_dialogs.h"
+#include "chrome/browser/ui/select_file_dialog.h"
 #include "views/controls/button/button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/textfield/textfield_controller.h"

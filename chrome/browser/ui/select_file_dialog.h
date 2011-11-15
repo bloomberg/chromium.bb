@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_SHELL_DIALOGS_H_
-#define CHROME_BROWSER_UI_SHELL_DIALOGS_H_
+#ifndef CHROME_BROWSER_UI_SELECT_FILE_DIALOG_H_
+#define CHROME_BROWSER_UI_SELECT_FILE_DIALOG_H_
 #pragma once
 
 #include <string>
@@ -17,7 +17,7 @@
 class TabContents;
 
 // This function is declared extern such that it is accessible for unit tests
-// in /chrome/browser/ui/views/shell_dialogs_win_unittest.cc
+// in /chrome/browser/ui/views/select_file_dialog_win_unittest.cc
 extern std::wstring AppendExtensionIfNeeded(const std::wstring& filename,
                                             const std::wstring& filter_selected,
                                             const std::wstring& suggested_ext);
@@ -174,4 +174,4 @@ class SelectFileDialog
   virtual bool HasMultipleFileTypeChoicesImpl() = 0;
 };
 
-#endif  // CHROME_BROWSER_UI_SHELL_DIALOGS_H_
+#endif  // CHROME_BROWSER_UI_SELECT_FILE_DIALOG_H_

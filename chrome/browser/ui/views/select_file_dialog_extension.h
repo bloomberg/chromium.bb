@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FILE_MANAGER_DIALOG_H_
-#define CHROME_BROWSER_UI_VIEWS_FILE_MANAGER_DIALOG_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_SELECT_FILE_DIALOG_EXTENSION_H_
+#define CHROME_BROWSER_UI_VIEWS_SELECT_FILE_DIALOG_EXTENSION_H_
 #pragma once
 
 #include <map>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/ui/shell_dialogs.h"  // SelectFileDialog
+#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 
@@ -18,11 +18,12 @@ class RenderViewHost;
 
 // Shows a dialog box for selecting a file or a folder, using the
 // file manager extension implementation.
-class FileManagerDialog
+class SelectFileDialogExtension
     : public SelectFileDialog,
       public ExtensionDialogObserver {
  public:
-  static FileManagerDialog* Create(SelectFileDialog::Listener* listener);
+  static SelectFileDialogExtension* Create(
+      SelectFileDialog::Listener* listener);
 
   // BaseShellDialog implementation.
   virtual bool IsRunning(gfx::NativeWindow owner_window) const OVERRIDE;
@@ -54,12 +55,12 @@ class FileManagerDialog
 
 
  private:
-  friend class FileManagerDialogBrowserTest;
-  friend class FileManagerDialogTest;
+  friend class SelectFileDialogExtensionBrowserTest;
+  friend class SelectFileDialogExtensionTest;
 
-  // Object is ref-counted, use FileManagerDialog::Create().
-  explicit FileManagerDialog(SelectFileDialog::Listener* listener);
-  virtual ~FileManagerDialog();
+  // Object is ref-counted, use Create().
+  explicit SelectFileDialogExtension(SelectFileDialog::Listener* listener);
+  virtual ~SelectFileDialogExtension();
 
   // Closes the dialog and cleans up callbacks and listeners.
   void Close();
@@ -87,7 +88,7 @@ class FileManagerDialog
 
   gfx::NativeWindow owner_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileManagerDialog);
+  DISALLOW_COPY_AND_ASSIGN(SelectFileDialogExtension);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FILE_MANAGER_DIALOG_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_SELECT_FILE_DIALOG_EXTENSION_H_

@@ -1836,7 +1836,7 @@
         'browser/ui/panels/auto_hiding_desktop_bar_win_unittest.cc',
         'browser/ui/panels/panel_browser_window_cocoa_unittest.mm',
         'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
-        'browser/ui/shell_dialogs_unittest.cc',
+        'browser/ui/select_file_dialog_unittest.cc',
         'browser/ui/tabs/dock_info_unittest.cc',
         'browser/ui/tabs/tab_menu_model_unittest.cc',
         'browser/ui/tests/ui_gfx_image_unittest.cc',
@@ -1851,10 +1851,10 @@
         'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',
         'browser/ui/views/bubble/border_contents_unittest.cc',
         'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
-        'browser/ui/views/file_manager_dialog_unittest.cc',
         'browser/ui/views/generic_info_view_unittest.cc',
         'browser/ui/views/reload_button_unittest.cc',
-        'browser/ui/views/shell_dialogs_win_unittest.cc',
+        'browser/ui/views/select_file_dialog_extension_unittest.cc',
+        'browser/ui/views/select_file_dialog_win_unittest.cc',
         'browser/ui/views/status_icons/status_tray_win_unittest.cc',
         'browser/ui/views/tabs/base_tab_strip_test_fixture.h',
         'browser/ui/views/tabs/fake_base_tab_strip_controller.cc',
@@ -2059,7 +2059,7 @@
         }],
         ['file_manager_extension==0', {
           'sources!': [
-            'browser/ui/views/file_manager_dialog_unittest.cc',
+            'browser/ui/views/select_file_dialog_extension_unittest.cc',
           ],
         }],
         ['configuration_policy==0', {
@@ -2629,8 +2629,8 @@
         'browser/ui/panels/panel_browser_view_browsertest.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',
         'browser/ui/views/dom_view_browsertest.cc',
-        'browser/ui/views/file_manager_dialog_browsertest.cc',
         'browser/ui/views/html_dialog_view_browsertest.cc',
+        'browser/ui/views/select_file_dialog_extension_browsertest.cc',
         'browser/ui/webui/chrome_url_data_manager_browsertest.cc',
         'browser/ui/webui/ntp/most_visited_browsertest.cc',
         'browser/ui/webui/test_chrome_web_ui_factory_browsertest.cc',
@@ -2782,7 +2782,7 @@
         }],
         ['file_manager_extension==0', {
           'sources!': [
-            'browser/ui/views/file_manager_dialog_browsertest.cc',
+            'browser/ui/views/select_file_dialog_extension_browsertest.cc',
           ],
         }],
         ['toolkit_views==0', {

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_FILE_PICKER_H_
 #pragma once
 
-#include "chrome/browser/ui/shell_dialogs.h"
+#include "chrome/browser/ui/select_file_dialog.h"
 #include "content/browser/download/download_manager.h"
 
 class FilePath;

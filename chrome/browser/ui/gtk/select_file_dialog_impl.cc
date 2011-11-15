@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This file implements commond select dialog functionality between GTK and KDE.
+// This file implements common select dialog functionality between GTK and KDE.
 
-#include "chrome/browser/ui/gtk/dialogs_common.h"
+#include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
 
 #include "base/environment.h"
 #include "base/file_util.h"

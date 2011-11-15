@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/file_manager_dialog.h"
+#include "chrome/browser/ui/views/select_file_dialog_extension.h"
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -32,16 +32,16 @@ const int kFileManagerHeight = 580;  // pixels
 class PendingDialog {
  public:
   static PendingDialog* GetInstance();
-  void Add(int32 tab_id, scoped_refptr<FileManagerDialog> dialog);
+  void Add(int32 tab_id, scoped_refptr<SelectFileDialogExtension> dialog);
   void Remove(int32 tab_id);
   // Returns scoped_refptr because in some cases, when the listener receives
   // the callback, it deletes itself and the reference to the dialog, and
   // otherwise we end up calling Close on a deleted dialog.
-  scoped_refptr<FileManagerDialog> Find(int32 tab_id);
+  scoped_refptr<SelectFileDialogExtension> Find(int32 tab_id);
 
  private:
   friend struct DefaultSingletonTraits<PendingDialog>;
-  typedef std::map<int32, scoped_refptr<FileManagerDialog> > Map;
+  typedef std::map<int32, scoped_refptr<SelectFileDialogExtension> > Map;
   Map map_;
 };
 
@@ -51,7 +51,7 @@ PendingDialog* PendingDialog::GetInstance() {
 }
 
 void PendingDialog::Add(int32 tab_id,
-                         scoped_refptr<FileManagerDialog> dialog) {
+                         scoped_refptr<SelectFileDialogExtension> dialog) {
   DCHECK(dialog);
   if (map_.find(tab_id) == map_.end())
     map_.insert(std::make_pair(tab_id, dialog));
@@ -63,7 +63,7 @@ void PendingDialog::Remove(int32 tab_id) {
   map_.erase(tab_id);
 }
 
-scoped_refptr<FileManagerDialog> PendingDialog::Find(int32 tab_id) {
+scoped_refptr<SelectFileDialogExtension> PendingDialog::Find(int32 tab_id) {
   Map::const_iterator it = map_.find(tab_id);
   if (it == map_.end()) {
     LOG(WARNING) << "Pending dialog not found " << tab_id;
@@ -82,55 +82,58 @@ scoped_refptr<FileManagerDialog> PendingDialog::Find(int32 tab_id) {
 // static
 SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return FileManagerDialog::Create(listener);
+  return SelectFileDialogExtension::Create(listener);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 // static
-FileManagerDialog* FileManagerDialog::Create(Listener* listener) {
-  return new FileManagerDialog(listener);
+SelectFileDialogExtension* SelectFileDialogExtension::Create(
+    Listener* listener) {
+  return new SelectFileDialogExtension(listener);
 }
 
-FileManagerDialog::FileManagerDialog(Listener* listener)
+SelectFileDialogExtension::SelectFileDialogExtension(Listener* listener)
     : SelectFileDialog(listener),
       params_(NULL),
       tab_id_(0),
       owner_window_(0) {
 }
 
-FileManagerDialog::~FileManagerDialog() {
+SelectFileDialogExtension::~SelectFileDialogExtension() {
   if (extension_dialog_)
     extension_dialog_->ObserverDestroyed();
 }
 
-bool FileManagerDialog::IsRunning(gfx::NativeWindow owner_window) const {
+bool SelectFileDialogExtension::IsRunning(
+    gfx::NativeWindow owner_window) const {
   return owner_window_ == owner_window;
 }
 
-void FileManagerDialog::ListenerDestroyed() {
+void SelectFileDialogExtension::ListenerDestroyed() {
   listener_ = NULL;
   params_ = NULL;
   PendingDialog::GetInstance()->Remove(tab_id_);
 }
 
-void FileManagerDialog::ExtensionDialogIsClosing(ExtensionDialog* dialog) {
+void SelectFileDialogExtension::ExtensionDialogIsClosing(
+    ExtensionDialog* dialog) {
   owner_window_ = NULL;
   // Release our reference to the dialog to allow it to close.
   extension_dialog_ = NULL;
   PendingDialog::GetInstance()->Remove(tab_id_);
 }
 
-void FileManagerDialog::Close() {
+void SelectFileDialogExtension::Close() {
   if (extension_dialog_)
     extension_dialog_->Close();
   PendingDialog::GetInstance()->Remove(tab_id_);
 }
 
 // static
-void FileManagerDialog::OnFileSelected(
+void SelectFileDialogExtension::OnFileSelected(
     int32 tab_id, const FilePath& path, int index) {
-  scoped_refptr<FileManagerDialog> dialog =
+  scoped_refptr<SelectFileDialogExtension> dialog =
       PendingDialog::GetInstance()->Find(tab_id);
   if (dialog) {
     DCHECK(dialog->listener_);
@@ -140,9 +143,9 @@ void FileManagerDialog::OnFileSelected(
 }
 
 // static
-void FileManagerDialog::OnMultiFilesSelected(
+void SelectFileDialogExtension::OnMultiFilesSelected(
     int32 tab_id, const std::vector<FilePath>& files) {
-  scoped_refptr<FileManagerDialog> dialog =
+  scoped_refptr<SelectFileDialogExtension> dialog =
       PendingDialog::GetInstance()->Find(tab_id);
   if (dialog) {
     DCHECK(dialog->listener_);
@@ -152,8 +155,8 @@ void FileManagerDialog::OnMultiFilesSelected(
 }
 
 // static
-void FileManagerDialog::OnFileSelectionCanceled(int32 tab_id) {
-  scoped_refptr<FileManagerDialog> dialog =
+void SelectFileDialogExtension::OnFileSelectionCanceled(int32 tab_id) {
+  scoped_refptr<SelectFileDialogExtension> dialog =
       PendingDialog::GetInstance()->Find(tab_id);
   if (dialog) {
     DCHECK(dialog->listener_);
@@ -162,26 +165,26 @@ void FileManagerDialog::OnFileSelectionCanceled(int32 tab_id) {
   }
 }
 
-RenderViewHost* FileManagerDialog::GetRenderViewHost() {
+RenderViewHost* SelectFileDialogExtension::GetRenderViewHost() {
   if (extension_dialog_)
     return extension_dialog_->host()->render_view_host();
   return NULL;
 }
 
-void FileManagerDialog::AddPending(int32 tab_id) {
+void SelectFileDialogExtension::AddPending(int32 tab_id) {
   PendingDialog::GetInstance()->Add(tab_id, this);
 }
 
 // static
-bool FileManagerDialog::PendingExists(int32 tab_id) {
+bool SelectFileDialogExtension::PendingExists(int32 tab_id) {
   return PendingDialog::GetInstance()->Find(tab_id) != NULL;
 }
 
-bool FileManagerDialog::HasMultipleFileTypeChoicesImpl() {
+bool SelectFileDialogExtension::HasMultipleFileTypeChoicesImpl() {
   return hasMultipleFileTypeChoices_;
 }
 
-void FileManagerDialog::SelectFileImpl(
+void SelectFileDialogExtension::SelectFileImpl(
     Type type,
     const string16& title,
     const FilePath& default_path,

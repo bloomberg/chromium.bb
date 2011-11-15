@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
-#include "chrome/browser/ui/shell_dialogs.h"
+#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/common/extensions/extension_resource.h"

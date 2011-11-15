@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "chrome/browser/ui/shell_dialogs.h"
+#include "chrome/browser/ui/select_file_dialog.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;

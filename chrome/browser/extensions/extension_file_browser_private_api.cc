@@ -26,7 +26,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/views/file_manager_dialog.h"
+#include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -1074,7 +1074,7 @@ void SelectFileFunction::GetLocalPathsResponseOnUIThread(
   int index;
   args_->GetInteger(1, &index);
   int32 tab_id = GetTabId();
-  FileManagerDialog::OnFileSelected(tab_id, files[0], index);
+  SelectFileDialogExtension::OnFileSelected(tab_id, files[0], index);
   SendResponse(true);
 }
 
@@ -1173,13 +1173,13 @@ void SelectFilesFunction::GetLocalPathsResponseOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!context);
   int32 tab_id = GetTabId();
-  FileManagerDialog::OnMultiFilesSelected(tab_id, files);
+  SelectFileDialogExtension::OnMultiFilesSelected(tab_id, files);
   SendResponse(true);
 }
 
 bool CancelFileDialogFunction::RunImpl() {
   int32 tab_id = GetTabId();
-  FileManagerDialog::OnFileSelectionCanceled(tab_id);
+  SelectFileDialogExtension::OnFileSelectionCanceled(tab_id);
   SendResponse(true);
   return true;
 }

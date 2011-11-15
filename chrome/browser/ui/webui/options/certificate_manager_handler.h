@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/certificate_manager_model.h"
-#include "chrome/browser/ui/shell_dialogs.h"
+#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "content/browser/cancelable_request.h"
 #include "net/base/cert_database.h"

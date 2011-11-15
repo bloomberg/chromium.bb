@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_CERTIFICATE_DIALOGS_H_
 #pragma once
 
-#include "chrome/browser/ui/shell_dialogs.h"
+#include "chrome/browser/ui/select_file_dialog.h"
 #include "net/base/x509_certificate.h"
 
 void ShowCertSelectFileDialog(SelectFileDialog* select_file_dialog,

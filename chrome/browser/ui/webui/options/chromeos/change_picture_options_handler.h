@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
-#include "chrome/browser/ui/shell_dialogs.h"
+#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"

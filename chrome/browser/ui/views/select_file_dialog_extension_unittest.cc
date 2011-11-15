@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/file_manager_dialog.h"
+#include "chrome/browser/ui/views/select_file_dialog_extension.h"
 
 #include "base/file_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class FileManagerDialogTest : public testing::Test {
+class SelectFileDialogExtensionTest : public testing::Test {
  public:
-  static FileManagerDialog* CreateDialog(SelectFileDialog::Listener* listener,
-                                         int32 tab_id) {
-    FileManagerDialog* dialog = new FileManagerDialog(listener);
+  static SelectFileDialogExtension* CreateDialog(
+      SelectFileDialog::Listener* listener,
+      int32 tab_id) {
+    SelectFileDialogExtension* dialog = new SelectFileDialogExtension(listener);
     // Simulate the dialog opening.
-    EXPECT_FALSE(FileManagerDialog::PendingExists(tab_id));
+    EXPECT_FALSE(SelectFileDialogExtension::PendingExists(tab_id));
     dialog->AddPending(tab_id);
-    EXPECT_TRUE(FileManagerDialog::PendingExists(tab_id));
+    EXPECT_TRUE(SelectFileDialogExtension::PendingExists(tab_id));
     return dialog;
   }
 };
@@ -25,7 +26,7 @@ class FileManagerDialogTest : public testing::Test {
 class SelfDeletingClient : public SelectFileDialog::Listener {
  public:
   explicit SelfDeletingClient(int32 tab_id) {
-    dialog_ = FileManagerDialogTest::CreateDialog(this, tab_id);
+    dialog_ = SelectFileDialogExtensionTest::CreateDialog(this, tab_id);
   }
 
   virtual ~SelfDeletingClient() {
@@ -40,15 +41,15 @@ class SelfDeletingClient : public SelectFileDialog::Listener {
   }
 
  private:
-  scoped_refptr<FileManagerDialog> dialog_;
+  scoped_refptr<SelectFileDialogExtension> dialog_;
 };
 
-TEST_F(FileManagerDialogTest, FileManagerDialogMemory) {
+TEST_F(SelectFileDialogExtensionTest, SelfDeleting) {
   const int32 kTabId = 123;
   // Registers itself with an internal map, so we don't need the pointer,
   // and it would be unused anyway.
   new SelfDeletingClient(kTabId);
   // Ensure we don't crash or trip an Address Sanitizer warning about
   // use-after-free.
-  FileManagerDialog::OnFileSelected(kTabId, FilePath(), 0);
+  SelectFileDialogExtension::OnFileSelected(kTabId, FilePath(), 0);
 }

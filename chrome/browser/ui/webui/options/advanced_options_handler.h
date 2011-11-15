@@ -8,7 +8,7 @@
 
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
-#include "chrome/browser/ui/shell_dialogs.h"
+#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 #if !defined(OS_CHROMEOS)

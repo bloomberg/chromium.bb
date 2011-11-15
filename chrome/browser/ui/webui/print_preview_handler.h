@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/printing/print_view_manager_observer.h"
-#include "chrome/browser/ui/shell_dialogs.h"
+#include "chrome/browser/ui/select_file_dialog.h"
 #include "content/browser/webui/web_ui.h"
 #include "printing/print_job_constants.h"
 

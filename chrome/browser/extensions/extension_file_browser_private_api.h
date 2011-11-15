@@ -12,7 +12,6 @@
 
 #include "base/platform_file.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/ui/shell_dialogs.h"
 #include "googleurl/src/url_util.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 

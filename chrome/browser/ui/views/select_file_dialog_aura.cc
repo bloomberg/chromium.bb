@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/shell_dialogs.h"
+#include "chrome/browser/ui/select_file_dialog.h"
 
-#include "chrome/browser/ui/views/file_manager_dialog.h"
+#include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -15,6 +15,6 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
 #if defined(OS_WIN)
   return NULL;
 #else
-  return new FileManagerDialog(listener);
+  return new SelectFileDialogExtension(listener);
 #endif
 }

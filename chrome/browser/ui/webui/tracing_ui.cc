@@ -14,7 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/shell_dialogs.h"
+#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
