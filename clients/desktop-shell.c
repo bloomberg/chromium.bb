@@ -1,5 +1,6 @@
 /*
  * Copyright © 2011 Kristian Høgsberg
+ * Copyright © 2011 Collabora, Ltd.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -43,6 +44,8 @@ struct desktop {
 	struct panel *panel;
 	struct window *background;
 	const char *background_path;
+	struct unlock_dialog *unlock_dialog;
+	struct task unlock_task;
 };
 
 struct panel {
@@ -56,6 +59,14 @@ struct panel_item {
 	cairo_surface_t *icon;
 	int pressed;
 	const char *path;
+};
+
+struct unlock_dialog {
+	struct window *window;
+	struct item *button;
+	int closing;
+
+	struct desktop *desktop;
 };
 
 static char *key_background_image;
@@ -294,6 +305,144 @@ background_draw(struct window *window, int width, int height, const char *path)
 }
 
 static void
+unlock_dialog_draw(struct unlock_dialog *dialog)
+{
+	struct rectangle allocation;
+	cairo_t *cr;
+	cairo_surface_t *surface;
+	cairo_pattern_t *pat;
+	double cx, cy, r, f;
+
+	window_draw(dialog->window);
+
+	surface = window_get_surface(dialog->window);
+	cr = cairo_create(surface);
+	window_get_child_allocation(dialog->window, &allocation);
+	cairo_rectangle(cr, allocation.x, allocation.y,
+			allocation.width, allocation.height);
+	cairo_clip(cr);
+	cairo_push_group(cr);
+	cairo_translate(cr, allocation.x, allocation.y);
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_set_source_rgba(cr, 0, 0, 0, 0.6);
+	cairo_paint(cr);
+
+	if (window_get_focus_item(dialog->window) == dialog->button)
+		f = 1.0;
+	else
+		f = 0.7;
+
+	cx = allocation.width / 2.0;
+	cy = allocation.height / 2.0;
+	r = (cx < cy ? cx : cy) * 0.4;
+	pat = cairo_pattern_create_radial(cx, cy, r * 0.7, cx, cy, r);
+	cairo_pattern_add_color_stop_rgb(pat, 0.0, 0, 0.86 * f, 0);
+	cairo_pattern_add_color_stop_rgb(pat, 0.85, 0.2 * f, f, 0.2 * f);
+	cairo_pattern_add_color_stop_rgb(pat, 1.0, 0, 0.86 * f, 0);
+	cairo_set_source(cr, pat);
+	cairo_arc(cr, cx, cy, r, 0.0, 2.0 * M_PI);
+	cairo_fill(cr);
+
+	item_set_allocation(dialog->button,
+			    allocation.x + cx - r,
+			    allocation.y + cy - r, 2 * r, 2 * r);
+	cairo_pattern_destroy(pat);
+
+	cairo_pop_group_to_source(cr);
+	cairo_paint(cr);
+	cairo_destroy(cr);
+
+	window_flush(dialog->window);
+	cairo_surface_destroy(surface);
+}
+
+static void
+unlock_dialog_button_handler(struct window *window,
+			     struct input *input, uint32_t time,
+			     int button, int state, void *data)
+{
+	struct unlock_dialog *dialog = data;
+	struct desktop *desktop = dialog->desktop;
+	struct item *focus;
+
+	focus = window_get_focus_item(dialog->window);
+	if (focus && button == BTN_LEFT) {
+		if (state == 0 && !dialog->closing) {
+			display_defer(desktop->display, &desktop->unlock_task);
+			dialog->closing = 1;
+		}
+	}
+}
+
+static void
+unlock_dialog_redraw_handler(struct window *window, void *data)
+{
+	struct unlock_dialog *dialog = data;
+
+	unlock_dialog_draw(dialog);
+}
+
+static void
+unlock_dialog_keyboard_focus_handler(struct window *window,
+				     struct input *device, void *data)
+{
+	window_schedule_redraw(window);
+}
+
+static void
+unlock_dialog_item_focus_handler(struct window *window,
+			 struct item *focus, void *data)
+{
+	window_schedule_redraw(window);
+}
+
+static struct unlock_dialog *
+unlock_dialog_create(struct display *display)
+{
+	struct unlock_dialog *dialog;
+
+	dialog = malloc(sizeof *dialog);
+	if (!dialog)
+		return NULL;
+	memset(dialog, 0, sizeof *dialog);
+
+	dialog->window = window_create(display, 260, 230);
+	window_set_title(dialog->window, "Unlock your desktop");
+
+	window_set_user_data(dialog->window, dialog);
+	window_set_redraw_handler(dialog->window, unlock_dialog_redraw_handler);
+	window_set_keyboard_focus_handler(dialog->window,
+					  unlock_dialog_keyboard_focus_handler);
+	window_set_button_handler(dialog->window, unlock_dialog_button_handler);
+	window_set_item_focus_handler(dialog->window,
+				      unlock_dialog_item_focus_handler);
+	dialog->button = window_add_item(dialog->window, NULL);
+
+	unlock_dialog_draw(dialog);
+
+	return dialog;
+}
+
+static void
+unlock_dialog_destroy(struct unlock_dialog *dialog)
+{
+	window_destroy(dialog->window);
+	free(dialog);
+}
+
+static void
+unlock_dialog_finish(struct task *task, uint32_t events)
+{
+	struct desktop *desktop =
+			container_of(task, struct desktop, unlock_task);
+
+	desktop_shell_unlock(desktop->shell);
+	unlock_dialog_destroy(desktop->unlock_dialog);
+	desktop->unlock_dialog = NULL;
+}
+
+static void
 desktop_shell_configure(void *data,
 			struct desktop_shell *desktop_shell,
 			uint32_t time, uint32_t edges,
@@ -315,8 +464,16 @@ static void
 desktop_shell_prepare_lock_surface(void *data,
 				   struct desktop_shell *desktop_shell)
 {
-	/* no-op for now */
-	desktop_shell_unlock(desktop_shell);
+	struct desktop *desktop = data;
+
+	if (!desktop->unlock_dialog) {
+		desktop->unlock_dialog =
+				unlock_dialog_create(desktop->display);
+		desktop->unlock_dialog->desktop = desktop;
+	}
+
+	desktop_shell_set_lock_surface(desktop_shell,
+			window_get_wl_surface(desktop->unlock_dialog->window));
 }
 
 static const struct desktop_shell_listener listener = {
@@ -356,8 +513,10 @@ launcher_section_done(void *data)
 
 int main(int argc, char *argv[])
 {
-	struct desktop desktop;
+	struct desktop desktop = { 0 };
 	char *config_file;
+
+	desktop.unlock_task.run = unlock_dialog_finish;
 
 	desktop.display = display_create(&argc, &argv, NULL);
 	if (desktop.display == NULL) {
