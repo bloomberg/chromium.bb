@@ -11,7 +11,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/tracked_objects.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/trace_controller.h"
 #include "content/common/hi_res_timer_manager.h"
@@ -297,7 +296,6 @@ void BrowserMainLoop::InitializeMainThread() {
   const char* kThreadName = "CrBrowserMain";
   base::PlatformThread::SetName(kThreadName);
   main_message_loop_->set_thread_name(kThreadName);
-  tracked_objects::ThreadData::InitializeThreadContext(kThreadName);
 
   // Register the main thread by instantiating it, but don't call any methods.
   main_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,
