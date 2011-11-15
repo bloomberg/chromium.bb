@@ -248,7 +248,7 @@
     {
       'name': 'DisabledSchemes',
       'type': 'list',
-      'supported_on': ['chrome.*:12-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:12-', 'chrome_os:0.12-'],
       'features': {'dynamic_refresh': 1},
       'example_value': ['file', 'mailto'],
       'id': 85,
@@ -429,7 +429,7 @@
     {
       'name': 'MetricsReportingEnabled',
       'type': 'main',
-      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:8-'],
       'features': {'dynamic_refresh': 0},
       'example_value': True,
       'id': 15,
@@ -514,7 +514,7 @@
     {
       'name': 'EnabledPlugins',
       'type': 'list',
-      'supported_on': ['chrome.*:11-'],
+      'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
       'id': 78,
@@ -531,7 +531,7 @@
     {
       'name': 'DisabledPluginsExceptions',
       'type': 'list',
-      'supported_on': ['chrome.*:11-'],
+      'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
       'id': 79,
@@ -608,7 +608,7 @@
     {
       'name': 'ClearSiteDataOnExit',
       'type': 'main',
-      'supported_on': ['chrome.*:11-', 'chrome_os:1.0-'],
+      'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 65,
@@ -663,7 +663,7 @@
               'caption': '''Use system proxy settings'''
             },
           ],
-          'supported_on': ['chrome.*:10-'],
+          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'direct',
           'id': 21,
@@ -708,7 +708,7 @@
               'caption': '''Use system proxy settings'''
             },
           ],
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'deprecated': True,
           'example_value': 2,
@@ -732,7 +732,7 @@
         {
           'name': 'ProxyServer',
           'type': 'string',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': '123.123.123.123:8080',
           'id': 23,
@@ -747,7 +747,7 @@
         {
           'name': 'ProxyPacUrl',
           'type': 'string',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'http://internal.site/example.pac',
           'id': 24,
@@ -762,7 +762,7 @@
         {
           'name': 'ProxyBypassList',
           'type': 'string',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'http://www.example1.com,http://www.example2.com,http://internalsite/',
           'id': 25,
@@ -1444,7 +1444,7 @@
     {
       'name': 'PolicyRefreshRate',
       'type': 'int',
-      'supported_on': ['chrome_os:1.0-'],
+      'supported_on': ['chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': 3600000,
       'id': 56,
@@ -1567,7 +1567,7 @@
     {
       'name': 'TranslateEnabled',
       'type': 'main',
-      'supported_on': ['chrome.*:12-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:12-', 'chrome_os:0.12-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 80,
@@ -1583,7 +1583,7 @@
     {
       'name': 'AllowOutdatedPlugins',
       'type': 'main',
-      'supported_on': ['chrome.*:12-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:12-', 'chrome_os:0.12-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 81,
@@ -1672,7 +1672,7 @@
     {
       'name': 'DevicePolicyRefreshRate',
       'type': 'int',
-      'supported_on': ['chrome_os:1.0-'],
+      'supported_on': ['chrome_os:0.11-'],
       'device_only': True,
       'features': {'dynamic_refresh': 1},
       'example_value': 3600000,
@@ -1702,7 +1702,7 @@
           'caption': '''Dev channel (may be unstable)'''
         }
       ],
-      'supported_on': ['chrome_os:1.0-'],
+      'supported_on': ['chrome_os:0.11-'],
       'device_only': True,
       'features': {'dynamic_refresh': 1},
       'example_value': 'stable-channel',
@@ -1768,7 +1768,7 @@
     {
       'name': 'MaxConnectionsPerProxy',
       'type': 'int',
-      'supported_on': ['chrome_os:1.0-','chrome.*:14-'],
+      'supported_on': ['chrome.*:14-','chrome_os:0.14-'],
       'features': {'dynamic_refresh': 0},
       'example_value': 32,
       'id': 92,
