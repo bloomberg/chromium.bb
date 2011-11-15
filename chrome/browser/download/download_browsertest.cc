@@ -836,6 +836,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, UnknownSize) {
                           "32.0 KB - ", "100% - "));
 }
 
+#if defined(OS_LINUX)
+// http://crbug.com/104310
+#define KnownSize FLAKY_KnownSize
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadTest, KnownSize) {
   ASSERT_TRUE(RunSizeTest(browser(), SIZE_TEST_TYPE_KNOWN,
                           "71% - ", "100% - "));
