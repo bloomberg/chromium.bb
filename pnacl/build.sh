@@ -413,7 +413,7 @@ crostarball() {
 
   StepBanner archive file list ${hgdir} ${reporev}
   archive="${tardir}/pnacl-src-${naclrev_}-${hgdir}.tbz2"
-  hg archive -R "${PNACL_HG_ROOT}/${hgdir}" -t tbz2 -p "${hgdir}" "${archive}"
+  hg archive -R "${TC_SRC}/${hgdir}" -t tbz2 -p "${hgdir}" "${archive}"
 }
 
 cros-tarball-all() {
@@ -452,7 +452,7 @@ cros-tarball-all() {
 
   StepBanner generating archive for clang at ${CLANG_REV}
 
-  svn export -q -r ${CLANG_REV} ${PNACL_HG_ROOT}/clang "${tardir}/clang"
+  svn export -q -r ${CLANG_REV} ${TC_SRC}/clang "${tardir}/clang"
   tar -C ${tardir} -cjf "${tardir}/pnacl-src-${naclrev}-clang.tar.bz2" clang &
 
   wait
