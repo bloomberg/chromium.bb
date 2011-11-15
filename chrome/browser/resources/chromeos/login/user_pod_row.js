@@ -10,14 +10,38 @@ cr.define('login', function() {
   // Pod width. 170px Pod + 10px padding + 10px margin on both sides.
   const POD_WIDTH = 170 + 2 * (10 + 10);
 
-  // Oauth token status. These must match UserManager::OAuthTokenStatus.
-  const OAUTH_TOKEN_STATUS_UNKNOWN = 0;
-  const OAUTH_TOKEN_STATUS_INVALID = 1;
-  const OAUTH_TOKEN_STATUS_VALID = 2;
+  /**
+   * Oauth token status. These must match UserManager::OAuthTokenStatus.
+   * @enum {number}
+   */
+  const OAuthTokenStatus = {
+    UNKNOWN: 0,
+    INVALID: 1,
+    VALID: 2
+  };
 
-  // Tab index for pods.  Update these when adding new controls.
-  const TAB_INDEX_POD_INPUT = 1;
-  const TAB_INDEX_REMOVE_USER = 2;
+  /**
+   * Tab order for user pods.  Update these when adding new controls.
+   * @enum {number}
+   */
+  const UserPodTabOrder = {
+    POD_INPUT: 1,    // Password input fields (and whole pods themselves).
+    HEADER_BAR: 2,   // Buttons on the header bar (Shutdown, Add User).
+    REMOVE_USER: 3   // Remove ('X') buttons.
+  };
+
+  // Focus and tab order are organized as follows:
+  //
+  // (1) all user pods have tab index 1 so they are traversed first;
+  // (2) when a user pod is activated, its tab index is set to -1 and its
+  //     main input field gets focus and tab index 1;
+  // (3) buttons on the header bar have tab index 2 so they follow user pods;
+  // (4) 'Remove' buttons have tab index 3 and follow header bar buttons;
+  // (5) lastly, focus jumps to the Status Area and back to user pods.
+  //
+  // 'Focus' event is handled by a capture handler for the whole document
+  // and in some cases 'mousedown' event handlers are used instead of 'click'
+  // handlers where it's necessary to prevent 'focus' event from being fired.
 
   /**
    * Helper function to remove a class from given element.
@@ -42,10 +66,11 @@ cr.define('login', function() {
 
     /** @inheritDoc */
     decorate: function() {
-      // Make this focusable
-      if (!this.hasAttribute('tabindex'))
-        this.tabIndex = TAB_INDEX_POD_INPUT;
+      this.tabIndex = UserPodTabOrder.POD_INPUT;
+      this.removeUserButtonElement.tabIndex = UserPodTabOrder.REMOVE_USER;
 
+      // Mousedown has to be used instead of click to be able to prevent 'focus'
+      // event later.
       this.addEventListener('mousedown',
           this.handleMouseDown_.bind(this));
 
@@ -53,10 +78,21 @@ cr.define('login', function() {
           this.activate.bind(this));
       this.signinButtonElement.addEventListener('click',
           this.activate.bind(this));
+
+      this.removeUserButtonElement.addEventListener('mousedown', function (e) {
+        // Prevent default so that we don't trigger a 'focus' event.
+        e.preventDefault();
+        // Prevent the 'mousedown' event for the whole pod, which could result
+        // in sign-in UI being shown.
+        e.stopPropagation();
+      });
       this.removeUserButtonElement.addEventListener('click',
           this.handleRemoveButtonClick_.bind(this));
       this.removeUserButtonElement.addEventListener('mouseout',
-          this.handleRemoveButtonMouseOut_.bind(this));
+          this.handleRemoveButtonMouseOutOrBlur_.bind(this));
+      // TODO(altimofeev): this will trigger when Gaia extension grabs focus.
+      this.removeUserButtonElement.addEventListener('blur',
+          this.handleRemoveButtonMouseOutOrBlur_.bind(this));
     },
 
     /**
@@ -72,6 +108,14 @@ cr.define('login', function() {
         this.passwordElement.addEventListener('keyup',
             this.handlePasswordKeyUp_.bind(this));
       }
+    },
+
+    /**
+     * Resets tab order for pod elements to its initial state.
+     */
+    resetTabOrder: function() {
+      this.tabIndex = UserPodTabOrder.POD_INPUT;
+      this.mainInput.tabIndex = -1;
     },
 
     /**
@@ -204,6 +248,7 @@ cr.define('login', function() {
 
     /**
      * Whether we are a guest pod or not.
+     * @type {boolean}
      */
     get isGuest() {
       return !this.user.emailAddress;
@@ -217,12 +262,13 @@ cr.define('login', function() {
       // the user has an invalid oauth token and device is online and the
       // user is not currently signed in (i.e. not the lock screen).
       return localStrings.getString('authType') == 'ext' &&
-          this.user.oauthTokenStatus != OAUTH_TOKEN_STATUS_VALID &&
+          this.user.oauthTokenStatus != OAuthTokenStatus.VALID &&
           window.navigator.onLine && !this.user.signedIn;
     },
 
     /**
      * Gets main input element.
+     * @type {(HTMLButtonElement|HTMLInputElement)}
      */
     get mainInput() {
       if (this.isGuest) {
@@ -246,6 +292,7 @@ cr.define('login', function() {
         return;
 
       if (active) {
+        this.parentNode.focusPod(undefined, true);  // Force focus clear first.
         this.removeUserButtonElement.classList.add('active');
         this.removeUserButtonElement.textContent =
             localStrings.getString('removeUser');
@@ -282,6 +329,9 @@ cr.define('login', function() {
         this.signinButtonElement.hidden = !needSignin;
         this.passwordElement.hidden = needSignin;
       }
+      // Move tabIndex from the whole pod to the main input.
+      this.tabIndex = -1;
+      this.mainInput.tabIndex = UserPodTabOrder.POD_INPUT;
       this.mainInput.focus();
     },
 
@@ -315,27 +365,31 @@ cr.define('login', function() {
 
     /**
      * Resets input field.
-     * @param {boolean} takeFocus True to take focus.
+     * @param {boolean} takeFocus If true, input field takes focus.
      */
     reset: function(takeFocus) {
       this.parentNode.rowEnabled = true;
       this.passwordElement.value = '';
 
       if (takeFocus)
-        this.mainInput.focus();
+        this.focusInput();
     },
 
     /**
-     * Handles mouseout on remove button button.
+     * Handles mouseout and blur on remove button.
+     * @param {Event} e Mouseout or blur event.
      */
-    handleRemoveButtonMouseOut_: function(e) {
+    handleRemoveButtonMouseOutOrBlur_: function(e) {
       this.activeRemoveButton = false;
     },
 
     /**
      * Handles a click event on remove user button.
+     * @param {Event} e Click event.
      */
     handleRemoveButtonClick_: function(e) {
+      if (!this.parentNode.rowEnabled)
+        return;
       if (this.activeRemoveButton)
         chrome.send('removeUser', [this.user.emailAddress]);
       else
@@ -343,17 +397,14 @@ cr.define('login', function() {
     },
 
     /**
-     * Handles mousedown event.
+     * Handles mousedown event on a user pod.
+     * @param {Event} e Mouseout event.
      */
     handleMouseDown_: function(e) {
       if (!this.parentNode.rowEnabled)
         return;
-      var handled = false;
       if (!this.signinButtonElement.hidden) {
         this.parentNode.showSigninUI(this.user.emailAddress);
-        handled = true;
-      }
-      if (handled) {
         // Prevent default so that we don't trigger 'focus' event.
         e.preventDefault();
       }
@@ -392,12 +443,16 @@ cr.define('login', function() {
 
     /**
      * Returns all the pods in this pod row.
+     * @type {NodeList}
      */
     get pods() {
       return this.children;
     },
 
-    // True when clicking on pods is enabled.
+    /**
+     * True when clicking on pods is enabled.
+     * @type {boolean}
+     */
     rowEnabled_ : true,
     get rowEnabled() {
       return this.rowEnabled_;
@@ -430,8 +485,20 @@ cr.define('login', function() {
 
       this.appendChild(userPod);
       userPod.initialize();
-      var index = this.findIndex_(userPod);
-      userPod.removeUserButtonElement.tabIndex = TAB_INDEX_REMOVE_USER;
+    },
+
+    /**
+     * Returns index of given pod or -1 if not found.
+     * @param {UserPod} pod Pod to look up.
+     * @private
+     */
+    indexOf_: function(pod) {
+      for (var i = 0; i < this.pods.length; ++i) {
+        if (pod == this.pods[i])
+          return i;
+      }
+
+      return -1;
     },
 
     /**
@@ -439,7 +506,7 @@ cr.define('login', function() {
      * @param {UserPod} pod Pod to scroll into view.
      */
     scrollPodIntoView: function(pod) {
-      var podIndex = this.findIndex_(pod);
+      var podIndex = this.indexOf_(pod);
       if (podIndex == -1)
         return;
 
@@ -458,35 +525,36 @@ cr.define('login', function() {
     },
 
     /**
-     * Gets index of given pod or -1 if not found.
-     * @param {UserPod} pod Pod to look up.
-     * @private
-     */
-    findIndex_: function(pod) {
-      for (var i = 0; i < this.pods.length; ++i) {
-        if (pod == this.pods[i])
-          return i;
-      }
-
-      return -1;
-    },
-
-    /**
      * Start first time show animation.
      */
     startInitAnimation: function() {
       // Schedule init animation.
-      for (var i = 0; i < this.pods.length; ++i) {
-        window.setTimeout(removeClass, 500 + i * 70,
-            this.pods[i], 'init');
-        window.setTimeout(removeClass, 700 + i * 70,
-            this.pods[i].nameElement, 'init');
+      for (var i = 0, pod; pod = this.pods[i]; ++i) {
+        window.setTimeout(removeClass, 500 + i * 70, pod, 'init');
+        window.setTimeout(removeClass, 700 + i * 70, pod.nameElement, 'init');
       }
     },
 
     /**
-     * Populates pod row with given existing users and
-     * kick start init animiation.
+     * Start login success animation.
+     */
+    startAuthenticatedAnimation: function() {
+      var activated = this.indexOf_(this.activatedPod_);
+      if (activated == -1)
+        return;
+
+      for (var i = 0, pod; pod = this.pods[i]; ++i) {
+        if (i < activated)
+          pod.classList.add('left');
+        else if (i > activated)
+          pod.classList.add('right');
+        else
+          pod.classList.add('zoom');
+      }
+    },
+
+    /**
+     * Populates pod row with given existing users and start init animation.
      * @param {array} users Array of existing user emails.
      * @param {boolean} animated Whether to use init animation.
      */
@@ -499,49 +567,40 @@ cr.define('login', function() {
       // Popoulate the pod row.
       for (var i = 0; i < users.length; ++i) {
         this.addUserPod(users[i], animated);
-        this.pods[i].tabIndex = TAB_INDEX_POD_INPUT;
       }
     },
 
     /**
      * Focuses a given user pod or clear focus when given null.
-     * @param {UserPod} pod User pod to focus or null to clear focus.
+     * @param {UserPod=} podToFocus User pod to focus (undefined clears focus).
+     * @param {boolean=} opt_force If true, forces focus update even when
+     *     podToFocus is already focused.
      */
-    focusPod: function(pod) {
-      if (this.focusedPod_ == pod)
+    focusPod: function(podToFocus, opt_force) {
+      if (this.focusedPod_ == podToFocus && !opt_force)
         return;
 
-      if (pod) {
-        for (var i = 0; i < this.pods.length; ++i) {
-          this.pods[i].activeRemoveButton = false;
-          if (this.pods[i] == pod) {
-            pod.classList.remove("faded");
-            pod.classList.add("focused");
-            pod.tabIndex = -1;  // Make it not keyboard focusable.
-          } else {
-            this.pods[i].classList.remove('focused');
-            this.pods[i].classList.add('faded');
-            this.pods[i].tabIndex = TAB_INDEX_POD_INPUT;
-          }
+      for (var i = 0, pod; pod = this.pods[i]; ++i) {
+        pod.activeRemoveButton = false;
+        if (pod != podToFocus) {
+          pod.classList.remove('focused');
+          pod.classList.remove('faded');
+          pod.resetTabOrder();
         }
-        pod.mainInput.tabIndex = TAB_INDEX_POD_INPUT;
-        pod.focusInput();
+      }
 
-        this.focusedPod_ = pod;
-        this.scrollPodIntoView(pod);
-      } else {
-        for (var i = 0; i < this.pods.length; ++i) {
-          this.pods[i].classList.remove('focused');
-          this.pods[i].classList.remove('faded');
-          this.pods[i].activeRemoveButton = false;
-          this.pods[i].tabIndex = TAB_INDEX_POD_INPUT;
-        }
-        this.focusedPod_ = undefined;
+      this.focusedPod_ = podToFocus;
+      if (podToFocus) {
+        podToFocus.classList.remove("faded");
+        podToFocus.classList.add("focused");
+        podToFocus.focusInput();
+        this.scrollPodIntoView(podToFocus);
       }
     },
 
     /**
      * Returns the currently activated pod.
+     * @type {UserPod}
      */
     get activated() {
       return this.activatedPod_;
@@ -563,29 +622,16 @@ cr.define('login', function() {
       }
     },
 
-    get lockedPod() {
-      for (var i = 0; i < this.pods.length; ++i) {
-        if (this.pods[i].user.signedIn)
-          return this.pods[i];
-      }
-    },
-
     /**
-     * Start login success animation.
+     * The pod of the signed-in user, if any; null otherwise.
+     * @type {?UserPod}
      */
-    startAuthenticatedAnimation: function() {
-      var activated = this.findIndex_(this.activatedPod_);
-      if (activated == -1)
-        return;
-
-      for (var i = 0; i < this.pods.length; ++i) {
-        if (i < activated)
-          this.pods[i].classList.add('left');
-        else if (i < activated)
-          this.pods[i].classList.add('right');
-        else
-          this.pods[i].classList.add('zoom');
+    get lockedPod() {
+      for (var i = 0, pod; pod = this.pods[i]; ++i) {
+        if (pod.user.signedIn)
+          return pod;
       }
+      return null;
     },
 
     /**
@@ -616,9 +662,11 @@ cr.define('login', function() {
      * @public
      */
     updateUserImage: function(email) {
-      for (var i = 0; i < this.pods.length; ++i) {
-        if (this.pods[i].user.emailAddress == email)
-          this.pods[i].updateUserImage();
+      for (var i = 0, pod; pod = this.pods[i]; ++i) {
+        if (pod.user.emailAddress == email) {
+          pod.updateUserImage();
+          return;
+        }
       }
     },
 
@@ -651,8 +699,9 @@ cr.define('login', function() {
         else
           this.focusPod(e.target);
       } else if (e.target.parentNode.parentNode == this) {
-        // Focus on a control of a pod.
-        if (!e.target.parentNode.classList.contains('focused')) {
+        // Focus on a control of a pod but not on the Remove button.
+        if (!e.target.parentNode.classList.contains('focused') &&
+            !e.target.classList.contains('remove-user-button')) {
           this.focusPod(e.target.parentNode);
           e.target.focus();
         }
@@ -710,6 +759,7 @@ cr.define('login', function() {
         this.ownerDocument.addEventListener(
             event, this.listeners_[event][0], this.listeners_[event][1]);
       }
+      $('login-header-bar').buttonsTabIndex = UserPodTabOrder.HEADER_BAR;
     },
 
     /**
@@ -720,6 +770,7 @@ cr.define('login', function() {
         this.ownerDocument.removeEventListener(
             event, this.listeners_[event][0], this.listeners_[event][1]);
       }
+      $('login-header-bar').buttonsTabIndex = 0;
     }
   };
 

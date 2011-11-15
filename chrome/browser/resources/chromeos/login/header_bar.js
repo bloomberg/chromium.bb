@@ -48,6 +48,17 @@ cr.define('login', function() {
     },
 
     /**
+     * Tab index value for all button elements.
+     * @type {number}
+     */
+    set buttonsTabIndex(tabIndex) {
+      var buttons = this.getElementsByTagName('button');
+      for (var i = 0, button; button = buttons[i]; ++i) {
+        button.tabIndex = tabIndex;
+      }
+    },
+
+    /**
      * Shutdown button click handler.
      * @private
      */
@@ -72,7 +83,7 @@ cr.define('login', function() {
       chrome.send('loginAddNetworkStateObserver',
                   ['login.HeaderBar.bubbleWatchdog']);
     }
-  }
+  };
 
   /**
    * Observes network state, and close the bubble when network becomes online.
@@ -86,7 +97,7 @@ cr.define('login', function() {
       chrome.send('loginRemoveNetworkStateObserver',
                   ['login.HeaderBar.bubbleWatchdog']);
     }
-  }
+  };
 
   return {
     HeaderBar: HeaderBar
