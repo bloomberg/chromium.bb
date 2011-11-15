@@ -158,6 +158,15 @@ void Speak(const char* utterance) {
       params);
 }
 
+bool IsAccessibilityEnabled() {
+  if (!g_browser_process) {
+    return false;
+  }
+  PrefService* prefs = g_browser_process->local_state();
+  bool accessibility_enabled = prefs &&
+      prefs->GetBoolean(prefs::kAccessibilityEnabled);
+  return accessibility_enabled;
+}
 
 }  // namespace accessibility
 }  // namespace chromeos

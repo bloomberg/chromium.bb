@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/accessibility_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -207,6 +208,14 @@ class NetworkIcon {
       }
     }
     bool dirty = bitmap_.empty();
+    bool speak = false;
+    if (accessibility::IsAccessibilityEnabled()) {
+      if ((Network::IsConnectedState(state_) && !network->connected()) ||
+          (Network::IsConnectingState(state_) && !network->connecting()) ||
+          (Network::IsDisconnectedState(state_) && !network->disconnected())) {
+        speak = true;
+      }
+    }
     if (state_ != network->state()) {
       state_ = network->state();
       dirty = true;
@@ -246,6 +255,35 @@ class NetworkIcon {
     if (dirty) {
       UpdateIcon(network);
       GenerateBitmap();
+    }
+    if (speak) {
+      std::string connection_string;
+      if (Network::IsConnectedState(state_)) {
+        switch (network->type()) {
+          case TYPE_ETHERNET:
+            connection_string = l10n_util::GetStringFUTF8(
+                IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
+                l10n_util::GetStringUTF16(
+                    IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
+            break;
+          default:
+            connection_string = l10n_util::GetStringFUTF8(
+                IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
+                UTF8ToUTF16(network->name()));
+            break;
+        }
+      } else if (Network::IsConnectingState(state_)) {
+        const Network* connecting_network = cros->connecting_network();
+        if (connecting_network && connecting_network->type() != TYPE_ETHERNET) {
+          connection_string = l10n_util::GetStringFUTF8(
+              IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
+              UTF8ToUTF16(connecting_network->name()));
+        }
+      } else if (Network::IsDisconnectedState(state_)) {
+        connection_string = l10n_util::GetStringUTF8(
+            IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP);
+      }
+      accessibility::Speak(connection_string.c_str());
     }
   }
 
