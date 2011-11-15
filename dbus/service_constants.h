@@ -253,6 +253,11 @@ const char kCheckPortalProperty[] = "CheckPortal";
 const char kSSIDProperty[] = "SSID";
 const char kConnectedProperty[] = "Connected";
 
+// Flimflam provider property names.
+const char kProviderHostProperty[] = "Provider.Host";
+const char kProviderNameProperty[] = "Provider.Name";
+const char kProviderTypeProperty[] = "Provider.Type";
+
 // Flimflam Wifi Service property names.
 const char kWifiHexSsid[] = "WiFi.HexSSID";
 const char kWifiFrequency[] = "WiFi.Frequency";
