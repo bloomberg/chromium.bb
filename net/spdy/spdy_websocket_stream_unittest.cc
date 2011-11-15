@@ -255,7 +255,7 @@ class SpdyWebSocketStreamTest : public testing::Test {
 
     if (throttling) {
       // Set max concurrent streams to 1.
-      spdy_session_pool->mutable_spdy_settings()->Set(
+      spdy_session_pool->http_server_properties()->SetSpdySettings(
           host_port_pair_, spdy_settings_to_set_);
     }
 

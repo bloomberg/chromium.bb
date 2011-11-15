@@ -104,10 +104,10 @@ class OffTheRecordProfileIOData : public ProfileIOData {
           scoped_refptr<ChromeURLRequestContext> main_context,
           const std::string& app_id) const;
 
+  mutable scoped_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
+
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable scoped_ptr<net::FtpTransactionFactory> ftp_factory_;
-
-  mutable scoped_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileIOData);
 };
