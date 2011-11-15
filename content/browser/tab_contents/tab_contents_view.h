@@ -49,7 +49,7 @@ class CONTENT_EXPORT TabContentsView : public RenderViewHostDelegate::View {
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const = 0;
 
   // Computes the rectangle for the native widget that contains the contents of
-  // the tab relative to its parent.
+  // the tab in the screen coordinate system.
   virtual void GetContainerBounds(gfx::Rect *out) const = 0;
 
   // Helper function for GetContainerBounds. Most callers just want to know the

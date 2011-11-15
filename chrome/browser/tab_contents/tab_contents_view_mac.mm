@@ -145,7 +145,19 @@ gfx::NativeWindow TabContentsViewMac::GetTopLevelNativeWindow() const {
 }
 
 void TabContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
-  *out = [cocoa_view_.get() flipNSRectToRect:[cocoa_view_.get() bounds]];
+  // Convert bounds to window coordinate space.
+  NSRect bounds =
+      [cocoa_view_.get() convertRect:[cocoa_view_.get() bounds] toView:nil];
+
+  // Convert bounds to screen coordinate space.
+  NSWindow* window = [cocoa_view_.get() window];
+  bounds.origin = [window convertBaseToScreen:bounds.origin];
+
+  // Flip y to account for screen flip.
+  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  bounds.origin.y = [screen frame].size.height - bounds.origin.y
+      - bounds.size.height;
+  *out = gfx::Rect(NSRectToCGRect(bounds));
 }
 
 void TabContentsViewMac::StartDragging(
