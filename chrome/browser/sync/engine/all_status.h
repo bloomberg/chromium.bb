@@ -20,16 +20,12 @@
 namespace browser_sync {
 
 class ScopedStatusLock;
-class ServerConnectionManager;
-class Syncer;
-class SyncerThread;
 struct AuthWatcherEvent;
 struct ServerConnectionEvent;
 
 class AllStatus : public SyncEngineEventListener {
   friend class ScopedStatusLock;
  public:
-
   AllStatus();
   virtual ~AllStatus();
 

@@ -16,10 +16,6 @@
 
 class HistoryService;
 
-namespace base {
-class WaitableEvent;
-}
-
 namespace browser_sync {
 
 // A ModelSafeWorker for history models that accepts requests

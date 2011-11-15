@@ -32,10 +32,6 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace syncable {
-class DirectoryManager;
-}
-
 namespace browser_sync {
 namespace sessions {
 

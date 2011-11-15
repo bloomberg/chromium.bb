@@ -37,8 +37,6 @@
 #include "chrome/browser/sync/util/immutable.h"
 #include "chrome/browser/sync/util/time.h"
 
-struct PurgeInfo;
-
 namespace base {
 class DictionaryValue;
 class ListValue;
@@ -485,7 +483,6 @@ class Entry {
         kernel_(NULL) { }
 
  protected:
-
   BaseTransaction* const basetrans_;
 
   EntryKernel* kernel_;
@@ -504,6 +501,7 @@ class MutableEntry : public Entry {
   friend class Directory;
   void Init(WriteTransaction* trans, const Id& parent_id,
       const std::string& name);
+
  public:
   MutableEntry(WriteTransaction* trans, Create, const Id& parent_id,
                const std::string& name);
@@ -1056,7 +1054,6 @@ class Directory {
   void InitKernel(const std::string& name, DirectoryChangeDelegate* delegate);
 
  private:
-
   struct Kernel {
     // |delegate| can be NULL.
     Kernel(const FilePath& db_path, const std::string& name,

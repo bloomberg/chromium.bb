@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/engine/verify_updates_command.h"
 
+#include <string>
+
 #include "base/location.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
@@ -17,7 +19,6 @@
 namespace browser_sync {
 
 using syncable::ScopedDirLookup;
-using syncable::SyncName;
 using syncable::WriteTransaction;
 
 using syncable::GET_BY_ID;

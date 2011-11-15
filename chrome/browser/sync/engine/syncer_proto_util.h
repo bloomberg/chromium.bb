@@ -15,8 +15,6 @@
 namespace syncable {
 class Directory;
 class Entry;
-class ScopedDirLookup;
-class SyncName;
 }  // namespace syncable
 
 namespace sync_pb {
@@ -30,7 +28,6 @@ namespace sessions {
 class SyncSession;
 }
 
-class AuthWatcher;
 class ClientToServerMessage;
 class ServerConnectionManager;
 class SyncEntity;

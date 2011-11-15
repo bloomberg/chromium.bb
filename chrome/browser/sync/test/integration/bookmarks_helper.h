@@ -17,7 +17,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class GURL;
-class Profile;
 
 namespace bookmarks_helper {
 

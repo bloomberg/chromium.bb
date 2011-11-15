@@ -20,10 +20,6 @@
 
 class FilePath;
 
-namespace base {
-class DictionaryValue;
-}  // namespace base
-
 namespace browser_sync {
 class JsBackend;
 class JsEventHandler;
@@ -606,6 +602,6 @@ syncable::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
 // Returns the string representation of a PassphraseRequiredReason value.
 std::string PassphraseRequiredReasonToString(PassphraseRequiredReason reason);
 
-} // namespace sync_api
+}  // namespace sync_api
 
 #endif  // CHROME_BROWSER_SYNC_INTERNAL_API_SYNC_MANAGER_H_

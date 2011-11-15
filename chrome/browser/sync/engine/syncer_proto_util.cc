@@ -31,7 +31,6 @@ using syncable::IS_UNSYNCED;
 using syncable::MTIME;
 using syncable::PARENT_ID;
 using syncable::ScopedDirLookup;
-using syncable::SyncName;
 
 namespace browser_sync {
 using sessions::SyncSession;
@@ -140,7 +139,6 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
                                             sessions::SyncSession* session,
                                             const ClientToServerMessage& msg,
                                             ClientToServerResponse* response) {
-
   ServerConnectionManager::PostBufferParams params;
   msg.SerializeToString(&params.buffer_in);
 

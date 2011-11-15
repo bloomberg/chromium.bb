@@ -14,8 +14,6 @@ class ProfileSyncService;
 
 namespace browser_sync {
 
-class UnrecoverableErrorHandler;
-
 // Contains all logic for associating the Chrome themes model and the
 // sync themes model.
 class ThemeModelAssociator : public AssociatorInterface {

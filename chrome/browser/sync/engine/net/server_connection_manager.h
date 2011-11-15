@@ -20,7 +20,6 @@
 #include "chrome/common/net/http_return.h"
 
 namespace syncable {
-class WriteTransaction;
 class DirectoryManager;
 }
 

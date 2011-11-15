@@ -26,7 +26,6 @@ const char kEncryptedString[] = "encrypted";
 
 class BaseTransaction;
 class Entry;
-class ReadTransaction;
 class WriteTransaction;
 
 // Check if our unsyced changes are encrypted if they need to be based on

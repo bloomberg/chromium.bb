@@ -18,7 +18,6 @@
 
 class PasswordStore;
 class MessageLoop;
-class NotificationService;
 
 namespace browser_sync {
 

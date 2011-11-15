@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_INTERNAL_API_CHANGE_RECORD_H_
 #define CHROME_BROWSER_SYNC_INTERNAL_API_CHANGE_RECORD_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
@@ -16,8 +18,6 @@ class DictionaryValue;
 }  // namespace base
 
 namespace sync_api {
-
-class BaseTransaction;
 
 // TODO(zea): One day get passwords playing nicely with the rest of encryption
 // and get rid of this.
@@ -62,6 +62,6 @@ typedef std::vector<ChangeRecord> ChangeRecordList;
 
 typedef browser_sync::Immutable<ChangeRecordList> ImmutableChangeRecordList;
 
-} // namespace sync_api
+}  // namespace sync_api
 
 #endif  // CHROME_BROWSER_SYNC_INTERNAL_API_CHANGE_RECORD_H_

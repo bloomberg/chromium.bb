@@ -23,21 +23,11 @@
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 
 namespace syncable {
-class Directory;
-class DirectoryManager;
 class Entry;
-class Id;
 class MutableEntry;
-class WriteTransaction;
 }  // namespace syncable
 
 namespace browser_sync {
-
-class ModelSafeWorker;
-class ServerConnectionManager;
-class SyncProcessState;
-class URLFactory;
-struct HttpResponse;
 
 enum SyncerStep {
   SYNCER_BEGIN,

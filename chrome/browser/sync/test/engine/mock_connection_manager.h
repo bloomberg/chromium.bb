@@ -24,10 +24,6 @@
 
 namespace syncable {
 class DirectoryManager;
-class ScopedDirLookup;
-}
-namespace browser_sync {
-struct HttpResponse;
 }
 
 class MockConnectionManager : public browser_sync::ServerConnectionManager {

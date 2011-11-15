@@ -37,7 +37,6 @@ class ProfileSyncService;
 namespace sync_api {
 class BaseTransaction;
 class ReadNode;
-class WriteNode;
 class WriteTransaction;
 }  // namespace sync_api
 
@@ -258,6 +257,7 @@ class SessionModelAssociator
     int64 sync_id() const { return sync_id_; }
     const SessionTab* session_tab() const { return session_tab_; }
     const SyncedTabDelegate* tab() const { return tab_; }
+
    private:
     int64 sync_id_;
     SessionTab* session_tab_;
@@ -321,6 +321,7 @@ class SessionModelAssociator
     void set_machine_tag(const std::string& machine_tag) {
       machine_tag_ = machine_tag;
     }
+
    private:
     // Pool of all available syncid's for tab's we have created.
     std::vector<int64> tab_syncid_pool_;

@@ -12,21 +12,6 @@
 #include "chrome/browser/sync/internal_api/base_node.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
-namespace sync_pb {
-class AppSpecifics;
-class AutofillSpecifics;
-class AutofillProfileSpecifics;
-class BookmarkSpecifics;
-class EntitySpecifics;
-class ExtensionSpecifics;
-class SessionSpecifics;
-class NigoriSpecifics;
-class PreferenceSpecifics;
-class PasswordSpecificsData;
-class ThemeSpecifics;
-class TypedUrlSpecifics;
-}
-
 namespace sync_api {
 
 // ReadNode wraps a syncable::Entry to provide the functionality of a

@@ -20,14 +20,10 @@ class BookmarkNode;
 
 namespace sync_api {
 class BaseNode;
-class BaseTransaction;
-class ReadNode;
 struct UserShare;
 }
 
 namespace browser_sync {
-
-class BookmarkChangeProcessor;
 
 // Contains all model association related logic:
 // * Algorithm to associate bookmark model and sync model.

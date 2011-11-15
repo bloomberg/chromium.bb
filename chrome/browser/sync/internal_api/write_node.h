@@ -32,7 +32,6 @@ class EntitySpecifics;
 class ExtensionSpecifics;
 class SessionSpecifics;
 class NigoriSpecifics;
-class PreferenceSpecifics;
 class PasswordSpecificsData;
 class ThemeSpecifics;
 class TypedUrlSpecifics;

@@ -8,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -32,8 +33,6 @@ class WriteTransaction;
 };
 
 namespace browser_sync {
-
-class UnrecoverableErrorHandler;
 
 extern const char kTypedUrlTag[];
 

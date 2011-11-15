@@ -17,7 +17,6 @@
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 
-class GURL;
 class MessageLoop;
 class PasswordStore;
 class ProfileSyncService;
@@ -32,9 +31,6 @@ class WriteTransaction;
 };
 
 namespace browser_sync {
-
-class PasswordChangeProcessor;
-class UnrecoverableErrorHandler;
 
 extern const char kPasswordTag[];
 

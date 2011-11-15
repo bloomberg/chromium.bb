@@ -14,7 +14,6 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 
 namespace syncable {
-class BaseTransaction;
 class Id;
 }
 

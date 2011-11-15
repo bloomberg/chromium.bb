@@ -16,10 +16,8 @@
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 
 class PasswordStore;
-class PersonalDataManager;
 class ProfileSyncService;
 class SyncableService;
-class WebDatabase;
 class WebDataService;
 
 namespace browser_sync {
