@@ -55,6 +55,15 @@ void SpellingMenuObserver::InitMenu(const ContextMenuParams& params) {
   if (!params.is_editable)
     return;
 
+  // Append Dictionary spell check suggestions.
+  suggestions_ = params.dictionary_suggestions;
+  for (size_t i = 0; i < params.dictionary_suggestions.size() &&
+       IDC_SPELLCHECK_SUGGESTION_0 + i <= IDC_SPELLCHECK_SUGGESTION_LAST;
+       ++i) {
+    proxy_->AddMenuItem(IDC_SPELLCHECK_SUGGESTION_0 + static_cast<int>(i),
+                        params.dictionary_suggestions[i]);
+  }
+
   Profile* profile = proxy_->GetProfile();
   if (!profile || !profile->GetRequestContext())
     return;
@@ -89,15 +98,6 @@ void SpellingMenuObserver::InitMenu(const ContextMenuParams& params) {
     std::string language =
         pref ? pref->GetString(prefs::kSpellCheckDictionary) : "en-US";
     Invoke(text, language, profile->GetRequestContext());
-  }
-
-  // Append Dictionary spell check suggestions.
-  suggestions_ = params.dictionary_suggestions;
-  for (size_t i = 0; i < params.dictionary_suggestions.size() &&
-       IDC_SPELLCHECK_SUGGESTION_0 + i <= IDC_SPELLCHECK_SUGGESTION_LAST;
-       ++i) {
-    proxy_->AddMenuItem(IDC_SPELLCHECK_SUGGESTION_0 + static_cast<int>(i),
-                        params.dictionary_suggestions[i]);
   }
 }
 

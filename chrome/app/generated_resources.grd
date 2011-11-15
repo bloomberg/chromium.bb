@@ -488,10 +488,10 @@ are declared in build/common.gypi.
           &amp;No spelling suggestions
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="The context-menu item that asks whether to integrate the spelling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
-          Ask Google for spelling suggestions
+          Ask Google for suggestions
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the spelling service of Google to Chrome.">
-          Google Chrome can provide even better spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.
+          Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="The button text that allows integrating the spelling service of Google.">
           Enable
@@ -500,10 +500,10 @@ are declared in build/common.gypi.
           No thanks
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_STOP_ASKING_GOOGLE" desc="The context-menu item that stops integrating the spelling service.">
-          Stop asking Google for spelling suggestions
+          Stop asking Google for suggestions
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_CHECKING" desc="The place-holder message shown while the Spelling service is checking text">
-          Loading spelling suggestion
+          Loading suggestion
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="The name of the Spellcheck Options submenu in the content area context menu">
           &amp;Spell-checker options
@@ -700,10 +700,10 @@ are declared in build/common.gypi.
           &amp;No Spelling Suggestions
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="The context-menu item that asks whether to integrate the spelling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
-          Ask Google for spelling suggestions
+          Ask Google for suggestions
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the spelling service of Google to Chrome.">
-          Google Chrome can provide even better spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.
+          Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="The button text that allows integrating the spelling service of Google.">
           Enable
@@ -712,10 +712,10 @@ are declared in build/common.gypi.
           No thanks
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_STOP_ASKING_GOOGLE" desc="The context-menu item that stops integrating the spelling service.">
-          Stop asking Google for spelling suggestions
+          Stop asking Google for suggestions
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_CHECKING" desc="The place-holder message shown while the Spelling service is checking text">
-          Loading spelling suggestion
+          Loading suggestion
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the content area context menu">
           &amp;Spell-checker Options
