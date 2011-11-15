@@ -1343,7 +1343,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, FLAKY_PasteReplacingAll) {
 class OmniboxViewViewsTest : public OmniboxViewTest {
  public:
   OmniboxViewViewsTest() {
-    views::Widget::IsPureViews();
+    views::Widget::SetPureViews(true);
   }
 };
 
