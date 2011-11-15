@@ -68,7 +68,6 @@ struct wlsc_output {
 	struct wl_resource resource;
 	struct wl_list link;
 	struct wlsc_compositor *compositor;
-	struct wlsc_surface *background;
 	struct wlsc_matrix matrix;
 	struct wl_list frame_callback_list;
 	int32_t x, y, mm_width, mm_height;
