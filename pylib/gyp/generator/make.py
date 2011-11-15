@@ -28,6 +28,7 @@ import gyp.common
 import gyp.system_test
 import os.path
 import os
+import re
 import shlex
 import sys
 
@@ -2432,6 +2433,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # See /Developer/Platforms/MacOSX.platform/Developer/Library/Xcode/Specifications/MacOSX\ Product\ Types.xcspec for FULL_PRODUCT_NAME
       'FULL_PRODUCT_NAME' : product_name,
       'SRCROOT' : srcroot,
+      'SOURCE_ROOT': '$(SRCROOT)',
       # This is not true for static libraries, but currently the env is only
       # written for bundles:
       'TARGET_BUILD_DIR' : built_products_dir,
@@ -2476,14 +2478,66 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     # GetXcodeEnv() for the full rationale.
     keys_to_not_absolutify = ('PRODUCT_NAME', 'FULL_PRODUCT_NAME')
 
-    # Perform some transformations that are required to mimic Xcode behavior.
-    for k in env:
-      # Values that are not strings but are, for example, lists or tuples such
-      # as LDFLAGS or CFLAGS, should not be written out because they are
-      # not needed and it's undefined how multi-valued keys should be written.
-      if not isinstance(env[k], str):
+    # First sort the list of keys, removing any non-string values.
+    # Values that are not strings but are, for example, lists or tuples such
+    # as LDFLAGS or CFLAGS, should not be written out because they are
+    # not needed and it's undefined how multi-valued keys should be written.
+    key_list = env.keys()
+    key_list.sort()
+    key_list = [k for k in key_list if isinstance(env[k], str)]
+
+    # Since environment variables can refer to other variables, the evaluation
+    # order is important. Below is the logic to compute the dependency graph
+    # and sort it.
+    regex = re.compile(r'\$\(([a-zA-Z0-9\-_]+)\)')
+
+    # Phase 1: Create a set of edges of (DEPENDEE, DEPENDER) where in the graph,
+    # DEPENDEE -> DEPENDER. Also create sets of dependers and dependees.
+    edges = set()
+    dependees = set()
+    dependers = set()
+    for k in key_list:
+      matches = regex.findall(env[k])
+      if not len(matches):
         continue
 
+      dependers.add(k)
+      for dependee in matches:
+        if dependee in env:
+          edges.add((dependee, k))
+          dependees.add(dependee)
+
+    # Phase 2: Create a list of graph nodes with no incoming edges.
+    sorted_nodes = []
+    edgeless_nodes = dependees - dependers
+
+    # Phase 3: Perform Kahn topological sort.
+    while len(edgeless_nodes):
+      # Find a node with no incoming edges, add it to the sorted list, and
+      # remove it from the list of nodes that aren't part of the graph.
+      node = edgeless_nodes.pop()
+      sorted_nodes.append(node)
+      key_list.remove(node)
+
+      # Find all the edges between |node| and other nodes.
+      edges_to_node = [e for e in edges if e[0] == node]
+      for edge in edges_to_node:
+        edges.remove(edge)
+        # If the node connected to |node| by |edge| has no other incoming edges,
+        # add it to |edgeless_nodes|.
+        if not len([e for e in edges if e[1] == edge[1]]):
+          edgeless_nodes.add(edge[1])
+
+    # Any remaining edges indicate a cycle.
+    if len(edges):
+      raise Exception('Xcode environment variables are cyclically dependent: ' +
+          str(edges))
+
+    # Append the "nodes" not in the graph to those that were just sorted.
+    sorted_nodes.extend(key_list)
+
+    # Perform some transformations that are required to mimic Xcode behavior.
+    for k in sorted_nodes:
       # For
       #  foo := a\ b
       # the escaped space does the right thing. For
