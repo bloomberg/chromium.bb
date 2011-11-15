@@ -26,7 +26,15 @@ if env.Bit('nacl_glibc'):
     # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2357
     env.FilterOut(CPPDEFINES = [['DYNAMIC_ANNOTATIONS_ENABLED', '1']])
 
-thread_test_nexe = env.ComponentProgram(
+# GLibC headers currently require target-specific defines.
+# BUG= http://code.google.com/p/nativeclient/issues/detail?id=2447
+if env.Bit('bitcode') and env.Bit('nacl_glibc'):
+  biased_env = env.Clone()
+  biased_env.AddBiasForPNaCl()
+else:
+  biased_env = env
+
+thread_test_nexe = biased_env.ComponentProgram(
     'thread_test',
     'thread_test.c',
     EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'] + ANNOTATIONS_LIBS)
