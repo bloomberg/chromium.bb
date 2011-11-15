@@ -38,7 +38,8 @@ libtoytoolkit_a_SOURCES =			\
 	window.c				\
 	window.h				\
 	cairo-util.c				\
-	cairo-util.h
+	cairo-util.h				\
+	config.c
 
 toolkit_libs =					\
 	libtoytoolkit.a				\

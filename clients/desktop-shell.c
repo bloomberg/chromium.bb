@@ -58,6 +58,30 @@ struct panel_item {
 	const char *path;
 };
 
+static char *key_background_image;
+static uint32_t key_panel_color;
+static char *key_launcher_icon;
+static char *key_launcher_path;
+static void launcher_section_done(void *data);
+
+static const struct config_key shell_config_keys[] = {
+	{ "background-image", CONFIG_KEY_STRING, &key_background_image },
+	{ "panel-color", CONFIG_KEY_INTEGER, &key_panel_color },
+};
+
+static const struct config_key launcher_config_keys[] = {
+	{ "icon", CONFIG_KEY_STRING, &key_launcher_icon },
+	{ "path", CONFIG_KEY_STRING, &key_launcher_path },
+};
+
+static const struct config_section config_sections[] = {
+	{ "wayland-desktop-shell",
+	  shell_config_keys, ARRAY_LENGTH(shell_config_keys) },
+	{ "launcher",
+	  launcher_config_keys, ARRAY_LENGTH(launcher_config_keys),
+	  launcher_section_done }
+};
+
 static void
 sigchild_handler(int s)
 {
@@ -138,6 +162,16 @@ panel_draw_item(struct item *item, void *data)
 }
 
 static void
+set_hex_color(cairo_t *cr, uint32_t color)
+{
+	cairo_set_source_rgba(cr, 
+			      ((color >> 16) & 0xff) / 255.0,
+			      ((color >>  8) & 0xff) / 255.0,
+			      ((color >>  0) & 0xff) / 255.0,
+			      ((color >> 24) & 0xff) / 255.0);
+}
+
+static void
 panel_redraw_handler(struct window *window, void *data)
 {
 	cairo_surface_t *surface;
@@ -147,7 +181,7 @@ panel_redraw_handler(struct window *window, void *data)
 	surface = window_get_surface(window);
 	cr = cairo_create(surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 0.9);
+	set_hex_color(cr, key_panel_color);
 	cairo_paint(cr);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
@@ -294,28 +328,26 @@ global_handler(struct wl_display *display, uint32_t id,
 	}
 }
 
-static const struct {
-	const char *icon;
-	const char *path;
-} launchers[] = {
-	{
-		"/usr/share/icons/gnome/24x24/apps/utilities-terminal.png",
-		"/usr/bin/gnome-terminal"
-	},
-	{
-		"/usr/share/icons/gnome/24x24/apps/utilities-terminal.png",
-		"./clients/terminal"
-	},
-	{
-		"/usr/share/icons/hicolor/24x24/apps/google-chrome.png",
-		"/usr/bin/google-chrome"
-	},
-};
+static void
+launcher_section_done(void *data)
+{
+	struct desktop *desktop = data;
+
+	if (key_launcher_icon == NULL || key_launcher_path == NULL) {
+		fprintf(stderr, "invalid launcher section\n");
+		return;
+	}
+
+	panel_add_item(desktop->panel, key_launcher_icon, key_launcher_path);
+	free(key_launcher_icon);
+	key_launcher_icon = NULL;
+	free(key_launcher_path);
+	key_launcher_path = NULL;
+}
 
 int main(int argc, char *argv[])
 {
 	struct desktop desktop;
-	int i;
 
 	desktop.display = display_create(&argc, &argv, NULL);
 	if (desktop.display == NULL) {
@@ -331,9 +363,11 @@ int main(int argc, char *argv[])
 
 	desktop.panel = panel_create(desktop.display);
 
-	for (i = 0; i < ARRAY_LENGTH(launchers); i++)
-		panel_add_item(desktop.panel,
-			       launchers[i].icon, launchers[i].path);
+	parse_config_file("wayland-desktop-shell.ini",
+			  config_sections, ARRAY_LENGTH(config_sections),
+			  &desktop);
+
+	printf("panel color: %08x\n", key_panel_color);
 
 	desktop_shell_set_panel(desktop.shell,
 				window_get_wl_surface(desktop.panel->window));
@@ -341,7 +375,7 @@ int main(int argc, char *argv[])
 	desktop.background = window_create(desktop.display, 0, 0);
 	window_set_decoration(desktop.background, 0);
 	window_set_custom(desktop.background);
-	desktop.background_path = argv[1];
+	desktop.background_path = key_background_image;
 	desktop_shell_set_background(desktop.shell,
 				     window_get_wl_surface(desktop.background));
 
