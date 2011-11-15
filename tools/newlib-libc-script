@@ -4,4 +4,4 @@
  * libraries that make up what -lc means semantically.
  */
 OUTPUT_FORMAT(@OBJFORMAT@)
-GROUP ( libcrt_common.a libnacl.a libcrt_platform.a )
+GROUP ( libcrt_common.a libnacl.a )
