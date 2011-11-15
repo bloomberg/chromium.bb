@@ -33,6 +33,30 @@ namespace extensions {
 //
 // But we only allow high-privilege operations to be performed by an extension
 // when it is running in an assigned process.
+//
+// ===========================================================================
+// WARNINGS - PLEASE UNDERSTAND THESE BEFORE CALLING OR MODIFYING THIS CLASS
+// ===========================================================================
+//
+// 1. This class contains the processes for hosted apps as well as extensions
+//    and packaged apps. Just because a process is present here *does not* mean
+//    it is an "extension process" (e.g., for UI purposes). It may contain only
+//    hosted apps. See crbug.com/102533.
+//
+// 2. An extension can show be in multiple processes. That is why there is no
+//    GetExtensionProcess() method here. There are two cases: a) The extension
+//    is actually a hosted app, in which case this is normal, or b) there is an
+//    incognito window open and the extension is "split mode". It is *not safe*
+//    to assume that there is one process per extension. If you only care about
+//    extensions (not hosted apps), and you are on the UI thread, then use
+//    ExtensionProcessManager::GetSiteInstanceForURL()->[Has|Get]Process().
+//
+// 3. The process ids contained in this class are *not limited* to the Profile
+//    you got this map from. They can also be associated with that profile's
+//    incognito/normal twin. If you care about this, use
+//    RenderProcessHost::FromID() and check the profile of the resulting object.
+//
+// TODO(aa): The above warnings suggest this class could use improvement :).
 class ProcessMap {
  public:
   ProcessMap();
