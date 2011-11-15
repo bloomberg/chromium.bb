@@ -30,6 +30,7 @@
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/shell_util.h"
@@ -239,6 +240,7 @@ void AddMultiUninstallWorkItems(const InstallerState& installer_state,
 void AddVersionKeyWorkItems(HKEY root,
                             BrowserDistribution* dist,
                             const Version& new_version,
+                            bool add_language_identifier,
                             WorkItemList* list) {
   // Create Version key for each distribution (if not already present) and set
   // the new product version as the last step.
@@ -252,6 +254,17 @@ void AddVersionKeyWorkItems(HKEY root,
                                google_update::kRegOopcrashesField,
                                static_cast<DWORD>(1),
                                false);  // set during first install
+  if (add_language_identifier) {
+    // Write the language identifier of the current translation.  Omaha's set of
+    // languages is a superset of Chrome's set of translations with this one
+    // exception: what Chrome calls "en-us", Omaha calls "en".  sigh.
+    std::wstring language(GetCurrentTranslation());
+    if (LowerCaseEqualsASCII(language, "en-us"))
+      language.resize(2);
+    list->AddSetRegValueWorkItem(root, version_key,
+                                 google_update::kRegLangField, language,
+                                 false);  // do not overwrite language
+  }
   list->AddSetRegValueWorkItem(root, version_key,
                                google_update::kRegVersionField,
                                ASCIIToWide(new_version.GetString()),
@@ -782,6 +795,9 @@ void AddInstallWorkItems(const InstallationState& original_state,
                         new_version, install_list);
 
   const HKEY root = installer_state.root_key();
+  // Only set "lang" for user-level installs since for system-level, the install
+  // language may not be related to a given user's runtime language.
+  const bool add_language_identifier = !installer_state.system_install();
 
   const Products& products = installer_state.products();
   for (size_t i = 0; i < products.size(); ++i) {
@@ -791,7 +807,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
                                   install_list, *product);
 
     AddVersionKeyWorkItems(root, product->distribution(), new_version,
-                           install_list);
+                           add_language_identifier, install_list);
   }
 
   if (installer_state.is_multi_install()) {
@@ -800,7 +816,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
 
     AddVersionKeyWorkItems(root,
         installer_state.multi_package_binaries_distribution(), new_version,
-        install_list);
+        add_language_identifier, install_list);
   }
 
   // Add any remaining work items that involve special settings for

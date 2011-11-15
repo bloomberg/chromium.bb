@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -26,6 +26,9 @@ std::wstring GetLocalizedString(int base_message_id);
 // Given the system language, return a url that points to the localized eula.
 // The empty string is returned on failure.
 std::wstring GetLocalizedEulaResource();
+
+// Returns the language identifier of the translation currently in use.
+std::wstring GetCurrentTranslation();
 
 }  // namespace installer.
 

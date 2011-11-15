@@ -78,4 +78,8 @@ std::wstring GetLocalizedEulaResource() {
   return url_path;
 }
 
+std::wstring GetCurrentTranslation() {
+  return GetLanguageSelector().selected_translation();
+}
+
 }  // namespace installer

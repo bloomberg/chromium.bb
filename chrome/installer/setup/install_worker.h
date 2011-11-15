@@ -132,10 +132,12 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                    const Product& product);
 
 // Create Version key for a product (if not already present) and sets the new
-// product version as the last step.
+// product version as the last step.  If |add_language_identifier| is true, the
+// "lang" value is also set according to the currently selected translation.
 void AddVersionKeyWorkItems(HKEY root,
                             BrowserDistribution* dist,
                             const Version& new_version,
+                            bool add_language_identifier,
                             WorkItemList* list);
 
 // Unregisters the "opv" version of ChromeLauncher from IE's low rights
