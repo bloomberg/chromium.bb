@@ -26,7 +26,7 @@ input[type='checkbox']:disabled {
   opacity: .75;
 }
 
-input[type='checkbox']:not(:disabled):not(.disabled):hover {
+input[type='checkbox']:not(:disabled):not(.disabled):not(:active):hover {
   background: -webkit-linear-gradient(#fff, #e6e6e6);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 1);
 }
@@ -35,8 +35,6 @@ input[type='checkbox']:active {
   -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, .2);
   background: -webkit-linear-gradient(#f0f0f0, #bebebe);
   border: 1px solid #808080;
-  padding-bottom: 4px;
-  padding-top: 6px;
   text-shadow: 0 1px 0 rgba(255, 255, 255, .25);
 }
 
@@ -75,7 +73,7 @@ input[type='radio']:disabled {
   opacity: .75;
 }
 
-input[type='radio']:not(:disabled):not(.disabled):hover {
+input[type='radio']:not(:disabled):not(.disabled):not(:active):hover {
   background: -webkit-linear-gradient(#fff, #e6e6e6);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 1);
 }
