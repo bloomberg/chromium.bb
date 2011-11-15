@@ -16,6 +16,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -853,32 +854,28 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
   EXPECT_LE(100, initial_bounds.height());
 
   // Expand the test page.
+  ui_test_utils::WindowedNotificationObserver enlarge(
+      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
+      content::Source<Panel>(panel));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
       panel->browser()->GetSelectedTabContents()->render_view_host(),
       std::wstring(),
       L"changeSize(50);"));
-
-  // Wait until the bounds get changed.
-  gfx::Rect bounds_on_grow;
-  while ((bounds_on_grow = panel->GetBounds()) == initial_bounds) {
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-    MessageLoop::current()->RunAllPending();
-  }
+  enlarge.Wait();
+  gfx::Rect bounds_on_grow = panel->GetBounds();
   EXPECT_GT(bounds_on_grow.width(), initial_bounds.width());
   EXPECT_EQ(bounds_on_grow.height(), initial_bounds.height());
 
   // Shrink the test page.
+  ui_test_utils::WindowedNotificationObserver shrink(
+      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
+      content::Source<Panel>(panel));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
       panel->browser()->GetSelectedTabContents()->render_view_host(),
       std::wstring(),
       L"changeSize(-30);"));
-
-  // Wait until the bounds get changed.
-  gfx::Rect bounds_on_shrink;
-  while ((bounds_on_shrink = panel->GetBounds()) == bounds_on_grow) {
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-    MessageLoop::current()->RunAllPending();
-  }
+  shrink.Wait();
+  gfx::Rect bounds_on_shrink = panel->GetBounds();
   EXPECT_LT(bounds_on_shrink.width(), bounds_on_grow.width());
   EXPECT_GT(bounds_on_shrink.width(), initial_bounds.width());
   EXPECT_EQ(bounds_on_shrink.height(), initial_bounds.height());
@@ -1450,6 +1447,62 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, OnBeforeUnloadOnClose) {
   alert->native_dialog()->AcceptAppModalDialog();
   browser_closed.Wait();
   EXPECT_EQ(0, panel_manager->num_panels());
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateWithExistingContents) {
+  PanelManager::GetInstance()->enable_auto_sizing(true);
+
+  // Load contents into regular tabbed browser.
+  GURL url(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("update-preferred-size.html"))));
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_EQ(1, browser()->tab_count());
+
+  Profile* profile = browser()->profile();
+  CreatePanelParams params("PanelTest1", gfx::Rect(0, 0, 100, 100),
+                           SHOW_AS_ACTIVE);
+  Panel* panel = CreatePanelWithParams(params);
+  Browser* panel_browser = panel->browser();
+  EXPECT_EQ(2U, BrowserList::size());
+
+  // Swap tab contents over to the panel from the tabbed browser.
+  TabContentsWrapper* contents =
+      browser()->tabstrip_model()->DetachTabContentsAt(0);
+  panel_browser->tabstrip_model()->InsertTabContentsAt(
+      0, contents, TabStripModel::ADD_NONE);
+  panel_browser->SelectNumberedTab(0);
+  EXPECT_EQ(contents, panel_browser->GetSelectedTabContentsWrapper());
+  EXPECT_EQ(1, PanelManager::GetInstance()->num_panels());
+
+  // Ensure that the tab contents were noticed by the panel by
+  // verifying that the panel auto resizes correctly. (Panel
+  // enables auto resizing when tab contents are detected.)
+  int initial_width = panel->GetBounds().width();
+  EXPECT_LE(100, initial_width);
+
+  // Expand the test page.
+  ui_test_utils::WindowedNotificationObserver enlarge(
+      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
+      content::Source<Panel>(panel));
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
+      panel_browser->GetSelectedTabContents()->render_view_host(),
+      std::wstring(),
+      L"changeSize(50);"));
+  enlarge.Wait();
+  EXPECT_GT(panel->GetBounds().width(), initial_width);
+
+  // Swapping tab contents back to the browser should close the panel.
+  ui_test_utils::WindowedNotificationObserver signal(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::Source<Browser>(panel_browser));
+  panel_browser->ConvertPopupToTabbedBrowser();
+  signal.Wait();
+  EXPECT_EQ(0, PanelManager::GetInstance()->num_panels());
+
+  Browser* tabbed_browser = BrowserList::FindTabbedBrowser(profile, false);
+  EXPECT_EQ(contents, tabbed_browser->GetSelectedTabContentsWrapper());
+  tabbed_browser->window()->Close();
 }
 
 class PanelDownloadTest : public PanelBrowserTest {

@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
@@ -28,7 +29,9 @@ class RenderViewHost;
 //   Panel size is restricted to certain limits.
 // - Invoke an appropriate PanelManager function to do stuff that might affect
 //   other Panels.  For example deleting a panel would rearrange other panels.
-class Panel : public BrowserWindow, public content::NotificationObserver {
+class Panel : public BrowserWindow,
+              public TabStripModelObserver,
+              public content::NotificationObserver {
  public:
   enum ExpansionState {
    // The panel is fully expanded with both title-bar and the client-area.
@@ -169,6 +172,11 @@ class Panel : public BrowserWindow, public content::NotificationObserver {
                                 const gfx::Rect& rect) OVERRIDE;
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE;
 
+  // TabStripModelObserver overrides.
+  virtual void TabInsertedAt(TabContentsWrapper* contents,
+                             int index,
+                             bool foreground) OVERRIDE;
+
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -187,6 +195,9 @@ class Panel : public BrowserWindow, public content::NotificationObserver {
   // Used on platforms where the panel cannot determine its window size
   // until the window has been created. (e.g. GTK)
   void OnWindowSizeAvailable();
+
+  // Asynchronous completion of panel close request.
+  void OnNativePanelClosed();
 
   NativePanel* native_panel() { return native_panel_; }
   Browser* browser() const;
@@ -216,6 +227,8 @@ class Panel : public BrowserWindow, public content::NotificationObserver {
 
   // NULL might be returned if the tab has not been added.
   RenderViewHost* GetRenderViewHost() const;
+
+  void EnableAutoResize(RenderViewHost* render_view_host);
 
   // Requests RenderViewHost not to show the scrollbars till |max_size_| since
   // the panel can grow to |max_size_|.

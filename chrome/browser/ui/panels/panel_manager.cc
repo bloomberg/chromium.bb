@@ -615,4 +615,3 @@ void PanelManager::RemoveAll() {
 bool PanelManager::is_dragging_panel() const {
   return dragging_panel_index_ != kInvalidPanelIndex;
 }
-

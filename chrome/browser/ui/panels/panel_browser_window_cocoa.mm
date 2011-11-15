@@ -248,7 +248,7 @@ void PanelBrowserWindowCocoa::DestroyPanelBrowser() {
 
 void PanelBrowserWindowCocoa::DidCloseNativeWindow() {
   DCHECK(!isClosed());
-  panel_->manager()->Remove(panel_.get());
+  panel_->OnNativePanelClosed();
   controller_ = NULL;
 }
 

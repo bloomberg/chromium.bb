@@ -56,7 +56,7 @@ PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel,
 }
 
 PanelBrowserView::~PanelBrowserView() {
-  panel_->manager()->Remove(panel_.get());
+  panel_->OnNativePanelClosed();
 }
 
 void PanelBrowserView::Init() {

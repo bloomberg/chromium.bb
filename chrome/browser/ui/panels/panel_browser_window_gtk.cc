@@ -69,7 +69,7 @@ PanelBrowserWindowGtk::~PanelBrowserWindowGtk() {
     gtk_grab_remove(drag_widget_);
     DestroyDragWidget();
   }
-  panel_->manager()->Remove(panel_.get());
+  panel_->OnNativePanelClosed();
 }
 
 void PanelBrowserWindowGtk::Init() {
