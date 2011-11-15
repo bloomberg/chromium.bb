@@ -17,24 +17,10 @@ const char* JSONFileValueSerializer::kNoSuchFile = "File doesn't exist.";
 JSONStringValueSerializer::~JSONStringValueSerializer() {}
 
 bool JSONStringValueSerializer::Serialize(const Value& root) {
-  return SerializeInternal(root, false);
-}
-
-bool JSONStringValueSerializer::SerializeAndOmitBinaryValues(
-    const Value& root) {
-  return SerializeInternal(root, true);
-}
-
-bool JSONStringValueSerializer::SerializeInternal(const Value& root,
-                                                  bool omit_binary_values) {
   if (!json_string_ || initialized_with_const_string_)
     return false;
 
-  base::JSONWriter::WriteWithOptions(
-      &root,
-      pretty_print_,
-      omit_binary_values ? base::JSONWriter::OPTIONS_OMIT_BINARY_VALUES : 0,
-      json_string_);
+  base::JSONWriter::Write(&root, pretty_print_, json_string_);
   return true;
 }
 
@@ -52,21 +38,10 @@ Value* JSONStringValueSerializer::Deserialize(int* error_code,
 /******* File Serializer *******/
 
 bool JSONFileValueSerializer::Serialize(const Value& root) {
-  return SerializeInternal(root, false);
-}
-
-bool JSONFileValueSerializer::SerializeAndOmitBinaryValues(const Value& root) {
-  return SerializeInternal(root, true);
-}
-
-bool JSONFileValueSerializer::SerializeInternal(const Value& root,
-                                                bool omit_binary_values) {
   std::string json_string;
   JSONStringValueSerializer serializer(&json_string);
   serializer.set_pretty_print(true);
-  bool result = omit_binary_values ?
-      serializer.SerializeAndOmitBinaryValues(root) :
-      serializer.Serialize(root);
+  bool result = serializer.Serialize(root);
   if (!result)
     return false;
 

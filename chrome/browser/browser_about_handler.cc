@@ -1006,8 +1006,7 @@ std::string AboutStats(const std::string& query) {
 
   std::string data;
   if (query == "json" || query == kStringsJsPath) {
-    base::JSONWriter::WriteWithOptions(
-          &root, true, base::JSONWriter::OPTIONS_DO_NOT_ESCAPE, &data);
+    base::JSONWriter::WriteWithOptionalEscape(&root, true, false, &data);
     if (query == kStringsJsPath)
       data = "var templateData = " + data + ";";
   } else if (query == "raw") {
