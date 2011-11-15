@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/cloud_print_signin_dialog.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
@@ -11,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -79,7 +83,8 @@ void CloudPrintSigninFlowHandler::Observe(
         url.scheme() == dialog_url.scheme()) {
       StoreDialogSize();
       web_ui_->tab_contents()->render_view_host()->ClosePage();
-      parent_tab_->controller().Reload(false);
+      static_cast<PrintPreviewUI*>(
+          parent_tab_->web_ui())->OnReloadPrintersList();
     }
   }
 }
@@ -187,4 +192,3 @@ void CreateCloudPrintSigninDialog(TabContents* parent_tab) {
       base::Bind(&CreateCloudPrintSigninDialogImpl, parent_tab));
 }
 }  // namespace cloud_print_signin_dialog
-

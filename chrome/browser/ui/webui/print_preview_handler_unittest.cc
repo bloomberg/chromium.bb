@@ -21,7 +21,7 @@ namespace {
 
 DictionaryValue* GetCustomMarginsDictionary(
     const double margin_top, const double margin_right,
-    const double margin_bottom,const double margin_left) {
+    const double margin_bottom, const double margin_left) {
   base::DictionaryValue* custom_settings = new base::DictionaryValue();
   custom_settings->SetDouble(printing::kSettingMarginTop, margin_top);
   custom_settings->SetDouble(printing::kSettingMarginRight, margin_right);
@@ -30,7 +30,7 @@ DictionaryValue* GetCustomMarginsDictionary(
   return custom_settings;
 }
 
-}
+}  // namespace
 
 class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
  protected:
@@ -65,7 +65,6 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
 
     preview_tab_ = controller->GetOrCreatePreviewTab(initiator_tab);
     ASSERT_TRUE(preview_tab_);
-    EXPECT_EQ(2, browser()->tab_count());
 
     preview_ui_ = static_cast<PrintPreviewUI*>(preview_tab_->web_ui());
     ASSERT_TRUE(preview_ui_);
@@ -114,7 +113,7 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
 
   void RequestPrintWithCustomMargins(
     const double margin_top, const double margin_right,
-    const double margin_bottom,const double margin_left) {
+    const double margin_bottom, const double margin_left) {
     // Set the minimal dummy settings to make the HandlePrint() code happy.
     DictionaryValue settings;
     settings.SetBoolean(printing::kSettingPreviewModifiable, true);
@@ -146,7 +145,6 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
     delete PrintPreviewHandler::last_used_page_size_margins_;
     PrintPreviewHandler::last_used_page_size_margins_ = NULL;
   }
-
 };
 
 // Tests that margin settings are saved correctly when printing with custom
@@ -198,7 +196,6 @@ TEST_F(PrintPreviewHandlerTest, StickyMarginsCustomThenDefault) {
   CheckCustomMargins(kMarginTop, kMarginRight, kMarginBottom, kMarginLeft);
 
   OpenPrintPreviewTab();
-  EXPECT_EQ(2, browser()->tab_count());
   RequestPrintWithDefaultMargins();
 
   // Checking that sticky settings were saved correctly.

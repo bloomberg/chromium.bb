@@ -42,8 +42,8 @@ TEST_F(PrintPreviewTabControllerUnitTest, GetOrCreatePreviewTab) {
   TabContentsWrapper* preview_tab =
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
-  // New print preview tab is created. Current focus is on preview tab.
-  EXPECT_EQ(2, browser()->tab_count());
+  // New print preview tab is created.
+  EXPECT_EQ(1, browser()->tab_count());
   EXPECT_NE(initiator_tab, preview_tab);
 
   // Get the print preview tab for initiator tab.
@@ -51,60 +51,10 @@ TEST_F(PrintPreviewTabControllerUnitTest, GetOrCreatePreviewTab) {
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // Preview tab already exists. Tab count remains the same.
-  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_count());
 
   // 1:1 relationship between initiator and preview tab.
   EXPECT_EQ(new_preview_tab, preview_tab);
-}
-
-// Test to verify the initiator tab title is stored in |PrintPreviewUI| after
-// preview tab reload.
-TEST_F(PrintPreviewTabControllerUnitTest, TitleAfterReload) {
-  ASSERT_TRUE(browser());
-  BrowserList::SetLastActive(browser());
-  ASSERT_TRUE(BrowserList::GetLastActive());
-
-  // Lets start with one window with one tab.
-  EXPECT_EQ(1u, BrowserList::size());
-  EXPECT_EQ(0, browser()->tab_count());
-  browser()->NewTab();
-  EXPECT_EQ(1, browser()->tab_count());
-
-  // Create a reference to initiator tab contents.
-  TabContentsWrapper* initiator_tab =
-      browser()->GetSelectedTabContentsWrapper();
-
-  scoped_refptr<printing::PrintPreviewTabController>
-      tab_controller(new printing::PrintPreviewTabController());
-  ASSERT_TRUE(tab_controller);
-
-  // Get the preview tab for initiator tab.
-  TabContentsWrapper* preview_tab =
-      tab_controller->GetOrCreatePreviewTab(initiator_tab);
-
-  // New print preview tab is created. Current focus is on preview tab.
-  EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_NE(initiator_tab, preview_tab);
-
-  // Set up a PrintPreviewUI for |preview_tab|.
-  PrintPreviewUI* preview_ui = new PrintPreviewUI(preview_tab->tab_contents());
-  // RenderViewHostManager takes ownership of |preview_ui|.
-  preview_tab->tab_contents()->render_manager_for_testing()->
-      SetWebUIPostCommit(preview_ui);
-
-  // Simulate a reload event on |preview_tab|.
-  scoped_ptr<NavigationEntry> entry;
-  entry.reset(new NavigationEntry());
-  entry->set_transition_type(content::PAGE_TRANSITION_RELOAD);
-  content::LoadCommittedDetails details;
-  details.type = content::NAVIGATION_TYPE_SAME_PAGE;
-  details.entry = entry.get();
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(&preview_tab->controller()),
-      content::Details<content::LoadCommittedDetails>(&details));
-  EXPECT_EQ(initiator_tab->tab_contents()->GetTitle(),
-            preview_ui->initiator_tab_title_);
 }
 
 // To show multiple print preview tabs exist in the same browser for
@@ -139,7 +89,7 @@ TEST_F(PrintPreviewTabControllerUnitTest, MultiplePreviewTabs) {
       tab_controller->GetOrCreatePreviewTab(tab_contents_1);
 
   EXPECT_NE(tab_contents_1, preview_tab_1);
-  EXPECT_EQ(3, browser()->tab_count());
+  EXPECT_EQ(2, browser()->tab_count());
 
   // Create preview tab for |tab_contents_2|
   TabContentsWrapper* preview_tab_2 =
@@ -147,23 +97,25 @@ TEST_F(PrintPreviewTabControllerUnitTest, MultiplePreviewTabs) {
 
   EXPECT_NE(tab_contents_2, preview_tab_2);
   // 2 initiator tab and 2 preview tabs exist in the same browser.
-  EXPECT_EQ(4, browser()->tab_count());
+  // The preview tabs are constrained in their respective initiator tabs.
+  EXPECT_EQ(2, browser()->tab_count());
 
   TabStripModel* model = browser()->tabstrip_model();
   ASSERT_TRUE(model);
 
+  int tab_1_index = model->GetIndexOfTabContents(tab_contents_1);
+  int tab_2_index = model->GetIndexOfTabContents(tab_contents_2);
   int preview_tab_1_index = model->GetIndexOfTabContents(preview_tab_1);
   int preview_tab_2_index = model->GetIndexOfTabContents(preview_tab_2);
 
-  EXPECT_NE(-1, preview_tab_1_index);
-  EXPECT_NE(-1, preview_tab_2_index);
-  // Current tab is |preview_tab_2|.
-  EXPECT_EQ(preview_tab_2_index, browser()->active_index());
+  EXPECT_EQ(-1, preview_tab_1_index);
+  EXPECT_EQ(-1, preview_tab_2_index);
+  EXPECT_EQ(tab_2_index, browser()->active_index());
 
   // When we get the preview tab for |tab_contents_1|,
   // |preview_tab_1| is activated and focused.
   tab_controller->GetOrCreatePreviewTab(tab_contents_1);
-  EXPECT_EQ(preview_tab_1_index, browser()->active_index());
+  EXPECT_EQ(tab_1_index, browser()->active_index());
 }
 
 // Clear the initiator tab details associated with preview tab.
@@ -191,7 +143,7 @@ TEST_F(PrintPreviewTabControllerUnitTest, ClearInitiatorTabDetails) {
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New print preview tab is created. Current focus is on preview tab.
-  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_count());
   EXPECT_NE(initiator_tab, preview_tab);
 
   // Clear the initiator tab details associated with the preview tab.
@@ -202,6 +154,6 @@ TEST_F(PrintPreviewTabControllerUnitTest, ClearInitiatorTabDetails) {
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New preview tab is created.
-  EXPECT_EQ(3, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_count());
   EXPECT_NE(new_preview_tab, preview_tab);
 }

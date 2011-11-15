@@ -33,10 +33,6 @@ class PrintViewManager : public content::NotificationObserver,
   explicit PrintViewManager(TabContentsWrapper* tab);
   virtual ~PrintViewManager();
 
-  // Override the title for this PrintViewManager's PrintJobs using the title
-  // in |tab_contents|.
-  void OverrideTitle(TabContents* tab_contents);
-
   // Prints the current document immediately. Since the rendering is
   // asynchronous, the actual printing will not be completed on the return of
   // this function. Returns false if printing is impossible at the moment.
@@ -64,9 +60,6 @@ class PrintViewManager : public content::NotificationObserver,
   // remove the current observer. |observer| may always be NULL, but |observer_|
   // must be NULL if |observer| is non-NULL.
   void set_observer(PrintViewManagerObserver* observer);
-
-  // Reset |is_title_overridden_| to false.
-  void ResetTitleOverride();
 
   // PrintedPagesSource implementation.
   virtual string16 RenderSourceName() OVERRIDE;
@@ -167,10 +160,6 @@ class PrintViewManager : public content::NotificationObserver,
   // Set to true when OnDidPrintPage() should be expecting the first page.
   bool expecting_first_page_;
 #endif
-
-  // Title override.
-  bool is_title_overridden_;
-  string16 overridden_title_;
 
   // Weak pointer to an observer that is notified when the print dialog is
   // shown.

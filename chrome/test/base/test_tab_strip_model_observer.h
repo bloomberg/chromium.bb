@@ -12,13 +12,13 @@
 
 class TabStripModel;
 
-// In order to support testing of print preview, we need to wait for the tab to
-// be inserted, and then observe notifications on the newly added tab's
-// controller to wait for it to be loaded. To support tests registering
-// javascript WebUI handlers, we need to inject the framework & registration
-// javascript before the webui page loads by calling back through the
-// TestTabStripModelObserver::LoadStartObserver when the new page starts
-// loading.
+// In order to support testing of print preview, we need to wait for the
+// constrained window to block the current tab, and then observe notifications
+// on the newly added tab's controller to wait for it to be loaded.
+// To support tests registering javascript WebUI handlers, we need to inject
+// the framework & registration javascript before the webui page loads by
+// calling back through the TestTabStripModelObserver::LoadStartObserver when
+// the new page starts loading.
 class TestTabStripModelObserver : public TestNavigationObserver,
                                   public TabStripModelObserver {
  public:
@@ -30,9 +30,12 @@ class TestTabStripModelObserver : public TestNavigationObserver,
   virtual ~TestTabStripModelObserver();
 
  private:
+  // Callback to observer the print preview tab associated with |contents|.
+  void ObservePrintPreviewTabContents(TabContentsWrapper* contents);
+
   // TabStripModelObserver:
-  virtual void TabInsertedAt(TabContentsWrapper* contents, int index,
-                             bool foreground) OVERRIDE;
+  virtual void TabBlockedStateChanged(TabContentsWrapper* contents,
+                                      int index) OVERRIDE;
 
   // |tab_strip_model_| is the object this observes. The constructor will
   // register this as an observer, and the destructor will remove the observer.
