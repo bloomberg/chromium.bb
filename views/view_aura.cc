@@ -4,6 +4,18 @@
 
 #include "views/view.h"
 
+namespace {
+
+// Default horizontal drag threshold in pixels.
+// Same as what gtk uses.
+const int kDefaultHorizontalDragThreshold = 8;
+
+// Default vertical drag threshold in pixels.
+// Same as what gtk uses.
+const int kDefaultVerticalDragThreshold = 8;
+
+}  // namespace
+
 namespace views {
 
 gfx::NativeViewAccessible View::GetNativeViewAccessible() {
@@ -11,11 +23,15 @@ gfx::NativeViewAccessible View::GetNativeViewAccessible() {
 }
 
 int View::GetHorizontalDragThreshold() {
-  return 0;
+  // TODO(jennyz): This value may need to be adjusted for different platforms
+  // and for different display density.
+  return kDefaultHorizontalDragThreshold;
 }
 
 int View::GetVerticalDragThreshold() {
-  return 0;
+  // TODO(jennyz): This value may need to be adjusted for different platforms
+  // and for different display density.
+  return kDefaultVerticalDragThreshold;
 }
 
 }  // namespace views

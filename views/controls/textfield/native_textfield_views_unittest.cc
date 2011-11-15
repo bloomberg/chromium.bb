@@ -1547,6 +1547,14 @@ TEST_F(NativeTextfieldViewsTest, OverflowInRTLTest) {
   display = GetDisplayRect();
   OverflowCursorBoundTestVerifier(display, bound);
 
+
+#if !defined(OS_WIN)
+  // TODO(jennyz): NonClientMouseClick() does not work for os_win builds;
+  // see crbug.com/104150. The mouse click in the next test will be confused
+  // as a double click, which breaks the test. Disable the test until the
+  // issue is fixed.
+  NonClientMouseClick();
+
   MouseClick(bound, 1);
 #if defined(OS_WIN)
   // In Windows, the text is always in LTR directionality even in RTL UI.
@@ -1556,6 +1564,7 @@ TEST_F(NativeTextfieldViewsTest, OverflowInRTLTest) {
 #else
   EXPECT_EQ(500U, textfield_->GetCursorPosition());
 #endif
+#endif  // !defined(OS_WIN)
 
   // Reset locale.
   base::i18n::SetICUDefaultLocale(locale);
