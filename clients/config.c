@@ -54,9 +54,9 @@ handle_key(const struct config_key *key, const char *value)
 		return 0;
 
 	case CONFIG_KEY_BOOL:
-		if (strcmp(value, "false") == 0)
+		if (strcmp(value, "false\n") == 0)
 			*(int *)key->data = 0;
-		else if (strcmp(value, "true") == 0)
+		else if (strcmp(value, "true\n") == 0)
 			*(int *)key->data = 1;
 		else {
 			fprintf(stderr, "invalid bool: %s\n", value);
