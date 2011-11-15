@@ -322,6 +322,10 @@ label {
   width: 640px;
 }
 
+#host-list-error {
+  margin-__MSG_@@bidi_start_edge__: 40px;
+}
+
 #session-mode {
   position: absolute;
   -webkit-box-shadow: 0 0 8px 0 black;
