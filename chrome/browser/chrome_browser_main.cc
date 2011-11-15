@@ -50,6 +50,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
+#include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -1842,6 +1843,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Start watching all browser threads for responsiveness.
   ThreadWatcherList::StartWatchingAll(parsed_command_line());
+
+#if !defined(DISABLE_NACL)
+  NaClProcessHost::EarlyStartup();
+#endif
 
   run_message_loop_ = true;
   return content::RESULT_CODE_NORMAL_EXIT;

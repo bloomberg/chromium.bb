@@ -147,9 +147,9 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
 }
 
 void ChromeRenderMessageFilter::OnLaunchNaCl(
-    const std::wstring& url, int channel_descriptor, IPC::Message* reply_msg) {
+    const std::wstring& url, int socket_count, IPC::Message* reply_msg) {
   NaClProcessHost* host = new NaClProcessHost(url);
-  host->Launch(this, channel_descriptor, reply_msg);
+  host->Launch(this, socket_count, reply_msg);
 }
 
 void ChromeRenderMessageFilter::OnDnsPrefetch(

@@ -96,9 +96,7 @@ bool NaClListener::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void NaClListener::OnStartSelLdr(
-    std::vector<nacl::FileDescriptor> handles,
-    bool have_irt_file) {
+void NaClListener::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles) {
 #if defined(OS_LINUX)
   nacl::SetCreateMemoryObjectFunc(content::MakeSharedMemorySegmentViaIPC);
 #elif defined(OS_MACOSX)
@@ -108,22 +106,22 @@ void NaClListener::OnStartSelLdr(
   handles.pop_back();
 #endif
 
-  if (have_irt_file) {
-    CHECK(handles.size() >= 1);
-    NaClHandle irt_handle = nacl::ToNativeHandle(handles[handles.size() - 1]);
-    handles.pop_back();
+  CHECK(handles.size() >= 1);
+  NaClHandle irt_handle = nacl::ToNativeHandle(handles[handles.size() - 1]);
+  handles.pop_back();
+
 #if defined(OS_WIN)
-    int irt_desc = _open_osfhandle(reinterpret_cast<intptr_t>(irt_handle),
-                                   _O_RDWR | _O_BINARY);
-    if (irt_desc < 0) {
-      LOG(ERROR) << "_open_osfhandle() failed";
-      return;
-    }
-#else
-    int irt_desc = irt_handle;
-#endif
-    NaClSetIrtFileDesc(irt_desc);
+  int irt_desc = _open_osfhandle(reinterpret_cast<intptr_t>(irt_handle),
+                                 _O_RDONLY | _O_BINARY);
+  if (irt_desc < 0) {
+    LOG(ERROR) << "_open_osfhandle() failed";
+    return;
   }
+#else
+  int irt_desc = irt_handle;
+#endif
+
+  NaClSetIrtFileDesc(irt_desc);
 
   scoped_array<NaClHandle> array(new NaClHandle[handles.size()]);
   for (size_t i = 0; i < handles.size(); i++) {

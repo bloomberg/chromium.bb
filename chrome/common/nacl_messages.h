@@ -20,9 +20,8 @@
 // NaClProcess messages
 // These are messages sent from the browser to the NaCl process.
 // Tells the NaCl process to start.
-IPC_MESSAGE_CONTROL2(NaClProcessMsg_Start,
-                     std::vector<nacl::FileDescriptor> /* sockets */,
-                     bool /* have_irt_file */)
+IPC_MESSAGE_CONTROL1(NaClProcessMsg_Start,
+                     std::vector<nacl::FileDescriptor> /* sockets */)
 
 // Tells the NaCl broker to launch a NaCl loader process.
 IPC_MESSAGE_CONTROL1(NaClProcessMsg_LaunchLoaderThroughBroker,
@@ -36,4 +35,3 @@ IPC_MESSAGE_CONTROL2(NaClProcessMsg_LoaderLaunched,
 // Notify the broker that all loader processes have been terminated and it
 // should shutdown.
 IPC_MESSAGE_CONTROL0(NaClProcessMsg_StopBroker)
-

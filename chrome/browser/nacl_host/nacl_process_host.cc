@@ -40,12 +40,58 @@ namespace {
 void SetCloseOnExec(nacl::Handle fd) {
 #if defined(OS_POSIX)
   int flags = fcntl(fd, F_GETFD);
-  CHECK(flags != -1);
+  CHECK_NE(flags, -1);
   int rc = fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
-  CHECK(rc == 0);
+  CHECK_EQ(rc, 0);
 #endif
 }
 #endif
+
+// Represents shared state for all NaClProcessHost objects in the browser.
+// Currently this just handles holding onto the file descriptor for the IRT.
+class NaClBrowser {
+ public:
+  static NaClBrowser* GetInstance() {
+    return Singleton<NaClBrowser>::get();
+  }
+
+  bool IrtAvailable() const {
+    return irt_platform_file_ != base::kInvalidPlatformFileValue;
+  }
+
+  base::PlatformFile IrtFile() const {
+    CHECK_NE(irt_platform_file_, base::kInvalidPlatformFileValue);
+    return irt_platform_file_;
+  }
+
+  // Asynchronously attempt to get the IRT open.
+  bool EnsureIrtAvailable();
+
+  // Make sure the IRT gets opened and follow up with the reply when it's ready.
+  bool MakeIrtAvailable(const base::Closure& reply);
+
+ private:
+  base::PlatformFile irt_platform_file_;
+
+  friend struct DefaultSingletonTraits<NaClBrowser>;
+
+  NaClBrowser()
+      : irt_platform_file_(base::kInvalidPlatformFileValue)
+  {}
+
+  ~NaClBrowser() {
+    if (irt_platform_file_ != base::kInvalidPlatformFileValue)
+      base::ClosePlatformFile(irt_platform_file_);
+  }
+
+  void OpenIrtLibraryFile();
+
+  static void DoOpenIrtLibraryFile() {
+    GetInstance()->OpenIrtLibraryFile();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(NaClBrowser);
+};
 
 }  // namespace
 
@@ -54,17 +100,21 @@ struct NaClProcessHost::NaClInternal {
   std::vector<nacl::Handle> sockets_for_sel_ldr;
 };
 
+static bool RunningOnWOW64() {
+#if defined(OS_WIN)
+  return (base::win::OSInfo::GetInstance()->wow64_status() ==
+          base::win::OSInfo::WOW64_ENABLED);
+#else
+  return false;
+#endif
+}
+
 NaClProcessHost::NaClProcessHost(const std::wstring& url)
     : BrowserChildProcessHost(NACL_LOADER_PROCESS),
       reply_msg_(NULL),
       internal_(new NaClInternal()),
-      running_on_wow64_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   set_name(WideToUTF16Hack(url));
-#if defined(OS_WIN)
-  running_on_wow64_ = (base::win::OSInfo::GetInstance()->wow64_status() ==
-      base::win::OSInfo::WOW64_ENABLED);
-#endif
 }
 
 NaClProcessHost::~NaClProcessHost() {
@@ -92,6 +142,34 @@ NaClProcessHost::~NaClProcessHost() {
   }
 }
 
+// Attempt to ensure the IRT will be available when we need it, but don't wait.
+bool NaClBrowser::EnsureIrtAvailable() {
+  if (IrtAvailable())
+    return true;
+
+  return BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&NaClBrowser::DoOpenIrtLibraryFile));
+}
+
+// We really need the IRT to be available now, so make sure that it is.
+// When it's ready, we'll run the reply closure.
+bool NaClBrowser::MakeIrtAvailable(const base::Closure& reply) {
+  return BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&NaClBrowser::DoOpenIrtLibraryFile), reply);
+}
+
+// This is called at browser startup.
+// static
+void NaClProcessHost::EarlyStartup() {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Open the IRT file early to make sure that it isn't replaced out from
+  // under us by autoupdate.
+  NaClBrowser::GetInstance()->EnsureIrtAvailable();
+#endif
+}
+
 bool NaClProcessHost::Launch(
     ChromeRenderMessageFilter* chrome_render_message_filter,
     int socket_count,
@@ -104,6 +182,13 @@ bool NaClProcessHost::Launch(
   // exposure in case the renderer is compromised.  We can increase
   // this if necessary.
   if (socket_count > 8) {
+    return false;
+  }
+
+  // Start getting the IRT open asynchronously while we launch the NaCl process.
+  // We'll make sure this actually finished in OnProcessLaunched, below.
+  if (!NaClBrowser::GetInstance()->EnsureIrtAvailable()) {
+    LOG(ERROR) << "Cannot launch NaCl process after IRT file open failed";
     return false;
   }
 
@@ -182,7 +267,7 @@ bool NaClProcessHost::LaunchSelLdr() {
 
   // On Windows we might need to start the broker process to launch a new loader
 #if defined(OS_WIN)
-  if (running_on_wow64_) {
+  if (RunningOnWOW64()) {
     return NaClBrokerService::GetInstance()->LaunchLoader(
         this, ASCIIToWide(channel_id()));
   } else {
@@ -204,7 +289,7 @@ void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
 
 base::TerminationStatus NaClProcessHost::GetChildTerminationStatus(
     int* exit_code) {
-  if (running_on_wow64_)
+  if (RunningOnWOW64())
     return base::GetTerminationStatus(handle(), exit_code);
   return BrowserChildProcessHost::GetChildTerminationStatus(exit_code);
 }
@@ -227,25 +312,15 @@ void NaClProcessHost::OnChildDied() {
   BrowserChildProcessHost::OnChildDied();
 }
 
-FilePath::StringType NaClProcessHost::GetIrtLibraryFilename() {
-  bool on_x86_64 = running_on_wow64_;
-#if defined(__x86_64__)
-  on_x86_64 = true;
-#endif
-  if (on_x86_64) {
-    return FILE_PATH_LITERAL("nacl_irt_x86_64.nexe");
-  } else {
-    return FILE_PATH_LITERAL("nacl_irt_x86_32.nexe");
-  }
-}
+// This only ever runs on the BrowserThread::FILE thread.
+// If multiple tasks are posted, the later ones are no-ops.
+void NaClBrowser::OpenIrtLibraryFile() {
+  if (irt_platform_file_ != base::kInvalidPlatformFileValue)
+    // We've already run.
+    return;
 
-void NaClProcessHost::OnProcessLaunched() {
-  // TODO(mseaborn): Opening the IRT file every time a NaCl process is
-  // launched probably does not work with auto-update on Linux.  We
-  // might need to open the file on startup.  If so, we would need to
-  // ensure that NaCl's ELF loader does not use lseek() on the shared
-  // IRT file descriptor, otherwise there would be a race condition.
-  FilePath irt_path;
+  FilePath irt_filepath;
+
   // Allow the IRT library to be overridden via an environment
   // variable.  This allows the NaCl/Chromium integration bot to
   // specify a newly-built IRT rather than using a prebuilt one
@@ -253,41 +328,103 @@ void NaClProcessHost::OnProcessLaunched() {
   // variable that the standalone NaCl PPAPI plugin accepts.
   const char* irt_path_var = getenv("NACL_IRT_LIBRARY");
   if (irt_path_var != NULL) {
-    FilePath::StringType string(irt_path_var,
-                                irt_path_var + strlen(irt_path_var));
-    irt_path = FilePath(string);
+    FilePath::StringType path_string(
+        irt_path_var, const_cast<const char*>(strchr(irt_path_var, '\0')));
+    irt_filepath = FilePath(path_string);
   } else {
     FilePath plugin_dir;
     if (!PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &plugin_dir)) {
       LOG(ERROR) << "Failed to locate the plugins directory";
-      delete this;
       return;
     }
-    irt_path = plugin_dir.Append(GetIrtLibraryFilename());
+
+    bool on_x86_64 = RunningOnWOW64();
+#if defined(__x86_64__)
+    on_x86_64 = true;
+#endif
+    FilePath::StringType irt_name;
+    if (on_x86_64) {
+      irt_name = FILE_PATH_LITERAL("nacl_irt_x86_64.nexe");
+    } else {
+      irt_name = FILE_PATH_LITERAL("nacl_irt_x86_32.nexe");
+    }
+
+    irt_filepath = plugin_dir.Append(irt_name);
   }
 
-  if (!base::FileUtilProxy::CreateOrOpen(
-           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-           irt_path,
-           base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-           base::Bind(&NaClProcessHost::OpenIrtFileDone,
-                      weak_factory_.GetWeakPtr()))) {
+  base::PlatformFileError error_code;
+  irt_platform_file_ = base::CreatePlatformFile(irt_filepath,
+                                                base::PLATFORM_FILE_OPEN |
+                                                base::PLATFORM_FILE_READ,
+                                                NULL,
+                                                &error_code);
+  if (error_code != base::PLATFORM_FILE_OK) {
+    LOG(ERROR) << "Failed to open NaCl IRT file \""
+               << irt_filepath.LossyDisplayName()
+               << "\": " << error_code;
+  }
+}
+
+void NaClProcessHost::OnProcessLaunched() {
+  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
+
+  if (nacl_browser->IrtAvailable()) {
+    // The IRT is already open.  Away we go.
+    SendStart(nacl_browser->IrtFile());
+  } else {
+    // We're waiting for the IRT to be open.
+    nacl_browser->MakeIrtAvailable(base::Bind(&NaClProcessHost::IrtReady,
+                                              weak_factory_.GetWeakPtr()));
+  }
+}
+
+// The asynchronous attempt to get the IRT file open has completed.
+void NaClProcessHost::IrtReady() {
+  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
+
+  if (nacl_browser->IrtAvailable()) {
+    SendStart(nacl_browser->IrtFile());
+  } else {
+    LOG(ERROR) << "Cannot launch NaCl process after IRT file open failed";
     delete this;
   }
 }
 
-void NaClProcessHost::OpenIrtFileDone(base::PlatformFileError error_code,
-                                      base::PassPlatformFile file,
-                                      bool created) {
+static bool SendHandleToSelLdr(
+    base::ProcessHandle processh,
+    nacl::Handle sourceh, bool close_source,
+    std::vector<nacl::FileDescriptor> *handles_for_sel_ldr) {
+#if defined(OS_WIN)
+  HANDLE channel;
+  int flags = DUPLICATE_SAME_ACCESS;
+  if (close_source)
+    flags |= DUPLICATE_CLOSE_SOURCE;
+  if (!DuplicateHandle(GetCurrentProcess(),
+                       reinterpret_cast<HANDLE>(sourceh),
+                       processh,
+                       &channel,
+                       0,  // Unused given DUPLICATE_SAME_ACCESS.
+                       FALSE,
+                       flags)) {
+    LOG(ERROR) << "DuplicateHandle() failed";
+    return false;
+  }
+  handles_for_sel_ldr->push_back(
+      reinterpret_cast<nacl::FileDescriptor>(channel));
+#else
+  nacl::FileDescriptor channel;
+  channel.fd = sourceh;
+  channel.auto_close = close_source;
+  handles_for_sel_ldr->push_back(channel);
+#endif
+  return true;
+}
+
+void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
+  CHECK_NE(irt_file, base::kInvalidPlatformFileValue);
+
   std::vector<nacl::FileDescriptor> handles_for_renderer;
   base::ProcessHandle nacl_process_handle;
-  bool have_irt_file = false;
-  if (base::PLATFORM_FILE_OK == error_code) {
-    internal_->sockets_for_sel_ldr.push_back(file.ReleaseValue());
-    have_irt_file = true;
-  } else {
-    LOG(ERROR) << "Failed to open the NaCl IRT library file";
-  }
 
   for (size_t i = 0; i < internal_->sockets_for_renderer.size(); i++) {
 #if defined(OS_WIN)
@@ -347,28 +484,18 @@ void NaClProcessHost::OpenIrtFileDone(base::PlatformFileError error_code,
 
   std::vector<nacl::FileDescriptor> handles_for_sel_ldr;
   for (size_t i = 0; i < internal_->sockets_for_sel_ldr.size(); i++) {
-#if defined(OS_WIN)
-    HANDLE channel;
-    if (!DuplicateHandle(GetCurrentProcess(),
-                         reinterpret_cast<HANDLE>(
-                             internal_->sockets_for_sel_ldr[i]),
-                         handle(),
-                         &channel,
-                         0,  // Unused given DUPLICATE_SAME_ACCESS.
-                         FALSE,
-                         DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-      LOG(ERROR) << "DuplicateHandle() failed";
+    if (!SendHandleToSelLdr(handle(),
+                            internal_->sockets_for_sel_ldr[i], true,
+                            &handles_for_sel_ldr)) {
       delete this;
       return;
     }
-    handles_for_sel_ldr.push_back(
-        reinterpret_cast<nacl::FileDescriptor>(channel));
-#else
-    nacl::FileDescriptor channel;
-    channel.fd = internal_->sockets_for_sel_ldr[i];
-    channel.auto_close = true;
-    handles_for_sel_ldr.push_back(channel);
-#endif
+  }
+
+  // Send over the IRT file handle.  We don't close our own copy!
+  if (!SendHandleToSelLdr(handle(), irt_file, false, &handles_for_sel_ldr)) {
+    delete this;
+    return;
   }
 
 #if defined(OS_MACOSX)
@@ -393,7 +520,7 @@ void NaClProcessHost::OpenIrtFileDone(base::PlatformFileError error_code,
   handles_for_sel_ldr.push_back(memory_fd);
 #endif
 
-  Send(new NaClProcessMsg_Start(handles_for_sel_ldr, have_irt_file));
+  Send(new NaClProcessMsg_Start(handles_for_sel_ldr));
   internal_->sockets_for_sel_ldr.clear();
 }
 

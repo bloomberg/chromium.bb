@@ -47,7 +47,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   virtual ~ChromeRenderMessageFilter();
 
   void OnLaunchNaCl(const std::wstring& url,
-                    int channel_descriptor,
+                    int socket_count,
                     IPC::Message* reply_msg);
   void OnDnsPrefetch(const std::vector<std::string>& hostnames);
   void OnRendererHistograms(int sequence_number,

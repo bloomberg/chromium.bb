@@ -22,8 +22,7 @@ class NaClListener : public IPC::Channel::Listener {
   void set_debug_enabled(bool value) {debug_enabled_ = value;}
 
  private:
-  void OnStartSelLdr(std::vector<nacl::FileDescriptor> handles,
-                     bool have_irt_file);
+  void OnStartSelLdr(std::vector<nacl::FileDescriptor> handles);
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
   bool debug_enabled_;
