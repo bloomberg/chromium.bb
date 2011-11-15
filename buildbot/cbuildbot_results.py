@@ -42,8 +42,8 @@ class Results:
     return cls._previous.get(name)
 
   @classmethod
-  def Success(cls):
-    """Return true if all stages so far have passed.
+  def BuildSucceededSoFar(cls):
+    """Return true if all stages so far have passing states.
 
     This method returns true if all was successful or forgiven.
     """
@@ -55,11 +55,13 @@ class Results:
     return True
 
   @classmethod
-  def WasStageSuccessfulOrSkipped(cls, name):
+  def WasStageSuccessful(cls, name):
     """Return true stage passed."""
+    cros_lib.Info('Checking for %s' % name)
     for entry in cls._results_log:
       entry, result, _, _ = entry
       if entry == name:
+        cros_lib.Info('Found %s' % result)
         return result == cls.SUCCESS
 
     return False
@@ -81,14 +83,13 @@ class Results:
 
   @classmethod
   def UpdateResult(cls, name, result, description=None):
-    """Updates a stage result.with a different result.
+    """Updates a stage result with a different result.
 
        Args:
          name: The name of the stage
          result:
-           Result should be one of:
-             Results.SUCCESS if the stage was successful.
-             The exception the stage errored with.
+           Result should be Results.SUCCESS if the stage was successful
+             otherwise the exception the stage errored with.
           description:
            The textual backtrace of the exception, or None
     """

@@ -173,8 +173,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'ManifestCheckout')
 
     stages.ManifestVersionedSyncStage.InitializeManifestManager()
-    self.manager.GetNextBuildSpec(force_version=None,
-        latest=True).AndReturn(self.next_version)
+    self.manager.GetNextBuildSpec().AndReturn(self.next_version)
 
     commands.ManifestCheckout(self.build_root,
                               self.TRACKING_BRANCH,
@@ -1181,15 +1180,15 @@ class BuildStagesResultsTest(unittest.TestCase):
     results_lib.Results.Clear()
     results_lib.Results.Record('Pass', results_lib.Results.SUCCESS)
 
-    self.assertTrue(results_lib.Results.Success())
+    self.assertTrue(results_lib.Results.BuildSucceededSoFar())
 
     results_lib.Results.Record('Fail', self.failException, time=1)
 
-    self.assertFalse(results_lib.Results.Success())
+    self.assertFalse(results_lib.Results.BuildSucceededSoFar())
 
     results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS)
 
-    self.assertFalse(results_lib.Results.Success())
+    self.assertFalse(results_lib.Results.BuildSucceededSoFar())
 
   def testStagesReportSuccess(self):
     """Tests Stage reporting."""
@@ -1350,7 +1349,7 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     results_lib.Results.Clear()
     results_lib.Results.RestoreCompletedStages(
-        StringIO.StringIO('Pass\n'))
+        StringIO.StringIO(self._PassString()))
 
     previous = results_lib.Results.GetPrevious()
     self.assertEqual(previous.keys(), ['Pass'])

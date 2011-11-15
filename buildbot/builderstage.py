@@ -217,6 +217,10 @@ class BuilderStage(object):
     buildroot, board = self._options.buildroot, self._build_config['board']
     return os.path.join(buildroot, 'src', 'build', 'images', board, pointer)
 
+  def HandleSkip(self):
+    """Run if the stage is skipped."""
+    pass
+
   def Run(self):
     """Have the builder execute the stage."""
     if self.option_name and not getattr(self._options, self.option_name):
@@ -226,6 +230,7 @@ class BuilderStage(object):
     record = results_lib.Results.PreviouslyCompletedRecord(self.name)
     if record:
       self._PrintLoudly('Skipping Stage %s' % self.name)
+      self.HandleSkip()
       results_lib.Results.Record(self.name, results_lib.Results.SUCCESS, None,
                                  float(record[2]))
       return

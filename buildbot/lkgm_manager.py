@@ -155,12 +155,12 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     self.compare_versions_fn = _LKGMCandidateInfo.VersionCompare
     self.build_type = build_type
     if self.build_type == constants.CHROME_PFQ_TYPE:
-      self.lkgm_subdir = self.CHROME_PFQ_SUBDIR
+      self.rel_working_dir = self.CHROME_PFQ_SUBDIR
     elif self.build_type == constants.COMMIT_QUEUE_TYPE:
-      self.lkgm_subdir = self.COMMIT_QUEUE_SUBDIR
+      self.rel_working_dir = self.COMMIT_QUEUE_SUBDIR
     else:
       assert self.build_type, constants.PFQ_TYPE
-      self.lkgm_subdir = self.LKGM_SUBDIR
+      self.rel_working_dir = self.LKGM_SUBDIR
 
   def _RunLambdaWithTimeout(self, function_to_run, use_long_timeout=False):
     """Runs function_to_run until it returns a value or timeout is reached."""
@@ -183,13 +183,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     return function_success
 
-  def _LoadSpecs(self, version_info):
-    """Loads the specifications from the working directory.
-    Args:
-      version_info: Info class for version information of cros.
-    """
-    super(LKGMManager, self)._LoadSpecs(version_info, self.lkgm_subdir)
-
   def _GetLatestCandidateByVersion(self, version_info):
     """Returns the latest lkgm candidate corresponding to the version file.
     Args:
@@ -205,6 +198,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     return _LKGMCandidateInfo(version_info.VersionString())
 
   def AddPatchesToManifest(self, manifest, patches):
+    """Adds list of patches to given manifest specified by manifest_path."""
     manifest_dom = minidom.parse(manifest)
     for patch in patches:
       pending_commit = manifest_dom.createElement(PALADIN_COMMIT_ELEMENT)
@@ -216,10 +210,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     with open(manifest, 'w+') as manifest_file:
       manifest_dom.writexml(manifest_file)
 
-  def CreateNewCandidate(self, force_version=None, patches=None, retries=3):
+  def CreateNewCandidate(self, patches=None, retries=3):
     """Gets the version number of the next build spec to build.
       Args:
-        force_version: Forces us to use this version.
         patches: An array of GerritPatches that should be built with this
           manifest as part of a Commit Queue run.
         retries: Number of retries for updating the status.
@@ -235,9 +228,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         version_info = self._GetCurrentVersionInfo()
         self._LoadSpecs(version_info)
         lkgm_info = self._GetLatestCandidateByVersion(version_info)
-        if force_version:
-          return self.GetLocalManifest(force_version)
-
         self._PrepSpecChanges()
         self.current_version = self._CreateNewBuildSpec(lkgm_info)
         path_to_new_build_spec = self.GetLocalManifest(self.current_version)
@@ -259,10 +249,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     else:
       raise manifest_version.GenerateBuildSpecException(last_error)
 
-  def GetLatestCandidate(self, force_version=None, retries=5):
+  def GetLatestCandidate(self, retries=5):
     """Gets the version number of the next build spec to build.
       Args:
-        force_version: Forces us to use this version.
         retries: Number of retries for updating the status
       Returns:
         Local path to manifest to build or None in case of no need to build.
@@ -274,9 +263,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       version_info = self._GetCurrentVersionInfo()
       self._LoadSpecs(version_info)
       version_to_use = None
-      if force_version:
-        version_to_use = force_version
-      elif self.latest_unprocessed:
+      if self.latest_unprocessed:
         version_to_use = self.latest_unprocessed
       else:
         logging.info('Found nothing new to build, trying again later.')
@@ -289,13 +276,13 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       last_error = None
       for _ in range(0, retries + 1):
         try:
-            logging.debug('Using build spec: %s', self.current_version)
-            commit_message = 'Automatic: Start %s %s' % (self.build_name,
-                                                         self.current_version)
-            self._PrepSpecChanges()
-            self._SetInFlight()
-            self._PushSpecChanges(commit_message)
-            break
+          logging.debug('Using build spec: %s', self.current_version)
+          commit_message = 'Automatic: Start %s %s' % (self.build_name,
+                                                       self.current_version)
+          self._PrepSpecChanges()
+          self._SetInFlight()
+          self._PushSpecChanges(commit_message)
+          break
         except (cros_lib.RunCommandError,
                 manifest_version.GitCommandException) as e:
           err_msg = 'Failed to set LKGM Candidate inflight. error: %s' % e
@@ -318,8 +305,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       for builder in builders_array:
         if builder_statuses.get(builder) not in LKGMManager.STATUS_COMPLETED:
           logging.debug("Checking for builder %s's status" % builder)
-          builder_statuses[builder] = self.GetBuildStatus(
-              builder, self.current_version, version_info)
+          builder_statuses[builder] = self.GetBuildStatus(builder, version_info)
           if builder_statuses[builder] == LKGMManager.STATUS_PASSED:
             num_complete += 1
             logging.info('Builder %s completed with status passed', builder)
@@ -367,10 +353,11 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         return
       except (manifest_version.GitCommandException,
               cros_lib.RunCommandError) as e:
-          last_error = 'Failed to promote manifest. error: %s' % e
-          logging.error(last_error)
-          logging.error('Retrying to promote manifest:  Retry %d/%d' %
-                        (index + 1, retries))
+        last_error = 'Failed to promote manifest. error: %s' % e
+        logging.error(last_error)
+        logging.error('Retrying to promote manifest:  Retry %d/%d' %
+                      (index + 1, retries))
+
     else:
       raise PromoteCandidateException(last_error)
 

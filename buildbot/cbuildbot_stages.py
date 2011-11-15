@@ -131,6 +131,17 @@ class ManifestVersionedSyncStage(SyncStage):
         cbuildbot_config.IsInternalBuild(self._build_config),
         read_only=read_only)
 
+  def HandleSkip(self):
+    """Initializes a manifest manager to the specified version if skipped."""
+    if self._options.force_version:
+      self._ForceVersion(self._options.force_version)
+
+  def _ForceVersion(self, version):
+    """Creates a manifest manager from given version and returns manifest."""
+    self.InitializeManifestManager()
+    return ManifestVersionedSyncStage.manifest_manager.BootstrapFromVersion(
+        version)
+
   def InitializeManifestManager(self):
     """Initializes a manager that manages manifests for associated stages."""
     increment = 'build' if self._tracking_branch == 'master' else 'branch'
@@ -150,13 +161,15 @@ class ManifestVersionedSyncStage(SyncStage):
     """Uses the initialized manifest manager to get the next manifest."""
     assert self.manifest_manager, \
         'Must run GetStageManager before checkout out build.'
-    return self.manifest_manager.GetNextBuildSpec(
-        force_version=self._options.force_version, latest=True)
-
+    return self.manifest_manager.GetNextBuildSpec()
 
   def _PerformStage(self):
-    self.InitializeManifestManager()
-    next_manifest = self.GetNextManifest()
+    if self._options.force_version:
+      next_manifest = self._ForceVersion(self._options.force_version)
+    else:
+      self.InitializeManifestManager()
+      next_manifest = self.GetNextManifest()
+
     if not next_manifest:
       print 'Found no work to do.'
       if ManifestVersionedSyncStage.manifest_manager.DidLastBuildSucceed():
@@ -200,11 +213,9 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
         'Manifest manager instantiated with wrong class.'
 
     if self._build_config['master']:
-      return self.manifest_manager.CreateNewCandidate(
-          force_version=self._options.force_version)
+      return self.manifest_manager.CreateNewCandidate()
     else:
-      return self.manifest_manager.GetLatestCandidate(
-          force_version=self._options.force_version)
+      return self.manifest_manager.GetLatestCandidate()
 
   def _PerformStage(self):
     """Performs normal stage and prints blamelist at end."""
@@ -226,6 +237,18 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
     super(CommitQueueSyncStage, self).__init__(bot_id, options, build_config)
     CommitQueueSyncStage.pool = None
 
+  def HandleSkip(self):
+    """Handles skip and initializes validation pool from manifest."""
+    super(CommitQueueSyncStage, self).HandleSkip()
+    self.SetPoolFromManifest(self.manifest_manager.GetLocalManifest())
+
+  def SetPoolFromManifest(self, manifest):
+    """Sets validation pool based on manifest path passed in."""
+    internal = cbuildbot_config.IsInternalBuild(self._build_config)
+    CommitQueueSyncStage.pool = \
+        validation_pool.ValidationPool.AcquirePoolFromManifest(
+            manifest, internal, self._options.buildnumber, self._options.debug)
+
   def GetNextManifest(self):
     """Gets the next manifest using LKGM logic."""
     assert self.manifest_manager, \
@@ -233,7 +256,6 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
     assert isinstance(self.manifest_manager, lkgm_manager.LKGMManager), \
         'Manifest manager instantiated with wrong class.'
 
-    internal = cbuildbot_config.IsInternalBuild(self._build_config)
     if self._build_config['master']:
       try:
         # In order to acquire a pool, we need an initialized buildroot.
@@ -242,6 +264,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
               self._build_config['git_url'], self._build_root,
               self._tracking_branch).Initialize()
 
+        internal = cbuildbot_config.IsInternalBuild(self._build_config)
         pool = validation_pool.ValidationPool.AcquirePool(
             self._tracking_branch, internal, self._build_root,
             self._options.buildnumber, self._options.debug)
@@ -255,19 +278,19 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
         cros_lib.Warning(str(e))
         return None
 
-      return self.manifest_manager.CreateNewCandidate(
-          force_version=self._options.force_version, patches=self.pool.changes)
+      return self.manifest_manager.CreateNewCandidate(patches=self.pool.changes)
     else:
-      manifest = self.manifest_manager.GetLatestCandidate(
-          force_version=self._options.force_version)
-      CommitQueueSyncStage.pool = \
-          validation_pool.ValidationPool.AcquirePoolFromManifest(
-              manifest, internal, self._options.buildnumber)
+      manifest = self.manifest_manager.GetLatestCandidate()
+      self.SetPoolFromManifest(manifest)
       return manifest
 
   def _PerformStage(self):
     """Performs normal stage and prints blamelist at end."""
-    super(LKGMCandidateSyncStage, self)._PerformStage()
+    if self._options.force_version:
+      self.HandleSkip()
+    else:
+      super(LKGMCandidateSyncStage, self)._PerformStage()
+
     if not self.pool.ApplyPoolIntoRepo(self._build_root):
       print 'No patches applied cleanly.  Found no work to do.'
       sys.exit(0)

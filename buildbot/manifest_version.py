@@ -45,17 +45,17 @@ class GenerateBuildSpecException(Exception):
 
 
 def _GitCleanDirectory(directory):
-    """"Clean git repo chanages.
+  """"Clean git repo chanages.
 
-    raises: GitCommandException: when fails to clean.
-    """
-    try:
-      cros_lib.RunCommand(['git', 'clean', '-d', '-f'], cwd=directory)
-      cros_lib.RunCommand(['git', 'reset', '--hard', 'HEAD'], cwd=directory)
-    except cros_lib.RunCommandError, e:
-      err_msg = 'Failed to clean git "%s" %s' % (directory, e.message)
-      logging.error(err_msg)
-      raise GitCommandException(err_msg)
+  raises: GitCommandException: when fails to clean.
+  """
+  try:
+    cros_lib.RunCommand(['git', 'clean', '-d', '-f'], cwd=directory)
+    cros_lib.RunCommand(['git', 'reset', '--hard', 'HEAD'], cwd=directory)
+  except cros_lib.RunCommandError, e:
+    err_msg = 'Failed to clean git "%s" %s' % (directory, e.message)
+    logging.error(err_msg)
+    raise GitCommandException(err_msg)
 
 
 def PrepForChanges(git_repo, dry_run):
@@ -122,7 +122,6 @@ def _PushGitChanges(git_repo, message, dry_run=True):
   raises: GitCommandException
   """
   try:
-    # TODO(sosa): Move to using cros_lib.GitPushWithRetry.
     remote, push_branch = cros_lib.GetPushBranch(PUSH_BRANCH, cwd=git_repo)
     cros_lib.RunCommand(['git', 'add', '-A'], cwd=git_repo)
     cros_lib.RunCommand(['git', 'commit', '-am', message], cwd=git_repo)
@@ -411,6 +410,7 @@ class BuildSpecsManager(object):
     self.compare_versions_fn = VersionInfo.VersionCompare
 
     self.current_version = None
+    self.rel_working_dir = ''
 
   def _GetMatchingSpecs(self, version_info, directory):
     """Returns the sorted list of buildspecs that match '*.xml in a directory.'
@@ -427,13 +427,14 @@ class BuildSpecsManager(object):
 
     return sorted(matched_manifests, key=self.compare_versions_fn)
 
-  def _LoadSpecs(self, version_info, relative_working_dir=''):
+  def _LoadSpecs(self, version_info, version=None):
     """Loads the specifications from the working directory.
     Args:
       version_info: Info class for version information of cros.
-      relative_working_dir: Optional working directory within buildspecs repo.
+      version: Checks to see if versioned manifest exists, if it does, does
+        not re-check out repository.
     """
-    working_dir = os.path.join(self._TMP_MANIFEST_DIR, relative_working_dir)
+    working_dir = os.path.join(self._TMP_MANIFEST_DIR, self.rel_working_dir)
     dir_pfx = version_info.DirPrefix()
     self.specs_for_builder = os.path.join(working_dir, 'build-name',
                                           '%(builder)s')
@@ -448,10 +449,11 @@ class BuildSpecsManager(object):
 
     # Conservatively grab the latest manifest versions repository.
     # Note:  This is key to some of the Git push logic for non-repos for
-    # local developers.  If this is changed, please revisit PushChanges and
-    # PrepForChanges.
-    _RemoveDirs(self._TMP_MANIFEST_DIR)
-    repository.CloneGitRepo(self._TMP_MANIFEST_DIR, self.manifest_repo)
+    # local developers.  Also note that we don't need to do this if we already
+    # have the version checked out that we are being forced to use.
+    if not version or not os.path.exists(self.GetLocalManifest(version)):
+      _RemoveDirs(self._TMP_MANIFEST_DIR)
+      repository.CloneGitRepo(self._TMP_MANIFEST_DIR, self.manifest_repo)
 
     # Build lists of specs.
     self.all = self._GetMatchingSpecs(version_info, self.all_specs_dir)
@@ -488,11 +490,11 @@ class BuildSpecsManager(object):
 
     if self.unprocessed: self.latest_unprocessed = self.unprocessed[-1]
 
-  def _GetCurrentVersionInfo(self):
+  def _GetCurrentVersionInfo(self, sync=True):
     """Returns the current version info from the version file.
     Args:
     """
-    self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST)
+    if sync: self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST)
     version_file_path = self.cros_source.GetRelativePath(constants.VERSION_FILE)
     return VersionInfo(version_file=version_file_path,
                        incr_type=self.incr_type)
@@ -537,7 +539,7 @@ class BuildSpecsManager(object):
     """Returns True if this is our first build or the last build succeeded."""
     return not self.latest or self.latest in self.passed
 
-  def GetBuildStatus(self, builder, version, version_info):
+  def GetBuildStatus(self, builder, version_info):
     """Given a builder, version, verison_info returns the build status."""
     xml_name = self.current_version + '.xml'
     dir_pfx = version_info.DirPrefix()
@@ -558,19 +560,30 @@ class BuildSpecsManager(object):
     else:
       return None
 
-  def GetLocalManifest(self, version):
-    """Return path to local copy of manifest given by version."""
+  def GetLocalManifest(self, version=None):
+    """Return path to local copy of manifest given by version.
+
+    Returns path of version.  By default if version is not set, returns the path
+    of the current version.
+    """
     if version:
       return os.path.join(self.all_specs_dir, version + '.xml')
+    elif self.current_version:
+      return os.path.join(self.all_specs_dir, self.current_version + '.xml')
 
     return None
 
-  def GetNextBuildSpec(self, latest=False, force_version=None,
-                       retries=5):
+  def BootstrapFromVersion(self, version):
+    """Initializes spec data from release version and returns path to manifest.
+    """
+    version_info = self._GetCurrentVersionInfo(sync=False)
+    self._LoadSpecs(version_info, version=version)
+    self.current_version = version
+    return self.GetLocalManifest(self.current_version)
+
+  def GetNextBuildSpec(self, retries=5):
     """Gets the version number of the next build spec to build.
       Args:
-        latest: Whether we need to handout the latest build. Default: False
-        force_version: Forces us to use this version.
         retries: Number of retries for updating the status
       Returns:
         Local path to manifest to build or None in case of no need to build.
@@ -583,17 +596,11 @@ class BuildSpecsManager(object):
         version_info = self._GetCurrentVersionInfo()
         logging.debug('Using version %s' % version_info.VersionString())
         self._LoadSpecs(version_info)
-        if force_version:
-          # We don't need to re-set inflight.
-          return self.GetLocalManifest(force_version)
-
         self._PrepSpecChanges()
         if not self.unprocessed:
           self.current_version = self._CreateNewBuildSpec(version_info)
-        elif latest:
-          self.current_version = self.latest_unprocessed
         else:
-          self.current_version = self.unprocessed[0]
+          self.current_version = self.latest_unprocessed
 
         if self.current_version:
           logging.debug('Using build spec: %s', self.current_version)

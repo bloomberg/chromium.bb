@@ -342,8 +342,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
 
   def NotestGetNextBuildSpec(self):
     """Meta test.  Re-enable if you want to use it to do a big test."""
-    print self.manager.GetNextBuildSpec(self.version_file, latest=True,
-                                        retries=0)
+    print self.manager.GetNextBuildSpec(retries=0)
     print self.manager.UpdateStatus('pass')
 
   def tearDown(self):

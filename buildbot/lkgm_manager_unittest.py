@@ -111,7 +111,7 @@ class LKGMManagerTest(mox.MoxTestBase):
 
     self.manager.all_specs_dir = '/LKGM/path'
     self.manager.specs_for_builder = os.path.join(self.manager.GetManifestDir(),
-                                                  self.manager.lkgm_subdir,
+                                                  self.manager.rel_working_dir,
                                                   'build-name', '%(builder)s')
     self.manager.SLEEP_TIMEOUT = 1
 
@@ -300,7 +300,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.manager.current_version = '1.2.4-rc21'
     dir_pfx = CHROME_BRANCH
     manifest = os.path.join(self.manager._TMP_MANIFEST_DIR,
-                            self.manager.lkgm_subdir, 'buildspecs',
+                            self.manager.rel_working_dir, 'buildspecs',
                             dir_pfx, '1.2.4-rc21.xml')
     manifest_version_unittest.TouchFile(manifest)
     return manifest, dir_pfx
@@ -331,10 +331,10 @@ class LKGMManagerTest(mox.MoxTestBase):
     manifest, dir_pfx = self._CreateManifest()
     print manifest, dir_pfx
     for_build1 = os.path.join(self.manager._TMP_MANIFEST_DIR,
-                              self.manager.lkgm_subdir,
+                              self.manager.rel_working_dir,
                               'build-name', 'build1')
     for_build2 = os.path.join(self.manager._TMP_MANIFEST_DIR,
-                              self.manager.lkgm_subdir,
+                              self.manager.rel_working_dir,
                               'build-name', 'build2')
 
     self._FinishBuild(manifest, for_build1, dir_pfx, 'fail')
@@ -355,10 +355,10 @@ class LKGMManagerTest(mox.MoxTestBase):
 
     manifest, dir_pfx = self._CreateManifest()
     for_build1 = os.path.join(self.manager._TMP_MANIFEST_DIR,
-                              self.manager.lkgm_subdir,
+                              self.manager.rel_working_dir,
                               'build-name', 'build1')
     for_build2 = os.path.join(self.manager._TMP_MANIFEST_DIR,
-                              self.manager.lkgm_subdir,
+                              self.manager.rel_working_dir,
                               'build-name', 'build2')
 
     self._FinishBuild(manifest, for_build1, dir_pfx, 'fail')
@@ -380,10 +380,10 @@ class LKGMManagerTest(mox.MoxTestBase):
 
     manifest, dir_pfx = self._CreateManifest()
     for_build1 = os.path.join(self.manager._TMP_MANIFEST_DIR,
-                              self.manager.lkgm_subdir,
+                              self.manager.rel_working_dir,
                               'build-name', 'build1')
     for_build2 = os.path.join(self.manager._TMP_MANIFEST_DIR,
-                              self.manager.lkgm_subdir,
+                              self.manager.rel_working_dir,
                               'build-name', 'build2')
 
     self._FinishBuild(manifest, for_build1, dir_pfx, 'fail', wait=3)

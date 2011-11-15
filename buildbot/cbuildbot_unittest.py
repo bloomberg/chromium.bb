@@ -77,7 +77,7 @@ class RunBuildStagesTest(mox.MoxTestBase):
       del os.environ['CHROMEOS_OFFICIAL']
 
     result = self.mox.CreateMock(cros_lib.CommandResult)
-    result.error_code = 0
+    result.returncode = 0
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
     cros_lib.RunCommand(mox.IgnoreArg(), cwd=self.buildroot,
                         error_code_ok=True).AndReturn(result)
@@ -107,7 +107,7 @@ class RunBuildStagesTest(mox.MoxTestBase):
       del os.environ['CHROMEOS_OFFICIAL']
 
     result = self.mox.CreateMock(cros_lib.CommandResult)
-    result.error_code = 0
+    result.returncode = 0
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
     cros_lib.RunCommand(mox.IgnoreArg(), cwd=self.buildroot,
                         error_code_ok=True).AndReturn(result)

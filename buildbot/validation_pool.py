@@ -124,7 +124,7 @@ class ValidationPool(object):
     Raises:
       TreeIsClosedException: if the tree is closed.
     """
-    if cls._IsTreeOpen():
+    if cls._IsTreeOpen() or dryrun:
       pool = ValidationPool(internal, build_number, dryrun)
       pool.gerrit_helper = gerrit_helper.GerritHelper(internal)
       raw_changes = pool.gerrit_helper.GrabChangesReadyForCommit(branch)
@@ -135,7 +135,7 @@ class ValidationPool(object):
       raise TreeIsClosedException()
 
   @classmethod
-  def AcquirePoolFromManifest(cls, manifest, internal, build_number):
+  def AcquirePoolFromManifest(cls, manifest, internal, build_number, dryrun):
     """Acquires the current pool from a given manifest.
 
     Args:
@@ -145,7 +145,7 @@ class ValidationPool(object):
     Returns:
       ValidationPool object.
     """
-    pool = ValidationPool(internal, build_number, False)
+    pool = ValidationPool(internal, build_number, dryrun)
     pool.gerrit_helper = gerrit_helper.GerritHelper(internal)
     manifest_dom = minidom.parse(manifest)
     pending_commits = manifest_dom.getElementsByTagName(
@@ -218,7 +218,8 @@ class ValidationPool(object):
           if change in changes_that_failed_to_apply_to_tot:
             break
 
-          change.Apply(directory, trivial=True)
+          # If we are running in debug mode, be more lenient.
+          change.Apply(directory, trivial=not self.dryrun)
           changes_applied.add(change)
         except cros_patch.ApplyPatchException as e:
           if e.type == cros_patch.ApplyPatchException.TYPE_REBASE_TO_TOT:

@@ -124,7 +124,7 @@ def _PreProcessPatches(gerrit_patches, local_patches, tracking_branch):
 
     if local_patches:
       local_patch_info = cros_patch.PrepareLocalPatches(local_patches,
-                                                   tracking_branch)
+                                                        tracking_branch)
 
   except cros_patch.PatchException as e:
     cros_lib.Die(str(e))
@@ -213,19 +213,22 @@ class Builder(object):
 
   def Initialize(self):
     """Runs through the initialization steps of an actual build."""
-    self.gerrit_patches, self.local_patches = _PreProcessPatches(
-      self.options.gerrit_patches, self.options.local_patches,
-      self.tracking_branch)
+    if self.options.resume and os.path.exists(self.completed_stages_file):
+      with open(self.completed_stages_file, 'r') as load_file:
+        results_lib.Results.RestoreCompletedStages(load_file)
+
+    # We only want to do this if we need to patch changes.
+    if not results_lib.Results.GetPrevious().get(
+        self._GetStageInstance(stages.PatchChangesStage, None, None).name):
+      self.gerrit_patches, self.local_patches = _PreProcessPatches(
+          self.options.gerrit_patches, self.options.local_patches,
+          self.tracking_branch)
 
     bs.BuilderStage.SetTrackingBranch(self.tracking_branch)
 
     # Check branch matching early.
     if _IsIncrementalBuild(self.options.buildroot, self.options.clobber):
       _CheckBuildRootBranch(self.options.buildroot, self.tracking_branch)
-
-    if self.options.resume and os.path.exists(self.completed_stages_file):
-      with open(self.completed_stages_file, 'r') as load_file:
-        results_lib.Results.RestoreCompletedStages(load_file)
 
     self._RunStage(stages.CleanUpStage)
 
@@ -250,6 +253,7 @@ class Builder(object):
     raise NotImplementedError()
 
   def _WriteCheckpoint(self):
+    """Drops a completed stages file with current state."""
     with open(self.completed_stages_file, 'w+') as save_file:
       results_lib.Results.SaveCompletedStages(save_file)
 
@@ -278,6 +282,11 @@ class Builder(object):
     if self.options.chrome_root:
       args_to_append += ['--chrome_root',
                          os.path.abspath(self.options.chrome_root)]
+
+    if stages.ManifestVersionedSyncStage.manifest_manager:
+      ver = stages.ManifestVersionedSyncStage.manifest_manager.current_version
+      args_to_append += ['--version', ver]
+
 
     # Re-run the command in the buildroot.
     return_obj = cros_lib.RunCommand(
@@ -308,7 +317,7 @@ class Builder(object):
         print '\n\n\n@@@BUILD_STEP Report@@@\n'
         results_lib.Results.Report(sys.stdout, self.archive_url,
                                    self.release_tag)
-        success = results_lib.Results.Success()
+        success = results_lib.Results.BuildSucceededSoFar()
 
     return success
 
@@ -419,7 +428,7 @@ class DistributedBuilder(SimpleBuilder):
                                               was_build_successful)
     completion_stage.Run()
     name = completion_stage.name
-    if not results_lib.Results.WasStageSuccessfulOrSkipped(name):
+    if not results_lib.Results.WasStageSuccessful(name):
       should_publish_changes = False
     else:
       should_publish_changes = (self.build_config['master'] and
