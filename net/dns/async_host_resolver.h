@@ -9,7 +9,6 @@
 #include <list>
 #include <map>
 
-#include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/address_family.h"
 #include "net/base/host_cache.h"
@@ -47,8 +46,6 @@ class NET_EXPORT AsyncHostResolver
                                AddressList* addresses,
                                const BoundNetLog& source_net_log) OVERRIDE;
   virtual void CancelRequest(RequestHandle req_handle) OVERRIDE;
-  virtual void AddObserver(HostResolver::Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(HostResolver::Observer* observer) OVERRIDE;
   virtual void SetDefaultAddressFamily(AddressFamily address_family) OVERRIDE;
   virtual AddressFamily GetDefaultAddressFamily() const OVERRIDE;
   virtual HostCache* GetHostCache() OVERRIDE;
@@ -144,13 +141,6 @@ class NET_EXPORT AsyncHostResolver
   // Also passed to DnsTransaction; it's a dependency injection to aid
   // testing, outside of unit tests, its value is always NULL.
   ClientSocketFactory* factory_;
-
-  // The observers to notify when a request starts/ends.
-  ObserverList<HostResolver::Observer> observers_;
-
-  // Monotonically increasing ID number to assign to the next request.
-  // Observers are the only consumers of this ID number.
-  int next_request_id_;
 
   NetLog* net_log_;
 

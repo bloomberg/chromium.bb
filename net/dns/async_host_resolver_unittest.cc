@@ -10,7 +10,6 @@
 #include "net/base/net_log.h"
 #include "net/base/rand_callback.h"
 #include "net/base/sys_addrinfo.h"
-#include "net/base/test_host_resolver_observer.h"
 #include "net/dns/dns_test_util.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -485,102 +484,6 @@ TEST_F(AsyncHostResolverTest, OverflowQueueWithHighPriorityLookup) {
   rv2 = callback2_.WaitForResult();
   EXPECT_EQ(OK, rv2);
   VerifyAddressList(ip_addresses2_, kPortNum, addrlist2_);
-}
-
-// Test that registering, unregistering, and notifying of observers of
-// resolution start, completion and cancellation (both due to CancelRequest
-// and resolver destruction) work.
-TEST_F(AsyncHostResolverTest, Observers) {
-  TestHostResolverObserver observer;
-  resolver_->AddObserver(&observer);
-
-  int rv0 = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
-                               BoundNetLog());
-  int rv1 = resolver_->Resolve(info1_, &addrlist1_, &callback1_, NULL,
-                               BoundNetLog());
-  // We will cancel this one.
-  HostResolver::RequestHandle req2 = NULL;
-  int rv2 = resolver_->Resolve(info2_, &addrlist2_, &callback2_, &req2,
-                               BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv0);
-  EXPECT_EQ(ERR_IO_PENDING, rv1);
-  EXPECT_EQ(ERR_IO_PENDING, rv2);
-
-  // Cancel lookup 2.
-  resolver_->CancelRequest(req2);
-
-  // Lookup 0 and 1 should succeed.
-  rv0 = callback0_.WaitForResult();
-  EXPECT_EQ(OK, rv0);
-  VerifyAddressList(ip_addresses0_, kPortNum, addrlist0_);
-
-  rv1 = callback1_.WaitForResult();
-  EXPECT_EQ(OK, rv1);
-  VerifyAddressList(ip_addresses1_, kPortNum, addrlist1_);
-
-  // Next lookup should not have finished.
-  MessageLoop::current()->RunAllPending();
-  EXPECT_FALSE(callback2_.have_result());
-
-  // Verify observer calls.
-  EXPECT_EQ(3u, observer.start_log.size());
-  EXPECT_EQ(2u, observer.finish_log.size());
-  EXPECT_EQ(1u, observer.cancel_log.size());
-
-  // Lookup 0 started and finished.
-  EXPECT_TRUE(observer.start_log[0] ==
-              TestHostResolverObserver::StartOrCancelEntry(0, info0_));
-  EXPECT_TRUE(observer.finish_log[0] ==
-              TestHostResolverObserver::FinishEntry(0, true, info0_));
-
-  // Ditto for lookup 1.
-  EXPECT_TRUE(observer.start_log[1] ==
-              TestHostResolverObserver::StartOrCancelEntry(1, info1_));
-  EXPECT_TRUE(observer.finish_log[1] ==
-              TestHostResolverObserver::FinishEntry(1, true, info1_));
-
-  // Lookup 2 was cancelled, hence, failed to finish.
-  EXPECT_TRUE(observer.start_log[2] ==
-              TestHostResolverObserver::StartOrCancelEntry(2, info2_));
-  EXPECT_TRUE(observer.cancel_log[0] ==
-              TestHostResolverObserver::StartOrCancelEntry(2, info2_));
-
-  // Unregister observer.
-  resolver_->RemoveObserver(&observer);
-
-  // We will do lookup 2 again but will not cancel it this time.
-  rv2 = resolver_->Resolve(info2_, &addrlist2_, &callback2_, NULL,
-                           BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv2);
-
-  // Run lookup 2 to completion.
-  rv2 = callback2_.WaitForResult();
-  EXPECT_EQ(OK, rv2);
-  VerifyAddressList(ip_addresses2_, kPortNum, addrlist2_);
-
-  // Observer log should stay the same.
-  EXPECT_EQ(3u, observer.start_log.size());
-  EXPECT_EQ(2u, observer.finish_log.size());
-  EXPECT_EQ(1u, observer.cancel_log.size());
-
-  // Re-register observer.
-  resolver_->AddObserver(&observer);
-
-  // Start lookup 3.
-  int rv3 = resolver_->Resolve(info3_, &addrlist3_, &callback3_, NULL,
-                               BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv3);
-
-  // Destroy the resolver and make sure that observer was notified of just
-  // the resolution start.
-  resolver_.reset();
-
-  EXPECT_EQ(4u, observer.start_log.size()); // Was incremented by 1.
-  EXPECT_EQ(2u, observer.finish_log.size());
-  EXPECT_EQ(2u, observer.cancel_log.size());
-
-  EXPECT_TRUE(observer.start_log[3] ==
-              TestHostResolverObserver::StartOrCancelEntry(4, info3_));
 }
 
 }  // namespace net

@@ -84,14 +84,12 @@ class AsyncHostResolver::Request {
   Request(AsyncHostResolver* resolver,
           const BoundNetLog& source_net_log,
           const BoundNetLog& request_net_log,
-          int id,
           const HostResolver::RequestInfo& info,
           OldCompletionCallback* callback,
           AddressList* addresses)
       : resolver_(resolver),
         source_net_log_(source_net_log),
         request_net_log_(request_net_log),
-        id_(id),
         info_(info),
         callback_(callback),
         addresses_(addresses),
@@ -109,7 +107,6 @@ class AsyncHostResolver::Request {
       resolver_->OnCancel(this);
   }
 
-  int id() const { return id_; }
   int result() const { return result_; }
   const Key& key() const {
     DCHECK(IsValid());
@@ -188,7 +185,6 @@ class AsyncHostResolver::Request {
   AsyncHostResolver* resolver_;
   BoundNetLog source_net_log_;
   BoundNetLog request_net_log_;
-  const int id_;
   const HostResolver::RequestInfo info_;
   Key key_;
   OldCompletionCallback* callback_;
@@ -210,7 +206,6 @@ AsyncHostResolver::AsyncHostResolver(const IPEndPoint& dns_server,
       rand_int_cb_(rand_int_cb),
       cache_(cache),
       factory_(factory),
-      next_request_id_(0),
       net_log_(net_log) {
 }
 
@@ -287,21 +282,10 @@ void AsyncHostResolver::OnStart(Request* request) {
       NetLog::TYPE_ASYNC_HOST_RESOLVER_REQUEST,
       make_scoped_refptr(new RequestParameters(
           request->info(), request->source_net_log().source())));
-
-  FOR_EACH_OBSERVER(
-      HostResolver::Observer, observers_,
-      OnStartResolution(request->id(), request->info()));
 }
 
 void AsyncHostResolver::OnFinish(Request* request, int result) {
   DCHECK(request);
-  bool was_resolved = result == OK;
-
-  FOR_EACH_OBSERVER(
-      HostResolver::Observer, observers_,
-      OnFinishResolutionWithStatus(
-          request->id(), was_resolved, request->info()));
-
   request->request_net_log().EndEventWithNetErrorCode(
       NetLog::TYPE_ASYNC_HOST_RESOLVER_REQUEST, result);
   request->source_net_log().EndEvent(
@@ -310,10 +294,6 @@ void AsyncHostResolver::OnFinish(Request* request, int result) {
 
 void AsyncHostResolver::OnCancel(Request* request) {
   DCHECK(request);
-
-  FOR_EACH_OBSERVER(
-      HostResolver::Observer, observers_,
-      OnCancelResolution(request->id(), request->info()));
 
   request->request_net_log().AddEvent(
       NetLog::TYPE_CANCELLED, NULL);
@@ -332,14 +312,6 @@ void AsyncHostResolver::CancelRequest(RequestHandle req_handle) {
     it->second.remove(request.get());
   else
     pending_requests_[request->priority()].remove(request.get());
-}
-
-void AsyncHostResolver::AddObserver(HostResolver::Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void AsyncHostResolver::RemoveObserver(HostResolver::Observer* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void AsyncHostResolver::SetDefaultAddressFamily(
@@ -415,9 +387,8 @@ AsyncHostResolver::Request* AsyncHostResolver::CreateNewRequest(
     const BoundNetLog& source_net_log) {
   BoundNetLog request_net_log = BoundNetLog::Make(net_log_,
       NetLog::SOURCE_ASYNC_HOST_RESOLVER_REQUEST);
-  int id = next_request_id_++;
   return new Request(
-      this, source_net_log, request_net_log, id, info, callback, addresses);
+      this, source_net_log, request_net_log, info, callback, addresses);
 }
 
 bool AsyncHostResolver::AttachToRequestList(Request* request) {
