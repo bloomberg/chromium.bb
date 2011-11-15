@@ -81,8 +81,10 @@ class JingleSession : public protocol::Session,
   const std::string& local_certificate() const;
   void Init(cricket::Session* cricket_session);
 
-  // Close all the channels and terminate the session.
-  void CloseInternal(int result, bool failed);
+  // Close all the channels and terminate the session. |result|
+  // defines error code that should returned to currently opened
+  // channels. |error| specified new value for error().
+  void CloseInternal(int result, Error error);
 
   bool HasSession(cricket::Session* cricket_session);
   cricket::Session* ReleaseSession();

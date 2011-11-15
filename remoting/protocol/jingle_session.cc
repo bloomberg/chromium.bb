@@ -82,7 +82,7 @@ void JingleSession::Init(cricket::Session* cricket_session) {
       this, &JingleSession::OnSessionError);
 }
 
-void JingleSession::CloseInternal(int result, bool failed) {
+void JingleSession::CloseInternal(int result, Error error) {
   DCHECK(CalledOnValidThread());
 
   if (state_ != FAILED && state_ != CLOSED && !closing_) {
@@ -95,17 +95,34 @@ void JingleSession::CloseInternal(int result, bool failed) {
 
     // Tear down the cricket session, including the cricket transport channels.
     if (cricket_session_) {
-      cricket_session_->Terminate();
+      std::string reason;
+      switch (error) {
+        case OK:
+          reason = cricket::STR_TERMINATE_SUCCESS;
+          break;
+        case SESSION_REJECTED:
+          reason = cricket::STR_TERMINATE_DECLINE;
+          break;
+        case INCOMPATIBLE_PROTOCOL:
+          reason = cricket::STR_TERMINATE_INCOMPATIBLE_PARAMETERS;
+          break;
+        default:
+          reason = cricket::STR_TERMINATE_ERROR;
+      }
+      cricket_session_->TerminateWithReason(reason);
       cricket_session_->SignalState.disconnect(this);
     }
+
+    error_ = error;
 
     // Inform the StateChangeCallback, so calling code knows not to
     // touch any channels. Needs to be done in the end because the
     // session may be deleted in response to this event.
-    if (failed)
+    if (error != OK) {
       SetState(FAILED);
-    else
+    } else {
       SetState(CLOSED);
+    }
   }
 }
 
@@ -236,7 +253,7 @@ const std::string& JingleSession::shared_secret() {
 void JingleSession::Close() {
   DCHECK(CalledOnValidThread());
 
-  CloseInternal(net::ERR_CONNECTION_CLOSED, false);
+  CloseInternal(net::ERR_CONNECTION_CLOSED, OK);
 }
 
 void JingleSession::OnSessionState(
@@ -284,7 +301,8 @@ void JingleSession::OnSessionError(
   DCHECK_EQ(cricket_session_, session);
 
   if (error != cricket::Session::ERROR_NONE) {
-    CloseInternal(net::ERR_CONNECTION_ABORTED, true);
+    // TODO(sergeyu): Report different errors depending on |error|.
+    CloseInternal(net::ERR_CONNECTION_ABORTED, CHANNEL_CONNECTION_ERROR);
   }
 }
 
@@ -357,7 +375,7 @@ void JingleSession::OnAccept() {
   if (cricket_session_->initiator()) {
     if (!InitializeConfigFromDescription(
             cricket_session_->remote_description())) {
-      CloseInternal(net::ERR_CONNECTION_FAILED, true);
+      CloseInternal(net::ERR_CONNECTION_FAILED, INCOMPATIBLE_PROTOCOL);
       return;
     }
   }
@@ -369,7 +387,7 @@ void JingleSession::OnAccept() {
 
 void JingleSession::OnTerminate() {
   DCHECK(CalledOnValidThread());
-  CloseInternal(net::ERR_CONNECTION_ABORTED, false);
+  CloseInternal(net::ERR_CONNECTION_ABORTED, OK);
 }
 
 void JingleSession::AcceptConnection() {
@@ -434,7 +452,7 @@ void JingleSession::OnChannelConnected(
   if (!socket) {
     LOG(ERROR) << "Failed to connect control or events channel. "
                << "Terminating connection";
-    CloseInternal(net::ERR_CONNECTION_CLOSED, true);
+    CloseInternal(net::ERR_CONNECTION_CLOSED, CHANNEL_CONNECTION_ERROR);
     return;
   }
 

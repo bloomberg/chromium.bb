@@ -39,6 +39,7 @@ struct JingleMessage {
     UNKNOWN_REASON,
     SUCCESS,
     DECLINE,
+    GENERAL_ERROR,
     INCOMPATIBLE_PARAMETERS,
   };
 
