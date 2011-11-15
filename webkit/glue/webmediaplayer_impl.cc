@@ -120,6 +120,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       delegate_(delegate),
       media_stream_client_(media_stream_client),
       media_log_(media_log),
+      is_accelerated_compositing_active_(false),
       incremented_externally_allocated_memory_(false) {
   // Saves the current message loop.
   DCHECK(!main_loop_);
@@ -152,8 +153,8 @@ bool WebMediaPlayerImpl::Initialize(
                    AsWeakPtr()));
   }
 
-  UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive",
-                        frame->view()->isAcceleratedCompositingActive());
+  is_accelerated_compositing_active_ =
+      frame->view()->isAcceleratedCompositingActive();
 
   pipeline_ = new media::PipelineImpl(pipeline_message_loop, media_log_);
 
@@ -237,9 +238,43 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   }
 }
 
+namespace {
+
+// Helper enum for reporting scheme histograms.
+enum URLSchemeForHistogram {
+  kUnknownURLScheme,
+  kMissingURLScheme,
+  kHttpURLScheme,
+  kHttpsURLScheme,
+  kFtpURLScheme,
+  kChromeExtensionURLScheme,
+  kJavascriptURLScheme,
+  kFileURLScheme,
+  kBlobURLScheme,
+  kDataURLScheme,
+  kMaxURLScheme = kDataURLScheme  // Must be equal to highest enum value.
+};
+
+URLSchemeForHistogram URLScheme(const GURL& url) {
+  if (!url.has_scheme()) return kMissingURLScheme;
+  if (url.SchemeIs("http")) return kHttpURLScheme;
+  if (url.SchemeIs("https")) return kHttpsURLScheme;
+  if (url.SchemeIs("ftp")) return kFtpURLScheme;
+  if (url.SchemeIs("chrome-extension")) return kChromeExtensionURLScheme;
+  if (url.SchemeIs("javascript")) return kJavascriptURLScheme;
+  if (url.SchemeIs("file")) return kFileURLScheme;
+  if (url.SchemeIs("blob")) return kBlobURLScheme;
+  if (url.SchemeIs("data")) return kDataURLScheme;
+  return kUnknownURLScheme;
+}
+
+}  // anonymous namespace
+
 void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
   DCHECK(proxy_);
+
+  UMA_HISTOGRAM_ENUMERATION("Media.URLScheme", URLScheme(url), kMaxURLScheme);
 
   if (media_stream_client_) {
     bool has_video = false;
@@ -707,6 +742,11 @@ void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
     new_buffered[0].end =
         static_cast<float>(pipeline_->GetMediaDuration().InSecondsF());
     buffered_.swap(new_buffered);
+
+    if (hasVideo()) {
+      UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive",
+                            is_accelerated_compositing_active_);
+    }
 
     if (pipeline_->IsLoaded()) {
       SetNetworkState(WebKit::WebMediaPlayer::Loaded);

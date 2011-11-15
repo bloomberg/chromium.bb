@@ -267,6 +267,8 @@ class WebMediaPlayerImpl
 
   scoped_refptr<media::MediaLog> media_log_;
 
+  bool is_accelerated_compositing_active_;
+
   bool incremented_externally_allocated_memory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
