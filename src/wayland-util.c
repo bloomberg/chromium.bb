@@ -71,6 +71,15 @@ wl_list_empty(struct wl_list *list)
 }
 
 WL_EXPORT void
+wl_list_insert_list(struct wl_list *list, struct wl_list *other)
+{
+	other->next->prev = list;
+	other->prev->next = list->next;
+	list->next->prev = other->prev;
+	list->next = other->next;
+}
+
+WL_EXPORT void
 wl_array_init(struct wl_array *array)
 {
 	memset(array, 0, sizeof *array);
