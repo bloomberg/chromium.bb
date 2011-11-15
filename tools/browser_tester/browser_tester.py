@@ -142,7 +142,7 @@ def ProcessToolLogs(options, logs_dir):
     analyzer = tsan_analyze.TsanAnalyzer('', use_gdb=True)
     logs_wildcard = 'log.*'
   files = glob.glob(os.path.join(logs_dir, logs_wildcard))
-  retcode = analyzer.Report(files)
+  retcode = analyzer.Report(files, options.url)
   return retcode
 
 

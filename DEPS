@@ -12,18 +12,24 @@ vars = {
   # value.  chromebinaries_rev should match LKGR so that we can download
   # the binaries, but sometimes chrome_rev needs to be more recent to get
   # source changes when LKGR is lagging too far back.
-  "chromebinaries_rev": "109032",
-  "chrome_rev": "109032",
-  "chromium_trunk": "http://src.chromium.org/svn/trunk",
-  "googlecode_url": "http://%s.googlecode.com/svn",
+  "chromebinaries_rev": "110106",
+  "chrome_rev": "110106",
+  # NOTE!  These three should match their counterparts in chromium/src/DEPS.
+  # Be sure to update them when updating chrome_rev, above.
+  "gyp_rev": "1088",
+  "jsoncpp_revision": "246",
   "gtest_rev": "560",
-  "gyp_rev": "1085",
+
   "lcov_rev": "54822",
-  "native_client_trunk": "http://src.chromium.org/native_client/trunk",
-  "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
   "python_26_rev": "53573",
   "tools_rev": "7139",
-  "wix_rev": "153",
+
+  # These are URL prefixes rather than revision numbers, so keep them separate.
+  "chromium_trunk": "http://src.chromium.org/svn/trunk",
+  "googlecode_url": "http://%s.googlecode.com/svn",
+  "native_client_trunk": "http://src.chromium.org/native_client/trunk",
+  "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
+  "sourceforge_url": "http://%(repo)s.svn.sourceforge.net/svnroot/%(repo)s",
 }
 
 deps = {
@@ -49,6 +55,16 @@ deps = {
     Var("chromium_trunk") + "/deps/third_party/asan@" + Var("chrome_rev"),
   "third_party/gles2_book":
     Var("chromium_trunk") + "/src/third_party/gles2_book@" + Var("chrome_rev"),
+  "third_party/jsoncpp":
+    Var("chromium_trunk") + "/src/third_party/jsoncpp@" + Var("chrome_rev"),
+  # NOTE! These two for jsoncpp are taken verbatim from chromium/src/DEPS
+  # and must match what is used there.
+  "third_party/jsoncpp/source/include":
+    (Var("sourceforge_url") % {"repo": "jsoncpp"}) +
+        "/trunk/jsoncpp/include@" + Var("jsoncpp_revision"),
+  "third_party/jsoncpp/source/src/lib_json":
+    (Var("sourceforge_url") % {"repo": "jsoncpp"}) +
+        "/trunk/jsoncpp/src/lib_json@" + Var("jsoncpp_revision"),
   "third_party/lcov":
     Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
   "third_party/pyftpdlib":
