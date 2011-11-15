@@ -93,7 +93,7 @@ class ChromeV8Extension : public v8::Extension {
   ExtensionDispatcher* extension_dispatcher_;
 
  private:
-  static const char* GetStringResource(int resource_id);
+  static base::StringPiece GetStringResource(int resource_id);
 
   // Helper to print from bindings javascript.
   static v8::Handle<v8::Value> Print(const v8::Arguments& args);

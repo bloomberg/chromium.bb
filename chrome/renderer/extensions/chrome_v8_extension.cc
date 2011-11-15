@@ -31,9 +31,6 @@ const char kChromeHidden[] = "chromeHidden";
 const char kValidateCallbacks[] = "validateCallbacks";
 #endif
 
-typedef std::map<int, std::string> StringMap;
-static base::LazyInstance<StringMap> g_string_map = LAZY_INSTANCE_INITIALIZER;
-
 static base::LazyInstance<ChromeV8Extension::InstanceSet> g_instances =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -41,16 +38,8 @@ static base::LazyInstance<ChromeV8Extension::InstanceSet> g_instances =
 
 
 // static
-const char* ChromeV8Extension::GetStringResource(int resource_id) {
-  StringMap* strings = g_string_map.Pointer();
-  StringMap::iterator it = strings->find(resource_id);
-  if (it == strings->end()) {
-    it = strings->insert(std::make_pair(
-        resource_id,
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            resource_id).as_string())).first;
-  }
-  return it->second.c_str();
+base::StringPiece ChromeV8Extension::GetStringResource(int resource_id) {
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
 }
 
 // static
@@ -72,9 +61,10 @@ content::RenderView* ChromeV8Extension::GetCurrentRenderView() {
 ChromeV8Extension::ChromeV8Extension(const char* name, int resource_id,
                                      ExtensionDispatcher* extension_dispatcher)
     : v8::Extension(name,
-                    GetStringResource(resource_id),
-                    0,  // num dependencies
-                    NULL),  // dependencies array
+                    GetStringResource(resource_id).data(),
+                    0,     // num dependencies
+                    NULL,  // dependencies array
+                    GetStringResource(resource_id).size()),  // source length
       extension_dispatcher_(extension_dispatcher) {
   g_instances.Get().insert(this);
 }
@@ -84,9 +74,10 @@ ChromeV8Extension::ChromeV8Extension(const char* name, int resource_id,
                                      const char** dependencies,
                                      ExtensionDispatcher* extension_dispatcher)
     : v8::Extension(name,
-                    GetStringResource(resource_id),
+                    GetStringResource(resource_id).data(),
                     dependency_count,
-                    dependencies),
+                    dependencies,
+                    GetStringResource(resource_id).size()),
       extension_dispatcher_(extension_dispatcher) {
   g_instances.Get().insert(this);
 }
