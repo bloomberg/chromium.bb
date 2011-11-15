@@ -236,7 +236,11 @@ bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
 bool DirectoryBackingStore::CheckIntegrity(sqlite3* handle, string* error)
     const {
   sqlite_utils::SQLStatement statement;
-  statement.prepare(handle, "PRAGMA integrity_check(1)");
+  if (SQLITE_OK !=
+      statement.prepare(handle, "PRAGMA integrity_check(1)")) {
+    *error = sqlite3_errmsg(handle);
+    return false;
+  }
   if (SQLITE_ROW != statement.step()) {
     *error =  sqlite3_errmsg(handle);
     return false;
@@ -289,37 +293,7 @@ DirOpenResult DirectoryBackingStore::Load(MetahandlesIndex* entry_bucket,
 
 bool DirectoryBackingStore::BeginLoad() {
   DCHECK(load_dbhandle_ == NULL);
-  bool ret = OpenAndConfigureHandleHelper(&load_dbhandle_);
-  if (ret)
-    return true;
-  // Something's gone wrong. Nuke the database and try again.
-  using ::operator<<;  // For string16.
-  LOG(ERROR) << "Sync database " << backing_filepath_.value()
-             << " corrupt. Deleting and recreating.";
-  file_util::Delete(backing_filepath_, false);
-  bool failed_again = !OpenAndConfigureHandleHelper(&load_dbhandle_);
-
-  // Using failed_again here lets us distinguish from cases where corruption
-  // occurred even when re-opening a fresh directory (they'll go in a separate
-  // double weight histogram bucket).  Failing twice in a row means we disable
-  // sync, so it's useful to see this number separately.
-  int bucket = failed_again ? 2 : 1;
-#if defined(OS_WIN)
-  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedWin", bucket);
-#elif defined(OS_MACOSX)
-  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedMac", bucket);
-#else
-  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedNotWinMac", bucket);
-
-#if defined(OS_CHROMEOS)
-  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedCros", bucket);
-#elif defined(OS_LINUX)
-  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedLinux", bucket);
-#else
-  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedOther", bucket);
-#endif  // OS_LINUX && !OS_CHROMEOS
-#endif  // OS_WIN
-  return !failed_again;
+  return OpenAndConfigureHandleHelper(&load_dbhandle_);
 }
 
 void DirectoryBackingStore::EndLoad() {
