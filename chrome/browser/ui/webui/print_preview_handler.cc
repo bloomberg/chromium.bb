@@ -50,6 +50,7 @@
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
 #include "printing/page_range.h"
+#include "printing/page_size_margins.h"
 #include "printing/print_settings.h"
 #include "unicode/ulocdata.h"
 
@@ -95,6 +96,17 @@ void ReportPrintSettingHistogram(enum PrintSettingsBuckets setting) {
   UMA_HISTOGRAM_ENUMERATION("PrintPreview.PrintSettings", setting,
                             PRINT_SETTINGS_BUCKET_BOUNDARY);
 }
+
+// Name of a dictionary fielad holdong cloud print related data;
+const char kCloudPrintData[] = "cloudPrintData";
+// Name of a dictionary field holding the initiator tab title.
+const char kInitiatorTabTitle[] = "initiatorTabTitle";
+// Name of a dictionary field holding the measurement system according to the
+// locale.
+const char kMeasurementSystem[] = "measurementSystem";
+// Name of a dictionary field holding the number format according to the locale.
+const char kNumberFormat[] = "numberFormat";
+
 
 // Get the print job settings dictionary from |args|. The caller takes
 // ownership of the returned DictionaryValue. Returns NULL on failure.
@@ -206,6 +218,8 @@ printing::ColorModels PrintPreviewHandler::last_used_color_model_ =
     printing::UNKNOWN_COLOR_MODEL;
 printing::MarginType PrintPreviewHandler::last_used_margins_type_ =
     printing::DEFAULT_MARGINS;
+printing::PageSizeMargins*
+    PrintPreviewHandler::last_used_page_size_margins_ = NULL;
 
 PrintPreviewHandler::PrintPreviewHandler()
     : print_backend_(printing::PrintBackend::CreateInstance(NULL)),
@@ -222,9 +236,6 @@ PrintPreviewHandler::~PrintPreviewHandler() {
 }
 
 void PrintPreviewHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("getDefaultPrinter",
-      base::Bind(&PrintPreviewHandler::HandleGetDefaultPrinter,
-                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("getPrinters",
       base::Bind(&PrintPreviewHandler::HandleGetPrinters,
                  base::Unretained(this)));
@@ -264,13 +275,9 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("saveLastPrinter",
       base::Bind(&PrintPreviewHandler::HandleSaveLastPrinter,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("getInitiatorTabTitle",
-      base::Bind(&PrintPreviewHandler::HandleGetInitiatorTabTitle,
+  web_ui_->RegisterMessageCallback("getInitialSettings",
+      base::Bind(&PrintPreviewHandler::HandleGetInitialSettings,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("getNumberFormatAndMeasurementSystem",
-      base::Bind(
-          &PrintPreviewHandler::HandleGetNumberFormatAndMeasurementSystem,
-          base::Unretained(this)));
 }
 
 TabContentsWrapper* PrintPreviewHandler::preview_tab_wrapper() const {
@@ -278,16 +285,6 @@ TabContentsWrapper* PrintPreviewHandler::preview_tab_wrapper() const {
 }
 TabContents* PrintPreviewHandler::preview_tab() const {
   return web_ui_->tab_contents();
-}
-
-void PrintPreviewHandler::HandleGetDefaultPrinter(const ListValue* /*args*/) {
-  scoped_refptr<PrintSystemTaskProxy> task =
-      new PrintSystemTaskProxy(AsWeakPtr(),
-                               print_backend_.get(),
-                               has_logged_printers_count_);
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&PrintSystemTaskProxy::GetDefaultPrinter, task.get()));
 }
 
 void PrintPreviewHandler::HandleGetPrinters(const ListValue* /*args*/) {
@@ -397,10 +394,19 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   last_used_color_model_ = static_cast<printing::ColorModels>(color_model);
 
   // Storing last used margin settings.
-  int margin_type;
-  if (!settings->GetInteger(printing::kSettingMarginsType, &margin_type))
-    margin_type = printing::DEFAULT_MARGINS;
-  last_used_margins_type_ = static_cast<printing::MarginType>(margin_type);
+  bool is_modifiable;
+  settings->GetBoolean(printing::kSettingPreviewModifiable, &is_modifiable);
+  if (is_modifiable) {
+    int margin_type;
+    if (!settings->GetInteger(printing::kSettingMarginsType, &margin_type))
+      margin_type = printing::DEFAULT_MARGINS;
+    last_used_margins_type_ = static_cast<printing::MarginType>(margin_type);
+    if (last_used_margins_type_ == printing::CUSTOM_MARGINS) {
+      if (!last_used_page_size_margins_)
+        last_used_page_size_margins_ = new printing::PageSizeMargins();
+      getCustomMarginsFromJobSettings(*settings, last_used_page_size_margins_);
+    }
+  }
 
   bool print_to_pdf = false;
   settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
@@ -613,32 +619,67 @@ void PrintPreviewHandler::ReportStats() {
                        manage_printers_dialog_request_count_);
 }
 
-void PrintPreviewHandler::HandleGetInitiatorTabTitle(
-    const ListValue* /*args*/) {
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
-  base::StringValue tab_title(print_preview_ui->initiator_tab_title());
-  web_ui_->CallJavascriptFunction("setInitiatorTabTitle", tab_title);
-}
-
-void PrintPreviewHandler::HandleGetNumberFormatAndMeasurementSystem(
-    const ListValue* /*args*/) {
+void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
+    base::DictionaryValue* settings) {
 
   // Getting the measurement system based on the locale.
   UErrorCode errorCode = U_ZERO_ERROR;
   const char* locale = g_browser_process->GetApplicationLocale().c_str();
-  UMeasurementSystem measurement_system =
-      ulocdata_getMeasurementSystem(locale, &errorCode);
-  if (errorCode > U_ZERO_ERROR || measurement_system == UMS_LIMIT)
-    measurement_system = UMS_SI;
+  UMeasurementSystem system = ulocdata_getMeasurementSystem(locale, &errorCode);
+  if (errorCode > U_ZERO_ERROR || system == UMS_LIMIT)
+    system = UMS_SI;
 
-  // Getting the number formatting based on the locale.
-  StringValue number_format(base::FormatDouble(123456.78, 2));
-  base::FundamentalValue system(measurement_system);
+  // Getting the number formatting based on the locale and writing to
+  // dictionary.
+  settings->SetString(kNumberFormat, base::FormatDouble(123456.78, 2));
+  settings->SetInteger(kMeasurementSystem, system);
+}
 
-  web_ui_->CallJavascriptFunction(
-      "print_preview.setNumberFormatAndMeasurementSystem",
-      number_format,
-      system);
+void PrintPreviewHandler::GetLastUsedMarginSettings(
+    base::DictionaryValue* custom_margins) {
+  custom_margins->SetInteger(printing::kSettingMarginsType,
+                             PrintPreviewHandler::last_used_margins_type_);
+  if (last_used_page_size_margins_) {
+    custom_margins->SetDouble(printing::kSettingMarginTop,
+                              last_used_page_size_margins_->margin_top);
+    custom_margins->SetDouble(printing::kSettingMarginBottom,
+                              last_used_page_size_margins_->margin_bottom);
+    custom_margins->SetDouble(printing::kSettingMarginLeft,
+                              last_used_page_size_margins_->margin_left);
+    custom_margins->SetDouble(printing::kSettingMarginRight,
+                              last_used_page_size_margins_->margin_right);
+  }
+}
+
+void PrintPreviewHandler::HandleGetInitialSettings(const ListValue* /*args*/) {
+  scoped_refptr<PrintSystemTaskProxy> task =
+      new PrintSystemTaskProxy(AsWeakPtr(),
+                               print_backend_.get(),
+                               has_logged_printers_count_);
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&PrintSystemTaskProxy::GetDefaultPrinter, task.get()));
+}
+
+void PrintPreviewHandler::SendInitialSettings(
+    const std::string& default_printer,
+    const std::string& cloud_print_data) {
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+
+  base::DictionaryValue initial_settings;
+  initial_settings.SetString(kInitiatorTabTitle,
+                             print_preview_ui->initiator_tab_title());
+  initial_settings.SetBoolean(printing::kSettingPreviewModifiable,
+                              print_preview_ui->source_is_modifiable());
+  initial_settings.SetString(printing::kSettingPrinterName,
+                             default_printer);
+  initial_settings.SetString(kCloudPrintData, cloud_print_data);
+
+  if (print_preview_ui->source_is_modifiable()) {
+    GetLastUsedMarginSettings(&initial_settings);
+    GetNumberFormatAndMeasurementSystem(&initial_settings);
+  }
+  web_ui_->CallJavascriptFunction("setInitialSettings", initial_settings);
 }
 
 void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {
@@ -655,17 +696,6 @@ void PrintPreviewHandler::SendPrinterCapabilities(
   VLOG(1) << "Get printer capabilities finished";
   web_ui_->CallJavascriptFunction("updateWithPrinterCapabilities",
                                   settings_info);
-}
-
-void PrintPreviewHandler::SendDefaultPrinter(
-    const StringValue& default_printer,
-    const StringValue& cloud_print_data) {
-  base::FundamentalValue margins_type(
-      PrintPreviewHandler::last_used_margins_type_);
-  web_ui_->CallJavascriptFunction("setDefaultPrinter",
-                                  default_printer,
-                                  cloud_print_data,
-                                  margins_type);
 }
 
 void PrintPreviewHandler::SetupPrinterList(const ListValue& printers) {

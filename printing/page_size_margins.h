@@ -5,6 +5,10 @@
 #ifndef PRINTING_PAGE_SIZE_MARGINS_H_
 #define PRINTING_PAGE_SIZE_MARGINS_H_
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace printing {
 
 // Struct that holds margin and content area sizes of a page. Units are
@@ -18,7 +22,9 @@ struct PageSizeMargins {
   double margin_left;
 };
 
+void getCustomMarginsFromJobSettings(const base::DictionaryValue& settings,
+                                     PageSizeMargins* page_size_margins);
+
 }  // namespace printing
 
 #endif  // PRINTING_PAGE_SIZE_MARGINS_H_
-

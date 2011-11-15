@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "printing/page_setup.h"
+#include "printing/page_size_margins.h"
 #include "printing/print_settings_initializer.h"
 
 namespace printing {
@@ -62,27 +63,15 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
   settings_.margin_type = static_cast<MarginType>(margin_type);
 
   if (margin_type == CUSTOM_MARGINS) {
-    double top_margin_in_points = 0;
-    double bottom_margin_in_points = 0;
-    double left_margin_in_points = 0;
-    double right_margin_in_points = 0;
-    DictionaryValue* custom_margins;
-    if (!job_settings.GetDictionary(kSettingMarginsCustom, &custom_margins) ||
-        !custom_margins->GetDouble(kSettingMarginTop, &top_margin_in_points) ||
-        !custom_margins->GetDouble(kSettingMarginBottom,
-                                   &bottom_margin_in_points) ||
-        !custom_margins->GetDouble(kSettingMarginLeft,
-                                   &left_margin_in_points) ||
-        !custom_margins->GetDouble(kSettingMarginRight,
-                                   &right_margin_in_points)) {
-      NOTREACHED();
-    }
+    printing::PageSizeMargins page_size_margins;
+    getCustomMarginsFromJobSettings(job_settings, &page_size_margins);
+
     PageMargins margins_in_points;
     margins_in_points.Clear();
-    margins_in_points.top = top_margin_in_points;
-    margins_in_points.bottom = bottom_margin_in_points;
-    margins_in_points.left = left_margin_in_points;
-    margins_in_points.right = right_margin_in_points;
+    margins_in_points.top = page_size_margins.margin_top;
+    margins_in_points.bottom = page_size_margins.margin_bottom;
+    margins_in_points.left = page_size_margins.margin_left;
+    margins_in_points.right = page_size_margins.margin_right;
 
     settings_.SetCustomMargins(margins_in_points);
   }

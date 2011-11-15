@@ -50,6 +50,7 @@
         'page_range.h',
         'page_setup.cc',
         'page_setup.h',
+        'page_size_margins.cc',
         'page_size_margins.h',
         'pdf_metafile_cg_mac.cc',
         'pdf_metafile_cg_mac.h',
