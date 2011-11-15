@@ -346,4 +346,7 @@ parse_config_file(const char *path,
 		  const struct config_section *sections, int num_sections,
 		  void *data);
 
+char *
+config_file_path(const char *name);
+
 #endif

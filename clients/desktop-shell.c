@@ -348,6 +348,7 @@ launcher_section_done(void *data)
 int main(int argc, char *argv[])
 {
 	struct desktop desktop;
+	char *config_file;
 
 	desktop.display = display_create(&argc, &argv, NULL);
 	if (desktop.display == NULL) {
@@ -363,9 +364,11 @@ int main(int argc, char *argv[])
 
 	desktop.panel = panel_create(desktop.display);
 
-	parse_config_file("wayland-desktop-shell.ini",
+	config_file = config_file_path("wayland-desktop-shell.ini");
+	parse_config_file(config_file,
 			  config_sections, ARRAY_LENGTH(config_sections),
 			  &desktop);
+	free(config_file);
 
 	printf("panel color: %08x\n", key_panel_color);
 

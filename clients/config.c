@@ -135,3 +135,41 @@ parse_config_file(const char *path,
 
 	return 0;
 }
+
+char *
+config_file_path(const char *name)
+{
+	const char dotconf[] = "/.config/";
+	const char *config_dir;
+	const char *home_dir;
+	char *path;
+	size_t size;
+
+	config_dir = getenv("XDG_CONFIG_HOME");
+	if (!config_dir) {
+		fprintf(stderr, "XDG_CONFIG_HOME is not set,"
+				" falling back to $HOME/.config\n");
+
+		home_dir = getenv("HOME");
+		if (!home_dir) {
+			fprintf(stderr, "HOME is not set, using cwd.\n");
+			return strdup(name);
+		}
+
+		size = strlen(home_dir) + sizeof dotconf + strlen(name);
+		path = malloc(size);
+		if (!path)
+			return NULL;
+
+		snprintf(path, size, "%s%s%s", home_dir, dotconf, name);
+		return path;
+	}
+
+	size = strlen(config_dir) + 1 + strlen(name) + 1;
+	path = malloc(size);
+	if (!path)
+		return NULL;
+
+	snprintf(path, size, "%s/%s", config_dir, name);
+	return path;
+}
