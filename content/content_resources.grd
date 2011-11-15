@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+This file contains resources required by each embedder of content.
+
+Currently, the resources are only included on Linux and Mac. If you add
+resources that need to be available on windows as well, you'll need to add
+content_resources.rc file to the respective targets.
+-->
+
+<grit latest_public_release="0" current_release="1">
+  <outputs>
+    <output filename="grit/content_resources.h" type="rc_header">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="content_resources.pak" type="data_package" />
+    <output filename="content_resources.rc" type="rc_all" />
+  </outputs>
+  <translations />
+  <release seq="1">
+    <includes>
+      <if expr="is_macosx">
+        <include name="IDR_GPU_SANDBOX_DEFINITION" file="browser/gpu.sb" type="BINDATA" />
+        <include name="IDR_WORKER_SANDBOX_DEFINITION" file="browser/worker.sb" type="BINDATA" />
+        <include name="IDR_COMMON_SANDBOX_DEFINITION" file="common/common.sb" type="BINDATA" />
+        <include name="IDR_PPAPI_SANDBOX_DEFINITION" file="ppapi_plugin/ppapi.sb" type="BINDATA" />
+        <include name="IDR_RENDERER_SANDBOX_DEFINITION" file="renderer/renderer.sb" type="BINDATA" />
+        <include name="IDR_UTILITY_SANDBOX_DEFINITION" file="utility/utility.sb" type="BINDATA" />
+      </if>
+    </includes>
+  </release>
+</grit>

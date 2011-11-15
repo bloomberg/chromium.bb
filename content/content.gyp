@@ -65,6 +65,9 @@
        'includes': [
           'content_common.gypi',
         ],
+       'dependencies': [
+          'content_resources.gyp:content_resources',
+        ],
       },
       {'target_name': 'content_gpu',
        'type': 'static_library',
@@ -217,7 +220,7 @@
       },
       {'target_name': 'content_common',
        'type': 'none',
-       'dependencies': ['content'],
+       'dependencies': ['content', 'content_resources.gyp:content_resources'],
       },
       {'target_name': 'content_gpu',
        'type': 'none',

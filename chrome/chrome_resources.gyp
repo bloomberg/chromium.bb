@@ -301,6 +301,7 @@
         'default_plugin/default_plugin.gyp:default_plugin_resources',
         'platform_locale_settings',
         'theme_resources',
+        '<(DEPTH)/content/content_resources.gyp:content_resources',
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
         '<(DEPTH)/ui/ui.gyp:gfx_resources',

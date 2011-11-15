@@ -172,4 +172,7 @@
   "ui/resources/ui_resources_large.grd": {
     "includes": [24000],
   },
+  "content/content_resources.grd": {
+    "includes": [24500],
+  },
 }

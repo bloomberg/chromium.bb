@@ -21,6 +21,7 @@
         'content_renderer',
         'content_utility',
         'content_worker',
+        'content_resources.gyp:content_resources',
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../build/temp_gyp/googleurl.gyp:googleurl',
