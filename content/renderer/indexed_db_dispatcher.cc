@@ -120,7 +120,6 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
     return; // We must be shutting down.
 
   IndexedDBHostMsg_FactoryOpen_Params params;
-  params.routing_id = render_view->routing_id();
   params.response_id = pending_callbacks_.Add(callbacks.release());
   params.origin = origin;
   params.name = name;
@@ -140,7 +139,6 @@ void IndexedDBDispatcher::RequestIDBFactoryGetDatabaseNames(
     return; // We must be shutting down.
 
   IndexedDBHostMsg_FactoryGetDatabaseNames_Params params;
-  params.routing_id = render_view->routing_id();
   params.response_id = pending_callbacks_.Add(callbacks.release());
   params.origin = origin;
   RenderThreadImpl::current()->Send(
@@ -161,7 +159,6 @@ void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
     return; // We must be shutting down.
 
   IndexedDBHostMsg_FactoryDeleteDatabase_Params params;
-  params.routing_id = render_view->routing_id();
   params.response_id = pending_callbacks_.Add(callbacks.release());
   params.origin = origin;
   params.name = name;

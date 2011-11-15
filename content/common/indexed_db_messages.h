@@ -22,8 +22,6 @@ IPC_ENUM_TRAITS(WebKit::WebIDBObjectStore::PutMode)
 
 // Used to enumerate indexed databases.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryGetDatabaseNames_Params)
-  // The routing ID of the view initiating the open.
-  IPC_STRUCT_MEMBER(int32, routing_id)
   // The response should have this id.
   IPC_STRUCT_MEMBER(int32, response_id)
   // The origin doing the initiating.
@@ -32,8 +30,6 @@ IPC_STRUCT_END()
 
 // Used to open an indexed database.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryOpen_Params)
-  // The routing ID of the view initiating the open.
-  IPC_STRUCT_MEMBER(int32, routing_id)
   // The response should have this id.
   IPC_STRUCT_MEMBER(int32, response_id)
   // The origin doing the initiating.
@@ -44,8 +40,6 @@ IPC_STRUCT_END()
 
 // Used to delete an indexed database.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryDeleteDatabase_Params)
-  // The routing ID of the view initiating the deletion.
-  IPC_STRUCT_MEMBER(int32, routing_id)
   // The response should have this id.
   IPC_STRUCT_MEMBER(int32, response_id)
   // The origin doing the initiating.
