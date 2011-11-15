@@ -2028,6 +2028,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
             # We want to get the literal string "$ORIGIN" into the link command,
             # so we need lots of escaping.
             ldflags.append(r'-Wl,-rpath=\$$ORIGIN/lib.%s/' % self.toolset)
+            ldflags.append(r'-Wl,-rpath-link=\$(builddir)/lib.%s/' %
+                           self.toolset)
         self.WriteList(ldflags, 'LDFLAGS_%s' % configname)
       libraries = spec.get('libraries')
       if libraries:
