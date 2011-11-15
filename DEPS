@@ -30,7 +30,7 @@ vars = {
   "sfntly_revision": "98",
   "skia_revision": "2674",
   "v8_revision": "9989",
-  "webrtc_revision": "921",
+  "webrtc_revision": "946",
   "jsoncpp_revision": "246",
 }
 
