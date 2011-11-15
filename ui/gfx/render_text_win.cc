@@ -5,16 +5,15 @@
 #include "ui/gfx/render_text_win.h"
 
 #include <algorithm>
+#include <map>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "base/win/scoped_hdc.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/platform_font.h"
 
 namespace {
 
@@ -63,63 +62,6 @@ void DrawTextRunDecorations(SkCanvas* canvas_skia,
   }
 }
 
-// Callback to |EnumEnhMetaFile()| to intercept font creation.
-int CALLBACK MetaFileEnumProc(HDC hdc,
-                              HANDLETABLE* table,
-                              CONST ENHMETARECORD* record,
-                              int table_entries,
-                              LPARAM log_font) {
-  if (record->iType == EMR_EXTCREATEFONTINDIRECTW) {
-    const EMREXTCREATEFONTINDIRECTW* create_font_record =
-        reinterpret_cast<const EMREXTCREATEFONTINDIRECTW*>(record);
-    *reinterpret_cast<LOGFONT*>(log_font) = create_font_record->elfw.elfLogFont;
-  }
-  return 1;
-}
-
-// Finds a fallback font to use to render the specified |text| with respect to
-// an initial |font|. Returns the resulting font via out param |result|. Returns
-// |true| if a fallback font was found.
-// Adapted from WebKit's |FontCache::GetFontDataForCharacters()|.
-bool ChooseFallbackFont(HDC hdc,
-                        const gfx::Font& font,
-                        const wchar_t* text,
-                        int text_length,
-                        gfx::Font* result) {
-  // Use a meta file to intercept the fallback font chosen by Uniscribe.
-  HDC meta_file_dc = CreateEnhMetaFile(hdc, NULL, NULL, NULL);
-  if (!meta_file_dc)
-    return false;
-
-  SelectObject(meta_file_dc, font.GetNativeFont());
-
-  SCRIPT_STRING_ANALYSIS script_analysis;
-  HRESULT hresult =
-      ScriptStringAnalyse(meta_file_dc, text, text_length, 0, -1,
-                          SSA_METAFILE | SSA_FALLBACK | SSA_GLYPHS | SSA_LINK,
-                          0, NULL, NULL, NULL, NULL, NULL, &script_analysis);
-
-  if (SUCCEEDED(hresult)) {
-    hresult = ScriptStringOut(script_analysis, 0, 0, 0, NULL, 0, 0, FALSE);
-    ScriptStringFree(&script_analysis);
-  }
-
-  bool found_fallback = false;
-  HENHMETAFILE meta_file = CloseEnhMetaFile(meta_file_dc);
-  if (SUCCEEDED(hresult)) {
-    LOGFONT log_font;
-    log_font.lfFaceName[0] = 0;
-    EnumEnhMetaFile(0, meta_file, MetaFileEnumProc, &log_font, NULL);
-    if (log_font.lfFaceName[0]) {
-      *result = gfx::Font(UTF16ToUTF8(log_font.lfFaceName), font.GetFontSize());
-      found_fallback = true;
-    }
-  }
-  DeleteEnhMetaFile(meta_file);
-
-  return found_fallback;
-}
-
 }  // namespace
 
 namespace gfx {
@@ -131,8 +73,7 @@ TextRun::TextRun()
     underline(false),
     width(0),
     preceding_run_widths(0),
-    glyph_count(0),
-    script_cache(NULL) {
+    glyph_count(0) {
 }
 
 }  // namespace internal
@@ -141,6 +82,7 @@ RenderTextWin::RenderTextWin()
     : RenderText(),
       script_control_(),
       script_state_(),
+      script_cache_(NULL),
       string_width_(0) {
   // Omitting default constructors for script_* would leave POD uninitialized.
   HRESULT hr = 0;
@@ -160,8 +102,7 @@ RenderTextWin::RenderTextWin()
 }
 
 RenderTextWin::~RenderTextWin() {
-  for (size_t i = 0; i < runs_.size(); ++i)
-    ScriptFreeCache(&runs_[i]->script_cache);
+  ScriptFreeCache(&script_cache_);
   STLDeleteContainerPointers(runs_.begin(), runs_.end());
 }
 
@@ -411,18 +352,18 @@ void RenderTextWin::ItemizeLogicalText() {
 
   HRESULT hr = E_OUTOFMEMORY;
   int script_items_count = 0;
-  std::vector<SCRIPT_ITEM> script_items;
+  scoped_array<SCRIPT_ITEM> script_items;
   for (size_t n = kGuessItems; hr == E_OUTOFMEMORY && n < kMaxItems; n *= 2) {
     // Derive the array of Uniscribe script items from the logical text.
     // ScriptItemize always adds a terminal array item so that the length of the
     // last item can be derived from the terminal SCRIPT_ITEM::iCharPos.
-    script_items.resize(n);
+    script_items.reset(new SCRIPT_ITEM[n]);
     hr = ScriptItemize(raw_text,
                        text_length,
                        n - 1,
                        &script_control_,
                        &script_state_,
-                       &script_items[0],
+                       script_items.get(),
                        &script_items_count);
   }
   DCHECK(SUCCEEDED(hr));
@@ -434,7 +375,7 @@ void RenderTextWin::ItemizeLogicalText() {
   // TODO(msw): Only break for font changes, not color etc. See TextRun comment.
   // TODO(msw): Apply the overriding selection and composition styles.
   StyleRanges::const_iterator style = style_ranges().begin();
-  SCRIPT_ITEM* script_item = &script_items[0];
+  SCRIPT_ITEM* script_item = script_items.get();
   for (int run_break = 0; run_break < text_length;) {
     internal::TextRun* run = new internal::TextRun();
     run->range.set_start(run_break);
@@ -477,7 +418,7 @@ void RenderTextWin::LayoutVisualText() {
       run->glyphs.reset(new WORD[max_glyphs]);
       run->visible_attributes.reset(new SCRIPT_VISATTR[max_glyphs]);
       hr = ScriptShape(hdc,
-                       &run->script_cache,
+                       &script_cache_,
                        run_text,
                        run_length,
                        max_glyphs,
@@ -489,20 +430,12 @@ void RenderTextWin::LayoutVisualText() {
       if (hr == E_OUTOFMEMORY) {
         max_glyphs *= 2;
       } else if (hr == USP_E_SCRIPT_NOT_IN_FONT) {
-        // TODO(msw): Don't use SCRIPT_UNDEFINED. Apparently Uniscribe can crash
-        //            on certain surrogate pairs when using SCRIPT_UNDEFINED.
+        // The run's font doesn't contain the required glyphs, use an alternate.
+        // TODO(msw): Font fallback... Don't use SCRIPT_UNDEFINED.
         //            See https://bugzilla.mozilla.org/show_bug.cgi?id=341500
         //            And http://maxradi.us/documents/uniscribe/
         if (run->script_analysis.eScript == SCRIPT_UNDEFINED)
           break;
-
-        // The run's font doesn't contain the required glyphs, use an alternate.
-        if (ChooseFallbackFont(hdc, run->font, run_text, run_length,
-                               &run->font)) {
-          ScriptFreeCache(&run->script_cache);
-          SelectObject(hdc, run->font.GetNativeFont());
-        }
-
         run->script_analysis.eScript = SCRIPT_UNDEFINED;
       } else {
         break;
@@ -514,7 +447,7 @@ void RenderTextWin::LayoutVisualText() {
       run->advance_widths.reset(new int[run->glyph_count]);
       run->offsets.reset(new GOFFSET[run->glyph_count]);
       hr = ScriptPlace(hdc,
-                       &run->script_cache,
+                       &script_cache_,
                        run->glyphs.get(),
                        run->glyph_count,
                        run->visible_attributes.get(),
@@ -573,6 +506,7 @@ size_t RenderTextWin::GetRunContainingPoint(const Point& point) const {
       break;
   return run;
 }
+
 
 SelectionModel RenderTextWin::FirstSelectionModelInsideRun(
     internal::TextRun* run) {
