@@ -2923,6 +2923,8 @@ sdk() {
   sdk-clean
   sdk-headers
   sdk-libs
+  sdk-irt-shim
+
   sdk-verify
 }
 
@@ -2974,6 +2976,16 @@ sdk-libs() {
       platform=${neutral_platform} \
       install_lib \
       libdir="$(PosixToSysPath "${INSTALL_SDK_LIB}")"
+  spopd
+}
+
+sdk-irt-shim() {
+  # NOTE: this is using the nacl-gcc toolchain and hance cause
+  #       the pnacl TC to depend on it
+  spushd "${NACL_ROOT}"
+  ./scons platform=x86-64 naclsdk_validate=0 --verbose pnacl_irt_shim
+  lib=scons-out/nacl-x86-64/obj/src/untrusted/pnacl_irt_shim/libpnacl_irt_shim.a
+  cp ${lib} "${INSTALL_LIB_X8664}/"
   spopd
 }
 
