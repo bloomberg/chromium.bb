@@ -270,6 +270,7 @@ struct wlsc_surface {
 	struct wlsc_output *output;
 	enum wlsc_surface_map_type map_type;
 	struct wlsc_output *fullscreen_output;
+	struct wl_list frame_callback_list;
 
 	EGLImageKHR image;
 

@@ -278,6 +278,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 
 	pixman_region32_init(&surface->damage);
 	pixman_region32_init(&surface->opaque);
+	wl_list_init(&surface->frame_callback_list);
 
 	surface->buffer_destroy_listener.func = surface_handle_buffer_destroy;
 
@@ -1065,11 +1066,12 @@ WL_EXPORT void
 wlsc_surface_assign_output(struct wlsc_surface *es)
 {
 	struct wlsc_compositor *ec = es->compositor;
-	struct wlsc_output *output;
+	struct wlsc_output *output, *new_output;
 	pixman_region32_t region;
 	uint32_t max, area;
 	pixman_box32_t *e;
 
+	new_output = NULL;
 	max = 0;
 	wl_list_for_each(output, &ec->output_list, link) {
 		pixman_region32_init_rect(&region,
@@ -1080,9 +1082,16 @@ wlsc_surface_assign_output(struct wlsc_surface *es)
 		area = (e->x2 - e->x1) * (e->y2 - e->y1);
 
 		if (area >= max) {
-			es->output = output;
+			new_output = output;
 			max = area;
 		}
+	}
+
+	es->output = new_output;
+	if (!wl_list_empty(&es->frame_callback_list)) {
+		wl_list_insert_list(new_output->frame_callback_list.prev,
+				    &es->frame_callback_list);
+		wl_list_init(&es->frame_callback_list);
 	}
 }
 
@@ -1161,8 +1170,7 @@ surface_frame(struct wl_client *client,
 		wl_list_insert(es->output->frame_callback_list.prev,
 			       &cb->link);
 	} else {
-		wl_list_init(&cb->link);
-		wl_resource_destroy(&cb->resource, 0);
+		wl_list_insert(es->frame_callback_list.prev, &cb->link);
 	}
 }
 
