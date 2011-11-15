@@ -9,8 +9,7 @@
 #include "crypto/hmac.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/socket/ssl_client_socket.h"
-#include "net/socket/ssl_server_socket.h"
+#include "net/socket/ssl_socket.h"
 #include "net/socket/stream_socket.h"
 
 namespace remoting {
@@ -46,8 +45,10 @@ bool GetAuthBytes(const std::string& shared_secret,
 
 }  // namespace
 
-HostChannelAuthenticator::HostChannelAuthenticator(net::SSLServerSocket* socket)
-    : socket_(socket),
+HostChannelAuthenticator::HostChannelAuthenticator(
+    const std::string& shared_secret)
+    : shared_secret_(shared_secret),
+      socket_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(auth_read_callback_(
           this, &HostChannelAuthenticator::OnAuthBytesRead)) {
 }
@@ -55,10 +56,11 @@ HostChannelAuthenticator::HostChannelAuthenticator(net::SSLServerSocket* socket)
 HostChannelAuthenticator::~HostChannelAuthenticator() {
 }
 
-void HostChannelAuthenticator::Authenticate(const std::string& shared_secret,
+void HostChannelAuthenticator::Authenticate(net::SSLSocket* socket,
                                             const DoneCallback& done_callback) {
   DCHECK(CalledOnValidThread());
 
+  socket_ = socket;
   done_callback_ = done_callback;
 
   unsigned char key_material[kAuthDigestLength];
@@ -70,7 +72,7 @@ void HostChannelAuthenticator::Authenticate(const std::string& shared_secret,
     return;
   }
 
-  if (!GetAuthBytes(shared_secret,
+  if (!GetAuthBytes(shared_secret_,
                     std::string(key_material, key_material + kAuthDigestLength),
                     &auth_bytes_)) {
     done_callback.Run(FAILURE);
@@ -139,8 +141,9 @@ bool HostChannelAuthenticator::VerifyAuthBytes(
 }
 
 ClientChannelAuthenticator::ClientChannelAuthenticator(
-    net::SSLClientSocket* socket)
-    : socket_(socket),
+    const std::string& shared_secret)
+    : shared_secret_(shared_secret),
+socket_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(auth_write_callback_(
         this, &ClientChannelAuthenticator::OnAuthBytesWritten)) {
 }
@@ -149,10 +152,11 @@ ClientChannelAuthenticator::~ClientChannelAuthenticator() {
 }
 
 void ClientChannelAuthenticator::Authenticate(
-    const std::string& shared_secret,
+    net::SSLSocket* socket,
     const DoneCallback& done_callback) {
   DCHECK(CalledOnValidThread());
 
+  socket_ = socket;
   done_callback_ = done_callback;
 
   unsigned char key_material[kAuthDigestLength];
@@ -165,7 +169,7 @@ void ClientChannelAuthenticator::Authenticate(
   }
 
   std::string auth_bytes;
-  if (!GetAuthBytes(shared_secret,
+  if (!GetAuthBytes(shared_secret_,
                     std::string(key_material, key_material + kAuthDigestLength),
                     &auth_bytes)) {
     done_callback.Run(FAILURE);

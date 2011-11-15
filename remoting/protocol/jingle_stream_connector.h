@@ -20,8 +20,7 @@ class TransportChannel;
 namespace net {
 class CertVerifier;
 class StreamSocket;
-class SSLClientSocket;
-class SSLServerSocket;
+class SSLSocket;
 }  // namespace net
 
 namespace remoting {
@@ -74,11 +73,8 @@ class JingleStreamConnector : public JingleChannelConnector {
   crypto::RSAPrivateKey* local_private_key_;
 
   cricket::TransportChannel* raw_channel_;
-  scoped_ptr<net::StreamSocket> socket_;
-
-  // TODO(wez): Ugly up-casts needed so we can fetch SSL keying material.
-  net::SSLClientSocket* ssl_client_socket_;
-  net::SSLServerSocket* ssl_server_socket_;
+  scoped_ptr<net::StreamSocket> tcp_socket_;
+  scoped_ptr<net::SSLSocket> socket_;
 
   // Used to verify the certificate received in SSLClientSocket.
   scoped_ptr<net::CertVerifier> cert_verifier_;

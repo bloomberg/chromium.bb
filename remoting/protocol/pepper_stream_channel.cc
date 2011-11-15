@@ -236,11 +236,10 @@ void PepperStreamChannel::OnSSLConnect(int result) {
 void PepperStreamChannel::AuthenticateChannel() {
   DCHECK(CalledOnValidThread());
 
-  authenticator_.reset(new ClientChannelAuthenticator(ssl_client_socket_));
-  authenticator_->Authenticate(
-      session_->shared_secret(),
-      base::Bind(&PepperStreamChannel::OnAuthenticationDone,
-                 base::Unretained(this)));
+  authenticator_.reset(
+      new ClientChannelAuthenticator(session_->shared_secret()));
+  authenticator_->Authenticate(ssl_client_socket_, base::Bind(
+      &PepperStreamChannel::OnAuthenticationDone, base::Unretained(this)));
 }
 
 void PepperStreamChannel::OnAuthenticationDone(

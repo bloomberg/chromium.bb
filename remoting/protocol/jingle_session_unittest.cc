@@ -239,7 +239,7 @@ class JingleSessionTest : public testing::Test {
         EXPECT_CALL(host_connection_callback_,
                     OnStateChange(Session::CONNECTED_CHANNELS))
             .Times(AtMost(1));
-        // Expect that the connection will be closed eventually.
+        // Expect that the connection will fail.
         EXPECT_CALL(host_connection_callback_,
                     OnStateChange(Session::FAILED))
             .Times(1)
