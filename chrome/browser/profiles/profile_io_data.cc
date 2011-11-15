@@ -450,7 +450,7 @@ void ProfileIOData::LazyInitialize() const {
   transport_security_persister_.reset(
       new TransportSecurityPersister(transport_security_state_.get(),
                                      profile_params_->path,
-                                     !profile_params_->is_incognito));
+                                     profile_params_->is_incognito));
 
   // NOTE(willchan): Keep these protocol handlers in sync with
   // ProfileIOData::IsHandledProtocol().
