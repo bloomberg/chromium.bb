@@ -703,6 +703,19 @@ var MainView = (function() {
     return false;
   }
 
+  /**
+   * Return the last component in a path which is separated by either forward
+   * slashes or backslashes.
+   */
+  function getFilenameFromPath(path) {
+    var lastSlash = Math.max(path.lastIndexOf('/'),
+                             path.lastIndexOf('\\'));
+    if (lastSlash == -1)
+      return path;
+
+    return path.substr(lastSlash + 1);
+  }
+
   // --------------------------------------------------------------------------
   // Functions that augment, bucket, and compute aggregates for the input data.
   // --------------------------------------------------------------------------
@@ -1000,8 +1013,6 @@ var MainView = (function() {
     if (cellAlignment)
       td.align = cellAlignment;
 
-    var parent = td;
-
     if (key == KEY_SOURCE_LOCATION) {
       // Linkify the source column so it jumps to the source code. This doesn't
       // take into account the particular code this build was compiled from, or
@@ -1009,14 +1020,18 @@ var MainView = (function() {
       // builds.
       var m = /^(.*) \[(\d+)\]$/.exec(text);
       if (m) {
-        var link = addNode(td, 'a');
+        var filepath = m[1];
+        var filename = getFilenameFromPath(filepath);
+        var linenumber = m[2];
+
+        var link = addNode(td, 'a', filename + ' [' + linenumber + ']');
         // http://chromesrc.appspot.com is a server I wrote specifically for
         // this task. It redirects to the appropriate source file; the file
         // paths given by the compiler can be pretty crazy and different
         // between platforms.
         link.href = 'http://chromesrc.appspot.com/?path=' +
-                    encodeURIComponent(m[1]) + '&line=' + m[2];
-        parent = link;
+                    encodeURIComponent(filepath) + '&line=' + linenumber;
+        return;
       }
     }
 
@@ -1027,10 +1042,10 @@ var MainView = (function() {
     // value, and hence avoid it overflowing!
     var kMinLengthBeforeWrap = 20;
 
-    addText(parent, text.substr(0, kMinLengthBeforeWrap));
+    addText(td, text.substr(0, kMinLengthBeforeWrap));
     for (var i = kMinLengthBeforeWrap; i < text.length; ++i) {
-      addNode(parent, 'wbr');
-      addText(parent, text.substr(i, 1));
+      addNode(td, 'wbr');
+      addText(td, text.substr(i, 1));
     }
   }
 
