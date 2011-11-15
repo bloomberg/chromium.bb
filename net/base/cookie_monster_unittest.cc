@@ -21,7 +21,6 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_monster_store_test.h"  // For CookieStore mock
-#include "net/base/cookie_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1853,7 +1852,7 @@ TEST_F(CookieMonsterTest, TestDomainIsHostOnly) {
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     EXPECT_EQ(tests[i].is_host_only,
-              cookie_utils::DomainIsHostOnly(tests[i].str));
+              CookieMonster::DomainIsHostOnly(tests[i].str));
   }
 }
 
