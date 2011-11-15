@@ -810,8 +810,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
 }
 
 #if defined(OS_MACOSX)
-// http://crbug.com/100467
-#define MAYBE_TestNewTabExitsFullscreen FAILS_TestNewTabExitsFullscreen
+// http://crbug.com/104265
+#define MAYBE_TestNewTabExitsFullscreen DISABLED_TestNewTabExitsFullscreen
 #else
 #define MAYBE_TestNewTabExitsFullscreen TestNewTabExitsFullscreen
 #endif
