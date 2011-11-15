@@ -711,6 +711,7 @@
       'sources': [
         'protocol/auth_token_utils.cc',
         'protocol/auth_token_utils.h',
+        'protocol/authenticator.h',
         'protocol/buffered_socket_writer.cc',
         'protocol/buffered_socket_writer.h',
         'protocol/channel_authenticator.cc',
