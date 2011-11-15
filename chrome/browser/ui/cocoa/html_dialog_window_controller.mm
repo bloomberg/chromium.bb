@@ -258,11 +258,8 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
   gfx::Size dialogSize;
   delegate->GetDialogSize(&dialogSize);
   NSRect dialogRect = NSMakeRect(0, 0, dialogSize.width(), dialogSize.height());
-  // TODO(akalin): Make the window resizable (but with the minimum size being
-  // dialog_size and always on top (but not modal) to match the Windows
-  // behavior.  On the other hand, the fact that HTML dialogs on Windows
-  // are resizable could just be an accident.  Investigate futher...
-  NSUInteger style = NSTitledWindowMask | NSClosableWindowMask;
+  NSUInteger style = NSTitledWindowMask | NSClosableWindowMask |
+      NSResizableWindowMask;
   scoped_nsobject<ChromeEventProcessingWindow> window(
       [[ChromeEventProcessingWindow alloc]
            initWithContentRect:dialogRect
@@ -279,6 +276,7 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
   [window setWindowController:self];
   [window setDelegate:self];
   [window setTitle:base::SysUTF16ToNSString(delegate->GetDialogTitle())];
+  [window setMinSize:dialogRect.size];
   [window center];
   delegate_.reset(new HtmlDialogWindowDelegateBridge(self, profile, delegate));
   return self;
