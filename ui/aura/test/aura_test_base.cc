@@ -38,8 +38,7 @@ AuraTestBase::~AuraTestBase() {
 
   // Flush the message loop because we have pending release tasks
   // and these tasks if un-executed would upset Valgrind.
-  message_loop_.RunAllPendingWithDispatcher(
-      Desktop::GetInstance()->GetDispatcher());
+  RunAllPendingInMessageLoop();
 
   // Ensure that we don't use the previously-allocated static Desktop object
   // later -- on Linux, it holds a reference to our message loop's X connection.
@@ -59,6 +58,11 @@ void AuraTestBase::SetUp() {
 void AuraTestBase::TearDown() {
   teardown_called_ = true;
   testing::Test::TearDown();
+}
+
+void AuraTestBase::RunAllPendingInMessageLoop() {
+  message_loop_.RunAllPendingWithDispatcher(
+      Desktop::GetInstance()->GetDispatcher());
 }
 
 }  // namespace test

@@ -68,6 +68,10 @@ UI_EXPORT bool QueryRenderSupport(Display* dpy);
 // Return the default screen number for the display
 int GetDefaultScreen(Display* display);
 
+// TODO(xiyuan): Fix the stale XCursorCache problem per http://crbug.com/102759.
+// A special cursor that makes GetXCursor below to clear its XCursorCache.
+const int kCursorClearXCursorCache = -1;
+
 // Returns an X11 Cursor, sharable across the process.
 // |cursor_shape| is an X font cursor shape, see XCreateFontCursor().
 UI_EXPORT Cursor GetXCursor(int cursor_shape);

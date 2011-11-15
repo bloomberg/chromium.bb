@@ -114,12 +114,7 @@ class XCursorCache {
  public:
    XCursorCache() {}
   ~XCursorCache() {
-    Display* display = base::MessagePumpForUI::GetDefaultXDisplay();
-    for (std::map<int, Cursor>::iterator it =
-        cache_.begin(); it != cache_.end(); ++it) {
-      XFreeCursor(display, it->second);
-    }
-    cache_.clear();
+    Clear();
   }
 
   Cursor GetCursor(int cursor_shape) {
@@ -132,6 +127,15 @@ class XCursorCache {
       it.first->second = XCreateFontCursor(display, cursor_shape);
     }
     return it.first->second;
+  }
+
+  void Clear() {
+    Display* display = base::MessagePumpForUI::GetDefaultXDisplay();
+    for (std::map<int, Cursor>::iterator it =
+        cache_.begin(); it != cache_.end(); ++it) {
+      XFreeCursor(display, it->second);
+    }
+    cache_.clear();
   }
 
  private:
@@ -218,6 +222,12 @@ int GetDefaultScreen(Display* display) {
 
 Cursor GetXCursor(int cursor_shape) {
   CR_DEFINE_STATIC_LOCAL(XCursorCache, cache, ());
+
+  if (cursor_shape == kCursorClearXCursorCache) {
+    cache.Clear();
+    return 0;
+  }
+
   return cache.GetCursor(cursor_shape);
 }
 

@@ -143,6 +143,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     gfx::NativeView parent = params.GetParent();
     if (parent)
       parent->AddTransientChild(window_);
+    // SetAlwaysOnTop before SetParent so that always-on-top container is used.
+    SetAlwaysOnTop(params.keep_on_top);
     window_->SetParent(NULL);
   }
   // TODO(beng): do this some other way.
@@ -410,8 +412,7 @@ bool NativeWidgetAura::IsActive() const {
 }
 
 void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {
-  // http://crbug.com/102582
-  NOTIMPLEMENTED();
+  window_->SetIntProperty(aura::kAlwaysOnTopKey, on_top);
 }
 
 void NativeWidgetAura::Maximize() {

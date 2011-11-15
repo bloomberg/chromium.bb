@@ -6,6 +6,7 @@
 
 #include "ui/aura/desktop.h"
 #include "ui/aura/window.h"
+#include "ui/aura_shell/always_on_top_controller.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"
 
@@ -35,6 +36,13 @@ StackingController::StackingController() {
 StackingController::~StackingController() {
 }
 
+void StackingController::Init() {
+  always_on_top_controller_.reset(new internal::AlwaysOnTopController);
+  always_on_top_controller_->SetContainers(
+      GetContainer(internal::kShellWindowId_DefaultContainer),
+      GetContainer(internal::kShellWindowId_AlwaysOnTopContainer));
+}
+
 // static
 aura::Window* StackingController::GetActivatableWindow(aura::Window* window) {
   aura::Window* parent = window->parent();
@@ -60,7 +68,7 @@ void StackingController::AddChildToDefaultParent(aura::Window* window) {
   switch (window->type()) {
     case aura::WINDOW_TYPE_NORMAL:
     case aura::WINDOW_TYPE_POPUP:
-      parent = GetContainer(internal::kShellWindowId_DefaultContainer);
+      parent = always_on_top_controller_->GetContainer(window);
       break;
     case aura::WINDOW_TYPE_MENU:
     case aura::WINDOW_TYPE_TOOLTIP:

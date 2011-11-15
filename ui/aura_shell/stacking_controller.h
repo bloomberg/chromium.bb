@@ -8,15 +8,21 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/stacking_client.h"
 
 namespace aura_shell {
 namespace internal {
 
+class AlwaysOnTopController;
+
 class StackingController : public aura::StackingClient {
  public:
   StackingController();
   virtual ~StackingController();
+
+  // Initializes this controller.
+  void Init();
 
   // Returns true if |window| exists within a container that supports
   // activation.
@@ -29,6 +35,8 @@ class StackingController : public aura::StackingClient {
       aura::Window* ignore) const OVERRIDE;
 
  private:
+  scoped_ptr<internal::AlwaysOnTopController> always_on_top_controller_;
+
   DISALLOW_COPY_AND_ASSIGN(StackingController);
 };
 

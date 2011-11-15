@@ -28,6 +28,10 @@ class AuraTestBase : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
+ protected:
+  // Flushes message loop.
+  void RunAllPendingInMessageLoop();
+
  private:
   MessageLoopForUI message_loop_;
   bool setup_called_;

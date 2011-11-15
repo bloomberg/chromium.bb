@@ -289,6 +289,9 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
 
 DesktopHostLinux::~DesktopHostLinux() {
   XDestroyWindow(xdisplay_, xwindow_);
+
+  // Clears XCursorCache.
+  ui::GetXCursor(ui::kCursorClearXCursorCache);
 }
 
 base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(

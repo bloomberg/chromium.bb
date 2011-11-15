@@ -5,18 +5,16 @@
 #include "ui/aura_shell/stacking_controller.h"
 
 #include "ui/aura/desktop.h"
-#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/test_window_delegate.h"
-#include "ui/aura_shell/shell.h"
+#include "ui/aura_shell/test/aura_shell_test_base.h"
 
 namespace aura_shell {
 namespace test {
 
-typedef aura::test::AuraTestBase StackingControllerTest;
+typedef aura_shell::test::AuraShellTestBase StackingControllerTest;
 
 TEST_F(StackingControllerTest, GetTopmostWindowToActivate) {
-  Shell::CreateInstance(NULL);
   aura::test::ActivateWindowDelegate activate;
   aura::test::ActivateWindowDelegate non_activate(false);
 

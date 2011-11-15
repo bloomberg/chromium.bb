@@ -33,6 +33,8 @@
       ],
       'sources': [
         # All .cc, .h under views, except unittests
+        'always_on_top_controller.cc',
+        'always_on_top_controller.h',
         'default_container_event_filter.cc',
         'default_container_event_filter.h',
         'default_container_layout_manager.cc',
@@ -121,9 +123,12 @@
         'launcher/view_model_unittest.cc',
         'launcher/view_model_utils_unittest.cc',
         'run_all_unittests.cc',
+        'shell_unittest.cc',
         'stacking_controller_unittest.cc',
         'test_suite.cc',
         'test_suite.h',
+        'test/aura_shell_test_base.cc',
+        'test/aura_shell_test_base.h',
         'toplevel_layout_manager_unittest.cc',
         'toplevel_window_event_filter_unittest.cc',
         'workspace_controller_unittest.cc',

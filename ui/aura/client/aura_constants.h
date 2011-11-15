@@ -11,17 +11,20 @@
 namespace aura {
 // Window property keys that are shared between aura_shell and chrome/views.
 
+// A property key to store always-on-top flag. The type of the value is boolean.
+AURA_EXPORT extern const char kAlwaysOnTopKey[];
+
 // A property key to store the restore bounds for a window. The type
 // of the value is |gfx::Rect*|.
-AURA_EXPORT extern const char* kRestoreBoundsKey;
+AURA_EXPORT extern const char kRestoreBoundsKey[];
 
 // A property key to store ui::WindowShowState for a window.
 // See ui/base/ui_base_types.h for its definition.
-AURA_EXPORT extern const char* kShowStateKey;
+AURA_EXPORT extern const char kShowStateKey[];
 
 // A property key to store tooltip text for a window. The type of the value
-// is |std::string*|.
-AURA_EXPORT extern const char* kTooltipTextKey;
+// is |string16*|.
+AURA_EXPORT extern const char kTooltipTextKey[];
 
 }  // namespace aura
 

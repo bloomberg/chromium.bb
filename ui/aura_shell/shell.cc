@@ -92,6 +92,9 @@ Shell::Shell(ShellDelegate* delegate)
 }
 
 Shell::~Shell() {
+  DCHECK(instance_ == this);
+  instance_ = NULL;
+
   // Make sure we delete WorkspaceController before launcher is
   // deleted as it has a reference to launcher model.
   workspace_controller_.reset();
@@ -129,6 +132,11 @@ void Shell::Init() {
     desktop_window->AddChild(*i);
     (*i)->Show();
   }
+
+  internal::StackingController* stacking_controller =
+      static_cast<internal::StackingController*>(
+          desktop_window->stacking_client());
+  stacking_controller->Init();
 
   internal::DesktopLayoutManager* desktop_layout =
       new internal::DesktopLayoutManager(desktop_window);
