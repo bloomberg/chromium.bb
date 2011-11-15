@@ -331,11 +331,8 @@ TEST_F(WorkerTest, FLAKY_WorkerMessagePort) {
   RunWorkerFastLayoutTest("worker-messageport.html");
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
-#define WorkerMessagePortGC FLAKY_WorkerMessagePortGC
-#endif
-TEST_F(WorkerTest, WorkerMessagePortGC) {
+TEST_F(WorkerTest, FLAKY_WorkerMessagePortGC) {
   RunWorkerFastLayoutTest("worker-messageport-gc.html");
 }
 
