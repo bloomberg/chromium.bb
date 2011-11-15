@@ -100,7 +100,18 @@ TEST_F(FramedBrowserWindowTest, DoesHideTitle) {
 
 // Test to make sure that our window widgets are in the right place.
 TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
-  // First without tabstrip.
+  BOOL yes = YES;
+  BOOL no = NO;
+
+  // First without a tabstrip.
+  id controller = [OCMockObject mockForClass:[BrowserWindowController class]];
+  [[[controller stub] andReturnValue:OCMOCK_VALUE(yes)]
+      isKindOfClass:[BrowserWindowController class]];
+  [[[controller expect] andReturnValue:OCMOCK_VALUE(no)] hasTabStrip];
+  [[[controller expect] andReturnValue:OCMOCK_VALUE(yes)] hasTitleBar];
+  [[[controller expect] andReturnValue:OCMOCK_VALUE(no)] isTabbedWindow];
+  [window_ setWindowController:controller];
+
   NSView* closeBoxControl = [window_ standardWindowButton:NSWindowCloseButton];
   EXPECT_TRUE(closeBoxControl);
   NSRect closeBoxFrame = [closeBoxControl frame];
@@ -124,11 +135,9 @@ TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
             NSMaxX(closeBoxFrame) + [window_ windowButtonsInterButtonSpacing]);
 
   // Then with a tabstrip.
-  id controller = [OCMockObject mockForClass:[BrowserWindowController class]];
-  BOOL yes = YES;
-  BOOL no = NO;
+  controller = [OCMockObject mockForClass:[BrowserWindowController class]];
   [[[controller stub] andReturnValue:OCMOCK_VALUE(yes)]
-   isKindOfClass:[BrowserWindowController class]];
+      isKindOfClass:[BrowserWindowController class]];
   [[[controller expect] andReturnValue:OCMOCK_VALUE(yes)] hasTabStrip];
   [[[controller expect] andReturnValue:OCMOCK_VALUE(no)] hasTitleBar];
   [[[controller expect] andReturnValue:OCMOCK_VALUE(yes)] isTabbedWindow];
@@ -156,4 +165,3 @@ TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
             NSMaxX(closeBoxFrame) + [window_ windowButtonsInterButtonSpacing]);
   [window_ setWindowController:nil];
 }
-
