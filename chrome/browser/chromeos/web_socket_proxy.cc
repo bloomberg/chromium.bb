@@ -1252,7 +1252,7 @@ Conn::Status Conn::ConsumeHeader(struct evbuffer* evb) {
       if (key.len > 0) {
         requested_parameters_[std::string(piece + key.begin, key.len)] =
             net::UnescapeURLComponent(std::string(piece + value.begin,
-                value.len), UnescapeRule::URL_SPECIAL_CHARS);
+                value.len), net::UnescapeRule::URL_SPECIAL_CHARS);
       }
     }
   }

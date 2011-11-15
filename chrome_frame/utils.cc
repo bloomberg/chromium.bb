@@ -1424,7 +1424,7 @@ bool ChromeFrameUrl::ParseAttachExternalTabUrl() {
     profile_name_ = tokenizer.token();
     // Escape out special characters like %20, etc.
     profile_name_ = net::UnescapeURLComponent(profile_name_,
-        UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
+        net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
   } else {
     return false;
   }

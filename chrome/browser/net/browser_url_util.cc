@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ void WriteURLToClipboard(const GURL& url,
   string16 text = url.SchemeIs(chrome::kMailToScheme) ?
       ASCIIToUTF16(url.path()) :
       net::FormatUrl(url, languages, net::kFormatUrlOmitNothing,
-                     UnescapeRule::NONE, NULL, NULL, NULL);
+                     net::UnescapeRule::NONE, NULL, NULL, NULL);
 
   ui::ScopedClipboardWriter scw(clipboard);
   scw.WriteURL(text);

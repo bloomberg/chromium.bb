@@ -382,7 +382,7 @@ void BookmarkEditorView::Init() {
     // username/password, or unescape anything that changes the meaning.
     string16 url_text = net::FormatUrl(url, languages,
         net::kFormatUrlOmitAll & ~net::kFormatUrlOmitUsernamePassword,
-        UnescapeRule::SPACES, NULL, NULL, NULL);
+        net::UnescapeRule::SPACES, NULL, NULL, NULL);
 
     url_tf_ = new views::Textfield;
     url_tf_->SetText(UTF16ToWide(url_text));

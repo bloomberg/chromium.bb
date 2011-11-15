@@ -58,7 +58,7 @@ string16 ToolbarModel::GetText() const {
   // the space.
   return AutocompleteInput::FormattedStringWithEquivalentMeaning(
       url, net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
-                          UnescapeRule::NORMAL, NULL, NULL, NULL));
+                          net::UnescapeRule::NORMAL, NULL, NULL, NULL));
 }
 
 bool ToolbarModel::ShouldDisplayURL() const {

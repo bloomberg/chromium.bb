@@ -859,7 +859,8 @@ std::string AboutHistograms(const std::string& query) {
   std::string unescaped_query;
   std::string unescaped_title("About Histograms");
   if (!query.empty()) {
-    unescaped_query = net::UnescapeURLComponent(query, UnescapeRule::NORMAL);
+    unescaped_query = net::UnescapeURLComponent(query,
+                                                net::UnescapeRule::NORMAL);
     unescaped_title += " - " + unescaped_query;
   }
 
@@ -890,7 +891,8 @@ static std::string AboutTracking(const std::string& query) {
   std::string unescaped_title("About Tracking");
   if (!query.empty()) {
     unescaped_title += " - ";
-    unescaped_title += net::UnescapeURLComponent(query, UnescapeRule::NORMAL);
+    unescaped_title += net::UnescapeURLComponent(query,
+                                                 net::UnescapeRule::NORMAL);
   }
   std::string data;
   AppendHeader(&data, 0, unescaped_title);

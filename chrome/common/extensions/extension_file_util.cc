@@ -552,7 +552,7 @@ FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
 
   // Drop the leading slashes and convert %-encoded UTF8 to regular UTF8.
   std::string file_path = net::UnescapeURLComponent(url_path,
-      UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
+      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
   size_t skip = file_path.find_first_not_of("/\\");
   if (skip != file_path.npos)
     file_path = file_path.substr(skip);

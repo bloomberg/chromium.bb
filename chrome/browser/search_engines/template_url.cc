@@ -528,7 +528,8 @@ string16 TemplateURLRef::SearchTermToString16(const TemplateURL& host,
 
   std::string unescaped = net::UnescapeURLComponent(
       term,
-      UnescapeRule::REPLACE_PLUS_WITH_SPACE | UnescapeRule::URL_SPECIAL_CHARS);
+      net::UnescapeRule::REPLACE_PLUS_WITH_SPACE |
+      net::UnescapeRule::URL_SPECIAL_CHARS);
   for (size_t i = 0; i < encodings.size(); ++i) {
     if (base::CodepageToUTF16(unescaped, encodings[i].c_str(),
                               base::OnStringConversionError::FAIL, &result))

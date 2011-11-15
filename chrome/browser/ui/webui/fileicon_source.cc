@@ -30,7 +30,7 @@ void FileIconSource::StartDataRequest(const std::string& path,
                                       bool is_incognito,
                                       int request_id) {
   std::string escaped_path = net::UnescapeURLComponent(path,
-                                                       UnescapeRule::SPACES);
+      net::UnescapeRule::SPACES);
 #if defined(OS_WIN)
   // The path we receive has the wrong slashes and escaping for what we need;
   // this only appears to matter for getting icons from .exe files.

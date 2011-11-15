@@ -221,7 +221,7 @@ bool DoesBookmarkContainWords(const BookmarkNode* node,
       DoesBookmarkTextContainWords(UTF8ToUTF16(node->url().spec()), words) ||
       DoesBookmarkTextContainWords(net::FormatUrl(
           node->url(), languages, net::kFormatUrlOmitNothing,
-          UnescapeRule::NORMAL, NULL, NULL, NULL), words);
+          net::UnescapeRule::NORMAL, NULL, NULL, NULL), words);
 }
 
 }  // namespace

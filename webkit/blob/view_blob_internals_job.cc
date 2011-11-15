@@ -134,7 +134,7 @@ void ViewBlobInternalsJob::DoWorkAsync() {
       StartsWithASCII(request_->url().query(), "remove=", true)) {
     std::string blob_url = request_->url().query().substr(strlen("remove="));
     blob_url = net::UnescapeURLComponent(blob_url,
-        UnescapeRule::NORMAL | UnescapeRule::URL_SPECIAL_CHARS);
+        net::UnescapeRule::NORMAL | net::UnescapeRule::URL_SPECIAL_CHARS);
     blob_storage_controller_->RemoveBlob(GURL(blob_url));
   }
 

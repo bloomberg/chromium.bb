@@ -53,8 +53,8 @@
 
 namespace {
 
-const UnescapeRule::Type kUnescapeRules =
-    UnescapeRule::NORMAL | UnescapeRule::URL_SPECIAL_CHARS;
+const net::UnescapeRule::Type kUnescapeRules =
+    net::UnescapeRule::NORMAL | net::UnescapeRule::URL_SPECIAL_CHARS;
 
 extension_misc::AppLaunchBucket ParseLaunchSource(
     const std::string& launch_source) {

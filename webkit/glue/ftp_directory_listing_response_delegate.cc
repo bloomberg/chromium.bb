@@ -93,8 +93,8 @@ void FtpDirectoryListingResponseDelegate::OnCompletedRequest() {
 }
 
 void FtpDirectoryListingResponseDelegate::Init(const GURL& response_url) {
-  UnescapeRule::Type unescape_rules = UnescapeRule::SPACES |
-                                      UnescapeRule::URL_SPECIAL_CHARS;
+  net::UnescapeRule::Type unescape_rules = net::UnescapeRule::SPACES |
+                                           net::UnescapeRule::URL_SPECIAL_CHARS;
   std::string unescaped_path = net::UnescapeURLComponent(response_url.path(),
                                                          unescape_rules);
   SendDataToClient(net::GetDirectoryListingHeader(

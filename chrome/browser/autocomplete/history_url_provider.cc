@@ -910,7 +910,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(info.url(),
           net::FormatUrl(info.url(), languages, format_types,
-                         UnescapeRule::SPACES, NULL, NULL,
+                         net::UnescapeRule::SPACES, NULL, NULL,
                          &inline_autocomplete_offset));
   if (!params->prevent_inline_autocomplete)
     match.inline_autocomplete_offset = inline_autocomplete_offset;
@@ -919,7 +919,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
 
   size_t match_start = history_match.input_location;
   match.contents = net::FormatUrl(info.url(), languages,
-      format_types, UnescapeRule::SPACES, NULL, NULL, &match_start);
+      format_types, net::UnescapeRule::SPACES, NULL, NULL, &match_start);
   if ((match_start != string16::npos) &&
       (inline_autocomplete_offset != string16::npos) &&
       (inline_autocomplete_offset != match_start)) {

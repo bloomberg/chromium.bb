@@ -171,7 +171,7 @@ void InMemoryURLIndex::IndexRow(const URLRow& row) {
   // Strip out username and password before saving and indexing.
   string16 url(net::FormatUrl(gurl, languages_,
       net::kFormatUrlOmitUsernamePassword,
-      UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS,
+      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS,
       NULL, NULL, NULL));
 
   HistoryID history_id = static_cast<HistoryID>(row_id);
@@ -196,7 +196,7 @@ void InMemoryURLIndex::AddRowWordsToIndex(const URLRow& row) {
   const GURL& gurl(row.url());
   string16 url(net::FormatUrl(gurl, languages_,
       net::kFormatUrlOmitUsernamePassword,
-      UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS,
+      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS,
       NULL, NULL, NULL));
   url = base::i18n::ToLower(url);
   String16Set url_words = String16SetFromString16(url);

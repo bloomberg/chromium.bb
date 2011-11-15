@@ -173,7 +173,7 @@ static std::string FixupPath(const std::string& text) {
   GURL file_url = net::FilePathToFileURL(FilePath(filename));
   if (file_url.is_valid()) {
     return UTF16ToUTF8(net::FormatUrl(file_url, std::string(),
-        net::kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, NULL,
+        net::kFormatUrlOmitUsernamePassword, net::UnescapeRule::NORMAL, NULL,
         NULL, NULL));
   }
 
@@ -550,11 +550,11 @@ GURL URLFixerUpper::FixupRelativeFile(const FilePath& base_dir,
 #if defined(OS_WIN)
     std::wstring unescaped = UTF8ToWide(net::UnescapeURLComponent(
         WideToUTF8(trimmed),
-        UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS));
+        net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS));
 #elif defined(OS_POSIX)
     std::string unescaped = net::UnescapeURLComponent(
         trimmed,
-        UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
+        net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
 #endif
 
     if (!ValidPathForFile(unescaped, &full_path))
@@ -569,7 +569,7 @@ GURL URLFixerUpper::FixupRelativeFile(const FilePath& base_dir,
     GURL file_url = net::FilePathToFileURL(full_path);
     if (file_url.is_valid())
       return GURL(UTF16ToUTF8(net::FormatUrl(file_url, std::string(),
-          net::kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, NULL,
+          net::kFormatUrlOmitUsernamePassword, net::UnescapeRule::NORMAL, NULL,
           NULL, NULL)));
     // Invalid files fall through to regular processing.
   }

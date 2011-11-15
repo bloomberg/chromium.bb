@@ -62,8 +62,8 @@ bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
     return false;
 
   std::string path = net::UnescapeURLComponent(bare_url.path(),
-      UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS |
-      UnescapeRule::CONTROL_CHARS);
+      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS |
+      net::UnescapeRule::CONTROL_CHARS);
   if (path.compare(0, strlen(kPersistentDir), kPersistentDir) == 0) {
     file_system_type = kFileSystemTypePersistent;
     path = path.substr(strlen(kPersistentDir));

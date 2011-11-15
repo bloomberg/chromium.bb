@@ -89,7 +89,7 @@ void HistoryQuickProvider::DoAutocomplete() {
   // Get the matching URLs from the DB.
   string16 term_string = autocomplete_input_.text();
   term_string = net::UnescapeURLComponent(term_string,
-      UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
+      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
   history::String16Vector terms(
       history::String16VectorFromString16(term_string, false));
   ScoredHistoryMatches matches = GetIndex()->HistoryItemsForTerms(terms);
@@ -132,9 +132,8 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   // Format the URL autocomplete presentation.
   std::vector<size_t> offsets =
       OffsetsFromTermMatches(history_match.url_matches);
-  match.contents =
-      net::FormatUrlWithOffsets(info.url(), languages_, net::kFormatUrlOmitAll,
-                                UnescapeRule::SPACES, NULL, NULL, &offsets);
+  match.contents = net::FormatUrlWithOffsets(info.url(), languages_,
+      net::kFormatUrlOmitAll, net::UnescapeRule::SPACES, NULL, NULL, &offsets);
   history::TermMatches new_matches =
       ReplaceOffsetsInTermMatches(history_match.url_matches, offsets);
   match.contents_class =

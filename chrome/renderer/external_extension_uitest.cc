@@ -120,8 +120,8 @@ void SearchProviderTest::FinishIsSearchProviderInstalledTest(
   // Unescapes and normalizes the actual result.
   std::string value = net::UnescapeURLComponent(
       escaped_value,
-      UnescapeRule::NORMAL | UnescapeRule::SPACES |
-      UnescapeRule::URL_SPECIAL_CHARS | UnescapeRule::CONTROL_CHARS);
+      net::UnescapeRule::NORMAL | net::UnescapeRule::SPACES |
+      net::UnescapeRule::URL_SPECIAL_CHARS | net::UnescapeRule::CONTROL_CHARS);
   value += "\n";
   ReplaceSubstringsAfterOffset(&value, 0, "\r", "");
   EXPECT_STREQ("1\n", value.c_str());

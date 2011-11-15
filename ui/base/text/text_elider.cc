@@ -118,7 +118,7 @@ string16 ElideUrl(const GURL& url,
   // Get a formatted string and corresponding parsing of the url.
   url_parse::Parsed parsed;
   string16 url_string = net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
-      UnescapeRule::SPACES, &parsed, NULL, NULL);
+      net::UnescapeRule::SPACES, &parsed, NULL, NULL);
   if (available_pixel_width <= 0)
     return url_string;
 
@@ -397,7 +397,7 @@ SortedDisplayURL::SortedDisplayURL(const GURL& url,
   string16 host_minus_www = net::StripWWW(sort_host_);
   url_parse::Parsed parsed;
   display_url_ = net::FormatUrl(url, languages,
-      net::kFormatUrlOmitAll, UnescapeRule::SPACES, &parsed, &prefix_end_,
+      net::kFormatUrlOmitAll, net::UnescapeRule::SPACES, &parsed, &prefix_end_,
       NULL);
   if (sort_host_.length() > host_minus_www.length()) {
     prefix_end_ += sort_host_.length() - host_minus_www.length();
