@@ -124,9 +124,9 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // |args| is unused.
   void HandleManageCloudPrint(const base::ListValue* args);
 
-  // Gathers UMA stats when the print preview tab is about to close.
-  // |args| is unused.
-  void HandleClosePreviewTab(const base::ListValue* args);
+  // Reloads the initiator tab and closes the associated preview tab. |args| is
+  // unused.
+  void HandleReloadCrashedInitiatorTab(const base::ListValue* args);
 
   // Asks the browser to show the native printer management dialog.
   // |args| is unused.
@@ -134,6 +134,9 @@ class PrintPreviewHandler : public WebUIMessageHandler,
 
   // Asks the browser to show the cloud print dialog.
   void HandlePrintWithCloudPrint();
+
+  // Asks the browser to close the preview tab. |args| is unused.
+  void HandleClosePreviewTab(const base::ListValue* args);
 
   // Asks the browser for several settings that are needed before the first
   // preview is displayed.
@@ -160,11 +163,17 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Gets the initiator tab for the print preview tab.
   TabContentsWrapper* GetInitiatorTab() const;
 
+  // Closes the print preview tab.
+  void ClosePrintPreviewTab();
+
   // Activates the initiator tab and close the preview tab.
   void ActivateInitiatorTabAndClosePreviewTab();
 
   // Adds all the recorded stats taken so far to histogram counts.
   void ReportStats();
+
+  // Hides the preview tab for printing.
+  void HidePreviewTab();
 
   // Clears initiator tab details for this preview tab.
   void ClearInitiatorTabDetails();

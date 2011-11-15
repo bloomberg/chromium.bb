@@ -53,14 +53,6 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Enables the cancel button and attaches its keydown event listener.
-     */
-    enableCancelButton: function() {
-      window.onkeydown = onKeyDown;
-      this.cancelButton_.disabled = false;
-    },
-
-    /**
      * Executes when a |customEvents.PDF_GENERATION_ERROR| event occurs.
      * @private
      */

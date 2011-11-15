@@ -69,6 +69,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
+#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
@@ -3551,6 +3552,19 @@ void Browser::CloseContents(TabContents* source) {
     return;
   }
 
+  // Various sites have a pattern which open a new window with output formatted
+  // for printing, then include a print button, which does window.print();
+  // window.close(); An example is printing Virgin America boarding
+  // pass. Instead of closing, when a print tab is associated with this tab,
+  // tell the BackgroundPrintingManager to own it, which causes it to be
+  // hidden and eventually closed when the print window is closed.
+  TabContentsWrapper* source_wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(source);
+  if (g_browser_process->background_printing_manager()->
+          OwnInitiatorTab(source_wrapper)) {
+    return;
+  }
+
   int index = tab_handler_->GetTabStripModel()->GetWrapperIndex(source);
   if (index == TabStripModel::kNoTab) {
     NOTREACHED() << "CloseContents called for tab not in our strip";
@@ -3833,21 +3847,6 @@ void Browser::ContentRestrictionsChanged(TabContents* source) {
 }
 
 void Browser::RendererUnresponsive(TabContents* source) {
-  // Ignore hangs if print preview is open.
-  TabContentsWrapper* source_wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(source);
-  if (source_wrapper) {
-    printing::PrintPreviewTabController* controller =
-        printing::PrintPreviewTabController::GetInstance();
-    if (controller) {
-      TabContentsWrapper* preview_tab =
-          controller->GetPrintPreviewForTab(source_wrapper);
-      if (preview_tab && preview_tab != source_wrapper) {
-        return;
-      }
-    }
-  }
-
   browser::ShowHungRendererDialog(source);
 }
 
@@ -4791,7 +4790,9 @@ void Browser::UpdatePrintingState(int content_restrictions) {
     // where advanced printing is always enabled.
     printing::PrintPreviewTabController* controller =
         printing::PrintPreviewTabController::GetInstance();
-    if (controller && controller->GetPrintPreviewForTab(wrapper)) {
+    if (controller &&
+        wrapper &&
+        wrapper == controller->GetPrintPreviewForTab(wrapper)) {
       advanced_print_enabled = true;
     }
   }

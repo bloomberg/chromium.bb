@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/chrome_switches.h"
@@ -21,10 +20,6 @@ namespace {
 
 const unsigned char blob1[] =
     "12346102356120394751634516591348710478123649165419234519234512349134";
-
-size_t GetConstrainedWindowCount(TabContentsWrapper* tab) {
-  return tab->constrained_window_tab_helper()->constrained_window_count();
-}
 
 }  // namespace
 
@@ -41,7 +36,6 @@ TEST_F(PrintPreviewUITest, PrintPreviewData) {
   TabContentsWrapper* initiator_tab =
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
-  EXPECT_EQ(0U, GetConstrainedWindowCount(initiator_tab));
 
   scoped_refptr<printing::PrintPreviewTabController>
       controller(new printing::PrintPreviewTabController());
@@ -51,8 +45,7 @@ TEST_F(PrintPreviewUITest, PrintPreviewData) {
       controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_tab);
-  EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
+  EXPECT_EQ(2, browser()->tab_count());
 
   PrintPreviewUI* preview_ui =
       reinterpret_cast<PrintPreviewUI*>(preview_tab->web_ui());
@@ -112,8 +105,7 @@ TEST_F(PrintPreviewUITest, PrintPreviewDraftPages) {
       controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_tab);
-  EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
+  EXPECT_EQ(2, browser()->tab_count());
 
   PrintPreviewUI* preview_ui =
       reinterpret_cast<PrintPreviewUI*>(preview_tab->web_ui());
@@ -180,8 +172,7 @@ TEST_F(PrintPreviewUITest, GetCurrentPrintPreviewStatus) {
       controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_tab);
-  EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
+  EXPECT_EQ(2, browser()->tab_count());
 
   PrintPreviewUI* preview_ui =
       reinterpret_cast<PrintPreviewUI*>(preview_tab->web_ui());

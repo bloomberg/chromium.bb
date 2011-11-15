@@ -11,12 +11,8 @@
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/browser/ui/webui/print_preview_data_source.h"
 #include "chrome/browser/ui/webui/print_preview_handler.h"
 #include "chrome/common/print_messages.h"
@@ -71,9 +67,8 @@ base::LazyInstance<PrintPreviewRequestIdMapWithLock>
 }  // namespace
 
 PrintPreviewUI::PrintPreviewUI(TabContents* contents)
-    : ConstrainedHtmlUI(contents),
-      initial_preview_start_time_(base::TimeTicks::Now()),
-      tab_closed_(false) {
+    : ChromeWebUI(contents),
+      initial_preview_start_time_(base::TimeTicks::Now()) {
   // WebUI owns |handler_|.
   handler_ = new PrintPreviewHandler();
   AddMessageHandler(handler_->Attach(this));
@@ -146,25 +141,14 @@ std::string PrintPreviewUI::GetPrintPreviewUIAddress() const {
   return preview_ui_addr;
 }
 
-void PrintPreviewUI::OnPrintPreviewTabClosed() {
-  TabContentsWrapper* preview_tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents());
-  printing::BackgroundPrintingManager* background_printing_manager =
-      g_browser_process->background_printing_manager();
-  if (background_printing_manager->HasPrintPreviewTab(preview_tab))
-    return;
-  OnClosePrintPreviewTab();
+void PrintPreviewUI::OnInitiatorTabCrashed() {
+  StringValue initiator_tab_url(initiator_url_);
+  CallJavascriptFunction("onInitiatorTabCrashed", initiator_tab_url);
 }
 
 void PrintPreviewUI::OnInitiatorTabClosed() {
-  TabContentsWrapper* preview_tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents());
-  printing::BackgroundPrintingManager* background_printing_manager =
-      g_browser_process->background_printing_manager();
-  if (background_printing_manager->HasPrintPreviewTab(preview_tab))
-    CallJavascriptFunction("cancelPendingPrintRequest");
-  else
-    OnClosePrintPreviewTab();
+  StringValue initiator_tab_url(initiator_url_);
+  CallJavascriptFunction("onInitiatorTabClosed", initiator_tab_url);
 }
 
 void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
@@ -180,7 +164,7 @@ void PrintPreviewUI::OnDidGetPreviewPageCount(
   DCHECK_GT(params.page_count, 0);
   base::FundamentalValue count(params.page_count);
   base::FundamentalValue request_id(params.preview_request_id);
-  CallJavascriptFunction("onDidGetPreviewPageCount", count, request_id);
+  CallJavascriptFunction("onDidGetPreviewPageCount", count,request_id);
 }
 
 void PrintPreviewUI::OnDidGetDefaultPageLayout(
@@ -260,35 +244,4 @@ void PrintPreviewUI::OnInvalidPrinterSettings() {
 
 PrintPreviewDataService* PrintPreviewUI::print_preview_data_service() {
   return PrintPreviewDataService::GetInstance();
-}
-
-void PrintPreviewUI::OnHidePreviewTab() {
-  TabContentsWrapper* preview_tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents());
-  printing::BackgroundPrintingManager* background_printing_manager =
-      g_browser_process->background_printing_manager();
-  if (background_printing_manager->HasPrintPreviewTab(preview_tab))
-    return;
-
-  ConstrainedHtmlUIDelegate* delegate = GetConstrainedDelegate();
-  if (!delegate)
-    return;
-  delegate->ReleaseTabContentsOnDialogClose();
-  background_printing_manager->OwnPrintPreviewTab(preview_tab);
-  OnClosePrintPreviewTab();
-}
-
-void PrintPreviewUI::OnClosePrintPreviewTab() {
-  if (tab_closed_)
-    return;
-  tab_closed_ = true;
-  ConstrainedHtmlUIDelegate* delegate = GetConstrainedDelegate();
-  if (!delegate)
-    return;
-  delegate->GetHtmlDialogUIDelegate()->OnDialogClosed("");
-  delegate->OnDialogCloseFromWebUI();
-}
-
-void PrintPreviewUI::OnReloadPrintersList() {
-  CallJavascriptFunction("reloadPrintersList");
 }

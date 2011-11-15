@@ -25,6 +25,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/printing/print_job_manager.h"
@@ -33,6 +34,8 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/cloud_print_signin_dialog.h"
@@ -67,7 +70,7 @@ enum UserActionBuckets {
   FALLBACK_TO_ADVANCED_SETTINGS_DIALOG,
   PREVIEW_FAILED,
   PREVIEW_STARTED,
-  INITIATOR_TAB_CRASHED,  // UNUSED
+  INITIATOR_TAB_CRASHED,
   INITIATOR_TAB_CLOSED,
   PRINT_WITH_CLOUD_PRINT,
   USERACTION_BUCKET_BOUNDARY
@@ -173,6 +176,10 @@ void ReportPrintSettingsStats(const DictionaryValue& settings) {
   }
 }
 
+printing::BackgroundPrintingManager* GetBackgroundPrintingManager() {
+  return g_browser_process->background_printing_manager();
+}
+
 }  // namespace
 
 // A Task implementation that stores a PDF file on disk.
@@ -253,6 +260,9 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("manageLocalPrinters",
       base::Bind(&PrintPreviewHandler::HandleManagePrinters,
                  base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("reloadCrashedInitiatorTab",
+      base::Bind(&PrintPreviewHandler::HandleReloadCrashedInitiatorTab,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("closePrintPreviewTab",
       base::Bind(&PrintPreviewHandler::HandleClosePreviewTab,
                  base::Unretained(this)));
@@ -312,7 +322,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   TabContentsWrapper* initiator_tab = GetInitiatorTab();
   if (!initiator_tab) {
     ReportUserActionHistogram(INITIATOR_TAB_CLOSED);
-    print_preview_ui->OnClosePrintPreviewTab();
+    print_preview_ui->OnInitiatorTabClosed();
     return;
   }
 
@@ -422,8 +432,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
     // This tries to activate the initiator tab as well, so do not clear the
     // association with the initiator tab yet.
-    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
-    print_preview_ui->OnHidePreviewTab();
+    HidePreviewTab();
 
     // Do this so the initiator tab can open a new print preview tab.
     ClearInitiatorTabDetails();
@@ -467,8 +476,7 @@ void PrintPreviewHandler::HandlePrintToPdf(
 }
 
 void PrintPreviewHandler::HandleHidePreview(const ListValue* /*args*/) {
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
-  print_preview_ui->OnHidePreviewTab();
+  HidePreviewTab();
 }
 
 void PrintPreviewHandler::HandleCancelPendingPrintRequest(
@@ -579,6 +587,21 @@ void PrintPreviewHandler::HandleManagePrinters(const ListValue* /*args*/) {
   printing::PrinterManagerDialog::ShowPrinterManagerDialog();
 }
 
+void PrintPreviewHandler::HandleReloadCrashedInitiatorTab(
+    const ListValue* /*args*/) {
+  ReportStats();
+  ReportUserActionHistogram(INITIATOR_TAB_CRASHED);
+
+  TabContentsWrapper* initiator_tab = GetInitiatorTab();
+  if (!initiator_tab)
+    return;
+
+  TabContents* contents = initiator_tab->tab_contents();
+  contents->OpenURL(contents->GetURL(), GURL(), CURRENT_TAB,
+                    content::PAGE_TRANSITION_RELOAD);
+  ActivateInitiatorTabAndClosePreviewTab();
+}
+
 void PrintPreviewHandler::HandleClosePreviewTab(const ListValue* /*args*/) {
   ReportStats();
   ReportUserActionHistogram(CANCEL);
@@ -587,6 +610,8 @@ void PrintPreviewHandler::HandleClosePreviewTab(const ListValue* /*args*/) {
   // before cancelling.
   UMA_HISTOGRAM_COUNTS("PrintPreview.RegeneratePreviewRequest.BeforeCancel",
                        regenerate_preview_request_count_);
+
+  ActivateInitiatorTabAndClosePreviewTab();
 }
 
 void PrintPreviewHandler::ReportStats() {
@@ -663,8 +688,7 @@ void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {
     static_cast<RenderViewHostDelegate*>(
         initiator_tab->tab_contents())->Activate();
   }
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
-  print_preview_ui->OnClosePrintPreviewTab();
+  ClosePrintPreviewTab();
 }
 
 void PrintPreviewHandler::SendPrinterCapabilities(
@@ -703,7 +727,7 @@ void PrintPreviewHandler::SendCloudPrintJob(const DictionaryValue& settings,
   std::string print_job_title = UTF16ToUTF8(print_job_title_utf16);
   std::string printer_id;
   settings.GetString(printing::kSettingCloudPrintId, &printer_id);
-  // BASE64 encode the job data.
+// BASE64 encode the job data.
   std::string raw_data(reinterpret_cast<const char*>(data->front()),
                        data->size());
   std::string base64_data;
@@ -725,8 +749,8 @@ void PrintPreviewHandler::SendCloudPrintJob(const DictionaryValue& settings,
     "data:application/pdf;base64,%s\r\n"
     "--%s\r\n";
 
-  // TODO(abodenha@chromium.org) This implies a large copy operation.
-  // Profile this and optimize if necessary.
+// TODO(abodenha@chromium.org) This implies a large copy operation.
+// Profile this and optimize if necessary.
   std::string final_data;
   base::SStringPrintf(&final_data,
                       prolog,
@@ -753,6 +777,25 @@ TabContentsWrapper* PrintPreviewHandler::GetInitiatorTab() const {
   if (!tab_controller)
     return NULL;
   return tab_controller->GetInitiatorTab(preview_tab_wrapper());
+}
+
+void PrintPreviewHandler::ClosePrintPreviewTab() {
+  TabContentsWrapper* tab =
+      TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
+  if (!tab)
+    return;
+  Browser* preview_tab_browser = BrowserList::FindBrowserWithID(
+      tab->restore_tab_helper()->window_id().id());
+  if (!preview_tab_browser)
+    return;
+  TabStripModel* tabstrip = preview_tab_browser->tabstrip_model();
+  int index = tabstrip->GetIndexOfTabContents(tab);
+  if (index == TabStripModel::kNoTab)
+    return;
+
+  // Keep print preview tab out of the recently closed tab list, because
+  // re-opening that page will just display a non-functional print preview page.
+  tabstrip->CloseTabContentsAt(index, TabStripModel::CLOSE_NONE);
 }
 
 void PrintPreviewHandler::OnPrintDialogShown() {
@@ -841,6 +884,12 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
 void PrintPreviewHandler::FileSelectionCanceled(void* params) {
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
   print_preview_ui->OnFileSelectionCancelled();
+}
+
+void PrintPreviewHandler::HidePreviewTab() {
+  if (GetBackgroundPrintingManager()->HasPrintPreviewTab(preview_tab_wrapper()))
+    return;
+  GetBackgroundPrintingManager()->OwnPrintPreviewTab(preview_tab_wrapper());
 }
 
 void PrintPreviewHandler::ClearInitiatorTabDetails() {

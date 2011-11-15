@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/time.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
-#include "chrome/browser/ui/webui/constrained_html_ui.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 
 class PrintPreviewDataService;
 class PrintPreviewHandler;
@@ -22,7 +22,7 @@ namespace printing {
 struct PageSizeMargins;
 }
 
-class PrintPreviewUI : public ConstrainedHtmlUI {
+class PrintPreviewUI : public ChromeWebUI {
  public:
   explicit PrintPreviewUI(TabContents* contents);
   virtual ~PrintPreviewUI();
@@ -100,13 +100,12 @@ class PrintPreviewUI : public ConstrainedHtmlUI {
   // Notifies the Web UI that the print preview failed to render.
   void OnPrintPreviewFailed();
 
-  // Notified the Web UI that this print preview tab's RenderProcess has been
-  // closed, which may occur for several reasons, e.g. tab closure or crash.
-  void OnPrintPreviewTabClosed();
-
   // Notifies the Web UI that initiator tab is closed, so we can disable all the
   // controls that need the initiator tab for generating the preview data.
   void OnInitiatorTabClosed();
+
+  // Notifies the Web UI that the initiator tab has crashed.
+  void OnInitiatorTabCrashed();
 
   // Notifies the Web UI renderer that file selection has been cancelled.
   void OnFileSelectionCancelled();
@@ -117,15 +116,6 @@ class PrintPreviewUI : public ConstrainedHtmlUI {
 
   // Notifies the Web UI to cancel the pending preview request.
   void OnCancelPendingPreviewRequest();
-
-  // Hides the print preview tab.
-  void OnHidePreviewTab();
-
-  // Closes the print preview tab.
-  void OnClosePrintPreviewTab();
-
-  // Reload the printers list.
-  void OnReloadPrintersList();
 
  private:
   friend class PrintPreviewHandlerTest;
@@ -161,9 +151,6 @@ class PrintPreviewUI : public ConstrainedHtmlUI {
   // Store the initiator tab title, used for populating the print preview tab
   // title.
   string16 initiator_tab_title_;
-
-  // Keeps track of whether OnClosePrintPreviewTab() has been called or not.
-  bool tab_closed_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };

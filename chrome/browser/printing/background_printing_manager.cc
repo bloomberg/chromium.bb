@@ -66,6 +66,8 @@ void BackgroundPrintingManager::OwnPrintPreviewTab(
                    content::Source<RenderProcessHost>(rph));
   }
 
+  RemoveFromTabStrip(preview_tab);
+
   // Activate the initiator tab.
   PrintPreviewTabController* tab_controller =
       PrintPreviewTabController::GetInstance();
@@ -77,6 +79,45 @@ void BackgroundPrintingManager::OwnPrintPreviewTab(
     return;
   static_cast<RenderViewHostDelegate*>(
       initiator_tab->tab_contents())->Activate();
+}
+
+bool BackgroundPrintingManager::OwnInitiatorTab(
+    TabContentsWrapper* initiator_tab) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!PrintPreviewTabController::IsPrintPreviewTab(initiator_tab));
+  bool has_initiator_tab = false;
+  for (TabContentsWrapperMap::iterator it = map_.begin(); it != map_.end();
+       ++it) {
+    if (it->second == initiator_tab) {
+      has_initiator_tab = true;
+      break;
+    }
+  }
+  CHECK(!has_initiator_tab);
+
+  PrintPreviewTabController* tab_controller =
+      PrintPreviewTabController::GetInstance();
+  if (!tab_controller)
+    return false;
+  TabContentsWrapper* preview_tab =
+      tab_controller->GetPrintPreviewForTab(initiator_tab);
+  if (!preview_tab)
+    return false;
+
+  map_[preview_tab] = initiator_tab;
+
+  // OwnPrintPreviewTab() may have already added this notification.
+  TabContents* preview_contents = preview_tab->tab_contents();
+  if (!registrar_.IsRegistered(
+          this,
+          content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+          content::Source<TabContents>(preview_contents))) {
+    registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+                   content::Source<TabContents>(preview_contents));
+  }
+
+  RemoveFromTabStrip(initiator_tab);
+  return true;
 }
 
 void BackgroundPrintingManager::Observe(
@@ -129,14 +170,25 @@ void BackgroundPrintingManager::OnPrintJobReleased(
 
 void BackgroundPrintingManager::OnTabContentsDestroyed(
     TabContentsWrapper* preview_tab) {
+  bool is_owned_printing_tab = HasPrintPreviewTab(preview_tab);
+  bool is_preview_tab_for_owned_initator_tab =
+      (map_.find(preview_tab) != map_.end());
+  DCHECK(is_owned_printing_tab || is_preview_tab_for_owned_initator_tab);
+
   // Always need to remove this notification since the tab is gone.
   registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                     content::Source<TabContents>(preview_tab->tab_contents()));
 
-  if (!HasPrintPreviewTab(preview_tab)) {
-    NOTREACHED();
-    return;
+  // Delete the associated initiator tab if one exists.
+  if (is_preview_tab_for_owned_initator_tab) {
+    TabContentsWrapper* initiator_tab = map_[preview_tab];
+    map_.erase(preview_tab);
+    MessageLoop::current()->DeleteSoon(FROM_HERE, initiator_tab);
   }
+
+  // If |preview_tab| is not owned, then we are done.
+  if (!is_owned_printing_tab)
+    return;
 
   // Remove NOTIFICATION_RENDERER_PROCESS_CLOSED if |preview_tab| is the last
   // TabContents associated with |rph|.
@@ -158,6 +210,18 @@ void BackgroundPrintingManager::OnTabContentsDestroyed(
     // DeletePreviewTab already deleted the notification.
     printing_tabs_pending_deletion_.erase(preview_tab);
   }
+}
+
+void BackgroundPrintingManager::RemoveFromTabStrip(TabContentsWrapper* tab) {
+  Browser* browser = BrowserList::FindBrowserWithID(
+      tab->restore_tab_helper()->window_id().id());
+  DCHECK(browser);
+
+  TabStripModel* tabstrip = browser->tabstrip_model();
+  int index = tabstrip->GetIndexOfTabContents(tab);
+  if (index == TabStripModel::kNoTab)
+    return;
+  tabstrip->DetachTabContentsAt(index);
 }
 
 void BackgroundPrintingManager::DeletePreviewTab(TabContentsWrapper* tab) {

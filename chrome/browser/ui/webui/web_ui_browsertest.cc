@@ -12,7 +12,6 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
@@ -207,13 +206,6 @@ void WebUIBrowserTest::BrowsePrintPreload(
       browser()->tabstrip_model(), this);
   browser()->Print();
   tabstrip_observer.WaitForObservation();
-  printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
-  ASSERT_TRUE(tab_controller);
-  TabContentsWrapper* preview_tab = tab_controller->GetPrintPreviewForTab(
-      browser()->GetSelectedTabContentsWrapper());
-  ASSERT_TRUE(preview_tab);
-  SetWebUIInstance(preview_tab->web_ui());
 }
 
 const char WebUIBrowserTest::kDummyURL[] = "chrome://DummyURL";

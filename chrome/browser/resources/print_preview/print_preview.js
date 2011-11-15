@@ -206,7 +206,6 @@ function onSystemDialogLinkClicked() {
     return;
   showingSystemDialog = true;
   disableInputElementsInSidebar();
-  printHeader.disableCancelButton();
   $('system-dialog-throbber').hidden = false;
   chrome.send('showSystemDialog');
 }
@@ -223,6 +222,42 @@ function launchNativePrintDialog() {
   printHeader.disableCancelButton();
   $('native-print-dialog-throbber').hidden = false;
   chrome.send('showSystemDialog');
+}
+
+/**
+ * Disables the controls which need the initiator tab to generate preview
+ * data. This function is called when the initiator tab has crashed.
+ * @param {string} initiatorTabURL The URL of the initiator tab.
+ */
+function onInitiatorTabCrashed(initiatorTabURL) {
+  disableInputElementsInSidebar();
+  if (initiatorTabURL) {
+    previewArea.displayErrorMessageWithButtonAndNotify(
+        localStrings.getString('initiatorTabCrashed'),
+        localStrings.getString('reopenPage'),
+        function() { chrome.send('reloadCrashedInitiatorTab'); });
+  } else {
+    previewArea.displayErrorMessageAndNotify(
+        localStrings.getString('initiatorTabCrashed'));
+  }
+}
+
+/**
+ * Disables the controls which need the initiator tab to generate preview
+ * data. This function is called when the initiator tab is closed.
+ * @param {string} initiatorTabURL The URL of the initiator tab.
+ */
+function onInitiatorTabClosed(initiatorTabURL) {
+  disableInputElementsInSidebar();
+  if (initiatorTabURL) {
+    previewArea.displayErrorMessageWithButtonAndNotify(
+        localStrings.getString('initiatorTabClosed'),
+        localStrings.getString('reopenPage'),
+        function() { window.location = initiatorTabURL; });
+  } else {
+    previewArea.displayErrorMessageAndNotify(
+        localStrings.getString('initiatorTabClosed'));
+  }
 }
 
 /**
@@ -304,16 +339,6 @@ function updateWithPrinterCapabilities(settingInfo) {
 }
 
 /**
- * Reloads the printer list.
- */
-function reloadPrintersList() {
-  $('printer-list').length = 0;
-  firstCloudPrintOptionPos = 0;
-  lastCloudPrintOptionPos = 0;
-  chrome.send('getPrinters');
-}
-
-/**
  * Turn on the integration of Cloud Print.
  * @param {string} cloudPrintUrl The URL to use for cloud print servers.
  */
@@ -335,7 +360,7 @@ function printToCloud(data) {
  * Cloud print upload of the PDF file is finished, time to close the dialog.
  */
 function finishedCloudPrinting() {
-  closePrintPreviewTab();
+  window.location = cloudprint.getBaseURL();
 }
 
 /**
@@ -553,7 +578,7 @@ function requestPrintPreview() {
  * preview tab regarding the file selection cancel event.
  */
 function fileSelectionCancelled() {
-  printHeader.enableCancelButton();
+  // TODO(thestig) re-enable controls here.
 }
 
 /**
@@ -594,7 +619,7 @@ function setDefaultPrinter(printerName, cloudPrintData) {
 
 /**
  * Fill the printer list drop down.
- * Called from PrintPreviewHandler::SetupPrinterList().
+ * Called from PrintPreviewHandler::SendPrinterList().
  * @param {Array} printers Array of printer info objects.
  */
 function setPrinters(printers) {
@@ -1060,7 +1085,6 @@ function setInitiatorTabTitle(initiatorTabTitle) {
  */
 function closePrintPreviewTab() {
   chrome.send('closePrintPreviewTab');
-  chrome.send('DialogClose');
 }
 
 /**
@@ -1072,13 +1096,6 @@ function onKeyDown(e) {
   if (e.keyCode == 27 && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
     printHeader.disableCancelButton();
     closePrintPreviewTab();
-  }
-  if (e.keyCode == 80) {
-    if ((cr.isMac && e.metaKey && e.altKey && !e.shiftKey && !e.ctrlKey) ||
-        (!cr.isMac && e.shiftKey && e.ctrlKey && !e.altKey && !e.metaKey)) {
-      window.onkeydown = null;
-      onSystemDialogLinkClicked();
-    }
   }
 }
 

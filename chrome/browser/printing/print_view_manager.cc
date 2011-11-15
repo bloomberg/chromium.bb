@@ -33,6 +33,13 @@ using content::BrowserThread;
 
 namespace {
 
+string16 GenerateRenderSourceName(TabContents* tab_contents) {
+  string16 name(tab_contents->GetTitle());
+  if (name.empty())
+    name = l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE);
+  return name;
+}
+
 // Release the PrinterQuery identified by |cookie|.
 void ReleasePrinterQuery(int cookie) {
   printing::PrintJobManager* print_job_manager =
@@ -60,6 +67,7 @@ PrintViewManager::PrintViewManager(TabContentsWrapper* tab)
       number_pages_(0),
       printing_succeeded_(false),
       inside_inner_message_loop_(false),
+      is_title_overridden_(false),
       observer_(NULL),
       cookie_(0) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -118,6 +126,10 @@ void PrintViewManager::set_observer(PrintViewManagerObserver* observer) {
   observer_ = observer;
 }
 
+void PrintViewManager::ResetTitleOverride() {
+  is_title_overridden_ = false;
+}
+
 void PrintViewManager::StopNavigation() {
   // Cancel the current job, wait for the worker to finish.
   TerminatePrintJob(true);
@@ -136,11 +148,15 @@ void PrintViewManager::RenderViewGone() {
   }
 }
 
+void PrintViewManager::OverrideTitle(TabContents* tab_contents) {
+  is_title_overridden_ = true;
+  overridden_title_ = GenerateRenderSourceName(tab_contents);
+}
+
 string16 PrintViewManager::RenderSourceName() {
-  string16 name(tab_contents()->GetTitle());
-  if (name.empty())
-    name = l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE);
-  return name;
+  if (is_title_overridden_)
+    return overridden_title_;
+  return GenerateRenderSourceName(tab_contents());
 }
 
 void PrintViewManager::OnDidGetPrintedPagesCount(int cookie, int number_pages) {

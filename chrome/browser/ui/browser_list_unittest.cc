@@ -158,8 +158,6 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
   browser3->CloseAllTabs();
 }
 
-#if 0
-// TODO(thestig) Fix or remove this test. http://crbug.com/100309
 TEST_F(BrowserListTest, TabContentsIteratorBackgroundPrinting) {
   // Make sure we have 1 window to start with.
   EXPECT_EQ(1U, BrowserList::size());
@@ -240,4 +238,3 @@ TEST_F(BrowserListTest, TabContentsIteratorBackgroundPrinting) {
 
   EXPECT_EQ(0U, CountAllTabs());
 }
-#endif

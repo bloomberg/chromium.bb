@@ -65,12 +65,11 @@ class ConstrainedHtmlUI : public ChromeWebUI {
   static PropertyAccessor<ConstrainedHtmlUIDelegate*>&
       GetPropertyAccessor();
 
- protected:
+ private:
   // Returns the TabContents' PropertyBag's ConstrainedHtmlUIDelegate.
   // Returns NULL if that property is not set.
   ConstrainedHtmlUIDelegate* GetConstrainedDelegate();
 
- private:
   // JS Message Handler
   void OnDialogCloseMessage(const base::ListValue* args);
 
