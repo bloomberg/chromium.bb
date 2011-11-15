@@ -283,7 +283,7 @@ class Builder(object):
     return_obj = cros_lib.RunCommand(
         [_PATH_TO_CBUILDBOT] + sys.argv + args_to_append,
         cwd=self.options.buildroot, error_code_ok=True)
-    return return_obj == 0
+    return return_obj.returncode == 0
 
   def Run(self):
     """Main runner for this builder class.  Runs build and prints summary."""
