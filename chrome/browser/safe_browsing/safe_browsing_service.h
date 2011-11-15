@@ -102,13 +102,13 @@ class SafeBrowsingService
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> full_hits;
 
-    // Task to make the callback to safebrowsing clients in case
-    // safebrowsing check takes too long to finish. Not owned by
-    // this class.
+    // Vends weak pointers for TimeoutCallback().  If the response is
+    // received before the timeout fires, factory is destructed and
+    // the timeout won't be fired.
     // TODO(lzheng): We should consider to use this time out check
     // for browsing too (instead of implementin in
     // safe_browsing_resource_handler.cc).
-    CancelableTask* timeout_task;
+    scoped_ptr<base::WeakPtrFactory<SafeBrowsingService> > timeout_factory_;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(SafeBrowsingCheck);
@@ -458,7 +458,7 @@ class SafeBrowsingService
   // success, otherwise TimeoutCallback will be called.
   void StartDownloadCheck(SafeBrowsingCheck* check,
                           Client* client,
-                          CancelableTask* task,
+                          const base::Closure& task,
                           int64 timeout_ms);
 
   // Adds the given entry to the whitelist.  Called on the UI thread.

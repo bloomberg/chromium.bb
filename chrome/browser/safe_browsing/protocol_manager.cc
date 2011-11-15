@@ -7,6 +7,7 @@
 #ifndef NDEBUG
 #include "base/base64.h"
 #endif
+#include "base/bind.h"
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -464,9 +465,8 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
       wrapped_key_ = wrapped_key;
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(
-              sb_service_, &SafeBrowsingService::OnNewMacKeys, client_key_,
-              wrapped_key_));
+          base::Bind(&SafeBrowsingService::OnNewMacKeys,
+                     sb_service_, client_key_, wrapped_key_));
       break;
     }
 
