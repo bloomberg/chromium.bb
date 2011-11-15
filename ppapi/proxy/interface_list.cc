@@ -238,10 +238,21 @@ const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
 }
 
 void InterfaceList::AddFlashInterfaces() {
+  AddProxy(API_ID_PPB_FLASH, &ProxyFactory<PPB_Flash_Proxy>);
+  AddPPB(PPB_FLASH_INTERFACE, API_ID_PPB_FLASH,
+         PPB_Flash_Proxy::GetInterface());
+
   AddProxy(API_ID_PPB_FLASH_CLIPBOARD,
            &ProxyFactory<PPB_Flash_Clipboard_Proxy>);
   AddPPB(PPB_FLASH_CLIPBOARD_INTERFACE, API_ID_PPB_FLASH_CLIPBOARD,
          thunk::GetPPB_Flash_Clipboard_Thunk());
+  AddPPB(PPB_FLASH_CLIPBOARD_INTERFACE_3_LEGACY, API_ID_PPB_FLASH_CLIPBOARD,
+         thunk::GetPPB_Flash_Clipboard_Thunk());
+
+  AddProxy(API_ID_PPB_FLASH_FILE_FILEREF,
+           &ProxyFactory<PPB_Flash_File_FileRef_Proxy>);
+  AddPPB(PPB_FLASH_FILE_FILEREF_INTERFACE, API_ID_PPB_FLASH_FILE_FILEREF,
+         PPB_Flash_File_FileRef_Proxy::GetInterface());
 
   AddProxy(API_ID_PPB_FLASH_FILE_MODULELOCAL,
            &ProxyFactory<PPB_Flash_File_ModuleLocal_Proxy>);
@@ -249,18 +260,9 @@ void InterfaceList::AddFlashInterfaces() {
          API_ID_PPB_FLASH_FILE_MODULELOCAL,
          PPB_Flash_File_ModuleLocal_Proxy::GetInterface());
 
-  AddProxy(API_ID_PPB_FLASH_FILE_FILEREF,
-           &ProxyFactory<PPB_Flash_File_FileRef_Proxy>);
-  AddPPB(PPB_FLASH_FILE_FILEREF_INTERFACE, API_ID_PPB_FLASH_FILE_FILEREF,
-         PPB_Flash_File_FileRef_Proxy::GetInterface());
-
   AddProxy(API_ID_PPB_FLASH_MENU, &ProxyFactory<PPB_Flash_Menu_Proxy>);
   AddPPB(PPB_FLASH_MENU_INTERFACE, API_ID_PPB_FLASH_MENU,
          thunk::GetPPB_Flash_Menu_Thunk());
-
-  AddProxy(API_ID_PPB_FLASH, &ProxyFactory<PPB_Flash_Proxy>);
-  AddPPB(PPB_FLASH_INTERFACE, API_ID_PPB_FLASH,
-         PPB_Flash_Proxy::GetInterface());
 
   AddProxy(API_ID_PPB_FLASH_TCPSOCKET,
            &ProxyFactory<PPB_Flash_TCPSocket_Proxy>);
