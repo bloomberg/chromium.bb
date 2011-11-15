@@ -246,7 +246,7 @@ def communicate(args, timeout=None, **kwargs):
       time.sleep(0.001)
     # Now that the process died, reset the cursor and read the file.
     buff.seek(0)
-    out = [buff.read(), None]
+    out = (buff.read(), None)
   return out, proc.returncode
 
 
