@@ -12,25 +12,26 @@
 set -o nounset
 set -o errexit
 
-# The script is located in "native_client/pnacl/scripts".
-# Set pwd to native_client/
-cd "$(dirname "$0")"/../..
-if [[ $(basename "$(pwd)") != "native_client" ]] ; then
-  echo "ERROR: cannot find native_client/ directory"
+# The script is located in "pnacl/scripts".
+# Set pwd to pnacl/
+cd "$(dirname "$0")"/..
+if [[ $(basename "$(pwd)") != "pnacl" ]] ; then
+  echo "ERROR: cannot find pnacl/ directory"
   exit -1
 fi
 
-source pnacl/scripts/common-tools.sh
-readonly NACL_ROOT="$(pwd)"
-SetScriptPath "${NACL_ROOT}/pnacl/scripts/merge-tool.sh"
-SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
+source scripts/common-tools.sh
+readonly PNACL_ROOT="$(pwd)"
+
+SetScriptPath "${PNACL_ROOT}/scripts/merge-tool.sh"
+SetLogDirectory "${PNACL_ROOT}/build/log"
 readonly SCRIPT_PATH="$0"
-readonly MERGE_LOG_FILE="${NACL_ROOT}/merge.log"
+readonly MERGE_LOG_FILE="${PNACL_ROOT}/merge.log"
 ######################################################################
 
 # Location of the sources
 # These should match the values in build.sh
-readonly TC_SRC="$(pwd)/hg"
+readonly TC_SRC="${PNACL_ROOT}/src"
 readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
 readonly TC_SRC_LLVM_MASTER="${TC_SRC}/llvm-master"
 
@@ -49,7 +50,7 @@ readonly HG_CONFIG_MANUAL=(
 # TODO(pdox): Refactor repository checkout into a separate script
 #             so that we don't need to invoke build.sh.
 pnacl-build() {
-  "${NACL_ROOT}"/pnacl/build.sh "$@"
+  "${PNACL_ROOT}"/build.sh "$@"
 }
 
 #@ auto [rev]            - Non-interactive merge
@@ -128,7 +129,7 @@ merge-all() {
 
 final-banner() {
   echo "********************************************************************"
-  echo "The hg/upstream working directory is now in a merged state."
+  echo "The pnacl/src/upstream working directory is now in a merged state."
   echo "Before you commit and push, you should build PNaCl and run all tests."
   echo ""
   echo "1) Set the default LLVM_PROJECT_REV to ${MERGE_REVISION} (in build.sh)"
@@ -154,14 +155,14 @@ assert-clean() {
 
 #@ clean                 - Clean/revert mercurial repositories
 clean() {
-  echo "@@@BUILD_STEP Clean hg/upstream@@@"
+  echo "@@@BUILD_STEP Clean src/upstream@@@"
   StepBanner "CLEAN - Cleaning repositories"
   clean-upstream
 }
 
-#+ clean-upstream       - Clean the hg/upstream repository
+#+ clean-upstream       - Clean the src/upstream repository
 clean-upstream() {
-  StepBanner "CLEAN" "Cleaning hg upstream repository"
+  StepBanner "CLEAN" "Cleaning src/upstream repository"
 
   if ! [ -d "${TC_SRC_UPSTREAM}" ]; then
     return 0

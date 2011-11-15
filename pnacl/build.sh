@@ -22,20 +22,22 @@
 set -o nounset
 set -o errexit
 
-# The script is located in "native_client/pnacl".
-# Set pwd to native_client/
-cd "$(dirname "$0")"/..
-if [[ $(basename "$(pwd)") != "native_client" ]] ; then
-  echo "ERROR: cannot find native_client/ directory"
+# The script is located in "native_client/pnacl/".
+# Set pwd to pnacl/
+cd "$(dirname "$0")"
+if [[ $(basename "$(pwd)") != "pnacl" ]] ; then
+  echo "ERROR: cannot find pnacl/ directory"
   exit -1
 fi
 
-source pnacl/scripts/common-tools.sh
+source scripts/common-tools.sh
 
-readonly NACL_ROOT="$(pwd)"
+readonly PNACL_ROOT="$(pwd)"
+readonly NACL_ROOT="$(GetAbsolutePath ..)"
+readonly SCONS_OUT="${NACL_ROOT}/scons-out"
 
-SetScriptPath "${NACL_ROOT}/pnacl/build.sh"
-SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
+SetScriptPath "${PNACL_ROOT}/build.sh"
+SetLogDirectory "${PNACL_ROOT}/build/log"
 
 # For different levels of make parallelism change this in your env
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
@@ -72,12 +74,13 @@ readonly BINUTILS_TARGET=arm-pc-nacl
 readonly REAL_CROSS_TARGET=pnacl
 readonly NACL64_TARGET=x86_64-nacl
 
-readonly DRIVER_DIR="${NACL_ROOT}/pnacl/driver"
+readonly DRIVER_DIR="${PNACL_ROOT}/driver"
 readonly ARM_ARCH=armv7-a
 readonly ARM_FPU=vfp
 
+readonly TOOLCHAIN_ROOT="${NACL_ROOT}/toolchain"
 
-readonly NNACL_BASE="${NACL_ROOT}/toolchain/${SCONS_BUILD_PLATFORM}_x86"
+readonly NNACL_BASE="${TOOLCHAIN_ROOT}/${SCONS_BUILD_PLATFORM}_x86"
 readonly NNACL_NEWLIB_ROOT="${NNACL_BASE}_newlib"
 readonly NNACL_GLIBC_ROOT="${NNACL_BASE}"
 
@@ -89,32 +92,32 @@ readonly NONEXISTENT_PATH="/going/down/the/longest/road/to/nowhere"
 # Leave this blank, it will be filled during processing.
 SPECULATIVE_REBUILD_SET=""
 
-readonly PNACL_ROOT="${NACL_ROOT}/pnacl"
 readonly PNACL_SUPPORT="${PNACL_ROOT}/support"
 
+readonly THIRD_PARTY="${NACL_ROOT}"/../third_party
+
 readonly GMP_VER=gmp-5.0.2
-readonly THIRD_PARTY_GMP="${NACL_ROOT}/../third_party/gmp/${GMP_VER}.tar.bz2"
+readonly THIRD_PARTY_GMP="${THIRD_PARTY}/gmp/${GMP_VER}.tar.bz2"
 
 readonly MPFR_VER=mpfr-3.0.1
-readonly THIRD_PARTY_MPFR="${NACL_ROOT}/../third_party/mpfr/${MPFR_VER}.tar.bz2"
+readonly THIRD_PARTY_MPFR="${THIRD_PARTY}/mpfr/${MPFR_VER}.tar.bz2"
 
 readonly MPC_VER=mpc-0.9
-readonly THIRD_PARTY_MPC="${NACL_ROOT}/../third_party/mpc/${MPC_VER}.tar.gz"
+readonly THIRD_PARTY_MPC="${THIRD_PARTY}/mpc/${MPC_VER}.tar.gz"
 
 # The location of Mercurial sources (absolute)
-readonly PNACL_HG_ROOT="${NACL_ROOT}/hg"
-readonly TC_SRC_UPSTREAM="${PNACL_HG_ROOT}/upstream"
+readonly TC_SRC="${PNACL_ROOT}/src"
+readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
 readonly TC_SRC_LLVM="${TC_SRC_UPSTREAM}/llvm"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_UPSTREAM}/llvm-gcc/libstdc++-v3"
-readonly TC_SRC_BINUTILS="${PNACL_HG_ROOT}/binutils"
-readonly TC_SRC_NEWLIB="${PNACL_HG_ROOT}/newlib"
-readonly TC_SRC_COMPILER_RT="${PNACL_HG_ROOT}/compiler-rt"
+readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
+readonly TC_SRC_NEWLIB="${TC_SRC}/newlib"
+readonly TC_SRC_COMPILER_RT="${TC_SRC}/compiler-rt"
 
 # LLVM sources (svn)
-readonly PNACL_SVN_ROOT="${NACL_ROOT}/hg"
-readonly TC_SRC_LLVM_MASTER="${PNACL_SVN_ROOT}/llvm-master"
-readonly TC_SRC_CLANG="${PNACL_SVN_ROOT}/clang"
-readonly TC_SRC_DRAGONEGG="${PNACL_SVN_ROOT}/dragonegg"
+readonly TC_SRC_LLVM_MASTER="${TC_SRC}/llvm-master"
+readonly TC_SRC_CLANG="${TC_SRC}/clang"
+readonly TC_SRC_DRAGONEGG="${TC_SRC}/dragonegg"
 
 # Git sources
 readonly PNACL_GIT_ROOT="${PNACL_ROOT}/git"
@@ -130,14 +133,13 @@ readonly BINUTILS_MESS="${TC_SRC_BINUTILS}/binutils-2.20/opcodes/i386-tbl.h"
 readonly SERVICE_RUNTIME_SRC="${NACL_ROOT}/src/trusted/service_runtime"
 readonly EXPORT_HEADER_SCRIPT="${SERVICE_RUNTIME_SRC}/export_header.py"
 readonly NACL_SYS_HEADERS="${SERVICE_RUNTIME_SRC}/include"
-readonly NACL_HEADERS_TS="${PNACL_HG_ROOT}/nacl.sys.timestamp"
+readonly NACL_HEADERS_TS="${TC_SRC}/nacl.sys.timestamp"
 readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib-trunk/newlib/libc/include"
 
 # The location of each project. These should be absolute paths.
 # If a tool below depends on a certain libc, then the build
 # directory should have ${LIBMODE} in it to distinguish them.
-
-readonly TC_BUILD="${NACL_ROOT}/toolchain/hg-build-${LIBMODE}"
+readonly TC_BUILD="${PNACL_ROOT}/build/${LIBMODE}"
 readonly TC_BUILD_LLVM="${TC_BUILD}/llvm"
 readonly TC_BUILD_BINUTILS="${TC_BUILD}/binutils"
 readonly TC_BUILD_BINUTILS_LIBERTY="${TC_BUILD}/binutils-liberty"
@@ -154,7 +156,7 @@ readonly TIMESTAMP_FILENAME="make-timestamp"
 
 # PNaCl toolchain installation directories (absolute paths)
 readonly TOOLCHAIN_LABEL="pnacl_${BUILD_PLATFORM}_${HOST_ARCH}_${LIBMODE}"
-readonly INSTALL_ROOT="${NACL_ROOT}/toolchain/${TOOLCHAIN_LABEL}"
+readonly INSTALL_ROOT="${TOOLCHAIN_ROOT}/${TOOLCHAIN_LABEL}"
 readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
 
 # SDK
@@ -267,8 +269,8 @@ if ${HOST_ARCH_X8632} ; then
   # environment variable HOST_ARCH=x86_32 on a 64 bit system.
   # Make sure you clean all your build dirs
   # before switching arches.
-  CC="${NACL_ROOT}/tools/llvm/mygcc32"
-  CXX="${NACL_ROOT}/tools/llvm/myg++32"
+  CC="${PNACL_ROOT}/scripts/mygcc32"
+  CXX="${PNACL_ROOT}/scripts/myg++32"
 fi
 
 select-frontend() {
@@ -374,6 +376,35 @@ update-all() {
   hg-update-compiler-rt
 }
 
+# TODO(pdox): Remove after completely moved to new git pnacl repository
+# Move hg/ --> pnacl/src
+hg-migrate() {
+  if ! [ -d "${NACL_ROOT}"/hg ] ; then
+    # Nothing to do
+    return 0
+  fi
+  if [ -d "${TC_SRC}" ] ; then
+    Fatal "Error: Trying to move hg/ to pnacl/src, but destination" \
+          "directory already exists. Please move manually."
+  fi
+  if ! ${PNACL_BUILDBOT} ; then
+    Banner "Migration needed: Repository paths have changed. This step will:" \
+           "   1) Move hg/ to pnacl/src/" \
+           "   2) Wipe the old build directories (toolchain/hg-build-*)" \
+           "   3) Wipe the old log directories (toolchain/log)" \
+           "These have moved to pnacl/build and pnacl/build/log respectively." \
+           "If you wish to stop and do the move manually, type N."
+    if ! confirm-yes "Proceed" ; then
+      Fatal "Aborted"
+      exit -1
+    fi
+  fi
+
+  mv "${NACL_ROOT}"/hg "${TC_SRC}"
+  rm -rf "${TOOLCHAIN_ROOT}"/hg-build-*
+  rm -rf "${TOOLCHAIN_ROOT}"/hg-log
+}
+
 crostarball() {
   local hgdir=$1
   local reporev=$2
@@ -447,13 +478,13 @@ hg-assert-safe-to-update() {
   Banner \
     "                         ERROR                          " \
     "                                                        " \
-    " hg/${name} needs to be updated to the stable revision  " \
-    " but has local modifications.                           " \
+    " Repository '${name}' needs to be updated to the stable " \
+    " revision but has local modifications.                  " \
     "                                                        " \
     " If your repository is behind stable, update it using:  " \
     "                                                        " \
-    "        cd hg/${name}; hg update ${rev}                 " \
-    "        (you may need to resolve conflicts)             " \
+    "   cd pnacl/src/${name}; hg update ${rev}               " \
+    "   (you may need to resolve conflicts)                  " \
     "                                                        " \
     " If your repository is ahead of stable, then modify:    " \
     "   ${defstr}_REV   (in pnacl/build.sh)                  " \
@@ -478,13 +509,13 @@ svn-assert-safe-to-update() {
   Banner \
     "                         ERROR                          " \
     "                                                        " \
-    " hg/${name} needs to be updated to the stable revision  " \
-    " but has local modifications.                           " \
+    " Repository '${name}' needs to be updated to the stable " \
+    " revision but has local modifications.                  " \
     "                                                        " \
     " If your repository is behind stable, update it using:  " \
     "                                                        " \
-    "        cd hg/${name}; svn update -r ${rev}             " \
-    "        (you may need to resolve conflicts)             " \
+    "   cd pnacl/src/${name}; svn update -r ${rev}           " \
+    "   (you may need to resolve conflicts)                  " \
     "                                                        " \
     " If your repository is ahead of stable, then modify:    " \
     "   ${defstr}_REV   (in pnacl/build.sh)                  " \
@@ -503,7 +534,7 @@ hg-bot-sanity() {
   if ! hg-on-branch "${dir}" pnacl-sfi ||
      hg-has-changes "${dir}" ||
      hg-has-untracked "${dir}" ; then
-    Banner "WARNING: hg/${name} is in an illegal state." \
+    Banner "WARNING: ${name} repository is in an illegal state." \
            "         Wiping and trying again."
     rm -rf "${dir}"
     hg-checkout-${name}
@@ -519,7 +550,7 @@ svn-bot-sanity() {
   fi
 
   if svn-has-changes "${dir}" ; then
-    Banner "WARNING: hg/${name} is in an illegal state." \
+    Banner "WARNING: ${name} repository is in an illegal state." \
            "         Wiping and trying again."
     rm -rf "${dir}"
     svn-checkout-${name}
@@ -681,25 +712,6 @@ hg-checkout-newlib() {
 
 hg-checkout-compiler-rt() {
   hg-checkout ${REPO_COMPILER_RT} "${TC_SRC_COMPILER_RT}" ${COMPILER_RT_REV}
-}
-
-#@ hg-clean              - Remove all repos. (WARNING: local changes are lost)
-hg-clean() {
-  StepBanner "HG-CLEAN"
-
-  echo "Are you sure?"
-  echo "This will DELETE all source repositories under 'native_client/hg'"
-  echo "Any local changes will be lost."
-  echo ""
-  echo "Type YES to confirm: "
-  read CONFIRM_TEXT
-
-  if [ $CONFIRM_TEXT == "YES" ]; then
-    StepBanner "HG-CLEAN" "Cleaning Mercurial repositories"
-    rm -rf "${PNACL_HG_ROOT}"
-  else
-    StepBanner "HG-CLEAN" "Clean cancelled by user"
-  fi
 }
 
 git-sync() {
@@ -974,7 +986,7 @@ clean() {
 #@ fast-clean            - Clean everything except LLVM.
 fast-clean() {
   local did_backup=false
-  local backup_dir="${NACL_ROOT}/llvm-build-backup"
+  local backup_dir="${TC_BUILD_LLVM}-backup"
 
   if [ -d "${TC_BUILD_LLVM}" ]; then
     rm -rf "${backup_dir}"
@@ -991,14 +1003,14 @@ fast-clean() {
 }
 
 binutils-mess-hide() {
-  local messtmp="${PNACL_HG_ROOT}/binutils.tmp"
+  local messtmp="${TC_SRC}/binutils.tmp"
   if [ -f "${BINUTILS_MESS}" ] ; then
     mv "${BINUTILS_MESS}" "${messtmp}"
   fi
 }
 
 binutils-mess-unhide() {
-  local messtmp="${PNACL_HG_ROOT}/binutils.tmp"
+  local messtmp="${TC_SRC}/binutils.tmp"
   if [ -f "${messtmp}" ] ; then
     mv "${messtmp}" "${BINUTILS_MESS}"
   fi
@@ -1006,7 +1018,7 @@ binutils-mess-unhide() {
 
 #+ clean-scons           - Clean scons-out directory
 clean-scons() {
-  rm -rf scons-out
+  rm -rf "${SCONS_OUT}"
 }
 
 #+ clean-build           - Clean all build directories
@@ -1153,6 +1165,8 @@ llvm-clean() {
 #+ llvm-link-clang       - Add tools/clang symlink into llvm directory
 llvm-link-clang() {
   rm -f "${TC_SRC_LLVM}"/tools/clang
+  # Symbolic link named : ${TC_SRC}/upstream/llvm/tools/clang
+  # Needs to point to   : ${TC_SRC}/clang
   ln -sf "../../../clang" "${TC_SRC_LLVM}"/tools/clang
 }
 
@@ -1838,6 +1852,7 @@ misc-tools() {
     StepBanner "MISC-ARM" "Building sel_ldr (ARM)"
 
     # TODO(robertm): revisit some of these options
+    spushd "${NACL_ROOT}"
     RunWithLog arm_sel_ldr \
       ./scons MODE=opt-host \
       platform=arm \
@@ -1847,15 +1862,17 @@ misc-tools() {
       sel_ldr
     rm -rf  "${INSTALL_ROOT}/tools-arm"
     mkdir "${INSTALL_ROOT}/tools-arm"
-    local sconsdir="scons-out/opt-${SCONS_BUILD_PLATFORM}-arm"
+    local sconsdir="${SCONS_OUT}/opt-${SCONS_BUILD_PLATFORM}-arm"
     cp "${sconsdir}/obj/src/trusted/service_runtime/sel_ldr" \
        "${INSTALL_ROOT}/tools-arm"
+    spopd
   else
     StepBanner "MISC-ARM" "Skipping ARM sel_ldr (No trusted ARM toolchain)"
   fi
 
   if ${BUILD_PLATFORM_LINUX} ; then
     StepBanner "MISC-ARM" "Building validator (ARM)"
+    spushd "${NACL_ROOT}"
     RunWithLog arm_ncval_core \
       ./scons MODE=opt-host \
       targetplatform=arm \
@@ -1863,8 +1880,9 @@ misc-tools() {
       arm-ncval-core
     rm -rf  "${INSTALL_ROOT}/tools-x86"
     mkdir "${INSTALL_ROOT}/tools-x86"
-    cp scons-out/opt-linux-x86-32-to-arm/obj/src/trusted/validator_arm/\
+    cp ${SCONS_OUT}/opt-linux-x86-32-to-arm/obj/src/trusted/validator_arm/\
 arm-ncval-core ${INSTALL_ROOT}/tools-x86
+    spopd
   else
     StepBanner "MISC-ARM" "Skipping ARM validator (Not yet supported on Mac)"
   fi
@@ -2892,14 +2910,13 @@ libs-support-native() {
 #########################################################################
 #     < SDK >
 #########################################################################
-SCONS_COMMON=(./scons
-              MODE=nacl
-              -j${PNACL_CONCURRENCY}
-              bitcode=1
-              sdl=none
-              disable_nosys_linker_warnings=1
-              naclsdk_validate=0
-              --verbose)
+SCONS_ARGS=(MODE=nacl
+            -j${PNACL_CONCURRENCY}
+            bitcode=1
+            sdl=none
+            disable_nosys_linker_warnings=1
+            naclsdk_validate=0
+            --verbose)
 
 sdk() {
   StepBanner "SDK"
@@ -2915,7 +2932,7 @@ sdk-clean() {
   rm -rf "${INSTALL_SDK_ROOT}"
 
   # clean scons obj dirs
-  rm -rf scons-out/nacl-*-pnacl*
+  rm -rf "${SCONS_OUT}"/nacl-*-pnacl*
 }
 
 sdk-headers() {
@@ -2928,12 +2945,15 @@ sdk-headers() {
   fi
 
   StepBanner "SDK" "Install headers"
+  spushd "${NACL_ROOT}"
   RunWithLog "sdk.headers" \
-      "${SCONS_COMMON[@]}" \
+      ./scons \
+      "${SCONS_ARGS[@]}" \
       ${extra_flags} \
       platform=${neutral_platform} \
       install_headers \
       includedir="$(PosixToSysPath "${INSTALL_SDK_INCLUDE}")"
+  spopd
 }
 
 sdk-libs() {
@@ -2946,12 +2966,15 @@ sdk-libs() {
     extra_flags="--nacl_glibc"
   fi
 
+  spushd "${NACL_ROOT}"
   RunWithLog "sdk.libs.bitcode" \
-      "${SCONS_COMMON[@]}" \
+      ./scons \
+      "${SCONS_ARGS[@]}" \
       ${extra_flags} \
       platform=${neutral_platform} \
       install_lib \
       libdir="$(PosixToSysPath "${INSTALL_SDK_LIB}")"
+  spopd
 }
 
 sdk-verify() {
@@ -3460,7 +3483,7 @@ help-full() {
 }
 
 has-trusted-toolchain() {
-  if [ -f ${NACL_ROOT}/toolchain/linux_arm-trusted/ld_script_arm_trusted ]; then
+  if [ -f ${TOOLCHAIN_ROOT}/linux_arm-trusted/ld_script_arm_trusted ]; then
     return 0
   else
     return 1
@@ -3667,5 +3690,7 @@ if [ "$(type -t $1)" != "function" ]; then
   echo "    $0 help"
   exit 1
 fi
+
+hg-migrate
 
 "$@"
