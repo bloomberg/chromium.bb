@@ -6,5 +6,3 @@ RenderViewTest.OnHandleKeyboardEvent
 ConnectionTesterTest.DeleteWhileInProgress
 # Fails on CrOS, see http://crbug.com/104030
 GViewRequestInterceptorTest.*
-# Flaky on CrOS, see http://crbug.com/104031
-RenderWidgetHostTest.StopAndStartHangMonitorTimeout
