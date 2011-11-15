@@ -1865,6 +1865,7 @@
         'browser/ui/webui/html_dialog_tab_contents_delegate_unittest.cc',
         'browser/ui/webui/options/chromeos/virtual_keyboard_manager_handler_unittest.cc',
         'browser/ui/webui/options/language_options_handler_unittest.cc',
+        'browser/ui/webui/print_preview_handler_unittest.cc',
         'browser/ui/webui/print_preview_ui_unittest.cc',
         'browser/ui/webui/sync_internals_ui_unittest.cc',
         'browser/ui/webui/theme_source_unittest.cc',
