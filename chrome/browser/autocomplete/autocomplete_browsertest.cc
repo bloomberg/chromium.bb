@@ -170,10 +170,6 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
   EXPECT_TRUE(location_bar->location_entry()->IsSelectAll());
 }
 
-#if defined(OS_WINDOWS) || defined(OS_LINUX)
-// http://crbug.com/104307
-#define FocusSearch FLAKY_FocusSearch
-#endif
 IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
   LocationBar* location_bar = GetLocationBar();
 
