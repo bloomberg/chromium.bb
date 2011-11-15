@@ -313,6 +313,9 @@ wlsc_surface_damage_below(struct wlsc_surface *surface)
 {
 	struct wlsc_surface *below;
 
+	if (wl_list_empty(&surface->link))
+		return;
+
 	if (surface->link.next == &surface->compositor->surface_list)
 		return;
 
