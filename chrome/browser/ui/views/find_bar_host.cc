@@ -317,6 +317,14 @@ void FindBarHost::UnregisterAccelerators() {
 ////////////////////////////////////////////////////////////////////////////////
 // private:
 
+void FindBarHost::GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect) {
+  gfx::Rect frame_rect = host()->GetTopLevelWidget()->GetWindowScreenBounds();
+  TabContentsView* tab_view = find_bar_controller_->tab_contents()->view();
+  gfx::Rect webcontents_rect;
+  tab_view->GetViewBounds(&webcontents_rect);
+  avoid_overlapping_rect->Offset(0, webcontents_rect.y() - frame_rect.y());
+}
+
 FindBarView* FindBarHost::find_bar_view() {
   return static_cast<FindBarView*>(view());
 }

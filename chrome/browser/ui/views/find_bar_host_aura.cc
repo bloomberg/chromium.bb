@@ -11,11 +11,6 @@ void FindBarHost::AudibleAlert() {
   NOTIMPLEMENTED();
 }
 
-void FindBarHost::GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-}
-
 bool FindBarHost::ShouldForwardKeyEventToWebpageNative(
     const views::KeyEvent& key_event) {
   // TODO(beng):

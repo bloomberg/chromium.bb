@@ -17,16 +17,6 @@ void FindBarHost::AudibleAlert() {
   MessageBeep(MB_OK);
 }
 
-void FindBarHost::GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect) {
-  RECT frame_rect = {0}, webcontents_rect = {0};
-  ::GetWindowRect(::GetParent(host()->GetNativeView()), &frame_rect);
-  ::GetWindowRect(
-      find_bar_controller_->
-          tab_contents()->tab_contents()->view()->GetNativeView(),
-      &webcontents_rect);
-  avoid_overlapping_rect->Offset(0, webcontents_rect.top - frame_rect.top);
-}
-
 bool FindBarHost::ShouldForwardKeyEventToWebpageNative(
     const views::KeyEvent& key_event) {
   // We specifically ignore WM_CHAR. See http://crbug.com/10509.
