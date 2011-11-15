@@ -43,6 +43,7 @@
             '../../win/exception_patch/intercept.S',
             '../../win/exception_patch/ntdll_patch.c',
             '../../win/nacl_signal_64.c',
+            'nacl_switch_unwind_win.asm',
             'sel_addrspace_win_x86_64.c',
             'fxsaverstor.S',
           ] },
@@ -52,6 +53,31 @@
               '-fPIC',
             ],
         }],
+      ],
+      # We assemble the .asm assembly file with the Microsoft
+      # assembler because we need to generate x86-64 Windows unwind
+      # info, which the GNU assembler we use elsewhere does not
+      # support.
+      'rules': [
+        {
+          'rule_name': 'Assemble',
+          'msvs_cygwin_shell': 0,
+          'msvs_quote_cmd': 0,
+          'extension': 'asm',
+          'inputs': [],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).obj',
+          ],
+          'action': [
+            'ml64',
+            '/Fo', '<(INTERMEDIATE_DIR)\<(RULE_INPUT_ROOT).obj',
+            '/c', '<(RULE_INPUT_PATH)',
+          ],
+          'process_outputs_as_sources': 0,
+          'message':
+              'Assembling <(RULE_INPUT_PATH) to ' \
+              '<(INTERMEDIATE_DIR)\<(RULE_INPUT_ROOT).obj.',
+        },
       ],
     },
   ],

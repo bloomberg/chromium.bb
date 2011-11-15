@@ -27,6 +27,10 @@ void NaClInitSwitchToApp(struct NaClApp *nap);
 extern NORETURN void NaClSwitchAVX(struct NaClThreadContext *context);
 extern NORETURN void NaClSwitchSSE(struct NaClThreadContext *context);
 extern NORETURN void NaClSwitchNoSSE(struct NaClThreadContext *context);
+extern NORETURN void NaClSwitchSavingStackPtr(
+    struct NaClThreadContext *user_context,
+    struct NaClThreadContext *sys_context,
+    void (*NaClSwitch)(struct NaClThreadContext *context));
 #else
 extern NORETURN void NaClSwitch(struct NaClThreadContext *context);
 #endif

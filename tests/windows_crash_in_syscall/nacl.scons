@@ -55,7 +55,18 @@ guest_env.Append(LINKFLAGS=['-nostartfiles', '-Wl,--entry=EntryPoint'])
 test_prog = guest_env.ComponentProgram(
     'test_guest', ['test_guest.c'])
 
-node = env.CommandTest('windows_crash_in_syscall_test.out', [runner, test_prog])
+STATUS_ACCESS_VIOLATION = 0xc0000005
+
+# Python's wrapper for GetExitCodeProcess() treats the STATUS_* values
+# as negative, although the unsigned values are used in headers and
+# are more widely recognised.
+def MungeWindowsErrorExit(num):
+  return num - 0x100000000
+
+node = env.CommandTest(
+    'windows_crash_in_syscall_test.out', [runner, test_prog],
+    stdout_golden=env.File('test.stdout'),
+    exit_status=str(MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION)))
 env.AddNodeToTestSuite(node, ['small_tests'],
                        'run_windows_crash_in_syscall_test',
                        is_broken=not env.Bit('nacl_static_link'))

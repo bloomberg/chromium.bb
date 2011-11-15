@@ -48,6 +48,8 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
                                    nacl_reg_t           new_prog_ctr) {
   struct NaClApp            *nap;
   struct NaClThreadContext  *context;
+
+#if !NACL_WINDOWS
   /*
    * Ensure stack alignment.  Stack pointer must be -8 mod 16 when no
    * __m256 objects are passed (8 mod 32 if __m256), after the call.
@@ -60,23 +62,21 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
    * Clearly it makes no difference since -8 and 8 are the same mod
    * 16, but there is a difference when mod 32.
    *
-   * We subtract 0x20 in case this is being compiled with the Windows
-   * compiler, which uses a different (curses!) calling convention
-   * than that specified by x86-64.org and requires callers to always
-   * allocate an extra 32 bytes after pushing fifth-last arguments and
-   * before the call, presumably for varargs processing.
+   * This is not suitable for Windows because we do not reserve 32
+   * bytes for the shadow space.
    */
   nacl_reg_t  secure_stack_ptr = NaClGetStackPtr();
 
   NaClLog(6,
           "NaClStartThreadInApp: secure stack:   0x%"NACL_PRIxNACL_REG"\n",
           secure_stack_ptr);
-  secure_stack_ptr = (secure_stack_ptr & ~0x1f) - 0x20;
+  secure_stack_ptr = secure_stack_ptr & ~0x1f;
   NaClLog(6,
           "NaClStartThreadInApp: adjusted stack: 0x%"NACL_PRIxNACL_REG"\n",
           secure_stack_ptr);
 
   NaClSetThreadCtxSp(&natp->sys, secure_stack_ptr);
+#endif
 
   nap = natp->nap;
   context = &natp->user;
@@ -90,7 +90,12 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
   NaClLog(6,
           "NaClStartThreadInApp: switching to untrusted code\n");
 
+#if NACL_WINDOWS
+  /* This sets up a stack containing a return address that has unwind info. */
+  NaClSwitchSavingStackPtr(context, &natp->sys, NaClSwitch);
+#else
   NaClSwitch(context);
+#endif
 }
 
 /*

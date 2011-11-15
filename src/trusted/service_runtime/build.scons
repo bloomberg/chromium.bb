@@ -115,8 +115,14 @@ elif env.Bit('build_x86_64'):
       'arch/x86_64/tramp_64.S',
       ]
   if env.Bit('windows'):
-    ldr_inputs += ['arch/x86_64/sel_addrspace_win_x86_64.c',
-                   'arch/x86_64/fxsaverstor.S']
+    # We assemble the .asm assembly file with the Microsoft assembler
+    # because we need to generate x86-64 Windows unwind info, which
+    # the GNU assembler we use elsewhere does not support.
+    win64_asm_env = env.Clone(ASCOM='ml64 $ASFLAGS /c /Fo$TARGET $SOURCES')
+    ldr_inputs += [
+        'arch/x86_64/sel_addrspace_win_x86_64.c',
+        'arch/x86_64/fxsaverstor.S',
+        win64_asm_env.ComponentObject('arch/x86_64/nacl_switch_unwind_win.asm')]
   else:
     ldr_inputs += ['arch/x86_64/sel_addrspace_posix_x86_64.c']
 elif env.Bit('build_arm'):

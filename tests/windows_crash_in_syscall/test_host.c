@@ -47,7 +47,14 @@ static int32_t CrashyTestSyscall(struct NaClAppThread *natp) {
 static LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *exc_info) {
   printf("Inside exception handler, as expected\n");
   fflush(stdout);
-  _exit(0);
+  /*
+   * Continuing is what Breakpad does, but this should cause the
+   * process to exit with an exit status that is appropriate for the
+   * type of exception.  We want to test that ExceptionHandler() does
+   * not get called twice, since that does not work with Chrome's
+   * embedding of Breakpad.
+   */
+  return EXCEPTION_CONTINUE_SEARCH;
 }
 
 int main(int argc, char **argv) {

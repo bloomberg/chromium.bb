@@ -110,7 +110,6 @@ ENDMACRO
  * using MS Studio (NACL_WINDOWS).
  */
         .text
-        .globl  IDENTIFIER(NaClGetStackPtr)
         .globl  IDENTIFIER(NaClSyscallSeg)
         HIDDEN(NaClSyscallSeg)
 IDENTIFIER(NaClSyscallSeg):
@@ -166,19 +165,6 @@ IDENTIFIER(NaClSyscallSeg):
         movq    0x0(%rdx), %rdx
 
         movq    0x38(%rdx), %rsp
-        /*
-         * hic sunt dracones
-         *
-         * According to the AMD64 ABI, %rsp must be 0 mod 16 here.
-         * (0 mod 32, if __m256 is on stack, which won't be the case.)
-         *
-         * Note for NACL_WINDOWS, %rsp must be pre-subtracted by $0x20
-         * for shadow space for Windows x86-64 compiler's non-standard
-         * calling convention's varargs save area.
-         *
-         * These properties are not enforced here; rather, the code in
-         * nacl_switch_to_app_64.c handles this.
-         */
 #if NACL_LINUX || NACL_OSX
         movq    %rax, %rdi
 #elif NACL_WINDOWS
@@ -186,8 +172,35 @@ IDENTIFIER(NaClSyscallSeg):
 #else
 # error "What OS/compiler is the service runtime being compiled with?"
 #endif
+        /*
+         * Although NaClSyscallCSegHook() never returns, we want to
+         * make sure that the return address on the stack will be
+         * handled properly by the host system's stack unwinder.
+         *
+         * For Linux, it is fine that the return address does not have
+         * associated unwind info, because libgcc's stack unwinder
+         * will stop unwinding when it reaches such an address.  Note
+         * that pthread_exit() causes stack unwinding.
+         *
+         * We cannot do the same thing on Windows because its stack
+         * unwinder does not have a similar safe default.  If it
+         * encounters a return address without unwind info, it applies
+         * the rule for leaf functions (even though this rule does not
+         * make sense for return addresses in the Windows x86-64 ABI),
+         * and it does so even for zero return addresses.  This can
+         * cause it to read uninitialised memory.
+         *
+         * So, for Windows, the stack has already been set up by
+         * NaClSwitchSavingStackPtr() with a return address with
+         * associated unwind info.
+         */
+#if NACL_WINDOWS
+        jmp     IDENTIFIER(NaClSyscallCSegHook)
+#else
         call    IDENTIFIER(NaClSyscallCSegHook)
         hlt
+        /* noret */
+#endif
 
         /*
          * untrusted stack after call to NaClSyscallCSegHook:
@@ -200,21 +213,7 @@ IDENTIFIER(NaClSyscallSeg):
          * 0x08 -0x10 rdx
          * 0x04 -0x14 rsi
          * 0x00 -0x18 rdi
-         *
-         * trusted stack after call to NaClSyscallCSegHook:
-         *
-         *      return addr (to the hlt)
          */
-
-        /* noret */
-
-#if NACL_WINDOWS && defined(_WIN64)
-/* On Windows64 this has to be done via out-of-line assembly code */
-        HIDDEN(NaClGetStackPtr)
-IDENTIFIER(NaClGetStackPtr):
-        movq %rsp, %rax
-        ret
-#endif
 
         .globl  IDENTIFIER(NaClGetTlsFastPath)
         HIDDEN(NaClGetTlsFastPath)
