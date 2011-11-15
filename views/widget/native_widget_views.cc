@@ -153,8 +153,8 @@ void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
     parent_view = widget->GetChildViewParent();
   }
 
-  gfx::Rect bounds = AdjustRectOriginForParentWidget(params.bounds,
-                                                     parent_);
+  gfx::Rect bounds = GetWidget()->is_top_level() ?
+      AdjustRectOriginForParentWidget(params.bounds, parent_) : params.bounds;
   view_ = new internal::NativeWidgetView(this);
   view_->SetBoundsRect(bounds);
   view_->SetVisible(params.type == Widget::InitParams::TYPE_CONTROL);
@@ -352,7 +352,10 @@ gfx::Rect NativeWidgetViews::GetRestoredBounds() const {
 
 void NativeWidgetViews::SetBounds(const gfx::Rect& bounds) {
   // |bounds| are supplied in the coordinates of the parent.
-  view_->SetBoundsRect(AdjustRectOriginForParentWidget(bounds, parent_));
+  if (GetWidget()->is_top_level())
+    view_->SetBoundsRect(AdjustRectOriginForParentWidget(bounds, parent_));
+  else
+    view_->SetBoundsRect(bounds);
 }
 
 void NativeWidgetViews::SetSize(const gfx::Size& size) {
