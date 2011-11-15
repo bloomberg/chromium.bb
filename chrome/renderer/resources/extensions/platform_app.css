@@ -1,0 +1,12 @@
+/*
+ * A style sheet for Chrome platform apps.
+ */
+
+@namespace "http://www.w3.org/1999/xhtml";
+
+html {
+  background-color: #cccccf;
+  color: #333;
+  -webkit-user-select: none;
+  cursor: default;
+}

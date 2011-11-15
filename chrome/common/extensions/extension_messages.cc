@@ -15,7 +15,7 @@ ExtensionMsg_Loaded_Params::~ExtensionMsg_Loaded_Params() {}
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
     const ExtensionMsg_Loaded_Params& other)
-    : manifest(other.manifest->DeepCopy()),
+    : manifest(other.manifest),
       location(other.location),
       path(other.path),
       apis(other.apis),
@@ -37,15 +37,16 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
   // As we need more bits of extension data in the renderer, add more keys to
   // this list.
   const char* kRendererExtensionKeys[] = {
-    extension_manifest_keys::kPublicKey,
-    extension_manifest_keys::kName,
-    extension_manifest_keys::kVersion,
+    extension_manifest_keys::kApp,
+    extension_manifest_keys::kContentScripts,
     extension_manifest_keys::kIcons,
+    extension_manifest_keys::kName,
     extension_manifest_keys::kPageAction,
     extension_manifest_keys::kPageActions,
     extension_manifest_keys::kPermissions,
-    extension_manifest_keys::kApp,
-    extension_manifest_keys::kContentScripts
+    extension_manifest_keys::kPlatformApp,
+    extension_manifest_keys::kPublicKey,
+    extension_manifest_keys::kVersion,
   };
 
   // Copy only the data we need.

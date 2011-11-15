@@ -922,8 +922,10 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
     Profile* host_profile =
         Profile::FromBrowserContext(host->browser_context());
     if (host_profile->GetOriginalProfile() == profile_->GetOriginalProfile()) {
+      std::vector<ExtensionMsg_Loaded_Params> loaded_extensions(
+          1, ExtensionMsg_Loaded_Params(extension));
       host->Send(
-          new ExtensionMsg_Loaded(ExtensionMsg_Loaded_Params(extension)));
+          new ExtensionMsg_Loaded(loaded_extensions));
     }
   }
 
@@ -2332,10 +2334,12 @@ void ExtensionService::Observe(int type,
           *Extension::GetScriptingWhitelist()));
 
       // Loaded extensions.
+      std::vector<ExtensionMsg_Loaded_Params> loaded_extensions;
       for (size_t i = 0; i < extensions_.size(); ++i) {
-        process->Send(new ExtensionMsg_Loaded(
-            ExtensionMsg_Loaded_Params(extensions_[i])));
+        loaded_extensions.push_back(
+            ExtensionMsg_Loaded_Params(extensions_[i]));
       }
+      process->Send(new ExtensionMsg_Loaded(loaded_extensions));
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {

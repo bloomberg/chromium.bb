@@ -29,6 +29,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 
 namespace {
@@ -42,6 +44,8 @@ using WebKit::WebDataSource;
 using WebKit::WebFrame;
 using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
+using WebKit::WebVector;
+using WebKit::WebView;
 using content::RenderThread;
 
 ExtensionDispatcher::ExtensionDispatcher()
@@ -180,17 +184,45 @@ void ExtensionDispatcher::OnDeliverMessage(int target_port_id,
       NULL);  // All render views.
 }
 
-void ExtensionDispatcher::OnLoaded(const ExtensionMsg_Loaded_Params& params) {
-  scoped_refptr<const Extension> extension(params.ConvertToExtension());
-  if (!extension) {
-    // This can happen if extension parsing fails for any reason. One reason
-    // this can legitimately happen is if the
-    // --enable-experimental-extension-apis changes at runtime, which happens
-    // during browser tests. Existing renderers won't know about the change.
-    return;
+void ExtensionDispatcher::OnLoaded(
+    const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions) {
+  std::vector<WebString> platform_app_patterns;
+
+  std::vector<ExtensionMsg_Loaded_Params>::const_iterator i;
+  for (i = loaded_extensions.begin(); i != loaded_extensions.end(); ++i) {
+    scoped_refptr<const Extension> extension(i->ConvertToExtension());
+    if (!extension) {
+      // This can happen if extension parsing fails for any reason. One reason
+      // this can legitimately happen is if the
+      // --enable-experimental-extension-apis changes at runtime, which happens
+      // during browser tests. Existing renderers won't know about the change.
+      continue;
+    }
+
+    extensions_.Insert(extension);
+
+    if (extension->is_platform_app()) {
+      platform_app_patterns.push_back(
+          WebString::fromUTF8(extension->url().spec() + "*"));
+    }
   }
 
-  extensions_.Insert(extension);
+  if (!platform_app_patterns.empty()) {
+    // We have collected a set of platform-app extensions, so let's tell WebKit
+    // about them so that it can provide a default stylesheet for them.
+    //
+    // TODO(miket): consider enhancing WebView to allow removing
+    // single stylesheets, or else to edit the pattern set associated
+    // with one.
+    WebVector<WebString> patterns;
+    patterns.assign(platform_app_patterns);
+    WebView::addUserStyleSheet(
+        WebString::fromUTF8(ResourceBundle::GetSharedInstance().
+                            GetRawDataResource(IDR_PLATFORM_APP_CSS)),
+        patterns,
+        WebView::UserContentInjectInAllFrames,
+        WebView::UserStyleInjectInExistingDocuments);
+  }
 }
 
 void ExtensionDispatcher::OnUnloaded(const std::string& id) {
@@ -199,6 +231,10 @@ void ExtensionDispatcher::OnUnloaded(const std::string& id) {
   // we'd like it to get a new isolated world ID, so that it can pick up the
   // changed origin whitelist.
   user_script_slave_->RemoveIsolatedWorld(id);
+
+  // We don't do anything with existing platform-app stylesheets. They will
+  // stay resident, but the URL pattern corresponding to the unloaded
+  // extension's URL just won't match anything anymore.
 }
 
 void ExtensionDispatcher::OnSetScriptingWhitelist(

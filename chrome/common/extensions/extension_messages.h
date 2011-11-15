@@ -107,7 +107,7 @@ struct ExtensionMsg_Loaded_Params {
   scoped_refptr<Extension> ConvertToExtension() const;
 
   // The subset of the extension manifest data we send to renderers.
-  scoped_ptr<DictionaryValue> manifest;
+  linked_ptr<DictionaryValue> manifest;
 
   // The location the extension was installed from.
   Extension::Location location;
@@ -202,9 +202,9 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_ActivateExtension,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_ActivateApplication,
                      std::string /* extension_id */)
 
-// Notifies the renderer that an extension was loaded in the browser.
+// Notifies the renderer that extensions were loaded in the browser.
 IPC_MESSAGE_CONTROL1(ExtensionMsg_Loaded,
-                     ExtensionMsg_Loaded_Params)
+                     std::vector<ExtensionMsg_Loaded_Params>)
 
 // Notifies the renderer that an extension was unloaded in the browser.
 IPC_MESSAGE_CONTROL1(ExtensionMsg_Unloaded,

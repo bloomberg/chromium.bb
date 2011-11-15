@@ -26,6 +26,7 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_NET_ERROR_HTML" file="resources\neterror.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SAD_PLUGIN" file="resources\sadplugin.png" type="BINDATA" />
       <include name="IDR_ERROR_APP_HTML" file="resources\error_app.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_PLATFORM_APP_CSS" file="resources\extensions\platform_app.css" type="BINDATA" />
     </includes>
   </release>
 </grit>
