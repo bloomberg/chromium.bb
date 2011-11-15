@@ -270,7 +270,6 @@ class MockHttpTransactionFactory : public net::HttpTransactionFactory {
 
     transport_params_ = new net::TransportSocketParams(host_port_pair_,
                                                        net::MEDIUM,
-                                                       GURL(),
                                                        false,
                                                        false);
     net::ClientSocketHandle* connection = new net::ClientSocketHandle;
