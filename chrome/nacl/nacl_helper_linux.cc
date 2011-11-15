@@ -7,6 +7,7 @@
 #include "chrome/common/nacl_helper_linux.h"
 
 #include <errno.h>
+#include <link.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -118,12 +119,61 @@ void HandleForkRequest(const std::vector<int>& child_fds) {
 }  // namespace
 
 static const char kNaClHelperAtZero[] = "at-zero";
+static const char kNaClHelperRDebug[] = "r_debug";
+
+/*
+ * Since we were started by the bootstrap program rather than in the
+ * usual way, the debugger cannot figure out where our executable
+ * or the dynamic linker or the shared libraries are in memory,
+ * so it won't find any symbols.  But we can fake it out to find us.
+ *
+ * The zygote passes --r_debug=0xXXXXXXXXXXXXXXXX.  The bootstrap
+ * program replaces the Xs with the address of its _r_debug
+ * structure.  The debugger will look for that symbol by name to
+ * discover the addresses of key dynamic linker data structures.
+ * Since all it knows about is the original main executable, which
+ * is the bootstrap program, it finds the symbol defined there.  The
+ * dynamic linker's structure is somewhere else, but it is filled in
+ * after initialization.  The parts that really matter to the
+ * debugger never change.  So we just copy the contents of the
+ * dynamic linker's structure into the address provided by the option.
+ * Hereafter, if someone attaches a debugger (or examines a core dump),
+ * the debugger will find all the symbols in the normal way.
+ */
+static void check_r_debug(char *argv0) {
+  std::string r_debug_switch_value =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kNaClHelperRDebug);
+  if (!r_debug_switch_value.empty()) {
+    char *endp = NULL;
+    uintptr_t r_debug_addr = strtoul(r_debug_switch_value.c_str(), &endp, 0);
+    if (r_debug_addr != 0 && *endp == '\0') {
+      struct r_debug *bootstrap_r_debug = (struct r_debug *) r_debug_addr;
+      *bootstrap_r_debug = _r_debug;
+
+      /*
+       * Since the main executable (the bootstrap program) does not
+       * have a dynamic section, the debugger will not skip the
+       * first element of the link_map list as it usually would for
+       * an executable or PIE that was loaded normally.  But the
+       * dynamic linker has set l_name for the PIE to "" as is
+       * normal for the main executable.  So the debugger doesn't
+       * know which file it is.  Fill in the actual file name, which
+       * came in as our argv[0].
+       */
+      struct link_map *l = _r_debug.r_map;
+      if (l->l_name[0] == '\0')
+        l->l_name = argv0;
+    }
+  }
+}
 
 int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
   base::AtExitManager exit_manager;
   base::RandUint64();  // acquire /dev/urandom fd before sandbox is raised
   std::vector<int> empty; // for SendMsg() calls
+
+  check_r_debug(argv[0]);
 
   g_suid_sandbox_active = (NULL != getenv("SBX_D"));
 

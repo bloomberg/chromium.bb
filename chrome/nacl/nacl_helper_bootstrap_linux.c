@@ -27,6 +27,18 @@
 
 #define MAX_PHNUM               12
 
+/*
+ * This exact magic argument string is recognized in check_r_debug_arg, below.
+ * Requiring the argument to have those Xs as a template both simplifies
+ * our argument matching code and saves us from having to reformat the
+ * whole stack to find space for a string longer than the original argument.
+ */
+#define R_DEBUG_TEMPLATE_PREFIX "--r_debug=0x"
+#define R_DEBUG_TEMPLATE_DIGITS "XXXXXXXXXXXXXXXX"
+static const char kRDebugTemplate[] =
+    R_DEBUG_TEMPLATE_PREFIX R_DEBUG_TEMPLATE_DIGITS;
+static const size_t kRDebugPrefixLen = sizeof(R_DEBUG_TEMPLATE_PREFIX) - 1;
+
 
 /*
  * We're not using <string.h> functions here, to avoid dependencies.
@@ -46,6 +58,16 @@ static size_t my_strlen(const char *s) {
   while (*s++ != '\0')
     ++n;
   return n;
+}
+
+static int my_strcmp(const char *a, const char *b) {
+  while (*a == *b) {
+    if (*a == '\0')
+      return 0;
+    ++a;
+    ++b;
+  }
+  return (int) (unsigned char) *a - (int) (unsigned char) *b;
 }
 
 
@@ -347,6 +369,35 @@ static ElfW(Addr) load_elf_file(const char *filename,
   return ehdr.e_entry + load_bias;
 }
 
+
+/*
+ * GDB looks for this symbol name when it cannot find PT_DYNAMIC->DT_DEBUG.
+ * We don't have a PT_DYNAMIC, so it will find this.  Now all we have to do
+ * is arrange for this space to be filled in with the dynamic linker's
+ * _r_debug contents after they're initialized.  That way, attaching GDB to
+ * this process or examining its core file will find the PIE we loaded, the
+ * dynamic linker, and all the shared libraries, making debugging pleasant.
+ */
+struct r_debug _r_debug __attribute__((nocommon, section(".r_debug")));
+
+/*
+ * If the argument matches the kRDebugTemplate string, then replace
+ * the 16 Xs with the hexadecimal address of our _r_debug variable.
+ */
+static int check_r_debug_arg(char *arg) {
+  if (my_strcmp(arg, kRDebugTemplate) == 0) {
+    uintptr_t addr = (uintptr_t) &_r_debug;
+    size_t i = 16;
+    while (i-- > 0) {
+      arg[kRDebugPrefixLen + i] = "0123456789abcdef"[addr & 0xf];
+      addr >>= 4;
+    }
+    return 1;
+  }
+  return 0;
+}
+
+
 /*
  * This is the main loading code.  It's called with the starting stack pointer.
  * This points to a sequence of pointer-size words:
@@ -400,6 +451,16 @@ ElfW(Addr) do_load(uintptr_t *stack) {
   stack[0] = argc;
   for (i = 1; i < stack_words; ++i)
     stack[i] = stack[i + 1];
+
+  /*
+   * If one of our arguments is the kRDebugTemplate string, then
+   * we'll modify that argument string in place to specify the
+   * address of our _r_debug structure.
+   */
+  for (i = 1; i < argc; ++i) {
+    if (check_r_debug_arg(argv[i]))
+      break;
+  }
 
   /*
    * Record the auxv entries that are specific to the file loaded.

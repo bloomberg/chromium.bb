@@ -48,6 +48,7 @@ PHDRS {
   text PT_LOAD FILEHDR PHDRS;
   data PT_LOAD;
   reserve PT_LOAD FLAGS(0);
+  r_debug PT_LOAD;
   note PT_NOTE;
   stack PT_GNU_STACK FLAGS(6);	/* RW, no E */
 }
@@ -110,6 +111,15 @@ SECTIONS {
   .reserve : {
     . = RESERVE_TOP - RESERVE_START;
   } :reserve
+
+  /*
+   * This must be placed above the reserved address space, so it won't
+   * be clobbered by NaCl.  We want this to be visible at its fixed address
+   * in the memory image so the debugger can make sense of things.
+   */
+  .r_debug : {
+    *(.r_debug)
+  } :r_debug
 
   /*
    * These are empty input sections the linker generates.

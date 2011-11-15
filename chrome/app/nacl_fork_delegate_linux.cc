@@ -26,7 +26,12 @@ NaClForkDelegate::NaClForkDelegate()
       sandboxed_(false),
       fd_(-1) {}
 
+/*
+ * Note these need to match up with their counterparts in nacl_helper_linux.c
+ * and nacl_helper_bootstrap_linux.c.
+ */
 const char kNaClHelperAtZero[] = "--at-zero";
+const char kNaClHelperRDebug[] = "--r_debug=0xXXXXXXXXXXXXXXXX";
 
 void NaClForkDelegate::Init(const bool sandboxed,
                             const int browserdesc,
@@ -59,6 +64,7 @@ void NaClForkDelegate::Init(const bool sandboxed,
     CommandLine cmd_line(helper_bootstrap_exe);
     cmd_line.AppendArgPath(helper_exe);
     cmd_line.AppendArgNative(kNaClHelperAtZero);
+    cmd_line.AppendArgNative(kNaClHelperRDebug);
     base::LaunchOptions options;
     options.fds_to_remap = &fds_to_map;
     options.clone_flags = CLONE_FS | SIGCHLD;
