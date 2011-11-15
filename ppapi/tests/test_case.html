@@ -158,8 +158,8 @@ onload = function() {
     obj.setAttribute("testcase", testcase);
     obj.setAttribute("protocol", window.location.protocol);
     var container = document.getElementById("container");
-    container.appendChild(obj);
     container.addEventListener("message", handleTestingMessage, true);
+    container.appendChild(obj);
   }
 }
 </script>
