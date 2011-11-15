@@ -2680,6 +2680,8 @@
         'test/data/webui/chrome_send_browsertest.cc',
         'test/data/webui/chrome_send_browsertest.h',
         'test/data/webui/chrome_send_browsertest.js',
+        'test/data/webui/hung_renderer_dialog_test.js',
+        'test/data/webui/hung_renderer_dialog_ui_test-inl.h',
         'test/data/webui/mock4js_browsertest.js',
         'test/data/webui/ntp4.js',
         'test/data/webui/print_preview.js',

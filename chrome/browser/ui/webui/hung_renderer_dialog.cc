@@ -35,7 +35,7 @@ namespace browser {
 
 void ShowHungRendererDialog(TabContents* contents) {
 #if defined(OS_CHROMEOS) || defined(USE_AURA)
-  HungRendererDialog::ShowHungRendererDialog(contents);
+  HungRendererDialog::ShowHungRendererDialog(contents, true);
 #else
   // TODO(rbyers): Remove IsMoreWebUI check once we decide for sure which
   // platforms will use the WebUI version of this dialog.
@@ -63,12 +63,7 @@ void HideHungRendererDialog(TabContents* contents) {
 // HungRendererDialog public static methods
 
 void HungRendererDialog::ShowHungRendererDialog(TabContents* contents) {
-  if (!logging::DialogsAreSuppressed()) {
-    if (g_instance)
-      return;
-    g_instance = new HungRendererDialog();
-    g_instance->ShowDialog(contents);
-  }
+  ShowHungRendererDialogInternal(contents, true);
 }
 
 void HungRendererDialog::HideHungRendererDialog(TabContents* contents) {
@@ -76,14 +71,47 @@ void HungRendererDialog::HideHungRendererDialog(TabContents* contents) {
     g_instance->HideDialog(contents);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// HungRendererDialog::TabContentsObserverImpl
+
+HungRendererDialog::TabContentsObserverImpl::TabContentsObserverImpl(
+    HungRendererDialog* dialog,
+    TabContents* contents)
+    : TabContentsObserver(contents),
+      contents_(contents),
+      dialog_(dialog) {
+}
+
+void HungRendererDialog::TabContentsObserverImpl::RenderViewGone() {
+  dialog_->HideDialog(contents_);
+}
+
+void HungRendererDialog::TabContentsObserverImpl::TabContentsDestroyed(
+    TabContents* tab) {
+  dialog_->HideDialog(contents_);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // HungRendererDialog private methods
 
-HungRendererDialog::HungRendererDialog()
+HungRendererDialog::HungRendererDialog(bool is_enabled)
     : contents_(NULL),
       handler_(NULL),
+      is_enabled_(is_enabled),
       window_(NULL) {
+}
+
+HungRendererDialog::~HungRendererDialog() {
+}
+
+void HungRendererDialog::ShowHungRendererDialogInternal(TabContents* contents,
+                                                        bool is_enabled) {
+  if (!logging::DialogsAreSuppressed()) {
+    if (g_instance)
+      return;
+    g_instance = new HungRendererDialog(is_enabled);
+    g_instance->ShowDialog(contents);
+  }
 }
 
 void HungRendererDialog::ShowDialog(TabContents* contents) {
@@ -93,6 +121,7 @@ void HungRendererDialog::ShowDialog(TabContents* contents) {
   DCHECK(browser);
   handler_ = new HungRendererDialogHandler(contents_);
   window_ = browser->BrowserShowHtmlDialog(this, NULL);
+  contents_observer_.reset(new TabContentsObserverImpl(this, contents_));
 }
 
 void HungRendererDialog::HideDialog(TabContents* contents) {
@@ -104,6 +133,7 @@ void HungRendererDialog::HideDialog(TabContents* contents) {
   // Settings |contents_| to NULL prevents the hang monitor from restarting.
   // We do this because the close dialog handler runs whether it is trigged by
   // the user closing the box, or by being closed externally with widget->Close.
+  contents_observer_.reset();
   contents_ = NULL;
   DCHECK(handler_);
   handler_->CloseDialog();
@@ -135,25 +165,27 @@ std::string HungRendererDialog::GetDialogArgs() const {
 }
 
 void HungRendererDialog::OnDialogClosed(const std::string& json_retval) {
-  // Figure out what the response was.
-  scoped_ptr<Value> root(base::JSONReader::Read(json_retval, false));
-  bool response = false;
-  ListValue* list = NULL;
-  // If the dialog closes because of a button click then the json is a list
-  // containing a single bool.  If the dialog closes some other way, then we
-  // assume it means no permission was given to kill tabs.
-  if (root.get() && root->GetAsList(&list) && list &&
-      list->GetBoolean(0, &response) && response) {
-    // The user indicated that it is OK to kill the renderer process.
-    if (contents_ && contents_->GetRenderProcessHost()) {
-      base::KillProcess(contents_->GetRenderProcessHost()->GetHandle(),
-                        content::RESULT_CODE_HUNG, false);
+  if (is_enabled_) {
+    // Figure out what the response was.
+    scoped_ptr<Value> root(base::JSONReader::Read(json_retval, false));
+    bool response = false;
+    ListValue* list = NULL;
+    // If the dialog closes because of a button click then the json is a list
+    // containing a single bool.  If the dialog closes some other way, then we
+    // assume it means no permission was given to kill tabs.
+    if (root.get() && root->GetAsList(&list) && list &&
+        list->GetBoolean(0, &response) && response) {
+      // The user indicated that it is OK to kill the renderer process.
+      if (contents_ && contents_->GetRenderProcessHost()) {
+        base::KillProcess(contents_->GetRenderProcessHost()->GetHandle(),
+                          content::RESULT_CODE_HUNG, false);
+      }
+    } else {
+      // No indication from the user that it is ok to kill anything. Just wait.
+      // Start waiting again for responsiveness.
+      if (contents_ && contents_->render_view_host())
+        contents_->render_view_host()->RestartHangMonitorTimeout();
     }
-  } else {
-    // No indication from the user that it is ok to kill anything. Just wait.
-    // Start waiting again for responsiveness.
-    if (contents_ && contents_->render_view_host())
-      contents_->render_view_host()->RestartHangMonitorTimeout();
   }
   g_instance = NULL;
   delete this;

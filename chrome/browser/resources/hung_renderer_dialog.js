@@ -56,7 +56,7 @@ cr.define('hungRendererDialog', function() {
 
     if (cr.isViews)
       forEach(document.querySelectorAll('.button-strip'), reverseChildren);
-    chrome.send('requestTabContentsList')
+    chrome.send('requestTabContentsList');
   }
 
   /**
@@ -74,7 +74,7 @@ cr.define('hungRendererDialog', function() {
       listItem.style.backgroundImage = url('chrome://favicon/size/32/' +
                                            tabDetailsList[i].url);
       listItem.textContent = tabDetailsList[i].title;
-      $('tab-table').appendChild(listItem)
+      $('tab-table').appendChild(listItem);
     }
   }
 
