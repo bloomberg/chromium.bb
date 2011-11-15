@@ -85,6 +85,7 @@ void HeartbeatSender::OnSignallingDisconnected() {
   state_ = STOPPED;
   request_.reset();
   iq_sender_.reset();
+  timer_.Stop();
 }
 
 // Ignore any notifications other than signalling
