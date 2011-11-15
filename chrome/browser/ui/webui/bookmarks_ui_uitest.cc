@@ -157,6 +157,10 @@ TEST_F(BookmarksUITest, TwoCommandsOneTab) {
   ASSERT_EQ(1, tab_count);
 }
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// http://crbug.com/104309
+#define BookmarksLoaded FLAKY_BookmarksLoaded
+#endif
 TEST_F(BookmarksUITest, BookmarksLoaded) {
   scoped_refptr<TabProxy> tab = GetBookmarksUITab();
   ASSERT_TRUE(tab.get());
