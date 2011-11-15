@@ -16,6 +16,8 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
@@ -36,6 +38,7 @@
 #include "content/common/desktop_notification_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/screen.h"
 
@@ -1400,6 +1403,55 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel_other->Close();
 }
 
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, OnBeforeUnloadOnClose) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  EXPECT_EQ(0, panel_manager->num_panels()); // No panels initially.
+
+  const char* on_before_unload_html_file = "onbeforeunload.html";
+  const string16 title_first_close = UTF8ToUTF16("TitleFirstClose");
+  const string16 title_second_close = UTF8ToUTF16("TitleSecondClose");
+
+  // Create a test panel with tab contents loaded.
+  CreatePanelParams params("PanelTest1", gfx::Rect(0, 0, 300, 300),
+                           SHOW_AS_ACTIVE);
+  params.url = GURL(net::FilePathToFileURL(
+      test_data_dir_.AppendASCII(on_before_unload_html_file)));
+  Panel* panel = CreatePanelWithParams(params);
+  EXPECT_EQ(1, panel_manager->num_panels());
+  TabContents* tab_contents = panel->browser()->GetSelectedTabContents();
+
+  // Close panel and respond to the onbeforeunload dialog with cancel. This is
+  // equivalent to clicking "Stay on this page"
+  scoped_ptr<ui_test_utils::TitleWatcher> title_watcher(
+      new ui_test_utils::TitleWatcher(tab_contents, title_first_close));
+  panel->Close();
+  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  alert->native_dialog()->CancelAppModalDialog();
+  EXPECT_EQ(title_first_close, title_watcher->WaitAndGetTitle());
+  EXPECT_EQ(1, panel_manager->num_panels());
+
+  // Close panel and respond to the onbeforeunload dialog with close. This is
+  // equivalent to clicking the OS close button on the dialog.
+  title_watcher.reset(
+      new ui_test_utils::TitleWatcher(tab_contents, title_second_close));
+  panel->Close();
+  alert = ui_test_utils::WaitForAppModalDialog();
+  alert->native_dialog()->CloseAppModalDialog();
+  EXPECT_EQ(title_second_close, title_watcher->WaitAndGetTitle());
+  EXPECT_EQ(1, panel_manager->num_panels());
+
+  // Close panel and respond to the onbeforeunload dialog with accept. This is
+  // equivalent to clicking "Leave this page".
+  ui_test_utils::WindowedNotificationObserver browser_closed(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::Source<Browser>(panel->browser()));
+  panel->Close();
+  alert = ui_test_utils::WaitForAppModalDialog();
+  alert->native_dialog()->AcceptAppModalDialog();
+  browser_closed.Wait();
+  EXPECT_EQ(0, panel_manager->num_panels());
+}
+
 class PanelDownloadTest : public PanelBrowserTest {
  public:
   PanelDownloadTest() : PanelBrowserTest() { }
@@ -1725,14 +1777,12 @@ IN_PROC_BROWSER_TEST_F(PanelAndNotificationTest, NoOverlapping) {
 
   // Closing short panel should move the notification balloon down to the same
   // position when tall panel brings up its titlebar.
-  panel1->Close();
-  WaitForBoundsAnimationFinished(panel1);
+  CloseWindowAndWait(panel1->browser());
   EXPECT_EQ(balloon_bottom_after_tall_panel_titlebar_up,
             GetBalloonBottomPosition(balloon));
 
   // Closing the remaining tall panel should move the notification balloon back
   // to its original position.
-  panel2->Close();
-  WaitForBoundsAnimationFinished(panel2);
+  CloseWindowAndWait(panel2->browser());
   EXPECT_EQ(original_balloon_bottom, GetBalloonBottomPosition(balloon));
 }

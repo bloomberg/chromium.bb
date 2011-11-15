@@ -162,6 +162,14 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     }
   }
 
+  void ClosePanelAndWaitForNotification(Panel* panel) {
+    ui_test_utils::WindowedNotificationObserver signal(
+        chrome::NOTIFICATION_BROWSER_CLOSED,
+        content::Source<Browser>(panel->browser()));
+    panel->Close();
+    signal.Wait();
+  }
+
   // We put all the testing logic in this class instead of the test so that
   // we do not need to declare each new test as a friend of PanelBrowserView
   // for the purpose of accessing its private members.
@@ -285,9 +293,9 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
         0, 0));
     browser_view1->OnTitlebarMouseReleased();
 
-    panel1->Close();
-    panel2->Close();
-    panel3->Close();
+    ClosePanelAndWaitForNotification(panel1);
+    ClosePanelAndWaitForNotification(panel2);
+    ClosePanelAndWaitForNotification(panel3);
     EXPECT_EQ(0, panel_manager->minimized_panel_count());
   }
 

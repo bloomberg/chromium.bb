@@ -10,12 +10,14 @@
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
@@ -169,6 +171,9 @@ BasePanelBrowserTest::~BasePanelBrowserTest() {
 
 void BasePanelBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   EnableDOMAutomation();
+
+  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
+  test_data_dir_ = test_data_dir_.AppendASCII("panels");
 }
 
 void BasePanelBrowserTest::SetUpOnMainThread() {

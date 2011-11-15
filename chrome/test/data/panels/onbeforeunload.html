@@ -1,0 +1,26 @@
+<html>
+  <head>
+    <script>
+      var close_call_num = 1;
+      var title_first_close =  "TitleFirstClose";
+      var title_second_close =  "TitleSecondClose";
+
+      function changeTitle() {
+        if (close_call_num == 1)
+          document.title = title_first_close;
+        else if (close_call_num == 2)
+          document.title = title_second_close;
+        close_call_num++;
+      }
+
+      window.onbeforeunload = function() {
+        if (close_call_num <= 2)
+          setTimeout("changeTitle()", 0);
+        return "some random string";
+      }
+    </script>
+ </head>
+ <body>
+    OnBeforeUnloadHandler In Panels.
+  </body>
+</html>
