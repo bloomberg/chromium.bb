@@ -21,7 +21,6 @@
 class NavigationController;
 class PrefService;
 class TabContents;
-class TemplateURL;
 
 // This object is responsible for checking the Google URL once per network
 // change, and if necessary prompting the user to see if they want to change to

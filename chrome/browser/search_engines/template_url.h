@@ -20,7 +20,6 @@ class Profile;
 class SearchTermsData;
 class TemplateURL;
 class WebDataService;
-struct WDKeywordsResult;
 
 // TemplateURL represents the relevant portions of the Open Search Description
 // Document (http://www.opensearch.org/Specifications/OpenSearch).

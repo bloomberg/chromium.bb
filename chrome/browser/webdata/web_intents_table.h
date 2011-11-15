@@ -13,8 +13,6 @@
 #include "chrome/browser/webdata/web_database_table.h"
 #include "webkit/glue/web_intent_service_data.h"
 
-class GURL;
-
 namespace sql {
 class Connection;
 class MetaTable;
@@ -31,8 +29,8 @@ class MetaTable;
 // Intents are uniquely identified by the <service_url,action,type> tuple.
 class WebIntentsTable : public WebDatabaseTable {
  public:
-   WebIntentsTable(sql::Connection* db, sql::MetaTable* meta_table);
-   virtual ~WebIntentsTable();
+  WebIntentsTable(sql::Connection* db, sql::MetaTable* meta_table);
+  virtual ~WebIntentsTable();
 
   // WebDatabaseTable implementation.
   virtual bool Init();

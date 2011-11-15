@@ -19,7 +19,6 @@ class BalloonCollection;
 class BalloonHost;
 class Notification;
 class Profile;
-class SiteInstance;
 
 // Interface for a view that displays a balloon.
 class BalloonView {

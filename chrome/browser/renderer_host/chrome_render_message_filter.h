@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_MESSAGE_FILTER_H_
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "base/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/content_settings.h"
@@ -18,7 +21,6 @@ class CookieSettings;
 struct ExtensionHostMsg_Request_Params;
 class ExtensionInfoMap;
 class GURL;
-class HostContentSettingsMap;
 
 namespace net {
 class URLRequestContextGetter;

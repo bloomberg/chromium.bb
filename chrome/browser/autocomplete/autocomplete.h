@@ -174,7 +174,6 @@ class AutocompleteInput;
 struct AutocompleteMatch;
 class AutocompleteProvider;
 class AutocompleteResult;
-class HistoryContentsProvider;
 class KeywordProvider;
 class Profile;
 class SearchProvider;

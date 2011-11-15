@@ -24,9 +24,6 @@ class ProfileIOData;
 namespace base {
 class WaitableEvent;
 }
-namespace net {
-class NetworkDelegate;
-}
 
 // Subclass of net::URLRequestContext which can be used to store extra
 // information for requests.

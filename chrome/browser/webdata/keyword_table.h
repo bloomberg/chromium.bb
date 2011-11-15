@@ -13,12 +13,7 @@
 #include "chrome/browser/webdata/web_database_table.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 
-class GURL;
 class TemplateURL;
-
-namespace base {
-class Time;
-}
 
 // This class manages the |keywords| MetaTable within the SQLite database
 // passed to the constructor. It expects the following schema:

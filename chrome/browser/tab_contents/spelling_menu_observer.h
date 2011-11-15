@@ -15,7 +15,6 @@
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
 #include "content/public/common/url_fetcher_delegate.h"
 
-class GURL;
 class RenderViewContextMenuProxy;
 
 namespace net {

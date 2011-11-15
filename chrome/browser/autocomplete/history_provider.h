@@ -9,14 +9,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 
-namespace history {
-
-class HistoryBackend;
-class URLDatabase;
-class URLRow;
-
-}  // namespace history
-
 // This class is a base class for the history autocomplete providers and
 // provides functions useful to all derived classes.
 class HistoryProvider : public AutocompleteProvider {

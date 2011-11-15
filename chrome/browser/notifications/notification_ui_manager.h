@@ -8,6 +8,7 @@
 
 #include <deque>
 #include <string>
+#include <vector>
 
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
@@ -22,7 +23,6 @@ class Notification;
 class PrefService;
 class Profile;
 class QueuedNotification;
-class SiteInstance;
 
 // The notification manager manages use of the desktop for notifications.
 // It maintains a queue of pending notifications when space becomes constrained.

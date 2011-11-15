@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -15,7 +16,6 @@
 #include "chrome/common/translate_errors.h"
 
 class PrefService;
-class SkBitmap;
 class TranslateInfoBarView;
 
 class TranslateInfoBarDelegate : public InfoBarDelegate {
@@ -167,8 +167,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   virtual void InfoBarDismissed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual InfoBarDelegate::Type GetInfoBarType() const OVERRIDE;
-   virtual bool ShouldExpire(
-       const content::LoadCommittedDetails& details) const;
+  virtual bool ShouldExpire(
+       const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() OVERRIDE;
 
   // Gets the host of the page being translated, or an empty string if no URL is

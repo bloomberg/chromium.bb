@@ -12,7 +12,6 @@
 #include "content/browser/renderer_host/resource_handler.h"
 #include "googleurl/src/gurl.h"
 
-class DownloadResourceHandler;
 class ResourceDispatcherHost;
 
 namespace net {

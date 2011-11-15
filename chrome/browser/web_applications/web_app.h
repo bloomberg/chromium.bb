@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/callback_old.h"
@@ -13,8 +14,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/web_apps.h"
-
-class Profile;
 
 namespace web_app {
 

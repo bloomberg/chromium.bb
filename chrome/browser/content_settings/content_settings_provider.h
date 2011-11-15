@@ -17,7 +17,6 @@
 #include "chrome/common/content_settings.h"
 
 class ContentSettingsPattern;
-class GURL;
 
 namespace content_settings {
 

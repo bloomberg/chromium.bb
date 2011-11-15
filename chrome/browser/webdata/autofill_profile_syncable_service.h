@@ -29,10 +29,6 @@ class AutofillTable;
 class ProfileSyncServiceAutofillTest;
 class WebDataService;
 
-namespace browser_sync {
-class UnrecoverableErrorHandler;
-}
-
 extern const char kAutofillProfileTag[];
 
 // The sync implementation for AutofillProfiles.

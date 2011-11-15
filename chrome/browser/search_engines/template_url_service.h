@@ -23,16 +23,15 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class GURL;
 class Extension;
+class GURL;
 class PrefService;
-class Profile;
 class PrefSetObserver;
+class Profile;
 class SearchHostToURLsMap;
 class SearchTermsData;
 class SyncData;
 class TemplateURLServiceObserver;
-class TemplateURLRef;
 
 namespace history {
 struct URLVisitedDetails;
@@ -418,7 +417,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // does not occur multiple times.
   static bool BuildQueryTerms(
       const GURL& url,
-      std::map<std::string,std::string>* query_terms);
+      std::map<std::string, std::string>* query_terms);
 
   // Invoked when the Google base URL has changed. Updates the mapping for all
   // TemplateURLs that have a replacement term of {google:baseURL} or

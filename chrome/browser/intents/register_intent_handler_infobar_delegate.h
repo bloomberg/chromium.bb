@@ -12,7 +12,6 @@
 #include "webkit/glue/web_intent_service_data.h"
 
 class InfoBarTabHelper;
-class TabContents;
 class WebIntentsRegistry;
 
 // The InfoBar used to request permission for a site to be registered as an

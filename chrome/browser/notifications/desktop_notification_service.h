@@ -23,11 +23,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 
 class ContentSettingsPattern;
-class Extension;
 class Notification;
-class NotificationDelegate;
 class NotificationUIManager;
-class PrefService;
 class Profile;
 class TabContents;
 

@@ -12,8 +12,6 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
 
-class Profile;
-
 namespace chrome_browser_net {
 class Predictor;
 }

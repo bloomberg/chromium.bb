@@ -20,12 +20,12 @@
 #include "base/memory/ref_counted.h"
 #include "googleurl/src/gurl.h"
 
-namespace net {
-class URLRequestContextGetter;
-class URLRequestStatus;
-}  // namespace net
 class DownloadItem;
 class SafeBrowsingService;
+
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
 
 namespace safe_browsing {
 class SignatureUtil;

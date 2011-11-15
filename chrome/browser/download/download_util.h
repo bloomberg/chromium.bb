@@ -20,24 +20,10 @@
 #include "views/view.h"
 #endif
 
-class BaseDownloadItemModel;
-class CrxInstaller;
 class DownloadItem;
-class GURL;
-class Profile;
-class ResourceDispatcherHost;
-class SkBitmap;
-
-struct DownloadCreateInfo;
-struct DownloadSaveInfo;
 
 namespace base {
 class DictionaryValue;
-class TimeTicks;
-}
-
-namespace content {
-class ResourceContext;
 }
 
 namespace gfx {

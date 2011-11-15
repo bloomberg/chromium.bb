@@ -14,7 +14,6 @@
 #include "net/base/completion_callback.h"
 
 class ChromeAppCacheService;
-class MessageLoop;
 class ResourceDispatcherHost;
 
 namespace net {

@@ -27,10 +27,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "content/public/common/url_fetcher_delegate.h"
 
-namespace net {
-class URLRequestStatus;
-}  // namespace net
-
 #if defined(COMPILER_GCC)
 // Allows us to use URLFetchers in a hash_map with gcc (MSVC is okay without
 // specifying this).
@@ -203,6 +199,7 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
       const std::string& http_url_prefix,
       const std::string& https_url_prefix,
       bool disable_auto_update);
+
  private:
   friend class SBProtocolManagerFactoryImpl;
 

@@ -10,8 +10,6 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 
-class TabContents;
-
 // An infobar delegate that presents the user with a choice to allow or deny
 // multiple downloads from the same site. This confirmation step protects
 // against "carpet-bombing", where a malicious site forces multiple downloads

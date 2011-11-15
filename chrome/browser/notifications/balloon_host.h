@@ -21,7 +21,6 @@ class Balloon;
 class Browser;
 class Profile;
 class SiteInstance;
-struct WebPreferences;
 
 namespace IPC {
 class Message;

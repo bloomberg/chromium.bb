@@ -11,9 +11,6 @@
 #include "base/string16.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 
-class SkBitmap;
-class TabContents;
-
 class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   SimpleAlertInfoBarDelegate(InfoBarTabHelper* infobar_helper,

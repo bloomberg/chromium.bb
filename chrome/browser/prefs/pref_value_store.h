@@ -17,7 +17,6 @@
 #include "chrome/common/pref_store.h"
 #include "content/public/browser/browser_thread.h"
 
-class FilePath;
 class PrefModelAssociator;
 class PrefNotifier;
 class PrefStore;

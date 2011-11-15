@@ -14,7 +14,6 @@
 class CommandLine;
 class FilePath;
 class PrefService;
-class Profile;
 
 namespace policy {
 class ConfigurationPolicyProvider;

@@ -17,11 +17,8 @@
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
 
-namespace base {
-class DictionaryValue;
-}
 class ResourceDispatcherHost;
-class TabContents;
+
 namespace content {
 class ResourceContext;
 }

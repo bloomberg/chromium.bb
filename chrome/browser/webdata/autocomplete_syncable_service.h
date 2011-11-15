@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -23,10 +24,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class ProfileSyncServiceAutofillTest;
-
-namespace browser_sync {
-class UnrecoverableErrorHandler;
-}
 
 namespace sync_pb {
 class AutofillSpecifics;

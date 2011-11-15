@@ -30,8 +30,6 @@
 
 class BookmarkModel;
 class BookmarkNode;
-class HistogramSynchronizer;
-class MetricsLogBase;
 class MetricsReportingScheduler;
 class PrefService;
 class Profile;

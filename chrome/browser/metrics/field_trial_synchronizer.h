@@ -13,9 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 
-class MessageLoop;
-class Task;
-
 // This class is used by the browser process to communicate FieldTrial setting
 // (field trial name and group) to any previously started renderers.
 //

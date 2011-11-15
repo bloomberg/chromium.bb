@@ -19,7 +19,6 @@
 #include "chrome/browser/history/shortcuts_backend.h"
 
 class Profile;
-struct AutocompleteLog;
 
 // Provider of recently autocompleted links. Provides autocomplete suggestions
 // from previously selected suggestions. The more often a user selects a

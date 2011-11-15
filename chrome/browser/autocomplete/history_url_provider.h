@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/synchronization/cancellation_flag.h"
@@ -20,7 +21,6 @@ namespace history {
 
 class HistoryBackend;
 class URLDatabase;
-class URLRow;
 
 }  // namespace history
 
