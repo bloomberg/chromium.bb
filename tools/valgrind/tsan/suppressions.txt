@@ -622,6 +622,11 @@
   fun:base::::ThreadFunc
 }
 {
+  bug_102327_b  
+  ThreadSanitizer:Race
+  fun:tracked_objects::ThreadData::tracking_status
+}
+{
   bug_103711a
   ThreadSanitizer:Race
   fun:webrtc::Trace::SetLevelFilter
