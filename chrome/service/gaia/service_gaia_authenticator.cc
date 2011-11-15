@@ -4,6 +4,7 @@
 
 #include "chrome/service/gaia/service_gaia_authenticator.h"
 
+#include "base/bind.h"
 #include "base/message_loop_proxy.h"
 #include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/service_process.h"
@@ -31,8 +32,7 @@ bool ServiceGaiaAuthenticator::Post(const GURL& url,
   DCHECK(io_message_loop_proxy_);
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &ServiceGaiaAuthenticator::DoPost, url,
-                        post_body));
+      base::Bind(&ServiceGaiaAuthenticator::DoPost, this, url, post_body));
   // TODO(sanjeevr): Waiting here until the network request completes is not
   // desirable. We need to change Post to be asynchronous.
   // Block until network request completes. See OnURLFetchComplete.

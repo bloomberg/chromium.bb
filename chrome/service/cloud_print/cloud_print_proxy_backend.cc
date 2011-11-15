@@ -7,6 +7,7 @@
 #include <map>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/rand_util.h"
 #include "base/values.h"
@@ -174,15 +175,11 @@ bool CloudPrintProxyBackend::InitializeWithLsid(
     const std::string& last_user_email) {
   if (!core_thread_.Start())
     return false;
-  core_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(
-        core_.get(),
-        &CloudPrintProxyBackend::Core::DoInitializeWithLsid,
-        lsid,
-        proxy_id,
-        last_robot_refresh_token,
-        last_robot_email,
-        last_user_email));
+  core_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&CloudPrintProxyBackend::Core::DoInitializeWithLsid,
+                 core_.get(), lsid, proxy_id, last_robot_refresh_token,
+                 last_robot_email, last_user_email));
   return true;
 }
 
@@ -191,10 +188,10 @@ bool CloudPrintProxyBackend::InitializeWithToken(
     const std::string& proxy_id) {
   if (!core_thread_.Start())
     return false;
-  core_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(
-        core_.get(), &CloudPrintProxyBackend::Core::DoInitializeWithToken,
-        cloud_print_token, proxy_id));
+  core_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&CloudPrintProxyBackend::Core::DoInitializeWithToken,
+                 core_.get(), cloud_print_token, proxy_id));
   return true;
 }
 
@@ -204,13 +201,11 @@ bool CloudPrintProxyBackend::InitializeWithRobotToken(
     const std::string& proxy_id) {
   if (!core_thread_.Start())
     return false;
-  core_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(
-        core_.get(),
-        &CloudPrintProxyBackend::Core::DoInitializeWithRobotToken,
-        robot_oauth_refresh_token,
-        robot_email,
-        proxy_id));
+  core_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&CloudPrintProxyBackend::Core::DoInitializeWithRobotToken,
+                 core_.get(), robot_oauth_refresh_token, robot_email,
+                 proxy_id));
   return true;
 }
 
@@ -220,20 +215,17 @@ bool CloudPrintProxyBackend::InitializeWithRobotAuthCode(
     const std::string& proxy_id) {
   if (!core_thread_.Start())
     return false;
-  core_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(
-        core_.get(),
-        &CloudPrintProxyBackend::Core::DoInitializeWithRobotAuthCode,
-        robot_oauth_auth_code,
-        robot_email,
-        proxy_id));
+  core_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&CloudPrintProxyBackend::Core::DoInitializeWithRobotAuthCode,
+                 core_.get(), robot_oauth_auth_code, robot_email, proxy_id));
   return true;
 }
 
 void CloudPrintProxyBackend::Shutdown() {
-  core_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(core_.get(),
-                        &CloudPrintProxyBackend::Core::DoShutdown));
+  core_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&CloudPrintProxyBackend::Core::DoShutdown, core_.get()));
   core_thread_.Stop();
   core_ = NULL;  // Releases reference to core_.
 }
@@ -308,11 +300,9 @@ void CloudPrintProxyBackend::Core::OnAuthenticationComplete(
   token_store->SetToken(access_token);
   // Let the frontend know that we have authenticated.
   backend_->frontend_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(this,
-                                   &Core::NotifyAuthenticated,
-                                   robot_oauth_refresh_token,
-                                   robot_email,
-                                   user_email));
+      FROM_HERE,
+      base::Bind(&Core::NotifyAuthenticated, this, robot_oauth_refresh_token,
+                 robot_email, user_email));
   if (first_time) {
     InitNotifications(robot_email, access_token);
   } else {
@@ -327,9 +317,7 @@ void CloudPrintProxyBackend::Core::OnAuthenticationComplete(
     if (!connector_->Start()) {
       // Let the frontend know that we do not have a print system.
       backend_->frontend_loop_->PostTask(
-          FROM_HERE,
-          NewRunnableMethod(this,
-                            &Core::NotifyPrintSystemUnavailable));
+          FROM_HERE, base::Bind(&Core::NotifyPrintSystemUnavailable, this));
     }
   }
 }
@@ -337,8 +325,8 @@ void CloudPrintProxyBackend::Core::OnAuthenticationComplete(
 void CloudPrintProxyBackend::Core::OnInvalidCredentials() {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   VLOG(1) << "CP_CONNECTOR: Auth Error";
-  backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &Core::NotifyAuthenticationFailed));
+  backend_->frontend_loop_->PostTask(
+      FROM_HERE, base::Bind(&Core::NotifyAuthenticationFailed, this));
 }
 
 void CloudPrintProxyBackend::Core::OnAuthFailed() {
@@ -415,7 +403,7 @@ void CloudPrintProxyBackend::Core::ScheduleJobPoll() {
                                             kMaxJobPollIntervalSecs);
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        NewRunnableMethod(this, &CloudPrintProxyBackend::Core::PollForJobs),
+        base::Bind(&CloudPrintProxyBackend::Core::PollForJobs, this),
         interval_in_seconds * 1000);
     job_poll_scheduled_ = true;
   }

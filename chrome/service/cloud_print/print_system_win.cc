@@ -8,6 +8,7 @@
 #include <winspool.h>
 #include <xpsprint.h>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -532,14 +533,9 @@ class PrintSystemWin : public PrintSystem {
         gfx::Rect render_area(0, 0, dc_width, dc_height);
         g_service_process->io_thread()->message_loop_proxy()->PostTask(
             FROM_HERE,
-            NewRunnableMethod(
-                this,
-                &JobSpoolerWin::Core::RenderPDFPagesInSandbox,
-                print_data_file_path_,
-                render_area,
-                printer_dpi,
-                page_ranges,
-                base::MessageLoopProxy::current()));
+            base::Bind(&JobSpoolerWin::Core::RenderPDFPagesInSandbox, this,
+                       print_data_file_path_, render_area, printer_dpi,
+                       page_ranges, base::MessageLoopProxy::current()));
       }
       // Called on the service process IO thread.
       void RenderPDFPagesInSandbox(
@@ -659,10 +655,8 @@ class PrintSystemWin : public PrintSystem {
     virtual void Start() {
       g_service_process->io_thread()->message_loop_proxy()->PostTask(
           FROM_HERE,
-          NewRunnableMethod(
-              this,
-              &PrinterCapsHandler::GetPrinterCapsAndDefaultsImpl,
-              base::MessageLoopProxy::current()));
+          base::Bind(&PrinterCapsHandler::GetPrinterCapsAndDefaultsImpl, this,
+                     base::MessageLoopProxy::current()));
     }
 
     virtual void OnChildDied() {
@@ -699,10 +693,8 @@ class PrintSystemWin : public PrintSystem {
       } else {
         client_message_loop_proxy->PostTask(
             FROM_HERE,
-            NewRunnableMethod(
-                this,
-                &PrinterCapsHandler::OnGetPrinterCapsAndDefaultsFailed,
-                printer_name_));
+            base::Bind(&PrinterCapsHandler::OnGetPrinterCapsAndDefaultsFailed,
+                       this, printer_name_));
       }
     }
 

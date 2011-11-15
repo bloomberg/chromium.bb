@@ -4,6 +4,7 @@
 
 #include "chrome/service/cloud_print/job_status_updater.h"
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -84,7 +85,7 @@ CloudPrintURLFetcher::ResponseAction JobStatusUpdater::HandleJSONData(
       bool succeeded) {
   if (last_job_details_.status == cloud_print::PRINT_JOB_STATUS_COMPLETED) {
     MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &JobStatusUpdater::Stop));
+        FROM_HERE, base::Bind(&JobStatusUpdater::Stop, this));
   }
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }

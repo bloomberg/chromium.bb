@@ -4,6 +4,7 @@
 
 #include "chrome/service/service_utility_process_host.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -133,8 +134,7 @@ void ServiceUtilityProcessHost::OnChildDied() {
     // If we are yet to receive a reply then notify the client that the
     // child died.
     client_message_loop_proxy_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(client_.get(), &Client::OnChildDied));
+        FROM_HERE, base::Bind(&Client::OnChildDied, client_.get()));
   }
   // The base class implementation will delete |this|.
   ServiceChildProcessHost::OnChildDied();
@@ -183,10 +183,8 @@ void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileSucceeded(
   scratch_metafile_dir_->Take();
   client_message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(client_.get(),
-                        &Client::MetafileAvailable,
-                        metafile_path_,
-                        highest_rendered_page_number));
+      base::Bind(&Client::MetafileAvailable, client_.get(), metafile_path_,
+                 highest_rendered_page_number));
 }
 
 void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileFailed() {
@@ -194,8 +192,7 @@ void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileFailed() {
   waiting_for_reply_ = false;
   client_message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(client_.get(),
-                        &Client::OnRenderPDFPagesToMetafileFailed));
+      base::Bind(&Client::OnRenderPDFPagesToMetafileFailed, client_.get()));
 }
 
 void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsSucceeded(
@@ -205,10 +202,8 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsSucceeded(
   waiting_for_reply_ = false;
   client_message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(client_.get(),
-                        &Client::OnGetPrinterCapsAndDefaultsSucceeded,
-                        printer_name,
-                        caps_and_defaults));
+      base::Bind(&Client::OnGetPrinterCapsAndDefaultsSucceeded, client_.get(),
+                 printer_name, caps_and_defaults));
 }
 
 void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsFailed(
@@ -217,9 +212,8 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsFailed(
   waiting_for_reply_ = false;
   client_message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(client_.get(),
-                        &Client::OnGetPrinterCapsAndDefaultsFailed,
-                        printer_name));
+      base::Bind(&Client::OnGetPrinterCapsAndDefaultsFailed, client_.get(),
+                 printer_name));
 }
 
 void ServiceUtilityProcessHost::Client::MetafileAvailable(
