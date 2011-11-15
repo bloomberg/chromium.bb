@@ -316,22 +316,25 @@ PrintSystemTaskProxy::~PrintSystemTaskProxy() {
 
 void PrintSystemTaskProxy::GetDefaultPrinter() {
   VLOG(1) << "Get default printer start";
-  std::string* default_printer = NULL;
+  StringValue* default_printer = NULL;
   if (PrintPreviewHandler::last_used_printer_name_ == NULL) {
-    default_printer = new std::string(print_backend_->GetDefaultPrinterName());
+    default_printer = new StringValue(
+        print_backend_->GetDefaultPrinterName());
   } else {
-    default_printer = new std::string(
+    default_printer = new StringValue(
         *PrintPreviewHandler::last_used_printer_name_);
   }
+  std::string default_printer_string;
+  default_printer->GetAsString(&default_printer_string);
   VLOG(1) << "Get default printer finished, found: "
-          << default_printer;
+          << default_printer_string;
 
-  std::string* cloud_print_data = NULL;
+  StringValue* cloud_print_data = NULL;
   if (PrintPreviewHandler::last_used_printer_cloud_print_data_ != NULL) {
-    cloud_print_data = new std::string(
+    cloud_print_data = new StringValue(
         *PrintPreviewHandler::last_used_printer_cloud_print_data_);
   } else {
-    cloud_print_data = new std::string;
+    cloud_print_data = new StringValue("");
   }
 
   BrowserThread::PostTask(
@@ -341,9 +344,9 @@ void PrintSystemTaskProxy::GetDefaultPrinter() {
 }
 
 void PrintSystemTaskProxy::SendDefaultPrinter(
-    const std::string* default_printer, const std::string* cloud_print_data) {
+    const StringValue* default_printer, const StringValue* cloud_print_data) {
   if (handler_)
-    handler_->SendInitialSettings(*default_printer, *cloud_print_data);
+    handler_->SendDefaultPrinter(*default_printer, *cloud_print_data);
   delete default_printer;
 }
 

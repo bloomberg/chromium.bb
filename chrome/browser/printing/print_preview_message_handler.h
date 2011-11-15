@@ -43,7 +43,7 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
   PrintPreviewUI* OnFailure(int document_cookie);
 
   // Message handlers.
-  void OnRequestPrintPreview(bool source_is_modifiable);
+  void OnRequestPrintPreview();
   void OnDidGetDefaultPageLayout(
       const printing::PageSizeMargins& page_layout_in_points);
   void OnDidGetPreviewPageCount(

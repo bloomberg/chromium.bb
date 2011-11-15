@@ -26,7 +26,7 @@ PrintPreviewWebUITest.prototype = {
    * @override
    */
   preLoad: function() {
-    this.makeAndRegisterMockHandler(['getInitialSettings',
+    this.makeAndRegisterMockHandler(['getDefaultPrinter',
                                      'getPrinters',
                                      'getPreview',
                                      'print',
@@ -45,7 +45,7 @@ PrintPreviewWebUITest.prototype = {
 
     // Register stubs for methods expected to be called before tests
     // run. Specific expectations can be made in the tests themselves.
-    this.mockHandler.stubs().getInitialSettings().
+    this.mockHandler.stubs().getDefaultPrinter().
         will(callFunction(function() {
           setDefaultPrinter('FooDevice');
         }));

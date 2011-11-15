@@ -164,25 +164,9 @@ function onLoad() {
   $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
 
   previewArea.showLoadingAnimation();
-  chrome.send('getInitialSettings');
-}
-
-/**
- * @param {string} initiatorTabTitle The title of the initiator tab.
- * @param {object} initialSettings An object containing all the initial
- *     settings.
- */
-function setInitialSettings(initialSettings) {
-  setInitiatorTabTitle(initialSettings['initiatorTabTitle']);
-  previewModifiable = initialSettings['previewModifiable'];
-  if (previewModifiable) {
-    print_preview.MarginSettings.setNumberFormatAndMeasurementSystem(
-        initialSettings['numberFormat'],
-        initialSettings['measurementSystem']);
-    marginSettings.setLastUsedMargins(initialSettings);
-  }
-  setDefaultPrinter(initialSettings['printerName'],
-                    initialSettings['cloudPrintData']);
+  chrome.send('getInitiatorTabTitle');
+  chrome.send('getDefaultPrinter');
+  chrome.send('getNumberFormatAndMeasurementSystem');
 }
 
 /**
@@ -300,9 +284,7 @@ function updateControlsWithSelectedPrinterCapabilities() {
     lastSelectedPrinterIndex = selectedIndex;
 
     // Regenerate the preview data based on selected printer settings.
-    // Do not reset the margins if no preview request has been made.
-    var resetMargins = lastPreviewRequestID != initialPreviewRequestID;
-    setDefaultValuesAndRegeneratePreview(resetMargins);
+    setDefaultValuesAndRegeneratePreview(true);
   }
 }
 
@@ -322,9 +304,7 @@ function doUpdateCloudPrinterCapabilities(printer) {
   lastSelectedPrinterIndex = selectedIndex;
 
   // Regenerate the preview data based on selected printer settings.
-  // Do not reset the margins if no preview request has been made.
-  var resetMargins = lastPreviewRequestID != initialPreviewRequestID;
-  setDefaultValuesAndRegeneratePreview(resetMargins);
+  setDefaultValuesAndRegeneratePreview(true);
 }
 
 /**
@@ -598,14 +578,18 @@ function fileSelectionCompleted() {
  * @param {string} printer Name of the default printer. Empty if none.
  * @param {string} cloudPrintData Cloud print related data to restore if
  *     the default printer is a cloud printer.
+ * @param {number} lastUsedMarginsType Indicates the last used margins type
+ *     (matches enum MarginType in printing/print_job_constants.h.
  */
-function setDefaultPrinter(printerName, cloudPrintData) {
+function setDefaultPrinter(printer_name, cloudPrintData, lastUsedMarginsType) {
+  // Setting the margin selection to the last used one.
+  marginSettings.setLastUsedMarginsType(lastUsedMarginsType);
   // Add a placeholder value so the printer list looks valid.
   addDestinationListOption('', '', true, true, true);
-  if (printerName) {
-    defaultOrLastUsedPrinterName = printerName;
+  if (printer_name) {
+    defaultOrLastUsedPrinterName = printer_name;
     if (cloudPrintData) {
-      cloudprint.setDefaultPrinter(printerName,
+      cloudprint.setDefaultPrinter(printer_name,
                                    cloudPrintData,
                                    addDestinationListOptionAtPosition,
                                    doUpdateCloudPrinterCapabilities);
@@ -795,13 +779,16 @@ function setPluginPreviewPageCount() {
  * Update the page count and check the page range.
  * Called from PrintPreviewUI::OnDidGetPreviewPageCount().
  * @param {number} pageCount The number of pages.
+ * @param {boolean} isModifiable Indicates whether the previewed document can be
+ *     modified.
  * @param {number} previewResponseId The preview request id that resulted in
  *     this response.
  */
-function onDidGetPreviewPageCount(pageCount, previewResponseId) {
+function onDidGetPreviewPageCount(pageCount, isModifiable, previewResponseId) {
   if (!isExpectedPreviewResponse(previewResponseId))
     return;
   pageSettings.updateState(pageCount);
+  previewModifiable = isModifiable;
   if (!previewModifiable && pageSettings.requestPrintPreviewIfNeeded())
     return;
 
@@ -1071,6 +1058,8 @@ PrintSettings.prototype.save = function() {
 
 /**
  * Updates the title of the print preview tab according to |initiatorTabTitle|.
+ * Called from PrintPreviewUI::OnGetInitiatorTabTitle as a result of sending a
+ * 'getInitiatorTabTitle' message.
  * @param {string} initiatorTabTitle The title of the initiator tab.
  */
 function setInitiatorTabTitle(initiatorTabTitle) {

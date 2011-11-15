@@ -55,8 +55,8 @@ class PrintSystemTaskProxy
       content::BrowserThread::UI>;
   friend class DeleteTask<PrintSystemTaskProxy>;
 
-  void SendDefaultPrinter(const std::string* default_printer,
-                          const std::string* cloud_print_data);
+  void SendDefaultPrinter(const base::StringValue* default_printer,
+                          const base::StringValue* cloud_print_data);
   void SetupPrinterList(base::ListValue* printers);
   void SendPrinterCapabilities(base::DictionaryValue* settings_info);
 

@@ -1282,8 +1282,7 @@ void PrintWebViewHelper::DisplayPrintJobError() {
 
 void PrintWebViewHelper::RequestPrintPreview() {
   old_print_pages_params_.reset();
-  Send(new PrintHostMsg_RequestPrintPreview(
-      routing_id(), print_preview_context_.IsModifiable()));
+  Send(new PrintHostMsg_RequestPrintPreview(routing_id()));
 }
 
 bool PrintWebViewHelper::CheckForCancel() {

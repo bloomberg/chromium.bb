@@ -343,7 +343,7 @@ IPC_MESSAGE_CONTROL1(PrintHostMsg_TempFileForPrintingWritten,
 #endif
 
 // Asks the browser to do print preview.
-IPC_MESSAGE_ROUTED1(PrintHostMsg_RequestPrintPreview, bool /* is_modifiable */)
+IPC_MESSAGE_ROUTED0(PrintHostMsg_RequestPrintPreview)
 
 // Notify the browser the number of pages in the print preview document.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_DidGetPreviewPageCount,

@@ -40,8 +40,6 @@ cr.define('print_preview', function() {
      * @return {boolean} true if they are equal.
      */
     isEqual: function(rhs) {
-      if (!rhs)
-        return false;
       return this[MarginSettings.TOP_GROUP] === rhs[MarginSettings.TOP_GROUP] &&
           this[MarginSettings.LEFT_GROUP] === rhs[MarginSettings.LEFT_GROUP] &&
           this[MarginSettings.RIGHT_GROUP] ===
@@ -50,11 +48,15 @@ cr.define('print_preview', function() {
               rhs[MarginSettings.BOTTOM_GROUP];
     },
 
-    clone: function() {
-      return new Margins(this[MarginSettings.TOP_GROUP],
-                         this[MarginSettings.LEFT_GROUP],
-                         this[MarginSettings.RIGHT_GROUP],
-                         this[MarginSettings.BOTTOM_GROUP]);
+    /**
+     * Copies the four margin values from |rhs|.
+     * @param {Margins} rhs The Margins object values to be used.
+     */
+    copy: function(rhs) {
+      this[MarginSettings.TOP_GROUP] = rhs[MarginSettings.TOP_GROUP];
+      this[MarginSettings.LEFT_GROUP] = rhs[MarginSettings.LEFT_GROUP];
+      this[MarginSettings.RIGHT_GROUP] = rhs[MarginSettings.RIGHT_GROUP];
+      this[MarginSettings.BOTTOM_GROUP] = rhs[MarginSettings.BOTTOM_GROUP];
     },
 
     /**
@@ -91,7 +93,6 @@ cr.define('print_preview', function() {
     this.contentWidth_ = width;
     this.contentHeight_ = height;
     this.margins_ = new Margins(left, top, right, bottom);
-    this.margins_.roundToLocaleUnits();
   }
 
   PageLayout.prototype = {
@@ -121,18 +122,21 @@ cr.define('print_preview', function() {
     this.marginsUI_ = null;
 
     // Holds the custom margin values in points (if set).
-    this.customMargins_ = null;
+    this.customMargins_ = new Margins(-1, -1, -1, -1);
     // Holds the previous custom margin values in points.
-    this.previousCustomMargins_ = null;
+    this.previousCustomMargins_ = new Margins(-1, -1, -1, -1);
     // Holds the width of the page in points.
     this.pageWidth_ = -1;
     // Holds the height of the page in points.
     this.pageHeight_ = -1;
-    // @type {boolean} True if the margins UI should be diplayed when the next
-    //     |customEvents.PDF_LOADED| event occurs.
-    this.forceMarginsUIOnPDFLoad_ = false;
+    // The last selected margin option.
+    this.lastSelectedOption_ = MarginSettings.MARGINS_VALUE_DEFAULT;
+
     // Holds the currently updated default page layout values.
     this.currentDefaultPageLayout = null;
+    // Holds the default page layout values when the custom margins was last
+    // selected.
+    this.previousDefaultPageLayout_ = null;
 
     // True if the margins UI should be shown regardless of mouse position.
     this.forceDisplayingMarginLines_ = true;
@@ -199,19 +203,6 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Sets |this.customMargins_| according to |margins|.
-     * @param {{marginLeft: number, marginTop: number, marginRight: number,
-     *     marginBottom: number}} margins An object holding the four margin
-     *     values.
-     */
-    set customMargins(margins) {
-      this.customMargins_.left = margins.marginLeft;
-      this.customMargins_.top = margins.marginTop;
-      this.customMargins_.right = margins.marginRight;
-      this.customMargins_.bottom = margins.marginBottom;
-    },
-
-    /**
      * @return {number} The value of the selected margin option.
      */
     get selectedMarginsValue() {
@@ -220,26 +211,13 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Sets the current margin selection to |lastUsedMarginType|.
-     * @param {number} lastUsedMarginType An integer value identifying a margin
+     * Sets the current margin selection to |lastUsedMarginsType|.
+     * @param {number} lastUsedMarginsType An integer value identifying a margin
      *     type according to MarginType enum in printing/print_job_constants.h.
-     * @param {Object} lastUsedCustomMargins The last used custom margins. If
-     *     custom margins have not been used before
-     *     |margin{Top|Bottom|Left|Right}| attributes are missing.
      */
-    setLastUsedMargins: function(lastUsedMarginsSettings) {
-      var lastUsedMarginsType = lastUsedMarginsSettings['marginsType']
-      this.forceMarginsUIOnPDFLoad_ =
-          lastUsedMarginsType == MarginSettings.MARGINS_VALUE_CUSTOM;
+    setLastUsedMarginsType: function(lastUsedMarginsType) {
       this.marginList_.selectedIndex =
           this.getMarginOptionIndexByValue_(lastUsedMarginsType);
-      if (lastUsedMarginsSettings.hasOwnProperty('marginTop') &&
-          lastUsedMarginsSettings.hasOwnProperty('marginBottom') &&
-          lastUsedMarginsSettings.hasOwnProperty('marginRight') &&
-          lastUsedMarginsSettings.hasOwnProperty('marginLeft')) {
-        this.customMargins_ = new Margins(-1, -1, -1 , -1);
-        this.customMargins = lastUsedMarginsSettings;
-      }
     },
 
     /**
@@ -312,11 +290,9 @@ cr.define('print_preview', function() {
     requestPreviewIfNeeded_: function() {
       if (!this.areMarginSettingsValid())
         return;
-
       if (this.customMargins_.isEqual(this.previousCustomMargins_))
         return;
-
-      this.previousCustomMargins_ = this.customMargins_.clone();
+      this.previousCustomMargins_.copy(this.customMargins_);
       setDefaultValuesAndRegeneratePreview(false);
     },
 
@@ -326,8 +302,6 @@ cr.define('print_preview', function() {
      * @private
      */
     onSidebarMouseOver_: function(e) {
-      $('mainview').onmouseover = this.onMainviewMouseOver_.bind(this);
-      $('navbar-container').onmouseover = null;
       if (!this.forceDisplayingMarginLines_)
         this.marginsUI.hide(false);
     },
@@ -338,8 +312,6 @@ cr.define('print_preview', function() {
      * @private
      */
     onMainviewMouseOver_: function() {
-      $('mainview').onmouseover = null;
-      $('navbar-container').onmouseover = this.onSidebarMouseOver_.bind(this);
       this.forceDisplayingMarginLines_ = false;
       this.marginsUI.show();
     },
@@ -396,7 +368,7 @@ cr.define('print_preview', function() {
      * @return {boolean} True if the margin settings are valid.
      */
     areMarginSettingsValid: function() {
-      if (!this.isCustomMarginsSelected() || !this.marginsUI_)
+      if (this.marginsUI_ == null)
         return true;
 
       var pairs = this.marginsUI.pairsAsList;
@@ -502,8 +474,6 @@ cr.define('print_preview', function() {
      * @private
      */
     removeCustomMarginEventListeners_: function() {
-      if (!this.marginsUI_)
-        return;
       $('mainview').onmouseover = null;
       $('navbar-container').onmouseover = null;
       this.eventTracker_.remove(this.marginsUI, customEvents.MARGIN_LINE_DRAG);
@@ -562,6 +532,8 @@ cr.define('print_preview', function() {
         this.onDefaultMinimumNoMarginsSelected_();
       else if (this.isCustomMarginsSelected())
         this.onCustomMarginsSelected_();
+
+      this.lastSelectedOption_ = this.selectedMarginsValue;
     },
 
     /**
@@ -571,7 +543,6 @@ cr.define('print_preview', function() {
     onDefaultMinimumNoMarginsSelected_: function() {
       this.removeCustomMarginEventListeners_();
       this.forceDisplayingMarginLines_ = true;
-      this.previousCustomMargins_ = null;
       setDefaultValuesAndRegeneratePreview(false);
     },
 
@@ -580,18 +551,20 @@ cr.define('print_preview', function() {
      * @private
      */
     onCustomMarginsSelected_: function() {
-      var customMarginsNotSpecified = !this.customMargins_;
-      this.updatePageData_();
+      this.addCustomMarginEventListeners_();
 
-      if (customMarginsNotSpecified) {
-        this.previousCustomMargins_ = this.customMargins_.clone();
-        this.drawCustomMarginsUI_();
-        this.addCustomMarginEventListeners_();
-        this.marginsUI.show();
-      } else {
-        this.forceMarginsUIOnPDFLoad_ = true;
-        this.requestPreviewIfNeeded_();
+      this.customMargins_ = this.currentDefaultPageLayout.margins_;
+      this.customMargins_.roundToLocaleUnits();
+      this.previousCustomMargins_.copy(this.customMargins_);
+
+      if (this.previousDefaultPageLayout_ != this.currentDefaultPageLayout) {
+        this.pageWidth_ = this.currentDefaultPageLayout.pageWidth;
+        this.pageHeight_ = this.currentDefaultPageLayout.pageHeight;
       }
+
+      this.previousDefaultPageLayout_ = this.currentDefaultPageLayout;
+      this.drawCustomMarginsUI_();
+      this.marginsUI.show();
     },
 
     /**
@@ -654,8 +627,7 @@ cr.define('print_preview', function() {
             MarginSettings.OPTION_INDEX_DEFAULT].selected = true;
         this.removeCustomMarginEventListeners_();
         this.forceDisplayingMarginLines_ = true;
-        this.customMargins_ = null;
-        this.previousCustomMargins_ = null;
+        this.lastSelectedOption_ = MarginSettings.MARGINS_VALUE_DEFAULT;
       }
     },
 
@@ -664,35 +636,15 @@ cr.define('print_preview', function() {
      * @private
      */
     onPDFLoaded_: function() {
-      if (!previewModifiable) {
+      if (!previewModifiable)
         fadeOutOption(this.marginsOption_);
-        return;
-      }
-
-      if (this.forceMarginsUIOnPDFLoad_) {
-        this.updatePageData_();
-        this.drawCustomMarginsUI_();
-        this.addCustomMarginEventListeners_();
-        this.marginsUI.show();
-        this.forceMarginsUIOnPDFLoad_ = false;
-      }
-    },
-
-    /**
-     * Updates |this.customMargins_|, |this.pageWidth_|, |this.pageHeight_|.
-     * @private
-     */
-    updatePageData_: function() {
-      if (!this.customMargins_)
-        this.customMargins_ = this.currentDefaultPageLayout.margins_.clone();
-
-      this.pageWidth_ = this.currentDefaultPageLayout.pageWidth;
-      this.pageHeight_ = this.currentDefaultPageLayout.pageHeight;
     }
   };
 
   return {
     MarginSettings: MarginSettings,
     PageLayout: PageLayout,
+    setNumberFormatAndMeasurementSystem:
+        MarginSettings.setNumberFormatAndMeasurementSystem,
   };
 });

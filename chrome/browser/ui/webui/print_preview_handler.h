@@ -27,7 +27,6 @@ class StringValue;
 }
 
 namespace printing {
-struct PageSizeMargins;
 class PrintBackend;
 }
 
@@ -68,19 +67,13 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   void ShowSystemDialog();
 
  private:
-  friend class PrintPreviewHandlerTest;
   friend class PrintSystemTaskProxy;
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, StickyMarginsCustom);
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, StickyMarginsDefault);
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                           StickyMarginsCustomThenDefault);
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                           GetLastUsedMarginSettingsCustom);
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                           GetLastUsedMarginSettingsDefault);
 
   TabContentsWrapper* preview_tab_wrapper() const;
   TabContents* preview_tab() const;
+
+  // Gets the default printer. |args| is unused.
+  void HandleGetDefaultPrinter(const base::ListValue* args);
 
   // Gets the list of printers. |args| is unused.
   void HandleGetPrinters(const base::ListValue* args);
@@ -138,17 +131,21 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Asks the browser to close the preview tab. |args| is unused.
   void HandleClosePreviewTab(const base::ListValue* args);
 
-  // Asks the browser for several settings that are needed before the first
-  // preview is displayed.
-  void HandleGetInitialSettings(const base::ListValue* args);
+  // Asks the browser for the title of the initiator tab.
+  // |args| is unused.
+  void HandleGetInitiatorTabTitle(const base::ListValue* args);
 
-  void SendInitialSettings(
-      const std::string& default_printer,
-      const std::string& cloud_print_data);
+  // Asks the browser for the number formatting and measurement system according
+  // to the current locale.
+  void HandleGetNumberFormatAndMeasurementSystem(const base::ListValue* args);
 
   // Sends the printer capabilities to the Web UI. |settings_info| contains
   // printer capabilities information.
   void SendPrinterCapabilities(const base::DictionaryValue& settings_info);
+
+  // Sends the default printer to the Web UI.
+  void SendDefaultPrinter(const base::StringValue& default_printer,
+                          const base::StringValue& cloud_print_data);
 
   // Send the list of printers to the Web UI.
   void SetupPrinterList(const base::ListValue& printers);
@@ -181,14 +178,6 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Posts a task to save to pdf at |print_to_pdf_path_|.
   void PostPrintToPdfTask();
 
-  // Populates |settings| according to the current locale.
-  void GetNumberFormatAndMeasurementSystem(base::DictionaryValue* settings);
-
-  // Populates |last_used_custom_margins| according to the last used margin
-  // settings.
-  void GetLastUsedMarginSettings(
-      base::DictionaryValue* last_used_custom_margins);
-
   // Pointer to current print system.
   scoped_refptr<printing::PrintBackend> print_backend_;
 
@@ -200,7 +189,6 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   static std::string* last_used_printer_name_;
   static printing::ColorModels last_used_color_model_;
   static printing::MarginType last_used_margins_type_;
-  static printing::PageSizeMargins* last_used_page_size_margins_;
 
   // A count of how many requests received to regenerate preview data.
   // Initialized to 0 then incremented and emitted to a histogram.

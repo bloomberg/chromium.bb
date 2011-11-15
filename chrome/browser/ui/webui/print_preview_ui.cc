@@ -116,10 +116,6 @@ void PrintPreviewUI::SetInitiatorTabURLAndTitle(
   initiator_tab_title_ = job_title;
 }
 
-void PrintPreviewUI::SetSourceIsModifiable(bool source_is_modifiable) {
-  source_is_modifiable_ = source_is_modifiable;
-}
-
 // static
 void PrintPreviewUI::GetCurrentPrintPreviewStatus(
     const std::string& preview_ui_addr,
@@ -163,8 +159,10 @@ void PrintPreviewUI::OnDidGetPreviewPageCount(
     const PrintHostMsg_DidGetPreviewPageCount_Params& params) {
   DCHECK_GT(params.page_count, 0);
   base::FundamentalValue count(params.page_count);
+  base::FundamentalValue modifiable(params.is_modifiable);
   base::FundamentalValue request_id(params.preview_request_id);
-  CallJavascriptFunction("onDidGetPreviewPageCount", count,request_id);
+  CallJavascriptFunction("onDidGetPreviewPageCount", count, modifiable,
+                         request_id);
 }
 
 void PrintPreviewUI::OnDidGetDefaultPageLayout(

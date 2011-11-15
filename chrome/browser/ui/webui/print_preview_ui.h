@@ -50,10 +50,6 @@ class PrintPreviewUI : public ChromeWebUI {
 
   string16 initiator_tab_title() { return initiator_tab_title_; }
 
-  bool source_is_modifiable() { return source_is_modifiable_; }
-
-  void SetSourceIsModifiable(bool source_is_modifiable);
-
   // Determines whether to cancel a print preview request based on
   // |preview_ui_addr| and |request_id|.
   // Can be called from any thread.
@@ -118,15 +114,6 @@ class PrintPreviewUI : public ChromeWebUI {
   void OnCancelPendingPreviewRequest();
 
  private:
-  friend class PrintPreviewHandlerTest;
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, StickyMarginsCustom);
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, StickyMarginsDefault);
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                           StickyMarginsCustomThenDefault);
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                           GetLastUsedMarginSettingsCustom);
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                           GetLastUsedMarginSettingsDefault);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewTabControllerUnitTest,
                            TitleAfterReload);
 
@@ -144,9 +131,6 @@ class PrintPreviewUI : public ChromeWebUI {
   // Store the |initiator_url| in order to display an accurate error message
   // when the initiator tab is closed/crashed.
   std::string initiator_url_;
-
-  // Indicates whether the source document can be modified.
-  bool source_is_modifiable_;
 
   // Store the initiator tab title, used for populating the print preview tab
   // title.
