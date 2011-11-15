@@ -83,6 +83,10 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionGetTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_get_test.html"))));
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/104306
+#define KeyTypesTest FLAKY_KeyTypesTest
+#endif
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyTypesTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("key_types_test.html"))));
 }
