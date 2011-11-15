@@ -72,6 +72,8 @@ class PrintPreviewTabController
   // Erase the initiator tab info associated with |preview_tab|.
   void EraseInitiatorTabInfo(TabContentsWrapper* preview_tab);
 
+  bool is_creating_print_preview_tab() const;
+
  private:
   friend class base::RefCounted<PrintPreviewTabController>;
 
@@ -104,6 +106,10 @@ class PrintPreviewTabController
   void AddObservers(TabContentsWrapper* tab);
   void RemoveObservers(TabContentsWrapper* tab);
 
+  // Removes tabs when they close/crash/navigate.
+  void RemoveInitiatorTab(TabContentsWrapper* initiator_tab);
+  void RemovePreviewTab(TabContentsWrapper* preview_tab);
+
   // Mapping between print preview tab and the corresponding initiator tab.
   PrintPreviewTabMap preview_tab_map_;
 
@@ -113,6 +119,10 @@ class PrintPreviewTabController
   // True if the controller is waiting for a new preview tab via
   // content::NAVIGATION_TYPE_NEW_PAGE.
   bool waiting_for_new_preview_page_;
+
+  // Whether the PrintPreviewTabController is in the middle of creating a
+  // print preview tab.
+  bool is_creating_print_preview_tab_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewTabController);
 };

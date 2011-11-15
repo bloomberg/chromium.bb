@@ -21,7 +21,7 @@ namespace {
 
 DictionaryValue* GetCustomMarginsDictionary(
     const double margin_top, const double margin_right,
-    const double margin_bottom,const double margin_left) {
+    const double margin_bottom, const double margin_left) {
   base::DictionaryValue* custom_settings = new base::DictionaryValue();
   custom_settings->SetDouble(printing::kSettingMarginTop, margin_top);
   custom_settings->SetDouble(printing::kSettingMarginRight, margin_right);
@@ -30,7 +30,7 @@ DictionaryValue* GetCustomMarginsDictionary(
   return custom_settings;
 }
 
-}
+}  // namespace
 
 class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
  protected:
@@ -65,7 +65,6 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
 
     preview_tab_ = controller->GetOrCreatePreviewTab(initiator_tab);
     ASSERT_TRUE(preview_tab_);
-    EXPECT_EQ(2, browser()->tab_count());
 
     preview_ui_ = static_cast<PrintPreviewUI*>(preview_tab_->web_ui());
     ASSERT_TRUE(preview_ui_);
@@ -114,7 +113,7 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
 
   void RequestPrintWithCustomMargins(
     const double margin_top, const double margin_right,
-    const double margin_bottom,const double margin_left) {
+    const double margin_bottom, const double margin_left) {
     // Set the minimal dummy settings to make the HandlePrint() code happy.
     DictionaryValue settings;
     settings.SetBoolean(printing::kSettingPreviewModifiable, true);
@@ -146,12 +145,18 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
     delete PrintPreviewHandler::last_used_page_size_margins_;
     PrintPreviewHandler::last_used_page_size_margins_ = NULL;
   }
-
 };
 
+// Test crashs on TouchUI due to initiator tab's native view having no parent.
+// http://crbug.com/104284
+#if defined(TOUCH_UI)
+#define MAYBE_StickyMarginsCustom DISABLED_StickyMarginsCustom
+#else
+#define MAYBE_StickyMarginsCustom StickyMarginsCustom
+#endif
 // Tests that margin settings are saved correctly when printing with custom
 // margins selected.
-TEST_F(PrintPreviewHandlerTest, StickyMarginsCustom) {
+TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsCustom) {
   const double kMarginTop = 25.5;
   const double kMarginRight = 26.5;
   const double kMarginBottom = 27.5;
@@ -168,9 +173,15 @@ TEST_F(PrintPreviewHandlerTest, StickyMarginsCustom) {
   CheckCustomMargins(kMarginTop, kMarginRight, kMarginBottom, kMarginLeft);
 }
 
+// http://crbug.com/104284
+#if defined(TOUCH_UI)
+#define MAYBE_StickyMarginsDefault DISABLED_StickyMarginsDefault
+#else
+#define MAYBE_StickyMarginsDefault StickyMarginsDefault
+#endif
 // Tests that margin settings are saved correctly when printing with default
 // margins selected.
-TEST_F(PrintPreviewHandlerTest, StickyMarginsDefault) {
+TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsDefault) {
   RequestPrintWithDefaultMargins();
   EXPECT_EQ(1, browser()->tab_count());
 
@@ -181,9 +192,16 @@ TEST_F(PrintPreviewHandlerTest, StickyMarginsDefault) {
   ASSERT_FALSE(PrintPreviewHandler::last_used_page_size_margins_);
 }
 
+// http://crbug.com/104284
+#if defined(TOUCH_UI)
+#define MAYBE_StickyMarginsCustomThenDefault \
+    DISABLED_StickyMarginsCustomThenDefault
+#else
+#define MAYBE_StickyMarginsCustomThenDefault StickyMarginsCustomThenDefault
+#endif
 // Tests that margin settings are saved correctly when printing with custom
 // margins selected and then again with default margins selected.
-TEST_F(PrintPreviewHandlerTest, StickyMarginsCustomThenDefault) {
+TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsCustomThenDefault) {
   const double kMarginTop = 125.5;
   const double kMarginRight = 126.5;
   const double kMarginBottom = 127.5;
@@ -198,7 +216,6 @@ TEST_F(PrintPreviewHandlerTest, StickyMarginsCustomThenDefault) {
   CheckCustomMargins(kMarginTop, kMarginRight, kMarginBottom, kMarginLeft);
 
   OpenPrintPreviewTab();
-  EXPECT_EQ(2, browser()->tab_count());
   RequestPrintWithDefaultMargins();
 
   // Checking that sticky settings were saved correctly.
@@ -209,9 +226,16 @@ TEST_F(PrintPreviewHandlerTest, StickyMarginsCustomThenDefault) {
   CheckCustomMargins(kMarginTop, kMarginRight, kMarginBottom, kMarginLeft);
 }
 
+// http://crbug.com/104284
+#if defined(TOUCH_UI)
+#define MAYBE_GetLastUsedMarginSettingsCustom \
+    DISABLED_GetLastUsedMarginSettingsCustom
+#else
+#define MAYBE_GetLastUsedMarginSettingsCustom GetLastUsedMarginSettingsCustom
+#endif
 // Tests that margin settings are retrieved correctly after printing with custom
 // margins.
-TEST_F(PrintPreviewHandlerTest, GetLastUsedMarginSettingsCustom) {
+TEST_F(PrintPreviewHandlerTest, MAYBE_GetLastUsedMarginSettingsCustom) {
   const double kMarginTop = 125.5;
   const double kMarginRight = 126.5;
   const double kMarginBottom = 127.5;
@@ -239,9 +263,16 @@ TEST_F(PrintPreviewHandlerTest, GetLastUsedMarginSettingsCustom) {
   EXPECT_EQ(kMarginLeft, margin_value);
 }
 
+// http://crbug.com/104284
+#if defined(TOUCH_UI)
+#define MAYBE_GetLastUsedMarginSettingsDefault \
+    DISABLED_GetLastUsedMarginSettingsDefault
+#else
+#define MAYBE_GetLastUsedMarginSettingsDefault GetLastUsedMarginSettingsDefault
+#endif
 // Tests that margin settings are retrieved correctly after printing with
 // default margins.
-TEST_F(PrintPreviewHandlerTest, GetLastUsedMarginSettingsDefault) {
+TEST_F(PrintPreviewHandlerTest, MAYBE_GetLastUsedMarginSettingsDefault) {
   RequestPrintWithDefaultMargins();
   base::DictionaryValue initial_settings;
   preview_ui_->handler_->GetLastUsedMarginSettings(&initial_settings);

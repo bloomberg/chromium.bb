@@ -51,12 +51,6 @@ PrintPreviewDataSource::PrintPreviewDataSource()
   AddLocalizedString("previewFailed", IDS_PRINT_PREVIEW_FAILED);
   AddLocalizedString("invalidPrinterSettings",
                      IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS);
-  AddLocalizedString("initiatorTabCrashed",
-                     IDS_PRINT_PREVIEW_INITIATOR_TAB_CRASHED);
-  AddLocalizedString("initiatorTabClosed",
-                     IDS_PRINT_PREVIEW_INITIATOR_TAB_CLOSED);
-  AddLocalizedString("reopenPage", IDS_PRINT_PREVIEW_REOPEN_PAGE);
-
   AddLocalizedString("printButton", IDS_PRINT_PREVIEW_PRINT_BUTTON);
   AddLocalizedString("cancelButton", IDS_PRINT_PREVIEW_CANCEL_BUTTON);
   AddLocalizedString("printing", IDS_PRINT_PREVIEW_PRINTING);
