@@ -468,7 +468,8 @@ ExtensionFileBrowserEventRouter::FileWatcherDelegate::HandleFileWatchOnUIThread(
 
 
 ExtensionFileBrowserEventRouter::FileWatcherExtensions::FileWatcherExtensions(
-    const FilePath& path, const std::string& extension_id) {
+    const FilePath& path, const std::string& extension_id)
+    : ref_count(0) {
   file_watcher.reset(new base::files::FilePathWatcher());
   virtual_path = path;
   AddExtension(extension_id);
