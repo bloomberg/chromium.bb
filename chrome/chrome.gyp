@@ -474,7 +474,6 @@
         'browser/sync/syncable/transaction_observer.h',
         'browser/sync/util/cryptographer.cc',
         'browser/sync/util/cryptographer.h',
-        'browser/sync/util/dbgq.h',
         'browser/sync/util/extensions_activity_monitor.cc',
         'browser/sync/util/extensions_activity_monitor.h',
         'browser/sync/util/immutable.h',

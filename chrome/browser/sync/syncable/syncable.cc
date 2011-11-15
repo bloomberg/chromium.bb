@@ -715,10 +715,12 @@ bool Directory::SaveChanges() {
 }
 
 void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
+  if (snapshot.dirty_metas.empty())
+    return;
+
   // Need a write transaction as we are about to permanently purge entries.
   WriteTransaction trans(FROM_HERE, VACUUM_AFTER_SAVE, this);
   ScopedKernelLock lock(this);
-  kernel_->flushed_metahandles.Push(0);  // Begin flush marker
   // Now drop everything we can out of memory.
   for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
        i != snapshot.dirty_metas.end(); ++i) {
@@ -731,8 +733,6 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
       // We now drop deleted metahandles that are up to date on both the client
       // and the server.
       size_t num_erased = 0;
-      int64 handle = entry->ref(META_HANDLE);
-      kernel_->flushed_metahandles.Push(handle);
       num_erased = kernel_->ids_index->erase(entry);
       DCHECK_EQ(1u, num_erased);
       num_erased = kernel_->metahandles_index->erase(entry);
@@ -1158,8 +1158,10 @@ BaseTransaction::BaseTransaction(const tracked_objects::Location& from_here,
 }
 
 BaseTransaction::~BaseTransaction() {
-  dirkernel_->observers->Notify(
-      &TransactionObserver::OnTransactionEnd, from_here_, writer_);
+  if (writer_ != INVALID) {
+    dirkernel_->observers->Notify(
+        &TransactionObserver::OnTransactionEnd, from_here_, writer_);
+  }
 }
 
 ReadTransaction::ReadTransaction(const tracked_objects::Location& location,

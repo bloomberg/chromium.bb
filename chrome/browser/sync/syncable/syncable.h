@@ -33,7 +33,6 @@
 #include "chrome/browser/sync/syncable/directory_event.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/util/dbgq.h"
 #include "chrome/browser/sync/util/immutable.h"
 #include "chrome/browser/sync/util/time.h"
 
@@ -1125,10 +1124,6 @@ class Directory {
 
     // The next metahandle is protected by kernel mutex.
     int64 next_metahandle;
-
-    // Keep a history of recently flushed metahandles for debugging
-    // purposes.  Protected by the save_changes_mutex.
-    DebugQueue<int64, 1000> flushed_metahandles;
 
     // The delegate for directory change events.  Can be NULL.
     DirectoryChangeDelegate* const delegate;
