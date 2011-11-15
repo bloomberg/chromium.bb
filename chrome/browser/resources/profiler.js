@@ -61,7 +61,7 @@ var BrowserBridge = (function() {
 })();
 
 /**
- * This class handles the presentation of our tracking view. Used as a
+ * This class handles the presentation of our profiler view. Used as a
  * singleton.
  */
 var MainView = (function() {

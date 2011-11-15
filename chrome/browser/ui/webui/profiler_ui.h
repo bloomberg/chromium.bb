@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_TRACKING_UI_H_
-#define CHROME_BROWSER_UI_WEBUI_TRACKING_UI_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_PROFILER_UI_H_
+#define CHROME_BROWSER_UI_WEBUI_PROFILER_UI_H_
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
@@ -11,11 +11,11 @@
 #include "base/values.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 
-// The C++ back-end for the chrome://tracking2 webui page.
-class TrackingUI : public ChromeWebUI {
+// The C++ back-end for the chrome://profiler webui page.
+class ProfilerUI : public ChromeWebUI {
  public:
-  explicit TrackingUI(TabContents* contents);
-  virtual ~TrackingUI();
+  explicit ProfilerUI(TabContents* contents);
+  virtual ~ProfilerUI();
 
   // Get the tracking data from TrackingSynchronizer.
   void GetData();
@@ -25,10 +25,10 @@ class TrackingUI : public ChromeWebUI {
 
  private:
   // Used to get |weak_ptr_| to self on the UI thread.
-  scoped_ptr<base::WeakPtrFactory<TrackingUI> > ui_weak_ptr_factory_;
-  base::WeakPtr<TrackingUI> ui_weak_ptr_;
+  scoped_ptr<base::WeakPtrFactory<ProfilerUI> > ui_weak_ptr_factory_;
+  base::WeakPtr<ProfilerUI> ui_weak_ptr_;
 
-  DISALLOW_COPY_AND_ASSIGN(TrackingUI);
+  DISALLOW_COPY_AND_ASSIGN(ProfilerUI);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_TRACKING_UI_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_PROFILER_UI_H_

@@ -34,12 +34,12 @@
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/policy_ui.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
+#include "chrome/browser/ui/webui/profiler_ui.h"
 #include "chrome/browser/ui/webui/quota_internals_ui.h"
 #include "chrome/browser/ui/webui/sessions_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
 #include "chrome/browser/ui/webui/tracing_ui.h"
-#include "chrome/browser/ui/webui/tracking_ui.h"
 #include "chrome/browser/ui/webui/workers_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -211,8 +211,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<TaskManagerUI>;
   if (url.host() == chrome::kChromeUITracingHost)
     return &NewWebUI<TracingUI>;
-  if (url.host() == chrome::kChromeUITrackingHost2)
-    return &NewWebUI<TrackingUI>;
+  if (url.host() == chrome::kChromeUIProfilerHost)
+    return &NewWebUI<ProfilerUI>;
   if (url.host() == chrome::kChromeUIWorkersHost)
     return &NewWebUI<WorkersUI>;
 

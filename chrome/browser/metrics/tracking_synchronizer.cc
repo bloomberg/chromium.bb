@@ -55,7 +55,7 @@ TrackingSynchronizer* TrackingSynchronizer::CurrentSynchronizer() {
 
 // static
 void TrackingSynchronizer::FetchTrackingDataAsynchronously(
-    const base::WeakPtr<TrackingUI>& callback_object) {
+    const base::WeakPtr<ProfilerUI>& callback_object) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   TrackingSynchronizer* current_synchronizer = CurrentSynchronizer();
@@ -159,7 +159,7 @@ void TrackingSynchronizer::DeserializeTrackingListOnUI(
 }
 
 int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
-    const base::WeakPtr<TrackingUI>& callback_object) {
+    const base::WeakPtr<ProfilerUI>& callback_object) {
   // To iterate over all processes, or to send messages to the hosts, we need
   // to be on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

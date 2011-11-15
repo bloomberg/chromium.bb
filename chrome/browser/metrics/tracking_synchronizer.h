@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/ui/webui/tracking_ui.h"
+#include "chrome/browser/ui/webui/profiler_ui.h"
 #include "content/common/child_process_info.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -42,7 +42,7 @@ class TrackingSynchronizer : public
   // The "RequestContext" structure describes an individual request received
   // from the UI.
   struct RequestContext {
-    RequestContext(const base::WeakPtr<TrackingUI>& callback_object,
+    RequestContext(const base::WeakPtr<ProfilerUI>& callback_object,
                    int sequence_number,
                    int processes_pending,
                    base::TimeTicks callback_start_time)
@@ -55,7 +55,7 @@ class TrackingSynchronizer : public
     ~RequestContext() {}
 
     // Requests are made to asynchronously send data to the |callback_object_|.
-    base::WeakPtr<TrackingUI> callback_object_;
+    base::WeakPtr<ProfilerUI> callback_object_;
 
     // The sequence number used by the most recent update request to contact all
     // processes.
@@ -86,7 +86,7 @@ class TrackingSynchronizer : public
   // the data received from each sub-process.
   // This method is accessible on UI thread.
   static void FetchTrackingDataAsynchronously(
-      const base::WeakPtr<TrackingUI>& callback_object);
+      const base::WeakPtr<ProfilerUI>& callback_object);
 
   // Contact all processes and set tracking status to |enable|.
   // This method is accessible on UI thread.
@@ -129,7 +129,7 @@ class TrackingSynchronizer : public
   // |callback_object| in |outstanding_requests_| map. Return the
   // sequence_number_ that was used. This method is accessible on UI thread.
   int RegisterAndNotifyAllProcesses(
-      const base::WeakPtr<TrackingUI>& callback_object);
+      const base::WeakPtr<ProfilerUI>& callback_object);
 
   // It finds the |callback_object_| in |outstanding_requests_| map for the
   // given |sequence_number| and notifies the |callback_object_| about the

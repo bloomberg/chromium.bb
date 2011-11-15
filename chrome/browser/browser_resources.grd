@@ -93,6 +93,8 @@
       <include name="IDR_POLICY_JS" file="resources\policy.js" type="BINDATA"/>
       <include name="IDR_PRINT_PREVIEW_HTML" file="resources\print_preview\print_preview.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_PRINT_PREVIEW_JS" file="resources\print_preview\print_preview.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_PROFILER_HTML" file="resources\profiler.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_PROFILER_JS" file="resources\profiler.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_READER_OUT_OF_DATE_HTML" file="resources\reader_out_of_date.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SAFE_BROWSING_MALWARE_BLOCK" file="resources\safe_browsing_malware_block.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SAFE_BROWSING_MULTIPLE_THREAT_BLOCK" file="resources\safe_browsing_multiple_threat_block.html" flattenhtml="true" type="BINDATA" />
@@ -114,8 +116,6 @@
       <include name="IDR_TASK_MANAGER_JS" file="resources\task_manager\main.js" type="BINDATA" />
       <include name="IDR_TRACING_HTML" file="resources\tracing.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_TRACING_JS" file="resources\tracing.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_TRACKING_HTML" file="resources\tracking.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_TRACKING_JS" file="resources\tracking.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TRANSLATE_JS" file="resources\translate.js" type="BINDATA" />
       <include name="IDR_WEBSTORE_MANIFEST" file="resources\webstore_app\manifest.json" type="BINDATA" />
       <if expr="not pp_ifdef('chromeos')">
