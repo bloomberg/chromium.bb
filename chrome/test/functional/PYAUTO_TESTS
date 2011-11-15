@@ -476,6 +476,9 @@
       'gpu',
       # Preloaded extensions affect process count: crbug.com/94350
       '-process_count',
+      # Disable sync.SyncIntegrationTest on the QA bots in FULL,
+      # until sync protobufs are copied over.
+      '-sync.SyncIntegrationTest',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
