@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/dbus/mock_bluetooth_adapter_client.h"
 #include "chrome/browser/chromeos/dbus/mock_bluetooth_manager_client.h"
+#include "chrome/browser/chromeos/dbus/mock_cros_disks_client.h"
 #include "chrome/browser/chromeos/dbus/mock_power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/mock_sensors_client.h"
 #include "chrome/browser/chromeos/dbus/mock_session_manager_client.h"
@@ -20,6 +21,7 @@ namespace chromeos {
 MockDBusThreadManager::MockDBusThreadManager()
     : mock_bluetooth_adapter_client_(new MockBluetoothAdapterClient),
       mock_bluetooth_manager_client_(new MockBluetoothManagerClient),
+      mock_cros_disks_client_(new MockCrosDisksClient),
       mock_power_manager_client_(new MockPowerManagerClient),
       mock_sensors_client_(new MockSensorsClient),
       mock_session_manager_client_(new MockSessionManagerClient),
@@ -28,6 +30,8 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_bluetooth_adapter_client_.get()));
   EXPECT_CALL(*this, GetBluetoothManagerClient())
       .WillRepeatedly(Return(mock_bluetooth_manager_client()));
+  EXPECT_CALL(*this, GetCrosDisksClient())
+      .WillRepeatedly(Return(mock_cros_disks_client()));
   EXPECT_CALL(*this, GetPowerManagerClient())
       .WillRepeatedly(Return(mock_power_manager_client_.get()));
   EXPECT_CALL(*this, GetSensorsClient())

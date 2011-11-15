@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/dbus/bluetooth_adapter_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
+#include "chrome/browser/chromeos/dbus/cros_disks_client.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/sensors_client.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
@@ -63,6 +64,9 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // Create the speech synthesizer client.
     speech_synthesizer_client_.reset(
         SpeechSynthesizerClient::Create(system_bus_.get()));
+    // Create the cros-disks client.
+    cros_disks_client_.reset(
+        CrosDisksClient::Create(system_bus_.get()));
   }
 
   virtual ~DBusThreadManagerImpl() {
@@ -104,6 +108,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return speech_synthesizer_client_.get();
   }
 
+  // DBusThreadManager override.
+  virtual CrosDisksClient* GetCrosDisksClient() {
+    return cros_disks_client_.get();
+  }
+
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
   scoped_ptr<CrosDBusService> cros_dbus_service_;
@@ -113,6 +122,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<SensorsClient> sensors_client_;
   scoped_ptr<SessionManagerClient> session_manager_client_;
   scoped_ptr<SpeechSynthesizerClient> speech_synthesizer_client_;
+  scoped_ptr<CrosDisksClient> cros_disks_client_;
 };
 
 // static
