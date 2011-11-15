@@ -82,7 +82,8 @@ HungRendererDialog::TabContentsObserverImpl::TabContentsObserverImpl(
       dialog_(dialog) {
 }
 
-void HungRendererDialog::TabContentsObserverImpl::RenderViewGone() {
+void HungRendererDialog::TabContentsObserverImpl::RenderViewGone(
+    base::TerminationStatus status) {
   dialog_->HideDialog(contents_);
 }
 
