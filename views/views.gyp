@@ -914,7 +914,7 @@
             '..',
           ],
           'sources': [
-            '../ui/aura_desktop/aura_desktop_main.cc',
+            '../ui/views/aura_desktop/aura_desktop_main.cc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
