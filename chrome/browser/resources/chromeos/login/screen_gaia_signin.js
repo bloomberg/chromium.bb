@@ -29,6 +29,9 @@ cr.define('login', function() {
   GaiaSigninScreen.prototype = {
     __proto__: HTMLDivElement.prototype,
 
+    // Frame loading error code (0 - no error).
+    error_: 0,
+
     // Authentication extension's start page URL.
     extensionUrl_: null,
 
@@ -176,13 +179,24 @@ cr.define('login', function() {
         console.log('Opening extension: ' + data.startUrl +
                     ', opt_email=' + data.email);
 
+        this.error_ = 0;
         this.frame_.src = url;
         this.extensionUrl_ = url;
 
         this.loading = true;
         this.clearRetry_();
       } else if (this.loading) {
-        // Probably an error has occurred, so trying to reload.
+        if (this.error_) {
+          // An error has occurred, so trying to reload.
+          this.doReload();
+        } else {
+          console.log('Gaia is still loading.');
+          // Nothing to do here. Just wait until the extension loads.
+        }
+      } else {
+        // TODO(altimofeev): GAIA extension is reloaded to make focus be set
+        // correctly. When fix on the GAIA side is ready, this reloading should
+        // be deleted.
         this.doReload();
       }
     },
@@ -251,8 +265,10 @@ cr.define('login', function() {
      */
     doReload: function() {
       console.log('Reload auth extension frame.');
+      this.error_ = 0;
       this.frame_.src = this.extensionUrl_;
       this.retryTimer_ = undefined;
+      this.loading = true;
     },
 
     /**
@@ -271,6 +287,14 @@ cr.define('login', function() {
       ++this.retryCount_;
       this.retryTimer_ = window.setTimeout(this.doReload.bind(this), delay);
       console.log('GaiaSigninScreen scheduleRetry in ' + delay + 'ms.');
+    },
+
+    /**
+     * This method is called when a frame loading error appears.
+     * @param {int} error Error code.
+     */
+    onFrameError: function(error) {
+      this.error_ = error;
     }
   };
 

@@ -23,6 +23,11 @@ cr.define('login', function() {
     PROXY_CONNECTION_FAILED: 'frame error:130'
   };
 
+  // Frame loading errors.
+  const NET_ERROR = {
+    ABORTED_BY_USER: 3
+  };
+
   // Link which starts guest session for captive portal fixing.
   const FIX_CAPTIVE_PORTAL_ID = 'captive-portal-fix-link';
 
@@ -198,6 +203,11 @@ cr.define('login', function() {
    */
   ErrorMessageScreen.onFrameError = function(error) {
     console.log('Gaia frame error = ' + error);
+    if (error == NET_ERROR.ABORTED_BY_USER) {
+      // Gaia frame was reloaded. Nothing to do here.
+      return;
+    }
+    $('gaia-signin').onFrameError(error);
     // Offline and simple captive portal cases are handled by the
     // NetworkStateInformer, so only the case when browser is online is
     // valuable.
