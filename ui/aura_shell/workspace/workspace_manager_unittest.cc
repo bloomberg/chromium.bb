@@ -204,7 +204,6 @@ TEST_F(WorkspaceManagerTest, WorkspaceManagerActivate) {
   EXPECT_EQ(NULL, manager_->GetActiveWorkspace());
   EXPECT_EQ(ws2, observer.old_active_workspace());
   EXPECT_EQ(NULL, observer.active_workspace());
-  manager_.reset();
 }
 
 TEST_F(WorkspaceManagerTest, FindRotateWindow) {
@@ -261,7 +260,8 @@ TEST_F(WorkspaceManagerTest, FindRotateWindow) {
 }
 
 TEST_F(WorkspaceManagerTest, RotateWindows) {
-  TestWorkspaceObserver observer(manager_.get());
+  scoped_ptr<TestWorkspaceObserver> observer(
+      new TestWorkspaceObserver(manager_.get()));
   Workspace* ws1 = manager_->CreateWorkspace();
   Workspace* ws2 = manager_->CreateWorkspace();
 
@@ -279,8 +279,8 @@ TEST_F(WorkspaceManagerTest, RotateWindows) {
 
   // Rotate right most to left most.
   manager_->RotateWindows(w22.get(), w11.get());
-  EXPECT_EQ(w22.get(), observer.move_source());
-  EXPECT_EQ(w11.get(), observer.move_target());
+  EXPECT_EQ(w22.get(), observer->move_source());
+  EXPECT_EQ(w11.get(), observer->move_target());
 
   EXPECT_EQ(0, ws1->GetIndexOf(w22.get()));
   EXPECT_EQ(0, ws2->GetIndexOf(w11.get()));
@@ -291,34 +291,35 @@ TEST_F(WorkspaceManagerTest, RotateWindows) {
   EXPECT_EQ(0, ws1->GetIndexOf(w11.get()));
   EXPECT_EQ(0, ws2->GetIndexOf(w21.get()));
   EXPECT_EQ(1, ws2->GetIndexOf(w22.get()));
-  EXPECT_EQ(w22.get(), observer.move_source());
-  EXPECT_EQ(w21.get(), observer.move_target());
+  EXPECT_EQ(w22.get(), observer->move_source());
+  EXPECT_EQ(w21.get(), observer->move_target());
 
   // Rotate left most to 1st element in 2nd workspace.
   manager_->RotateWindows(w11.get(), w21.get());
   EXPECT_EQ(0, ws1->GetIndexOf(w21.get()));
   EXPECT_EQ(0, ws2->GetIndexOf(w11.get()));
   EXPECT_EQ(1, ws2->GetIndexOf(w22.get()));
-  EXPECT_EQ(w11.get(), observer.move_source());
-  EXPECT_EQ(w21.get(), observer.move_target());
+  EXPECT_EQ(w11.get(), observer->move_source());
+  EXPECT_EQ(w21.get(), observer->move_target());
 
   // Rotate middle to right most.
   manager_->RotateWindows(w11.get(), w22.get());
   EXPECT_EQ(0, ws1->GetIndexOf(w21.get()));
   EXPECT_EQ(0, ws2->GetIndexOf(w22.get()));
   EXPECT_EQ(1, ws2->GetIndexOf(w11.get()));
-  EXPECT_EQ(w11.get(), observer.move_source());
-  EXPECT_EQ(w22.get(), observer.move_target());
+  EXPECT_EQ(w11.get(), observer->move_source());
+  EXPECT_EQ(w22.get(), observer->move_target());
 
   // Rotate middle to left most.
   manager_->RotateWindows(w22.get(), w21.get());
   EXPECT_EQ(0, ws1->GetIndexOf(w22.get()));
   EXPECT_EQ(0, ws2->GetIndexOf(w21.get()));
   EXPECT_EQ(1, ws2->GetIndexOf(w11.get()));
-  EXPECT_EQ(w22.get(), observer.move_source());
-  EXPECT_EQ(w21.get(), observer.move_target());
+  EXPECT_EQ(w22.get(), observer->move_source());
+  EXPECT_EQ(w21.get(), observer->move_target());
 
   // Reset now before windows are destroyed.
+  observer.reset();
   manager_.reset();
 }
 
