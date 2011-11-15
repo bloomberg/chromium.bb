@@ -265,6 +265,9 @@ TaskManager.prototype = {
     cr.ui.contextMenuHandler.addContextMenuProperty(this.table_.header);
     this.table_.header.contextMenu = this.columnSelectContextMenu_;
 
+    cr.ui.contextMenuHandler.addContextMenuProperty(this.table_.list);
+    this.table_.list.contextMenu = this.columnSelectContextMenu_;
+
     this.document_.addEventListener('command', this.onCommand_.bind(this));
     this.document_.addEventListener('canExecute',
                                     this.onCommandCanExecute_.bind(this));
