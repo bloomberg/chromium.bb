@@ -48,7 +48,8 @@ void TestCompositor::DrawTree() {
 #endif
 }
 
-void TestCompositor::ReadPixels(SkBitmap* bitmap) {
+bool TestCompositor::ReadPixels(SkBitmap* bitmap) {
+  return false;
 }
 
 ui::Compositor* TestCompositor::Create(ui::CompositorDelegate* owner) {

@@ -558,7 +558,7 @@ CompositorGL::~CompositorGL() {
   gl_context_ = NULL;
 }
 
-void CompositorGL::ReadPixels(SkBitmap* bitmap) {
+bool CompositorGL::ReadPixels(SkBitmap* bitmap) {
   MakeCurrent();
 
   bitmap->setConfig(SkBitmap::kARGB_8888_Config,
@@ -584,25 +584,8 @@ void CompositorGL::ReadPixels(SkBitmap* bitmap) {
                pixels);
   glPixelStorei(GL_PACK_ALIGNMENT, current_alignment);
 
-  // Swizzle from RGBA to BGRA
-  size_t bitmap_size = 4 * size().width() * size().height();
-  for(size_t i = 0; i < bitmap_size; i += 4)
-    std::swap(pixels[i], pixels[i + 2]);
-
-  // Vertical flip to transform from GL co-ords
-  size_t row_size = 4 * size().width();
-  scoped_array<unsigned char> tmp_row(new unsigned char[row_size]);
-  for(int row = 0; row < size().height() / 2; row++) {
-    memcpy(tmp_row.get(),
-           &pixels[row * row_size],
-           row_size);
-    memcpy(&pixels[row * row_size],
-           &pixels[bitmap_size - (row + 1) * row_size],
-           row_size);
-    memcpy(&pixels[bitmap_size - (row + 1) * row_size],
-           tmp_row.get(),
-           row_size);
-  }
+  SwizzleRGBAToBGRAAndFlip(pixels, size());
+  return true;
 }
 
 void CompositorGL::MakeCurrent() {

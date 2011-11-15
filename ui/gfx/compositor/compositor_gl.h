@@ -102,7 +102,7 @@ class COMPOSITOR_EXPORT CompositorGL : public Compositor {
   virtual ~CompositorGL();
 
   // Overridden from Compositor.
-  virtual void ReadPixels(SkBitmap* bitmap) OVERRIDE;
+  virtual bool ReadPixels(SkBitmap* bitmap) OVERRIDE;
 
   void MakeCurrent();
   gfx::Size GetSize();

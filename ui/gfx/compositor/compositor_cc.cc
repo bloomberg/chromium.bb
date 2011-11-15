@@ -4,8 +4,11 @@
 
 #include "ui/gfx/compositor/compositor_cc.h"
 
+#include "third_party/skia/include/images/SkImageEncoder.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFloatPoint.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/gl/gl_context.h"
@@ -178,8 +181,17 @@ void CompositorCC::DrawTree() {
   host_.composite();
 }
 
-void CompositorCC::ReadPixels(SkBitmap* bitmap) {
-  NOTIMPLEMENTED();
+bool CompositorCC::ReadPixels(SkBitmap* bitmap) {
+  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
+                    size().width(), size().height());
+  bitmap->allocPixels();
+  SkAutoLockPixels lock_image(*bitmap);
+  unsigned char* pixels = static_cast<unsigned char*>(bitmap->getPixels());
+  if (host_.compositeAndReadback(pixels, gfx::Rect(size()))) {
+    SwizzleRGBAToBGRAAndFlip(pixels, size());
+    return true;
+  }
+  return false;
 }
 
 void CompositorCC::animateAndLayout(double frameBeginTime) {

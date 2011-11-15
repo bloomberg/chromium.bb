@@ -134,7 +134,8 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   void Draw(bool force_clear);
 
   // Reads the contents of the last rendered frame into the given bitmap.
-  virtual void ReadPixels(SkBitmap* bitmap) = 0;
+  // Returns false if the pixels could not be read.
+  virtual bool ReadPixels(SkBitmap* bitmap) = 0;
 
   // Notifies the compositor that the size of the widget that it is
   // drawing to has changed.
@@ -179,6 +180,11 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   virtual void DrawTree();
 
   CompositorDelegate* delegate() { return delegate_; }
+
+  // When reading back pixel data we often get RGBA rather than BGRA pixels and
+  // and the image often needs to be flipped vertically.
+  static void SwizzleRGBAToBGRAAndFlip(unsigned char* pixels,
+                                       const gfx::Size& image_size);
 
  private:
   // Notifies the compositor that compositing is about to start. See Draw() for

@@ -4,9 +4,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
+#include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
@@ -172,6 +177,20 @@ class NullLayerDelegate : public LayerDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(NullLayerDelegate);
 };
+
+// Encodes a bitmap into a PNG and write to disk. Returns true on success. The
+// parent directory does not have to exist.
+bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
+  std::vector<unsigned char> png_data;
+  if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &png_data) &&
+      file_util::CreateDirectory(file_path.DirName())) {
+    int bytes_written = file_util::WriteFile(
+        file_path, reinterpret_cast<char*>(&png_data[0]), png_data.size());
+    if (bytes_written == static_cast<int>(png_data.size()))
+      return true;
+  }
+  return false;
+}
 
 }
 
@@ -968,7 +987,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_DrawPixels) {
   DrawTree(layer.get());
 
   SkBitmap bitmap;
-  GetCompositor()->ReadPixels(&bitmap);
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
 
   SkAutoLockPixels lock(bitmap);

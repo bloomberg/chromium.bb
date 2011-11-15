@@ -105,7 +105,7 @@ class CompositorWin : public Compositor {
 
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
 
-  virtual void ReadPixels(SkBitmap* bitmap) OVERRIDE;
+  virtual bool ReadPixels(SkBitmap* bitmap) OVERRIDE;
 
  protected:
   virtual void OnNotifyStart(bool clear) OVERRIDE;
@@ -503,8 +503,9 @@ void CompositorWin::Blur(const gfx::Rect& bounds) {
 #endif
 }
 
-void CompositorWin::ReadPixels(SkBitmap* bitmap) {
+bool CompositorWin::ReadPixels(SkBitmap* bitmap) {
   NOTIMPLEMENTED();
+  return false;
 }
 
 void CompositorWin::OnWidgetSizeChanged() {
