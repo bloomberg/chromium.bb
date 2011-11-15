@@ -112,7 +112,6 @@ struct window {
 	int type;
 	int decoration;
 	int transparent;
-	struct input *grab_device;
 	struct input *keyboard_device;
 	uint32_t name;
 	enum window_buffer_type buffer_type;
@@ -987,6 +986,19 @@ window_draw_decorations(struct window *window)
 void
 window_destroy(struct window *window)
 {
+	struct display *display = window->display;
+	struct input *input;
+
+	if (window->redraw_scheduled)
+		wl_list_remove(&window->redraw_task.link);
+
+	wl_list_for_each(input, &display->input_list, link) {
+		if (input->pointer_focus == window)
+			input->pointer_focus = NULL;
+		if (input->keyboard_focus == window)
+			input->keyboard_focus = NULL;
+	}
+
 	wl_surface_destroy(window->surface);
 	wl_list_remove(&window->link);
 	free(window);
