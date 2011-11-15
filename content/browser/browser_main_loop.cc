@@ -32,6 +32,7 @@
 #include <ole2.h>
 #include <shellapi.h>
 
+#include "content/browser/system_message_window_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "net/base/winsock_init.h"
 #endif
@@ -254,6 +255,10 @@ void BrowserMainLoop::MainMessageLoopStart() {
   hi_res_timer_manager_.reset(new HighResolutionTimerManager);
 
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+
+#if defined(OS_WIN)
+  system_message_window_.reset(new SystemMessageWindowWin);
+#endif
 
   for (size_t i = 0; i < parts_list_.size(); ++i)
     parts_list_[i]->PostMainMessageLoopStart();
