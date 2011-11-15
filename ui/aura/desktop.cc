@@ -323,12 +323,14 @@ void Desktop::OnHostResized(const gfx::Size& size) {
 }
 
 void Desktop::SetActiveWindow(Window* window, Window* to_focus) {
+  if (!window)
+    return;
   // The stacking client may impose rules on what window configurations can be
   // activated or deactivated.
-  if (window && !stacking_client_->CanActivateWindow(window))
+  if (!stacking_client_->CanActivateWindow(window))
     return;
   // The window may not be activate-able.
-  if (window && !window->CanActivate())
+  if (!window->CanActivate())
     return;
   // Nothing may actually have changed.
   if (active_window_ == window)

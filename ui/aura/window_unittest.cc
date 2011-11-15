@@ -504,6 +504,8 @@ TEST_F(WindowTest, NotActiveInLostActive) {
   scoped_ptr<Window> w1(
       CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
   d1.set_window(w1.get());
+  scoped_ptr<Window> w2(
+      CreateTestWindowWithDelegate(NULL, 1, gfx::Rect(10, 10, 50, 50), NULL));
 
   // Activate w1.
   desktop->SetActiveWindow(w1.get(), NULL);
@@ -512,9 +514,12 @@ TEST_F(WindowTest, NotActiveInLostActive) {
   // Should not have gotten a OnLostActive yet.
   EXPECT_EQ(0, d1.hit_count());
 
-  // Change the active window to NULL.
+  // SetActiveWindow(NULL) should not change the active window.
   desktop->SetActiveWindow(NULL, NULL);
-  EXPECT_TRUE(desktop->active_window() == NULL);
+  EXPECT_TRUE(desktop->active_window() == w1.get());
+
+  // Now activate another window.
+  desktop->SetActiveWindow(w2.get(), NULL);
 
   // Should have gotten OnLostActive and w1 should not have been active at that
   // time.
