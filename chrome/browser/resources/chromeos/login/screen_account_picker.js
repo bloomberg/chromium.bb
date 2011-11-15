@@ -39,8 +39,17 @@ cr.define('login', function() {
      * @param data {string} Screen init payload.
      */
     onBeforeShow: function(data) {
-      $('add-user-header-bar-item').hidden = false;
-      $('pod-row').handleShow();
+      var podRow = $('pod-row');
+      podRow.handleShow();
+
+      // If this is showing for the lock screen display the sign out button,
+      // hide the add user button and activate the locked user's pod.
+      var lockedPod = podRow.lockedPod;
+      $('add-user-header-bar-item').hidden = !!lockedPod;
+      $('sign-out-user-item').hidden = !lockedPod;
+      if (lockedPod)
+        podRow.focusPod(lockedPod);
+
       if (this.firstShown_) {
         this.firstShown_ = false;
         // TODO(nkostylev): Enable animation back when session start jank
@@ -70,14 +79,6 @@ cr.define('login', function() {
    */
   AccountPickerScreen.loadUsers = function(users, animated) {
     $('pod-row').loadPods(users, animated);
-
-    // If this is showing for the lock screen display the sign out button, hide
-    // the add user button and activate the locked user's pod.
-    var lockedPod = $('pod-row').lockedPod;
-    $('add-user-header-bar-item').hidden = !!lockedPod;
-    $('sign-out-user-item').hidden = !lockedPod;
-    if (lockedPod)
-      lockedPod.activate();
   };
 
   /**
