@@ -214,8 +214,8 @@ class Builder(object):
   def Initialize(self):
     """Runs through the initialization steps of an actual build."""
     self.gerrit_patches, self.local_patches = _PreProcessPatches(
-      self.options.gerrit_patches, self.options.local_patches,
-      self.tracking_branch)
+        self.options.gerrit_patches, self.options.local_patches,
+        self.tracking_branch)
 
     bs.BuilderStage.SetTrackingBranch(self.tracking_branch)
 
@@ -249,68 +249,24 @@ class Builder(object):
     """Subclasses must override this method.  Runs the appropriate code."""
     raise NotImplementedError()
 
-  def _WriteCheckpoint(self):
-    with open(self.completed_stages_file, 'w+') as save_file:
-      results_lib.Results.SaveCompletedStages(save_file)
-
-  def _ShouldReExecuteInBuildRoot(self):
-    """Returns True if this build should be re-executed in the buildroot."""
-    return not os.path.abspath(
-        __file__).startswith(os.path.abspath(self.options.buildroot))
-
-  def _ReExecuteInBuildroot(self):
-    """Reexecutes self in buildroot and returns True if build succeeds.
-
-    This allows the buildbot code to test itself when changes are patched for
-    buildbot-related code.  This is a no-op if the buildroot == buildroot
-    of the running chromite checkout.
-
-    Returns:
-      True if the Build succeeded.
-    """
-    # If we are resuming, use last checkpoint.
-    if not self.options.resume:
-      self._WriteCheckpoint()
-
-    # Re-write paths to use absolute paths.
-    args_to_append = ['--resume', '--buildroot',
-                      os.path.abspath(self.options.buildroot)]
-    if self.options.chrome_root:
-      args_to_append += ['--chrome_root',
-                         os.path.abspath(self.options.chrome_root)]
-
-    # Re-run the command in the buildroot.
-    return_obj = cros_lib.RunCommand(
-        [_PATH_TO_CBUILDBOT] + sys.argv + args_to_append,
-        cwd=self.options.buildroot, error_code_ok=True)
-    return return_obj == 0
-
   def Run(self):
     """Main runner for this builder class.  Runs build and prints summary."""
-    print_report = True
-    success = True
     try:
       self.Initialize()
       self.Sync()
       if self.gerrit_patches or self.local_patches:
-        self._RunStage(stages.PatchChangesStage,
-                       self.gerrit_patches, self.local_patches)
+        self._RunStage(stages.PatchChangesStage, self.gerrit_patches,
+                       self.local_patches)
 
-      if self._ShouldReExecuteInBuildRoot():
-        print_report = False
-        success = self._ReExecuteInBuildroot()
-      else:
-        self.RunStages()
-
+      self.RunStages()
     finally:
-      if print_report:
-        self._WriteCheckpoint()
-        print '\n\n\n@@@BUILD_STEP Report@@@\n'
-        results_lib.Results.Report(sys.stdout, self.archive_url,
-                                   self.release_tag)
-        success = results_lib.Results.Success()
+      with open(self.completed_stages_file, 'w+') as save_file:
+        results_lib.Results.SaveCompletedStages(save_file)
 
-    return success
+      print '\n\n\n@@@BUILD_STEP Report@@@\n'
+      results_lib.Results.Report(sys.stdout, self.archive_url, self.release_tag)
+
+    return results_lib.Results.Success()
 
 
 class SimpleBuilder(Builder):
@@ -801,8 +757,8 @@ def main(argv=None):
   if options.dump_config:
     # This works, but option ordering is bad...
     print 'Configuration %s:' % bot_id
-    pretty_printer = pprint.PrettyPrinter(indent=2)
-    pretty_printer.pprint(build_config)
+    pp = pprint.PrettyPrinter(indent=2)
+    pp.pprint(build_config)
     sys.exit(0)
 
   if not options.buildroot:

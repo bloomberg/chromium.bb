@@ -1150,14 +1150,17 @@ class BuildStagesResultsTest(unittest.TestCase):
     for i in xrange(len(expectedResults)):
       name, result, description, runtime = actualResults[i]
 
-      if result != results_lib.Results.SUCCESS:
+      if result not in (results_lib.Results.SUCCESS,
+                        results_lib.Results.SKIPPED):
         self.assertTrue(isinstance(description, str))
 
-      self.assertTrue(runtime >= 0 and runtime < 2.0)
-      self.assertEqual(expectedResults[i], (name, result))
+      # Skipped stages take no time, all other test stages take a little time
+      if result == results_lib.Results.SKIPPED:
+        self.assertEqual(runtime, 0)
+      else:
+        self.assertTrue(runtime >= 0 and runtime < 2.0)
 
-  def _PassString(self):
-    return results_lib.Results.SPLIT_TOKEN.join(['Pass', 'None', '0\n'])
+      self.assertEqual(expectedResults[i], (name, result))
 
   def testRunStages(self):
     """Run some stages and verify the captured results"""
@@ -1179,7 +1182,7 @@ class BuildStagesResultsTest(unittest.TestCase):
     """Run some stages and verify the captured results"""
 
     results_lib.Results.Clear()
-    results_lib.Results.Record('Pass', results_lib.Results.SUCCESS)
+    results_lib.Results.Record('Pass', results_lib.Results.SKIPPED)
 
     self.assertTrue(results_lib.Results.Success())
 
@@ -1199,7 +1202,7 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     # Store off a known set of results and generate a report
     results_lib.Results.Clear()
-    results_lib.Results.Record('Pass', results_lib.Results.SUCCESS, time=1)
+    results_lib.Results.Record('Pass', results_lib.Results.SKIPPED, time=1)
     results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS, time=2)
     results_lib.Results.Record('Fail', self.failException, time=3)
     results_lib.Results.Record(
@@ -1221,7 +1224,7 @@ class BuildStagesResultsTest(unittest.TestCase):
         "************************************************************\n"
         "** Stage Results\n"
         "************************************************************\n"
-        "** PASS Pass (0:00:01)\n"
+        "** Pass previously completed\n"
         "************************************************************\n"
         "** PASS Pass2 (0:00:02)\n"
         "************************************************************\n"
@@ -1248,7 +1251,7 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     # Store off a known set of results and generate a report
     results_lib.Results.Clear()
-    results_lib.Results.Record('Pass', results_lib.Results.SUCCESS, time=1)
+    results_lib.Results.Record('Pass', results_lib.Results.SKIPPED, time=1)
     results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS, time=2)
     results_lib.Results.Record('Fail', self.failException,
                                'failException Msg\nLine 2', time=3)
@@ -1273,7 +1276,7 @@ class BuildStagesResultsTest(unittest.TestCase):
         "************************************************************\n"
         "** Stage Results\n"
         "************************************************************\n"
-        "** PASS Pass (0:00:01)\n"
+        "** Pass previously completed\n"
         "************************************************************\n"
         "** PASS Pass2 (0:00:02)\n"
         "************************************************************\n"
@@ -1343,7 +1346,7 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     saveFile = StringIO.StringIO()
     results_lib.Results.SaveCompletedStages(saveFile)
-    self.assertEqual(saveFile.getvalue(), self._PassString())
+    self.assertEqual(saveFile.getvalue(), 'Pass\n')
 
   def testRestoreCompletedStages(self):
     """Tests that we can read in completed stages."""
@@ -1352,8 +1355,7 @@ class BuildStagesResultsTest(unittest.TestCase):
     results_lib.Results.RestoreCompletedStages(
         StringIO.StringIO('Pass\n'))
 
-    previous = results_lib.Results.GetPrevious()
-    self.assertEqual(previous.keys(), ['Pass'])
+    self.assertEqual(results_lib.Results.GetPrevious(), ['Pass'])
 
   def testRunAfterRestore(self):
     """Tests that we skip previously completed stages."""
@@ -1361,13 +1363,13 @@ class BuildStagesResultsTest(unittest.TestCase):
     # Fake results_lib.Results.RestoreCompletedStages
     results_lib.Results.Clear()
     results_lib.Results.RestoreCompletedStages(
-        StringIO.StringIO(self._PassString()))
+        StringIO.StringIO('Pass\n'))
 
     self._runStages()
 
     # Verify that the results are what we expect.
     expectedResults = [
-        ('Pass', results_lib.Results.SUCCESS),
+        ('Pass', results_lib.Results.SKIPPED),
         ('Pass2', results_lib.Results.SUCCESS),
         ('Fail', self.failException)]
 
