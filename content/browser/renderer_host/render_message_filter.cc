@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/sys_string_conversions.h"
@@ -737,8 +738,8 @@ void RenderMessageFilter::OnKeygen(uint32 key_size_index,
   // Dispatch to worker pool, so we do not block the IO thread.
   if (!base::WorkerPool::PostTask(
            FROM_HERE,
-           NewRunnableMethod(
-               this, &RenderMessageFilter::OnKeygenOnWorkerThread,
+           base::Bind(
+               &RenderMessageFilter::OnKeygenOnWorkerThread, this,
                key_size_in_bits, challenge_string, url, reply_msg),
            true)) {
     NOTREACHED() << "Failed to dispatch keygen task to worker pool";
@@ -785,8 +786,8 @@ void RenderMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
   }
 
   BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
-          this, &RenderMessageFilter::AsyncOpenFileOnFileThread,
+      BrowserThread::FILE, FROM_HERE, base::Bind(
+          &RenderMessageFilter::AsyncOpenFileOnFileThread, this,
           path, flags, message_id, msg.routing_id()));
 }
 
@@ -806,8 +807,8 @@ void RenderMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
   IPC::Message* reply = new ViewMsg_AsyncOpenFile_ACK(
       routing_id, error_code, file_for_transit, message_id);
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, NewRunnableMethod(
-          this, &RenderMessageFilter::Send, reply));
+      BrowserThread::IO, FROM_HERE, base::IgnoreReturn<bool>(base::Bind(
+          &RenderMessageFilter::Send, this, reply)));
 }
 
 void RenderMessageFilter::OnMediaLogEvent(const media::MediaLogEvent& event) {

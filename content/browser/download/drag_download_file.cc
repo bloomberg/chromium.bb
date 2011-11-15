@@ -4,6 +4,7 @@
 
 #include "content/browser/download/drag_download_file.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "content/browser/browser_context.h"
@@ -112,8 +113,7 @@ void DragDownloadFile::InitiateDownload() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &DragDownloadFile::InitiateDownload));
+        base::Bind(&DragDownloadFile::InitiateDownload, this));
     return;
   }
 #endif
@@ -140,9 +140,7 @@ void DragDownloadFile::DownloadCompleted(bool is_successful) {
   if (drag_message_loop_ != MessageLoop::current()) {
     drag_message_loop_->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &DragDownloadFile::DownloadCompleted,
-                          is_successful));
+        base::Bind(&DragDownloadFile::DownloadCompleted, this, is_successful));
     return;
   }
 #endif

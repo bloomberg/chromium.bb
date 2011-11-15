@@ -4,6 +4,7 @@
 
 #include "content/browser/download/mhtml_generation_manager.h"
 
+#include "base/bind.h"
 #include "base/platform_file.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -42,8 +43,8 @@ void MHTMLGenerationManager::GenerateMHTML(TabContents* tab_contents,
   base::ProcessHandle renderer_process =
       tab_contents->GetRenderProcessHost()->GetHandle();
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &MHTMLGenerationManager::CreateFile,
-                        job_id, file, renderer_process));
+      base::Bind(&MHTMLGenerationManager::CreateFile, this,
+                 job_id, file, renderer_process));
 }
 
 void MHTMLGenerationManager::MHTMLGenerated(int job_id, int64 mhtml_data_size) {
@@ -65,8 +66,8 @@ void MHTMLGenerationManager::CreateFile(int job_id, const FilePath& file_path,
       IPC::GetFileHandleForProcess(browser_file, renderer_process, false);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &MHTMLGenerationManager::FileCreated,
-                        job_id, browser_file, renderer_file));
+      base::Bind(&MHTMLGenerationManager::FileCreated, this,
+                 job_id, browser_file, renderer_file));
 }
 
 void MHTMLGenerationManager::FileCreated(int job_id,
@@ -122,8 +123,7 @@ void MHTMLGenerationManager::JobFinished(int job_id, int64 file_size) {
   }
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &MHTMLGenerationManager::CloseFile,
-                        job.browser_file));
+      base::Bind(&MHTMLGenerationManager::CloseFile, this, job.browser_file));
 
   id_to_job_.erase(job_id);
 }

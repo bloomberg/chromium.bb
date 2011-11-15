@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/device_orientation/data_fetcher.h"
 #include "content/browser/device_orientation/orientation.h"
 #include "content/browser/device_orientation/provider.h"
@@ -76,7 +76,7 @@ class ProviderImpl : public Provider {
   // from that thread.
   scoped_ptr<DataFetcher> data_fetcher_;
   Orientation last_orientation_;
-  ScopedRunnableMethodFactory<ProviderImpl> do_poll_method_factory_;
+  base::WeakPtrFactory<ProviderImpl> weak_factory_;
 
   // Polling is done on this background thread.
   scoped_ptr<base::Thread> polling_thread_;

@@ -20,6 +20,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "content/browser/download/download_resource_handler.h"
@@ -469,7 +470,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   int request_id_;
 
   // For running tasks.
-  ScopedRunnableMethodFactory<ResourceDispatcherHost> method_runner_;
+  base::WeakPtrFactory<ResourceDispatcherHost> weak_factory_;
 
   // True if the resource dispatcher host has been shut down.
   bool is_shutdown_;

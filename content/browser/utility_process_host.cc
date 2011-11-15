@@ -4,6 +4,8 @@
 
 #include "content/browser/utility_process_host.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -139,14 +141,15 @@ bool UtilityProcessHost::StartProcess() {
 bool UtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
   BrowserThread::PostTask(
       client_thread_id_, FROM_HERE,
-      NewRunnableMethod(client_.get(), &Client::OnMessageReceived, message));
+      base::IgnoreReturn<bool>(
+          base::Bind(&Client::OnMessageReceived, client_.get(), message)));
   return true;
 }
 
 void UtilityProcessHost::OnProcessCrashed(int exit_code) {
   BrowserThread::PostTask(
       client_thread_id_, FROM_HERE,
-      NewRunnableMethod(client_.get(), &Client::OnProcessCrashed, exit_code));
+      base::Bind(&Client::OnProcessCrashed, client_.get(), exit_code));
 }
 
 bool UtilityProcessHost::CanShutdown() {

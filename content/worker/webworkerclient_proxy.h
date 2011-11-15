@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWorkerClient.h"
@@ -94,7 +94,7 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient {
   int route_id_;
   int appcache_host_id_;
   WebSharedWorkerStub* stub_;
-  ScopedRunnableMethodFactory<WebWorkerClientProxy> kill_process_factory_;
+  base::WeakPtrFactory<WebWorkerClientProxy> weak_factory_;
   SharedWorkerDevToolsAgent* devtools_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(WebWorkerClientProxy);

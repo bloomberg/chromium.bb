@@ -7,7 +7,7 @@
 #define CONTENT_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_
 #pragma once
 
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "net/url_request/url_request_job.h"
 
@@ -32,7 +32,7 @@ class URLRequestFailedDnsJob : public net::URLRequestJob {
   // Simulate a DNS failure.
   void StartAsync();
 
-  ScopedRunnableMethodFactory<URLRequestFailedDnsJob> method_factory_;
+  base::WeakPtrFactory<URLRequestFailedDnsJob> weak_factory_;
 };
 
 #endif  // CONTENT_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_

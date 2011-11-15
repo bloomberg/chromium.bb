@@ -4,6 +4,7 @@
 
 #include "content/browser/net/url_request_slow_download_job.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -38,8 +39,8 @@ base::LazyInstance<
 void URLRequestSlowDownloadJob::Start() {
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &URLRequestSlowDownloadJob::StartAsync));
+      base::Bind(&URLRequestSlowDownloadJob::StartAsync,
+                 weak_factory_.GetWeakPtr()));
 }
 
 // static
@@ -85,7 +86,7 @@ URLRequestSlowDownloadJob::URLRequestSlowDownloadJob(net::URLRequest* request)
       first_download_size_remaining_(kFirstDownloadSize),
       should_finish_download_(false),
       buffer_size_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 void URLRequestSlowDownloadJob::StartAsync() {
@@ -127,8 +128,8 @@ bool URLRequestSlowDownloadJob::ReadRawData(net::IOBuffer* buf, int buf_size,
   SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &URLRequestSlowDownloadJob::CheckDoneStatus),
+      base::Bind(&URLRequestSlowDownloadJob::CheckDoneStatus,
+                 weak_factory_.GetWeakPtr()),
       100);
 
   // Return false to signal there is pending data.
@@ -148,8 +149,8 @@ void URLRequestSlowDownloadJob::CheckDoneStatus() {
   } else {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &URLRequestSlowDownloadJob::CheckDoneStatus),
+        base::Bind(&URLRequestSlowDownloadJob::CheckDoneStatus,
+                   weak_factory_.GetWeakPtr()),
         100);
   }
 }

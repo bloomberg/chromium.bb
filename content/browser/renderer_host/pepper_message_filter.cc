@@ -1091,12 +1091,12 @@ void PepperMessageFilter::OnConnectTcpAddress(
   // Validate the address and then continue (doing |connect()|) on a worker
   // thread.
   if (!ppapi::NetAddressPrivateImpl::ValidateNetAddress(addr) ||
-      !base::WorkerPool::PostTask(FROM_HERE,
-           NewRunnableMethod(
-               this,
-               &PepperMessageFilter::ConnectTcpAddressOnWorkerThread,
-               routing_id, request_id, addr),
-           true)) {
+      !base::WorkerPool::PostTask(
+          FROM_HERE,
+          base::Bind(
+              &PepperMessageFilter::ConnectTcpAddressOnWorkerThread, this,
+              routing_id, request_id, addr),
+          true)) {
     SendConnectTcpACKError(routing_id, request_id);
   }
 }
@@ -1118,12 +1118,12 @@ void PepperMessageFilter::ConnectTcpLookupFinished(
   // If the lookup returned addresses, continue (doing |connect()|) on a worker
   // thread.
   if (!addresses.head() ||
-      !base::WorkerPool::PostTask(FROM_HERE,
-           NewRunnableMethod(
-               this,
-               &PepperMessageFilter::ConnectTcpOnWorkerThread,
-               routing_id, request_id, addresses),
-           true)) {
+      !base::WorkerPool::PostTask(
+          FROM_HERE,
+          base::Bind(
+              &PepperMessageFilter::ConnectTcpOnWorkerThread, this,
+              routing_id, request_id, addresses),
+          true)) {
     SendConnectTcpACKError(routing_id, request_id);
   }
 }
@@ -1148,8 +1148,8 @@ void PepperMessageFilter::ConnectTcpOnWorkerThread(int routing_id,
   }
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &PepperMessageFilter::Send,
+      base::Bind(
+          &PepperMessageFilter::Send, this,
           new PepperMsg_ConnectTcpACK(
               routing_id, request_id,
               socket_for_transit, local_addr, remote_addr)));
@@ -1171,8 +1171,8 @@ void PepperMessageFilter::ConnectTcpAddressOnWorkerThread(
     socket_for_transit = base::FileDescriptor(fd, true);
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &PepperMessageFilter::Send,
+      base::Bind(
+          &PepperMessageFilter::Send, this,
           new PepperMsg_ConnectTcpACK(
               routing_id, request_id,
               socket_for_transit, local_addr, remote_addr)));

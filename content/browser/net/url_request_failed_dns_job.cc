@@ -4,6 +4,7 @@
 
 #include "content/browser/net/url_request_failed_dns_job.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "googleurl/src/gurl.h"
@@ -16,15 +17,15 @@ const char URLRequestFailedDnsJob::kTestUrl[] =
 
 URLRequestFailedDnsJob::URLRequestFailedDnsJob(net::URLRequest* request)
     : net::URLRequestJob(request),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
 URLRequestFailedDnsJob::~URLRequestFailedDnsJob() {}
 
 void URLRequestFailedDnsJob::Start() {
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &URLRequestFailedDnsJob::StartAsync));
+      base::Bind(&URLRequestFailedDnsJob::StartAsync,
+                 weak_factory_.GetWeakPtr()));
 }
 
 // static

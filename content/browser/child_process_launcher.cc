@@ -6,6 +6,7 @@
 
 #include <utility>  // For std::pair.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -71,7 +72,7 @@ class ChildProcessLauncher::Context
 
     BrowserThread::PostTask(
         BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-        NewRunnableFunction(
+        base::Bind(
             &Context::LaunchInternal,
             make_scoped_refptr(this),
             client_thread_id_,
@@ -205,9 +206,9 @@ class ChildProcessLauncher::Context
 
     BrowserThread::PostTask(
         client_thread_id, FROM_HERE,
-        NewRunnableMethod(
-            this_object.get(),
+        base::Bind(
             &Context::Notify,
+            this_object.get(),
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
             use_zygote,
 #endif
@@ -245,7 +246,7 @@ class ChildProcessLauncher::Context
     // don't this on the UI/IO threads.
     BrowserThread::PostTask(
         BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-        NewRunnableFunction(
+        base::Bind(
             &Context::TerminateInternal,
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
             zygote_,
@@ -375,7 +376,7 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
 void ChildProcessLauncher::SetProcessBackgrounded(bool background) {
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-      NewRunnableFunction(
+      base::Bind(
           &ChildProcessLauncher::Context::SetProcessBackgrounded,
           GetHandle(), background));
 }

@@ -306,7 +306,7 @@ ResourceDispatcherHost::ResourceDispatcherHost(
           save_file_manager_(new SaveFileManager(this))),
       webkit_thread_(new WebKitThread),
       request_id_(-1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_runner_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       is_shutdown_(false),
       max_outstanding_requests_cost_per_process_(
           kMaxOutstandingRequestsCostPerProcess),
@@ -330,7 +330,7 @@ void ResourceDispatcherHost::Initialize() {
   webkit_thread_->Initialize();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&appcache::AppCacheInterceptor::EnsureRegistered));
+      base::Bind(&appcache::AppCacheInterceptor::EnsureRegistered));
 }
 
 void ResourceDispatcherHost::Shutdown() {
@@ -999,8 +999,9 @@ void ResourceDispatcherHost::PauseRequest(int child_id,
   // asynchronously to avoid recursion problems.
   if (info->pause_count() == 0) {
     MessageLoop::current()->PostTask(FROM_HERE,
-        method_runner_.NewRunnableMethod(
-            &ResourceDispatcherHost::ResumeRequest, global_id));
+        base::Bind(
+            &ResourceDispatcherHost::ResumeRequest, weak_factory_.GetWeakPtr(),
+            global_id));
   }
 }
 
@@ -1716,8 +1717,9 @@ void ResourceDispatcherHost::OnReadCompleted(net::URLRequest* request,
         GlobalRequestID id(info->child_id(), info->request_id());
         MessageLoop::current()->PostTask(
             FROM_HERE,
-            method_runner_.NewRunnableMethod(
-                &ResourceDispatcherHost::ResumeRequest, id));
+            base::Bind(
+                &ResourceDispatcherHost::ResumeRequest,
+                weak_factory_.GetWeakPtr(), id));
         return;
       }
     }
@@ -1878,7 +1880,7 @@ void ResourceDispatcherHost::NotifyResponseStarted(net::URLRequest* request,
       request, GetCertID(request, child_id));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
+      base::Bind(
           &ResourceDispatcherHost::NotifyOnUI<ResourceRequestDetails>,
           static_cast<int>(content::NOTIFICATION_RESOURCE_RESPONSE_STARTED),
           render_process_id, render_view_id, detail));
@@ -1896,7 +1898,7 @@ void ResourceDispatcherHost::NotifyReceivedRedirect(net::URLRequest* request,
       request, GetCertID(request, child_id), new_url);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
+      base::Bind(
           &ResourceDispatcherHost::NotifyOnUI<ResourceRedirectDetails>,
           static_cast<int>(content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT),
           render_process_id, render_view_id, detail));

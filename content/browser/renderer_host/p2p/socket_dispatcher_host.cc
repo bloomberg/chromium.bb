@@ -168,8 +168,8 @@ void P2PSocketDispatcherHost::OnStartNetworkNotifications(
   notifications_routing_ids_.insert(msg.routing_id());
 
   BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
-          this, &P2PSocketDispatcherHost::DoGetNetworkList));
+      BrowserThread::FILE, FROM_HERE, base::Bind(
+          &P2PSocketDispatcherHost::DoGetNetworkList, this));
 }
 
 void P2PSocketDispatcherHost::OnStopNetworkNotifications(
@@ -180,16 +180,16 @@ void P2PSocketDispatcherHost::OnStopNetworkNotifications(
 void P2PSocketDispatcherHost::OnIPAddressChanged() {
   // Notify the renderer about changes to list of network interfaces.
   BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
-          this, &P2PSocketDispatcherHost::DoGetNetworkList));
+      BrowserThread::FILE, FROM_HERE, base::Bind(
+          &P2PSocketDispatcherHost::DoGetNetworkList, this));
 }
 
 void P2PSocketDispatcherHost::DoGetNetworkList() {
   net::NetworkInterfaceList list;
   net::GetNetworkList(&list);
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, NewRunnableMethod(
-          this, &P2PSocketDispatcherHost::SendNetworkList, list));
+      BrowserThread::IO, FROM_HERE, base::Bind(
+          &P2PSocketDispatcherHost::SendNetworkList, this, list));
 }
 
 void P2PSocketDispatcherHost::SendNetworkList(

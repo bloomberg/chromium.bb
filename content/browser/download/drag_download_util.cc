@@ -4,12 +4,12 @@
 
 #include "content/browser/download/drag_download_util.h"
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -102,13 +102,13 @@ void PromiseFileFinalizer::Cleanup() {
 void PromiseFileFinalizer::OnDownloadCompleted(const FilePath& file_path) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PromiseFileFinalizer::Cleanup));
+      base::Bind(&PromiseFileFinalizer::Cleanup, this));
 }
 
 void PromiseFileFinalizer::OnDownloadAborted() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PromiseFileFinalizer::Cleanup));
+      base::Bind(&PromiseFileFinalizer::Cleanup, this));
 }
 
 }  // namespace drag_download_util

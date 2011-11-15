@@ -7,6 +7,7 @@
 #include "content/common/resource_dispatcher.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
@@ -257,7 +258,7 @@ void IPCResourceLoaderBridge::UpdateRoutingId(int new_routing_id) {
 
 ResourceDispatcher::ResourceDispatcher(IPC::Message::Sender* sender)
     : message_sender_(sender),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       delegate_(NULL) {
 }
 
@@ -512,8 +513,8 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
     FollowPendingRedirect(request_id, request_info);
 
     MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &ResourceDispatcher::FlushDeferredMessages, request_id));
+        base::Bind(&ResourceDispatcher::FlushDeferredMessages,
+                   weak_factory_.GetWeakPtr(), request_id));
   }
 }
 

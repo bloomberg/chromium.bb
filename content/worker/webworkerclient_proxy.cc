@@ -4,6 +4,7 @@
 
 #include "content/worker/webworkerclient_proxy.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "content/common/file_system/file_system_dispatcher.h"
@@ -45,7 +46,7 @@ WebWorkerClientProxy::WebWorkerClientProxy(int route_id,
     : route_id_(route_id),
       appcache_host_id_(0),
       stub_(stub),
-      ALLOW_THIS_IN_INITIALIZER_LIST(kill_process_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       devtools_agent_(NULL) {
 }
 
@@ -209,7 +210,8 @@ void WebWorkerClientProxy::EnsureWorkerContextTerminates() {
   // page. It's ok to post several of theese, because the first executed task
   // will exit the message loop and subsequent ones won't be executed.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      kill_process_factory_.NewRunnableMethod(
-          &WebWorkerClientProxy::workerContextDestroyed),
-          kMaxTimeForRunawayWorkerMs);
+      base::Bind(
+          &WebWorkerClientProxy::workerContextDestroyed,
+          weak_factory_.GetWeakPtr()),
+      kMaxTimeForRunawayWorkerMs);
 }

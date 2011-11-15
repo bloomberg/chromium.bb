@@ -17,7 +17,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "build/build_config.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/in_process_webkit/webkit_context.h"

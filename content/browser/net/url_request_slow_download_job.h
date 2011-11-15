@@ -14,7 +14,7 @@
 #include <string>
 
 #include "base/lazy_instance.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "net/url_request/url_request_job.h"
 
@@ -72,7 +72,7 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   scoped_refptr<net::IOBuffer> buffer_;
   int buffer_size_;
 
-  ScopedRunnableMethodFactory<URLRequestSlowDownloadJob> method_factory_;
+  base::WeakPtrFactory<URLRequestSlowDownloadJob> weak_factory_;
 };
 
 #endif  // CONTENT_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_

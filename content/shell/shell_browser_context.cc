@@ -4,6 +4,7 @@
 
 #include "content/shell/shell_browser_context.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -211,9 +212,9 @@ ChromeBlobStorageContext* ShellBrowserContext::GetBlobStorageContext()  {
     blob_storage_context_ = new ChromeBlobStorageContext();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            blob_storage_context_.get(),
-            &ChromeBlobStorageContext::InitializeOnIOThread));
+        base::Bind(
+            &ChromeBlobStorageContext::InitializeOnIOThread,
+            blob_storage_context_.get()));
   }
   return blob_storage_context_;
 }
@@ -250,9 +251,9 @@ void ShellBrowserContext::CreateQuotaManagerAndClients() {
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy;
   BrowserThread::PostTask(
     BrowserThread::IO, FROM_HERE,
-    NewRunnableMethod(
-        appcache_service_.get(),
+    base::Bind(
         &ChromeAppCacheService::InitializeOnIOThread,
+        appcache_service_.get(),
         IsOffTheRecord()
             ? FilePath() : GetPath().Append(FILE_PATH_LITERAL("AppCache")),
         &GetResourceContext(),

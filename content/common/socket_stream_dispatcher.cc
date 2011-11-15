@@ -6,11 +6,11 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/id_map.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "content/common/child_thread.h"
 #include "content/common/socket_stream.h"
 #include "content/common/socket_stream_messages.h"
@@ -89,8 +89,7 @@ void IPCWebSocketStreamHandleBridge::Connect(const GURL& url) {
   DVLOG(1) << "Connect url=" << url;
   child_thread_->message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &IPCWebSocketStreamHandleBridge::DoConnect,
-                        url));
+      base::Bind(&IPCWebSocketStreamHandleBridge::DoConnect, this, url));
 }
 
 bool IPCWebSocketStreamHandleBridge::Send(
@@ -110,7 +109,7 @@ void IPCWebSocketStreamHandleBridge::Close() {
   AddRef();  // Released in DoClose().
   child_thread_->message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &IPCWebSocketStreamHandleBridge::DoClose));
+      base::Bind(&IPCWebSocketStreamHandleBridge::DoClose, this));
 }
 
 void IPCWebSocketStreamHandleBridge::OnConnected(int max_pending_send_allowed) {

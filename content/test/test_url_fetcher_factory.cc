@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "content/common/net/url_fetcher_impl.h"
 #include "content/public/common/url_fetcher_delegate.h"
@@ -232,7 +234,7 @@ class FakeURLFetcher : public TestURLFetcher {
                  content::URLFetcherDelegate* d,
                  const std::string& response_data, bool success)
     : TestURLFetcher(0, url, d),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
     set_status(net::URLRequestStatus(
         success ? net::URLRequestStatus::SUCCESS :
             net::URLRequestStatus::FAILED,
@@ -246,7 +248,7 @@ class FakeURLFetcher : public TestURLFetcher {
   virtual void Start() OVERRIDE {
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        method_factory_.NewRunnableMethod(&FakeURLFetcher::RunDelegate));
+        base::Bind(&FakeURLFetcher::RunDelegate, weak_factory_.GetWeakPtr()));
   }
 
   virtual const GURL& GetURL() const OVERRIDE {
@@ -263,8 +265,7 @@ class FakeURLFetcher : public TestURLFetcher {
     delegate()->OnURLFetchComplete(this);
   }
 
-  // Method factory used to run the delegate.
-  ScopedRunnableMethodFactory<FakeURLFetcher> method_factory_;
+  base::WeakPtrFactory<FakeURLFetcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcher);
 };

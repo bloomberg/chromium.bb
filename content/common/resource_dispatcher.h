@@ -13,8 +13,8 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/shared_memory.h"
-#include "base/task.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel.h"
 #include "webkit/glue/resource_loader_bridge.h"
@@ -154,7 +154,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Channel::Listener {
   // All pending requests issued to the host
   PendingRequestList pending_requests_;
 
-  ScopedRunnableMethodFactory<ResourceDispatcher> method_factory_;
+  base::WeakPtrFactory<ResourceDispatcher> weak_factory_;
 
   content::ResourceDispatcherDelegate* delegate_;
 

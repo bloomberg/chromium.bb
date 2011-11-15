@@ -4,6 +4,8 @@
 
 #include "content/browser/browser_message_filter.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/process.h"
 #include "base/process_util.h"
@@ -49,7 +51,8 @@ bool BrowserMessageFilter::Send(IPC::Message* message) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        NewRunnableMethod(this, &BrowserMessageFilter::Send, message));
+        base::IgnoreReturn<bool>(
+            base::Bind(&BrowserMessageFilter::Send, this, message)));
     return true;
   }
 
@@ -75,8 +78,8 @@ bool BrowserMessageFilter::OnMessageReceived(const IPC::Message& message) {
 
   BrowserThread::PostTask(
       thread, FROM_HERE,
-      NewRunnableMethod(
-          this, &BrowserMessageFilter::DispatchMessage, message));
+      base::IgnoreReturn<bool>(
+          base::Bind(&BrowserMessageFilter::DispatchMessage, this, message)));
   return true;
 }
 
