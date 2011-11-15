@@ -128,45 +128,45 @@ class ExternalTabContainer : public TabContentsDelegate,
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags);
+                                      unsigned changed_flags) OVERRIDE;
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
-                              bool user_gesture);
-  virtual void CloseContents(TabContents* source);
-  virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
-  virtual bool IsPopup(const TabContents* source) const;
+                              bool user_gesture) OVERRIDE;
+  virtual void CloseContents(TabContents* source) OVERRIDE;
+  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) OVERRIDE;
+  virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
   virtual void UpdateTargetURL(TabContents* source, int32 page_id,
-                               const GURL& url);
-  virtual void ContentsZoomChange(bool zoom_in);
-  virtual gfx::NativeWindow GetFrameNativeWindow();
+                               const GURL& url) OVERRIDE;
+  virtual void ContentsZoomChange(bool zoom_in) OVERRIDE;
+  virtual gfx::NativeWindow GetFrameNativeWindow() OVERRIDE;
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut);
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
-  virtual bool TakeFocus(bool reverse);
-  virtual bool CanDownload(TabContents* source, int request_id);
-  virtual bool OnGoToEntryOffset(int offset);
-  virtual void ShowPageInfo(Profile* profile,
-                            const GURL& url,
-                            const NavigationEntry::SSLStatus& ssl,
-                            bool show_history);
-  virtual bool HandleContextMenu(const ContextMenuParams& params);
-  virtual bool ExecuteContextMenuCommand(int command);
+                                      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual bool TakeFocus(bool reverse) OVERRIDE;
+  virtual bool CanDownload(TabContents* source, int request_id) OVERRIDE;
+  virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
+  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
+  virtual bool ExecuteContextMenuCommand(int command) OVERRIDE;
   virtual void BeforeUnloadFired(TabContents* tab,
                                  bool proceed,
-                                 bool* proceed_to_fire_unload);
-  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator();
-  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
-  virtual void RunFileChooser(TabContents* tab,
-                              const ViewHostMsg_RunFileChooser_Params& params);
-  virtual void EnumerateDirectory(TabContents* tab, int request_id,
-                                const FilePath& path);
+                                 bool* proceed_to_fire_unload) OVERRIDE;
+  virtual content::JavaScriptDialogCreator*
+      GetJavaScriptDialogCreator() OVERRIDE;
+  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) OVERRIDE;
+  virtual void RunFileChooser(
+      TabContents* tab,
+      const ViewHostMsg_RunFileChooser_Params& params) OVERRIDE;
+  virtual void EnumerateDirectory(TabContents* tab,
+                                  int request_id,
+                                  const FilePath& path) OVERRIDE;
   virtual void JSOutOfMemory(TabContents* tab);
   virtual void RegisterProtocolHandler(TabContents* tab,
                                        const std::string& protocol,
                                        const GURL& url,
-                                       const string16& title);
+                                       const string16& title) OVERRIDE;
   virtual void RegisterIntentHandler(TabContents* tab,
                                      const string16& action,
                                      const string16& type,
@@ -182,9 +182,9 @@ class ExternalTabContainer : public TabContentsDelegate,
                          int number_of_matches,
                          const gfx::Rect& selection_rect,
                          int active_match_ordinal,
-                         bool final_update);
+                         bool final_update) OVERRIDE;
   virtual void CrashedPlugin(TabContents* tab,
-                             const FilePath& plugin_path);
+                             const FilePath& plugin_path) OVERRIDE;
 
   void RegisterRenderViewHost(RenderViewHost* render_view_host);
   void UnregisterRenderViewHost(RenderViewHost* render_view_host);

@@ -536,7 +536,7 @@ TabContentsWrapper* ExternalTabContainer::GetConstrainingContentsWrapper(
   return source;
 }
 
-bool ExternalTabContainer::IsPopup(const TabContents* source) const {
+bool ExternalTabContainer::IsPopupOrPanel(const TabContents* source) const {
   return is_popup_window_;
 }
 
@@ -585,26 +585,6 @@ bool ExternalTabContainer::CanDownload(TabContents* source, int request_id) {
 
   // Never allow downloads.
   return false;
-}
-
-void ExternalTabContainer::ShowPageInfo(Profile* profile,
-                                        const GURL& url,
-                                        const NavigationEntry::SSLStatus& ssl,
-                                        bool show_history) {
-  POINT cursor_pos = {0};
-  GetCursorPos(&cursor_pos);
-
-  gfx::Rect bounds;
-  bounds.set_origin(gfx::Point(cursor_pos));
-
-  PageInfoBubbleView* page_info_bubble =
-      new ExternalTabPageInfoBubbleView(this, NULL, profile, url,
-                                        ssl, show_history);
-  Bubble* bubble = Bubble::Show(GetWidget(), bounds,
-                                views::BubbleBorder::TOP_LEFT,
-                                views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-                                page_info_bubble, page_info_bubble);
-  page_info_bubble->set_bubble(bubble);
 }
 
 void ExternalTabContainer::RegisterRenderViewHostForAutomation(
