@@ -89,6 +89,10 @@ class LoginUtils {
   // Prewarms the authentication network connection.
   virtual void PrewarmAuthentication() = 0;
 
+  // Restores authentication session after crash.
+  virtual void RestoreAuthenticationSession(const std::string& user_name,
+                                            Profile* profile) = 0;
+
   // Given the credentials try to exchange them for
   // full-fledged Google authentication cookies.
   virtual void FetchCookies(

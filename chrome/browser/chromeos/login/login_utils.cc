@@ -438,6 +438,8 @@ class LoginUtilsImpl : public LoginUtils,
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
       LoginStatusConsumer* consumer) OVERRIDE;
   virtual void PrewarmAuthentication() OVERRIDE;
+  virtual void RestoreAuthenticationSession(const std::string& user_name,
+                                            Profile* profile) OVERRIDE;
   virtual void FetchCookies(
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
@@ -479,6 +481,9 @@ class LoginUtilsImpl : public LoginUtils,
       CommandLine *command_line);
 
  private:
+  // Restarts OAuth session authentication check.
+  void KickStartAuthentication(Profile* profile);
+
   // Reads OAuth1 token from user profile's prefs.
   bool ReadOAuth1AccessToken(Profile* user_profile,
                              std::string* token,
@@ -1019,6 +1024,23 @@ void LoginUtilsImpl::PrewarmAuthentication() {
   }
 }
 
+void LoginUtilsImpl::RestoreAuthenticationSession(const std::string& username,
+                                                  Profile* user_profile) {
+  username_ = username;
+  KickStartAuthentication(user_profile);
+}
+
+void LoginUtilsImpl::KickStartAuthentication(Profile* user_profile) {
+  if (!authenticator_.get())
+    CreateAuthenticator(NULL);
+  std::string oauth1_token;
+  std::string oauth1_secret;
+  if (ReadOAuth1AccessToken(user_profile, &oauth1_token, &oauth1_secret))
+    VerifyOAuth1AccessToken(user_profile, oauth1_token, oauth1_secret);
+
+  authenticator_ = NULL;
+}
+
 void LoginUtilsImpl::SetBackgroundView(BackgroundView* background_view) {
   background_view_ = background_view;
 }
@@ -1165,14 +1187,7 @@ void LoginUtilsImpl::OnOnlineStateChanged(bool online) {
   // we need to kick of OAuth token verification process again.
   if (UserManager::Get()->user_is_logged_in() &&
       UserManager::Get()->offline_login() && online) {
-    if (!authenticator_.get())
-      CreateAuthenticator(NULL);
-    std::string oauth1_token;
-    std::string oauth1_secret;
-    Profile* user_profile = ProfileManager::GetDefaultProfile();
-    if (ReadOAuth1AccessToken(user_profile, &oauth1_token, &oauth1_secret))
-      VerifyOAuth1AccessToken(user_profile, oauth1_token, oauth1_secret);
-    authenticator_ = NULL;
+    KickStartAuthentication(ProfileManager::GetDefaultProfile());
   }
 }
 

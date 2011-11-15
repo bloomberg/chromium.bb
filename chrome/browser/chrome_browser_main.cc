@@ -548,10 +548,12 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
         parsed_command_line.GetSwitchValueASCII(switches::kLoginUser),
         parsed_command_line.GetSwitchValueASCII(switches::kLoginPassword));
   } else {
-    // We did not log in (we crashed or are debugging), so we need to
-    // set the user name for sync.
-    profile->GetProfileSyncService(
-        chromeos::UserManager::Get()->logged_in_user().email());
+    if (!parsed_command_line.HasSwitch(switches::kTestName)) {
+      // We did not log in (we crashed or are debugging), so we need to
+      // set the user name for sync.
+      chromeos::LoginUtils::Get()->RestoreAuthenticationSession(
+          chromeos::UserManager::Get()->logged_in_user().email(), profile);
+    }
   }
 }
 
