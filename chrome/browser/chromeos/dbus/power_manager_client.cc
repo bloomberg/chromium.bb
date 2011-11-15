@@ -276,7 +276,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
     if (!timer_.IsRunning()) {
       timer_.Start(
           FROM_HERE,
-          base::TimeDelta::FromMilliseconds(100),
+          base::TimeDelta::FromMilliseconds(1000),
           this,
           &PowerManagerClientStubImpl::Update);
     } else {
@@ -301,20 +301,25 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
         pause_count_ = 0;
         discharging_ = !discharging_;
       } else {
-        pause_count_ = 20;
+        // Pause twice (i.e. skip updating the menu), including the current
+        // call to this function.
+        pause_count_ = 2;
         return;
       }
     }
     battery_percentage_ += (discharging_ ? -1 : 1);
+
+    const int kSecondsToEmptyFullBattery(3 * 60 * 60);  // 3 hours.
 
     PowerSupplyStatus status;
     status.line_power_on = !discharging_;
     status.battery_is_present = true;
     status.battery_percentage = battery_percentage_;
     status.battery_seconds_to_empty =
-        std::max(1, battery_percentage_ * 180 / 100);
+        std::max(1, battery_percentage_ * kSecondsToEmptyFullBattery / 100);
     status.battery_seconds_to_full =
-        std::max(static_cast<int64>(1), 180 - status.battery_seconds_to_empty);
+        std::max(static_cast<int64>(1),
+                 kSecondsToEmptyFullBattery - status.battery_seconds_to_empty);
 
     FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status));
   }
