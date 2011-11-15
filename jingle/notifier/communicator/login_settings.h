@@ -15,10 +15,6 @@ namespace buzz {
 class XmppClientSettings;
 }
 
-namespace talk_base {
-class SocketAddress;
-}
-
 namespace notifier {
 class ConnectionOptions;
 

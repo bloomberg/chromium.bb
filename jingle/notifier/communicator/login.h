@@ -19,7 +19,6 @@
 
 namespace buzz {
 class XmppClient;
-class XmppEngine;
 class XmppClientSettings;
 class XmppTaskParentInterface;
 }  // namespace buzz

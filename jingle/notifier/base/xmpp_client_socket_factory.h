@@ -15,9 +15,7 @@ namespace net {
 class ClientSocketFactory;
 class ClientSocketHandle;
 class HostPortPair;
-class NetLog;
 class SSLClientSocket;
-class SSLHostInfo;
 class StreamSocket;
 class URLRequestContextGetter;
 }

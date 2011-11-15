@@ -9,7 +9,6 @@
 namespace net {
 class ClientSocketHandle;
 class HostPortPair;
-class NetLog;
 class SSLClientSocket;
 class StreamSocket;
 }

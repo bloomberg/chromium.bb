@@ -23,7 +23,6 @@ class GLSurface;
 namespace gpu {
 
 class StreamTextureManager;
-class SurfaceManager;
 
 namespace gles2 {
 

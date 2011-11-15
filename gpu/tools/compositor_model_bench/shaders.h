@@ -12,7 +12,6 @@
 // Forward declarations.
 class CCNode;
 class ContentLayerNode;
-class TextureBuilder;
 
 typedef unsigned int GLuint;
 
@@ -51,4 +50,3 @@ void DrawQuad(float width, float height);
 void DrawTileQuad(GLuint texID, int x, int y);
 
 #endif  // GPU_TOOLS_COMPOSITOR_MODEL_BENCH_SHADERS_H_
-

@@ -15,11 +15,6 @@
 #include "net/base/single_request_host_resolver.h"
 #include "jingle/notifier/base/server_information.h"
 
-namespace talk_base {
-struct ProxyInfo;
-class SignalThread;
-}
-
 namespace notifier {
 
 class ConnectionOptions;

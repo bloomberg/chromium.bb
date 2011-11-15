@@ -6,16 +6,15 @@
 #define DBUS_OBJECT_PROXY_H_
 #pragma once
 
+#include <dbus/dbus.h>
+
 #include <map>
 #include <string>
 #include <vector>
-#include <dbus/dbus.h>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
-
-class MessageLoop;
 
 namespace dbus {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IPC_IPC_SYNC_SENDER_H__
-#define IPC_IPC_SYNC_SENDER_H__
+#ifndef IPC_IPC_SYNC_CHANNEL_H_
+#define IPC_IPC_SYNC_CHANNEL_H_
 #pragma once
 
 #include <string>
@@ -24,7 +24,6 @@ class WaitableEvent;
 namespace IPC {
 
 class SyncMessage;
-class MessageReplyDeserializer;
 
 // This is similar to ChannelProxy, with the added feature of supporting sending
 // synchronous messages.
@@ -197,4 +196,4 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
 
 }  // namespace IPC
 
-#endif  // IPC_IPC_SYNC_SENDER_H__
+#endif  // IPC_IPC_SYNC_CHANNEL_H_

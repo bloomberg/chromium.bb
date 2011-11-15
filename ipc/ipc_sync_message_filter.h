@@ -6,12 +6,13 @@
 #define IPC_IPC_SYNC_MESSAGE_FILTER_H_
 #pragma once
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_message.h"
-#include <set>
 
 namespace base {
 class MessageLoopProxy;
@@ -19,8 +20,6 @@ class WaitableEvent;
 }
 
 namespace IPC {
-
-class MessageReplyDeserializer;
 
 // This MessageFilter allows sending synchronous IPC messages from a thread
 // other than the listener thread associated with the SyncChannel.  It does not
