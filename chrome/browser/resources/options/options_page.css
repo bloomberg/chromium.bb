@@ -233,7 +233,9 @@ html[dir='rtl'] .action-area {
   width: 100%;
   margin: 0;
   padding: 0;
+  position: relative;
   vertical-align: middle;
+  z-index: 11;
 }
 
 .managed-prefs-banner.clickable:active {

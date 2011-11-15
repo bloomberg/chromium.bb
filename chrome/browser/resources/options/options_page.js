@@ -167,6 +167,23 @@ cr.define('options', function() {
   };
 
   /**
+   * Scrolls the page to the correct position (the top when opening a subpage,
+   * or the old scroll position a previously hidden subpage becomes visible).
+   * @private
+   */
+  OptionsPage.updateScrollPosition_ = function () {
+    var topmostPage = this.getTopmostVisibleNonOverlayPage_();
+    var nestingLevel = topmostPage ? topmostPage.nestingLevel : 0;
+
+    var container = (nestingLevel > 0) ?
+       $('subpage-sheet-container-' + nestingLevel) : $('page-container');
+
+    var scrollTop = container.oldScrollTop || 0;
+    container.oldScrollTop = undefined;
+    window.scroll(document.body.scrollLeft, scrollTop);
+  };
+
+  /**
    * Pushes the current page onto the history stack, overriding the last page
    * if it is the generic chrome://settings/.
    * @private
@@ -533,22 +550,20 @@ cr.define('options', function() {
       return;
 
     if (freeze) {
-      var scrollPosition = document.body.scrollTop;
       // Lock the width, since auto width computation may change.
       container.style.width = window.getComputedStyle(container).width;
+      container.oldScrollTop = document.body.scrollTop;
       container.classList.add('frozen');
-      container.style.top = -scrollPosition + 'px';
+      var verticalPosition =
+          container.getBoundingClientRect().top - container.oldScrollTop;
+      container.style.top = verticalPosition + 'px';
       this.updateFrozenElementHorizontalPosition_(container);
     } else {
-      var scrollPosition = - parseInt(container.style.top, 10);
       container.classList.remove('frozen');
       container.style.top = '';
       container.style.left = '';
       container.style.right = '';
       container.style.width = '';
-      // Restore the scroll position.
-      if (!container.hidden)
-        window.scroll(document.body.scrollLeft, scrollPosition);
     }
   };
 
@@ -866,11 +881,9 @@ cr.define('options', function() {
       }
       if (!controlledByPolicy && !controlledByExtension) {
         bannerDiv.hidden = true;
-        $('subpage-backdrop').style.top = '0';
       } else {
         bannerDiv.hidden = false;
         var height = window.getComputedStyle(bannerDiv).height;
-        $('subpage-backdrop').style.top = height;
         if (controlledByPolicy && !controlledByExtension) {
           $('managed-prefs-text').textContent =
               templateData.policyManagedPrefsBannerText;
@@ -919,19 +932,16 @@ cr.define('options', function() {
 
       OptionsPage.updatePageFreezeStates();
 
-      // A subpage was shown or hidden.
-      if (!this.isOverlay && this.nestingLevel > 0) {
-        OptionsPage.updateSubpageBackdrop_();
-        if (visible) {
-          // Scroll to the top of the newly-opened subpage.
-          window.scroll(document.body.scrollLeft, 0)
-        }
-      }
-
       // The managed prefs banner is global, so after any visibility change
       // update it based on the topmost page, not necessarily this page
       // (e.g., if an ancestor is made visible after a child).
       OptionsPage.updateManagedBannerVisibility();
+
+      // A subpage was shown or hidden.
+      if (!this.isOverlay && this.nestingLevel > 0) {
+        OptionsPage.updateSubpageBackdrop_();
+        OptionsPage.updateScrollPosition_();
+      }
 
       cr.dispatchPropertyChange(this, 'visible', visible, !visible);
     },
