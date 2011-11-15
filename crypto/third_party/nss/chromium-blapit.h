@@ -40,8 +40,8 @@
  * ***** END LICENSE BLOCK ***** */
 /* $Id: blapit.h,v 1.20 2007/02/28 19:47:37 rrelyea%redhat.com Exp $ */
 
-#ifndef _BLAPIT_H_
-#define _BLAPIT_H_
+#ifndef CRYPTO_THIRD_PARTY_NSS_CHROMIUM_BLAPIT_H_
+#define CRYPTO_THIRD_PARTY_NSS_CHROMIUM_BLAPIT_H_
 
 #include "base/third_party/nspr/prtypes.h"
 
@@ -88,4 +88,4 @@ typedef struct SHA512ContextStr     SHA512Context;
 /* SHA384Context is really a SHA512ContextStr.  This is not a mistake. */
 typedef struct SHA512ContextStr     SHA384Context;
 
-#endif /* _BLAPIT_H_ */
+#endif /* CRYPTO_THIRD_PARTY_NSS_CHROMIUM_BLAPIT_H_ */

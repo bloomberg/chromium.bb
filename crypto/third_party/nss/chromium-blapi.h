@@ -39,10 +39,10 @@
  * ***** END LICENSE BLOCK ***** */
 /* $Id: blapi.h,v 1.27 2007/11/09 18:49:32 wtc%google.com Exp $ */
 
-#ifndef _BLAPI_H_
-#define _BLAPI_H_
+#ifndef CRYPTO_THIRD_PARTY_NSS_CHROMIUM_BLAPI_H_
+#define CRYPTO_THIRD_PARTY_NSS_CHROMIUM_BLAPI_H_
 
-#include "crypto/third_party/nss/blapit.h"
+#include "crypto/third_party/nss/chromium-blapit.h"
 
 /******************************************/
 
@@ -98,4 +98,4 @@ extern SECStatus SHA384_Flatten(SHA384Context *cx,unsigned char *space);
 extern SHA384Context * SHA384_Resurrect(unsigned char *space, void *arg);
 extern void SHA384_Clone(SHA384Context *dest, SHA384Context *src);
 
-#endif /* _BLAPI_H_ */
+#endif /* CRYPTO_THIRD_PARTY_NSS_CHROMIUM_BLAPI_H_ */

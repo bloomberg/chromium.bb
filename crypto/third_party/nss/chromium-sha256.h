@@ -34,8 +34,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef _SHA_256_H_
-#define _SHA_256_H_
+#ifndef CRYPTO_THIRD_PARTY_NSS_CHROMIUM_SHA_256_H_
+#define CRYPTO_THIRD_PARTY_NSS_CHROMIUM_SHA_256_H_
 
 #include "base/third_party/nspr/prtypes.h"
 
@@ -48,4 +48,4 @@ struct SHA256ContextStr {
     PRUint32 sizeHi,sizeLo;	/* 64-bit count of hashed bytes. */
 };
 
-#endif /* _SHA_256_H_ */
+#endif /* CRYPTO_THIRD_PARTY_NSS_CHROMIUM_SHA_256_H_ */
