@@ -3069,7 +3069,8 @@ FileManager.prototype = {
     spliceArgs.unshift(0, 0);  // index, deleteCount
     this.dataModel_.splice.apply(this.dataModel_, spliceArgs);
 
-    rescanDone();
+    if (opt_callback)
+      opt_callback();
   };
 
   FileManager.prototype.findListItem_ = function(event) {
