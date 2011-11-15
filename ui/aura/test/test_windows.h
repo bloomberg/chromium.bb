@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/window_types.h"
 
 namespace gfx {
 class Canvas;
@@ -28,6 +29,11 @@ Window* CreateTestWindowWithDelegate(WindowDelegate* delegate,
                                      int id,
                                      const gfx::Rect& bounds,
                                      Window* parent);
+Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
+                                            WindowType type,
+                                            int id,
+                                            const gfx::Rect& bounds,
+                                            Window* parent);
 
 }  // namespace test
 }  // namespace aura

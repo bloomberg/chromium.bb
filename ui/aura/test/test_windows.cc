@@ -31,9 +31,22 @@ Window* CreateTestWindowWithDelegate(WindowDelegate* delegate,
                                      int id,
                                      const gfx::Rect& bounds,
                                      Window* parent) {
+  return CreateTestWindowWithDelegateAndType(
+      delegate,
+      aura::WINDOW_TYPE_NORMAL,
+      id,
+      bounds,
+      parent);
+}
+
+Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
+                                            WindowType type,
+                                            int id,
+                                            const gfx::Rect& bounds,
+                                            Window* parent) {
   Window* window = new Window(delegate);
   window->set_id(id);
-  window->SetType(aura::WINDOW_TYPE_NORMAL);
+  window->SetType(type);
   window->Init(ui::Layer::LAYER_HAS_TEXTURE);
   window->SetBounds(bounds);
   window->Show();
