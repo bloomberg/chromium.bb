@@ -47,20 +47,29 @@ input[type='submit'][disabled]:not(.custom-appearance):hover {
   color: #888;
 }
 
-/* Currently we can't make custom focus outlines look right on the Mac, so
- * we stick to native focus rings. Once outlines follow border radius, we
- * can revisit.
- */
-html:not([os='mac']) button:not(.custom-appearance):focus,
-html:not([os='mac']) input:not(.custom-appearance):focus,
-html:not([os='mac']) input[type='submit']:not(.custom-appearance):focus,
-html:not([os='mac']) select:not(.custom-appearance):focus {
-  outline-color: rgba(0, 128, 256, 0.5);
+button:not(.custom-appearance):focus,
+input[type='submit']:not(.custom-appearance):focus,
+input[type='text']:not(.custom-appearance):focus,
+select:not(.custom-appearance):focus {
+  -webkit-box-shadow: inset 0 1px 2px white,
+      0 1px 2px rgba(0, 0, 0, .2),
+      0 0 1px #c0c0c0,
+      0 0 1px #c0c0c0,
+      0 0 1px #c0c0c0;
+  -webkit-transition: border-color 200ms;
+  /* We use border color because it follows the border radius (unlike outline).
+   * This is particularly noticeable on mac. */
+  border-color: #4080fa;
+  outline: none;
 }
 
-html[os='mac'] button:not(.custom-appearance):focus,
-html[os='mac'] input[type='submit']:not(.custom-appearance):focus {
-  outline-offset: -2px;
+/* Search boxes use an outline because it follows the contours of the box.
+ * TODO(estade): remove the first 2 of these selectors when we use checkbox.css
+ * in more places. */
+html:not(#print-preview) input[type='checkbox']:not(.custom-appearance):focus,
+html:not(#print-preview) input[type='radio']:not(.custom-appearance):focus,
+input[type='search']:not(.custom-appearance):focus {
+  outline-color: #4080fa;
 }
 
 /* TODO(jhawkins): Refactor button styling and remove !important here. This is
