@@ -248,6 +248,19 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     }
   }
 
+  string16 GetClipboardText() const {
+    string16 text;
+    views::ViewsDelegate::views_delegate->GetClipboard()->
+        ReadText(ui::Clipboard::BUFFER_STANDARD, &text);
+    return text;
+  }
+
+  void SetClipboardText(const std::string& text) {
+    ui::ScopedClipboardWriter clipboard_writer(
+        views::ViewsDelegate::views_delegate->GetClipboard());
+    clipboard_writer.WriteText(ASCIIToUTF16(text));
+  }
+
   View* GetFocusedView() {
     return widget_->GetFocusManager()->GetFocusedView();
   }
@@ -300,6 +313,17 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
   // Wrap for visibility in test classes.
   ui::TextInputType GetTextInputType() {
     return textfield_view_->GetTextInputType();
+  }
+
+  void VerifyTextfieldContextMenuContents(bool textfield_has_selection,
+                                          ui::MenuModel* menu_model) {
+    EXPECT_TRUE(menu_model->IsEnabledAt(4 /* Separator */));
+    EXPECT_TRUE(menu_model->IsEnabledAt(5 /* SELECT ALL */));
+    EXPECT_EQ(textfield_has_selection, menu_model->IsEnabledAt(0 /* CUT */));
+    EXPECT_EQ(textfield_has_selection, menu_model->IsEnabledAt(1 /* COPY */));
+    EXPECT_EQ(textfield_has_selection, menu_model->IsEnabledAt(3 /* DELETE */));
+    string16 str(GetClipboardText());
+    EXPECT_NE(str.empty(), menu_model->IsEnabledAt(2 /* PASTE */));
   }
 
   // We need widget to populate wrapper class.
@@ -649,19 +673,6 @@ TEST_F(NativeTextfieldViewsTest, FocusTraversalTest) {
   EXPECT_EQ(1, GetFocusedView()->id());
 }
 
-void VerifyTextfieldContextMenuContents(bool textfield_has_selection,
-    ui::MenuModel* menu_model) {
-  EXPECT_TRUE(menu_model->IsEnabledAt(4 /* Separator */));
-  EXPECT_TRUE(menu_model->IsEnabledAt(5 /* SELECT ALL */));
-  EXPECT_EQ(textfield_has_selection, menu_model->IsEnabledAt(0 /* CUT */));
-  EXPECT_EQ(textfield_has_selection, menu_model->IsEnabledAt(1 /* COPY */));
-  EXPECT_EQ(textfield_has_selection, menu_model->IsEnabledAt(3 /* DELETE */));
-  string16 str;
-  views::ViewsDelegate::views_delegate->GetClipboard()->
-      ReadText(ui::Clipboard::BUFFER_STANDARD, &str);
-  EXPECT_NE(str.empty(), menu_model->IsEnabledAt(2 /* PASTE */));
-}
-
 TEST_F(NativeTextfieldViewsTest, ContextMenuDisplayTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
@@ -984,11 +995,10 @@ TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {
   EXPECT_STR_EQ(" one two three ", textfield_->GetSelectedText());
 
   // CUT&PASTE does not work, but COPY works
+  SetClipboardText("Test");
   SendKeyEvent(ui::VKEY_X, false, true);
   EXPECT_STR_EQ(" one two three ", textfield_->GetSelectedText());
-  string16 str;
-  views::ViewsDelegate::views_delegate->GetClipboard()->
-      ReadText(ui::Clipboard::BUFFER_STANDARD, &str);
+  string16 str(GetClipboardText());
   EXPECT_STR_NE(" one two three ", str);
 
   SendKeyEvent(ui::VKEY_C, false, true);
