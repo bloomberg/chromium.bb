@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_ANIMATION_BOUNDS_ANIMATOR_H_
-#define VIEWS_ANIMATION_BOUNDS_ANIMATOR_H_
+#ifndef UI_VIEWS_ANIMATION_BOUNDS_ANIMATOR_H_
+#define UI_VIEWS_ANIMATION_BOUNDS_ANIMATOR_H_
 #pragma once
 
 #include <map>
@@ -184,4 +184,4 @@ class VIEWS_EXPORT BoundsAnimator : public ui::AnimationDelegate,
 
 }  // namespace views
 
-#endif  // VIEWS_ANIMATION_BOUNDS_ANIMATOR_H_
+#endif  // UI_VIEWS_ANIMATION_BOUNDS_ANIMATOR_H_

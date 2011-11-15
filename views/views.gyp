@@ -57,8 +57,6 @@
         # All .cc, .h under views, except unittests
         'accessible_pane_view.cc',
         'accessible_pane_view.h',
-        'animation/bounds_animator.cc',
-        'animation/bounds_animator.h',
         'background.cc',
         'background.h',
         'border.cc',
@@ -394,6 +392,8 @@
         'widget/widget_delegate.h',
         'widget/window_manager.cc',
         'widget/window_manager.h',
+        '../ui/views/animation/bounds_animator.cc',
+        '../ui/views/animation/bounds_animator.h',
         '../ui/views/accessibility/native_view_accessibility_win.cc',
         '../ui/views/accessibility/native_view_accessibility_win.h',
         '../ui/views/window/client_view.cc',
@@ -574,8 +574,8 @@
         '..',
       ],
       'sources': [
+        '../ui/views/animation/bounds_animator_unittest.cc',
         'accessible_pane_view_unittest.cc',
-        'animation/bounds_animator_unittest.cc',
         'bubble/bubble_delegate_unittest.cc',
         'bubble/bubble_frame_view_unittest.cc',
         'controls/label_unittest.cc',
@@ -914,7 +914,7 @@
             '..',
           ],
           'sources': [
-            'aura_desktop/aura_desktop_main.cc',
+            '../ui/aura_desktop/aura_desktop_main.cc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',

@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/views/tabs/abstract_tab_strip_view.h"
 #include "chrome/browser/ui/views/tabs/base_tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
-#include "views/animation/bounds_animator.h"
+#include "ui/views/animation/bounds_animator.h"
 #include "views/view.h"
 
 class BaseTab;
