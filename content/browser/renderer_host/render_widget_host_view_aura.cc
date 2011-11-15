@@ -128,7 +128,14 @@ void RenderWidgetHostViewAura::InitAsPopup(
 
   window_->SetParent(NULL);
   Show();
-  SetBounds(pos);
+
+  // |pos| is in desktop coordinates. So convert it to
+  // |popup_parent_host_view_|'s coordinates first.
+  gfx::Point origin = pos.origin();
+  aura::Window::ConvertPointToWindow(
+      aura::Desktop::GetInstance(),
+      popup_parent_host_view_->window_, &origin);
+  SetBounds(gfx::Rect(origin, pos.size()));
 }
 
 void RenderWidgetHostViewAura::InitAsFullscreen(
