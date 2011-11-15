@@ -136,24 +136,44 @@ legend {
 
 #policy-table td {
   background-color: #eaeef3;
-  overflow: hidden;
   padding: 10px;
-  text-overflow: ellipsis;
+  position: relative;
+  vertical-align: top;
   width: 20%;
 }
 
-.toggler {
-  color: #808080;
-  cursor: pointer;
+.text-collapsed {
+  bottom: 0;
+  left: 0;
+  margin: 10px;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
-.collapsed {
+.text-cell {
   overflow: hidden;
+}
+
+.text-collapsed .text-cell {
   text-overflow: ellipsis;
+}
+
+.text-expanded .text-cell {
+  overflow: visible;
+  word-wrap: break-word;
+}
+
+.text-collapsed .text-value {
   white-space: nowrap;
 }
 
-.expanded {
-  overflow: visible;
-  word-wrap: break-word;
+.text-expanded .text-value {
+  white-space: pre-wrap;
+}
+
+.toggler {
+  float: right;
+  padding: 0 3px !important;
 }

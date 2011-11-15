@@ -57,7 +57,7 @@ string16 PolicyErrorMap::GetErrors(ConfigurationPolicyType policy) {
   std::vector<string16> list;
   for (const_iterator it = range.first; it != range.second; ++it)
     list.push_back(it->second);
-  return JoinString(list, ' ');
+  return JoinString(list, '\n');
 }
 
 bool PolicyErrorMap::empty() {

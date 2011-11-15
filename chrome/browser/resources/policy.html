@@ -127,24 +127,26 @@
                   <span class="policy-name" jscontent="name"></span>
                 </td>
                 <td>
-                  <div class="text-container collapsed">
-                    <span class="cell-text" jscontent="value"></span>
+                  <div class="text-collapsed text-container">
+                    <button class="link-button toggler expand"
+                        i18n-content="showMoreText" hidden></button>
+                    <div class="text-cell">
+                      <span class="text-value" jscontent="value"></span>
+                    </div>
+                    <button class="link-button toggler collapse"
+                        i18n-content="hideText" hidden></button>
                   </div>
-                  <a class="toggler expand" style="display: none"
-                      jsdisplay="Policy.shouldShowExpand(this)"
-                      i18n-content="showMoreText"></a>
-                  <a class="toggler collapse" style="display: none"
-                      i18n-content="hideText"></a>
                 </td>
                 <td>
-                  <div class="text-container collapsed">
-                    <span class="cell-text" jscontent="status"></span>
+                  <div class="text-collapsed text-container">
+                    <button class="link-button toggler expand"
+                        i18n-content="showMoreText" hidden></button>
+                    <div class="text-cell">
+                      <span class="text-value" jscontent="status"></span>
+                    </div>
+                    <button class="link-button toggler collapse"
+                        i18n-content="hideText" hidden></button>
                   </div>
-                  <a class="toggler expand" style="display: none"
-                      jsdisplay="Policy.shouldShowExpand(this)"
-                      i18n-content="showMoreText"></a>
-                  <a class="toggler collapse" style="display: none"
-                      i18n-content="hideText"></a>
                 </td>
               </tr>
             </table>
