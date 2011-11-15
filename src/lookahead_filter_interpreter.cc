@@ -142,7 +142,19 @@ Gesture* LookaheadFilterInterpreter::HandleTimer(stime_t now,
         break;
       next_timeout = -1.0;
       last_interpreted_time_ = node->state_.timestamp;
-      result = next_->SyncInterpret(&node->state_, &next_timeout);
+      const size_t finger_cnt = node->state_.finger_cnt;
+      FingerState fs_copy[finger_cnt];
+      std::copy(&node->state_.fingers[0],
+                &node->state_.fingers[finger_cnt],
+                &fs_copy[0]);
+      HardwareState hs_copy = {
+        node->state_.timestamp,
+        node->state_.buttons_down,
+        node->state_.finger_cnt,
+        node->state_.touch_cnt,
+        fs_copy
+      };
+      result = next_->SyncInterpret(&hs_copy, &next_timeout);
 
       // Clear previously completed nodes
       while (!queue_.Empty() && queue_.Head()->completed_)

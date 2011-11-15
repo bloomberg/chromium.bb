@@ -24,9 +24,12 @@ class LookaheadFilterInterpreterTest : public ::testing::Test {};
 class LookaheadFilterInterpreterTestInterpreter : public Interpreter {
  public:
   LookaheadFilterInterpreterTestInterpreter()
-      : timer_return_(-1.0), set_hwprops_called_(false) {}
+      : timer_return_(-1.0), set_hwprops_called_(false),
+        clear_incoming_hwstates_(false) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+    if (clear_incoming_hwstates_)
+      hwstate->finger_cnt = 0;
     if (timer_return_ >= 0.0) {
       *timeout = timer_return_;
       timer_return_ = -1.0;
@@ -53,6 +56,7 @@ class LookaheadFilterInterpreterTestInterpreter : public Interpreter {
   deque<Gesture> return_values_;
   stime_t timer_return_;
   bool set_hwprops_called_;
+  bool clear_incoming_hwstates_;
 };
 
 TEST(LookaheadFilterInterpreterTest, SimpleTest) {
@@ -380,6 +384,7 @@ TEST(LookaheadFilterInterpreterTest, InterpolateTest) {
   for (size_t i = 0; i < 2; ++i) {
     bool should_interpolate = i;
     base_interpreter = new LookaheadFilterInterpreterTestInterpreter;
+    base_interpreter->clear_incoming_hwstates_ = true;
     base_interpreter->return_values_.push_back(
         Gesture(kGestureMove,
                 0,  // start time
