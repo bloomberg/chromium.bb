@@ -10,6 +10,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/base/models/accelerator.h"
 #include "ui/gfx/native_widget_types.h"
@@ -70,6 +71,11 @@
 //
 // Note that FocusTraversable do not have to be RootViews: AccessibleToolbarView
 // is FocusTraversable.
+
+namespace ui {
+class AcceleratorTarget;
+class AcceleratorManager;
+}
 
 namespace views {
 
@@ -253,17 +259,15 @@ class VIEWS_EXPORT FocusManager {
   // The view that currently is focused.
   View* focused_view_;
 
+  // The AcceleratorManager this FocusManager is associated with.
+  scoped_ptr<ui::AcceleratorManager> accelerator_manager_;
+
   // The storage id used in the ViewStorage to store/restore the view that last
   // had focus.
   int stored_focused_view_storage_id_;
 
   // The reason why the focus most recently changed.
   FocusChangeReason focus_change_reason_;
-
-  // The accelerators and associated targets.
-  typedef std::list<ui::AcceleratorTarget*> AcceleratorTargetList;
-  typedef std::map<ui::Accelerator, AcceleratorTargetList> AcceleratorMap;
-  AcceleratorMap accelerators_;
 
   // The list of registered FocusChange listeners.
   ObserverList<FocusChangeListener, true> focus_change_listeners_;

@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "ui/base/accelerator_manager.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/accelerator.h"
 #include "views/focus/focus_search.h"
@@ -23,6 +24,7 @@ namespace views {
 FocusManager::FocusManager(Widget* widget)
     : widget_(widget),
       focused_view_(NULL),
+      accelerator_manager_(new ui::AcceleratorManager),
       focus_change_reason_(kReasonDirectFocusChange),
       is_changing_focus_(false) {
   DCHECK(widget_);
@@ -361,60 +363,25 @@ View* FocusManager::FindFocusableView(FocusTraversable* focus_traversable,
 void FocusManager::RegisterAccelerator(
     const ui::Accelerator& accelerator,
     ui::AcceleratorTarget* target) {
-  AcceleratorTargetList& targets = accelerators_[accelerator];
-  DCHECK(std::find(targets.begin(), targets.end(), target) == targets.end())
-      << "Registering the same target multiple times";
-  targets.push_front(target);
+  accelerator_manager_->Register(accelerator, target);
 }
 
 void FocusManager::UnregisterAccelerator(const ui::Accelerator& accelerator,
                                          ui::AcceleratorTarget* target) {
-  AcceleratorMap::iterator map_iter = accelerators_.find(accelerator);
-  if (map_iter == accelerators_.end()) {
-    NOTREACHED() << "Unregistering non-existing accelerator";
-    return;
-  }
-
-  AcceleratorTargetList* targets = &map_iter->second;
-  AcceleratorTargetList::iterator target_iter =
-      std::find(targets->begin(), targets->end(), target);
-  if (target_iter == targets->end()) {
-    NOTREACHED() << "Unregistering accelerator for wrong target";
-    return;
-  }
-
-  targets->erase(target_iter);
+  accelerator_manager_->Unregister(accelerator, target);
 }
 
 void FocusManager::UnregisterAccelerators(ui::AcceleratorTarget* target) {
-  for (AcceleratorMap::iterator map_iter = accelerators_.begin();
-       map_iter != accelerators_.end(); ++map_iter) {
-    AcceleratorTargetList* targets = &map_iter->second;
-    targets->remove(target);
-  }
+  accelerator_manager_->UnregisterAll(target);
 }
 
 bool FocusManager::ProcessAccelerator(const ui::Accelerator& accelerator) {
-  AcceleratorMap::iterator map_iter = accelerators_.find(accelerator);
-  if (map_iter != accelerators_.end()) {
-    // We have to copy the target list here, because an AcceleratorPressed
-    // event handler may modify the list.
-    AcceleratorTargetList targets(map_iter->second);
-    for (AcceleratorTargetList::iterator iter = targets.begin();
-         iter != targets.end(); ++iter) {
-      if ((*iter)->AcceleratorPressed(accelerator))
-        return true;
-    }
-  }
-  return false;
+  return accelerator_manager_->Process(accelerator);
 }
 
 ui::AcceleratorTarget* FocusManager::GetCurrentTargetForAccelerator(
     const ui::Accelerator& accelerator) const {
-  AcceleratorMap::const_iterator map_iter = accelerators_.find(accelerator);
-  if (map_iter == accelerators_.end() || map_iter->second.empty())
-    return NULL;
-  return map_iter->second.front();
+  return accelerator_manager_->GetCurrentTarget(accelerator);
 }
 
 void FocusManager::FocusNativeView(gfx::NativeView native_view) {
