@@ -5185,6 +5185,12 @@
    fun:_ZN15tracked_objects10ThreadData19TallyABirthIfActiveERKNS_8LocationE
 }
 {
+   Intentional leak of stl map during thread cleanup in profiler
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK15tracked_objects10ThreadData26OnThreadTerminationCleanupEv
+}
+{
    bug_102614
    Memcheck:Leak
    fun:_Znw*
