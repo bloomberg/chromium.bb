@@ -146,10 +146,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Parses the string with the cookie time (very forgivingly).
   static base::Time ParseCookieTime(const std::string& time_string);
 
-  // Returns true if a domain string represents a host-only cookie,
-  // i.e. it doesn't begin with a leading '.' character.
-  static bool DomainIsHostOnly(const std::string& domain_string);
-
   // Helper function that adds all cookies from |list| into this instance.
   bool InitializeFrom(const CookieList& list);
 
