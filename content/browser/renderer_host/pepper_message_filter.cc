@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
@@ -1147,12 +1148,15 @@ void PepperMessageFilter::ConnectTcpOnWorkerThread(int routing_id,
     }
   }
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &PepperMessageFilter::Send, this,
-          new PepperMsg_ConnectTcpACK(
-              routing_id, request_id,
-              socket_for_transit, local_addr, remote_addr)));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::IgnoreReturn<bool>(
+          base::Bind(
+              &PepperMessageFilter::Send, this,
+              new PepperMsg_ConnectTcpACK(
+                  routing_id, request_id,
+                  socket_for_transit, local_addr, remote_addr))));
 }
 
 // TODO(vluu): Eliminate duplication between this and
@@ -1170,12 +1174,15 @@ void PepperMessageFilter::ConnectTcpAddressOnWorkerThread(
   if (fd != -1)
     socket_for_transit = base::FileDescriptor(fd, true);
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &PepperMessageFilter::Send, this,
-          new PepperMsg_ConnectTcpACK(
-              routing_id, request_id,
-              socket_for_transit, local_addr, remote_addr)));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::IgnoreReturn<bool>(
+          base::Bind(
+              &PepperMessageFilter::Send, this,
+              new PepperMsg_ConnectTcpACK(
+                  routing_id, request_id,
+                  socket_for_transit, local_addr, remote_addr))));
 }
 
 #endif  // ENABLE_FLAPPER_HACKS
