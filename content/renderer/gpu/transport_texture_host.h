@@ -52,16 +52,16 @@
 // void MyObjectInitDone() {
 //   std::vector<int> textures;
 //   factory_host.GetTextures(
-//       NewCallback(&handler, &TextureUpdateHandler::OnTextureUpdate),
+//       base::Bind(&TextureUpdateHandler::OnTextureUpdate, &handler),
 //       &textures);
 // }
 //
 // void InitDone() {
 //   InitMyObjectInGPUProcess(factory_host.GetPeerId(),
-//                            NewRunnableFunction(&MyObjectInitDone));
+//                            base::Bind(&MyObjectInitDone));
 // }
 //
-// factory_host.Init(NewRunnableFunction(&InitDone));
+// factory_host.Init(base::Bind(&InitDone));
 //
 // ----------------------
 // | In the GPU process |
@@ -83,8 +83,7 @@
 //
 // void OnInit() {
 //   factory->CreateTextures(3, 1024, 768, TransportTexture::RGB, &textures,
-//                           NewRunnableFunction(&TextureCreateDone),
-//                           textures);
+//                           base::Bind(&TextureCreateDone), textures);
 // }
 
 #ifndef CONTENT_RENDERER_GPU_TRANSPORT_TEXTURE_HOST_H_

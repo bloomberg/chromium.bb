@@ -4,6 +4,7 @@
 
 #include "content/renderer/gpu/gpu_channel_host.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "content/common/child_process.h"
@@ -79,10 +80,8 @@ bool GpuChannelHost::MessageFilter::OnMessageReceived(
     const scoped_refptr<GpuChannelHost::Listener>& listener = it->second;
     listener->loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(
-            listener.get(),
-            &GpuChannelHost::Listener::DispatchMessage,
-            message));
+        base::Bind(&GpuChannelHost::Listener::DispatchMessage, listener.get(),
+                   message));
   }
 
   return true;
@@ -98,9 +97,7 @@ void GpuChannelHost::MessageFilter::OnChannelError() {
     const scoped_refptr<GpuChannelHost::Listener>& listener = it->second;
     listener->loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(
-            listener.get(),
-            &GpuChannelHost::Listener::DispatchError));
+        base::Bind(&GpuChannelHost::Listener::DispatchError, listener.get()));
   }
 
   listeners_.clear();
@@ -108,8 +105,7 @@ void GpuChannelHost::MessageFilter::OnChannelError() {
   ChildThread* main_thread = RenderProcess::current()->main_thread();
   MessageLoop* main_loop = main_thread->message_loop();
   main_loop->PostTask(FROM_HERE,
-                      NewRunnableMethod(parent_,
-                                        &GpuChannelHost::OnChannelError));
+                      base::Bind(&GpuChannelHost::OnChannelError, parent_));
 }
 
 GpuChannelHost::GpuChannelHost()
@@ -312,19 +308,16 @@ void GpuChannelHost::AddRoute(
 
   MessageLoopProxy* io_loop = RenderProcess::current()->io_message_loop_proxy();
   io_loop->PostTask(FROM_HERE,
-                    NewRunnableMethod(
-                        channel_filter_.get(),
-                        &GpuChannelHost::MessageFilter::AddRoute,
-                        route_id, listener, MessageLoopProxy::current()));
+                    base::Bind(&GpuChannelHost::MessageFilter::AddRoute,
+                               channel_filter_.get(), route_id, listener,
+                               MessageLoopProxy::current()));
 }
 
 void GpuChannelHost::RemoveRoute(int route_id) {
   MessageLoopProxy* io_loop = RenderProcess::current()->io_message_loop_proxy();
   io_loop->PostTask(FROM_HERE,
-                    NewRunnableMethod(
-                        channel_filter_.get(),
-                        &GpuChannelHost::MessageFilter::RemoveRoute,
-                        route_id));
+                    base::Bind(&GpuChannelHost::MessageFilter::RemoveRoute,
+                               channel_filter_.get(), route_id));
 }
 
 bool GpuChannelHost::WillGpuSwitchOccur(

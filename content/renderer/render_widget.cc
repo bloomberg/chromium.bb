@@ -4,6 +4,7 @@
 
 #include "content/renderer/render_widget.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
@@ -252,8 +253,8 @@ void RenderWidget::OnClose() {
   // If there is a Send call on the stack, then it could be dangerous to close
   // now.  Post a task that only gets invoked when there are no nested message
   // loops.
-  MessageLoop::current()->PostNonNestableTask(FROM_HERE,
-      NewRunnableMethod(this, &RenderWidget::Close));
+  MessageLoop::current()->PostNonNestableTask(
+      FROM_HERE, NewRunnableMethod(this, &RenderWidget::Close));
 
   // Balances the AddRef taken when we called AddRoute.
   Release();
@@ -660,8 +661,9 @@ void RenderWidget::AnimateIfNeeded() {
     // Set a timer to call us back after animationInterval before
     // running animation callbacks so that if a callback requests another
     // we'll be sure to run it at the proper time.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
-        this, &RenderWidget::AnimationCallback), animationInterval);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(&RenderWidget::AnimationCallback, this),
+        animationInterval);
     animation_task_posted_ = true;
     animation_update_pending_ = false;
     webwidget_->animate(0.0);
@@ -680,8 +682,8 @@ void RenderWidget::AnimateIfNeeded() {
   // tasks until base::Time::Now() has advanced far enough.
   int64 delay = (animation_floor_time_ - now).InMillisecondsRoundedUp();
   animation_task_posted_ = true;
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      NewRunnableMethod(this, &RenderWidget::AnimationCallback), delay);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(&RenderWidget::AnimationCallback, this), delay);
 }
 
 bool RenderWidget::IsRenderingVSynced() {
@@ -898,8 +900,8 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
   // 2) Allows us to collect more damage rects before painting to help coalesce
   //    the work that we will need to do.
   invalidation_task_posted_ = true;
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &RenderWidget::InvalidationCallback));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&RenderWidget::InvalidationCallback, this));
 }
 
 void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
@@ -936,8 +938,8 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
   // 2) Allows us to collect more damage rects before painting to help coalesce
   //    the work that we will need to do.
   invalidation_task_posted_ = true;
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &RenderWidget::InvalidationCallback));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&RenderWidget::InvalidationCallback, this));
 }
 
 void RenderWidget::didActivateCompositor(int compositor_identifier) {
@@ -988,8 +990,8 @@ void RenderWidget::scheduleAnimation() {
     animation_update_pending_ = true;
     if (!animation_task_posted_) {
       animation_task_posted_ = true;
-      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-          this, &RenderWidget::AnimationCallback));
+      MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(&RenderWidget::AnimationCallback, this));
     }
   }
 }
@@ -1047,8 +1049,8 @@ void RenderWidget::closeWidgetSoon() {
   // could be closed before the JS finishes executing.  So instead, post a
   // message back to the message loop, which won't run until the JS is
   // complete, and then the Close message can be sent.
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &RenderWidget::DoDeferredClose));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&RenderWidget::DoDeferredClose, this));
 }
 
 void RenderWidget::Close() {

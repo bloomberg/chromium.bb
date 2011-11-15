@@ -4,6 +4,7 @@
 
 #include "content/renderer/gpu/transport_texture_service.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "content/common/child_process.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -71,8 +72,8 @@ TransportTextureService::CreateTransportTextureHost(
   // Add route in the IO thread.
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &TransportTextureService::AddRouteInternal,
-                        next_host_id_, host));
+      base::Bind(&TransportTextureService::AddRouteInternal, this,
+                 next_host_id_, host));
 
   // Increment host ID for next object.
   ++next_host_id_;
@@ -86,14 +87,13 @@ TransportTextureService::CreateTransportTextureHost(
 void TransportTextureService::RemoveRoute(int32 host_id) {
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &TransportTextureService::RemoveRouteInternal,
-                        host_id));
+      base::Bind(&TransportTextureService::RemoveRouteInternal, this, host_id));
 }
 
 bool TransportTextureService::Send(IPC::Message* msg) {
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &TransportTextureService::SendInternal, msg));
+      base::Bind(&TransportTextureService::SendInternal, this, msg));
   return true;
 }
 

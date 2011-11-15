@@ -4,6 +4,7 @@
 
 #include "content/renderer/p2p/p2p_transport_impl.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
@@ -65,7 +66,7 @@ class UdpChannelTester : public base::RefCountedThreadSafe<UdpChannelTester> {
 
   void Start() {
     message_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &UdpChannelTester::DoStart));
+        FROM_HERE, base::Bind(&UdpChannelTester::DoStart, this));
   }
 
   void CheckResults() {
@@ -120,7 +121,7 @@ class UdpChannelTester : public base::RefCountedThreadSafe<UdpChannelTester> {
       EXPECT_EQ(kMessageSize, result);
       packets_sent_++;
       message_loop_->PostDelayedTask(
-          FROM_HERE, NewRunnableMethod(this, &UdpChannelTester::DoWrite),
+          FROM_HERE, base::Bind(&UdpChannelTester::DoWrite, this),
           kUdpWriteDelayMs);
     }
   }
@@ -217,12 +218,12 @@ class TcpChannelTester : public base::RefCountedThreadSafe<TcpChannelTester> {
 
   void StartRead() {
     message_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &TcpChannelTester::DoRead));
+        FROM_HERE, base::Bind(&TcpChannelTester::DoRead, this));
   }
 
   void StartWrite() {
     message_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &TcpChannelTester::DoWrite));
+        FROM_HERE, base::Bind(&TcpChannelTester::DoWrite, this));
   }
 
   void CheckResults() {
@@ -265,7 +266,7 @@ class TcpChannelTester : public base::RefCountedThreadSafe<TcpChannelTester> {
     } else if (result > 0) {
       send_buffer_->DidConsume(result);
       message_loop_->PostDelayedTask(
-          FROM_HERE, NewRunnableMethod(this, &TcpChannelTester::DoWrite),
+          FROM_HERE, base::Bind(&TcpChannelTester::DoWrite, this),
           kTcpWriteDelayMs);
     }
   }

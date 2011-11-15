@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "base/task.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "net/base/net_util.h"
@@ -40,7 +40,7 @@ class IpcNetworkManager : public talk_base::NetworkManagerBase,
   bool started_;
   bool first_update_sent_;
 
-  ScopedRunnableMethodFactory<IpcNetworkManager> task_factory_;
+  base::WeakPtrFactory<IpcNetworkManager> weak_factory_;
 };
 
 }  // namespace content

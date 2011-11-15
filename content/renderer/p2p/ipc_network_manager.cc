@@ -4,6 +4,7 @@
 
 #include "content/renderer/p2p/ipc_network_manager.h"
 
+#include "base/bind.h"
 #include "net/base/net_util.h"
 #include "net/base/sys_byteorder.h"
 
@@ -13,7 +14,7 @@ IpcNetworkManager::IpcNetworkManager(P2PSocketDispatcher* socket_dispatcher)
     : socket_dispatcher_(socket_dispatcher),
       started_(false),
       first_update_sent_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 IpcNetworkManager::~IpcNetworkManager() {
@@ -28,8 +29,8 @@ void IpcNetworkManager::StartUpdating() {
   } else {
     // Post a task to avoid reentrancy.
     MessageLoop::current()->PostTask(
-        FROM_HERE,task_factory_.NewRunnableMethod(
-            &IpcNetworkManager::SendNetworksChangedSignal));
+        FROM_HERE, base::Bind(&IpcNetworkManager::SendNetworksChangedSignal,
+                              weak_factory_.GetWeakPtr()));
   }
 }
 
