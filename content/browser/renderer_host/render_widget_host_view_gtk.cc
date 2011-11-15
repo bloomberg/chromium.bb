@@ -1076,8 +1076,12 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
 
   invalid_rect_ = damage_rect;
   about_to_validate_and_paint_ = true;
+
+  // If the size of our canvas is (0,0), then we don't want to block here. We
+  // are doing one of our first paints and probably have animations going on.
+  bool force_create = !host_->empty();
   BackingStoreGtk* backing_store = static_cast<BackingStoreGtk*>(
-      host_->GetBackingStore(true));
+      host_->GetBackingStore(force_create));
   // Calling GetBackingStore maybe have changed |invalid_rect_|...
   about_to_validate_and_paint_ = false;
 
