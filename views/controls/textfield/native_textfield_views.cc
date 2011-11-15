@@ -95,45 +95,13 @@ NativeTextfieldViews::~NativeTextfieldViews() {
 
 bool NativeTextfieldViews::OnMousePressed(const MouseEvent& event) {
   OnBeforeUserAction();
-  textfield_->RequestFocus();
+  TrackMouseClicks(event);
 
-  if (event.IsOnlyLeftMouseButton()) {
-    base::TimeDelta time_delta = event.time_stamp() - last_click_time_;
-    gfx::Point location_delta = event.location().Subtract(last_click_location_);
-    if (time_delta.InMilliseconds() <= GetDoubleClickInterval() &&
-        !ExceededDragThreshold(location_delta.x(), location_delta.y())) {
-      aggregated_clicks_ = (aggregated_clicks_ + 1) % 3;
-    } else {
-      aggregated_clicks_ = 0;
-    }
-    last_click_time_ = event.time_stamp();
-    last_click_location_ = event.location();
-
-    initiating_drag_ = false;
-    bool can_drag = true;
-#if defined(TOUCH_UI)
-    can_drag = false;
-#endif
-    switch(aggregated_clicks_) {
-      case 0:
-        if (can_drag && GetRenderText()->IsPointInSelection(event.location()))
-          initiating_drag_ = true;
-        else
-          MoveCursorTo(event.location(), event.IsShiftDown());
-        break;
-      case 1:
-        model_->SelectWord();
-        OnCaretBoundsChanged();
-        break;
-      case 2:
-        model_->SelectAll();
-        OnCaretBoundsChanged();
-        break;
-      default:
-        NOTREACHED();
-    }
-    SchedulePaint();
-  }
+  // Allow the textfield/omnibox to optionally handle the mouse pressed event.
+  // This should be removed once native textfield implementations are
+  // consolidated to textfield.
+  if (!textfield_->OnMousePressed(event))
+    HandleMousePressEvent(event);
 
   OnAfterUserAction();
   return true;
@@ -1059,6 +1027,53 @@ bool NativeTextfieldViews::Paste() {
       controller->ContentsChanged(textfield_, textfield_->text());
   }
   return success;
+}
+
+void NativeTextfieldViews::TrackMouseClicks(const MouseEvent& event) {
+  if (event.IsOnlyLeftMouseButton()) {
+    base::TimeDelta time_delta = event.time_stamp() - last_click_time_;
+    gfx::Point location_delta = event.location().Subtract(last_click_location_);
+    if (time_delta.InMilliseconds() <= GetDoubleClickInterval() &&
+        !ExceededDragThreshold(location_delta.x(), location_delta.y())) {
+      aggregated_clicks_ = (aggregated_clicks_ + 1) % 3;
+    } else {
+      aggregated_clicks_ = 0;
+    }
+    last_click_time_ = event.time_stamp();
+    last_click_location_ = event.location();
+  }
+}
+
+void NativeTextfieldViews::HandleMousePressEvent(const MouseEvent& event) {
+  if (event.IsOnlyLeftMouseButton()) {
+    textfield_->RequestFocus();
+
+    initiating_drag_ = false;
+    bool can_drag = true;
+#if defined(TOUCH_UI)
+    // Temporarily disable drag and drop on touch builds; see crbug.com/97845.
+    can_drag = false;
+#endif
+    switch(aggregated_clicks_) {
+      case 0:
+        if (can_drag && GetRenderText()->IsPointInSelection(event.location()))
+          initiating_drag_ = true;
+        else
+          MoveCursorTo(event.location(), event.IsShiftDown());
+        break;
+      case 1:
+        model_->SelectWord();
+        OnCaretBoundsChanged();
+        break;
+      case 2:
+        model_->SelectAll();
+        OnCaretBoundsChanged();
+        break;
+      default:
+        NOTREACHED();
+    }
+    SchedulePaint();
+  }
 }
 
 // static

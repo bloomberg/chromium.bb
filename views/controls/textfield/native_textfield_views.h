@@ -214,6 +214,12 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   // explicitly if paste succeeded.
   bool Paste();
 
+  // Tracks the mouse clicks for single/double/triple clicks.
+  void TrackMouseClicks(const MouseEvent& event);
+
+  // Handles mouse press events.
+  void HandleMousePressEvent(const MouseEvent& event);
+
   // Checks if a char is ok to be inserted into the textfield. The |ch| is a
   // modified character, i.e., modifiers took effect when generating this char.
   static bool ShouldInsertChar(char16 ch, int flags);

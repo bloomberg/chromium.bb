@@ -28,6 +28,7 @@
 #include "ui/gfx/render_text.h"
 #include "views/border.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/events/event.h"
 #include "views/layout/fill_layout.h"
 
 #if defined(TOUCH_UI)
@@ -77,6 +78,10 @@ class AutocompleteTextfield : public views::Textfield {
     // Bypass Textfield::IsFocusable. The omnibox in popup window requires
     // focus in order for text selection to work.
     return views::View::IsFocusable();
+  }
+
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+    return omnibox_view_->HandleMousePressEvent(event);
   }
 
  private:
@@ -264,6 +269,16 @@ bool OmniboxViewViews::HandleKeyReleaseEvent(const views::KeyEvent& event) {
     model_->OnControlKeyChanged(false);
     return true;
   }
+  return false;
+}
+
+bool OmniboxViewViews::HandleMousePressEvent(const views::MouseEvent& event) {
+  if (!textfield_->HasFocus() && !textfield_->HasSelection()) {
+    textfield_->SelectAll();
+    textfield_->RequestFocus();
+    return true;
+  }
+
   return false;
 }
 

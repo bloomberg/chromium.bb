@@ -61,6 +61,9 @@ class OmniboxViewViews : public views::View,
   // Called when KeyRelease event is generated on textfield.
   bool HandleKeyReleaseEvent(const views::KeyEvent& event);
 
+  // Called when the mouse press event is generated on textfield.
+  bool HandleMousePressEvent(const views::MouseEvent& event);
+
   // Called when Focus is set/unset on textfield.
   void HandleFocusIn();
   void HandleFocusOut();
