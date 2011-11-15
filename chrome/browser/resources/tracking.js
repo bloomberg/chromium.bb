@@ -1000,6 +1000,26 @@ var MainView = (function() {
     if (cellAlignment)
       td.align = cellAlignment;
 
+    var parent = td;
+
+    if (key == KEY_SOURCE_LOCATION) {
+      // Linkify the source column so it jumps to the source code. This doesn't
+      // take into account the particular code this build was compiled from, or
+      // local edits to source. It should however work correctly for top of tree
+      // builds.
+      var m = /^(.*) \[(\d+)\]$/.exec(text);
+      if (m) {
+        var link = addNode(td, 'a');
+        // http://chromesrc.appspot.com is a server I wrote specifically for
+        // this task. It redirects to the appropriate source file; the file
+        // paths given by the compiler can be pretty crazy and different
+        // between platforms.
+        link.href = 'http://chromesrc.appspot.com/?path=' +
+                    encodeURIComponent(m[1]) + '&line=' + m[2];
+        parent = link;
+      }
+    }
+
     // String values can get pretty long. If the string contains no spaces, then
     // CSS fails to wrap it, and it overflows the cell causing the table to get
     // really big. We solve this using a hack: insert a <wbr> element after
@@ -1007,10 +1027,10 @@ var MainView = (function() {
     // value, and hence avoid it overflowing!
     var kMinLengthBeforeWrap = 20;
 
-    addText(td, text.substr(0, kMinLengthBeforeWrap));
+    addText(parent, text.substr(0, kMinLengthBeforeWrap));
     for (var i = kMinLengthBeforeWrap; i < text.length; ++i) {
-      addNode(td, 'wbr');
-      addText(td, text.substr(i, 1));
+      addNode(parent, 'wbr');
+      addText(parent, text.substr(i, 1));
     }
   }
 
