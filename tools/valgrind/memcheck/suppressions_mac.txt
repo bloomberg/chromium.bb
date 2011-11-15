@@ -734,11 +734,19 @@
    fun:*16HasAudioHardware*
 }
 {
-   bug_47949
+   bug_47949_a
    Memcheck:Cond
-   fun:rips_f_DrawRing
-   fun:rips_f_BltShape
-   fun:ripc_Render
+   ...
+   fun:ripc_DrawRects
+   fun:CGContextFillRects
+   fun:CGContextFillRect
+   fun:NSRectFill
+   fun:_ZN18FocusIndicationFix40currentOSHasSetFocusRingStyleInBitmapBugEv
+}
+{
+   bug_47949_b
+   Memcheck:Value4
+   ...
    fun:ripc_DrawRects
    fun:CGContextFillRects
    fun:CGContextFillRect
