@@ -121,6 +121,31 @@ var testing = {};
     extraLibraries: [],
 
     /**
+     * Create a new class to handle |messageNames|, assign it to
+     * |this.mockHandler|, register its messages and return it.
+     * @return {Mock} Mock handler class assigned to |this.mockHandler|.
+     */
+    makeAndRegisterMockHandler: function(messageNames) {
+      var MockClass = makeMockClass(messageNames);
+      this.mockHandler = mock(MockClass);
+      registerMockMessageCallbacks(this.mockHandler, MockClass);
+      return this.mockHandler;
+    },
+
+    /**
+     * Create a new class to handle |functionNames|, assign it to
+     * |this.mockGlobals|, register its global overrides, and return it.
+     * @return {Mock} Mock handler class assigned to |this.mockGlobals|.
+     * @see registerMockGlobals
+     */
+    makeAndRegisterMockGlobals: function(functionNames) {
+      var MockClass = makeMockClass(functionNames);
+      this.mockGlobals = mock(MockClass);
+      registerMockGlobals(this.mockGlobals, MockClass);
+      return this.mockGlobals;
+    },
+
+    /**
      * Override this method to perform initialization during preload (such as
      * creating mocks and registering handlers).
      * @type {Function}
@@ -389,6 +414,7 @@ var testing = {};
    * @param {string} name The name of the message to route to this |callback|.
    * @param {Object} object Pass as |this| when calling the |callback|.
    * @param {function(...)} callback Called by {@code chrome.send}.
+   * @see overrideGlobal
    */
   function registerMockGlobal(name, object, callback) {
     assertEquals(undefined, globalOverrides[name]);
@@ -402,12 +428,31 @@ var testing = {};
   }
 
   /**
+   * Empty function for use in making mocks.
+   * @const
+   */
+  function emptyFunction() {}
+
+  /**
+   * Make a mock from the supplied |methodNames| array.
+   * @param {Array.<string>} methodNames Array of names of methods to mock.
+   * @return {Function} Constructor with prototype filled in with methods
+   *     matching |methodNames|.
+   */
+  function makeMockClass(methodNames) {
+    function MockConstructor() {}
+    for(var i = 0; i < methodNames.length; i++)
+      MockConstructor.prototype[methodNames[i]] = emptyFunction;
+    return MockConstructor;
+  }
+
+  /**
    * Register all methods of {@code mockClass.prototype} as overrides to global
    * functions of the same name as the method, using the proxy of the
    * |mockObject| to handle the functions.
    * @param {Mock4JS.Mock} mockObject The mock to register callbacks against.
    * @param {function(new:Object)} mockClass Constructor for the mocked class.
-   * @see registerMessageCallback
+   * @see registerMockGlobal
    */
   function registerMockGlobals(mockObject, mockClass) {
     var mockProxy = mockObject.proxy();

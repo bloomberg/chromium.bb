@@ -554,6 +554,33 @@ cr.define('options', function() {
       }
     },
 
+    /**
+     * Get the login email text input DOM element.
+     * @return {DOMElement} The login email text input.
+     * @private
+     */
+    getLoginEmail_: function() {
+      return $('gaia-email');
+    },
+
+    /**
+     * Get the login password text input DOM element.
+     * @return {DOMElement} The login password text input.
+     * @private
+     */
+    getLoginPasswd_: function() {
+      return $('gaia-passwd');
+    },
+
+    /**
+     * Get the sign in button DOM element.
+     * @return {DOMElement} The sign in button.
+     * @private
+     */
+    getSignInButton_: function() {
+      return $('sign-in');
+    },
+
     showAccessCodeRequired_: function() {
       $('password-row').hidden = true;
       $('email-row').hidden = true;
@@ -812,6 +839,20 @@ cr.define('options', function() {
     }
   };
 
+  // These get methods should only be called by the WebUI tests.
+  SyncSetupOverlay.getLoginEmail = function() {
+    return SyncSetupOverlay.getInstance().getLoginEmail_();
+  };
+
+  SyncSetupOverlay.getLoginPasswd = function() {
+    return SyncSetupOverlay.getInstance().getLoginPasswd_();
+  };
+
+  SyncSetupOverlay.getSignInButton = function() {
+    return SyncSetupOverlay.getInstance().getSignInButton_();
+  };
+
+  // These methods are for general consumption.
   SyncSetupOverlay.showErrorUI = function() {
     SyncSetupOverlay.getInstance().showErrorUI_();
   };

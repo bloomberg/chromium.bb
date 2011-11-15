@@ -32,13 +32,7 @@ ChromeSendWebUITest.prototype = {
 
   /** @inheritDoc */
   setUp: function() {
-    // Set up a mock handler class to catch the 'checkSend' message.
-    function MockHandler() {}
-    MockHandler.prototype = {
-      checkSend: function() {},
-    };
-    this.mockHandler = mock(MockHandler);
-    registerMockMessageCallbacks(this.mockHandler, MockHandler);
+    this.makeAndRegisterMockHandler(['checkSend']);
   }
 };
 

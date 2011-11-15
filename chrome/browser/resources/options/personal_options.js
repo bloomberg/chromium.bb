@@ -7,10 +7,6 @@ cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
   var ArrayDataModel = cr.ui.ArrayDataModel;
 
-  // State variables.
-  var syncEnabled = false;
-  var syncSetupCompleted = false;
-
   /**
    * Encapsulated handling of personal options page.
    * @constructor
@@ -30,6 +26,10 @@ cr.define('options', function() {
   PersonalOptions.prototype = {
     // Inherit PersonalOptions from OptionsPage.
     __proto__: options.OptionsPage.prototype,
+
+    // State variables.
+    syncEnabled: false,
+    syncSetupCompleted: false,
 
     // Initialize PersonalOptions page.
     initializePage: function() {
@@ -292,6 +292,15 @@ cr.define('options', function() {
     },
 
     /**
+     * Get the start/stop sync button DOM element.
+     * @return {DOMElement} The start/stop sync button.
+     * @private
+     */
+    getStartStopSyncButton_: function() {
+      return $('start-stop-sync');
+    },
+
+    /**
      * (Re)loads IMG element with current user account picture.
      */
     updateAccountPicture_: function() {
@@ -330,6 +339,7 @@ cr.define('options', function() {
 
   // Forward public APIs to private implementations.
   [
+    'getStartStopSyncButton',
     'hideSyncSection',
     'setAutoLoginVisible',
     'setCustomizeSyncButtonEnabled',
@@ -349,7 +359,7 @@ cr.define('options', function() {
     'updateAccountPicture',
   ].forEach(function(name) {
     PersonalOptions[name] = function(value) {
-      PersonalOptions.getInstance()[name + '_'](value);
+      return PersonalOptions.getInstance()[name + '_'](value);
     };
   });
 

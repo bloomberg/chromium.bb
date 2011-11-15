@@ -26,43 +26,30 @@ PrintPreviewWebUITest.prototype = {
    * @override
    */
   preLoad: function() {
-    // TODO(scr) remove this after tests pass consistently.
-    console.info('preLoad');
+    this.makeAndRegisterMockHandler(['getDefaultPrinter',
+                                     'getPrinters',
+                                     'getPreview',
+                                     'print',
+                                     'getPrinterCapabilities',
+                                     'showSystemDialog',
+                                     'morePrinters',
+                                     'signIn',
+                                     'addCloudPrinter',
+                                     'manageCloudPrinters',
+                                     'manageLocalPrinters',
+                                     'closePrintPreviewTab',
+                                     'hidePreview',
+                                     'cancelPendingPrintRequest',
+                                     'saveLastPrinter',
+                                    ]);
 
-    /**
-     * Create a handler class with empty methods to allow mocking to register
-     * expectations and for registration of handlers with chrome.send.
-     * @constructor
-     */
-    function MockPrintPreviewHandler() {}
-
-    MockPrintPreviewHandler.prototype = {
-      getDefaultPrinter: function() {},
-      getPrinters: function() {},
-      getPreview: function(settings, draft_page_count, modifiable) {},
-      print: function(settings) {},
-      getPrinterCapabilities: function(printerName) {},
-      showSystemDialog: function() {},
-      morePrinters: function() {},
-      signIn: function() {},
-      addCloudPrinter: function() {},
-      manageCloudPrinters: function() {},
-      manageLocalPrinters: function() {},
-      closePrintPreviewTab: function() {},
-      hidePreview: function() {},
-      cancelPendingPrintRequest: function() {},
-      saveLastPrinter: function(name, cloud_print_data) {},
-    };
-
-    // Create the actual mock and register stubs for methods expected to be
-    // called before tests run.  Specific expectations can be made in the
-    // tests themselves.
-    var mockHandler = this.mockHandler = mock(MockPrintPreviewHandler);
-    mockHandler.stubs().getDefaultPrinter().
+    // Register stubs for methods expected to be called before tests
+    // run. Specific expectations can be made in the tests themselves.
+    this.mockHandler.stubs().getDefaultPrinter().
         will(callFunction(function() {
           setDefaultPrinter('FooDevice');
         }));
-    mockHandler.stubs().getPrinterCapabilities(NOT_NULL).
+    this.mockHandler.stubs().getPrinterCapabilities(NOT_NULL).
         will(callFunction(function() {
           updateWithPrinterCapabilities({
             disableColorOption: true,
@@ -72,12 +59,12 @@ PrintPreviewWebUITest.prototype = {
           });
         }));
     var savedArgs = new SaveMockArguments();
-    mockHandler.stubs().getPreview(savedArgs.match(NOT_NULL)).
+    this.mockHandler.stubs().getPreview(savedArgs.match(NOT_NULL)).
         will(callFunctionWithSavedArgs(savedArgs, function(args) {
           updatePrintPreview(1, JSON.parse(args[0]).requestID);
         }));
 
-    mockHandler.stubs().getPrinters().
+    this.mockHandler.stubs().getPrinters().
         will(callFunction(function() {
           setPrinters([{
               printerName: 'FooName',
@@ -89,27 +76,11 @@ PrintPreviewWebUITest.prototype = {
           ]);
         }));
 
-    // Register mock as a handler of the chrome.send messages.
-    registerMockMessageCallbacks(mockHandler, MockPrintPreviewHandler);
-
-    /**
-     * Create a class to hold global functions to watch for.
-     * @constructor
-     */
-    function MockGlobals() {}
-
-    MockGlobals.prototype = {
-      updateWithPrinterCapabilities: function(settingInfo) {},
-    };
-
-    var mockGlobals = this.mockGlobals = mock(MockGlobals);
-    mockGlobals.stubs().updateWithPrinterCapabilities(
+    this.makeAndRegisterMockGlobals(['updateWithPrinterCapabilities']);
+    this.mockGlobals.stubs().updateWithPrinterCapabilities(
         savedArgs.match(ANYTHING)).
             will(callGlobalWithSavedArgs(
                 savedArgs, 'updateWithPrinterCapabilities'));
-
-    // Register globals to mock out for us.
-    registerMockGlobals(mockGlobals, MockGlobals);
 
     // Override checkCompatiblePluginExists to return a value consistent with
     // the state being tested and stub out the pdf viewer if it doesn't exist,

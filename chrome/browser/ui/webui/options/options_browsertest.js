@@ -22,38 +22,26 @@ OptionsWebUITest.prototype = {
    * behave correctly.
    */
   preLoad: function() {
+    this.makeAndRegisterMockHandler(
+        ['coreOptionsInitialize',
+         'fetchPrefs',
+         'observePrefs',
+         'setBooleanPref',
+         'setIntegerPref',
+         'setDoublePref',
+         'setStringPref',
+         'setObjectPref',
+         'clearPref',
+         'coreOptionsUserMetricsAction',
+         // TODO(scr): Handle this new message:
+         // getInstantFieldTrialStatus: function() {},
+        ]);
 
-    /**
-     * Create handler class with empty methods to allow mocking to register
-     * expectations and for registration of handlers with chrome.send.
-     */
-    function MockOptionsHandler() {}
-
-    MockOptionsHandler.prototype = {
-      coreOptionsInitialize: function() {},
-      fetchPrefs: function() {},
-      observePrefs: function() {},
-      setBooleanPref: function() {},
-      setIntegerPref: function() {},
-      setDoublePref: function() {},
-      setStringPref: function() {},
-      setObjectPref: function() {},
-      clearPref: function() {},
-      coreOptionsUserMetricsAction: function() {},
-      // TODO(scr): Handle this new message:
-      // getInstantFieldTrialStatus: function() {},
-    };
-
-    // Create the actual mock and register stubs for methods expected to be
-    // called before our tests run.  Specific expectations can be made in the
-    // tests themselves.
-    var mockHandler = this.mockHandler = mock(MockOptionsHandler);
-    mockHandler.stubs().fetchPrefs(ANYTHING);
-    mockHandler.stubs().observePrefs(ANYTHING);
-    mockHandler.stubs().coreOptionsInitialize();
-
-    // Register our mock as a handler of the chrome.send messages.
-    registerMockMessageCallbacks(mockHandler, MockOptionsHandler);
+    // Register stubs for methods expected to be called before our tests run.
+    // Specific expectations can be made in the tests themselves.
+    this.mockHandler.stubs().fetchPrefs(ANYTHING);
+    this.mockHandler.stubs().observePrefs(ANYTHING);
+    this.mockHandler.stubs().coreOptionsInitialize();
   },
 };
 

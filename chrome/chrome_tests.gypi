@@ -2646,6 +2646,7 @@
         'browser/ui/webui/options/password_manager_browsertest.js',
         'browser/ui/webui/options/personal_options_browsertest.js',
         'browser/ui/webui/options/search_engine_manager_browsertest.js',
+        'browser/ui/webui/sync_setup_browsertest.js',
         'browser/ui/webui/test_html_dialog_ui_delegate.cc',
         'browser/ui/webui/test_html_dialog_ui_delegate.h',
         'browser/ui/webui/web_ui_browsertest.cc',
