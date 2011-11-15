@@ -89,6 +89,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
                                      bool newly_bookmarked)
     : url_(url),
       profile_(profile),
+      model_(profile->GetBookmarkModel()),
       theme_service_(GtkThemeService::GetFrom(profile_)),
       anchor_(anchor),
       content_(NULL),
@@ -203,10 +204,9 @@ BookmarkBubbleGtk::~BookmarkBubbleGtk() {
   if (apply_edits_) {
     ApplyEdits();
   } else if (remove_bookmark_) {
-    BookmarkModel* model = profile_->GetBookmarkModel();
-    const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url_);
+    const BookmarkNode* node = model_->GetMostRecentlyAddedNodeForURL(url_);
     if (node)
-      model->Remove(node->parent(), node->parent()->GetIndexOf(node));
+      model_->Remove(node->parent(), node->parent()->GetIndexOf(node));
   }
 }
 
@@ -269,14 +269,13 @@ void BookmarkBubbleGtk::ApplyEdits() {
   // Set this to make sure we don't attempt to apply edits again.
   apply_edits_ = false;
 
-  BookmarkModel* model = profile_->GetBookmarkModel();
-  const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url_);
+  const BookmarkNode* node = model_->GetMostRecentlyAddedNodeForURL(url_);
   if (node) {
     const string16 new_title(
         UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(name_entry_))));
 
     if (new_title != node->GetTitle()) {
-      model->SetTitle(node, new_title);
+      model_->SetTitle(node, new_title);
       UserMetrics::RecordAction(
           UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"));
     }
@@ -289,16 +288,14 @@ void BookmarkBubbleGtk::ApplyEdits() {
       if (new_parent != node->parent()) {
         UserMetrics::RecordAction(
             UserMetricsAction("BookmarkBubble_ChangeParent"));
-        model->Move(node, new_parent, new_parent->child_count());
+        model_->Move(node, new_parent, new_parent->child_count());
       }
     }
   }
 }
 
 std::string BookmarkBubbleGtk::GetTitle() {
-  BookmarkModel* bookmark_model= profile_->GetBookmarkModel();
-  const BookmarkNode* node =
-      bookmark_model->GetMostRecentlyAddedNodeForURL(url_);
+  const BookmarkNode* node = model_->GetMostRecentlyAddedNodeForURL(url_);
   if (!node) {
     NOTREACHED();
     return std::string();
@@ -308,8 +305,7 @@ std::string BookmarkBubbleGtk::GetTitle() {
 }
 
 void BookmarkBubbleGtk::ShowEditor() {
-  const BookmarkNode* node =
-      profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url_);
+  const BookmarkNode* node = model_->GetMostRecentlyAddedNodeForURL(url_);
 
   // Commit any edits now.
   ApplyEdits();
@@ -329,12 +325,10 @@ void BookmarkBubbleGtk::ShowEditor() {
 }
 
 void BookmarkBubbleGtk::InitFolderComboModel() {
-  const BookmarkNode* node =
-      profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url_);
+  const BookmarkNode* node = model_->GetMostRecentlyAddedNodeForURL(url_);
   DCHECK(node);
 
-  folder_combo_model_.reset(new RecentlyUsedFoldersComboModel(
-      profile_->GetBookmarkModel(), node));
+  folder_combo_model_.reset(new RecentlyUsedFoldersComboModel(model_, node));
 
   // We always have nodes + 1 entries in the combo.  The last entry will be
   // the 'Select another folder...' entry that opens the bookmark editor.

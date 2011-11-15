@@ -27,6 +27,7 @@
 #include "googleurl/src/gurl.h"
 #include "ui/base/gtk/gtk_signal.h"
 
+class BookmarkModel;
 class Profile;
 class RecentlyUsedFoldersComboModel;
 
@@ -80,8 +81,12 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
 
   // The URL of the bookmark.
   GURL url_;
+
   // Our current profile (used to access the bookmark system).
   Profile* profile_;
+
+  // This is owned by the Profile.
+  BookmarkModel* model_;
 
   // Provides colors and stuff.
   GtkThemeService* theme_service_;
