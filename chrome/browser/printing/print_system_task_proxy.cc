@@ -423,7 +423,7 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
     printing_internal::mark_lpoptions(printer_name, &ppd);
 #endif
     ppd_choice_t* duplex_choice = ppdFindMarkedChoice(ppd, kDuplex);
-    if (duplex_choice) {
+    if (!duplex_choice) {
       ppd_option_t* option = ppdFindOption(ppd, kDuplex);
       if (option)
         duplex_choice = ppdFindChoice(option, option->defchoice);
