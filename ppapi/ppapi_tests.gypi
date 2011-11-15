@@ -121,6 +121,8 @@
         'tests/test_scrollbar.cc',
         'tests/test_scrollbar.h',
         'tests/test_struct_sizes.c',
+        'tests/test_tcp_socket_private.cc',
+        'tests/test_tcp_socket_private.h',
         'tests/test_uma.cc',
         'tests/test_uma.h',
         'tests/test_url_loader.cc',

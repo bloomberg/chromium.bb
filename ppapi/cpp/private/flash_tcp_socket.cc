@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(yzshen): See the comment in corresponding .h file.
-
 #include "ppapi/cpp/private/flash_tcp_socket.h"
 
 #include "ppapi/c/pp_bool.h"
@@ -30,6 +28,11 @@ TCPSocket::TCPSocket(Instance* instance) {
     PassRefFromConstructor(get_interface<PPB_Flash_TCPSocket>()->Create(
         instance->pp_instance()));
   }
+}
+
+// static
+bool TCPSocket::IsAvailable() {
+  return has_interface<PPB_Flash_TCPSocket>();
 }
 
 int32_t TCPSocket::Connect(const char* host,

@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(yzshen): This (and the .cc file) contain C++ wrappers for things
-// in ppapi/c/private/ppb_flash_tcp_socket.h. This is currently not used in
-// (or even compiled with) Chromium.
-
 #ifndef PPAPI_CPP_PRIVATE_FLASH_TCP_SOCKET_H_
 #define PPAPI_CPP_PRIVATE_FLASH_TCP_SOCKET_H_
 
@@ -23,6 +19,9 @@ namespace flash {
 class TCPSocket : public Resource {
  public:
   explicit TCPSocket(Instance* instance);
+
+  // Returns true if the required interface is available.
+  static bool IsAvailable();
 
   int32_t Connect(const char* host,
                   uint16_t port,

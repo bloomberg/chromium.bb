@@ -311,3 +311,8 @@ TEST_F(OutOfProcessPPAPITest, FAILS_UMA) {
 
 TEST_PPAPI_IN_PROCESS(NetAddressPrivate)
 TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate)
+
+// PPB_TCPSocket_Private currently isn't supported in-process.
+TEST_F(OutOfProcessPPAPITest, TCPSocketPrivate) {
+  RunTestViaHTTP("TCPSocketPrivate");
+}
