@@ -161,6 +161,8 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
 
   bool EnsureSettingsMenuCreated();
 
+  string16 GetTitleText() const;
+
 #ifdef UNIT_TEST
   PanelSettingsMenuModel* settings_menu_model() const {
     return settings_menu_model_.get();

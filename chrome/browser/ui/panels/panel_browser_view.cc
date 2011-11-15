@@ -382,8 +382,12 @@ PanelBrowserFrameView* PanelBrowserView::GetFrameView() const {
 }
 
 bool PanelBrowserView::OnTitlebarMousePressed(const gfx::Point& location) {
+  // |location| is in the view's coordinate system. Convert it to the screen
+  // coordinate system.
+  mouse_location_ = location;
+  views::View::ConvertPointToScreen(this, &mouse_location_);
+
   mouse_pressed_ = true;
-  mouse_pressed_point_ = location;
   mouse_pressed_time_ = base::TimeTicks::Now();
   mouse_dragging_state_ = NO_DRAGGING;
   return true;
@@ -393,8 +397,15 @@ bool PanelBrowserView::OnTitlebarMouseDragged(const gfx::Point& location) {
   if (!mouse_pressed_)
     return false;
 
-  int delta_x = location.x() - mouse_pressed_point_.x();
-  int delta_y = location.y() - mouse_pressed_point_.y();
+  gfx::Point last_mouse_location = mouse_location_;
+
+  // |location| is in the view's coordinate system. Convert it to the screen
+  // coordinate system.
+  mouse_location_ = location;
+  views::View::ConvertPointToScreen(this, &mouse_location_);
+
+  int delta_x = mouse_location_.x() - last_mouse_location.x();
+  int delta_y = mouse_location_.y() - last_mouse_location.y();
   if (mouse_dragging_state_ == NO_DRAGGING &&
       ExceededDragThreshold(delta_x, delta_y)) {
     // When a drag begins, we do not want to the client area to still receive
@@ -506,12 +517,14 @@ void NativePanelTestingWin::ReleaseMouseButtonTitlebar() {
 }
 
 void NativePanelTestingWin::DragTitlebar(int delta_x, int delta_y) {
-  // TODO(jianli): Need a comment here that explains why we use
-  // mouse_pressed_point_ and not current bounds as obtained by
-  // GetRestoredBounds(). http://crbug.com/102730
-  panel_browser_view_->OnTitlebarMouseDragged(gfx::Point(
-      panel_browser_view_->mouse_pressed_point_.x() + delta_x,
-      panel_browser_view_->mouse_pressed_point_.y() + delta_y));
+  gfx::Point new_mouse_location = panel_browser_view_->mouse_location_;
+  new_mouse_location.Offset(delta_x, delta_y);
+
+  // Convert from the screen coordinate system to the view's coordinate system
+  // since OnTitlebarMouseDragged takes the point in the latter.
+  views::View::ConvertPointToView(NULL, panel_browser_view_,
+                                  &new_mouse_location);
+  panel_browser_view_->OnTitlebarMouseDragged(new_mouse_location);
 }
 
 void NativePanelTestingWin::CancelDragTitlebar() {

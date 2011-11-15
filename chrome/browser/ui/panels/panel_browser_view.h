@@ -128,8 +128,9 @@ class PanelBrowserView : public BrowserView,
   // Is the mouse button currently down?
   bool mouse_pressed_;
 
-  // Location the mouse was pressed at. Used to detect drag and drop.
-  gfx::Point mouse_pressed_point_;
+  // Location the mouse was pressed at or dragged to. Used in drag-and-drop.
+  // This point is represented in the screen coordinate system.
+  gfx::Point mouse_location_;
 
   // Timestamp when the mouse was pressed. Used to detect long click.
   base::TimeTicks mouse_pressed_time_;
