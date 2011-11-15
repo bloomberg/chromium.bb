@@ -1133,7 +1133,7 @@ destroy_frame_callback(struct wl_resource *resource)
 	struct wlsc_frame_callback *cb = resource->data;
 
 	wl_list_remove(&cb->link);
-	free(resource);
+	free(cb);
 }
 
 static void
