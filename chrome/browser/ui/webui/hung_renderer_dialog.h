@@ -9,9 +9,11 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "ui/gfx/native_widget_types.h"
 
 class TabContents;
@@ -26,7 +28,31 @@ class HungRendererDialog : private HtmlDialogUIDelegate {
   static void HideHungRendererDialog(TabContents* contents);
 
  private:
-  HungRendererDialog();
+  class TabContentsObserverImpl : public TabContentsObserver {
+   public:
+    TabContentsObserverImpl(HungRendererDialog* dialog,
+                            TabContents* contents);
+
+    // TabContentsObserver overrides:
+    virtual void RenderViewGone() OVERRIDE;
+    virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
+
+   private:
+    TabContents* contents_;  // weak
+    HungRendererDialog* dialog_;  // weak
+
+    DISALLOW_COPY_AND_ASSIGN(TabContentsObserverImpl);
+  };
+
+  friend class HungRendererDialogUITest;
+
+  explicit HungRendererDialog(bool is_enabled);
+  virtual ~HungRendererDialog();
+
+  // Shows a hung renderer dialog that, if not enabled, won't kill processes
+  // or restart hang timers.
+  static void ShowHungRendererDialogInternal(TabContents* contents,
+                                             bool is_enabled);
 
   // Shows the hung renderer dialog.
   void ShowDialog(TabContents* contents);
@@ -53,8 +79,16 @@ class HungRendererDialog : private HtmlDialogUIDelegate {
   // The dialog handler.
   HungRendererDialogHandler* handler_;
 
+  // A safety switch that must be enabled to allow actual killing of processes
+  // or restarting of the hang timer.  This is necessary so that tests can
+  // create a disabled version of this dialog that won't kill processes or
+  // restart timers when the dialog closes at the end of the test.
+  bool is_enabled_;
+
   // The dialog window.
   gfx::NativeWindow window_;
+
+  scoped_ptr<TabContentsObserverImpl> contents_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(HungRendererDialog);
 };
