@@ -1334,9 +1334,6 @@ wlsc_compositor_wake(struct wlsc_compositor *compositor)
 	if (compositor->idle_inhibit)
 		return;
 
-	if (compositor->state == WLSC_COMPOSITOR_SLEEPING)
-		compositor->shell->unlock(compositor->shell);
-
 	wlsc_compositor_fade(compositor, 0.0);
 	compositor->state = WLSC_COMPOSITOR_ACTIVE;
 
@@ -1344,10 +1341,20 @@ wlsc_compositor_wake(struct wlsc_compositor *compositor)
 				     option_idle_time * 1000);
 }
 
+WL_EXPORT void
+wlsc_compositor_activity(struct wlsc_compositor *compositor)
+{
+	if (compositor->state != WLSC_COMPOSITOR_SLEEPING) {
+		wlsc_compositor_wake(compositor);
+	} else {
+		compositor->shell->unlock(compositor->shell);
+	}
+}
+
 static void
 wlsc_compositor_idle_inhibit(struct wlsc_compositor *compositor)
 {
-	wlsc_compositor_wake(compositor);
+	wlsc_compositor_activity(compositor);
 	compositor->idle_inhibit++;
 }
 
@@ -1355,7 +1362,7 @@ static void
 wlsc_compositor_idle_release(struct wlsc_compositor *compositor)
 {
 	compositor->idle_inhibit--;
-	wlsc_compositor_wake(compositor);
+	wlsc_compositor_activity(compositor);
 }
 
 static int
@@ -1384,7 +1391,7 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 	int x_valid = 0, y_valid = 0;
 	int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
 
-	wlsc_compositor_wake(ec);
+	wlsc_compositor_activity(ec);
 
 	wl_list_for_each(output, &ec->output_list, link) {
 		if (output->x <= x && x <= output->x + output->current->width)

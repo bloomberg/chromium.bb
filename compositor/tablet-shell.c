@@ -556,6 +556,10 @@ tablet_shell_lock(struct wlsc_shell *base)
 static void
 tablet_shell_unlock(struct wlsc_shell *base)
 {
+	struct tablet_shell *shell =
+		container_of(base, struct tablet_shell, shell);
+
+	wlsc_compositor_wake(shell->compositor);
 }
 
 static void

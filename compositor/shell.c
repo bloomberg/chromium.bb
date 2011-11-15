@@ -829,6 +829,11 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 			       struct wl_resource *resource,
 			       struct wl_resource *surface_resource)
 {
+	struct wl_shell *shell = resource->data;
+
+	/* TODO: put the lock surface always on top modal until unlocked */
+
+	wlsc_compositor_wake(shell->compositor);
 }
 
 static void
@@ -839,6 +844,7 @@ desktop_shell_unlock(struct wl_client *client,
 
 	shell->locked = false;
 	shell->prepare_event_sent = false;
+	wlsc_compositor_wake(shell->compositor);
 }
 
 static const struct desktop_shell_interface desktop_shell_implementation = {
@@ -952,6 +958,7 @@ unlock(struct wlsc_shell *base)
 	/* If desktop-shell client has gone away, unlock immediately. */
 	if (!shell->child.desktop_shell) {
 		shell->locked = false;
+		wlsc_compositor_wake(shell->compositor);
 		return;
 	}
 

@@ -326,6 +326,8 @@ void
 wlsc_compositor_unlock(struct wlsc_compositor *compositor);
 void
 wlsc_compositor_wake(struct wlsc_compositor *compositor);
+void
+wlsc_compositor_activity(struct wlsc_compositor *compositor);
 
 struct wlsc_binding;
 typedef void (*wlsc_binding_handler_t)(struct wl_input_device *device,
