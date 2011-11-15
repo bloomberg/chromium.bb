@@ -1,5 +1,6 @@
 /*
  * Copyright © 2010 Intel Corporation
+ * Copyright © 2011 Collabora, Ltd.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -22,6 +23,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <linux/input.h>
@@ -44,7 +46,11 @@ struct wl_shell {
 	struct {
 		struct wlsc_process process;
 		struct wl_client *client;
+		struct wl_resource *desktop_shell;
 	} child;
+
+	bool locked;
+	bool prepare_event_sent;
 };
 
 struct wlsc_move_grab {
@@ -818,9 +824,28 @@ desktop_shell_set_panel(struct wl_client *client,
 			       output->current->height);
 }
 
+static void
+desktop_shell_set_lock_surface(struct wl_client *client,
+			       struct wl_resource *resource,
+			       struct wl_resource *surface_resource)
+{
+}
+
+static void
+desktop_shell_unlock(struct wl_client *client,
+		     struct wl_resource *resource)
+{
+	struct wl_shell *shell = resource->data;
+
+	shell->locked = false;
+	shell->prepare_event_sent = false;
+}
+
 static const struct desktop_shell_interface desktop_shell_implementation = {
 	desktop_shell_set_background,
-	desktop_shell_set_panel
+	desktop_shell_set_panel,
+	desktop_shell_set_lock_surface,
+	desktop_shell_unlock
 };
 
 static void
@@ -907,8 +932,35 @@ activate(struct wlsc_shell *base, struct wlsc_surface *es,
 }
 
 static void
-lock(struct wlsc_shell *shell)
+lock(struct wlsc_shell *base)
 {
+	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
+
+	shell->locked = true;
+}
+
+static void
+unlock(struct wlsc_shell *base)
+{
+	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
+
+	if (!shell->locked) {
+		wlsc_compositor_wake(shell->compositor);
+		return;
+	}
+
+	/* If desktop-shell client has gone away, unlock immediately. */
+	if (!shell->child.desktop_shell) {
+		shell->locked = false;
+		return;
+	}
+
+	if (shell->prepare_event_sent)
+		return;
+
+	wl_resource_post_event(shell->child.desktop_shell,
+			       DESKTOP_SHELL_PREPARE_LOCK_SURFACE);
+	shell->prepare_event_sent = true;
 }
 
 static void
@@ -1015,6 +1067,15 @@ bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 }
 
 static void
+unbind_desktop_shell(struct wl_resource *resource)
+{
+	struct wl_shell *shell = resource->data;
+	shell->child.desktop_shell = NULL;
+	shell->prepare_event_sent = false;
+	free(resource);
+}
+
+static void
 bind_desktop_shell(struct wl_client *client,
 		   void *data, uint32_t version, uint32_t id)
 {
@@ -1025,8 +1086,11 @@ bind_desktop_shell(struct wl_client *client,
 					&desktop_shell_implementation,
 					id, shell);
 
-	if (client == shell->child.client)
+	if (client == shell->child.client) {
+		resource->destroy = unbind_desktop_shell;
+		shell->child.desktop_shell = resource;
 		return;
+	}
 
 	wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
 			       "permission to bind desktop_shell denied");
@@ -1049,6 +1113,7 @@ shell_init(struct wlsc_compositor *ec)
 	shell->compositor = ec;
 	shell->shell.activate = activate;
 	shell->shell.lock = lock;
+	shell->shell.unlock = unlock;
 	shell->shell.map = map;
 	shell->shell.configure = configure;
 	shell->shell.set_selection_focus = wlsc_selection_set_focus;

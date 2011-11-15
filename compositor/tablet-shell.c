@@ -554,6 +554,11 @@ tablet_shell_lock(struct wlsc_shell *base)
 }
 
 static void
+tablet_shell_unlock(struct wlsc_shell *base)
+{
+}
+
+static void
 go_home(struct tablet_shell *shell)
 {
 	struct wlsc_input_device *device =
@@ -687,6 +692,7 @@ shell_init(struct wlsc_compositor *compositor)
 	compositor->shell = &shell->shell;
 
 	shell->shell.lock = tablet_shell_lock;
+	shell->shell.unlock = tablet_shell_unlock;
 	shell->shell.map = tablet_shell_map;
 	shell->shell.configure = tablet_shell_configure;
 	shell->shell.set_selection_focus =

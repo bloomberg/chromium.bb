@@ -311,8 +311,17 @@ desktop_shell_configure(void *data,
 	}
 }
 
+static void
+desktop_shell_prepare_lock_surface(void *data,
+				   struct desktop_shell *desktop_shell)
+{
+	/* no-op for now */
+	desktop_shell_unlock(desktop_shell);
+}
+
 static const struct desktop_shell_listener listener = {
-	desktop_shell_configure
+	desktop_shell_configure,
+	desktop_shell_prepare_lock_surface
 };
 
 static void

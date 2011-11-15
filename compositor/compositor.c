@@ -1334,6 +1334,9 @@ wlsc_compositor_wake(struct wlsc_compositor *compositor)
 	if (compositor->idle_inhibit)
 		return;
 
+	if (compositor->state == WLSC_COMPOSITOR_SLEEPING)
+		compositor->shell->unlock(compositor->shell);
+
 	wlsc_compositor_fade(compositor, 0.0);
 	compositor->state = WLSC_COMPOSITOR_ACTIVE;
 
