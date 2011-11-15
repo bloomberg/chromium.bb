@@ -6,6 +6,7 @@
 
 #import <AppKit/AppKit.h>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/sys_string_conversions.h"
@@ -37,5 +38,5 @@ void IconLoader::ReadIcon() {
   }
 
   target_message_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &IconLoader::NotifyDelegate));
+      base::Bind(&IconLoader::NotifyDelegate, this));
 }

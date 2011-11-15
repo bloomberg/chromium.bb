@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -49,5 +50,5 @@ void IconLoader::ReadIcon() {
   }
 
   target_message_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &IconLoader::NotifyDelegate));
+      FROM_HERE, base::Bind(&IconLoader::NotifyDelegate, this));
 }

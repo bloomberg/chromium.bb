@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <shellapi.h>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "ui/gfx/icon_util.h"
@@ -37,5 +38,5 @@ void IconLoader::ReadIcon() {
       IconUtil::CreateSkBitmapFromHICON(file_info.hIcon)));
   DestroyIcon(file_info.hIcon);
   target_message_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &IconLoader::NotifyDelegate));
+      base::Bind(&IconLoader::NotifyDelegate, this));
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/icon_loader.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -35,7 +36,7 @@ void IconLoader::Start() {
 #endif
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &IconLoader::ReadIcon));
+      base::Bind(&IconLoader::ReadIcon, this));
 }
 
 void IconLoader::NotifyDelegate() {
