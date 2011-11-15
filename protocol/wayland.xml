@@ -157,6 +157,115 @@
     <event name="release"/>
   </interface>
 
+
+  <interface name="wl_data_offer" version="1">
+    <!-- Indicate that the client can accept the given mime-type, or
+         NULL for not accepted.  Use for feedback during drag and
+         drop. -->
+    <request name="accept">
+      <arg name="time" type="uint"/>
+      <arg name="type" type="string"/>
+    </request>
+
+    <request name="receive">
+      <arg name="mime_type" type="string"/>
+      <arg name="fd" type="fd"/>
+    </request>
+
+    <request name="destroy" type="destructor"/>
+
+    <!-- Sent immediately after creating the wl_data_offer object.  One
+         event per offered mime type. -->
+    <event name="offer">
+      <arg name="type" type="string"/>
+    </event>
+  </interface>
+
+  <interface name="wl_data_source" version="1">
+    <!-- Add an offered mime type.  Can be called several times to
+         offer multiple types. -->
+    <request name="offer">
+      <arg name="type" type="string"/>
+    </request>
+
+    <!-- Destroy the selection. -->
+    <request name="destroy" type="destructor"/>
+
+    <!-- Sent when a target accepts pointer_focus or motion events.
+         If a target does not accept any of the offered types, type is
+         NULL -->
+    <event name="target">
+      <arg name="mime_type" type="string"/>
+    </event>
+
+    <!-- Request for data from another client.  Send the data in the
+         specified mime-type over the passed fd, the close it. -->
+    <event name="send">
+      <arg name="mime_type" type="string"/>
+      <arg name="fd" type="fd"/>
+    </event>
+
+    <!-- Another selection became active. -->
+    <event name="cancelled"/>
+  </interface>
+
+  <interface name="wl_data_device" version="1">
+    <request name="start_drag">
+      <arg name="source" type="object" interface="wl_data_source"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="time" type="uint"/>
+    </request>
+
+    <request name="attach">
+      <arg name="time" type="uint"/>
+      <arg name="buffer" type="object" interface="wl_buffer"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+    </request>
+
+    <request name="set_selection">
+      <arg name="source" type="object" interface="wl_data_source"/>
+      <arg name="time" type="uint"/>
+    </request>
+
+    <event name="data_offer">
+      <arg name="id" type="new_id" interface="wl_data_offer"/>
+    </event>
+
+    <event name="enter">
+      <arg name="time" type="uint"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="id" type="object" interface="wl_data_offer"/>
+    </event>
+
+    <event name="leave"/>
+
+    <event name="motion">
+      <arg name="time" type="uint"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+    </event>
+
+    <event name="drop"/>
+
+    <event name="selection">
+      <arg name="id" type="object" interface="wl_data_offer"/>
+    </event>
+  </interface>
+
+  <interface name="wl_data_device_manager" version="1">
+    <request name="create_data_source">
+      <arg name="id" type="new_id" interface="wl_data_source"/>
+    </request>
+
+    <request name="get_data_device">
+      <arg name="id" type="new_id" interface="wl_data_device"/>
+      <arg name="input_device" type="object" interface="wl_input_device"/>
+    </request>
+  </interface>
+
   <interface name="wl_shell" version="1">
     <request name="move">
       <arg name="surface" type="object" interface="wl_surface"/>
@@ -182,14 +291,6 @@
       <arg name="time" type="uint"/>
       <!-- edges is an enum, need to get the values in here -->
       <arg name="edges" type="uint"/>
-    </request>
-
-    <request name="create_drag">
-      <arg name="id" type="new_id" interface="wl_drag"/>
-    </request>
-
-    <request name="create_selection">
-      <arg name="id" type="new_id" interface="wl_selection"/>
     </request>
 
     <!-- Make the surface visible as a toplevel window. -->
@@ -238,145 +339,6 @@
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </event>
-  </interface>
-
-  <interface name="wl_selection" version="1">
-    <!-- Add an offered mime type.  Can be called several times to
-         offer multiple types, but must be called before 'activate'. -->
-    <request name="offer">
-      <arg name="type" type="string"/>
-    </request>
-
-    <!-- Can the selection be activated for multiple devices? -->
-    <request name="activate">
-      <arg name="input_device" type="object" interface="wl_input_device"/>
-      <arg name="time" type="uint"/>
-    </request>
-
-    <!-- Destroy the selection. -->
-    <request name="destroy" type="destructor"/>
-
-    <!-- Another client pasted the selection, send the mime-type over
-         the passed fd. -->
-    <event name="send">
-      <arg name="mime_type" type="string"/>
-      <arg name="fd" type="fd"/>
-    </event>
-
-    <!-- Another selection became active. -->
-    <event name="cancelled"/>
-  </interface>
-
-  <interface name="wl_selection_offer" version="1">
-    <!-- Called to receive the selection data as the specified type.
-         Sends the pipe fd to the compositor, which forwards it to the
-         source in the 'send' event -->
-    <request name="receive">
-      <arg name="mime_type" type="string"/>
-      <arg name="fd" type="fd"/>
-    </request>
-
-    <!-- Sent before the keyboard_focus event to announce the types
-         offered.  One event per offered mime type.  A mime type of
-         NULL means the selection offer is going away.  -->
-    <event name="offer">
-      <arg name="type" type="string"/>
-    </event>
-
-    <event name="keyboard_focus">
-      <arg name="input_device" type="object" interface="wl_input_device"/>
-    </event>
-  </interface>
-
-  <interface name="wl_drag" version="1">
-    <!-- Add an offered mime type.  Can be called several times to
-         offer multiple types, but must be called before 'activate'. -->
-    <request name="offer">
-      <arg name="type" type="string"/>
-    </request>
-
-    <request name="activate">
-      <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="input_device" type="object" interface="wl_input_device"/>
-      <arg name="time" type="uint"/>
-    </request>
-
-    <!-- Destroy the drag and cancel the session. -->
-    <request name="destroy" type="destructor"/>
-
-    <!-- Sent when a target accepts pointer_focus or motion events.
-         If a target does not accept any of the offered types, type is
-         NULL -->
-    <event name="target">
-      <arg name="mime_type" type="string"/>
-    </event>
-
-    <!-- Sent when the drag is finished.  The final mime type is that
-         of the last target event.  If that was NULL, no drag target
-         was valid when the drag finished, fd is undefined and the
-         source should not send data.  The event is also sent in case
-         a drag source tries to activate a drag after the grab was
-         released, in which case mime_type will also be NULL. -->
-    <event name="finish">
-      <arg name="fd" type="fd"/>
-    </event>
-
-    <event name="reject"/>
-  </interface>
-
-
-  <interface name="wl_drag_offer" version="1">
-    <!-- Call to accept the offer of the given type -->
-    <request name="accept">
-      <arg name="time" type="uint"/>
-      <arg name="type" type="string"/>
-    </request>
-
-    <!-- Called to initiate the drag finish sequence.  Sends the pipe
-         fd to the compositor, which forwards it to the source in the
-         'finish' event -->
-    <request name="receive">
-      <arg name="fd" type="fd"/>
-    </request>
-
-    <!-- Called to reject a drop  -->
-    <request name="reject"/>
-
-    <!-- Sent before the pointer_focus event to announce the types
-         offered.  One event per offered mime type. -->
-    <event name="offer">
-      <arg name="type" type="string"/>
-    </event>
-
-    <!-- Similar to device::pointer_focus.  Sent to potential target
-         surfaces to offer drag data.  If the device leaves the
-         window, the drag stops or the originator cancels the drag,
-         this event is sent with the NULL surface, at which point the
-         drag object may no longer be valid. -->
-    <event name="pointer_focus">
-      <arg name="time" type="uint"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
-      <arg name="surface_x" type="int"/>
-      <arg name="surface_y" type="int"/>
-    </event>
-
-    <!-- Similar to device::motion.  Sent to potential target surfaces
-         as the drag pointer moves around in the surface. -->
-    <event name="motion">
-      <arg name="time" type="uint"/>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
-      <arg name="surface_x" type="int"/>
-      <arg name="surface_y" type="int"/>
-    </event>
-
-    <!-- Sent to indicate that the drag is finishing.  The last
-         motion/pointer_focus event gives the location of the drop.
-         Target must respond with the 'receive' request, which sends
-         an fd to the source for writing the drag data. -->
-    <event name="drop"/>
   </interface>
 
 

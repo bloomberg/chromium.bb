@@ -152,8 +152,9 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 
 	proxy->object.interface = interface;
 	proxy->object.implementation = NULL;
-	proxy->object.id = wl_map_insert_at(&display->objects, id, proxy);
+	proxy->object.id = id;
 	proxy->display = display;
+	wl_map_insert_at(&display->objects, id, proxy);
 
 	return proxy;
 }

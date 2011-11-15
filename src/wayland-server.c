@@ -874,3 +874,16 @@ wl_client_add_object(struct wl_client *client,
 
 	return resource;
 }
+
+WL_EXPORT struct wl_resource *
+wl_client_new_object(struct wl_client *client,
+		     const struct wl_interface *interface,
+		     const void *implementation, void *data)
+{
+	uint32_t id;
+
+	id = wl_map_insert_new(&client->objects, WL_MAP_SERVER_SIDE, NULL);
+	return wl_client_add_object(client,
+				    interface, implementation, id, data);
+
+}

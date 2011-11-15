@@ -104,6 +104,10 @@ struct wl_resource *
 wl_client_add_object(struct wl_client *client,
 		     const struct wl_interface *interface,
 		     const void *implementation, uint32_t id, void *data);
+struct wl_resource *
+wl_client_new_object(struct wl_client *client,
+		     const struct wl_interface *interface,
+		     const void *implementation, void *data);
 
 struct wl_resource {
 	struct wl_object object;
@@ -176,39 +180,6 @@ struct wl_input_device {
 	struct wl_listener grab_listener;
 };
 
-struct wl_drag_offer {
-	struct wl_resource resource;
-};
-
-struct wl_drag {
-	struct wl_resource resource;
-	struct wl_grab grab;
-	struct wl_drag_offer drag_offer;
-	struct wl_surface *source;
-	struct wl_surface *drag_focus;
-	struct wl_client *target;
-	int32_t x, y, sx, sy;
-	struct wl_array types;
-	const char *type;
-	uint32_t pointer_focus_time;
-	struct wl_listener drag_focus_listener;
-};
-
-struct wl_selection_offer {
-	struct wl_resource resource;
-};
-
-struct wl_selection {
-	struct wl_resource resource;
-	struct wl_client *client;
-	struct wl_input_device *input_device;
-	struct wl_selection_offer selection_offer;
-	struct wl_surface *selection_focus;
-	struct wl_client *target;
-	struct wl_array types;
-	struct wl_listener selection_focus_listener;
-};
-
 void wl_resource_post_event(struct wl_resource *resource,
 			    uint32_t opcode, ...);
 void wl_resource_queue_event(struct wl_resource *resource,
@@ -216,11 +187,6 @@ void wl_resource_queue_event(struct wl_resource *resource,
 void wl_resource_post_error(struct wl_resource *resource,
 			    uint32_t code, const char *msg, ...);
 void wl_resource_post_no_memory(struct wl_resource *resource);
-
-int
-wl_display_set_compositor(struct wl_display *display,
-			  struct wl_compositor *compositor,
-			  const struct wl_compositor_interface *implementation);
 
 void
 wl_display_post_frame(struct wl_display *display, struct wl_surface *surface,
@@ -286,11 +252,6 @@ wl_shm_init(struct wl_display *display,
 
 void
 wl_shm_finish(struct wl_shm *shm);
-
-int
-wl_compositor_init(struct wl_compositor *compositor,
-		   const struct wl_compositor_interface *interface,
-		   struct wl_display *display);
 
 #ifdef  __cplusplus
 }

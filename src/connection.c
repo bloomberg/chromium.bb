@@ -449,7 +449,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 			closure->types[i] = &ffi_type_uint32;
 			closure->args[i] = p;
 			object = va_arg(ap, struct wl_object *);
-			*p++ = object->id;
+			*p++ = object ? object->id : 0;
 			break;
 
 		case 'a':
@@ -493,6 +493,8 @@ wl_connection_vmarshal(struct wl_connection *connection,
 				      &dup_fd, sizeof dup_fd);
 			break;
 		default:
+			fprintf(stderr, "unhandled format code: '%c'\n",
+				message->signature[i - 2]);
 			assert(0);
 			break;
 		}
@@ -632,7 +634,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 			closure->types[i] = &ffi_type_uint32;
 			closure->args[i] = p;
 			object = wl_map_lookup(objects, *p);
-			if (*p == 0 || object != NULL) {
+			if (object != NULL) {
 				printf("not a new object (%d), "
 				       "message %s(%s)\n",
 				       *p, message->name, message->signature);
