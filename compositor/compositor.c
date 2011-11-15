@@ -1331,8 +1331,8 @@ static const struct wl_grab_interface implicit_grab_interface = {
 WL_EXPORT void
 wlsc_compositor_wake(struct wlsc_compositor *compositor)
 {
-	wlsc_compositor_fade(compositor, 0.0);
 	compositor->state = WLSC_COMPOSITOR_ACTIVE;
+	wlsc_compositor_fade(compositor, 0.0);
 
 	wl_event_source_timer_update(compositor->idle_source,
 				     option_idle_time * 1000);
