@@ -5642,7 +5642,7 @@ void TestingAutomationProvider::LaunchApp(
   // This observer will delete itself.
   new AppLaunchObserver(&old_contents->controller(), this, reply_message,
                         launch_container);
-  Browser::OpenApplication(profile(), extension, launch_container,
+  Browser::OpenApplication(profile(), extension, launch_container, GURL(),
                            CURRENT_TAB);
 }
 

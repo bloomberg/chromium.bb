@@ -291,5 +291,6 @@ void LaunchAppFromOmnibox(const AutocompleteMatch& match,
       service->extension_prefs()->GetLaunchContainer(
           extension, ExtensionPrefs::LAUNCH_REGULAR);
 
-  Browser::OpenApplication(profile, extension, launch_container, disposition);
+  Browser::OpenApplication(profile, extension, launch_container, GURL(),
+                           disposition);
 }

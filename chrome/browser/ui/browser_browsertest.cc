@@ -1063,6 +1063,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
       Browser::OpenApplication(browser()->profile(),
                                extension_app,
                                extension_misc::LAUNCH_WINDOW,
+                               GURL(),
                                NEW_WINDOW);
   ASSERT_TRUE(app_window);
 

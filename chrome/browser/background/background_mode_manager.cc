@@ -242,7 +242,7 @@ void BackgroundModeManager::LaunchBackgroundApplication(
   extension_misc::LaunchContainer launch_container =
       service->extension_prefs()->GetLaunchContainer(
           extension, ExtensionPrefs::LAUNCH_REGULAR);
-  Browser::OpenApplication(profile, extension, launch_container,
+  Browser::OpenApplication(profile, extension, launch_container, GURL(),
                            NEW_FOREGROUND_TAB);
 }
 

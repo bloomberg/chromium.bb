@@ -263,11 +263,13 @@ class Browser : public TabHandlerDelegate,
   static void OpenURLOffTheRecord(Profile* profile, const GURL& url);
 
   // Open |extension| in |container|, using |disposition| if container type is
-  // TAB. Returns the TabContents* that was created or NULL.
+  // TAB. Returns the TabContents* that was created or NULL. If non-empty,
+  // |override_url| is used in place of the app launch url.
   static TabContents* OpenApplication(
       Profile* profile,
       const Extension* extension,
       extension_misc::LaunchContainer container,
+      const GURL& override_url,
       WindowOpenDisposition disposition);
 
   // Opens a new application window for the specified url. If |as_panel|
@@ -295,9 +297,11 @@ class Browser : public TabHandlerDelegate,
                                             bool update_shortcut);
 
   // Open an application for |extension| using |disposition|.  Returns NULL if
-  // there are no appropriate existing browser windows for |profile|.
+  // there are no appropriate existing browser windows for |profile|. If
+  // non-empty, |override_url| is used in place of the app launch url.
   static TabContents* OpenApplicationTab(Profile* profile,
                                          const Extension* extension,
+                                         const GURL& override_url,
                                          WindowOpenDisposition disposition);
 
   // Opens a new window and opens the bookmark manager.

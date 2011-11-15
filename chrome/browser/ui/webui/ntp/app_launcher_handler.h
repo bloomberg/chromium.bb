@@ -45,9 +45,6 @@ class AppLauncherHandler : public WebUIMessageHandler,
       ExtensionService* service,
       base::DictionaryValue* value);
 
-  // Callback for pings related to launching apps on the NTP.
-  static bool HandlePing(Profile* profile, const std::string& path);
-
   // WebUIMessageHandler implementation.
   virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
@@ -126,8 +123,7 @@ class AppLauncherHandler : public WebUIMessageHandler,
 
   // Records an app launch in the corresponding |bucket| of the app launch
   // histogram. |promo_active| specifies if the web store promotion was active.
-  static void RecordAppLaunchByID(bool promo_active,
-                                  extension_misc::AppLaunchBucket bucket);
+  static void RecordAppLaunchByID(extension_misc::AppLaunchBucket bucket);
 
   // Records an app launch in the corresponding |bucket| of the app launch
   // histogram if the |escaped_url| corresponds to an installed app.
@@ -183,9 +179,6 @@ class AppLauncherHandler : public WebUIMessageHandler,
 
   // The id of the extension we are prompting the user about.
   std::string extension_id_prompting_;
-
-  // Whether the promo is currently being shown.
-  bool promo_active_;
 
   // When true, we ignore changes to the underlying data rather than immediately
   // refreshing. This is useful when making many batch updates to avoid flicker.

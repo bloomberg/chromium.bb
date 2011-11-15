@@ -250,6 +250,33 @@ bool HasInternalURL(const NavigationEntry* entry) {
   return false;
 }
 
+// Get the launch URL for a given extension, with optional override/fallback.
+// |override_url|, if non-empty, will be preferred over the extension's
+// launch url.
+GURL UrlForExtension(const Extension* extension, const GURL& override_url) {
+  if (!extension)
+    return override_url;
+
+  GURL url;
+  if (!override_url.is_empty()) {
+    DCHECK(extension->web_extent().MatchesURL(override_url));
+    url = override_url;
+  } else {
+    url = extension->GetFullLaunchURL();
+  }
+
+  // For extensions lacking launch urls, determine a reasonable fallback.
+  if (!url.is_valid()) {
+    url = extension->options_url();
+    if (!url.is_valid()) {
+      url = GURL(std::string(chrome::kChromeUISettingsURL) +
+                 chrome::kExtensionsSubPage);
+    }
+  }
+
+  return url;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -581,6 +608,7 @@ TabContents* Browser::OpenApplication(
     Profile* profile,
     const Extension* extension,
     extension_misc::LaunchContainer container,
+    const GURL& override_url,
     WindowOpenDisposition disposition) {
 #if defined(USE_AURA)
   // On aura we're experimenting with making all apps open in windows.
@@ -596,10 +624,11 @@ TabContents* Browser::OpenApplication(
     case extension_misc::LAUNCH_WINDOW:
     case extension_misc::LAUNCH_PANEL:
       tab = Browser::OpenApplicationWindow(profile, extension, container,
-                                           GURL(), NULL);
+                                           override_url, NULL);
       break;
     case extension_misc::LAUNCH_TAB: {
-      tab = Browser::OpenApplicationTab(profile, extension, disposition);
+      tab = Browser::OpenApplicationTab(profile, extension, override_url,
+                                        disposition);
       break;
     }
     default:
@@ -616,22 +645,13 @@ TabContents* Browser::OpenApplicationWindow(
     extension_misc::LaunchContainer container,
     const GURL& url_input,
     Browser** app_browser) {
-  GURL url;
-  if (!url_input.is_empty()) {
-    if (extension)
-      DCHECK(extension->web_extent().MatchesURL(url_input));
-    url = url_input;
-  } else {
-    DCHECK(extension);  // Empty url and no extension.  Nothing to open.
-    url = extension->GetFullLaunchURL();
-  }
+  DCHECK(!url_input.is_empty() || extension);
+  GURL url = UrlForExtension(extension, url_input);
 
   std::string app_name;
-  if (extension)
-    app_name =
-        web_app::GenerateApplicationNameFromExtensionId(extension->id());
-  else
-    app_name = web_app::GenerateApplicationNameFromURL(url);
+  app_name = extension ?
+      web_app::GenerateApplicationNameFromExtensionId(extension->id()) :
+      web_app::GenerateApplicationNameFromURL(url);
 
   Type type = extension && (container == extension_misc::LAUNCH_PANEL) ?
       TYPE_PANEL : TYPE_POPUP;
@@ -690,6 +710,7 @@ TabContents* Browser::OpenAppShortcutWindow(Profile* profile,
 // static
 TabContents* Browser::OpenApplicationTab(Profile* profile,
                                          const Extension* extension,
+                                         const GURL& override_url,
                                          WindowOpenDisposition disposition) {
   Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
   TabContents* contents = NULL;
@@ -723,15 +744,7 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
   if (launch_type == ExtensionPrefs::LAUNCH_PINNED)
     add_type |= TabStripModel::ADD_PINNED;
 
-  // For extensions lacking launch urls, determine a reasonable fallback.
-  GURL extension_url = extension->GetFullLaunchURL();
-  if (!extension_url.is_valid()) {
-    extension_url = extension->options_url();
-    if (!extension_url.is_valid())
-      extension_url = GURL(std::string(chrome::kChromeUISettingsURL) +
-                           chrome::kExtensionsSubPage);
-  }
-
+  GURL extension_url = UrlForExtension(extension, override_url);
   // TODO(erikkay): START_PAGE doesn't seem like the right transition in all
   // cases.
   browser::NavigateParams params(browser, extension_url,
@@ -744,7 +757,7 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
     TabStripModel* model = browser->tabstrip_model();
     int tab_index = model->GetWrapperIndex(existing_tab);
 
-    existing_tab->OpenURL(extension->GetFullLaunchURL(), existing_tab->GetURL(),
+    existing_tab->OpenURL(extension_url, existing_tab->GetURL(),
                           disposition, content::PAGE_TRANSITION_LINK);
     if (params.tabstrip_add_types & TabStripModel::ADD_PINNED) {
       model->SetTabPinned(tab_index, true);
@@ -764,8 +777,9 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
   // Today we open the tab, but stay in full screen mode.  Should we leave
   // full screen mode in this case?
   if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN &&
-      !browser->window()->IsFullscreen())
+      !browser->window()->IsFullscreen()) {
     browser->ToggleFullscreenMode(false);
+  }
 
   return contents;
 }

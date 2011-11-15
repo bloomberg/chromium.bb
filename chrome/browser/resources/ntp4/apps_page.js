@@ -238,8 +238,7 @@ cr.define('ntp4', function() {
       this.appContents_.addEventListener('contextmenu',
                                          cr.ui.contextMenuHandler);
 
-      this.isStore_ = this.appData_.is_webstore;
-      if (this.isStore_)
+      if (this.appData_.is_webstore)
         this.createAppsPromoExtras_();
 
       this.addEventListener('mousedown', this.onMousedown_, true);
@@ -435,8 +434,18 @@ cr.define('ntp4', function() {
      * @private
      */
     onClick_: function(e) {
+      var is_promo = this.appsPromoExtras_ &&
+          window.getComputedStyle(this.appsPromoExtras_).display != 'none';
+      var url = !this.appData_.is_webstore ? '' :
+          is_promo ? appendParam(this.appsPromoLink_.href,
+                                 'utm_source',
+                                 'chrome-ntp-promo') :
+                     appendParam(this.appData_.url,
+                                 'utm_source',
+                                 'chrome-ntp-icon');
+
       chrome.send('launchApp',
-                  [this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED,
+                  [this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED, url,
                    e.altKey, e.ctrlKey, e.metaKey, e.shiftKey, e.button]);
 
       // Don't allow the click to trigger a link or anything
@@ -451,7 +460,7 @@ cr.define('ntp4', function() {
     onKeydown_: function(e) {
       if (e.keyIdentifier == 'Enter') {
         chrome.send('launchApp',
-                    [this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED,
+                    [this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED, '',
                      e.altKey, e.ctrlKey, e.metaKey, e.shiftKey, 0]);
         e.preventDefault();
         e.stopPropagation();

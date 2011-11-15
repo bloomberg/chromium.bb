@@ -53,12 +53,6 @@
 
 namespace {
 
-// The URL prefixes used by the NTP to signal when the web store or an app
-// has launched so we can record the proper histogram.
-const char* kPingLaunchAppByID = "record-app-launch-by-id";
-const char* kPingLaunchWebStore = "record-webstore-launch";
-const char* kPingLaunchAppByURL = "record-app-launch-by-url";
-
 const UnescapeRule::Type kUnescapeRules =
     UnescapeRule::NORMAL | UnescapeRule::URL_SPECIAL_CHARS;
 
@@ -76,7 +70,6 @@ extension_misc::AppLaunchBucket ParseLaunchSource(
 
 AppLauncherHandler::AppLauncherHandler(ExtensionService* extension_service)
     : extension_service_(extension_service),
-      promo_active_(false),
       ignore_changes_(false),
       attempted_bookmark_app_install_(false),
       has_loaded_apps_(false) {
@@ -188,49 +181,6 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
     prefs->SetPageIndex(extension->id(), page_index);
   }
   value->SetInteger("page_index", page_index);
-}
-
-// TODO(estade): remove this. We record app launches via js calls rather than
-// pings for ntp4.
-// static
-bool AppLauncherHandler::HandlePing(Profile* profile, const std::string& path) {
-  std::vector<std::string> params;
-  base::SplitString(path, '+', &params);
-
-  // Check if the user launched an app from the most visited or recently
-  // closed sections.
-  if (kPingLaunchAppByURL == params.at(0)) {
-    CHECK(params.size() == 3);
-    RecordAppLaunchByURL(
-        profile, params.at(1), ParseLaunchSource(params.at(2)));
-    return true;
-  }
-
-  bool is_web_store_ping = kPingLaunchWebStore == params.at(0);
-  bool is_app_launch_ping = kPingLaunchAppByID == params.at(0);
-
-  if (!is_web_store_ping && !is_app_launch_ping)
-    return false;
-
-  CHECK(params.size() >= 2);
-
-  bool is_promo_active = params.at(1) == "true";
-
-  // At this point, the user must have used the app launcher, so we hide the
-  // promo if its still displayed.
-  if (is_promo_active) {
-    DCHECK(profile->GetExtensionService());
-    profile->GetExtensionService()->apps_promo()->ExpireDefaultApps();
-  }
-
-  if (is_web_store_ping) {
-    RecordWebStoreLaunch(is_promo_active);
-  }  else {
-    CHECK(params.size() == 3);
-    RecordAppLaunchByID(is_promo_active, ParseLaunchSource(params.at(2)));
-  }
-
-  return true;
 }
 
 WebUIMessageHandler* AppLauncherHandler::Attach(WebUI* web_ui) {
@@ -514,10 +464,8 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
                                   &apps_promo_just_expired)) {
     dictionary.SetBoolean("showPromo", true);
     FillPromoDictionary(&dictionary);
-    promo_active_ = true;
   } else {
     dictionary.SetBoolean("showPromo", false);
-    promo_active_ = false;
   }
 
   // If the default apps have just expired (user viewed them too many times with
@@ -562,6 +510,7 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
 void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   std::string extension_id;
   double source = -1.0;
+  std::string url;
   bool alt_key = false;
   bool ctrl_key = false;
   bool meta_key = false;
@@ -570,12 +519,14 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
 
   CHECK(args->GetString(0, &extension_id));
   CHECK(args->GetDouble(1, &source));
-  if (args->GetSize() > 2) {
-    CHECK(args->GetBoolean(2, &alt_key));
-    CHECK(args->GetBoolean(3, &ctrl_key));
-    CHECK(args->GetBoolean(4, &meta_key));
-    CHECK(args->GetBoolean(5, &shift_key));
-    CHECK(args->GetDouble(6, &button));
+  if (args->GetSize() > 2)
+    CHECK(args->GetString(2, &url));
+  if (args->GetSize() > 3) {
+    CHECK(args->GetBoolean(3, &alt_key));
+    CHECK(args->GetBoolean(4, &ctrl_key));
+    CHECK(args->GetBoolean(5, &meta_key));
+    CHECK(args->GetBoolean(6, &shift_key));
+    CHECK(args->GetDouble(7, &button));
   }
 
   extension_misc::AppLaunchBucket launch_bucket =
@@ -603,20 +554,21 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
                                                 ctrl_key, meta_key, shift_key);
 
   if (extension_id != extension_misc::kWebStoreAppId) {
-    RecordAppLaunchByID(promo_active_, launch_bucket);
+    RecordAppLaunchByID(launch_bucket);
     extension_service_->apps_promo()->ExpireDefaultApps();
   } else if (NewTabUI::NTP4Enabled()) {
-    RecordWebStoreLaunch(promo_active_);
+    RecordWebStoreLaunch(url.find("chrome-ntp-promo") != std::string::npos);
   }
 
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
     // TODO(jamescook): Proper support for background tabs.
     Browser::OpenApplication(
-        profile, extension, extension_misc::LAUNCH_TAB, disposition);
+        profile, extension, extension_misc::LAUNCH_TAB, GURL(url), disposition);
   } else if (disposition == NEW_WINDOW) {
     // Force a new window open.
     Browser::OpenApplication(
-            profile, extension, extension_misc::LAUNCH_WINDOW, disposition);
+        profile, extension, extension_misc::LAUNCH_WINDOW, GURL(url),
+        disposition);
   } else {
     // Look at preference to find the right launch container.  If no preference
     // is set, launch as a regular tab.
@@ -632,7 +584,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
       old_contents = browser->GetSelectedTabContents();
 
     TabContents* new_contents = Browser::OpenApplication(
-        profile, extension, launch_container,
+        profile, extension, launch_container, GURL(url),
         old_contents ? CURRENT_TAB : NEW_FOREGROUND_TAB);
 
     // This will also destroy the handler, so do not perform any actions after.
@@ -910,17 +862,11 @@ void AppLauncherHandler::RecordWebStoreLaunch(bool promo_active) {
 
 // static
 void AppLauncherHandler::RecordAppLaunchByID(
-    bool promo_active, extension_misc::AppLaunchBucket bucket) {
+    extension_misc::AppLaunchBucket bucket) {
   CHECK(bucket != extension_misc::APP_LAUNCH_BUCKET_INVALID);
 
   UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram, bucket,
                             extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
-
-  if (!promo_active) return;
-
-  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppsPromoHistogram,
-                            extension_misc::PROMO_LAUNCH_APP,
-                            extension_misc::PROMO_BUCKET_BOUNDARY);
 }
 
 // static

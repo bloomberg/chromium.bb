@@ -187,3 +187,19 @@ document.addEventListener('click', function(e) {
     }
   }
 });
+
+/**
+ * Creates a new URL which is the old URL with a GET param of key=value.
+ * @param {string} url The base URL. There is not sanity checking on the URL so
+ *     it must be passed in a proper format.
+ * @param {string} key The key of the param.
+ * @param {string} value The value of the param.
+ * @return {string}
+ */
+function appendParam(url, key, value) {
+  var param = encodeURIComponent(key) + '=' + encodeURIComponent(value);
+
+  if (url.indexOf('?') == -1)
+    return url + '?' + param;
+  return url + '&' + param;
+}

@@ -53,6 +53,7 @@ class PanelAppBrowserTest : public ExtensionBrowserTest {
         extension,
         // Overriding manifest to open in a panel.
         extension_misc::LAUNCH_PANEL,
+        GURL(),
         NEW_WINDOW);
 
     // Now we have a new browser instance.

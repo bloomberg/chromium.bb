@@ -813,7 +813,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationTab(Profile* profile) {
 
   RecordCmdLineAppHistogram();
 
-  TabContents* app_tab = Browser::OpenApplicationTab(profile, extension,
+  TabContents* app_tab = Browser::OpenApplicationTab(profile, extension, GURL(),
                                                      NEW_FOREGROUND_TAB);
   return (app_tab != NULL);
 }
@@ -842,7 +842,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
 
     RecordCmdLineAppHistogram();
     TabContents* tab_in_app_window = Browser::OpenApplication(
-        profile, extension, launch_container, NEW_WINDOW);
+        profile, extension, launch_container, GURL(), NEW_WINDOW);
     return (tab_in_app_window != NULL);
   }
 
