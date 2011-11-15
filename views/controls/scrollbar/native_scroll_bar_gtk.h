@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,6 @@
 #include "views/controls/scrollbar/native_scroll_bar_wrapper.h"
 
 namespace views {
-
-class ScrollBarContainer;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -76,5 +74,4 @@ class NativeScrollBarGtk : public NativeControlGtk,
 
 }  // namespace views
 
-#endif  // #ifndef VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_GTK_H_
-
+#endif  // VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_GTK_H_

@@ -6,9 +6,11 @@
 #define VIEWS_CONTROLS_MENU_NATIVE_MENU_HOST_DELEGATE_H_
 
 namespace views {
+
 class MenuHost;
-class RootView;
+
 namespace internal {
+
 class NativeWidgetDelegate;
 
 class NativeMenuHostDelegate {
@@ -28,4 +30,3 @@ class NativeMenuHostDelegate {
 }  // namespace views
 
 #endif  // VIEWS_CONTROLS_MENU_NATIVE_MENU_HOST_DELEGATE_H_
-

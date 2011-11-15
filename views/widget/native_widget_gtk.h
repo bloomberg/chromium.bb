@@ -35,7 +35,6 @@ namespace views {
 
 class DropTargetGtk;
 class InputMethod;
-class TooltipManagerGtk;
 class View;
 
 namespace internal {

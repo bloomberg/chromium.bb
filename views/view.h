@@ -42,7 +42,6 @@ namespace ui {
 struct AccessibleViewState;
 class Compositor;
 class Layer;
-class LayerAnimationSequence;
 class TextInputClient;
 class Texture;
 class ThemeProvider;

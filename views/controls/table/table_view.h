@@ -26,8 +26,6 @@
 typedef struct tagNMLVCUSTOMDRAW NMLVCUSTOMDRAW;
 #endif  // defined(OS_WIN)
 
-class SkBitmap;
-
 namespace gfx {
 class Font;
 }

@@ -6,6 +6,7 @@
 #define VIEWS_WIDGET_WIDGET_H_
 #pragma once
 
+#include <set>
 #include <stack>
 
 #include "base/gtest_prod_util.h"
@@ -35,7 +36,6 @@
 
 namespace gfx {
 class Canvas;
-class Path;
 class Point;
 class Rect;
 }
@@ -56,7 +56,6 @@ class InputMethod;
 class NativeWidget;
 class NonClientFrameView;
 class ScopedEvent;
-class TooltipManager;
 class View;
 class WidgetDelegate;
 namespace internal {
@@ -747,4 +746,4 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
 }  // namespace views
 
-#endif // VIEWS_WIDGET_WIDGET_H_
+#endif  // VIEWS_WIDGET_WIDGET_H_

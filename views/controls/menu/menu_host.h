@@ -13,7 +13,6 @@
 
 namespace views {
 
-class NativeMenuHost;
 class NativeWidget;
 class SubmenuView;
 class View;

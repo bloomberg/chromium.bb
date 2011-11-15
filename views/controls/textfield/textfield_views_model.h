@@ -19,10 +19,7 @@
 #include "views/views_export.h"
 
 namespace gfx {
-class Canvas;
-class Font;
 class RenderText;
-struct StyleRange;
 }  // namespace gfx
 
 namespace ui {
@@ -54,7 +51,6 @@ enum MergeType {
 // It supports editing, selection and cursor manipulation.
 class VIEWS_EXPORT TextfieldViewsModel {
  public:
-
   // Delegate interface implemented by the textfield view class to provided
   // additional functionalities required by the model.
   class VIEWS_EXPORT Delegate {

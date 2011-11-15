@@ -7,8 +7,8 @@
 #pragma once
 
 namespace views {
-class View;
 namespace internal {
+
 class NativeWidgetPrivate;
 
 // Create dummy widgets for use in testing.  Caller owns the returned

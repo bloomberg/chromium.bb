@@ -14,10 +14,6 @@ class Canvas;
 class Size;
 }
 
-namespace ui {
-class Animation;
-}
-
 namespace views {
 
 class NativeThemeDelegate;

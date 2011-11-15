@@ -9,18 +9,15 @@
 #include <string>
 #include <vector>
 
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 #include "base/logging.h"
 #include "base/string16.h"
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/view.h"
 
 #if defined(OS_WIN)
+#include <windows.h>
+
 #include "ui/gfx/native_theme.h"
 #endif
 
@@ -38,7 +35,6 @@ namespace internal {
 class MenuRunnerImpl;
 }
 
-class MenuButton;
 struct MenuConfig;
 class MenuController;
 class MenuDelegate;

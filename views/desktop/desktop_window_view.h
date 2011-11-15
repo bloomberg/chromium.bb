@@ -15,7 +15,7 @@ class LayerAnimationSequence;
 }  // namespace ui
 
 namespace views {
-class NativeWidgetViews;
+
 class Widget;
 
 namespace desktop {

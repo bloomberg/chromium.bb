@@ -7,12 +7,10 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-namespace gfx {
-class Rect;
-}
-
 namespace views {
+
 class NativeWidget;
+
 namespace internal {
 class NativeMenuHostDelegate;
 }

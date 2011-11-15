@@ -34,7 +34,6 @@ class Rect;
 namespace ui {
 class ViewProp;
 class WaylandDisplay;
-class WaylandInputDevice;
 class WaylandWindow;
 }
 
