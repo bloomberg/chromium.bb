@@ -16,6 +16,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/global_error.h"
 #include "grit/generated_resources.h"
+#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -66,13 +67,21 @@ const CGFloat kWrenchBubblePointOffsetY = 6;
   else
     [cancelButton_ setTitle:SysUTF16ToNSString(cancelLabel)];
 
-  // Adapt window size to bottom buttons. Do this before all other layouting.
+  // First make sure that the window is wide enough to accomidate the buttons.
+  NSRect frame = [[self window] frame];
+  [layoutTweaker_ tweakUI:buttonContainer_];
+  CGFloat delta =  NSWidth([buttonContainer_ frame]) - NSWidth(frame);
+  if (delta > 0) {
+    frame.size.width += delta;
+    [[self window] setFrame:frame display:NO];
+  }
+
+  // Adapt window height to bottom buttons. Do this before all other layouting.
   NSArray* views = [NSArray arrayWithObjects:
-      title_, message_, [acceptButton_ superview], nil];
+      title_, message_, buttonContainer_, nil];
   NSSize ds = NSMakeSize(0, cocoa_l10n_util::VerticallyReflowGroup(views));
   ds = [[self bubble] convertSize:ds toView:nil];
 
-  NSRect frame = [[self window] frame];
   frame.origin.y -= ds.height;
   frame.size.height += ds.height;
   [[self window] setFrame:frame display:YES];

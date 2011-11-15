@@ -11,6 +11,8 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
 class GlobalError;
+@class GTMUILocalizerAndLayoutTweaker;
+@class GTMWidthBasedTweaker;
 
 // This is a bubble view shown from the wrench menu to display information
 // about a global error.
@@ -24,6 +26,8 @@ class GlobalError;
   IBOutlet NSTextField* message_;
   IBOutlet NSButton* acceptButton_;
   IBOutlet NSButton* cancelButton_;
+  IBOutlet GTMUILocalizerAndLayoutTweaker* layoutTweaker_;
+  IBOutlet GTMWidthBasedTweaker* buttonContainer_;
 }
 
 - (IBAction)onAccept:(id)sender;
