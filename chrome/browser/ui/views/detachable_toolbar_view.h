@@ -8,7 +8,6 @@
 
 #include "views/accessible_pane_view.h"
 
-class SkBitmap;
 struct SkRect;
 
 // DetachableToolbarView contains functionality common to views that can detach

@@ -15,8 +15,6 @@
 #include "views/controls/button/button.h"
 
 class BrowserView;
-class AvatarMenuButton;
-class SkBitmap;
 
 class GlassBrowserFrameView : public BrowserNonClientFrameView,
                               public content::NotificationObserver {

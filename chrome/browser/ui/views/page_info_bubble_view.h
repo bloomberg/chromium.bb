@@ -15,10 +15,6 @@
 #include "views/controls/link_listener.h"
 #include "views/view.h"
 
-namespace views {
-class Label;
-}
-
 class PageInfoBubbleView : public views::View,
                            public PageInfoModelObserver,
                            public BubbleDelegate,

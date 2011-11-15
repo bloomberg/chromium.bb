@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_SHELF_VIEW_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/download/download_shelf.h"
@@ -18,7 +20,6 @@
 class BaseDownloadItemModel;
 class Browser;
 class BrowserView;
-class DownloadAnimation;
 class DownloadItemView;
 
 namespace ui {

@@ -38,10 +38,6 @@ class ExtensionPopup;
 class PrefService;
 class Profile;
 
-namespace gfx {
-class CanvasSkia;
-}
-
 namespace ui {
 class SlideAnimation;
 }

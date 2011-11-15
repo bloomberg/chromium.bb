@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 
 namespace views {
-class Label;
 class Textfield;
 }
 
@@ -54,4 +53,3 @@ class LocalStorageInfoView : public views::View {
 
 
 #endif  // CHROME_BROWSER_UI_VIEWS_LOCAL_STORAGE_INFO_VIEW_H_
-

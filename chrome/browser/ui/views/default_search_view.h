@@ -16,7 +16,6 @@ class Profile;
 class TabContents;
 class TemplateURL;
 class TemplateURLService;
-class ThemeService;
 
 namespace gfx {
 class Canvas;
@@ -25,7 +24,6 @@ class Canvas;
 namespace views {
 class Button;
 class ImageView;
-class Label;
 class View;
 }
 

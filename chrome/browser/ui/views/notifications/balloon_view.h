@@ -35,9 +35,7 @@ class SlideAnimation;
 namespace views {
 class ButtonListener;
 class ImageButton;
-class ImagePainter;
 class MenuRunner;
-class TextButton;
 }
 
 // A balloon view is the UI component for a desktop notification toasts.

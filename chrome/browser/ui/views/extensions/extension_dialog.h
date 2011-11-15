@@ -15,7 +15,6 @@ class Browser;
 class ExtensionDialogObserver;
 class ExtensionHost;
 class GURL;
-class Profile;
 class TabContents;
 
 namespace views {

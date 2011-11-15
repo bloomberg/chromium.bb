@@ -49,14 +49,6 @@ class TabContents;
 class TabContentsWrapper;
 class TemplateURLService;
 
-namespace ui {
-class Accelerator;
-}  // namespace ui
-namespace views {
-class HorizontalPainter;
-class Label;
-}  // namespace views
-
 #if defined(OS_WIN) || defined(USE_AURA)
 class SuggestedTextView;
 #endif

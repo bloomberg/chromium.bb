@@ -17,13 +17,6 @@ class BrowserView;
 class FrameBackground;
 class WindowControlButton;
 
-namespace gfx {
-class canvas;
-}
-namespace views {
-class CustomButton;
-}
-
 class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
                                       public views::ButtonListener,
                                       public views::Widget::Observer,

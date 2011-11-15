@@ -37,10 +37,6 @@ class BorderWidgetWin;
 #endif
 class Bubble;
 
-namespace gfx {
-class Path;
-}
-
 namespace ui {
 class SlideAnimation;
 }

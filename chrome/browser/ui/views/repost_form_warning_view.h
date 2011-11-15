@@ -9,8 +9,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class ConstrainedWindow;
-class NavigationController;
 class RepostFormWarningController;
 class TabContents;
 

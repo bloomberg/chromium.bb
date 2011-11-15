@@ -19,10 +19,6 @@ class BookmarkNode;
 class PageNavigator;
 class Profile;
 
-namespace gfx {
-class Rect;
-}  // namespace gfx
-
 namespace ui {
 class OSExchangeData;
 }  // namespace ui

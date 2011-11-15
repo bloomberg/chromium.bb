@@ -16,13 +16,8 @@
 #include "views/controls/button/button.h"
 
 class BrowserView;
-namespace gfx {
-class Font;
-}
-class TabContents;
 namespace views {
 class ImageButton;
-class ImageView;
 }
 
 class OpaqueBrowserFrameView : public BrowserNonClientFrameView,

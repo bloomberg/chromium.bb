@@ -23,7 +23,6 @@ class Profile;
 
 namespace gfx {
 class CanvasSkia;
-class Insets;
 }
 
 namespace views {

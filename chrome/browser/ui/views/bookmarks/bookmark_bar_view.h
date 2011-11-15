@@ -7,6 +7,7 @@
 #pragma once
 
 #include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -29,7 +30,6 @@
 class BookmarkContextMenu;
 class Browser;
 class PageNavigator;
-class PrefService;
 
 namespace ui {
 class SlideAnimation;

@@ -11,9 +11,6 @@
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
 #include "views/widget/native_widget_gtk.h"
 
-class BrowserNonClientFrameView;
-class BrowserRootView;
-
 class BrowserFrameGtk : public views::NativeWidgetGtk,
                         public NativeBrowserFrame {
  public:

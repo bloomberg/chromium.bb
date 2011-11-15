@@ -12,14 +12,12 @@
 #include "chrome/browser/ui/views/frame/native_browser_frame_delegate.h"
 #include "views/widget/widget.h"
 
-class AeroGlassNonClientView;
 class AvatarMenuButton;
 class BrowserNonClientFrameView;
 class BrowserRootView;
 class BrowserView;
 class NativeBrowserFrame;
 class NonClientFrameView;
-class Profile;
 
 namespace gfx {
 class Font;

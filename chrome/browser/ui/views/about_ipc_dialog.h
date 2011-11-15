@@ -19,8 +19,6 @@
 #include "views/controls/button/button.h"
 #include "views/controls/table/table_view.h"
 
-
-class Profile;
 namespace views {
 class NativeViewHost;
 class TextButton;

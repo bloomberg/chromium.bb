@@ -13,13 +13,11 @@
 #include "views/controls/button/button.h"
 
 class BrowserView;
-class TabContents;
 namespace gfx {
 class Font;
 }
 namespace views {
 class ImageButton;
-class ImageView;
 }
 // The frame view which is used for Application Panels.
 // TODO(rafaelw): Refactor. This shares much duplicated code with

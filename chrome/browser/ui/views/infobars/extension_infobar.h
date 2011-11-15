@@ -12,7 +12,6 @@
 #include "views/controls/menu/view_menu_delegate.h"
 
 class Browser;
-class TabContentsWrapper;
 namespace views {
 class MenuButton;
 }

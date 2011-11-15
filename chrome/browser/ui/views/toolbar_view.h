@@ -25,7 +25,6 @@
 
 class BrowserActionsContainer;
 class Browser;
-class Profile;
 class WrenchMenu;
 
 namespace views {
@@ -138,7 +137,6 @@ class ToolbarView : public views::AccessiblePaneView,
   static const int kVertSpacing;
 
  protected:
-
   // Overridden from AccessiblePaneView
   virtual views::View* GetDefaultFocusableChild() OVERRIDE;
   virtual void RemovePaneFocus() OVERRIDE;

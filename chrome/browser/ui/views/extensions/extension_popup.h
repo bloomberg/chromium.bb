@@ -17,11 +17,6 @@
 
 class Browser;
 class ExtensionHost;
-class Profile;
-
-namespace views {
-class Widget;
-}
 
 class ExtensionPopup : public BrowserBubble,
                        public BrowserBubble::Delegate,
