@@ -59,6 +59,7 @@ TEST_F(SignatureUtilWinTest, UntrustedSignedBinary) {
   EXPECT_EQ("Joe's-Software-Emporium", certs[0]->subject().common_name);
   EXPECT_EQ("Root Agency", certs[1]->subject().common_name);
 
+  EXPECT_TRUE(signature_info.has_trusted());
   EXPECT_FALSE(signature_info.trusted());
 }
 
@@ -89,7 +90,7 @@ TEST_F(SignatureUtilWinTest, UnsignedBinary) {
   signature_util->CheckSignature(testdata_path_.Append(L"unsigned.exe"),
                                  &signature_info);
   EXPECT_EQ(0, signature_info.certificate_chain_size());
-  EXPECT_FALSE(signature_info.trusted());
+  EXPECT_FALSE(signature_info.has_trusted());
 }
 
 TEST_F(SignatureUtilWinTest, NonExistentBinary) {
@@ -99,7 +100,7 @@ TEST_F(SignatureUtilWinTest, NonExistentBinary) {
   signature_util->CheckSignature(testdata_path_.Append(L"doesnotexist.exe"),
                                  &signature_info);
   EXPECT_EQ(0, signature_info.certificate_chain_size());
-  EXPECT_FALSE(signature_info.trusted());
+  EXPECT_FALSE(signature_info.has_trusted());
 }
 
 }  // namespace safe_browsing
