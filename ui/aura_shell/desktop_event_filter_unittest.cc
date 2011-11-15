@@ -10,6 +10,7 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/aura/test/test_event_filter.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura_shell/shell_window_ids.h"
@@ -19,9 +20,9 @@
 namespace aura_shell {
 namespace test {
 
-class DefaultEventFilterTest : public aura::test::AuraTestBase {
+class DesktopEventFilterTest : public aura::test::AuraTestBase {
  public:
-  DefaultEventFilterTest() {
+  DesktopEventFilterTest() {
     aura::Desktop::GetInstance()->SetEventFilter(
         new internal::DesktopEventFilter);
 
@@ -31,12 +32,12 @@ class DefaultEventFilterTest : public aura::test::AuraTestBase {
     stacking_client->default_container()->set_id(
         internal::kShellWindowId_DefaultContainer);
   }
-  virtual ~DefaultEventFilterTest() {
+  virtual ~DesktopEventFilterTest() {
     aura::Desktop::GetInstance()->SetEventFilter(NULL);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DefaultEventFilterTest);
+  DISALLOW_COPY_AND_ASSIGN(DesktopEventFilterTest);
 };
 
 class HitTestWindowDelegate : public aura::test::TestWindowDelegate {
@@ -58,7 +59,7 @@ class HitTestWindowDelegate : public aura::test::TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(HitTestWindowDelegate);
 };
 
-TEST_F(DefaultEventFilterTest, Focus) {
+TEST_F(DesktopEventFilterTest, Focus) {
   aura::Desktop* desktop = aura::Desktop::GetInstance();
   desktop->SetBounds(gfx::Rect(0, 0, 510, 510));
 
@@ -120,7 +121,7 @@ TEST_F(DefaultEventFilterTest, Focus) {
 }
 
 // Various assertion testing for activating windows.
-TEST_F(DefaultEventFilterTest, ActivateOnMouse) {
+TEST_F(DesktopEventFilterTest, ActivateOnMouse) {
   aura::Desktop* desktop = aura::Desktop::GetInstance();
 
   aura::test::ActivateWindowDelegate d1;
@@ -186,7 +187,7 @@ TEST_F(DefaultEventFilterTest, ActivateOnMouse) {
 }
 
 // Essentially the same as ActivateOnMouse, but for touch events.
-TEST_F(DefaultEventFilterTest, ActivateOnTouch) {
+TEST_F(DesktopEventFilterTest, ActivateOnTouch) {
   aura::Desktop* desktop = aura::Desktop::GetInstance();
 
   aura::test::ActivateWindowDelegate d1;
@@ -252,7 +253,7 @@ TEST_F(DefaultEventFilterTest, ActivateOnTouch) {
   EXPECT_EQ(0, d1.lost_active_count());
 }
 
-TEST_F(DefaultEventFilterTest, MouseEventCursors) {
+TEST_F(DesktopEventFilterTest, MouseEventCursors) {
   aura::Desktop* desktop = aura::Desktop::GetInstance();
 
   // Create a window.
@@ -316,7 +317,7 @@ TEST_F(DefaultEventFilterTest, MouseEventCursors) {
   EXPECT_EQ(aura::kCursorNull, desktop->last_cursor());
 }
 
-TEST_F(DefaultEventFilterTest, TransformActivate) {
+TEST_F(DesktopEventFilterTest, TransformActivate) {
   aura::Desktop* desktop = aura::Desktop::GetInstance();
   gfx::Size size = desktop->GetHostSize();
   EXPECT_EQ(gfx::Rect(size),
@@ -353,6 +354,75 @@ TEST_F(DefaultEventFilterTest, TransformActivate) {
   desktop->DispatchMouseEvent(&mouseev2);
   EXPECT_EQ(w1.get(), desktop->active_window());
   EXPECT_EQ(w1.get(), w1->GetFocusManager()->GetFocusedWindow());
+}
+
+TEST_F(DesktopEventFilterTest, AdditionalFilters) {
+  aura::Desktop* desktop = aura::Desktop::GetInstance();
+
+  // Creates a window and make it active
+  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindow(
+      SK_ColorWHITE, -1, gfx::Rect(0, 0, 100, 100), NULL));
+  desktop->SetActiveWindow(w1.get(), NULL);
+
+  // Creates two addition filters
+  scoped_ptr<aura::test::TestEventFilter> f1(
+      new aura::test::TestEventFilter(NULL));
+  scoped_ptr<aura::test::TestEventFilter> f2(
+      new aura::test::TestEventFilter(NULL));
+
+  // Adds them to desktop event filter.
+  internal::DesktopEventFilter* desktop_filter =
+      static_cast<internal::DesktopEventFilter*>(desktop->event_filter());
+  desktop_filter->AddFilter(f1.get());
+  desktop_filter->AddFilter(f2.get());
+
+  // Dispatches mouse and keyboard events.
+  aura::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
+  desktop->DispatchKeyEvent(&key_event);
+  aura::MouseEvent mouse_pressed(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), 0x0);
+  desktop->DispatchMouseEvent(&mouse_pressed);
+
+  // Both filters should get the events.
+  EXPECT_EQ(1, f1->key_event_count());
+  EXPECT_EQ(1, f1->mouse_event_count());
+  EXPECT_EQ(1, f2->key_event_count());
+  EXPECT_EQ(1, f2->mouse_event_count());
+
+  f1->ResetCounts();
+  f2->ResetCounts();
+
+  // Makes f1 consume events.
+  f1->set_consumes_key_events(true);
+  f1->set_consumes_mouse_events(true);
+
+  // Dispatches events.
+  desktop->DispatchKeyEvent(&key_event);
+  aura::MouseEvent mouse_released(ui::ET_MOUSE_RELEASED, gfx::Point(0, 0), 0x0);
+  desktop->DispatchMouseEvent(&mouse_released);
+
+  // f1 should still get the events but f2 no longer gets them.
+  EXPECT_EQ(1, f1->key_event_count());
+  EXPECT_EQ(1, f1->mouse_event_count());
+  EXPECT_EQ(0, f2->key_event_count());
+  EXPECT_EQ(0, f2->mouse_event_count());
+
+  f1->ResetCounts();
+  f2->ResetCounts();
+
+  // Remove f1 from additonal filters list.
+  desktop_filter->RemoveFilter(f1.get());
+
+  // Dispatches events.
+  desktop->DispatchKeyEvent(&key_event);
+  desktop->DispatchMouseEvent(&mouse_pressed);
+
+  // f1 should get no events since it's out and f2 should get them.
+  EXPECT_EQ(0, f1->key_event_count());
+  EXPECT_EQ(0, f1->mouse_event_count());
+  EXPECT_EQ(1, f2->key_event_count());
+  EXPECT_EQ(1, f2->mouse_event_count());
+
+  desktop_filter->RemoveFilter(f2.get());
 }
 
 }  // namespace test

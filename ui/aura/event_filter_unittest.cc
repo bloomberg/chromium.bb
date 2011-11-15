@@ -10,6 +10,7 @@
 #include "ui/aura/event.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_event_filter.h"
 #include "ui/aura/test/test_window_delegate.h"
 
 #if defined(OS_WIN)
@@ -73,67 +74,6 @@ Window* CreateWindow(int id, Window* parent, WindowDelegate* delegate) {
   window->Show();
   return window;
 }
-
-class TestEventFilter : public EventFilter {
- public:
-  explicit TestEventFilter(Window* owner)
-      : EventFilter(owner),
-        key_event_count_(0),
-        mouse_event_count_(0),
-        touch_event_count_(0),
-        consumes_key_events_(false),
-        consumes_mouse_events_(false),
-        consumes_touch_events_(false) {
-  }
-  virtual ~TestEventFilter() {}
-
-  void ResetCounts() {
-    key_event_count_ = 0;
-    mouse_event_count_ = 0;
-    touch_event_count_ = 0;
-  }
-
-  int key_event_count() const { return key_event_count_; }
-  int mouse_event_count() const { return mouse_event_count_; }
-  int touch_event_count() const { return touch_event_count_; }
-
-  void set_consumes_key_events(bool consumes_key_events) {
-    consumes_key_events_ = consumes_key_events;
-  }
-  void set_consumes_mouse_events(bool consumes_mouse_events) {
-    consumes_mouse_events_ = consumes_mouse_events;
-  }
-  void set_consumes_touch_events(bool consumes_touch_events) {
-    consumes_touch_events_ = consumes_touch_events;
-  }
-
-  // Overridden from EventFilter:
-  virtual bool PreHandleKeyEvent(Window* target, KeyEvent* event) OVERRIDE {
-    ++key_event_count_;
-    return consumes_key_events_;
-  }
-  virtual bool PreHandleMouseEvent(Window* target, MouseEvent* event) OVERRIDE {
-    ++mouse_event_count_;
-    return consumes_mouse_events_;
-  }
-  virtual ui::TouchStatus PreHandleTouchEvent(Window* target,
-                                              TouchEvent* event) OVERRIDE {
-    ++touch_event_count_;
-    // TODO(sadrul): !
-    return ui::TOUCH_STATUS_UNKNOWN;
-  }
-
- private:
-  int key_event_count_;
-  int mouse_event_count_;
-  int touch_event_count_;
-
-  bool consumes_key_events_;
-  bool consumes_mouse_events_;
-  bool consumes_touch_events_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestEventFilter);
-};
 
 // Creates this hierarchy:
 //

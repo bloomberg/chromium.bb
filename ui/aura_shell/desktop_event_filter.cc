@@ -47,6 +47,17 @@ DesktopEventFilter::DesktopEventFilter()
 }
 
 DesktopEventFilter::~DesktopEventFilter() {
+  // Additional filters are not owned by DesktopEventFilter and they
+  // should all be removed when running here. |filters_| has
+  // check_empty == true and will DCHECK failure if it is not empty.
+}
+
+void DesktopEventFilter::AddFilter(aura::EventFilter* filter) {
+  filters_.AddObserver(filter);
+}
+
+void DesktopEventFilter::RemoveFilter(aura::EventFilter* filter) {
+  filters_.RemoveObserver(filter);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,11 +65,14 @@ DesktopEventFilter::~DesktopEventFilter() {
 
 bool DesktopEventFilter::PreHandleKeyEvent(aura::Window* target,
                                            aura::KeyEvent* event) {
-  return false;
+  return FilterKeyEvent(target, event);
 }
 
 bool DesktopEventFilter::PreHandleMouseEvent(aura::Window* target,
                                              aura::MouseEvent* event) {
+  if (FilterMouseEvent(target, event))
+    return true;
+
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
       ActivateIfNecessary(target, event);
@@ -75,6 +89,10 @@ bool DesktopEventFilter::PreHandleMouseEvent(aura::Window* target,
 ui::TouchStatus DesktopEventFilter::PreHandleTouchEvent(
     aura::Window* target,
     aura::TouchEvent* event) {
+  ui::TouchStatus status = FilterTouchEvent(target, event);
+  if (status != ui::TOUCH_STATUS_UNKNOWN)
+    return status;
+
   if (event->type() == ui::ET_TOUCH_PRESSED)
     ActivateIfNecessary(target, event);
   return ui::TOUCH_STATUS_UNKNOWN;
@@ -103,6 +121,44 @@ void DesktopEventFilter::HandleMouseMoved(aura::Window* target,
     cursor = CursorForWindowComponent(window_component);
   }
   aura::Desktop::GetInstance()->SetCursor(cursor);
+}
+
+bool DesktopEventFilter::FilterKeyEvent(aura::Window* target,
+                                        aura::KeyEvent* event) {
+  bool handled = false;
+  if (filters_.might_have_observers()) {
+    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
+    aura::EventFilter* filter;
+    while (!handled && (filter = it.GetNext()) != NULL)
+      handled = filter->PreHandleKeyEvent(target, event);
+  }
+  return handled;
+}
+
+bool DesktopEventFilter::FilterMouseEvent(aura::Window* target,
+                                          aura::MouseEvent* event) {
+  bool handled = false;
+  if (filters_.might_have_observers()) {
+    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
+    aura::EventFilter* filter;
+    while (!handled && (filter = it.GetNext()) != NULL)
+      handled = filter->PreHandleMouseEvent(target, event);
+  }
+  return handled;
+}
+
+ui::TouchStatus DesktopEventFilter::FilterTouchEvent(aura::Window* target,
+                                                     aura::TouchEvent* event) {
+  ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
+  if (filters_.might_have_observers()) {
+    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
+    aura::EventFilter* filter;
+    while (status == ui::TOUCH_STATUS_UNKNOWN &&
+        (filter = it.GetNext()) != NULL) {
+      status = filter->PreHandleTouchEvent(target, event);
+    }
+  }
+  return status;
 }
 
 }  // namespace internal

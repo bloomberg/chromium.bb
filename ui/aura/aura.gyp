@@ -69,6 +69,8 @@
         'test/aura_test_base.h',
         'test/event_generator.cc',
         'test/event_generator.h',
+        'test/test_event_filter.cc',
+        'test/test_event_filter.h',
         'test/test_stacking_client.cc',
         'test/test_stacking_client.h',
         'test/test_windows.cc',
