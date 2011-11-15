@@ -126,6 +126,7 @@ class CloudPrintConnector
     PENDING_PRINTER_DELETE
   };
 
+  // TODO(jhawkins): This name conflicts with base::PendingTask.
   struct PendingTask {
     PendingTaskType type;
     // Optional members, depending on type.
