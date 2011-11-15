@@ -555,16 +555,11 @@ void ProfileSyncService::OnUnrecoverableError(
 
 void ProfileSyncService::OnBackendInitialized(
     const WeakHandle<JsBackend>& js_backend, bool success) {
-  if (HasSyncSetupCompleted()) {
-    UMA_HISTOGRAM_BOOLEAN("Sync.FirstBackendInitializeSuccess", success);
-  } else {
-    UMA_HISTOGRAM_BOOLEAN("Sync.RestoreBackendInitializeSuccess", success);
-  }
-
   if (!success) {
-    // Something went unexpectedly wrong.  Play it safe: nuke our current state
-    // and prepare ourselves to try again later.
-    DisableForUser();
+    // If backend initialization failed, abort.  We only want to blow away
+    // state (DBs, etc) if this was a first-time scenario that failed.
+    wizard_.Step(SyncSetupWizard::FATAL_ERROR);
+    Shutdown(!HasSyncSetupCompleted());
     return;
   }
 

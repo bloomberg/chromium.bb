@@ -2082,7 +2082,15 @@ TEST_F(DirectoryBackingStoreTest, Corruption) {
     scoped_ptr<DirectoryBackingStore> dbs(
         new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
 
-    EXPECT_FALSE(dbs->BeginLoad());
+    // In release mode, we expect the sync database to nuke itself and start
+    // over if it detects invalid/corrupted data.
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
+    EXPECT_TRUE(dbs->BeginLoad());
+#elif defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
+    EXPECT_DEATH(dbs->BeginLoad(), "stmt_");
+#else
+    EXPECT_DEATH(dbs->BeginLoad(), "sqlite error");
+#endif
   }
 }
 
