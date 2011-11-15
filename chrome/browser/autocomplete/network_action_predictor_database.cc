@@ -89,7 +89,10 @@ NetworkActionPredictorDatabase::~NetworkActionPredictorDatabase() {
 
 void NetworkActionPredictorDatabase::Initialize() {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::DB));
-  CHECK(!canceled_.IsSet());
+
+  if (canceled_.IsSet())
+    return;
+
   db_.set_exclusive_locking();
   if (!db_.Open(db_path_)) {
     canceled_.Set();
