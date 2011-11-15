@@ -72,7 +72,7 @@ class MainPage(webapp.RequestHandler):
       logging.info("Path: " + self.request.path)
       logging.info("Url: " + url)
       try:
-        result = urlfetch.fetch(url + self.request.query_string)
+        result = urlfetch.fetch(url)
         if result.status_code != 200:
           logging.error("urlfetch failed: " + url)
           # TODO(nickbaum): what should we do when the urlfetch fails?
