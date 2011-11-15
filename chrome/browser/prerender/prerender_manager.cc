@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -97,18 +99,29 @@ bool NeedMatchCompleteDummyForFinalStatus(FinalStatus final_status) {
 
 }  // namespace
 
-class PrerenderManager::OnCloseTabContentsDeleter : public TabContentsDelegate {
+class PrerenderManager::OnCloseTabContentsDeleter
+    : public TabContentsDelegate,
+      public base::SupportsWeakPtr<
+          PrerenderManager::OnCloseTabContentsDeleter> {
  public:
   OnCloseTabContentsDeleter(PrerenderManager* manager,
                             TabContentsWrapper* tab)
       : manager_(manager),
         tab_(tab) {
     tab_->tab_contents()->set_delegate(this);
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        base::Bind(&OnCloseTabContentsDeleter::ScheduleTabContentsForDeletion,
+                   this->AsWeakPtr(), true), kDeleteWithExtremePrejudiceTimeMs);
   }
 
   virtual void CloseContents(TabContents* source) OVERRIDE {
-    tab_->tab_contents()->set_delegate(NULL);
-    manager_->ScheduleDeleteOldTabContents(tab_.release(), this);
+    DCHECK_EQ(tab_->tab_contents(), source);
+    ScheduleTabContentsForDeletion(false);
+  }
+
+  virtual void SwappedOut(TabContents* source) OVERRIDE {
+    DCHECK_EQ(tab_->tab_contents(), source);
+    ScheduleTabContentsForDeletion(false);
   }
 
   virtual bool ShouldSuppressDialogs() OVERRIDE {
@@ -116,6 +129,14 @@ class PrerenderManager::OnCloseTabContentsDeleter : public TabContentsDelegate {
   }
 
  private:
+  static const int kDeleteWithExtremePrejudiceTimeMs = 3000;
+
+  void ScheduleTabContentsForDeletion(bool timeout) {
+    tab_->tab_contents()->set_delegate(NULL);
+    manager_->ScheduleDeleteOldTabContents(tab_.release(), this);
+    UMA_HISTOGRAM_BOOLEAN("Prerender.TabContentsDeleterTimeout", timeout);
+  }
+
   PrerenderManager* manager_;
   scoped_ptr<TabContentsWrapper> tab_;
 

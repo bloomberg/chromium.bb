@@ -1647,6 +1647,11 @@ void TabContents::Close(RenderViewHost* rvh) {
     delegate()->CloseContents(this);
 }
 
+void TabContents::SwappedOut(RenderViewHost* rvh) {
+  if (delegate() && rvh == render_view_host())
+    delegate()->SwappedOut(this);
+}
+
 void TabContents::RequestMove(const gfx::Rect& new_bounds) {
   if (delegate() && delegate()->IsPopupOrPanel(this))
     delegate()->MoveContents(this, new_bounds);

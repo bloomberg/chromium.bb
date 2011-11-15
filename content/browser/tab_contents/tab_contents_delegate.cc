@@ -62,6 +62,9 @@ void TabContentsDelegate::LoadProgressChanged(double progress) {
 void TabContentsDelegate::CloseContents(TabContents* source) {
 }
 
+void TabContentsDelegate::SwappedOut(TabContents* source) {
+}
+
 void TabContentsDelegate::MoveContents(TabContents* source,
                                        const gfx::Rect& pos) {
 }

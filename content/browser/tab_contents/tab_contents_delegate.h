@@ -119,6 +119,10 @@ class CONTENT_EXPORT TabContentsDelegate {
   // it needs to do.
   virtual void CloseContents(TabContents* source);
 
+  // Informs the delegate that the underlying RenderViewHost has been swapped
+  // out so it can perform any cleanup necessary.
+  virtual void SwappedOut(TabContents* source);
+
   // Request the delegate to move this tab contents to the specified position
   // in screen coordinates.
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);

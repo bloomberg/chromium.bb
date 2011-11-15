@@ -348,6 +348,7 @@ void RenderViewHost::OnSwapOutACK() {
   // Stop the hang monitor now that the unload handler has finished.
   StopHangMonitorTimeout();
   is_waiting_for_unload_ack_ = false;
+  delegate_->SwappedOut(this);
 }
 
 void RenderViewHost::WasSwappedOut() {
