@@ -232,7 +232,8 @@ void BrowserPolicyConnector::ScheduleServiceInitialization(
 #endif
 }
 void BrowserPolicyConnector::InitializeUserPolicy(
-    const std::string& user_name) {
+    const std::string& user_name,
+    bool wait_for_policy_fetch) {
   // Throw away the old backend.
   user_cloud_policy_subsystem_.reset();
   user_policy_token_cache_.reset();
@@ -251,8 +252,10 @@ void BrowserPolicyConnector::InitializeUserPolicy(
 
   if (command_line->HasSwitch(switches::kDeviceManagementUrl)) {
     FilePath policy_cache_dir = policy_dir.Append(kPolicyDir);
+
     UserPolicyCache* user_policy_cache =
-        new UserPolicyCache(policy_cache_dir.Append(kPolicyCacheFile));
+        new UserPolicyCache(policy_cache_dir.Append(kPolicyCacheFile),
+                            wait_for_policy_fetch);
     user_data_store_.reset(CloudPolicyDataStore::CreateForUserPolicies());
     user_policy_token_cache_.reset(
         new UserPolicyTokenCache(user_data_store_.get(),
@@ -272,9 +275,11 @@ void BrowserPolicyConnector::InitializeUserPolicy(
     user_data_store_->set_user_name(user_name);
     user_data_store_->set_user_affiliation(GetUserAffiliation(user_name));
 
+    int64 delay =
+        wait_for_policy_fetch ? 0 : kServiceInitializationStartupDelay;
     user_cloud_policy_subsystem_->CompleteInitialization(
         prefs::kUserPolicyRefreshRate,
-        kServiceInitializationStartupDelay);
+        delay);
   }
 }
 
@@ -294,8 +299,18 @@ void BrowserPolicyConnector::SetUserPolicyTokenService(
 
 void BrowserPolicyConnector::RegisterForUserPolicy(
     const std::string& oauth_token) {
-  if (user_data_store_.get())
-    user_data_store_->SetOAuthToken(oauth_token);
+  if (oauth_token.empty()) {
+    // An attempt to fetch the dm service oauth token has failed. Notify
+    // the user policy cache of this, so that a potential blocked login
+    // proceeds without waiting for user policy.
+    if (user_cloud_policy_subsystem_.get()) {
+      user_cloud_policy_subsystem_->GetCloudPolicyCacheBase()->
+          SetFetchingDone();
+    }
+  } else {
+    if (user_data_store_.get())
+      user_data_store_->SetOAuthToken(oauth_token);
+  }
 }
 
 const CloudPolicyDataStore*
@@ -315,6 +330,21 @@ const CloudPolicyDataStore*
 const ConfigurationPolicyHandlerList*
     BrowserPolicyConnector::GetHandlerList() const {
   return &handler_list_;
+}
+
+CloudPolicyDataStore::UserAffiliation
+    BrowserPolicyConnector::GetUserAffiliation(const std::string& user_name) {
+#if defined(OS_CHROMEOS)
+  if (install_attributes_.get()) {
+    size_t pos = user_name.find('@');
+    if (pos != std::string::npos &&
+        user_name.substr(pos + 1) == install_attributes_->GetDomain()) {
+      return CloudPolicyDataStore::USER_AFFILIATION_MANAGED;
+    }
+  }
+#endif
+
+  return CloudPolicyDataStore::USER_AFFILIATION_NONE;
 }
 
 BrowserPolicyConnector::BrowserPolicyConnector()
@@ -414,21 +444,6 @@ void BrowserPolicyConnector::InitializeDevicePolicySubsystem() {
         kServiceInitializationStartupDelay);
   }
 #endif
-}
-
-CloudPolicyDataStore::UserAffiliation
-    BrowserPolicyConnector::GetUserAffiliation(const std::string& user_name) {
-#if defined(OS_CHROMEOS)
-  if (install_attributes_.get()) {
-    size_t pos = user_name.find('@');
-    if (pos != std::string::npos &&
-        user_name.substr(pos + 1) == install_attributes_->GetDomain()) {
-      return CloudPolicyDataStore::USER_AFFILIATION_MANAGED;
-    }
-  }
-#endif
-
-  return CloudPolicyDataStore::USER_AFFILIATION_NONE;
 }
 
 // static

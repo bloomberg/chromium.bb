@@ -126,6 +126,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetProfileManager(ProfileManager* profile_manager);
   void SetIOThread(IOThread* io_thread);
   void SetDevToolsManager(DevToolsManager*);
+  void SetBrowserPolicyConnector(policy::BrowserPolicyConnector* connector);
 
  private:
   NotificationServiceImpl notification_service_;

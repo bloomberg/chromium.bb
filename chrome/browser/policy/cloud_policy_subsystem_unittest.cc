@@ -117,7 +117,8 @@ class CloudPolicySubsystemTestBase : public TESTBASE {
     ASSERT_TRUE(temp_user_data_dir_.CreateUniqueTempDir());
     data_store_.reset(CloudPolicyDataStore::CreateForUserPolicies());
     cache_ = new UserPolicyCache(
-        temp_user_data_dir_.path().AppendASCII("CloudPolicyControllerTest"));
+        temp_user_data_dir_.path().AppendASCII("CloudPolicyControllerTest"),
+        false  /* wait_for_policy_fetch */);
     cloud_policy_subsystem_.reset(new TestingCloudPolicySubsystem(
         data_store_.get(), cache_,
         kDeviceManagementUrl, logger_.get()));

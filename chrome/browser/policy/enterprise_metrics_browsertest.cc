@@ -310,7 +310,7 @@ TEST_F(EnterpriseMetricsTest, TokenFetchOK) {
   DeviceManagementBackendTestHelper helper(loop());
 
   // Test token fetcher.
-  UserPolicyCache cache(temp_dir().AppendASCII("FetchTokenTest"));
+  UserPolicyCache cache(temp_dir().AppendASCII("FetchTokenTest"), false);
   scoped_ptr<CloudPolicyDataStore> data_store;
   data_store.reset(CloudPolicyDataStore::CreateForUserPolicies());
   data_store->SetupForTesting("", "fake_device_id", "fake_user_name",
@@ -465,7 +465,7 @@ TEST_F(EnterpriseMetricsTest, PolicyFetchReceiveResponse) {
 TEST_F(EnterpriseMetricsTest, PolicyFetchInvalidPolicy) {
   SetMetricName(kMetricPolicy);
 
-  UserPolicyCache cache(temp_dir().AppendASCII("UserPolicyCacheTest"));
+  UserPolicyCache cache(temp_dir().AppendASCII("UserPolicyCacheTest"), false);
   UserPolicyDiskCache::Delegate* cache_as_delegate =
       implicit_cast<UserPolicyDiskCache::Delegate*>(&cache);
 
@@ -480,7 +480,7 @@ TEST_F(EnterpriseMetricsTest, PolicyFetchInvalidPolicy) {
 TEST_F(EnterpriseMetricsTest, PolicyFetchTimestampInFuture) {
   SetMetricName(kMetricPolicy);
 
-  UserPolicyCache cache(temp_dir().AppendASCII("UserPolicyCacheTest"));
+  UserPolicyCache cache(temp_dir().AppendASCII("UserPolicyCacheTest"), false);
   UserPolicyDiskCache::Delegate* cache_as_delegate =
       implicit_cast<UserPolicyDiskCache::Delegate*>(&cache);
 
@@ -502,7 +502,7 @@ TEST_F(EnterpriseMetricsTest, PolicyFetchTimestampInFuture) {
 TEST_F(EnterpriseMetricsTest, PolicyFetchNotModified) {
   SetMetricName(kMetricPolicy);
 
-  UserPolicyCache cache(temp_dir().AppendASCII("UserPolicyCacheTest"));
+  UserPolicyCache cache(temp_dir().AppendASCII("UserPolicyCacheTest"), false);
   UserPolicyDiskCache::Delegate* cache_as_delegate =
       implicit_cast<UserPolicyDiskCache::Delegate*>(&cache);
 
@@ -521,7 +521,7 @@ TEST_F(EnterpriseMetricsTest, PolicyFetchNotModified) {
 TEST_F(EnterpriseMetricsTest, PolicyFetchOK) {
   SetMetricName(kMetricPolicy);
 
-  UserPolicyCache cache(temp_dir().AppendASCII("UserPolicyCacheTest"));
+  UserPolicyCache cache(temp_dir().AppendASCII("UserPolicyCacheTest"), false);
 
   std::string data;
   em::PolicyData policy_data;
@@ -541,7 +541,7 @@ TEST_F(EnterpriseMetricsTest, PolicyFetchOK) {
 TEST_F(EnterpriseMetricsTest, PolicyFetchBadResponse) {
   SetMetricName(kMetricPolicy);
 
-  UserPolicyCache cache(temp_dir().AppendASCII("UserPolicyCacheTest"));
+  UserPolicyCache cache(temp_dir().AppendASCII("UserPolicyCacheTest"), false);
   PolicyNotifier notifier;
   scoped_ptr<CloudPolicyDataStore> data_store;
   data_store.reset(CloudPolicyDataStore::CreateForUserPolicies());

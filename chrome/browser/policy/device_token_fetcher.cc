@@ -224,6 +224,10 @@ void DeviceTokenFetcher::SetState(FetcherState state) {
     scheduler_->PostDelayedWork(
         base::Bind(&DeviceTokenFetcher::DoWork, base::Unretained(this)), delay);
   }
+
+  // Inform the cache if a token fetch attempt has failed.
+  if (state_ != STATE_INACTIVE && state_ != STATE_TOKEN_AVAILABLE)
+    cache_->SetFetchingDone();
 }
 
 void DeviceTokenFetcher::DoWork() {

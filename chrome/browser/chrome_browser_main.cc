@@ -1543,7 +1543,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // Initialize user policy before creating the profile so the profile
     // initialization code sees policy settings.
     g_browser_process->browser_policy_connector()->InitializeUserPolicy(
-        username);
+        username, false  /* wait_for_policy_fetch */);
   }
 #endif
 

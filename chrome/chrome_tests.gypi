@@ -2427,6 +2427,7 @@
         'browser/chromeos/login/enrollment/enterprise_enrollment_screen_browsertest.cc',
         'browser/chromeos/login/existing_user_controller_browsertest.cc',
         'browser/chromeos/login/login_browsertest.cc',
+        'browser/chromeos/login/login_utils_browsertest.cc',
         'browser/chromeos/login/mock_authenticator.cc',
         'browser/chromeos/login/mock_authenticator.h',
         'browser/chromeos/login/enrollment/mock_enterprise_enrollment_screen.cc',

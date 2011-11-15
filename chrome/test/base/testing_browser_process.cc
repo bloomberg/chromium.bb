@@ -274,3 +274,8 @@ void TestingBrowserProcess::SetIOThread(IOThread* io_thread) {
 void TestingBrowserProcess::SetDevToolsManager(DevToolsManager* manager) {
   devtools_manager_.reset(manager);
 }
+
+void TestingBrowserProcess::SetBrowserPolicyConnector(
+    policy::BrowserPolicyConnector* connector) {
+  browser_policy_connector_.reset(connector);
+}

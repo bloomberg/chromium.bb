@@ -207,7 +207,7 @@ TEST_F(UserPolicyCacheTest, DecodeStringList) {
 }
 
 TEST_F(UserPolicyCacheTest, Empty) {
-  UserPolicyCache cache(test_file());
+  UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   PolicyMap empty;
   EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
   EXPECT_TRUE(empty.Equals(recommended_policy(cache)));
@@ -215,7 +215,7 @@ TEST_F(UserPolicyCacheTest, Empty) {
 }
 
 TEST_F(UserPolicyCacheTest, LoadNoFile) {
-  UserPolicyCache cache(test_file());
+  UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   cache.Load();
   loop_.RunAllPending();
   PolicyMap empty;
@@ -229,7 +229,7 @@ TEST_F(UserPolicyCacheTest, RejectFuture) {
                                base::TimeDelta::FromMinutes(5),
                            em::PolicyOptions::MANDATORY));
   WritePolicy(*policy_response);
-  UserPolicyCache cache(test_file());
+  UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   cache.Load();
   loop_.RunAllPending();
   PolicyMap empty;
@@ -242,7 +242,7 @@ TEST_F(UserPolicyCacheTest, LoadWithFile) {
       CreateHomepagePolicy("", base::Time::NowFromSystemTime(),
                            em::PolicyOptions::MANDATORY));
   WritePolicy(*policy_response);
-  UserPolicyCache cache(test_file());
+  UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   cache.Load();
   loop_.RunAllPending();
   PolicyMap empty;
@@ -257,7 +257,7 @@ TEST_F(UserPolicyCacheTest, LoadWithData) {
                            base::Time::NowFromSystemTime(),
                            em::PolicyOptions::MANDATORY));
   WritePolicy(*policy);
-  UserPolicyCache cache(test_file());
+  UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   cache.Load();
   loop_.RunAllPending();
   PolicyMap expected;
@@ -267,7 +267,7 @@ TEST_F(UserPolicyCacheTest, LoadWithData) {
 }
 
 TEST_F(UserPolicyCacheTest, SetPolicy) {
-  UserPolicyCache cache(test_file());
+  UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   em::PolicyFetchResponse* policy =
       CreateHomepagePolicy("http://www.example.com",
                            base::Time::NowFromSystemTime(),
@@ -293,7 +293,7 @@ TEST_F(UserPolicyCacheTest, SetPolicy) {
 }
 
 TEST_F(UserPolicyCacheTest, ResetPolicy) {
-  UserPolicyCache cache(test_file());
+  UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
 
   em::PolicyFetchResponse* policy =
       CreateHomepagePolicy("http://www.example.com",
@@ -315,7 +315,7 @@ TEST_F(UserPolicyCacheTest, ResetPolicy) {
 
 TEST_F(UserPolicyCacheTest, PersistPolicy) {
   {
-    UserPolicyCache cache(test_file());
+    UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
     scoped_ptr<em::PolicyFetchResponse> policy(
         CreateHomepagePolicy("http://www.example.com",
                              base::Time::NowFromSystemTime(),
@@ -326,7 +326,7 @@ TEST_F(UserPolicyCacheTest, PersistPolicy) {
   loop_.RunAllPending();
 
   EXPECT_TRUE(file_util::PathExists(test_file()));
-  UserPolicyCache cache(test_file());
+  UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   cache.Load();
   loop_.RunAllPending();
   PolicyMap expected;
@@ -342,7 +342,7 @@ TEST_F(UserPolicyCacheTest, FreshPolicyOverride) {
                            em::PolicyOptions::MANDATORY));
   WritePolicy(*policy);
 
-  UserPolicyCache cache(test_file());
+  UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   em::PolicyFetchResponse* updated_policy =
       CreateHomepagePolicy("http://www.chromium.org",
                            base::Time::NowFromSystemTime(),
@@ -358,7 +358,7 @@ TEST_F(UserPolicyCacheTest, FreshPolicyOverride) {
 }
 
 TEST_F(UserPolicyCacheTest, SetReady) {
-  UserPolicyCache cache(test_file());
+  UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   cache.AddObserver(&observer);
   scoped_ptr<em::PolicyFetchResponse> policy(
       CreateHomepagePolicy("http://www.example.com",
@@ -378,7 +378,7 @@ TEST_F(UserPolicyCacheTest, SetReady) {
 // CloudPolicySettings protobuf. Can be removed when this support is no longer
 // required.
 TEST_F(UserPolicyCacheTest, OldStylePolicy) {
-  UserPolicyCache cache(test_file());
+  UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   em::PolicyFetchResponse* policy = new em::PolicyFetchResponse();
   em::PolicyData signed_response;
   em::LegacyChromeSettingsProto settings;
@@ -409,6 +409,34 @@ TEST_F(UserPolicyCacheTest, OldStylePolicy) {
   SetPolicy(&cache, policy);
   EXPECT_TRUE(expected.Equals(recommended_policy(cache)));
   EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
+}
+
+TEST_F(UserPolicyCacheTest, CheckReadyNoWaiting) {
+  UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
+  EXPECT_FALSE(cache.IsReady());
+  cache.Load();
+  loop_.RunAllPending();
+  EXPECT_TRUE(cache.IsReady());
+}
+
+TEST_F(UserPolicyCacheTest, CheckReadyWaitForFetch) {
+  UserPolicyCache cache(test_file(), true  /* wait_for_policy_fetch */);
+  EXPECT_FALSE(cache.IsReady());
+  cache.Load();
+  loop_.RunAllPending();
+  EXPECT_FALSE(cache.IsReady());
+  cache.SetFetchingDone();
+  EXPECT_TRUE(cache.IsReady());
+}
+
+TEST_F(UserPolicyCacheTest, CheckReadyWaitForDisk) {
+  UserPolicyCache cache(test_file(), true  /* wait_for_policy_fetch */);
+  EXPECT_FALSE(cache.IsReady());
+  cache.SetFetchingDone();
+  EXPECT_FALSE(cache.IsReady());
+  cache.Load();
+  loop_.RunAllPending();
+  EXPECT_TRUE(cache.IsReady());
 }
 
 }  // namespace policy

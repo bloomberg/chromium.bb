@@ -140,7 +140,7 @@ class GaiaOAuthFetcher : public content::URLFetcherDelegate,
 
   // StartGetOAuthToken (or other Start* routine) been called, but results
   // are not back yet.
-  virtual bool HasPendingFetch();
+  virtual bool HasPendingFetch() const;
 
   // Stop any URL fetches in progress.
   virtual void CancelRequest();

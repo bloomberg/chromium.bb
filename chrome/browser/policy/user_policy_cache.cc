@@ -28,8 +28,11 @@ namespace policy {
 void DecodePolicy(const em::CloudPolicySettings& policy,
                   PolicyMap* mandatory, PolicyMap* recommended);
 
-UserPolicyCache::UserPolicyCache(const FilePath& backing_file_path)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+UserPolicyCache::UserPolicyCache(const FilePath& backing_file_path,
+                                 bool wait_for_policy_fetch)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      disk_cache_ready_(false),
+      fetch_ready_(!wait_for_policy_fetch) {
   disk_cache_ = new UserPolicyDiskCache(weak_ptr_factory_.GetWeakPtr(),
                                         backing_file_path);
 }
@@ -72,6 +75,13 @@ void UserPolicyCache::SetUnmanaged() {
   disk_cache_->Store(cached_policy);
 }
 
+void UserPolicyCache::SetFetchingDone() {
+  if (!fetch_ready_)
+    DVLOG(1) << "SetFetchingDone, cache is now fetch_ready_";
+  fetch_ready_ = true;
+  CheckIfReady();
+}
+
 void UserPolicyCache::OnDiskCacheLoaded(
     UserPolicyDiskCache::LoadResult result,
     const em::CachedCloudPolicyResponse& cached_response) {
@@ -89,7 +99,8 @@ void UserPolicyCache::OnDiskCacheLoaded(
   }
 
   // Ready to feed policy up the chain!
-  SetReady();
+  disk_cache_ready_ = true;
+  CheckIfReady();
 }
 
 bool UserPolicyCache::DecodePolicyData(const em::PolicyData& policy_data,
@@ -105,6 +116,11 @@ bool UserPolicyCache::DecodePolicyData(const em::PolicyData& policy_data,
   DecodePolicy(policy, mandatory, recommended);
   MaybeDecodeOldstylePolicy(policy_data.policy_value(), mandatory, recommended);
   return true;
+}
+
+void UserPolicyCache::CheckIfReady() {
+  if (!IsReady() && disk_cache_ready_ && fetch_ready_)
+    SetReady();
 }
 
 // Everything below is only needed for supporting old-style GenericNamedValue

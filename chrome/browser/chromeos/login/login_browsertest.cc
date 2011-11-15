@@ -20,11 +20,7 @@
 
 namespace chromeos {
 using ::testing::_;
-using ::testing::AnyNumber;
-using ::testing::InvokeWithoutArgs;
-using ::testing::NiceMock;
 using ::testing::Return;
-using ::testing::ReturnRef;
 
 class LoginTestBase : public CrosInProcessBrowserTest {
  public:

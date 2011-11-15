@@ -126,6 +126,7 @@ void CloudPolicyController::HandlePolicyResponse(
   } else {
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchBadResponse,
                               kMetricPolicySize);
+    SetState(STATE_POLICY_UNAVAILABLE);
   }
 }
 
@@ -369,6 +370,11 @@ void CloudPolicyController::SetState(
         base::Bind(&CloudPolicyController::DoWork, base::Unretained(this)),
         delay);
   }
+
+  // Inform the cache if a fetch attempt has completed. This happens if policy
+  // has been succesfully fetched, or if token or policy fetching failed.
+  if (state_ != STATE_TOKEN_UNAVAILABLE && state_ != STATE_TOKEN_VALID)
+    cache_->SetFetchingDone();
 }
 
 int64 CloudPolicyController::GetRefreshDelay() {

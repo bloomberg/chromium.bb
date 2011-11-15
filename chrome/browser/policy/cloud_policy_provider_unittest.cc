@@ -47,6 +47,10 @@ class MockCloudPolicyCache : public CloudPolicyCacheBase {
     is_unmanaged_ = true;
   }
 
+  void SetFetchingDone() {
+    // Implement pure virtual method.
+  }
+
   void set_initialized(bool initialized) {
     initialization_complete_ = initialized;
   }

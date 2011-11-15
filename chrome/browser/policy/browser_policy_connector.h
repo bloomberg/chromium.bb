@@ -98,19 +98,30 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   void ScheduleServiceInitialization(int64 delay_milliseconds);
 
   // Initializes the user cloud policy infrastructure.
-  void InitializeUserPolicy(const std::string& user_name);
+  // If |wait_for_policy_fetch| is true, the user policy will only become fully
+  // initialized after a policy fetch is attempted. Note that Profile creation
+  // is blocked until this initialization is complete.
+  void InitializeUserPolicy(const std::string& user_name,
+                            bool wait_for_policy_fetch);
 
   // Installs a token service for user policy.
   void SetUserPolicyTokenService(TokenService* token_service);
 
   // Registers for user policy (if not already registered), using the passed
-  // OAuth V2 token for authentication.
+  // OAuth V2 token for authentication. |oauth_token| can be empty to signal
+  // that an attempt to fetch the token was made but failed, or that oauth
+  // isn't being used.
   void RegisterForUserPolicy(const std::string& oauth_token);
 
   const CloudPolicyDataStore* GetDeviceCloudPolicyDataStore() const;
   const CloudPolicyDataStore* GetUserCloudPolicyDataStore() const;
 
   const ConfigurationPolicyHandlerList* GetHandlerList() const;
+
+  // Works out the user affiliation by checking the given |user_name| against
+  // the installation attributes.
+  policy::CloudPolicyDataStore::UserAffiliation GetUserAffiliation(
+      const std::string& user_name);
 
  private:
   friend class ::TestingBrowserProcess;
@@ -137,11 +148,6 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // from InitializeDevicePolicy since it needs to wait for the message loops to
   // be running.
   void InitializeDevicePolicySubsystem();
-
-  // Works out the user affiliation by checking the given |user_name| against
-  // the installation attributes.
-  policy::CloudPolicyDataStore::UserAffiliation GetUserAffiliation(
-      const std::string& user_name);
 
   static BrowserPolicyConnector* CreateForTests();
   static ConfigurationPolicyProvider* CreateManagedPlatformProvider();

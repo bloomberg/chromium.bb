@@ -102,22 +102,24 @@ const char kServiceScopeChromeOSDeviceManagement[] =
 // Task for fetching tokens from UI thread.
 class StartSyncOnUIThreadTask : public Task {
  public:
-  StartSyncOnUIThreadTask(
+  explicit StartSyncOnUIThreadTask(
       const GaiaAuthConsumer::ClientLoginResult& credentials)
       : credentials_(credentials) {}
   virtual ~StartSyncOnUIThreadTask() {}
 
   // Task override.
-  virtual void Run() {
+  virtual void Run() OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     LoginUtils::Get()->FetchCookies(ProfileManager::GetDefaultProfile(),
                                     credentials_);
     LoginUtils::Get()->StartSync(ProfileManager::GetDefaultProfile(),
-                                   credentials_);
+                                 credentials_);
   }
 
  private:
   GaiaAuthConsumer::ClientLoginResult credentials_;
+
+  DISALLOW_COPY_AND_ASSIGN(StartSyncOnUIThreadTask);
 };
 
 // Transfers initial set of Profile cookies from the default profile.
@@ -131,7 +133,7 @@ class TransferDefaultCookiesOnIOThreadTask : public Task {
   virtual ~TransferDefaultCookiesOnIOThreadTask() {}
 
   // Task override.
-  virtual void Run() {
+  virtual void Run() OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     net::CookieStore* default_store =
         auth_context_->GetURLRequestContext()->cookie_store();
@@ -146,7 +148,7 @@ class TransferDefaultCookiesOnIOThreadTask : public Task {
   void InitializeCookieMonster(const net::CookieList& cookies) {
      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
      net::CookieStore* new_store =
-       new_context_->GetURLRequestContext()->cookie_store();
+         new_context_->GetURLRequestContext()->cookie_store();
      net::CookieMonster* new_monster = new_store->GetCookieMonster();
 
     if (!new_monster->InitializeFrom(cookies)) {
@@ -223,8 +225,8 @@ class OAuthLoginVerifier : public GaiaOAuthConsumer {
   virtual void OnOAuthLoginSuccess(const std::string& sid,
                                    const std::string& lsid,
                                    const std::string& auth) OVERRIDE {
-    GaiaAuthConsumer::ClientLoginResult credentials(sid,
-      lsid, auth, std::string());
+    GaiaAuthConsumer::ClientLoginResult credentials(
+        sid, lsid, auth, std::string());
     UserManager::Get()->set_offline_login(false);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             new StartSyncOnUIThreadTask(credentials));
@@ -232,8 +234,8 @@ class OAuthLoginVerifier : public GaiaOAuthConsumer {
 
   virtual void OnOAuthLoginFailure(
       const GoogleServiceAuthError& error) OVERRIDE {
-    LOG(WARNING) << "Failed to verify OAuth1 access tokens,"
-                 << " error.state=" << error.state();
+    LOG(WARNING) << "Failed to verify OAuth1 access tokens, error: "
+                 << error.state();
 
     // Mark this account's OAuth token state as invalid if the failure is not
     // caused by network error.
@@ -277,8 +279,7 @@ class UserSessionCookieFetcher : public GaiaAuthConsumer {
 
   virtual void OnIssueAuthTokenFailure(const std::string& service,
       const GoogleServiceAuthError& error) OVERRIDE {
-    LOG(WARNING) << "Failed IssueAuthToken request,"
-                 << " error.state=" << error.state();
+    LOG(WARNING) << "Failed IssueAuthToken request, error: " << error.state();
     HandlerGaiaAuthError(error);
     delete this;
   }
@@ -290,8 +291,7 @@ class UserSessionCookieFetcher : public GaiaAuthConsumer {
 
   virtual void OnMergeSessionFailure(
       const GoogleServiceAuthError& error) OVERRIDE {
-    LOG(WARNING) << "Failed MergeSession request,"
-                 << " error.state=" << error.state();
+    LOG(WARNING) << "Failed MergeSession request, error: " << error.state();
     HandlerGaiaAuthError(error);
     delete this;
   }
@@ -309,10 +309,15 @@ class UserSessionCookieFetcher : public GaiaAuthConsumer {
   DISALLOW_COPY_AND_ASSIGN(UserSessionCookieFetcher);
 };
 
-
-// Fetches an OAuth token and initializes user policy with it.
+// Fetches the oauth token for the device management service. Since Profile
+// creation might be blocking on a user policy fetch, this fetcher must always
+// send a (possibly empty) token to the BrowserPolicyConnector, which will then
+// let the policy subsystem proceed and resume Profile creation.
+// Sending the token even when no Profile is pending is also OK.
 class PolicyOAuthFetcher : public GaiaOAuthConsumer {
  public:
+  // Fetches the device management service's oauth token using |oauth1_token|
+  // and |oauth1_secret| as access tokens.
   PolicyOAuthFetcher(Profile* profile,
                      const std::string& oauth1_token,
                      const std::string& oauth1_secret)
@@ -322,37 +327,90 @@ class PolicyOAuthFetcher : public GaiaOAuthConsumer {
                        kServiceScopeChromeOSDeviceManagement),
         oauth1_token_(oauth1_token),
         oauth1_secret_(oauth1_secret) {
-    oauth_fetcher_.SetAutoFetchLimit(
-        GaiaOAuthFetcher::OAUTH2_SERVICE_ACCESS_TOKEN);
   }
+
+  // Fetches the device management service's oauth token, after also retrieving
+  // the access tokens.
+  explicit PolicyOAuthFetcher(Profile* profile)
+      : oauth_fetcher_(this,
+                       profile->GetRequestContext(),
+                       profile,
+                       kServiceScopeChromeOSDeviceManagement) {
+  }
+
   virtual ~PolicyOAuthFetcher() {}
 
   void Start() {
-    oauth_fetcher_.StartOAuthWrapBridge(
-        oauth1_token_, oauth1_secret_, GaiaConstants::kGaiaOAuthDuration,
-        std::string(kServiceScopeChromeOSDeviceManagement));
+    oauth_fetcher_.SetAutoFetchLimit(
+        GaiaOAuthFetcher::OAUTH2_SERVICE_ACCESS_TOKEN);
+
+    if (oauth1_token_.empty()) {
+      oauth_fetcher_.StartGetOAuthTokenRequest();
+    } else {
+      oauth_fetcher_.StartOAuthWrapBridge(
+          oauth1_token_, oauth1_secret_, GaiaConstants::kGaiaOAuthDuration,
+          std::string(kServiceScopeChromeOSDeviceManagement));
+    }
   }
 
-  // GaiaOAuthConsumer implementation:
+  const std::string& oauth1_token() const { return oauth1_token_; }
+  const std::string& oauth1_secret() const { return oauth1_secret_; }
+  bool failed() const {
+    return !oauth_fetcher_.HasPendingFetch() && policy_token_.empty();
+  }
+
+ private:
+  virtual void OnGetOAuthTokenSuccess(const std::string& oauth_token) OVERRIDE {
+    VLOG(1) << "Got OAuth request token";
+  }
+
+  virtual void OnGetOAuthTokenFailure(
+      const GoogleServiceAuthError& error) OVERRIDE {
+    LOG(WARNING) << "Failed to get OAuth request token, error: "
+                 << error.state();
+    SetPolicyToken("");
+  }
+
+  virtual void OnOAuthGetAccessTokenSuccess(
+      const std::string& token,
+      const std::string& secret) OVERRIDE {
+    VLOG(1) << "Got OAuth access token";
+    oauth1_token_ = token;
+    oauth1_secret_ = secret;
+  }
+
+  virtual void OnOAuthGetAccessTokenFailure(
+      const GoogleServiceAuthError& error) OVERRIDE {
+    LOG(WARNING) << "Failed to get OAuth access token, error: "
+                 << error.state();
+    SetPolicyToken("");
+  }
+
   virtual void OnOAuthWrapBridgeSuccess(
       const std::string& service_name,
       const std::string& token,
       const std::string& expires_in) OVERRIDE {
-    policy::BrowserPolicyConnector* browser_policy_connector =
-        g_browser_process->browser_policy_connector();
-    browser_policy_connector->RegisterForUserPolicy(token);
+    VLOG(1) << "Got OAuth access token for " << service_name;
+    SetPolicyToken(token);
   }
 
   virtual void OnOAuthWrapBridgeFailure(
       const std::string& service_name,
       const GoogleServiceAuthError& error) OVERRIDE {
-    LOG(WARNING) << "Failed to get OAuth access token for " << service_name;
+    LOG(WARNING) << "Failed to get OAuth access token for " << service_name
+                 << ", error: " << error.state();
+    SetPolicyToken("");
   }
 
- private:
+  void SetPolicyToken(const std::string& token) {
+    policy_token_ = token;
+    g_browser_process->browser_policy_connector()->RegisterForUserPolicy(token);
+  }
+
   GaiaOAuthFetcher oauth_fetcher_;
   std::string oauth1_token_;
   std::string oauth1_secret_;
+  std::string policy_token_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyOAuthFetcher);
 };
@@ -461,7 +519,7 @@ class LoginUtilsImpl : public LoginUtils,
   // GaiaOAuthConsumer overrides.
   virtual void OnGetOAuthTokenSuccess(const std::string& oauth_token) OVERRIDE;
   virtual void OnGetOAuthTokenFailure(
-    const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnOAuthGetAccessTokenSuccess(const std::string& token,
                                             const std::string& secret) OVERRIDE;
   virtual void OnOAuthGetAccessTokenFailure(
@@ -605,9 +663,33 @@ void LoginUtilsImpl::PrepareProfile(
   has_cookies_ = has_cookies;
   delegate_ = delegate;
 
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+
+  // If this is an enterprise device and the user belongs to the enterprise
+  // domain, then wait for a policy fetch before logging the user in. This
+  // will delay Profile creation until the policy is fetched, so that features
+  // controlled by policy (e.g. Sync, Startup tabs) only start after the
+  // PrefService has the right values.
+  // Profile creation is also resumed if the fetch attempt fails.
+  bool wait_for_policy_fetch =
+      using_oauth_ &&
+      authenticator_.get() &&
+      (connector->GetUserAffiliation(username) ==
+          policy::CloudPolicyDataStore::USER_AFFILIATION_MANAGED);
+
   // Initialize user policy before the profile is created so the profile
-  // initialization code sees the policy settings.
-  g_browser_process->browser_policy_connector()->InitializeUserPolicy(username);
+  // initialization code sees the cached policy settings.
+  connector->InitializeUserPolicy(username, wait_for_policy_fetch);
+
+  if (wait_for_policy_fetch) {
+    // Profile creation will block until user policy is fetched, which
+    // requires the DeviceManagement token. Try to fetch it now.
+    VLOG(1) << "Profile creation requires policy token, fetching now";
+    policy_oauth_fetcher_.reset(
+        new PolicyOAuthFetcher(authenticator_->authentication_profile()));
+    policy_oauth_fetcher_->Start();
+  }
 
   // The default profile will have been changed because the ProfileManager
   // will process the notification that the UserManager sends out.
@@ -636,12 +718,9 @@ void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
   }
 
   // Initialize the user-policy backend.
-  policy::BrowserPolicyConnector* browser_policy_connector =
-      g_browser_process->browser_policy_connector();
-
   if (!using_oauth_) {
-    browser_policy_connector->SetUserPolicyTokenService(
-        user_profile->GetTokenService());
+    g_browser_process->browser_policy_connector()->
+        SetUserPolicyTokenService(user_profile->GetTokenService());
   }
 
   // We suck. This is a hack since we do not have the enterprise feature
@@ -657,6 +736,16 @@ void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
   btl->AddLoginTimeMarker("UserProfileGotten", false);
 
   if (using_oauth_) {
+    // Reuse the access token fetched by the PolicyOAuthFetcher, if it was
+    // used to fetch policies before Profile creation.
+    if (policy_oauth_fetcher_.get() &&
+        !policy_oauth_fetcher_->oauth1_token().empty()) {
+      VLOG(1) << "Resuming profile creation after fetching policy token";
+      StoreOAuth1AccessToken(user_profile,
+                             policy_oauth_fetcher_->oauth1_token(),
+                             policy_oauth_fetcher_->oauth1_secret());
+    }
+
     // Transfer cookies when user signs in using extension.
     if (has_cookies_) {
       // Transfer cookies from the profile that was used for authentication.
@@ -750,8 +839,8 @@ void LoginUtilsImpl::FetchOAuth1AccessToken(Profile* auth_profile) {
                                             auth_profile,
                                             kServiceScopeChromeOS));
   // Let's first get the Oauth request token and OAuth1 token+secret.
-  // One we get that, we will kick off individial requests for OAuth2 tokens for
-  // all our services.
+  // Once we get that, we will kick off individual requests for OAuth2 tokens
+  // for all our services.
   oauth_fetcher_->SetAutoFetchLimit(GaiaOAuthFetcher::OAUTH1_ALL_ACCESS_TOKEN);
   oauth_fetcher_->StartGetOAuthTokenRequest();
 }
@@ -804,7 +893,6 @@ void LoginUtilsImpl::StartSync(
   token_service->UpdateCredentials(credentials);
   if (token_service->AreCredentialsValid())
     token_service->StartFetchingTokens();
-
 }
 
 void LoginUtilsImpl::RespectLocalePreference(Profile* profile) {
@@ -1072,7 +1160,8 @@ void LoginUtilsImpl::OnGetOAuthTokenSuccess(const std::string& oauth_token) {
 void LoginUtilsImpl::OnGetOAuthTokenFailure(
     const GoogleServiceAuthError& error) {
   // TODO(zelidrag): Pop up sync setup UI here?
-  LOG(WARNING) << "Failed fetching OAuth request token";
+  LOG(WARNING) << "Failed fetching OAuth request token, error: "
+               << error.state();
 }
 
 void LoginUtilsImpl::OnOAuthGetAccessTokenSuccess(const std::string& token,
@@ -1083,6 +1172,13 @@ void LoginUtilsImpl::OnOAuthGetAccessTokenSuccess(const std::string& token,
 
   // Verify OAuth1 token by doing OAuthLogin and fetching credentials.
   VerifyOAuth1AccessToken(user_profile, token, secret);
+}
+
+void LoginUtilsImpl::OnOAuthGetAccessTokenFailure(
+    const GoogleServiceAuthError& error) {
+  // TODO(zelidrag): Pop up sync setup UI here?
+  LOG(WARNING) << "Failed fetching OAuth request token, error: "
+               << error.state();
 }
 
 void LoginUtilsImpl::FetchSecondaryTokens(Profile* offrecord_profile,
@@ -1159,11 +1255,14 @@ void LoginUtilsImpl::FetchCredentials(Profile* user_profile,
 void LoginUtilsImpl::FetchPolicyToken(Profile* offrecord_profile,
                                       const std::string& token,
                                       const std::string& secret) {
-  // Trigger oauth token fetch for user policy.
-  policy_oauth_fetcher_.reset(new PolicyOAuthFetcher(offrecord_profile,
-                                                     token,
-                                                     secret));
-  policy_oauth_fetcher_->Start();
+  // Fetch dm service token now, if it hasn't been fetched yet.
+  if (!policy_oauth_fetcher_.get() || policy_oauth_fetcher_->failed()) {
+    // Trigger oauth token fetch for user policy.
+    policy_oauth_fetcher_.reset(new PolicyOAuthFetcher(offrecord_profile,
+                                                       token,
+                                                       secret));
+    policy_oauth_fetcher_->Start();
+  }
 
   // TODO(zelidrag): We should add initialization of other services somewhere
   // here as well. This could be handled with TokenService class once it is
@@ -1174,12 +1273,6 @@ void LoginUtilsImpl::FetchPolicyToken(Profile* offrecord_profile,
   // TODO(nkostylev): There's a potential race if SL would be created before
   // OAuth tokens are fetched. It would use incorrect Authenticator instance.
   authenticator_ = NULL;
-}
-
-void LoginUtilsImpl::OnOAuthGetAccessTokenFailure(
-    const GoogleServiceAuthError& error) {
-  // TODO(zelidrag): Pop up sync setup UI here?
-  LOG(WARNING) << "Failed fetching OAuth v1 token, error: " << error.state();
 }
 
 void LoginUtilsImpl::OnOnlineStateChanged(bool online) {

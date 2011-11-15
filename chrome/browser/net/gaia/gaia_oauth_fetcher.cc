@@ -47,7 +47,7 @@ GaiaOAuthFetcher::GaiaOAuthFetcher(GaiaOAuthConsumer* consumer,
 
 GaiaOAuthFetcher::~GaiaOAuthFetcher() {}
 
-bool GaiaOAuthFetcher::HasPendingFetch() {
+bool GaiaOAuthFetcher::HasPendingFetch() const {
   return fetch_pending_;
 }
 

@@ -53,6 +53,12 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   virtual void SetPolicy(const em::PolicyFetchResponse& policy) = 0;
 
   virtual void SetUnmanaged() = 0;
+
+  // Invoked whenever an attempt to fetch policy has been completed. The fetch
+  // may or may not have suceeded. This can be triggered by failed attempts to
+  // fetch oauth tokens, register with dmserver or fetch policy.
+  virtual void SetFetchingDone() = 0;
+
   bool is_unmanaged() const {
     return is_unmanaged_;
   }
@@ -78,10 +84,10 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   void Reset();
 
   // true if the cache contains data that is ready to be served as policies.
-  // This should mean that this method turns true as soon as a round-trip to
-  // the local policy storage is complete. The creation of the Profile is
-  // blocked on this method, so we shouldn't wait for successful network
-  // round trips.
+  // This usually means that the local policy storage has been loaded.
+  // Note that Profile creation will block until the cache is ready.
+  // On enrolled devices and for users of the enrolled domain, the cache only
+  // becomes ready after a user policy fetch is completed.
   bool IsReady();
 
  protected:

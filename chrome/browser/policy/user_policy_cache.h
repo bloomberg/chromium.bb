@@ -36,13 +36,18 @@ class PolicyMap;
 class UserPolicyCache : public CloudPolicyCacheBase,
                         public UserPolicyDiskCache::Delegate {
  public:
-  explicit UserPolicyCache(const FilePath& backing_file_path);
+  // |backing_file_path| is the path to the cache file.
+  // |wait_for_policy_fetch| is true if the cache should be ready only after
+  // an attempt was made to fetch user policy.
+  UserPolicyCache(const FilePath& backing_file_path,
+                  bool wait_for_policy_fetch);
   virtual ~UserPolicyCache();
 
   // CloudPolicyCacheBase implementation:
   virtual void Load() OVERRIDE;
   virtual void SetPolicy(const em::PolicyFetchResponse& policy) OVERRIDE;
   virtual void SetUnmanaged() OVERRIDE;
+  virtual void SetFetchingDone() OVERRIDE;
 
  private:
   class DiskCache;
@@ -56,6 +61,9 @@ class UserPolicyCache : public CloudPolicyCacheBase,
   virtual bool DecodePolicyData(const em::PolicyData& policy_data,
                                 PolicyMap* mandatory,
                                 PolicyMap* recommended) OVERRIDE;
+
+  // Checks if this cache is ready, and invokes SetReady() if so.
+  void CheckIfReady();
 
   // <Old-style policy support>
   // The following member functions are needed to support old-style policy and
@@ -79,6 +87,13 @@ class UserPolicyCache : public CloudPolicyCacheBase,
 
   // Used for constructing the weak ptr passed to |disk_cache_|.
   base::WeakPtrFactory<UserPolicyDiskCache::Delegate> weak_ptr_factory_;
+
+  // True if the disk cache has been loaded.
+  bool disk_cache_ready_;
+
+  // True if at least one attempt was made to refresh the cache with a freshly
+  // fetched policy, or if there is no need to wait for that.
+  bool fetch_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicyCache);
 };
