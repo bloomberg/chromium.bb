@@ -700,12 +700,7 @@ add_config('aura-tot-chrome-pfq-informational', [chrome_pfq_info, {
   'profile' : 'aura',
 }])
 
-add_config('stumpy-aura-private-bin', [internal, binary, {
-  'board' : 'stumpy',
-  'profile' : 'aura',
-}])
-
-add_config('stumpy-aura-release', [internal, full, official, release, {
+add_config('aura-release', [internal, full, official, release, {
   'board' : 'stumpy',
   'profile' : 'aura',
 }])
