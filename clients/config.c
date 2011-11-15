@@ -147,9 +147,6 @@ config_file_path(const char *name)
 
 	config_dir = getenv("XDG_CONFIG_HOME");
 	if (!config_dir) {
-		fprintf(stderr, "XDG_CONFIG_HOME is not set,"
-				" falling back to $HOME/.config\n");
-
 		home_dir = getenv("HOME");
 		if (!home_dir) {
 			fprintf(stderr, "HOME is not set, using cwd.\n");

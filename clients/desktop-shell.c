@@ -370,8 +370,6 @@ int main(int argc, char *argv[])
 			  &desktop);
 	free(config_file);
 
-	printf("panel color: %08x\n", key_panel_color);
-
 	desktop_shell_set_panel(desktop.shell,
 				window_get_wl_surface(desktop.panel->window));
 
