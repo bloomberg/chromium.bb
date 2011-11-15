@@ -398,8 +398,9 @@ unlock_dialog_item_focus_handler(struct window *window,
 }
 
 static struct unlock_dialog *
-unlock_dialog_create(struct display *display)
+unlock_dialog_create(struct desktop *desktop)
 {
+	struct display *display = desktop->display;
 	struct unlock_dialog *dialog;
 
 	dialog = malloc(sizeof *dialog);
@@ -418,6 +419,9 @@ unlock_dialog_create(struct display *display)
 	window_set_item_focus_handler(dialog->window,
 				      unlock_dialog_item_focus_handler);
 	dialog->button = window_add_item(dialog->window, NULL);
+
+	desktop_shell_set_lock_surface(desktop->shell,
+				       window_get_wl_surface(dialog->window));
 
 	unlock_dialog_draw(dialog);
 
@@ -467,13 +471,9 @@ desktop_shell_prepare_lock_surface(void *data,
 	struct desktop *desktop = data;
 
 	if (!desktop->unlock_dialog) {
-		desktop->unlock_dialog =
-				unlock_dialog_create(desktop->display);
+		desktop->unlock_dialog = unlock_dialog_create(desktop);
 		desktop->unlock_dialog->desktop = desktop;
 	}
-
-	desktop_shell_set_lock_surface(desktop_shell,
-			window_get_wl_surface(desktop->unlock_dialog->window));
 }
 
 static const struct desktop_shell_listener listener = {

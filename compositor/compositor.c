@@ -313,7 +313,7 @@ wlsc_surface_damage_below(struct wlsc_surface *surface)
 {
 	struct wlsc_surface *below;
 
-	if (wl_list_empty(&surface->link))
+	if (surface->output == NULL)
 		return;
 
 	if (surface->link.next == &surface->compositor->surface_list)
@@ -368,6 +368,9 @@ wlsc_compositor_repick(struct wlsc_compositor *compositor)
 	struct wlsc_surface *surface;
 	int32_t sx, sy;
 	uint32_t time;
+
+	if (!compositor->focus)
+		return;
 
 	time = wlsc_compositor_get_time();
 	wl_list_for_each(device, &compositor->input_device_list, link) {
