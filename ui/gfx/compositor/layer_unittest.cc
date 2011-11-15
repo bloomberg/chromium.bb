@@ -571,7 +571,118 @@ TEST_F(LayerWithNullDelegateTest, LargestHole) {
   scoped_ptr<Layer> child2(CreateTextureLayer(gfx::Rect(75, 75, 200, 200)));
   parent->Add(child2.get());
 
+  Draw();
+
   EXPECT_EQ(gfx::Rect(75, 75, 200, 200), parent->hole_rect());
+}
+
+// Verifies that the largest hole in the draw order is picked
+TEST_F(LayerWithNullDelegateTest, HoleGeneratedFromLeaf) {
+  // Layer tree looks like:
+  // node 1
+  // |_ node 11
+  //    |_ node 111
+  // |_ node 12
+  //    |_ node 121
+
+  scoped_ptr<Layer> node1(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
+
+  scoped_ptr<Layer> node11(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
+  node1->Add(node11.get());
+
+  scoped_ptr<Layer> node12(CreateTextureLayer(gfx::Rect(75, 75, 200, 200)));
+  node1->Add(node12.get());
+
+  scoped_ptr<Layer> node111(CreateTextureLayer(gfx::Rect(10, 10, 20, 20)));
+  node11->Add(node111.get());
+
+  scoped_ptr<Layer> node121(CreateTextureLayer(gfx::Rect(10, 10, 190, 190)));
+  node12->Add(node121.get());
+
+  Draw();
+
+  EXPECT_EQ(gfx::Rect(75, 75, 200, 200), node1->hole_rect());
+  EXPECT_EQ(gfx::Rect(25, 25, 75, 75), node11->hole_rect());
+  EXPECT_EQ(gfx::Rect(10, 10, 190, 190), node12->hole_rect());
+}
+
+// Verifies that a hole can only punched into a layer with opacity = 1.0f.
+TEST_F(LayerWithNullDelegateTest, NoHoleWhenPartialOpacity) {
+  // Layer tree looks like:
+  // node 1
+  // |_ node 11
+  //    |_ node 111
+
+  scoped_ptr<Layer> node1(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
+
+  scoped_ptr<Layer> node11(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
+  node1->Add(node11.get());
+
+  scoped_ptr<Layer> node111(CreateTextureLayer(gfx::Rect(10, 10, 20, 20)));
+  node11->Add(node111.get());
+
+  Draw();
+  EXPECT_EQ(gfx::Rect(50, 50, 100, 100), node1->hole_rect());
+  EXPECT_EQ(gfx::Rect(10, 10, 20, 20), node11->hole_rect());
+
+
+  node11->SetOpacity(0.5f);
+  Draw();
+  EXPECT_TRUE(node1->hole_rect().IsEmpty());
+  EXPECT_TRUE(node11->hole_rect().IsEmpty());
+}
+
+// Verifies that a non visible layer or any of its children is not a hole.
+TEST_F(LayerWithNullDelegateTest, NonVisibleLayerCannotBeHole) {
+  // Layer tree looks like:
+  // node 1
+  // |_ node 11
+  //    |_ node 111
+
+  scoped_ptr<Layer> node1(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
+
+  scoped_ptr<Layer> node11(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
+  node1->Add(node11.get());
+
+  scoped_ptr<Layer> node111(CreateTextureLayer(gfx::Rect(10, 10, 20, 20)));
+  node11->Add(node111.get());
+
+  Draw();
+  EXPECT_EQ(gfx::Rect(50, 50, 100, 100), node1->hole_rect());
+  EXPECT_EQ(gfx::Rect(10, 10, 20, 20), node11->hole_rect());
+
+
+  node11->SetVisible(false);
+  Draw();
+  EXPECT_TRUE(node1->hole_rect().IsEmpty());
+  EXPECT_TRUE(node11->hole_rect().IsEmpty());
+}
+
+// Verifies that a layer which doesn't fill its bounds opaquely cannot punch a
+// hole. However its children should still be able to punch a hole.
+TEST_F(LayerWithNullDelegateTest, LayerNotFillingBoundsOpaquelyCannotBeHole) {
+  // Layer tree looks like:
+  // node 1
+  // |_ node 11
+  //    |_ node 111
+
+  scoped_ptr<Layer> node1(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
+
+  scoped_ptr<Layer> node11(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
+  node1->Add(node11.get());
+
+  scoped_ptr<Layer> node111(CreateTextureLayer(gfx::Rect(10, 10, 20, 20)));
+  node11->Add(node111.get());
+
+  Draw();
+  EXPECT_EQ(gfx::Rect(50, 50, 100, 100), node1->hole_rect());
+  EXPECT_EQ(gfx::Rect(10, 10, 20, 20), node11->hole_rect());
+
+
+  node11->SetFillsBoundsOpaquely(false);
+  Draw();
+  EXPECT_EQ(gfx::Rect(60, 60, 20, 20), node1->hole_rect());
+  EXPECT_TRUE(node11->hole_rect().IsEmpty());
 }
 
 // Verifies that the hole is with respect to the local bounds of its parent.
@@ -582,15 +693,19 @@ TEST_F(LayerWithNullDelegateTest, HoleLocalBounds) {
   scoped_ptr<Layer> child(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
   parent->Add(child.get());
 
+  Draw();
+
   EXPECT_EQ(gfx::Rect(50, 50, 100, 100), parent->hole_rect());
 }
 
 // Verifies that there is no hole present when one of the child layers has a
 // transform.
 TEST_F(LayerWithNullDelegateTest, NoHoleWithTransform) {
-  scoped_ptr<Layer> parent(CreateTextureLayer(gfx::Rect(0, 0, 400, 400)));
+  scoped_ptr<Layer> parent(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
   scoped_ptr<Layer> child(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
   parent->Add(child.get());
+
+  Draw();
 
   EXPECT_TRUE(!parent->hole_rect().IsEmpty());
 
@@ -600,15 +715,19 @@ TEST_F(LayerWithNullDelegateTest, NoHoleWithTransform) {
   t.ConcatTranslate(50, 50);
   child->SetTransform(t);
 
+  Draw();
+
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), parent->hole_rect());
 }
 
 // Verifies that if the child layer is rotated by a multiple of ninety degrees
 // we punch a hole
 TEST_F(LayerWithNullDelegateTest, HoleWithNinetyDegreeTransforms) {
-  scoped_ptr<Layer> parent(CreateTextureLayer(gfx::Rect(0, 0, 400, 400)));
+  scoped_ptr<Layer> parent(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
   scoped_ptr<Layer> child(CreateTextureLayer(gfx::Rect(50, 50, 50, 50)));
   parent->Add(child.get());
+
+  Draw();
 
   EXPECT_TRUE(!parent->hole_rect().IsEmpty());
 
@@ -626,8 +745,65 @@ TEST_F(LayerWithNullDelegateTest, HoleWithNinetyDegreeTransforms) {
     t.ConcatTranslate(child->bounds().x(), child->bounds().y());
     t.TransformRect(&target_rect);
 
+    Draw();
+
     EXPECT_EQ(target_rect, parent->hole_rect());
   }
+}
+
+// Verifies that a layer which doesn't have a texture cannot punch a
+// hole. However its children should still be able to punch a hole.
+TEST_F(LayerWithNullDelegateTest, HoleWithRelativeNinetyDegreeTransforms) {
+  // Layer tree looks like:
+  // node 1
+  // |_ node 11
+  // |_ node 12
+
+  scoped_ptr<Layer> node1(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
+
+  scoped_ptr<Layer> node11(CreateTextureLayer(gfx::Rect(50, 50, 50, 50)));
+  node1->Add(node11.get());
+
+  scoped_ptr<Layer> node12(CreateTextureLayer(gfx::Rect(50, 50, 50, 50)));
+  node1->Add(node12.get());
+
+  Draw();
+
+  EXPECT_EQ(gfx::Rect(0, 0, 50, 50), node11->hole_rect());
+  EXPECT_TRUE(node12->hole_rect().IsEmpty());
+
+  ui::Transform t1;
+  // Need to rotate in local coordinates.
+  t1.SetTranslate(-25, -25);
+  t1.ConcatRotate(45.0f);
+  t1.ConcatTranslate(25, 25);
+  node11->SetTransform(t1);
+
+  Draw();
+
+  EXPECT_TRUE(node12->hole_rect().IsEmpty());
+  EXPECT_TRUE(node11->hole_rect().IsEmpty());
+
+  ui::Transform t2;
+  // Need to rotate in local coordinates.
+  t2.SetTranslate(-25, -25);
+  t2.ConcatRotate(-135.0f);
+  t2.ConcatTranslate(25, 25);
+  node12->SetTransform(t2);
+
+  // Do translation of target rect in order to account for inprecision of
+  // using floating point matrices vs integer rects.
+  ui::Transform t3;
+  gfx::Rect target_rect = gfx::Rect(node11->bounds().size());
+  t3.ConcatTransform(t2);
+  t1.GetInverse(&t1);
+  t3.ConcatTransform(t1);
+  t3.TransformRect(&target_rect);
+
+  Draw();
+
+  EXPECT_TRUE(node12->hole_rect().IsEmpty());
+  EXPECT_EQ(target_rect, node11->hole_rect());
 }
 
 // Create this hierarchy:

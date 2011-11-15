@@ -196,6 +196,12 @@ class COMPOSITOR_EXPORT Layer :
 #endif
 
  private:
+  struct LayerProperties {
+   public:
+    ui::Layer* layer;
+    ui::Transform transform_relative_to_root;
+  };
+
   // TODO(vollick): Eventually, if a non-leaf node has an opacity of less than
   // 1.0, we'll render to a separate texture, and then apply the alpha.
   // Currently, we multiply our opacity by all our ancestor's opacities and
@@ -206,18 +212,31 @@ class COMPOSITOR_EXPORT Layer :
   // delegate.
   void UpdateLayerCanvas();
 
+  // Called to indicate that a layer's properties have changed and that the
+  // holes for the layers must be recomputed.
+  void SetNeedsToRecomputeHole();
+
+  // Resets |hole_rect_| to the empty rect for all layers below and
+  // including this one.
+  void ClearHoleRects();
+
+  // Does a preorder traversal of layers starting with this layer. Omits layers
+  // which cannot punch a hole in another layer such as non visible layers
+  // and layers which don't fill their bounds opaquely.
+  void GetLayerProperties(const ui::Transform& current_transform,
+                          std::vector<LayerProperties>* traverasal);
+
   // A hole in a layer is an area in the layer that does not get drawn
   // because this area is covered up with another layer which is known to be
   // opaque.
   // This method computes the dimension of the hole (if there is one)
   // based on whether one of its child nodes is always opaque.
-  // Note: For simplicity's sake, currently a hole is only created if the child
-  // view has no transform with respect to its parent.
+  // Note: This method should only be called from the root.
   void RecomputeHole();
 
-  // Returns true if the layer paints every pixel (fills_bounds_opaquely)
-  // and the alpha of the layer is 1.0f.
-  bool IsCompletelyOpaque() const;
+  void set_hole_rect(const gfx::Rect& hole_rect) {
+    hole_rect_ = hole_rect;
+  }
 
   // Determines the regions that don't intersect |rect| and places the
   // result in |sides|.
@@ -236,6 +255,9 @@ class COMPOSITOR_EXPORT Layer :
   static void PunchHole(const gfx::Rect& rect,
                         const gfx::Rect& region_to_punch_out,
                         std::vector<gfx::Rect>* sides);
+
+  // Drops texture just for this layer.
+  void DropTexture();
 
   // Drop all textures for layers below and including this one. Called when
   // the layer is removed from a hierarchy. Textures will be re-generated if
@@ -294,6 +316,8 @@ class COMPOSITOR_EXPORT Layer :
   bool fills_bounds_opaquely_;
 
   gfx::Rect hole_rect_;
+
+  bool recompute_hole_;
 
   gfx::Rect invalid_rect_;
 
