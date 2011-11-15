@@ -148,4 +148,4 @@ class GerritHelper():
                                           'commit:%s' % revision])
     raw_results = cros_build_lib.RunCommand(rev_cmd, redirect_stdout=True)
     result_dict = json.loads(raw_results.output.splitlines()[0])
-    return result_dict['status'] not in ['NEW', 'ABANDONED']
+    return result_dict.get('status') not in ['NEW', 'ABANDONED', None]
