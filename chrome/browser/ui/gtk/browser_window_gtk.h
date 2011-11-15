@@ -8,7 +8,7 @@
 
 #include <gtk/gtk.h>
 
-#include <map>
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
@@ -27,7 +27,6 @@ class BookmarkBarGtk;
 class Browser;
 class BrowserTitlebar;
 class BrowserToolbarGtk;
-class CustomDrawButton;
 class DownloadShelfGtk;
 class FindBarGtk;
 class FullscreenExitBubbleGtk;

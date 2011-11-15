@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_TRANSLATE_INFOBAR_BASE_H_
-#define CHROME_BROWSER_UI_COCOA_TRANSLATE_INFOBAR_BASE_H_
+#ifndef CHROME_BROWSER_UI_COCOA_INFOBARS_TRANSLATE_INFOBAR_BASE_H_
+#define CHROME_BROWSER_UI_COCOA_INFOBARS_TRANSLATE_INFOBAR_BASE_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
@@ -16,8 +16,6 @@
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #include "chrome/common/translate_errors.h"
-
-class TranslateInfoBarMenuModel;
 
 #pragma mark TranslateInfoBarUtilities helper functions.
 namespace TranslateInfoBarUtilities {
@@ -161,4 +159,4 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
 @end // TranslateInfoBarControllerBase (TestingAPI)
 
 
-#endif // CHROME_BROWSER_UI_COCOA_TRANSLATE_INFOBAR_BASE_H_
+#endif // CHROME_BROWSER_UI_COCOA_INFOBARS_TRANSLATE_INFOBAR_BASE_H_

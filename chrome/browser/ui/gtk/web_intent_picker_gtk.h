@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_GTK_WEB_INTENT_PICKER_GTK_H_
 #pragma once
 
-#include <vector>
-
 #include <gtk/gtk.h>
+
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -25,7 +25,6 @@ class GURL;
 class TabContents;
 class TabContentsContainerGtk;
 class TabContentsWrapper;
-class WebIntentController;
 class WebIntentPickerDelegate;
 
 // Gtk implementation of WebIntentPicker.

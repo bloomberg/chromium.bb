@@ -18,21 +18,19 @@
 
 @class AutocompleteTextField;
 @class AutocompleteTextFieldEditor;
-@class BrowserActionsContainerView;
 @class BackForwardMenuController;
 class Browser;
+@class BrowserActionsContainerView;
 @class BrowserActionsController;
 class CommandUpdater;
-class LocationBar;
 class LocationBarViewMac;
 @class MenuButton;
-@class ToolbarButton;
 class Profile;
 @class ReloadButton;
 class TabContents;
+@class ToolbarButton;
 class ToolbarModel;
 @class WrenchMenuController;
-class WrenchMenuModel;
 
 namespace ToolbarControllerInternal {
 class NotificationBridge;

@@ -13,8 +13,6 @@
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "ui/gfx/gtk_util.h"
 
-class ExtensionContextMenuModel;
-class ExtensionInfobarDelegate;
 class ExtensionResource;
 class ExtensionViewGtk;
 class MenuGtk;

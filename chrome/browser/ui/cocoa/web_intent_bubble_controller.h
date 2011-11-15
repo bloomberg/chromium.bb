@@ -12,9 +12,6 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 
-class Browser;
-class WebIntentPickerDelegate;
-class SkBitmap;
 class WebIntentPickerCocoa;
 
 // Controller for intent picker bubble. This bubble pops up whenever a web

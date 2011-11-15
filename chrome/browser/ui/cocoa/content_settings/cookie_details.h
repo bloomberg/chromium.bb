@@ -12,7 +12,6 @@
 #include "webkit/appcache/appcache_service.h"
 
 class CookieTreeNode;
-class CookiePromptModalDialog;
 
 // This enum specifies the type of information contained in the
 // cookie details.
@@ -221,4 +220,3 @@ enum CocoaCookieDetailsType {
 // in its initializer.
 - (id)initWithDetails:(CocoaCookieDetails*)details;
 @end
-

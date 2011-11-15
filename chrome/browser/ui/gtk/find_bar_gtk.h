@@ -26,7 +26,6 @@ class FindBarController;
 class GtkThemeService;
 class NineBox;
 class SlideAnimatorGtk;
-class TabContentsContainerGtk;
 
 typedef struct _GtkFloatingContainer GtkFloatingContainer;
 

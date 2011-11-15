@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "googleurl/src/gurl.h"
 
-class TabContentsWrapper;
 @class BrowserWindowController;
 class Browser;
 @class GTMUILocalizerAndLayoutTweaker;

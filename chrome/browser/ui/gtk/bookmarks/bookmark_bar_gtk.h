@@ -33,7 +33,6 @@
 class BookmarkMenuController;
 class Browser;
 class BrowserWindowGtk;
-class CustomContainerButton;
 class GtkThemeService;
 class MenuGtk;
 class PageNavigator;

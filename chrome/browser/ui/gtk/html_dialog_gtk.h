@@ -18,7 +18,6 @@
 
 typedef struct _GtkWidget GtkWidget;
 
-class Browser;
 class Profile;
 class TabContents;
 class TabContentsContainerGtk;

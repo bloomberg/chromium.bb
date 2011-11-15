@@ -16,7 +16,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Browser;
-class BrowserWindowGtk;
 class Extension;
 class SkBitmap;
 
@@ -78,7 +77,7 @@ class ExtensionInstalledBubbleGtk
                             ExtensionInstalledBubbleGtk* toolbar);
 
   const Extension* extension_;
-  Browser *browser_;
+  Browser* browser_;
   SkBitmap icon_;
   content::NotificationRegistrar registrar_;
   BubbleType type_;

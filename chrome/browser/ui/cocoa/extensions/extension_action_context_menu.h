@@ -12,10 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 
 class AsyncUninstaller;
-class DevmodeObserver;
 class Extension;
 class ExtensionAction;
-class NotificationRegistrar;
 class Profile;
 
 namespace extension_action_context_menu {

@@ -18,7 +18,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class Profile;
-class Profiler;
 class PageNavigator;
 class BookmarkModel;
 class BookmarkNode;

@@ -19,7 +19,6 @@
 class Browser;
 class GtkThemeService;
 class LocationBarViewGtk;
-class Task;
 
 class ReloadButtonGtk : public content::NotificationObserver {
  public:

@@ -27,7 +27,6 @@
 #include "googleurl/src/gurl.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-class BookmarkNode;
 class Profile;
 class RecentlyUsedFoldersComboModel;
 

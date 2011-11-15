@@ -15,7 +15,6 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
-class RenderViewHost;
 class StatusBubbleGtk;
 class TabContents;
 class TabContentsWrapper;

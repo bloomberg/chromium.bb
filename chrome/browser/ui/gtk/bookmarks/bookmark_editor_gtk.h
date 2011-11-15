@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_EDITOR_GTK_H_
 #pragma once
 
+#include <vector>
+
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
@@ -22,10 +24,6 @@ typedef struct _GtkTreeIter GtkTreeIter;
 typedef struct _GtkTreeSelection GtkTreeSelection;
 typedef struct _GtkTreeStore GtkTreeStore;
 typedef struct _GtkWidget GtkWidget;
-
-namespace gfx {
-class Point;
-}  // namespace gfx
 
 // GTK version of the bookmark editor dialog.
 class BookmarkEditorGtk : public BookmarkEditor,

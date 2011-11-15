@@ -28,7 +28,6 @@ class ConstrainedWindowMac;
 class TabStripModelObserverBridge;
 class TabStripModel;
 class TabContents;
-class ToolbarModel;
 
 // The interface for the tab strip controller's delegate.
 // Delegating TabStripModelObserverBridge's events (in lieu of directly

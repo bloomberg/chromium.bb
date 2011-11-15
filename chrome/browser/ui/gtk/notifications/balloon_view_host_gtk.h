@@ -9,8 +9,6 @@
 #include "chrome/browser/notifications/balloon_host.h"
 #include "ui/gfx/native_widget_types.h"
 
-class RenderWidgetHostViewGtk;
-
 // BalloonViewHost class is a delegate to the renderer host for the HTML
 // notification.  When initialized it creates a new RenderViewHost and loads
 // the contents of the toast into it.  It also handles links within the toast,

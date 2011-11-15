@@ -16,10 +16,6 @@
 class TabStripMenuController;
 class ThemeService;
 
-namespace gfx {
-class Path;
-}
-
 class TabGtk : public TabRendererGtk,
                public MessageLoopForUI::Observer {
  public:

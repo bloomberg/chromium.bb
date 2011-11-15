@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 
 @class ExtensionActionContextMenu;
-class ExtensionInfoBarDelegate;
 class InfobarBridge;
 @class MenuButton;
 

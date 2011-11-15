@@ -27,7 +27,6 @@ class DownloadShelfContextMenuGtk;
 class DownloadShelfGtk;
 class GtkThemeService;
 class NineBox;
-class SkBitmap;
 
 namespace gfx {
 class Image;

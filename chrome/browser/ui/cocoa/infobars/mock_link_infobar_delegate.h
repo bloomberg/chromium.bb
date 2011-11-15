@@ -11,8 +11,6 @@
 #include "base/string16.h"
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
 
-class SkBitmap;
-
 class MockLinkInfoBarDelegate : public LinkInfoBarDelegate {
  public:
   // Called when |this| is about to be destroyed.

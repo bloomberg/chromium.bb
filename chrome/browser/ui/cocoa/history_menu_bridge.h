@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #include <map>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_nsobject.h"
@@ -20,11 +21,9 @@
 #include "content/browser/cancelable_request.h"
 #include "content/public/browser/notification_observer.h"
 
-class NavigationEntry;
 class NotificationRegistrar;
 class PageUsageData;
 class Profile;
-class TabNavigationEntry;
 class TabRestoreService;
 @class HistoryMenuCocoaController;
 
@@ -32,7 +31,7 @@ namespace {
 
 class HistoryMenuBridgeTest;
 
-}
+}  // namespace
 
 // C++ bridge for the history menu; one per AppController (means there
 // is only one). This class observes various data sources, namely the
