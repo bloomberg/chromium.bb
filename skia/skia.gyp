@@ -379,8 +379,6 @@
         '../third_party/skia/src/gpu/GrGpuFactory.cpp',
         '../third_party/skia/src/gpu/GrGpuGL.cpp',
         '../third_party/skia/src/gpu/GrGpuGL.h',
-        '../third_party/skia/src/gpu/GrGpuGLFixed.cpp',
-        '../third_party/skia/src/gpu/GrGpuGLFixed.h',
         '../third_party/skia/src/gpu/GrGpuGLShaders.cpp',
         '../third_party/skia/src/gpu/GrGpuGLShaders.h',
         '../third_party/skia/src/gpu/GrGpuVertex.h',
