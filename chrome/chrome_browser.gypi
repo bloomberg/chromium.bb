@@ -886,8 +886,6 @@
         'browser/download/download_request_limiter.h',
         'browser/download/download_request_limiter_observer.cc',
         'browser/download/download_request_limiter_observer.h',
-        'browser/download/download_safe_browsing_client.cc',
-        'browser/download/download_safe_browsing_client.h',
         'browser/download/download_service.cc',
         'browser/download/download_service.h',
         'browser/download/download_service_factory.cc',
@@ -4028,8 +4026,6 @@
             'safe_browsing_report_proto',
           ],
           'sources!': [
-            'browser/download/download_safe_browsing_client.cc',
-            'browser/download/download_safe_browsing_client.h',
             'browser/renderer_host/safe_browsing_resource_handler.cc',
             'browser/renderer_host/safe_browsing_resource_handler.h',
           ],

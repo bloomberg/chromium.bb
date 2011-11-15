@@ -37,7 +37,8 @@ class DownloadProtectionService {
   // TODO(noelutz): we're missing some fields here: server IPs,
   // tab URL redirect chain, ...
   struct DownloadInfo {
-    FilePath local_file;
+    FilePath local_file;  // Where the download is currently stored.
+    FilePath target_file;  // Where the download will eventually be stored.
     std::vector<GURL> download_url_chain;
     GURL referrer_url;
     std::string sha256_hash;
@@ -45,7 +46,7 @@ class DownloadProtectionService {
     bool user_initiated;
     DownloadInfo();
     ~DownloadInfo();
-
+    std::string DebugString() const;
     // Creates a DownloadInfo from a DownloadItem object.
     static DownloadInfo FromDownloadItem(const DownloadItem& item);
   };

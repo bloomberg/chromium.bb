@@ -214,17 +214,10 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
   msg_loop_.Run();
   EXPECT_EQ(DownloadProtectionService::SAFE, result_);
 
-  // Only http is supported for now.
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+  // Only https is not supported for now for privacy reasons.
+  info.local_file = FilePath(FILE_PATH_LITERAL("a.tmp"));
+  info.target_file = FilePath(FILE_PATH_LITERAL("a.exe"));
   info.download_url_chain.push_back(GURL("https://www.google.com/"));
-  download_service_->CheckClientDownload(
-      info,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  msg_loop_.Run();
-  EXPECT_EQ(DownloadProtectionService::SAFE, result_);
-
-  info.download_url_chain[0] = GURL("ftp://www.google.com/");
   download_service_->CheckClientDownload(
       info,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -235,7 +228,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+  info.local_file = FilePath(FILE_PATH_LITERAL("a.tmp"));
+  info.target_file = FilePath(FILE_PATH_LITERAL("a.exe"));
   info.download_url_chain.push_back(GURL("http://www.evil.com/bla.exe"));
   info.download_url_chain.push_back(GURL("http://www.google.com/a.exe"));
   info.referrer_url = GURL("http://www.google.com/");
@@ -272,7 +266,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
       DownloadProtectionService::kDownloadRequestUrl, "", false);
 
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+  info.local_file = FilePath(FILE_PATH_LITERAL("a.tmp"));
+  info.target_file = FilePath(FILE_PATH_LITERAL("a.exe"));
   info.download_url_chain.push_back(GURL("http://www.evil.com/a.exe"));
   info.referrer_url = GURL("http://www.google.com/");
 
@@ -299,7 +294,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       true);
 
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+  info.local_file = FilePath(FILE_PATH_LITERAL("a.tmp"));
+  info.target_file = FilePath(FILE_PATH_LITERAL("a.exe"));
   info.download_url_chain.push_back(GURL("http://www.evil.com/a.exe"));
   info.referrer_url = GURL("http://www.google.com/");
 
@@ -347,7 +343,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   TestURLFetcherFactory factory;
 
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("bla.exe"));
+  info.local_file = FilePath(FILE_PATH_LITERAL("bla.tmp"));
+  info.target_file = FilePath(FILE_PATH_LITERAL("bla.exe"));
   info.download_url_chain.push_back(GURL("http://www.google.com/"));
   info.download_url_chain.push_back(GURL("http://www.google.com/bla.exe"));
   info.referrer_url = GURL("http://www.google.com/");
@@ -404,7 +401,8 @@ TEST_F(DownloadProtectionServiceTest,
   TestURLFetcherFactory factory;
 
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("bla.exe"));
+  info.local_file = FilePath(FILE_PATH_LITERAL("bla.tmp"));
+  info.target_file = FilePath(FILE_PATH_LITERAL("bla.exe"));
   info.download_url_chain.push_back(GURL("http://www.google.com/"));
   info.download_url_chain.push_back(GURL("http://www.google.com/bla.exe"));
   info.referrer_url = GURL("http://www.google.com/");
@@ -452,7 +450,9 @@ TEST_F(DownloadProtectionServiceTest,
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadDigestList) {
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+  info.local_file = FilePath(FILE_PATH_LITERAL("a.tmp"));
+  info.target_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+
   // HTTPs URLs never result in a server ping for privacy reasons.  However,
   // we do lookup the bad binary digest list.
   info.download_url_chain.push_back(GURL("https://www.evil.com/a.exe"));
@@ -501,7 +501,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadDigestList) {
   EXPECT_EQ(DownloadProtectionService::SAFE, result_);
   Mock::VerifyAndClearExpectations(sb_service_);
 
-  // A match is found with the bad binary digest list.
+  // A match is found with the bad binary digest list.  We currently do not
+  // warn based on the digest list.  Hence we should always return SAFE.
   EXPECT_CALL(*sb_service_,
               CheckDownloadHash(info.sha256_hash, NotNull()))
       .WillOnce(DoAll(
@@ -512,12 +513,12 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadDigestList) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   msg_loop_.Run();
-  EXPECT_EQ(DownloadProtectionService::DANGEROUS, result_);
+  EXPECT_EQ(DownloadProtectionService::SAFE, result_);
   Mock::VerifyAndClearExpectations(sb_service_);
 
   // If the download is not an executable we do not send a server ping but we
   // still want to lookup the binary digest list.
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.pdf"));
+  info.target_file = FilePath(FILE_PATH_LITERAL("a.pdf"));
   info.download_url_chain[0] = GURL("http://www.evil.com/a.pdf");
   EXPECT_CALL(*sb_service_,
               CheckDownloadHash(info.sha256_hash, NotNull()))
@@ -529,13 +530,13 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadDigestList) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   msg_loop_.Run();
-  EXPECT_EQ(DownloadProtectionService::DANGEROUS, result_);
+  EXPECT_EQ(DownloadProtectionService::SAFE, result_);
   Mock::VerifyAndClearExpectations(sb_service_);
 
   // If the URL or the referrer matches the download whitelist we cannot send
   // a server ping for privacy reasons but we still match the digest against
   // the bad binary digest list.
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+  info.target_file = FilePath(FILE_PATH_LITERAL("a.exe"));
   info.download_url_chain[0] = GURL("http://www.evil.com/a.exe");
   EXPECT_CALL(*sb_service_, MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(true));
@@ -550,7 +551,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadDigestList) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   msg_loop_.Run();
-  EXPECT_EQ(DownloadProtectionService::DANGEROUS, result_);
+  EXPECT_EQ(DownloadProtectionService::SAFE, result_);
 }
 
 TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {

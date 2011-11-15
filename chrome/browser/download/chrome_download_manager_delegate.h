@@ -100,7 +100,14 @@ class ChromeDownloadManagerDelegate
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Callback function after url is checked with safebrowsing service.
-  void CheckDownloadUrlDone(int32 download_id, bool is_dangerous_url);
+  void CheckDownloadUrlDone(
+      int32 download_id,
+      safe_browsing::DownloadProtectionService::DownloadCheckResult result);
+
+  // Callback function after the DownloadProtectionService completes.
+  void CheckClientDownloadDone(
+      int32 download_id,
+      safe_browsing::DownloadProtectionService::DownloadCheckResult result);
 
   // Callback function after we check whether the referrer URL has been visited
   // before today.
@@ -130,15 +137,6 @@ class ChromeDownloadManagerDelegate
   // Callback from history system.
   void OnItemAddedToPersistentStore(int32 download_id, int64 db_handle);
 
-  // Callback function after download file hash is checked with safebrowsing
-  // service.
-  void CheckDownloadHashDone(int32 download_id, bool is_dangerous_hash);
-
-  // Callback function after the DownloadProtectionService completes.
-  void CheckClientDownloadDone(
-      int32 download_id,
-      safe_browsing::DownloadProtectionService::DownloadCheckResult result);
-
   Profile* profile_;
   scoped_ptr<DownloadPrefs> download_prefs_;
   scoped_ptr<DownloadHistory> download_history_;
@@ -146,6 +144,16 @@ class ChromeDownloadManagerDelegate
   // Maps from pending extension installations to DownloadItem IDs.
   typedef base::hash_map<CrxInstaller*, int> CrxInstallerMap;
   CrxInstallerMap crx_installers_;
+
+  // Maps the SafeBrowsing download check state to a DownloadItem ID.
+  struct SafeBrowsingState {
+    // If true the SafeBrowsing check is not done yet.
+    bool pending;
+    // The verdict that we got from calling CheckClientDownload.
+    safe_browsing::DownloadProtectionService::DownloadCheckResult verdict;
+  };
+  typedef base::hash_map<int, SafeBrowsingState> SafeBrowsingStateMap;
+  SafeBrowsingStateMap safe_browsing_state_;
 
   content::NotificationRegistrar registrar_;
 

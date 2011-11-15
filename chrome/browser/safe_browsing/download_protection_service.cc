@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 
 #include "base/bind.h"
+#include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -112,12 +113,35 @@ DownloadProtectionService::DownloadInfo::DownloadInfo()
 
 DownloadProtectionService::DownloadInfo::~DownloadInfo() {}
 
+std::string DownloadProtectionService::DownloadInfo::DebugString() const {
+  std::string chain;
+  for (size_t i = 0; i < download_url_chain.size(); ++i) {
+    chain += download_url_chain[i].spec();
+    if (i < download_url_chain.size() - 1) {
+      chain += " -> ";
+    }
+  }
+  return base::StringPrintf(
+      "DownloadInfo {addr:0x%p, download_url_chain:[%s], local_file:%s, "
+      "target_file:%s, referrer_url:%s, sha256_hash:%s, total_bytes:%" PRId64
+      ", user_initiated: %s}",
+      reinterpret_cast<const void*>(this),
+      chain.c_str(),
+      local_file.value().c_str(),
+      target_file.value().c_str(),
+      referrer_url.spec().c_str(),
+      "TODO",
+      total_bytes,
+      user_initiated ? "true" : "false");
+}
+
 // static
 DownloadProtectionService::DownloadInfo
 DownloadProtectionService::DownloadInfo::FromDownloadItem(
     const DownloadItem& item) {
   DownloadInfo download_info;
   download_info.local_file = item.full_path();
+  download_info.target_file = item.GetTargetFilePath();
   download_info.download_url_chain = item.url_chain();
   download_info.referrer_url = item.referrer_url();
   // TODO(bryner): Fill in the hash (we shouldn't compute it again)
@@ -161,7 +185,7 @@ class DownloadSBClient
                             FROM_HERE,
                             base::Bind(callback_, result));
     UpdateDownloadCheckStats(total_type_);
-    if (IsDangerous(sb_result)) {
+    if (sb_result != SafeBrowsingService::SAFE) {
       UpdateDownloadCheckStats(dangerous_type_);
       BrowserThread::PostTask(
           BrowserThread::UI,
@@ -269,7 +293,11 @@ class DownloadHashSBClient : public DownloadSBClient {
 
   virtual bool IsDangerous(
       SafeBrowsingService::UrlCheckResult result) const OVERRIDE {
-    return result == SafeBrowsingService::BINARY_MALWARE_HASH;
+    // We always return false here because we don't want to warn based on
+    // a match with the digest list.  However, for UMA users, we want to
+    // report the malware URL: DownloadSBClient::CheckDone() will still report
+    // the URL even if the download is not considered dangerous.
+    return false;
   }
 
   virtual void OnDownloadHashCheckResult(
@@ -309,6 +337,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
   void Start() {
+    VLOG(2) << "Starting SafeBrowsing download check for: "
+            << info_.DebugString();
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // TODO(noelutz): implement some cache to make sure we don't issue the same
     // request over and over again if a user downloads the same binary multiple
@@ -324,10 +354,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
       PostFinishTask(SAFE);
       return;
     }
-    RecordFileExtensionType(info_.local_file);
+    RecordFileExtensionType(info_.target_file);
 
-    if (!final_url.SchemeIs("http") || !IsBinaryFile(info_.local_file)) {
-      RecordImprovedProtectionStats(!final_url.SchemeIs("http") ?
+    if (final_url.SchemeIs("https") || !IsBinaryFile(info_.target_file)) {
+      RecordImprovedProtectionStats(final_url.SchemeIs("https") ?
                   REASON_HTTPS_URL : REASON_NOT_BINARY_FILE);
       BrowserThread::PostTask(
           BrowserThread::IO,
