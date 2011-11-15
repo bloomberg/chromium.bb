@@ -26,22 +26,23 @@ set -o nounset
 set -o errexit
 
 CROSS_ARM_TC_PACKAGES="\
-  binutils-arm-linux-gnueabi \
-  cpp-4.5-arm-linux-gnueabi \
-  cpp-arm-linux-gnueabi \
-  gcc-4.5-arm-linux-gnueabi \
   gcc-4.5-arm-linux-gnueabi-base \
   libc6-armel-cross \
   libc6-dev-armel-cross \
   libgcc1-armel-cross \
   libgomp1-armel-cross \
   linux-libc-dev-armel-cross \
-  gcc-4.5-locales \
-  libmudflap0-4.5-dev-armel-cross \
   libgcc1-dbg-armel-cross \
   libgomp1-dbg-armel-cross \
-  libmudflap0-dbg-armel-cross \
-  libstdc++6-4.4-dev-armel-cross"
+  libstdc++6-4.4-dev-armel-cross \
+  binutils-arm-linux-gnueabi \
+  gcc-4.5-locales \
+  cpp-4.5-arm-linux-gnueabi \
+  cpp-arm-linux-gnueabi \
+  gcc-4.5-arm-linux-gnueabi \
+  libmudflap0-4.5-dev-armel-cross \
+  libmudflap0-dbg-armel-cross
+"
 
 # Optional:
 # gdb-arm-linux-gnueabi
@@ -61,7 +62,6 @@ CROSS_ARM_TC_DEP_FILES="\
   universe/a/armel-cross-toolchain-base/libc6-armel-cross_2.13-0ubuntu13cross1.62_all.deb \
   universe/a/armel-cross-toolchain-base/libc6-dev-armel-cross_2.13-0ubuntu13cross1.62_all.deb \
   universe/a/armel-cross-toolchain-base/linux-libc-dev-armel-cross_2.6.38-8.42cross1.62_all.deb \
-  main/c/cloog-ppl/libcloog-ppl0_0.15.9-2_amd64.deb \
   main/m/mpfr4/libmpfr4_3.0.0-7_amd64.deb \
   main/c/cloog-ppl/libcloog-ppl0_0.15.9-2_amd64.deb"
 
