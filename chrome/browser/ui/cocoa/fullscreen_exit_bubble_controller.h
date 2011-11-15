@@ -13,7 +13,6 @@ class TabContentsWrapper;
 @class BrowserWindowController;
 class Browser;
 @class GTMUILocalizerAndLayoutTweaker;
-@class InfoBubbleView;
 
 // The FullscreenExitBubbleController manages the bubble that tells the user
 // how to escape fullscreen mode. The bubble only appears when a tab requests
@@ -32,7 +31,6 @@ class Browser;
   IBOutlet NSTextField* messageLabel_;
   IBOutlet NSButton* allowButton_;
   IBOutlet NSButton* denyButton_;
-  IBOutlet InfoBubbleView* bubble_;
   IBOutlet GTMUILocalizerAndLayoutTweaker* tweaker_;
 
   // Text fields don't work as well with embedded links as text views, but

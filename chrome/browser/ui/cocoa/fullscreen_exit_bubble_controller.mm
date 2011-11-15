@@ -27,7 +27,6 @@
 
 
 namespace {
-const int kBubbleOffsetY = 10;
 const float kInitialDelay = 3.8;
 const float kHideDuration = 0.7;
 } // namespace
@@ -110,7 +109,6 @@ const float kHideDuration = 0.7;
 - (void)showWindow {
   // Completes nib load.
   InfoBubbleWindow* info_bubble = static_cast<InfoBubbleWindow*>([self window]);
-  [bubble_ setArrowLocation:info_bubble::kNoArrow];
   [info_bubble setCanBecomeKeyWindow:NO];
   if (!fullscreen_bubble::ShowButtonsForType(bubbleType_)) {
     [self showButtons:NO];
@@ -137,7 +135,6 @@ const float kHideDuration = 0.7;
   NSPoint origin;
   origin.x = (int)(maxWidth/2 - NSWidth(windowFrame)/2);
   origin.y = maxY - NSHeight(windowFrame);
-  origin.y -= kBubbleOffsetY;
   [[self window] setFrameOrigin:origin];
 }
 
