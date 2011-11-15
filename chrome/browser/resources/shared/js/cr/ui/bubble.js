@@ -173,8 +173,8 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Starts showing the bubble. The bubble will grab input and show until the
-     * user clicks away.
+     * Starts showing the bubble. The bubble will show until the user clicks
+     * away or presses Escape.
      */
     show: function() {
       if (!this.hidden)
@@ -209,12 +209,12 @@ cr.define('cr.ui', function() {
      */
     handleEvent: function(e) {
       switch (e.type) {
-        case 'keydown':
+        case 'keydown': {
           if (e.keyCode == 27)  // Esc
             this.hide();
           break;
-
-        case 'mousedown':
+        }
+        case 'mousedown': {
           if (e.target == this.querySelector('.bubble-close')) {
             this.handleCloseEvent_();
           } else if (!this.contains(e.target)) {
@@ -225,11 +225,8 @@ cr.define('cr.ui', function() {
             return;
           }
           break;
+        }
       }
-
-      e.stopPropagation();
-      e.preventDefault();
-      return;
     },
   };
 
