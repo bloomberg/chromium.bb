@@ -954,7 +954,7 @@ LogFunctionMap g_log_function_mapping;
 
 #define IPC_MESSAGE_FORWARD_DELAY_REPLY(msg_class, obj, member_func)           \
     case msg_class::ID: {                                                      \
-        /* TRACK_RUN_IN_IPC_HANDLER(member_func);  TODO(jar) */                \
+        TRACK_RUN_IN_IPC_HANDLER(member_func);                                 \
         msg_is_ok__ = msg_class::DispatchDelayReply(&ipc_message__, obj,       \
                                                   &member_func);               \
       }                                                                        \
@@ -964,6 +964,7 @@ LogFunctionMap g_log_function_mapping;
     IPC_MESSAGE_FORWARD_DELAY_REPLY(msg_class, this,                           \
                                     _IpcMessageHandlerClass::member_func)
 
+// TODO(jar): fix chrome frame to always supply |code| argument.
 #define IPC_MESSAGE_HANDLER_GENERIC(msg_class, code)                           \
     case msg_class::ID: {                                                      \
         /* TRACK_RUN_IN_IPC_HANDLER(code);  TODO(jar) */                       \
@@ -981,7 +982,6 @@ LogFunctionMap g_log_function_mapping;
 
 #define IPC_MESSAGE_UNHANDLED(code)                                            \
     default: {                                                                 \
-        /* TRACK_RUN_IN_IPC_HANDLER(code);  TODO(jar) */                       \
         code;                                                                  \
       }                                                                        \
       break;
