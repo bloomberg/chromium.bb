@@ -78,17 +78,6 @@ void ShowCertificateViewer(gfx::NativeWindow parent,
   // No certificate viewer on Windows.
 }
 
-// static
-FirstRunBubble* FirstRunBubble::Show(
-    Profile* profile,
-    views::Widget* parent,
-    const gfx::Rect& position_relative_to,
-    views::BubbleBorder::ArrowLocation arrow_location,
-    FirstRun::BubbleType bubble_type) {
-  // TODO(beng);
-  NOTIMPLEMENTED();
-  return NULL;
-}
 #else
 void ShowCertSelectFileDialog(SelectFileDialog* select_file_dialog,
                               SelectFileDialog::Type type,

@@ -6,50 +6,42 @@
 #define CHROME_BROWSER_UI_VIEWS_FIRST_RUN_BUBBLE_H_
 #pragma once
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/ui/views/bubble/bubble.h"
+#include "views/bubble/bubble_delegate.h"
+#include "views/controls/button/button.h"
 
-class FirstRunBubbleViewBase;
 class Profile;
 
-class FirstRunBubble : public Bubble,
-                       public BubbleDelegate {
+class FirstRunBubble : public views::BubbleDelegateView,
+                       public views::ButtonListener {
  public:
-  static FirstRunBubble* Show(Profile* profile,
-                              views::Widget* parent,
-                              const gfx::Rect& position_relative_to,
-                              views::BubbleBorder::ArrowLocation arrow_location,
-                              FirstRun::BubbleType bubble_type);
+  static FirstRunBubble* ShowBubble(
+      Profile* profile,
+      views::View* anchor_view,
+      views::BubbleBorder::ArrowLocation location,
+      FirstRun::BubbleType bubble_type);
+
+  // views::BubbleDelegateView overrides:
+  virtual gfx::Point GetAnchorPoint() OVERRIDE;
+
+ protected:
+  // views::BubbleDelegateView overrides:
+  virtual void Init() OVERRIDE;
 
  private:
-  FirstRunBubble();
+  FirstRunBubble(Profile* profile,
+                 views::View* anchor_view,
+                 views::BubbleBorder::ArrowLocation arrow_location,
+                 FirstRun::BubbleType bubble_type);
   virtual ~FirstRunBubble();
 
-  void set_view(FirstRunBubbleViewBase* view) { view_ = view; }
+  // views::ButtonListener overrides:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
-  // Re-enable the parent window.
-  void EnableParent();
+  Profile* profile_;
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // Overridden from Bubble:
-  virtual void OnActivate(UINT action, BOOL minimized, HWND window) OVERRIDE;
-#endif
-
-  // BubbleDelegate.
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
-  virtual bool CloseOnEscape() OVERRIDE { return true; }
-  virtual bool FadeInOnShow() OVERRIDE { return true; }
-
-  // Whether we have already been activated.
-  bool has_been_activated_;
-
-  base::WeakPtrFactory<FirstRunBubble> enable_window_method_factory_;
-
-  // The view inside the FirstRunBubble.
-  FirstRunBubbleViewBase* view_;
+  FirstRun::BubbleType bubble_type_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunBubble);
 };

@@ -1205,11 +1205,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   bool is_first_run = FirstRun::IsChromeFirstRun() ||
       parsed_command_line().HasSwitch(switches::kFirstRun);
 
-#if defined(USE_AURA)
-  // No first run on Aura. See crbug.com/99439.
-  is_first_run = false;
-#endif
-
   if (parsed_command_line().HasSwitch(switches::kImport) ||
       parsed_command_line().HasSwitch(switches::kImportFromFile)) {
     // We use different BrowserProcess when importing so no GoogleURLTracker is

@@ -1851,6 +1851,7 @@
         'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',
         'browser/ui/views/bubble/border_contents_unittest.cc',
         'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
+        'browser/ui/views/first_run_bubble_unittest.cc',
         'browser/ui/views/generic_info_view_unittest.cc',
         'browser/ui/views/reload_button_unittest.cc',
         'browser/ui/views/select_file_dialog_extension_unittest.cc',
@@ -1982,6 +1983,10 @@
         '../content/common/sandbox_mac_system_access_unittest.mm',
         '../testing/gtest_mac_unittest.mm',
         '../third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
+        '../views/test/test_views_delegate.cc',
+        '../views/test/test_views_delegate.h',
+        '../views/test/views_test_base.cc',
+        '../views/test/views_test_base.h',
         '../webkit/fileapi/file_system_dir_url_request_job_unittest.cc',
         '../webkit/fileapi/file_system_operation_write_unittest.cc',
         '../webkit/fileapi/file_system_url_request_job_unittest.cc',
@@ -2184,6 +2189,7 @@
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../dbus/dbus.gyp:dbus_test_support',
+            '../ui/aura/aura.gyp:test_support_aura',
           ],
         }],
         ['os_posix == 1 and OS != "mac"', {

@@ -60,7 +60,7 @@
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/drag_utils.h"
 
-#if defined(OS_WIN)
+#if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/first_run_bubble.h"
 #endif
 
@@ -987,23 +987,12 @@ void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
 
 void LocationBarView::ShowFirstRunBubbleInternal(
     FirstRun::BubbleType bubble_type) {
-#if defined(OS_WIN)  // First run bubble doesn't make sense for Chrome OS.
-  // Point at the start of the edit control; adjust to look as good as possible.
-  const int kXOffset = kNormalHorizontalEdgeThickness + kEdgeItemPadding +
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_OMNIBOX_HTTP)->width() + kItemPadding;
-  const int kYOffset = -(kVerticalEdgeThickness + 2);
-  gfx::Point origin(location_entry_view_->bounds().x() + kXOffset,
-                    y() + height() + kYOffset);
-  // If the UI layout is RTL, the coordinate system is not transformed and
-  // therefore we need to adjust the X coordinate so that bubble appears on the
-  // right hand side of the location bar.
-  if (base::i18n::IsRTL())
-    origin.set_x(width() - origin.x());
-  views::View::ConvertPointToScreen(this, &origin);
-  FirstRunBubble::Show(browser_->profile(), GetWidget(),
-                       gfx::Rect(origin, gfx::Size()),
-                       views::BubbleBorder::TOP_LEFT, bubble_type);
+#if !defined(OS_CHROMEOS)
+  // First run bubble doesn't make sense for Chrome OS.
+  FirstRunBubble::ShowBubble(browser_->profile(),
+                             location_icon_view_,
+                             views::BubbleBorder::TOP_LEFT,
+                             bubble_type);
 #endif
 }
 
