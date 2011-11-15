@@ -6,6 +6,7 @@
 #define UI_GFX_NATIVE_THEME_BASE_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/native_theme.h"
 
@@ -19,12 +20,12 @@ class NativeThemeBase : public NativeTheme {
   // NativeTheme implementation:
   virtual gfx::Size GetPartSize(Part part,
                                 State state,
-                                const ExtraParams& extra) const;
+                                const ExtraParams& extra) const OVERRIDE;
   virtual void Paint(SkCanvas* canvas,
                      Part part,
                      State state,
                      const gfx::Rect& rect,
-                     const ExtraParams& extra) const;
+                     const ExtraParams& extra) const OVERRIDE;
 
  protected:
   NativeThemeBase();

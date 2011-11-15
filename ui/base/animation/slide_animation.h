@@ -67,13 +67,13 @@ class UI_EXPORT SlideAnimation : public LinearAnimation {
   int GetSlideDuration() const { return slide_duration_; }
   void SetTweenType(Tween::Type tween_type) { tween_type_ = tween_type; }
 
-  virtual double GetCurrentValue() const;
+  virtual double GetCurrentValue() const OVERRIDE;
   bool IsShowing() const { return showing_; }
   bool IsClosing() const { return !showing_ && value_end_ < value_current_; }
 
  private:
   // Overridden from Animation.
-  virtual void AnimateToState(double state);
+  virtual void AnimateToState(double state) OVERRIDE;
 
   AnimationDelegate* target_;
 

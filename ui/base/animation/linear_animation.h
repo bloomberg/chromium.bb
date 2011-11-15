@@ -31,7 +31,7 @@ class UI_EXPORT LinearAnimation : public Animation {
   // Gets the value for the current state, according to the animation curve in
   // use. This class provides only for a linear relationship, however subclasses
   // can override this to provide others.
-  virtual double GetCurrentValue() const;
+  virtual double GetCurrentValue() const OVERRIDE;
 
   // Skip to the end of the current animation.
   void End();
@@ -48,13 +48,13 @@ class UI_EXPORT LinearAnimation : public Animation {
   // Invoked by the AnimationContainer when the animation is running to advance
   // the animation. Use |time_now| rather than Time::Now to avoid multiple
   // animations running at the same time diverging.
-  virtual void Step(base::TimeTicks time_now);
+  virtual void Step(base::TimeTicks time_now) OVERRIDE;
 
   // Overriden to advance to the end (if End was invoked).
-  virtual void AnimationStopped();
+  virtual void AnimationStopped() OVERRIDE;
 
   // Overriden to return true if state is not 1.
-  virtual bool ShouldSendCanceledFromStop();
+  virtual bool ShouldSendCanceledFromStop() OVERRIDE;
 
  private:
   base::TimeDelta duration_;

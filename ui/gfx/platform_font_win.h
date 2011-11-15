@@ -6,6 +6,7 @@
 #define UI_GFX_PLATFORM_FONT_WIN_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/platform_font.h"
@@ -41,16 +42,16 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
   static AdjustFontCallback adjust_font_callback;
 
   // Overridden from PlatformFont:
-  virtual Font DeriveFont(int size_delta, int style) const;
-  virtual int GetHeight() const;
-  virtual int GetBaseline() const;
-  virtual int GetAverageCharacterWidth() const;
-  virtual int GetStringWidth(const string16& text) const;
-  virtual int GetExpectedTextWidth(int length) const;
-  virtual int GetStyle() const;
-  virtual std::string GetFontName() const;
-  virtual int GetFontSize() const;
-  virtual NativeFont GetNativeFont() const;
+  virtual Font DeriveFont(int size_delta, int style) const OVERRIDE;
+  virtual int GetHeight() const OVERRIDE;
+  virtual int GetBaseline() const OVERRIDE;
+  virtual int GetAverageCharacterWidth() const OVERRIDE;
+  virtual int GetStringWidth(const string16& text) const OVERRIDE;
+  virtual int GetExpectedTextWidth(int length) const OVERRIDE;
+  virtual int GetStyle() const OVERRIDE;
+  virtual std::string GetFontName() const OVERRIDE;
+  virtual int GetFontSize() const OVERRIDE;
+  virtual NativeFont GetNativeFont() const OVERRIDE;
 
  private:
   virtual ~PlatformFontWin() {}
