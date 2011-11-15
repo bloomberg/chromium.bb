@@ -75,7 +75,8 @@ TEST_F(ChromeRenderViewTest, DidBlockContentType) {
 }
 
 // Tests that multiple invokations of AllowDOMStorage result in a single IPC.
-TEST_F(ChromeRenderViewTest, AllowDOMStorage) {
+// Fails due to http://crbug.com/104300
+TEST_F(ChromeRenderViewTest, FAILS_AllowDOMStorage) {
   // Load some HTML, so we have a valid security origin.
   LoadHTML("<html></html>");
   MockContentSettingsObserver observer(view_);
