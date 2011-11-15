@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <GLES2/gl2.h>
 
 #include <algorithm>
 
@@ -16,6 +15,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/renderer/gpu/renderer_gl_context.h"
 #include "content/renderer/gpu/transport_texture_service.h"
+#include "gpu/GLES2/gl2.h"
 
 TransportTextureHost::TransportTextureHost(MessageLoop* io_message_loop,
                                            MessageLoop* render_message_loop,
