@@ -22,6 +22,7 @@ desired threshold value.
 """
 
 import BaseHTTPServer
+import commands
 import logging
 import math
 import os
@@ -497,30 +498,107 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
     pyauto.PyUITest.__init__(self, methodName, **kwargs)
     YoutubeTestHelper.__init__(self, self)
 
-  def testYoutubeDroppedFrames(self):
-    """Measures the Youtube video dropped frames. Runs for 60 secs."""
+  def GetCPUUsage(self):
+    """Returns machine's CPU usage
+       
+    It uses /proc/stat to count CPU usage.
+    Returns:
+      A dictionary with user, nice, system and idle values.
+      Sample dictionary :
+      {
+        'user': 254544,
+        'nice': 9,
+        'system': 254768,
+        'idle': 2859878,
+      }
+    """
+    cpu = open('/proc/stat').readline().split()
+    return {
+        'user': int(cpu[1]),
+        'nice': int(cpu[2]),
+        'system': int(cpu[3]),
+        'idle': int(cpu[4])
+        }
+
+  def VerifyVideoTotalBytes(self):
+    """Returns true if video total bytes information is available"""
+    return self.GetVideoTotalBytes() > 0
+
+  def VerifyVideoLoadedBytes(self):
+    """Returns true if video loaded bytes information is available"""
+    return self.GetVideoLoadedBytes() > 0
+
+  def StartVideoForPerformance(self):
+    """Start the test video with all required buffering"""
     self.PlayVideoAndAssert()
     self.ExecuteJavascript("""
         ytplayer.setPlaybackQuality('hd720');
         window.domAutomationController.send('');
     """)
+    self.AssertPlayingState()
+    self.assertTrue(
+        self.WaitUntil(self.VerifyVideoTotalBytes, expect_retval=True),
+        msg='Failed to get video total bytes information.')
+    self.assertTrue(
+        self.WaitUntil(self.VerifyVideoLoadedBytes, expect_retval=True), 
+        msg='Failed to get video loaded bytes information')
+    loaded_video_bytes = self.GetVideoLoadedBytes()
+    total_video_bytes = self.GetVideoTotalBytes()
+    self.PauseVideo()
+    count = 0
+    while total_video_bytes > loaded_video_bytes:
+      loaded_video_bytes = self.GetVideoLoadedBytes()
+      time.sleep(1)
+      count = count + 1
+    self.PlayVideo()
+    # Ignoring first 10 seconds of video playing so we get smooth
+    # videoplayback.
+    time.sleep(10)
+
+  def testYoutubeDroppedFrames(self):
+    """Measures the Youtube video dropped frames. Runs for 60 secs."""
+    self.StartVideoForPerformance()
+    init_dropped_frames = self.GetVideoDroppedFrames()
     total_dropped_frames = 0
     dropped_fps = []
-    youtube_apis = self.GetPrivateInfo()['youtube_api']
-    youtube_debug_text = youtube_apis['GetDebugText']
     for _ in xrange(60):
-      video_data = self.ExecuteJavascript(
-          'window.domAutomationController.send(%s);' % youtube_debug_text)
-      # Video data returns total dropped frames so far, so calculating
-      # the dropped frames for the last second.
-      matched = re.search('droppedFrames=([\d\.]+)', video_data)
-      if matched:
-        frames = int(matched.group(1))
+      frames = self.GetVideoDroppedFrames() - init_dropped_frames
       current_dropped_frames = frames - total_dropped_frames 
       dropped_fps.append(current_dropped_frames)
       total_dropped_frames = frames
+      # Play the video for some time
       time.sleep(1)
     self._PrintSummaryResults('YoutubeDroppedFrames', dropped_fps, 'frames')
+
+  def testYoutubeCPU(self):
+    """Measure the Youtube video CPU usage. Runs for 60 seconds.
+
+    Measures the Youtube video CPU usage (between 0 and 1) extrapolated to
+    totalframes in the video by taking dropped frames into account. For smooth
+    videoplayback this number should be < 0.5..1.0 on a hyperthreaded CPU.
+    """
+    self.StartVideoForPerformance()
+    init_dropped_frames = self.GetVideoDroppedFrames()
+    cpu_usage1 = self.GetCPUUsage() 
+    total_shown_frames = 0
+    for _ in xrange(60):
+      total_shown_frames = total_shown_frames + self.GetVideoFrames() 
+      # Play the video for some time
+      time.sleep(1)
+    total_dropped_frames = self.GetVideoDroppedFrames() - init_dropped_frames
+    cpu_usage2 = self.GetCPUUsage() 
+    
+    x2 = cpu_usage2['user'] + cpu_usage2['nice'] + cpu_usage2['system']
+    x1 = cpu_usage1['user'] + cpu_usage1['nice'] + cpu_usage1['system']
+    y2 = cpu_usage2['user'] + cpu_usage2['nice'] + \
+         cpu_usage2['system'] + cpu_usage2['idle']
+    y1 = cpu_usage1['user'] + cpu_usage1['nice'] + \
+         cpu_usage1['system'] + cpu_usage1['idle']
+    total_frames = total_shown_frames + total_dropped_frames
+    # Counting extrapolation for utilization to play the video
+    self._PrintSummaryResults('YoutubeCPUExtrapolation',
+        [((float(x2) - x1) / (y2 - y1)) * total_frames/total_shown_frames],
+        'extrapolation')
 
 
 class FileUploadDownloadTest(BasePerfTest):

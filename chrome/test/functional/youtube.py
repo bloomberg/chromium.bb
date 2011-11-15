@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import re
 import time
 
 import pyauto_functional
@@ -26,27 +27,60 @@ class YoutubeTestHelper():
     self._pyauto = pyauto
 
   def IsFlashPluginEnabled(self):
-    """Verify flash plugin availability and its state"""
+    """Verify flash plugin availability and its state."""
     return [x for x in self._pyauto.GetPluginsInfo().Plugins() \
             if x['name'] == 'Shockwave Flash' and x['enabled']]
 
   def WaitUntilPlayerReady(self):
-    """Verify that player is ready"""
+    """Verify that player is ready."""
     return self._pyauto.WaitUntil(lambda: self._pyauto.ExecuteJavascript("""
         player_status = document.getElementById("player_status");
         window.domAutomationController.send(player_status.innerHTML);
     """), expect_retval='player ready')
 
   def GetPlayerState(self):
-    """Returns a player state"""
+    """Returns a player state."""
     js = """
         var val = ytplayer.getPlayerState(); 
         window.domAutomationController.send(val + '');
     """
     return self._pyauto.ExecuteJavascript(js)
 
+  def GetVideoInfo(self):
+    """Returns Youtube video info."""
+    youtube_apis = self._pyauto.GetPrivateInfo()['youtube_api']
+    youtube_debug_text = youtube_apis['GetDebugText']
+    return  self._pyauto.ExecuteJavascript(
+        'window.domAutomationController.send(%s);' % youtube_debug_text)
+
+  def GetVideoDroppedFrames(self):
+    """Returns total Youtube video dropped frames.
+  
+    Returns:
+      -1 if failed to get video frames from the video data
+    """
+    video_data = self._pyauto.GetVideoInfo()
+    matched = re.search('droppedFrames=([\d\.]+)', video_data)
+    if matched:
+      return int(matched.group(1))
+    else:
+      return -1
+
+  def GetVideoFrames(self):
+    """Returns Youtube video frames/second.
+
+    Returns:
+      -1 if failed to get droppd frames from the video data.
+    """
+    video_data = self._pyauto.GetVideoInfo()
+    matched = re.search('videoFps=([\d\.]+)', video_data)
+    if matched:
+      return int(matched.group(1))
+    else:
+      return -1
+
   def GetVideoTotalBytes(self):
-    """Returns video size in bytes
+    """Returns video total size in bytes.
        
     To call this function, video must be in the paying state,
     or this returns 0.
@@ -58,23 +92,39 @@ class YoutubeTestHelper():
     """)
     return int(total_bytes)
 
+  def GetVideoLoadedBytes(self):
+    """Returns video size in bytes."""
+    loaded_bytes = 0
+    loaded_bytes = self.ExecuteJavascript("""
+        bytes = ytplayer.getVideoBytesLoaded();
+        window.domAutomationController.send(bytes + '');
+    """)
+    return int(loaded_bytes)
+
   def PlayVideo(self):
-    """Plays the loaded video"""
+    """Plays the loaded video."""
     self._pyauto.ExecuteJavascript("""
         ytplayer.playVideo();
         window.domAutomationController.send('');
     """)
 
+  def PauseVideo(self):
+    """Pause the video."""
+    self.ExecuteJavascript("""
+        ytplayer.pauseVideo();
+        window.domAutomationController.send('');
+    """)
+
   def AssertPlayingState(self):
-    """Assert player's playing state"""
+    """Assert player's playing state."""
     self._pyauto.assertTrue(self._pyauto.WaitUntil(self._pyauto.GetPlayerState,
         expect_retval=self._pyauto.is_playing),
         msg='Player did not enter the playing state')
 
   def PlayVideoAndAssert(self):
-    """Start video and assert the playing state"""
+    """Start video and assert the playing state."""
     self._pyauto.assertTrue(self._pyauto.IsFlashPluginEnabled(), 
-                    msg='From here Flash plugin is disabled or not available') 
+        msg='From here Flash plugin is disabled or not available')
     url = self._pyauto.GetHttpURLForDataPath('media', 'youtube.html')
     self._pyauto.NavigateToURL(url)
     self._pyauto.assertTrue(self._pyauto.WaitUntilPlayerReady(),
@@ -99,11 +149,7 @@ class YoutubeTest(pyauto.PyUITest, YoutubeTestHelper):
     # Navigating to Youtube video. This video is 122 seconds long.
     # During tests, we are not goinig to play this video full.
     self.PlayVideoAndAssert()
-    # Pause the playing video
-    self.ExecuteJavascript("""
-        ytplayer.pauseVideo();
-        window.domAutomationController.send('');
-    """)
+    self.PauseVideo()
     self.assertEqual(self.GetPlayerState(), self.is_paused,
                      msg='Player did not enter the paused state')
     # Seek to the end of video
@@ -120,7 +166,7 @@ class YoutubeTest(pyauto.PyUITest, YoutubeTestHelper):
                     msg='Player did not reach the stopped state')
 
   def testPlayerResolution(self):
-    """Test various video resolutions"""
+    """Test various video resolutions."""
     self.PlayVideoAndAssert()
     resolutions = self.ExecuteJavascript("""
         res = ytplayer.getAvailableQualityLevels();
@@ -139,7 +185,7 @@ class YoutubeTest(pyauto.PyUITest, YoutubeTestHelper):
       self.assertEqual(res, curr_res, msg='Resolution is not set to %s.' % res)
       
   def testPlayerBytes(self):
-    """Test that player downloads video bytes"""
+    """Test that player downloads video bytes."""
     self.PlayVideoAndAssert()
     total_bytes = self.GetVideoTotalBytes()
     prev_loaded_bytes = 0
@@ -150,11 +196,7 @@ class YoutubeTest(pyauto.PyUITest, YoutubeTestHelper):
       count = count + 1
       if count == 2:
         break
-      loaded_bytes = self.ExecuteJavascript("""
-          bytes = ytplayer.getVideoBytesLoaded();
-          window.domAutomationController.send(bytes + '');
-      """)
-      loaded_bytes = int(loaded_bytes)
+      loaded_bytes = self.GetVideoLoadedBytes()
       self.assertTrue(prev_loaded_bytes <= loaded_bytes)
       prev_loaded_bytes = loaded_bytes
       # Give some time to load a video
