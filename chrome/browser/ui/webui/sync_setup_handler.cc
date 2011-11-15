@@ -174,6 +174,11 @@ bool HasConfigurationChanged(const SyncConfiguration& config,
                              Profile* profile) {
   CHECK(profile);
 
+  // This function must be updated every time a new sync datatype is added to
+  // the sync preferences page.
+  COMPILE_ASSERT(17 == syncable::MODEL_TYPE_COUNT,
+                 UpdateCustomConfigHistogram);
+
   // If service is null or if this is a first time configuration, return true.
   ProfileSyncService* service = profile->GetProfileSyncService();
   if (!service || !service->HasSyncSetupCompleted())
@@ -193,6 +198,8 @@ bool HasConfigurationChanged(const SyncConfiguration& config,
       pref_service->GetBoolean(prefs::kSyncKeepEverythingSynced))
     return true;
 
+  // Only check the data types that are explicitly listed on the sync
+  // preferences page.
   const syncable::ModelTypeSet& types = config.data_types;
   if (((types.find(syncable::BOOKMARKS) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncBookmarks)) ||
@@ -206,16 +213,12 @@ bool HasConfigurationChanged(const SyncConfiguration& config,
        pref_service->GetBoolean(prefs::kSyncAutofill)) ||
       ((types.find(syncable::EXTENSIONS) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncExtensions)) ||
-      ((types.find(syncable::EXTENSION_SETTINGS) != types.end()) !=
-       pref_service->GetBoolean(prefs::kSyncExtensionSettings)) ||
       ((types.find(syncable::TYPED_URLS) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncTypedUrls)) ||
       ((types.find(syncable::SESSIONS) != types.end()) !=
        pref_service->GetBoolean(prefs::kSyncSessions)) ||
       ((types.find(syncable::APPS) != types.end()) !=
-       pref_service->GetBoolean(prefs::kSyncApps)) ||
-      ((types.find(syncable::APP_SETTINGS) != types.end()) !=
-       pref_service->GetBoolean(prefs::kSyncAppSettings)))
+       pref_service->GetBoolean(prefs::kSyncApps)))
     return true;
 
   return false;
@@ -555,6 +558,44 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
     return;
   }
 
+  // We do not do UMA logging during unit tests.
+  if (web_ui_) {
+    Profile* profile = Profile::FromWebUI(web_ui_);
+    if (HasConfigurationChanged(configuration, profile)) {
+      UMA_HISTOGRAM_BOOLEAN("Sync.SyncEverything",
+                            configuration.sync_everything);
+      if (!configuration.sync_everything) {
+        // Only log the data types that are explicitly listed on the sync
+        // preferences page.
+        const syncable::ModelTypeSet& types = configuration.data_types;
+        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncBookmarks",
+            types.find(syncable::BOOKMARKS) != types.end());
+        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncPreferences",
+            types.find(syncable::PREFERENCES) != types.end());
+        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncThemes",
+            types.find(syncable::THEMES) != types.end());
+        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncPasswords",
+            types.find(syncable::PASSWORDS) != types.end());
+        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncAutofill",
+            types.find(syncable::AUTOFILL) != types.end());
+        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncExtensions",
+            types.find(syncable::EXTENSIONS) != types.end());
+        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncTypedUrls",
+            types.find(syncable::TYPED_URLS) != types.end());
+        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncSessions",
+            types.find(syncable::SESSIONS) != types.end());
+        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncApps",
+            types.find(syncable::APPS) != types.end());
+        COMPILE_ASSERT(17 == syncable::MODEL_TYPE_COUNT,
+                       UpdateCustomConfigHistogram);
+      }
+      UMA_HISTOGRAM_BOOLEAN("Sync.EncryptAllData", configuration.encrypt_all);
+      UMA_HISTOGRAM_BOOLEAN("Sync.CustomPassphrase",
+                            configuration.set_gaia_passphrase ||
+                            configuration.set_secondary_passphrase);
+    }
+  }
+
   DCHECK(flow_);
   flow_->OnUserConfigured(configuration);
 
@@ -567,47 +608,6 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
   }
   if (!configuration.sync_everything) {
     ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_CHOOSE);
-  }
-
-  // Happens during unit tests.
-  if (!web_ui_)
-    return;
-
-  Profile* profile = Profile::FromWebUI(web_ui_);
-  if (HasConfigurationChanged(configuration, profile)) {
-    UMA_HISTOGRAM_BOOLEAN("Sync.SyncEverything",
-                          configuration.sync_everything);
-    if (!configuration.sync_everything) {
-      const syncable::ModelTypeSet& types = configuration.data_types;
-      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncBookmarks",
-          types.find(syncable::BOOKMARKS) != types.end());
-      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncPreferences",
-          types.find(syncable::PREFERENCES) != types.end());
-      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncThemes",
-          types.find(syncable::THEMES) != types.end());
-      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncPasswords",
-          types.find(syncable::PASSWORDS) != types.end());
-      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncAutofill",
-          types.find(syncable::AUTOFILL) != types.end());
-      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncExtensions",
-          types.find(syncable::EXTENSIONS) != types.end());
-      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncExtensionSettings",
-          types.find(syncable::EXTENSION_SETTINGS) != types.end());
-      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncTypedUrls",
-          types.find(syncable::TYPED_URLS) != types.end());
-      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncSessions",
-          types.find(syncable::SESSIONS) != types.end());
-      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncApps",
-          types.find(syncable::APPS) != types.end());
-      UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncAppSettings",
-          types.find(syncable::APP_SETTINGS) != types.end());
-      COMPILE_ASSERT(17 == syncable::MODEL_TYPE_COUNT,
-                     UpdateCustomConfigHistogram);
-    }
-    UMA_HISTOGRAM_BOOLEAN("Sync.EncryptAllData", configuration.encrypt_all);
-    UMA_HISTOGRAM_BOOLEAN("Sync.CustomPassphrase",
-                          configuration.set_gaia_passphrase ||
-                          configuration.set_secondary_passphrase);
   }
 }
 
