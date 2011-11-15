@@ -30,6 +30,9 @@ class StatusAreaBubbleContentView : public views::View {
 
   views::View* icon_view() const { return icon_view_; }
 
+  // views::View override
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+
  private:
   views::View* icon_view_;
   views::Label* message_view_;

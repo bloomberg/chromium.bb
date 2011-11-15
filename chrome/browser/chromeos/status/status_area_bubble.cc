@@ -7,6 +7,7 @@
 #include "views/controls/label.h"
 #include "views/layout/box_layout.h"
 #include "views/layout/fill_layout.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 
 namespace chromeos {
 
@@ -65,6 +66,13 @@ string16 StatusAreaBubbleContentView::GetMessage() const {
 
 void StatusAreaBubbleContentView::SetMessage(const string16& message) {
   message_view_->SetText(message);
+}
+
+void StatusAreaBubbleContentView::GetAccessibleState(
+    ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_STATICTEXT;
+  state->state = ui::AccessibilityTypes::STATE_READONLY;
+  state->name = GetMessage();
 }
 
 
