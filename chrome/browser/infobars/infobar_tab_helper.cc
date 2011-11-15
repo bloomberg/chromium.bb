@@ -155,7 +155,7 @@ void InfoBarTabHelper::OnDidBlockRunningInsecureContent() {
       InsecureContentInfoBarDelegate::RUN));
 }
 
-void InfoBarTabHelper::RenderViewGone() {
+void InfoBarTabHelper::RenderViewGone(base::TerminationStatus status) {
   RemoveAllInfoBars(true);
 }
 

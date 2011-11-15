@@ -43,6 +43,7 @@ class PasswordManagerDelegate;
 class PluginObserver;
 class Profile;
 class RestoreTabHelper;
+class SadTabObserver;
 class SearchEngineTabHelper;
 class TabContentsSSLHelper;
 class TabContentsWrapperDelegate;
@@ -324,6 +325,7 @@ class TabContentsWrapper : public TabContentsObserver,
   scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
   scoped_ptr<PluginObserver> plugin_observer_;
   scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
+  scoped_ptr<SadTabObserver> sad_tab_observer_;
   scoped_ptr<ThumbnailGenerator> thumbnail_generation_observer_;
 
   // TabContents (MUST BE LAST) ------------------------------------------------

@@ -50,7 +50,7 @@ class InfoBarTabHelper : public TabContentsObserver,
   void set_infobars_enabled(bool value) { infobars_enabled_ = value; }
 
   // TabContentsObserver overrides:
-  virtual void RenderViewGone() OVERRIDE;
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // content::NotificationObserver overrides:

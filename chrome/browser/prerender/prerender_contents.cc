@@ -523,7 +523,7 @@ void PrerenderContents::OnJSOutOfMemory() {
   Destroy(FINAL_STATUS_JS_OUT_OF_MEMORY);
 }
 
-void PrerenderContents::RenderViewGone() {
+void PrerenderContents::RenderViewGone(base::TerminationStatus status) {
   Destroy(FINAL_STATUS_RENDERER_CRASHED);
 }
 

@@ -7,17 +7,24 @@
 #include "base/mac/mac_util.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_view.h"
 
+namespace sad_tab_controller_mac {
+
+SadTabController* CreateSadTabController(TabContents* tab_contents) {
+  return [[SadTabController alloc] initWithTabContents:tab_contents];
+}
+
+gfx::NativeView GetViewOfSadTabController(SadTabController* sad_tab) {
+  return [sad_tab view];
+}
+
+}  // namespace sad_tab_controller_mac
+
 @implementation SadTabController
 
-- (id)initWithTabContents:(TabContents*)someTabContents
-                superview:(NSView*)superview {
+- (id)initWithTabContents:(TabContents*)tabContents {
   if ((self = [super initWithNibName:@"SadTab"
                               bundle:base::mac::MainAppBundle()])) {
-    tabContents_ = someTabContents;
-
-    NSView* view = [self view];
-    [superview addSubview:view];
-    [view setFrame:[superview bounds]];
+    tabContents_ = tabContents;
   }
 
   return self;
@@ -29,11 +36,6 @@
     SadTabView* sad_view = static_cast<SadTabView*>([self view]);
     [sad_view removeHelpText];
   }
-}
-
-- (void)dealloc {
-  [[self view] removeFromSuperview];
-  [super dealloc];
 }
 
 - (TabContents*)tabContents {

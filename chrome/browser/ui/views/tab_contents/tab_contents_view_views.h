@@ -16,7 +16,6 @@
 class ConstrainedWindowGtk;
 class NativeTabContentsView;
 class RenderViewContextMenuViews;
-class SadTabView;
 class SkBitmap;
 struct WebDropData;
 namespace gfx {
@@ -28,8 +27,6 @@ class Widget;
 }
 
 // Views-specific implementation of the TabContentsView.
-// TODO(beng): Remove last remnants of Windows-specificity, and make this
-//             subclass Widget.
 class TabContentsViewViews : public views::Widget,
                              public TabContentsView,
                              public internal::NativeTabContentsViewDelegate {
@@ -75,6 +72,8 @@ class TabContentsViewViews : public views::Widget,
   virtual bool IsEventTracking() const;
   virtual void CloseTabAfterEventTracking();
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
+  virtual void InstallOverlayView(gfx::NativeView view) OVERRIDE;
+  virtual void RemoveOverlayView() OVERRIDE;
 
   // Implementation of RenderViewHostDelegate::View.
   virtual void CreateNewWindow(
@@ -152,11 +151,6 @@ class TabContentsViewViews : public views::Widget,
 
   NativeTabContentsView* native_tab_contents_view_;
 
-  // If non-null we're showing a sad tab. SadTabView is hosted in a separate
-  // widget so that TabContentsViewViews does not need to draw, and can be
-  // created without a texture.
-  views::Widget* sad_tab_widget_;
-
   // The id used in the ViewStorage to store the last focused view.
   int last_focused_view_storage_id_;
 
@@ -173,6 +167,10 @@ class TabContentsViewViews : public views::Widget,
   // The FocusManager associated with this tab.  Stored as it is not directly
   // accessible when un-parented.
   mutable const views::FocusManager* focus_manager_;
+
+  // The overlaid view. Owned by the caller of |InstallOverlayView|; this is a
+  // weak reference.
+  views::Widget* overlaid_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewViews);
 };

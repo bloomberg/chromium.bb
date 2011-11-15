@@ -106,11 +106,11 @@ class AutomationTabHelper
       const std::string& error_msg);
 
   // TabContentsObserver implementation.
-  virtual void DidStartLoading();
-  virtual void DidStopLoading();
-  virtual void RenderViewGone();
-  virtual void TabContentsDestroyed(TabContents* tab_contents);
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void DidStartLoading() OVERRIDE;
+  virtual void DidStopLoading() OVERRIDE;
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void TabContentsDestroyed(TabContents* tab_contents) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnWillPerformClientRedirect(int64 frame_id, double delay_seconds);
   void OnDidCompleteOrCancelClientRedirect(int64 frame_id);

@@ -126,3 +126,9 @@ void TestTabContentsView::CloseTabAfterEventTracking() {
 
 void TestTabContentsView::GetViewBounds(gfx::Rect* out) const {
 }
+
+void TestTabContentsView::InstallOverlayView(gfx::NativeView view) {
+}
+
+void TestTabContentsView::RemoveOverlayView() {
+}

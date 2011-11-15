@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_OBSERVER_H_
 #define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_OBSERVER_H_
 
+#include "base/process_util.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
@@ -22,7 +23,7 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void RenderViewDeleted(RenderViewHost* render_view_host);
   virtual void RenderViewReady();
-  virtual void RenderViewGone();
+  virtual void RenderViewGone(base::TerminationStatus status);
   virtual void NavigateToPendingEntry(
       const GURL& url,
       NavigationController::ReloadType reload_type);

@@ -13,11 +13,9 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_gtk.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_gtk.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
-#include "chrome/browser/ui/gtk/sad_tab_gtk.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
@@ -26,8 +24,6 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/web_drag_dest_gtk.h"
 #include "content/browser/tab_contents/web_drag_source_gtk.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "ui/base/gtk/gtk_expanded_container.h"
 #include "ui/base/gtk/gtk_floating_container.h"
 #include "ui/gfx/point.h"
@@ -81,7 +77,8 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       floating_(gtk_floating_container_new()),
       expanded_(gtk_expanded_container_new()),
-      constrained_window_(NULL) {
+      constrained_window_(NULL),
+      overlaid_view_(NULL) {
   gtk_widget_set_name(expanded_, "chrome-tab-contents-view");
   g_signal_connect(expanded_, "size-allocate",
                    G_CALLBACK(OnSizeAllocateThunk), this);
@@ -93,8 +90,6 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
   gtk_container_add(GTK_CONTAINER(floating_.get()), expanded_);
   gtk_widget_show(expanded_);
   gtk_widget_show(floating_.get());
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
-                 content::Source<TabContents>(tab_contents));
   drag_source_.reset(new content::WebDragSourceGtk(tab_contents));
 }
 
@@ -198,20 +193,6 @@ void TabContentsViewGtk::SetPageTitle(const string16& title) {
 
 void TabContentsViewGtk::OnTabCrashed(base::TerminationStatus status,
                                       int error_code) {
-  // Only show the sad tab if we're not in browser shutdown, so that TabContents
-  // objects that are not in a browser (e.g., HTML dialogs) and thus are
-  // visible do not flash a sad tab page.
-  if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)
-    return;
-
-  if (tab_contents_ != NULL && !sad_tab_.get()) {
-    sad_tab_.reset(new SadTabGtk(
-        tab_contents_,
-        status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
-        SadTabGtk::KILLED : SadTabGtk::CRASHED));
-    InsertIntoContentArea(sad_tab_->widget());
-    gtk_widget_show(sad_tab_->widget());
-  }
 }
 
 void TabContentsViewGtk::SizeContents(const gfx::Size& size) {
@@ -279,6 +260,19 @@ void TabContentsViewGtk::GetViewBounds(gfx::Rect* out) const {
   out->SetRect(x, y, w, h);
 }
 
+void TabContentsViewGtk::InstallOverlayView(gfx::NativeView view) {
+  DCHECK(!overlaid_view_);
+  overlaid_view_ = view;
+  InsertIntoContentArea(view);
+  gtk_widget_show(view);
+}
+
+void TabContentsViewGtk::RemoveOverlayView() {
+  DCHECK(overlaid_view_);
+  gtk_container_remove(GTK_CONTAINER(expanded_), overlaid_view_);
+  overlaid_view_ = NULL;
+}
+
 void TabContentsViewGtk::SetFocusedWidget(GtkWidget* widget) {
   focus_store_.SetWidget(widget);
 }
@@ -300,24 +294,6 @@ void TabContentsViewGtk::TakeFocus(bool reverse) {
         reverse ? GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
   }
 }
-
-void TabContentsViewGtk::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_TAB_CONTENTS_CONNECTED: {
-      // No need to remove the SadTabGtk's widget from the container since
-      // the new RenderWidgetHostViewGtk instance already removed all the
-      // vbox's children.
-      sad_tab_.reset();
-      break;
-    }
-    default:
-      NOTREACHED() << "Got a notification we didn't register for.";
-      break;
-  }
-}
-
 
 void TabContentsViewGtk::CreateNewWindow(
     int route_id,

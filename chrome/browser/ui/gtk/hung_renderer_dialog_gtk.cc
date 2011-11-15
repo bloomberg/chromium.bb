@@ -49,7 +49,7 @@ class HungRendererDialogGtk {
     }
 
     // TabContentsObserver overrides:
-    virtual void RenderViewGone() OVERRIDE {
+    virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE {
       dialog_->Hide();
     }
     virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE {

@@ -52,13 +52,13 @@ class SadTabControllerTest : public ChromeRenderViewHostTestHarness {
 
   // Creates the controller and adds its view to contents, caller has ownership.
   SadTabController* CreateController() {
-    NSView* contentView = [test_window_ contentView];
     SadTabController* controller =
-        [[SadTabController alloc] initWithTabContents:contents()
-                                            superview:contentView];
+        [[SadTabController alloc] initWithTabContents:contents()];
     EXPECT_TRUE(controller);
     NSView* view = [controller view];
     EXPECT_TRUE(view);
+    NSView* contentView = [test_window_ contentView];
+    [contentView addSubview:view];
 
     return controller;
   }

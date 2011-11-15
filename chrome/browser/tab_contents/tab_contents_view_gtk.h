@@ -14,14 +14,11 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/gtk/focus_store_gtk.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 class ConstrainedWindowGtk;
 class RenderViewContextMenuGtk;
-class SadTabGtk;
 class WebDragBookmarkHandlerGtk;
 
 namespace content {
@@ -29,8 +26,7 @@ class WebDragDestGtk;
 class WebDragSourceGtk;
 }
 
-class TabContentsViewGtk : public TabContentsView,
-                           public content::NotificationObserver {
+class TabContentsViewGtk : public TabContentsView {
  public:
   // The corresponding TabContents is passed in the constructor, and manages our
   // lifetime. This doesn't need to be the case, but is this way currently
@@ -71,6 +67,8 @@ class TabContentsViewGtk : public TabContentsView,
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
+  virtual void InstallOverlayView(gfx::NativeView view) OVERRIDE;
+  virtual void RemoveOverlayView() OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void CreateNewWindow(
@@ -98,12 +96,6 @@ class TabContentsViewGtk : public TabContentsView,
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
-
-  // content::NotificationObserver implementation ------------------------------
-
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
 
  private:
   // Insert the given widget into the content area. Should only be used for
@@ -136,7 +128,6 @@ class TabContentsViewGtk : public TabContentsView,
   // Common implementations of some RenderViewHostDelegate::View methods.
   RenderViewHostDelegateViewHelper delegate_view_helper_;
 
-
   // Contains |expanded_| as its GtkBin member.
   ui::OwnedWidgetGtk floating_;
 
@@ -147,11 +138,6 @@ class TabContentsViewGtk : public TabContentsView,
   // The context menu is reset every time we show it, but we keep a pointer to
   // between uses so that it won't go out of scope before we're done with it.
   scoped_ptr<RenderViewContextMenuGtk> context_menu_;
-
-  // Used to get notifications about renderers coming and going.
-  content::NotificationRegistrar registrar_;
-
-  scoped_ptr<SadTabGtk> sad_tab_;
 
   FocusStoreGtk focus_store_;
 
@@ -172,6 +158,10 @@ class TabContentsViewGtk : public TabContentsView,
   // The size we want the tab contents view to be.  We keep this in a separate
   // variable because resizing in GTK+ is async.
   gfx::Size requested_size_;
+
+  // The overlaid view. Owned by the caller of |InstallOverlayView|; this is a
+  // weak reference.
+  GtkWidget* overlaid_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewGtk);
 };

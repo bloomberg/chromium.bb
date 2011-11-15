@@ -161,9 +161,9 @@ static const CGFloat kTabHorzMargin = 13;
 }
 
 // Called when someone clicks on the embedded link.
-- (BOOL) textView:(NSTextView*)textView
-    clickedOnLink:(id)link
-          atIndex:(NSUInteger)charIndex {
+- (BOOL)textView:(NSTextView*)textView
+   clickedOnLink:(id)link
+         atIndex:(NSUInteger)charIndex {
   if (controller_)
     [controller_ openLearnMoreAboutCrashLink:nil];
   return YES;

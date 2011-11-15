@@ -66,8 +66,7 @@ class CONTENT_EXPORT TabContentsView : public RenderViewHostDelegate::View {
   // trying to find a specific window.
   virtual void SetPageTitle(const string16& title) = 0;
 
-  // Used to notify the view that a tab has crashed so each platform can
-  // prepare the sad tab.
+  // Used to notify the view that a tab has crashed.
   virtual void OnTabCrashed(base::TerminationStatus status,
                             int error_code) = 0;
 
@@ -116,6 +115,18 @@ class CONTENT_EXPORT TabContentsView : public RenderViewHostDelegate::View {
   // Get the bounds of the View, relative to the parent.
   // TODO(beng): Return a rect rather than using an out param.
   virtual void GetViewBounds(gfx::Rect* out) const = 0;
+
+  // ---------------------------------------------------------------------------
+  // Functions for embedders.
+  // TODO(avi): Figure out where these go on the API surface.
+
+  // Installs a native view to cover the visible web contents. Removed by
+  // |RemoveOverlayView|. This is not a transfer of ownership, and the view must
+  // remain valid until removed.
+  virtual void InstallOverlayView(gfx::NativeView view) = 0;
+
+  // Removes the native overlay view installed by |InstallOverlayView|.
+  virtual void RemoveOverlayView() = 0;
 
  protected:
   TabContentsView();  // Abstract interface.

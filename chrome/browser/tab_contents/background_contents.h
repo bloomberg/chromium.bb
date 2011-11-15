@@ -51,7 +51,7 @@ class BackgroundContents : public TabContentsDelegate,
   virtual void DidNavigateMainFramePostCommit(TabContents* tab) OVERRIDE;
 
   // TabContentsObserver implementation:
-  virtual void RenderViewGone() OVERRIDE;
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,

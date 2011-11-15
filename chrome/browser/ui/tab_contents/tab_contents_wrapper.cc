@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/intents/web_intent_picker_factory_impl.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
+#include "chrome/browser/ui/sad_tab_observer.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -306,6 +307,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
   plugin_observer_.reset(new PluginObserver(this));
   print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
+  sad_tab_observer_.reset(new SadTabObserver(contents));
   // Start the in-browser thumbnailing if the feature is enabled.
   if (switches::IsInBrowserThumbnailingEnabled()) {
     thumbnail_generation_observer_.reset(new ThumbnailGenerator);

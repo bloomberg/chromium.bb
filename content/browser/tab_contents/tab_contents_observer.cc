@@ -17,7 +17,7 @@ void TabContentsObserver::RenderViewDeleted(RenderViewHost* render_view_host) {
 void TabContentsObserver::RenderViewReady() {
 }
 
-void TabContentsObserver::RenderViewGone() {
+void TabContentsObserver::RenderViewGone(base::TerminationStatus status) {
 }
 
 void TabContentsObserver::NavigateToPendingEntry(

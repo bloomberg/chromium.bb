@@ -17,8 +17,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/gfx/size.h"
 
@@ -48,8 +46,7 @@ class Point;
 
 // Mac-specific implementation of the TabContentsView. It owns an NSView that
 // contains all of the contents of the tab and associated child views.
-class TabContentsViewMac : public TabContentsView,
-                           public content::NotificationObserver {
+class TabContentsViewMac : public TabContentsView {
  public:
   // The corresponding TabContents is passed in the constructor, and manages our
   // lifetime. This doesn't need to be the case, but is this way currently
@@ -80,6 +77,8 @@ class TabContentsViewMac : public TabContentsView,
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
+  virtual void InstallOverlayView(gfx::NativeView view) OVERRIDE;
+  virtual void RemoveOverlayView() OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void CreateNewWindow(
@@ -108,12 +107,6 @@ class TabContentsViewMac : public TabContentsView,
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
 
-  // content::NotificationObserver implementation ------------------------------
-
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
-
   // A helper method for closing the tab in the
   // CloseTabAfterEventTracking() implementation.
   void CloseTab();
@@ -135,18 +128,15 @@ class TabContentsViewMac : public TabContentsView,
   // focus returns.
   scoped_nsobject<FocusTracker> focus_tracker_;
 
-  // Used to get notifications about renderers coming and going.
-  content::NotificationRegistrar registrar_;
-
-  // Used to render the sad tab. This will be non-NULL only when the sad tab is
-  // visible.
-  scoped_nsobject<SadTabController> sad_tab_;
-
   // The context menu. Callbacks are asynchronous so we need to keep it around.
   scoped_ptr<RenderViewContextMenuMac> context_menu_;
 
   // The page content's intrinsic width.
   int preferred_width_;
+
+  // The overlaid view. Owned by the caller of |InstallOverlayView|; this is a
+  // weak reference.
+  NSView* overlaid_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewMac);
 };

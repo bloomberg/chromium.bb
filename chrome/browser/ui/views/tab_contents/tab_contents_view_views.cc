@@ -7,11 +7,9 @@
 #include <vector>
 
 #include "base/time.h"
-#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/views/sad_tab_view.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -39,9 +37,9 @@ using WebKit::WebInputEvent;
 TabContentsViewViews::TabContentsViewViews(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       native_tab_contents_view_(NULL),
-      sad_tab_widget_(NULL),
       close_tab_after_drag_ends_(false),
-      focus_manager_(NULL) {
+      focus_manager_(NULL),
+      overlaid_view_(NULL) {
   last_focused_view_storage_id_ =
       views::ViewStorage::GetInstance()->CreateStorageID();
 }
@@ -89,12 +87,6 @@ RenderWidgetHostView* TabContentsViewViews::CreateViewForWidget(
     return render_widget_host->view();
   }
 
-  // If we were showing sad tab, remove it now.
-  if (sad_tab_widget_) {
-    sad_tab_widget_->Close();
-    sad_tab_widget_ = NULL;
-  }
-
   return native_tab_contents_view_->CreateRenderWidgetHostView(
       render_widget_host);
 }
@@ -130,26 +122,6 @@ void TabContentsViewViews::SetPageTitle(const string16& title) {
 
 void TabContentsViewViews::OnTabCrashed(base::TerminationStatus status,
                                         int /* error_code */) {
-  // Only show the sad tab if we're not in browser shutdown, so that TabContents
-  // objects that are not in a browser (e.g., HTML dialogs) and thus are
-  // visible do not flash a sad tab page.
-  if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)
-    return;
-
-  // Note that it's possible to get this message after the window was destroyed.
-  if (GetNativeView()) {
-    SadTabView::Kind kind =
-        status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
-        SadTabView::KILLED : SadTabView::CRASHED;
-    views::Widget::InitParams sad_tab_widget_params(
-        views::Widget::InitParams::TYPE_CONTROL);
-    sad_tab_widget_params.parent_widget = this;
-    sad_tab_widget_params.bounds =
-        gfx::Rect(GetClientAreaScreenBounds().size());
-    sad_tab_widget_ = new views::Widget;
-    sad_tab_widget_->Init(sad_tab_widget_params);
-    sad_tab_widget_->SetContentsView(new SadTabView(tab_contents_, kind));
-  }
 }
 
 void TabContentsViewViews::SizeContents(const gfx::Size& size) {
@@ -173,8 +145,8 @@ void TabContentsViewViews::Focus() {
     return;
   }
 
-  if (tab_contents_->is_crashed() && sad_tab_widget_ != NULL) {
-    sad_tab_widget_->GetContentsView()->RequestFocus();
+  if (overlaid_view_) {
+    overlaid_view_->GetContentsView()->RequestFocus();
     return;
   }
 
@@ -285,6 +257,19 @@ void TabContentsViewViews::GetViewBounds(gfx::Rect* out) const {
   *out = GetWindowScreenBounds();
 }
 
+void TabContentsViewViews::InstallOverlayView(gfx::NativeView view) {
+  DCHECK(!overlaid_view_);
+  views::Widget::ReparentNativeView(view, GetNativeView());
+  overlaid_view_ = views::Widget::GetWidgetForNativeView(view);
+  overlaid_view_->SetBounds(gfx::Rect(GetClientAreaScreenBounds().size()));
+}
+
+void TabContentsViewViews::RemoveOverlayView() {
+  DCHECK(overlaid_view_);
+  overlaid_view_->Close();
+  overlaid_view_ = NULL;
+}
+
 void TabContentsViewViews::UpdateDragCursor(WebDragOperation operation) {
   native_tab_contents_view_->SetDragCursor(operation);
 }
@@ -385,7 +370,7 @@ TabContents* TabContentsViewViews::GetTabContents() {
 }
 
 bool TabContentsViewViews::IsShowingSadTab() const {
-  return tab_contents_->is_crashed() && sad_tab_widget_;
+  return tab_contents_->is_crashed() && overlaid_view_;
 }
 
 void TabContentsViewViews::OnNativeTabContentsViewShown() {
@@ -472,7 +457,7 @@ void TabContentsViewViews::OnNativeWidgetVisibilityChanged(bool visible) {
 
 void TabContentsViewViews::OnNativeWidgetSizeChanged(
     const gfx::Size& new_size) {
-  if (sad_tab_widget_)
-    sad_tab_widget_->SetBounds(gfx::Rect(new_size));
+  if (overlaid_view_)
+    overlaid_view_->SetBounds(gfx::Rect(new_size));
   views::Widget::OnNativeWidgetSizeChanged(new_size);
 }

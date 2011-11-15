@@ -87,7 +87,7 @@ void AutomationTabHelper::DidStopLoading() {
   }
 }
 
-void AutomationTabHelper::RenderViewGone() {
+void AutomationTabHelper::RenderViewGone(base::TerminationStatus status) {
   OnTabOrRenderViewDestroyed(tab_contents());
 }
 

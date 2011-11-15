@@ -8,12 +8,10 @@
 
 #include <string>
 
-#include "chrome/browser/browser_shutdown.h"
 #import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_delegate.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_mac.h"
 #import "chrome/browser/ui/cocoa/focus_tracker.h"
-#import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -27,9 +25,6 @@
 #import "content/common/chrome_application_mac.h"
 #import "content/common/mac/scoped_sending_event.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 
@@ -71,9 +66,8 @@ TabContentsView* CreateTabContentsView(TabContents* tab_contents) {
 
 TabContentsViewMac::TabContentsViewMac(TabContents* tab_contents)
     : tab_contents_(tab_contents),
-      preferred_width_(0) {
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
-                 content::Source<TabContents>(tab_contents));
+      preferred_width_(0),
+      overlaid_view_(nil) {
 }
 
 TabContentsViewMac::~TabContentsViewMac() {
@@ -120,6 +114,8 @@ RenderWidgetHostView* TabContentsViewMac::CreateViewForWidget(
   NSView* view_view = view->native_view();
   [view_view setFrame:[cocoa_view_.get() bounds]];
   [view_view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+  // Add the new view below all other views; this also keeps it below any
+  // overlay view installed.
   [cocoa_view_.get() addSubview:view_view
                      positioned:NSWindowBelow
                      relativeTo:nil];
@@ -188,21 +184,6 @@ void TabContentsViewMac::SetPageTitle(const string16& title) {
 
 void TabContentsViewMac::OnTabCrashed(base::TerminationStatus /* status */,
                                       int /* error_code */) {
-  // Only show the sad tab if we're not in browser shutdown, so that TabContents
-  // objects that are not in a browser (e.g., HTML dialogs) and thus are
-  // visible do not flash a sad tab page.
-  if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)
-    return;
-
-  if (!sad_tab_.get()) {
-    DCHECK(tab_contents_);
-    if (tab_contents_) {
-      SadTabController* sad_tab =
-          [[SadTabController alloc] initWithTabContents:tab_contents_
-                                              superview:cocoa_view_];
-      sad_tab_.reset(sad_tab);
-    }
-  }
 }
 
 void TabContentsViewMac::SizeContents(const gfx::Size& size) {
@@ -397,21 +378,22 @@ void TabContentsViewMac::GetViewBounds(gfx::Rect* out) const {
   NOTIMPLEMENTED();
 }
 
-void TabContentsViewMac::CloseTab() {
-  tab_contents_->Close(tab_contents_->render_view_host());
+void TabContentsViewMac::InstallOverlayView(gfx::NativeView view) {
+  DCHECK(!overlaid_view_);
+  overlaid_view_ = view;
+  [view setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
+  [cocoa_view_.get() addSubview:view];
+  [view setFrame:[cocoa_view_.get() bounds]];
 }
 
-void TabContentsViewMac::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_TAB_CONTENTS_CONNECTED: {
-      sad_tab_.reset();
-      break;
-    }
-    default:
-      NOTREACHED() << "Got a notification we didn't register for.";
-  }
+void TabContentsViewMac::RemoveOverlayView() {
+  DCHECK(overlaid_view_);
+  [overlaid_view_ removeFromSuperview];
+  overlaid_view_ = nil;
+}
+
+void TabContentsViewMac::CloseTab() {
+  tab_contents_->Close(tab_contents_->render_view_host());
 }
 
 @implementation TabContentsViewCocoa

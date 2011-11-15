@@ -94,7 +94,7 @@ void BackgroundContents::DidNavigateMainFramePostCommit(TabContents* tab) {
       content::Details<BackgroundContents>(this));
 }
 
-void BackgroundContents::RenderViewGone() {
+void BackgroundContents::RenderViewGone(base::TerminationStatus status) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_TERMINATED,
       content::Source<Profile>(profile_),
@@ -103,7 +103,7 @@ void BackgroundContents::RenderViewGone() {
   // Our RenderView went away, so we should go away also, so killing the process
   // via the TaskManager doesn't permanently leave a BackgroundContents hanging
   // around the system, blocking future instances from being created
-  // (http://crbug.com/65189).
+  // <http://crbug.com/65189>.
   delete this;
 }
 

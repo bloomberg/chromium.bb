@@ -145,7 +145,7 @@ class PrerenderContents : public content::NotificationObserver,
       const GURL& validated_url,
       bool is_error_page,
       RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewGone() OVERRIDE;
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,

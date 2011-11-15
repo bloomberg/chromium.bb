@@ -1487,7 +1487,9 @@ void TabContents::RenderViewGone(RenderViewHost* rvh,
   SetIsCrashed(status, error_code);
   view()->OnTabCrashed(crashed_status(), crashed_error_code());
 
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_, RenderViewGone());
+  FOR_EACH_OBSERVER(TabContentsObserver,
+                    observers_,
+                    RenderViewGone(crashed_status()));
 }
 
 void TabContents::RenderViewDeleted(RenderViewHost* rvh) {

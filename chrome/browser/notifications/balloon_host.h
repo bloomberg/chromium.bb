@@ -68,7 +68,7 @@ class BalloonHost : public TabContentsDelegate,
   // TabContentsObserver implementation:
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewReady() OVERRIDE;
-  virtual void RenderViewGone() OVERRIDE;
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Message handlers

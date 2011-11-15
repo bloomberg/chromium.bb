@@ -74,6 +74,8 @@ void TabContentsViewWin::SetPageTitle(const string16& title) {
 
 void TabContentsViewWin::OnTabCrashed(base::TerminationStatus status,
                                       int error_code) {
+  // TODO(avi): No other TCV implementation does anything in this callback. Can
+  // this be moved elsewhere so that |OnTabCrashed| can be removed everywhere?
   view_ = NULL;
 }
 
@@ -145,6 +147,14 @@ void TabContentsViewWin::GetViewBounds(gfx::Rect* out) const {
   RECT r;
   GetWindowRect(hwnd(), &r);
   *out = gfx::Rect(r);
+}
+
+void TabContentsViewWin::InstallOverlayView(gfx::NativeView view) {
+  NOTREACHED();
+}
+
+void TabContentsViewWin::RemoveOverlayView() {
+  NOTREACHED();
 }
 
 void TabContentsViewWin::CreateNewWindow(

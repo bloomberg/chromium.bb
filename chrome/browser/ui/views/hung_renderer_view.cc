@@ -90,7 +90,7 @@ class HungPagesTableModel : public views::GroupTableModel {
     }
 
     // TabContentsObserver overrides:
-    virtual void RenderViewGone() OVERRIDE;
+    virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
     virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
    private:
@@ -212,7 +212,8 @@ HungPagesTableModel::TabContentsObserverImpl::TabContentsObserverImpl(
       tab_(tab) {
 }
 
-void HungPagesTableModel::TabContentsObserverImpl::RenderViewGone() {
+void HungPagesTableModel::TabContentsObserverImpl::RenderViewGone(
+    base::TerminationStatus status) {
   model_->TabDestroyed(this);
 }
 

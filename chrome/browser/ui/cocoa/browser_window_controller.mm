@@ -1746,7 +1746,7 @@ enum {
 
 // Handle the openLearnMoreAboutCrashLink: action from SadTabController when
 // "Learn more" link in "Aw snap" page (i.e. crash page or sad tab) is
-// clicked. Decoupling the action from its target makes unitestting possible.
+// clicked. Decoupling the action from its target makes unit testing possible.
 - (void)openLearnMoreAboutCrashLink:(id)sender {
   if ([sender isKindOfClass:[SadTabController class]]) {
     SadTabController* sad_tab = static_cast<SadTabController*>(sender);

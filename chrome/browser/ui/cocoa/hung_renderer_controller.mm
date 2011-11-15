@@ -46,7 +46,7 @@ class TabContentsObserverBridge : public TabContentsObserver {
 
  protected:
   // TabContentsObserver overrides:
-  virtual void RenderViewGone() OVERRIDE {
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE {
     [controller_ renderViewGone];
   }
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE {

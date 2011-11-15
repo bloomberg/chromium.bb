@@ -115,7 +115,7 @@ class KeyboardWidget
 
   // Overridden from TabContentsObserver.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void RenderViewGone() OVERRIDE;
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   // Overridden from TextInputTypeObserver.
@@ -347,7 +347,7 @@ bool KeyboardWidget::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void KeyboardWidget::RenderViewGone() {
+void KeyboardWidget::RenderViewGone(base::TerminationStatus status) {
   // Reload the keyboard if it crashes.
   dom_view_->LoadURL(keyboard_url_);
   dom_view_->SchedulePaint();

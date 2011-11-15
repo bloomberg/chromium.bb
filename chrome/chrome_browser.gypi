@@ -3187,6 +3187,8 @@
         'browser/ui/panels/panel_window_controller_cocoa.mm',
         'browser/ui/profile_error_dialog.cc',
         'browser/ui/profile_error_dialog.h',
+        'browser/ui/sad_tab_observer.cc',
+        'browser/ui/sad_tab_observer.h',
         'browser/ui/search_engines/edit_search_engine_controller.cc',
         'browser/ui/search_engines/edit_search_engine_controller.h',
         'browser/ui/search_engines/keyword_editor_controller.cc',

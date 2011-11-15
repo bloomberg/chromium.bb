@@ -93,7 +93,7 @@ void BalloonHost::RenderViewReady() {
       content::NotificationService::NoDetails());
 }
 
-void BalloonHost::RenderViewGone() {
+void BalloonHost::RenderViewGone(base::TerminationStatus status) {
   CloseContents(tab_contents_.get());
 }
 
