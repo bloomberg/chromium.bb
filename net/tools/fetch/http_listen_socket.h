@@ -28,8 +28,8 @@ class HttpListenSocket : public net::ListenSocket,
   static HttpListenSocket* Listen(const std::string& ip, int port,
                                   HttpListenSocket::Delegate* delegate);
 
-  virtual void Listen();
-  virtual void Accept();
+  virtual void Listen() OVERRIDE;
+  virtual void Accept() OVERRIDE;
 
   // Send a server response.
   // TODO(mbelshe): make this capable of non-ascii data.
@@ -37,10 +37,10 @@ class HttpListenSocket : public net::ListenSocket,
 
   // ListenSocketDelegate
   virtual void DidAccept(net::ListenSocket* server,
-                         net::ListenSocket* connection);
+                         net::ListenSocket* connection) OVERRIDE;
   virtual void DidRead(net::ListenSocket* connection,
-                       const char* data, int len);
-  virtual void DidClose(net::ListenSocket* sock);
+                       const char* data, int len) OVERRIDE;
+  virtual void DidClose(net::ListenSocket* sock) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<net::ListenSocket>;

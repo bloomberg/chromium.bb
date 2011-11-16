@@ -95,9 +95,12 @@ class ListenSocketTester :
   virtual bool Send(SOCKET sock, const std::string& str);
 
   // ListenSocket::ListenSocketDelegate:
-  virtual void DidAccept(ListenSocket *server, ListenSocket *connection);
-  virtual void DidRead(ListenSocket *connection, const char* data, int len);
-  virtual void DidClose(ListenSocket *sock);
+  virtual void DidAccept(ListenSocket *server,
+                         ListenSocket *connection) OVERRIDE;
+  virtual void DidRead(ListenSocket *connection,
+                       const char* data,
+                       int len) OVERRIDE;
+  virtual void DidClose(ListenSocket *sock) OVERRIDE;
 
   scoped_ptr<base::Thread> thread_;
   MessageLoopForIO* loop_;

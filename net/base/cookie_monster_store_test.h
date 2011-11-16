@@ -128,7 +128,7 @@ class MockCookieMonsterDelegate : public CookieMonster::Delegate {
   virtual void OnCookieChanged(
       const CookieMonster::CanonicalCookie& cookie,
       bool removed,
-      CookieMonster::Delegate::ChangeCause cause);
+      CookieMonster::Delegate::ChangeCause cause) OVERRIDE;
 
  private:
   virtual ~MockCookieMonsterDelegate();

@@ -113,8 +113,8 @@ class NET_EXPORT ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
   HANDLE socket_event_;
 #elif defined(OS_POSIX)
   // Called by MessagePumpLibevent when the socket is ready to do I/O
-  virtual void OnFileCanReadWithoutBlocking(int fd);
-  virtual void OnFileCanWriteWithoutBlocking(int fd);
+  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
   WaitState wait_state_;
   // The socket's libevent wrapper
   MessageLoopForIO::FileDescriptorWatcher watcher_;

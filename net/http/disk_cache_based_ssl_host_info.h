@@ -33,9 +33,9 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
                             HttpCache* http_cache);
 
   // Implementation of SSLHostInfo
-  virtual void Start();
-  virtual int WaitForDataReady(OldCompletionCallback* callback);
-  virtual void Persist();
+  virtual void Start() OVERRIDE;
+  virtual int WaitForDataReady(OldCompletionCallback* callback) OVERRIDE;
+  virtual void Persist() OVERRIDE;
 
  private:
   enum State {
@@ -66,7 +66,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
     disk_cache::Entry* entry() const { return entry_; }
 
     // CallbackRunner<Tuple1<int> >:
-    virtual void RunWithParams(const Tuple1<int>& params);
+    virtual void RunWithParams(const Tuple1<int>& params) OVERRIDE;
 
    private:
     base::WeakPtr<DiskCacheBasedSSLHostInfo> obj_;

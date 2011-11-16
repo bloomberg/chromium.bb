@@ -35,7 +35,7 @@ class NetLogHttpRequestParameter : public NetLog::EventParameters {
   }
 
   // NetLog::EventParameters
-  virtual base::Value* ToValue() const;
+  virtual base::Value* ToValue() const OVERRIDE;
 
  private:
   virtual ~NetLogHttpRequestParameter();
@@ -56,7 +56,7 @@ class NetLogHttpResponseParameter : public NetLog::EventParameters {
   }
 
   // NetLog::EventParameters
-  virtual base::Value* ToValue() const;
+  virtual base::Value* ToValue() const OVERRIDE;
 
  private:
   virtual ~NetLogHttpResponseParameter();
