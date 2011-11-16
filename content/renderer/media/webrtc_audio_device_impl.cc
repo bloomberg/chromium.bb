@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/string_util.h"
+#include "base/win/windows_version.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_util.h"
@@ -40,13 +41,13 @@ WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
       initialized_(false),
       playing_(false),
       recording_(false) {
-    VLOG(1) << "WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()";
+    DVLOG(1) << "WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()";
     DCHECK(RenderThreadImpl::current()) <<
         "WebRtcAudioDeviceImpl must be constructed on the render thread";
 }
 
 WebRtcAudioDeviceImpl::~WebRtcAudioDeviceImpl() {
-  VLOG(1) << "WebRtcAudioDeviceImpl::~WebRtcAudioDeviceImpl()";
+  DVLOG(1) << "WebRtcAudioDeviceImpl::~WebRtcAudioDeviceImpl()";
   if (playing_)
     StopPlayout();
   if (recording_)
@@ -174,7 +175,7 @@ void WebRtcAudioDeviceImpl::Capture(
 }
 
 void WebRtcAudioDeviceImpl::OnDeviceStarted(int device_index) {
-  VLOG(1) << "OnDeviceStarted (device_index=" << device_index << ")";
+  DVLOG(1) << "OnDeviceStarted (device_index=" << device_index << ")";
   // -1 is an invalid device index. Do nothing if a valid device has
   // been started. Otherwise update the |recording_| state to false.
   if (device_index != -1)
@@ -186,7 +187,7 @@ void WebRtcAudioDeviceImpl::OnDeviceStarted(int device_index) {
 }
 
 void WebRtcAudioDeviceImpl::OnDeviceStopped() {
-  VLOG(1) << "OnDeviceStopped";
+  DVLOG(1) << "OnDeviceStopped";
   base::AutoLock auto_lock(lock_);
   if (recording_)
     recording_ = false;
@@ -195,7 +196,7 @@ void WebRtcAudioDeviceImpl::OnDeviceStopped() {
 int32_t WebRtcAudioDeviceImpl::Version(char* version,
                                        uint32_t& remaining_buffer_in_bytes,
                                        uint32_t& position) const {
-  VLOG(1) << "Version()";
+  DVLOG(1) << "Version()";
   DCHECK(version);
   if (version == NULL)
     return -1;
@@ -207,7 +208,7 @@ int32_t WebRtcAudioDeviceImpl::Version(char* version,
   base::strlcpy(&version[position], kVersion, arr_size - 1);
   remaining_buffer_in_bytes -= arr_size;
   position += arr_size;
-  VLOG(1) << "version: " << version;
+  DVLOG(1) << "version: " << version;
   return 0;
 }
 
@@ -245,14 +246,14 @@ webrtc::AudioDeviceModule::ErrorCode WebRtcAudioDeviceImpl::LastError() const {
 
 int32_t WebRtcAudioDeviceImpl::RegisterEventObserver(
     webrtc::AudioDeviceObserver* event_callback) {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::RegisterEventObserver() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::RegisterEventObserver() "
+           << "NOT IMPLEMENTED";
   return -1;
 }
 
 int32_t WebRtcAudioDeviceImpl::RegisterAudioCallback(
     webrtc::AudioTransport* audio_callback) {
-  VLOG(1) << "RegisterAudioCallback()";
+  DVLOG(1) << "RegisterAudioCallback()";
   if (playing_ || recording_)  {
     LOG(ERROR) << "Unable to (de)register transport during active media";
     return -1;
@@ -262,7 +263,7 @@ int32_t WebRtcAudioDeviceImpl::RegisterAudioCallback(
 }
 
 int32_t WebRtcAudioDeviceImpl::Init() {
-  VLOG(1) << "Init()";
+  DVLOG(1) << "Init()";
 
   if (!render_loop_->BelongsToCurrentThread()) {
     int32_t error = 0;
@@ -290,12 +291,12 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   // This request is based on a synchronous IPC message.
   int output_sample_rate =
       static_cast<int>(AudioDevice::GetAudioHardwareSampleRate());
-  VLOG(1) << "Audio output hardware sample rate: " << output_sample_rate;
+  DVLOG(1) << "Audio output hardware sample rate: " << output_sample_rate;
 
   // Ask the browser for the default audio input hardware sample-rate.
   // This request is based on a synchronous IPC message.
   int input_sample_rate = GetAudioInputHardwareSampleRate();
-  VLOG(1) << "Audio input hardware sample rate: " << input_sample_rate;
+  DVLOG(1) << "Audio input hardware sample rate: " << input_sample_rate;
 
   int input_channels = 0;
   int output_channels = 0;
@@ -303,19 +304,24 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   size_t input_buffer_size = 0;
   size_t output_buffer_size = 0;
 
-  // For real-time audio (in combination with the webrtc::VoiceEngine) it
-  // is convenient to use audio buffers of size N*10ms.
-
+// Windows
 #if defined(OS_WIN)
-  if (output_sample_rate != 48000) {
-    DLOG(ERROR) << "Only 48kHz sample rate is supported on Windows.";
+  if (input_sample_rate != 48000 && input_sample_rate != 44100) {
+    DLOG(ERROR) << "Only 48 and 44.1kHz input rates are supported on Windows.";
+    return -1;
+  }
+  if (output_sample_rate != 48000 && output_sample_rate != 44100) {
+    DLOG(ERROR) << "Only 48 and 44.1kHz output rates are supported on Windows.";
     return -1;
   }
 
   // Use stereo recording on Windows since low-latency Core Audio (WASAPI)
   // does not support mono.
   input_channels = 2;
-  output_channels = 1;
+
+  // Use stereo rendering on Windows to make input and output sides
+  // symmetric. WASAPI supports both stereo and mono.
+  output_channels = 2;
 
   // Capture side: AUDIO_PCM_LOW_LATENCY is based on the Core Audio (WASAPI)
   // API which was introduced in Windows Vista. For lower Windows versions,
@@ -331,41 +337,70 @@ int32_t WebRtcAudioDeviceImpl::Init() {
     input_buffer_size = 440;
   }
 
-  // Rendering side: AUDIO_PCM_LOW_LATENCY on Windows is based on a callback-
-  // driven Wave implementation where 2 buffers are fed to the audio driver
-  // before actual rendering starts. Initial real-time tests have shown that
-  // 20ms buffer size (corresponds to ~40ms total delay) is not enough but
-  // can lead to buffer underruns. The next even multiple of 10ms is 30ms
-  // (<=> ~60ms total delay) and it works fine also under high load.
-  output_buffer_size = 3 * 480;
-#elif defined(OS_MACOSX)
-  if (output_sample_rate != 48000 && output_sample_rate != 44100) {
-    DLOG(ERROR) << "Only 48 and 44.1kHz sample rates are supported on Mac OSX.";
-    return -1;
-  }
-  input_channels = 1;
-  output_channels = 1;
-
-  // Rendering side: AUDIO_PCM_LOW_LATENCY on Mac OS X is based on a callback-
-  // driven Core Audio implementation. Tests have shown that 10ms is a suitable
-  // frame size to use, both for 48kHz and 44.1kHz.
-  // Capturing side: AUDIO_PCM_LINEAR on Mac OS X uses the Audio Queue Services
-  // API which is not well suited for real-time applications since the delay
-  // is very high. We set buffer sizes to 10ms for the input side here as well
-  // but none of them will work.
-  // TODO(henrika): add support for AUDIO_PCM_LOW_LATENCY on the capture side
-  // based on the Mac OS X Core Audio API.
+  // Render side: AUDIO_PCM_LOW_LATENCY is based on the Core Audio (WASAPI)
+  // API which was introduced in Windows Vista. For lower Windows versions,
+  // a callback-driven Wave implementation is used instead. An output buffer
+  // size of 10ms works well for WASAPI but 30ms is needed for Wave.
 
   // Use different buffer sizes depending on the current hardware sample rate.
   if (output_sample_rate == 48000) {
-    input_buffer_size = 480;
     output_buffer_size = 480;
   } else {
     // We do run at 44.1kHz at the actual audio layer, but ask for frames
     // at 44.0kHz to ensure that we can feed them to the webrtc::VoiceEngine.
+    // TODO(henrika): figure out why we seem to need 20ms here for glitch-
+    // free audio.
+    output_buffer_size = 2 * 440;
+  }
+
+  // Windows XP and lower can't cope with 10 ms output buffer size.
+  // It must be extended to 30 ms (60 ms will be used internally by WaveOut).
+  if (base::win::GetVersion() <= base::win::VERSION_XP) {
+    output_buffer_size = 3 * output_buffer_size;
+    DLOG(WARNING) << "Extending the output buffer size by a factor of three "
+                  << "since Windows XP has been detected.";
+  }
+
+// Mac OS X
+#elif defined(OS_MACOSX)
+  if (input_sample_rate != 48000 && input_sample_rate != 44100) {
+    DLOG(ERROR) << "Only 48 and 44.1kHz input rates are supported on Mac OSX.";
+    return -1;
+  }
+  if (output_sample_rate != 48000 && output_sample_rate != 44100) {
+    DLOG(ERROR) << "Only 48 and 44.1kHz output rates are supported on Mac OSX.";
+    return -1;
+  }
+
+  input_channels = 1;
+  output_channels = 1;
+
+  // Capture side: AUDIO_PCM_LOW_LATENCY on Mac OS X is based on a callback-
+  // driven Core Audio implementation. Tests have shown that 10ms is a suitable
+  // frame size to use, both for 48kHz and 44.1kHz.
+
+  // Use different buffer sizes depending on the current hardware sample rate.
+  if (input_sample_rate == 48000) {
+    input_buffer_size = 480;
+  } else {
+    // We do run at 44.1kHz at the actual audio layer, but ask for frames
+    // at 44.0kHz to ensure that we can feed them to the webrtc::VoiceEngine.
     input_buffer_size = 440;
+  }
+
+  // Render side: AUDIO_PCM_LOW_LATENCY on Mac OS X is based on a callback-
+  // driven Core Audio implementation. Tests have shown that 10ms is a suitable
+  // frame size to use, both for 48kHz and 44.1kHz.
+
+  // Use different buffer sizes depending on the current hardware sample rate.
+  if (output_sample_rate == 48000) {
+    output_buffer_size = 480;
+  } else {
+    // We do run at 44.1kHz at the actual audio layer, but ask for frames
+    // at 44.0kHz to ensure that we can feed them to the webrtc::VoiceEngine.
     output_buffer_size = 440;
   }
+// Linux
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
   if (output_sample_rate != 48000) {
     DLOG(ERROR) << "Only 48kHz sample rate is supported on Linux.";
@@ -421,12 +456,12 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
   initialized_ = true;
 
-  VLOG(1) << "Capture parameters (size/channels/rate): ("
-          << input_buffer_size_ << "/" << input_channels_ << "/"
-          << input_sample_rate_ << ")";
-  VLOG(1) << "Render parameters (size/channels/rate): ("
-          << output_buffer_size_ << "/" << output_channels_ << "/"
-          << output_sample_rate_ << ")";
+  DVLOG(1) << "Capture parameters (size/channels/rate): ("
+           << input_buffer_size_ << "/" << input_channels_ << "/"
+           << input_sample_rate_ << ")";
+  DVLOG(1) << "Render parameters (size/channels/rate): ("
+           << output_buffer_size_ << "/" << output_channels_ << "/"
+           << output_sample_rate_ << ")";
   return 0;
 }
 
@@ -438,7 +473,7 @@ void WebRtcAudioDeviceImpl::InitOnRenderThread(int32_t* error,
 }
 
 int32_t WebRtcAudioDeviceImpl::Terminate() {
-  VLOG(1) << "Terminate()";
+  DVLOG(1) << "Terminate()";
 
   // Calling Terminate() multiple times in a row is OK.
   if (!initialized_)
@@ -490,65 +525,65 @@ int32_t WebRtcAudioDeviceImpl::RecordingDeviceName(
 }
 
 int32_t WebRtcAudioDeviceImpl::SetPlayoutDevice(uint16_t index) {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SetPlayoutDevice() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SetPlayoutDevice() "
+           << "NOT IMPLEMENTED";
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::SetPlayoutDevice(WindowsDeviceType device) {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SetPlayoutDevice() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SetPlayoutDevice() "
+           << "NOT IMPLEMENTED";
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::SetRecordingDevice(uint16_t index) {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SetRecordingDevice() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SetRecordingDevice() "
+           << "NOT IMPLEMENTED";
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::SetRecordingDevice(WindowsDeviceType device) {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SetRecordingDevice() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SetRecordingDevice() "
+           << "NOT IMPLEMENTED";
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::PlayoutIsAvailable(bool* available) {
-  VLOG(1) << "PlayoutIsAvailable()";
+  DVLOG(1) << "PlayoutIsAvailable()";
   *available = (audio_output_device_ != NULL);
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::InitPlayout() {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::InitPlayout() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::InitPlayout() "
+           << "NOT IMPLEMENTED";
   return 0;
 }
 
 bool WebRtcAudioDeviceImpl::PlayoutIsInitialized() const {
-  VLOG(1) << "PlayoutIsInitialized()";
+  DVLOG(1) << "PlayoutIsInitialized()";
   return (audio_output_device_ != NULL);
 }
 
 int32_t WebRtcAudioDeviceImpl::RecordingIsAvailable(bool* available) {
-  VLOG(1) << "RecordingIsAvailable()";
+  DVLOG(1) << "RecordingIsAvailable()";
   *available = (audio_input_device_ != NULL);
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::InitRecording() {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::InitRecording() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::InitRecording() "
+           << "NOT IMPLEMENTED";
   return 0;
 }
 
 bool WebRtcAudioDeviceImpl::RecordingIsInitialized() const {
-  VLOG(1) << "RecordingIsInitialized()";
+  DVLOG(1) << "RecordingIsInitialized()";
   return (audio_input_device_ != NULL);
 }
 
 int32_t WebRtcAudioDeviceImpl::StartPlayout() {
-  VLOG(1) << "StartPlayout()";
+  DVLOG(1) << "StartPlayout()";
   if (!audio_transport_callback_) {
     LOG(ERROR) << "Audio transport is missing";
     return -1;
@@ -556,7 +591,6 @@ int32_t WebRtcAudioDeviceImpl::StartPlayout() {
   if (playing_) {
     // webrtc::VoiceEngine assumes that it is OK to call Start() twice and
     // that the call is ignored the second time.
-    LOG(WARNING) << "Playout is already active";
     return 0;
   }
   audio_output_device_->Start();
@@ -565,11 +599,10 @@ int32_t WebRtcAudioDeviceImpl::StartPlayout() {
 }
 
 int32_t WebRtcAudioDeviceImpl::StopPlayout() {
-  VLOG(1) << "StopPlayout()";
+  DVLOG(1) << "StopPlayout()";
   DCHECK(audio_output_device_);
   if (!playing_) {
     // webrtc::VoiceEngine assumes that it is OK to call Stop() just in case.
-    LOG(WARNING) << "Playout was already stopped";
     return 0;
   }
   playing_ = !audio_output_device_->Stop();
@@ -581,7 +614,7 @@ bool WebRtcAudioDeviceImpl::Playing() const {
 }
 
 int32_t WebRtcAudioDeviceImpl::StartRecording() {
-  VLOG(1) << "StartRecording()";
+  DVLOG(1) << "StartRecording()";
 #if defined(OS_MACOSX)
   DLOG(WARNING) << "Real-time recording is not yet fully supported on Mac OS X";
 #endif
@@ -602,7 +635,6 @@ int32_t WebRtcAudioDeviceImpl::StartRecording() {
   if (recording_) {
     // webrtc::VoiceEngine assumes that it is OK to call Start() twice and
     // that the call is ignored the second time.
-    LOG(WARNING) << "Recording is already active";
     return 0;
   }
 
@@ -614,13 +646,12 @@ int32_t WebRtcAudioDeviceImpl::StartRecording() {
 }
 
 int32_t WebRtcAudioDeviceImpl::StopRecording() {
-  VLOG(1) << "StopRecording()";
+  DVLOG(1) << "StopRecording()";
   DCHECK(audio_input_device_);
 
   base::AutoLock auto_lock(lock_);
   if (!recording_) {
     // webrtc::VoiceEngine assumes that it is OK to call Stop() just in case.
-    LOG(WARNING) << "Recording was already stopped";
     return 0;
   }
   recording_ = !audio_input_device_->Stop();
@@ -632,14 +663,12 @@ bool WebRtcAudioDeviceImpl::Recording() const {
 }
 
 int32_t WebRtcAudioDeviceImpl::SetAGC(bool enable) {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SetAGC() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SetAGC() " << "NOT IMPLEMENTED";
   return -1;
 }
 
 bool WebRtcAudioDeviceImpl::AGC() const {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::AGC() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::AGC() " << "NOT IMPLEMENTED";
   return false;
 }
 
@@ -656,34 +685,34 @@ int32_t WebRtcAudioDeviceImpl::WaveOutVolume(
 }
 
 int32_t WebRtcAudioDeviceImpl::SpeakerIsAvailable(bool* available) {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SpeakerIsAvailable() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SpeakerIsAvailable() "
+           << "NOT IMPLEMENTED";
   *available = true;
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::InitSpeaker() {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::InitSpeaker() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::InitSpeaker() "
+           << "NOT IMPLEMENTED";
   return 0;
 }
 
 bool WebRtcAudioDeviceImpl::SpeakerIsInitialized() const {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SpeakerIsInitialized() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SpeakerIsInitialized() "
+           << "NOT IMPLEMENTED";
   return true;
 }
 
 int32_t WebRtcAudioDeviceImpl::MicrophoneIsAvailable(bool* available) {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::MicrophoneIsAvailable() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::MicrophoneIsAvailable() "
+           << "NOT IMPLEMENTED";
   *available = true;
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::InitMicrophone() {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::InitMicrophone() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::InitMicrophone() "
+           << "NOT IMPLEMENTED";
   return 0;
 }
 
@@ -742,15 +771,15 @@ int32_t WebRtcAudioDeviceImpl::MicrophoneVolume(uint32_t* volume) const {
 
 int32_t WebRtcAudioDeviceImpl::MaxMicrophoneVolume(
     uint32_t* max_volume) const {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::MaxMicrophoneVolume() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::MaxMicrophoneVolume() "
+           << "NOT IMPLEMENTED";
   return -1;
 }
 
 int32_t WebRtcAudioDeviceImpl::MinMicrophoneVolume(
     uint32_t* min_volume) const {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::MinMicrophoneVolume() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::MinMicrophoneVolume() "
+           << "NOT IMPLEMENTED";
   return -1;
 }
 
@@ -807,40 +836,40 @@ int32_t WebRtcAudioDeviceImpl::MicrophoneBoost(bool* enabled) const {
 }
 
 int32_t WebRtcAudioDeviceImpl::StereoPlayoutIsAvailable(bool* available) const {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::StereoPlayoutIsAvailable() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::StereoPlayoutIsAvailable() "
+           << "NOT IMPLEMENTED";
   *available = false;
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::SetStereoPlayout(bool enable) {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SetStereoPlayout() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SetStereoPlayout() "
+           << "NOT IMPLEMENTED";
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::StereoPlayout(bool* enabled) const {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::StereoPlayout() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::StereoPlayout() "
+           << "NOT IMPLEMENTED";
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::StereoRecordingIsAvailable(
     bool* available) const {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::StereoRecordingIsAvailable() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::StereoRecordingIsAvailable() "
+           << "NOT IMPLEMENTED";
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::SetStereoRecording(bool enable) {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SetStereoRecording() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SetStereoRecording() "
+           << "NOT IMPLEMENTED";
   return -1;
 }
 
 int32_t WebRtcAudioDeviceImpl::StereoRecording(bool* enabled) const {
-  VLOG(2) << "WARNING: WebRtcAudioDeviceImpl::StereoRecording() "
-          << "NOT IMPLEMENTED";
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::StereoRecording() "
+           << "NOT IMPLEMENTED";
   return -1;
 }
 
