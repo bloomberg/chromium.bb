@@ -473,7 +473,7 @@ DeviceManagementBackendImpl::~DeviceManagementBackendImpl() {
 }
 
 std::string DeviceManagementBackendImpl::GetAgentString() {
-  CR_DEFINE_STATIC_LOCAL(std::string, agent, ());
+  static std::string agent;
   if (!agent.empty())
     return agent;
 
@@ -486,7 +486,7 @@ std::string DeviceManagementBackendImpl::GetAgentString() {
 }
 
 std::string DeviceManagementBackendImpl::GetPlatformString() {
-  CR_DEFINE_STATIC_LOCAL(std::string, platform, ());
+  static std::string platform;
   if (!platform.empty())
     return platform;
 

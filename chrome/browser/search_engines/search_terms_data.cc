@@ -33,7 +33,8 @@ std::string SearchTermsData::GoogleBaseSuggestURLValue() const {
   GURL::Replacements repl;
 
   // Replace any existing path with "/complete/".
-  repl.SetPathStr("/complete/");
+  static const std::string suggest_path("/complete/");
+  repl.SetPathStr(suggest_path);
 
   // Clear the query and ref.
   repl.ClearQuery();

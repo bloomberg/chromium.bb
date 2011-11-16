@@ -37,12 +37,16 @@
 
 namespace {
 
-string16 SetupIframeXPath() {
-  return ASCIIToUTF16("//iframe[@id='cloudprintsetup']");
+string16& SetupIframeXPath() {
+  static string16 kSetupIframeXPath =
+      ASCIIToUTF16("//iframe[@id='cloudprintsetup']");
+  return kSetupIframeXPath;
 }
 
-string16 DoneIframeXPath() {
-  return ASCIIToUTF16("//iframe[@id='setupdone']");
+string16& DoneIframeXPath() {
+  static string16 kDoneIframeXPath =
+      ASCIIToUTF16("//iframe[@id='setupdone']");
+  return kDoneIframeXPath;
 }
 
 }  // end namespace
