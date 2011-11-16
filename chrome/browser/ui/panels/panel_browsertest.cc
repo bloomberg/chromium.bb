@@ -844,11 +844,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
   Panel* panel = CreatePanelWithParams(params);
 
   // Load the test page.
-  const FilePath::CharType* kUpdateSizeTestFile =
-      FILE_PATH_LITERAL("update-preferred-size.html");
-  ui_test_utils::NavigateToURL(panel->browser(),
-      ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
-                                FilePath(kUpdateSizeTestFile)));
+  GURL url(ui_test_utils::GetTestUrl(
+      FilePath(kTestDir),
+      FilePath(FILE_PATH_LITERAL("update-preferred-size.html"))));
+  ui_test_utils::NavigateToURL(panel->browser(), url);
+
   gfx::Rect initial_bounds = panel->GetBounds();
   EXPECT_LE(100, initial_bounds.width());
   EXPECT_LE(100, initial_bounds.height());
@@ -1404,15 +1404,15 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, OnBeforeUnloadOnClose) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   EXPECT_EQ(0, panel_manager->num_panels()); // No panels initially.
 
-  const char* on_before_unload_html_file = "onbeforeunload.html";
   const string16 title_first_close = UTF8ToUTF16("TitleFirstClose");
   const string16 title_second_close = UTF8ToUTF16("TitleSecondClose");
 
   // Create a test panel with tab contents loaded.
   CreatePanelParams params("PanelTest1", gfx::Rect(0, 0, 300, 300),
                            SHOW_AS_ACTIVE);
-  params.url = GURL(net::FilePathToFileURL(
-      test_data_dir_.AppendASCII(on_before_unload_html_file)));
+  params.url = ui_test_utils::GetTestUrl(
+      FilePath(kTestDir),
+      FilePath(FILE_PATH_LITERAL("onbeforeunload.html")));
   Panel* panel = CreatePanelWithParams(params);
   EXPECT_EQ(1, panel_manager->num_panels());
   TabContents* tab_contents = panel->browser()->GetSelectedTabContents();
@@ -1454,7 +1454,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateWithExistingContents) {
 
   // Load contents into regular tabbed browser.
   GURL url(ui_test_utils::GetTestUrl(
-      FilePath(FilePath::kCurrentDirectory),
+      FilePath(kTestDir),
       FilePath(FILE_PATH_LITERAL("update-preferred-size.html"))));
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_EQ(1, browser()->tab_count());

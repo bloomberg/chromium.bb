@@ -157,6 +157,9 @@ bool ExistsPanel(Panel* panel) {
 
 }  // namespace
 
+const FilePath::CharType* BasePanelBrowserTest::kTestDir =
+    FILE_PATH_LITERAL("panels");
+
 BasePanelBrowserTest::BasePanelBrowserTest()
     : InProcessBrowserTest(),
       testing_work_area_(0, 0, kTestingWorkAreaWidth,
@@ -171,9 +174,6 @@ BasePanelBrowserTest::~BasePanelBrowserTest() {
 
 void BasePanelBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   EnableDOMAutomation();
-
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
-  test_data_dir_ = test_data_dir_.AppendASCII("panels");
 }
 
 void BasePanelBrowserTest::SetUpOnMainThread() {

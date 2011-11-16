@@ -79,8 +79,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
     return mock_auto_hiding_desktop_bar_.get();
   }
 
-  FilePath test_data_dir_;
-
+  static const FilePath::CharType* kTestDir;
  private:
   gfx::Rect testing_work_area_;
   scoped_refptr<MockAutoHidingDesktopBar> mock_auto_hiding_desktop_bar_;
