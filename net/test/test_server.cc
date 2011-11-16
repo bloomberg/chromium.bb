@@ -274,7 +274,11 @@ void TestServer::Init(const FilePath& document_root) {
   FilePath src_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &src_dir);
 
-  document_root_ = src_dir.Append(document_root);
+  if (document_root.IsAbsolute()) {
+    document_root_ = document_root;
+  } else {
+    document_root_ = src_dir.Append(document_root);
+  }
 
   certificates_dir_ = src_dir.Append(FILE_PATH_LITERAL("net"))
                        .Append(FILE_PATH_LITERAL("data"))
