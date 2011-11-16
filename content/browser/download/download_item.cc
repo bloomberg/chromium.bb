@@ -110,6 +110,31 @@ DownloadItem::DangerType GetDangerType(bool dangerous_file,
       DownloadItem::DANGEROUS_FILE : DownloadItem::NOT_DANGEROUS;
 }
 
+// Classes to null out request handle calls (for SavePage DownloadItems, which
+// may have, e.g., Cancel() called on them without it doing anything)
+// and to DCHECK on them (for history DownloadItems, which should never have
+// any operation that implies an off-thread component, since they don't
+// have any).
+class NullDownloadRequestHandle : public DownloadRequestHandleInterface {
+ public:
+  NullDownloadRequestHandle() {}
+
+  // DownloadRequestHandleInterface calls
+  virtual TabContents* GetTabContents() const OVERRIDE {
+    return NULL;
+  }
+  virtual DownloadManager* GetDownloadManager() const OVERRIDE {
+    return NULL;
+  }
+  virtual void PauseRequest() const OVERRIDE {}
+  virtual void ResumeRequest() const OVERRIDE {}
+  virtual void CancelRequest() const OVERRIDE {}
+  virtual std::string DebugString() const OVERRIDE {
+    return "Null DownloadRequestHandle";
+  }
+};
+
+
 }  // namespace
 
 // Our download table ID starts at 1, so we use 0 to represent a download that
@@ -201,7 +226,8 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
                            const GURL& url,
                            bool is_otr,
                            DownloadId download_id)
-    : download_id_(download_id),
+    : request_handle_(new NullDownloadRequestHandle()),
+      download_id_(download_id),
       full_path_(path),
       url_chain_(1, url),
       referrer_url_(GURL()),
@@ -684,6 +710,10 @@ DownloadPersistentStoreInfo DownloadItem::GetPersistentStoreInfo() const {
 }
 
 TabContents* DownloadItem::GetTabContents() const {
+  // TODO(rdsmith): Remove null check after removing GetTabContents() from
+  // paths that might be used by DownloadItems created from history import.
+  // Currently such items have null request_handle_s, where other items
+  // (regular and SavePackage downloads) have actual objects off the pointer.
   if (request_handle_.get())
     return request_handle_->GetTabContents();
   return NULL;
