@@ -390,7 +390,8 @@ bool ResourceDispatcherHost::HandleExternalProtocol(
 
   handler->OnResponseCompleted(
       request_id,
-      net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_ABORTED),
+      net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                            net::ERR_UNKNOWN_URL_SCHEME),
       std::string());  // No security info necessary.
   return true;
 }
