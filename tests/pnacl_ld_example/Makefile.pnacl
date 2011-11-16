@@ -82,4 +82,4 @@ run2.arm: main2.arm
 ######################################################################
 
 clean:
-	rm -f *.bc *.o *.ll *.so main
+	rm -f *.bc *.o *.ll *.so main *.pso *.raw

@@ -63,4 +63,4 @@ run: main$(ARCH) libsimple$(ARCH).so
 
 ######################################################################
 clean:
-	rm -f main-* *.ll *.s *.o *.so
+	rm -f main-* *.ll *.s *.o *.so *.pso *raw
