@@ -822,14 +822,12 @@ everything-hg() {
   mkdir -p "${INSTALL_ROOT}"
   if ${PNACL_IN_CROS_CHROOT}; then
     # TODO: http://code.google.com/p/nativeclient/issues/detail?id=135
-    Banner "You are running in a ChromiumOS Chroot." \
-      " You should make sure that the PNaCl sources are properly checked out " \
-      " And updated outside of the chroot"
-  else
-    checkout-all
-    StepBanner "Updating upstreaming repository"
-    update-all
+    Banner "You are running in a ChromiumOS Chroot."
   fi
+
+  checkout-all
+  StepBanner "Updating upstreaming repository"
+  update-all
 }
 
 #@ everything-post-hg does everything AFTER hg setup
