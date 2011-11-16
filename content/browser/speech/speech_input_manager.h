@@ -147,7 +147,12 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
     bool is_active;  // Set to true when recording or recognition is going on.
   };
 
+  struct SpeechInputParams;
+
   Delegate* GetDelegate(int caller_id) const;
+
+  void CheckRenderViewTypeAndStartRecognition(const SpeechInputParams& params);
+  void ProceedStartingRecognition(const SpeechInputParams& params);
 
   typedef std::map<int, SpeechInputRequest> SpeechRecognizerMap;
   SpeechRecognizerMap requests_;

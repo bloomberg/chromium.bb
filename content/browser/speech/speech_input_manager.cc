@@ -5,13 +5,51 @@
 #include "content/browser/speech/speech_input_manager.h"
 
 #include "base/bind.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/speech/speech_input_preferences.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/view_types.h"
 #include "media/audio/audio_manager.h"
 
 using content::BrowserThread;
 
 namespace speech_input {
+
+struct SpeechInputManager::SpeechInputParams {
+  SpeechInputParams(Delegate* delegate,
+                    int caller_id,
+                    int render_process_id,
+                    int render_view_id,
+                    const gfx::Rect& element_rect,
+                    const std::string& language,
+                    const std::string& grammar,
+                    const std::string& origin_url,
+                    net::URLRequestContextGetter* context_getter,
+                    SpeechInputPreferences* speech_input_prefs)
+      : delegate(delegate),
+        caller_id(caller_id),
+        render_process_id(render_process_id),
+        render_view_id(render_view_id),
+        element_rect(element_rect),
+        language(language),
+        grammar(grammar),
+        origin_url(origin_url),
+        context_getter(context_getter),
+        speech_input_prefs(speech_input_prefs) {
+  }
+
+  Delegate* delegate;
+  int caller_id;
+  int render_process_id;
+  int render_view_id;
+  gfx::Rect element_rect;
+  std::string language;
+  std::string grammar;
+  std::string origin_url;
+  net::URLRequestContextGetter* context_getter;
+  SpeechInputPreferences* speech_input_prefs;
+};
 
 SpeechInputManager::SpeechInputManager()
     : can_report_metrics_(false),
@@ -58,21 +96,58 @@ void SpeechInputManager::StartRecognition(
     const std::string& origin_url,
     net::URLRequestContextGetter* context_getter,
     SpeechInputPreferences* speech_input_prefs) {
-  DCHECK(!HasPendingRequest(caller_id));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&SpeechInputManager::CheckRenderViewTypeAndStartRecognition,
+      base::Unretained(this), SpeechInputParams(delegate, caller_id,
+      render_process_id, render_view_id, element_rect, language, grammar,
+      origin_url, context_getter, speech_input_prefs)));
+}
+
+void SpeechInputManager::CheckRenderViewTypeAndStartRecognition(
+    const SpeechInputParams& params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  RenderViewHost* render_view_host = RenderViewHost::FromID(
+      params.render_process_id, params.render_view_id);
+  if (!render_view_host || !render_view_host->delegate())
+    return;
+
+  // For host delegates other than TabContents we can't reliably show a popup,
+  // including the speech input bubble. In these cases for privacy reasons we
+  // don't want to start recording if the user can't be properly notified.
+  // An example of this is trying to show the speech input bubble within an
+  // extension popup: http://crbug.com/92083. In these situations the speech
+  // input extension API should be used instead.
+  if (render_view_host->delegate()->GetRenderViewType() ==
+      content::VIEW_TYPE_TAB_CONTENTS) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&SpeechInputManager::ProceedStartingRecognition,
+        base::Unretained(this), params));
+  }
+}
+
+void SpeechInputManager::ProceedStartingRecognition(
+    const SpeechInputParams& params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!HasPendingRequest(params.caller_id));
 
   ShowRecognitionRequested(
-      caller_id, render_process_id, render_view_id, element_rect);
+      params.caller_id, params.render_process_id, params.render_view_id,
+      params.element_rect);
   GetRequestInfo(&can_report_metrics_, &request_info_);
 
-  SpeechInputRequest* request = &requests_[caller_id];
-  request->delegate = delegate;
+  SpeechInputRequest* request = &requests_[params.caller_id];
+  request->delegate = params.delegate;
   request->recognizer = new SpeechRecognizer(
-      this, caller_id, language, grammar, context_getter,
-      speech_input_prefs->filter_profanities(),
-      request_info_, can_report_metrics_ ? origin_url : "");
+      this, params.caller_id, params.language, params.grammar,
+      params.context_getter, params.speech_input_prefs->filter_profanities(),
+      request_info_, can_report_metrics_ ? params.origin_url : "");
   request->is_active = false;
 
-  StartRecognitionForRequest(caller_id);
+  StartRecognitionForRequest(params.caller_id);
 }
 
 void SpeechInputManager::StartRecognitionForRequest(int caller_id) {
@@ -119,7 +194,10 @@ void SpeechInputManager::CancelAllRequestsWithDelegate(
 }
 
 void SpeechInputManager::StopRecording(int caller_id) {
-  DCHECK(HasPendingRequest(caller_id));
+  // No pending requests on extension popups.
+  if (!HasPendingRequest(caller_id))
+    return;
+
   requests_[caller_id].recognizer->StopRecording();
 }
 
