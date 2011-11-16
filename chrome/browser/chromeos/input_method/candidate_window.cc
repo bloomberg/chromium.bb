@@ -1673,8 +1673,10 @@ void CandidateWindowController::Impl::CreateView() {
   // Create a non-decorated frame.
   frame_.reset(new views::Widget);
   // The size is initially zero.
-  frame_->Init(
-      views::Widget::InitParams(views::Widget::InitParams::TYPE_POPUP));
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+  // Show the candidate window always on top
+  params.keep_on_top = true;
+  frame_->Init(params);
 
   // Create the candidate window.
   candidate_window_ = new CandidateWindowView(frame_.get());
@@ -1686,8 +1688,7 @@ void CandidateWindowController::Impl::CreateView() {
 
   // Create the infolist window.
   infolist_frame_.reset(new views::Widget);
-  infolist_frame_->Init(
-      views::Widget::InitParams(views::Widget::InitParams::TYPE_POPUP));
+  infolist_frame_->Init(params);
   infolist_window_ = new InfolistWindowView(
       infolist_frame_.get(), frame_.get());
   infolist_window_->Init();
