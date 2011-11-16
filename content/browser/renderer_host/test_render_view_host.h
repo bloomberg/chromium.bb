@@ -88,6 +88,9 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE {}
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
+  virtual void AcceleratedSurfaceBuffersSwapped(
+      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
+      int gpu_host_id) OVERRIDE;
 #if defined(OS_MACOSX)
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE {}
   virtual gfx::Rect GetViewCocoaBounds() const OVERRIDE;
@@ -112,12 +115,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
       int32 width,
       int32 height,
       TransportDIB::Handle transport_dib) OVERRIDE;
-  virtual void AcceleratedSurfaceBuffersSwapped(
-      gfx::PluginWindowHandle window,
-      uint64 surface_id,
-      int renderer_id,
-      int32 route_id,
-      int gpu_host_id) OVERRIDE;
 #elif defined(OS_WIN)
   virtual void WillWmDestroy() OVERRIDE;
 #endif

@@ -77,6 +77,7 @@ class EGLImageTransportSurface : public ImageTransportSurface,
   virtual void OnNewSurfaceACK(
       uint64 surface_id, TransportDIB::Handle surface_handle) OVERRIDE;
   virtual void OnBuffersSwappedACK() OVERRIDE;
+  virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
  private:
@@ -118,6 +119,7 @@ class GLXImageTransportSurface : public ImageTransportSurface,
   virtual void OnNewSurfaceACK(
       uint64 surface_id, TransportDIB::Handle surface_handle) OVERRIDE;
   virtual void OnBuffersSwappedACK() OVERRIDE;
+  virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
  private:
@@ -166,6 +168,7 @@ class OSMesaImageTransportSurface : public ImageTransportSurface,
   virtual void OnNewSurfaceACK(
       uint64 surface_id, TransportDIB::Handle surface_handle) OVERRIDE;
   virtual void OnBuffersSwappedACK() OVERRIDE;
+  virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
  private:
@@ -373,6 +376,11 @@ void EGLImageTransportSurface::OnBuffersSwappedACK() {
   helper_->SetScheduled(true);
 }
 
+
+void EGLImageTransportSurface::OnResizeViewACK() {
+  NOTREACHED();
+}
+
 GLXImageTransportSurface::GLXImageTransportSurface(
     GpuChannelManager* manager,
     int32 render_view_id,
@@ -527,6 +535,10 @@ void GLXImageTransportSurface::OnBuffersSwappedACK() {
   helper_->SetScheduled(true);
 }
 
+void GLXImageTransportSurface::OnResizeViewACK() {
+  NOTREACHED();
+}
+
 OSMesaImageTransportSurface::OSMesaImageTransportSurface(
     GpuChannelManager* manager,
     int32 render_view_id,
@@ -605,6 +617,10 @@ void OSMesaImageTransportSurface::OnNewSurfaceACK(
   helper_->SetScheduled(true);
 }
 
+void OSMesaImageTransportSurface::OnResizeViewACK() {
+  NOTREACHED();
+}
+
 bool OSMesaImageTransportSurface::SwapBuffers() {
   DCHECK_NE(shared_mem_.get(), static_cast<void*>(NULL));
 
@@ -636,8 +652,9 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     int32 render_view_id,
     int32 renderer_id,
     int32 command_buffer_id,
-    gfx::PluginWindowHandle /* handle */) {
+    gfx::PluginWindowHandle handle) {
   scoped_refptr<gfx::GLSurface> surface;
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   switch (gfx::GetGLImplementation()) {
     case gfx::kGLImplementationDesktopGL:
       surface = new GLXImageTransportSurface(manager,
@@ -661,6 +678,17 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
       NOTREACHED();
       return NULL;
   }
+#else
+  surface = gfx::GLSurface::CreateViewGLSurface(false, handle);
+  if (!surface.get())
+    return NULL;
+
+  surface = new PassThroughImageTransportSurface(manager,
+                                                 render_view_id,
+                                                 renderer_id,
+                                                 command_buffer_id,
+                                                 surface.get());
+#endif
   if (surface->Initialize())
     return surface;
   else

@@ -14,12 +14,10 @@
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_watchdog.h"
-#include "gpu/command_buffer/common/constants.h"
-#include "ui/gfx/gl/gl_switches.h"
-
-#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 #include "content/common/gpu/image_transport_surface.h"
-#endif
+#include "gpu/command_buffer/common/constants.h"
+#include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 GpuCommandBufferStub::GpuCommandBufferStub(
     GpuChannel* channel,
@@ -125,6 +123,19 @@ bool GpuCommandBufferStub::IsScheduled() {
   return !scheduler_.get() || scheduler_->IsScheduled();
 }
 
+void GpuCommandBufferStub::SetSwapInterval() {
+#if !defined(OS_MACOSX) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+  // Set up swap interval for onscreen contexts.
+  if (!surface_->IsOffscreen()) {
+    decoder_->MakeCurrent();
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
+      context_->SetSwapInterval(0);
+    else
+      context_->SetSwapInterval(1);
+  }
+#endif
+}
+
 void GpuCommandBufferStub::Destroy() {
   // The scheduler has raw references to the decoder and the command buffer so
   // destroy it before those.
@@ -186,6 +197,7 @@ void GpuCommandBufferStub::OnInitialize(
       OnInitializeFailed(reply_message);
       return;
     }
+#endif
 
     surface_ = ImageTransportSurface::CreateSurface(
         channel_->gpu_channel_manager(),
@@ -193,9 +205,6 @@ void GpuCommandBufferStub::OnInitialize(
         renderer_id_,
         route_id_,
         handle_);
-#elif defined(OS_WIN) || defined(OS_LINUX) || defined(OS_OPENBSD)
-    surface_ = gfx::GLSurface::CreateViewGLSurface(software_, handle_);
-#endif
   } else {
     surface_ = gfx::GLSurface::CreateOffscreenGLSurface(software_,
                                                         gfx::Size(1, 1));
@@ -253,16 +262,6 @@ void GpuCommandBufferStub::OnInitialize(
       NewCallback(this, &GpuCommandBufferStub::OnParseError));
   scheduler_->SetScheduledCallback(
       NewCallback(channel_, &GpuChannel::OnScheduled));
-
-  // On platforms that use an ImageTransportSurface, the surface
-  // handles co-ordinating the resize with the browser process. The
-  // surface sets it's own resize callback, so we shouldn't do it here.
-#if !defined(OS_MACOSX) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  if (handle_ != gfx::kNullPluginWindow) {
-    decoder_->SetResizeCallback(
-        NewCallback(this, &GpuCommandBufferStub::OnResize));
-  }
-#endif
 
   if (watchdog_) {
     scheduler_->SetCommandProcessedCallback(
@@ -430,48 +429,6 @@ void GpuCommandBufferStub::OnCommandProcessed() {
     watchdog_->CheckArmed();
 }
 
-void GpuCommandBufferStub::OnResize(gfx::Size size) {
-  if (handle_ == gfx::kNullPluginWindow)
-    return;
-
-#if defined(TOOLKIT_USES_GTK) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT) || \
-    defined(OS_WIN)
-  GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-
-  // On Windows, Linux, we need to coordinate resizing of onscreen
-  // contexts with the resizing of the actual OS-level window. We do this by
-  // sending a resize message to the browser process and descheduling the
-  // context until the ViewResized message comes back in reply.
-  // Send the resize message if needed
-  gpu_channel_manager->Send(
-      new GpuHostMsg_ResizeView(renderer_id_,
-                                render_view_id_,
-                                route_id_,
-                                size));
-
-  scheduler_->SetScheduled(false);
-#endif
-}
-
-void GpuCommandBufferStub::ViewResized() {
-#if defined(TOOLKIT_USES_GTK) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT) || \
-    defined(OS_WIN)
-  DCHECK(handle_ != gfx::kNullPluginWindow);
-  scheduler_->SetScheduled(true);
-#endif
-
-#if defined(OS_WIN)
-  // Recreate the view surface to match the window size. Swap chains do not
-  // automatically resize with window size with D3D.
-  context_->ReleaseCurrent(surface_.get());
-  if (surface_.get()) {
-    surface_->Destroy();
-    surface_->Initialize();
-    SetSwapInterval();
-  }
-#endif
-}
-
 void GpuCommandBufferStub::ReportState() {
   gpu::CommandBuffer::State state = command_buffer_->GetState();
   if (state.error == gpu::error::kLostContext &&
@@ -482,19 +439,6 @@ void GpuCommandBufferStub::ReportState() {
     msg->set_unblock(true);
     Send(msg);
   }
-}
-
-void GpuCommandBufferStub::SetSwapInterval() {
-#if !defined(OS_MACOSX) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  // Set up swap interval for onscreen contexts.
-  if (!surface_->IsOffscreen()) {
-    decoder_->MakeCurrent();
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
-      context_->SetSwapInterval(0);
-    else
-      context_->SetSwapInterval(1);
-  }
-#endif
 }
 
 void GpuCommandBufferStub::OnCreateVideoDecoder(

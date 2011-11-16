@@ -74,12 +74,7 @@ class GpuProcessHostUIShim
   // actually received on the IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
-#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  // TODO(apatrick): Remove this when mac does not use AcceleratedSurfaces for
-  // when running the GPU thread in the browser process.
-  // This is now also used in TOUCH_UI builds.
   static void SendToGpuHost(int host_id, IPC::Message* msg);
-#endif
 
  private:
   explicit GpuProcessHostUIShim(int host_id);
@@ -94,15 +89,16 @@ class GpuProcessHostUIShim
     defined(OS_WIN)
   void OnResizeView(int32 renderer_id,
                     int32 render_view_id,
-                    int32 command_buffer_route_id,
+                    int32 route_id,
                     gfx::Size size);
 #endif
+
+  void OnAcceleratedSurfaceBuffersSwapped(
+      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
 
 #if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   void OnAcceleratedSurfaceNew(
       const GpuHostMsg_AcceleratedSurfaceNew_Params& params);
-  void OnAcceleratedSurfaceBuffersSwapped(
-      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
 #endif
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
