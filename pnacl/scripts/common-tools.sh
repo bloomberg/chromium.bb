@@ -660,7 +660,12 @@ PackageCheck() {
   assert-bin "makeinfo" "makeinfo not found. Please install 'texinfo' package."
   assert-bin "bison"    "bison not found. Please install 'bison' package."
   assert-bin "flex"     "flex not found. Please install 'flex' package."
-  assert-bin "gclient"  "gclient not found in PATH. Please install depot_tools."
+  if ${PNACL_IN_CROS_CHROOT}; then
+    echo "In cros chroot - not running gclient"
+  else
+    assert-bin "gclient"  \
+     "gclient not found in PATH. Please install depot_tools."
+  fi
 }
 
 assert-bin() {
