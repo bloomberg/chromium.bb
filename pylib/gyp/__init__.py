@@ -336,16 +336,12 @@ def main(args):
       options.formats = generate_formats
     else:
       # Nothing in the variable, default based on platform.
-      options.formats = [ {'darwin':   'xcode',
-                           'win32':    'msvs',
-                           'cygwin':   'msvs',
-                           'freebsd7': 'make',
-                           'freebsd8': 'make',
-                           'linux2':   'make',
-                           'linux3':   'make',
-                           'openbsd4': 'make',
-                           'openbsd5': 'make',
-                           'sunos5':   'make',}[sys.platform] ]
+      if sys.platform == 'darwin':
+        options.formats = ['xcode']
+      elif sys.platform in ('win32', 'cygwin'):
+        options.formats = ['msvs']
+      else:
+        options.formats = ['make']
 
   if not options.generator_output and options.use_environment:
     g_o = os.environ.get('GYP_GENERATOR_OUTPUT')
