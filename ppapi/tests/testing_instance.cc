@@ -56,6 +56,7 @@ bool TestingInstance::Init(uint32_t argc,
       if (argv[i][0] == '\0')
         break;
       current_case_ = CaseForTestName(argv[i]);
+      test_filter_ = FilterForTestName(argv[i]);
       if (!current_case_)
         errors_.append(std::string("Unknown test case ") + argv[i]);
       else if (!current_case_->Init())
@@ -144,7 +145,7 @@ void TestingInstance::ExecuteTests(int32_t unused) {
     LogAvailableTests();
     errors_.append("FAIL: Only listed tests");
   } else {
-    current_case_->RunTest();
+    current_case_->RunTests(test_filter_);
     // Automated PyAuto tests rely on finding the exact strings below.
     LogHTML(errors_.empty() ?
             "<span class=\"pass\">[SHUTDOWN]</span> All tests passed." :
@@ -156,14 +157,22 @@ void TestingInstance::ExecuteTests(int32_t unused) {
   PostMessage(pp::Var("TESTING_MESSAGE:DidExecuteTests"));
 }
 
-TestCase* TestingInstance::CaseForTestName(const char* name) {
+TestCase* TestingInstance::CaseForTestName(const std::string& name) {
+  std::string case_name = name.substr(0, name.find_first_of('_'));
   TestCaseFactory* iter = TestCaseFactory::head_;
   while (iter != NULL) {
-    if (std::strcmp(name, iter->name_) == 0)
+    if (case_name == iter->name_)
       return iter->method_(this);
     iter = iter->next_;
   }
   return NULL;
+}
+
+std::string TestingInstance::FilterForTestName(const std::string& name) {
+  size_t delim = name.find_first_of('_');
+  if (delim != std::string::npos)
+    return name.substr(delim+1);
+  return "";
 }
 
 void TestingInstance::LogAvailableTests() {

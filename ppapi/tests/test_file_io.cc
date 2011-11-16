@@ -111,15 +111,15 @@ bool TestFileIO::Init() {
   return InitTestingInterface() && EnsureRunningOverHTTP();
 }
 
-void TestFileIO::RunTest() {
-  RUN_TEST_FORCEASYNC_AND_NOT(Open);
-  RUN_TEST_FORCEASYNC_AND_NOT(ReadWriteSetLength);
-  RUN_TEST_FORCEASYNC_AND_NOT(TouchQuery);
-  RUN_TEST_FORCEASYNC_AND_NOT(AbortCalls);
-  RUN_TEST_FORCEASYNC_AND_NOT(ParallelReads);
-  RUN_TEST_FORCEASYNC_AND_NOT(ParallelWrites);
-  RUN_TEST_FORCEASYNC_AND_NOT(NotAllowMixedReadWrite);
-  RUN_TEST_FORCEASYNC_AND_NOT(WillWriteWillSetLength);
+void TestFileIO::RunTests(const std::string& filter) {
+  RUN_TEST_FORCEASYNC_AND_NOT(Open, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(ReadWriteSetLength, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(TouchQuery, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(AbortCalls, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(ParallelReads, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(ParallelWrites, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(NotAllowMixedReadWrite, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(WillWriteWillSetLength, filter);
 
   // TODO(viettrungluu): add tests:
   //  - that PP_ERROR_PENDING is correctly returned

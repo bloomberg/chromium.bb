@@ -88,3 +88,9 @@ bool TestCase::EnsureRunningOverHTTP() {
 
   return true;
 }
+
+bool TestCase::MatchesFilter(const std::string& test_name,
+                             const std::string& filter) {
+  return filter.empty() || (test_name == filter);
+}
+

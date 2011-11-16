@@ -15,7 +15,7 @@ class TestNetAddressPrivate : public TestCase {
 
   // TestCase implementation.
   virtual bool Init();
-  virtual void RunTest();
+  virtual void RunTests(const std::string& filter);
 
  private:
   std::string TestAreEqual();

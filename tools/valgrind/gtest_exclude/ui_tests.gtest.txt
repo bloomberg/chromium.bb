@@ -104,7 +104,7 @@ FastShutdown.SlowTermination
 # Out-of-process PPAPI tests fail on buildbots http://crbug.com/89961
 OutOfProcessPPAPITest.Instance
 OutOfProcessPPAPITest.CursorControl
-OutOfProcessPPAPITest.PostMessage
+OutOfProcessPPAPITest.PostMessage*
 
 # Flakily times out, http://crbug.com/92527
 NamedInterfaceTest.BasicNamedInterface

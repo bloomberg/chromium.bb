@@ -17,10 +17,10 @@ bool TestUMA::Init() {
   return !!uma_interface_;
 }
 
-void TestUMA::RunTest() {
-  RUN_TEST(Count);
-  RUN_TEST(Time);
-  RUN_TEST(Enum);
+void TestUMA::RunTests(const std::string& filter) {
+  RUN_TEST(Count, filter);
+  RUN_TEST(Time, filter);
+  RUN_TEST(Enum, filter);
 }
 
 std::string TestUMA::TestCount() {

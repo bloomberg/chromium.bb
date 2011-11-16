@@ -106,16 +106,16 @@ bool TestPostMessage::Init() {
   return success;
 }
 
-void TestPostMessage::RunTest() {
+void TestPostMessage::RunTests(const std::string& filter) {
   // Note: SendInInit must be first, because it expects to receive a message
   // that was sent in Init above.
-  RUN_TEST(SendInInit);
-  RUN_TEST(SendingData);
-  RUN_TEST(MessageEvent);
-  RUN_TEST(NoHandler);
-  RUN_TEST(ExtraParam);
+  RUN_TEST(SendInInit, filter);
+  RUN_TEST(SendingData, filter);
+  RUN_TEST(MessageEvent, filter);
+  RUN_TEST(NoHandler, filter);
+  RUN_TEST(ExtraParam, filter);
   if (testing_interface_->IsOutOfProcess())
-    RUN_TEST(NonMainThread);
+    RUN_TEST(NonMainThread, filter);
 }
 
 void TestPostMessage::HandleMessage(const pp::Var& message_data) {
@@ -186,9 +186,13 @@ std::string TestPostMessage::TestSendInInit() {
 }
 
 std::string TestPostMessage::TestSendingData() {
+  // Clean up after previous tests. This also swallows the message sent by Init
+  // if we didn't run the 'SendInInit' test. All tests other than 'SendInInit'
+  // should start with these.
+  WaitForMessages();
+  ASSERT_TRUE(ClearListeners());
   // Set up the JavaScript message event listener to echo the data part of the
   // message event back to us.
-  ASSERT_TRUE(ClearListeners());
   ASSERT_TRUE(AddEchoingListener("message_event.data"));
 
   // Test sending a message to JavaScript for each supported type.  The JS sends
@@ -244,9 +248,10 @@ std::string TestPostMessage::TestMessageEvent() {
   // Set up the JavaScript message event listener to pass us some values from
   // the MessageEvent and make sure they match our expectations.
 
+  WaitForMessages();
+  ASSERT_TRUE(ClearListeners());
   // Have the listener pass back the type of message_event and make sure it's
   // "object".
-  ASSERT_TRUE(ClearListeners());
   ASSERT_TRUE(AddEchoingListener("typeof(message_event)"));
   message_data_.clear();
   instance_->PostMessage(pp::Var(kTestInt));
@@ -299,13 +304,12 @@ std::string TestPostMessage::TestMessageEvent() {
   ASSERT_DOUBLE_EQ(double_vec[1], 2.0);
   ASSERT_DOUBLE_EQ(double_vec[2], 3.0);
 
-  ASSERT_TRUE(ClearListeners());
-
   PASS();
 }
 
 std::string TestPostMessage::TestNoHandler() {
-  // Delete any lingering event listeners.
+  // Delete any lingering messages and event listeners.
+  WaitForMessages();
   ASSERT_TRUE(ClearListeners());
 
   // Now send a message.  We shouldn't get a response.
@@ -318,7 +322,8 @@ std::string TestPostMessage::TestNoHandler() {
 }
 
 std::string TestPostMessage::TestExtraParam() {
-  // Delete any lingering event listeners.
+  // Delete any lingering messages and event listeners.
+  WaitForMessages();
   ASSERT_TRUE(ClearListeners());
   // Add a listener that will respond with 1 and an empty array (where the
   // message port array would appear if it was Worker postMessage).
@@ -334,6 +339,7 @@ std::string TestPostMessage::TestExtraParam() {
 }
 
 std::string TestPostMessage::TestNonMainThread() {
+  WaitForMessages();
   ASSERT_TRUE(ClearListeners());
   ASSERT_TRUE(AddEchoingListener("message_event.data"));
   message_data_.clear();

@@ -24,7 +24,7 @@ class TestFullscreen : public TestCase {
 
   // TestCase implementation.
   virtual bool Init();
-  virtual void RunTest();
+  virtual void RunTests(const std::string& filter);
   virtual bool HandleInputEvent(const pp::InputEvent& event);
   virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
 

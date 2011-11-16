@@ -22,10 +22,10 @@ bool TestCharSet::Init() {
   return !!char_set_interface_;
 }
 
-void TestCharSet::RunTest() {
-  RUN_TEST(UTF16ToCharSet);
-  RUN_TEST(CharSetToUTF16);
-  RUN_TEST(GetDefaultCharSet);
+void TestCharSet::RunTests(const std::string& filter) {
+  RUN_TEST(UTF16ToCharSet, filter);
+  RUN_TEST(CharSetToUTF16, filter);
+  RUN_TEST(GetDefaultCharSet, filter);
 }
 
 std::string TestCharSet::TestUTF16ToCharSet() {

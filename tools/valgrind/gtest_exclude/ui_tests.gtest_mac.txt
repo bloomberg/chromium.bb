@@ -231,7 +231,7 @@ OutOfProcessPPAPITest.Graphics2D
 PPAPITest.Broker
 PPAPITest.Core
 PPAPITest.Memory
-PPAPITest.PostMessage
+PPAPITest.PostMessage*
 PreferenceServiceTest.PreservedWindowPlacementIsMigrated
 RedirectTest.Client
 RedirectTest.ClientFragments

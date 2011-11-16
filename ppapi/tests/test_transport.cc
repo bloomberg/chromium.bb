@@ -102,14 +102,14 @@ bool TestTransport::Init() {
   return transport_interface_ && InitTestingInterface();
 }
 
-void TestTransport::RunTest() {
-  RUN_TEST(Create);
-  RUN_TEST_FORCEASYNC_AND_NOT(Connect);
-  RUN_TEST(SetProperty);
-  RUN_TEST_FORCEASYNC_AND_NOT(SendDataUdp);
-  RUN_TEST_FORCEASYNC_AND_NOT(SendDataTcp);
-  RUN_TEST_FORCEASYNC_AND_NOT(ConnectAndCloseUdp);
-  RUN_TEST_FORCEASYNC_AND_NOT(ConnectAndCloseTcp);
+void TestTransport::RunTests(const std::string& filter) {
+  RUN_TEST(Create, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(Connect, filter);
+  RUN_TEST(SetProperty, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(SendDataUdp, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(SendDataTcp, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(ConnectAndCloseUdp, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(ConnectAndCloseTcp, filter);
 }
 
 std::string TestTransport::InitTargets(PP_TransportType type) {

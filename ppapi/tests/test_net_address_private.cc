@@ -58,12 +58,12 @@ bool TestNetAddressPrivate::Init() {
   return NetAddressPrivate::IsAvailable();
 }
 
-void TestNetAddressPrivate::RunTest() {
-  RUN_TEST(AreEqual);
-  RUN_TEST(AreHostsEqual);
-  RUN_TEST(Describe);
-  RUN_TEST(ReplacePort);
-  RUN_TEST(GetAnyAddress);
+void TestNetAddressPrivate::RunTests(const std::string& filter) {
+  RUN_TEST(AreEqual, filter);
+  RUN_TEST(AreHostsEqual, filter);
+  RUN_TEST(Describe, filter);
+  RUN_TEST(ReplacePort, filter);
+  RUN_TEST(GetAnyAddress, filter);
 }
 
 std::string TestNetAddressPrivate::TestAreEqual() {

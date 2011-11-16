@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ class TestCharSet : public TestCase {
   // TestCase implementation.
 
   virtual bool Init();
-  virtual void RunTest();
+  virtual void RunTests(const std::string& filter);
 
  private:
   std::string TestUTF16ToCharSet();

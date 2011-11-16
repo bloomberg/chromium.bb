@@ -80,10 +80,10 @@ bool TestTCPSocketPrivate::Init() {
   return true;
 }
 
-void TestTCPSocketPrivate::RunTest() {
-  RUN_TEST_FORCEASYNC_AND_NOT(Basic);
-  RUN_TEST_FORCEASYNC_AND_NOT(ReadWrite);
-  RUN_TEST_FORCEASYNC_AND_NOT(ConnectAddress);
+void TestTCPSocketPrivate::RunTests(const std::string& filter) {
+  RUN_TEST_FORCEASYNC_AND_NOT(Basic, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(ReadWrite, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(ConnectAddress, filter);
 }
 
 std::string TestTCPSocketPrivate::TestBasic() {

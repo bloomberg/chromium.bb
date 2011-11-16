@@ -207,12 +207,13 @@ bool TestBroker::Init() {
   return !!broker_interface_;
 }
 
-void TestBroker::RunTest() {
-  RUN_TEST(Create);
-  RUN_TEST(GetHandleFailure);
-  RUN_TEST(ConnectFailure);
+void TestBroker::RunTests(const std::string& filter) {
+  RUN_TEST(Create, filter);
+  RUN_TEST(Create, filter);
+  RUN_TEST(GetHandleFailure, filter);
+  RUN_TEST(ConnectFailure, filter);
 #if !defined(OS_WIN)  // This is broken on Windows. See http://crbug.com/103975.
-  RUN_TEST(ConnectAndPipe);
+  RUN_TEST(ConnectAndPipe, filter);
 #endif
 }
 
