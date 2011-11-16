@@ -314,6 +314,8 @@ wl_resource_destroy(struct wl_resource *resource, uint32_t time)
 {
 	struct wl_client *client = resource->client;
 
+	wl_resource_post_event(resource->client->display_resource,
+			       WL_DISPLAY_DELETE_ID, resource->object.id);
 	wl_map_insert_at(&client->objects, resource->object.id, NULL);
 	destroy_resource(resource, &time);
 }

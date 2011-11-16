@@ -141,7 +141,8 @@ wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 WL_EXPORT void
 wl_proxy_destroy(struct wl_proxy *proxy)
 {
-	wl_map_remove(&proxy->display->objects, proxy->object.id);
+	wl_map_insert_at(&proxy->display->objects,
+			 proxy->object.id, WL_ZOMBIE_OBJECT);
 	free(proxy);
 }
 
@@ -239,10 +240,23 @@ display_handle_global_remove(void *data,
 		}
 }
 
+static void
+display_handle_delete_id(void *data, struct wl_display *display, uint32_t id)
+{
+	struct wl_proxy *proxy;
+
+	proxy = wl_map_lookup(&display->objects, id);
+	if (proxy != WL_ZOMBIE_OBJECT)
+		fprintf(stderr, "server sent delete_id for live object\n");
+	else
+		wl_map_remove(&display->objects, id);
+}
+
 static const struct wl_display_listener display_listener = {
 	display_handle_error,
 	display_handle_global,
 	display_handle_global_remove,
+	display_handle_delete_id
 };
 
 static int
@@ -412,7 +426,11 @@ handle_event(struct wl_display *display,
 	wl_connection_copy(display->connection, p, size);
 	proxy = wl_map_lookup(&display->objects, id);
 
-	if (proxy == NULL || proxy->object.implementation == NULL) {
+	if (proxy == WL_ZOMBIE_OBJECT) {
+		fprintf(stderr, "Message to zombie object\n");
+		wl_connection_consume(display->connection, size);
+		return;
+	} else if (proxy == NULL || proxy->object.implementation == NULL) {
 		wl_connection_consume(display->connection, size);
 		return;
 	}

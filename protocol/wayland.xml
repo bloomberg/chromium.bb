@@ -76,6 +76,10 @@
       <arg name="name" type="uint" />
     </event>
 
+    <!-- Server has deleted the id and client can now reuse it. -->
+    <event name="delete_id">
+      <arg name="id" type="uint" />
+    </event>
   </interface>
 
   <interface name="wl_callback" version="1">

@@ -587,9 +587,14 @@ wl_connection_demarshal(struct wl_connection *connection,
 			closure->args[i] = object;
 
 			*object = wl_map_lookup(objects, *p);
-			if (*object == NULL && *p != 0) {
+			if (*object == WL_ZOMBIE_OBJECT) {
+				/* references object we've already
+				 * destroyed client side */
+				*object = NULL;
+			} else if (*object == NULL && *p != 0) {
 				printf("unknown object (%d), message %s(%s)\n",
 				       *p, message->name, message->signature);
+				*object = NULL;
 				errno = EINVAL;
 				goto err;
 			}
