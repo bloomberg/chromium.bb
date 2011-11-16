@@ -16,8 +16,6 @@
 #include "sql/meta_table.h"
 
 class FilePath;
-class RefCountedMemory;
-class SkBitmap;
 
 namespace sql {
 class Connection;

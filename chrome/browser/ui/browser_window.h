@@ -18,15 +18,12 @@ class BrowserWindowTesting;
 class DownloadShelf;
 class FindBar;
 class GURL;
-class HtmlDialogUIDelegate;
 class LocationBar;
-class Panel;
 class Profile;
 class StatusBubble;
 class TabContents;
 class TabContentsWrapper;
 class TemplateURL;
-class TemplateURLService;
 #if !defined(OS_MACOSX)
 class ToolbarView;
 #endif

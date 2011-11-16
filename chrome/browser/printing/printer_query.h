@@ -17,7 +17,6 @@ class MessageLoop;
 
 namespace base {
 class DictionaryValue;
-class Thread;
 }
 
 namespace printing {

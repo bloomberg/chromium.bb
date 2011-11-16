@@ -22,9 +22,6 @@ class FilePath;
 
 namespace history {
 
-// Forward declaration for the temporary migration code in Init().
-class TextDatabaseManager;
-
 // Encapsulates the SQL connection for the history database. This class holds
 // the database connection and has methods the history system (including full
 // text search) uses for writing and retrieving information.
@@ -181,6 +178,6 @@ class HistoryDatabase : public DownloadDatabase,
   DISALLOW_COPY_AND_ASSIGN(HistoryDatabase);
 };
 
-}  // history
+}  // namespace history
 
 #endif  // CHROME_BROWSER_HISTORY_HISTORY_DATABASE_H_

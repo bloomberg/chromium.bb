@@ -9,7 +9,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_types.h"
 
-class GURL;
 class Profile;
 class TabContentsWrapper;
 

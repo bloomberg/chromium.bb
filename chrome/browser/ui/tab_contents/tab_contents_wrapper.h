@@ -32,7 +32,6 @@ class ExtensionTabHelper;
 class ExtensionWebNavigationTabObserver;
 class ExternalProtocolObserver;
 class FaviconTabHelper;
-class FileSelectObserver;
 class FindTabHelper;
 class InfoBarTabHelper;
 class HistoryTabHelper;

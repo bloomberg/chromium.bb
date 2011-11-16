@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_PRINTING_PRINT_SYSTEM_TASK_PROXY_H_
 #pragma once
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
@@ -14,7 +16,6 @@
 
 namespace base {
 class DictionaryValue;
-class FundamentalValue;
 class StringValue;
 }
 

@@ -6,14 +6,11 @@
 #define CHROME_BROWSER_HISTORY_TOP_SITES_CACHE_H_
 #pragma once
 
-#include <algorithm>
 #include <map>
-#include <string>
+#include <utility>
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/history/history_types.h"
-
-class RefCountedBytes;
 
 namespace history {
 

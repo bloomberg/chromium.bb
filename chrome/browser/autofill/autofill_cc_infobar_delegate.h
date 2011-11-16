@@ -16,8 +16,7 @@
 
 class CreditCard;
 class PersonalDataManager;
-class SkBitmap;
-class TabContents;
+
 namespace content {
 struct LoadCommittedDetails;
 }

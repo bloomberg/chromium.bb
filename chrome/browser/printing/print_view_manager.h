@@ -13,7 +13,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "printing/printed_pages_source.h"
 
-class RenderViewHost;
 class TabContentsWrapper;
 struct PrintHostMsg_DidPrintPage_Params;
 

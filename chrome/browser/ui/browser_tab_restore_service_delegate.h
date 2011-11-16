@@ -12,7 +12,6 @@
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 
 class Browser;
-class Profile;
 class SessionStorageNamespace;
 class TabContents;
 class TabNavigation;

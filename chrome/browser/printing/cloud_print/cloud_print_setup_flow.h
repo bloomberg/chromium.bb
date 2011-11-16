@@ -18,7 +18,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
 
-class Browser;
 class CloudPrintServiceProcessHelper;
 class CloudPrintSetupMessageHandler;
 class GaiaAuthFetcher;

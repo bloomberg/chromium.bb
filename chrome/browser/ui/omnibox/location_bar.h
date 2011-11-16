@@ -21,11 +21,9 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class ExtensionAction;
-class InstantController;
 class LocationBarTesting;
 class OmniboxView;
 class TabContents;
-class TabContentsWrapper;
 
 class LocationBar {
  public:

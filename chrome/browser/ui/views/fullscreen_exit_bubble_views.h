@@ -11,6 +11,10 @@
 #include "googleurl/src/gurl.h"
 #include "views/controls/link_listener.h"
 
+namespace ui {
+class SlideAnimation;
+}
+
 namespace views {
 class View;
 class Widget;

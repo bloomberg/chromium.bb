@@ -5,13 +5,11 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_RENDER_VIEW_HOST_OBSERVER_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_RENDER_VIEW_HOST_OBSERVER_H_
 
-#include "content/browser/renderer_host/render_view_host_observer.h"
-
-#include <string>
 #include <vector>
 
+#include "content/browser/renderer_host/render_view_host_observer.h"
+
 struct FaviconURL;
-class GURL;
 class RenderViewHost;
 
 namespace IPC {
@@ -47,5 +45,6 @@ class PrerenderRenderViewHostObserver : public RenderViewHostObserver {
   PrerenderContents* prerender_contents_;
 };
 
-}
+}  // namespace prerender
+
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_RENDER_VIEW_HOST_OBSERVER_H_

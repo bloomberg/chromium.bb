@@ -14,7 +14,6 @@ class GURL;
 
 namespace prerender {
 
-class PrerenderContents;
 class PrerenderManager;
 
 // PrerenderTabHelper is responsible for recording perceived pageload times

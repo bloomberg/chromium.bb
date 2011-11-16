@@ -24,7 +24,6 @@
 
 class FilePath;
 class GURL;
-class HistoryDatabase;
 class Profile;
 
 namespace history {

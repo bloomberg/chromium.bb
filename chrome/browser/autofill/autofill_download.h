@@ -21,12 +21,7 @@
 
 class AutofillMetrics;
 class FormStructure;
-class GURL;
 class Profile;
-
-namespace net {
-class URLRequestStatus;
-}
 
 // Handles getting and updating Autofill heuristics.
 class AutofillDownloadManager : public content::URLFetcherDelegate {

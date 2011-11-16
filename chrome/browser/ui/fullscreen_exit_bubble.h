@@ -16,10 +16,6 @@
 
 class Browser;
 
-namespace ui {
-class SlideAnimation;
-}
-
 namespace gfx {
 class Rect;
 }

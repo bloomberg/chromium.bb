@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_FEEDBACK_INFOBAR_DELEGATE_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
 #include "webkit/glue/window_open_disposition.h"
-
-class TabContents;
 
 // An InfoBar delegate that prompts the user to provide additional feedback for
 // the Autofill developers.

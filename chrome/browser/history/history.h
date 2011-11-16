@@ -32,26 +32,13 @@ class FilePath;
 class GURL;
 class HistoryURLProvider;
 struct HistoryURLProviderParams;
-class InMemoryURLDatabase;
-class MainPagesRequest;
 class PageUsageData;
 class PageUsageRequest;
 class Profile;
-class SkBitmap;
-struct ThumbnailScore;
 
 namespace base {
 class Thread;
 class Time;
-}
-
-namespace browser_sync {
-class HistoryModelWorker;
-class TypedUrlDataTypeController;
-}
-
-namespace gfx {
-class Image;
 }
 
 namespace history {

@@ -30,10 +30,6 @@ namespace base {
 class ProcessMetrics;
 }
 
-namespace gfx {
-class Rect;
-}
-
 namespace prerender {
 
 class PrerenderManager;

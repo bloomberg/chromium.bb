@@ -12,7 +12,6 @@
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
 class SearchEngineTabHelperDelegate;
-class TabContentsWrapper;
 
 // Per-tab search engine manager. Handles dealing search engine processing
 // functionality.

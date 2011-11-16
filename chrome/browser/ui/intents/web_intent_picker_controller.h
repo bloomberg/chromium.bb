@@ -17,11 +17,9 @@
 #include "webkit/glue/web_intent_data.h"
 
 class Browser;
-class FaviconService;
 class GURL;
 class SkBitmap;
 class TabContentsWrapper;
-class WebDataService;
 class WebIntentPicker;
 class WebIntentPickerFactory;
 

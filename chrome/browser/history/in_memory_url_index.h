@@ -26,8 +26,6 @@
 #include "sql/connection.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
-class Profile;
-
 namespace base {
 class Time;
 }
