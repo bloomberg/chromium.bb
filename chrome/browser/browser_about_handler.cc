@@ -895,7 +895,7 @@ void AboutMemory(const std::string& path, AboutSource* source, int request_id) {
 std::string AboutStats(const std::string& query) {
   // We keep the DictionaryValue tree live so that we can do delta
   // stats computations across runs.
-  static DictionaryValue root;
+  CR_DEFINE_STATIC_LOCAL(DictionaryValue, root, ());
   static base::TimeTicks last_sample_time = base::TimeTicks::Now();
 
   base::TimeTicks now = base::TimeTicks::Now();

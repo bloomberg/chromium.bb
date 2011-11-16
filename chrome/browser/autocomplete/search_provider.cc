@@ -330,7 +330,7 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
   // Don't send any queries to the server until some time has elapsed after
   // the last keypress, to avoid flooding the server with requests we are
   // likely to end up throwing away anyway.
-  static const int kQueryDelayMs = 200;
+  const int kQueryDelayMs = 200;
 
   if (!IsQuerySuitableForSuggest()) {
     StopSuggest();
@@ -491,7 +491,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val,
       DictionaryValue* dict_val = static_cast<DictionaryValue*>(optional_val);
 
       // Parse Google Suggest specific type extension.
-      static const std::string kGoogleSuggestType("google:suggesttype");
+      const std::string kGoogleSuggestType("google:suggesttype");
       if (dict_val->HasKey(kGoogleSuggestType))
         dict_val->GetList(kGoogleSuggestType, &type_list);
     }

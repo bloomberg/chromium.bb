@@ -462,7 +462,7 @@ class WatchDogThread : public base::Thread {
   virtual ~WatchDogThread();
 
   // Callable on any thread.  Returns whether you're currently on a
-  // watchdog_thread_.
+  // WatchDogThread.
   static bool CurrentlyOnWatchDogThread();
 
   // These are the same methods in message_loop.h, but are guaranteed to either
@@ -485,11 +485,6 @@ class WatchDogThread : public base::Thread {
       const tracked_objects::Location& from_here,
       const base::Closure& task,
       int64 delay_ms);
-
-  // This lock protects watchdog_thread_.
-  static base::Lock lock_;
-
-  static WatchDogThread* watchdog_thread_;  // The singleton of this class.
 
   DISALLOW_COPY_AND_ASSIGN(WatchDogThread);
 };

@@ -410,9 +410,9 @@ std::string CharacterEncoding::GetCanonicalEncodingNameByAliasName(
 
 // Static
 // According to the behavior of user recently selected encoding short list in
-// FireFox, we always put UTF-8 as toppest position, after then put user
-// recently selected encodings, then put local dependent encoding items.
-// At last, we put all rest encoding items.
+// Firefox, we always put UTF-8 as top position, after then put user
+// recent selected encodings, then put local dependent encoding items.
+// At last, we put all remaining encoding items.
 const std::vector<CharacterEncoding::EncodingInfo>*
     CharacterEncoding::GetCurrentDisplayEncodings(
     const std::string& locale,
@@ -429,7 +429,7 @@ const std::vector<CharacterEncoding::EncodingInfo>*
                                         locale_dependent_encoding_list,
                                         kUserSelectedEncodingsMaxLength);
 
-  static std::string cached_user_selected_encodings;
+  CR_DEFINE_STATIC_LOCAL(std::string, cached_user_selected_encodings, ());
   // Build current display encoding list.
   if (encoding_list->empty() ||
       cached_user_selected_encodings != recently_select_encodings) {

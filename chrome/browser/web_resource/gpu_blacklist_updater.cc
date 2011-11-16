@@ -36,7 +36,7 @@ static const int kStartGpuBlacklistFetchDelay = 6000;
 static const int kCacheUpdateDelay = 48 * 60 * 60 * 1000;
 
 std::string GetChromeVersionString() {
-  static std::string cr_version;
+  CR_DEFINE_STATIC_LOCAL(std::string, cr_version, ());
   if (!cr_version.empty())
     return cr_version;
   chrome::VersionInfo version_info;

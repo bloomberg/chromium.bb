@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
+#include "base/lazy_instance.h"
 #include "base/string_tokenizer.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -702,11 +703,15 @@ void ThreadWatcherObserver::Observe(
 }
 
 // WatchDogThread methods and members.
-//
-// static
-base::Lock WatchDogThread::lock_;
-// static
-WatchDogThread* WatchDogThread::watchdog_thread_ = NULL;
+
+// This lock protects g_watchdog_thread.
+static base::LazyInstance<base::Lock,
+                          base::LeakyLazyInstanceTraits<base::Lock> >
+    g_watchdog_lock = LAZY_INSTANCE_INITIALIZER;
+
+// The singleton of this class.
+static WatchDogThread* g_watchdog_thread = NULL;
+
 
 // The WatchDogThread object must outlive any tasks posted to the IO thread
 // before the Quit task.
@@ -721,9 +726,9 @@ WatchDogThread::~WatchDogThread() {
 
 // static
 bool WatchDogThread::CurrentlyOnWatchDogThread() {
-  base::AutoLock lock(lock_);
-  return watchdog_thread_ &&
-    watchdog_thread_->message_loop() == MessageLoop::current();
+  base::AutoLock lock(g_watchdog_lock.Get());
+  return g_watchdog_thread &&
+    g_watchdog_thread->message_loop() == MessageLoop::current();
 }
 
 // static
@@ -745,10 +750,10 @@ bool WatchDogThread::PostTaskHelper(
     const base::Closure& task,
     int64 delay_ms) {
   {
-    base::AutoLock lock(lock_);
+    base::AutoLock lock(g_watchdog_lock.Get());
 
-    MessageLoop* message_loop = watchdog_thread_ ?
-        watchdog_thread_->message_loop() : NULL;
+    MessageLoop* message_loop = g_watchdog_thread ?
+        g_watchdog_thread->message_loop() : NULL;
     if (message_loop) {
       message_loop->PostDelayedTask(from_here, task, delay_ms);
       return true;
@@ -762,14 +767,14 @@ void WatchDogThread::Init() {
   // This thread shouldn't be allowed to perform any blocking disk I/O.
   base::ThreadRestrictions::SetIOAllowed(false);
 
-  base::AutoLock lock(lock_);
-  CHECK(!watchdog_thread_);
-  watchdog_thread_ = this;
+  base::AutoLock lock(g_watchdog_lock.Get());
+  CHECK(!g_watchdog_thread);
+  g_watchdog_thread = this;
 }
 
 void WatchDogThread::CleanUp() {
-  base::AutoLock lock(lock_);
-  watchdog_thread_ = NULL;
+  base::AutoLock lock(g_watchdog_lock.Get());
+  g_watchdog_thread = NULL;
 }
 
 namespace {
