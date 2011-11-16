@@ -498,11 +498,11 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
     return;
   }
 
-#if defined(OS_MACOSX)
-  // For dynamic loading support, NaCl requires a file descriptor that
-  // was created in /tmp, since those created with shm_open() are not
-  // mappable with PROT_EXEC.  Rather than requiring an extra IPC
-  // round trip out of the sandbox, we create an FD here.
+#if defined(OS_POSIX)
+  // For dynamic loading support, NaCl requires a file descriptor on an
+  // anonymous file that can have PROT_EXEC applied to its mappings.
+  // Rather than requiring an extra IPC round trip out of the sandbox,
+  // we create an FD here.
   base::SharedMemory memory_buffer;
   if (!memory_buffer.CreateAnonymous(/* size= */ 1)) {
     LOG(ERROR) << "Failed to allocate memory buffer";
