@@ -420,11 +420,8 @@ void SyncBackendHost::Core::OnInitializationComplete(
       base::Bind(&Core::HandleInitializationCompletedOnFrontendLoop, this,
                  js_backend, success));
 
-  if (success) {
-    // Initialization is complete, so we can schedule recurring SaveChanges.
-    sync_loop_->PostTask(FROM_HERE,
-                         base::Bind(&Core::StartSavingChanges, this));
-  }
+  // Initialization is complete, so we can schedule recurring SaveChanges.
+  sync_loop_->PostTask(FROM_HERE, base::Bind(&Core::StartSavingChanges, this));
 }
 
 void SyncBackendHost::Core::OnAuthError(const AuthError& auth_error) {
@@ -611,7 +608,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       host_->sync_notifier_factory_.CreateSyncNotifier(),
       options.restored_key_for_bootstrapping,
       options.setup_for_test_mode);
-  LOG_IF(ERROR, !success) << "Syncapi initialization failed!";
+  DCHECK(success) << "Syncapi initialization failed!";
 }
 
 void SyncBackendHost::Core::DoCheckServerReachable() {

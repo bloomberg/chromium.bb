@@ -33,9 +33,9 @@ class DebugSQLErrorHandler: public VanillaSQLErrorHandler {
  public:
   virtual int HandleError(int error, sqlite3* db) {
     error_ = error;
-    LOG(ERROR) << "sqlite error " << error
-               << " " << sqlite3_errmsg(db)
-               << " db " << static_cast<void*>(db);
+    NOTREACHED() << "sqlite error " << error
+                 << " " << sqlite3_errmsg(db)
+                 << " db " << static_cast<void*>(db);
     return error;
   }
 };
