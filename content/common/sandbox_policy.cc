@@ -402,6 +402,8 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     type = ChildProcessInfo::GPU_PROCESS;
   } else if (type_str == switches::kPpapiPluginProcess) {
     type = ChildProcessInfo::PPAPI_PLUGIN_PROCESS;
+  } else if (type_str == switches::kPpapiBrokerProcess) {
+    type = ChildProcessInfo::PPAPI_BROKER_PROCESS;
   } else {
     NOTREACHED();
     return 0;
@@ -414,7 +416,8 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   // process are sandboxed by default.
   bool in_sandbox =
       (type != ChildProcessInfo::NACL_BROKER_PROCESS) &&
-      (type != ChildProcessInfo::PLUGIN_PROCESS);
+      (type != ChildProcessInfo::PLUGIN_PROCESS) &&
+      (type != ChildProcessInfo::PPAPI_BROKER_PROCESS);
 
   // If it is the GPU process then it can be disabled by a command line flag.
   if ((type == ChildProcessInfo::GPU_PROCESS) &&

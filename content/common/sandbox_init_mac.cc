@@ -52,7 +52,8 @@ bool InitializeSandbox() {
   } else if (process_type == switches::kGpuProcess) {
     sandbox_process_type = Sandbox::SANDBOX_TYPE_GPU;
   } else if ((process_type == switches::kPluginProcess) ||
-             (process_type == switches::kServiceProcess)) {
+             (process_type == switches::kServiceProcess) ||
+             (process_type == switches::kPpapiBrokerProcess)) {
     return true;
   } else if (process_type == switches::kPpapiPluginProcess) {
     sandbox_process_type = Sandbox::SANDBOX_TYPE_PPAPI;
