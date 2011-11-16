@@ -192,6 +192,25 @@ bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
   return false;
 }
 
+// Remembers if it has been notified.
+class TestCompositorObserver : public CompositorObserver {
+ public:
+  TestCompositorObserver() : notified_(false) {}
+
+  bool notified() const { return notified_; }
+
+  void Reset() { notified_ = false; }
+
+ private:
+  virtual void OnCompositingEnded(Compositor* compositor) OVERRIDE {
+    notified_ = true;
+  }
+
+  bool notified_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCompositorObserver);
+};
+
 }
 
 #if defined(OS_WIN)
@@ -204,6 +223,7 @@ bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
 #define MAYBE_HierarchyNoTexture DISABLED_HierarchyNoTexture
 #define MAYBE_DrawPixels DISABLED_DrawPixels
 #define MAYBE_SetRootLayer DISABLED_SetRootLayer
+#define MAYBE_CompositorObservers DISABLED_CompositorObservers
 #else
 #define MAYBE_Delegate Delegate
 #define MAYBE_Draw Draw
@@ -212,6 +232,7 @@ bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
 #define MAYBE_HierarchyNoTexture HierarchyNoTexture
 #define MAYBE_DrawPixels DrawPixels
 #define MAYBE_SetRootLayer SetRootLayer
+#define MAYBE_CompositorObservers CompositorObservers
 #endif
 
 TEST_F(LayerWithRealCompositorTest, MAYBE_Draw) {
@@ -1025,6 +1046,75 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_SetRootLayer) {
   compositor->SetRootLayer(NULL);
   EXPECT_EQ(NULL, l1.GetCompositor());
   EXPECT_EQ(NULL, l2.GetCompositor());
+}
+
+// Checks that compositor observers are notified when:
+// - DrawTree is called,
+// - After ScheduleDraw is called, or
+// - Whenever SetBounds, SetOpacity or SetTransform are called.
+// TODO(vollick): could be reorganized into compositor_unittest.cc
+TEST_F(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
+  scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
+                                        gfx::Rect(20, 20, 400, 400)));
+  scoped_ptr<Layer> l2(CreateColorLayer(SK_ColorBLUE,
+                                        gfx::Rect(10, 10, 350, 350)));
+  l1->Add(l2.get());
+  TestCompositorObserver observer;
+  GetCompositor()->AddObserver(&observer);
+
+  // Explicitly called DrawTree should cause the observers to be notified.
+  // NOTE: this call to DrawTree sets l1 to be the compositor's root layer.
+  DrawTree(l1.get());
+  RunPendingMessages();
+  EXPECT_TRUE(observer.notified());
+
+  // As should scheduling a draw and waiting.
+  observer.Reset();
+  l1->ScheduleDraw();
+  RunPendingMessages();
+  EXPECT_TRUE(observer.notified());
+
+  // Moving, but not resizing, a layer should alert the observers.
+  observer.Reset();
+  l2->SetBounds(gfx::Rect(0, 0, 350, 350));
+  RunPendingMessages();
+  EXPECT_TRUE(observer.notified());
+
+  // So should resizing a layer.
+  observer.Reset();
+  l2->SetBounds(gfx::Rect(0, 0, 400, 400));
+  RunPendingMessages();
+  EXPECT_TRUE(observer.notified());
+
+  // Opacity changes should alert the observers.
+  observer.Reset();
+  l2->SetOpacity(0.5f);
+  RunPendingMessages();
+  EXPECT_TRUE(observer.notified());
+
+  // So should setting the opacity back.
+  observer.Reset();
+  l2->SetOpacity(1.0f);
+  RunPendingMessages();
+  EXPECT_TRUE(observer.notified());
+
+  // Setting the transform of a layer should alert the observers.
+  observer.Reset();
+  Transform transform;
+  transform.ConcatTranslate(-200, -200);
+  transform.ConcatRotate(90.0f);
+  transform.ConcatTranslate(200, 200);
+  l2->SetTransform(transform);
+  RunPendingMessages();
+  EXPECT_TRUE(observer.notified());
+
+  GetCompositor()->RemoveObserver(&observer);
+
+  // Opacity changes should no longer alert the removed observer.
+  observer.Reset();
+  l2->SetOpacity(0.5f);
+  RunPendingMessages();
+  EXPECT_FALSE(observer.notified());
 }
 
 } // namespace ui
