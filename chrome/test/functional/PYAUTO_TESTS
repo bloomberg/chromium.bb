@@ -442,9 +442,11 @@
       'nacl_sdk',
       'translate',
 
-      # Disabled until the changes reach the Google Chrome builders.
-      # Re-enable on 11/02/2011.
-      '-prefs.PrefsTest.testHaveLocalStatePrefs',
+      # crbug.com/103427 has been fixed on trunk.
+      # Disabled until r110327 reaches Google Chrome builds.
+      # Re-enable on 11/17/2011
+      '-notifications.NotificationsTest.testIncognitoNotification',
+      '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
 
       # ===========================
       # Permanently-disabled tests.
@@ -491,7 +493,7 @@
       '-enterprise.EnterpriseTest.testDisabledPlugins',
       '-enterprise.EnterpriseTest.testEnabledPlugins',
       # crbug.com/100893
-      '-enterprise.EnterpriseTestReverse.testEnableSPDY',      
+      '-enterprise.EnterpriseTestReverse.testEnableSPDY',
     ],
 
     'mac': [
