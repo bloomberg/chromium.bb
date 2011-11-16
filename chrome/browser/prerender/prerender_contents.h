@@ -154,6 +154,9 @@ class PrerenderContents : public content::NotificationObserver,
   // remembered.
   virtual bool AddAliasURL(const GURL& url);
 
+  // Adds all alias URLs from another prerender.
+  void AddAliasURLsFromOtherPrerenderContents(PrerenderContents* other_pc);
+
   // The preview TabContents (may be null).
   TabContentsWrapper* prerender_contents() const {
     return prerender_contents_.get();

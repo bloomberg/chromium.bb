@@ -506,6 +506,16 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
   return true;
 }
 
+void PrerenderContents::AddAliasURLsFromOtherPrerenderContents(
+    PrerenderContents* other_pc) {
+  for (std::vector<GURL>::const_iterator it = other_pc->alias_urls_.begin();
+       it != other_pc->alias_urls_.end();
+       ++it) {
+    alias_urls_.push_back(*it);
+    prerender_tracker_->AddPrerenderURLOnUIThread(*it);
+  }
+}
+
 bool PrerenderContents::MatchesURL(const GURL& url, GURL* matching_url) const {
   std::vector<GURL>::const_iterator matching_url_iterator =
       std::find_if(alias_urls_.begin(),

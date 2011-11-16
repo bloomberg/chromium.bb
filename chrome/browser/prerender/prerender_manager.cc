@@ -731,6 +731,8 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
                   entry->experiment_id());
           if (dummy_replacement_prerender_contents &&
               dummy_replacement_prerender_contents->Init()) {
+            dummy_replacement_prerender_contents->
+                AddAliasURLsFromOtherPrerenderContents(entry);
             it->contents_ = dummy_replacement_prerender_contents;
             it->contents_->set_final_status(FINAL_STATUS_MATCH_COMPLETE_DUMMY);
             swapped_in_dummy_replacement = true;
