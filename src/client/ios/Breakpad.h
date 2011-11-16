@@ -196,6 +196,11 @@ bool BreakpadHasCrashReportToUpload(BreakpadRef ref);
 // Upload next report to the server.
 void BreakpadUploadNextReport(BreakpadRef ref);
 
+// Upload a file to the server. |data| is the content of the file to sent.
+// |server_parameters| is additional server parameters to send.
+void BreakpadUploadData(BreakpadRef ref, NSData *data,
+                        NSDictionary *server_parameters);
+
 #ifdef __cplusplus
 }
 #endif

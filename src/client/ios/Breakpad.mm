@@ -152,6 +152,7 @@ class Breakpad {
   void RemoveKeyValue(NSString *key);
   NSString *NextCrashReportToUpload();
   void UploadNextReport();
+  void UploadData(NSData *data, NSDictionary *server_parameters);
 
  private:
   Breakpad()
@@ -426,6 +427,25 @@ void Breakpad::UploadNextReport() {
 }
 
 //=============================================================================
+void Breakpad::UploadData(NSData *data, NSDictionary *server_parameters) {
+  NSMutableDictionary *config = [NSMutableDictionary dictionary];
+
+  SimpleStringDictionaryIterator it(*config_params_);
+  while (const KeyValueEntry *next = it.Next()) {
+    [config setValue:[NSString stringWithUTF8String:next->GetValue()]
+              forKey:[NSString stringWithUTF8String:next->GetKey()]];
+  }
+
+  Uploader *uploader =
+      [[[Uploader alloc] initWithConfig:config] autorelease];
+  for (NSString *key in server_parameters) {
+    [uploader addServerParameter:[server_parameters objectForKey:key]
+                          forKey:key];
+  }
+  [uploader uploadData:data];
+}
+
+//=============================================================================
 bool Breakpad::HandleMinidump(const char *dump_dir,
                               const char *minidump_id) {
   DEBUGLOG(stderr, "Breakpad: a minidump has been created.\n");
@@ -679,5 +699,20 @@ void BreakpadUploadNextReport(BreakpadRef ref) {
     }
   } catch(...) {    // don't let exceptions leave this C API
     fprintf(stderr, "BreakpadUploadNextReport() : error\n");
+  }
+}
+
+//=============================================================================
+void BreakpadUploadData(BreakpadRef ref, NSData *data,
+                        NSDictionary *server_parameters) {
+  try {
+    // Not called at exception time
+    Breakpad *breakpad = (Breakpad *)ref;
+
+    if (breakpad) {
+      breakpad->UploadData(data, server_parameters);
+    }
+  } catch(...) {    // don't let exceptions leave this C API
+    fprintf(stderr, "BreakpadUploadData() : error\n");
   }
 }

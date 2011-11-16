@@ -44,7 +44,6 @@ extern NSString *const kDefaultServerType;
 
 @interface Uploader : NSObject {
  @private
-  int configFile_;                         // File descriptor for config file
   NSMutableDictionary *parameters_;        // Key value pairs of data (STRONG)
   NSData *minidumpContents_;               // The data in the minidump (STRONG)
   NSData *logFileData_;                    // An NSdata for the tar,
@@ -66,8 +65,17 @@ extern NSString *const kDefaultServerType;
 
 - (id)initWithConfigFile:(const char *)configFile;
 
+- (id)initWithConfig:(NSDictionary *)config;
+
 - (NSMutableDictionary *)parameters;
 
 - (void)report;
+
+// Upload the given data to the crash server.
+- (void)uploadData:(NSData *)data name:(NSString *)name;
+
+// This method adds a key/value pair to the dictionary that
+// will be uploaded to the crash server.
+- (void)addServerParameter:(id)value forKey:(NSString *)key;
 
 @end

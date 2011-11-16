@@ -38,8 +38,8 @@
 		163201D61443019E00C4DBF5 /* ConfigFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 163201D41443019E00C4DBF5 /* ConfigFile.h */; };
 		163201D71443019E00C4DBF5 /* ConfigFile.mm in Sources */ = {isa = PBXBuildFile; fileRef = 163201D51443019E00C4DBF5 /* ConfigFile.mm */; };
 		163201E31443029300C4DBF5 /* ConfigFile.mm in Sources */ = {isa = PBXBuildFile; fileRef = 163201D51443019E00C4DBF5 /* ConfigFile.mm */; };
-		163202451443201300C4DBF5 /* uploader.m in Sources */ = {isa = PBXBuildFile; fileRef = 163202441443201300C4DBF5 /* uploader.m */; };
 		1632058314442E9000C4DBF5 /* BreakpadDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 1632058214442E9000C4DBF5 /* BreakpadDefines.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		16E02DB8147410F0008C604D /* uploader.mm in Sources */ = {isa = PBXBuildFile; fileRef = 16E02DB4147410D4008C604D /* uploader.mm */; };
 		3329D4ED0FA16D820007BBC5 /* Breakpad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3329D4EC0FA16D820007BBC5 /* Breakpad.xib */; };
 		33880C800F9E097100817F82 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 33880C7E0F9E097100817F82 /* InfoPlist.strings */; };
 		4084699D0F5D9CF900FDCA37 /* crash_report_sender.icns in Resources */ = {isa = PBXBuildFile; fileRef = 4084699C0F5D9CF900FDCA37 /* crash_report_sender.icns */; };
@@ -552,8 +552,8 @@
 		163201D41443019E00C4DBF5 /* ConfigFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ConfigFile.h; path = crash_generation/ConfigFile.h; sourceTree = "<group>"; };
 		163201D51443019E00C4DBF5 /* ConfigFile.mm */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = ConfigFile.mm; path = crash_generation/ConfigFile.mm; sourceTree = "<group>"; };
 		163202431443201300C4DBF5 /* uploader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = uploader.h; path = sender/uploader.h; sourceTree = "<group>"; };
-		163202441443201300C4DBF5 /* uploader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = uploader.m; path = sender/uploader.m; sourceTree = "<group>"; };
 		1632058214442E9000C4DBF5 /* BreakpadDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BreakpadDefines.h; path = Framework/BreakpadDefines.h; sourceTree = "<group>"; };
+		16E02DB4147410D4008C604D /* uploader.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = uploader.mm; path = sender/uploader.mm; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* Breakpad_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Breakpad_Prefix.pch; path = Framework/Breakpad_Prefix.pch; sourceTree = "<group>"; };
 		3329D4EC0FA16D820007BBC5 /* Breakpad.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Breakpad.xib; path = sender/Breakpad.xib; sourceTree = "<group>"; };
 		33880C7F0F9E097100817F82 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = sender/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -998,8 +998,8 @@
 		F92C56A60ECE04B6009BE4BA /* sender */ = {
 			isa = PBXGroup;
 			children = (
+				16E02DB4147410D4008C604D /* uploader.mm */,
 				163202431443201300C4DBF5 /* uploader.h */,
-				163202441443201300C4DBF5 /* uploader.m */,
 				F9B6309F100FF96B00D0F4AC /* goArrow.png */,
 				F92C56A70ECE04C5009BE4BA /* crash_report_sender.h */,
 				F92C56A80ECE04C5009BE4BA /* crash_report_sender.m */,
@@ -1741,7 +1741,7 @@
 				F9C44EA20EF09F93003AEBAA /* HTTPMultipartUpload.m in Sources */,
 				F92C56A90ECE04C5009BE4BA /* crash_report_sender.m in Sources */,
 				F9C44EE90EF0A3C1003AEBAA /* GTMLogger.m in Sources */,
-				163202451443201300C4DBF5 /* uploader.m in Sources */,
+				16E02DB8147410F0008C604D /* uploader.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

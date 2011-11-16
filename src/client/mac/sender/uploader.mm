@@ -52,12 +52,99 @@ NSString *const kDefaultServerType = @"google";
 
 #pragma mark -
 
-@interface Uploader(PrivateMethods)
-- (NSString *)readString;
-- (NSData *)readData:(ssize_t)length;
+namespace {
+// Read one line from the configuration file.
+NSString *readString(int fileId) {
+  NSMutableString *str = [NSMutableString stringWithCapacity:32];
+  char ch[2] = { 0 };
 
-- (BOOL)readConfigurationData;
+  while (read(fileId, &ch[0], 1) == 1) {
+    if (ch[0] == '\n') {
+      // Break if this is the first newline after reading some other string
+      // data.
+      if ([str length])
+        break;
+    } else {
+      [str appendString:[NSString stringWithUTF8String:ch]];
+    }
+  }
+
+  return str;
+}
+
+//=============================================================================
+// Read |length| of binary data from the configuration file. This method will
+// returns |nil| in case of error.
+NSData *readData(int fileId, ssize_t length) {
+  NSMutableData *data = [NSMutableData dataWithLength:length];
+  char *bytes = (char *)[data bytes];
+
+  if (read(fileId, bytes, length) != length)
+    return nil;
+
+  return data;
+}
+
+//=============================================================================
+// Read the configuration from the config file.
+NSDictionary *readConfigurationData(const char *configFile) {
+  int fileId = open(configFile, O_RDONLY, 0600);
+  if (fileId == -1) {
+    GTMLoggerDebug(@"Couldn't open config file %s - %s",
+                   configFile,
+                   strerror(errno));
+  }
+
+  // we want to avoid a build-up of old config files even if they
+  // have been incorrectly written by the framework
+  if (unlink(configFile)) {
+    GTMLoggerDebug(@"Couldn't unlink config file %s - %s",
+                   configFile,
+                   strerror(errno));
+  }
+
+  if (fileId == -1) {
+    return nil;
+  }
+
+  NSMutableDictionary *config = [NSMutableDictionary dictionary];
+
+  while (1) {
+    NSString *key = readString(fileId);
+
+    if (![key length])
+      break;
+
+    // Read the data.  Try to convert to a UTF-8 string, or just save
+    // the data
+    NSString *lenStr = readString(fileId);
+    ssize_t len = [lenStr intValue];
+    NSData *data = readData(fileId, len);
+    id value = [[NSString alloc] initWithData:data
+                                     encoding:NSUTF8StringEncoding];
+
+    [config setObject:(value ? value : data) forKey:key];
+    [value release];
+  }
+
+  close(fileId);
+  return config;
+}
+}  // namespace
+
+#pragma mark -
+
+@interface Uploader(PrivateMethods)
+
+// Update |parameters_| as well as the server parameters using |config|.
+- (void)translateConfigurationData:(NSDictionary *)config;
+
+// Read the minidump referenced in |parameters_| and update |minidumpContents_|
+// with its content.
 - (BOOL)readMinidumpData;
+
+// Read the log files referenced in |parameters_| and update |logFileData_|
+// with their content.
 - (BOOL)readLogFileData;
 
 // Returns a unique client id (user-specific), creating a persistent
@@ -80,41 +167,24 @@ NSString *const kDefaultServerType = @"google";
 // Accessor method for the URL parameter dictionary
 - (NSMutableDictionary *)urlParameterDictionary;
 
-// This method adds a key/value pair to the dictionary that
-// will be uploaded to the crash server.
-- (void)addServerParameter:(id)value forKey:(NSString *)key;
-
 // Records the uploaded crash ID to the log file.
 - (void)logUploadWithID:(const char *)uploadID;
-
 @end
 
 @implementation Uploader
 
 //=============================================================================
 - (id)initWithConfigFile:(const char *)configFile {
+  NSDictionary *config = readConfigurationData(configFile);
+  if (!config)
+    return nil;
+
+  return [self initWithConfig:config];
+}
+
+//=============================================================================
+- (id)initWithConfig:(NSDictionary *)config {
   if ((self = [super init])) {
-
-    configFile_ = open(configFile, O_RDONLY, 0600);
-    if (configFile_ == -1) {
-      GTMLoggerDebug(@"Couldn't open config file %s - %s",
-                     configFile,
-                     strerror(errno));
-    }
-
-    // we want to avoid a build-up of old config files even if they
-    // have been incorrectly written by the framework
-    if (unlink(configFile)) {
-      GTMLoggerDebug(@"Couldn't unlink config file %s - %s",
-                     configFile,
-                     strerror(errno));
-    }
-
-    if (configFile_ == -1) {
-      [self release];
-      return nil;
-    }
-
     // Because the reporter is embedded in the framework (and many copies
     // of the framework may exist) its not completely certain that the OS
     // will obey the com.apple.PreferenceSync.ExcludeAllSyncKeys in our
@@ -126,68 +196,21 @@ NSString *const kDefaultServerType = @"google";
 
     [self createServerParameterDictionaries];
 
-    if (![self readConfigurationData]) {
-       GTMLoggerDebug(@"uploader readConfigurationData failed");
-       [self release];
-       return nil;
-    }
+    [self translateConfigurationData:config];
 
     // Read the minidump into memory.
     [self readMinidumpData];
     [self readLogFileData];
-
   }
   return self;
 }
 
 //=============================================================================
-- (NSString *)readString {
-  NSMutableString *str = [NSMutableString stringWithCapacity:32];
-  char ch[2] = { 0 };
-
-  while (read(configFile_, &ch[0], 1) == 1) {
-    if (ch[0] == '\n') {
-      // Break if this is the first newline after reading some other string
-      // data.
-      if ([str length])
-        break;
-    } else {
-      [str appendString:[NSString stringWithUTF8String:ch]];
-    }
-  }
-
-  return str;
-}
-
-//=============================================================================
-- (NSData *)readData:(ssize_t)length {
-  NSMutableData *data = [NSMutableData dataWithLength:length];
-  char *bytes = (char *)[data bytes];
-
-  if (read(configFile_, bytes, length) != length)
-    return nil;
-
-  return data;
-}
-
-//=============================================================================
-- (BOOL)readConfigurationData {
+- (void)translateConfigurationData:(NSDictionary *)config {
   parameters_ = [[NSMutableDictionary alloc] init];
 
-  while (1) {
-    NSString *key = [self readString];
-
-    if (![key length])
-      break;
-
-    // Read the data.  Try to convert to a UTF-8 string, or just save
-    // the data
-    NSString *lenStr = [self readString];
-    ssize_t len = [lenStr intValue];
-    NSData *data = [self readData:len];
-    id value = [[NSString alloc] initWithData:data
-                                     encoding:NSUTF8StringEncoding];
-
+  NSEnumerator *it = [config keyEnumerator];
+  while (NSString *key = [it nextObject]) {
     // If the keyname is prefixed by BREAKPAD_SERVER_PARAMETER_PREFIX
     // that indicates that it should be uploaded to the server along
     // with the minidump, so we treat it specially.
@@ -195,29 +218,24 @@ NSString *const kDefaultServerType = @"google";
       NSString *urlParameterKey =
         [key substringFromIndex:[@BREAKPAD_SERVER_PARAMETER_PREFIX length]];
       if ([urlParameterKey length]) {
-        if (value) {
-          [self addServerParameter:value
+        id value = [config objectForKey:key];
+        if ([value isKindOfClass:[NSString class]]) {
+          [self addServerParameter:(NSString *)value
                             forKey:urlParameterKey];
         } else {
-          [self addServerParameter:data
+          [self addServerParameter:(NSData *)value
                             forKey:urlParameterKey];
         }
       }
     } else {
-      [parameters_ setObject:(value ? value : data) forKey:key];
+      [parameters_ setObject:[config objectForKey:key] forKey:key];
     }
-    [value release];
   }
 
   // generate a unique client ID based on this host's MAC address
   // then add a key/value pair for it
   NSString *clientID = [self clientID];
   [parameters_ setObject:clientID forKey:@"guid"];
-
-  close(configFile_);
-  configFile_ = -1;
-
-  return YES;
 }
 
 // Per user per machine
@@ -528,21 +546,27 @@ NSString *const kDefaultServerType = @"google";
   }
 
   if (logFileData_) {
-    HTTPMultipartUpload *logUpload =
-        [[HTTPMultipartUpload alloc] initWithURL:url];
-
-    [uploadParameters setObject:@"log" forKey:@"type"];
-    [logUpload setParameters:uploadParameters];
-    [logUpload addFileContents:logFileData_ name:@"log"];
-
-    NSError *error = nil;
-    NSData *data = [logUpload send:&error];
-    NSString *result = [[NSString alloc] initWithData:data
-                                         encoding:NSUTF8StringEncoding];
-    [result release];
-    [logUpload release];
+    [self uploadData:logFileData_ name:@"log" url:url];
   }
 
+  [upload release];
+}
+
+- (void)uploadData:(NSData *)data name:(NSString *)name {
+  NSURL *url = [NSURL URLWithString:[parameters_ objectForKey:@BREAKPAD_URL]];
+  NSMutableDictionary *uploadParameters = [NSMutableDictionary dictionary];
+
+  if (![self populateServerDictionary:uploadParameters])
+    return;
+
+  HTTPMultipartUpload *upload =
+      [[HTTPMultipartUpload alloc] initWithURL:url];
+
+  [uploadParameters setObject:name forKey:@"type"];
+  [upload setParameters:uploadParameters];
+  [upload addFileContents:data name:name];
+
+  [upload send:nil];
   [upload release];
 }
 
