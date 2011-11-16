@@ -17,7 +17,6 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/debugger/devtools_window.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -90,35 +89,6 @@ ContextMenuModel* ConvertMenuModel(const ui::MenuModel* ui_model) {
 }
 
 }  // namespace
-
-// This class overrides the LinkClicked function in the PageInfoBubbleView
-// class and routes the help center link navigation to the host browser.
-class ExternalTabPageInfoBubbleView : public PageInfoBubbleView {
- public:
-  ExternalTabPageInfoBubbleView(ExternalTabContainer* container,
-                                gfx::NativeWindow parent_window,
-                                Profile* profile,
-                                const GURL& url,
-                                const NavigationEntry::SSLStatus& ssl,
-                                bool show_history)
-      : PageInfoBubbleView(parent_window, profile, url, ssl, show_history),
-        container_(container) {
-    DVLOG(1) << __FUNCTION__;
-  }
-  virtual ~ExternalTabPageInfoBubbleView() {
-    DVLOG(1) << __FUNCTION__;
-  }
-  // LinkListener methods:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE {
-    GURL url = google_util::AppendGoogleLocaleParam(
-        GURL(chrome::kPageInfoHelpCenterURL));
-    container_->OpenURLFromTab(container_->tab_contents(), url, GURL(),
-                               NEW_FOREGROUND_TAB,
-                               content::PAGE_TRANSITION_LINK);
-  }
- private:
-  scoped_refptr<ExternalTabContainer> container_;
-};
 
 base::LazyInstance<ExternalTabContainer::PendingTabs>
     ExternalTabContainer::pending_tabs_ = LAZY_INSTANCE_INITIALIZER;
