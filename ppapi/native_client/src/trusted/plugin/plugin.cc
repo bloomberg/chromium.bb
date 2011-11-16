@@ -1946,11 +1946,13 @@ void Plugin::DispatchProgressEvent(int32_t result) {
   static const char* kEventClosureJS =
       "(function(target, type, url,"
       "          lengthComputable, loadedBytes, totalBytes) {"
-      "    var progress_event = document.createEvent('ProgressEvent');"
-      "    progress_event.initProgressEvent(type, false, true,"
-      "                                     lengthComputable,"
-      "                                     loadedBytes,"
-      "                                     totalBytes);"
+      "    var progress_event = new ProgressEvent(type, {"
+      "        bubbles: false,"
+      "        cancelable: true,"
+      "        lengthComputable: lengthComputable,"
+      "        loaded: loadedBytes,"
+      "        total: totalBytes"
+      "      });"
       "    progress_event.url = url;"
       "    target.dispatchEvent(progress_event);"
       "})";
