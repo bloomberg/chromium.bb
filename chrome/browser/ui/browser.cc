@@ -609,10 +609,6 @@ TabContents* Browser::OpenApplication(
     extension_misc::LaunchContainer container,
     const GURL& override_url,
     WindowOpenDisposition disposition) {
-#if defined(USE_AURA)
-  // On aura we're experimenting with making all apps open in windows.
-  container = extension_misc::LAUNCH_WINDOW;
-#endif
   TabContents* tab = NULL;
   ExtensionPrefs* prefs = profile->GetExtensionService()->extension_prefs();
   prefs->SetActiveBit(extension->id(), true);
