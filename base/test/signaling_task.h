@@ -19,7 +19,7 @@ class SignalingTask : public Task {
   explicit SignalingTask(base::WaitableEvent* event);
   virtual ~SignalingTask();
 
-  virtual void Run();
+  virtual void Run() OVERRIDE;
 
  private:
   base::WaitableEvent* event_;

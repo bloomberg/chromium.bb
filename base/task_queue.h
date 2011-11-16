@@ -34,7 +34,7 @@ class BASE_EXPORT TaskQueue : public Task {
 
   // Run all the tasks in the queue.  New tasks pushed onto the queue during
   // a run will be run next time |Run| is called.
-  virtual void Run();
+  virtual void Run() OVERRIDE;
 
  private:
    // The list of tasks we are waiting to run.
