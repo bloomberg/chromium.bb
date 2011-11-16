@@ -11,6 +11,10 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/public/common/show_desktop_notification_params.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/desktop.h"
+#endif
+
 using content::BrowserThread;
 
 // static
@@ -84,6 +88,12 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 }
 
 void DesktopNotificationsTest::SetUp() {
+#if defined(USE_AURA)
+  // MockBalloonCollection retrieves information about the screen on creation.
+  // So it is necessary to make sure the desktop gets created first.
+  aura::Desktop::GetInstance();
+#endif
+
   browser::RegisterLocalState(&local_state_);
   profile_.reset(new TestingProfile());
   balloon_collection_ = new MockBalloonCollection();
