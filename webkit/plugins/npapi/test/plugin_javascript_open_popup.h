@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_JAVASCRIPT_OPEN_POPUP_H_
 #define WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_JAVASCRIPT_OPEN_POPUP_H_
 
+#include "base/compiler_specific.h"
 #include "webkit/plugins/npapi/test/plugin_test.h"
 
 namespace NPAPIClient {
@@ -18,7 +19,7 @@ class ExecuteJavascriptOpenPopupWithPluginTest : public PluginTest {
   ExecuteJavascriptOpenPopupWithPluginTest(
       NPP id, NPNetscapeFuncs *host_functions);
   // NPAPI SetWindow handler.
-  virtual NPError SetWindow(NPWindow* window);
+  virtual NPError SetWindow(NPWindow* window) OVERRIDE;
 
  private:
   bool popup_window_test_started_;
@@ -31,7 +32,7 @@ class ExecuteJavascriptPopupWindowTargetPluginTest : public PluginTest {
   ExecuteJavascriptPopupWindowTargetPluginTest(
       NPP id, NPNetscapeFuncs *host_functions);
   // NPAPI SetWindow handler.
-  virtual NPError SetWindow(NPWindow* window);
+  virtual NPError SetWindow(NPWindow* window) OVERRIDE;
 
  private:
   // Do a platform-specific validation of the passed-in |window|.

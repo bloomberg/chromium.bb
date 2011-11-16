@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,26 +32,28 @@ class PluginStreamUrl : public PluginStream,
   // Stop sending the stream to the client.
   // Overrides the base Close so we can cancel our fetching the URL if
   // it is still loading.
-  virtual bool Close(NPReason reason);
+  virtual bool Close(NPReason reason) OVERRIDE;
 
-  virtual WebPluginResourceClient* AsResourceClient();
+  virtual WebPluginResourceClient* AsResourceClient() OVERRIDE;
 
-  virtual void CancelRequest();
+  virtual void CancelRequest() OVERRIDE;
 
   //
   // WebPluginResourceClient methods
   //
-  virtual void WillSendRequest(const GURL& url, int http_status_code);
+  virtual void WillSendRequest(const GURL& url, int http_status_code) OVERRIDE;
   virtual void DidReceiveResponse(const std::string& mime_type,
                                   const std::string& headers,
                                   uint32 expected_length,
                                   uint32 last_modified,
-                                  bool request_is_seekable);
-  virtual void DidReceiveData(const char* buffer, int length, int data_offset);
-  virtual void DidFinishLoading();
-  virtual void DidFail();
-  virtual bool IsMultiByteResponseExpected();
-  virtual int ResourceId();
+                                  bool request_is_seekable) OVERRIDE;
+  virtual void DidReceiveData(const char* buffer,
+                              int length,
+                              int data_offset) OVERRIDE;
+  virtual void DidFinishLoading() OVERRIDE;
+  virtual void DidFail() OVERRIDE;
+  virtual bool IsMultiByteResponseExpected() OVERRIDE;
+  virtual int ResourceId() OVERRIDE;
 
  private:
   GURL url_;

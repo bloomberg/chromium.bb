@@ -27,12 +27,13 @@ class BLOB_EXPORT ViewBlobInternalsJob : public net::URLRequestSimpleJob {
   ViewBlobInternalsJob(net::URLRequest* request,
                        BlobStorageController* blob_storage_controller);
 
-  virtual void Start();
+  virtual void Start() OVERRIDE;
   virtual bool GetData(std::string* mime_type,
                        std::string* charset,
-                       std::string* data) const;
-  virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
-  virtual void Kill();
+                       std::string* data) const OVERRIDE;
+  virtual bool IsRedirectResponse(GURL* location,
+                                  int* http_status_code) OVERRIDE;
+  virtual void Kill() OVERRIDE;
 
  private:
   virtual ~ViewBlobInternalsJob();

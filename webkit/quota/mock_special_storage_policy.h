@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+
 #include "googleurl/src/gurl.h"
 #include "webkit/quota/special_storage_policy.h"
 
@@ -17,11 +18,11 @@ class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   MockSpecialStoragePolicy();
   virtual ~MockSpecialStoragePolicy();
 
-  virtual bool IsStorageProtected(const GURL& origin);
-  virtual bool IsStorageUnlimited(const GURL& origin);
-  virtual bool IsStorageSessionOnly(const GURL& origin);
-  virtual bool IsFileHandler(const std::string& extension_id);
-  virtual bool HasSessionOnlyOrigins();
+  virtual bool IsStorageProtected(const GURL& origin) OVERRIDE;
+  virtual bool IsStorageUnlimited(const GURL& origin) OVERRIDE;
+  virtual bool IsStorageSessionOnly(const GURL& origin) OVERRIDE;
+  virtual bool IsFileHandler(const std::string& extension_id) OVERRIDE;
+  virtual bool HasSessionOnlyOrigins() OVERRIDE;
 
   void AddProtected(const GURL& origin) {
     protected_.insert(origin);

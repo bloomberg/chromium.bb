@@ -17,10 +17,10 @@ class WindowlessPluginTest : public PluginTest {
   WindowlessPluginTest(NPP id, NPNetscapeFuncs *host_functions);
 
   // These tests run in windowless plugin mode.
-  virtual bool IsWindowless() const;
+  virtual bool IsWindowless() const OVERRIDE;
 
   // NPAPI HandleEvent handler
-  virtual int16 HandleEvent(void* event);
+  virtual int16 HandleEvent(void* event) OVERRIDE;
 
  protected:
   NPError ExecuteScript(NPNetscapeFuncs* browser, NPP id,

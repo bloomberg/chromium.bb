@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef WEBKIT_PLUGINS_NPAPI_PLUGINS_TEST_PLUGIN_GET_JAVASCRIPT_URL2_H_
 #define WEBKIT_PLUGINS_NPAPI_PLUGINS_TEST_PLUGIN_GET_JAVASCRIPT_URL2_H_
 
+#include "base/compiler_specific.h"
 #include "webkit/plugins/npapi/test/plugin_test.h"
 
 namespace NPAPIClient {
@@ -19,14 +20,16 @@ class ExecuteGetJavascriptUrl2Test : public PluginTest {
   //
   // NPAPI functions
   //
-  virtual NPError SetWindow(NPWindow* pNPWindow);
+  virtual NPError SetWindow(NPWindow* pNPWindow) OVERRIDE;
   virtual NPError NewStream(NPMIMEType type, NPStream* stream,
-                            NPBool seekable, uint16* stype);
-  virtual int32   WriteReady(NPStream *stream);
+                            NPBool seekable, uint16* stype) OVERRIDE;
+  virtual int32   WriteReady(NPStream *stream) OVERRIDE;
   virtual int32   Write(NPStream *stream, int32 offset, int32 len,
-                        void *buffer);
-  virtual NPError DestroyStream(NPStream *stream, NPError reason);
-  virtual void    URLNotify(const char* url, NPReason reason, void* data);
+                        void *buffer) OVERRIDE;
+  virtual NPError DestroyStream(NPStream *stream, NPError reason) OVERRIDE;
+  virtual void    URLNotify(const char* url,
+                            NPReason reason,
+                            void* data) OVERRIDE;
 
  private:
   bool test_started_;

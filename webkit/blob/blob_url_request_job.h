@@ -34,13 +34,16 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   virtual ~BlobURLRequestJob();
 
   // net::URLRequestJob methods.
-  virtual void Start();
-  virtual void Kill();
-  virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read);
-  virtual bool GetMimeType(std::string* mime_type) const;
-  virtual void GetResponseInfo(net::HttpResponseInfo* info);
-  virtual int GetResponseCode() const;
-  virtual void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers);
+  virtual void Start() OVERRIDE;
+  virtual void Kill() OVERRIDE;
+  virtual bool ReadRawData(net::IOBuffer* buf,
+                           int buf_size,
+                           int* bytes_read) OVERRIDE;
+  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
+  virtual int GetResponseCode() const OVERRIDE;
+  virtual void SetExtraRequestHeaders(
+      const net::HttpRequestHeaders& headers) OVERRIDE;
 
  private:
   void CloseStream();

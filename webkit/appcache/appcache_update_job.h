@@ -122,9 +122,10 @@ class APPCACHE_EXPORT AppCacheUpdateJob : public AppCacheStorage::Delegate,
     // URLRequest::Delegate overrides
     virtual void OnReceivedRedirect(net::URLRequest* request,
                                     const GURL& new_url,
-                                    bool* defer_redirect);
-    virtual void OnResponseStarted(net::URLRequest* request);
-    virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
+                                    bool* defer_redirect) OVERRIDE;
+    virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
+    virtual void OnReadCompleted(net::URLRequest* request,
+                                 int bytes_read) OVERRIDE;
 
     void AddConditionalHeaders(const net::HttpResponseHeaders* headers);
     void OnWriteComplete(int result);
@@ -150,16 +151,16 @@ class APPCACHE_EXPORT AppCacheUpdateJob : public AppCacheStorage::Delegate,
 
   // Methods for AppCacheStorage::Delegate.
   virtual void OnResponseInfoLoaded(AppCacheResponseInfo* response_info,
-                                    int64 response_id);
+                                    int64 response_id) OVERRIDE;
   virtual void OnGroupAndNewestCacheStored(AppCacheGroup* group,
                                            AppCache* newest_cache,
                                            bool success,
-                                           bool would_exceed_quota);
-  virtual void OnGroupMadeObsolete(AppCacheGroup* group, bool success);
+                                           bool would_exceed_quota) OVERRIDE;
+  virtual void OnGroupMadeObsolete(AppCacheGroup* group, bool success) OVERRIDE;
 
   // Methods for AppCacheHost::Observer.
-  virtual void OnCacheSelectionComplete(AppCacheHost* host) {}  // N/A
-  virtual void OnDestructionImminent(AppCacheHost* host);
+  virtual void OnCacheSelectionComplete(AppCacheHost* host) OVERRIDE {}  // N/A
+  virtual void OnDestructionImminent(AppCacheHost* host) OVERRIDE;
 
   void HandleCacheFailure(const std::string& error_message);
 

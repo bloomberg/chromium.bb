@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/hash_tables.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 
@@ -25,7 +26,7 @@ class TestShellWebMimeRegistryImpl
   // generated against ogg/vorbis/theora content we need to lock down how
   // canPlayType() behaves when running layout tests.
   virtual WebKit::WebMimeRegistry::SupportsType supportsMediaMIMEType(
-      const WebKit::WebString&, const WebKit::WebString&);
+      const WebKit::WebString&, const WebKit::WebString&) OVERRIDE;
 
  private:
   bool IsSupportedMediaMimeType(const std::string& mime_type);

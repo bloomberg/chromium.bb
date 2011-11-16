@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_NPOBJECT_LIFETIME_TEST_H_
 #define WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_NPOBJECT_LIFETIME_TEST_H_
 
+#include "base/compiler_specific.h"
 #include "build/build_config.h"
 #include "webkit/plugins/npapi/test/plugin_test.h"
 
@@ -20,9 +21,11 @@ class NPObjectLifetimeTest : public PluginTest {
   NPObjectLifetimeTest(NPP id, NPNetscapeFuncs *host_functions);
 
   // NPAPI SetWindow handler.
-  virtual NPError SetWindow(NPWindow* pNPWindow);
+  virtual NPError SetWindow(NPWindow* pNPWindow) OVERRIDE;
 
-  virtual void  URLNotify(const char* url, NPReason reason, void* data);
+  virtual void  URLNotify(const char* url,
+                          NPReason reason,
+                          void* data) OVERRIDE;
 
  protected:
   NPObject* other_plugin_instance_object_;
@@ -44,7 +47,7 @@ class NPObjectLifetimeTestInstance2 : public PluginTest {
   virtual ~NPObjectLifetimeTestInstance2();
 
   // NPAPI SetWindow handler.
-  virtual NPError SetWindow(NPWindow* pNPWindow);
+  virtual NPError SetWindow(NPWindow* pNPWindow) OVERRIDE;
  protected:
   static NPObject* plugin_instance_object_;
   friend class NPObjectLifetimeTest;
@@ -61,7 +64,7 @@ class NPObjectDeletePluginInNPN_Evaluate : public PluginTest {
   virtual ~NPObjectDeletePluginInNPN_Evaluate();
 
   // NPAPI SetWindow handler.
-  virtual NPError SetWindow(NPWindow* pNPWindow);
+  virtual NPError SetWindow(NPWindow* pNPWindow) OVERRIDE;
 
  protected:
   NPObject* plugin_instance_object_;

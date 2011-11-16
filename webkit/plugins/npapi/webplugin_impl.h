@@ -91,25 +91,26 @@ class WebPluginImpl : public WebPlugin,
       const WebKit::WebURLError& error);
 
   // WebPlugin implementation:
-  virtual void SetWindow(gfx::PluginWindowHandle window);
-  virtual void SetAcceptsInputEvents(bool accepts);
-  virtual void WillDestroyWindow(gfx::PluginWindowHandle window);
+  virtual void SetWindow(gfx::PluginWindowHandle window) OVERRIDE;
+  virtual void SetAcceptsInputEvents(bool accepts) OVERRIDE;
+  virtual void WillDestroyWindow(gfx::PluginWindowHandle window) OVERRIDE;
 #if defined(OS_WIN)
   void SetWindowlessPumpEvent(HANDLE pump_messages_event) { }
   void ReparentPluginWindow(HWND window, HWND parent) { }
 #endif
-  virtual void CancelResource(unsigned long id);
-  virtual void Invalidate();
-  virtual void InvalidateRect(const gfx::Rect& rect);
-  virtual NPObject* GetWindowScriptNPObject();
-  virtual NPObject* GetPluginElement();
-  virtual bool FindProxyForUrl(const GURL& url, std::string* proxy_list);
+  virtual void CancelResource(unsigned long id) OVERRIDE;
+  virtual void Invalidate() OVERRIDE;
+  virtual void InvalidateRect(const gfx::Rect& rect) OVERRIDE;
+  virtual NPObject* GetWindowScriptNPObject() OVERRIDE;
+  virtual NPObject* GetPluginElement() OVERRIDE;
+  virtual bool FindProxyForUrl(const GURL& url,
+                               std::string* proxy_list) OVERRIDE;
   virtual void SetCookie(const GURL& url,
                          const GURL& first_party_for_cookies,
-                         const std::string& cookie);
+                         const std::string& cookie) OVERRIDE;
   virtual std::string GetCookies(const GURL& url,
-                                 const GURL& first_party_for_cookies);
-  virtual void URLRedirectResponse(bool allow, int resource_id);
+                                 const GURL& first_party_for_cookies) OVERRIDE;
+  virtual void URLRedirectResponse(bool allow, int resource_id) OVERRIDE;
 
   // Given a (maybe partial) url, completes using the base url.
   GURL CompleteURL(const char* url);
@@ -203,17 +204,19 @@ class WebPluginImpl : public WebPlugin,
                                 unsigned int len,
                                 int notify_id,
                                 bool popups_allowed,
-                                bool notify_redirects);
+                                bool notify_redirects) OVERRIDE;
 
-  virtual void CancelDocumentLoad();
+  virtual void CancelDocumentLoad() OVERRIDE;
 
-  virtual void InitiateHTTPRangeRequest(
-      const char* url, const char* range_info, int pending_request_id);
+  virtual void InitiateHTTPRangeRequest(const char* url,
+                                        const char* range_info,
+                                        int pending_request_id) OVERRIDE;
 
-  virtual void SetDeferResourceLoading(unsigned long resource_id, bool defer);
+  virtual void SetDeferResourceLoading(unsigned long resource_id,
+                                       bool defer) OVERRIDE;
 
   // Ignore in-process plugins mode for this flag.
-  virtual bool IsOffTheRecord();
+  virtual bool IsOffTheRecord() OVERRIDE;
 
   // Handles HTTP multipart responses, i.e. responses received with a HTTP
   // status code of 206.

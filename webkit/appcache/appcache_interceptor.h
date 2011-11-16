@@ -43,11 +43,13 @@ class APPCACHE_EXPORT AppCacheInterceptor
   static AppCacheInterceptor* GetInstance();
 
  protected:
-  // Overridde from net::URLRequest::Interceptor:
-  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request);
-  virtual net::URLRequestJob* MaybeInterceptResponse(net::URLRequest* request);
-  virtual net::URLRequestJob* MaybeInterceptRedirect(net::URLRequest* request,
-                                                     const GURL& location);
+  // Override from net::URLRequest::Interceptor:
+  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request) OVERRIDE;
+  virtual net::URLRequestJob* MaybeInterceptResponse(
+      net::URLRequest* request) OVERRIDE;
+  virtual net::URLRequestJob* MaybeInterceptRedirect(
+      net::URLRequest* request,
+      const GURL& location) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<AppCacheInterceptor>;

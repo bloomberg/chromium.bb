@@ -63,9 +63,10 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
   // DatabaseTracker::Observer implementation
   virtual void OnDatabaseSizeChanged(const string16& origin_identifier,
                                      const string16& database_name,
-                                     int64 database_size);
-  virtual void OnDatabaseScheduledForDeletion(const string16& origin_identifier,
-                                              const string16& database_name);
+                                     int64 database_size) OVERRIDE;
+  virtual void OnDatabaseScheduledForDeletion(
+      const string16& origin_identifier,
+      const string16& database_name) OVERRIDE;
 
   // Used by our public SQLite VFS methods, only called on the db_thread.
   void VfsOpenFile(const string16& vfs_file_name, int desired_flags,

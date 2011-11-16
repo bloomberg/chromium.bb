@@ -57,7 +57,7 @@ class SandboxMountPointProvider
   // Checks if access to |virtual_path| is allowed from |origin_url|.
   virtual bool IsAccessAllowed(const GURL& origin_url,
                                FileSystemType type,
-                               const FilePath& virtual_path);
+                               const FilePath& virtual_path) OVERRIDE;
 
   // Retrieves the root path for the given |origin_url| and |type|, and
   // calls the given |callback| with the root path and name.
@@ -66,7 +66,7 @@ class SandboxMountPointProvider
       const GURL& origin_url,
       FileSystemType type,
       bool create,
-      const FileSystemPathManager::GetRootPathCallback& callback);
+      const FileSystemPathManager::GetRootPathCallback& callback) OVERRIDE;
 
   // Like GetFileSystemRootPath, but synchronous, and can be called only while
   // running on the file thread.
@@ -74,7 +74,7 @@ class SandboxMountPointProvider
       const GURL& origin_url,
       FileSystemType type,
       const FilePath& unused,
-      bool create);
+      bool create) OVERRIDE;
 
   // The legacy [pre-obfuscation] FileSystem directory name, kept around for
   // migration and migration testing.
@@ -89,9 +89,9 @@ class SandboxMountPointProvider
   FilePath renamed_old_base_path() const;
 
   // Checks if a given |name| contains any restricted names/chars in it.
-  virtual bool IsRestrictedFileName(const FilePath& filename) const;
+  virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
 
-  virtual std::vector<FilePath> GetRootDirectories() const;
+  virtual std::vector<FilePath> GetRootDirectories() const OVERRIDE;
 
   // Returns an origin enumerator of this provider.
   // This method can only be called on the file thread.
@@ -108,7 +108,7 @@ class SandboxMountPointProvider
       FileSystemType type,
       bool create) const;
 
-  virtual FileSystemFileUtil* GetFileUtil();
+  virtual FileSystemFileUtil* GetFileUtil() OVERRIDE;
 
   // Deletes the data on the origin and reports the amount of deleted data
   // to the quota manager via |proxy|.

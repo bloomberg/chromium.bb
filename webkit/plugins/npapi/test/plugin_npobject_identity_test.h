@@ -18,7 +18,7 @@ class NPObjectIdentityTest : public PluginTest {
   NPObjectIdentityTest(NPP id, NPNetscapeFuncs *host_functions);
 
   // NPAPI SetWindow handler.
-  virtual NPError SetWindow(NPWindow* pNPWindow);
+  virtual NPError SetWindow(NPWindow* pNPWindow) OVERRIDE;
 };
 
 }  // namespace NPAPIClient

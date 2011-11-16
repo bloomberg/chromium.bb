@@ -35,16 +35,20 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
       scoped_refptr<base::MessageLoopProxy> file_thread_proxy);
 
   // URLRequestJob methods:
-  virtual void Start();
-  virtual void Kill();
-  virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read);
-  virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
-  virtual void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers);
-  virtual void GetResponseInfo(net::HttpResponseInfo* info);
-  virtual int GetResponseCode() const;
+  virtual void Start() OVERRIDE;
+  virtual void Kill() OVERRIDE;
+  virtual bool ReadRawData(net::IOBuffer* buf,
+                           int buf_size,
+                           int* bytes_read) OVERRIDE;
+  virtual bool IsRedirectResponse(GURL* location,
+                                  int* http_status_code) OVERRIDE;
+  virtual void SetExtraRequestHeaders(
+      const net::HttpRequestHeaders& headers) OVERRIDE;
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
+  virtual int GetResponseCode() const OVERRIDE;
 
   // FilterContext methods (via URLRequestJob):
-  virtual bool GetMimeType(std::string* mime_type) const;
+  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
 
  private:
   class CallbackDispatcher;

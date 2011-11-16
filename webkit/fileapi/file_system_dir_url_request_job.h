@@ -30,13 +30,15 @@ class FileSystemDirURLRequestJob : public net::URLRequestJob {
       scoped_refptr<base::MessageLoopProxy> file_thread_proxy);
 
   // URLRequestJob methods:
-  virtual void Start();
-  virtual void Kill();
-  virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read);
-  virtual bool GetCharset(std::string* charset);
+  virtual void Start() OVERRIDE;
+  virtual void Kill() OVERRIDE;
+  virtual bool ReadRawData(net::IOBuffer* buf,
+                           int buf_size,
+                           int* bytes_read) OVERRIDE;
+  virtual bool GetCharset(std::string* charset) OVERRIDE;
 
   // FilterContext methods (via URLRequestJob):
-  virtual bool GetMimeType(std::string* mime_type) const;
+  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
   // TODO(adamk): Implement GetResponseInfo and GetResponseCode to simulate
   // an HTTP response.
 

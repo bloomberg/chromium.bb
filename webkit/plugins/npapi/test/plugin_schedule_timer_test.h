@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_SCHEDULE_TIMER_TEST_H
 #define WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_SCHEDULE_TIMER_TEST_H
 
+#include "base/compiler_specific.h"
 #include "base/time.h"
 #include "webkit/plugins/npapi/test/plugin_test.h"
 
@@ -17,7 +18,7 @@ class ScheduleTimerTest : public PluginTest {
   ScheduleTimerTest(NPP id, NPNetscapeFuncs *host_functions);
 
   virtual NPError New(uint16 mode, int16 argc, const char* argn[],
-                      const char* argv[], NPSavedData* saved);
+                      const char* argv[], NPSavedData* saved) OVERRIDE;
 
   void OnTimer(uint32 timer_id);
 

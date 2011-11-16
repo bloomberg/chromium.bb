@@ -193,7 +193,7 @@ class APPCACHE_EXPORT AppCacheResponseReader : public AppCacheResponseIO {
                          int64 group_id,
                          AppCacheDiskCacheInterface* disk_cache);
 
-  virtual void OnIOComplete(int result);
+  virtual void OnIOComplete(int result) OVERRIDE;
   void ContinueReadInfo();
   void ContinueReadData();
   void OpenEntryIfNeededAndContinue();
@@ -256,7 +256,7 @@ class APPCACHE_EXPORT AppCacheResponseWriter : public AppCacheResponseIO {
                          int64 group_id,
                          AppCacheDiskCacheInterface* disk_cache);
 
-  virtual void OnIOComplete(int result);
+  virtual void OnIOComplete(int result) OVERRIDE;
   void ContinueWriteInfo();
   void ContinueWriteData();
   void CreateEntryIfNeededAndContinue();

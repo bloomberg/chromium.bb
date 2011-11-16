@@ -60,7 +60,7 @@ class APPCACHE_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
 
   // net::URLRequestJob's Kill method is made public so the users of this
   // class in the appcache namespace can call it.
-  virtual void Kill();
+  virtual void Kill() OVERRIDE;
 
   // Returns true if the job has been started by the net library.
   bool has_been_started() const {
@@ -98,7 +98,7 @@ class APPCACHE_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
 
   // AppCacheStorage::Delegate methods
   virtual void OnResponseInfoLoaded(
-      AppCacheResponseInfo* response_info, int64 response_id);
+      AppCacheResponseInfo* response_info, int64 response_id) OVERRIDE;
 
   const net::HttpResponseInfo* http_info() const;
   bool is_range_request() const { return range_requested_.IsValid(); }
@@ -108,19 +108,22 @@ class APPCACHE_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
   void OnReadComplete(int result);
 
   // net::URLRequestJob methods, see url_request_job.h for doc comments
-  virtual void Start();
-  virtual net::LoadState GetLoadState() const;
-  virtual bool GetCharset(std::string* charset);
-  virtual void GetResponseInfo(net::HttpResponseInfo* info);
-  virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int *bytes_read);
+  virtual void Start() OVERRIDE;
+  virtual net::LoadState GetLoadState() const OVERRIDE;
+  virtual bool GetCharset(std::string* charset) OVERRIDE;
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
+  virtual bool ReadRawData(net::IOBuffer* buf,
+                           int buf_size,
+                           int *bytes_read) OVERRIDE;
 
   // Sets extra request headers for Job types that support request headers.
   // This is how we get informed of range-requests.
-  virtual void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers);
+  virtual void SetExtraRequestHeaders(
+      const net::HttpRequestHeaders& headers) OVERRIDE;
 
   // FilterContext methods
-  virtual bool GetMimeType(std::string* mime_type) const;
-  virtual int GetResponseCode() const;
+  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
+  virtual int GetResponseCode() const OVERRIDE;
 
   AppCacheStorage* storage_;
   bool has_been_started_;

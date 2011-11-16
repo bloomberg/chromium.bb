@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,9 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/window_open_disposition.h"
 #include "webkit/tools/test_shell/test_shell.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 class TestShellTest : public testing::Test {
  protected:
@@ -23,8 +23,8 @@ class TestShellTest : public testing::Test {
   GURL GetTestURL(const FilePath& test_case_path,
                   const std::string& test_case);
 
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   // Don't refactor away; some unittests override this!
   virtual void CreateEmptyWindow();

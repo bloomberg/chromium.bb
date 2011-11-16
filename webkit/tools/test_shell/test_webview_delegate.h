@@ -239,16 +239,16 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   // webkit::npapi::WebPluginPageDelegate
   virtual webkit::npapi::WebPluginDelegate* CreatePluginDelegate(
       const FilePath& url,
-      const std::string& mime_type);
+      const std::string& mime_type) OVERRIDE;
   virtual void CreatedPluginWindow(
-      gfx::PluginWindowHandle handle);
+      gfx::PluginWindowHandle handle) OVERRIDE;
   virtual void WillDestroyPluginWindow(
-      gfx::PluginWindowHandle handle);
+      gfx::PluginWindowHandle handle) OVERRIDE;
   virtual void DidMovePlugin(
-      const webkit::npapi::WebPluginGeometry& move);
-  virtual void DidStartLoadingForPlugin() {}
-  virtual void DidStopLoadingForPlugin() {}
-  virtual WebKit::WebCookieJar* GetCookieJar();
+      const webkit::npapi::WebPluginGeometry& move) OVERRIDE;
+  virtual void DidStartLoadingForPlugin() OVERRIDE {}
+  virtual void DidStopLoadingForPlugin() OVERRIDE {}
+  virtual WebKit::WebCookieJar* GetCookieJar() OVERRIDE;
 
   TestWebViewDelegate(TestShell* shell);
   virtual ~TestWebViewDelegate();

@@ -38,7 +38,7 @@ class AppCacheQuotaClient : public quota::QuotaClient {
 
   // QuotaClient method overrides
   virtual ID id() const OVERRIDE;
-  virtual void OnQuotaManagerDestroyed();
+  virtual void OnQuotaManagerDestroyed() OVERRIDE;
   virtual void GetOriginUsage(const GURL& origin,
                               quota::StorageType type,
                               const GetUsageCallback& callback) OVERRIDE;

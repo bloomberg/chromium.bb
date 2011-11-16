@@ -32,7 +32,7 @@ class TestShellRequestContext : public net::URLRequestContext {
                           net::HttpCache::Mode cache_mode,
                           bool no_proxy);
 
-  virtual const std::string& GetUserAgent(const GURL& url) const;
+  virtual const std::string& GetUserAgent(const GURL& url) const OVERRIDE;
 
   webkit_blob::BlobStorageController* blob_storage_controller() const {
     return blob_storage_controller_.get();

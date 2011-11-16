@@ -4,6 +4,7 @@
 #ifndef WEBKIT_PLUGINS_NPAPI_TEST_DELETE_PLUGIN_IN_DEALLOCATE_TEST_H_
 #define WEBKIT_PLUGINS_NPAPI_TEST_DELETE_PLUGIN_IN_DEALLOCATE_TEST_H_
 
+#include "base/compiler_specific.h"
 #include "webkit/plugins/npapi/test/plugin_test.h"
 
 namespace NPAPIClient {
@@ -18,8 +19,8 @@ class DeletePluginInDeallocateTest : public PluginTest {
   DeletePluginInDeallocateTest(NPP id, NPNetscapeFuncs* host_functions);
 
   // NPAPI handlers.
-  virtual NPError SetWindow(NPWindow* pNPWindow);
-  virtual NPError Destroy();
+  virtual NPError SetWindow(NPWindow* pNPWindow) OVERRIDE;
+  virtual NPError Destroy() OVERRIDE;
 
   NPObject* npobject_;
   bool test_started_;

@@ -31,28 +31,35 @@ class MockAppCacheStorage : public AppCacheStorage {
   explicit MockAppCacheStorage(AppCacheService* service);
   virtual ~MockAppCacheStorage();
 
-  virtual void GetAllInfo(Delegate* delegate);
-  virtual void LoadCache(int64 id, Delegate* delegate);
-  virtual void LoadOrCreateGroup(const GURL& manifest_url, Delegate* delegate);
-  virtual void StoreGroupAndNewestCache(
-      AppCacheGroup* group, AppCache* newest_cache, Delegate* delegate);
-  virtual void FindResponseForMainRequest(
-      const GURL& url, const GURL& preferred_manifest_url, Delegate* delegate);
+  virtual void GetAllInfo(Delegate* delegate) OVERRIDE;
+  virtual void LoadCache(int64 id, Delegate* delegate) OVERRIDE;
+  virtual void LoadOrCreateGroup(const GURL& manifest_url,
+                                 Delegate* delegate) OVERRIDE;
+  virtual void StoreGroupAndNewestCache(AppCacheGroup* group,
+                                        AppCache* newest_cache,
+                                        Delegate* delegate) OVERRIDE;
+  virtual void FindResponseForMainRequest(const GURL& url,
+                                          const GURL& preferred_manifest_url,
+                                          Delegate* delegate) OVERRIDE;
   virtual void FindResponseForSubRequest(
       AppCache* cache, const GURL& url,
       AppCacheEntry* found_entry, AppCacheEntry* found_fallback_entry,
-      bool * found_network_namespace);
-  virtual void MarkEntryAsForeign(const GURL& entry_url, int64 cache_id);
-  virtual void MakeGroupObsolete(AppCacheGroup* group, Delegate* delegate);
+      bool * found_network_namespace) OVERRIDE;
+  virtual void MarkEntryAsForeign(const GURL& entry_url,
+                                  int64 cache_id) OVERRIDE;
+  virtual void MakeGroupObsolete(AppCacheGroup* group,
+                                 Delegate* delegate) OVERRIDE;
   virtual AppCacheResponseReader* CreateResponseReader(
-      const GURL& manifest_url, int64 group_id, int64 response_id);
+      const GURL& manifest_url, int64 group_id, int64 response_id) OVERRIDE;
   virtual AppCacheResponseWriter* CreateResponseWriter(
-      const GURL& manifest_url, int64 group_id);
+      const GURL& manifest_url, int64 group_id) OVERRIDE;
   virtual void DoomResponses(
-      const GURL& manifest_url, const std::vector<int64>& response_ids);
+      const GURL& manifest_url,
+      const std::vector<int64>& response_ids) OVERRIDE;
   virtual void DeleteResponses(
-      const GURL& manifest_url, const std::vector<int64>& response_ids);
-  virtual void PurgeMemory() {}
+      const GURL& manifest_url,
+      const std::vector<int64>& response_ids) OVERRIDE;
+  virtual void PurgeMemory() OVERRIDE {}
 
  private:
   friend class AppCacheRequestHandlerTest;

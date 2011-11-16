@@ -114,8 +114,8 @@ class RootAccessibilityUIElement : public AccessibilityUIElement {
       Factory* factory);
   virtual ~RootAccessibilityUIElement();
 
-  virtual AccessibilityUIElement* GetChildAtIndex(unsigned index);
-  virtual bool IsRoot() const;
+  virtual AccessibilityUIElement* GetChildAtIndex(unsigned index) OVERRIDE;
+  virtual bool IsRoot() const OVERRIDE;
 };
 
 
@@ -129,7 +129,7 @@ class AccessibilityUIElementList : public AccessibilityUIElement::Factory {
 
   void Clear();
   virtual AccessibilityUIElement* Create(
-      const WebKit::WebAccessibilityObject& object);
+      const WebKit::WebAccessibilityObject& object) OVERRIDE;
   AccessibilityUIElement* CreateRoot(
       const WebKit::WebAccessibilityObject& object);
 

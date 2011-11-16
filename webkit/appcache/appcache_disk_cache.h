@@ -38,10 +38,11 @@ class APPCACHE_EXPORT AppCacheDiskCache
   bool is_disabled() const { return is_disabled_; }
 
   virtual int CreateEntry(int64 key, Entry** entry,
-                          net::OldCompletionCallback* callback);
+                          net::OldCompletionCallback* callback) OVERRIDE;
   virtual int OpenEntry(int64 key, Entry** entry,
-                        net::OldCompletionCallback* callback);
-  virtual int DoomEntry(int64 key, net::OldCompletionCallback* callback);
+                        net::OldCompletionCallback* callback) OVERRIDE;
+  virtual int DoomEntry(int64 key,
+                        net::OldCompletionCallback* callback) OVERRIDE;
 
  private:
   class EntryImpl;

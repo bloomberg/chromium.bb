@@ -107,35 +107,36 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
                           const std::vector<std::string>& arg_names,
                           const std::vector<std::string>& arg_values,
                           WebPlugin* plugin,
-                          bool load_manually);
-  virtual void PluginDestroyed();
+                          bool load_manually) OVERRIDE;
+  virtual void PluginDestroyed() OVERRIDE;
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
-                              const gfx::Rect& clip_rect);
-  virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect);
-  virtual void SetFocus(bool focused);
+                              const gfx::Rect& clip_rect) OVERRIDE;
+  virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect) OVERRIDE;
+  virtual void SetFocus(bool focused) OVERRIDE;
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
-                                WebKit::WebCursorInfo* cursor_info);
-  virtual NPObject* GetPluginScriptableObject();
-  virtual bool GetFormValue(string16* value);
-  virtual void DidFinishLoadWithReason(
-      const GURL& url, NPReason reason, int notify_id);
-  virtual int GetProcessId();
+                                WebKit::WebCursorInfo* cursor_info) OVERRIDE;
+  virtual NPObject* GetPluginScriptableObject() OVERRIDE;
+  virtual bool GetFormValue(string16* value) OVERRIDE;
+  virtual void DidFinishLoadWithReason(const GURL& url,
+                                       NPReason reason,
+                                       int notify_id) OVERRIDE;
+  virtual int GetProcessId() OVERRIDE;
   virtual void SendJavaScriptStream(const GURL& url,
                                     const std::string& result,
                                     bool success,
-                                    int notify_id);
+                                    int notify_id) OVERRIDE;
   virtual void DidReceiveManualResponse(const GURL& url,
                                         const std::string& mime_type,
                                         const std::string& headers,
                                         uint32 expected_length,
-                                        uint32 last_modified);
-  virtual void DidReceiveManualData(const char* buffer, int length);
-  virtual void DidFinishManualLoading();
-  virtual void DidManualLoadFail();
+                                        uint32 last_modified) OVERRIDE;
+  virtual void DidReceiveManualData(const char* buffer, int length) OVERRIDE;
+  virtual void DidFinishManualLoading() OVERRIDE;
+  virtual void DidManualLoadFail() OVERRIDE;
   virtual WebPluginResourceClient* CreateResourceClient(
-      unsigned long resource_id, const GURL& url, int notify_id);
+      unsigned long resource_id, const GURL& url, int notify_id) OVERRIDE;
   virtual WebPluginResourceClient* CreateSeekableResourceClient(
-      unsigned long resource_id, int range_request_id);
+      unsigned long resource_id, int range_request_id) OVERRIDE;
   // End of WebPluginDelegate implementation.
 
   bool IsWindowless() const { return windowless_ ; }

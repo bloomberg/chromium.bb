@@ -186,7 +186,7 @@ class WebMediaPlayerImpl
   // even before this object gets destructed, so we need to know when
   // |main_loop_| is being destroyed and we can stop posting repaint task
   // to it.
-  virtual void WillDestroyCurrentMessageLoop();
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
   void Repaint();
 

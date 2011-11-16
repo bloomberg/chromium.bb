@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 
+#include "base/compiler_specific.h"
 #include "webkit/plugins/npapi/test/plugin_test.h"
 
 namespace NPAPIClient {
@@ -27,18 +28,19 @@ class PluginGetURLTest : public PluginTest {
   // NPAPI functions
   //
   virtual NPError New(uint16 mode, int16 argc, const char* argn[],
-                      const char* argv[], NPSavedData* saved);
-  virtual NPError SetWindow(NPWindow* pNPWindow);
+                      const char* argv[], NPSavedData* saved) OVERRIDE;
+  virtual NPError SetWindow(NPWindow* pNPWindow) OVERRIDE;
   virtual NPError NewStream(NPMIMEType type, NPStream* stream,
-                            NPBool seekable, uint16* stype);
-  virtual int32   WriteReady(NPStream *stream);
+                            NPBool seekable, uint16* stype) OVERRIDE;
+  virtual int32   WriteReady(NPStream *stream) OVERRIDE;
   virtual int32   Write(NPStream *stream, int32 offset, int32 len,
-                        void *buffer);
-  virtual NPError DestroyStream(NPStream *stream, NPError reason);
-  virtual void    StreamAsFile(NPStream* stream, const char* fname);
-  virtual void    URLNotify(const char* url, NPReason reason, void* data);
+                        void *buffer) OVERRIDE;
+  virtual NPError DestroyStream(NPStream *stream, NPError reason) OVERRIDE;
+  virtual void    StreamAsFile(NPStream* stream, const char* fname) OVERRIDE;
+  virtual void    URLNotify(const char* url, NPReason reason,
+                            void* data) OVERRIDE;
   virtual void    URLRedirectNotify(const char* url, int32_t status,
-                                    void* notify_data);
+                                    void* notify_data) OVERRIDE;
 
  private:
   bool tests_started_;

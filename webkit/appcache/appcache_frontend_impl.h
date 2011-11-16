@@ -15,19 +15,19 @@ namespace appcache {
 class APPCACHE_EXPORT AppCacheFrontendImpl : public AppCacheFrontend {
  public:
   virtual void OnCacheSelected(
-      int host_id, const appcache::AppCacheInfo& info);
+      int host_id, const appcache::AppCacheInfo& info) OVERRIDE;
   virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                               Status status);
+                               Status status) OVERRIDE;
   virtual void OnEventRaised(const std::vector<int>& host_ids,
-                             EventID event_id);
+                             EventID event_id) OVERRIDE;
   virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
                                      const GURL& url,
-                                     int num_total, int num_complete);
+                                     int num_total, int num_complete) OVERRIDE;
   virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                  const std::string& message);
+                                  const std::string& message) OVERRIDE;
   virtual void OnLogMessage(int host_id, LogLevel log_level,
-                            const std::string& message);
-  virtual void OnContentBlocked(int host_id, const GURL& manifest_url);
+                            const std::string& message) OVERRIDE;
+  virtual void OnContentBlocked(int host_id, const GURL& manifest_url) OVERRIDE;
 };
 
 }  // namespace

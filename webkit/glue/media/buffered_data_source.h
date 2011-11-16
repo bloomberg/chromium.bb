@@ -38,26 +38,28 @@ class BufferedDataSource : public WebDataSource {
   virtual ~BufferedDataSource();
 
   // media::Filter implementation.
-  virtual void set_host(media::FilterHost* host);
-  virtual void Stop(const base::Closure& callback);
-  virtual void SetPlaybackRate(float playback_rate);
+  virtual void set_host(media::FilterHost* host) OVERRIDE;
+  virtual void Stop(const base::Closure& callback) OVERRIDE;
+  virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
 
   // media::DataSource implementation.
   // Called from demuxer thread.
-  virtual void Read(int64 position, size_t size,
-                    uint8* data,
-                    const media::DataSource::ReadCallback& read_callback);
-  virtual bool GetSize(int64* size_out);
-  virtual bool IsStreaming();
-  virtual void SetPreload(media::Preload preload);
-  virtual void SetBitrate(int bitrate);
+  virtual void Read(
+      int64 position,
+      size_t size,
+      uint8* data,
+      const media::DataSource::ReadCallback& read_callback) OVERRIDE;
+  virtual bool GetSize(int64* size_out) OVERRIDE;
+  virtual bool IsStreaming() OVERRIDE;
+  virtual void SetPreload(media::Preload preload) OVERRIDE;
+  virtual void SetBitrate(int bitrate) OVERRIDE;
 
   // webkit_glue::WebDataSource implementation.
   virtual void Initialize(const std::string& url,
-                          const media::PipelineStatusCB& callback);
-  virtual void CancelInitialize();
-  virtual bool HasSingleOrigin();
-  virtual void Abort();
+                          const media::PipelineStatusCB& callback) OVERRIDE;
+  virtual void CancelInitialize() OVERRIDE;
+  virtual bool HasSingleOrigin() OVERRIDE;
+  virtual void Abort() OVERRIDE;
 
  protected:
   // A factory method to create a BufferedResourceLoader based on the read
