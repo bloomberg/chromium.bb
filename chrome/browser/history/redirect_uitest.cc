@@ -132,7 +132,10 @@ TEST_F(RedirectTest, FLAKY_ClientEmptyReferer) {
 
 // Tests to make sure a location change when a pending redirect exists isn't
 // flagged as a redirect.
-#if defined(OS_MACOSX)
+#if defined(USE_AURA)
+// http://crbug.com/104396
+#define MAYBE_ClientCancelled FAILS_ClientCancelled
+#elif defined(OS_MACOSX)
 // SimulateOSClick is broken on the Mac: http://crbug.com/45162
 #define MAYBE_ClientCancelled DISABLED_ClientCancelled
 #elif defined(OS_WIN)
