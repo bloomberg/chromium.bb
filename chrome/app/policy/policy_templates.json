@@ -138,7 +138,9 @@
 
           If you select the New Tab Page, then this policy is ignored.
 
-          If you enable this setting, users cannot change their home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, but they can still can choose the New Tab Page as their home page.''',
+          If you enable this setting, users cannot change their home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, but they can still can choose the New Tab Page as their home page.
+
+          Leaving this policy not set will allow the user to choose his home page on his own if HomepageIsNewTabPage is not set too.''',
           'label': '''Home page URL''',
         },
         {
@@ -155,7 +157,9 @@
 
           If you disable this setting, the user's homepage will never be the New Tab Page, unless its URL is set to 'chrome://newtab'.
 
-          If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+          If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+          Leaving this policy not set will allow the user to choose whether the new tab page is his home page on his own.''',
         },
       ],
     },
@@ -188,7 +192,7 @@
 
       If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.
 
-      If this setting is disabled or not configured, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses either the user-specified preferred locale (if configured), the system locale or the fallback locale 'en-US'.''',
+      If this setting is disabled or not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses either the user-specified preferred locale (if configured), the system locale or the fallback locale 'en-US'.''',
       'label': '''Application locale''',
     },
     {
@@ -205,7 +209,9 @@
 
       If you disable this setting, alternate error pages are never used.
 
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If this policy is left not set, this will be enabled but the user will be able to change it.''',
     },
     {
       'name': 'SearchSuggestEnabled',
@@ -221,7 +227,9 @@
 
       If you disable this setting, search suggestions are never used.
 
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If this policy is left not set, this will be enabled but the user will be able to change it.''',
     },
     {
       'name': 'DnsPrefetchingEnabled',
@@ -233,7 +241,9 @@
       'caption': '''Enable network prediction.''',
       'desc': '''Enables network prediction in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If this policy is left not set, this will be enabled but the user will be able to change it.''',
     },
     {
       'name': 'DisableSpdy',
@@ -243,7 +253,13 @@
       'example_value': True,
       'id': 8,
       'caption': '''Disable SPDY protocol''',
-      'desc': '''Disables use of the SPDY protocol in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      'desc': '''Disables use of the SPDY protocol in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If this policy is enabled the SPDY protocol will not be available in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      Setting this policy to disabled will allow the usage of SPDY.
+
+      If this policy is left not set, SPDY will be available but the user will be able to change it.''',
     },
     {
       'name': 'DisabledSchemes',
@@ -255,7 +271,9 @@
       'caption': '''Disable URL protocol schemes''',
       'desc': '''Disables the listed protocol schemes in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      URLs using a scheme from this list will not load and can not be navigated to.''',
+      URLs using a scheme from this list will not load and can not be navigated to.
+
+      If this policy is left not set or the list is empty all schemes will be accessible in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
       'label': '''List of disabled protocol schemes''',
     },
     {
@@ -275,7 +293,9 @@
 
       If this setting is disabled, web pages cannot use JavaScript.
 
-      The DefaultJavaScriptSetting policy will override this policy when both are set.''',
+      If this policy is left not set the default value will be used which is enabled and the user will be able to change it.
+
+      If this policy is left not set, this will be enabled but the user will be able to change it.''',
     },
     {
       'name': 'IncognitoEnabled',
@@ -291,7 +311,9 @@
 
       If this setting is enabled or not configured, users can open web pages in incognito mode.
 
-      If this setting is disabled, users cannot open web pages in incognito mode.''',
+      If this setting is disabled, users cannot open web pages in incognito mode.
+
+      If this policy is left not set, this will be enabled and the user will be able to use incognito mode.''',
     },
     {
       'name': 'IncognitoModeAvailability',
@@ -320,7 +342,7 @@
       'caption': '''Incognito mode availability.''',
       'desc': '''Specifies whether the user may open pages in Incognito mode in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If 'Enabled' is selected, pages may be opened in Incognito mode.
+      If 'Enabled' is selected or the policy is left unset, pages may be opened in Incognito mode.
 
       If 'Disabled' is selected, pages may not be opened in Incognito mode.
 
@@ -338,7 +360,7 @@
 
       If this setting is enabled, browsing history is not saved.
 
-      If this setting is disabled or not configured, browsing history is saved.''',
+      If this setting is disabled or not set, browsing history is saved.''',
     },
     {
       'name': 'RemoteAccess',
@@ -377,7 +399,9 @@
 
           If this setting is enabled, then remote clients can discover and connect to this machines even if they are separated by a firewall.
 
-          If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine will only allow connections from client machines within the local network.''',
+          If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine will only allow connections from client machines within the local network.
+
+          If this policy is left not set the setting will be enabled.''',
         },
       ],
     },
@@ -393,7 +417,9 @@
 
       If this setting is enabled or not configured, users can print.
 
-      If this setting is disabled, users cannot print from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Printing is disabled in the wrench menu, extensions, JavaScript applications, etc. It is still possible to print from plugins that bypass <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> while printing. For example certain Flash applications has the print option in their context menu, and that will not be disabled.''',
+      If this setting is disabled, users cannot print from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Printing is disabled in the wrench menu, extensions, JavaScript applications, etc. It is still possible to print from plugins that bypass <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> while printing. For example certain Flash applications has the print option in their context menu, and that will not be disabled.
+
+      If this policy is left not set, this will be enabled but the user will be able to change it.''',
     },
     {
       'name': 'CloudPrintProxyEnabled',
@@ -408,7 +434,9 @@
 
       If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google account.
 
-      If this setting is disabled, users cannot enable the proxy, and the machine will not be allowed to share it's printers with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>.''',
+      If this setting is disabled, users cannot enable the proxy, and the machine will not be allowed to share it's printers with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>.
+
+      If this policy is left not set, this will be enabled but the user will be able to change it.''',
     },
     {
       'name': 'SafeBrowsingEnabled',
@@ -424,7 +452,9 @@
 
       If you disable this setting, Safe Browsing is never active.
 
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If this policy is left not set, this will be enabled but the user will be able to change it.''',
     },
     {
       'name': 'MetricsReportingEnabled',
@@ -440,7 +470,9 @@
 
       If you disable this setting, anonymous reporting of usage and crash-related data is never sent to Google.
 
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If this policy is left not set the setting will be what the user chose upon installation / first run.''',
     },
     {
       'name': 'PasswordManager',
@@ -462,7 +494,9 @@
 
           If you disable this setting, users are not able to save passwords or use already saved passwords.
 
-          If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+          If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+          If this policy is left not set, this will be enabled but the user will be able to change it.''',
         },
         {
           'name': 'PasswordManagerAllowShowPasswords',
@@ -476,7 +510,7 @@
 
           If you disable this setting, the password manager does not allow showing stored passwords in clear text in the password manager window.
 
-          If you enable or do not configure this setting, users can view their passwords in clear text in the password manager.''',
+          If you enable or do not set this policy, users can view their passwords in clear text in the password manager.''',
         },
       ],
     },
@@ -492,7 +526,7 @@
 
       If you disable this setting, AutoFill will be inaccessible to users.
 
-      If you enable this setting or do not configure a value, AutoFill will remain under the control of the user. This will allow them to configure AutoFill profiles and to switch AutoFill on or off at their own discretion.''',
+      If you enable this setting or do not set a value, AutoFill will remain under the control of the user. This will allow them to configure AutoFill profiles and to switch AutoFill on or off at their own discretion.''',
     },
     {
       'name': 'DisabledPlugins',
@@ -508,7 +542,9 @@
 
       If you enable this setting, the specified list of plugins is never used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The plugins are marked as disabled in 'about:plugins' and users cannot enable them.
 
-      Note that this policy can be overriden by EnabledPlugins and DisabledPluginsExceptions.''',
+      Note that this policy can be overriden by EnabledPlugins and DisabledPluginsExceptions.
+
+      If this policy is left not set the user can use any plugin installed on the system except for hard-coded incompatible, outdated or dangerous plugins.''',
       'label': '''List of disabled plugins''',
     },
     {
@@ -525,7 +561,9 @@
 
       The specified list of plugins is always used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> if they are installed. The plugins are marked as enabled in 'about:plugins' and users cannot disable them.
 
-      Note that this policy overrides both DisabledPlugins and DisabledPluginsExceptions.''',
+      Note that this policy overrides both DisabledPlugins and DisabledPluginsExceptions.
+
+      If this policy is left not set the user can disable any plugin installed on the system.''',
       'label': '''List of enabled plugins''',
     },
     {
@@ -540,7 +578,11 @@
 
       The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\\', so to match actual '*', '?', or '\\' characters, you can put a '\\' in front of them.
 
-      If you enable this setting, the specified list of plugins can be used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Users can enable or disable them in 'about:plugins', even if the plugin also matches a pattern in DisabledPlugins. Users can also enable and disable plugins that don't match any patterns in DisabledPlugins, DisabledPluginsExceptions and EnabledPlugins.''',
+      If you enable this setting, the specified list of plugins can be used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Users can enable or disable them in 'about:plugins', even if the plugin also matches a pattern in DisabledPlugins. Users can also enable and disable plugins that don't match any patterns in DisabledPlugins, DisabledPluginsExceptions and EnabledPlugins.
+
+      This policy is meant to allow for strict plugin balcklisting where the 'DisabledPlugins' list contains wildcarded entries like disable all plugins '*' or disable all Java plugins '*Java*' but the administrator wishes to enable some particular version like 'IcedTea Java 2.3'. This particular versions can be specified in this policy.
+
+      If this policy is left not set any plugin that matches the patterns in the 'DisabledPlugins' will be locked disabled and the user won't be able to enable them.''',
       'label': '''List of exceptions to the list of disabled plugins''',
     },
     {
@@ -551,7 +593,9 @@
       'example_value': True,
       'id': 66,
       'caption': '''Specify whether the plugin finder should be disabled''',
-      'desc': '''If you set this setting to True the automatic search and installation of missing plugins will be disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      'desc': '''If you set this setting to enabled the automatic search and installation of missing plugins will be disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      Setting this option to disabled or leave it not set the plugin finder will be active.''',
       'label': '''Disable plugin finder''',
     },
     {
@@ -564,7 +608,9 @@
       'caption': '''Disable synchronization of data with Google''',
       'desc': '''Disables data synchronization in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> using Google-hosted synchronization services and prevents users from changing this setting.
 
-      If you enable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      If you enable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If this policy is left not set Google Sync will be available for the user to choose whether to use it or not.''',
     },
     {
       'name': 'UserDataDir',
@@ -576,7 +622,9 @@
       'caption': '''Set user data directory''',
       'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing user data.
 
-      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified the '--user-data-dir' flag or not.''',
+      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified the '--user-data-dir' flag or not.
+
+      If this policy is left not set the default profile path will be used and the user will be able to override it with the '--user-data-dir' command line flag.''',
       'label': '''Set user data directory''',
     },
     {
@@ -589,7 +637,9 @@
       'caption': '''Set disk cache directory''',
       'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing cached files on the disk.
 
-      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified the '--disk-cache-dir' flag or not.''',
+      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified the '--disk-cache-dir' flag or not.
+
+      If this policy is left not set the default cache directory will be used and the user will be able to override it with the '--disk-cache-dir' command line flag.''',
       'label': '''Set disk cache directory''',
     },
     {
@@ -602,7 +652,9 @@
       'caption': '''Set download directory''',
       'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for downloading files.
 
-      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified one or enabled the flag to be prompted for download location every time.''',
+      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified one or enabled the flag to be prompted for download location every time.
+
+      If this policy is left not set the default download directory will be used and the user will be able to change it.''',
       'label': '''Set download directory''',
     },
     {
@@ -615,7 +667,11 @@
       'caption': '''Clear site data on browser shutdown''',
       'desc': '''This policy is an override for the "Clear cookies and other site data when I close my browser" content settings option.
 
-      When set to true <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will delete all locally stored data from the browser when it is shut down.''',
+      When set to enabled <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will delete all locally stored data from the browser when it is shut down.
+
+      If set to disabled site data will not be cleared on exit.
+
+      If this policy is left not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the default which is to preserve site data on shut down and the user will be able to change this.''',
       'label': '''Clear site data on browser shutdown''',
     },
     {
@@ -631,7 +687,9 @@
       For detailed examples, visit:
       <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
 
-      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.''',
+      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.
+
+      Leaving these policies not set will allow the users to choose the proxy settings on their own.''',
       'policies': [
         {
           'name': 'ProxyMode',
@@ -681,7 +739,9 @@
           For detailed examples, visit:
           <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
 
-          If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.''',
+          If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.
+
+          Leaving this policy not set will allow the users to choose the proxy settings on their own.''',
         },
         {
           'name': 'ProxyServerMode',
@@ -727,7 +787,9 @@
           For detailed examples, visit:
           <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
 
-          If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.''',
+          If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.
+
+          Leaving this policy not set will allow the users to choose the proxy settings on their own.''',
         },
         {
           'name': 'ProxyServer',
@@ -740,6 +802,8 @@
           'desc': '''You can specify the URL of the proxy server here.
 
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
+
+          You should leave this policy not set if you have selected any other mode for setting proxy policies.
 
           For more options and detailed examples, visit:
           <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
@@ -756,6 +820,8 @@
 
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
 
+          You should leave this policy not set if you have selected any other mode for setting proxy policies.
+
           For detailed examples, visit:
           <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
         },
@@ -770,6 +836,8 @@
           'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will bypass any proxy for the list of hosts given here.
 
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
+
+          You should leave this policy not set if you have selected any other mode for setting proxy policies.
 
           For more detailed examples, visit:
           <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
@@ -793,7 +861,9 @@
           'caption': '''Supported authentication schemes''',
           'desc': '''Specifies which HTTP Authentication schemes are supported by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-          Possible values are 'basic', 'digest', 'ntlm' and 'negotiate'. Separate multiple values with commas.''',
+          Possible values are 'basic', 'digest', 'ntlm' and 'negotiate'. Separate multiple values with commas.
+
+          If this policy is left not set, all four schemes will be used.''',
         },
         {
           'name': 'DisableAuthNegotiateCnameLookup',
@@ -807,7 +877,7 @@
 
           If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
 
-          If you disable this setting, the canonical name of the server will be determined via CNAME lookup.''',
+          If you disable this setting or leave it not set, the canonical name of the server will be determined via CNAME lookup.''',
         },
         {
           'name': 'EnableAuthNegotiatePort',
@@ -821,7 +891,7 @@
 
           If you enable this setting, and a non-standard port (i.e., a port other than 80 or 443) is entered, it will be included in the generated Kerberos SPN.
 
-          If you disable this setting, the generated Kerberos SPN will not include a port in any case.''',
+          If you disable this setting or leave it not set, the generated Kerberos SPN will not include a port in any case.''',
         },
         {
           'name': 'AuthServerWhitelist',
@@ -833,7 +903,9 @@
           'caption': '''Authentication server whitelist''',
           'desc': '''Specifies which servers should be whitelisted for integrated authentication. Integrated authentication is only enabled when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> receives an authentication challenge from a proxy or from a server which is in this permitted list.
 
-          Separate multiple server names with commas. Wildcards (*) are allowed.''',
+          Separate multiple server names with commas. Wildcards (*) are allowed.
+
+          If you leave this policy not set any server will be accepted for integrated authentication.''',
         },
         {
           'name': 'AuthNegotiateDelegateWhitelist',
@@ -842,7 +914,9 @@
           'features': {'dynamic_refresh': 0},
           'example_value': 'foobar.example.com',
           'id': 30,
-          'caption': '''Kerberos delegation server whitelist''',
+          'caption': '''Kerberos delegation server whitelist
+
+          If you leave this policy not set any server will be accepted for integrated authentication.''',
           'desc': '''Servers that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may delegate to.''',
         },
         {
@@ -853,7 +927,9 @@
           'example_value': 'libgssapi_krb5.so.2',
           'id': 31,
           'caption': '''GSSAPI library name''',
-          'desc': '''Specifies which GSSAPI library to use for HTTP Authentication. You can set either just a library name, or a full path. If no setting is provided, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will fall back to using a default library name.''',
+          'desc': '''Specifies which GSSAPI library to use for HTTP Authentication. You can set either just a library name, or a full path.
+
+          If no setting is provided, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will fall back to using a default library name.''',
         },
         {
           'name': 'AllowCrossOriginAuthPrompt',
@@ -862,8 +938,10 @@
           'features': {'dynamic_refresh': 1},
           'example_value': False,
           'id': 89,
-          'caption': '''Cross-origin HTTP Basic Auth propmts''',
-          'desc': '''Controls whether third-party sub-content on a page is allowed to pop-up an HTTP Basic Auth dialog box.  Typically this is disabled as a phishing defense.''',
+          'caption': '''Cross-origin HTTP Basic Auth prompts''',
+          'desc': '''Controls whether third-party sub-content on a page is allowed to pop-up an HTTP Basic Auth dialog box.
+
+          Typically this is disabled as a phishing defense. If this policy is not set, this is disabled and third-party sub-content will not be allowed to pop up a HTTP Basic Auth dialog box.''',
         },
       ],
     },
@@ -883,7 +961,9 @@
           'caption': '''Configure extension installation blacklist''',
           'desc': '''Allows you to specify which extensions the users can NOT install. Extensions already installed will be removed if blacklisted.
 
-          A blacklist value of * means all extensions are blacklisted unless they are explicitly listed in the whitelist.''',
+          A blacklist value of '*' means all extensions are blacklisted unless they are explicitly listed in the whitelist.
+
+          If this policy is left not set the user can install any extension in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
           'label': '''Extension IDs the user should be prevented from installing (or * for all)''',
         },
         {
@@ -913,7 +993,9 @@
 
           Each item of the list is a string, that contains an extension ID and an update URL delimited by a semicolon (<ph name="SEMICOLON">;</ph>). For example: <ph name="EXTENSION_POLICY_EXAMPLE">lcncmkcnkcdbbanbjakcencbaoegdjlp;https://clients2.google.com/service/update2/crx</ph>. For each item, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will retrieve the extension specified by the ID from the specified URL and silently install it. The following pages explain how you can host extensions on your own server. About update URLs: <ph name="LINK_TO_EXTENSION_DOC1">http://code.google.com/chrome/extensions/autoupdate.html</ph> , about hosting extensions in general: <ph name="LINK_TO_EXTENSION_DOC2">http://code.google.com/chrome/extensions/hosting.html</ph>.
 
-          Users will be unable to uninstall extensions that are specified by this policy. If you remove an extension from this list, then it will be automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Extensions that are blacklisted in 'ExtensionInstallBlacklist' and not whitelisted, cannot be force-installed by this policy.''',
+          Users will be unable to uninstall extensions that are specified by this policy. If you remove an extension from this list, then it will be automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Extensions that are blacklisted in 'ExtensionInstallBlacklist' and not whitelisted, cannot be force-installed by this policy.
+
+          If this policy is left not set the user can uninstall any extension  in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
           'label': '''Extension IDs and update URLs to be silently installed''',
         },
       ],
@@ -932,7 +1014,9 @@
 
       If you disable this setting, the Home button is never shown.
 
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      Leaving this policy not set will allow the user to choose whether to show the home button.''',
     },
     {
       'name': 'DeveloperToolsDisabled',
@@ -944,7 +1028,9 @@
       'caption': '''Disable Developer Tools''',
       'desc': '''Disables the Developer Tools and the JavaScript console.
 
-      If you enable this setting, the Developer Tools can not be accessed and web-site elements can not be inspected anymore. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.''',
+      If you enable this setting, the Developer Tools can not be accessed and web-site elements can not be inspected anymore. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.
+
+      Setting this option to disabled or leaving it not set will allow the use to use the Developer Tools and the JavaScript console.''',
     },
     {
       'name': 'RestoreOnStartupGroup',
@@ -999,7 +1085,9 @@
           'example_value': ['http://example.com', 'http://chromium.org'],
           'id': 38,
           'caption': '''URLs to open on startup''',
-          'desc': '''If 'Open a list of URLs' is selected as the startup action, this allows you to specify the list of URLs that are opened.''',
+          'desc': '''If 'Open a list of URLs' is selected as the startup action, this allows you to specify the list of URLs that are opened. If left not set no URL will be opened on start up.
+
+          This policy only works if the 'RestoreOnStartup' policy is set to 'RestoreOnStartupIsURLs'.''',
         },
       ],
     },
@@ -1015,7 +1103,9 @@
 
       Enabling this setting prevents cookies from being set by web page elements that are not from the domain that is in the browser's address bar.
 
-      Disabling this setting allows cookies to be set by web page elements that are not from the domain that is in the browser's address bar and prevents users from changing this setting.''',
+      Disabling this setting allows cookies to be set by web page elements that are not from the domain that is in the browser's address bar and prevents users from changing this setting.
+
+      If this policy is left not set, third party cookies will be enabled but the user will be able to change that.''',
     },
     {
       'name': 'DefaultSearchProvider',
@@ -1039,9 +1129,9 @@
 
           If you disable this setting, no search is performed when the user enters non-URL text in the omnibox.
 
-          If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">
-          $1<ex>Google Chrome</ex>
-          </ph>.''',
+          If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+          If this policy is left not set, the default search provider is enabled, and the user will be able to set the search provider list.''',
         },
         {
           'name': 'DefaultSearchProviderName',
@@ -1051,7 +1141,9 @@
           'example_value': 'My Intranet Search',
           'id': 41,
           'caption': '''Default search provider name''',
-          'desc': '''Specifies the name of the default search provider. If left empty, the host name specified by the search URL will be used.''',
+          'desc': '''Specifies the name of the default search provider. If left empty or not set, the host name specified by the search URL will be used.
+
+          This policy is only considered if the 'DefaultSearchProviderEnabled' policy is enabled.''',
         },
         {
           'name': 'DefaultSearchProviderKeyword',
@@ -1061,7 +1153,11 @@
           'example_value': 'mis',
           'id': 42,
           'caption': '''Default search provider keyword''',
-          'desc': '''Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider. Optional.''',
+          'desc': '''Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider.
+
+          This policy is optional. If not set, no keyword will activate the search provider.
+
+          This policy is only considered if the 'DefaultSearchProviderEnabled' policy is enabled.''',
         },
         {
           'name': 'DefaultSearchProviderSearchURL',
@@ -1071,7 +1167,9 @@
           'example_value': 'http://search.my.company/search?q={searchTerms}',
           'id': 43,
           'caption': '''Default search provider search URL''',
-          'desc': '''Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the terms the user is searching for.''',
+          'desc': '''Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the terms the user is searching for.
+
+          This option must be set when the 'DefaultSearchProviderEnabled' policy is enabled and will only be respected if this is the case.''',
         },
         {
           'name': 'DefaultSearchProviderSuggestURL',
@@ -1081,7 +1179,11 @@
           'example_value': 'http://search.my.company/suggest?q={searchTerms}',
           'id': 44,
           'caption': '''Default search provider suggest URL''',
-          'desc': '''Specifies the URL of the search engine used to provide search suggestions. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the text the user has entered so far. Optional.''',
+          'desc': '''Specifies the URL of the search engine used to provide search suggestions. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the text the user has entered so far.
+
+          This policy is optional. If not set, no suggest URL will be used.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
         },
         {
           'name': 'DefaultSearchProviderInstantURL',
@@ -1091,7 +1193,11 @@
           'example_value': 'http://search.my.company/suggest?q={searchTerms}',
           'id': 45,
           'caption': '''Default search provider instant URL''',
-          'desc': '''Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, which will be replaced at query time by the text the user has entered so far. Optional.''',
+          'desc': '''Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, which will be replaced at query time by the text the user has entered so far.
+
+          This policy is optional. If not set, no instant search results will be provided.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
         },
         {
           'name': 'DefaultSearchProviderIconURL',
@@ -1101,7 +1207,11 @@
           'example_value': 'http://search.my.company/favicon.ico',
           'id': 46,
           'caption': '''Default search provider icon''',
-          'desc': '''Specifies the favorite icon URL of the default search provider. Optional.''',
+          'desc': '''Specifies the favorite icon URL of the default search provider.
+
+          This policy is optional. If not set, no icon will be present for the search provider.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
         },
         {
           'name': 'DefaultSearchProviderEncodings',
@@ -1111,7 +1221,11 @@
           'example_value': ['UTF-8', 'UTF-16', 'GB2312', 'ISO-8859-1'],
           'id': 47,
           'caption': '''Default search provider encodings''',
-          'desc': '''Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided. The default is UTF-8.''',
+          'desc': '''Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided.
+
+          This policy is optional. If not set, the default will be used which is UTF-8.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
         },
       ],
     },
@@ -1141,7 +1255,9 @@
           'example_value': 1,
           'id': 48,
           'caption': '''Default cookies setting''',
-          'desc': '''Allows you to set whether websites are allowed to set local data. Setting local data can be either allowed for all websites or denied for all websites.''',
+          'desc': '''Allows you to set whether websites are allowed to set local data. Setting local data can be either allowed for all websites or denied for all websites.
+
+          If this policy is left not set, 'AllowCookies' will be used and the user will be able to change it.''',
         },
         {
           'name': 'DefaultImagesSetting',
@@ -1163,7 +1279,9 @@
           'example_value': 1,
           'id': 49,
           'caption': '''Default images setting''',
-          'desc': '''Allows you to set whether websites are allowed to display images. Displaying images can be either allowed for all websites or denied for all websites.''',
+          'desc': '''Allows you to set whether websites are allowed to display images. Displaying images can be either allowed for all websites or denied for all websites.
+
+          If this policy is left not set, 'AllowImages' will be used and the user will be able to change it.''',
         },
         {
           'name': 'DefaultJavaScriptSetting',
@@ -1185,7 +1303,9 @@
           'example_value': 1,
           'id': 50,
           'caption': '''Default JavaScript setting''',
-          'desc': '''Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.''',
+          'desc': '''Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.
+
+          If this policy is left not set, 'AllowJavaScript' will be used and the user will be able to change it.''',
         },
         {
           'name': 'DefaultPluginsSetting',
@@ -1207,7 +1327,9 @@
           'example_value': 1,
           'id': 51,
           'caption': '''Default plugins setting''',
-          'desc': '''Allows you to set whether websites are allowed to automatically run plugins. Automatically running plugins can be either allowed for all websites or denied for all websites.''',
+          'desc': '''Allows you to set whether websites are allowed to automatically run plugins. Automatically running plugins can be either allowed for all websites or denied for all websites.
+
+          If this policy is left not set, 'AllowPlugins' will be used and the user will be able to change it.''',
         },
         {
           'name': 'DefaultPopupsSetting',
@@ -1229,7 +1351,9 @@
           'example_value': 1,
           'id': 52,
           'caption': '''Default popups setting''',
-          'desc': '''Allows you to set whether websites are allowed to show pop-ups. Showing popups can be either allowed for all websites or denied for all websites.''',
+          'desc': '''Allows you to set whether websites are allowed to show pop-ups. Showing popups can be either allowed for all websites or denied for all websites.
+
+          If this policy is left not set, 'BlockPopups' will be used and the user will be able to change it.''',
         },
         {
           'name': 'DefaultNotificationsSetting',
@@ -1256,7 +1380,9 @@
           'example_value': 2,
           'id': 53,
           'caption': '''Default notification setting''',
-          'desc': '''Allows you to set whether websites are allowed to display desktop notifications. Displaying desktop notifications can be allowed by default, denied by default or the user can be asked everytime a website wants to show desktop notifications.''',
+          'desc': '''Allows you to set whether websites are allowed to display desktop notifications. Displaying desktop notifications can be allowed by default, denied by default or the user can be asked every time a website wants to show desktop notifications.
+
+          If this policy is left not set, 'AskNotifications' will be used and the user will be able to change it.''',
         },
         {
           'name': 'DefaultGeolocationSetting',
@@ -1283,7 +1409,9 @@
           'example_value': 0,
           'id': 54,
           'caption': '''Default geolocation setting''',
-          'desc': '''Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked everytime a website requests the pysical location.''',
+          'desc': '''Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked every time a website requests the physical location.
+
+          If this policy is left not set, 'AskGeolocation' will be used and the user will be able to change it.''',
         },
         {
           'name': 'AutoSelectCertificateForUrls',
@@ -1293,7 +1421,9 @@
           'example_value': ["{\\\"pattern\\\":\\\"https://www.example.com\\\",\\\"filter\\\":{\\\"ISSUER\\\":{\\\"CN\\\":\\\"certificate issuer name\\\"}}}"],
           'id': 102,
           'caption': '''Automatically select client certificates for these sites''',
-          'desc': '''Allows you to specify a list of url patterns that specify sites for which <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> should automatically select a client certificates, if the site requests a certificate.''',
+          'desc': '''Allows you to specify a list of url patterns that specify sites for which <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> should automatically select a client certificates, if the site requests a certificate.
+
+          If this policy is left not set no auto-selection will be done for any site.''',
         },
         {
           'name': 'CookiesAllowedForUrls',
@@ -1303,7 +1433,9 @@
           'example_value': ['http://www.example.com', '[*.]example.edu'],
           'id': 77,
           'caption': '''Allow cookies on these sites''',
-          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to set cookies.''',
+          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to set cookies.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.''',
         },
         {
           'name': 'CookiesBlockedForUrls',
@@ -1313,7 +1445,9 @@
           'example_value': ['http://www.example.com', '[*.]example.edu'],
           'id': 67,
           'caption': '''Block cookies on these sites''',
-          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to set cookies.''',
+          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to set cookies.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.''',
         },
         {
           'name': 'CookiesSessionOnlyForUrls',
@@ -1323,7 +1457,9 @@
           'example_value': ['http://www.example.com', '[*.]example.edu'],
           'id': 68,
           'caption': '''Allow session only cookies on these sites''',
-          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to set session only cookies.''',
+          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to set session only cookies.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.''',
         },
         {
           'name': 'ImagesAllowedForUrls',
@@ -1333,7 +1469,9 @@
           'example_value': ['http://www.example.com', '[*.]example.edu'],
           'id': 69,
           'caption': '''Allow images on these sites''',
-          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display images.''',
+          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display images.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultImagesSetting' policy if it is set, or the user's personal configuration otherwise.''',
         },
         {
           'name': 'ImagesBlockedForUrls',
@@ -1343,7 +1481,9 @@
           'example_value': ['http://www.example.com', '[*.]example.edu'],
           'id': 70,
           'caption': '''Block images on these sites''',
-          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display images.''',
+          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display images.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultImagesSetting' policy if it is set, or the user's personal configuration otherwise.''',
         },
         {
           'name': 'JavaScriptAllowedForUrls',
@@ -1353,7 +1493,9 @@
           'example_value': ['http://www.example.com', '[*.]example.edu'],
           'id': 71,
           'caption': '''Allow JavaScript on these sites''',
-          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.''',
+          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy if it is set, or the user's personal configuration otherwise.''',
         },
         {
           'name': 'JavaScriptBlockedForUrls',
@@ -1363,7 +1505,9 @@
           'example_value': ['http://www.example.com', '[*.]example.edu'],
           'id': 72,
           'caption': '''Block JavaScript on these sites''',
-          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.''',
+          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy if it is set, or the user's personal configuration otherwise.''',
         },
         {
           'name': 'PluginsAllowedForUrls',
@@ -1373,7 +1517,9 @@
           'example_value': ['http://www.example.com', '[*.]example.edu'],
           'id': 73,
           'caption': '''Allow plugins on these sites''',
-          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to run plugins.''',
+          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to run plugins.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.''',
         },
         {
           'name': 'PluginsBlockedForUrls',
@@ -1383,7 +1529,9 @@
           'example_value': ['http://www.example.com', '[*.]example.edu'],
           'id': 74,
           'caption': '''Block plugins on these sites''',
-          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to run plugins.''',
+          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to run plugins.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.''',
         },
         {
           'name': 'PopupsAllowedForUrls',
@@ -1393,7 +1541,9 @@
           'example_value': ['http://www.example.com', '[*.]example.edu'],
           'id': 75,
           'caption': '''Allow popups on these sites''',
-          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to open popups.''',
+          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to open popups.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPopupsSetting' policy if it is set, or the user's personal configuration otherwise.''',
         },
         {
           'name': 'PopupsBlockedForUrls',
@@ -1403,7 +1553,9 @@
           'example_value': ['http://www.example.com', '[*.]example.edu'],
           'id': 76,
           'caption': '''Block popups on these sites''',
-          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to open popups.''',
+          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to open popups.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPopupsSetting' policy if it is set, or the user's personal configuration otherwise.''',
         },
         {
           'name': 'NotificationsAllowedForUrls',
@@ -1413,7 +1565,9 @@
           'example_value': ['http://www.example.com', '[*.]example.edu'],
           'id': 105,
           'caption': '''Allow notifications on these sites''',
-          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display notifications.''',
+          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display notifications.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy if it is set, or the user's personal configuration otherwise.''',
         },
         {
           'name': 'NotificationsBlockedForUrls',
@@ -1423,7 +1577,9 @@
           'example_value': ['http://www.example.com', '[*.]example.edu'],
           'id': 106,
           'caption': '''Block notifications on these sites''',
-          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.''',
+          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy if it is set, or the user's personal configuration otherwise.''',
         }
       ],
     },
@@ -1439,7 +1595,7 @@
 
       Enabling this setting prevents web pages from accessing the graphics processing unit (GPU). Specifically, web pages can not access the WebGL API and plugins can not use the Pepper 3D API.
 
-      Disabling this setting potentially allows web pages to use the WebGL API and plugins to use the Pepper 3D API. The default settings of the browser may still require command line arguments to be passed in order to use these APIs.''',
+      Disabling this setting or leaving it not set potentially allows web pages to use the WebGL API and plugins to use the Pepper 3D API. The default settings of the browser may still require command line arguments to be passed in order to use these APIs.''',
     },
     {
       'name': 'PolicyRefreshRate',
@@ -1451,14 +1607,15 @@
       'caption': '''Refresh rate for user policy''',
       'desc': '''Specifies the period in milliseconds at which the device management service is queried for user policy information.
 
-      Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1800000 (30 minutes) to 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.''',
+      Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1800000 (30 minutes) to 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.
+
+      Leaving this policy not set will make <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> use the default value of 3 hours.''',
     },
     {
       'name': 'ChromeFrameRendererSettings',
       'type': 'group',
       'caption': '''Default HTML renderer for <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
-      'desc': '''Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex>
-      </ph> is installed.
+      'desc': '''Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> is installed.
       The default setting is to allow the host browser do the rendering, but you
       can optionally override this and have <ph name="PRODUCT_FRAME_NAME">$3<ex>
       Google Chrome Frame</ex></ph> render HTML pages by default.''',
@@ -1483,11 +1640,8 @@
           'example_value': 1,
           'id': 57,
           'caption': '''Default HTML renderer for <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
-          'desc': '''Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex>
-          </ph> is installed.
-          The default setting is to allow the host browser do the rendering, but you
-          can optionally override this and have <ph name="PRODUCT_FRAME_NAME">$3<ex>
-          Google Chrome Frame</ex></ph> render HTML pages by default.''',
+          'desc': '''Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> is installed.
+          The default setting used when this policy is left not set is to allow the host browser do the rendering, but you can optionally override this and have <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> render HTML pages by default.''',
         },
         {
           'name': 'RenderInChromeFrameList',
@@ -1498,6 +1652,8 @@
           'id': 58,
           'caption': '''Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
           'desc': '''Customize the list of URL patterns that should always be rendered by <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>.
+
+          If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.
 
           For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.''',
         },
@@ -1510,6 +1666,9 @@
           'id': 59,
           'caption': '''Always render the following URL patterns in the host browser''',
           'desc': '''Customize the list of URL patterns that should always be rendered by the host browser.
+
+          If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.
+
           For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.''',
         },
       ],
@@ -1527,8 +1686,10 @@
           'features': {'dynamic_refresh': 0},
           'example_value': ['text/xml', 'application/xml'],
           'id': 60,
-          'caption': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the following content types.''',
-          'desc': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the following content types.''',
+          'caption': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the listed content types.''',
+          'desc': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the listed content types.
+
+          If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.''',
         },
       ],
     },
@@ -1546,7 +1707,9 @@
 
       If you disable this setting, users will not be asked for a password to wake ChromeOS devices from sleep.
 
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.''',
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
+
+      If the policy is left not set the user can choose whether he wants to be asked for password to unlock the device or not.''',
     },
     {
       'name': 'InstantEnabled',
@@ -1562,7 +1725,9 @@
 
       If you disable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Instant is disabled.
 
-      If you enable or disable this setting, users cannot change or override this setting.''',
+      If you enable or disable this setting, users cannot change or override this setting.
+
+      If this setting is left not set the user can decide to use this function or not.''',
     },
     {
       'name': 'TranslateEnabled',
@@ -1578,7 +1743,9 @@
 
       If you disable this setting, users will never see the translation bar.
 
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If this setting is left not set the user can decide to use this function or not.''',
     },
     {
       'name': 'AllowOutdatedPlugins',
@@ -1624,7 +1791,9 @@
 
       If you disable this setting, users will never see the bookmark bar.
 
-      If you enable or disable this setting, users cannot change or override it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      If you enable or disable this setting, users cannot change or override it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If this setting is left not set the user can decide to use this function or not.''',
     },
     {
       'name': 'EditBookmarksEnabled',
@@ -1636,7 +1805,7 @@
       'caption': '''Enables or disables bookmark editing''',
       'desc': '''Enables or disables editing bookmarks in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If you enable this setting, bookmarks can be added, removed or modified. This is the default.
+      If you enable this setting, bookmarks can be added, removed or modified. This is the default also when this policy is not set.
 
       If you disable this setting, bookmarks can not be added, removed or modified. Existing bookmarks are still available.''',
     },
@@ -1652,7 +1821,7 @@
 
       If you enable this setting, users can open file selection dialogs as normal.
 
-      If you disable this setting, whenever the user perfoms an action which would provoke a file selection dialog (like importing bookmarks, uploading files, saving links, etc.) a message is displayed instead and the user is assumed to have clicked Cancel on the file selection dialog.
+      If you disable this setting, whenever the user performs an action which would provoke a file selection dialog (like importing bookmarks, uploading files, saving links, etc.) a message is displayed instead and the user is assumed to have clicked Cancel on the file selection dialog.
 
       If this setting is not set, users can open file selection dialogs as normal.''',
     },
@@ -1666,7 +1835,9 @@
       'caption': '''Set <ph name="PRODUCT_NAME">$3<ex>Google Chrome Frame</ex></ph> user data directory''',
       'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$3<ex>Google Chrome Frame</ex></ph> will use for storing user data.
 
-      If you set this policy, <ph name="PRODUCT_NAME">$3<ex>Google Chrome Frame</ex></ph> will use the provided directory.''',
+      If you set this policy, <ph name="PRODUCT_NAME">$3<ex>Google Chrome Frame</ex></ph> will use the provided directory.
+
+      If this setting is left not set the default profile directory will be used.''',
       'label': '''Set user data directory''',
     },
     {
@@ -1680,7 +1851,9 @@
       'caption': '''Refresh rate for Device Policy''',
       'desc': '''Specifies the period in milliseconds at which the device management service is queried for device policy information.
 
-      Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1800000 (30 minutes) to 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.''',
+      Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1800000 (30 minutes) to 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.
+
+      Leaving this policy not set will make <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> use the default value of 3 hours.''',
     },
     {
       'name': 'ChromeOsReleaseChannel',
@@ -1708,7 +1881,7 @@
       'example_value': 'stable-channel',
       'id': 91,
       'caption': '''Release channel''',
-      'desc': '''Specifies the release channel that this device should be locked to. This policy is a work in progress; currently, the user can still change the release channel even if it's specified by the policy.'''
+      'desc': '''Specifies the release channel that this device should be locked to.'''
     },
     {
       'name': 'ImportBookmarks',
@@ -1718,7 +1891,11 @@
       'example_value': True,
       'id': 97,
       'caption': '''Import bookmarks from default browser on first run''',
-      'desc': '''This policy forces bookmarks to be imported from the current default browser if enabled. If disabled, no bookmarks are imported. If it is not configured, the default behaviour is used. If enabled, this policy also affects the import dialog.''',
+      'desc': '''This policy forces bookmarks to be imported from the current default browser if enabled. If enabled, this policy also affects the import dialog.
+
+      If disabled, no bookmarks are imported.
+
+      If it is not set, the user may be asked whether to import, or importing may happen automatically.''',
       'label': '''Import bookmarks from default browser on first run''',
     },
     {
@@ -1729,7 +1906,11 @@
       'example_value': True,
       'id': 98,
       'caption': '''Import browsing history from default browser on first run''',
-      'desc': '''This policy forces the browsing history to be imported from the current default browser if enabled. If disabled, no browsing history is imported. If it is not configured, the default behaviour is used. If enabled, this policy also affects the import dialog.''',
+      'desc': '''This policy forces the browsing history to be imported from the current default browser if enabled. If enabled, this policy also affects the import dialog.
+
+      If disabled, no browsing history is imported.
+
+      If it is not set, the user may be asked whether to import, or importing may happen automatically.''',
       'label': '''Import browsing history from default browser on first run''',
     },
     {
@@ -1740,7 +1921,11 @@
       'example_value': True,
       'id': 99,
       'caption': '''Import of homepage from default browser on first run''',
-      'desc': '''This policy forces the home page to be imported from the current default browser if enabled. If disabled, the home page is not imported. If it is not configured, the default behaviour is used.''',
+      'desc': '''This policy forces the home page to be imported from the current default browser if enabled.
+
+      If disabled, the home page is not imported.
+
+      If it is not set, the user may be asked whether to import, or importing may happen automatically.''',
       'label': '''Import of homepage from default browser on first run''',
     },
     {
@@ -1751,7 +1936,11 @@
       'example_value': True,
       'id': 100,
       'caption': '''Import search engines from default browser on first run''',
-      'desc': '''This policy forces search engines to be imported from the current default browser if enabled. If disabled, the default search engine is not imported. If it is not configured, the default behaviour is used. If enabled, this policy also affects the import dialog.''',
+      'desc': '''This policy forces search engines to be imported from the current default browser if enabled. If enabled, this policy also affects the import dialog.
+
+      If disabled, the default search engine is not imported.
+
+      If it is not set, the user may be asked whether to import, or importing may happen automatically.''',
       'label': '''Import search engines from default browser on first run''',
     },
     {
@@ -1762,7 +1951,11 @@
       'example_value': True,
       'id': 101,
       'caption': '''Import saved passwords from default browser on first run''',
-      'desc': '''This policy forces the saved passwords to be imported from the previous default browser if enabled. If disabled, the saved passwords are not imported. If it is not configured, the default behaviour is used. If enabled, this policy also affects the import dialog.''',
+      'desc': '''This policy forces the saved passwords to be imported from the previous default browser if enabled. If enabled, this policy also affects the import dialog.
+
+      If disabled, the saved passwords are not imported.
+
+      If it is not set, the user may be asked whether to import, or importing may happen automatically.''',
       'label': '''Import saved passwords from default browser on first run''',
     },
     {
@@ -1779,7 +1972,9 @@
 
       The value of this policy should be lower than 100 and higher than 6 and the default value is 32.
 
-      Some web apps are known to consume many connections with hanging GETs, so lowering below 32 may lead to browser networking hangs if too many such web apps are open. Lower below the default at your own risk.''',
+      Some web apps are known to consume many connections with hanging GETs, so lowering below 32 may lead to browser networking hangs if too many such web apps are open. Lower below the default at your own risk.
+
+      If this policy is left not set the default value will be used which is 32.''',
     },
     {
       'name': 'HideWebStorePromo',
@@ -1789,7 +1984,9 @@
       'example_value': False,
       'id': 96,
       'caption': '''Prevent app promotions from appearing on the new tab page''',
-      'desc': '''When set to True, promotions for Chrome Web Store apps will not appear on the new tab page.''',
+      'desc': '''When set to True, promotions for Chrome Web Store apps will not appear on the new tab page.
+
+      Setting this option to False or leaving it not set will make the promotions for Chrome Web Store apps appear on the new tab page''',
     },
     {
       'name': 'URLBlacklist',
@@ -1809,7 +2006,9 @@
       The optional port is a valid port number from 1 to 65535. If none is specified, all ports are blocked.
       If the optional path is specified, only paths with that prefix will be blocked.
 
-      Exceptions can be defined in the URL whitelist policy. These policies are limited to 100 entries; subsequent entries will be ignored.''',
+      Exceptions can be defined in the URL whitelist policy. These policies are limited to 100 entries; subsequent entries will be ignored.
+
+      If this policy is not set no URL will be blacklisted in the browser.''',
     },
     {
       'name': 'URLWhitelist',
@@ -1827,7 +2026,9 @@
 
       The most specific filter will determine if a URL is blocked or allowed. The whitelist takes precedence over the blacklist.
 
-      This policy is limited to 100 entries; subsequent entries will be ignored.''',
+      This policy is limited to 100 entries; subsequent entries will be ignored.
+
+      If this policy is not set there will be no exceptions to the blacklist from the 'URLBlacklist' policy.''',
     },
     {
       'name': 'OpenNetworkConfiguration',
