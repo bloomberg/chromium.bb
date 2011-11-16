@@ -4,6 +4,7 @@
 
 #include "ui/gfx/native_theme_chromeos.h"
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "grit/gfx_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -239,7 +240,6 @@ const NativeTheme* NativeTheme::instance() {
 
 // static
 const NativeThemeChromeos* NativeThemeChromeos::instance() {
-  // The global NativeThemeChromeos instance.
   CR_DEFINE_STATIC_LOCAL(NativeThemeChromeos, s_native_theme, ());
   return &s_native_theme;
 }

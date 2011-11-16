@@ -4,6 +4,7 @@
 
 #include "ui/gfx/native_theme_aura.h"
 
+#include "base/basictypes.h"
 #include "grit/gfx_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
@@ -24,7 +25,7 @@ const NativeTheme* NativeTheme::instance() {
 
 // static
 const NativeThemeAura* NativeThemeAura::instance() {
-  static const NativeThemeAura s_native_theme;
+  CR_DEFINE_STATIC_LOCAL(NativeThemeAura, s_native_theme, ());
   return &s_native_theme;
 }
 

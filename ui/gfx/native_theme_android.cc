@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "grit/gfx_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -52,8 +53,7 @@ static SkColor BrightenColor(const color_utils::HSL& hsl,
 
 // static
 NativeThemeAndroid* NativeThemeAndroid::instance() {
-  // The global NativeThemeAndroid instance.
-  static NativeThemeAndroid s_native_theme;
+  CR_DEFINE_STATIC_LOCAL(NativeThemeAndroid, s_native_theme, ());
   return &s_native_theme;
 }
 

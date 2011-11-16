@@ -4,6 +4,8 @@
 
 #include "ui/gfx/native_theme_gtk.h"
 
+#include "base/basictypes.h"
+
 namespace gfx {
 
 // static

@@ -9,6 +9,7 @@
 #include <vsstyle.h>
 #include <vssym32.h>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_handle.h"
 #include "base/memory/scoped_ptr.h"
@@ -65,8 +66,7 @@ const NativeTheme* NativeTheme::instance() {
 
 // static
 const NativeThemeWin* NativeThemeWin::instance() {
-  // The global NativeThemeWin instance.
-  static const NativeThemeWin s_native_theme;
+  CR_DEFINE_STATIC_LOCAL(NativeThemeWin, s_native_theme, ());
   return &s_native_theme;
 }
 
