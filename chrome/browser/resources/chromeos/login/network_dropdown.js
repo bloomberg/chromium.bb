@@ -88,7 +88,6 @@ cr.define('cr.ui', function() {
       this.appendChild(this.title_ = this.createTitle_());
       this.appendChild(new DropDownContainer());
 
-      this.isShown = false;
       this.addEventListener('keydown', this.keyDownHandler_);
 
       this.title_.id = this.id + '-dropdown';
@@ -379,6 +378,7 @@ cr.define('cr.ui', function() {
   DropDown.setActive = function(elementId, isActive) {
     if (isActive) {
       DropDown.activeElementId_ = elementId;
+      $(elementId).isShown = false;
       chrome.send('networkDropdownShow', [elementId]);
     } else {
       if (DropDown.activeElementId_ == elementId) {
