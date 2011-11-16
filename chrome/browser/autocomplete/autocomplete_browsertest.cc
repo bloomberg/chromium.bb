@@ -165,13 +165,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
   EXPECT_TRUE(location_bar->location_entry()->IsSelectAll());
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-// http://crbug.com/104307
-#define MAYBE_FocusSearch FLAKY_FocusSearch
-#else
-#define MAYBE_FocusSearch FocusSearch
-#endif
-IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_FocusSearch) {
+IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
   LocationBar* location_bar = GetLocationBar();
 
   // Focus search when omnibox is blank
