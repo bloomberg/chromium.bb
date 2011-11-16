@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/events.h"
+#include "ui/base/keycodes/keyboard_code_conversion.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/touch/touch_factory.h"
 #include "views/widget/root_view.h"
@@ -56,14 +57,14 @@ uint16 KeyEvent::GetCharacter() const {
         return ch;
     }
 #endif
-    return GetCharacterFromKeyCode(key_code_, flags());
+    return ui::GetCharacterFromKeyCode(key_code_, flags());
   }
 
   DCHECK(native_event()->type == KeyPress ||
          native_event()->type == KeyRelease);
 
   uint16 ch = ui::DefaultSymbolFromXEvent(native_event());
-  return ch ? ch : GetCharacterFromKeyCode(key_code_, flags());
+  return ch ? ch : ui::GetCharacterFromKeyCode(key_code_, flags());
 }
 
 uint16 KeyEvent::GetUnmodifiedCharacter() const {
@@ -94,7 +95,7 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
       }
     }
 #endif
-    return GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
+    return ui::GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
   }
 
   DCHECK(native_event()->type == KeyPress ||
@@ -110,7 +111,7 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
   key->state &= ~kIgnoredModifiers;
   uint16 ch = ui::DefaultSymbolFromXEvent(native_event());
   return ch ? ch :
-      GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
+      ui::GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

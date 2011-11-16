@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "ui/aura/event.h"
+#include "ui/base/keycodes/keyboard_code_conversion.h"
 
 namespace views {
 
@@ -35,7 +36,7 @@ TouchEvent::TouchEvent(const NativeEvent& event)
 KeyEvent::KeyEvent(const NativeEvent& native_event)
     : Event(native_event, native_event->type(), native_event->flags()),
       key_code_(static_cast<aura::KeyEvent*>(native_event)->key_code()),
-      character_(GetCharacterFromKeyCode(key_code_, flags())),
+      character_(ui::GetCharacterFromKeyCode(key_code_, flags())),
       unmodified_character_(0) {
 }
 
@@ -47,7 +48,7 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
   if (unmodified_character_)
     return unmodified_character_;
 
-  return GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
+  return ui::GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -5,6 +5,7 @@
 #include "views/events/event.h"
 
 #include "base/logging.h"
+#include "ui/base/keycodes/keyboard_code_conversion.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"
 
@@ -88,109 +89,8 @@ KeyEvent::KeyEvent(ui::EventType type,
                    int event_flags)
     : Event(type, event_flags),
       key_code_(key_code),
-      character_(GetCharacterFromKeyCode(key_code, event_flags)),
+      character_(ui::GetCharacterFromKeyCode(key_code, event_flags)),
       unmodified_character_(0) {
-}
-
-// KeyEvent, private: ---------------------------------------------------------
-
-// static
-uint16 KeyEvent::GetCharacterFromKeyCode(ui::KeyboardCode key_code, int flags) {
-  const bool ctrl = (flags & ui::EF_CONTROL_DOWN) != 0;
-  const bool shift = (flags & ui::EF_SHIFT_DOWN) != 0;
-  const bool upper = shift ^ ((flags & ui::EF_CAPS_LOCK_DOWN) != 0);
-
-  // Following Windows behavior to map ctrl-a ~ ctrl-z to \x01 ~ \x1A.
-  if (key_code >= ui::VKEY_A && key_code <= ui::VKEY_Z)
-    return key_code - ui::VKEY_A + (ctrl ? 1 : (upper ? 'A' : 'a'));
-
-  // Other ctrl characters
-  if (ctrl) {
-    if (shift) {
-      // following graphics chars require shift key to input.
-      switch (key_code) {
-        // ctrl-@ maps to \x00 (Null byte)
-        case ui::VKEY_2:
-          return 0;
-        // ctrl-^ maps to \x1E (Record separator, Information separator two)
-        case ui::VKEY_6:
-          return 0x1E;
-        // ctrl-_ maps to \x1F (Unit separator, Information separator one)
-        case ui::VKEY_OEM_MINUS:
-          return 0x1F;
-        // Returns 0 for all other keys to avoid inputting unexpected chars.
-        default:
-          return 0;
-      }
-    } else {
-      switch (key_code) {
-        // ctrl-[ maps to \x1B (Escape)
-        case ui::VKEY_OEM_4:
-          return 0x1B;
-        // ctrl-\ maps to \x1C (File separator, Information separator four)
-        case ui::VKEY_OEM_5:
-          return 0x1C;
-        // ctrl-] maps to \x1D (Group separator, Information separator three)
-        case ui::VKEY_OEM_6:
-          return 0x1D;
-        // ctrl-Enter maps to \x0A (Line feed)
-        case ui::VKEY_RETURN:
-          return 0x0A;
-        // Returns 0 for all other keys to avoid inputting unexpected chars.
-        default:
-          return 0;
-      }
-    }
-  }
-
-  // Normal characters
-  if (key_code >= ui::VKEY_0 && key_code <= ui::VKEY_9)
-    return shift ? ")!@#$%^&*("[key_code - ui::VKEY_0] : key_code;
-  else if (key_code >= ui::VKEY_NUMPAD0 && key_code <= ui::VKEY_NUMPAD9)
-    return key_code - ui::VKEY_NUMPAD0 + '0';
-
-  switch (key_code) {
-    case ui::VKEY_TAB:
-      return '\t';
-    case ui::VKEY_RETURN:
-      return '\r';
-    case ui::VKEY_MULTIPLY:
-      return '*';
-    case ui::VKEY_ADD:
-      return '+';
-    case ui::VKEY_SUBTRACT:
-      return '-';
-    case ui::VKEY_DECIMAL:
-      return '.';
-    case ui::VKEY_DIVIDE:
-      return '/';
-    case ui::VKEY_SPACE:
-      return ' ';
-    case ui::VKEY_OEM_1:
-      return shift ? ':' : ';';
-    case ui::VKEY_OEM_PLUS:
-      return shift ? '+' : '=';
-    case ui::VKEY_OEM_COMMA:
-      return shift ? '<' : ',';
-    case ui::VKEY_OEM_MINUS:
-      return shift ? '_' : '-';
-    case ui::VKEY_OEM_PERIOD:
-      return shift ? '>' : '.';
-    case ui::VKEY_OEM_2:
-      return shift ? '?' : '/';
-    case ui::VKEY_OEM_3:
-      return shift ? '~' : '`';
-    case ui::VKEY_OEM_4:
-      return shift ? '{' : '[';
-    case ui::VKEY_OEM_5:
-      return shift ? '|' : '\\';
-    case ui::VKEY_OEM_6:
-      return shift ? '}' : ']';
-    case ui::VKEY_OEM_7:
-      return shift ? '"' : '\'';
-    default:
-      return 0;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

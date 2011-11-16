@@ -5,6 +5,7 @@
 #include "views/events/event.h"
 
 #include "base/logging.h"
+#include "ui/base/keycodes/keyboard_code_conversion.h"
 
 namespace views {
 
@@ -15,7 +16,7 @@ uint16 KeyEvent::GetCharacter() const {
   if (character_)
     return character_;
   return (native_event().message == WM_CHAR) ? key_code_ :
-      GetCharacterFromKeyCode(key_code_, flags());
+      ui::GetCharacterFromKeyCode(key_code_, flags());
 }
 
 uint16 KeyEvent::GetUnmodifiedCharacter() const {
@@ -23,7 +24,7 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
     return unmodified_character_;
   // Looks like there is no way to get unmodified character on Windows.
   return (native_event().message == WM_CHAR) ? key_code_ :
-      GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
+      ui::GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
 }
 
 }  // namespace views
