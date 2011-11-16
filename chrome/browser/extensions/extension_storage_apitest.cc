@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #if defined(OS_WIN)
 // Always fails on Windows after r110181: http://crbug.com/104419.
-#define MAYBE_Storage FAILS_Storage
+#define MAYBE_Storage DISABLED_Storage
 #else
 #define MAYBE_Storage Storage
 #endif
