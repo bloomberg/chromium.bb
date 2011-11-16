@@ -2565,7 +2565,7 @@ TEST_F(ViewLayerTest, RootState) {
   EXPECT_EQ(0u, layer->children().size());
   EXPECT_FALSE(layer->transform().HasChange());
   EXPECT_EQ(widget()->GetRootView()->bounds(), layer->bounds());
-  EXPECT_TRUE(layer->compositor() != NULL);
+  EXPECT_TRUE(layer->GetCompositor() != NULL);
 }
 
 // Verifies that the complete bounds of a texture are updated if the texture

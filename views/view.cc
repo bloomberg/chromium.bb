@@ -1779,7 +1779,7 @@ void View::CreateLayer() {
   for (int i = 0, count = child_count(); i < count; ++i)
     child_at(i)->UpdateChildLayerVisibility(true);
 
-  layer_.reset(new ui::Layer(NULL));
+  layer_.reset(new ui::Layer());
   layer_->set_delegate(this);
 
   UpdateParentLayers();

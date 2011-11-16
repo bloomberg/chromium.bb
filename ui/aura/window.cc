@@ -71,7 +71,7 @@ Window::~Window() {
 }
 
 void Window::Init(ui::Layer::LayerType layer_type) {
-  layer_.reset(new ui::Layer(Desktop::GetInstance()->compositor(), layer_type));
+  layer_.reset(new ui::Layer(layer_type));
   layer_->SetVisible(false);
   layer_->set_delegate(this);
 }

@@ -48,10 +48,8 @@ class COMPOSITOR_EXPORT Layer :
     LAYER_HAS_TEXTURE = 1
   };
 
-  // |compositor| can be NULL, and will be set later when the Layer is added to
-  // a Compositor.
-  explicit Layer(Compositor* compositor);
-  Layer(Compositor* compositor, LayerType type);
+  Layer();
+  explicit Layer(LayerType type);
   virtual ~Layer();
 
   // Retrieves the Layer's compositor. The Layer will walk up its parent chain
@@ -151,10 +149,6 @@ class COMPOSITOR_EXPORT Layer :
   const gfx::Rect& invalid_rect() const { return invalid_rect_; }
 
   const gfx::Rect& hole_rect() const {  return hole_rect_; }
-
-  // The compositor.
-  const Compositor* compositor() const { return compositor_; }
-  Compositor* compositor() { return compositor_; }
 
   const ui::Texture* texture() const { return texture_.get(); }
 

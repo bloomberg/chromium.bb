@@ -34,8 +34,8 @@ namespace {
 
 class ColoredLayer : public Layer, public LayerDelegate {
  public:
-  ColoredLayer(Compositor* compositor, SkColor color)
-      : Layer(compositor, Layer::LAYER_HAS_TEXTURE),
+  explicit ColoredLayer(SkColor color)
+      : Layer(Layer::LAYER_HAS_TEXTURE),
         color_(color) {
     set_delegate(this);
   }
@@ -71,11 +71,11 @@ class LayerWithRealCompositorTest : public testing::Test {
   }
 
   Layer* CreateLayer(Layer::LayerType type) {
-    return new Layer(GetCompositor(), type);
+    return new Layer(type);
   }
 
   Layer* CreateColorLayer(SkColor color, const gfx::Rect& bounds) {
-    Layer* layer = new ColoredLayer(GetCompositor(), color);
+    Layer* layer = new ColoredLayer(color);
     layer->SetBounds(bounds);
     return layer;
   }
@@ -203,6 +203,7 @@ bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
 #define MAYBE_Hierarchy DISABLED_Hierarchy
 #define MAYBE_HierarchyNoTexture DISABLED_HierarchyNoTexture
 #define MAYBE_DrawPixels DISABLED_DrawPixels
+#define MAYBE_SetRootLayer DISABLED_SetRootLayer
 #else
 #define MAYBE_Delegate Delegate
 #define MAYBE_Draw Draw
@@ -210,6 +211,7 @@ bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
 #define MAYBE_Hierarchy Hierarchy
 #define MAYBE_HierarchyNoTexture HierarchyNoTexture
 #define MAYBE_DrawPixels DrawPixels
+#define MAYBE_SetRootLayer SetRootLayer
 #endif
 
 TEST_F(LayerWithRealCompositorTest, MAYBE_Draw) {
@@ -257,11 +259,11 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
   Compositor* compositor() { return compositor_.get(); }
 
   virtual Layer* CreateLayer(Layer::LayerType type) {
-    return new Layer(compositor(), type);
+    return new Layer(type);
   }
 
   Layer* CreateColorLayer(SkColor color, const gfx::Rect& bounds) {
-    Layer* layer = new ColoredLayer(compositor(), color);
+    Layer* layer = new ColoredLayer(color);
     layer->SetBounds(bounds);
     return layer;
   }
@@ -461,7 +463,7 @@ class LayerWithNullDelegateTest : public LayerWithDelegateTest {
   }
 
   Layer* CreateLayer(Layer::LayerType type) OVERRIDE {
-    Layer* layer = new Layer(compositor(), type);
+    Layer* layer = new Layer(type);
     layer->set_delegate(default_layer_delegate_.get());
     return layer;
   }
@@ -888,9 +890,9 @@ TEST_F(LayerWithNullDelegateTest,
 
 // Various visibile/drawn assertions.
 TEST_F(LayerWithNullDelegateTest, Visibility) {
-  scoped_ptr<Layer> l1(new Layer(NULL, Layer::LAYER_HAS_TEXTURE));
-  scoped_ptr<Layer> l2(new Layer(NULL, Layer::LAYER_HAS_TEXTURE));
-  scoped_ptr<Layer> l3(new Layer(NULL, Layer::LAYER_HAS_TEXTURE));
+  scoped_ptr<Layer> l1(new Layer(Layer::LAYER_HAS_TEXTURE));
+  scoped_ptr<Layer> l2(new Layer(Layer::LAYER_HAS_TEXTURE));
+  scoped_ptr<Layer> l3(new Layer(Layer::LAYER_HAS_TEXTURE));
   l1->Add(l2.get());
   l2->Add(l3.get());
 
@@ -997,6 +999,32 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_DrawPixels) {
       is_all_red = is_all_red && (bitmap.getColor(x, y) == SK_ColorRED);
 
   EXPECT_TRUE(is_all_red);
+}
+
+// Checks the logic around Compositor::SetRootLayer and Layer::SetCompositor.
+TEST_F(LayerWithRealCompositorTest, MAYBE_SetRootLayer) {
+  Compositor* compositor = GetCompositor();
+  Layer l1;
+  EXPECT_EQ(NULL, l1.GetCompositor());
+
+  Layer l2;
+  EXPECT_EQ(NULL, l2.GetCompositor());
+
+  compositor->SetRootLayer(&l1);
+  EXPECT_EQ(compositor, l1.GetCompositor());
+
+  l1.Add(&l2);
+  EXPECT_EQ(compositor, l2.GetCompositor());
+
+  l1.Remove(&l2);
+  EXPECT_EQ(NULL, l2.GetCompositor());
+
+  l1.Add(&l2);
+  EXPECT_EQ(compositor, l2.GetCompositor());
+
+  compositor->SetRootLayer(NULL);
+  EXPECT_EQ(NULL, l1.GetCompositor());
+  EXPECT_EQ(NULL, l2.GetCompositor());
 }
 
 } // namespace ui

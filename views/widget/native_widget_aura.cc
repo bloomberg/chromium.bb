@@ -201,11 +201,11 @@ Widget* NativeWidgetAura::GetTopLevelWidget() {
 }
 
 const ui::Compositor* NativeWidgetAura::GetCompositor() const {
-  return window_->layer()->compositor();
+  return window_->layer()->GetCompositor();
 }
 
 ui::Compositor* NativeWidgetAura::GetCompositor() {
-  return window_->layer()->compositor();
+  return window_->layer()->GetCompositor();
 }
 
 void NativeWidgetAura::CalculateOffsetToAncestorWithLayer(

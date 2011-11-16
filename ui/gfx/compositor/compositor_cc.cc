@@ -174,7 +174,8 @@ void CompositorCC::OnWidgetSizeChanged() {
 
 void CompositorCC::OnRootLayerChanged() {
   root_web_layer_.removeAllChildren();
-  root_web_layer_.addChild(root_layer()->web_layer());
+  if (root_layer())
+    root_web_layer_.addChild(root_layer()->web_layer());
 }
 
 void CompositorCC::DrawTree() {

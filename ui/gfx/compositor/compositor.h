@@ -122,7 +122,10 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   // Schedules a redraw of the layer tree associated with this compositor.
   virtual void ScheduleDraw();
 
-  // Sets the root of the layer tree drawn by this Compositor.
+  // Sets the root of the layer tree drawn by this Compositor. The root layer
+  // must have no parent. The compositor's root layer is reset if the root layer
+  // is destroyed. NULL can be passed to reset the root layer, in which case the
+  // compositor will stop drawing anything.
   // The Compositor does not own the root layer.
   const Layer* root_layer() const { return root_layer_; }
   Layer* root_layer() { return root_layer_; }

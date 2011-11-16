@@ -26,6 +26,8 @@ Compositor::Compositor(CompositorDelegate* delegate, const gfx::Size& size)
 }
 
 Compositor::~Compositor() {
+  if (root_layer_)
+    root_layer_->SetCompositor(NULL);
 }
 
 void Compositor::ScheduleDraw() {
@@ -33,8 +35,10 @@ void Compositor::ScheduleDraw() {
 }
 
 void Compositor::SetRootLayer(Layer* root_layer) {
+  if (root_layer_)
+    root_layer_->SetCompositor(NULL);
   root_layer_ = root_layer;
-  if (!root_layer_->GetCompositor())
+  if (root_layer_ && !root_layer_->GetCompositor())
     root_layer_->SetCompositor(this);
   OnRootLayerChanged();
 }

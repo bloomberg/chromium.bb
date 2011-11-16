@@ -32,13 +32,17 @@ bool IsApproximateMultilpleOf(float value, float base) {
   return remainder < EPSILON || base - remainder < EPSILON;
 }
 
+const ui::Layer* GetRoot(const ui::Layer* layer) {
+  return layer->parent() ? GetRoot(layer->parent()) : layer;
+}
+
 }  // namespace
 
 namespace ui {
 
-Layer::Layer(Compositor* compositor)
+Layer::Layer()
     : type_(LAYER_HAS_TEXTURE),
-      compositor_(compositor),
+      compositor_(NULL),
       parent_(NULL),
       visible_(true),
       fills_bounds_opaquely_(true),
@@ -51,9 +55,9 @@ Layer::Layer(Compositor* compositor)
 #endif
 }
 
-Layer::Layer(Compositor* compositor, LayerType type)
+Layer::Layer(LayerType type)
     : type_(type),
-      compositor_(compositor),
+      compositor_(NULL),
       parent_(NULL),
       visible_(true),
       fills_bounds_opaquely_(true),
@@ -67,6 +71,8 @@ Layer::Layer(Compositor* compositor, LayerType type)
 }
 
 Layer::~Layer() {
+  if (compositor_)
+    compositor_->SetRootLayer(NULL);
   if (parent_)
     parent_->Remove(this);
   for (size_t i = 0; i < children_.size(); ++i)
@@ -77,19 +83,20 @@ Layer::~Layer() {
 }
 
 Compositor* Layer::GetCompositor() {
-  return compositor_ ? compositor_ : parent_ ? parent_->GetCompositor() : NULL;
+  return GetRoot(this)->compositor_;
 }
 
 void Layer::SetCompositor(Compositor* compositor) {
-  // This function must only be called once, with a valid compositor, and only
-  // for the compositor's root layer.
-  DCHECK(!compositor_);
-  DCHECK(compositor);
-  DCHECK_EQ(compositor->root_layer(), this);
+  // This function must only be called to set the compositor on the root layer,
+  // or to reset it.
+  DCHECK(!compositor || !compositor_);
+  DCHECK(!compositor || compositor->root_layer() == this);
+  DCHECK(!parent_);
   compositor_ = compositor;
 }
 
 void Layer::Add(Layer* child) {
+  DCHECK(!child->compositor_);
   if (child->parent_)
     child->parent_->Remove(child);
   child->parent_ = this;
@@ -235,8 +242,8 @@ void Layer::ConvertPointToLayer(const Layer* source,
   if (source == target)
     return;
 
-  const Layer* root_layer = source->compositor()->root_layer();
-  CHECK_EQ(root_layer, target->compositor()->root_layer());
+  const Layer* root_layer = GetRoot(source);
+  CHECK_EQ(root_layer, GetRoot(target));
 
   if (source != root_layer)
     source->ConvertPointForAncestor(root_layer, point);
