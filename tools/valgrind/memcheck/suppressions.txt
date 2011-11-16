@@ -1049,10 +1049,10 @@
 }
 {
    # very common in ui tests
-   bug_16089
+   bug_16089a
    Memcheck:Leak
-   fun:*
-   fun:_ZN4base22PosixDynamicThreadPool8PostTaskEP4Task
+   ...
+   fun:_ZN4base22PosixDynamicThreadPool8PostTask*
    ...
    fun:_ZN3net12HostResolver3Job5StartEv
 }
@@ -1061,7 +1061,7 @@
    bug_16089b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN4base22PosixDynamicThreadPool8PostTaskEP4Task
+   fun:_ZN4base22PosixDynamicThreadPool8PostTask*
    ...
    fun:_ZN18chrome_browser_net9DnsMaster24PreLockedScheduleLookupsEv
 }
@@ -1070,7 +1070,7 @@
    bug_16089c
    Memcheck:Leak
    ...
-   fun:_ZN4base22PosixDynamicThreadPool8PostTaskEP4Task
+   fun:_ZN4base22PosixDynamicThreadPool8PostTask*
    ...
    fun:_ZN3net13TCPConnectJob13DoResolveHostEv
 }
@@ -1080,7 +1080,7 @@
    Memcheck:Leak
    fun:*
    ...
-   fun:_ZN4base22PosixDynamicThreadPool8PostTaskEP4Task
+   fun:_ZN4base22PosixDynamicThreadPool8PostTask*
    ...
    fun:_ZN3net16HostResolverImpl3Job5StartEv
 }
@@ -1090,7 +1090,7 @@
    Memcheck:Leak
    fun:*
    ...
-   fun:_ZN4base22PosixDynamicThreadPool8PostTaskEP4Task
+   fun:_ZN4base22PosixDynamicThreadPool8PostTask*
    ...
    fun:_ZN3net16HostResolverImpl16ProbeIPv6SupportEv
 }
@@ -1099,9 +1099,18 @@
    bug_16089f
    Memcheck:Leak
    ...
-   fun:_ZN4base22PosixDynamicThreadPool8PostTaskEP4Task
+   fun:_ZN4base22PosixDynamicThreadPool8PostTask*
    ...
    fun:_ZN7fileapi23FileSystemURLRequestJob11ReadRawDataEPN3net8IOBufferEiPi
+}
+{
+   # ditto, but for fileapi::FileWriter
+   bug_16089g
+   Memcheck:Leak
+   ...
+   fun:_ZN4base22PosixDynamicThreadPool8PostTask*
+   ...
+   fun:_ZN7fileapi18FileWriterDelegate5WriteEv
 }
 {
    # very common in ui tests
@@ -4761,10 +4770,6 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN27SQLitePersistentCookieStore7Backend21LoadCookiesForDomainsERKSt3setISsSt4lessISsESaISsEE
-   ...
-   fun:_ZN4base8internal8Invoker*
-   fun:_ZNK4base8CallbackIFvvEE3RunEv
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
    bug_100647
