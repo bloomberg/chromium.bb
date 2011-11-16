@@ -1810,7 +1810,7 @@ FileManager.prototype = {
           selection.iconType = 'unknown';
       }
 
-      if (thumbnailCount < MAX_PREVIEW_THUMBAIL_COUNT) {
+      if (thumbnailCount < MAX_PREVIEW_THUMBAIL_COUNT && entry.isFile) {
         var thumbnail = this.renderThumbnailBox_(entry, true);
         thumbnail.style.zIndex = MAX_PREVIEW_THUMBAIL_COUNT + 1 - i;
         this.previewThumbnails_.appendChild(thumbnail);
