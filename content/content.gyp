@@ -22,8 +22,14 @@
    # upstream unnecessarily (e.g., content_renderer depends on allocator
    # and chrome_exe depends on content_common but we don't want
    # chrome_exe to have to depend on allocator).
-   # TODO(dpranke): Uncomment: ['component == "static_library"', {
-   ['1 == 1', {
+   #
+   # TODO(dpranke): Remove the mac conditional once the circular
+   # dependencies in WebKit.gyp are fixed.
+   # See https://bugs.webkit.org/show_bug.cgi?id=68463
+   ['OS=="mac" or component=="static_library" or incremental_chrome_dll==1', {
+     'target_defines': [
+       'COMPILE_CONTENT_STATICALLY',
+     ],
      'targets': [
       {'target_name': 'content',
        'type': 'none',
@@ -192,8 +198,6 @@
       ],
     },
     { # component != static_library
-     'target_defaults': {
-     },
      'targets': [
       {'target_name': 'content',
        'type': 'shared_library',

@@ -89,7 +89,7 @@ class CONTENT_EXPORT AudioInputDevice
       public base::DelegateSimpleThread::Delegate,
       public base::RefCountedThreadSafe<AudioInputDevice> {
  public:
-  class CaptureCallback {
+  class CONTENT_EXPORT CaptureCallback {
    public:
     virtual void Capture(const std::vector<float*>& audio_data,
                          size_t number_of_frames,
@@ -98,7 +98,7 @@ class CONTENT_EXPORT AudioInputDevice
     virtual ~CaptureCallback() {}
   };
 
-  class CaptureEventHandler {
+  class CONTENT_EXPORT CaptureEventHandler {
    public:
     // Notification to the client that the device with the specific index has
     // been started. This callback is triggered as a result of StartDevice().

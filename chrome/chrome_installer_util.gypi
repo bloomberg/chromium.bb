@@ -97,13 +97,13 @@
           },
           'dependencies': [
             'installer_util_strings',
-            '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
             'common_constants',
             'chrome_resources.gyp:chrome_resources',
             'chrome_resources.gyp:chrome_strings',
-            '../content/content.gyp:content_common',
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+            '<(DEPTH)/content/content.gyp:content_common',
             '<(DEPTH)/courgette/courgette.gyp:courgette_lib',
             '<(DEPTH)/third_party/bspatch/bspatch.gyp:bspatch',
             '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
@@ -140,6 +140,14 @@
             'installer/util/self_cleaning_temp_dir.h',
             'installer/util/shell_util.cc',
             'installer/util/shell_util.h',
+          ],
+          'conditions': [
+            ['component=="shared_library" and incremental_chrome_dll!=1', {
+              'sources': [ '../content/public/common/content_switches.cc' ],
+              'defines': [ 'COMPILE_CONTENT_STATICALLY'],
+            }, {
+              'dependencies': ['<(DEPTH)/content/content.gyp:content_common'],
+            }],
           ],
         },
         {
@@ -186,8 +194,15 @@
           'include_dirs': [
             '<(DEPTH)',
           ],
+          'conditions': [
+            ['component == "shared_library"', {
+              'sources': [ '../content/public/common/content_switches.cc' ],
+              'defines': [ 'COMPILE_CONTENT_STATICALLY'],
+            }],
+          ],
         }
       ],
     }],
+
   ],
 }

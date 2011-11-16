@@ -59,7 +59,7 @@ struct CustomContextMenuContext;
 class TransportDIB;
 
 // This object is NOT thread-safe.
-class BrokerDispatcherWrapper {
+class CONTENT_EXPORT BrokerDispatcherWrapper {
  public:
   BrokerDispatcherWrapper();
   ~BrokerDispatcherWrapper();

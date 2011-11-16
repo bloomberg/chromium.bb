@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "content/browser/browser_child_process_host.h"
+#include "content/common/content_export.h"
 #include "content/browser/worker_host/worker_document_set.h"
 #include "googleurl/src/gurl.h"
 
@@ -132,7 +133,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
                         unsigned long long document_id);
 
   // Terminates the given worker, i.e. based on a UI action.
-  void TerminateWorker(int worker_route_id);
+  CONTENT_EXPORT void TerminateWorker(int worker_route_id);
 
   typedef std::list<WorkerInstance> Instances;
   const Instances& instances() const { return instances_; }

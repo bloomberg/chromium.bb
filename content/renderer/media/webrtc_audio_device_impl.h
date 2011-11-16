@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
@@ -92,7 +93,7 @@
 //  - Recording is currently not supported on Mac OS X.
 //
 class CONTENT_EXPORT WebRtcAudioDeviceImpl
-    : public webrtc::AudioDeviceModule,
+    : NON_EXPORTED_BASE(public webrtc::AudioDeviceModule),
       public AudioDevice::RenderCallback,
       public AudioInputDevice::CaptureCallback,
       public AudioInputDevice::CaptureEventHandler {

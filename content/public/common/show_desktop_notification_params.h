@@ -6,13 +6,14 @@
 #define CONTENT_PUBLIC_COMMON_SHOW_DESKTOP_NOTIFICATION_PARAMS_H_
 #pragma once
 
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 
 namespace content {
 
 // Parameters used when showing an HTML5 notification.
-struct ShowDesktopNotificationHostMsgParams {
+struct CONTENT_EXPORT ShowDesktopNotificationHostMsgParams {
   ShowDesktopNotificationHostMsgParams();
   ~ShowDesktopNotificationHostMsgParams();
 
