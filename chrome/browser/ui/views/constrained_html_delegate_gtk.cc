@@ -122,6 +122,8 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
 }
 
 ConstrainedHtmlDelegateGtk::~ConstrainedHtmlDelegateGtk() {
+  if (release_tab_on_close_)
+    ignore_result(html_tab_contents_.release());
 }
 
 HtmlDialogUIDelegate* ConstrainedHtmlDelegateGtk::GetHtmlDialogUIDelegate() {
