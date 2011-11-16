@@ -41,7 +41,7 @@ class BitmapPlatformDevice : public PlatformDevice, public SkDevice {
   virtual ~BitmapPlatformDevice();
 
   // PlatformDevice overrides
-  virtual CGContextRef GetBitmapContext();
+  virtual CGContextRef GetBitmapContext() OVERRIDE;
   virtual void DrawToNativeContext(CGContextRef context, int x, int y,
                                    const CGRect* src_rect) OVERRIDE;
 
