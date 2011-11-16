@@ -98,18 +98,23 @@ unarchive-for-hw-bots() {
 # makes sense to run for ARM.
 gyp-arm-build() {
   gypmode=$1
+  TOOLCHAIN_DIR=native_client/toolchain/linux_arm-trusted
+  EXTRA="-isystem ${TOOLCHAIN_DIR}/usr/include \
+         -L${TOOLCHAIN_DIR}/lib \
+         -L${TOOLCHAIN_DIR}/lib/arm-linux-gnueabi \
+         -L${TOOLCHAIN_DIR}/usr/lib \
+         -L${TOOLCHAIN_DIR}/usr/lib/arm-linux-gnueabi"
   # Setup environment for arm.
-  export TOOLCHAIN_DIR=native_client/toolchain/linux_arm-trusted/arm-2009q3
-  export TOOLCHAIN_BIN=${TOOLCHAIN_DIR}/bin
-  export AR=${TOOLCHAIN_BIN}/arm-none-linux-gnueabi-ar
-  export AS=${TOOLCHAIN_BIN}/arm-none-linux-gnueabi-as
-  export CC=${TOOLCHAIN_BIN}/arm-none-linux-gnueabi-gcc
-  export CXX=${TOOLCHAIN_BIN}/arm-none-linux-gnueabi-g++
-  export LD=${TOOLCHAIN_BIN}/arm-none-linux-gnueabi-ld
-  export RANLIB=${TOOLCHAIN_BIN}/arm-none-linux-gnueabi-ranlib
+
+  export AR=arm-linux-gnueabi-ar
+  export AS=arm-linux-gnueabi-as
+  export CC="arm-linux-gnueabi-gcc-4.5 ${EXTRA} "
+  export CXX="arm-linux-gnueabi-g++-4.5 ${EXTRA} "
+  export LD=arm-linux-gnueabi-ld
+  export RANLIB=arm-linux-gnueabi-ranlib
   export SYSROOT
   export GYP_DEFINES="target_arch=arm \
-    sysroot=${TOOLCHAIN_DIR}/arm-none-linux-gnueabi/libc \
+    sysroot=${TOOLCHAIN_DIR} \
     linux_use_tcmalloc=0 armv7=1 arm_thumb=1"
   export GYP_GENERATOR=make
 
