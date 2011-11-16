@@ -431,6 +431,7 @@
       '-netflix.NetflixTest.testPlaying',
       # Youtube perf test
       '-perf.YoutubePerfTest.testYoutubeDroppedFrames',
+      '-perf.YoutubePerfTest.testYoutubeCPU',
     ],
   },
 
