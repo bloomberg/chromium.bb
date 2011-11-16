@@ -6895,6 +6895,12 @@
             "description": "Whether it is currently enabled or disabled.",
             "type": "boolean"
           },
+          "disabledReason": {
+            "description": "A reason the item is disabled.",
+            "type": "string",
+            "enum": ["unknown", "permissions_increase"],
+            "optional": true
+          },
           "isApp": {
             "description": "True if this is an app.",
             "type": "boolean"

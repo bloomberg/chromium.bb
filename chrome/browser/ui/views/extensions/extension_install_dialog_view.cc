@@ -303,7 +303,7 @@ void ExtensionInstallDialogView::LinkClicked(views::Link* source,
   GetWidget()->Close();
 }
 
-void ShowExtensionInstallDialog(
+void ShowExtensionInstallDialogImpl(
     Profile* profile,
     ExtensionInstallUI::Delegate* delegate,
     const Extension* extension,

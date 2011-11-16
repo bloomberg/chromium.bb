@@ -93,7 +93,7 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
     // API functions.
     host_resolver()->AddRule("www.example.com", "127.0.0.1");
     ASSERT_TRUE(test_server()->Start());
-    SetExtensionInstallDialogForManifestAutoConfirmForTests(true);
+    SetExtensionInstallDialogAutoConfirmForTests(true);
     ExtensionInstallUI::DisableFailureUIForTests();
   }
 
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallLocalized) {
 
 // Now test the case where the user cancels the confirmation dialog.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallCancelled) {
-  SetExtensionInstallDialogForManifestAutoConfirmForTests(false);
+  SetExtensionInstallDialogAutoConfirmForTests(false);
   ASSERT_TRUE(RunInstallTest("cancelled.html", "extension.crx"));
 }
 

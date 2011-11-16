@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -158,6 +159,60 @@ void RunFunction(UIThreadExtensionFunction* function,
   function->set_profile(browser->profile());
   function->set_include_incognito(flags & INCLUDE_INCOGNITO);
   function->Run();
+}
+
+// This helps us be able to wait until an AsyncExtensionFunction calls
+// SendResponse.
+class SendResponseDelegate : public AsyncExtensionFunction::DelegateForTests {
+ public:
+  SendResponseDelegate() : should_post_quit_(false) {}
+
+  virtual ~SendResponseDelegate() {}
+
+  void set_should_post_quit(bool should_quit) {
+    should_post_quit_ = should_quit;
+  }
+
+  bool HasResponse() {
+    return response_.get() != NULL;
+  }
+
+  bool GetResponse() {
+    EXPECT_TRUE(HasResponse());
+    return *response_.get();
+  }
+
+  virtual void OnSendResponse(AsyncExtensionFunction* function, bool success) {
+    ASSERT_FALSE(HasResponse());
+    response_.reset(new bool);
+    *response_ = success;
+    if (should_post_quit_) {
+      MessageLoopForUI::current()->Quit();
+    }
+  }
+
+ private:
+  scoped_ptr<bool> response_;
+  bool should_post_quit_;
+};
+
+bool RunAsyncFunction(AsyncExtensionFunction* function,
+                      const std::string& args,
+                      Browser* browser,
+                      RunFunctionFlags flags) {
+  SendResponseDelegate response_delegate;
+  function->set_test_delegate(&response_delegate);
+  RunFunction(function, args, browser, flags);
+
+  // If the RunImpl of |function| didn't already call SendResponse, run the
+  // message loop until they do.
+  if (!response_delegate.HasResponse()) {
+    response_delegate.set_should_post_quit(true);
+    ui_test_utils::RunMessageLoop();
+  }
+
+  EXPECT_TRUE(response_delegate.HasResponse());
+  return response_delegate.GetResponse();
 }
 
 } // namespace extension_function_test_utils

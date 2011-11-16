@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 
+class AsyncExtensionFunction;
 class Browser;
 class Extension;
 class UIThreadExtensionFunction;
@@ -83,6 +84,13 @@ void RunFunction(UIThreadExtensionFunction* function,
                  const std::string& args,
                  Browser* browser,
                  RunFunctionFlags flags);
+
+// Similar to RunFunction, but doesn't return until |function| calls
+// SendResponse. Returns the value |function| passed to SendResponse.
+bool RunAsyncFunction(AsyncExtensionFunction* function,
+                      const std::string& args,
+                      Browser* browser,
+                      RunFunctionFlags flags);
 
 } // namespace extension_function_test_utils
 

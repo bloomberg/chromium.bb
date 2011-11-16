@@ -20,12 +20,18 @@ namespace base {
 class DictionaryValue;
 }
 
-// The implementations of this function are platform-specific.
 void ShowExtensionInstallDialog(Profile* profile,
                                 ExtensionInstallUI::Delegate* delegate,
                                 const Extension* extension,
                                 SkBitmap* icon,
                                 const ExtensionInstallUI::Prompt& prompt);
+
+// The implementations of this function are platform-specific.
+void ShowExtensionInstallDialogImpl(Profile* profile,
+                                    ExtensionInstallUI::Delegate* delegate,
+                                    const Extension* extension,
+                                    SkBitmap* icon,
+                                    const ExtensionInstallUI::Prompt& prompt);
 
 // Wrapper around ShowExtensionInstallDialog that shows the install dialog for
 // a given manifest (that corresponds to an extension about to be installed with
@@ -49,9 +55,9 @@ bool ShowExtensionInstallDialogForManifest(
     scoped_refptr<Extension>* dummy_extension);
 
 // For use only in tests - sets a flag that makes invocations of
-// ShowExtensionInstallDialogForManifest skip putting up a real dialog, and
+// ShowExtensionInstallDialog* skip putting up a real dialog, and
 // instead act as if the dialog choice was to proceed or abort.
-void SetExtensionInstallDialogForManifestAutoConfirmForTests(
+void SetExtensionInstallDialogAutoConfirmForTests(
     bool should_proceed);
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_DIALOG_H_
