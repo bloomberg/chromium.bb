@@ -772,10 +772,10 @@ void BrowserView::EnterFullscreen(
   if (IsFullscreen())
     return;  // Nothing to do.
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
   ProcessFullscreen(true, url, bubble_type);
 #else
-  // On Linux changing fullscreen is async. Ask the window to change it's
+  // On Linux/gtk changing fullscreen is async. Ask the window to change it's
   // fullscreen state, and when done invoke ProcessFullscreen.
   fullscreen_request_.pending = true;
   fullscreen_request_.url = url;
@@ -788,7 +788,7 @@ void BrowserView::ExitFullscreen() {
   if (!IsFullscreen())
     return;  // Nothing to do.
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
   ProcessFullscreen(false, GURL(), FEB_TYPE_NONE);
 #else
   fullscreen_request_.pending = false;
@@ -2245,10 +2245,10 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 #endif
 
   // Toggle fullscreen mode.
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN) || defined(USE_AURA)
   frame_->SetFullscreen(fullscreen);
-#endif  // No need to invoke SetFullscreen for linux as this code is executed
-        // once we're already fullscreen on linux.
+#endif  // No need to invoke SetFullscreen for linux/gtk as this code
+        // is executed once we're already fullscreen on linux.
 
   browser_->WindowFullscreenStateChanged();
 

@@ -48,8 +48,12 @@
 #include "ui/aura/desktop.h"
 #endif
 
+namespace {
+
 // Passed as value of kTestType.
-static const char kBrowserTestType[] = "browser";
+const char kBrowserTestType[] = "browser";
+
+}  // namespace
 
 InProcessBrowserTest::InProcessBrowserTest()
     : browser_(NULL),
@@ -273,12 +277,8 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 #endif
 
   // Pump startup related events.
-#if defined(USE_AURA)
-  MessageLoopForUI::current()->RunAllPendingWithDispatcher(
-      aura::Desktop::GetInstance()->GetDispatcher());
-#else
-  MessageLoopForUI::current()->RunAllPending();
-#endif
+  ui_test_utils::RunAllPendingInMessageLoop();
+
 #if defined(OS_MACOSX)
   pool.Recycle();
 #endif
@@ -290,7 +290,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 
   // Pump any pending events that were created as a result of creating a
   // browser.
-  MessageLoopForUI::current()->RunAllPending();
+  ui_test_utils::RunAllPendingInMessageLoop();
 
   SetUpOnMainThread();
 #if defined(OS_MACOSX)

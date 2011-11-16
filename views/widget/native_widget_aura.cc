@@ -349,7 +349,13 @@ void NativeWidgetAura::SetShape(gfx::NativeRegion region) {
 }
 
 void NativeWidgetAura::Close() {
-  Hide();
+  // |window_| may already be deleted by parent window. This can happen
+  // when this widget is child widget or has transient parent
+  // and ownership is WIDGET_OWNS_NATIVE_WIDGET.
+  DCHECK(window_ ||
+         ownership_ == Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
+  if (window_)
+    Hide();
 
   window_->SetIntProperty(aura::kModalKey, 0);
 
