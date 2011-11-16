@@ -70,8 +70,6 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) OVERRIDE;
   virtual PP_Resource CreateFlashNetConnector(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateFlashTCPSocket(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateFlashUDPSocket(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateFontObject(
       PP_Instance instance,
       const PP_FontDescription_Dev* description) OVERRIDE;
@@ -109,9 +107,11 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual PP_Resource CreateSurface3D(PP_Instance instance,
                                       PP_Config3D_Dev config,
                                       const int32_t* attrib_list) OVERRIDE;
+  virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateTransport(PP_Instance instance,
                                       const char* name,
                                       PP_TransportType type) OVERRIDE;
+  virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLRequestInfo(
       PP_Instance instance,

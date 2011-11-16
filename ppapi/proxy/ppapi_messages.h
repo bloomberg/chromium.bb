@@ -29,7 +29,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/dev/pp_video_dev.h"
-#include "ppapi/c/private/ppb_flash_tcp_socket.h"
+#include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
@@ -251,40 +251,40 @@ IPC_MESSAGE_ROUTED5(PpapiMsg_PPBFlashNetConnector_ConnectACK,
                     std::string /* local_addr_as_string */,
                     std::string /* remote_addr_as_string */)
 
-// PPB_Flash_TCPSocket.
-IPC_MESSAGE_ROUTED5(PpapiMsg_PPBFlashTCPSocket_ConnectACK,
+// PPB_TCPSocket_Private.
+IPC_MESSAGE_ROUTED5(PpapiMsg_PPBTCPSocket_ConnectACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,
                     bool /* succeeded */,
                     PP_NetAddress_Private /* local_addr */,
                     PP_NetAddress_Private /* remote_addr */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPBFlashTCPSocket_SSLHandshakeACK,
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPBTCPSocket_SSLHandshakeACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,
                     bool /* succeeded */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPBFlashTCPSocket_ReadACK,
+IPC_MESSAGE_ROUTED4(PpapiMsg_PPBTCPSocket_ReadACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,
                     bool /* succeeded */,
                     std::string /* data */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPBFlashTCPSocket_WriteACK,
+IPC_MESSAGE_ROUTED4(PpapiMsg_PPBTCPSocket_WriteACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,
                     bool /* succeeded */,
                     int32_t /* bytes_written */)
 
-// PPB_Flash_UDPSocket
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPBFlashUDPSocket_BindACK,
+// PPB_UDPSocket_Private
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPBUDPSocket_BindACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,
                     bool /* succeeded */)
-IPC_MESSAGE_ROUTED5(PpapiMsg_PPBFlashUDPSocket_RecvFromACK,
+IPC_MESSAGE_ROUTED5(PpapiMsg_PPBUDPSocket_RecvFromACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,
                     bool /* succeeded */,
                     std::string /* data */,
                     PP_NetAddress_Private /* remote_addr */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPBFlashUDPSocket_SendToACK,
+IPC_MESSAGE_ROUTED4(PpapiMsg_PPBUDPSocket_SendToACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,
                     bool /* succeeded */,
@@ -737,47 +737,47 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlashNetConnector_ConnectTcpAddress,
                     ppapi::HostResource /* connector */,
                     std::string /* net_address_as_string */)
 
-// PPB_Flash_TCPSocket.
-IPC_SYNC_MESSAGE_CONTROL2_1(PpapiHostMsg_PPBFlashTCPSocket_Create,
+// PPB_TCPSocket_Private.
+IPC_SYNC_MESSAGE_CONTROL2_1(PpapiHostMsg_PPBTCPSocket_Create,
                             int32 /* routing_id */,
                             uint32 /* plugin_dispatcher_id */,
                             uint32 /* socket_id */)
-IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBFlashTCPSocket_Connect,
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBTCPSocket_Connect,
                      uint32 /* socket_id */,
                      std::string /* host */,
                      uint16_t /* port */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashTCPSocket_ConnectWithNetAddress,
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress,
                      uint32 /* socket_id */,
                      PP_NetAddress_Private /* net_addr */)
-IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBFlashTCPSocket_SSLHandshake,
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBTCPSocket_SSLHandshake,
                      uint32 /* socket_id */,
                      std::string /* server_name */,
                      uint16_t /* server_port */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashTCPSocket_Read,
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBTCPSocket_Read,
                      uint32 /* socket_id */,
                      int32_t /* bytes_to_read */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashTCPSocket_Write,
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBTCPSocket_Write,
                      uint32 /* socket_id */,
                      std::string /* data */)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBFlashTCPSocket_Disconnect,
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBTCPSocket_Disconnect,
                      uint32 /* socket_id */)
 
-// PPB_Flash_UDPSocket
-IPC_SYNC_MESSAGE_CONTROL2_1(PpapiHostMsg_PPBFlashUDPSocket_Create,
+// PPB_UDPSocket_Private.
+IPC_SYNC_MESSAGE_CONTROL2_1(PpapiHostMsg_PPBUDPSocket_Create,
                             int32 /* routing_id */,
                             uint32 /* plugin_dispatcher_id */,
                             uint32 /* socket_id */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashUDPSocket_Bind,
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBUDPSocket_Bind,
                      uint32 /* socket_id */,
                      PP_NetAddress_Private /* net_addr */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashUDPSocket_RecvFrom,
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBUDPSocket_RecvFrom,
                      uint32 /* socket_id */,
                      int32_t /* num_bytes */)
-IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBFlashUDPSocket_SendTo,
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBUDPSocket_SendTo,
                      uint32 /* socket_id */,
                      std::string /* data */,
                      PP_NetAddress_Private /* net_addr */)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBFlashUDPSocket_Close,
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBUDPSocket_Close,
                      uint32 /* socket_id */)
 
 // PPB_Font.

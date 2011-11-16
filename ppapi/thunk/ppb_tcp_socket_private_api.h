@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_THUNK_PPB_FLASH_TCP_SOCKET_API_H_
-#define PPAPI_THUNK_PPB_FLASH_TCP_SOCKET_API_H_
+#ifndef PPAPI_THUNK_PPB_TCP_SOCKET_PRIVATE_API_H_
+#define PPAPI_THUNK_PPB_TCP_SOCKET_PRIVATE_API_H_
 
-#include "ppapi/c/private/ppb_flash_tcp_socket.h"
+#include "ppapi/c/private/ppb_tcp_socket_private.h"
 
 namespace ppapi {
 namespace thunk {
 
-class PPB_Flash_TCPSocket_API {
+class PPB_TCPSocket_Private_API {
  public:
-  virtual ~PPB_Flash_TCPSocket_API() {}
+  virtual ~PPB_TCPSocket_Private_API() {}
 
   virtual int32_t Connect(const char* host,
                           uint16_t port,
@@ -36,4 +36,4 @@ class PPB_Flash_TCPSocket_API {
 }  // namespace thunk
 }  // namespace ppapi
 
-#endif  // PPAPI_THUNK_PPB_FLASH_TCP_SOCKET_API_H_
+#endif  // PPAPI_THUNK_PPB_TCP_SOCKET_PRIVATE_API_H_

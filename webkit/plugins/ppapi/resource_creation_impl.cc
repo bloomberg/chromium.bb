@@ -139,18 +139,6 @@ PP_Resource ResourceCreationImpl::CreateFlashNetConnector(
   return (new PPB_Flash_NetConnector_Impl(instance))->GetReference();
 }
 
-PP_Resource ResourceCreationImpl::CreateFlashTCPSocket(
-    PP_Instance instance) {
-  // Creating TCP socket resource at the renderer side is not supported.
-  return 0;
-}
-
-PP_Resource ResourceCreationImpl::CreateFlashUDPSocket(
-    PP_Instance instance) {
-  // Creating UDP socket resource at the renderer side is not supported.
-  return 0;
-}
-
 PP_Resource ResourceCreationImpl::CreateFontObject(
     PP_Instance instance,
     const PP_FontDescription_Dev* description) {
@@ -255,12 +243,23 @@ PP_Resource ResourceCreationImpl::CreateSurface3D(
   return PPB_Surface3D_Impl::Create(instance, config, attrib_list);
 }
 
+
+PP_Resource ResourceCreationImpl::CreateTCPSocketPrivate(PP_Instance instance) {
+  // Creating TCP socket resource at the renderer side is not supported.
+  return 0;
+}
+
 PP_Resource ResourceCreationImpl::CreateTransport(PP_Instance instance,
                                                   const char* name,
                                                   PP_TransportType type) {
 #if defined(ENABLE_P2P_APIS)
   return PPB_Transport_Impl::Create(instance, name, type);
 #endif
+}
+
+PP_Resource ResourceCreationImpl::CreateUDPSocketPrivate(PP_Instance instance) {
+  // Creating UDP socket resource at the renderer side is not supported.
+  return 0;
 }
 
 PP_Resource ResourceCreationImpl::CreateURLLoader(PP_Instance instance) {

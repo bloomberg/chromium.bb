@@ -31,8 +31,6 @@
   F(PPB_Find_API) \
   F(PPB_Flash_Menu_API) \
   F(PPB_Flash_NetConnector_API) \
-  F(PPB_Flash_TCPSocket_API) \
-  F(PPB_Flash_UDPSocket_API) \
   F(PPB_Font_API) \
   F(PPB_Graphics2D_API) \
   F(PPB_Graphics3D_API) \
@@ -42,7 +40,9 @@
   F(PPB_PDFFont_API) \
   F(PPB_Scrollbar_API) \
   F(PPB_Surface3D_API) \
+  F(PPB_TCPSocket_Private_API) \
   F(PPB_Transport_API) \
+  F(PPB_UDPSocket_Private_API) \
   F(PPB_URLLoader_API) \
   F(PPB_URLRequestInfo_API) \
   F(PPB_URLResponseInfo_API) \

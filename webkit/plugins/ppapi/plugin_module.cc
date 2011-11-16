@@ -68,11 +68,12 @@
 #include "ppapi/c/private/ppb_flash_file.h"
 #include "ppapi/c/private/ppb_flash_fullscreen.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
-#include "ppapi/c/private/ppb_flash_udp_socket.h"
 #include "ppapi/c/private/ppb_gpu_blacklist_private.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
+#include "ppapi/c/private/ppb_tcp_socket_private.h"
+#include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
@@ -283,9 +284,7 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_FLASH_MENU_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Flash_Menu_Thunk();
   if (strcmp(name, PPB_FLASH_TCPSOCKET_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Flash_TCPSocket_Thunk();
-  if (strcmp(name, PPB_FLASH_UDPSOCKET_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Flash_UDPSocket_Thunk();
+    return ::ppapi::thunk::GetPPB_TCPSocket_Private_Thunk();
   if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE_0_4) == 0)
     return ::ppapi::thunk::GetPPB_FlashFullscreen_Thunk();
   if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE) == 0)

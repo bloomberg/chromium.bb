@@ -48,9 +48,10 @@
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
-#include "ppapi/c/private/ppb_flash_udp_socket.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/c/private/ppb_tcp_socket_private.h"
+#include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/proxy/interface_proxy.h"
@@ -68,8 +69,6 @@
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
 #include "ppapi/proxy/ppb_flash_net_connector_proxy.h"
 #include "ppapi/proxy/ppb_flash_proxy.h"
-#include "ppapi/proxy/ppb_flash_tcp_socket_proxy.h"
-#include "ppapi/proxy/ppb_flash_udp_socket_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
@@ -77,8 +76,10 @@
 #include "ppapi/proxy/ppb_instance_proxy.h"
 #include "ppapi/proxy/ppb_pdf_proxy.h"
 #include "ppapi/proxy/ppb_surface_3d_proxy.h"
+#include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_testing_proxy.h"
 #include "ppapi/proxy/ppb_text_input_proxy.h"
+#include "ppapi/proxy/ppb_udp_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_url_response_info_proxy.h"
 #include "ppapi/proxy/ppb_var_deprecated_proxy.h"
@@ -264,15 +265,9 @@ void InterfaceList::AddFlashInterfaces() {
   AddPPB(PPB_FLASH_MENU_INTERFACE, API_ID_PPB_FLASH_MENU,
          thunk::GetPPB_Flash_Menu_Thunk());
 
-  AddProxy(API_ID_PPB_FLASH_TCPSOCKET,
-           &ProxyFactory<PPB_Flash_TCPSocket_Proxy>);
-  AddPPB(PPB_FLASH_TCPSOCKET_INTERFACE, API_ID_PPB_FLASH_TCPSOCKET,
-         thunk::GetPPB_Flash_TCPSocket_Thunk());
-
-  AddProxy(API_ID_PPB_FLASH_UDPSOCKET,
-           &ProxyFactory<PPB_Flash_UDPSocket_Proxy>);
-  AddPPB(PPB_FLASH_UDPSOCKET_INTERFACE, API_ID_PPB_FLASH_UDPSOCKET,
-         thunk::GetPPB_Flash_UDPSocket_Thunk());
+  // Only add PPB because proxy for the this API ID was already added.
+  AddPPB(PPB_FLASH_TCPSOCKET_INTERFACE, API_ID_PPB_TCPSOCKET_PRIVATE,
+         thunk::GetPPB_TCPSocket_Private_Thunk());
 
 #ifdef ENABLE_FLAPPER_HACKS
   AddProxy(API_ID_PPB_FLASH_NETCONNECTOR,

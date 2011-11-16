@@ -2,37 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_PROXY_PPB_FLASH_TCP_SOCKET_PROXY_H_
-#define PPAPI_PROXY_PPB_FLASH_TCP_SOCKET_PROXY_H_
+#ifndef PPAPI_PROXY_PPB_TCP_SOCKET_PRIVATE_PROXY_H_
+#define PPAPI_PROXY_PPB_TCP_SOCKET_PRIVATE_PROXY_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/private/ppb_flash_tcp_socket.h"
+#include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 
 namespace ppapi {
 namespace proxy {
 
-// The maximum number of bytes that each PpapiHostMsg_PPBFlashTCPSocket_Read
+// The maximum number of bytes that each PpapiHostMsg_PPBTCPSocket_Read
 // message is allowed to request.
-PPAPI_PROXY_EXPORT extern const int32_t kFlashTCPSocketMaxReadSize;
-// The maximum number of bytes that each PpapiHostMsg_PPBFlashTCPSocket_Write
+PPAPI_PROXY_EXPORT extern const int32_t kTCPSocketMaxReadSize;
+// The maximum number of bytes that each PpapiHostMsg_PPBTCPSocket_Write
 // message is allowed to carry.
-PPAPI_PROXY_EXPORT extern const int32_t kFlashTCPSocketMaxWriteSize;
+PPAPI_PROXY_EXPORT extern const int32_t kTCPSocketMaxWriteSize;
 
-class PPB_Flash_TCPSocket_Proxy : public InterfaceProxy {
+class PPB_TCPSocket_Private_Proxy : public InterfaceProxy {
  public:
-  PPB_Flash_TCPSocket_Proxy(Dispatcher* dispatcher);
-  virtual ~PPB_Flash_TCPSocket_Proxy();
+  PPB_TCPSocket_Private_Proxy(Dispatcher* dispatcher);
+  virtual ~PPB_TCPSocket_Private_Proxy();
 
   static PP_Resource CreateProxyResource(PP_Instance instance);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
+
+  static const ApiID kApiID = API_ID_PPB_TCPSOCKET_PRIVATE;
 
  private:
   // Browser->plugin message handlers.
@@ -53,10 +55,10 @@ class PPB_Flash_TCPSocket_Proxy : public InterfaceProxy {
                      bool succeeded,
                      int32_t bytes_written);
 
-  DISALLOW_COPY_AND_ASSIGN(PPB_Flash_TCPSocket_Proxy);
+  DISALLOW_COPY_AND_ASSIGN(PPB_TCPSocket_Private_Proxy);
 };
 
 }  // namespace proxy
 }  // namespace ppapi
 
-#endif  // PPAPI_PROXY_PPB_FLASH_TCP_SOCKET_PROXY_H_
+#endif  // PPAPI_PROXY_PPB_TCP_SOCKET_PRIVATE_PROXY_H_

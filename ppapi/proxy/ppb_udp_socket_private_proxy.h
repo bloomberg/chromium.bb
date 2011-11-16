@@ -2,36 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_PROXY_PPB_FLASH_UDP_SOCKET_PROXY_H_
-#define PPAPI_PROXY_PPB_FLASH_UDP_SOCKET_PROXY_H_
+#ifndef PPAPI_PROXY_PPB_UDP_SOCKET_PRIVATE_PROXY_H_
+#define PPAPI_PROXY_PPB_UDP_SOCKET_PRIVATE_PROXY_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/private/ppb_flash_udp_socket.h"
+#include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/proxy/interface_proxy.h"
 
 namespace ppapi {
 namespace proxy {
 
-// The maximum number of bytes that each PpapiHostMsg_PPBFlashUDPSocket_RecvFrom
+// The maximum number of bytes that each PpapiHostMsg_PPBUDPSocket_RecvFrom
 // message is allowed to request.
-extern const int32_t kFlashUDPSocketMaxReadSize;
-// The maximum number of bytes that each PpapiHostMsg_PPBFlashUDPSocket_SendTo
+extern const int32_t kUDPSocketMaxReadSize;
+// The maximum number of bytes that each PpapiHostMsg_PPBUDPSocket_SendTo
 // message is allowed to carry.
-extern const int32_t kFlashUDPSocketMaxWriteSize;
+extern const int32_t kUDPSocketMaxWriteSize;
 
-class PPB_Flash_UDPSocket_Proxy : public InterfaceProxy {
+class PPB_UDPSocket_Private_Proxy : public InterfaceProxy {
  public:
-  PPB_Flash_UDPSocket_Proxy(Dispatcher* dispatcher);
-  virtual ~PPB_Flash_UDPSocket_Proxy();
+  PPB_UDPSocket_Private_Proxy(Dispatcher* dispatcher);
+  virtual ~PPB_UDPSocket_Private_Proxy();
 
   static PP_Resource CreateProxyResource(PP_Instance instance);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
+
+  static const ApiID kApiID = API_ID_PPB_UDPSOCKET_PRIVATE;
 
  private:
   // Browser->plugin message handlers.
@@ -48,11 +50,11 @@ class PPB_Flash_UDPSocket_Proxy : public InterfaceProxy {
                       bool succeeded,
                       int32_t bytes_written);
 
-  DISALLOW_COPY_AND_ASSIGN(PPB_Flash_UDPSocket_Proxy);
+  DISALLOW_COPY_AND_ASSIGN(PPB_UDPSocket_Private_Proxy);
 };
 
 }  // namespace proxy
 }  // namespace ppapi
 
-#endif  // PPAPI_PROXY_PPB_FLASH_UDP_SOCKET_PROXY_H_
+#endif  // PPAPI_PROXY_PPB_UDP_SOCKET_PRIVATE_PROXY_H_
 

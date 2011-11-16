@@ -102,9 +102,12 @@
         'c/private/ppb_gpu_blacklist_private.h',
         'c/private/ppb_instance_private.h',
         'c/private/ppb_nacl_private.h',
+        'c/private/ppb_net_address_private.h',
         'c/private/ppb_pdf.h',
         'c/private/ppb_proxy_private.h',
         'c/private/ppp_instance_private.h',
+        'c/private/ppb_tcp_socket_private.h',
+        'c/private/ppb_udp_socket_private.h',
 
         # Deprecated interfaces.
         'c/dev/deprecated_bool.h',
@@ -255,6 +258,10 @@
         'cpp/private/instance_private.h',
         'cpp/private/net_address_private.cc',
         'cpp/private/net_address_private.h',
+        'cpp/private/tcp_socket_private.cc',
+        'cpp/private/tcp_socket_private.h',
+        'cpp/private/udp_socket_private.cc',
+        'cpp/private/udp_socket_private.h',
         'cpp/private/var_private.cc',
         'cpp/private/var_private.h',
 

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_THUNK_PPB_FLASH_UDP_SOCKET_API_H_
-#define PPAPI_THUNK_PPB_FLASH_UDP_SOCKET_API_H_
+#ifndef PPAPI_THUNK_PPB_UDP_SOCKET_PRIVATE_API_H_
+#define PPAPI_THUNK_PPB_UDP_SOCKET_PRIVATE_API_H_
 
-#include "ppapi/c/private/ppb_flash_udp_socket.h"
+#include "ppapi/c/private/ppb_udp_socket_private.h"
 
 namespace ppapi {
 namespace thunk {
 
-class PPB_Flash_UDPSocket_API {
+class PPB_UDPSocket_Private_API {
  public:
-  virtual ~PPB_Flash_UDPSocket_API() {}
+  virtual ~PPB_UDPSocket_Private_API() {}
 
   virtual int32_t Bind(const PP_NetAddress_Private* addr,
                        PP_CompletionCallback callback) = 0;
@@ -30,5 +30,4 @@ class PPB_Flash_UDPSocket_API {
 }  // namespace thunk
 }  // namespace ppapi
 
-#endif  // PPAPI_THUNK_PPB_FLASH_UDP_SOCKET_API_H_
-
+#endif  // PPAPI_THUNK_PPB_UDP_SOCKET_PRIVATE_API_H_

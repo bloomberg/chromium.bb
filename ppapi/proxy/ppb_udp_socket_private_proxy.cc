@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/proxy/ppb_flash_udp_socket_proxy.h"
+#include "ppapi/proxy/ppb_udp_socket_private_proxy.h"
 
 #include <algorithm>
 #include <cstring>
@@ -17,22 +17,22 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/resource.h"
-#include "ppapi/thunk/ppb_flash_udp_socket_api.h"
+#include "ppapi/thunk/ppb_udp_socket_private_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::thunk::PPB_Flash_UDPSocket_API;
+using ppapi::thunk::PPB_UDPSocket_Private_API;
 
 namespace ppapi {
 namespace proxy {
 
-const int32_t kFlashUDPSocketMaxReadSize = 1024 * 1024;
-const int32_t kFlashUDPSocketMaxWriteSize = 1024 * 1024;
+const int32_t kUDPSocketMaxReadSize = 1024 * 1024;
+const int32_t kUDPSocketMaxWriteSize = 1024 * 1024;
 
 namespace {
 
-class FlashUDPSocket;
+class UDPSocket;
 
-typedef std::map<uint32, FlashUDPSocket*> IDToSocketMap;
+typedef std::map<uint32, UDPSocket*> IDToSocketMap;
 IDToSocketMap* g_id_to_socket = NULL;
 
 class AbortCallbackTask : public Task {
@@ -49,16 +49,16 @@ class AbortCallbackTask : public Task {
   PP_CompletionCallback callback_;
 };
 
-class FlashUDPSocket : public PPB_Flash_UDPSocket_API,
-                       public Resource {
+class UDPSocket : public PPB_UDPSocket_Private_API,
+                  public Resource {
  public:
-  FlashUDPSocket(const HostResource& resource, uint32 socket_id);
-  virtual ~FlashUDPSocket();
+  UDPSocket(const HostResource& resource, uint32 socket_id);
+  virtual ~UDPSocket();
 
   // ResourceObjectBase overrides.
-  virtual PPB_Flash_UDPSocket_API* AsPPB_Flash_UDPSocket_API() OVERRIDE;
+  virtual PPB_UDPSocket_Private_API* AsPPB_UDPSocket_Private_API() OVERRIDE;
 
-  // PPB_Flash_UDPSocket_API implementation.
+  // PPB_UDPSocket_Private_API implementation.
   virtual int32_t Bind(const PP_NetAddress_Private* addr,
                        PP_CompletionCallback callback) OVERRIDE;
   virtual int32_t RecvFrom(char* buffer,
@@ -101,11 +101,10 @@ class FlashUDPSocket : public PPB_Flash_UDPSocket_API,
 
   PP_NetAddress_Private recvfrom_addr_;
 
-  DISALLOW_COPY_AND_ASSIGN(FlashUDPSocket);
+  DISALLOW_COPY_AND_ASSIGN(UDPSocket);
 };
 
-FlashUDPSocket::FlashUDPSocket(const HostResource& resource,
-                               uint32 socket_id)
+UDPSocket::UDPSocket(const HostResource& resource, uint32 socket_id)
     : Resource(resource),
       socket_id_(socket_id),
       binded_(false),
@@ -126,16 +125,16 @@ FlashUDPSocket::FlashUDPSocket(const HostResource& resource,
   (*g_id_to_socket)[socket_id] = this;
 }
 
-FlashUDPSocket::~FlashUDPSocket() {
+UDPSocket::~UDPSocket() {
   Close();
 }
 
-PPB_Flash_UDPSocket_API* FlashUDPSocket::AsPPB_Flash_UDPSocket_API() {
+PPB_UDPSocket_Private_API* UDPSocket::AsPPB_UDPSocket_Private_API() {
   return this;
 }
 
-int32_t FlashUDPSocket::Bind(const PP_NetAddress_Private* addr,
-                             PP_CompletionCallback callback) {
+int32_t UDPSocket::Bind(const PP_NetAddress_Private* addr,
+                        PP_CompletionCallback callback) {
   if (!addr || !callback.func)
     return PP_ERROR_BADARGUMENT;
   if (binded_ || closed_)
@@ -146,14 +145,14 @@ int32_t FlashUDPSocket::Bind(const PP_NetAddress_Private* addr,
   bind_callback_ = callback;
 
   GetDispatcher()->SendToBrowser(
-      new PpapiHostMsg_PPBFlashUDPSocket_Bind(socket_id_, *addr));
+      new PpapiHostMsg_PPBUDPSocket_Bind(socket_id_, *addr));
 
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t FlashUDPSocket::RecvFrom(char* buffer,
-                                 int32_t num_bytes,
-                                 PP_CompletionCallback callback) {
+int32_t UDPSocket::RecvFrom(char* buffer,
+                            int32_t num_bytes,
+                            PP_CompletionCallback callback) {
   if (!buffer || num_bytes <= 0 || !callback.func)
     return PP_ERROR_BADARGUMENT;
   if (!binded_)
@@ -162,17 +161,17 @@ int32_t FlashUDPSocket::RecvFrom(char* buffer,
     return PP_ERROR_INPROGRESS;
 
   read_buffer_ = buffer;
-  bytes_to_read_ = std::min(num_bytes, kFlashUDPSocketMaxReadSize);
+  bytes_to_read_ = std::min(num_bytes, kUDPSocketMaxReadSize);
   recvfrom_callback_ = callback;
 
   // Send the request, the browser will call us back via RecvFromACK.
   GetDispatcher()->SendToBrowser(
-      new PpapiHostMsg_PPBFlashUDPSocket_RecvFrom(
+      new PpapiHostMsg_PPBUDPSocket_RecvFrom(
           socket_id_, num_bytes));
   return PP_OK_COMPLETIONPENDING;
 }
 
-PP_Bool FlashUDPSocket::GetRecvFromAddress(PP_NetAddress_Private* addr) {
+PP_Bool UDPSocket::GetRecvFromAddress(PP_NetAddress_Private* addr) {
   if (!addr)
     return PP_FALSE;
 
@@ -180,10 +179,10 @@ PP_Bool FlashUDPSocket::GetRecvFromAddress(PP_NetAddress_Private* addr) {
   return PP_TRUE;
 }
 
-int32_t FlashUDPSocket::SendTo(const char* buffer,
-                               int32_t num_bytes,
-                               const PP_NetAddress_Private* addr,
-                               PP_CompletionCallback callback) {
+int32_t UDPSocket::SendTo(const char* buffer,
+                          int32_t num_bytes,
+                          const PP_NetAddress_Private* addr,
+                          PP_CompletionCallback callback) {
   if (!buffer || num_bytes <= 0 || !addr || !callback.func)
     return PP_ERROR_BADARGUMENT;
   if (!binded_)
@@ -191,20 +190,20 @@ int32_t FlashUDPSocket::SendTo(const char* buffer,
   if (sendto_callback_.func)
     return PP_ERROR_INPROGRESS;
 
-  if (num_bytes > kFlashUDPSocketMaxWriteSize)
-    num_bytes = kFlashUDPSocketMaxWriteSize;
+  if (num_bytes > kUDPSocketMaxWriteSize)
+    num_bytes = kUDPSocketMaxWriteSize;
 
   sendto_callback_ = callback;
 
   // Send the request, the browser will call us back via SendToACK.
   GetDispatcher()->SendToBrowser(
-      new PpapiHostMsg_PPBFlashUDPSocket_SendTo(
+      new PpapiHostMsg_PPBUDPSocket_SendTo(
           socket_id_, std::string(buffer, num_bytes), *addr));
 
   return PP_OK_COMPLETIONPENDING;
 }
 
-void FlashUDPSocket::Close() {
+void UDPSocket::Close() {
   if(closed_)
     return;
 
@@ -217,7 +216,7 @@ void FlashUDPSocket::Close() {
   g_id_to_socket->erase(socket_id_);
 
   GetDispatcher()->SendToBrowser(
-      new PpapiHostMsg_PPBFlashUDPSocket_Close(socket_id_));
+      new PpapiHostMsg_PPBUDPSocket_Close(socket_id_));
   socket_id_ = 0;
 
   PostAbortAndClearIfNecessary(&bind_callback_);
@@ -225,7 +224,7 @@ void FlashUDPSocket::Close() {
   PostAbortAndClearIfNecessary(&sendto_callback_);
 }
 
-void FlashUDPSocket::OnBindCompleted(bool succeeded) {
+void UDPSocket::OnBindCompleted(bool succeeded) {
   if (!bind_callback_.func) {
     NOTREACHED();
     return;
@@ -238,9 +237,9 @@ void FlashUDPSocket::OnBindCompleted(bool succeeded) {
                                    succeeded ? PP_OK : PP_ERROR_FAILED);
 }
 
-void FlashUDPSocket::OnRecvFromCompleted(bool succeeded,
-                                         const std::string& data,
-                                         const PP_NetAddress_Private& addr) {
+void UDPSocket::OnRecvFromCompleted(bool succeeded,
+                                    const std::string& data,
+                                    const PP_NetAddress_Private& addr) {
   if (!recvfrom_callback_.func || !read_buffer_) {
     NOTREACHED();
     return;
@@ -261,8 +260,7 @@ void FlashUDPSocket::OnRecvFromCompleted(bool succeeded,
                   static_cast<int32_t>(PP_ERROR_FAILED));
 }
 
-void FlashUDPSocket::OnSendToCompleted(bool succeeded,
-                                       int32_t bytes_written) {
+void UDPSocket::OnSendToCompleted(bool succeeded, int32_t bytes_written) {
   if (!sendto_callback_.func) {
     NOTREACHED();
     return;
@@ -273,7 +271,7 @@ void FlashUDPSocket::OnSendToCompleted(bool succeeded,
       succeeded ? bytes_written : static_cast<int32_t>(PP_ERROR_FAILED));
 }
 
-void FlashUDPSocket::PostAbortAndClearIfNecessary(
+void UDPSocket::PostAbortAndClearIfNecessary(
     PP_CompletionCallback* callback) {
   DCHECK(callback);
 
@@ -285,46 +283,46 @@ void FlashUDPSocket::PostAbortAndClearIfNecessary(
 }
 }  // namespace
 
-PPB_Flash_UDPSocket_Proxy::PPB_Flash_UDPSocket_Proxy(Dispatcher* dispatcher)
+PPB_UDPSocket_Private_Proxy::PPB_UDPSocket_Private_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher) {
 }
 
-PPB_Flash_UDPSocket_Proxy::~PPB_Flash_UDPSocket_Proxy() {
+PPB_UDPSocket_Private_Proxy::~PPB_UDPSocket_Private_Proxy() {
 }
 
 // static
-PP_Resource PPB_Flash_UDPSocket_Proxy::CreateProxyResource(
+PP_Resource PPB_UDPSocket_Private_Proxy::CreateProxyResource(
     PP_Instance instance) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return 0;
 
   uint32 socket_id = 0;
-  dispatcher->SendToBrowser(new PpapiHostMsg_PPBFlashUDPSocket_Create(
-      API_ID_PPB_FLASH_UDPSOCKET, dispatcher->plugin_dispatcher_id(),
+  dispatcher->SendToBrowser(new PpapiHostMsg_PPBUDPSocket_Create(
+      API_ID_PPB_UDPSOCKET_PRIVATE, dispatcher->plugin_dispatcher_id(),
       &socket_id));
   if (socket_id == 0)
     return 0;
 
-  return (new FlashUDPSocket(HostResource::MakeInstanceOnly(instance),
-                             socket_id))->GetReference();
+  return (new UDPSocket(HostResource::MakeInstanceOnly(instance),
+                        socket_id))->GetReference();
 }
 
-bool PPB_Flash_UDPSocket_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_UDPSocket_Private_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PPB_Flash_UDPSocket_Proxy, msg)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPBFlashUDPSocket_BindACK,
+  IPC_BEGIN_MESSAGE_MAP(PPB_UDPSocket_Private_Proxy, msg)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBUDPSocket_BindACK,
                         OnMsgBindACK)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPBFlashUDPSocket_RecvFromACK,
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBUDPSocket_RecvFromACK,
                         OnMsgRecvFromACK)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPBFlashUDPSocket_SendToACK,
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBUDPSocket_SendToACK,
                         OnMsgSendToACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void PPB_Flash_UDPSocket_Proxy::OnMsgBindACK(
+void PPB_UDPSocket_Private_Proxy::OnMsgBindACK(
     uint32 /* plugin_dispatcher_id */,
     uint32 socket_id,
     bool succeeded) {
@@ -338,7 +336,7 @@ void PPB_Flash_UDPSocket_Proxy::OnMsgBindACK(
   iter->second->OnBindCompleted(succeeded);
 }
 
-void PPB_Flash_UDPSocket_Proxy::OnMsgRecvFromACK(
+void PPB_UDPSocket_Private_Proxy::OnMsgRecvFromACK(
     uint32 /* plugin_dispatcher_id */,
     uint32 socket_id,
     bool succeeded,
@@ -354,7 +352,7 @@ void PPB_Flash_UDPSocket_Proxy::OnMsgRecvFromACK(
   iter->second->OnRecvFromCompleted(succeeded, data, addr);
 }
 
-void PPB_Flash_UDPSocket_Proxy::OnMsgSendToACK(
+void PPB_UDPSocket_Private_Proxy::OnMsgSendToACK(
     uint32 /* plugin_dispatcher_id */,
     uint32 socket_id,
     bool succeeded,

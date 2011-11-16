@@ -9,7 +9,7 @@
 #include "base/string_split.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
-#include "ppapi/cpp/private/flash_tcp_socket.h"
+#include "ppapi/cpp/private/tcp_socket_private.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/tests/testing_instance.h"
 #include "ppapi/tests/test_utils.h"
@@ -33,7 +33,7 @@ TestTCPSocketPrivate::TestTCPSocketPrivate(TestingInstance* instance)
 }
 
 bool TestTCPSocketPrivate::Init() {
-  if (!TCPSocketPrivate::IsAvailable())
+  if (!pp::TCPSocketPrivate::IsAvailable())
     return false;
 
   // This test currently only works out-of-process (since the API is really only
@@ -87,7 +87,7 @@ void TestTCPSocketPrivate::RunTests(const std::string& filter) {
 }
 
 std::string TestTCPSocketPrivate::TestBasic() {
-  TCPSocketPrivate socket(instance_);
+  pp::TCPSocketPrivate socket(instance_);
   TestCompletionCallback cb(instance_->pp_instance(), force_async_);
 
   int32_t rv = socket.Connect(host_.c_str(), port_, cb);
@@ -107,7 +107,7 @@ std::string TestTCPSocketPrivate::TestBasic() {
 }
 
 std::string TestTCPSocketPrivate::TestReadWrite() {
-  TCPSocketPrivate socket(instance_);
+  pp::TCPSocketPrivate socket(instance_);
   TestCompletionCallback cb(instance_->pp_instance(), force_async_);
 
   int32_t rv = socket.Connect(host_.c_str(), port_, cb);
@@ -133,7 +133,7 @@ std::string TestTCPSocketPrivate::TestConnectAddress() {
 
   // First, bring up a connection and grab the address.
   {
-    TCPSocketPrivate socket(instance_);
+    pp::TCPSocketPrivate socket(instance_);
     TestCompletionCallback cb(instance_->pp_instance(), force_async_);
     int32_t rv = socket.Connect(host_.c_str(), port_, cb);
     ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
@@ -146,7 +146,7 @@ std::string TestTCPSocketPrivate::TestConnectAddress() {
   }
 
   // Connect to that address.
-  TCPSocketPrivate socket(instance_);
+  pp::TCPSocketPrivate socket(instance_);
   TestCompletionCallback cb(instance_->pp_instance(), force_async_);
   int32_t rv = socket.ConnectWithNetAddress(&address, cb);
   ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
@@ -167,8 +167,9 @@ std::string TestTCPSocketPrivate::TestConnectAddress() {
 
 // TODO(viettrungluu): Try testing SSL somehow.
 
-int32_t TestTCPSocketPrivate::ReadFirstLineFromSocket(TCPSocketPrivate* socket,
-                                                      std::string* s) {
+int32_t TestTCPSocketPrivate::ReadFirstLineFromSocket(
+    pp::TCPSocketPrivate* socket,
+    std::string* s) {
   char buffer[10000];
 
   s->clear();
@@ -194,7 +195,7 @@ int32_t TestTCPSocketPrivate::ReadFirstLineFromSocket(TCPSocketPrivate* socket,
   return PP_ERROR_FAILED;
 }
 
-int32_t TestTCPSocketPrivate::WriteStringToSocket(TCPSocketPrivate* socket,
+int32_t TestTCPSocketPrivate::WriteStringToSocket(pp::TCPSocketPrivate* socket,
                                                   const std::string& s) {
   const char* buffer = s.data();
   size_t written = 0;

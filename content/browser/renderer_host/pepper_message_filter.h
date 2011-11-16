@@ -42,11 +42,11 @@ class PepperMessageFilter : public BrowserMessageFilter {
                                  bool* message_was_ok);
 
  private:
-  template<class SocketType> class FlashSocketManager;
-  class FlashTCPSocket;
-  class FlashTCPSocketManager;
-  class FlashUDPSocket;
-  class FlashUDPSocketManager;
+  template<class SocketType> class SocketManager;
+  class TCPSocket;
+  class TCPSocketManager;
+  class UDPSocket;
+  class UDPSocketManager;
 
 #if defined(ENABLE_FLAPPER_HACKS)
   // Message handlers.
@@ -98,8 +98,8 @@ class PepperMessageFilter : public BrowserMessageFilter {
   // GetHostResolver instead of accessing directly.
   net::HostResolver* host_resolver_;
 
-  scoped_ptr<FlashTCPSocketManager> socket_manager_tcp_;
-  scoped_ptr<FlashUDPSocketManager> socket_manager_udp_;
+  scoped_ptr<TCPSocketManager> socket_manager_tcp_;
+  scoped_ptr<UDPSocketManager> socket_manager_udp_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperMessageFilter);
 };

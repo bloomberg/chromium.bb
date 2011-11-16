@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/proxy/ppb_flash_tcp_socket_proxy.h"
+#include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
 
 #include <algorithm>
 #include <cstring>
@@ -17,22 +17,22 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/resource.h"
-#include "ppapi/thunk/ppb_flash_tcp_socket_api.h"
+#include "ppapi/thunk/ppb_tcp_socket_private_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::thunk::PPB_Flash_TCPSocket_API;
+using ppapi::thunk::PPB_TCPSocket_Private_API;
 
 namespace ppapi {
 namespace proxy {
 
-const int32_t kFlashTCPSocketMaxReadSize = 1024 * 1024;
-const int32_t kFlashTCPSocketMaxWriteSize = 1024 * 1024;
+const int32_t kTCPSocketMaxReadSize = 1024 * 1024;
+const int32_t kTCPSocketMaxWriteSize = 1024 * 1024;
 
-class FlashTCPSocket;
+class TCPSocket;
 
 namespace {
 
-typedef std::map<uint32, FlashTCPSocket*> IDToSocketMap;
+typedef std::map<uint32, TCPSocket*> IDToSocketMap;
 IDToSocketMap* g_id_to_socket = NULL;
 
 class AbortCallbackTask : public Task {
@@ -51,16 +51,16 @@ class AbortCallbackTask : public Task {
 
 }  // namespace
 
-class FlashTCPSocket : public PPB_Flash_TCPSocket_API,
-                       public Resource {
+class TCPSocket : public PPB_TCPSocket_Private_API,
+                  public Resource {
  public:
-  FlashTCPSocket(const HostResource& resource, uint32 socket_id);
-  virtual ~FlashTCPSocket();
+  TCPSocket(const HostResource& resource, uint32 socket_id);
+  virtual ~TCPSocket();
 
   // Resource overrides.
-  virtual PPB_Flash_TCPSocket_API* AsPPB_Flash_TCPSocket_API() OVERRIDE;
+  virtual PPB_TCPSocket_Private_API* AsPPB_TCPSocket_Private_API() OVERRIDE;
 
-  // PPB_Flash_TCPSocket_API implementation.
+  // PPB_TCPSocket_Private_API implementation.
   virtual int32_t Connect(const char* host,
                           uint16_t port,
                           PP_CompletionCallback callback) OVERRIDE;
@@ -129,10 +129,10 @@ class FlashTCPSocket : public PPB_Flash_TCPSocket_API,
   PP_NetAddress_Private local_addr_;
   PP_NetAddress_Private remote_addr_;
 
-  DISALLOW_COPY_AND_ASSIGN(FlashTCPSocket);
+  DISALLOW_COPY_AND_ASSIGN(TCPSocket);
 };
 
-FlashTCPSocket::FlashTCPSocket(const HostResource& resource, uint32 socket_id)
+TCPSocket::TCPSocket(const HostResource& resource, uint32 socket_id)
     : Resource(resource),
       socket_id_(socket_id),
       connection_state_(BEFORE_CONNECT),
@@ -155,38 +155,38 @@ FlashTCPSocket::FlashTCPSocket(const HostResource& resource, uint32 socket_id)
   (*g_id_to_socket)[socket_id] = this;
 }
 
-FlashTCPSocket::~FlashTCPSocket() {
+TCPSocket::~TCPSocket() {
   Disconnect();
 }
 
-PPB_Flash_TCPSocket_API* FlashTCPSocket::AsPPB_Flash_TCPSocket_API() {
+PPB_TCPSocket_Private_API* TCPSocket::AsPPB_TCPSocket_Private_API() {
   return this;
 }
 
-int32_t FlashTCPSocket::Connect(const char* host,
-                                uint16_t port,
-                                PP_CompletionCallback callback) {
+int32_t TCPSocket::Connect(const char* host,
+                           uint16_t port,
+                           PP_CompletionCallback callback) {
   if (!host)
     return PP_ERROR_BADARGUMENT;
 
   return ConnectWithMessage(
-      new PpapiHostMsg_PPBFlashTCPSocket_Connect(socket_id_, host, port),
+      new PpapiHostMsg_PPBTCPSocket_Connect(socket_id_, host, port),
       callback);
 }
 
-int32_t FlashTCPSocket::ConnectWithNetAddress(
+int32_t TCPSocket::ConnectWithNetAddress(
     const PP_NetAddress_Private* addr,
     PP_CompletionCallback callback) {
   if (!addr)
     return PP_ERROR_BADARGUMENT;
 
   return ConnectWithMessage(
-      new PpapiHostMsg_PPBFlashTCPSocket_ConnectWithNetAddress(
+      new PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress(
           socket_id_, *addr),
       callback);
 }
 
-PP_Bool FlashTCPSocket::GetLocalAddress(PP_NetAddress_Private* local_addr) {
+PP_Bool TCPSocket::GetLocalAddress(PP_NetAddress_Private* local_addr) {
   if (!IsConnected() || !local_addr)
     return PP_FALSE;
 
@@ -194,7 +194,7 @@ PP_Bool FlashTCPSocket::GetLocalAddress(PP_NetAddress_Private* local_addr) {
   return PP_TRUE;
 }
 
-PP_Bool FlashTCPSocket::GetRemoteAddress(PP_NetAddress_Private* remote_addr) {
+PP_Bool TCPSocket::GetRemoteAddress(PP_NetAddress_Private* remote_addr) {
   if (!IsConnected() || !remote_addr)
     return PP_FALSE;
 
@@ -202,9 +202,9 @@ PP_Bool FlashTCPSocket::GetRemoteAddress(PP_NetAddress_Private* remote_addr) {
   return PP_TRUE;
 }
 
-int32_t FlashTCPSocket::SSLHandshake(const char* server_name,
-                                     uint16_t server_port,
-                                     PP_CompletionCallback callback) {
+int32_t TCPSocket::SSLHandshake(const char* server_name,
+                                uint16_t server_port,
+                                PP_CompletionCallback callback) {
   if (!server_name)
     return PP_ERROR_BADARGUMENT;
   if (!callback.func)
@@ -220,14 +220,14 @@ int32_t FlashTCPSocket::SSLHandshake(const char* server_name,
 
   // Send the request, the browser will call us back via SSLHandshakeACK.
   GetDispatcher()->SendToBrowser(
-      new PpapiHostMsg_PPBFlashTCPSocket_SSLHandshake(
+      new PpapiHostMsg_PPBTCPSocket_SSLHandshake(
           socket_id_, std::string(server_name), server_port));
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t FlashTCPSocket::Read(char* buffer,
-                             int32_t bytes_to_read,
-                             PP_CompletionCallback callback) {
+int32_t TCPSocket::Read(char* buffer,
+                        int32_t bytes_to_read,
+                        PP_CompletionCallback callback) {
   if (!buffer || bytes_to_read <= 0)
     return PP_ERROR_BADARGUMENT;
   if (!callback.func)
@@ -239,18 +239,18 @@ int32_t FlashTCPSocket::Read(char* buffer,
     return PP_ERROR_INPROGRESS;
 
   read_buffer_ = buffer;
-  bytes_to_read_ = std::min(bytes_to_read, kFlashTCPSocketMaxReadSize);
+  bytes_to_read_ = std::min(bytes_to_read, kTCPSocketMaxReadSize);
   read_callback_ = callback;
 
   // Send the request, the browser will call us back via ReadACK.
   GetDispatcher()->SendToBrowser(
-      new PpapiHostMsg_PPBFlashTCPSocket_Read(socket_id_, bytes_to_read_));
+      new PpapiHostMsg_PPBTCPSocket_Read(socket_id_, bytes_to_read_));
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t FlashTCPSocket::Write(const char* buffer,
-                              int32_t bytes_to_write,
-                              PP_CompletionCallback callback) {
+int32_t TCPSocket::Write(const char* buffer,
+                         int32_t bytes_to_write,
+                         PP_CompletionCallback callback) {
   if (!buffer || bytes_to_write <= 0)
     return PP_ERROR_BADARGUMENT;
   if (!callback.func)
@@ -261,19 +261,19 @@ int32_t FlashTCPSocket::Write(const char* buffer,
   if (write_callback_.func || ssl_handshake_callback_.func)
     return PP_ERROR_INPROGRESS;
 
-  if (bytes_to_write > kFlashTCPSocketMaxWriteSize)
-    bytes_to_write = kFlashTCPSocketMaxWriteSize;
+  if (bytes_to_write > kTCPSocketMaxWriteSize)
+    bytes_to_write = kTCPSocketMaxWriteSize;
 
   write_callback_ = callback;
 
   // Send the request, the browser will call us back via WriteACK.
   GetDispatcher()->SendToBrowser(
-      new PpapiHostMsg_PPBFlashTCPSocket_Write(
+      new PpapiHostMsg_PPBTCPSocket_Write(
           socket_id_, std::string(buffer, bytes_to_write)));
   return PP_OK_COMPLETIONPENDING;
 }
 
-void FlashTCPSocket::Disconnect() {
+void TCPSocket::Disconnect() {
   if (connection_state_ == DISCONNECTED)
     return;
 
@@ -284,7 +284,7 @@ void FlashTCPSocket::Disconnect() {
   g_id_to_socket->erase(socket_id_);
 
   GetDispatcher()->SendToBrowser(
-      new PpapiHostMsg_PPBFlashTCPSocket_Disconnect(socket_id_));
+      new PpapiHostMsg_PPBTCPSocket_Disconnect(socket_id_));
   socket_id_ = 0;
 
   PostAbortAndClearIfNecessary(&connect_callback_);
@@ -295,7 +295,7 @@ void FlashTCPSocket::Disconnect() {
   bytes_to_read_ = -1;
 }
 
-void FlashTCPSocket::OnConnectCompleted(
+void TCPSocket::OnConnectCompleted(
     bool succeeded,
     const PP_NetAddress_Private& local_addr,
     const PP_NetAddress_Private& remote_addr) {
@@ -313,7 +313,7 @@ void FlashTCPSocket::OnConnectCompleted(
                                    succeeded ? PP_OK : PP_ERROR_FAILED);
 }
 
-void FlashTCPSocket::OnSSLHandshakeCompleted(bool succeeded) {
+void TCPSocket::OnSSLHandshakeCompleted(bool succeeded) {
   if (connection_state_ != CONNECTED || !ssl_handshake_callback_.func) {
     NOTREACHED();
     return;
@@ -328,7 +328,7 @@ void FlashTCPSocket::OnSSLHandshakeCompleted(bool succeeded) {
   }
 }
 
-void FlashTCPSocket::OnReadCompleted(bool succeeded, const std::string& data) {
+void TCPSocket::OnReadCompleted(bool succeeded, const std::string& data) {
   if (!read_callback_.func || !read_buffer_) {
     NOTREACHED();
     return;
@@ -348,7 +348,7 @@ void FlashTCPSocket::OnReadCompleted(bool succeeded, const std::string& data) {
                   static_cast<int32_t>(PP_ERROR_FAILED));
 }
 
-void FlashTCPSocket::OnWriteCompleted(bool succeeded, int32_t bytes_written) {
+void TCPSocket::OnWriteCompleted(bool succeeded, int32_t bytes_written) {
   if (!write_callback_.func || (succeeded && bytes_written < 0)) {
     NOTREACHED();
     return;
@@ -359,12 +359,12 @@ void FlashTCPSocket::OnWriteCompleted(bool succeeded, int32_t bytes_written) {
       succeeded ? bytes_written : static_cast<int32_t>(PP_ERROR_FAILED));
 }
 
-bool FlashTCPSocket::IsConnected() const {
+bool TCPSocket::IsConnected() const {
   return connection_state_ == CONNECTED || connection_state_ == SSL_CONNECTED;
 }
 
-int32_t FlashTCPSocket::ConnectWithMessage(IPC::Message* msg,
-                                           PP_CompletionCallback callback) {
+int32_t TCPSocket::ConnectWithMessage(IPC::Message* msg,
+                                      PP_CompletionCallback callback) {
   scoped_ptr<IPC::Message> msg_deletor(msg);
   if (!callback.func)
     return PP_ERROR_BLOCKS_MAIN_THREAD;
@@ -379,7 +379,7 @@ int32_t FlashTCPSocket::ConnectWithMessage(IPC::Message* msg,
   return PP_OK_COMPLETIONPENDING;
 }
 
-void FlashTCPSocket::PostAbortAndClearIfNecessary(
+void TCPSocket::PostAbortAndClearIfNecessary(
     PP_CompletionCallback* callback) {
   DCHECK(callback);
 
@@ -390,44 +390,45 @@ void FlashTCPSocket::PostAbortAndClearIfNecessary(
   }
 }
 
-PPB_Flash_TCPSocket_Proxy::PPB_Flash_TCPSocket_Proxy(Dispatcher* dispatcher)
+PPB_TCPSocket_Private_Proxy::PPB_TCPSocket_Private_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher) {
 }
 
-PPB_Flash_TCPSocket_Proxy::~PPB_Flash_TCPSocket_Proxy() {
+PPB_TCPSocket_Private_Proxy::~PPB_TCPSocket_Private_Proxy() {
 }
 
 // static
-PP_Resource PPB_Flash_TCPSocket_Proxy::CreateProxyResource(
+PP_Resource PPB_TCPSocket_Private_Proxy::CreateProxyResource(
     PP_Instance instance) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return 0;
 
   uint32 socket_id = 0;
-  dispatcher->SendToBrowser(new PpapiHostMsg_PPBFlashTCPSocket_Create(
-      API_ID_PPB_FLASH_TCPSOCKET, dispatcher->plugin_dispatcher_id(),
+  dispatcher->SendToBrowser(new PpapiHostMsg_PPBTCPSocket_Create(
+      API_ID_PPB_TCPSOCKET_PRIVATE, dispatcher->plugin_dispatcher_id(),
       &socket_id));
   if (socket_id == 0)
     return 0;
-  return (new FlashTCPSocket(HostResource::MakeInstanceOnly(instance),
-                             socket_id))->GetReference();
+  return (new TCPSocket(HostResource::MakeInstanceOnly(instance),
+                        socket_id))->GetReference();
 }
 
-bool PPB_Flash_TCPSocket_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_TCPSocket_Private_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PPB_Flash_TCPSocket_Proxy, msg)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPBFlashTCPSocket_ConnectACK, OnMsgConnectACK)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPBFlashTCPSocket_SSLHandshakeACK,
+  IPC_BEGIN_MESSAGE_MAP(PPB_TCPSocket_Private_Proxy, msg)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_ConnectACK,
+                        OnMsgConnectACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_SSLHandshakeACK,
                         OnMsgSSLHandshakeACK)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPBFlashTCPSocket_ReadACK, OnMsgReadACK)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPBFlashTCPSocket_WriteACK, OnMsgWriteACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_ReadACK, OnMsgReadACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_WriteACK, OnMsgWriteACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void PPB_Flash_TCPSocket_Proxy::OnMsgConnectACK(
+void PPB_TCPSocket_Private_Proxy::OnMsgConnectACK(
     uint32 /* plugin_dispatcher_id */,
     uint32 socket_id,
     bool succeeded,
@@ -443,7 +444,7 @@ void PPB_Flash_TCPSocket_Proxy::OnMsgConnectACK(
   iter->second->OnConnectCompleted(succeeded, local_addr, remote_addr);
 }
 
-void PPB_Flash_TCPSocket_Proxy::OnMsgSSLHandshakeACK(
+void PPB_TCPSocket_Private_Proxy::OnMsgSSLHandshakeACK(
     uint32 /* plugin_dispatcher_id */,
     uint32 socket_id,
     bool succeeded) {
@@ -457,10 +458,11 @@ void PPB_Flash_TCPSocket_Proxy::OnMsgSSLHandshakeACK(
   iter->second->OnSSLHandshakeCompleted(succeeded);
 }
 
-void PPB_Flash_TCPSocket_Proxy::OnMsgReadACK(uint32 /* plugin_dispatcher_id */,
-                                             uint32 socket_id,
-                                             bool succeeded,
-                                             const std::string& data) {
+void PPB_TCPSocket_Private_Proxy::OnMsgReadACK(
+    uint32 /* plugin_dispatcher_id */,
+    uint32 socket_id,
+    bool succeeded,
+    const std::string& data) {
   if (!g_id_to_socket) {
     NOTREACHED();
     return;
@@ -471,10 +473,11 @@ void PPB_Flash_TCPSocket_Proxy::OnMsgReadACK(uint32 /* plugin_dispatcher_id */,
   iter->second->OnReadCompleted(succeeded, data);
 }
 
-void PPB_Flash_TCPSocket_Proxy::OnMsgWriteACK(uint32 /* plugin_dispatcher_id */,
-                                              uint32 socket_id,
-                                              bool succeeded,
-                                              int32_t bytes_written) {
+void PPB_TCPSocket_Private_Proxy::OnMsgWriteACK(
+    uint32 /* plugin_dispatcher_id */,
+    uint32 socket_id,
+    bool succeeded,
+    int32_t bytes_written) {
   if (!g_id_to_socket) {
     NOTREACHED();
     return;
