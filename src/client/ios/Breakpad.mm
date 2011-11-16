@@ -152,7 +152,8 @@ class Breakpad {
   void RemoveKeyValue(NSString *key);
   NSString *NextCrashReportToUpload();
   void UploadNextReport();
-  void UploadData(NSData *data, NSDictionary *server_parameters);
+  void UploadData(NSData *data, NSString *name,
+                  NSDictionary *server_parameters);
 
  private:
   Breakpad()
@@ -427,7 +428,8 @@ void Breakpad::UploadNextReport() {
 }
 
 //=============================================================================
-void Breakpad::UploadData(NSData *data, NSDictionary *server_parameters) {
+void Breakpad::UploadData(NSData *data, NSString *name,
+                          NSDictionary *server_parameters) {
   NSMutableDictionary *config = [NSMutableDictionary dictionary];
 
   SimpleStringDictionaryIterator it(*config_params_);
@@ -442,7 +444,7 @@ void Breakpad::UploadData(NSData *data, NSDictionary *server_parameters) {
     [uploader addServerParameter:[server_parameters objectForKey:key]
                           forKey:key];
   }
-  [uploader uploadData:data];
+  [uploader uploadData:data name:name];
 }
 
 //=============================================================================
@@ -703,14 +705,14 @@ void BreakpadUploadNextReport(BreakpadRef ref) {
 }
 
 //=============================================================================
-void BreakpadUploadData(BreakpadRef ref, NSData *data,
+void BreakpadUploadData(BreakpadRef ref, NSData *data, NSString *name,
                         NSDictionary *server_parameters) {
   try {
     // Not called at exception time
     Breakpad *breakpad = (Breakpad *)ref;
 
     if (breakpad) {
-      breakpad->UploadData(data, server_parameters);
+      breakpad->UploadData(data, name, server_parameters);
     }
   } catch(...) {    // don't let exceptions leave this C API
     fprintf(stderr, "BreakpadUploadData() : error\n");

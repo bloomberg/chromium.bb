@@ -198,7 +198,7 @@ void BreakpadUploadNextReport(BreakpadRef ref);
 
 // Upload a file to the server. |data| is the content of the file to sent.
 // |server_parameters| is additional server parameters to send.
-void BreakpadUploadData(BreakpadRef ref, NSData *data,
+void BreakpadUploadData(BreakpadRef ref, NSData *data, NSString *name,
                         NSDictionary *server_parameters);
 
 #ifdef __cplusplus
