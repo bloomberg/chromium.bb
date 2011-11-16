@@ -34,3 +34,23 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, AbortOnEnd) {
   EXPECT_FALSE(tab_contents->is_crashed());
 }
 
+// This is a browser test because the DumpRenderTree framework holds
+// onto a Document* reference that blocks this reproduction from
+// destroying the Document, so it is not a use after free unless
+// you don't have DumpRenderTree loaded.
+
+// TODO(gavinp): remove this browser_test if we can get good LayoutTest
+// coverage of the same issue.
+const char kXsltBadImportPage[] =
+    "files/webkit/xslt-bad-import.html";
+IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, XsltBadImport) {
+  ASSERT_TRUE(test_server()->Start());
+  URLRequestAbortOnEndJob::AddUrlHandler();
+  GURL url = test_server()->GetURL(kXsltBadImportPage);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  EXPECT_FALSE(tab_contents->is_crashed());
+}
+
