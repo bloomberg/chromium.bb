@@ -191,34 +191,38 @@ DirectoryBackingStore::~DirectoryBackingStore() {
 bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
     sqlite3** handle) const {
   if (SQLITE_OK == sqlite_utils::OpenSqliteDb(backing_filepath_, handle)) {
-    sqlite_utils::scoped_sqlite_db_ptr scoped_handle(*handle);
-    sqlite3_busy_timeout(scoped_handle.get(), std::numeric_limits<int>::max());
+    sqlite3_busy_timeout(*handle, std::numeric_limits<int>::max());
     {
       string integrity_error;
-      bool is_ok = CheckIntegrity(scoped_handle.get(), &integrity_error);
+      bool is_ok = CheckIntegrity(*handle, &integrity_error);
       if (!is_ok) {
         LOG(ERROR) << "Integrity check failed: " << integrity_error;
+        sqlite3_close(*handle);
+        *handle = NULL;
         return false;
       }
     }
     {
       sqlite_utils::SQLStatement statement;
-      statement.prepare(scoped_handle.get(), "PRAGMA fullfsync = 1");
+      statement.prepare(*handle, "PRAGMA fullfsync = 1");
       if (SQLITE_DONE != statement.step()) {
-        LOG(ERROR) << sqlite3_errmsg(scoped_handle.get());
+        LOG(ERROR) << sqlite3_errmsg(*handle);
+        sqlite3_close(*handle);
+        *handle = NULL;
         return false;
       }
     }
     {
       sqlite_utils::SQLStatement statement;
-      statement.prepare(scoped_handle.get(), "PRAGMA synchronous = 2");
+      statement.prepare(*handle, "PRAGMA synchronous = 2");
       if (SQLITE_DONE != statement.step()) {
-        LOG(ERROR) << sqlite3_errmsg(scoped_handle.get());
+        LOG(ERROR) << sqlite3_errmsg(*handle);
+        sqlite3_close(*handle);
+        *handle = NULL;
         return false;
       }
     }
-    sqlite3_busy_timeout(scoped_handle.release(),
-                         kDirectoryBackingStoreBusyTimeoutMs);
+    sqlite3_busy_timeout(*handle, kDirectoryBackingStoreBusyTimeoutMs);
 #if defined(OS_WIN)
     // Do not index this file. Scanning can occur every time we close the file,
     // which causes long delays in SQLite's file locking.
@@ -229,14 +233,25 @@ bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
 #endif
 
     return true;
+  } else {
+    // The sqlite3 API docs indicate a handle is usually returned even
+    // in the case of error.  We clean it up here.
+    if (*handle != NULL) {
+      sqlite3_close(*handle);
+      *handle = NULL;
+    }
+    return false;
   }
-  return false;
 }
 
 bool DirectoryBackingStore::CheckIntegrity(sqlite3* handle, string* error)
     const {
   sqlite_utils::SQLStatement statement;
-  statement.prepare(handle, "PRAGMA integrity_check(1)");
+  if (SQLITE_OK !=
+      statement.prepare(handle, "PRAGMA integrity_check(1)")) {
+    *error = sqlite3_errmsg(handle);
+    return false;
+  }
   if (SQLITE_ROW != statement.step()) {
     *error =  sqlite3_errmsg(handle);
     return false;
@@ -289,37 +304,7 @@ DirOpenResult DirectoryBackingStore::Load(MetahandlesIndex* entry_bucket,
 
 bool DirectoryBackingStore::BeginLoad() {
   DCHECK(load_dbhandle_ == NULL);
-  bool ret = OpenAndConfigureHandleHelper(&load_dbhandle_);
-  if (ret)
-    return true;
-  // Something's gone wrong. Nuke the database and try again.
-  using ::operator<<;  // For string16.
-  LOG(ERROR) << "Sync database " << backing_filepath_.value()
-             << " corrupt. Deleting and recreating.";
-  file_util::Delete(backing_filepath_, false);
-  bool failed_again = !OpenAndConfigureHandleHelper(&load_dbhandle_);
-
-  // Using failed_again here lets us distinguish from cases where corruption
-  // occurred even when re-opening a fresh directory (they'll go in a separate
-  // double weight histogram bucket).  Failing twice in a row means we disable
-  // sync, so it's useful to see this number separately.
-  int bucket = failed_again ? 2 : 1;
-#if defined(OS_WIN)
-  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedWin", bucket);
-#elif defined(OS_MACOSX)
-  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedMac", bucket);
-#else
-  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedNotWinMac", bucket);
-
-#if defined(OS_CHROMEOS)
-  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedCros", bucket);
-#elif defined(OS_LINUX)
-  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedLinux", bucket);
-#else
-  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedOther", bucket);
-#endif  // OS_LINUX && !OS_CHROMEOS
-#endif  // OS_WIN
-  return !failed_again;
+  return OpenAndConfigureHandleHelper(&load_dbhandle_);
 }
 
 void DirectoryBackingStore::EndLoad() {

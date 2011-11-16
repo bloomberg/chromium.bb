@@ -802,7 +802,7 @@ bool SyncManager::SyncInternal::Init(
 
   bool signed_in = SignIn(credentials);
 
-  if (signed_in || setup_for_test_mode_) {
+  if (signed_in) {
     if (scheduler()) {
       scheduler()->Start(
           browser_sync::SyncScheduler::CONFIGURATION_MODE, base::Closure());
@@ -894,7 +894,6 @@ bool SyncManager::SyncInternal::OpenDirectory() {
   DCHECK(!initialized_) << "Should only happen once";
 
   bool share_opened = dir_manager()->Open(username_for_share(), this);
-  DCHECK(share_opened);
   if (!share_opened) {
     LOG(ERROR) << "Could not open share for:" << username_for_share();
     return false;
@@ -1291,7 +1290,7 @@ void SyncManager::SyncInternal::ShutdownOnSyncThread() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
   observing_ip_address_changes_ = false;
 
-  if (dir_manager()) {
+  if (initialized_ && dir_manager()) {
     {
       // Cryptographer should only be accessed while holding a
       // transaction.
