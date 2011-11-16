@@ -26,21 +26,13 @@ const SIMULTANEOUS_RESCAN_INTERVAL = 1000;
  *     dialog UI.
  * @param {DOMFileSystem} filesystem The HTML5 filesystem object representing
  *     the root filesystem for the new FileManager.
- * @param {Object} params A map of parameter names to values controlling the
- *     appearance of the FileManager.  Names are:
- *     - type: A value from FileManager.DialogType defining what kind of
- *       dialog to present.  Defaults to FULL_PAGE.
- *     - title: The title for the dialog.  Defaults to a localized string based
- *       on the dialog type.
- *     - defaultPath: The default path for the dialog.  The default path should
- *       end with a trailing slash if it represents a directory.
  */
-function FileManager(dialogDom, filesystem, rootEntries) {
+function FileManager(dialogDom) {
   console.log('Init FileManager: ' + dialogDom);
 
   this.dialogDom_ = dialogDom;
-  this.rootEntries_ = rootEntries;
-  this.filesystem_ = filesystem;
+  this.rootEntries_ = null;
+  this.filesystem_ = null;
   this.params_ = location.search ?
                  JSON.parse(decodeURIComponent(location.search.substr(1))) :
                  {};
@@ -72,93 +64,13 @@ function FileManager(dialogDom, filesystem, rootEntries) {
       FileManager.DialogType.SELECT_OPEN_MULTI_FILE,
       FileManager.DialogType.FULL_PAGE]);
 
-  this.initDialogs_();
-
   // TODO(dgozman): This will be changed to LocaleInfo.
   this.locale_ = new v8Locale(navigator.language);
 
-  // TODO(rginda): 6/22/11: Remove this test when createDateTimeFormat is
-  // available in all chrome trunk builds.
-  if ('createDateTimeFormat' in this.locale_) {
-    this.shortDateFormatter_ =
-      this.locale_.createDateTimeFormat({'dateType': 'medium'});
-  } else {
-    this.shortDateFormatter_ = {
-      format: function(d) {
-        return (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
-      }
-    };
-  }
-
-  // TODO(rginda): 6/22/11: Remove this test when createCollator is
-  // available in all chrome trunk builds.
-  if ('createCollator' in this.locale_) {
-    this.collator_ = this.locale_.createCollator({
-      'numeric': true, 'ignoreCase': true, 'ignoreAccents': true});
-  } else {
-    this.collator_ = {
-      compare: function(a, b) {
-        if (a > b) return 1;
-        if (a < b) return -1;
-        return 0;
-      }
-    };
-  }
-
-  // Optional list of file types.
-  this.fileTypes_ = this.params_.typeList;
-
-  this.showCheckboxes_ =
-      (this.dialogType_ == FileManager.DialogType.FULL_PAGE ||
-       this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE);
-
-  // DirectoryEntry representing the current directory of the dialog.
-  this.currentDirEntry_ = null;
-
-  this.copyManager_ = new FileCopyManager();
-  this.copyManager_.addEventListener('copy-progress',
-                                     this.onCopyProgress_.bind(this));
-
-  window.addEventListener('popstate', this.onPopState_.bind(this));
-  window.addEventListener('unload', this.onUnload_.bind(this));
-
-  this.addEventListener('directory-changed',
-                        this.onDirectoryChanged_.bind(this));
-  this.addEventListener('selection-summarized',
-                        this.onSelectionSummarized_.bind(this));
-
-  // The list of archives requested to mount. We will show contents once
-  // archive is mounted, but only for mounts from within this filebrowser tab.
-  this.mountRequests_ = [];
-  chrome.fileBrowserPrivate.onMountCompleted.addListener(
-      this.onMountCompleted_.bind(this));
-
-  chrome.fileBrowserPrivate.onFileChanged.addListener(
-    this.onFileChanged_.bind(this));
-
-  var self = this;
-
-  // The list of callbacks to be invoked during the directory rescan after
-  // all paste tasks are complete.
-  this.pasteSuccessCallbacks_ = [];
-
-  // The list of active mount points to distinct them from other directories.
-  chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
-      self.mountPoints_ = mountPoints;
-  });
-
-  this.initCommands_();
+  this.resolveRoots_();
   this.initDom_();
   this.initDialogType_();
-  this.setupCurrentDirectory_();
-
-  this.summarizeSelection_();
-
-  this.dataModel_.sort('cachedMtime_', 'desc');
-
-  this.refocus();
-
-  this.createMetadataProvider_();
+  this.dialogDom_.style.opacity = '1';
 }
 
 FileManager.prototype = {
@@ -557,6 +469,146 @@ FileManager.prototype = {
   // Instance methods.
 
   /**
+   * Request file system and get root entries asynchronously. Invokes init_
+   * when have finished.
+   */
+  FileManager.prototype.resolveRoots_ = function(callback) {
+    var rootPaths = ['Downloads', 'removable', 'archive'];
+
+    metrics.startInterval('RequestLocalFileSystem');
+    var self = this;
+    chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
+      self.filesystem_ = filesystem;
+      util.installFileErrorToString();
+
+      metrics.recordTime('RequestLocalFileSystem');
+      console.log('Found filesystem: ' + filesystem.name, filesystem);
+
+      var rootEntries = [];
+
+      function onAllRootsFound() {
+        self.rootEntries_ = rootEntries;
+        self.init_();
+      }
+
+      function onPathError(path, err) {
+        console.error('Error locating root path: ' + path + ': ' + err);
+      }
+
+      function onEntryFound(entry) {
+        if (entry) {
+          rootEntries.push(entry);
+        } else {
+          onAllRootsFound();
+        }
+      }
+
+      metrics.startInterval('EnumerateRoots');
+      if (filesystem.name.match(/^chrome-extension_\S+:external/i)) {
+        // We've been handed the local filesystem, whose root directory
+        // cannot be enumerated.
+        util.getDirectories(filesystem.root, {create: false}, rootPaths,
+                            onEntryFound, onPathError);
+      } else {
+        util.forEachDirEntry(filesystem.root, onEntryFound);
+      }
+    });
+  };
+
+  /**
+   * Continue initializing the file manager after resolving roots.
+   */
+  FileManager.prototype.init_ = function() {
+    metrics.startInterval('InitFileManager');
+    this.initFileList_();
+    this.initDialogs_();
+
+    // TODO(rginda): 6/22/11: Remove this test when createDateTimeFormat is
+    // available in all chrome trunk builds.
+    if ('createDateTimeFormat' in this.locale_) {
+      this.shortDateFormatter_ =
+        this.locale_.createDateTimeFormat({'dateType': 'medium'});
+    } else {
+      this.shortDateFormatter_ = {
+        format: function(d) {
+          return (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+        }
+      };
+    }
+
+    // TODO(rginda): 6/22/11: Remove this test when createCollator is
+    // available in all chrome trunk builds.
+    if ('createCollator' in this.locale_) {
+      this.collator_ = this.locale_.createCollator({
+        'numeric': true, 'ignoreCase': true, 'ignoreAccents': true});
+    } else {
+      this.collator_ = {
+        compare: function(a, b) {
+          if (a > b) return 1;
+          if (a < b) return -1;
+          return 0;
+        }
+      };
+    }
+
+    // Optional list of file types.
+    this.fileTypes_ = this.params_.typeList;
+
+    this.showCheckboxes_ =
+        (this.dialogType_ == FileManager.DialogType.FULL_PAGE ||
+         this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE);
+
+    // DirectoryEntry representing the current directory of the dialog.
+    this.currentDirEntry_ = null;
+
+    this.copyManager_ = new FileCopyManager();
+    this.copyManager_.addEventListener('copy-progress',
+                                       this.onCopyProgress_.bind(this));
+
+    window.addEventListener('popstate', this.onPopState_.bind(this));
+    window.addEventListener('unload', this.onUnload_.bind(this));
+
+    this.addEventListener('directory-changed',
+                          this.onDirectoryChanged_.bind(this));
+    this.addEventListener('selection-summarized',
+                          this.onSelectionSummarized_.bind(this));
+
+    // The list of archives requested to mount. We will show contents once
+    // archive is mounted, but only for mounts from within this filebrowser tab.
+    this.mountRequests_ = [];
+    chrome.fileBrowserPrivate.onMountCompleted.addListener(
+        this.onMountCompleted_.bind(this));
+
+    chrome.fileBrowserPrivate.onFileChanged.addListener(
+        this.onFileChanged_.bind(this));
+
+    var self = this;
+
+    // The list of callbacks to be invoked during the directory rescan after
+    // all paste tasks are complete.
+    this.pasteSuccessCallbacks_ = [];
+
+    // The list of active mount points to distinct them from other directories.
+    chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
+        self.mountPoints_ = mountPoints;
+    });
+
+    this.initCommands_();
+
+    this.setupCurrentDirectory_();
+
+    this.summarizeSelection_();
+
+    this.dataModel_.sort('cachedMtime_', 'desc');
+
+    this.refocus();
+
+    this.createMetadataProvider_();
+    metrics.recordTime('InitFileManager');
+    metrics.recordTime('TotalLoad');
+  };
+
+  /**
    * One-time initialization of commands.
    */
   FileManager.prototype.initCommands_ = function() {
@@ -652,7 +704,12 @@ FileManager.prototype = {
 
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, localStrings.templateData);
+  };
 
+  /**
+   * Constructs table and grid (heavy operation).
+   **/
+  FileManager.prototype.initFileList_ = function() {
     // Always sharing the data model between the detail/thumb views confuses
     // them.  Instead we maintain this bogus data model, and hook it up to the
     // view that is not in use.
@@ -685,7 +742,6 @@ FileManager.prototype = {
     this.setListType(FileManager.ListType.DETAIL);
 
     this.onResize_();
-    this.dialogDom_.style.opacity = '1';
 
     this.textSearchState_ = {text: '', date: new Date()};
   };
@@ -1222,7 +1278,8 @@ FileManager.prototype = {
    */
   FileManager.prototype.onPopState_ = function(event) {
     // TODO(serya): We should restore selected items here.
-    this.setupCurrentDirectory_();
+    if (this.rootEntries_)
+      this.setupCurrentDirectory_();
   };
 
   FileManager.prototype.requestResize_ = function(timeout) {

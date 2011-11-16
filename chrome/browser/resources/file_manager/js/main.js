@@ -13,54 +13,13 @@ var fileManager;
  * Called by main.html after the dom has been parsed.
  */
 function init() {
-  var rootPaths = ['Downloads', 'removable', 'archive', 'tmp'];
-
-  function onEntriesFound(filesystem, entries) {
-    metrics.recordTime('EnumerateRoots');
-    FileManager.initStrings(function () {
-      metrics.startInterval('Construct');
-      fileManager = new FileManager(document.body, filesystem, entries);
-      metrics.recordTime('Construct');
-      metrics.recordTime('TotalLoad');
-      // We're ready to run.  Tests can monitor for this state with
-      // ExtensionTestMessageListener listener("ready");
-      // ASSERT_TRUE(listener.WaitUntilSatisfied());
-      chrome.test.sendMessage('ready');
-    });
-  }
-
-  function onFileSystemFound(filesystem) {
-    metrics.recordTime('RequestLocalFileSystem');
-    console.log('Found filesystem: ' + filesystem.name, filesystem);
-
-    var entries = [];
-
-    function onPathError(path, err) {
-      console.error('Error locating root path: ' + path + ': ' + err);
-    }
-
-    function onEntryFound(entry) {
-      if (entry) {
-        entries.push(entry);
-      } else {
-        onEntriesFound(filesystem, entries);
-      }
-    }
-
-    metrics.startInterval('EnumerateRoots');
-    if (filesystem.name.match(/^chrome-extension_\S+:external/i)) {
-      // We've been handed the local filesystem, whose root directory
-      // cannot be enumerated.
-      util.getDirectories(filesystem.root, {create: false}, rootPaths,
-                          onEntryFound, onPathError);
-    } else {
-      util.forEachDirEntry(filesystem.root, onEntryFound);
-    }
-  };
-
-  util.installFileErrorToString();
-
-    console.log('Requesting filesystem.');
-    metrics.startInterval('RequestLocalFileSystem');
-    chrome.fileBrowserPrivate.requestLocalFileSystem(onFileSystemFound);
+  FileManager.initStrings(function () {
+    metrics.startInterval('Construct');
+    fileManager = new FileManager(document.body);
+    metrics.recordTime('Construct');
+    // We're ready to run.  Tests can monitor for this state with
+    // ExtensionTestMessageListener listener("ready");
+    // ASSERT_TRUE(listener.WaitUntilSatisfied());
+    chrome.test.sendMessage('ready');
+  });
 }
