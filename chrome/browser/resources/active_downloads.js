@@ -55,9 +55,9 @@ function init() {
   document.body.addEventListener("selectstart", function (e) {
       e.preventDefault(); });
 
-  var sadt = $('showalldownloadstext');
-  sadt.textContent = localStrings.getString('showalldownloads');
-  sadt.addEventListener("click", showAllDownloads);
+  var sadt = $('showallfilestext');
+  sadt.textContent = localStrings.getString('showallfiles');
+  sadt.addEventListener("click", showAllFiles);
 
   downloadRowList = new DownloadRowList();
   chromeSend('getDownloads');
@@ -77,8 +77,8 @@ function initTestHarness() {
   // Fix localStrings.
   localStrings = {
     getString: function(name) {
-      if (name == 'showalldownloads')
-        return 'Show All Downloads';
+      if (name == 'showallfiles')
+        return 'Show all files';
       if (name == 'dangerousextension')
         return 'Extensions, apps, and themes can harm your computer.' +
             ' Are you sure you want to continue?'
@@ -191,8 +191,8 @@ function downloadUpdated(result) {
   downloadRowList.update(result);
 }
 
-function showAllDownloads() {
-  chromeSend('openNewFullWindow', 'chrome://downloads');
+function showAllFiles() {
+  chromeSend('showAllFiles');
 }
 
 /**

@@ -24,9 +24,11 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/media/media_player.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/extensions/file_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -55,7 +57,7 @@ static const int kPopupLeft = 0;
 static const int kPopupTop = 0;
 static const int kPopupWidth = 250;
 // Minimum height of window must be 100, so kPopupHeight has space for
-// 2 download rows of 36 px and 'Show All Downloads' which is 29px.
+// 2 download rows of 36 px and 'Show all files' link which is 29px.
 static const int kPopupHeight = 36 * 2 + 29;
 
 static const char kPropertyPath[] = "path";
@@ -76,8 +78,8 @@ ChromeWebUIDataSource* CreateActiveDownloadsUIHTMLSource() {
   source->AddLocalizedString("continue", IDS_CONTINUE_EXTENSION_DOWNLOAD);
   source->AddLocalizedString("pause", IDS_DOWNLOAD_LINK_PAUSE);
   source->AddLocalizedString("resume", IDS_DOWNLOAD_LINK_RESUME);
-  source->AddLocalizedString("showalldownloads",
-                             IDS_FILEBROWSER_SHOW_ALL_DOWNLOADS);
+  source->AddLocalizedString("showallfiles",
+                             IDS_FILE_BROWSER_MORE_FILES);
   source->AddLocalizedString("error_unknown_file_type",
                              IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE);
 
@@ -129,8 +131,9 @@ class ActiveDownloadsHandler
   // WebUI Callbacks.
   void HandleGetDownloads(const ListValue* args);
   void HandlePauseToggleDownload(const ListValue* args);
-  void HandleCancelDownload(const ListValue* args);
   void HandleAllowDownload(const ListValue* args);
+  void HandleCancelDownload(const ListValue* args);
+  void HandleShowAllFiles(const ListValue* args);
   void OpenNewFullWindow(const ListValue* args);
   void PlayMediaFile(const ListValue* args);
 
@@ -189,11 +192,14 @@ void ActiveDownloadsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("pauseToggleDownload",
       base::Bind(&ActiveDownloadsHandler::HandlePauseToggleDownload,
                  base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("allowDownload",
+      base::Bind(&ActiveDownloadsHandler::HandleAllowDownload,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("cancelDownload",
       base::Bind(&ActiveDownloadsHandler::HandleCancelDownload,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("allowDownload",
-      base::Bind(&ActiveDownloadsHandler::HandleAllowDownload,
+  web_ui_->RegisterMessageCallback("showAllFiles",
+      base::Bind(&ActiveDownloadsHandler::HandleShowAllFiles,
                  base::Unretained(this)));
   web_ui_->RegisterMessageCallback("openNewFullWindow",
       base::Bind(&ActiveDownloadsHandler::OpenNewFullWindow,
@@ -241,6 +247,11 @@ void ActiveDownloadsHandler::HandleCancelDownload(const ListValue* args) {
       item->Cancel(true);
     item->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
   }
+}
+
+void ActiveDownloadsHandler::HandleShowAllFiles(const ListValue* args) {
+  FileManagerUtil::ViewFolder(
+      DownloadPrefs::FromDownloadManager(download_manager_)->download_path());
 }
 
 bool ActiveDownloadsHandler::SelectTab(const GURL& url) {
