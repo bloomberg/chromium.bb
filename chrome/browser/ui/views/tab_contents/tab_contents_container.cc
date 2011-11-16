@@ -85,8 +85,17 @@ void TabContentsContainer::Observe(
 // TabContentsContainer, View overrides:
 
 void TabContentsContainer::Layout() {
-  if (native_container_)
+  if (native_container_) {
+    gfx::Size view_size(native_container_->GetView()->size());
     native_container_->GetView()->SetBounds(0, 0, width(), height());
+    // SetBounds does nothing if the bounds haven't changed. We need to force
+    // layout if the bounds haven't changed, but fast resize has.
+    if (view_size.width() == width() && view_size.height() == height() &&
+        native_container_->FastResizeAtLastLayout() &&
+        !native_container_->GetFastResize()) {
+      native_container_->GetView()->Layout();
+    }
+  }
 }
 
 void TabContentsContainer::GetAccessibleState(ui::AccessibleViewState* state) {

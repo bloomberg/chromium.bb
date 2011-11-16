@@ -53,6 +53,14 @@ void NativeTabContentsContainerViews::DetachContents(TabContents* contents) {
 void NativeTabContentsContainerViews::SetFastResize(bool fast_resize) {
 }
 
+bool NativeTabContentsContainerViews::GetFastResize() const {
+  return false;
+}
+
+bool NativeTabContentsContainerViews::FastResizeAtLastLayout() const {
+  return false;
+}
+
 void NativeTabContentsContainerViews::RenderViewHostChanged(
     RenderViewHost* old_host,
     RenderViewHost* new_host) {

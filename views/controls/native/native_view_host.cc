@@ -31,6 +31,7 @@ NativeViewHost::NativeViewHost()
     : native_view_(NULL),
       views_view_(NULL),
       fast_resize_(false),
+      fast_resize_at_last_layout_(false),
       focus_view_(NULL) {
 }
 
@@ -120,6 +121,7 @@ void NativeViewHost::Layout() {
   } else {
     native_wrapper_->HideWidget();
   }
+  fast_resize_at_last_layout_ = visible && fast_resize_;
 }
 
 void NativeViewHost::OnPaint(gfx::Canvas* canvas) {

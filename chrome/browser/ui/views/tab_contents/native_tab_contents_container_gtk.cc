@@ -47,6 +47,14 @@ void NativeTabContentsContainerGtk::SetFastResize(bool fast_resize) {
   set_fast_resize(fast_resize);
 }
 
+bool NativeTabContentsContainerGtk::GetFastResize() const {
+  return fast_resize();
+}
+
+bool NativeTabContentsContainerGtk::FastResizeAtLastLayout() const {
+  return fast_resize_at_last_layout();
+}
+
 void NativeTabContentsContainerGtk::RenderViewHostChanged(
     RenderViewHost* old_host,
     RenderViewHost* new_host) {

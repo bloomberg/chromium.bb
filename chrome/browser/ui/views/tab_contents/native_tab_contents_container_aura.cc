@@ -48,7 +48,15 @@ void NativeTabContentsContainerAura::DetachContents(TabContents* contents) {
 }
 
 void NativeTabContentsContainerAura::SetFastResize(bool fast_resize) {
-  NOTIMPLEMENTED();
+  set_fast_resize(fast_resize);
+}
+
+bool NativeTabContentsContainerAura::GetFastResize() const {
+  return fast_resize();
+}
+
+bool NativeTabContentsContainerAura::FastResizeAtLastLayout() const {
+  return fast_resize_at_last_layout();
 }
 
 void NativeTabContentsContainerAura::RenderViewHostChanged(

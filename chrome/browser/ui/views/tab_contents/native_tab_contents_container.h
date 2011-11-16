@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,10 @@ class NativeTabContentsContainer {
   // Tells the container to update less frequently during resizing operations
   // so performance is better.
   virtual void SetFastResize(bool fast_resize) = 0;
+  virtual bool GetFastResize() const = 0;
+
+  // Returns the value of GetFastResize() the last time layout occurred.
+  virtual bool FastResizeAtLastLayout() const = 0;
 
   // Tells the container that the RenderViewHost for the attached TabContents
   // has changed and it should update focus.
@@ -41,6 +45,7 @@ class NativeTabContentsContainer {
 
   // Retrieves the views::View that hosts the TabContents.
   virtual views::View* GetView() = 0;
+
  protected:
   virtual ~NativeTabContentsContainer() {}
 };

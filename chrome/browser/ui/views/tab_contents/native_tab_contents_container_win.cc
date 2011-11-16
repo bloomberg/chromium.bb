@@ -62,6 +62,14 @@ void NativeTabContentsContainerWin::SetFastResize(bool fast_resize) {
   set_fast_resize(fast_resize);
 }
 
+bool NativeTabContentsContainerWin::GetFastResize() const {
+  return fast_resize();
+}
+
+bool NativeTabContentsContainerWin::FastResizeAtLastLayout() const {
+  return fast_resize_at_last_layout();
+}
+
 void NativeTabContentsContainerWin::RenderViewHostChanged(
     RenderViewHost* old_host,
     RenderViewHost* new_host) {
