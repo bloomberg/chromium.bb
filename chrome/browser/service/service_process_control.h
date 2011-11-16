@@ -48,8 +48,10 @@ class ServiceProcessControl : public IPC::Channel::Sender,
 
   // Returns the singleton instance of this class.
   static ServiceProcessControl* GetInstance();
+
   // Return true if this object is connected to the service.
-  bool is_connected() const { return channel_.get() != NULL; }
+  // Virtual for testing.
+  virtual bool is_connected() const;
 
   // If no service process is currently running, creates a new service process
   // and connects to it. If a service process is already running this method
@@ -61,11 +63,13 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // this case, the task is invoked on success or failure.
   // Note that if we are already connected to service process then
   // |success_task| can be invoked in the context of the Launch call.
-  void Launch(const base::Closure& success_task,
-              const base::Closure& failure_task);
+  // Virtual for testing.
+  virtual void Launch(const base::Closure& success_task,
+                      const base::Closure& failure_task);
 
   // Disconnect the IPC channel from the service process.
-  void Disconnect();
+  // Virtual for testing.
+  virtual void Disconnect();
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -87,7 +91,8 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // Send a shutdown message to the service process. IPC channel will be
   // destroyed after calling this method.
   // Return true if the message was sent.
-  bool Shutdown();
+  // Virtual for testing.
+  virtual bool Shutdown();
 
   // Send request for cloud print proxy info (enabled state, email, proxy id).
   // The callback gets the information when received.
@@ -125,6 +130,7 @@ class ServiceProcessControl : public IPC::Channel::Sender,
     uint32 retry_count_;
   };
 
+  friend class MockServiceProcessControl;
   ServiceProcessControl();
   virtual ~ServiceProcessControl();
 

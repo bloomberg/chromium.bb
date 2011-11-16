@@ -78,6 +78,10 @@ void ServiceProcessControl::RunAllTasksHelper(TaskList* task_list) {
   }
 }
 
+bool ServiceProcessControl::is_connected() const {
+  return channel_.get() != NULL;
+}
+
 void ServiceProcessControl::Launch(const base::Closure& success_task,
                                    const base::Closure& failure_task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

@@ -12,10 +12,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/task.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "content/public/browser/notification_observer.h"
 
 class Profile;
+class ServiceProcessControl;
 
 namespace cloud_print {
 struct CloudPrintProxyInfo;
@@ -25,7 +28,8 @@ struct CloudPrintProxyInfo;
 // running in the service process.
 class CloudPrintProxyService
     : public CloudPrintSetupHandlerDelegate,
-      public ProfileKeyedService {
+      public ProfileKeyedService,
+      public content::NotificationObserver {
  public:
   explicit CloudPrintProxyService(Profile* profile);
   virtual ~CloudPrintProxyService();
@@ -50,6 +54,11 @@ class CloudPrintProxyService
 
   // CloudPrintSetupHandler::Delegate implementation.
   virtual void OnCloudPrintSetupClosed();
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // NotificationDelegate implementation for the token expired notification.
@@ -82,8 +91,15 @@ class CloudPrintProxyService
   void OnTokenExpiredNotificationClosed(bool by_user);
   void OnTokenExpiredNotificationClick();
   void TokenExpiredNotificationDone(bool keep_alive);
+  void ApplyCloudPrintConnectorPolicy();
+
+  // Virtual for testing.
+  virtual ServiceProcessControl* GetServiceProcessControl();
 
   base::WeakPtrFactory<CloudPrintProxyService> weak_factory_;
+
+  // For watching for connector enablement policy changes.
+  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxyService);
 };

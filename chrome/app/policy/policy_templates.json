@@ -424,9 +424,8 @@
     {
       'name': 'CloudPrintProxyEnabled',
       'type': 'main',
-      'supported_on': ['chrome.*:X-'],
+      'supported_on': ['chrome.*:17-'],
       'features': {'dynamic_refresh': 1},
-      'future': True,
       'example_value': True,
       'id': 13,
       'caption': '''Enable <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> proxy''',
