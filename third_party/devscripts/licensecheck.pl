@@ -125,7 +125,7 @@ Adam D. Barratt <adam@adam-barratt.org.uk>
 
 use strict;
 use warnings;
-use Getopt::Long;
+use Getopt::Long qw(:config gnu_getopt);
 use File::Basename;
 
 sub fatal($);
@@ -429,6 +429,8 @@ sub parselicense($) {
     if ($licensetext =~ /opensource\.org\/licenses\/mit-license\.php/) {
 	$license = "MIT/X11 (BSD like) $license";
     } elsif ($licensetext =~ /Permission is hereby granted, free of charge, to any person obtaining a copy of this software and(\/or)? associated documentation files \(the (Software|Materials)\), to deal in the (Software|Materials)/) {
+	$license = "MIT/X11 (BSD like) $license";
+    } elsif ($licensetext =~ /Permission is hereby granted, without written agreement and without license or royalty fees, to use, copy, modify, and distribute this software and its documentation for any purpose/) {
 	$license = "MIT/X11 (BSD like) $license";
     }
 
