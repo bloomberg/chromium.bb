@@ -1027,9 +1027,7 @@ class PepperMessageFilter::LookupRequest {
                 int routing_id,
                 int request_id,
                 const net::HostResolver::RequestInfo& request_info)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(
-            net_callback_(this, &LookupRequest::OnLookupFinished)),
-        pepper_message_filter_(pepper_message_filter),
+      : pepper_message_filter_(pepper_message_filter),
         resolver_(resolver),
         routing_id_(routing_id),
         request_id_(request_id),
@@ -1037,8 +1035,9 @@ class PepperMessageFilter::LookupRequest {
   }
 
   void Start() {
-    int result = resolver_.Resolve(request_info_, &addresses_, &net_callback_,
-                                   net::BoundNetLog());
+    int result = resolver_.Resolve(
+        request_info_, &addresses_,
+        base::Bind(&LookupRequest::OnLookupFinished, this), net::BoundNetLog());
     if (result != net::ERR_IO_PENDING)
       OnLookupFinished(result);
   }
@@ -1049,9 +1048,6 @@ class PepperMessageFilter::LookupRequest {
         routing_id_, request_id_, addresses_);
     delete this;
   }
-
-  // HostResolver will call us using this callback when resolution is complete.
-  net::OldCompletionCallbackImpl<LookupRequest> net_callback_;
 
   PepperMessageFilter* pepper_message_filter_;
   net::SingleRequestHostResolver resolver_;
