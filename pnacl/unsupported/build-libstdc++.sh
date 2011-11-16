@@ -14,12 +14,12 @@ set -o nounset
 set -o errexit
 
 
-readonly INSTALL_ROOT="$(pwd)/toolchain/pnacl_linux_x86_64_newlib"
+readonly INSTALL_ROOT="$(pwd)/../toolchain/pnacl_linux_x86_64_newlib"
 readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
 readonly INSTALL_LIB="${INSTALL_ROOT}/lib"
 readonly LIBSTDCPP_INSTALL_DIR="${INSTALL_ROOT}/pkg/libstdcpp"
 readonly BUILD=cpp-build
-readonly GCC_SRC="$(pwd)/pnacl/git/gcc"
+readonly GCC_SRC="$(pwd)/git/gcc"
 
 CC=gcc
 

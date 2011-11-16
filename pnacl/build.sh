@@ -800,7 +800,13 @@ libs() {
   if ${LIBMODE_NEWLIB}; then
     build-compiler-rt
     libgcc_eh-all
-    libstdcpp
+    # HACK(robertm): once this has baked for a while we need to:
+    #                1) inline the code from build-libstdc++.sh
+    #                2) directly apply the patch in
+    #                   pnacl/unsupported/patch-libstdc++ to the repo
+    #                3) eliminate the old code libstdcpp code
+    #libstdcpp
+    unsupported/build-libstdc++.sh all
   fi
 }
 
