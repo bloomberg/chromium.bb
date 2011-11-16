@@ -25,10 +25,7 @@ class PluginResource;
 class PluginResourceTracker {
  public:
   // Returns the pointer to the singleton object.
-  static PluginResourceTracker* Get() {
-    static PluginResourceTracker tracker;
-    return &tracker;
-  }
+  static PluginResourceTracker* Get();
 
   // PP_Resources --------------------------------------------------------------
 

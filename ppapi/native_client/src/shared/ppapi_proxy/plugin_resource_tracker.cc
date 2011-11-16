@@ -7,6 +7,7 @@
 #include <limits>
 #include <set>
 
+#include "base/basictypes.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
@@ -15,6 +16,12 @@
 #include "ppapi/c/pp_resource.h"
 
 namespace ppapi_proxy {
+
+// static
+PluginResourceTracker* PluginResourceTracker::Get() {
+  CR_DEFINE_STATIC_LOCAL(PluginResourceTracker, tracker, ());
+  return &tracker;
+}
 
 PluginResourceTracker::ResourceAndRefCounts::ResourceAndRefCounts(
     PluginResource* r, size_t browser_count)
