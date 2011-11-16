@@ -328,16 +328,28 @@ void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
     frame_color = ResourceBundle::frame_color_inactive;
   }
 
+#if defined(USE_AURA)
+  // TODO(jamescook): Remove this when Aura defaults to its own window frame,
+  // BrowserNonClientFrameViewAura.  Until then, use custom square corners to
+  // avoid performance penalties associated with transparent layers.
+  SkBitmap* top_left_corner = rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_LEFT);
+  SkBitmap* top_right_corner = rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_RIGHT);
+  SkBitmap* bottom_left_corner =
+      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_LEFT);
+  SkBitmap* bottom_right_corner =
+      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_RIGHT);
+#else
   SkBitmap* top_left_corner = rb.GetBitmapNamed(IDR_WINDOW_TOP_LEFT_CORNER);
   SkBitmap* top_right_corner =
       rb.GetBitmapNamed(IDR_WINDOW_TOP_RIGHT_CORNER);
-  SkBitmap* top_edge = rb.GetBitmapNamed(IDR_WINDOW_TOP_CENTER);
-  SkBitmap* right_edge = rb.GetBitmapNamed(IDR_WINDOW_RIGHT_SIDE);
-  SkBitmap* left_edge = rb.GetBitmapNamed(IDR_WINDOW_LEFT_SIDE);
   SkBitmap* bottom_left_corner =
       rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_LEFT_CORNER);
   SkBitmap* bottom_right_corner =
       rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER);
+#endif
+  SkBitmap* top_edge = rb.GetBitmapNamed(IDR_WINDOW_TOP_CENTER);
+  SkBitmap* right_edge = rb.GetBitmapNamed(IDR_WINDOW_RIGHT_SIDE);
+  SkBitmap* left_edge = rb.GetBitmapNamed(IDR_WINDOW_LEFT_SIDE);
   SkBitmap* bottom_edge = rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_CENTER);
 
   // Fill with the frame color first so we have a constant background for
@@ -365,8 +377,11 @@ void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
     }
   }
 
+  // Don't draw the colored frame on Aura, just the frame color.
+#if !defined(USE_AURA)
   // Draw the theme frame.
   canvas->TileImageInt(*frame_image, 0, 0, width(), frame_image->height());
+#endif
 
   // Top.
   canvas->DrawBitmapInt(*top_left_corner, 0, 0);

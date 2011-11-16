@@ -311,8 +311,7 @@ void NativeWidgetAura::SetAccessibleState(ui::AccessibilityTypes::State state) {
 }
 
 void NativeWidgetAura::BecomeModal() {
-  // http://crbug.com/93936
-  NOTIMPLEMENTED();
+  window_->SetIntProperty(aura::kModalKey, 1);
 }
 
 gfx::Rect NativeWidgetAura::GetWindowScreenBounds() const {
@@ -351,6 +350,8 @@ void NativeWidgetAura::SetShape(gfx::NativeRegion region) {
 
 void NativeWidgetAura::Close() {
   Hide();
+
+  window_->SetIntProperty(aura::kModalKey, 0);
 
   if (!close_widget_factory_.HasWeakPtrs()) {
     MessageLoop::current()->PostTask(

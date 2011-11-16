@@ -4,6 +4,7 @@
 
 #include "ui/aura_shell/stacking_controller.h"
 
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/always_on_top_controller.h"
@@ -21,7 +22,12 @@ aura::Window* GetContainer(int id) {
 // Returns true if children of |window| can be activated.
 bool SupportsChildActivation(aura::Window* window) {
   return window->id() == kShellWindowId_DefaultContainer ||
-         window->id() == kShellWindowId_AlwaysOnTopContainer;
+         window->id() == kShellWindowId_AlwaysOnTopContainer ||
+         window->id() == kShellWindowId_ModalContainer;
+}
+
+bool IsWindowModal(aura::Window* window) {
+  return window->transient_parent() && window->GetIntProperty(aura::kModalKey);
 }
 
 }  // namespace
@@ -68,6 +74,10 @@ void StackingController::AddChildToDefaultParent(aura::Window* window) {
   switch (window->type()) {
     case aura::WINDOW_TYPE_NORMAL:
     case aura::WINDOW_TYPE_POPUP:
+      if (IsWindowModal(window)) {
+        parent = GetContainer(internal::kShellWindowId_ModalContainer);
+        break;
+      }
       parent = always_on_top_controller_->GetContainer(window);
       break;
     case aura::WINDOW_TYPE_MENU:

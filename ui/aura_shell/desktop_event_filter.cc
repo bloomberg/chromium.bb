@@ -70,19 +70,17 @@ bool DesktopEventFilter::PreHandleKeyEvent(aura::Window* target,
 
 bool DesktopEventFilter::PreHandleMouseEvent(aura::Window* target,
                                              aura::MouseEvent* event) {
+  // We must always update the cursor, otherwise the cursor can get stuck if an
+  // event filter registered with us consumes the event.
+  if (event->type() == ui::ET_MOUSE_MOVED)
+    UpdateCursor(target, event);
+
   if (FilterMouseEvent(target, event))
     return true;
 
-  switch (event->type()) {
-    case ui::ET_MOUSE_PRESSED:
-      ActivateIfNecessary(target, event);
-      break;
-    case ui::ET_MOUSE_MOVED:
-      HandleMouseMoved(target, event);
-      break;
-    default:
-      break;
-  }
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    ActivateIfNecessary(target, event);
+
   return false;
 }
 
@@ -112,8 +110,8 @@ void DesktopEventFilter::ActivateIfNecessary(aura::Window* window,
   }
 }
 
-void DesktopEventFilter::HandleMouseMoved(aura::Window* target,
-                                          aura::MouseEvent* event) {
+void DesktopEventFilter::UpdateCursor(aura::Window* target,
+                                      aura::MouseEvent* event) {
   gfx::NativeCursor cursor = target->GetCursor(event->location());
   if (event->flags() & ui::EF_IS_NON_CLIENT) {
     int window_component =

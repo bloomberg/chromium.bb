@@ -32,7 +32,7 @@ void StatusAreaView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(status_mock_, 0, 0);
 }
 
-views::Widget* CreateStatusArea() {
+AURA_SHELL_EXPORT views::Widget* CreateStatusArea() {
   StatusAreaView* status_area_view = new StatusAreaView;
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);

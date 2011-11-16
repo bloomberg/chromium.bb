@@ -29,7 +29,6 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui',
-        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'defines': [
         'COMPOSITOR_IMPLEMENTATION',
@@ -94,6 +93,7 @@
               ['exclude', '^compositor_(gl|win|stub).(h|cc)$'],
             ],
             'dependencies': [
+              '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
               '<(DEPTH)/webkit/support/webkit_support.gyp:fileapi',
               '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
               '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_gpu',

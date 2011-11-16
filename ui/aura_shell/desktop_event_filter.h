@@ -44,7 +44,7 @@ class AURA_SHELL_EXPORT DesktopEventFilter : public aura::EventFilter {
 
   // Updates the cursor if the target provides a custom one, and provides
   // default resize cursors for window edges.
-  void HandleMouseMoved(aura::Window* target, aura::MouseEvent* event);
+  void UpdateCursor(aura::Window* target, aura::MouseEvent* event);
 
   // Dispatches event to addtional filters. Returns false or
   // ui::TOUCH_STATUS_UNKNOWN if event is consumed.

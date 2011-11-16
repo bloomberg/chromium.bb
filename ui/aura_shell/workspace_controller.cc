@@ -79,7 +79,7 @@ void WorkspaceController::ActiveWorkspaceChanged(WorkspaceManager* manager,
                                                  Workspace* old) {
   // TODO(oshima): Update Launcher and Status area state when the active
   // workspace's fullscreen state changes.
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

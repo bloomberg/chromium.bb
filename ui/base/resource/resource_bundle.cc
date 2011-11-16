@@ -42,13 +42,20 @@ const int kLargeFontSizeDelta = 8;
 
 ResourceBundle* ResourceBundle::g_shared_instance_ = NULL;
 
-/* static */
+// static
 // TODO(glen): Finish moving these into theme provider (dialogs still
-//    depend on these colors).
+//             depend on these colors).
+#if defined(USE_AURA)
+const SkColor ResourceBundle::frame_color =
+     SkColorSetRGB(109, 109, 109);
+const SkColor ResourceBundle::frame_color_inactive =
+     SkColorSetRGB(176, 176, 176);
+#else
 const SkColor ResourceBundle::frame_color =
      SkColorSetRGB(66, 116, 201);
 const SkColor ResourceBundle::frame_color_inactive =
      SkColorSetRGB(161, 182, 228);
+#endif
 const SkColor ResourceBundle::frame_color_app_panel =
      SK_ColorWHITE;
 const SkColor ResourceBundle::frame_color_app_panel_inactive =

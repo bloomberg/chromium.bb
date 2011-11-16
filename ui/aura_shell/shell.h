@@ -17,6 +17,7 @@
 #include "ui/aura_shell/aura_shell_export.h"
 
 namespace aura {
+class EventFilter;
 class Window;
 }
 namespace gfx {
@@ -51,6 +52,10 @@ class AURA_SHELL_EXPORT Shell {
 
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
+
+  // Adds or removes |filter| from the DesktopEventFilter.
+  void AddDesktopEventFilter(aura::EventFilter* filter);
+  void RemoveDesktopEventFilter(aura::EventFilter* filter);
 
   // Toggles between overview mode and normal mode.
   void ToggleOverview();

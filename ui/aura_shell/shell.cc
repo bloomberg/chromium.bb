@@ -15,6 +15,7 @@
 #include "ui/aura_shell/desktop_event_filter.h"
 #include "ui/aura_shell/desktop_layout_manager.h"
 #include "ui/aura_shell/launcher/launcher.h"
+#include "ui/aura_shell/modal_container_layout_manager.h"
 #include "ui/aura_shell/shelf_layout_controller.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
@@ -60,6 +61,16 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
   launcher_container->set_id(internal::kShellWindowId_LauncherContainer);
   containers->push_back(launcher_container);
 
+  aura::Window* modal_container = new aura::Window(NULL);
+  modal_container->SetEventFilter(
+      new ToplevelWindowEventFilter(modal_container));
+  modal_container->SetLayoutManager(
+      new internal::ModalContainerLayoutManager(modal_container));
+  modal_container->set_id(internal::kShellWindowId_ModalContainer);
+  containers->push_back(modal_container);
+
+  // TODO(beng): Figure out if we can make this use ModalityEventFilter instead
+  //             of stops_event_propagation.
   aura::Window* lock_container = new aura::Window(NULL);
   lock_container->set_stops_event_propagation(true);
   lock_container->set_id(internal::kShellWindowId_LockScreenContainer);
@@ -178,6 +189,16 @@ aura::Window* Shell::GetContainer(int container_id) {
 
 const aura::Window* Shell::GetContainer(int container_id) const {
   return aura::Desktop::GetInstance()->GetChildById(container_id);
+}
+
+void Shell::AddDesktopEventFilter(aura::EventFilter* filter) {
+  static_cast<internal::DesktopEventFilter*>(
+      aura::Desktop::GetInstance()->event_filter())->AddFilter(filter);
+}
+
+void Shell::RemoveDesktopEventFilter(aura::EventFilter* filter) {
+  static_cast<internal::DesktopEventFilter*>(
+      aura::Desktop::GetInstance()->event_filter())->RemoveFilter(filter);
 }
 
 void Shell::ToggleOverview() {

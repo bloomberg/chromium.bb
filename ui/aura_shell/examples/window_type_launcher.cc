@@ -24,6 +24,120 @@ using views::MenuRunner;
 namespace aura_shell {
 namespace examples {
 
+namespace {
+
+SkColor g_colors[] = { SK_ColorRED,
+                       SK_ColorYELLOW,
+                       SK_ColorBLUE,
+                       SK_ColorGREEN };
+int g_color_index = 0;
+
+class ModalWindow : public views::WidgetDelegateView,
+                    public views::ButtonListener {
+ public:
+  ModalWindow()
+      : color_(g_colors[g_color_index]),
+        ALLOW_THIS_IN_INITIALIZER_LIST(open_button_(
+            new views::NativeTextButton(this, ASCIIToUTF16("Moar!")))) {
+    ++g_color_index %= arraysize(g_colors);
+    AddChildView(open_button_);
+  }
+  virtual ~ModalWindow() {
+  }
+
+  static void OpenModalWindow(aura::Window* parent) {
+    views::Widget* widget =
+        views::Widget::CreateWindowWithParent(new ModalWindow, parent);
+    widget->GetNativeView()->set_name("ModalWindow");
+    widget->Show();
+  }
+
+  // Overridden from views::View:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    canvas->FillRect(color_, GetLocalBounds());
+  }
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    return gfx::Size(200, 200);
+  }
+  virtual void Layout() OVERRIDE {
+    gfx::Size open_ps = open_button_->GetPreferredSize();
+    gfx::Rect local_bounds = GetLocalBounds();
+    open_button_->SetBounds(
+        5, local_bounds.bottom() - open_ps.height() - 5,
+        open_ps.width(), open_ps.height());
+  }
+
+  // Overridden from views::WidgetDelegate:
+  virtual views::View* GetContentsView() OVERRIDE {
+    return this;
+  }
+  virtual bool CanResize() const OVERRIDE {
+    return true;
+  }
+  virtual string16 GetWindowTitle() const OVERRIDE {
+    return ASCIIToUTF16("Modal Window");
+  }
+  virtual bool IsModal() const OVERRIDE {
+    return true;
+  }
+
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE {
+    DCHECK(sender == open_button_);
+    OpenModalWindow(GetWidget()->GetNativeView());
+  }
+
+ private:
+  SkColor color_;
+  views::NativeTextButton* open_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(ModalWindow);
+};
+
+class NonModalTransient : public views::WidgetDelegateView {
+ public:
+  NonModalTransient()
+      : color_(g_colors[g_color_index]) {
+    ++g_color_index %= arraysize(g_colors);
+  }
+  virtual ~NonModalTransient() {
+  }
+
+  static void OpenNonModalTransient(aura::Window* parent) {
+    views::Widget* widget =
+        views::Widget::CreateWindowWithParent(new NonModalTransient, parent);
+    widget->GetNativeView()->set_name("NonModalTransient");
+    widget->Show();
+  }
+
+  // Overridden from views::View:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    canvas->FillRect(color_, GetLocalBounds());
+  }
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    return gfx::Size(250, 250);
+  }
+
+  // Overridden from views::WidgetDelegate:
+  virtual views::View* GetContentsView() OVERRIDE {
+    return this;
+  }
+  virtual bool CanResize() const OVERRIDE {
+    return true;
+  }
+  virtual string16 GetWindowTitle() const OVERRIDE {
+    return ASCIIToUTF16("Non-Modal Transient");
+  }
+
+ private:
+  SkColor color_;
+
+  DISALLOW_COPY_AND_ASSIGN(NonModalTransient);
+};
+
+}  // namespace
+
 void InitWindowTypeLauncher() {
   views::Widget* widget =
       views::Widget::CreateWindowWithBounds(new WindowTypeLauncher,
@@ -45,12 +159,20 @@ WindowTypeLauncher::WindowTypeLauncher()
           new views::NativeTextButton(this, ASCIIToUTF16("Lock Screen")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(widgets_button_(
           new views::NativeTextButton(
-              this, ASCIIToUTF16("Show Example Widgets")))) {
+              this, ASCIIToUTF16("Show Example Widgets")))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(modal_button_(
+          new views::NativeTextButton(
+              this, ASCIIToUTF16("Open Modal Window")))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(transient_button_(
+          new views::NativeTextButton(
+              this, ASCIIToUTF16("Open Non-Modal Transient Window")))) {
   AddChildView(create_button_);
   AddChildView(create_nonresizable_button_);
   AddChildView(bubble_button_);
   AddChildView(lock_button_);
   AddChildView(widgets_button_);
+  AddChildView(modal_button_);
+  AddChildView(transient_button_);
   set_context_menu_controller(this);
 }
 
@@ -88,6 +210,16 @@ void WindowTypeLauncher::Layout() {
   widgets_button_->SetBounds(
       5, lock_button_->y() - widgets_ps.height() - 5,
       widgets_ps.width(), widgets_ps.height());
+
+  gfx::Size modal_ps = modal_button_->GetPreferredSize();
+  modal_button_->SetBounds(
+      5, widgets_button_->y() - modal_ps.height() - 5,
+      modal_ps.width(), modal_ps.height());
+
+  gfx::Size transient_ps = transient_button_->GetPreferredSize();
+  transient_button_->SetBounds(
+      5, modal_button_->y() - transient_ps.height() - 5,
+      transient_ps.width(), transient_ps.height());
 }
 
 gfx::Size WindowTypeLauncher::GetPreferredSize() {
@@ -129,6 +261,10 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     CreateLock();
   } else if (sender == widgets_button_) {
     CreateWidgetsWindow();
+  } else if (sender == modal_button_) {
+    ModalWindow::OpenModalWindow(GetWidget()->GetNativeView());
+  } else if (sender == transient_button_) {
+    NonModalTransient::OpenNonModalTransient(GetWidget()->GetNativeView());
   }
 }
 

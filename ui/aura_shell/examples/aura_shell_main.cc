@@ -60,7 +60,15 @@ class ShellDelegateImpl : public aura_shell::ShellDelegate {
   }
 };
 
-}  // namesapce
+}  // namespace
+
+namespace aura_shell {
+namespace examples {
+
+void InitWindowTypeLauncher();
+
+}  // namespace examples
+}  // namespace aura_shell
 
 int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);

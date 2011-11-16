@@ -49,7 +49,6 @@ class ToplevelLayoutManagerTest : public aura::test::AuraTestBase {
 
   scoped_ptr<aura::Window> container_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(ToplevelLayoutManagerTest);
 };
 

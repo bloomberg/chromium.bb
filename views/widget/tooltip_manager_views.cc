@@ -96,7 +96,8 @@ void TooltipManagerViews::UpdateForMouseEvent(const MouseEvent& event) {
       break;
     case ui::ET_MOUSE_ENTERED:
       // Mouse just entered this widget. Start the timer to show the tooltip.
-      CHECK(!tooltip_timer_.IsRunning());
+      if (tooltip_timer_.IsRunning())
+        tooltip_timer_.Stop();
       tooltip_timer_.Start(FROM_HERE,
           base::TimeDelta::FromMilliseconds(kTooltipTimeoutMs),
           this, &TooltipManagerViews::TooltipTimerFired);

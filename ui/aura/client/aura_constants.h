@@ -26,6 +26,9 @@ AURA_EXPORT extern const char kShowStateKey[];
 // is |string16*|.
 AURA_EXPORT extern const char kTooltipTextKey[];
 
+// A property key to store the boolean property of window modality.
+AURA_EXPORT extern const char kModalKey[];
+
 }  // namespace aura
 
 #endif  // UI_AURA_CLIENT_AURA_CONSTANTS_H_

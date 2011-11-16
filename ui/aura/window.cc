@@ -56,16 +56,18 @@ Window::~Window() {
   if (transient_parent_)
     transient_parent_->RemoveTransientChild(this);
 
-  // Destroy transient children.
-  Windows transient_children(transient_children_);
-  STLDeleteElements(&transient_children);
-  DCHECK(transient_children_.empty());
-
   // And let the delegate do any post cleanup.
   if (delegate_)
     delegate_->OnWindowDestroyed();
   if (parent_)
     parent_->RemoveChild(this);
+
+  // Destroy transient children, only after we've removed ourselves from our
+  // parent, as destroying an active transient child may otherwise attempt to
+  // refocus us.
+  Windows transient_children(transient_children_);
+  STLDeleteElements(&transient_children);
+  DCHECK(transient_children_.empty());
 
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroyed(this));
 }

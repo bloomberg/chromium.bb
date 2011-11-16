@@ -6,6 +6,8 @@
 #define UI_AURA_SHELL_SHELL_FACTORY_H_
 #pragma once
 
+#include "ui/aura_shell/aura_shell_export.h"
+
 namespace views {
 class Widget;
 }
@@ -14,13 +16,9 @@ class Widget;
 
 namespace aura_shell {
 
-namespace examples {
-void InitWindowTypeLauncher();
-}  // namespace examples
-
 namespace internal {
 views::Widget* CreateDesktopBackground();
-views::Widget* CreateStatusArea();
+AURA_SHELL_EXPORT views::Widget* CreateStatusArea();
 }  // namespace internal
 
 }  // namespace aura_shell

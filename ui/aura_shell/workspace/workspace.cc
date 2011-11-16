@@ -239,7 +239,7 @@ int Workspace::GetIndexOf(aura::Window* window) const {
 bool Workspace::CanAdd(aura::Window* window) const {
   // TODO(oshima): This should be based on available space and the
   // size of the |window|.
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
   return windows_.size() < g_max_windows_per_workspace;
 }
 
