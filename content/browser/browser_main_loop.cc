@@ -158,10 +158,8 @@ BrowserMainLoop::BrowserMainLoop(const content::MainFunctionParams& parameters)
 }
 
 BrowserMainLoop::~BrowserMainLoop() {
-  // Destroy added parts in reverse order.
-  for (int i = static_cast<int>(parts_list_.size())-1; i >= 0; --i)
-    delete parts_list_[i];
-  parts_list_.clear();
+  // Release and destroy |parts_| before destroying other members.
+  parts_.reset();
 
 #if defined(OS_WIN)
   OleUninitialize();
@@ -169,15 +167,15 @@ BrowserMainLoop::~BrowserMainLoop() {
 }
 
 void BrowserMainLoop::Init() {
-  GetContentClient()->browser()->CreateBrowserMainParts(
-      parameters_, &parts_list_);
+  parts_.reset(
+      GetContentClient()->browser()->CreateBrowserMainParts(parameters_));
 }
 
 // BrowserMainLoop stages ==================================================
 
 void BrowserMainLoop::EarlyInitialization() {
-  for (size_t i = 0; i < parts_list_.size(); ++i)
-    parts_list_[i]->PreEarlyInitialization();
+  if (parts_.get())
+    parts_->PreEarlyInitialization();
 
 #if defined(OS_WIN)
   net::EnsureWinsockInit();
@@ -223,13 +221,13 @@ void BrowserMainLoop::EarlyInitialization() {
   if (parsed_command_line_.HasSwitch(switches::kEnableTcpFastOpen))
     net::set_tcp_fastopen_enabled(true);
 
-  for (size_t i = 0; i < parts_list_.size(); ++i)
-    parts_list_[i]->PostEarlyInitialization();
+  if (parts_.get())
+    parts_->PostEarlyInitialization();
 }
 
 void BrowserMainLoop::MainMessageLoopStart() {
-  for (size_t i = 0; i < parts_list_.size(); ++i)
-    parts_list_[i]->PreMainMessageLoopStart();
+  if (parts_.get())
+    parts_->PreMainMessageLoopStart();
 
 #if defined(OS_WIN)
   // If we're running tests (ui_task is non-null), then the ResourceBundle
@@ -260,31 +258,24 @@ void BrowserMainLoop::MainMessageLoopStart() {
   system_message_window_.reset(new SystemMessageWindowWin);
 #endif
 
-  for (size_t i = 0; i < parts_list_.size(); ++i)
-    parts_list_[i]->PostMainMessageLoopStart();
+  if (parts_.get())
+    parts_->PostMainMessageLoopStart();
 }
 
 void BrowserMainLoop::RunMainMessageLoopParts(
     bool* completed_main_message_loop) {
-  for (size_t i = 0; i < parts_list_.size(); ++i)
-    parts_list_[i]->PreMainMessageLoopRun();
+  if (parts_.get())
+    parts_->PreMainMessageLoopRun();
 
   TRACE_EVENT_BEGIN_ETW("BrowserMain:MESSAGE_LOOP", 0, "");
   // If the UI thread blocks, the whole UI is unresponsive.
   // Do not allow disk IO from the UI thread.
   base::ThreadRestrictions::SetIOAllowed(false);
 
-  // Iterate through each of the parts. If any of them ran the main
-  // message loop then they should return |true|. Otherwise
-  // BrowserMainLoop::MainMessageLoopRun loop will be run.
   bool ran_main_loop = false;
-  for (size_t i = 0; i < parts_list_.size(); ++i) {
-    int result_code = result_code_;
-    if (parts_list_[i]->MainMessageLoopRun(&result_code)) {
-      ran_main_loop = true;
-      result_code_ = result_code;
-    }
-  }
+  if (parts_.get())
+    ran_main_loop = parts_->MainMessageLoopRun(&result_code_);
+
   if (!ran_main_loop)
     MainMessageLoopRun();
 
@@ -293,8 +284,8 @@ void BrowserMainLoop::RunMainMessageLoopParts(
   if (completed_main_message_loop)
     *completed_main_message_loop = true;
 
-  for (size_t i = 0; i < parts_list_.size(); ++i)
-    parts_list_[i]->PostMainMessageLoopRun();
+  if (parts_.get())
+    parts_->PostMainMessageLoopRun();
 }
 
 void BrowserMainLoop::InitializeMainThread() {
@@ -343,8 +334,8 @@ void BrowserMainLoop::InitializeToolkit() {
     LOG_GETLASTERROR(FATAL);
 #endif
 
-  for (size_t i = 0; i < parts_list_.size(); ++i)
-    parts_list_[i]->ToolkitInitialized();
+  if (parts_.get())
+    parts_->ToolkitInitialized();
 }
 
 void BrowserMainLoop::MainMessageLoopRun() {

@@ -15,9 +15,8 @@ namespace chrome {
 
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
-  virtual void CreateBrowserMainParts(
-      const content::MainFunctionParams& parameters,
-      std::vector<content::BrowserMainParts*>* parts_list) OVERRIDE;
+  virtual content::BrowserMainParts* CreateBrowserMainParts(
+      const content::MainFunctionParams& parameters) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* widget) OVERRIDE;
   virtual TabContentsView* CreateTabContentsView(

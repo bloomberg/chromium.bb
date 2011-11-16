@@ -37,7 +37,7 @@ class ShellBrowserMainParts : public BrowserMainParts {
   virtual void PostMainMessageLoopStart() OVERRIDE {}
   virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
-  virtual void PostMainMessageLoopRun() {}
+  virtual void PostMainMessageLoopRun() OVERRIDE {}
 
   ResourceDispatcherHost* GetResourceDispatcherHost();
   ui::Clipboard* GetClipboard();

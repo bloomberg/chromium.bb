@@ -6,8 +6,6 @@
 #define CONTENT_BROWSER_BROWSER_MAIN_LOOP_H_
 #pragma once
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -55,11 +53,6 @@ class BrowserMainLoop {
   const CommandLine& parsed_command_line_;
   int result_code_;
 
-  // Vector of BrowserMainParts set by CreateBrowserMainParts ------------------
-  // The BrowserParts fucntions for each part are called in the order added.
-  // They are released (destroyed) in the reverse order.
-  std::vector<BrowserMainParts*> parts_list_;
-
   // Members initialized in |MainMessageLoopStart()| ---------------------------
   scoped_ptr<MessageLoop> main_message_loop_;
   scoped_ptr<base::SystemMonitor> system_monitor_;
@@ -69,6 +62,10 @@ class BrowserMainLoop {
   scoped_ptr<SystemMessageWindowWin> system_message_window_;
 #endif
   scoped_ptr<BrowserThreadImpl> main_thread_;
+
+  // Parts are created in BrowserMainLoop::Init() and released/destroyed in
+  // the destructor before anything else.
+  scoped_ptr<BrowserMainParts> parts_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainLoop);
 };

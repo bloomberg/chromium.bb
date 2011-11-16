@@ -94,9 +94,6 @@
       '-indexeddb.IndexedDBTest.testVersionChangeCrashResilience',
       # crbug.com/99506
       '-notifications.NotificationsTest.testSpecialURLNotification',
-      # Cause browser crash.  crbug.com/103427
-      '-notifications.NotificationsTest.testIncognitoNotification',
-      '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # crbug.com/71715
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/97140
