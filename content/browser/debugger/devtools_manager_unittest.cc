@@ -208,13 +208,13 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedTab) {
 
 TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   contents()->transition_cross_site = true;
-  TestRenderViewHost* orig_rvh = rvh();
   // Navigate to URL.  First URL should use first RenderViewHost.
   const GURL url("http://www.google.com");
   controller().LoadURL(
       url, GURL(), content::PAGE_TRANSITION_TYPED, std::string());
   ViewHostMsg_FrameNavigate_Params params1;
   InitNavigateParams(&params1, 1, url, content::PAGE_TRANSITION_TYPED);
+  TestRenderViewHost* orig_rvh = rvh();
   contents()->TestDidNavigate(orig_rvh, params1);
   EXPECT_FALSE(contents()->cross_navigation_pending());
 
