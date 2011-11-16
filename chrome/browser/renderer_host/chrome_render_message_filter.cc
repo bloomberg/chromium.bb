@@ -204,8 +204,8 @@ void ChromeRenderMessageFilter::OnFPS(int routing_id, float fps) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this, &ChromeRenderMessageFilter::OnFPS,
+        base::Bind(
+            &ChromeRenderMessageFilter::OnFPS, this,
             routing_id, fps));
     return;
   }
@@ -287,10 +287,9 @@ void ChromeRenderMessageFilter::OnGetExtensionMessageBundle(
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this,
+      base::Bind(
           &ChromeRenderMessageFilter::OnGetExtensionMessageBundleOnFileThread,
-          extension_path, extension_id, default_locale, reply_msg));
+          this, extension_path, extension_id, default_locale, reply_msg));
 }
 
 void ChromeRenderMessageFilter::OnGetExtensionMessageBundleOnFileThread(
@@ -387,7 +386,7 @@ void ChromeRenderMessageFilter::OnAllowDatabase(int render_view_id,
                                                       top_origin_url);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
+      base::Bind(
           &TabSpecificContentSettings::WebDatabaseAccessed,
           render_process_id_, render_view_id, origin_url, name, display_name,
           !*allowed));
@@ -403,7 +402,7 @@ void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_view_id,
   // Record access to DOM storage for potential display in UI.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
+      base::Bind(
           &TabSpecificContentSettings::DOMStorageAccessed,
           render_process_id_, render_view_id, origin_url, type, !*allowed));
 }
@@ -417,7 +416,7 @@ void ChromeRenderMessageFilter::OnAllowFileSystem(int render_view_id,
   // Record access to file system for potential display in UI.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
+      base::Bind(
           &TabSpecificContentSettings::FileSystemAccessed,
           render_process_id_, render_view_id, origin_url, !*allowed));
 }
@@ -431,7 +430,7 @@ void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_view_id,
                                                       top_origin_url);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
+      base::Bind(
           &TabSpecificContentSettings::IndexedDBAccessed,
           render_process_id_, render_view_id, origin_url, name, !*allowed));
 }

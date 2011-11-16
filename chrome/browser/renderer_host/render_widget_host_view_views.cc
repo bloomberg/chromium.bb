@@ -7,12 +7,12 @@
 #include <algorithm>
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -122,7 +122,7 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
       has_composition_text_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(touch_selection_controller_(
           views::TouchSelectionController::create(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(update_touch_selection_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   set_focusable(true);
   host_->SetView(this);
 
@@ -200,8 +200,7 @@ void RenderWidgetHostViewViews::WasHidden() {
   if (host_)
     host_->WasHidden();
 
-  if (!update_touch_selection_.empty())
-    update_touch_selection_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void RenderWidgetHostViewViews::SetSize(const gfx::Size& size) {
@@ -411,10 +410,11 @@ void RenderWidgetHostViewViews::SelectionBoundsChanged(
   // inserting text at the beginning of a non-empty text control). But in those
   // cases, it does send the correct selection information quickly afterwards.
   // So delay the notification to the touch-selection controller.
-  if (update_touch_selection_.empty()) {
+  if (!weak_factory_.HasWeakPtrs()) {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        update_touch_selection_.NewRunnableMethod(
-          &RenderWidgetHostViewViews::UpdateTouchSelectionController),
+        base::Bind(
+          &RenderWidgetHostViewViews::UpdateTouchSelectionController,
+          weak_factory_.GetWeakPtr()),
         kTouchControllerUpdateDelay);
   }
 }

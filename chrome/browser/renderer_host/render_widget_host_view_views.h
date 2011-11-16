@@ -12,8 +12,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/notification_observer.h"
@@ -300,8 +300,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 #endif
 
   scoped_ptr<views::TouchSelectionController> touch_selection_controller_;
-  ScopedRunnableMethodFactory<RenderWidgetHostViewViews>
-      update_touch_selection_;
+  base::WeakPtrFactory<RenderWidgetHostViewViews> weak_factory_;
 
 #if defined(TOUCH_UI)
   // used to register for keyboard visiblity notificatons.

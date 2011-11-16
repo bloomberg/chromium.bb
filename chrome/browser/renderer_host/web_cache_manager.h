@@ -16,7 +16,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -213,7 +213,7 @@ class WebCacheManager : public content::NotificationObserver {
   // recently than they have been active.
   std::set<int> inactive_renderers_;
 
-  ScopedRunnableMethodFactory<WebCacheManager> revise_allocation_factory_;
+  base::WeakPtrFactory<WebCacheManager> weak_factory_;
 
   content::NotificationRegistrar registrar_;
 

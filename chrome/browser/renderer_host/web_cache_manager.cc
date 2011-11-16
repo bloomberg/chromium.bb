@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
@@ -63,7 +64,7 @@ WebCacheManager* WebCacheManager::GetInstance() {
 
 WebCacheManager::WebCacheManager()
     : global_size_limit_(GetDefaultGlobalSizeLimit()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(revise_allocation_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -415,8 +416,9 @@ void WebCacheManager::ReviseAllocationStrategyLater() {
   // Ask to be called back in a few milliseconds to actually recompute our
   // allocation.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      revise_allocation_factory_.NewRunnableMethod(
-          &WebCacheManager::ReviseAllocationStrategy),
+      base::Bind(
+          &WebCacheManager::ReviseAllocationStrategy,
+          weak_factory_.GetWeakPtr()),
       kReviseAllocationDelayMS);
 }
 

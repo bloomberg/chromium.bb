@@ -12,7 +12,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "content/browser/accessibility/browser_accessibility_delegate_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -398,7 +398,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   string16 tooltip_text_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
-  ScopedRunnableMethodFactory<RenderWidgetHostViewMac> shutdown_factory_;
+  base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;
 
   // selected text on the renderer.
   std::string selected_text_;

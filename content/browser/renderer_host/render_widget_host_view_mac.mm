@@ -6,6 +6,7 @@
 
 #include <QuartzCore/QuartzCore.h>
 
+#include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
@@ -229,7 +230,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       is_loading_(false),
       is_hidden_(false),
       is_showing_context_menu_(false),
-      shutdown_factory_(this),
+      weak_factory_(this),
       accelerated_compositing_active_(false),
       needs_gpu_visibility_update_after_repaint_(false),
       compositing_surface_(gfx::kNullPluginWindow) {
@@ -724,11 +725,11 @@ void RenderWidgetHostViewMac::SetTakesFocusOnlyOnMouseDown(bool flag) {
 }
 
 void RenderWidgetHostViewMac::KillSelf() {
-  if (shutdown_factory_.empty()) {
+  if (!weak_factory_.HasWeakPtrs()) {
     [cocoa_view_ setHidden:YES];
     MessageLoop::current()->PostTask(FROM_HERE,
-        shutdown_factory_.NewRunnableMethod(
-            &RenderWidgetHostViewMac::ShutdownHost));
+        base::Bind(&RenderWidgetHostViewMac::ShutdownHost,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -944,10 +945,9 @@ void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        NewRunnableFunction(&GpuProcessHostUIShim::SendToGpuHost,
-                            gpu_host_id,
-                            new AcceleratedSurfaceMsg_BuffersSwappedACK(
-                                route_id)));
+        base::Bind(&GpuProcessHostUIShim::SendToGpuHost,
+                   gpu_host_id,
+                   new AcceleratedSurfaceMsg_BuffersSwappedACK(route_id)));
   } else {
     GpuProcessHost::SendOnIO(
         gpu_host_id,
@@ -1069,7 +1069,7 @@ void RenderWidgetHostViewMac::UnlockMouse() {
 }
 
 void RenderWidgetHostViewMac::ShutdownHost() {
-  shutdown_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   render_widget_host_->Shutdown();
   // Do not touch any members at this point, |this| has been deleted.
 }
