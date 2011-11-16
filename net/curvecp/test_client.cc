@@ -57,7 +57,8 @@ bool TestClient::Start(const HostPortPair& server_host_port_pair,
   SingleRequestHostResolver host_resolver(system_host_resolver.get());
   HostResolver::RequestInfo request(server_host_port_pair);
   AddressList addresses;
-  int rv = host_resolver.Resolve(request, &addresses, NULL, BoundNetLog());
+  int rv = host_resolver.Resolve(request, &addresses, CompletionCallback(),
+                                 BoundNetLog());
   if (rv != OK) {
     LOG(ERROR) << "Could not resolve host";
     return false;

@@ -28,9 +28,7 @@ class P2PSocketDispatcherHost::DnsRequest {
              net::HostResolver* host_resolver)
       : routing_id_(routing_id),
         request_id_(request_id),
-        resolver_(host_resolver),
-        ALLOW_THIS_IN_INITIALIZER_LIST(completion_callback_(
-            this, &P2PSocketDispatcherHost::DnsRequest::OnDone)) {
+        resolver_(host_resolver) {
   }
 
   void Resolve(const std::string& host_name,
@@ -52,8 +50,11 @@ class P2PSocketDispatcherHost::DnsRequest {
       host_name_ = host_name_ + '.';
 
     net::HostResolver::RequestInfo info(net::HostPortPair(host_name_, 0));
-    int result = resolver_.Resolve(info, &addresses_, &completion_callback_,
-                                   net::BoundNetLog());
+    int result = resolver_.Resolve(
+        info, &addresses_,
+        base::Bind(&P2PSocketDispatcherHost::DnsRequest::OnDone,
+                   base::Unretained(this)),
+        net::BoundNetLog());
     if (result != net::ERR_IO_PENDING)
       OnDone(result);
   }
@@ -96,8 +97,6 @@ class P2PSocketDispatcherHost::DnsRequest {
   net::SingleRequestHostResolver resolver_;
 
   DoneCallback done_callback_;
-
-  net::OldCompletionCallbackImpl<DnsRequest> completion_callback_;
 };
 
 P2PSocketDispatcherHost::P2PSocketDispatcherHost(

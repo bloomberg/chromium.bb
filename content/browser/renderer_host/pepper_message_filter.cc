@@ -181,7 +181,6 @@ class PepperMessageFilter::TCPSocket {
   ConnectionState connection_state_;
   bool end_of_file_reached_;
 
-  net::OldCompletionCallbackImpl<TCPSocket> resolve_callback_;
   net::OldCompletionCallbackImpl<TCPSocket> connect_callback_;
   net::OldCompletionCallbackImpl<TCPSocket> ssl_handshake_callback_;
   net::OldCompletionCallbackImpl<TCPSocket> read_callback_;
@@ -304,8 +303,6 @@ PepperMessageFilter::TCPSocket::TCPSocket(
       connection_state_(BEFORE_CONNECT),
       end_of_file_reached_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          resolve_callback_(this, &TCPSocket::OnResolveCompleted)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
           connect_callback_(this, &TCPSocket::OnConnectCompleted)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           ssl_handshake_callback_(this, &TCPSocket::OnSSLHandshakeCompleted)),
@@ -335,8 +332,10 @@ void PepperMessageFilter::TCPSocket::Connect(const std::string& host,
   net::HostResolver::RequestInfo request_info(net::HostPortPair(host, port));
   resolver_.reset(new net::SingleRequestHostResolver(
       manager_->GetHostResolver()));
-  int result = resolver_->Resolve(request_info, &address_list_,
-                                  &resolve_callback_, net::BoundNetLog());
+  int result = resolver_->Resolve(
+      request_info, &address_list_,
+      base::Bind(&TCPSocket::OnResolveCompleted, base::Unretained(this)),
+      net::BoundNetLog());
   if (result != net::ERR_IO_PENDING)
     OnResolveCompleted(result);
 }

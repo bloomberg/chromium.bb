@@ -82,9 +82,7 @@ class Predictor::LookupRequest {
   LookupRequest(Predictor* predictor,
                 net::HostResolver* host_resolver,
                 const GURL& url)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(
-            net_callback_(this, &LookupRequest::OnLookupFinished)),
-        predictor_(predictor),
+      : predictor_(predictor),
         url_(url),
         resolver_(host_resolver) {
   }
@@ -102,16 +100,15 @@ class Predictor::LookupRequest {
     // lets the HostResolver know it can de-prioritize it.
     resolve_info.set_is_speculative(true);
     return resolver_.Resolve(
-        resolve_info, &addresses_, &net_callback_, net::BoundNetLog());
+        resolve_info, &addresses_,
+        base::Bind(&LookupRequest::OnLookupFinished, base::Unretained(this)),
+        net::BoundNetLog());
   }
 
  private:
   void OnLookupFinished(int result) {
     predictor_->OnLookupFinished(this, url_, result == net::OK);
   }
-
-  // HostResolver will call us using this callback when resolution is complete.
-  net::OldCompletionCallbackImpl<LookupRequest> net_callback_;
 
   Predictor* predictor_;  // The predictor which started us.
 

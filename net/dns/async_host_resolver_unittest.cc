@@ -147,12 +147,12 @@ class AsyncHostResolverTest : public testing::Test {
   TestPrng test_prng_;
   RandIntCallback rand_int_cb_;
   scoped_ptr<HostResolver> resolver_;
-  TestOldCompletionCallback callback0_, callback1_, callback2_, callback3_;
+  TestCompletionCallback callback0_, callback1_, callback2_, callback3_;
 };
 
 TEST_F(AsyncHostResolverTest, EmptyHostLookup) {
   info0_.set_host_port_pair(HostPortPair("", kPortNum));
-  int rv = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+  int rv = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                               BoundNetLog());
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
 }
@@ -161,7 +161,7 @@ TEST_F(AsyncHostResolverTest, IPv4LiteralLookup) {
   const char* kIPLiteral = "192.168.1.2";
   info0_.set_host_port_pair(HostPortPair(kIPLiteral, kPortNum));
   info0_.set_host_resolver_flags(HOST_RESOLVER_CANONNAME);
-  int rv = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+  int rv = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                               BoundNetLog());
   EXPECT_EQ(OK, rv);
   std::vector<const char*> ip_addresses(1, kIPLiteral);
@@ -171,7 +171,7 @@ TEST_F(AsyncHostResolverTest, IPv4LiteralLookup) {
 
 TEST_F(AsyncHostResolverTest, IPv6LiteralLookup) {
   info0_.set_host_port_pair(HostPortPair("2001:db8:0::42", kPortNum));
-  int rv = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+  int rv = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                               BoundNetLog());
   // When support for IPv6 is added, this should succeed.
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
@@ -182,7 +182,7 @@ TEST_F(AsyncHostResolverTest, CachedLookup) {
   EXPECT_EQ(ERR_DNS_CACHE_MISS, rv);
 
   // Cache the result of |info0_| lookup.
-  rv = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+  rv = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                           BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   rv = callback0_.WaitForResult();
@@ -199,19 +199,19 @@ TEST_F(AsyncHostResolverTest, CachedLookup) {
 TEST_F(AsyncHostResolverTest, InvalidHostNameLookup) {
   const std::string kHostName1(64, 'a');
   info0_.set_host_port_pair(HostPortPair(kHostName1, kPortNum));
-  int rv = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+  int rv = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                               BoundNetLog());
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
 
   const std::string kHostName2(4097, 'b');
   info0_.set_host_port_pair(HostPortPair(kHostName2, kPortNum));
-  rv = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+  rv = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                           BoundNetLog());
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
 }
 
 TEST_F(AsyncHostResolverTest, Lookup) {
-  int rv = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+  int rv = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                               BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   rv = callback0_.WaitForResult();
@@ -220,11 +220,11 @@ TEST_F(AsyncHostResolverTest, Lookup) {
 }
 
 TEST_F(AsyncHostResolverTest, ConcurrentLookup) {
-  int rv0 = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+  int rv0 = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                                BoundNetLog());
-  int rv1 = resolver_->Resolve(info1_, &addrlist1_, &callback1_, NULL,
+  int rv1 = resolver_->Resolve(info1_, &addrlist1_, callback1_.callback(), NULL,
                                BoundNetLog());
-  int rv2 = resolver_->Resolve(info2_, &addrlist2_, &callback2_, NULL,
+  int rv2 = resolver_->Resolve(info2_, &addrlist2_, callback2_.callback(), NULL,
                                BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv0);
   EXPECT_EQ(ERR_IO_PENDING, rv1);
@@ -247,11 +247,11 @@ TEST_F(AsyncHostResolverTest, ConcurrentLookup) {
 
 TEST_F(AsyncHostResolverTest, SameHostLookupsConsumeSingleTransaction) {
   // We pass the info0_ to all requests.
-  int rv0 = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+  int rv0 = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                                BoundNetLog());
-  int rv1 = resolver_->Resolve(info0_, &addrlist1_, &callback1_, NULL,
+  int rv1 = resolver_->Resolve(info0_, &addrlist1_, callback1_.callback(), NULL,
                                BoundNetLog());
-  int rv2 = resolver_->Resolve(info0_, &addrlist2_, &callback2_, NULL,
+  int rv2 = resolver_->Resolve(info0_, &addrlist2_, callback2_.callback(), NULL,
                                BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv0);
   EXPECT_EQ(ERR_IO_PENDING, rv1);
@@ -275,12 +275,12 @@ TEST_F(AsyncHostResolverTest, SameHostLookupsConsumeSingleTransaction) {
 
 TEST_F(AsyncHostResolverTest, CancelLookup) {
   HostResolver::RequestHandle req0 = NULL, req2 = NULL;
-  int rv0 = resolver_->Resolve(info0_, &addrlist0_, &callback0_, &req0,
+  int rv0 = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(),
+                               &req0, BoundNetLog());
+  int rv1 = resolver_->Resolve(info1_, &addrlist1_, callback1_.callback(), NULL,
                                BoundNetLog());
-  int rv1 = resolver_->Resolve(info1_, &addrlist1_, &callback1_, NULL,
-                               BoundNetLog());
-  int rv2 = resolver_->Resolve(info2_, &addrlist2_, &callback2_, &req2,
-                               BoundNetLog());
+  int rv2 = resolver_->Resolve(info2_, &addrlist2_, callback2_.callback(),
+                               &req2, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv0);
   EXPECT_EQ(ERR_IO_PENDING, rv1);
   EXPECT_EQ(ERR_IO_PENDING, rv2);
@@ -304,9 +304,9 @@ TEST_F(AsyncHostResolverTest, CancelSameHostLookup) {
   HostResolver::RequestHandle req0 = NULL;
 
   // Pass the info0_ to both requests.
-  int rv0 = resolver_->Resolve(info0_, &addrlist0_, &callback0_, &req0,
-                               BoundNetLog());
-  int rv1 = resolver_->Resolve(info0_, &addrlist1_, &callback1_, NULL,
+  int rv0 = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(),
+                               &req0, BoundNetLog());
+  int rv1 = resolver_->Resolve(info0_, &addrlist1_, callback1_.callback(), NULL,
                                BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv0);
   EXPECT_EQ(ERR_IO_PENDING, rv1);
@@ -326,15 +326,15 @@ TEST_F(AsyncHostResolverTest, CancelSameHostLookup) {
 TEST_F(AsyncHostResolverTest, QueuedLookup) {
   // kMaxTransactions is 2, thus the following requests consume all
   // available transactions.
-  int rv0 = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+  int rv0 = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                                BoundNetLog());
-  int rv1 = resolver_->Resolve(info1_, &addrlist1_, &callback1_, NULL,
+  int rv1 = resolver_->Resolve(info1_, &addrlist1_, callback1_.callback(), NULL,
                                BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv0);
   EXPECT_EQ(ERR_IO_PENDING, rv1);
 
   // The following request will end up in queue.
-  int rv2 = resolver_->Resolve(info2_, &addrlist2_, &callback2_, NULL,
+  int rv2 = resolver_->Resolve(info2_, &addrlist2_, callback2_.callback(), NULL,
                                BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv2);
   EXPECT_EQ(1u,
@@ -358,17 +358,17 @@ TEST_F(AsyncHostResolverTest, QueuedLookup) {
 TEST_F(AsyncHostResolverTest, CancelPendingLookup) {
   // kMaxTransactions is 2, thus the following requests consume all
   // available transactions.
-  int rv0 = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+  int rv0 = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                                BoundNetLog());
-  int rv1 = resolver_->Resolve(info1_, &addrlist1_, &callback1_, NULL,
+  int rv1 = resolver_->Resolve(info1_, &addrlist1_, callback1_.callback(), NULL,
                                BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv0);
   EXPECT_EQ(ERR_IO_PENDING, rv1);
 
   // The following request will end up in queue.
   HostResolver::RequestHandle req2 = NULL;
-  int rv2 = resolver_->Resolve(info2_, &addrlist2_, &callback2_, &req2,
-                               BoundNetLog());
+  int rv2 = resolver_->Resolve(info2_, &addrlist2_, callback2_.callback(),
+                               &req2, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv2);
   EXPECT_EQ(1u,
       static_cast<AsyncHostResolver*>(resolver_.get())->GetNumPending());
@@ -389,12 +389,12 @@ TEST_F(AsyncHostResolverTest, CancelPendingLookup) {
 }
 
 TEST_F(AsyncHostResolverTest, ResolverDestructionCancelsLookups) {
-  int rv0 = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+  int rv0 = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                                BoundNetLog());
-  int rv1 = resolver_->Resolve(info1_, &addrlist1_, &callback1_, NULL,
+  int rv1 = resolver_->Resolve(info1_, &addrlist1_, callback1_.callback(), NULL,
                                BoundNetLog());
   // This one is queued.
-  int rv2 = resolver_->Resolve(info2_, &addrlist2_, &callback2_, NULL,
+  int rv2 = resolver_->Resolve(info2_, &addrlist2_, callback2_.callback(), NULL,
                                BoundNetLog());
   EXPECT_EQ(1u,
       static_cast<AsyncHostResolver*>(resolver_.get())->GetNumPending());
@@ -415,12 +415,12 @@ TEST_F(AsyncHostResolverTest, ResolverDestructionCancelsLookups) {
 // Test that when the number of pending lookups is at max, a new lookup
 // with a priority lower than all of those in the queue fails.
 TEST_F(AsyncHostResolverTest, OverflowQueueWithLowPriorityLookup) {
-  int rv0 = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+  int rv0 = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                                BoundNetLog());
-  int rv1 = resolver_->Resolve(info1_, &addrlist1_, &callback1_, NULL,
+  int rv1 = resolver_->Resolve(info1_, &addrlist1_, callback1_.callback(), NULL,
                                BoundNetLog());
   // This one is queued and fills up the queue since its size is 1.
-  int rv2 = resolver_->Resolve(info2_, &addrlist2_, &callback2_, NULL,
+  int rv2 = resolver_->Resolve(info2_, &addrlist2_, callback2_.callback(), NULL,
                                BoundNetLog());
   EXPECT_EQ(1u,
       static_cast<AsyncHostResolver*>(resolver_.get())->GetNumPending());
@@ -431,7 +431,7 @@ TEST_F(AsyncHostResolverTest, OverflowQueueWithLowPriorityLookup) {
 
   // This one fails.
   info3_.set_priority(LOWEST);
-  int rv3 = resolver_->Resolve(info3_, &addrlist3_, &callback3_, NULL,
+  int rv3 = resolver_->Resolve(info3_, &addrlist3_, callback3_.callback(), NULL,
                                BoundNetLog());
   EXPECT_EQ(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE, rv3);
 
@@ -443,9 +443,9 @@ TEST_F(AsyncHostResolverTest, OverflowQueueWithLowPriorityLookup) {
 // with a priority higher than any of those in the queue succeeds and
 // causes the lowest priority lookup in the queue to fail.
 TEST_F(AsyncHostResolverTest, OverflowQueueWithHighPriorityLookup) {
-  int rv0 = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+  int rv0 = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                                BoundNetLog());
-  int rv1 = resolver_->Resolve(info1_, &addrlist1_, &callback1_, NULL,
+  int rv1 = resolver_->Resolve(info1_, &addrlist1_, callback1_.callback(), NULL,
                                BoundNetLog());
 
   // Next lookup is queued.  Since this will be ejected from the queue and
@@ -454,8 +454,9 @@ TEST_F(AsyncHostResolverTest, OverflowQueueWithHighPriorityLookup) {
   HostResolver::RequestInfo info(HostPortPair("cnn.com", 80));
   info.set_address_family(ADDRESS_FAMILY_IPV4);
   AddressList addrlist_fail;
-  TestOldCompletionCallback callback_fail;
-  int rv_fail = resolver_->Resolve(info, &addrlist_fail, &callback_fail, NULL,
+  TestCompletionCallback callback_fail;
+  int rv_fail = resolver_->Resolve(info, &addrlist_fail,
+                                   callback_fail.callback(), NULL,
                                    BoundNetLog());
   EXPECT_EQ(1u,
       static_cast<AsyncHostResolver*>(resolver_.get())->GetNumPending());
@@ -466,7 +467,7 @@ TEST_F(AsyncHostResolverTest, OverflowQueueWithHighPriorityLookup) {
 
   // Lookup 2 causes the above to fail, but itself should succeed.
   info2_.set_priority(HIGHEST);
-  int rv2 = resolver_->Resolve(info2_, &addrlist2_, &callback2_, NULL,
+  int rv2 = resolver_->Resolve(info2_, &addrlist2_, callback2_.callback(), NULL,
                                BoundNetLog());
 
   rv0 = callback0_.WaitForResult();

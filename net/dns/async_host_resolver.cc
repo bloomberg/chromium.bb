@@ -85,7 +85,7 @@ class AsyncHostResolver::Request {
           const BoundNetLog& source_net_log,
           const BoundNetLog& request_net_log,
           const HostResolver::RequestInfo& info,
-          OldCompletionCallback* callback,
+          const CompletionCallback& callback,
           AddressList* addresses)
       : resolver_(resolver),
         source_net_log_(source_net_log),
@@ -103,7 +103,7 @@ class AsyncHostResolver::Request {
   }
 
   ~Request() {
-    if (callback_)
+    if (!callback_.is_null())
       resolver_->OnCancel(this);
   }
 
@@ -161,7 +161,7 @@ class AsyncHostResolver::Request {
   // |addresses_| and in case of an unsuccessful synchronous completion, we
   // do not touch |addresses_|.
   void OnSyncComplete(int result) {
-    callback_ = NULL;
+    callback_.Reset();
     resolver_->OnFinish(this, result);
   }
 
@@ -169,11 +169,11 @@ class AsyncHostResolver::Request {
   void OnAsyncComplete(int result, const AddressList& addresses) {
     if (result == OK)
       *addresses_ = CreateAddressListUsingPort(addresses, info_.port());
-    DCHECK(callback_);
-    OldCompletionCallback* callback = callback_;
-    callback_ = NULL;
+    DCHECK_EQ(false, callback_.is_null());
+    CompletionCallback callback = callback_;
+    callback_.Reset();
     resolver_->OnFinish(this, result);
-    callback->Run(result);
+    callback.Run(result);
   }
 
   // Returns true if request has a validly formed hostname.
@@ -187,7 +187,7 @@ class AsyncHostResolver::Request {
   BoundNetLog request_net_log_;
   const HostResolver::RequestInfo info_;
   Key key_;
-  OldCompletionCallback* callback_;
+  CompletionCallback callback_;
   AddressList* addresses_;
   int result_;
 };
@@ -225,11 +225,11 @@ AsyncHostResolver::~AsyncHostResolver() {
 
 int AsyncHostResolver::Resolve(const RequestInfo& info,
                                AddressList* addresses,
-                               OldCompletionCallback* callback,
+                               const CompletionCallback& callback,
                                RequestHandle* out_req,
                                const BoundNetLog& source_net_log) {
   DCHECK(addresses);
-  DCHECK(callback);
+  DCHECK_EQ(false, callback.is_null());
   scoped_ptr<Request> request(
       CreateNewRequest(info, callback, addresses, source_net_log));
 
@@ -259,7 +259,7 @@ int AsyncHostResolver::ResolveFromCache(const RequestInfo& info,
                                         AddressList* addresses,
                                         const BoundNetLog& source_net_log) {
   scoped_ptr<Request> request(
-      CreateNewRequest(info, NULL, addresses, source_net_log));
+      CreateNewRequest(info, CompletionCallback(), addresses, source_net_log));
   int rv = ERR_UNEXPECTED;
   if (!request->IsValid())
     rv = ERR_NAME_NOT_RESOLVED;
@@ -382,7 +382,7 @@ void AsyncHostResolver::OnTransactionComplete(
 
 AsyncHostResolver::Request* AsyncHostResolver::CreateNewRequest(
     const RequestInfo& info,
-    OldCompletionCallback* callback,
+    const CompletionCallback& callback,
     AddressList* addresses,
     const BoundNetLog& source_net_log) {
   BoundNetLog request_net_log = BoundNetLog::Make(net_log_,

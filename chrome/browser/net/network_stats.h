@@ -176,9 +176,6 @@ class NetworkStats {
   // HostResolver fills out the |addresses_| after host resolution is completed.
   net::AddressList addresses_;
 
-  // Callback to call when host resolution is completed.
-  net::OldCompletionCallbackImpl<NetworkStats> resolve_callback_;
-
   // Callback to call when data is read from the server.
   net::OldCompletionCallbackImpl<NetworkStats> read_callback_;
 

@@ -196,8 +196,8 @@ bool TestServer::GetAddressList(AddressList* address_list) const {
                                HostResolver::kDefaultRetryAttempts,
                                NULL));
   HostResolver::RequestInfo info(host_port_pair_);
-  TestOldCompletionCallback callback;
-  int rv = resolver->Resolve(info, address_list, &callback, NULL,
+  TestCompletionCallback callback;
+  int rv = resolver->Resolve(info, address_list, callback.callback(), NULL,
                              BoundNetLog());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();

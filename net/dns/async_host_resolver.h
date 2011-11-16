@@ -39,7 +39,7 @@ class NET_EXPORT AsyncHostResolver
   // HostResolver interface
   virtual int Resolve(const RequestInfo& info,
                       AddressList* addresses,
-                      OldCompletionCallback* callback,
+                      const CompletionCallback& callback,
                       RequestHandle* out_req,
                       const BoundNetLog& source_net_log) OVERRIDE;
   virtual int ResolveFromCache(const RequestInfo& info,
@@ -75,7 +75,7 @@ class NET_EXPORT AsyncHostResolver
 
   // Create a new request for the incoming Resolve() call.
   Request* CreateNewRequest(const RequestInfo& info,
-                            OldCompletionCallback* callback,
+                            const CompletionCallback& callback,
                             AddressList* addresses,
                             const BoundNetLog& source_net_log);
 

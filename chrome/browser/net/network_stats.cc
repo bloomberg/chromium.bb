@@ -82,8 +82,6 @@ NetworkStats::NetworkStats()
       bytes_to_send_(0),
       encoded_message_(""),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          resolve_callback_(this, &NetworkStats::OnResolveComplete)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
           read_callback_(this, &NetworkStats::OnReadComplete)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           write_callback_(this, &NetworkStats::OnWriteComplete)),
@@ -105,11 +103,11 @@ bool NetworkStats::Start(net::HostResolver* host_resolver,
   Initialize(bytes_to_send, finished_callback);
 
   net::HostResolver::RequestInfo request(server_host_port_pair);
-  int rv = host_resolver->Resolve(request,
-                                  &addresses_,
-                                  &resolve_callback_,
-                                  NULL,
-                                  net::BoundNetLog());
+  int rv = host_resolver->Resolve(
+      request, &addresses_,
+      base::Bind(&NetworkStats::OnResolveComplete,
+                 base::Unretained(this)),
+      NULL, net::BoundNetLog());
   if (rv == net::ERR_IO_PENDING)
     return true;
   return DoConnect(rv);

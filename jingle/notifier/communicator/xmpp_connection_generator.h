@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"
-#include "net/base/completion_callback.h"
 #include "net/base/host_resolver.h"
 #include "net/base/net_log.h"
 #include "net/base/single_request_host_resolver.h"
@@ -65,7 +64,6 @@ class XmppConnectionGenerator {
 
   Delegate* delegate_;
   net::SingleRequestHostResolver host_resolver_;
-  scoped_ptr<net::OldCompletionCallback> resolve_callback_;
   net::AddressList address_list_;
   net::BoundNetLog bound_net_log_;
   scoped_ptr<ConnectionSettingsList> settings_list_;
