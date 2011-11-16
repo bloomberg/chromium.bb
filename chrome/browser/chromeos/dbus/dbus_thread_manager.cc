@@ -48,13 +48,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     if (command_line.HasSwitch(switches::kEnableSensors))
       sensors_client_.reset(SensorsClient::Create(system_bus_.get()));
 
-    // Create bluetooth clients if bluetooth is enabled.
-    if (command_line.HasSwitch(switches::kEnableBluetooth)) {
-      bluetooth_manager_client_.reset(BluetoothManagerClient::Create(
-          system_bus_.get()));
-      bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create(
-          system_bus_.get()));
-    }
+    // Create the bluetooth clients.
+    bluetooth_manager_client_.reset(BluetoothManagerClient::Create(
+        system_bus_.get()));
+    bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create(
+        system_bus_.get()));
 
     // Create the power manager client.
     power_manager_client_.reset(PowerManagerClient::Create(system_bus_.get()));

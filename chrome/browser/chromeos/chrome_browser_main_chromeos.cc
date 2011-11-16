@@ -143,6 +143,16 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   // Get the statistics provider instance here to start loading statistcs
   // on the background FILE thread.
   chromeos::system::StatisticsProvider::GetInstance();
+
+  // Initialize the Chrome OS bluetooth subsystem.
+  // We defer this to PreMainMessageLoopRun because we don't want to check the
+  // parsed command line until after about_flags::ConvertFlagsToSwitches has
+  // been called.
+  // TODO(vlaviano): Move this back to PostMainMessageLoopStart when we remove
+  // the --enable-bluetooth flag.
+  if (parsed_command_line().HasSwitch(switches::kEnableBluetooth)) {
+    chromeos::BluetoothManager::Initialize();
+  }
 }
 
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
@@ -164,11 +174,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   session_manager_observer_.reset(new chromeos::SessionManagerObserver);
   chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
       AddObserver(session_manager_observer_.get());
-
-  // Initialize the Chrome OS bluetooth subsystem
-  if (parsed_command_line().HasSwitch(switches::kEnableBluetooth)) {
-    chromeos::BluetoothManager::Initialize();
-  }
 
   // Initialize the network change notifier for Chrome OS. The network
   // change notifier starts to monitor changes from the power manager and
