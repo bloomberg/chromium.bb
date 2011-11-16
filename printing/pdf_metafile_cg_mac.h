@@ -30,31 +30,32 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
   virtual ~PdfMetafileCg();
 
   // Metafile methods.
-  virtual bool Init();
-  virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
+  virtual bool Init() OVERRIDE;
+  virtual bool InitFromData(const void* src_buffer,
+                            uint32 src_buffer_size) OVERRIDE;
 
   // Not implemented on mac.
   virtual SkDevice* StartPageForVectorCanvas(
       const gfx::Size& page_size, const gfx::Rect& content_area,
-      const float& scale_factor);
+      const float& scale_factor) OVERRIDE;
   virtual bool StartPage(const gfx::Size& page_size,
                          const gfx::Rect& content_area,
-                         const float& scale_factor);
-  virtual bool FinishPage();
-  virtual bool FinishDocument();
+                         const float& scale_factor) OVERRIDE;
+  virtual bool FinishPage() OVERRIDE;
+  virtual bool FinishDocument() OVERRIDE;
 
-  virtual uint32 GetDataSize() const;
-  virtual bool GetData(void* dst_buffer, uint32 dst_buffer_size) const;
+  virtual uint32 GetDataSize() const OVERRIDE;
+  virtual bool GetData(void* dst_buffer, uint32 dst_buffer_size) const OVERRIDE;
 
   // For testing purposes only.
-  virtual bool SaveTo(const FilePath& file_path) const;
+  virtual bool SaveTo(const FilePath& file_path) const OVERRIDE;
 
-  virtual gfx::Rect GetPageBounds(unsigned int page_number) const;
-  virtual unsigned int GetPageCount() const;
+  virtual gfx::Rect GetPageBounds(unsigned int page_number) const OVERRIDE;
+  virtual unsigned int GetPageCount() const OVERRIDE;
 
   // Note: The returned context *must not be retained* past Close(). If it is,
   // the data returned from GetData will not be valid PDF data.
-  virtual CGContextRef context() const;
+  virtual CGContextRef context() const OVERRIDE;
 
   virtual bool RenderPage(unsigned int page_number,
                           CGContextRef context,
@@ -62,7 +63,7 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
                           bool shrink_to_fit,
                           bool stretch_to_fit,
                           bool center_horizontally,
-                          bool center_vertically) const;
+                          bool center_vertically) const OVERRIDE;
 
  private:
   // Returns a CGPDFDocumentRef version of pdf_data_.

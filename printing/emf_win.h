@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "printing/metafile.h"
 
@@ -42,45 +43,46 @@ class PRINTING_EXPORT Emf : public Metafile {
   virtual bool InitFromFile(const FilePath& metafile_path);
 
   // Metafile methods.
-  virtual bool Init();
-  virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
+  virtual bool Init() OVERRIDE;
+  virtual bool InitFromData(const void* src_buffer,
+                            uint32 src_buffer_size) OVERRIDE;
 
   virtual SkDevice* StartPageForVectorCanvas(
       const gfx::Size& page_size, const gfx::Rect& content_area,
-      const float& scale_factor);
+      const float& scale_factor) OVERRIDE;
   // Inserts a custom GDICOMMENT records indicating StartPage/EndPage calls
   // (since StartPage and EndPage do not work in a metafile DC). Only valid
   // when hdc_ is non-NULL. |page_size|, |content_area|, and |scale_factor| are
   // ignored.
   virtual bool StartPage(const gfx::Size& page_size,
                          const gfx::Rect& content_area,
-                         const float& scale_factor);
-  virtual bool FinishPage();
-  virtual bool FinishDocument();
+                         const float& scale_factor) OVERRIDE;
+  virtual bool FinishPage() OVERRIDE;
+  virtual bool FinishDocument() OVERRIDE;
 
-  virtual uint32 GetDataSize() const;
-  virtual bool GetData(void* buffer, uint32 size) const;
+  virtual uint32 GetDataSize() const OVERRIDE;
+  virtual bool GetData(void* buffer, uint32 size) const OVERRIDE;
 
   // Saves the EMF data to a file as-is. It is recommended to use the .emf file
   // extension but it is not enforced. This function synchronously writes to the
   // file. For testing only.
-  virtual bool SaveTo(const FilePath& file_path) const;
+  virtual bool SaveTo(const FilePath& file_path) const OVERRIDE;
 
   // Should be passed to Playback to keep the exact same size.
-  virtual gfx::Rect GetPageBounds(unsigned int page_number) const;
+  virtual gfx::Rect GetPageBounds(unsigned int page_number) const OVERRIDE;
 
-  virtual unsigned int GetPageCount() const {
+  virtual unsigned int GetPageCount() const OVERRIDE {
     return page_count_;
   }
 
-  virtual HDC context() const {
+  virtual HDC context() const OVERRIDE {
     return hdc_;
   }
 
-  virtual bool Playback(HDC hdc, const RECT* rect) const;
-  virtual bool SafePlayback(HDC hdc) const;
+  virtual bool Playback(HDC hdc, const RECT* rect) const OVERRIDE;
+  virtual bool SafePlayback(HDC hdc) const OVERRIDE;
 
-  virtual HENHMETAFILE emf() const {
+  virtual HENHMETAFILE emf() const OVERRIDE {
     return emf_;
   }
 

@@ -97,14 +97,15 @@ class PrintBackendCUPS : public PrintBackend {
   virtual ~PrintBackendCUPS() {}
 
   // PrintBackend implementation.
-  virtual bool EnumeratePrinters(PrinterList* printer_list);
+  virtual bool EnumeratePrinters(PrinterList* printer_list) OVERRIDE;
 
-  virtual std::string GetDefaultPrinterName();
+  virtual std::string GetDefaultPrinterName() OVERRIDE;
 
-  virtual bool GetPrinterCapsAndDefaults(const std::string& printer_name,
-                                         PrinterCapsAndDefaults* printer_info);
+  virtual bool GetPrinterCapsAndDefaults(
+      const std::string& printer_name,
+      PrinterCapsAndDefaults* printer_info) OVERRIDE;
 
-  virtual bool IsValidPrinter(const std::string& printer_name);
+  virtual bool IsValidPrinter(const std::string& printer_name) OVERRIDE;
 
  private:
   // Following functions are wrappers around corresponding CUPS functions.

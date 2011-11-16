@@ -26,34 +26,36 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   virtual ~PdfMetafileSkia();
 
   // Metafile methods.
-  virtual bool Init();
-  virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
+  virtual bool Init() OVERRIDE;
+  virtual bool InitFromData(const void* src_buffer,
+                            uint32 src_buffer_size) OVERRIDE;
 
   virtual SkDevice* StartPageForVectorCanvas(
       const gfx::Size& page_size,
       const gfx::Rect& content_area,
-      const float& scale_factor);
+      const float& scale_factor) OVERRIDE;
 
   virtual bool StartPage(const gfx::Size& page_size,
                          const gfx::Rect& content_area,
-                         const float& scale_factor);
-  virtual bool FinishPage();
-  virtual bool FinishDocument();
+                         const float& scale_factor) OVERRIDE;
+  virtual bool FinishPage() OVERRIDE;
+  virtual bool FinishDocument() OVERRIDE;
 
-  virtual uint32 GetDataSize() const;
-  virtual bool GetData(void* dst_buffer, uint32 dst_buffer_size) const;
+  virtual uint32 GetDataSize() const OVERRIDE;
+  virtual bool GetData(void* dst_buffer, uint32 dst_buffer_size) const OVERRIDE;
 
-  virtual bool SaveTo(const FilePath& file_path) const;
+  virtual bool SaveTo(const FilePath& file_path) const OVERRIDE;
 
-  virtual gfx::Rect GetPageBounds(unsigned int page_number) const;
-  virtual unsigned int GetPageCount() const;
+  virtual gfx::Rect GetPageBounds(unsigned int page_number) const OVERRIDE;
+  virtual unsigned int GetPageCount() const OVERRIDE;
 
-  virtual gfx::NativeDrawingContext context() const;
+  virtual gfx::NativeDrawingContext context() const OVERRIDE;
 
 #if defined(OS_WIN)
-  virtual bool Playback(gfx::NativeDrawingContext hdc, const RECT* rect) const;
-  virtual bool SafePlayback(gfx::NativeDrawingContext hdc) const;
-  virtual HENHMETAFILE emf() const;
+  virtual bool Playback(gfx::NativeDrawingContext hdc,
+                        const RECT* rect) const OVERRIDE;
+  virtual bool SafePlayback(gfx::NativeDrawingContext hdc) const OVERRIDE;
+  virtual HENHMETAFILE emf() const OVERRIDE;
 #elif defined(OS_MACOSX)
   virtual bool RenderPage(unsigned int page_number,
                           CGContextRef context,
@@ -61,11 +63,11 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
                           bool shrink_to_fit,
                           bool stretch_to_fit,
                           bool center_horizontally,
-                          bool center_vertically) const;
+                          bool center_vertically) const OVERRIDE;
 #endif
 
 #if defined(OS_CHROMEOS)
-  virtual bool SaveToFD(const base::FileDescriptor& fd) const;
+  virtual bool SaveToFD(const base::FileDescriptor& fd) const OVERRIDE;
 #endif  // if defined(OS_CHROMEOS)
 
   // Return a new metafile containing just the current page in draft mode.
