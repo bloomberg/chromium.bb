@@ -13,33 +13,33 @@ class Results:
   """Static class that collects the results of our BuildStages as they run."""
 
   # List of results for all stages that's built up as we run. Members are of
-  #  the form ('name', SUCCESS | SKIPPED | Exception, None | description)
+  #  the form ('name', SUCCESS | FORGIVEN | Exception, None | description)
   _results_log = []
 
-  # Stages run in a previous run and restored. Stored as a list of
-  # stage names.
-  _previous = []
+  # Stages run in a previous run and restored. Stored as a dictionary of
+  # names to previous records.
+  _previous = {}
 
   # Stored in the results log for a stage skipped because it was previously
   # completed successfully.
   SUCCESS = "Stage was successful"
-  SKIPPED = "Stage skipped because successful on previous run"
   FORGIVEN = "Stage failed but was optional"
+  SPLIT_TOKEN = "\_O_/"
 
   @classmethod
   def Clear(cls):
     """Clear existing stage results."""
     cls._results_log = []
-    cls._previous = []
+    cls._previous = {}
 
   @classmethod
-  def PreviouslyCompleted(cls, name):
+  def PreviouslyCompletedRecord(cls, name):
     """Check to see if this stage was previously completed.
 
        Returns:
          A boolean showing the stage was successful in the previous run.
     """
-    return name in cls._previous
+    return cls._previous.get(name)
 
   @classmethod
   def Success(cls):
@@ -49,8 +49,7 @@ class Results:
     """
     for entry in cls._results_log:
       _, result, _, _ = entry
-
-      if not result in (cls.SUCCESS, cls.SKIPPED, cls.FORGIVEN):
+      if not result in (cls.SUCCESS, cls.FORGIVEN):
         return False
 
     return True
@@ -60,12 +59,8 @@ class Results:
     """Return true stage passed."""
     for entry in cls._results_log:
       entry, result, _, _ = entry
-
       if entry == name:
-        if result not in (cls.SUCCESS, cls.SKIPPED):
-          return False
-        else:
-          return True
+        return result == cls.SUCCESS
 
     return False
 
@@ -78,7 +73,6 @@ class Results:
          result:
            Result should be one of:
              Results.SUCCESS if the stage was successful.
-             Results.SKIPPED if the stage was completed in a previous run.
              The exception the stage errored with.
          description:
            The textual backtrace of the exception, or None
@@ -94,7 +88,6 @@ class Results:
          result:
            Result should be one of:
              Results.SUCCESS if the stage was successful.
-             Results.SKIPPED if the stage was completed in a previous run.
              The exception the stage errored with.
           description:
            The textual backtrace of the exception, or None
@@ -128,16 +121,25 @@ class Results:
   @classmethod
   def SaveCompletedStages(cls, file):
     """Save out the successfully completed stages to the provided file."""
-    for name, result, _, _ in cls._results_log:
-      if result != cls.SUCCESS and result != cls.SKIPPED: break
-      file.write(name)
+    for name, result, description, time in cls._results_log:
+      if result != cls.SUCCESS: break
+      file.write(cls.SPLIT_TOKEN.join([name, str(description), str(time)]))
       file.write('\n')
 
   @classmethod
   def RestoreCompletedStages(cls, file):
     """Load the successfully completed stages from the provided file."""
-    # Read the file, and strip off the newlines
-    cls._previous = [line.strip() for line in file.readlines()]
+    # Read the file, and strip off the newlines.
+    for line in file:
+      record = line.strip().split(cls.SPLIT_TOKEN)
+      if len(record) != 3:
+        cros_lib.Warning('State file does not match expected format, ignoring.')
+        # Wipe any partial state.
+        cls._previous = {}
+        break
+
+      cls._previous[record[0]] = record
+
 
   @classmethod
   def Report(cls, file, archive_url=None, current_version=None):
@@ -163,15 +165,10 @@ class Results:
       timestr = datetime.timedelta(seconds=math.ceil(run_time))
 
       file.write(line)
-
       if result == cls.SUCCESS:
         # These was no error
         file.write('%s PASS %s (%s)\n' % (edge, name, timestr))
 
-      elif result == cls.SKIPPED:
-        # The stage was executed previously, and skipped this time
-        file.write('%s %s previously completed\n' %
-                   (edge, name))
       elif result == cls.FORGIVEN:
         # The stage was executed previously, and skipped this time
         file.write('%s FAILED BUT FORGIVEN %s (%s)\n' %

@@ -46,7 +46,6 @@ class BuilderStage(object):
     self._prebuilt_type = None
     self.name = self.name_stage_re.match(self.__class__.__name__).group(1)
     self._ExtractVariables()
-    repo_dir = os.path.join(self._build_root, '.repo')
 
     # Determine correct chrome_rev.
     self._chrome_rev = self._build_config['chrome_rev']
@@ -224,9 +223,11 @@ class BuilderStage(object):
       self._PrintLoudly('Not running Stage %s' % self.name)
       return
 
-    if results_lib.Results.PreviouslyCompleted(self.name):
+    record = results_lib.Results.PreviouslyCompletedRecord(self.name)
+    if record:
       self._PrintLoudly('Skipping Stage %s' % self.name)
-      results_lib.Results.Record(self.name, results_lib.Results.SKIPPED)
+      results_lib.Results.Record(self.name, results_lib.Results.SUCCESS, None,
+                                 float(record[2]))
       return
 
     start_time = time.time()
