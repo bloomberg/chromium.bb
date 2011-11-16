@@ -834,7 +834,7 @@ handle_lock_surface_destroy(struct wl_listener *listener,
 			    struct wl_resource *resource, uint32_t time)
 {
 	struct wl_shell *shell =
-		container_of(listener, struct wl_shell, panel_listener);
+		container_of(listener, struct wl_shell, lock_surface_listener);
 
 	fprintf(stderr, "lock surface gone\n");
 	shell->lock_surface = NULL;
