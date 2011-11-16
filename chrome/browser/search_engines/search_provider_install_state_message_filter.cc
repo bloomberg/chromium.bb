@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
@@ -19,8 +20,7 @@ SearchProviderInstallStateMessageFilter::
 SearchProviderInstallStateMessageFilter(
     int render_process_id,
     Profile* profile)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-        reply_with_provider_install_state_factory_(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       provider_data_(profile->GetWebDataService(Profile::EXPLICIT_ACCESS),
                      content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                      content::Source<RenderProcessHost>(
@@ -88,9 +88,10 @@ SearchProviderInstallStateMessageFilter::OnMsgGetSearchProviderInstallState(
     const GURL& requested_host,
     IPC::Message* reply_msg) {
   provider_data_.CallWhenLoaded(
-      reply_with_provider_install_state_factory_.NewRunnableMethod(
+      base::Bind(
           &SearchProviderInstallStateMessageFilter::
           ReplyWithProviderInstallState,
+          weak_factory_.GetWeakPtr(),
           page_location,
           requested_host,
           reply_msg));

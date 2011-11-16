@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_SEARCH_ENGINES_SEARCH_PROVIDER_INSTALL_STATE_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_SEARCH_ENGINES_SEARCH_PROVIDER_INSTALL_STATE_MESSAGE_FILTER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/search_engines/search_provider_install_data.h"
 #include "chrome/common/search_provider.h"
 #include "content/browser/browser_message_filter.h"
@@ -41,8 +42,7 @@ class SearchProviderInstallStateMessageFilter : public BrowserMessageFilter {
                                      IPC::Message* reply_msg);
 
   // Used to schedule invocations of ReplyWithProviderInstallState.
-  ScopedRunnableMethodFactory<SearchProviderInstallStateMessageFilter>
-      reply_with_provider_install_state_factory_;
+  base::WeakPtrFactory<SearchProviderInstallStateMessageFilter> weak_factory_;
 
   // Used to do a load and get information about install states.
   SearchProviderInstallData provider_data_;

@@ -4,12 +4,14 @@
 
 #include "chrome/browser/search_engines/search_provider_install_data.h"
 
+#include <algorithm>
+#include <functional>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/task.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -138,9 +140,9 @@ void GoogleURLObserver::Observe(int type,
                                 const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_GOOGLE_URL_UPDATED) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(change_notifier_.get(),
-                          &GoogleURLChangeNotifier::OnChange,
-                          UIThreadSearchTermsData().GoogleBaseURLValue()));
+        base::Bind(&GoogleURLChangeNotifier::OnChange,
+                   change_notifier_.get(),
+                   UIThreadSearchTermsData().GoogleBaseURLValue()));
   } else {
     // This must be the death notification.
     delete this;
@@ -185,16 +187,15 @@ SearchProviderInstallData::~SearchProviderInstallData() {
   }
 }
 
-void SearchProviderInstallData::CallWhenLoaded(Task* task) {
+void SearchProviderInstallData::CallWhenLoaded(const base::Closure& closure) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (provider_map_.get()) {
-    task->Run();
-    delete task;
+    closure.Run();
     return;
   }
 
-  task_queue_.Push(task);
+  closure_queue_.push_back(closure);
   if (load_handle_)
     return;
 
@@ -300,7 +301,12 @@ void SearchProviderInstallData::OnLoadFailed() {
 void SearchProviderInstallData::NotifyLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  task_queue_.Run();
+  std::vector<base::Closure> closure_queue;
+  closure_queue.swap(closure_queue_);
+
+  std::for_each(closure_queue.begin(),
+                closure_queue.end(),
+                std::mem_fun_ref(&base::Closure::Run));
 
   // Since we expect this request to be rare, clear out the information. This
   // also keeps the responses current as the search providers change.

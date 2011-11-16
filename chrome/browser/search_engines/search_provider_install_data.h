@@ -9,16 +9,15 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task_queue.h"
 #include "chrome/browser/webdata/web_data_service.h"
 
 class GURL;
 class SearchHostToURLsMap;
-class Task;
 class TemplateURL;
 
 namespace content {
@@ -53,10 +52,10 @@ class SearchProviderInstallData : public WebDataServiceConsumer,
   virtual ~SearchProviderInstallData();
 
   // Use to determine when the search provider information is loaded. The
-  // callback may happen synchronously or asynchronously. This takes ownership
-  // of |task|. There is no need to do anything special to make it function
-  // (as it just relies on the normal I/O thread message loop).
-  void CallWhenLoaded(Task* task);
+  // callback may happen synchronously or asynchronously. There is no need to do
+  // anything special to make it function (as it just relies on the normal I/O
+  // thread message loop).
+  void CallWhenLoaded(const base::Closure& closure);
 
   // Returns the search provider install state for the given origin.
   // This should only be called while a task is called back from CallWhenLoaded.
@@ -84,8 +83,8 @@ class SearchProviderInstallData : public WebDataServiceConsumer,
   // install state has been loaded.
   void NotifyLoaded();
 
-  // The list of tasks to call after the load has finished.
-  TaskQueue task_queue_;
+  // The list of closures to call after the load has finished.
+  std::vector<base::Closure> closure_queue_;
 
   // Service used to store entries.
   scoped_refptr<WebDataService> web_service_;

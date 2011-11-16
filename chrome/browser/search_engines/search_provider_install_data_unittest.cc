@@ -5,9 +5,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/search_provider_install_data.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -94,7 +94,7 @@ bool TestGetInstallState::RunTests() {
 
   BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &TestGetInstallState::StartTestOnIOThread));
+      base::Bind(&TestGetInstallState::StartTestOnIOThread, this));
   // Run the current message loop. When the test is finished on the I/O thread,
   // it invokes Quit, which unblocks this.
   MessageLoop::current()->Run();
@@ -109,8 +109,7 @@ TestGetInstallState::~TestGetInstallState() {
 
 void TestGetInstallState::StartTestOnIOThread() {
   install_data_->CallWhenLoaded(
-      NewRunnableMethod(this,
-                        &TestGetInstallState::DoInstallStateTests));
+      base::Bind(&TestGetInstallState::DoInstallStateTests, this));
 }
 
 void TestGetInstallState::DoInstallStateTests() {
