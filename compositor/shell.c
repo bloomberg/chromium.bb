@@ -1069,17 +1069,23 @@ map(struct wlsc_shell *base,
 	else
 		list = &compositor->surface_list;
 
-	/* Map background at the bottom of the stack, panel on top,
-	   everything else just below panel. */
+	/* surface stacking order, see also activate() */
 	if (surface == shell->background) {
+		/* background always visible, at the bottom */
 		wl_list_insert(compositor->surface_list.prev, &surface->link);
+
 	} else if (surface == shell->panel) {
+		/* panel always on top, hidden while locked */
 		wl_list_insert(list, &surface->link);
+
 	} else if (surface == shell->lock_surface) {
+		/* lock surface always visible, on top */
 		wl_list_insert(&compositor->surface_list, &surface->link);
+
 		wlsc_compositor_repick(compositor);
 		wlsc_compositor_wake(compositor);		
 	} else {
+		/* everything else just below the panel */
 		wl_list_insert(&shell->panel->link, &surface->link);
 	}
 
@@ -1090,7 +1096,7 @@ map(struct wlsc_shell *base,
 
 	surface->width = width;
 	surface->height = height;
-	if (!shell->locked)
+	if (!shell->locked || surface == shell->lock_surface)
 		wlsc_surface_configure(surface,
 				       surface->x, surface->y, width, height);
 }
