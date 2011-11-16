@@ -7,6 +7,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/combobox_model.h"
+#include "views/layout/fill_layout.h"
 
 namespace {
 
@@ -18,8 +19,6 @@ class ComboboxModelExample : public ui::ComboboxModel {
 
   // Overridden from ui::ComboboxModel:
   virtual int GetItemCount() OVERRIDE { return 10; }
-
-  // Overridden from ui::ComboboxModel:
   virtual string16 GetItemAt(int index) OVERRIDE {
     return UTF8ToUTF16(base::StringPrintf("Item %d", index));
   }

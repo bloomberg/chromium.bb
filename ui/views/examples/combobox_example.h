@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "ui/views/examples/example_base.h"
 #include "views/controls/combobox/combobox.h"
-#include "views/layout/fill_layout.h"
 
 namespace examples {
 
@@ -29,7 +28,6 @@ class ComboboxExample : public ExampleBase,
                            int prev_index,
                            int new_index) OVERRIDE;
 
-  // This test only control.
   views::Combobox* combobox_;
 
   DISALLOW_COPY_AND_ASSIGN(ComboboxExample);
