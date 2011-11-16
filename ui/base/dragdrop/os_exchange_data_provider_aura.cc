@@ -69,7 +69,8 @@ OSExchangeData::Provider* OSExchangeData::CreateProvider() {
 }
 
 // static
-void* OSExchangeData::RegisterCustomFormat(const std::string& type) {
+OSExchangeData::CustomFormat
+OSExchangeData::RegisterCustomFormat(const std::string& type) {
   // TODO(davemoore) Implement this for aura.
   return NULL;
 }

@@ -14,7 +14,7 @@
 #include "content/browser/renderer_host/gtk_window_utils.h"
 #endif
 
-#if defined(TOUCH_UI)
+#if defined(TOUCH_UI) && !defined(USE_AURA)
 // static
 void RenderWidgetHostView::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
