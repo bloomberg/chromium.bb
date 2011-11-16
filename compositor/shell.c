@@ -1037,7 +1037,7 @@ unlock(struct wlsc_shell *base)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 
-	if (!shell->locked) {
+	if (!shell->locked || shell->lock_surface) {
 		wlsc_compositor_wake(shell->compositor);
 		return;
 	}
