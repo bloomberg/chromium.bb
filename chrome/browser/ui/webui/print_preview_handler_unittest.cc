@@ -149,7 +149,8 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
 
 // Test crashs on TouchUI due to initiator tab's native view having no parent.
 // http://crbug.com/104284
-#if defined(TOUCH_UI)
+// Test crashes on CrOS as well. http://crbug.com/104403
+#if defined(TOUCH_UI) || defined(OS_CHROMEOS)
 #define MAYBE_StickyMarginsCustom DISABLED_StickyMarginsCustom
 #else
 #define MAYBE_StickyMarginsCustom StickyMarginsCustom
@@ -173,8 +174,8 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsCustom) {
   CheckCustomMargins(kMarginTop, kMarginRight, kMarginBottom, kMarginLeft);
 }
 
-// http://crbug.com/104284
-#if defined(TOUCH_UI)
+// http://crbug.com/104284, http://crbug.com/104403
+#if defined(TOUCH_UI) || defined(OS_CHROMEOS)
 #define MAYBE_StickyMarginsDefault DISABLED_StickyMarginsDefault
 #else
 #define MAYBE_StickyMarginsDefault StickyMarginsDefault
@@ -192,8 +193,8 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsDefault) {
   ASSERT_FALSE(PrintPreviewHandler::last_used_page_size_margins_);
 }
 
-// http://crbug.com/104284
-#if defined(TOUCH_UI)
+// http://crbug.com/104284, http://crbug.com/104403
+#if defined(TOUCH_UI) || defined(OS_CHROMEOS)
 #define MAYBE_StickyMarginsCustomThenDefault \
     DISABLED_StickyMarginsCustomThenDefault
 #else
@@ -226,8 +227,8 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsCustomThenDefault) {
   CheckCustomMargins(kMarginTop, kMarginRight, kMarginBottom, kMarginLeft);
 }
 
-// http://crbug.com/104284
-#if defined(TOUCH_UI)
+// http://crbug.com/104284, http://crbug.com/104403
+#if defined(TOUCH_UI) || defined(OS_CHROMEOS)
 #define MAYBE_GetLastUsedMarginSettingsCustom \
     DISABLED_GetLastUsedMarginSettingsCustom
 #else
@@ -263,8 +264,8 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_GetLastUsedMarginSettingsCustom) {
   EXPECT_EQ(kMarginLeft, margin_value);
 }
 
-// http://crbug.com/104284
-#if defined(TOUCH_UI)
+// http://crbug.com/104284, http://crbug.com/104403
+#if defined(TOUCH_UI) || defined(OS_CHROMEOS)
 #define MAYBE_GetLastUsedMarginSettingsDefault \
     DISABLED_GetLastUsedMarginSettingsDefault
 #else
