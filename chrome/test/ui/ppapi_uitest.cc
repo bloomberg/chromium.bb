@@ -315,12 +315,19 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileSystem)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
 TEST_PPAPI_NACL_VIA_HTTP(FileSystem)
 
-// http://crbug.com/96767
-#if !defined(OS_MACOSX)
-TEST_F(PPAPITest, FLAKY_FlashFullscreen) {
+// http://crbug.com/96767 and 104384 for aura.
+#if !defined(OS_MACOSX) && !defined(USE_AURA)
+#define MAYBE_FlashFullscreen FLAKY_FlashFullscreen
+#define MAYBE_FlashFullscreen FLAKY_FlashFullscreen
+#else
+#define MAYBE_FlashFullscreen DISABLED_FlashFullscreen
+#define MAYBE_FlashFullscreen DISABLED_FlashFullscreen
+#endif
+
+TEST_F(PPAPITest, MAYBE_FlashFullscreen) {
   RunTestViaHTTP("FlashFullscreen");
 }
-TEST_F(OutOfProcessPPAPITest, FLAKY_FlashFullscreen) {
+TEST_F(OutOfProcessPPAPITest, MAYBE_FlashFullscreen) {
   RunTestViaHTTP("FlashFullscreen");
 }
 // New implementation only honors fullscreen requests within a context of
@@ -336,7 +343,6 @@ TEST_F(PPAPITest, DISABLED_Fullscreen) {
 TEST_F(OutOfProcessPPAPITest, DISABLED_Fullscreen) {
   RunTestViaHTTP("Fullscreen");
 }
-#endif
 
 TEST_PPAPI_IN_PROCESS(FlashClipboard)
 TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)
