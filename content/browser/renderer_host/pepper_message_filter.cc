@@ -1037,7 +1037,8 @@ class PepperMessageFilter::LookupRequest {
   void Start() {
     int result = resolver_.Resolve(
         request_info_, &addresses_,
-        base::Bind(&LookupRequest::OnLookupFinished, this), net::BoundNetLog());
+        base::Bind(&LookupRequest::OnLookupFinished, base::Unretained(this)),
+        net::BoundNetLog());
     if (result != net::ERR_IO_PENDING)
       OnLookupFinished(result);
   }
