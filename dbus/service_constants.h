@@ -204,6 +204,7 @@ const char kClearPropertyFunction[] = "ClearProperty";
 const char kConnectFunction[] = "Connect";
 const char kDisconnectFunction[] = "Disconnect";
 const char kRequestScanFunction[] = "RequestScan";
+const char kGetServiceFunction[] = "GetService";
 const char kGetWifiServiceFunction[] = "GetWifiService";
 const char kGetVPNServiceFunction[] = "GetVPNService";
 const char kRemoveServiceFunction[] = "Remove";
