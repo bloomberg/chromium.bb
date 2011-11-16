@@ -63,13 +63,13 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
       (input.matches_requested() == AutocompleteInput::BEST_MATCH))
     return;
 
-  static const string16 kAbout = ASCIIToUTF16(chrome::kAboutScheme) +
+  const string16 kAbout = ASCIIToUTF16(chrome::kAboutScheme) +
       ASCIIToUTF16(chrome::kStandardSchemeSeparator);
-  static const string16 kChrome = ASCIIToUTF16(chrome::kChromeUIScheme) +
+  const string16 kChrome = ASCIIToUTF16(chrome::kChromeUIScheme) +
       ASCIIToUTF16(chrome::kStandardSchemeSeparator);
 
-  static const int kUrl = ACMatchClassification::URL;
-  static const int kMatch = kUrl | ACMatchClassification::MATCH;
+  const int kUrl = ACMatchClassification::URL;
+  const int kMatch = kUrl | ACMatchClassification::MATCH;
 
   string16 text = input.text();
   bool starting_chrome = StartsWith(kChrome, text, false);
@@ -77,7 +77,7 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
     ACMatchClassifications styles;
     // Highlight the input portion matching "chrome://"; or if the user has
     // input "about:" (with optional slashes), highlight the whole "chrome://".
-    static const size_t kAboutSchemeLength = strlen(chrome::kAboutScheme);
+    const size_t kAboutSchemeLength = strlen(chrome::kAboutScheme);
     bool highlight = starting_chrome || text.length() > kAboutSchemeLength;
     styles.push_back(ACMatchClassification(0, highlight ? kMatch : kUrl));
     size_t offset = starting_chrome ? text.length() : kChrome.length();

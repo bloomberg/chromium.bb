@@ -73,7 +73,7 @@ void OnLinkButtonClick(GtkWidget* button, const char* url) {
 }
 
 const char* GetChromiumUrl() {
-  static GURL url = google_util::AppendGoogleLocaleParam(
+  GURL url = google_util::AppendGoogleLocaleParam(
       GURL(chrome::kChromiumProjectURL));
   return url.spec().c_str();
 }

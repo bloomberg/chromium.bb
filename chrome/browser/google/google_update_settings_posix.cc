@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,13 @@
 #include "chrome/common/chrome_paths.h"
 
 namespace google_update {
-std::string posix_guid;
+
+static std::string& posix_guid() {
+  CR_DEFINE_STATIC_LOCAL(std::string, guid, ());
+  return guid;
 }
+
+}  // namespace google_update
 
 // File name used in the user data dir to indicate consent.
 static const char kConsentToSendStats[] = "Consent To Send Stats";
@@ -24,7 +29,7 @@ bool GoogleUpdateSettings::GetCollectStatsConsent() {
   std::string tmp_guid;
   bool consented = file_util::ReadFileToString(consent_file, &tmp_guid);
   if (consented)
-    google_update::posix_guid.assign(tmp_guid);
+    google_update::posix_guid().assign(tmp_guid);
   return consented;
 }
 
@@ -39,13 +44,13 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
   if (consented) {
     if ((!file_util::PathExists(consent_file)) ||
         (file_util::PathExists(consent_file) &&
-         !google_update::posix_guid.empty())) {
-      const char* c_str = google_update::posix_guid.c_str();
-      int size = google_update::posix_guid.size();
+         !google_update::posix_guid().empty())) {
+      const char* c_str = google_update::posix_guid().c_str();
+      int size = google_update::posix_guid().size();
       return file_util::WriteFile(consent_file, c_str, size) == size;
     }
   } else {
-    google_update::posix_guid.clear();
+    google_update::posix_guid().clear();
     return file_util::Delete(consent_file, false);
   }
   return true;
@@ -60,7 +65,7 @@ bool GoogleUpdateSettings::SetMetricsId(const std::wstring& client_id) {
     return false;
 
   // Since user has consented, write the metrics id to the file.
-  google_update::posix_guid = WideToASCII(client_id);
+  google_update::posix_guid() = WideToASCII(client_id);
   return GoogleUpdateSettings::SetCollectStatsConsent(true);
 }
 

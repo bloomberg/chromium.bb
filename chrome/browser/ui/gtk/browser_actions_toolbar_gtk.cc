@@ -59,12 +59,11 @@ const int kSeparatorPadding = 2;
 // Width of the invisible gripper for resizing the toolbar.
 const int kResizeGripperWidth = 4;
 
-const char* kDragTarget = "application/x-chrome-browseraction";
+const char kDragTarget[] = "application/x-chrome-browseraction";
 
 GtkTargetEntry GetDragTargetEntry() {
-  static std::string drag_target_string(kDragTarget);
   GtkTargetEntry drag_target;
-  drag_target.target = const_cast<char*>(drag_target_string.c_str());
+  drag_target.target = const_cast<char*>(kDragTarget);
   drag_target.flags = GTK_TARGET_SAME_APP;
   drag_target.info = 0;
   return drag_target;
