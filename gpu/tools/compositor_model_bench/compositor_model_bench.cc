@@ -23,12 +23,12 @@
 
 #include "base/at_exit.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "base/time.h"
 
 #include "gpu/tools/compositor_model_bench/render_model_utils.h"
@@ -65,7 +65,7 @@ class Simulator {
        current_sim_(NULL),
        output_path_(output_path),
        seconds_per_test_(seconds_per_test),
-       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
        display_(NULL),
        window_(0),
        gl_context_(NULL),
@@ -124,7 +124,8 @@ class Simulator {
     LOG(INFO) << "Running " << sims_remaining_.size() << " simulations.";
 
     loop.PostTask(FROM_HERE,
-                  method_factory_.NewRunnableMethod(&Simulator::ProcessEvents));
+                  base::Bind(&Simulator::ProcessEvents,
+                             weak_factory_.GetWeakPtr()));
     loop.Run();
   }
 
@@ -269,7 +270,7 @@ class Simulator {
 
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        method_factory_.NewRunnableMethod(&Simulator::UpdateLoop));
+        base::Bind(&Simulator::UpdateLoop, weak_factory_.GetWeakPtr()));
   }
 
   void DumpOutput() {
@@ -348,7 +349,7 @@ class Simulator {
   // Amount of time to run each simulation
   int seconds_per_test_;
   // GUI data
-  ScopedRunnableMethodFactory<Simulator> method_factory_;
+  base::WeakPtrFactory<Simulator> weak_factory_;
   Display* display_;
   Window window_;
   GLXContext gl_context_;
@@ -403,4 +404,3 @@ int main(int argc, char* argv[]) {
 
   return 0;
 }
-
