@@ -17,12 +17,12 @@
           'conditions': [
             ['target_arch=="ia32"', {
               'dependencies': [
-                'crt_platform_32',
+                'crt_initfini_32',
               ],
             }],
             ['target_arch=="x64" or OS=="win"', {
               'dependencies': [
-                'crt_platform_64',
+                'crt_initfini_64',
               ],
             }],
           ],
@@ -119,18 +119,18 @@
     ['target_arch=="x64" or OS=="win"', {
       'targets' : [
         {
-          'target_name': 'crt_platform_64',
+          'target_name': 'crt_initfini_64',
           'type': 'none',
           'dependencies': [
             'copy_headers'
            ],
           'variables': {
-            'nlib_target': 'libcrt_platform.a',
+            'nlib_target': 'crt_initfini_dummy',
             'build_glibc': 0,
             'build_newlib': 1,
             'enable_x86_32': 0,
             'extra_args': [
-              '--empty',
+              '--compile',
               '--no-suffix',
               '--strip=_x86_64'
              ],
@@ -146,18 +146,18 @@
     ['target_arch=="ia32"', {
       'targets' : [
         {
-          'target_name': 'crt_platform_32',
+          'target_name': 'crt_initfini_32',
           'type': 'none',
           'dependencies': [
             'copy_headers'
            ],
           'variables': {
-            'nlib_target': 'libcrt_platform.a',
+            'nlib_target': 'crt_initfini_dummy',
             'build_glibc': 0,
             'build_newlib': 1,
             'enable_x86_64': 0,
             'extra_args': [
-              '--empty',
+              '--compile',
               '--no-suffix',
               '--strip=_x86_32'
             ],

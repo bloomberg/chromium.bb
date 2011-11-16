@@ -702,7 +702,7 @@ endif
 	# and then libfoo.a, but only the latter under -static, so install
 	# under .a names to cover both cases.
 	for libdir in lib32 lib; do \
-	  for lib in nacl crt_platform nosys; do \
+	  for lib in nacl nosys; do \
 	    echo '/* Intentionally empty */' > \
 		$(PREFIX_NATIVE)/$(CROSSARCH)/$${libdir}/lib$${lib}.a; \
 	  done; \

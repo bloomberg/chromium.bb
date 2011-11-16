@@ -3387,7 +3387,6 @@ def AddImplicitLibs(env):
     else:
       implicit_libs = ['crt1.o',
                        'libnacl.a',
-                       'libcrt_platform.a',
                        'crti.o',
                        'crtn.o']
       # TODO(mcgrathr): multilib nonsense defeats -B!  figure out a better way.

@@ -31,13 +31,7 @@ env.AddObjectToSdk([crt1])
 if platform == 'x86_32':
   env.Install(os.path.join('${LIB_DIR}', '32'), crt1)
 
-# NOTE: we only provide setjmp/longjmp for pnacl, nacl-gcc obtains
-# them from newlib, while pnacl's newlib is arch neutral
-platform_objs = []
-
 bookends = [env.ComponentObject('crti', ['crti_%s.S' % platform]),
             env.ComponentObject('crtn', ['crtn_%s.S' % platform])]
 
-crt_platform = env.StaticLibrary('crt_platform', platform_objs)
-
-env.AddObjectToSdk([crt_platform] + bookends)
+env.AddObjectToSdk(bookends)
