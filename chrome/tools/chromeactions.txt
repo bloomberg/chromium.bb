@@ -206,6 +206,10 @@
 0x2aeb39c03cc86464	CreateLink
 0x1225d110ef7fba17	CreateProfile
 0x30604f84327d0ae5	CreateShortcut
+0x8b83a029888765ac	CriticalNotificationShown
+0x3811e868a8b2639a	CriticalNotification_AutoRestart
+0x74d29a646c3b335c	CriticalNotification_Ignore
+0x417f35273c2e009b	CriticalNotification_Restart
 0xfdf6ee64a0588855	Cryptohome.PKCS11InitFail
 0xeb334dca00e390e0	Cut
 0xb94d8a074eddd267	Debugger
@@ -246,7 +250,9 @@
 0xfef46e5063ce3dc7	Exit
 0xdf56dffe242f621a	Extensions.ExtensionInstalled
 0x4f07c158c8047ab9	Extensions.ExtensionUninstalled
+0x08566bf746b7f665	Extensions.IDChangedError
 0xa295e3ad39bbacc0	Extensions.WebStoreLaunch
+0x4268aeb48d5c0d1e	FileBrowser.CreateNewFolder
 0x4cfa6c981549e990	Find
 0x058404d575478e31	FindNext
 0xca56592cf013fc40	FindPrevious

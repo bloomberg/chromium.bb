@@ -223,6 +223,15 @@ def AddChromeOSActions(actions):
   # Actions sent by Chrome OS cryptohome.
   actions.add('Cryptohome.PKCS11InitFail')
 
+def AddExtensionActions(actions):
+  """Add actions reported by extensions via chrome.experimental.metrics API.
+
+  Arguments:
+    actions: set of actions to add to.
+  """
+  # Actions sent by Chrome OS File Browser.
+  actions.add('FileBrowser.CreateNewFolder')
+
 def GrepForActions(path, actions):
   """Grep a source file for calls to UserMetrics functions.
 
@@ -413,6 +422,7 @@ def main(argv):
 
   AddClosedSourceActions(actions)
   AddChromeOSActions(actions)
+  AddExtensionActions(actions)
 
   if hash_output:
     f = open(chromeactions_path, "w")
