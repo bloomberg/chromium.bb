@@ -481,6 +481,12 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
            all_settings.begin();
        i != all_settings.end();
        ++i) {
+    // Don't add default settings.
+    if (i->primary_pattern == ContentSettingsPattern::Wildcard() &&
+        i->secondary_pattern == ContentSettingsPattern::Wildcard() &&
+        i->source != "preferences") {
+      continue;
+    }
     all_patterns_settings[i->primary_pattern][i->secondary_pattern] =
         i->setting;
   }
@@ -538,6 +544,13 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
            settings.begin();
        i != settings.end();
        ++i) {
+    // Don't add default settings.
+    if (i->primary_pattern == ContentSettingsPattern::Wildcard() &&
+        i->secondary_pattern == ContentSettingsPattern::Wildcard() &&
+        i->source != "preferences") {
+      continue;
+    }
+
     exceptions.Append(
         GetNotificationExceptionForPage(i->primary_pattern, i->setting,
                                         i->source));
