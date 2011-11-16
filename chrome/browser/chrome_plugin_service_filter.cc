@@ -156,7 +156,7 @@ void ChromePluginServiceFilter::Observe(
     case chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       PluginService::GetInstance()->PurgePluginListCache(profile, false);
-      if (profile->HasOffTheRecordProfile()) {
+      if (profile && profile->HasOffTheRecordProfile()) {
         PluginService::GetInstance()->PurgePluginListCache(
             profile->GetOffTheRecordProfile(), false);
       }
