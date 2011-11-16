@@ -17,7 +17,6 @@
 
 class BookmarkNode;
 class FilePath;
-class GURL;
 class Profile;
 
 // Observer for bookmark html output. Used only in tests.

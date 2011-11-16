@@ -16,13 +16,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "webkit/quota/quota_types.h"
 
-class Profile;
-
-namespace quota {
-class QuotaManager;
-}
-
 class BrowsingDataQuotaHelper;
+class Profile;
 
 struct BrowsingDataQuotaHelperDeleter {
   static void Destruct(const BrowsingDataQuotaHelper* helper);

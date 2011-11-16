@@ -15,8 +15,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class GURL;
-class PrefService;
-class Profile;
 class SidebarContainer;
 class SkBitmap;
 class TabContents;
@@ -149,4 +147,3 @@ class SidebarManager : public content::NotificationObserver,
 };
 
 #endif  // CHROME_BROWSER_SIDEBAR_SIDEBAR_MANAGER_H_
-

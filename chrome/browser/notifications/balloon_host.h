@@ -19,7 +19,6 @@
 
 class Balloon;
 class Browser;
-class Profile;
 class SiteInstance;
 
 namespace IPC {

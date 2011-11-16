@@ -53,7 +53,6 @@
 #include "content/public/browser/notification_types.h"
 #include "ui/gfx/size.h"
 
-class AutocompleteEditModel;
 class AutomationProvider;
 class BalloonCollection;
 class Browser;

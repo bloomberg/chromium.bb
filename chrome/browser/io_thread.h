@@ -18,16 +18,11 @@
 #include "net/base/network_change_notifier.h"
 
 class ChromeNetLog;
-class ChromeURLRequestContextGetter;
 class ExtensionEventRouterForwarder;
 class MediaInternals;
 class PrefProxyConfigTrackerImpl;
 class PrefService;
 class SystemURLRequestContextGetter;
-
-namespace base {
-class ListValue;
-}
 
 namespace net {
 class CertVerifier;

@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_FAVICON_FAVICON_TAB_HELPER_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback_old.h"
 #include "chrome/browser/favicon/favicon_handler_delegate.h"
@@ -16,7 +18,6 @@
 
 class FaviconHandler;
 class NavigationEntry;
-class RefCountedMemory;
 class SkBitmap;
 class TabContents;
 

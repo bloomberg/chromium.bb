@@ -6,16 +6,16 @@
 #define CHROME_BROWSER_PLUGIN_DATA_REMOVER_H_
 #pragma once
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "content/browser/plugin_process_host.h"
 
 class PluginPrefs;
 class Profile;
-class Task;
 
 namespace base {
-class MessageLoopProxy;
 class WaitableEvent;
 }
 

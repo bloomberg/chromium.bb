@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_IO_DATA_H_
 #pragma once
 
-#include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -20,7 +20,6 @@
 #include "content/browser/resource_context.h"
 #include "net/base/cookie_monster.h"
 
-class CommandLine;
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class CookieSettings;
@@ -47,7 +46,6 @@ class CookieStore;
 class DnsCertProvenanceChecker;
 class FraudulentCertificateReporter;
 class HttpTransactionFactory;
-class NetLog;
 class OriginBoundCertService;
 class ProxyConfigService;
 class ProxyService;
@@ -170,7 +168,6 @@ class ProfileIOData {
     // ensure it's not accidently used on the IO thread. Before using it on the
     // UI thread, call ProfileManager::IsValidProfile to ensure it's alive.
     void* profile;
-
   };
 
   explicit ProfileIOData(bool is_incognito);

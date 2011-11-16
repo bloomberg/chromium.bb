@@ -38,7 +38,6 @@
 #include "views/events/event.h"
 #endif  // defined(OS_WIN) && !defined(USE_AURA)
 
-class PopupMenuWaiter;
 class TabContents;
 struct AutomationMsg_Find_Params;
 struct Reposition_Params;
@@ -48,18 +47,14 @@ namespace IPC {
 class ChannelProxy;
 }
 
-class AutofillProfile;
 class AutomationBrowserTracker;
 class AutomationExtensionTracker;
-class AutomationOmniboxTracker;
 class AutomationResourceMessageFilter;
 class AutomationTabTracker;
 class AutomationWindowTracker;
 class Browser;
-class CreditCard;
 class DownloadItem;
 class Extension;
-class ExtensionPortContainer;
 class ExtensionTestResultNotificationObserver;
 class ExternalTabContainer;
 class FilePath;
@@ -71,7 +66,6 @@ class NavigationControllerRestoredObserver;
 class Profile;
 class RenderViewHost;
 class TabContents;
-struct AutocompleteMatchData;
 
 namespace base {
 class DictionaryValue;

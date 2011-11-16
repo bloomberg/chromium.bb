@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_AUTOMATION_TESTING_AUTOMATION_PROVIDER_H_
 #pragma once
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -27,8 +29,9 @@
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #endif  // defined(OS_CHROMEOS)
 
+class AutofillProfile;
+class CreditCard;
 class ImporterList;
-class TemplateURLService;
 
 namespace base {
 class DictionaryValue;
@@ -44,9 +47,8 @@ class TestingAutomationProvider : public AutomationProvider,
                                   public importer::ImporterListObserver,
 #if defined(OS_CHROMEOS)
                                   public chromeos::PowerManagerClient::Observer,
-#endif // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
                                   public content::NotificationObserver {
-
  public:
   explicit TestingAutomationProvider(Profile* profile);
 
@@ -265,7 +267,7 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Get the bookmarks as a JSON string.
   void GetBookmarksAsJSON(int handle, std::string* bookmarks_as_json,
-                          bool *success);
+                          bool* success);
 
   // Wait for the bookmark model to load.
   void WaitForBookmarkModelToLoad(int handle, IPC::Message* reply_message);

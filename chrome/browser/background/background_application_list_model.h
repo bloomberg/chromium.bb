@@ -15,8 +15,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class ExtensionService;
-class PrefService;
 class Profile;
 
 // Model for list of Background Applications, that is, Extensions with

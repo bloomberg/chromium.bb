@@ -16,7 +16,6 @@
 #include "ui/gfx/image/image.h"
 
 class PageInfoModelObserver;
-class PrefService;
 class Profile;
 
 // The model that provides the information that should be displayed in the page

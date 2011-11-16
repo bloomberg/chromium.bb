@@ -8,10 +8,8 @@
 
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
-class FilePath;
 class GURL;
 class InfoBarDelegate;
-class PluginInstallerInfoBarDelegate;
 class TabContentsWrapper;
 
 class PluginObserver : public TabContentsObserver {

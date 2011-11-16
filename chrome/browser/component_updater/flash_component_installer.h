@@ -7,7 +7,6 @@
 #pragma once
 
 class ComponentUpdateService;
-class FilePath;
 class Version;
 
 namespace base {

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -21,7 +22,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class CommandLine;
-class NotificationDelegate;
 class PrefService;
 class Profile;
 class TabContents;

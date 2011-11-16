@@ -16,7 +16,6 @@
 
 class CommandLine;
 class FilePath;
-class PrefService;
 
 #if defined(USE_X11)
 namespace base {

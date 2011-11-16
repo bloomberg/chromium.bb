@@ -8,6 +8,8 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_IMPL_H_
 #pragma once
 
+#include <string>
+
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -21,11 +23,14 @@
 class ExtensionNavigationObserver;
 class ExtensionPrefs;
 class ExtensionPrefValueMap;
-class ExtensionSettings;
 class NetPrefObserver;
 class PrefService;
+class ProfileSyncFactory;
+class PromoResourceService;
 class SpeechInputPreferences;
 class SpellCheckProfile;
+class SSLConfigServiceManager;
+class VisitedLinkEventListener;
 
 #if defined(OS_CHROMEOS)
 namespace chromeos {

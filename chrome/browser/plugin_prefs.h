@@ -19,12 +19,7 @@
 
 class Profile;
 
-namespace content {
-class ResourceContext;
-}
-
 namespace base {
-class DictionaryValue;
 class ListValue;
 }
 

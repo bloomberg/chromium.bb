@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_BROWSING_DATA_REMOVER_H_
 #pragma once
 
-#include <vector>
+#include <set>
 
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -30,10 +30,6 @@ class Backend;
 
 namespace net {
 class URLRequestContextGetter;
-}
-
-namespace webkit_database {
-class DatabaseTracker;
 }
 
 namespace quota {

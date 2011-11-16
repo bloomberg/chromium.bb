@@ -15,7 +15,6 @@
 class DebuggerRemoteService;
 class DevToolsClientHost;
 class DevToolsClientHostImpl;
-struct DevToolsMessageData;
 class TabContentsWrapper;
 
 // Proxies debugged tabs' TabContentsWrapper using their UIDs.

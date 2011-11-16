@@ -30,8 +30,6 @@ class ChromeNetLog;
 class ChromeResourceDispatcherHostDelegate;
 class CommandLine;
 class DevToolsProtocolHandler;
-class FilePath;
-class PluginDataRemover;
 class RemoteDebuggingServer;
 class TabCloseableStateWatcher;
 

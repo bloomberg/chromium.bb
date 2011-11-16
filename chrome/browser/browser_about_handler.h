@@ -18,7 +18,6 @@
 
 template <typename T> struct DefaultSingletonTraits;
 class GURL;
-class Profile;
 
 namespace content {
 class BrowserContext;

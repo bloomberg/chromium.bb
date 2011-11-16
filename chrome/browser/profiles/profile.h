@@ -28,7 +28,6 @@ class ResetDefaultProxyConfigServiceTask;
 
 namespace fileapi {
 class FileSystemContext;
-class SandboxedFileSystemContext;
 }
 
 namespace history {
@@ -38,10 +37,6 @@ class ShortcutsBackend;
 
 namespace net {
 class SSLConfigService;
-}
-
-namespace speech_input {
-class SpeechRecognizer;
 }
 
 namespace chrome_browser_net {
@@ -57,7 +52,6 @@ class ExtensionDevToolsManager;
 class ExtensionEventRouter;
 class ExtensionInfoMap;
 class ExtensionMessageService;
-class ExtensionPrefValueMap;
 class ExtensionProcessManager;
 class ExtensionService;
 class ExtensionSpecialStoragePolicy;
@@ -65,17 +59,12 @@ class FaviconService;
 class FindBarState;
 class HistoryService;
 class HostContentSettingsMap;
-class NavigationController;
 class NetworkActionPredictor;
 class PasswordStore;
 class PrefService;
-class ProfileSyncFactory;
 class ProfileSyncService;
 class PromoCounter;
-class PromoResourceService;
 class ProtocolHandlerRegistry;
-class SQLitePersistentCookieStore;
-class SSLConfigServiceManager;
 class SpeechInputPreferences;
 class SpellCheckHost;
 class TemplateURLFetcher;
@@ -83,7 +72,6 @@ class TestingProfile;
 class TokenService;
 class UserScriptMaster;
 class UserStyleSheetWatcher;
-class VisitedLinkEventListener;
 class VisitedLinkMaster;
 class WebDataService;
 class WebUI;

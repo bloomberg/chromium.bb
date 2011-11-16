@@ -13,9 +13,6 @@
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 
-class BrowserWindow;
-class Profile;
-class RenderViewHost;
 class SkBitmap;
 class TabContents;
 
