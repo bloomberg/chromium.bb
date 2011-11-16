@@ -36,6 +36,7 @@ cr.define('sync_promo', function() {
       CONFIRMED_AFTER_SIGN_IN: i++,
       CLOSED_TAB: i++,
       CLOSED_WINDOW: i++,
+      LEFT_DURING_THROBBER: i++,
     };
   }());
 
@@ -69,7 +70,7 @@ cr.define('sync_promo', function() {
       var self = this;
 
       $('promo-skip-button').addEventListener('click', function() {
-        chrome.send('SyncPromo:UserFlowAction', [actions.SKIP_CLICKED]);
+        chrome.send('SyncPromo:UserSkipped');
         self.closeOverlay_();
       });
 
@@ -109,6 +110,7 @@ cr.define('sync_promo', function() {
       // we also track users that use the keyboard and press enter.
       var signInAttemptedAlready = false;
       $('gaia-login-form').addEventListener('submit', function() {
+        ++self.signInAttempts_;
         if (!signInAttemptedAlready)
           chrome.send('SyncPromo:UserFlowAction', [actions.SIGN_IN_ATTEMPTED]);
         signInAttemptedAlready = true;
@@ -144,6 +146,17 @@ cr.define('sync_promo', function() {
                                          this.toggleHidden_.bind(this));
       this.learnMore_.addEventListener('webkitTransitionEnd',
                                        this.toggleHidden_.bind(this));
+    },
+
+    /**
+     * Called when the page is unloading to record number of times a user tried
+     * to sign in and if they left while a throbber was running.
+     * @private
+     */
+    recordPageViewActions_: function() {
+      chrome.send('SyncPromo:RecordSignInAttempts', [this.signInAttempts_]);
+      if (this.throbberStart_)
+        chrome.send('SyncPromo:UserFlowAction', [actions.LEFT_DURING_THROBBER]);
     },
 
     /**
@@ -193,7 +206,36 @@ cr.define('sync_promo', function() {
      */
     setPromoTitleVisible_: function(visible) {
       $('promo-title').hidden = !visible;
-    }
+    },
+
+    /** @inheritDoc */
+    setThrobbersVisible_: function(visible) {
+      if (visible) {
+        this.throbberStart_ = Date.now();
+      } else {
+        if (this.throbberStart_) {
+          chrome.send('SyncPromo:RecordThrobberTime',
+                      [Date.now() - this.throbberStart_]);
+        }
+        this.throbberStart_ = 0;
+      }
+      // Pass through to SyncSetupOverlay to handle display logic.
+      options.SyncSetupOverlay.prototype.setThrobbersVisible_.apply(
+          this, arguments);
+    },
+
+    /**
+     * Number of times a user attempted to sign in to GAIA during this page
+     * view.
+     * @private
+     */
+    signInAttempts_: 0,
+
+    /**
+     * The start time of a throbber on the page.
+     * @private
+     */
+    throbberStart_: 0,
   };
 
   SyncPromo.showErrorUI = function() {
@@ -227,14 +269,20 @@ cr.define('sync_promo', function() {
 
   SyncPromo.setPromoTitleVisible = function(visible) {
     SyncPromo.getInstance().setPromoTitleVisible_(visible);
-  }
+  };
+
+  SyncPromo.recordPageViewActions = function() {
+    SyncPromo.getInstance().recordPageViewActions_();
+  };
 
   // Export
   return {
-    SyncPromo : SyncPromo
+    SyncPromo: SyncPromo
   };
 });
 
 var OptionsPage = options.OptionsPage;
 var SyncSetupOverlay = sync_promo.SyncPromo;
 window.addEventListener('DOMContentLoaded', sync_promo.SyncPromo.initialize);
+window.addEventListener('beforeunload',
+    sync_promo.SyncPromo.recordPageViewActions.bind(sync_promo.SyncPromo));

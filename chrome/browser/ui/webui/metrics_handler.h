@@ -33,6 +33,8 @@ class MetricsHandler : public WebUIMessageHandler {
   // user action.
   void HandleRecordAction(const base::ListValue* args);
 
+  // TODO(dbeam): http://crbug.com/104338
+
   // Callback for the "metricsHandler:recordInHistogram" message. This records
   // into a histogram. |args| contains the histogram name, the value to record,
   // and the maximum allowed value, which can be at most 4000. The histogram

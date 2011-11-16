@@ -538,10 +538,15 @@ cr.define('options', function() {
         this.showOverlay_();
     },
 
+    /**
+     * Changes the visibility of throbbers on this page.
+     * @param {boolean} visible Whether or not to set all throbber nodes
+     *     visible.
+     */
     setThrobbersVisible_: function(visible) {
       var throbbers = document.getElementsByClassName("throbber");
-        for (var i = 0; i < throbbers.length; i++)
-          throbbers[i].style.visibility = visible ? "visible" : "hidden";
+      for (var i = 0; i < throbbers.length; i++)
+        throbbers[i].style.visibility = visible ? "visible" : "hidden";
     },
 
     loginSetFocus_: function() {
@@ -771,7 +776,7 @@ cr.define('options', function() {
       $('captcha-value').disabled = true;
       $('access-code').disabled = true;
 
-      $('logging-in-throbber').style.visibility = "visible";
+      this.setThrobbersVisible_(true);
 
       var f = $('gaia-login-form');
       var email = $('gaia-email');
