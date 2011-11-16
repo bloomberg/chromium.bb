@@ -63,6 +63,9 @@ void TabContentsObserver::DidFailProvisionalLoad(
     const string16& error_description) {
 }
 
+void TabContentsObserver::DocumentAvailableInMainFrame() {
+}
+
 void TabContentsObserver::DocumentLoadedInFrame(int64 frame_id) {
 }
 

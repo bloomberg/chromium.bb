@@ -38,7 +38,7 @@ class BrowserActionApiTest : public ExtensionApiTest {
   bool OpenPopup(int index) {
     ResultCatcher catcher;
     ui_test_utils::WindowedNotificationObserver popup_observer(
-        chrome::NOTIFICATION_EXTENSION_POPUP_VIEW_READY,
+        content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
     GetBrowserActionsBar().Press(index);
     popup_observer.Wait();

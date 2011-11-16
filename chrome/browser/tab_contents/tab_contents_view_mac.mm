@@ -56,6 +56,9 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 - (void)clearTabContentsView;
 - (void)closeTabAfterEvent;
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification;
+// Notify the RenderWidgetHost that the frame was updated so it can resize
+// its contents.
+- (void)renderWidgetHostWasResized;
 @end
 
 namespace tab_contents_view_mac {
@@ -82,7 +85,6 @@ TabContentsViewMac::~TabContentsViewMac() {
 void TabContentsViewMac::CreateView(const gfx::Size& initial_size) {
   TabContentsViewCocoa* view =
       [[TabContentsViewCocoa alloc] initWithTabContentsViewMac:this];
-  [view setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
   cocoa_view_.reset(view);
 }
 
@@ -506,6 +508,19 @@ void TabContentsViewMac::CloseTab() {
             pasteboard:[NSPasteboard pasteboardWithName:NSDragPboard]
      dragOperationMask:operationMask]);
   [dragSource_ startDrag];
+}
+
+- (void)setFrameWithDeferredUpdate:(NSRect)frameRect {
+  [super setFrame:frameRect];
+  [self performSelector:@selector(renderWidgetHostWasResized)
+             withObject:nil
+             afterDelay:0];
+}
+
+- (void)renderWidgetHostWasResized {
+  TabContents* tabContents = [self tabContents];
+  if (tabContents->render_view_host())
+    tabContents->render_view_host()->WasResized();
 }
 
 // NSDraggingSource methods

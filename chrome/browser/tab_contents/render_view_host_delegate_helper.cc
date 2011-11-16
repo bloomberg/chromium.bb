@@ -549,7 +549,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
   if (service) {
     const Extension* extension =
         service->GetExtensionByURL(rvh->site_instance()->site());
-    extension_webkit_preferences::SetPreferences(&web_prefs, extension);
+    extension_webkit_preferences::SetPreferences(
+        extension, rvh->delegate()->GetRenderViewType(), &web_prefs);
   }
 
   if (rvh->delegate()->GetRenderViewType() == chrome::VIEW_TYPE_NOTIFICATION) {
