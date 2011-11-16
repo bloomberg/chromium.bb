@@ -109,16 +109,6 @@ TEST_F(FullscreenExitBubbleControllerTest, LabelWasReplaced) {
   EXPECT_TRUE([controller_ exitLabel]);
 }
 
-TEST_F(FullscreenExitBubbleControllerTest, LabelContainsShortcut) {
-  NSString* shortcut = [FullscreenExitBubbleController keyCommandString];
-  EXPECT_GT([shortcut length], 0U);
-
-  NSString* message = [[[controller_ exitLabel] textStorage] string];
-
-  NSRange range = [message rangeOfString:shortcut];
-  EXPECT_NE(NSNotFound, range.location);
-}
-
 TEST_F(FullscreenExitBubbleControllerTest, ShortcutText) {
   ui::AcceleratorCocoa cmd_F(@"F", NSCommandKeyMask);
   ui::AcceleratorCocoa cmd_shift_f(@"f", NSCommandKeyMask|NSShiftKeyMask);

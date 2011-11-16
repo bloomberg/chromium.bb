@@ -19,10 +19,12 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "grit/generated_resources.h"
+#include "grit/ui_strings.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/models/accelerator_cocoa.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 
@@ -163,6 +165,7 @@ const float kHideDuration = 0.7;
     // Only button-less bubbles auto-hide.
     [self hideSoon];
   }
+  // TODO(jeremya): show "Press Esc to exit" instead of a link on mouselock.
 
   // Relayout. A bit jumpy, but functional.
   [tweaker_ tweakUI:[self window]];
@@ -234,14 +237,16 @@ const float kHideDuration = 0.7;
   exitLabelPlaceholder_ = nil;  // Now released.
   [exitLabel_.get() setDelegate:self];
 
-  NSString *message = l10n_util::GetNSStringF(IDS_EXIT_FULLSCREEN_MODE,
-      base::SysNSStringToUTF16([[self class] keyCommandString]));
+  NSString* exitLinkText = l10n_util::GetNSString(IDS_EXIT_FULLSCREEN_MODE);
+  NSString* acceleratorText = [@" " stringByAppendingString:
+      l10n_util::GetNSStringF(IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR,
+                              l10n_util::GetStringUTF16(IDS_APP_ESC_KEY))];
 
   NSFont* font = [NSFont systemFontOfSize:
       [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
   [(HyperlinkTextView*)exitLabel_.get()
-        setMessageAndLink:@""
-                 withLink:message
+        setMessageAndLink:acceleratorText
+                 withLink:exitLinkText
                  atOffset:0
                      font:font
              messageColor:[NSColor blackColor]
@@ -259,6 +264,7 @@ const float kHideDuration = 0.7;
   [layoutManager ensureLayoutForTextContainer:textContainer];
   NSRect textFrame = [layoutManager usedRectForTextContainer:textContainer];
 
+  textFrame.size.width = ceil(NSWidth(textFrame));
   labelFrame.origin.x += NSWidth(labelFrame) - NSWidth(textFrame);
   labelFrame.size = textFrame.size;
   [exitLabel_ setFrame:labelFrame];

@@ -56,7 +56,22 @@ void FullscreenExitBubbleGtk::UpdateContent(
                          UTF16ToUTF8(GetCurrentDenyButtonText()).c_str());
     gtk_widget_show(deny_button_);
   } else {
+    bool link_visible = true;
+    string16 accelerator;
     if (bubble_type == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION) {
+      accelerator = l10n_util::GetStringUTF16(IDS_APP_F11_KEY);
+    } else if (bubble_type == FEB_TYPE_FULLSCREEN_EXIT_INSTRUCTION) {
+      accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);
+    } else {
+      link_visible = false;
+    }
+    if (link_visible) {
+      std::string exit_link_text(
+          l10n_util::GetStringUTF8(IDS_EXIT_FULLSCREEN_MODE) + " " +
+          l10n_util::GetStringFUTF8(IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR,
+              accelerator));
+      gtk_chrome_link_button_set_label(GTK_CHROME_LINK_BUTTON(link_),
+          exit_link_text.c_str());
       gtk_widget_show(link_);
       gtk_widget_hide(instruction_label_);
     } else {
@@ -73,16 +88,6 @@ void FullscreenExitBubbleGtk::UpdateContent(
 }
 
 void FullscreenExitBubbleGtk::InitWidgets() {
-  // The exit bubble is a gtk_chrome_link_button inside a gtk event box and gtk
-  // alignment (these provide the background color).  This is then made rounded
-  // and put into a slide widget.
-
-  // The Windows code actually looks up the accelerator key in the accelerator
-  // table and then converts the key to a string (in a switch statement). This
-  // doesn't seem to be implemented for Gtk, so we just use F11 directly.
-  std::string exit_text_utf8(l10n_util::GetStringFUTF8(
-      IDS_EXIT_FULLSCREEN_MODE, l10n_util::GetStringUTF16(IDS_APP_F11_KEY)));
-
   hbox_ = gtk_hbox_new(false, ui::kControlSpacing);
 
   message_label_ = gtk_label_new(GetMessage(url_).c_str());
@@ -100,18 +105,15 @@ void FullscreenExitBubbleGtk::InitWidgets() {
   gtk_widget_set_no_show_all(deny_button_, FALSE);
   gtk_box_pack_start(GTK_BOX(hbox_), deny_button_, FALSE, FALSE, 0);
 
-  link_ = gtk_chrome_link_button_new(exit_text_utf8.c_str());
+  link_ = gtk_chrome_link_button_new("");
   gtk_widget_set_can_focus(link_, FALSE);
   gtk_widget_set_no_show_all(link_, FALSE);
   gtk_chrome_link_button_set_use_gtk_theme(GTK_CHROME_LINK_BUTTON(link_),
                                            FALSE);
   gtk_box_pack_start(GTK_BOX(hbox_), link_, FALSE, FALSE, 0);
 
-  instruction_label_ = gtk_chrome_link_button_new(
-      UTF16ToUTF8(GetInstructionText()).c_str());
+  instruction_label_ = gtk_label_new(UTF16ToUTF8(GetInstructionText()).c_str());
   gtk_widget_set_no_show_all(instruction_label_, FALSE);
-  gtk_chrome_link_button_set_use_gtk_theme(
-      GTK_CHROME_LINK_BUTTON(instruction_label_), FALSE);
   gtk_box_pack_start(GTK_BOX(hbox_), instruction_label_, FALSE, FALSE, 0);
 
   GtkWidget* bubble = gtk_util::CreateGtkBorderBin(
@@ -137,8 +139,6 @@ void FullscreenExitBubbleGtk::InitWidgets() {
   signals_.Connect(container_, "set-floating-position",
                    G_CALLBACK(OnSetFloatingPositionThunk), this);
   signals_.Connect(link_, "clicked", G_CALLBACK(OnLinkClickedThunk), this);
-  signals_.Connect(instruction_label_, "clicked",
-                   G_CALLBACK(OnLinkClickedThunk), this);
   signals_.Connect(allow_button_, "clicked",
                    G_CALLBACK(&OnAllowClickedThunk), this);
   signals_.Connect(deny_button_, "clicked",

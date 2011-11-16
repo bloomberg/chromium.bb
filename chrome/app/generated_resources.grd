@@ -3617,14 +3617,12 @@ are declared in build/common.gypi.
 
 
       <!-- Fullscreen mode -->
+      <message name="IDS_EXIT_FULLSCREEN_MODE" desc="Clickable message displayed on entering full screen mode. Clicking on the link exits full screen mode.">
+        Exit full screen
+      </message>
       <if expr="not pp_ifdef('chromeos')">
-        <message name="IDS_EXIT_FULLSCREEN_MODE" desc="Clickable message displayed on entering fullscreen mode to tell users how to return to normal mode">
-          Exit full screen (<ph name="ACCELERATOR">$1<ex>F11</ex></ph>)
-        </message>
-      </if>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_EXIT_FULLSCREEN_MODE" desc="Clickable message displayed on entering fullscreen mode to tell users how to return to normal mode (for Chrome OS, which has a dedicated fullscreen key on the top row in the F3 position)">
-          Exit full screen
+        <message name="IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR" desc="Accelerator description shown next to a link showing 'Exit full screen' e.g. 'Exit full screen (Esc)', where 'Exit full screen' is a link.">
+          (<ph name="ACCELERATOR">$1<ex>Esc</ex></ph>)
         </message>
       </if>
 
@@ -14410,7 +14408,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       This page is hiding your mouse cursor.
     </message>
     <message name="IDS_FULLSCREEN_PRESS_ESC_TO_EXIT" desc="Text displayed in the bubble to tell users how to return to normal mode">
-      Press Esc to exit.
+      Press <ph name="ACCELERATOR">$1<ex>Esc</ex></ph> to exit.
     </message>
     <message name="IDS_FULLSCREEN_ALLOW" desc="Text in the bubble button that grants permission for a site to enter fullscreen and/or lock the mouse.">
       Allow

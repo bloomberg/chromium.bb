@@ -9,6 +9,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
 #include "grit/generated_resources.h"
+#include "grit/ui_strings.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -57,10 +58,13 @@ class FullscreenExitBubbleViews::FullscreenExitView
 
   // Clickable hint text for exiting fullscreen mode.
   views::Link link_;
+  // Instruction for exiting mouse lock.
+  views::Label mouse_lock_exit_instruction_;
+  // Informational label: 'www.foo.com has gone fullscreen'.
   views::Label message_label_;
   views::NativeTextButton* accept_button_;
   views::NativeTextButton* deny_button_;
-  string16 browser_fullscreen_exit_text_;
+  const string16 browser_fullscreen_exit_accelerator_;
 };
 
 FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
@@ -70,15 +74,8 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
     FullscreenExitBubbleType bubble_type)
     : bubble_(bubble),
       accept_button_(NULL),
-      deny_button_(NULL) {
-#if !defined(OS_CHROMEOS)
-  browser_fullscreen_exit_text_ =
-      l10n_util::GetStringFUTF16(IDS_EXIT_FULLSCREEN_MODE, accelerator);
-#else
-  browser_fullscreen_exit_text_ =
-      l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE);
-#endif
-
+      deny_button_(NULL),
+      browser_fullscreen_exit_accelerator_(accelerator) {
   views::BubbleBorder* bubble_border =
       new views::BubbleBorder(views::BubbleBorder::NONE);
   bubble_border->set_background_color(Bubble::kBackgroundColor);
@@ -90,9 +87,18 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
   message_label_.SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::MediumFont));
 
+  mouse_lock_exit_instruction_.set_parent_owned(false);
+  mouse_lock_exit_instruction_.SetText(bubble_->GetInstructionText());
+  mouse_lock_exit_instruction_.SetFont(
+      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
+
   link_.set_parent_owned(false);
   link_.set_collapse_when_hidden(false);
   link_.set_focusable(false);
+#if defined(OS_CHROMEOS)
+  // On CrOS, the link text doesn't change, since it doesn't show the shortcut.
+  link_.SetText(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE));
+#endif
   link_.set_listener(bubble);
   link_.SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::MediumFont));
@@ -102,7 +108,9 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
 
   link_.SetBackgroundColor(background()->get_color());
   message_label_.SetBackgroundColor(background()->get_color());
+  mouse_lock_exit_instruction_.SetBackgroundColor(background()->get_color());
   AddChildView(&message_label_);
+  AddChildView(&mouse_lock_exit_instruction_);
   AddChildView(&link_);
 
   accept_button_ = new views::NativeTextButton(
@@ -132,7 +140,9 @@ gfx::Size FullscreenExitBubbleViews::FullscreenExitView::GetPreferredSize() {
   gfx::Size message_size(message_label_.GetPreferredSize());
 
   gfx::Size button_instruction_area;
-  if (link_.IsVisible()) {
+  if (mouse_lock_exit_instruction_.IsVisible()) {
+    button_instruction_area = mouse_lock_exit_instruction_.GetPreferredSize();
+  } else if (link_.IsVisible()) {
     button_instruction_area = link_.GetPreferredSize();
   } else {
     gfx::Size accept_size(accept_button_->GetPreferredSize());
@@ -159,16 +169,32 @@ void FullscreenExitBubbleViews::FullscreenExitView::UpdateContent(
   message_label_.SetText(bubble_->GetCurrentMessageText());
   if (fullscreen_bubble::ShowButtonsForType(bubble_type)) {
     link_.SetVisible(false);
+    mouse_lock_exit_instruction_.SetVisible(false);
     accept_button_->SetVisible(true);
     deny_button_->SetText(bubble_->GetCurrentDenyButtonText());
     deny_button_->SetVisible(true);
     deny_button_->ClearMaxTextSize();
   } else {
-    if (bubble_type == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION)
-      link_.SetText(browser_fullscreen_exit_text_);
-    else
-      link_.SetText(bubble_->GetInstructionText());
-    link_.SetVisible(true);
+    bool link_visible = true;
+    string16 accelerator;
+    if (bubble_type == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION) {
+      accelerator = browser_fullscreen_exit_accelerator_;
+    } else if (bubble_type == FEB_TYPE_FULLSCREEN_EXIT_INSTRUCTION) {
+      accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);
+    } else {
+      link_visible = false;
+    }
+#if !defined(OS_CHROMEOS)
+    if (link_visible) {
+      link_.SetText(
+          l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE) +
+          UTF8ToUTF16(" ") +
+          l10n_util::GetStringFUTF16(IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR,
+              accelerator));
+    }
+#endif
+    link_.SetVisible(link_visible);
+    mouse_lock_exit_instruction_.SetVisible(!link_visible);
     accept_button_->SetVisible(false);
     deny_button_->SetVisible(false);
   }
@@ -186,7 +212,12 @@ void FullscreenExitBubbleViews::FullscreenExitView::Layout() {
       message_size.width(), message_size.height());
   x += message_size.width() + kMiddlePaddingPx;
 
-  if (link_.IsVisible()) {
+  if (mouse_lock_exit_instruction_.IsVisible()) {
+    gfx::Size instruction_size(mouse_lock_exit_instruction_.GetPreferredSize());
+    mouse_lock_exit_instruction_.SetBounds(
+        x, insets.top() + (inner_height - instruction_size.height()) / 2,
+        instruction_size.width(), instruction_size.height());
+  } else if (link_.IsVisible()) {
     gfx::Size link_size(link_.GetPreferredSize());
     link_.SetBounds(x, insets.top() + (inner_height - link_size.height()) / 2,
                     link_size.width(), link_size.height());

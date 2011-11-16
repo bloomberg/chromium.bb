@@ -8,6 +8,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "grit/generated_resources.h"
+#include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
@@ -124,5 +125,6 @@ string16 FullscreenExitBubble::GetAllowButtonText() const {
 }
 
 string16 FullscreenExitBubble::GetInstructionText() const {
-  return l10n_util::GetStringUTF16(IDS_FULLSCREEN_PRESS_ESC_TO_EXIT);
+  return l10n_util::GetStringFUTF16(IDS_FULLSCREEN_PRESS_ESC_TO_EXIT,
+      l10n_util::GetStringUTF16(IDS_APP_ESC_KEY));
 }
